@@ -1,3 +1,68 @@
+## [5.1.12-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12-alpha.2...5.1.12-alpha.3) (2024-01-28)
+
+
+### 📦 Other
+
+* Add clientside-mods recommended by @MoonstruckDev. Closes [#506](https://git.griefed.de/Griefed/ServerPackCreator/issues/506) ([93a0e9e](https://git.griefed.de/Griefed/ServerPackCreator/commit/93a0e9e4edcc5a307b67ec1af180779066448513))
+* Add Jump Over Fences to clientside-mods. Thanks to @ModernGamingWorld for the report. Closes [#503](https://git.griefed.de/Griefed/ServerPackCreator/issues/503) ([137d673](https://git.griefed.de/Griefed/ServerPackCreator/commit/137d673a549ca29cb922d0e0c871b2d4157fe1ba))
+
+
+### 🦊 CI/CD
+
+* Bump actions versions ([2980d72](https://git.griefed.de/Griefed/ServerPackCreator/commit/2980d72a73374e2c5e27159b5e9043417e2ffb5e))
+
+
+### 🛠 Fixes
+
+* Re-add chmod to allow execution ([c681980](https://git.griefed.de/Griefed/ServerPackCreator/commit/c6819800337a10cf4469e1017b51705f73a34197))
+
+## [5.1.12-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12-alpha.1...5.1.12-alpha.2) (2024-01-27)
+
+
+### 📦 Other
+
+* Add missing PUID and PGID ([b94cb7f](https://git.griefed.de/Griefed/ServerPackCreator/commit/b94cb7f1e1be763d7a3d75259208a165ce1f2a8f))
+* bump npm packages ([b0f9697](https://git.griefed.de/Griefed/ServerPackCreator/commit/b0f9697dffe5be1102516fbd7d85bfbd5dbb2fca))
+
+
+### 🦊 CI/CD
+
+* Bump actions versions ([1d0336b](https://git.griefed.de/Griefed/ServerPackCreator/commit/1d0336be9e7e83aa54993d58a39b2140fa8e6455))
+* Bump artifact download version ([f17591a](https://git.griefed.de/Griefed/ServerPackCreator/commit/f17591abbad870e96f2c8b9c73cae9689bc275d8))
+* Update tj-actions-branch-name ([e4b8220](https://git.griefed.de/Griefed/ServerPackCreator/commit/e4b82205e2e1150575cad62a76f2c1854c727edc))
+
+
+### 🛠 Fixes
+
+* Do not chown root-files ([a14b9e0](https://git.griefed.de/Griefed/ServerPackCreator/commit/a14b9e0abf5935ae9b30052af410d12fd53b582c))
+* Hopefully fix container not booting up correctly ([977fbc9](https://git.griefed.de/Griefed/ServerPackCreator/commit/977fbc93dddcb5802ef212ce12433126da1f57b4))
+* Remove explicit chmod and chown ([25e04b2](https://git.griefed.de/Griefed/ServerPackCreator/commit/25e04b2982a5ef59d4a1bd822616c67c9fcd29da))
+
+## [5.1.12-alpha.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.11...5.1.12-alpha.1) (2024-01-27)
+
+
+### 💎 Improvements
+
+* Centralize i18n, add [@arthurbarret0](https://git.griefed.de/arthurbarret0) pt_BR translations. See merge request Griefed/ServerPackCreator!563 ([1f5c6a9](https://git.griefed.de/Griefed/ServerPackCreator/commit/1f5c6a90f32a2963b793411b426a7a8ea490dabc))
+* Fix, rework and improve webservice ([8be9e4b](https://git.griefed.de/Griefed/ServerPackCreator/commit/8be9e4bf8e152ad72a7cac30b1c3f960278b2465))
+
+
+### 📦 Other
+
+* Add Yungs Menu Tweaks to clientside-mods list. Thanks to @Elrol for the report! ([85d3ba7](https://git.griefed.de/Griefed/ServerPackCreator/commit/85d3ba708219fc92ca790793269415a297c35b94))
+
+
+### 🦊 CI/CD
+
+* Move i18n to singular source ([1bdabb7](https://git.griefed.de/Griefed/ServerPackCreator/commit/1bdabb772f29b32e82d95709a69bf2fbe28ef77c))
+
+
+### 🛠 Fixes
+
+* Prevent Update Checks not being initialized from preventing SPC starting up ([db73e5e](https://git.griefed.de/Griefed/ServerPackCreator/commit/db73e5e8123eae24446f52228ef9143cbb84a759))
+
+## [3.15.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.7...3.15.0) (2022-11-08)
+
 ## [5.1.11](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.10...5.1.11) (2024-01-04)
 
 
@@ -2454,8 +2519,6 @@
 
 * Replace wget in Shell scripts with Curl, which is more likely to be available on Mac-systems. Thanks to [@chorbintime](https://git.griefed.de/chorbintime) for the report! ([615f142](https://git.griefed.de/Griefed/ServerPackCreator/commit/615f142a5c9062a72ded79f447bcccf3b81fb28a))
 
-## [3.15.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.7...3.15.0) (2022-11-08)
-
 
 ### :scissors: Refactor
 
@@ -2573,6 +2636,65 @@
 * **deps:** update dependency minimist to v1.2.7 ([ced7ae1](https://git.griefed.de/Griefed/ServerPackCreator/commit/ced7ae190052431ed4f18cf87ebd9503e65ead58))
 * **deps:** update dependency quasar to v2.10.1 ([7e53485](https://git.griefed.de/Griefed/ServerPackCreator/commit/7e534853b58f07dc7b9dde005d35014986cfcef2))
 * **deps:** update dependency vue to v3.2.41 ([ad2ba5f](https://git.griefed.de/Griefed/ServerPackCreator/commit/ad2ba5fef57faf62881951f23c772878a1a5f36c))
+* **Maintenance:** Remove manual write of old version to properties from maintenance release 3.14.6. ([d908705](https://git.griefed.de/Griefed/ServerPackCreator/commit/d90870542c1644e6f098cee5756a827fb2aff213))
+
+## [3.15.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.5...3.15.0-beta.1) (2022-10-08)
+
+
+### :scissors: Refactor
+
+* Merge ConfigUtilities into ConfigurationHandler. Extract JSON and XML utilities into separate utilitiy classes, passed to VersionMeta and other parts of ServerPackCreator. ([441ede1](https://git.griefed.de/Griefed/ServerPackCreator/commit/441ede123fc7de08543ba2f31cb1c425e43db0d2))
+* **Code Quality:** Implement latest Qodana suggestions ([d7ccfe8](https://git.griefed.de/Griefed/ServerPackCreator/commit/d7ccfe8a31e0015d25fc24fade6212734ca5c9a8))
+* **Execution Time Measurement:** Implement custom stopwatch to measure the execution time of tasks. ([b1c1f2d](https://git.griefed.de/Griefed/ServerPackCreator/commit/b1c1f2d7758fcd0d10698e51d901a0c7bb8703e0))
+* **Migration Message Logging:** Make the display window and logging of migration messages a little easier on the eye. ([92fd7a9](https://git.griefed.de/Griefed/ServerPackCreator/commit/92fd7a91d24c948100ccdfa62adbd98c4e50d539))
+* **MigrationManager:** Improve docs and styling. ([f141413](https://git.griefed.de/Griefed/ServerPackCreator/commit/f14141348df504b29ce56e844d235f5a511190fc))
+* **ServerPackCreator:** Improve docs and styling ([631d581](https://git.griefed.de/Griefed/ServerPackCreator/commit/631d5810bfc33a6f24497cce8daa2fb0eac592a9))
+* **ServerPackHandler:** Improve docs and styling ([44d67c6](https://git.griefed.de/Griefed/ServerPackCreator/commit/44d67c643c73aab0af1dca82b8e04e6fce15702d))
+* **SimpleStopWatch:** Rearrange methods, apply editorconfig and make getElapsedNanoseconds public ([bd81c7d](https://git.griefed.de/Griefed/ServerPackCreator/commit/bd81c7de266919c629b5b925a6a18321530b2c7b))
+
+
+### 💈 Style
+
+* Apply new EditorConfig styling ([ed09b6c](https://git.griefed.de/Griefed/ServerPackCreator/commit/ed09b6c837c467eab59ff7378bc20e80fc2eb520))
+* **Editorconfig:** Wrap multi-parameter method declarations, align multi-parameter calls and improve method grouping ([0e943a6](https://git.griefed.de/Griefed/ServerPackCreator/commit/0e943a666a117b203f5c5dc2df916ffa36ef86e2))
+
+
+### 💎 Improvements
+
+* **Home Directory:** Base all actions, file- and directory paths on home ServerPackCreators directory. Preparations for GH[#438](https://git.griefed.de/Griefed/ServerPackCreator/issues/438) ([3309c74](https://git.griefed.de/Griefed/ServerPackCreator/commit/3309c74bce0a01bf8234173b7976012645745dc7))
+
+
+### 📔 Docs
+
+* Improve description for base-package, short description of intended workflow, list extensions ([5cfdfeb](https://git.griefed.de/Griefed/ServerPackCreator/commit/5cfdfeb00f2cbdf30b3277c5a6dd4ba368ab19fa))
+* **ApplicationProperties:** Improve descriptions for files and directories ([0f88239](https://git.griefed.de/Griefed/ServerPackCreator/commit/0f8823908044fffec48051dbfb8285cba0ac5219))
+
+
+### 🦊 CI/CD
+
+* **Maintenance Release:** Writes the current version to your serverpackcreator.properties to `de.griefed.serverpackcreator.version.old`, so following version can execute migrations properly.  If you've used SPC before, please update to this version and run it at least once. ([f0de921](https://git.griefed.de/Griefed/ServerPackCreator/commit/f0de921622b73cad9837f74cb13af3cad20a0615))
+
+
+### 🧪 Tests
+
+* Set home-directory to tests and run tests in said directory to prevent file-clobbering and unwanted overwrites ([81a3e49](https://git.griefed.de/Griefed/ServerPackCreator/commit/81a3e49fc473d7046e2b4c33b1a6a2950d63d203))
+
+
+### 🚀 Features
+
+* **Update Migrations:** When updating from an older to a new version, perform necessary migrations on a step-by-step, version-to-version, basis ([7e04426](https://git.griefed.de/Griefed/ServerPackCreator/commit/7e044266685454733ea0a71de76dd081b686d649))
+
+
+### 🛠 Fixes
+
+* **File and Directory exclusion:** Correctly exclude files and directories as per user input and default list of directories to exclude from the server pack by matching the paths of files and directories. Thanks to @ModernGamingWorld for reporting this! ([a887796](https://git.griefed.de/Griefed/ServerPackCreator/commit/a8877962c33e2b7645a3bad7c0a5f079937e6998))
+* **JAR folder extraction:** Extract all files and folders when running in a dev-env. Allow specifying of multiple file-endings separated with pipe-symbol via use of regex. ([a796aab](https://git.griefed.de/Griefed/ServerPackCreator/commit/a796aabf7ee07809c20c8d5e368aed6e567dfb7e))
+* **Quilt server installation:** Install Quilt server in server pack directory. ([3552632](https://git.griefed.de/Griefed/ServerPackCreator/commit/3552632d77e5730b19957db71175bfa6ccead39a))
+* **Webservice Propery Loading:** Pass property files to load as CLI argument when running Spring to ensure the properties from SPCs home-directory get loaded as well. ([b431dd2](https://git.griefed.de/Griefed/ServerPackCreator/commit/b431dd2ee47ad22c0ec1589eb0ff7dd9fdfa9b0c))
+
+
+### Other
+
 * **Maintenance:** Remove manual write of old version to properties from maintenance release 3.14.6. ([d908705](https://git.griefed.de/Griefed/ServerPackCreator/commit/d90870542c1644e6f098cee5756a827fb2aff213))
 
 ## [3.14.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.4...3.14.5) (2022-09-26)
