@@ -1,3 +1,21 @@
+## [5.1.12-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12-alpha.3...5.1.12-alpha.4) (2024-01-28)
+
+
+### ⏩ Performance
+
+* Call api directly ([203c46d](https://git.griefed.de/Griefed/ServerPackCreator/commit/203c46d86c26d563d9208aa5c5225a124603b394))
+
+
+### 📦 Other
+
+* Ignores, doc updates, cleanups ([6660de4](https://git.griefed.de/Griefed/ServerPackCreator/commit/6660de4ded65c68ef97b3fd24f0b3ad2140797f7))
+
+
+### 🦊 CI/CD
+
+* Include correctly ([4f15c6d](https://git.griefed.de/Griefed/ServerPackCreator/commit/4f15c6dc12de739adebab5f358d80634078663d8))
+* Do not make Docker test dependant on Gradle anymore ([de3f065](https://git.griefed.de/Griefed/ServerPackCreator/commit/de3f065887f2fb9a686c6c776dc21f16a25b1219))
+
 ## [5.1.12-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12-alpha.2...5.1.12-alpha.3) (2024-01-28)
 
 
