@@ -55,3 +55,8 @@ body {
 .card-margins {
   margin: 10px;
 }
+
+.force-wrap {
+  white-space: normal !important;
+  word-wrap: break-word;
+}
