@@ -1,3 +1,21 @@
+## [5.1.12-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12-alpha.2...5.1.12-alpha.3) (2024-01-28)
+
+
+### 📦 Other
+
+* Add clientside-mods recommended by @MoonstruckDev. Closes [#506](https://git.griefed.de/Griefed/ServerPackCreator/issues/506) ([93a0e9e](https://git.griefed.de/Griefed/ServerPackCreator/commit/93a0e9e4edcc5a307b67ec1af180779066448513))
+* Add Jump Over Fences to clientside-mods. Thanks to @ModernGamingWorld for the report. Closes [#503](https://git.griefed.de/Griefed/ServerPackCreator/issues/503) ([137d673](https://git.griefed.de/Griefed/ServerPackCreator/commit/137d673a549ca29cb922d0e0c871b2d4157fe1ba))
+
+
+### 🦊 CI/CD
+
+* Bump actions versions ([2980d72](https://git.griefed.de/Griefed/ServerPackCreator/commit/2980d72a73374e2c5e27159b5e9043417e2ffb5e))
+
+
+### 🛠 Fixes
+
+* Re-add chmod to allow execution ([c681980](https://git.griefed.de/Griefed/ServerPackCreator/commit/c6819800337a10cf4469e1017b51705f73a34197))
+
 ## [5.1.12-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12-alpha.1...5.1.12-alpha.2) (2024-01-27)
 
 
