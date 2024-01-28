@@ -372,6 +372,7 @@ actual class ApiProperties(
             "jeed-",
             "jehc-",
             "jeiintegration_",
+            "jumpoverfences-",
             "just-enough-harvestcraft-",
             "justenoughbeacons-",
             "justenoughdrags-",
