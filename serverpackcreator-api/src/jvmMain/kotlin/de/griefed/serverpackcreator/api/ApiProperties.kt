@@ -187,7 +187,6 @@ actual class ApiProperties(
             "Controller Support-",
             "Controlling-",
             "CraftPresence-",
-            "Create_Questing-",
             "CullLessLeaves-Reforged-",
             "CustomCursorMod-",
             "CustomMainMenu-",
@@ -285,10 +284,11 @@ actual class ApiProperties(
             "Toast-Control-",
             "ToastControl-",
             "TravelersTitles-",
-            "VR-Combat_",
             "VoidFog-",
+            "VR-Combat_",
             "WindowedFullscreen-",
             "WorldNameRandomizer-",
+            "YeetusExperimentus-",
             "YungsMenuTweaks-",
             "[1.12.2]DamageIndicatorsMod-",
             "[1.12.2]bspkrscore-",
@@ -459,8 +459,7 @@ actual class ApiProperties(
             "whats-that-slot-forge-",
             "wisla-",
             "xlifeheartcolors-",
-            "yisthereautojump-",
-            "YeetusExperimentus-Forge-"
+            "yisthereautojump-"
         )
     )
 
