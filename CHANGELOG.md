@@ -1,3 +1,11 @@
+## [5.1.12-alpha.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12-alpha.4...5.1.12-alpha.5) (2024-01-28)
+
+
+### 💎 Improvements
+
+* Display errors encountered for failed modpack checks in history ([b76a897](https://git.griefed.de/Griefed/ServerPackCreator/commit/b76a897fa402f55492a79d84d9096a1dd68f0db5))
+* General improvements in styling and formatting ([ed812ab](https://git.griefed.de/Griefed/ServerPackCreator/commit/ed812abc3cd4a8152d09cae8133c4e95a57f5eea))
+
 ## [5.1.12-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12-alpha.3...5.1.12-alpha.4) (2024-01-28)
 
 
