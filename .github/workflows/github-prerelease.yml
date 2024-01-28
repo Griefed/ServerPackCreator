@@ -504,7 +504,7 @@ jobs:
 
       - name: General Info
         id: info
-        uses: jaywcjlove/github-action-read-file@main
+        uses: jaywcjlove/github-action-read-file@v1.2.2
         with:
           path: misc/INFO.md
 
@@ -519,7 +519,7 @@ jobs:
           fi
 
       - name: Append Release Info
-        uses: "DamianReeves/write-file-action@master"
+        uses: DamianReeves/write-file-action@v1.2
         with:
           path: description.txt
           write-mode: append
