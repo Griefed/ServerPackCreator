@@ -709,3 +709,4 @@ Voila! The menubar will now have german translations!
 
 Keep in mind when using languages other than `en_GB`: Any key not found in your currently set
 language will fall back to the english default.
+

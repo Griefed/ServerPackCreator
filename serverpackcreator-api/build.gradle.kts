@@ -80,8 +80,36 @@ tasks.jvmSourcesJar {
     dependsOn(tasks.generateI18n4kFiles)
 }
 
+tasks.processResources {
+
+}
+
 tasks.jvmProcessResources {
     dependsOn(tasks.generateI18n4kFiles)
+    copy {
+        from(rootProject.layout.projectDirectory.file("CHANGELOG.md"))
+        into(layout.projectDirectory.dir("src/jvmMain/resources"))
+    }
+    copy {
+        from(rootProject.layout.projectDirectory.file("CODE_OF_CONDUCT.md"))
+        into(layout.projectDirectory.dir("src/jvmMain/resources"))
+    }
+    copy {
+        from(rootProject.layout.projectDirectory.file("CONTRIBUTING.md"))
+        into(layout.projectDirectory.dir("src/jvmMain/resources"))
+    }
+    copy {
+        from(rootProject.layout.projectDirectory.file("HELP.md"))
+        into(layout.projectDirectory.dir("src/jvmMain/resources"))
+    }
+    copy {
+        from(rootProject.layout.projectDirectory.file("LICENSE"))
+        into(layout.projectDirectory.dir("src/jvmMain/resources"))
+    }
+    copy {
+        from(rootProject.layout.projectDirectory.file("README.md"))
+        into(layout.projectDirectory.dir("src/jvmMain/resources"))
+    }
 }
 
 //Fix resources missing in multiplatform jvm inDev run https://youtrack.jetbrains.com/issue/KTIJ-16582/Consumer-Kotlin-JVM-library-cannot-access-a-Kotlin-Multiplatform-JVM-target-resources-in-multi-module-Gradle-project

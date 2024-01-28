@@ -74,8 +74,12 @@
           </span>
           <span v-else-if="col.field === 'downloads'">
             {{ col.value }}
-            <q-btn @click="download(props.row.id)" color="info" dense icon="download" round size="sm"
-                   style="margin-left: 5px;"/>
+            <q-btn :href="buildDownloadUrl(props.row.id)" color="info" dense icon="download" round size="sm"
+                   style="margin-left: 5px;" type="a" @click="props.row.downloads++">
+              <q-tooltip>
+                Download modpack
+              </q-tooltip>
+            </q-btn>
           </span>
 
           <span v-else>
@@ -147,7 +151,7 @@ export default defineComponent({
     };
   },
   methods: {
-    download(id: number) {
+    /*download(id: number) {
       serverpacks.get('download/' + id, {
         responseType: 'blob'
       }).then(response => {
@@ -166,6 +170,9 @@ export default defineComponent({
         URL.revokeObjectURL(href);
         this.loadData()
       })
+    },*/
+    buildDownloadUrl(id: number): string {
+      return '/api/v2/serverpacks/download/' + id
     },
     voteServerPack(id: number, decision: string) {
       serverpacks.get('vote/' + id + '&' + decision).then(() => {
