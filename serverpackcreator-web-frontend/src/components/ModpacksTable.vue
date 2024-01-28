@@ -48,8 +48,12 @@
         <q-td v-for="col in props.cols" :key="col.name" :props="props">
           <span v-if="col.field === 'name'">
             {{ col.value }}
-            <q-btn @click="download(props.row.id)" color="info" dense icon="download" round size="sm"
-                   style="margin-left: 5px;"/>
+            <q-btn :href="buildDownloadUrl(props.row.id)" color="info" dense icon="download" round size="sm"
+                   style="margin-left: 5px;" type="a">
+              <q-tooltip>
+                Download modpack
+              </q-tooltip>
+            </q-btn>
           </span>
           <span v-else>
             {{ col.value }}
@@ -114,7 +118,7 @@ export default defineComponent({
     };
   },
   methods: {
-    download(id: number) {
+    /*download(id: number) {
       modpacks.get('download/' + id, {
         responseType: 'blob'
       }).then(response => {
@@ -133,6 +137,9 @@ export default defineComponent({
         URL.revokeObjectURL(href);
         this.loadData()
       })
+    },*/
+    buildDownloadUrl(id: number): string {
+      return '/api/v2/modpacks/download/' + id
     },
     loadData() {
       modpacks.get('all').then(response => {
