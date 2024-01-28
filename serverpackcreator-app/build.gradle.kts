@@ -40,33 +40,6 @@ tasks.clean {
     }
 }
 
-tasks.processResources {
-    copy {
-        from(rootProject.layout.projectDirectory.file("CHANGELOG.md"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("CODE_OF_CONDUCT.md"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("CONTRIBUTING.md"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("HELP.md"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("LICENSE"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("README.md"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
-}
-
 task("copyDependencies", Copy::class) {
     from(configurations.runtimeClasspath).into("${layout.buildDirectory.asFile.get()}/jars")
 }
