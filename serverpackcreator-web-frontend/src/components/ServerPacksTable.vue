@@ -4,30 +4,22 @@
       <transition
         appear
         enter-active-class="animated fadeIn"
-        leave-active-class="animated fadeOut"
-      >
+        leave-active-class="animated fadeOut">
       </transition>
     </q-card-section>
     <q-inner-loading :showing="visible">
-      <q-spinner-gears size="50px" color="accent" />
+      <q-spinner-gears size="50px" color="accent"/>
     </q-inner-loading>
   </q-card>
   <q-table
-    v-else
-    :rows="rows"
-    :columns="columns"
-    row-key="id"
-    title="Server Packs"
-    id="serverpacktable"
+    v-else :rows="rows" :columns="columns" row-key="id" title="Server Packs" id="serverpacktable"
     style="max-width: 100%;"
-    bordered dense
-    no-data-label="No server packs available (yet)..."
-    no-results-label="The search didn't uncover any results"
-    :pagination="initialPagination">
+    bordered dense no-data-label="No server packs available (yet)..."
+    no-results-label="The search didn't uncover any results" :pagination="initialPagination">
     <template v-slot:header="props">
       <q-tr :props="props">
         <q-th auto-width>
-          <q-btn push size="xs" color="primary" round icon="sync" @click="loadData" />
+          <q-btn push size="xs" color="primary" round icon="sync" @click="loadData"/>
         </q-th>
         <q-th v-for="col in props.cols" :key="col.name" :props="props">
           <strong>{{ col.label }}</strong>
@@ -91,7 +83,7 @@
         <q-td colspan="100%" style="max-width: 90vw;" v-if="props.expand">
           <div class="row">
             <div class="col">
-              <RunConfigurationCard :id="props.row.runConfiguration.id" style="max-height: 280px; height: 280px;"/>
+              <RunConfigurationCard :id="props.row.runConfiguration.id"/>
             </div>
           </div>
         </q-td>
@@ -101,29 +93,44 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
-import { modpacks, serverpacks } from 'boot/axios';
-import { date } from 'quasar';
+import {defineComponent, ref} from 'vue';
+import {modpacks, serverpacks} from 'boot/axios';
+import {date} from 'quasar';
 import RunConfigurationCard from 'components/RunConfigurationCard.vue';
+
 const columns = [
-  { name: 'id',               label: 'ServerPack ID',       field: 'id',                sortable: true,   align: 'left' },
-  { name: 'size',             label: 'Size',                field: 'size',              sortable: false,  align: 'left' },
-  { name: 'downloads',        label: 'Downloads',           field: 'downloads',         sortable: true,   align: 'left' },
-  { name: 'confirmedWorking', label: 'Confirmed Working',   field: 'confirmedWorking',  sortable: true,   align: 'left' },
-  { name: 'sha256',           label: 'SHA256 Hash',         field: 'sha256',            sortable: false,  align: 'left' },
-  { name: 'runConfiguration', label: 'RunConfiguration ID', field: 'runConfiguration',  sortable: true,   align: 'left', format: (val: { id: number; }) => val.id },
-  { name: 'dateCreated',      label: 'Date and Time',       field: 'dateCreated',       sortable: true,   align: 'left', format: (val: number) => date.formatDate(val, 'YYYY-MM-DD : HH:mm') }
+  {name: 'id', label: 'ServerPack ID', field: 'id', sortable: true, align: 'left'},
+  {name: 'size', label: 'Size', field: 'size', sortable: false, align: 'left'},
+  {name: 'downloads', label: 'Downloads', field: 'downloads', sortable: true, align: 'left'},
+  {name: 'confirmedWorking', label: 'Confirmed Working', field: 'confirmedWorking', sortable: true, align: 'left'},
+  {name: 'sha256', label: 'SHA256 Hash', field: 'sha256', sortable: false, align: 'left'},
+  {
+    name: 'runConfiguration',
+    label: 'RunConfiguration ID',
+    field: 'runConfiguration',
+    sortable: true,
+    align: 'left',
+    format: (val: { id: number; }) => val.id
+  },
+  {
+    name: 'dateCreated',
+    label: 'Date and Time',
+    field: 'dateCreated',
+    sortable: true,
+    align: 'left',
+    format: (val: number) => date.formatDate(val, 'YYYY-MM-DD : HH:mm')
+  }
 ];
 
 export default defineComponent({
   name: 'ServerPacksTable',
-  components: { RunConfigurationCard },
+  components: {RunConfigurationCard},
   props: {
-  id: {
-    type: Number,
+    id: {
+      type: Number,
       required: true
-  }
-},
+    }
+  },
   setup() {
     const visible = ref(true);
     const showSimulatedReturnData = ref(false);

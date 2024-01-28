@@ -1,32 +1,21 @@
 <template>
   <q-card flat bordered style="max-width: 100vw;" class="relative-position" v-if="visible">
     <q-card-section>
-      <transition
-        appear
-        enter-active-class="animated fadeIn"
-        leave-active-class="animated fadeOut"
-      >
-      </transition>
+      <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut"/>
     </q-card-section>
     <q-inner-loading :showing="visible">
-      <q-spinner-gears size="50px" color="accent" />
+      <q-spinner-gears size="50px" color="accent"/>
     </q-inner-loading>
   </q-card>
   <q-table
-    v-else
-    class="sticky-header-table"
-    :rows="rows"
-    :columns="columns"
-    row-key="id"
-    bordered dense
-    style="max-width: 100vw;"
-    no-data-label="No history available (yet)..."
+    v-else class="sticky-header-table" :rows="rows" :columns="columns" row-key="id" bordered dense
+    style="max-width: 100vw;" no-data-label="No history available (yet)..."
     no-results-label="The search didn't uncover any results"
     :pagination="initialPagination">
     <template v-slot:header="props">
       <q-tr :props="props">
         <q-th auto-width>
-          <q-btn push size="xs" color="primary" round icon="sync" @click="loadData" />
+          <q-btn push size="xs" color="primary" round icon="sync" @click="loadData"/>
         </q-th>
         <q-th v-for="col in props.cols" :key="col.name" :props="props">
           <strong>{{ col.label }}</strong>
@@ -38,7 +27,7 @@
       <q-tr :props="props">
         <q-td auto-width>
           <q-btn size="sm" color="primary" round dense @click="props.expand = !props.expand"
-                 :icon="props.expand ? 'remove' : 'add'" >
+                 :icon="props.expand ? 'remove' : 'add'">
             <q-tooltip>
               Click to see details
             </q-tooltip>
@@ -52,15 +41,19 @@
         <q-td colspan="100%" style="max-width: 1100px;" v-if="props.expand">
           <div class="row">
             <div class="col">
-              <ModPackCard :id="props.row.modPackId" />
+              <ModPackCard :id="props.row.modPackId"/>
             </div>
-            <q-separator spaced inset />
+            <q-separator spaced inset v-if="props.row.serverPackId !== null"/>
             <div class="col" v-if="props.row.serverPackId !== null">
-              <ServerPackCard :id="props.row.serverPackId" />
+              <ServerPackCard :id="props.row.serverPackId"/>
             </div>
-            <q-separator spaced inset />
+            <q-separator spaced inset v-if="props.row.serverPackId !== null"/>
             <div class="col" v-if="props.row.serverPackId !== null">
-              <RunConfigurationCard :id="props.row.serverPackId" />
+              <RunConfigurationCard :id="props.row.serverPackId"/>
+            </div>
+            <q-separator spaced inset v-if="props.row.errors.length > 0"/>
+            <div class="col" v-if="props.row.errors.length > 0">
+              <ErrorsCard :errors="props.row.errors"/>
             </div>
           </div>
         </q-td>
@@ -71,18 +64,19 @@
 
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
-import { events } from 'boot/axios';
-import { date } from 'quasar';
+import {defineComponent, ref} from 'vue';
+import {events} from 'boot/axios';
+import {date} from 'quasar';
 import ModPackCard from 'components/ModPackCard.vue';
 import ServerPackCard from 'components/ServerPackCard.vue';
 import RunConfigurationCard from 'components/RunConfigurationCard.vue';
+import ErrorsCard from 'components/ErrorsCard.vue';
 
 const columns = [
-  { name: 'modPackId', label: 'Modpack ID', field: 'modPackId', sortable: true, align: 'left' },
-  { name: 'serverPackId', label: 'Server Pack ID', field: 'serverPackId', sortable: true, align: 'left' },
-  { name: 'status', label: 'Status', field: 'status', sortable: true, align: 'left' },
-  { name: 'message', label: 'Message', field: 'message', sortable: false, align: 'left' },
+  {name: 'modPackId', label: 'Modpack ID', field: 'modPackId', sortable: true, align: 'left'},
+  {name: 'serverPackId', label: 'Server Pack ID', field: 'serverPackId', sortable: true, align: 'left'},
+  {name: 'status', label: 'Status', field: 'status', sortable: true, align: 'left'},
+  {name: 'message', label: 'Message', field: 'message', sortable: false, align: 'left'},
   {
     name: 'timestamp',
     label: 'Date and Time',
@@ -103,7 +97,7 @@ const columns = [
 
 export default defineComponent({
   name: 'HistoryTable',
-  components: { RunConfigurationCard, ServerPackCard, ModPackCard },
+  components: {ErrorsCard, RunConfigurationCard, ServerPackCard, ModPackCard},
   setup() {
     const visible = ref(true);
     const showSimulatedReturnData = ref(false);

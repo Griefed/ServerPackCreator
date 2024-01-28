@@ -39,7 +39,7 @@
       <q-tr :props="props">
         <q-td auto-width>
           <q-btn size="sm" color="primary" round dense @click="props.expand = !props.expand"
-                 :icon="props.expand ? 'remove' : 'add'">
+                 :icon="props.expand ? 'remove' : 'add'" v-if="props.row.serverPacks.length > 0">
             <q-tooltip>
               Click to see available server packs
             </q-tooltip>

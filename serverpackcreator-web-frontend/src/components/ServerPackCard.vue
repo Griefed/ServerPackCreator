@@ -1,71 +1,71 @@
 <template>
   <q-card flat bordered style="height: 385px;" class="relative-position" v-if="visible">
     <q-card-section>
-      <transition
-        appear
-        enter-active-class="animated fadeIn"
-        leave-active-class="animated fadeOut"
-      >
-      </transition>
+      <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut"/>
     </q-card-section>
     <q-inner-loading :showing="visible">
-      <q-spinner-gears size="50px" color="accent" />
+      <q-spinner-gears size="50px" color="accent"/>
     </q-inner-loading>
   </q-card>
-  <q-card flat bordered style="height: 385px;" v-else>
+  <q-card flat bordered style="height: 400px;" v-else>
     <q-list dense>
       <q-item clickable @click="copyToClipboard(id.toString())">
         <q-item-section avatar>
-          <q-icon color="accent" name="token" />
+          <q-icon color="accent" name="token"/>
         </q-item-section>
         <q-item-section>
           <q-item-label>ServerPack ID</q-item-label>
           <q-item-label caption>{{ id }}</q-item-label>
         </q-item-section>
       </q-item>
+
       <q-item clickable @click="copyToClipboard(size.toString())">
         <q-item-section avatar>
-          <q-icon color="accent" name="scale" />
+          <q-icon color="accent" name="scale"/>
         </q-item-section>
         <q-item-section>
           <q-item-label>Size</q-item-label>
           <q-item-label caption>{{ size }} MB</q-item-label>
         </q-item-section>
       </q-item>
+
       <q-item clickable @click="copyToClipboard(downloads.toString())">
         <q-item-section avatar>
-          <q-icon color="accent" name="download" />
+          <q-icon color="accent" name="download"/>
         </q-item-section>
         <q-item-section>
           <q-item-label>Downloads</q-item-label>
           <q-item-label caption>{{ downloads }}</q-item-label>
         </q-item-section>
       </q-item>
+
       <q-item clickable @click="copyToClipboard(confirmedWorking.toString())">
         <q-item-section avatar>
-          <q-icon color="accent" name="thumbs_up_down" />
+          <q-icon color="accent" name="thumbs_up_down"/>
         </q-item-section>
         <q-item-section>
           <q-item-label>Confirmed Working</q-item-label>
           <q-item-label caption>{{ confirmedWorking }}</q-item-label>
         </q-item-section>
       </q-item>
+
       <q-item clickable @click="copyToClipboard(date.formatDate(dateCreated, 'YYYY-MM-DD : HH:mm'))">
         <q-item-section avatar>
-          <q-icon color="accent" name="event" />
+          <q-icon color="accent" name="event"/>
         </q-item-section>
         <q-item-section>
           <q-item-label>Creation Date and Time</q-item-label>
           <q-item-label caption>{{ date.formatDate(dateCreated, 'YYYY-MM-DD : HH:mm') }}</q-item-label>
         </q-item-section>
       </q-item>
+
       <q-item clickable @click="copyToClipboard(sha256)">
         <q-item-section avatar>
-          <q-icon color="accent" name="tag" />
+          <q-icon color="accent" name="tag"/>
         </q-item-section>
         <q-item-section>
           <q-item-label>ServerPack SHA256 Hash</q-item-label>
-          <q-item-label lines="1" caption>{{ sha256 }}</q-item-label>
+          <q-item-label lines="1" caption class="force-wrap">{{ sha256 }}</q-item-label>
         </q-item-section>
       </q-item>
     </q-list>
@@ -73,9 +73,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
-import { serverpacks } from 'boot/axios';
-import { date } from 'quasar';
+import {defineComponent, ref} from 'vue';
+import {serverpacks} from 'boot/axios';
+import {date} from 'quasar';
 
 export default defineComponent({
   name: 'ServerPackCard',
