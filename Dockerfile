@@ -46,8 +46,8 @@ RUN \
       /root/.cache \
       /tmp/*
 
-COPY root/ /
-COPY --from=builder /tmp/serverpackcreator/java/ /app/serverpackcreator/java
-COPY --from=builder /tmp/serverpackcreator/serverpackcreator-app/build/libs/serverpackcreator-app-$VERSION.jar /app/serverpackcreator/serverpackcreator.jar
+COPY --chmod=777 root/ /
+COPY --from=builder --chmod=777 /tmp/serverpackcreator/java/ /app/serverpackcreator/java
+COPY --from=builder --chmod=777 /tmp/serverpackcreator/serverpackcreator-app/build/libs/serverpackcreator-app-$VERSION.jar /app/serverpackcreator/serverpackcreator.jar
 
 EXPOSE 8080
