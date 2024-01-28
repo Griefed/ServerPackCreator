@@ -212,6 +212,7 @@ actual class ApiProperties(
             "Fallingleaves-",
             "FancySpawnEggs",
             "FancyVideo-API-",
+            "farsight-",
             "FirstPersonMod",
             "FogTweaker-",
             "ForgeCustomCursorMod-",
@@ -445,6 +446,7 @@ actual class ApiProperties(
             "sounddeviceoptions-",
             "soundreloader-",
             "spoticraft-",
+            "skinlayers3d-forge",
             "tconplanner-",
             "textrues_embeddium_options-",
             "timestamps-",
@@ -457,7 +459,8 @@ actual class ApiProperties(
             "whats-that-slot-forge-",
             "wisla-",
             "xlifeheartcolors-",
-            "yisthereautojump-"
+            "yisthereautojump-",
+            "YeetusExperimentus-Forge-"
         )
     )
 
