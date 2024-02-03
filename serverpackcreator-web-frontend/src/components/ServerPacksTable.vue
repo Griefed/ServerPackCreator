@@ -12,10 +12,17 @@
     </q-inner-loading>
   </q-card>
   <q-table
-    v-else :rows="rows" :columns="columns" row-key="id" title="Server Packs" id="serverpacktable"
-    style="max-width: 100%;"
-    bordered dense no-data-label="No server packs available (yet)..."
+    v-else :rows="rows" :columns="columns" row-key="id" title="Server Packs" id="serverpacktable" :filter="filter"
+    style="max-width: 100%;" bordered dense no-data-label="No server packs available (yet)..."
     no-results-label="The search didn't uncover any results" :pagination="initialPagination">
+    <template v-slot:top-right>
+      <q-input borderless dense debounce="300" v-model="filter" placeholder="Search">
+        <template v-slot:append>
+          <q-icon name="search"/>
+        </template>
+      </q-input>
+    </template>
+
     <template v-slot:header="props">
       <q-tr :props="props">
         <q-th auto-width>
@@ -37,7 +44,7 @@
             </q-tooltip>
           </q-btn>
         </q-td>
-        <q-td v-for="col in props.cols" :key="col.name" :props="props">
+        <q-td v-for="col in props.cols" :key="col.name" :props="props" auto-width>
           <span v-if="col.field==='confirmedWorking'">
             <span v-if="props.row.confirmedWorking < 0" class="text-red text-bold">
               {{ col.value }}
@@ -80,7 +87,7 @@
         </q-td>
       </q-tr>
       <q-tr v-show="props.expand" :props="props">
-        <q-td colspan="100%" style="max-width: 90vw;" v-if="props.expand">
+        <q-td colspan="100%" style="max-width: 90vw;" v-if="props.expand" auto-width>
           <div class="row">
             <div class="col">
               <RunConfigurationCard :id="props.row.runConfiguration.id"/>
@@ -134,9 +141,11 @@ export default defineComponent({
   setup() {
     const visible = ref(true);
     const showSimulatedReturnData = ref(false);
+    const filter = ref('');
     return {
       visible,
       showSimulatedReturnData,
+      filter,
       showTextLoading() {
         visible.value = true;
         showSimulatedReturnData.value = false;

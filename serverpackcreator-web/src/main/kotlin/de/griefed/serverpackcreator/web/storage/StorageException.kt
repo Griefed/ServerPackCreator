@@ -20,7 +20,10 @@
 package de.griefed.serverpackcreator.web.storage
 
 open class StorageException : RuntimeException {
+    var id: Int? = null
     constructor(message: String?) : super(message)
-
+    constructor(message: String, id: Int) : super(message) {
+        this.id = id
+    }
     constructor(message: String?, cause: Throwable?) : super(message, cause)
 }

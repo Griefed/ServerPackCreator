@@ -23,6 +23,7 @@ import de.griefed.serverpackcreator.web.data.ModPackView
 import de.griefed.serverpackcreator.web.data.ServerPack
 import de.griefed.serverpackcreator.web.data.ZipResponse
 import de.griefed.serverpackcreator.web.runconfiguration.RunConfigurationService
+import de.griefed.serverpackcreator.web.storage.StorageException
 import de.griefed.serverpackcreator.web.task.TaskDetail
 import de.griefed.serverpackcreator.web.task.TaskExecutionServiceImpl
 import org.apache.logging.log4j.kotlin.KotlinLogger
@@ -50,16 +51,18 @@ class ModpackController @Autowired constructor(
     @GetMapping("/download/{id:[0-9]+}", produces = ["application/zip"])
     @ResponseBody
     fun downloadModpack(@PathVariable id: Int): ResponseEntity<Resource> {
-        val modpackArchive = modpackService.getModPackArchive(id.toLong())
         val modpack = modpackService.getModpack(id)
-        return if (modpackArchive.isPresent && modpack.isPresent) {
-            ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType("application/zip"))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"${modpack.get().name}\"")
-                .body(ByteArrayResource(modpackArchive.get().readBytes()))
-        } else {
-            ResponseEntity.notFound().build()
+        if (modpack.isEmpty) {
+            return ResponseEntity.notFound().build()
         }
+        val modpackArchive = modpackService.getModPackArchive(modpack.get())
+        if (modpackArchive.isEmpty) {
+            return ResponseEntity.notFound().build()
+        }
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType("application/zip"))
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"${modpack.get().name}\"")
+            .body(ByteArrayResource(modpackArchive.get().readBytes()))
     }
 
     @PostMapping("/upload", produces = ["application/json"])
@@ -93,23 +96,38 @@ class ModpackController @Autowired constructor(
                     )
                 )
         }
-        val modpack = modpackService.saveZipModpack(file)
-        val taskDetail = TaskDetail(modpack)
-        taskDetail.runConfiguration = runConfigurationService.createRunConfig(
+        val runConfig = runConfigurationService.createRunConfig(
             minecraftVersion, modloader, modloaderVersion, startArgs, clientMods, whiteListMods
         )
-        taskExecutionServiceImpl.submitTaskInQueue(taskDetail)
-        return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
-            .body(
-                ZipResponse(
-                    message = "File is being stored and will be queued for checks.",
-                    success = true,
-                    modPackId = modpack.id,
-                    runConfigId = taskDetail.runConfiguration?.id,
-                    serverPackId = null,
-                    status = ModpackStatus.QUEUED
+        try {
+            val modpack = modpackService.saveZipModpack(file)
+            val taskDetail = TaskDetail(modpack)
+            taskDetail.runConfiguration = runConfig
+            taskExecutionServiceImpl.submitTaskInQueue(taskDetail)
+            return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
+                .body(
+                    ZipResponse(
+                        message = "File is being stored and will be queued for checks.",
+                        success = true,
+                        modPackId = modpack.id,
+                        runConfigId = taskDetail.runConfiguration?.id,
+                        serverPackId = null,
+                        status = ModpackStatus.QUEUED
+                    )
                 )
-            )
+        } catch (ex: StorageException) {
+            return ResponseEntity.badRequest().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
+                .body(
+                    ZipResponse(
+                        message = "The modpack you uploaded already exists.",
+                        success = false,
+                        modPackId = ex.id!!,
+                        runConfigId = runConfig.id,
+                        serverPackId = null,
+                        status = ModpackStatus.ERROR
+                    )
+                )
+        }
     }
 
     @PostMapping("/generate", produces = ["application/json"])
