@@ -711,10 +711,14 @@ export default defineComponent({
           color: 'positive',
           message: response.data.message + '  ModPack ID: ' + response.data.modPackId + '. RunConfiguration ID: ' + response.data.runConfigId
         });
-        this.modPackID = response.data.modPackID
-        this.runConfigID = response.data.runConfigID
         this.progress = 0
         this.resetForm()
+        this.refreshModPackIDs()
+        this.refreshRunConfigurationIDs()
+        this.sleep(2000).then(() => {
+          this.selectedModPack(response.data.modPackId)
+          this.selectedRunConfiguration(response.data.runConfigId)
+        })
       }).catch(error => {
         this.$q.notify({
           timeout: 5000,
@@ -723,8 +727,6 @@ export default defineComponent({
           color: 'negative',
           message: 'Upload failed: ' + error
         });
-        this.modPackID = error.data.modPackID
-        this.runConfigID = error.data.runConfigID
         this.progress = 0
         this.resetForm()
       })
@@ -784,6 +786,9 @@ export default defineComponent({
           this.modloaderVersion = this.modloaderVersions[0];
           break;
       }
+    },
+    sleep(ms: number) {
+      return new Promise(resolve => setTimeout(resolve, ms));
     }
   },
   mounted() {
