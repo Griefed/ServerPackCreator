@@ -98,8 +98,6 @@ actual class ApiProperties(
         "de.griefed.serverpackcreator.spring.schedules.files.cleanup"
     private val pSpringSchedulesVersionMetaRefresh =
         "de.griefed.serverpackcreator.spring.schedules.versions.refresh"
-    private val pSpringArtemisQueueMaxDiskUsage =
-        "de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage"
     private val pConfigurationSaveLastLoadedConfigEnabled =
         "de.griefed.serverpackcreator.configuration.saveloadedconfig"
     private val pConfigurationDirectoriesMustInclude =

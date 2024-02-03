@@ -573,7 +573,6 @@ de.griefed.serverpackcreator.configuration.directories.shouldexclude=animation,a
 de.griefed.serverpackcreator.spring.schedules.database.cleanup=0 0 0 * * *
 de.griefed.serverpackcreator.spring.schedules.files.cleanup=0 30 0 * * *
 de.griefed.serverpackcreator.spring.schedules.versions.refresh=0 0 0 * * *
-de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage=90
 de.griefed.serverpackcreator.configuration.saveloadedconfig=false
 de.griefed.serverpackcreator.configuration.directories.mustinclude=addonpacks,blueprints,config,configs,customnpcs,defaultconfigs,global_data_packs,global_packs,kubejs,maps,mods,openloader,scripts,shrines-saves,structures,structurize,worldshape,Zoestria
 de.griefed.serverpackcreator.serverpack.zip.exclude=minecraft_server.MINECRAFT_VERSION.jar,server.jar,libraries/net/minecraft/server/MINECRAFT_VERSION/server-MINECRAFT_VERSION.jar
@@ -602,7 +601,6 @@ de.griefed.serverpackcreator.script.java.autoupdate=true
 | de.griefed.serverpackcreator.spring.schedules.database.cleanup       | Web-only. Cron-schedule at which checks are run and server packs cleaned up.                                                                                                           |
 | de.griefed.serverpackcreator.spring.schedules.files.cleanup          | Web-only. Cron-schedule at which checks are run and files from server pack generations are cleaned up.                                                                                 |
 | de.griefed.serverpackcreator.spring.schedules.versions.refresh       | Web-only. Cron-schedule at which the available Minecraft, Forge and Fabric versions are refreshed.                                                                                     |
-| de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage     | Web-only. Maximum disk usage in percent at which no new tasks are accepted, preventing the generation of new server packs.                                                             |
 | de.griefed.serverpackcreator.configuration.saveloadedconfig          | GUI-only. `true` or `false`. Whether to overwrite the last manually loaded configuration file, too.                                                                                    |
 | de.griefed.serverpackcreator.configuration.directories.mustinclude   | List of directories which must be included in a server pack.                                                                                                                           |
 | de.griefed.serverpackcreator.serverpack.zip.exclude                  | Files to exclude from the server pack ZIP-archive. You may use `MINECRAFT_VERSION` as a placeholder for the Minecraft version of your modpack/server pack if a files name contains it. | 
@@ -634,9 +632,6 @@ spring.jpa.database-platform=org.sqlite.hibernate.dialect.SQLiteDialect
 spring.jpa.open-in-view=false
 spring.jdbc.template.query-timeout=3600
 spring.transaction.default-timeout=3600
-spring.artemis.mode=embedded
-spring.artemis.embedded.persistent=true
-spring.artemis.embedded.data-directory=work/artemis
 spring.datasource.tomcat.max-active=50
 spring.datasource.tomcat.max-idle=15
 spring.datasource.tomcat.min-idle=8
@@ -655,7 +650,6 @@ comment.
 |-------------------------------------------|--------------------------------------------------------------------------------------------------------|
 | server.port                               | The port at which ServerPackCreator as a webservice will be available at.                              |
 | spring.datasource.url                     | Path to and name of the SQLite database which the webservice will use.                                 |
-| spring.artemis.embedded.data-directory    | The path to and name of the directory in which Artemis will store queues and task related information. |
 | spring.servlet.multipart.max-file-size    | Maximum filesize for uploads.                                                                          |
 | spring.servlet.multipart.max-request-size | Maximum request size for file uploads.                                                                 |
 | spring.config.import                      | Additional properties-file to import properties from.                                                  |
