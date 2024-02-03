@@ -46,7 +46,7 @@
           </q-btn>
         </q-td>
         <q-td v-for="col in props.cols" :key="col.name" :props="props">
-          <span v-if="col.field === 'name'">
+          <span v-if="col.field === 'name' && props.row.size > 0">
             {{ col.value }}
             <q-btn :href="buildDownloadUrl(props.row.id)" color="info" dense icon="download" round size="sm"
                    style="margin-left: 5px;" type="a">
