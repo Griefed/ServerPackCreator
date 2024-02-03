@@ -25,6 +25,7 @@ import de.griefed.serverpackcreator.api.PackConfig
 import de.griefed.serverpackcreator.web.data.ModPack
 import de.griefed.serverpackcreator.web.data.ModPackView
 import de.griefed.serverpackcreator.web.data.RunConfiguration
+import de.griefed.serverpackcreator.web.storage.StorageException
 import de.griefed.serverpackcreator.web.storage.StorageSystem
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Sort
@@ -44,6 +45,13 @@ class ModpackService @Autowired constructor(
     private val rootLocation: Path = apiProperties.modpacksDirectory.toPath()
     private val storage: StorageSystem = StorageSystem(rootLocation)
 
+    /**
+     * Store the multipart-file to disk. If a match in SHA256 hashes is found, a [StorageException] is thrown to prevent
+     * duplicates and save storage.
+     *
+     * @author Griefed
+     */
+    @Throws(StorageException::class)
     fun saveZipModpack(file: MultipartFile): ModPack {
         val modpack = ModPack()
         modpack.status = ModpackStatus.QUEUED
@@ -53,6 +61,12 @@ class ModpackService @Autowired constructor(
         val storePair = storage.storeOnFilesystem(file).get()
         modpack.fileID = storePair.first
         modpack.sha256 = storePair.second
+        val availableModpacks = modpackRepository.findAll()
+        for (available in availableModpacks) {
+            if (available.sha256 == modpack.sha256) {
+                throw StorageException("Modpack already exists. Not storing. Match found with hash ${modpack.sha256} in ${available.name} (${available.id})", available.id)
+            }
+        }
         return modpackRepository.save(modpack)
     }
 
