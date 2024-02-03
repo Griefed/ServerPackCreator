@@ -1,3 +1,30 @@
+## [5.1.12-alpha.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12-alpha.5...5.1.12-alpha.6) (2024-02-03)
+
+
+### :scissors: Refactor
+
+* Remove no longer required property ([808c01d](https://git.griefed.de/Griefed/ServerPackCreator/commit/808c01d97792a5f57826985f293de8bf059cfe14))
+
+
+### 💎 Improvements
+
+* Allow searching in tables ([f189c90](https://git.griefed.de/Griefed/ServerPackCreator/commit/f189c902b0bfc260c8f1590ee4500e2c816517f2))
+* Prevent upload of duplicates ([7e5923e](https://git.griefed.de/Griefed/ServerPackCreator/commit/7e5923eba9df1d9545d7f8fe15ca07bc2f723f88))
+* Set modpack and runconfig ID in regen after upload ([51b1401](https://git.griefed.de/Griefed/ServerPackCreator/commit/51b1401d24a393a7a92bd9ef711515662afab33b))
+* Switch to regen and inform user if duplicate modpack was uploaded ([161bb7f](https://git.griefed.de/Griefed/ServerPackCreator/commit/161bb7f7bf4a04c283ab15b6341120cb8bd0cca8))
+
+
+### 📦 Other
+
+* License header and template source ([b3327e7](https://git.griefed.de/Griefed/ServerPackCreator/commit/b3327e71d007ae1ebaedc44d3c69c4cb280c46f4))
+* Run file cleanup 30 min after database cleanup by default ([1ed4278](https://git.griefed.de/Griefed/ServerPackCreator/commit/1ed427880f39e7345356bfd3ffc82ce017fbafed))
+
+
+### 🛠 Fixes
+
+* Download correct modpack-file ([1437593](https://git.griefed.de/Griefed/ServerPackCreator/commit/14375934f8e413118a64196224fc486b07bd4e98))
+* Only offer download for modpack if size is valid ([a807d35](https://git.griefed.de/Griefed/ServerPackCreator/commit/a807d3584a90d60e79a89c4c956da7ded937c38b))
+
 ## [5.1.12-alpha.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12-alpha.4...5.1.12-alpha.5) (2024-01-28)
 
 
