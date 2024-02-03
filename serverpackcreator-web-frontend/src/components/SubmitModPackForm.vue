@@ -666,7 +666,6 @@ export default defineComponent({
     },
     onSubmitRegeneration (evt: { target: HTMLFormElement | undefined; }) {
       const formData = new FormData(evt.target)
-      console.log(formData)
       this.uploading = true
 
       modpacks.postForm('generate', formData)
@@ -674,6 +673,7 @@ export default defineComponent({
         this.$q.notify({
           timeout: 5000,
           progress: true,
+          position: 'center',
           icon: 'check',
           color: 'positive',
           message: 'Generation queued for ModPack ID: ' + response.data.modPackId + '. RunConfiguration ID: ' + response.data.runConfigId
@@ -685,6 +685,7 @@ export default defineComponent({
         this.$q.notify({
           timeout: 5000,
           progress: true,
+          position: 'center',
           icon: 'error',
           color: 'negative',
           message: 'Request failed: ' + error
@@ -696,7 +697,6 @@ export default defineComponent({
     },
     onSubmit (evt: { target: HTMLFormElement | undefined; }) {
       const formData = new FormData(evt.target)
-      console.log(formData)
       this.uploading = true
 
       modpacks.postForm('upload', formData, {
@@ -707,28 +707,39 @@ export default defineComponent({
         this.$q.notify({
           timeout: 5000,
           progress: true,
+          position: 'center',
           icon: 'check',
           color: 'positive',
           message: response.data.message + '  ModPack ID: ' + response.data.modPackId + '. RunConfiguration ID: ' + response.data.runConfigId
         });
         this.progress = 0
         this.resetForm()
-        this.refreshModPackIDs()
-        this.refreshRunConfigurationIDs()
-        this.sleep(2000).then(() => {
-          this.selectedModPack(response.data.modPackId)
-          this.selectedRunConfiguration(response.data.runConfigId)
-        })
+        this.delayedRegenPrep(response.data.modPackId, response.data.runConfigId)
       }).catch(error => {
+        let message = error.response.data.message === undefined ? error.message : error.response.data.message
+        let suffix = error.response.data.modPackId === undefined ? '' : ' See Modpack ID: ' + error.response.data.modPackId
         this.$q.notify({
           timeout: 5000,
           progress: true,
+          position: 'center',
           icon: 'error',
           color: 'negative',
-          message: 'Upload failed: ' + error
+          message: 'Upload failed: ' + message + suffix
         });
         this.progress = 0
         this.resetForm()
+        if (error.response.data.modPackId !== undefined && error.response.data.runConfigId !== undefined) {
+          this.delayedRegenPrep(error.response.data.modPackId, error.response.data.runConfigId)
+          this.tab = 'regeneration'
+        }
+      })
+    },
+    delayedRegenPrep(modPackId: number, runConfigId: number) {
+      this.refreshModPackIDs()
+      this.refreshRunConfigurationIDs()
+      this.sleep(2000).then(() => {
+        this.selectedModPack(modPackId)
+        this.selectedRunConfiguration(runConfigId)
       })
     },
     resetForm() {
@@ -738,6 +749,7 @@ export default defineComponent({
     onRejected(rejectedEntry: File) {
       this.$q.notify({
         type: 'negative',
+        position: 'center',
         message: `${rejectedEntry.name} is not a ZIP-file`
       });
     },
@@ -812,6 +824,7 @@ export default defineComponent({
       this.$q.notify({
         timeout: 5000,
         progress: true,
+        position: 'center',
         icon: 'error',
         color: 'negative',
         message: 'Could not retrieve versions: ' + error
