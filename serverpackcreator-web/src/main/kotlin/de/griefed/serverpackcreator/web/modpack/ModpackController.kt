@@ -50,16 +50,18 @@ class ModpackController @Autowired constructor(
     @GetMapping("/download/{id:[0-9]+}", produces = ["application/zip"])
     @ResponseBody
     fun downloadModpack(@PathVariable id: Int): ResponseEntity<Resource> {
-        val modpackArchive = modpackService.getModPackArchive(id.toLong())
         val modpack = modpackService.getModpack(id)
-        return if (modpackArchive.isPresent && modpack.isPresent) {
-            ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType("application/zip"))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"${modpack.get().name}\"")
-                .body(ByteArrayResource(modpackArchive.get().readBytes()))
-        } else {
-            ResponseEntity.notFound().build()
+        if (modpack.isEmpty) {
+            return ResponseEntity.notFound().build()
         }
+        val modpackArchive = modpackService.getModPackArchive(modpack.get())
+        if (modpackArchive.isEmpty) {
+            return ResponseEntity.notFound().build()
+        }
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType("application/zip"))
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"${modpack.get().name}\"")
+            .body(ByteArrayResource(modpackArchive.get().readBytes()))
     }
 
     @PostMapping("/upload", produces = ["application/json"])

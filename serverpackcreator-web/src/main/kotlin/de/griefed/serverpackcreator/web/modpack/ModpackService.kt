@@ -99,10 +99,10 @@ class ModpackService @Autowired constructor(
     }
 
     /**
-     * Store an uploaded ZIP-archive to disk.
+     * Retrieve the archive of a previously uploaded modpack.
      *
-     * @param modPack The modpack to be stored to disk from the database
-     * @return The modpack-file, wrapped in an [Optional]
+     * @param modPack The modpack for which to retrieve the archive.
+     * @return The modpack-zip, wrapped in an [Optional]
      * @throws IOException If an I/O error occurs writing to or creating the file.
      * @throws IllegalArgumentException If the modpack doesn't have data to export.
      * @author Griefed
@@ -112,7 +112,7 @@ class ModpackService @Autowired constructor(
         return storage.load(modPack.fileID!!)
     }
 
-    fun getModPackArchive(id: Long): Optional<File> {
-        return storage.load(id)
+    fun getModPackArchive(fileID: Long): Optional<File> {
+        return storage.load(fileID)
     }
 }
