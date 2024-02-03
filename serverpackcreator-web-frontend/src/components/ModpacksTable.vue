@@ -9,27 +9,26 @@
       </transition>
     </q-card-section>
     <q-inner-loading :showing="visible">
-      <q-spinner-gears size="50px" color="accent" />
+      <q-spinner-gears size="50px" color="accent"/>
     </q-inner-loading>
   </q-card>
-  <q-table
-    v-else
-    class="sticky-header-table"
-    :rows="rows"
-    :columns="columns"
-    row-key="id"
-    title="Modpacks"
-    bordered dense
-    style="max-width: 100vw;"
-    no-data-label="No modpacks available (yet)..."
-    no-results-label="The search didn't uncover any results"
-    :pagination="initialPagination">
+  <q-table v-else class="sticky-header-table" :rows="rows" :columns="columns" row-key="id" title="Modpacks" bordered
+           dense style="max-width: 100vw;" no-data-label="No modpacks available (yet)..." :filter="filter"
+           no-results-label="The search didn't uncover any results" :pagination="initialPagination">
+    <template v-slot:top-right>
+      <q-input borderless dense debounce="300" v-model="filter" placeholder="Search">
+        <template v-slot:append>
+          <q-icon name="search"/>
+        </template>
+      </q-input>
+    </template>
+
     <template v-slot:header="props">
       <q-tr :props="props">
         <q-th auto-width>
-          <q-btn push size="xs" color="primary" round icon="sync" @click="loadData" />
+          <q-btn push size="xs" color="primary" round icon="sync" @click="loadData"/>
         </q-th>
-        <q-th v-for="col in props.cols" :key="col.name" :props="props">
+        <q-th v-for="col in props.cols" :key="col.name" :props="props" auto-width>
           <strong>{{ col.label }}</strong>
         </q-th>
       </q-tr>
@@ -45,7 +44,7 @@
             </q-tooltip>
           </q-btn>
         </q-td>
-        <q-td v-for="col in props.cols" :key="col.name" :props="props">
+        <q-td v-for="col in props.cols" :key="col.name" :props="props" auto-width>
           <span v-if="col.field === 'name' && props.row.size > 0">
             {{ col.value }}
             <q-btn :href="buildDownloadUrl(props.row.id)" color="info" dense icon="download" round size="sm"
@@ -61,8 +60,8 @@
         </q-td>
       </q-tr>
       <q-tr v-show="props.expand" :props="props">
-        <q-td colspan="100%" style="max-width: 100vw;" v-if="props.expand">
-          <ServerPacksTable :id="props.row.id" />
+        <q-td colspan="100%" style="max-width: 100vw;" v-if="props.expand" auto-width>
+          <ServerPacksTable :id="props.row.id"/>
         </q-td>
       </q-tr>
     </template>
@@ -70,33 +69,49 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
-import { modpacks } from 'boot/axios';
-import { date } from 'quasar';
+import {defineComponent, ref} from 'vue';
+import {modpacks} from 'boot/axios';
+import {date} from 'quasar';
 import ServerPacksTable from 'components/ServerPacksTable.vue';
 
 const columns = [
-  { name: 'id',           label: 'Modpack ID',    field: 'id',          sortable: true,   align: 'left' },
-  { name: 'name',         label: 'Name',          field: 'name',        sortable: false,  align: 'left' },
-  { name: 'projectID',    label: 'Project ID',    field: 'projectID',   sortable: true,   align: 'left' },
-  { name: 'versionID',    label: 'Version ID',    field: 'versionID',   sortable: true,   align: 'left' },
-  { name: 'source',       label: 'Source',        field: 'source',      sortable: false,  align: 'left' },
-  { name: 'status',       label: 'Status',        field: 'status',      sortable: false,  align: 'left' },
-  { name: 'size',         label: 'Size',          field: 'size',        sortable: false,  align: 'left' },
-  { name: 'serverPacks',  label: 'Server Packs',  field: 'serverPacks', sortable: false,  align: 'left', format: (val: Array<never>) => val.length },
-  { name: 'sha256',       label: 'SHA256 Hash',   field: 'sha256',      sortable: false,  align: 'left' },
-  { name: 'dateCreated',  label: 'Date and Time', field: 'dateCreated', sortable: true,   align: 'left', format: (val: number) => date.formatDate(val, 'YYYY-MM-DD : HH:mm') }
+  {name: 'id', label: 'Modpack ID', field: 'id', sortable: true, align: 'left'},
+  {name: 'name', label: 'Name', field: 'name', sortable: false, align: 'left'},
+  {name: 'projectID', label: 'Project ID', field: 'projectID', sortable: true, align: 'left'},
+  {name: 'versionID', label: 'Version ID', field: 'versionID', sortable: true, align: 'left'},
+  {name: 'source', label: 'Source', field: 'source', sortable: false, align: 'left'},
+  {name: 'status', label: 'Status', field: 'status', sortable: false, align: 'left'},
+  {name: 'size', label: 'Size', field: 'size', sortable: false, align: 'left'},
+  {
+    name: 'serverPacks',
+    label: 'Server Packs',
+    field: 'serverPacks',
+    sortable: false,
+    align: 'left',
+    format: (val: Array<never>) => val.length
+  },
+  {name: 'sha256', label: 'SHA256 Hash', field: 'sha256', sortable: false, align: 'left'},
+  {
+    name: 'dateCreated',
+    label: 'Date and Time',
+    field: 'dateCreated',
+    sortable: true,
+    align: 'left',
+    format: (val: number) => date.formatDate(val, 'YYYY-MM-DD : HH:mm')
+  }
 ];
 
 export default defineComponent({
   name: 'ModpacksTable',
-  components: { ServerPacksTable },
+  components: {ServerPacksTable},
   setup() {
     const visible = ref(true);
     const showSimulatedReturnData = ref(false);
+    const filter = ref('');
     return {
       visible,
       showSimulatedReturnData,
+      filter,
       showTextLoading() {
         visible.value = true;
         showSimulatedReturnData.value = false;

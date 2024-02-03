@@ -8,10 +8,18 @@
     </q-inner-loading>
   </q-card>
   <q-table
-    v-else class="sticky-header-table" :rows="rows" :columns="columns" row-key="id" bordered dense
+    v-else class="sticky-header-table" :rows="rows" :columns="columns" row-key="id" bordered dense :filter="filter"
     style="max-width: 100vw;" no-data-label="No history available (yet)..."
     no-results-label="The search didn't uncover any results"
     :pagination="initialPagination">
+    <template v-slot:top-right>
+      <q-input borderless dense debounce="300" v-model="filter" placeholder="Search">
+        <template v-slot:append>
+          <q-icon name="search"/>
+        </template>
+      </q-input>
+    </template>
+
     <template v-slot:header="props">
       <q-tr :props="props">
         <q-th auto-width>
@@ -38,7 +46,7 @@
         </q-td>
       </q-tr>
       <q-tr v-show="props.expand" :props="props">
-        <q-td colspan="100%" style="max-width: 1100px;" v-if="props.expand">
+        <q-td colspan="100%" style="max-width: 1100px;" v-if="props.expand" auto-width>
           <div class="row">
             <div class="col">
               <ModPackCard :id="props.row.modPackId"/>
@@ -81,17 +89,17 @@ const columns = [
     name: 'timestamp',
     label: 'Date and Time',
     field: 'timestamp',
-    format: (val: number) => date.formatDate(val, 'YYYY-MM-DD : HH:mm'),
     sortable: true,
-    align: 'left'
+    align: 'left',
+    format: (val: number) => date.formatDate(val, 'YYYY-MM-DD : HH:mm')
   },
   {
     name: 'errors',
     label: 'Errors',
     field: 'errors',
-    format: (val: string[]) => val.length,
     sortable: false,
-    align: 'left'
+    align: 'left',
+    format: (val: string[]) => val.length
   }
 ];
 
@@ -101,9 +109,11 @@ export default defineComponent({
   setup() {
     const visible = ref(true);
     const showSimulatedReturnData = ref(false);
+    const filter = ref('');
     return {
       visible,
       showSimulatedReturnData,
+      filter,
       showTextLoading() {
         visible.value = true;
         showSimulatedReturnData.value = false;
