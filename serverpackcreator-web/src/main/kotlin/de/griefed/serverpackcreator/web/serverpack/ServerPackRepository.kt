@@ -30,5 +30,5 @@ import java.util.*
 interface ServerPackRepository : JpaRepository<ServerPack, Int> {
     fun findAllProjectedBy(): MutableList<ServerPackView>
     fun findAllProjectedBy(sort: Sort): MutableList<ServerPackView>
-    fun findProjectedById(id: Int) : Optional<ServerPackView>
+    fun findProjectedById(id: Int): Optional<ServerPackView>
 }

@@ -96,6 +96,7 @@ class ModpackController @Autowired constructor(
                     )
                 )
         }
+        //TODO check contents
         val runConfig = runConfigurationService.createRunConfig(
             minecraftVersion, modloader, modloaderVersion, startArgs, clientMods, whiteListMods
         )
@@ -133,7 +134,7 @@ class ModpackController @Autowired constructor(
     @PostMapping("/generate", produces = ["application/json"])
     @ResponseBody
     fun requestGeneration(
-        @RequestParam("id") id: Int,
+        @RequestParam("modPackID") modPackID: Int,
         @RequestParam("minecraftVersion") minecraftVersion: String,
         @RequestParam("modloader") modloader: String,
         @RequestParam("modloaderVersion") modloaderVersion: String,
@@ -141,14 +142,14 @@ class ModpackController @Autowired constructor(
         @RequestParam("clientMods") clientMods: String,
         @RequestParam("whiteListMods") whiteListMods: String
     ): ResponseEntity<ZipResponse> {
-        val modpack = modpackService.getModpack(id)
+        val modpack = modpackService.getModpack(modPackID)
         if (modpack.isEmpty) {
             return ResponseEntity.badRequest().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
                 .body(
                     ZipResponse(
                         message = "Modpack not found.",
                         success = false,
-                        modPackId = id,
+                        modPackId = modPackID,
                         runConfigId = null,
                         serverPackId = null,
                         status = ModpackStatus.ERROR
@@ -172,7 +173,7 @@ class ModpackController @Autowired constructor(
                     ZipResponse(
                         message = "Server Pack already exists for the requested ModPack and RunConfiguration.",
                         success = false,
-                        modPackId = id,
+                        modPackId = modPackID,
                         runConfigId = taskDetail.runConfiguration!!.id,
                         serverPackId = serverpack.id,
                         status = ModpackStatus.GENERATED
@@ -185,7 +186,7 @@ class ModpackController @Autowired constructor(
                 ZipResponse(
                     message = "Generation of ServerPack, from existing ModPack, with different config, queued.",
                     success = true,
-                    modPackId = id,
+                    modPackId = modPackID,
                     runConfigId = taskDetail.runConfiguration?.id,
                     serverPackId = null,
                     status = ModpackStatus.QUEUED

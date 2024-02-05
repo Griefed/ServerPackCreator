@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.web.serverpack
 import de.griefed.serverpackcreator.web.data.ServerPack
 import de.griefed.serverpackcreator.web.data.ServerPackView
 import de.griefed.serverpackcreator.web.modpack.ModpackRepository
+import de.griefed.serverpackcreator.web.runconfiguration.RunConfigurationService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
@@ -42,7 +43,8 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/v2/serverpacks")
 class ServerPackController @Autowired constructor(
     private val serverPackService: ServerPackService,
-    private val modpackRepository: ModpackRepository
+    private val modpackRepository: ModpackRepository,
+    private val runConfigurationService: RunConfigurationService
 ) {
 
     /**

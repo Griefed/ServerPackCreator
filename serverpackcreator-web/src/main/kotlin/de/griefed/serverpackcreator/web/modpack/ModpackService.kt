@@ -70,6 +70,11 @@ class ModpackService @Autowired constructor(
         return modpackRepository.save(modpack)
     }
 
+    /**
+     * Save the provided modpack to the database. If the provided modpack already exists, it is updated.
+     *
+     * @author Griefed
+     */
     fun saveModpack(modpack: ModPack): ModPack {
         return modpackRepository.save(modpack)
     }

@@ -32,6 +32,7 @@ import java.io.File
 import java.nio.file.Path
 import java.security.MessageDigest
 import java.util.*
+import kotlin.io.path.moveTo
 
 /**
  * Class revolving around with server packs, like downloading, retrieving, deleting, voting etc.
@@ -74,7 +75,7 @@ class ServerPackService @Autowired constructor(
      * Increment the download counter for a given server pack entry in the database identified by the
      * database id.
      *
-     * @param id The database id of the server pack.
+     * @param serverPack The server pack for which to update the download counter.
      * @author Griefed
      */
     fun updateDownloadCounter(serverPack: ServerPack) {
@@ -85,7 +86,8 @@ class ServerPackService @Autowired constructor(
     /**
      * Either upvote or downvote a given server pack.
      *
-     * @param voting The database id of the server pack and whether it should be up- or downvoted.
+     * @param id The database id of the server pack.
+     * @param vote Either "up" or "down".
      * @return Returns ok if the vote went through, bad request if the passed vote was malformed, or
      * not found if the server pack could not be found.
      * @author Griefed
@@ -129,9 +131,24 @@ class ServerPackService @Autowired constructor(
     }
 
     /**
+     * Move the specified file to a new one which will receive a new filename based on the current time in milliseconds.
+     * This is done to prevent clashes in case a server pack is generated from an existing modpack, using a new
+     * [de.griefed.serverpackcreator.web.data.RunConfiguration].
+     *
+     * @author Griefed
+     */
+    fun moveServerPack(serverPackFile: File) : File {
+        val id = System.currentTimeMillis()
+        val newLocation = File(rootLocation.toFile(),"${id}.zip").absoluteFile.toPath()
+        return serverPackFile.absoluteFile.toPath().moveTo(
+            newLocation
+        ).toFile()
+    }
+
+    /**
      * Deletes a server pack with the given id.
      *
-     * @param id The database id of the server pack to delete.
+     * @param serverPack The server pack to delete.
      * @author Griefed
      */
     fun deleteServerPack(serverPack: ServerPack) {
@@ -142,9 +159,7 @@ class ServerPackService @Autowired constructor(
         val serverpack = serverPackRepository.findById(id)
         if (serverpack.isPresent) {
             serverPackRepository.deleteById(id)
-            if (serverpack.get().fileID != null) {
-                storage.delete(serverpack.get().fileID!!)
-            }
+            storage.delete(serverpack.get().fileID!!)
         }
     }
 
