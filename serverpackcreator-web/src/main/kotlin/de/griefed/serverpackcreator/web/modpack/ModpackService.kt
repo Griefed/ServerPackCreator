@@ -25,6 +25,7 @@ import de.griefed.serverpackcreator.api.PackConfig
 import de.griefed.serverpackcreator.web.data.ModPack
 import de.griefed.serverpackcreator.web.data.ModPackView
 import de.griefed.serverpackcreator.web.data.RunConfiguration
+import de.griefed.serverpackcreator.web.data.ServerPack
 import de.griefed.serverpackcreator.web.storage.StorageException
 import de.griefed.serverpackcreator.web.storage.StorageSystem
 import org.springframework.beans.factory.annotation.Autowired
@@ -89,6 +90,10 @@ class ModpackService @Autowired constructor(
 
     fun getModpacks(): List<ModPackView> {
         return modpackRepository.findAllProjectedBy(Sort.by(Sort.Direction.DESC, "dateCreated"))
+    }
+
+    fun getByServerPack(serverPack: ServerPack) : Optional<ModPack> {
+        return modpackRepository.findByServerPacksContains(serverPack)
     }
 
     fun getPackConfigForModpack(modpack: ModPack, runConfiguration: RunConfiguration): PackConfig {

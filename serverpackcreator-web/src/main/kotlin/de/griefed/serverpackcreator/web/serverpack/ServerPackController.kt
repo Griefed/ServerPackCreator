@@ -21,8 +21,7 @@ package de.griefed.serverpackcreator.web.serverpack
 
 import de.griefed.serverpackcreator.web.data.ServerPack
 import de.griefed.serverpackcreator.web.data.ServerPackView
-import de.griefed.serverpackcreator.web.modpack.ModpackRepository
-import de.griefed.serverpackcreator.web.runconfiguration.RunConfigurationService
+import de.griefed.serverpackcreator.web.modpack.ModpackService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
@@ -43,8 +42,7 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/v2/serverpacks")
 class ServerPackController @Autowired constructor(
     private val serverPackService: ServerPackService,
-    private val modpackRepository: ModpackRepository,
-    private val runConfigurationService: RunConfigurationService
+    private val modpackService: ModpackService
 ) {
 
     /**
@@ -63,7 +61,7 @@ class ServerPackController @Autowired constructor(
             if (archive.isEmpty) {
                 ResponseEntity.notFound().build()
             } else {
-                val modPack = modpackRepository.findByServerPacksContains(serverPack.get())
+                val modPack = modpackService.getByServerPack(serverPack.get())
                 serverPackService.updateDownloadCounter(id)
                 val fileName = modPack.get().name.replace(".zip","",ignoreCase = true)
                 ResponseEntity.ok()
@@ -93,8 +91,7 @@ class ServerPackController @Autowired constructor(
         @PathVariable modPackId: Int,
         @PathVariable runConfigurationId: Int
     ): ResponseEntity<Resource> {
-        val modpack =
-            modpackRepository.findById(modPackId)
+        val modpack = modpackService.getModpack(modPackId)
         if (modpack.isEmpty) {
             return ResponseEntity.notFound().build()
         }
@@ -107,20 +104,7 @@ class ServerPackController @Autowired constructor(
         if (serverpack == null) {
             return ResponseEntity.notFound().build()
         }
-        val archive = serverPackService.getServerPackArchive(serverpack.fileID!!)
-        return if (archive.isEmpty) {
-            ResponseEntity.notFound().build()
-        } else {
-            val modPack = modpackRepository.findByServerPacksContains(serverpack)
-            serverPackService.updateDownloadCounter(serverpack.id)
-            ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType("application/zip"))
-                .header(
-                    HttpHeaders.CONTENT_DISPOSITION,
-                    "attachment; filename=\"${modPack.get().name}_server_pack.zip\""
-                )
-                .body(ByteArrayResource(archive.get().readBytes()))
-        }
+        return downloadServerPack(serverpack.id)
     }
 
     /**
