@@ -25,6 +25,7 @@ import de.griefed.serverpackcreator.api.PackConfig
 import de.griefed.serverpackcreator.web.data.ModPack
 import de.griefed.serverpackcreator.web.data.ModPackView
 import de.griefed.serverpackcreator.web.data.RunConfiguration
+import de.griefed.serverpackcreator.web.data.ServerPack
 import de.griefed.serverpackcreator.web.storage.StorageException
 import de.griefed.serverpackcreator.web.storage.StorageSystem
 import org.springframework.beans.factory.annotation.Autowired
@@ -55,12 +56,16 @@ class ModpackService @Autowired constructor(
     fun saveZipModpack(file: MultipartFile): ModPack {
         val modpack = ModPack()
         modpack.status = ModpackStatus.QUEUED
-        modpack.name = file.originalFilename ?: file.name
-        modpack.size = file.size.toDouble().div(1048576.0).toInt()
         modpack.source = ModpackSource.ZIP
-        val storePair = storage.storeOnFilesystem(file).get()
-        modpack.fileID = storePair.first
-        modpack.sha256 = storePair.second
+        val savedFile = storage.store(file).get()
+        val check = configurationHandler.checkZipArchive(savedFile.file.toString())
+        if (!check.allChecksPassed) {
+            throw StorageException("The modpack you uploaded did not pass validation: ${check.encounteredErrors.joinToString(",")}")
+        }
+        modpack.fileID = savedFile.id
+        modpack.sha256 = savedFile.sha256
+        modpack.name = savedFile.originalName
+        modpack.size = savedFile.size
         val availableModpacks = modpackRepository.findAll()
         for (available in availableModpacks) {
             if (available.sha256 == modpack.sha256) {
@@ -70,6 +75,11 @@ class ModpackService @Autowired constructor(
         return modpackRepository.save(modpack)
     }
 
+    /**
+     * Save the provided modpack to the database. If the provided modpack already exists, it is updated.
+     *
+     * @author Griefed
+     */
     fun saveModpack(modpack: ModPack): ModPack {
         return modpackRepository.save(modpack)
     }
@@ -84,6 +94,10 @@ class ModpackService @Autowired constructor(
 
     fun getModpacks(): List<ModPackView> {
         return modpackRepository.findAllProjectedBy(Sort.by(Sort.Direction.DESC, "dateCreated"))
+    }
+
+    fun getByServerPack(serverPack: ServerPack) : Optional<ModPack> {
+        return modpackRepository.findByServerPacksContains(serverPack)
     }
 
     fun getPackConfigForModpack(modpack: ModPack, runConfiguration: RunConfiguration): PackConfig {

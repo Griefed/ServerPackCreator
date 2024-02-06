@@ -1,20 +1,11 @@
 <template>
-  <q-card flat bordered style="max-width: 100vw;" class="relative-position" v-if="visible">
-    <q-card-section>
-      <transition
-        appear
-        enter-active-class="animated fadeIn"
-        leave-active-class="animated fadeOut"
-      >
-      </transition>
-    </q-card-section>
-    <q-inner-loading :showing="visible">
-      <q-spinner-gears size="50px" color="accent"/>
-    </q-inner-loading>
-  </q-card>
-  <q-table v-else class="sticky-header-table" :rows="rows" :columns="columns" row-key="id" title="Modpacks" bordered
-           dense style="max-width: 100vw;" no-data-label="No modpacks available (yet)..." :filter="filter"
-           no-results-label="The search didn't uncover any results" :pagination="initialPagination">
+  <q-table class="sticky-header-table" :rows="rows" :columns="columns" row-key="id" title="Modpacks" bordered
+           dense no-data-label="No modpacks available (yet)..." :filter="filter"
+           no-results-label="The search didn't uncover any results" :pagination="initialPagination" :loading="visible">
+    <template v-slot:loading>
+      <q-inner-loading showing color="accent"/>
+    </template>
+
     <template v-slot:top-right>
       <q-input borderless dense debounce="300" v-model="filter" placeholder="Search">
         <template v-slot:append>
@@ -45,10 +36,9 @@
           </q-btn>
         </q-td>
         <q-td v-for="col in props.cols" :key="col.name" :props="props" auto-width>
-          <span v-if="col.field === 'name' && props.row.size > 0">
-            {{ col.value }}
+          <span v-if="col.name === 'download'">
             <q-btn :href="buildDownloadUrl(props.row.id)" color="info" dense icon="download" round size="sm"
-                   style="margin-left: 5px;" type="a">
+                   type="a" v-if="props.row.size > 0">
               <q-tooltip>
                 Download modpack
               </q-tooltip>
@@ -77,6 +67,7 @@ import ServerPacksTable from 'components/ServerPacksTable.vue';
 const columns = [
   {name: 'id', label: 'Modpack ID', field: 'id', sortable: true, align: 'left'},
   {name: 'name', label: 'Name', field: 'name', sortable: false, align: 'left'},
+  {name: 'download', label: 'Download', sortable: false, align: 'center'},
   {name: 'projectID', label: 'Project ID', field: 'projectID', sortable: true, align: 'left'},
   {name: 'versionID', label: 'Version ID', field: 'versionID', sortable: true, align: 'left'},
   {name: 'source', label: 'Source', field: 'source', sortable: false, align: 'left'},
@@ -170,7 +161,7 @@ export default defineComponent({
           progress: true,
           icon: 'error',
           color: 'negative',
-          message: 'Could not retrieve event history: ' + error
+          message: 'Could not retrieve modpacks: ' + error
         });
       });
     }

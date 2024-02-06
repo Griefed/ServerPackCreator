@@ -1,20 +1,11 @@
 <template>
-  <q-card flat bordered style="max-width: 100vw;" class="relative-position" v-if="visible">
-    <q-card-section>
-      <transition
-        appear
-        enter-active-class="animated fadeIn"
-        leave-active-class="animated fadeOut">
-      </transition>
-    </q-card-section>
-    <q-inner-loading :showing="visible">
-      <q-spinner-gears size="50px" color="accent"/>
-    </q-inner-loading>
-  </q-card>
-  <q-table
-    v-else :rows="rows" :columns="columns" row-key="id" title="Server Packs" id="serverpacktable" :filter="filter"
-    style="max-width: 100%;" bordered dense no-data-label="No server packs available (yet)..."
-    no-results-label="The search didn't uncover any results" :pagination="initialPagination">
+  <q-table :rows="rows" :columns="columns" row-key="id" title="Server Packs" id="serverpacktable" :filter="filter"
+           bordered dense no-data-label="No server packs available (yet)..."
+           no-results-label="The search didn't uncover any results" :pagination="initialPagination" :loading="visible">
+    <template v-slot:loading>
+      <q-inner-loading showing color="accent"/>
+    </template>
+
     <template v-slot:top-right>
       <q-input borderless dense debounce="300" v-model="filter" placeholder="Search">
         <template v-slot:append>
@@ -71,16 +62,14 @@
           <span v-else-if="col.field === 'size'">
             {{ col.value }} MB
           </span>
-          <span v-else-if="col.field === 'downloads'">
-            {{ col.value }}
+          <span v-else-if="col.name === 'download'">
             <q-btn :href="buildDownloadUrl(props.row.id)" color="info" dense icon="download" round size="sm"
-                   style="margin-left: 5px;" type="a" @click="props.row.downloads++">
+                   type="a" @click="props.row.downloads++" v-if="props.row.size > 0">
               <q-tooltip>
-                Download modpack
+                Download server pack
               </q-tooltip>
             </q-btn>
           </span>
-
           <span v-else>
             {{ col.value }}
           </span>
@@ -108,6 +97,7 @@ import RunConfigurationCard from 'components/RunConfigurationCard.vue';
 const columns = [
   {name: 'id', label: 'ServerPack ID', field: 'id', sortable: true, align: 'left'},
   {name: 'size', label: 'Size', field: 'size', sortable: false, align: 'left'},
+  {name: 'download', label: 'Download', sortable: false, align: 'center'},
   {name: 'downloads', label: 'Downloads', field: 'downloads', sortable: true, align: 'left'},
   {name: 'confirmedWorking', label: 'Confirmed Working', field: 'confirmedWorking', sortable: true, align: 'left'},
   {name: 'sha256', label: 'SHA256 Hash', field: 'sha256', sortable: false, align: 'left'},

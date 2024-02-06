@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.web.storage
 
+import de.griefed.serverpackcreator.api.utilities.common.size
+import de.griefed.serverpackcreator.web.data.SavedFile
 import org.apache.logging.log4j.kotlin.KotlinLogger
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.bouncycastle.util.encoders.Hex
@@ -38,7 +40,7 @@ class FileSystemStorageService(private val rootLocation: Path, private val messa
     private val logger: KotlinLogger = cachedLoggerOf(this.javaClass)
 
     @Throws(StorageException::class)
-    fun store(file: MultipartFile): Optional<Triple<Long, String, Path>> {
+    fun store(file: MultipartFile): Optional<SavedFile> {
         try {
             if (file.isEmpty) {
                 throw StorageException("Failed to store empty file.")
@@ -52,14 +54,22 @@ class FileSystemStorageService(private val rootLocation: Path, private val messa
             file.transferTo(destinationFile)
             logger.debug("Stored file to $destinationFile.")
             val sha256 = String(Hex.encode(messageDigestInstance.digest(destinationFile.toFile().readBytes())))
-            return Optional.of(Triple(id, sha256, destinationFile))
+            return Optional.of(
+                SavedFile(
+                    id,
+                    sha256,
+                    destinationFile,
+                    file.originalFilename ?: file.name, destinationFile.toFile().size().div(1048576.0).toInt()
+                )
+            )
         } catch (e: IOException) {
             return Optional.empty()
         }
     }
 
     fun load(id: Long): Optional<File> {
-        val file = rootLocation.listDirectoryEntries().find { path -> path.toString().contains("$id") }?.normalize()?.toFile()
+        val file =
+            rootLocation.listDirectoryEntries().find { path -> path.toString().contains("$id") }?.normalize()?.toFile()
         return if (file != null && file.exists()) {
             Optional.of(file)
         } else {

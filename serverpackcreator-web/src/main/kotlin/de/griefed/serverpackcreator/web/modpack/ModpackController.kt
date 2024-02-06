@@ -76,25 +76,23 @@ class ModpackController @Autowired constructor(
         @RequestParam("clientMods") clientMods: String,
         @RequestParam("whiteListMods") whiteListMods: String
     ): ResponseEntity<ZipResponse> {
-        //TODO return reuse-object with modpack info if uploaded file hash found
+        var zipResponse: ZipResponse
         if (file.size == 0L ||
             file.bytes.isEmpty() ||
-            !file.originalFilename!!.endsWith("zip", ignoreCase = true) ||
             minecraftVersion.isEmpty() ||
             modloader.isEmpty() ||
             modloaderVersion.isEmpty()
         ) {
+            zipResponse = ZipResponse(
+                message = "Invalid ZIP-file, Minecraft version, Modloader or Modloader version configuration.",
+                success = false,
+                modPackId = null,
+                runConfigId = null,
+                serverPackId = null,
+                status = ModpackStatus.ERROR
+            )
             return ResponseEntity.badRequest().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
-                .body(
-                    ZipResponse(
-                        message = "Invalid ZIP-file, Minecraft version, Modloader or Modloader version configuration.",
-                        success = false,
-                        modPackId = null,
-                        runConfigId = null,
-                        serverPackId = null,
-                        status = ModpackStatus.ERROR
-                    )
-                )
+                .body(zipResponse)
         }
         val runConfig = runConfigurationService.createRunConfig(
             minecraftVersion, modloader, modloaderVersion, startArgs, clientMods, whiteListMods
@@ -104,36 +102,34 @@ class ModpackController @Autowired constructor(
             val taskDetail = TaskDetail(modpack)
             taskDetail.runConfiguration = runConfig
             taskExecutionServiceImpl.submitTaskInQueue(taskDetail)
+            zipResponse = ZipResponse(
+                message = "File is being stored and will be queued for checks.",
+                success = true,
+                modPackId = modpack.id,
+                runConfigId = taskDetail.runConfiguration?.id,
+                serverPackId = null,
+                status = ModpackStatus.QUEUED
+            )
             return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
-                .body(
-                    ZipResponse(
-                        message = "File is being stored and will be queued for checks.",
-                        success = true,
-                        modPackId = modpack.id,
-                        runConfigId = taskDetail.runConfiguration?.id,
-                        serverPackId = null,
-                        status = ModpackStatus.QUEUED
-                    )
-                )
+                .body(zipResponse)
         } catch (ex: StorageException) {
+            zipResponse = ZipResponse(
+                message = ex.message!!,
+                success = false,
+                modPackId = ex.id,
+                runConfigId = runConfig.id,
+                serverPackId = null,
+                status = ModpackStatus.ERROR
+            )
             return ResponseEntity.badRequest().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
-                .body(
-                    ZipResponse(
-                        message = "The modpack you uploaded already exists.",
-                        success = false,
-                        modPackId = ex.id!!,
-                        runConfigId = runConfig.id,
-                        serverPackId = null,
-                        status = ModpackStatus.ERROR
-                    )
-                )
+                .body(zipResponse)
         }
     }
 
     @PostMapping("/generate", produces = ["application/json"])
     @ResponseBody
     fun requestGeneration(
-        @RequestParam("id") id: Int,
+        @RequestParam("modPackID") modPackID: Int,
         @RequestParam("minecraftVersion") minecraftVersion: String,
         @RequestParam("modloader") modloader: String,
         @RequestParam("modloaderVersion") modloaderVersion: String,
@@ -141,14 +137,14 @@ class ModpackController @Autowired constructor(
         @RequestParam("clientMods") clientMods: String,
         @RequestParam("whiteListMods") whiteListMods: String
     ): ResponseEntity<ZipResponse> {
-        val modpack = modpackService.getModpack(id)
+        val modpack = modpackService.getModpack(modPackID)
         if (modpack.isEmpty) {
             return ResponseEntity.badRequest().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
                 .body(
                     ZipResponse(
                         message = "Modpack not found.",
                         success = false,
-                        modPackId = id,
+                        modPackId = modPackID,
                         runConfigId = null,
                         serverPackId = null,
                         status = ModpackStatus.ERROR
@@ -172,7 +168,7 @@ class ModpackController @Autowired constructor(
                     ZipResponse(
                         message = "Server Pack already exists for the requested ModPack and RunConfiguration.",
                         success = false,
-                        modPackId = id,
+                        modPackId = modPackID,
                         runConfigId = taskDetail.runConfiguration!!.id,
                         serverPackId = serverpack.id,
                         status = ModpackStatus.GENERATED
@@ -185,7 +181,7 @@ class ModpackController @Autowired constructor(
                 ZipResponse(
                     message = "Generation of ServerPack, from existing ModPack, with different config, queued.",
                     success = true,
-                    modPackId = id,
+                    modPackId = modPackID,
                     runConfigId = taskDetail.runConfiguration?.id,
                     serverPackId = null,
                     status = ModpackStatus.QUEUED

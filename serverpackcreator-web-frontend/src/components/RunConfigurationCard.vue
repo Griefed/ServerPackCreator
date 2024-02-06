@@ -11,7 +11,7 @@
     <q-scroll-area :thumb-style="thumbStyle" :bar-style="barStyle" style="height: 400px;">
       <q-list dense>
         <q-item clickable @click="copyToClipboard(id.toString())">
-          <q-item-section avatar>
+          <q-item-section side>
             <q-icon color="accent" name="token"/>
           </q-item-section>
           <q-item-section>
@@ -21,7 +21,7 @@
         </q-item>
 
         <q-item clickable @click="copyToClipboard(minecraftVersion)">
-          <q-item-section avatar>
+          <q-item-section side>
             <q-icon color="accent" name="pin"/>
           </q-item-section>
           <q-item-section>
@@ -31,7 +31,7 @@
         </q-item>
 
         <q-item clickable @click="copyToClipboard(modloader)">
-          <q-item-section avatar>
+          <q-item-section side>
             <q-icon color="accent" name="pin"/>
           </q-item-section>
           <q-item-section>
@@ -41,7 +41,7 @@
         </q-item>
 
         <q-item clickable @click="copyToClipboard(modloaderVersion)">
-          <q-item-section avatar>
+          <q-item-section side>
             <q-icon color="accent" name="pin"/>
           </q-item-section>
           <q-item-section>
@@ -51,7 +51,7 @@
         </q-item>
 
         <q-item clickable @click="copyToClipboard(startArgs.join(' '))">
-          <q-item-section avatar>
+          <q-item-section side>
             <q-icon color="accent" name="not_started"/>
           </q-item-section>
           <q-item-section>
@@ -61,7 +61,7 @@
         </q-item>
 
         <q-item clickable @click="copyToClipboard(clientMods.join(', '))">
-          <q-item-section avatar>
+          <q-item-section side>
             <q-icon color="accent" name="format_list_numbered"/>
           </q-item-section>
           <q-item-section>
@@ -71,7 +71,7 @@
         </q-item>
 
         <q-item clickable @click="copyToClipboard(whitelistedMods.join(', '))">
-          <q-item-section avatar>
+          <q-item-section side>
             <q-icon color="accent" name="format_list_numbered"/>
           </q-item-section>
           <q-item-section>

@@ -17,18 +17,14 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.web.serverpack
+package de.griefed.serverpackcreator.web.data
 
-import de.griefed.serverpackcreator.web.data.ServerPack
-import de.griefed.serverpackcreator.web.data.ServerPackView
-import org.springframework.data.domain.Sort
-import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.stereotype.Repository
-import java.util.*
+import java.nio.file.Path
 
-@Repository
-interface ServerPackRepository : JpaRepository<ServerPack, Int> {
-    fun findAllProjectedBy(): MutableList<ServerPackView>
-    fun findAllProjectedBy(sort: Sort): MutableList<ServerPackView>
-    fun findProjectedById(id: Int): Optional<ServerPackView>
-}
+class SavedFile(
+    val id: Long,
+    val sha256: String,
+    val file: Path,
+    val originalName: String,
+    val size: Int
+)

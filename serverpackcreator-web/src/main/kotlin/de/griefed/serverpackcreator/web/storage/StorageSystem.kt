@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.web.storage
 
+import de.griefed.serverpackcreator.web.data.SavedFile
 import org.apache.logging.log4j.kotlin.KotlinLogger
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.springframework.web.multipart.MultipartFile
@@ -38,14 +39,8 @@ class StorageSystem(private val fileSystemStorageService: FileSystemStorageServi
         FileSystemStorageService(rootLocation)
     )
 
-    fun store(file: MultipartFile): Optional<Pair<Long, String>> {
-        val triple = fileSystemStorageService.store(file)
-        return Optional.of(Pair(triple.get().first, triple.get().second))
-    }
-
-    fun storeOnFilesystem(file: MultipartFile): Optional<Pair<Long, String>> {
-        val triple = fileSystemStorageService.store(file)
-        return Optional.of(Pair(triple.get().first, triple.get().second))
+    fun store(file: MultipartFile): Optional<SavedFile> {
+        return fileSystemStorageService.store(file)
     }
 
     fun load(id: Long): Optional<File> {

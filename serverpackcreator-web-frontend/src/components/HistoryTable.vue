@@ -1,17 +1,12 @@
 <template>
-  <q-card flat bordered style="max-width: 100vw;" class="relative-position" v-if="visible">
-    <q-card-section>
-      <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut"/>
-    </q-card-section>
-    <q-inner-loading :showing="visible">
-      <q-spinner-gears size="50px" color="accent"/>
-    </q-inner-loading>
-  </q-card>
-  <q-table
-    v-else class="sticky-header-table" :rows="rows" :columns="columns" row-key="id" bordered dense :filter="filter"
-    style="max-width: 100vw;" no-data-label="No history available (yet)..."
-    no-results-label="The search didn't uncover any results"
-    :pagination="initialPagination">
+  <q-table class="sticky-header-table" :rows="rows" :columns="columns" row-key="id" bordered dense :filter="filter"
+           no-data-label="No history available (yet)..." title="History / Event Log"
+           no-results-label="The search didn't uncover any results"
+           :pagination="initialPagination" :loading="visible">
+    <template v-slot:loading>
+      <q-inner-loading showing color="accent"/>
+    </template>
+
     <template v-slot:top-right>
       <q-input borderless dense debounce="300" v-model="filter" placeholder="Search">
         <template v-slot:append>
@@ -42,7 +37,12 @@
           </q-btn>
         </q-td>
         <q-td v-for="col in props.cols" :key="col.name" :props="props">
-          {{ col.value }}
+          <span v-if="col.name === 'errors' && col.value > 0" class="text-bold text-red-14">
+            {{ col.value }}
+          </span>
+          <span v-else>
+            {{ col.value }}
+          </span>
         </q-td>
       </q-tr>
       <q-tr v-show="props.expand" :props="props">
@@ -51,16 +51,13 @@
             <div class="col">
               <ModPackCard :id="props.row.modPackId"/>
             </div>
-            <q-separator spaced inset v-if="props.row.serverPackId !== null"/>
-            <div class="col" v-if="props.row.serverPackId !== null">
+            <div class="col" v-if="props.row.serverPackId !== null" style="margin-left: 5px;">
               <ServerPackCard :id="props.row.serverPackId"/>
             </div>
-            <q-separator spaced inset v-if="props.row.serverPackId !== null"/>
-            <div class="col" v-if="props.row.serverPackId !== null">
+            <div class="col" v-if="props.row.serverPackId !== null" style="margin-left: 5px;">
               <RunConfigurationCard :id="props.row.serverPackId"/>
             </div>
-            <q-separator spaced inset v-if="props.row.errors.length > 0"/>
-            <div class="col" v-if="props.row.errors.length > 0">
+            <div class="col" v-if="props.row.errors.length > 0" style="margin-left: 5px;">
               <ErrorsCard :errors="props.row.errors"/>
             </div>
           </div>

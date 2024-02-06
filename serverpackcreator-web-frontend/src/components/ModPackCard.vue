@@ -10,7 +10,7 @@
   <q-card flat bordered style="height: 400px;" v-else>
     <q-list dense>
       <q-item clickable @click="copyToClipboard(id.toString())">
-        <q-item-section avatar>
+        <q-item-section side>
           <q-icon color="accent" name="token"/>
         </q-item-section>
         <q-item-section>
@@ -20,7 +20,7 @@
       </q-item>
 
       <q-item clickable @click="copyToClipboard(projectID.length === 1 ? projectID : 'N/A')">
-        <q-item-section avatar>
+        <q-item-section side>
           <q-icon color="accent" name="badge"/>
         </q-item-section>
         <q-item-section>
@@ -30,7 +30,7 @@
       </q-item>
 
       <q-item clickable @click="copyToClipboard(versionID.length === 1 ? versionID : 'N/A')">
-        <q-item-section avatar>
+        <q-item-section side>
           <q-icon color="accent" name="badge"/>
         </q-item-section>
         <q-item-section>
@@ -40,7 +40,7 @@
       </q-item>
 
       <q-item clickable @click="copyToClipboard(date.formatDate(dateCreated, 'YYYY-MM-DD : HH:mm'))">
-        <q-item-section avatar>
+        <q-item-section side>
           <q-icon color="accent" name="event"/>
         </q-item-section>
         <q-item-section>
@@ -50,7 +50,7 @@
       </q-item>
 
       <q-item clickable @click="copyToClipboard(name)">
-        <q-item-section avatar>
+        <q-item-section side>
           <q-icon color="accent" name="abc"/>
         </q-item-section>
         <q-item-section>
@@ -60,7 +60,7 @@
       </q-item>
 
       <q-item clickable @click="copyToClipboard(size.toString())">
-        <q-item-section avatar>
+        <q-item-section side>
           <q-icon color="accent" name="scale"/>
         </q-item-section>
         <q-item-section>
@@ -70,7 +70,7 @@
       </q-item>
 
       <q-item clickable @click="copyToClipboard(status)">
-        <q-item-section avatar>
+        <q-item-section side>
           <q-icon color="accent" name="pending_actions"/>
         </q-item-section>
         <q-item-section>
@@ -80,7 +80,7 @@
       </q-item>
 
       <q-item clickable @click="copyToClipboard(source)">
-        <q-item-section avatar>
+        <q-item-section side>
           <q-icon color="accent" name="move_to_inbox"/>
         </q-item-section>
         <q-item-section>
@@ -90,7 +90,7 @@
       </q-item>
 
       <q-item clickable @click="copyToClipboard(sha256)">
-        <q-item-section avatar>
+        <q-item-section side>
           <q-icon color="accent" name="tag"/>
         </q-item-section>
         <q-item-section>
@@ -100,7 +100,7 @@
       </q-item>
 
       <q-item clickable @click="copyToClipboard(serverPacks.length.toString())">
-        <q-item-section avatar>
+        <q-item-section side>
           <q-icon color="accent" name="dns"/>
         </q-item-section>
         <q-item-section>

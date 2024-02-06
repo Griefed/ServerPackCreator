@@ -10,7 +10,7 @@
   <q-card flat bordered style="height: 400px;" v-else>
     <q-list dense>
       <q-item clickable @click="copyToClipboard(id.toString())">
-        <q-item-section avatar>
+        <q-item-section side>
           <q-icon color="accent" name="token"/>
         </q-item-section>
         <q-item-section>
@@ -20,7 +20,7 @@
       </q-item>
 
       <q-item clickable @click="copyToClipboard(size.toString())">
-        <q-item-section avatar>
+        <q-item-section side>
           <q-icon color="accent" name="scale"/>
         </q-item-section>
         <q-item-section>
@@ -30,7 +30,7 @@
       </q-item>
 
       <q-item clickable @click="copyToClipboard(downloads.toString())">
-        <q-item-section avatar>
+        <q-item-section side>
           <q-icon color="accent" name="download"/>
         </q-item-section>
         <q-item-section>
@@ -40,7 +40,7 @@
       </q-item>
 
       <q-item clickable @click="copyToClipboard(confirmedWorking.toString())">
-        <q-item-section avatar>
+        <q-item-section side>
           <q-icon color="accent" name="thumbs_up_down"/>
         </q-item-section>
         <q-item-section>
@@ -50,7 +50,7 @@
       </q-item>
 
       <q-item clickable @click="copyToClipboard(date.formatDate(dateCreated, 'YYYY-MM-DD : HH:mm'))">
-        <q-item-section avatar>
+        <q-item-section side>
           <q-icon color="accent" name="event"/>
         </q-item-section>
         <q-item-section>
@@ -60,7 +60,7 @@
       </q-item>
 
       <q-item clickable @click="copyToClipboard(sha256)">
-        <q-item-section avatar>
+        <q-item-section side>
           <q-icon color="accent" name="tag"/>
         </q-item-section>
         <q-item-section>
