@@ -1,7 +1,7 @@
 <template>
   <q-tabs v-model="tab" dense active-color="primary" indicator-color="secondary" narrow-indicator>
-    <q-tab name="upload" label="Upload" />
-    <q-tab name="regeneration" label="Regeneration" />
+    <q-tab name="upload" label="Upload"/>
+    <q-tab name="regeneration" label="Regeneration"/>
   </q-tabs>
 
   <q-separator/>
@@ -34,7 +34,7 @@
               hint="The Minecraft version your modpack uses."
             >
               <template v-slot:append>
-                <q-icon name="pin" color="accent" />
+                <q-icon name="pin" color="accent"/>
               </template>
             </q-input>
           </q-item-section>
@@ -64,7 +64,7 @@
               hint="The modlaoder your modpack uses."
             >
               <template v-slot:append>
-                <q-icon name="pin" color="accent" />
+                <q-icon name="pin" color="accent"/>
               </template>
             </q-input>
           </q-item-section>
@@ -94,13 +94,13 @@
               hint="The modloader version your modpack uses."
             >
               <template v-slot:append>
-                <q-icon name="pin" color="accent" />
+                <q-icon name="pin" color="accent"/>
               </template>
             </q-input>
           </q-item-section>
         </q-item>
 
-        <q-separator inset spaced />
+        <q-separator inset spaced/>
 
         <q-expansion-item expand-separator label="Customizations" icon="tune">
           <q-item>
@@ -118,7 +118,7 @@
             </q-item-section>
           </q-item>
 
-          <q-separator inset spaced />
+          <q-separator inset spaced/>
 
           <q-item>
             <q-item-section>
@@ -135,7 +135,7 @@
             </q-item-section>
           </q-item>
 
-          <q-separator inset spaced />
+          <q-separator inset spaced/>
 
           <q-item>
             <q-item-section>
@@ -153,23 +153,25 @@
           </q-item>
         </q-expansion-item>
 
-        <q-separator inset spaced />
+        <q-separator inset spaced/>
 
         <q-item>
           <q-item-section>
-            <q-file label-color="accent" filled bottom-slots v-model="file" label="Modpack ZIP" counter @rejected="onRejected" accept=".zip"
+            <q-file label-color="accent" filled bottom-slots v-model="file" label="Modpack ZIP" counter
+                    @rejected="onRejected" accept=".zip"
                     style="margin-right: 10px;" name="file">
               <template v-slot:file="{ file }">
                 <q-chip
                   class="full-width q-my-xs"
                   square
                 >
-                  <q-linear-progress
-                    class="absolute-full full-height"
-                    :value="progress"
-                    color="positive"
-                    track-color="grey-2"
-                  />
+                  <q-linear-progress v-if="progress > 0" :stripe="progress === 1" class="absolute-full full-height" :value="progress"
+                                     color="positive" track-color="primary" instant-feedback>
+                    <div class="absolute-full flex flex-center">
+                      <q-badge v-if="progress < 1" color="white" text-color="accent" :label="'Uploaded: ' + Math.round(progress * 100) + '%'"/>
+                      <q-badge v-else color="white" text-color="accent" label="Upload done. Checking..."/>
+                    </div>
+                  </q-linear-progress>
 
                   <div class="ellipsis relative-position">
                     {{ file.name }}
@@ -181,10 +183,10 @@
                 </q-chip>
               </template>
               <template v-slot:prepend>
-                <q-icon name="folder_zip" @click.stop.prevent />
+                <q-icon name="folder_zip" @click.stop.prevent/>
               </template>
               <template v-slot:append>
-                <q-icon name="close" @click.stop.prevent="file = null" class="cursor-pointer" />
+                <q-icon name="close" @click.stop.prevent="file = null" class="cursor-pointer"/>
                 <q-btn dense flat icon="help_outline" round @click="zipInfo = true"/>
               </template>
 
@@ -259,7 +261,7 @@
               hint="ID of an already available ModPack"
             >
               <template v-slot:append>
-                <q-icon name="token" color="accent" />
+                <q-icon name="token" color="accent"/>
               </template>
             </q-input>
           </q-item-section>
@@ -290,7 +292,9 @@
                         Client Mods: {{ this.runConfigurations[id].clientMods.map((mod) => mod.mod).join(', ') }}
                       </div>
                       <div class="row">
-                        Whitelisted Mods: {{ this.runConfigurations[id].whitelistedMods.map((mod) => mod.mod).join(', ') }}
+                        Whitelisted Mods: {{
+                          this.runConfigurations[id].whitelistedMods.map((mod) => mod.mod).join(', ')
+                        }}
                       </div>
                     </q-tooltip>
                   </q-item-section>
@@ -309,7 +313,7 @@
               hint="ID of an already available RunConfiguration"
             >
               <template v-slot:append>
-                <q-icon name="token" color="accent" />
+                <q-icon name="token" color="accent"/>
               </template>
             </q-input>
           </q-item-section>
@@ -340,7 +344,7 @@
               hint="The Minecraft version your modpack uses."
             >
               <template v-slot:append>
-                <q-icon name="pin" color="accent" />
+                <q-icon name="pin" color="accent"/>
               </template>
             </q-input>
           </q-item-section>
@@ -370,7 +374,7 @@
               hint="The modlaoder your modpack uses."
             >
               <template v-slot:append>
-                <q-icon name="pin" color="accent" />
+                <q-icon name="pin" color="accent"/>
               </template>
             </q-input>
           </q-item-section>
@@ -400,13 +404,13 @@
               hint="The modloader version your modpack uses."
             >
               <template v-slot:append>
-                <q-icon name="pin" color="accent" />
+                <q-icon name="pin" color="accent"/>
               </template>
             </q-input>
           </q-item-section>
         </q-item>
 
-        <q-separator inset spaced />
+        <q-separator inset spaced/>
 
         <q-expansion-item expand-separator label="Customizations" icon="tune">
           <q-item>
@@ -424,7 +428,7 @@
             </q-item-section>
           </q-item>
 
-          <q-separator inset spaced />
+          <q-separator inset spaced/>
 
           <q-item>
             <q-item-section>
@@ -441,7 +445,7 @@
             </q-item-section>
           </q-item>
 
-          <q-separator inset spaced />
+          <q-separator inset spaced/>
 
           <q-item>
             <q-item-section>
@@ -459,7 +463,7 @@
           </q-item>
         </q-expansion-item>
 
-        <q-separator inset spaced />
+        <q-separator inset spaced/>
 
         <q-item>
           <q-item-section>
@@ -481,7 +485,7 @@
         </q-item-section>
       </q-item>
 
-      <q-separator />
+      <q-separator/>
 
       <q-card-section horizontal>
         <q-card-section class="col">
@@ -508,7 +512,7 @@
           </q-chip>
         </q-card-section>
 
-        <q-separator vertical />
+        <q-separator vertical/>
 
         <q-card-section class="col-5">
           <div>
@@ -541,10 +545,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
-import { modpacks, runConfigs, versions } from 'boot/axios';
-import { settingsStore } from 'stores/stores';
-import { date } from 'quasar';
+import {defineComponent, ref} from 'vue';
+import {modpacks, runConfigs, versions} from 'boot/axios';
+import {settingsStore} from 'stores/stores';
+import {date} from 'quasar';
 
 export default defineComponent({
   name: 'SubmitModPackForm',
@@ -586,7 +590,7 @@ export default defineComponent({
     const zipInfo = ref(false)
     const zipSlide = ref(1)
     const zipAutoplay = ref(true)
-    const zipSlideInfo = ['Not accepted: Only minecraft','Not accepted: Only overrides','Accepted.','Accepted.']
+    const zipSlideInfo = ['Not accepted: Only minecraft', 'Not accepted: Only overrides', 'Accepted.', 'Accepted.']
     return {
       store,
       file,
@@ -664,24 +668,24 @@ export default defineComponent({
       this.whiteListMods = config.whitelistedMods.map((mod: { mod: string; }) => mod.mod).join(', ')
       this.clientMods = config.clientMods.map((mod: { mod: string; }) => mod.mod).join(', ')
     },
-    onSubmitRegeneration (evt: { target: HTMLFormElement | undefined; }) {
+    onSubmitRegeneration(evt: { target: HTMLFormElement | undefined; }) {
       const formData = new FormData(evt.target)
       this.uploading = true
 
       modpacks.postForm('generate', formData)
         .then(response => {
-        this.$q.notify({
-          timeout: 5000,
-          progress: true,
-          position: 'center',
-          icon: 'check',
-          color: 'positive',
-          message: 'Generation queued for ModPack ID: ' + response.data.modPackId + '. RunConfiguration ID: ' + response.data.runConfigId
-        });
-        this.modPackID = response.data.modPackID
-        this.runConfigID = response.data.runConfigID
-        this.resetForm()
-      }).catch(error => {
+          this.$q.notify({
+            timeout: 5000,
+            progress: true,
+            position: 'center',
+            icon: 'check',
+            color: 'positive',
+            message: 'Generation queued for ModPack ID: ' + response.data.modPackId + '. RunConfiguration ID: ' + response.data.runConfigId
+          });
+          this.modPackID = response.data.modPackID
+          this.runConfigID = response.data.runConfigID
+          this.resetForm()
+        }).catch(error => {
         this.$q.notify({
           timeout: 5000,
           progress: true,
@@ -695,13 +699,13 @@ export default defineComponent({
         this.resetForm()
       })
     },
-    onSubmit (evt: { target: HTMLFormElement | undefined; }) {
+    onSubmit(evt: { target: HTMLFormElement | undefined; }) {
       const formData = new FormData(evt.target)
       this.uploading = true
 
       modpacks.postForm('upload', formData, {
         onUploadProgress: progressEvent => {
-          this.progress = progressEvent.loaded / (progressEvent.total? progressEvent.total : progressEvent.loaded)
+          this.progress = progressEvent.loaded / (progressEvent.total ? progressEvent.total : progressEvent.loaded)
         }
       }).then(response => {
         this.$q.notify({
@@ -716,10 +720,10 @@ export default defineComponent({
         this.resetForm()
         this.delayedRegenPrep(response.data.modPackId, response.data.runConfigId)
       }).catch(error => {
-        let message = error.response.data.message === undefined ? error.message : error.response.data.message
-        let suffix = error.response.data.modPackId === undefined ? '' : ' See Modpack ID: ' + error.response.data.modPackId
+        let message = (error.response.data.message === undefined || error.response.data.message === null) ? error.message : error.response.data.message
+        let suffix = (error.response.data.modPackId === undefined || error.response.data.modPackId === null) ? '' : ' See Modpack ID: ' + error.response.data.modPackId
         this.$q.notify({
-          timeout: 5000,
+          timeout: 10000,
           progress: true,
           position: 'center',
           icon: 'error',
@@ -728,7 +732,8 @@ export default defineComponent({
         });
         this.progress = 0
         this.resetForm()
-        if (error.response.data.modPackId !== undefined && error.response.data.runConfigId !== undefined) {
+        if (error.response.data.modPackId !== undefined && error.response.data.runConfigId !== undefined &&
+          error.response.data.modPackId !== null && error.response.data.runConfigId !== null) {
           this.delayedRegenPrep(error.response.data.modPackId, error.response.data.runConfigId)
           this.tab = 'regeneration'
         }
