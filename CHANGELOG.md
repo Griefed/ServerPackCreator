@@ -1,3 +1,27 @@
+## [5.1.12-alpha.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12-alpha.6...5.1.12-alpha.7) (2024-02-06)
+
+
+### :scissors: Refactor
+
+* Improve readability by returning concrete object ([821204c](https://git.griefed.de/Griefed/ServerPackCreator/commit/821204cfda92d3ad99e480ef82fb09d9171380b3))
+* Use ModpackService instead of directly accessing repository ([7edde2d](https://git.griefed.de/Griefed/ServerPackCreator/commit/7edde2de19b9ec02cf0362acb00deb5889147d23))
+
+
+### 💈 Style
+
+* Some minor style improvements ([e0c861f](https://git.griefed.de/Griefed/ServerPackCreator/commit/e0c861f65d1bfb8571a029da4db3eb4e55fd7c6f))
+
+
+### 💎 Improvements
+
+* Check uploaded modpack and return error before queue submit. ([9cc7100](https://git.griefed.de/Griefed/ServerPackCreator/commit/9cc71006afeefbdb70332db6ce2603192b5ea6ca))
+* Feedback during and after upload ([b87156e](https://git.griefed.de/Griefed/ServerPackCreator/commit/b87156ea21c2be708ab24bfc96f756839d468d5a))
+
+
+### 🛠 Fixes
+
+* Allow regeneration of already uploaded modpack. Prevent clashing of server packs via renaming. ([f57eaa1](https://git.griefed.de/Griefed/ServerPackCreator/commit/f57eaa103766e67609848856dafb7cc60bd3a15d))
+
 ## [5.1.12-alpha.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12-alpha.5...5.1.12-alpha.6) (2024-02-03)
 
 
