@@ -1,5 +1,6 @@
+
 import org.jetbrains.kotlin.gradle.plugin.getKotlinPluginVersion
-import java.io.*
+import java.io.FileInputStream
 import java.util.*
 
 plugins {
@@ -7,9 +8,6 @@ plugins {
 }
 
 repositories {
-    maven {
-        url = uri("https://nexus.griefed.dev/repository/maven-public/")
-    }
     gradlePluginPortal()
     google()
     mavenCentral()
