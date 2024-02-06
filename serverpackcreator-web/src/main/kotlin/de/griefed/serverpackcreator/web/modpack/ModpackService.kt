@@ -56,12 +56,12 @@ class ModpackService @Autowired constructor(
     fun saveZipModpack(file: MultipartFile): ModPack {
         val modpack = ModPack()
         modpack.status = ModpackStatus.QUEUED
-        modpack.name = file.originalFilename ?: file.name
-        modpack.size = file.size.toDouble().div(1048576.0).toInt()
         modpack.source = ModpackSource.ZIP
-        val storePair = storage.storeOnFilesystem(file).get()
-        modpack.fileID = storePair.first
-        modpack.sha256 = storePair.second
+        val savedFile = storage.store(file).get()
+        modpack.fileID = savedFile.id
+        modpack.sha256 = savedFile.sha256
+        modpack.name = savedFile.originalName
+        modpack.size = savedFile.size
         val availableModpacks = modpackRepository.findAll()
         for (available in availableModpacks) {
             if (available.sha256 == modpack.sha256) {
