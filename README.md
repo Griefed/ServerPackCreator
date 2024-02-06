@@ -167,7 +167,7 @@ Should you at any point want to revisit said guide, simply hit *About -> Step-By
 The installers ship their own Java installations.
 
 **ATTENTION:** I **can** not and **will** not guarantee that ServerPackCreator will work flawlessly with any other Java
-version other than version 17. Things may break at **random**, at **any** place, if a **different** Java version is used.
+version other than version 21. Things may break at **random**, at **any** place, if a **different** Java version is used.
 You are welcome to try and use any other version, but do **not** report issues back to me if you do encounter problems
 when running ServerPackCreator with a more recent Java version.
 
