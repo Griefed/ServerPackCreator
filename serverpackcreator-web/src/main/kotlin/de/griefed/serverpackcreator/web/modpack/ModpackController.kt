@@ -76,27 +76,24 @@ class ModpackController @Autowired constructor(
         @RequestParam("clientMods") clientMods: String,
         @RequestParam("whiteListMods") whiteListMods: String
     ): ResponseEntity<ZipResponse> {
-        //TODO return reuse-object with modpack info if uploaded file hash found
+        var zipResponse: ZipResponse
         if (file.size == 0L ||
             file.bytes.isEmpty() ||
-            !file.originalFilename!!.endsWith("zip", ignoreCase = true) ||
             minecraftVersion.isEmpty() ||
             modloader.isEmpty() ||
             modloaderVersion.isEmpty()
         ) {
+            zipResponse = ZipResponse(
+                message = "Invalid ZIP-file, Minecraft version, Modloader or Modloader version configuration.",
+                success = false,
+                modPackId = null,
+                runConfigId = null,
+                serverPackId = null,
+                status = ModpackStatus.ERROR
+            )
             return ResponseEntity.badRequest().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
-                .body(
-                    ZipResponse(
-                        message = "Invalid ZIP-file, Minecraft version, Modloader or Modloader version configuration.",
-                        success = false,
-                        modPackId = null,
-                        runConfigId = null,
-                        serverPackId = null,
-                        status = ModpackStatus.ERROR
-                    )
-                )
+                .body(zipResponse)
         }
-        //TODO check contents
         val runConfig = runConfigurationService.createRunConfig(
             minecraftVersion, modloader, modloaderVersion, startArgs, clientMods, whiteListMods
         )
@@ -105,29 +102,27 @@ class ModpackController @Autowired constructor(
             val taskDetail = TaskDetail(modpack)
             taskDetail.runConfiguration = runConfig
             taskExecutionServiceImpl.submitTaskInQueue(taskDetail)
+            zipResponse = ZipResponse(
+                message = "File is being stored and will be queued for checks.",
+                success = true,
+                modPackId = modpack.id,
+                runConfigId = taskDetail.runConfiguration?.id,
+                serverPackId = null,
+                status = ModpackStatus.QUEUED
+            )
             return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
-                .body(
-                    ZipResponse(
-                        message = "File is being stored and will be queued for checks.",
-                        success = true,
-                        modPackId = modpack.id,
-                        runConfigId = taskDetail.runConfiguration?.id,
-                        serverPackId = null,
-                        status = ModpackStatus.QUEUED
-                    )
-                )
+                .body(zipResponse)
         } catch (ex: StorageException) {
+            zipResponse = ZipResponse(
+                message = ex.message!!,
+                success = false,
+                modPackId = ex.id,
+                runConfigId = runConfig.id,
+                serverPackId = null,
+                status = ModpackStatus.ERROR
+            )
             return ResponseEntity.badRequest().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
-                .body(
-                    ZipResponse(
-                        message = "The modpack you uploaded already exists.",
-                        success = false,
-                        modPackId = ex.id!!,
-                        runConfigId = runConfig.id,
-                        serverPackId = null,
-                        status = ModpackStatus.ERROR
-                    )
-                )
+                .body(zipResponse)
         }
     }
 

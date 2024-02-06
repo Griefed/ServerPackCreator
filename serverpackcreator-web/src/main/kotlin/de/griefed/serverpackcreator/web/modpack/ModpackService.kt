@@ -58,6 +58,10 @@ class ModpackService @Autowired constructor(
         modpack.status = ModpackStatus.QUEUED
         modpack.source = ModpackSource.ZIP
         val savedFile = storage.store(file).get()
+        val check = configurationHandler.checkZipArchive(savedFile.file.toString())
+        if (!check.allChecksPassed) {
+            throw StorageException("The modpack you uploaded did not pass validation: ${check.encounteredErrors.joinToString(",")}")
+        }
         modpack.fileID = savedFile.id
         modpack.sha256 = savedFile.sha256
         modpack.name = savedFile.originalName
