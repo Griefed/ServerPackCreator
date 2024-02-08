@@ -167,7 +167,7 @@ Should you at any point want to revisit said guide, simply hit *About -> Step-By
 The installers ship their own Java installations.
 
 **ATTENTION:** I **can** not and **will** not guarantee that ServerPackCreator will work flawlessly with any other Java
-version other than version 17. Things may break at **random**, at **any** place, if a **different** Java version is used.
+version other than version 21. Things may break at **random**, at **any** place, if a **different** Java version is used.
 You are welcome to try and use any other version, but do **not** report issues back to me if you do encounter problems
 when running ServerPackCreator with a more recent Java version.
 
@@ -543,12 +543,14 @@ A short excerpt:
 # 8. Awesomesauce!
 
 **None of this would have been possible without the excellent IDEs by JetBrains. They have kindly provided this open source project with an All Products Pack license.**
-**Additionally, ej-Technologies has provided an open-source license for JProfiler for ServerPackCreator, which allows me to resolve performance bottlenecks, pin down memory leaks and understand threading issues.
+**Additionally, ej-Technologies has provided an open-source license for JProfiler and install4j for ServerPackCreator, which allows me to resolve performance bottlenecks, pin down memory leaks and understand threading issues, as well as generated fancy high-end installers.
 Huge shoutout and thank you!**
 
-| [JetBrains](https://www.jetbrains.com/)                     | [IntelliJ IDEA](https://www.jetbrains.com/idea/)                                | [WebStorm](https://www.jetbrains.com/webstorm/)                           | [YouTrack](https://www.jetbrains.com/youtrack/)                           | [JProfiler](https://www.ej-technologies.com/products/jprofiler/overview.html)                                                                                                                                                                                                                                                              |
-|-------------------------------------------------------------|---------------------------------------------------------------------------------|---------------------------------------------------------------------------|---------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [![JetBrains](img/jb_beam.png)](https://www.jetbrains.com/) | [![IntelliJ IDEA](img/IntelliJ_IDEA_icon.png)](https://www.jetbrains.com/idea/) | [![WebStorm](img/WebStorm_icon.png)](https://www.jetbrains.com/webstorm/) | [![YouTrack](img/YouTrack_icon.png)](https://www.jetbrains.com/youtrack/) | [![ej-Technologies](https://www.ej-technologies.com/assets/logo-18cdc16334888781eb17378d82e5b1bb.png)](https://www.ej-technologies.com/products/jprofiler/overview.html) <br> [![JProfiler](https://www.ej-technologies.com/images/product_banners/jprofiler_large.png)](https://www.ej-technologies.com/products/jprofiler/overview.html) |
+| [JetBrains](https://www.jetbrains.com/)                     | [IntelliJ IDEA](https://www.jetbrains.com/idea/)                                | [WebStorm](https://www.jetbrains.com/webstorm/)                           | [YouTrack](https://www.jetbrains.com/youtrack/)                           | [JProfiler](https://www.ej-technologies.com/products/jprofiler/overview.html)                                                                                                                                       | [install4j](https://www.ej-technologies.com/products/install4j/overview.html)                                  |
+|-------------------------------------------------------------|---------------------------------------------------------------------------------|---------------------------------------------------------------------------|---------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
+| [![JetBrains](img/jb_beam.png)](https://www.jetbrains.com/) | [![IntelliJ IDEA](img/IntelliJ_IDEA_icon.png)](https://www.jetbrains.com/idea/) | [![WebStorm](img/WebStorm_icon.png)](https://www.jetbrains.com/webstorm/) | [![YouTrack](img/YouTrack_icon.png)](https://www.jetbrains.com/youtrack/) | [![JProfiler](img/jprofiler.webp)](https://www.ej-technologies.com/products/jprofiler/overview.html)<br>[![JProfiler](img/jprofiler_banner.webp)](https://www.ej-technologies.com/products/jprofiler/overview.html) | [![install4j](img/install4j_icon.webp)](https://www.ej-technologies.com/products/install4j/overview.html)<br>[![install4j](img/install4j.webp)](https://www.ej-technologies.com/products/install4j/overview.html) |
+
+*Starting from version 6.x, ServerPackCreator will sport fancy new installers made possible by ej-technologies' install4j.*
 
 ---
 
