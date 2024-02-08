@@ -51,25 +51,25 @@ const linksList = [
     title: 'Submissions',
     caption: 'Generate from zipped modpack',
     icon: 'upload',
-    link: 'submissions'
+    link: '/submissions'
   },
   {
     title: 'Downloads',
     caption: 'Browser modpacks and server packs for downloads',
     icon: 'download',
-    link: 'downloads'
+    link: '/downloads'
   },
   {
     title: 'History',
     caption: 'Event history',
     icon: 'history',
-    link: 'history'
+    link: '/history'
   },
   {
     title: 'About',
     caption: 'About ServerPackCreator',
     icon: 'info',
-    link: 'about'
+    link: '/about'
   }
 ];
 
