@@ -389,6 +389,7 @@ Writerside Build:
     - cp -rf LICENSE            serverpackcreator-help/Writerside/topics/LICENSE.md
     - cp -rf README.md          serverpackcreator-help/Writerside/topics/README.md
     - cp -rf SECURITY.md        serverpackcreator-help/Writerside/topics/SECURITY.md
+    - rm -f /tmp/.X99-lock || true
     - set -e
     - export DISPLAY=:99
     - Xvfb :99 &
