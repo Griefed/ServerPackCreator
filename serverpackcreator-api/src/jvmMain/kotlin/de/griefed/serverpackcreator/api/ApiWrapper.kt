@@ -331,7 +331,7 @@ actual class ApiWrapper private constructor(
          * Acquire a new instance of the ServerPackCreator API.
          *
          * @param properties A ServerPackCreator properties-file to use for API initialization. This files may contain
-         * configurations for the home-directory and many other settings. For details, see the [Wiki](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help#serverpackcreatorproperties).
+         * configurations for the home-directory and many other settings. For details, see the [Wiki](https://help.serverpackcreator.de/settings-and-configs.html).
          * @param language The language with which to initialize the localization. Format: `en_gb` or `de_de`
          * @param runSetup Whether to run the initial setup, creating and copying all required files to the filesystem and
          * ensuring the home-directory is properly set up and available to the API.

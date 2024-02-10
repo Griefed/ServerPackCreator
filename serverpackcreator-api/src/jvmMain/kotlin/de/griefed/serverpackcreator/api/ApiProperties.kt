@@ -2164,7 +2164,7 @@ actual class ApiProperties(
             propertiesFile.outputStream().use {
                 internalProps.store(
                     it,
-                    "For details about each property, see https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help#serverpackcreatorproperties"
+                    "For details about each property, see https://help.serverpackcreator.de/settings-and-configs.html"
                 )
             }
             log.info("Saved properties to: $propertiesFile")

@@ -58,8 +58,7 @@ How to use ServerPackCreator:
 
  Help/Wiki: If you want additional help on how to use ServerPackCreator, take a look at my wiki articles
             regarding ServerPackCreator and some of the more advanced things it can do.
-             - Help:  https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help
-             - HowTo: https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-HowTo
+             - Help:  https://help.serverpackcreator.de/help-topic.html
 
  Buy Me A Coffee:
    You like ServerPackCreator and would like to support me? By all means, every bit is very much

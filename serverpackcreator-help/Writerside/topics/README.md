@@ -146,7 +146,7 @@ Note: All three ways are supported by the **.jar**-file. Which one is started de
 - Report a bug / ask for a feature / ask for an improvement / request a documentation improvement:
     - https://github.com/Griefed/ServerPackCreator/issues/new/choose
 - There's a Wiki available which goes into further detail for many of ServerPackCreators available aspects:
-    - https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help
+    - https://help.serverpackcreator.de/help-topic.html
 - The same as the Wiki, but as a file should you prefer it. 😊
     - [HELP.md](HELP.md)
 
