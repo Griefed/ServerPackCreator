@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.settings.components
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.settings.SettingsEditorsTab
 import kotlinx.coroutines.*
@@ -50,7 +50,7 @@ class SettingsCheckTimer(
             if (errors.isEmpty()) {
                 settingsEditor.title.hideErrorIcon()
             } else {
-                settingsEditor.title.setAndShowErrorIcon(Gui.settings_check_errors.toString())
+                settingsEditor.title.setAndShowErrorIcon(Translations.settings_check_errors.toString())
             }
             settingsEditor.settingsHandling.checkAll()
         }

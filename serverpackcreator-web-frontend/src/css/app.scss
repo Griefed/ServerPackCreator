@@ -1,0 +1,62 @@
+// app global css in SCSS form
+body {
+  background-image: url("assets/background.webp");
+  background-repeat: repeat;
+  background-attachment: fixed;
+}
+
+.tile-x {
+  background: url("assets/tile.webp") repeat-x;
+}
+
+.tile-y {
+  background: url("assets/tile.webp") repeat-y;
+}
+
+.tile-xy {
+  background: url("assets/tile.webp") repeat;
+}
+
+.tile2-x {
+  background: url("assets/tile2.webp") repeat-x;
+}
+
+.tile2-y {
+  background: url("assets/tile2.webp") repeat-y;
+}
+
+.tile2-xy {
+  background: url("assets/tile2.webp") repeat;
+}
+
+.sticky-header-table {  /* height or max-height is important */
+  .q-table__top,
+  .q-table__bottom,
+  thead tr:first-child th {    /* bg color is important for th; just specify one */
+    background-color: #f7f7f7;
+  }
+  thead tr th {
+    position: sticky;
+    z-index: 1;
+  }
+  thead tr:first-child th {
+    top: 0;
+  }
+  /* this is when the loading indicator appears */
+  &.q-table--loading thead tr:last-child th {    /* height of all previous header rows */
+    top: 48px;
+  }
+  /* prevent scrolling behind sticky top row on focus */
+  tbody {    /* height of all previous header rows */
+    scroll-margin-top: 48px;
+  }
+}
+
+.card-margins {
+  margin: 10px;
+}
+
+.force-wrap {
+  white-space: normal !important;
+  word-wrap: break-word;
+}

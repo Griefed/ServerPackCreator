@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.themes.ThemeManager
@@ -44,7 +44,7 @@ class MainFrame(
     migrationManager: MigrationManager,
     themeManager: ThemeManager
 ) {
-    val frame: JFrame = JFrame(Gui.createserverpack_gui_createandshowgui.toString())
+    val frame: JFrame = JFrame(Translations.createserverpack_gui_createandshowgui.toString())
     val mainPanel = MainPanel(guiProps, apiWrapper, guiProps.larsonScanner, this, themeManager)
     private val updateDialogs: UpdateDialogs
     private val menuBar: MainMenuBar

@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.BalloonTipButton
@@ -48,7 +48,7 @@ class MainMenuBar(
     themeManager: ThemeManager
 ) {
     val menuBar: JMenuBar = JMenuBar()
-    private val updateButton = BalloonTipButton(null, guiProps.updateAnimation, Gui.update_dialog_available.toString(), guiProps)
+    private val updateButton = BalloonTipButton(null, guiProps.updateAnimation, Translations.update_dialog_available.toString(), guiProps)
     private val file = FileMenu(mainFrame.mainPanel.tabbedConfigsTab,apiWrapper.apiProperties,mainFrame,apiWrapper.utilities, guiProps)
     private val edit = EditMenu(apiWrapper.apiProperties, guiProps,mainFrame,apiWrapper.fileUtilities,mainFrame.mainPanel.tabbedConfigsTab)
     private val view = ViewMenu(apiWrapper, themeManager)

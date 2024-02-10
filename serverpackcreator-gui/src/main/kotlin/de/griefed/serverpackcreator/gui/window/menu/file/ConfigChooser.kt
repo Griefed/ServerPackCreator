@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.file
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.gui.components.BaseFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
@@ -34,7 +34,7 @@ class ConfigChooser(apiProperties: ApiProperties, title: String) : BaseFileChoos
         currentDirectory = apiProperties.configsDirectory
         dialogTitle = title
         fileSelectionMode = FILES_ONLY
-        fileFilter = FileNameExtensionFilter(Gui.createserverpack_gui_buttonloadconfig_filter.toString(), "conf")
+        fileFilter = FileNameExtensionFilter(Translations.createserverpack_gui_buttonloadconfig_filter.toString(), "conf")
         isAcceptAllFileFilterUsed = false
         isMultiSelectionEnabled = true
     }

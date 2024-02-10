@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.logs
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.gui.components.TabPanel
 
@@ -30,7 +30,7 @@ import de.griefed.serverpackcreator.gui.components.TabPanel
  */
 class TabbedLogsTab(apiProperties: ApiProperties) : TabPanel() {
     init {
-        tabs.addTab(Gui.createserverpack_gui_tabbedpane_serverpackcreatorlog_title.toString(), ServerPackCreatorLog(apiProperties))
-        tabs.addTab(Gui.createserverpack_gui_tabbedpane_pluginshandlerlog_title.toString(), PluginsLog(apiProperties))
+        tabs.addTab(Translations.createserverpack_gui_tabbedpane_serverpackcreatorlog_title.toString(), ServerPackCreatorLog(apiProperties))
+        tabs.addTab(Translations.createserverpack_gui_tabbedpane_pluginshandlerlog_title.toString(), PluginsLog(apiProperties))
     }
 }

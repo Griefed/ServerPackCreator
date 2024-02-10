@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -236,9 +236,6 @@ actual class ServerPackHandler actual constructor(
         }
     }
 
-    /**
-     * @author Griefed
-     */
     fun getServerFiles(
         inclusion: InclusionSpecification,
         modpackDir: String,
@@ -340,9 +337,6 @@ actual class ServerPackHandler actual constructor(
         return serverPackFiles
     }
 
-    /**
-     * @author Griefed
-     */
     private fun runFilters(
         acquired: List<ServerPackFile>,
         inclusionSpec: InclusionSpecification,
@@ -519,7 +513,7 @@ actual class ServerPackHandler actual constructor(
         }
         log.info("Finished creation of zip archive.")
     }
-    
+
     override fun preInstallationCleanup(destination: String) {
         log.info("Pre server installation cleanup.")
         var fileToDelete: File
@@ -530,7 +524,7 @@ actual class ServerPackHandler actual constructor(
             }
         }
     }
-    
+
     override fun getExplicitFiles(
         source: String,
         destination: String,

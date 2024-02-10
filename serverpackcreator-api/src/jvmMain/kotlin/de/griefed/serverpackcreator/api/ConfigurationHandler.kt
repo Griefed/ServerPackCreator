@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.api
 
-import Api
+import Translations
 import com.fasterxml.jackson.databind.JsonNode
 import de.griefed.serverpackcreator.api.utilities.File
 import de.griefed.serverpackcreator.api.utilities.common.InvalidFileTypeException
@@ -32,7 +32,6 @@ import java.net.URI
 import java.nio.file.*
 import java.util.*
 import java.util.regex.PatternSyntaxException
-import kotlin.io.path.moveTo
 
 /**
  * Check any given [PackConfig] for errors and, if so desired, add them to a passed
@@ -84,7 +83,7 @@ actual class ConfigurationHandler(
             )
 
             // This log is meant to be read by the user, therefore we allow translation.
-            configCheck.configErrors.add(Api.configuration_log_error_checkconfig_start.toString())
+            configCheck.configErrors.add(Translations.configuration_log_error_checkconfig_start.toString())
             return configCheck
         }
     }
@@ -102,24 +101,24 @@ actual class ConfigurationHandler(
         }
 
         if (!checkIconAndProperties(packConfig.serverIconPath)) {
-            configCheck.serverIconErrors.add(Api.configuration_log_error_servericon(packConfig.serverIconPath))
+            configCheck.serverIconErrors.add(Translations.configuration_log_error_servericon(packConfig.serverIconPath))
             log.error("The specified server-icon does not exist: ${packConfig.serverIconPath}")
             // This log is meant to be read by the user, therefore we allow translation.
         } else if (packConfig.serverIconPath.isNotEmpty()
             && File(packConfig.serverIconPath).exists()
             && !utilities.fileUtilities.isReadPermissionSet(packConfig.serverIconPath)
         ) {
-            configCheck.serverIconErrors.add(Api.configuration_log_error_checkcopydirs_read(packConfig.serverIconPath))
+            configCheck.serverIconErrors.add(Translations.configuration_log_error_checkcopydirs_read(packConfig.serverIconPath))
             log.error("No read-permission for ${packConfig.serverIconPath}")
         }
         if (!checkIconAndProperties(packConfig.serverPropertiesPath)) {
-            configCheck.serverPropertiesErrors.add(Api.configuration_log_error_serverproperties(packConfig.serverPropertiesPath))
+            configCheck.serverPropertiesErrors.add(Translations.configuration_log_error_serverproperties(packConfig.serverPropertiesPath))
             log.error("The specified server.properties does not exist: ${packConfig.serverPropertiesPath}")
         } else if (packConfig.serverPropertiesPath.isNotEmpty()
             && File(packConfig.serverPropertiesPath).exists()
             && !utilities.fileUtilities.isReadPermissionSet(packConfig.serverPropertiesPath)
         ) {
-            configCheck.serverPropertiesErrors.add(Api.configuration_log_error_checkcopydirs_read(packConfig.serverPropertiesPath))
+            configCheck.serverPropertiesErrors.add(Translations.configuration_log_error_checkcopydirs_read(packConfig.serverPropertiesPath))
             log.error("No read-permission for ${packConfig.serverPropertiesPath}")
         }
 
@@ -134,11 +133,11 @@ actual class ConfigurationHandler(
                 log.error("An error occurred whilst working with the ZIP-archive.", ex)
             }
         } else {
-            configCheck.modpackErrors.add(Api.configuration_log_error_checkmodpackdir.toString())
+            configCheck.modpackErrors.add(Translations.configuration_log_error_checkmodpackdir.toString())
             log.error("Modpack directory not specified. Please specify an existing directory. Specified: ${packConfig.modpackDir}")
         }
 
-        if (!checkModloader(packConfig.modloader, configCheck).modloaderChecksPassed) {
+        if (checkModloader(packConfig.modloader, configCheck).modloaderChecksPassed) {
             log.debug("modLoader settings check passed.")
         } else {
             log.error("There's something wrong with your modloader or modloader version setting.")
@@ -152,7 +151,7 @@ actual class ConfigurationHandler(
         if (versionMeta.minecraft.isMinecraftVersionAvailable(packConfig.minecraftVersion)) {
             log.debug("minecraftversion settings check passed.")
         } else {
-            configCheck.minecraftVersionErrors.add(Api.configuration_log_error_minecraft.toString())
+            configCheck.minecraftVersionErrors.add(Translations.configuration_log_error_minecraft.toString())
             log.error("There's something wrong with your Minecraft version setting.")
         }
 
@@ -178,7 +177,7 @@ actual class ConfigurationHandler(
             && !modloader.lowercase().matches(quilt)
             && !modloader.lowercase().matches(legacyFabric)
         ) {
-            configCheck.modloaderErrors.add(Api.configuration_log_error_checkmodloader.toString())
+            configCheck.modloaderErrors.add(Translations.configuration_log_error_checkmodloader.toString())
             log.error("Invalid modloader specified. Modloader must be either Forge, Fabric or Quilt.")
         }
         return configCheck
@@ -254,7 +253,7 @@ actual class ConfigurationHandler(
             log.debug("copyDirs setting check passed.")
         } else {
             log.error("There's something wrong with your setting of directories to include in your server pack.")
-            configCheck.inclusionErrors.add(Api.configuration_log_error_isdir_copydir.toString())
+            configCheck.inclusionErrors.add(Translations.configuration_log_error_isdir_copydir.toString())
         }
         return configCheck
     }
@@ -264,16 +263,17 @@ actual class ConfigurationHandler(
         // modpackDir points at a ZIP-file. Get the path to the would be modpack directory.
         val name = File(packConfig.modpackDir).name
         val cleaned = name.replace(zipRegex, "")
-        var unzippedModpack = "${apiProperties.modpacksDirectory}${File.separator}$cleaned"
+        val unzippedModpack = "${apiProperties.modpacksDirectory}${File.separator}$cleaned"
         if (!checkZipArchive(Paths.get(packConfig.modpackDir).toAbsolutePath().toString(), configCheck).modpackChecksPassed) {
             return configCheck
         }
 
         // Does the modpack extracted from the ZIP-archive already exist?
-        unzippedModpack = unzipDestination(unzippedModpack)
+        //unzippedModpack = unzipDestination(unzippedModpack)
 
         // Extract the archive to the modpack directory.
         utilities.fileUtilities.unzipArchive(packConfig.modpackDir, unzippedModpack)
+        packConfig.modpackDir = unzippedModpack
 
         // Expand the already set copyDirs with suggestions from extracted ZIP-archive.
         val newCopyDirs = suggestInclusions(unzippedModpack)
@@ -291,7 +291,7 @@ actual class ConfigurationHandler(
 
         var packName = checkManifests(unzippedModpack, packConfig, configCheck)
         if (configCheck.modpackErrors.size > amountOfErrors) {
-            configCheck.modpackErrors.add(Api.configuration_log_error_zip_manifests.toString())
+            configCheck.modpackErrors.add(Translations.configuration_log_error_zip_manifests.toString())
         }
 
         // If no json was read from the modpack, we must sadly use the ZIP-files name as the new
@@ -300,23 +300,6 @@ actual class ConfigurationHandler(
             packName = unzippedModpack
         }
         packName = File(utilities.stringUtilities.pathSecureTextAlternative(packName)).path
-
-        // Get the path to the would-be-server-pack with the new destination.
-        var createServerPackFrom = File(
-            apiProperties.serverPacksDirectory, File(packName!!).name + packConfig.serverPackSuffix
-        ).absolutePath
-
-        // Check whether a server pack for the new destination already exists.
-        // If it does, we need to change it to avoid overwriting any existing files.
-        createServerPackFrom = checkServerPacksForIncrement(unzippedModpack, createServerPackFrom)
-
-        // Finally, move to new destination to avoid overwriting of server pack
-        if (!File(unzippedModpack).name.equals(File(createServerPackFrom).name)) {
-            File(unzippedModpack).toPath().moveTo(File(createServerPackFrom).toPath(), overwrite = true)
-        }
-
-        // Last but not least, use the newly acquired packname as the modpack directory.
-        packConfig.modpackDir = createServerPackFrom
 
         // Does the modpack contain a server-icon or server.properties? If so, include
         // them in the server pack.
@@ -337,7 +320,7 @@ actual class ConfigurationHandler(
         when (modloader) {
             "Forge" -> if (!versionMeta.forge.isForgeAndMinecraftCombinationValid(minecraftVersion, modloaderVersion)) {
                 configCheck.modloaderVersionErrors.add(
-                    Api.configuration_log_error_checkmodloaderandversion(
+                    Translations.configuration_log_error_checkmodloaderandversion(
                         minecraftVersion, modloader, modloaderVersion
                     )
                 )
@@ -345,7 +328,7 @@ actual class ConfigurationHandler(
 
             "NeoForge" -> if (!versionMeta.neoForge.isNeoForgeAndMinecraftCombinationValid(minecraftVersion,modloaderVersion)) {
                 configCheck.modloaderVersionErrors.add(
-                    Api.configuration_log_error_checkmodloaderandversion(
+                    Translations.configuration_log_error_checkmodloaderandversion(
                         minecraftVersion, modloader, modloaderVersion
                     )
                 )
@@ -354,7 +337,7 @@ actual class ConfigurationHandler(
             "Fabric" -> if (!versionMeta.fabric.isVersionValid(modloaderVersion)
                 || !versionMeta.fabric.getLoaderDetails(minecraftVersion,modloaderVersion).isPresent) {
                 configCheck.modloaderVersionErrors.add(
-                    Api.configuration_log_error_checkmodloaderandversion(
+                    Translations.configuration_log_error_checkmodloaderandversion(
                         minecraftVersion, modloader, modloaderVersion
                     )
                 )
@@ -363,7 +346,7 @@ actual class ConfigurationHandler(
             "Quilt" -> if (!versionMeta.quilt.isVersionValid(modloaderVersion)
                 || !versionMeta.fabric.isMinecraftSupported(minecraftVersion)) {
                 configCheck.modloaderVersionErrors.add(
-                    Api.configuration_log_error_checkmodloaderandversion(
+                    Translations.configuration_log_error_checkmodloaderandversion(
                         minecraftVersion, modloader, modloaderVersion
                     )
                 )
@@ -372,7 +355,7 @@ actual class ConfigurationHandler(
             "LegacyFabric" -> if (!versionMeta.legacyFabric.isVersionValid(modloaderVersion)
                 || !versionMeta.legacyFabric.isMinecraftSupported(minecraftVersion)) {
                 configCheck.modloaderVersionErrors.add(
-                    Api.configuration_log_error_checkmodloaderandversion(
+                    Translations.configuration_log_error_checkmodloaderandversion(
                         minecraftVersion, modloader, modloaderVersion
                     )
                 )
@@ -418,7 +401,7 @@ actual class ConfigurationHandler(
             if (printLog) {
                 log.error("No directories or files specified for copying. This would result in an empty server pack.")
             }
-            configCheck.inclusionErrors.add(Api.configuration_log_error_checkcopydirs_empty.toString())
+            configCheck.inclusionErrors.add(Translations.configuration_log_error_checkcopydirs_empty.toString())
         } else if (inclusions.size == 1 && hasLazy) {
             if (printLog) {
                 log.warn(
@@ -454,20 +437,20 @@ actual class ConfigurationHandler(
                     if (printLog) {
                         log.error("Source ${inclusion.source} does not exist. Please specify existing files.")
                     }
-                    configCheck.inclusionErrors.add(Api.configuration_log_error_checkcopydirs_filenotfound(inclusion.source))
+                    configCheck.inclusionErrors.add(Translations.configuration_log_error_checkcopydirs_filenotfound(inclusion.source))
                 }
                 if (inclusion.hasDestination()
                     && !utilities.stringUtilities.checkForInvalidPathCharacters(inclusion.destination!!)) {
                     log.warn("Invalid destination specified: ${inclusion.destination}.")
                     inclusion.destination = null
-                    configCheck.inclusionErrors.add(Api.configuration_log_error_checkcopydirs_destination(inclusion.source))
+                    configCheck.inclusionErrors.add(Translations.configuration_log_error_checkcopydirs_destination(inclusion.source))
                 }
                 if (inclusion.hasInclusionFilter()) {
                     try {
                         inclusion.inclusionFilter!!.toRegex()
                     } catch (ex: PatternSyntaxException) {
                         log.error("Invalid inclusion-regex specified: ${inclusion.inclusionFilter}.", ex)
-                        configCheck.inclusionErrors.add(Api.configuration_log_error_checkcopydirs_inclusion(inclusion.inclusionFilter ?: ""))
+                        configCheck.inclusionErrors.add(Translations.configuration_log_error_checkcopydirs_inclusion(inclusion.inclusionFilter ?: ""))
                     }
                 }
                 if (inclusion.hasExclusionFilter()) {
@@ -475,7 +458,7 @@ actual class ConfigurationHandler(
                         inclusion.exclusionFilter!!.toRegex()
                     } catch (ex: PatternSyntaxException) {
                         log.error("Invalid exclusion-regex specified: ${inclusion.exclusionFilter}.", ex)
-                        configCheck.inclusionErrors.add(Api.configuration_log_error_checkcopydirs_inclusion(inclusion.exclusionFilter ?: ""))
+                        configCheck.inclusionErrors.add(Translations.configuration_log_error_checkcopydirs_inclusion(inclusion.exclusionFilter ?: ""))
                     }
                 }
             }
@@ -508,7 +491,7 @@ actual class ConfigurationHandler(
                 )
 
                 // This log is meant to be read by the user, therefore we allow translation.
-                configCheck.modpackErrors.add(Api.configuration_log_error_zip_overrides(foldersInModpackZip[0]))
+                configCheck.modpackErrors.add(Translations.configuration_log_error_zip_overrides(foldersInModpackZip[0]))
                 return configCheck
 
                 // If the ZIP-file does not contain the mods or config directories, consider it invalid.
@@ -518,14 +501,14 @@ actual class ConfigurationHandler(
                 )
 
                 // This log is meant to be read by the user, therefore we allow translation.
-                configCheck.modpackErrors.add(Api.configuration_log_error_zip_modsorconfig.toString())
+                configCheck.modpackErrors.add(Translations.configuration_log_error_zip_modsorconfig.toString())
                 return configCheck
             }
         } catch (ex: IOException) {
             log.error("Couldn't acquire directories in ZIP-file.", ex)
 
             // This log is meant to be read by the user, therefore we allow translation.
-            configCheck.modpackErrors.add(Api.configuration_log_error_zip_directories.toString())
+            configCheck.modpackErrors.add(Translations.configuration_log_error_zip_directories.toString())
             return configCheck
         }
         return configCheck
@@ -568,7 +551,10 @@ actual class ConfigurationHandler(
             doNotInclude = apiProperties.directoriesToExclude.toList()[i]
             dirsInModpack.removeIf { it.source == doNotInclude }
         }
-        log.info("Modpack directory checked. Suggested directories for copyDirs-setting are: $dirsInModpack")
+        log.info("Modpack directory checked. Suggested directories for copyDirs-setting are:")
+        for (inclusion in dirsInModpack) {
+            log.info("    ${inclusion.source}")
+        }
         return dirsInModpack
     }
 
@@ -589,7 +575,7 @@ actual class ConfigurationHandler(
                     packName = updatePackName(packConfig, "name")
                 } catch (ex: IOException) {
                     log.error("Error parsing minecraftinstance.json from ZIP-file.", ex)
-                    configCheck.modpackErrors.add(Api.configuration_log_error_zip_instance.toString())
+                    configCheck.modpackErrors.add(Translations.configuration_log_error_zip_instance.toString())
                 }
             }
 
@@ -600,7 +586,7 @@ actual class ConfigurationHandler(
                     packName = updatePackName(packConfig, "launcher", "name")
                 } catch (ex: IOException) {
                     log.error("Error parsing config.json from ZIP-file.", ex)
-                    configCheck.modpackErrors.add(Api.configuration_log_error_zip_config.toString())
+                    configCheck.modpackErrors.add(Translations.configuration_log_error_zip_config.toString())
                 }
             }
 
@@ -610,7 +596,7 @@ actual class ConfigurationHandler(
                     packName = updatePackName(packConfig, "name")
                 } catch (ex: IOException) {
                     log.error("Error parsing CurseForge manifest.json from ZIP-file.", ex)
-                    configCheck.modpackErrors.add(Api.configuration_log_error_zip_manifest.toString())
+                    configCheck.modpackErrors.add(Translations.configuration_log_error_zip_manifest.toString())
                 }
             }
 
@@ -621,7 +607,7 @@ actual class ConfigurationHandler(
                     packName = updatePackName(packConfig, "name")
                 } catch (ex: IOException) {
                     log.error("Error parsing modrinth.index.json from ZIP-file.", ex)
-                    configCheck.modpackErrors.add(Api.configuration_log_error_zip_config.toString())
+                    configCheck.modpackErrors.add(Translations.configuration_log_error_zip_config.toString())
                 }
             }
 
@@ -632,7 +618,7 @@ actual class ConfigurationHandler(
                     packName = updatePackName(packConfig, "loader", "sourceName")
                 } catch (ex: IOException) {
                     log.error("Error parsing config.json from ZIP-file.", ex)
-                    configCheck.modpackErrors.add(Api.configuration_log_error_zip_config.toString())
+                    configCheck.modpackErrors.add(Translations.configuration_log_error_zip_config.toString())
                 }
             }
 
@@ -642,7 +628,7 @@ actual class ConfigurationHandler(
                     updateConfigModelFromMMCPack(packConfig, mmcPackJson)
                 } catch (ex: IOException) {
                     log.error("Error parsing mmc-pack.json from ZIP-file.", ex)
-                    configCheck.modpackErrors.add(Api.configuration_log_error_zip_mmcpack.toString())
+                    configCheck.modpackErrors.add(Translations.configuration_log_error_zip_mmcpack.toString())
                 }
                 try {
                     if (instanceCfg.exists()) {
@@ -914,12 +900,12 @@ actual class ConfigurationHandler(
             if (printLog) {
                 log.error("Modpack directory not specified. Please specify an existing directory.")
             }
-            configCheck.modpackErrors.add(Api.configuration_log_error_checkmodpackdir.toString())
+            configCheck.modpackErrors.add(Translations.configuration_log_error_checkmodpackdir.toString())
         } else if (!File(modpackDir).exists()) {
             if (printLog) {
                 log.warn("Couldn't find directory $modpackDir.")
             }
-            configCheck.modpackErrors.add(Api.configuration_log_error_modpackdirectory(modpackDir))
+            configCheck.modpackErrors.add(Translations.configuration_log_error_modpackdirectory(modpackDir))
         }
         return configCheck
     }

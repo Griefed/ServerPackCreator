@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.view
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
 import de.griefed.serverpackcreator.gui.themes.ThemeManager
 import javax.swing.JMenuItem
@@ -32,7 +32,7 @@ import javax.swing.JMenuItem
 class ThemesDirItem(
     fileUtilities: FileUtilities,
     themeManager: ThemeManager
-) : JMenuItem(Gui.menubar_gui_menuitem_themesdir.toString()) {
+) : JMenuItem(Translations.menubar_gui_menuitem_themesdir.toString()) {
     init {
         this.addActionListener { fileUtilities.openFolder(themeManager.themesDir) }
     }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -199,9 +199,6 @@ class LoggingConfig : ConfigurationFactory() {
         return CustomXmlConfiguration(loggerContext, source)
     }
 
-    /**
-     * @author Griefed
-     */
     private fun getXmlConfig(sourceFile: File, loggerContext: LoggerContext): CustomXmlConfiguration {
         val configSource: ConfigurationSource
         val stream = sourceFile.inputStream()

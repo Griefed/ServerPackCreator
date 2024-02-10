@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.settings
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.BalloonTipButton
@@ -46,10 +46,10 @@ class SettingsHandling(
 ) {
     val panel = JPanel()
     private val load =
-        BalloonTipButton(Gui.settings_handle_load_label.toString(), guiProps.loadIcon, Gui.settings_handle_load_tooltip.toString(), guiProps) { load() }
+        BalloonTipButton(Translations.settings_handle_load_label.toString(), guiProps.loadIcon, Translations.settings_handle_load_tooltip.toString(), guiProps) { load() }
     private val save =
-        BalloonTipButton(Gui.settings_handle_save_label.toString(), guiProps.saveIcon, Gui.settings_handle_save_tooltip.toString(), guiProps) { save() }
-    private val lastActionLabel = JLabel(Gui.settings_handle_idle.toString())
+        BalloonTipButton(Translations.settings_handle_save_label.toString(), guiProps.saveIcon, Translations.settings_handle_save_tooltip.toString(), guiProps) { save() }
+    private val lastActionLabel = JLabel(Translations.settings_handle_idle.toString())
 
     private var lastAction: String
         set(value) {
@@ -70,47 +70,35 @@ class SettingsHandling(
         panel.add(lastActionLabel, "cell 3 0, grow, height 30!")
     }
 
-    /**
-     * @author Griefed
-     */
     private fun currentTime(): String {
         val format = SimpleDateFormat("HH:mm")
         return format.format(Date())
     }
 
-    /**
-     * @author Griefed
-     */
     fun save() {
         for (tab in settingsEditorsTab.allTabs) {
             (tab as Editor).saveSettings()
         }
         apiProperties.saveProperties(apiProperties.serverPackCreatorPropertiesFile)
         apiProperties.saveOverrides()
-        lastAction = Gui.settings_handle_saved(currentTime())
+        lastAction = Translations.settings_handle_saved(currentTime())
         checkAll()
-        controlPanel.updateStatus(Gui.settings_info_saved(apiProperties.serverPackCreatorPropertiesFile.absolutePath))
+        controlPanel.updateStatus(Translations.settings_info_saved(apiProperties.serverPackCreatorPropertiesFile.absolutePath))
     }
 
-    /**
-     * @author Griefed
-     */
     fun load() {
-        val propertiesChooser = PropertiesChooser(apiProperties, Gui.settings_handle_chooser.toString())
+        val propertiesChooser = PropertiesChooser(apiProperties, Translations.settings_handle_chooser.toString())
         if (propertiesChooser.showOpenDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             apiProperties.loadProperties(propertiesChooser.selectedFile, false)
             for (tab in settingsEditorsTab.allTabs) {
                 (tab as Editor).loadSettings()
             }
-            lastAction = Gui.settings_handle_loaded(currentTime())
-            controlPanel.updateStatus(Gui.settings_info_loaded(propertiesChooser.selectedFile.absolutePath))
+            lastAction = Translations.settings_handle_loaded(currentTime())
+            controlPanel.updateStatus(Translations.settings_info_loaded(propertiesChooser.selectedFile.absolutePath))
         }
         checkAll()
     }
 
-    /**
-     * @author Griefed
-     */
     fun checkAll() {
         val changes = settingsEditorsTab.allTabs.any {
             (it as Editor).hasUnsavedChanges()

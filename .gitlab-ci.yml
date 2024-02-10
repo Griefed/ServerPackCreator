@@ -84,23 +84,22 @@ Build Test:
         - serverpackcreator-web-frontend/node
         - serverpackcreator-web-frontend/dist
 
-# TODO reactivate with milestone 6
-#Docker Test:
-#  stage: Tests
-#  image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.1
-#  needs:
-#    - job: Build Test
-#      artifacts: true
-#      optional: false
-#  before_script:
-#    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-#    - docker buildx create --use --name grfdbuilder
-#  script:
-#    - docker buildx build --no-cache --platform linux/amd64,linux/arm/v7,linux/arm64
-#      --file Dockerfile .
-#  retry: 1
-#  rules:
-#    - if: '$CI_SERVER_HOST == "git.griefed.de"' # Remove once GitLab no longer throws javax.net.ssl.SSLHandshakeException: Remote host terminated the handshake
+Docker Test:
+  stage: Tests
+  image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.17
+  before_script:
+    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
+    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - docker buildx create --use --name grfdbuilder
+  script:
+    - docker buildx build --push --no-cache --platform linux/amd64
+      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_SHORT_SHA"
+      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_SHORT_SHA"
+      --file Dockerfile .
+  retry: 1
+  rules:
+    - if: '$CI_SERVER_HOST == "git.griefed.de"' # Remove once GitLab no longer throws javax.net.ssl.SSLHandshakeException: Remote host terminated the handshake
 
 Generate Release:
   stage: Release
@@ -332,51 +331,124 @@ Publish OSSRH:
         - serverpackcreator-web-frontend/node
         - serverpackcreator-web-frontend/dist
 
-# TODO reactivate with milestone 6
-#Build Docker Release:
-#  stage: Build Release
-#  image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.1
-#  needs:
-#    - job: Build Test
-#      artifacts: true
-#      optional: false
-#  before_script:
-#    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-#    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
-#    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-#    - docker buildx create --use --name grfdbuilder
-#  script:
-#    - docker buildx build --push --no-cache --platform linux/amd64,linux/arm/v7,linux/arm64
-#      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
-#      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:latest"
-#      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
-#      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:latest"
-#      --build-arg VERSION=$CI_COMMIT_TAG
-#      --file Dockerfile .
-#  rules:
-#    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+Build Docker Release:
+  stage: Build Release
+  image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.17
+  needs:
+    - job: Build Test
+      artifacts: true
+      optional: false
+  before_script:
+    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
+    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - docker buildx create --use --name grfdbuilder
+  script:
+    - docker buildx build --push --no-cache --platform linux/amd64
+      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
+      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:latest"
+      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
+      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:latest"
+      --build-arg VERSION=$CI_COMMIT_TAG
+      --file Dockerfile .
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
-# TODO reactivate with milestone 6
-#Build Docker PreRelease:
-#  stage: Build Release
-#  image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.1
-#  needs:
-#    - job: Build Test
-#      artifacts: true
-#      optional: false
-#  before_script:
-#    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-#    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
-#    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-#    - docker buildx create --use --name grfdbuilder
-#  script:
-#    - docker buildx build --push --no-cache --platform linux/amd64,linux/arm/v7,linux/arm64
-#      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
-#      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
-#      --build-arg VERSION=$CI_COMMIT_TAG
-#      --file Dockerfile .
-#  rules:
-#    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+Build Docker PreRelease:
+  stage: Build Release
+  image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.17
+  needs:
+    - job: Build Test
+      artifacts: true
+      optional: false
+  before_script:
+    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
+    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - docker buildx create --use --name grfdbuilder
+  script:
+    - docker buildx build --push --no-cache --platform linux/amd64
+      --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
+      --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
+      --build-arg VERSION=$CI_COMMIT_TAG
+      --file Dockerfile .
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+
+Writerside Build:
+  stage: Documentation
+  image: registry.jetbrains.team/p/writerside/builder/writerside-builder:233.14389
+  variables:
+    ARTIFACT: webHelpSPCH2-all.zip
+    INSTANCE: Writerside/spch
+  script:
+    - cp -rf CHANGELOG.md       serverpackcreator-help/Writerside/topics/CHANGELOG.md
+    - cp -rf CODE_OF_CONDUCT.md serverpackcreator-help/Writerside/topics/CODE_OF_CONDUCT.md
+    - cp -rf CONTRIBUTING.md    serverpackcreator-help/Writerside/topics/CONTRIBUTING.md
+    - cp -rf HELP.md            serverpackcreator-help/Writerside/topics/HELP.md
+    - cp -rf LICENSE            serverpackcreator-help/Writerside/topics/LICENSE.md
+    - cp -rf README.md          serverpackcreator-help/Writerside/topics/README.md
+    - cp -rf SECURITY.md        serverpackcreator-help/Writerside/topics/SECURITY.md
+    - rm -f /tmp/.X99-lock || true
+    - set -e
+    - export DISPLAY=:99
+    - Xvfb :99 &
+    - /opt/builder/bin/idea.sh helpbuilderinspect -source-dir serverpackcreator-help -product $INSTANCE --runner gitlab -output-dir public/ || true
+    - echo "Test existing of $ARTIFACT artifact"
+    - test -e public/$ARTIFACT
+  artifacts:
+    paths:
+      - public/$ARTIFACT
+      - public/report.json
+    expire_in: 1 week
+  rules:
+    - if: '$CI_SERVER_HOST == "git.griefed.de"'
+
+Writerside Docker:
+  stage: Documentation
+  image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.17
+  needs:
+    - job: Writerside Build
+      artifacts: true
+      optional: false
+  before_script:
+    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
+    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - docker buildx create --use --name grfdbuilder
+  script:
+    - docker buildx build --push --no-cache --platform linux/amd64
+      --tag "ghcr.io/$DOCKERHUB_USER/serverpackcreator-help:$CI_COMMIT_SHORT_SHA"
+      --tag "index.docker.io/$DOCKERHUB_USER/serverpackcreator-help:$CI_COMMIT_SHORT_SHA"
+      --build-arg VERSION=$CI_COMMIT_SHORT_SHA
+      --file Dockerfile.help .
+  rules:
+    - if: '$CI_COMMIT_TAG !~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+    - if: '$CI_COMMIT_TAG !~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+
+Writerside Docker Latest:
+  stage: Documentation
+  image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.17
+  needs:
+    - job: Writerside Build
+      artifacts: true
+      optional: false
+  before_script:
+    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
+    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - docker buildx create --use --name grfdbuilder
+  script:
+    - docker buildx build --push --no-cache --platform linux/amd64
+      --tag "ghcr.io/$DOCKERHUB_USER/serverpackcreator-help:$CI_COMMIT_TAG"
+      --tag "ghcr.io/$DOCKERHUB_USER/serverpackcreator-help:latest"
+      --tag "index.docker.io/$DOCKERHUB_USER/serverpackcreator-help:$CI_COMMIT_TAG"
+      --tag "index.docker.io/$DOCKERHUB_USER/serverpackcreator-help:latest"
+      --build-arg VERSION=$CI_COMMIT_TAG
+      --file Dockerfile.help .
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
 pages:
   stage: Documentation

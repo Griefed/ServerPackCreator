@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.about
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
 import java.net.URI
 import javax.swing.JMenuItem
@@ -29,8 +29,8 @@ import javax.swing.JMenuItem
  *
  * @author Griefed
  */
-class WikiHelpItem(private val webUtilities: WebUtilities) : JMenuItem(Gui.menubar_gui_menuitem_wiki_help.toString()) {
-    private val help = URI.create("https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help")
+class WikiHelpItem(private val webUtilities: WebUtilities) : JMenuItem(Translations.menubar_gui_menuitem_wiki_help.toString()) {
+    private val help = URI.create("https://help.serverpackcreator.de/help-topic.html")
 
     init {
         this.addActionListener { openHelp() }

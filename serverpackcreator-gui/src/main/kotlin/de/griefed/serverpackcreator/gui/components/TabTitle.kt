@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.components
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.gui.GuiProps
 import java.awt.FlowLayout
 import javax.swing.BorderFactory
@@ -33,7 +33,7 @@ open class TabTitle(guiProps: GuiProps) : JPanel(FlowLayout(FlowLayout.LEFT, 0, 
 
     private val errorIconLabel = JLabel(guiProps.smallErrorIcon)
     private val warningIconLabel = JLabel(guiProps.smallWarningIcon)
-    private val titleLabel = JLabel(Gui.createserverpack_gui_title_new.toString())
+    private val titleLabel = JLabel(Translations.createserverpack_gui_title_new.toString())
 
     var hasUnsavedChanges: Boolean = false
         get() {
@@ -58,7 +58,7 @@ open class TabTitle(guiProps: GuiProps) : JPanel(FlowLayout(FlowLayout.LEFT, 0, 
         titleLabel.border = BorderFactory.createEmptyBorder(0, 0, 0, 5)
         warningIconLabel.border = BorderFactory.createEmptyBorder(0, 0, 0, 5)
         errorIconLabel.border = BorderFactory.createEmptyBorder(0, 0, 0, 5)
-        warningIconLabel.toolTipText = Gui.configuration_title_warning.toString()
+        warningIconLabel.toolTipText = Translations.configuration_title_warning.toString()
         errorIconLabel.isVisible = false
         warningIconLabel.isVisible = false
         this.add(errorIconLabel)
@@ -72,7 +72,7 @@ open class TabTitle(guiProps: GuiProps) : JPanel(FlowLayout(FlowLayout.LEFT, 0, 
      *
      * @author Griefed
      */
-    fun setAndShowErrorIcon(tooltip: String = Gui.configuration_title_error.toString()) {
+    fun setAndShowErrorIcon(tooltip: String = Translations.configuration_title_error.toString()) {
         errorIconLabel.isVisible = true
         errorIconLabel.toolTipText = tooltip
     }

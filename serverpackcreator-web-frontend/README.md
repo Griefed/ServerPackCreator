@@ -1,37 +1,45 @@
-# ServerPackCreator frontend
+# ServerPackCreator Web Frontend (serverpackcreator-web-frontend)
 
-[[_TOC_]]
+Frontend for the webservice of ServerPackCreator
 
 ## Resources used
 * [Quasar Framework](https://quasar.dev/)
 * [Vue.js](https://vuejs.org/)
 
-## Installation, Testing, Building
-
-### Install Quasar
-
-```shell
-npm install -g @quasar/cli
-```
-
-### Install the dependencies
-
-```shell
-cd frontend
+## Install the dependencies
+```bash
+yarn
+# or
 npm install
 ```
 
-If the installation of node-sass fails, try `npm install node-sass@6.0.0 --ignore-scripts`
-
-### Start development mode
-
-```shell
+### Start the app in development mode (hot-code reloading, error reporting, etc.)
+```bash
 quasar dev
 ```
 
 
-### Build the application
+### Lint the files
+```bash
+yarn lint
+# or
+npm run lint
+```
 
-```shell
+
+### Format the files
+```bash
+yarn format
+# or
+npm run format
+```
+
+
+
+### Build the app for production
+```bash
 quasar build
 ```
+
+### Customize the configuration
+See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).

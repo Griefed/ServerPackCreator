@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.file
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
 import de.griefed.serverpackcreator.gui.GuiProps
@@ -38,7 +38,7 @@ class ConfigToHasteBinItem(
     private val webUtilities: WebUtilities,
     guiProps: GuiProps,
     mainFrame: JFrame
-) : HasteBinMenuItem(Gui.menubar_gui_menuitem_uploadconfig.toString(), mainFrame, guiProps, webUtilities) {
+) : HasteBinMenuItem(Translations.menubar_gui_menuitem_uploadconfig.toString(), mainFrame, guiProps, webUtilities) {
     private val configWindowTextPane: JTextPane = JTextPane()
 
     init {
@@ -51,7 +51,7 @@ class ConfigToHasteBinItem(
      */
     private fun uploadConfig() {
         if (tabbedConfigsTabs.selectedEditor == null || tabbedConfigsTabs.selectedEditor!!.configFile == null) {
-            errorDialog(Gui.menubar_gui_noconfig_message.toString(), Gui.menubar_gui_noconfig_title.toString())
+            errorDialog(Translations.menubar_gui_noconfig_message.toString(), Translations.menubar_gui_noconfig_title.toString())
             return
         }
         if (webUtilities.hasteBinPreChecks(tabbedConfigsTabs.selectedEditor!!.configFile!!)) {
@@ -61,7 +61,7 @@ class ConfigToHasteBinItem(
             configWindowTextPane.text = textContent
             displayUploadUrl(urlToHasteBin, configWindowTextPane)
         } else {
-            errorDialog(Gui.menubar_gui_filetoolarge.toString(), Gui.menubar_gui_filetoolargetitle.toString())
+            errorDialog(Translations.menubar_gui_filetoolarge.toString(), Translations.menubar_gui_filetoolargetitle.toString())
         }
     }
 }

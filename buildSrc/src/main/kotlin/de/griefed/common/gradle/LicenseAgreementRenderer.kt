@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,7 @@ import com.github.jk1.license.render.ReportRenderer
 import com.github.jk1.license.util.Files
 import org.gradle.api.Project
 import java.io.File
+import java.net.URI
 import java.net.URL
 
 /**
@@ -140,7 +141,7 @@ class LicenseAgreementRenderer(private val fileName: String = "LICENSE-AGREEMENT
                 text = append(text,"URL: ${license.url}\n\n")
                 if (!license.url.isNullOrBlank() && license.url.endsWith(".txt",ignoreCase = true) && Files.maybeLicenseUrl(license.url)) {
                     try {
-                        text = append(text, URL(license.url).readText() + "\n")
+                        text = append(text, URI(license.url).toURL().readText() + "\n")
                     } catch (_: Exception) {}
                 }
             }

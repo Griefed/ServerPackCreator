@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,6 @@ import com.electronwill.nightconfig.toml.TomlParser
 import com.fasterxml.jackson.core.json.JsonReadFeature
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
-import de.comahe.i18n4k.Locale
 import de.griefed.serverpackcreator.api.modscanning.*
 import de.griefed.serverpackcreator.api.utilities.common.*
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
@@ -44,7 +43,6 @@ import javax.xml.parsers.ParserConfigurationException
  */
 actual class ApiWrapper private constructor(
     val properties: File = File("serverpackcreator.properties"),
-    val language: Locale = Locale("en_GB"),
     runSetup: Boolean = true
 ) : Api<File>() {
 
@@ -320,7 +318,6 @@ actual class ApiWrapper private constructor(
     actual val tomlScanner: TomlScanner = TomlScanner(tomlParser)
 
     init {
-        apiProperties.changeLocale(language)
         if (runSetup) {
             setup()
         }
@@ -334,7 +331,7 @@ actual class ApiWrapper private constructor(
          * Acquire a new instance of the ServerPackCreator API.
          *
          * @param properties A ServerPackCreator properties-file to use for API initialization. This files may contain
-         * configurations for the home-directory and many other settings. For details, see the [Wiki](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help#serverpackcreatorproperties).
+         * configurations for the home-directory and many other settings. For details, see the [Wiki](https://help.serverpackcreator.de/settings-and-configs.html).
          * @param language The language with which to initialize the localization. Format: `en_gb` or `de_de`
          * @param runSetup Whether to run the initial setup, creating and copying all required files to the filesystem and
          * ensuring the home-directory is properly set up and available to the API.
@@ -343,13 +340,12 @@ actual class ApiWrapper private constructor(
         @Synchronized
         fun api(
             properties: File = File("serverpackcreator.properties"),
-            language: Locale = Locale("en_GB"),
             runSetup: Boolean = true
         ): ApiWrapper {
             if (api == null) {
                 synchronized(this) {
                     if (api == null) {
-                        api = ApiWrapper(properties, language, runSetup)
+                        api = ApiWrapper(properties, runSetup)
                     }
                 }
             }
@@ -357,9 +353,6 @@ actual class ApiWrapper private constructor(
         }
     }
 
-    /**
-     * @author Griefed
-     */
     @Synchronized
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     override fun setup(force: Boolean): ApiWrapper {
@@ -464,18 +457,12 @@ actual class ApiWrapper private constructor(
         log.info("Include this information when reporting an issue on GitHub.")
     }
 
-    /**
-     * @author Griefed
-     */
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     override fun stageTwo() {
         versionMeta
         configurationHandler
     }
 
-    /**
-     * @author Griefed
-     */
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     override fun stageThree() {
         apiPlugins

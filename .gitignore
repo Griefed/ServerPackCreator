@@ -348,6 +348,13 @@ yarn.lock
 /.gradle
 
 ### ServerPackCreator ###
+/configs
+/logs
+/modpacks
+/plugins
+/server-packs
+/server_files
+/work
 
 # ServerPackCreator Web
 serverpackcreator-web/src/main/resources/static
@@ -358,6 +365,7 @@ serverpackcreator-web-frontend/dist/
 serverpackcreator-web-frontend/node_modules/
 serverpackcreator-web-frontend/node/
 serverpackcreator-web/serverpackcreator.db
+docker-compose-dev.yml
 
 # ServerPackCreator App
 serverpackcreator-app/tests/*
@@ -376,3 +384,4 @@ serverpackcreator-api/src/jvmTest/resources/quilt_tests_copy/
 serverpackcreator-api/src/jvmTest/resources/fabric_tests_server_pack.zip
 serverpackcreator-api/src/jvmTest/resources/forge_tests_server_pack.zip
 serverpackcreator-api/src/jvmTest/resources/quilt_tests_server_pack.zip
+
