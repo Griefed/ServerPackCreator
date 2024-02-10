@@ -376,14 +376,14 @@ Build Docker PreRelease:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
 Writerside Build:
-  stage: Build Release
+  stage: Documentation
   image: registry.jetbrains.team/p/writerside/builder/writerside-builder:233.14389
   variables:
     ARTIFACT: webHelpSPCH2-all.zip
     INSTANCE: Writerside/spch
   script:
     - cp -rf CHANGELOG.md       serverpackcreator-help/Writerside/topics/CHANGELOG.md
-    - cp -rf CODE_OF_CONDUCT.md serverpackcreator-help/Writerside/CODE_OF_CONDUCT/README.md
+    - cp -rf CODE_OF_CONDUCT.md serverpackcreator-help/Writerside/topics/CODE_OF_CONDUCT.md
     - cp -rf CONTRIBUTING.md    serverpackcreator-help/Writerside/topics/CONTRIBUTING.md
     - cp -rf HELP.md            serverpackcreator-help/Writerside/topics/HELP.md
     - cp -rf LICENSE            serverpackcreator-help/Writerside/topics/LICENSE.md
@@ -404,7 +404,7 @@ Writerside Build:
     - if: '$CI_SERVER_HOST == "git.griefed.de"'
 
 Writerside Docker:
-  stage: Build Release
+  stage: Documentation
   image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.17
   needs:
     - job: Writerside Build
