@@ -34,7 +34,7 @@ test something, or just release a new server pack for the new modpack version.
 The thought "*There must be a way to automate this, or at least make it less tedious...*" was the spark which sent me off
 into the world of programming. And here we are.
 
-##### Disclaimer:
+**Disclaimer:**
 
 * ServerPackCreator is not a guarantee for working server packs. It helps you create them, but you **must still test them**!
 * You are still expected to be knowledgeable about your modpack, server packs in general, server administration and managing your Java installations. ServerPackCreator is not intended to take all the work off your shoulders!
@@ -45,14 +45,14 @@ into the world of programming. And here we are.
 * I will not be held responsible for errors in your server pack in general. **Test your server packs before you ship them!**
 * **TL;DR:** Don't use test to ship to prod! **Test** before shipping!
 
-##### Pre-Releases:
+**Pre-Releases:**
 
 There are two kinds of pre-releases: Alphas and Betas
 
 * Alphas: Missing features, incomplete features, almost guaranteed to have bugs / errors
 * Betas: Feature complete, probably contains bugs / errors
 
-# Screenshots
+## Screenshots
 
 | CLI                 | GUI                           | WEB                 |
 |---------------------|-------------------------------|---------------------|
@@ -60,13 +60,13 @@ There are two kinds of pre-releases: Alphas and Betas
 
 [//]: # (TODO: add web image)
 
-# Advantages/Disadvantages of CLI, GUI:
+## Advantages/Disadvantages of CLI, GUI:
 
 Each way of using ServerPackCreator has its advantages and disadvantages. Depending on your environment, it may be better to use one way over the other. This section highlights some of the
 advantages and disadvantages of each version to help you decide which way you are going to use.
 Note: All three ways are supported by the **.jar**-file. Which one is started depends on the CLI arguments used and your environment.
 
-## CLI:
+### CLI:
 
 | Advantages                                                                                                                                                                                               | Disadvantages                                                                                                         |
 |:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------|
@@ -76,7 +76,7 @@ Note: All three ways are supported by the **.jar**-file. Which one is started de
 |                                                                                                                                                                                                          | Manual editing of the configuration-file in case you want to change it.                                               |
 |                                                                                                                                                                                                          | Unable to edit start script placeholders and variables                                                                |
 
-## GUI:
+### GUI:
 
 | Advantages                                                                                                             | Disadvantages                     |
 |:-----------------------------------------------------------------------------------------------------------------------|:----------------------------------|
@@ -89,7 +89,7 @@ Note: All three ways are supported by the **.jar**-file. Which one is started de
 
 [//]: # (TODO: add web block)
 
-# WEB:
+## WEB:
 
 | Advantages                                                    | Disadvantages                                                  |
 |:--------------------------------------------------------------|:---------------------------------------------------------------|
@@ -104,7 +104,7 @@ Note: All three ways are supported by the **.jar**-file. Which one is started de
 
 ---
 
-# 1. Small feature overview
+## 1. Small feature overview
 
 1. **Exclude clientside-only mods**
     - **Automatically** by letting ServerPackCreator scan the mods of your modpack for their sideness
@@ -141,7 +141,7 @@ Note: All three ways are supported by the **.jar**-file. Which one is started de
     - ServerPackCreator allows you to use plugins to add new features in various places.
     - An example plugins is available with every release, and the source code for it can be found in this repository, at [Example Plugin](serverpackcreator-plugin-example)
 
-# 2. Issues and help
+## 2. Issues and help
 
 - Report a bug / ask for a feature / ask for an improvement / request a documentation improvement:
     - https://github.com/Griefed/ServerPackCreator/issues/new/choose
@@ -150,16 +150,16 @@ Note: All three ways are supported by the **.jar**-file. Which one is started de
 - The same as the Wiki, but as a file should you prefer it. 😊
     - [HELP.md](HELP.md)
 
-# 3. How To
+## 3. How To
 
 The first time you start ServerPackCreator, you will be asked whether you want to see a small step-by-step guide.
 Said guide will show you the most important parts in configuring your server pack.
 
 Should you at any point want to revisit said guide, simply hit *About -> Step-By-Step Guide* in the menu at the top. 
 
-# 4. Java
+## 4. Java
 
-##### Required:
+### Required:
 
 * Using the JAR-file release requires Java 21.
 * Working internet connection recommended.
@@ -171,12 +171,12 @@ version other than version 21. Things may break at **random**, at **any** place,
 You are welcome to try and use any other version, but do **not** report issues back to me if you do encounter problems
 when running ServerPackCreator with a more recent Java version.
 
-# 5. Plugins
+## 5. Plugins
 
 The plugin-section shows an excerpt from the README of the example plugin README. Check out the repository of the example plugin, linked below,
 for more details.
 
-## 5.1. Example plugin for ServerPackCreator
+### 5.1. Example plugin for ServerPackCreator
 
 This repository contains an example plugin. Available at [Example Plugin](serverpackcreator-plugin-example)
 
@@ -273,7 +273,7 @@ extension passed to it by ServerPackCreator.
 See now why the ConfigPanel, ConfigCheck and Tab extensions are so nice to have?
 The possibilities are (almost) **endless**!😁
 
-## 5.3 The reason for allowing ServerPackCreator to run plugin:
+### 5.3 The reason for allowing ServerPackCreator to run plugin:
 
 Some people need additional functionality for their server packs, or have some additional wishes for
 them. Some of those things may not fit into the core functionality of ServerPackCreator itself.
@@ -287,7 +287,7 @@ of those reasons or another.
 This allows people to write their own plugins to expand the functionality of ServerPackCreator with
 their own features as they see fit.
 
-## 5.4 Adding your own
+### 5.4 Adding your own
 
 A curated list of officially acknowledged plugins can be found [here](https://addons.griefed.de) (redirects to [GitHub Pages](https://griefed.github.io/ServerPackCreator-Addons-Overview/#/))
 
@@ -302,7 +302,7 @@ For a plugin to be accepted, you must at least provide:
 - The branch of the repository where the main code resides in.
 - A description of the plugin.
 
-# 6 Running
+## 6 Running
 
 1. If you've used the installer to acquire ServerPackCreator, use the shortcut created by the installer to run
 ServerPackCreator. The installers provide their own Java runtime, so you do not need to install Java separately.
@@ -321,9 +321,9 @@ There are a couple of arguments which may or may not be helpful for you, dependi
 | `-gui`    | Run ServerPackCreator with our GUI. If a graphical environment is supported, this is the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.                     |
 | `--setup` | Set up and prepare the environment for subsequent runs of ServerPackCreator. This will create/copy all files needed for ServerPackCreator to function properly from inside its JAR-file and setup everything else, too. |
 
-## 6.1 Running ServerPackCreator as a webservice
+### 6.1 Running ServerPackCreator as a webservice
 
-### 6.1.1 JAR
+#### 6.1.1 JAR
 
 1. Download the JAR-file from the latest release
 2. Run it once, using the `-web` argument. ServerPackCreator will crash, complaining about JDBC-related things. This is expected, don't worry.
@@ -338,7 +338,7 @@ There are a couple of arguments which may or may not be helpful for you, dependi
 6. Run ServerPackCreator, using the `-web`-argument, again
 7. Browse to `http://localhost:8080`
 
-#### 6.1.1.1 Tweaking the webservice
+##### 6.1.1.1 Tweaking the webservice
 
 You may edit the following properties inside the `serverpackcreator.properties` if you wish to change some parts of the webservice-behaviour:
 
@@ -358,7 +358,7 @@ You may edit the following properties inside the `serverpackcreator.properties` 
 | `de.griefed.serverpackcreator.serverpack.zip.exclude.enabled`          | Whether files should be excluded from a server pack archive.                                                                         |
 | `server.port`                                                          | The port at which the webservice will be available at. Default is `8080`.                                                            |
 
-### 6.1.2 Docker (recommended)
+#### 6.1.2 Docker (recommended)
 
 The recommended, and easiest, way to deploy ServerPackCreator as a webservice is via [docker](https://www.docker.com/) and [docker-compose](https://docs.docker.com/compose/).
 
@@ -406,7 +406,7 @@ services:
       - ./logs:/app/serverpackcreator/logs # Path at which logs from the container will be stored at on your host : Path to the logs in the container. Only change the left value, if at all.
 ```
 
-#### 6.1.2.1 Tweaking the docker deployment
+##### 6.1.2.1 Tweaking the docker deployment
 
 You may edit the following container-properties if you wish to change some parts of the webservice-behaviour:
 
@@ -425,7 +425,7 @@ You may edit the following container-properties if you wish to change some parts
 | `SPC_SERVERPACK_ZIP_EXCLUDE_ENABLED`          | Whether files should be excluded from a server pack archive.                                                                         |
 
 
-## 6.1 Localization
+### 6.1 Localization
 
 If you wish to run ServerPackCreator with your locale (if it is already supported), you can either:
 1. Run `java -jar ServerPackCreator-X.X.X.jar -lang yourLocale` for example `java -jar ServerPackCreator-X.X.X.jar -lang en`. This will create the lang.properties-file with your specified locale.
@@ -437,29 +437,14 @@ If you want to contribute translations to ServerPackCreator, check out the [i18n
 translations to see how they are set up. Then, make your changes, test them, and open a pull request on GitHub according
 to the [Contribution-Guidelines](CONTRIBUTING.md).
 
-### 6.1.1 Adding a translation
+#### 6.1.1 Adding a translation
 
-Say you want to translate ServerPackCreator to german.
-You would need to add the file `<Module_Name>_de_DE.properties` in the following places:
-- `serverpackcreator-api\src\commonMain\i18n`
-  - Prefix: `Api_`
-- `serverpackcreator-cli\src\main\i18n`
-  - Prefix: `Cli_`
-- `serverpackcreator-gui\src\main\i18n`
-  - Prefix: `Gui_`
-- `serverpackcreator-plugin-example\src\main\i18n`
-  - Prefix: `Example_`
-- `serverpackcreator-updater\src\main\i18n`
-  - Prefix: `Updates_`
+Say you want to translate ServerPackCreator to german. You would need to add a file called `Translations_de_DE.properties` to the folder [serverpackcreator-api/src/commonMain/i18n/](serverpackcreator-api/src/commonMain/i18n/). 
 
-English translations for each can be found at:
-1. [API module](serverpackcreator-api/src/commonMain/i18n/Api_en_GB.properties)
-2. [CLI module](serverpackcreator-cli/src/main/i18n/Cli_en_GB.properties)
-3. [GUI module](serverpackcreator-gui/src/main/i18n/Gui_en_GB.properties)
-4. [Example Kotlin](serverpackcreator-plugin-example/src/main/i18n/Example_en_GB.properties)
-5. [Updater module](serverpackcreator-updater/src/main/i18n/Updates_en_GB.properties)
+English translations, as an example for how to define translations, can be found at:
+[serverpackcreator-api/src/commonMain/i18n/Translations_en_GB.properties](serverpackcreator-api/src/commonMain/i18n/Translations_en_GB.properties)
 
-In the english properties for the Gui, for example, you will see entries like
+You will see entries like
 
 ```properties
 menubar.gui.menu.file=File
@@ -469,7 +454,7 @@ menubar.gui.menu.about=About
 menubar.gui.menu.help=Help
 ```
 
-So, in order to translate them to german, in your `Gui_de_DE.properties`-file, you would add
+So, in order to translate them to german, in your `Translations_de_DE.properties`-file, you would add
 
 ```properties
 menubar.gui.menu.file=Datei
@@ -488,7 +473,7 @@ ServerPackCreator with the argument `-lang=de_DE`.
 
 Voilà! The menubar will now have german translations!
 
-# 7 Contributing
+## 7 Contributing
 
 Java documentation available at:
 - https://griefed.pages.griefed.de/ServerPackCreator/ or
@@ -540,7 +525,7 @@ A short excerpt:
 > This is the only way to ensure that any changes made to ServerPackCreator always arrive on my GitLab instance first, then on GitHub.
 > Since I want to stay independent of GitHub and their architecture, I have to make use of my own GitLab installation. Hence, this procedure. So, if one day, GitHub vanishes, we still can provide people with ServerPackCreator from my GitLab instance.
 
-# 8. Awesomesauce!
+## 8. Awesomesauce!
 
 **None of this would have been possible without the excellent IDEs by JetBrains. They have kindly provided this open source project with an All Products Pack license.**
 **Additionally, ej-Technologies has provided an open-source license for JProfiler and install4j for ServerPackCreator, which allows me to resolve performance bottlenecks, pin down memory leaks and understand threading issues, as well as generated fancy high-end installers.
@@ -560,7 +545,7 @@ Huge shoutout and thank you!**
 
 ---
 
-# 10. Libraries and Licenses
+## 10. Libraries and Licenses
 
 This project would not be possible without [these awesome groups](licenses/licences.md), creators and developers and their wonderful libraries
 they have kindly provided to people such as me. 

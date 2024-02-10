@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE instance-profile
+        SYSTEM "https://resources.jetbrains.com/writerside/1.0/product-profile.dtd">
+
+<instance-profile id="spch" name="ServerPackCreator-Help" start-page="API-reference.md">
+    <toc-element topic="API-reference.md">
+        <toc-element topic="Events.md"/>
+        <toc-element topic="Modpacks.md"/>
+        <toc-element topic="Run-Configs.md"/>
+        <toc-element topic="Server-Packs.md"/>
+        <toc-element topic="Settings.md"/>
+        <toc-element topic="Versions.md"/>
+    </toc-element>
+    <toc-element topic="Help-Topic.md">
+        <toc-element topic="Custom-Start-Arguments.md"/>
+        <toc-element topic="Exclusions.md"/>
+        <toc-element topic="Custom-Themes.md"/>
+        <toc-element topic="Minecraft-Versions.md"/>
+        <toc-element topic="Mod-Exclusions.md"/>
+        <toc-element topic="Placeholders.md"/>
+        <toc-element topic="Run-Modes.md"/>
+        <toc-element topic="Scripts.md"/>
+        <toc-element topic="Settings-And-Configs.md"/>
+        <toc-element topic="Special-Mods.md"/>
+        <toc-element topic="Translations.md"/>
+        <toc-element topic="Working-With-Plugins.md"/>
+    </toc-element>
+    <toc-element topic="Documents.md">
+        <toc-element topic="CHANGELOG.md" toc-title="Changelog"/>
+        <toc-element topic="CODE_OF_CONDUCT.md" toc-title="Code Of Conduct"/>
+        <toc-element topic="CONTRIBUTING.md" toc-title="Contributing"/>
+        <toc-element topic="LICENSE.md" toc-title="License"/>
+        <toc-element topic="README.md" toc-title="Readme"/>
+        <toc-element topic="SECURITY.md" toc-title="Security"/>
+    </toc-element>
+</instance-profile>
