@@ -199,6 +199,7 @@ actual class ApiProperties(
             "DurabilityNotifier-",
             "DynamicSurroundings-",
             "DynamicSurroundingsHuds-",
+            "EasyLAN-",
             "EffectsLeft-",
             "EiraMoticons_",
             "EnchantmentDescriptions-",
@@ -239,7 +240,9 @@ actual class ApiProperties(
             "LegendaryTooltips-",
             "LightOverlay-",
             "MinecraftCapes ",
+            "MineMenu-",
             "MoBends",
+            "ModernUI-",
             "MouseTweaks-",
             "MyServerIsCompatible-",
             "Neat ",
@@ -459,9 +462,6 @@ actual class ApiProperties(
             "wisla-",
             "xlifeheartcolors-",
             "yisthereautojump-"
-            "ModernUI-",
-            "EasyLAN-",
-            "MineMenu-"
         )
     )
 
