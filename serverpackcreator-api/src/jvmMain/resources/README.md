@@ -58,8 +58,6 @@ There are two kinds of pre-releases: Alphas and Betas
 |---------------------|-------------------------------|---------------------|
 | ![cli](img/cli.png) | ![gui dark](img/gui_dark.png) | ![web](img/web.png) |
 
-[//]: # (TODO: add web image)
-
 ## Advantages/Disadvantages of CLI, GUI:
 
 Each way of using ServerPackCreator has its advantages and disadvantages. Depending on your environment, it may be better to use one way over the other. This section highlights some of the
@@ -86,8 +84,6 @@ Note: All three ways are supported by the **.jar**-file. Which one is started de
 | Loading and saving different configurations for quick generation of multiple server packs in short succession.         |                                   |
 | Edit the configuration in the GUI. No manual file-editing required.                                                    |                                   |
 | Edit start script placeholders and values                                                                              |                                   |
-
-[//]: # (TODO: add web block)
 
 ## WEB:
 
