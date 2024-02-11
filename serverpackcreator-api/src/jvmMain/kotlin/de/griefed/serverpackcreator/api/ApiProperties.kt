@@ -459,6 +459,9 @@ actual class ApiProperties(
             "wisla-",
             "xlifeheartcolors-",
             "yisthereautojump-"
+            "ModernUI-",
+            "EasyLAN-",
+            "MineMenu-"
         )
     )
 
