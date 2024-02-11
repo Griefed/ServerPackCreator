@@ -382,13 +382,16 @@ Writerside Build:
     ARTIFACT: webHelpSPCH2-all.zip
     INSTANCE: Writerside/spch
   script:
-    - cp -rf CHANGELOG.md       serverpackcreator-help/Writerside/topics/CHANGELOG.md
-    - cp -rf CODE_OF_CONDUCT.md serverpackcreator-help/Writerside/topics/CODE_OF_CONDUCT.md
-    - cp -rf CONTRIBUTING.md    serverpackcreator-help/Writerside/topics/CONTRIBUTING.md
-    - cp -rf HELP.md            serverpackcreator-help/Writerside/topics/HELP.md
-    - cp -rf LICENSE            serverpackcreator-help/Writerside/topics/LICENSE.md
-    - cp -rf README.md          serverpackcreator-help/Writerside/topics/README.md
-    - cp -rf SECURITY.md        serverpackcreator-help/Writerside/topics/SECURITY.md
+    - cp -f img/*.png          serverpackcreator-help/Writerside/topics/img/
+    - cp -f img/*.webp         serverpackcreator-help/Writerside/topics/img/
+    - cp -f img/*.gif          serverpackcreator-help/Writerside/topics/img/
+    - cp -f CHANGELOG.md       serverpackcreator-help/Writerside/topics/CHANGELOG.md
+    - cp -f CODE_OF_CONDUCT.md serverpackcreator-help/Writerside/topics/CODE_OF_CONDUCT.md
+    - cp -f CONTRIBUTING.md    serverpackcreator-help/Writerside/topics/CONTRIBUTING.md
+    - cp -f HELP.md            serverpackcreator-help/Writerside/topics/HELP.md
+    - cp -f LICENSE            serverpackcreator-help/Writerside/topics/LICENSE.md
+    - cp -f README.md          serverpackcreator-help/Writerside/topics/README.md
+    - cp -f SECURITY.md        serverpackcreator-help/Writerside/topics/SECURITY.md
     - rm -f /tmp/.X99-lock || true
     - set -e
     - export DISPLAY=:99
