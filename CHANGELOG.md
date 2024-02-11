@@ -1,3 +1,92 @@
+## [5.1.12-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.11...5.1.12-beta.1) (2024-02-11)
+
+
+### :scissors: Refactor
+
+* Improve readability by returning concrete object ([821204c](https://git.griefed.de/Griefed/ServerPackCreator/commit/821204cfda92d3ad99e480ef82fb09d9171380b3))
+* Remove no longer required property ([808c01d](https://git.griefed.de/Griefed/ServerPackCreator/commit/808c01d97792a5f57826985f293de8bf059cfe14))
+* Use ModpackService instead of directly accessing repository ([7edde2d](https://git.griefed.de/Griefed/ServerPackCreator/commit/7edde2de19b9ec02cf0362acb00deb5889147d23))
+
+
+### ⏩ Performance
+
+* Call api directly ([203c46d](https://git.griefed.de/Griefed/ServerPackCreator/commit/203c46d86c26d563d9208aa5c5225a124603b394))
+
+
+### 💈 Style
+
+* Some minor style improvements ([e0c861f](https://git.griefed.de/Griefed/ServerPackCreator/commit/e0c861f65d1bfb8571a029da4db3eb4e55fd7c6f))
+
+
+### 💎 Improvements
+
+* Allow configuring of JDBC URL, user and password in GUI ([ad22b28](https://git.griefed.de/Griefed/ServerPackCreator/commit/ad22b28bc49a7bebe132079952063ca95aade9cb))
+* Allow searching in tables ([f189c90](https://git.griefed.de/Griefed/ServerPackCreator/commit/f189c902b0bfc260c8f1590ee4500e2c816517f2))
+* Better display for download timer depending on upcoming event or current status ([62d4fc1](https://git.griefed.de/Griefed/ServerPackCreator/commit/62d4fc1c2df43036d89017df6ca6693905799868))
+* Centralize i18n, add [@arthurbarret0](https://git.griefed.de/arthurbarret0) pt_BR translations. See merge request Griefed/ServerPackCreator!563 ([1f5c6a9](https://git.griefed.de/Griefed/ServerPackCreator/commit/1f5c6a90f32a2963b793411b426a7a8ea490dabc))
+* Check uploaded modpack and return error before queue submit. ([9cc7100](https://git.griefed.de/Griefed/ServerPackCreator/commit/9cc71006afeefbdb70332db6ce2603192b5ea6ca))
+* Display errors encountered for failed modpack checks in history ([b76a897](https://git.griefed.de/Griefed/ServerPackCreator/commit/b76a897fa402f55492a79d84d9096a1dd68f0db5))
+* Feedback during and after upload ([b87156e](https://git.griefed.de/Griefed/ServerPackCreator/commit/b87156ea21c2be708ab24bfc96f756839d468d5a))
+* Fix, rework and improve webservice ([8be9e4b](https://git.griefed.de/Griefed/ServerPackCreator/commit/8be9e4bf8e152ad72a7cac30b1c3f960278b2465))
+* General improvements in styling and formatting ([ed812ab](https://git.griefed.de/Griefed/ServerPackCreator/commit/ed812abc3cd4a8152d09cae8133c4e95a57f5eea))
+* Individual pages for mod- and server pack downloads ([0012bc4](https://git.griefed.de/Griefed/ServerPackCreator/commit/0012bc47dad4084e13d16461eb14f90197ddf85f))
+* Prevent upload of duplicates ([7e5923e](https://git.griefed.de/Griefed/ServerPackCreator/commit/7e5923eba9df1d9545d7f8fe15ca07bc2f723f88))
+* Set modpack and runconfig ID in regen after upload ([51b1401](https://git.griefed.de/Griefed/ServerPackCreator/commit/51b1401d24a393a7a92bd9ef711515662afab33b))
+* Switch to regen and inform user if duplicate modpack was uploaded ([161bb7f](https://git.griefed.de/Griefed/ServerPackCreator/commit/161bb7f7bf4a04c283ab15b6341120cb8bd0cca8))
+
+
+### 📔 Docs
+
+* Copy to correct location and change stage to reflect use-case ([a55f13e](https://git.griefed.de/Griefed/ServerPackCreator/commit/a55f13e571cc7857cd2d1f32e8b6cdf1a9ddccd1))
+* Include images ([c69dc4a](https://git.griefed.de/Griefed/ServerPackCreator/commit/c69dc4a3d437a3b4b07c85dc275d6c0bd3128c2b))
+* Latest on release, commit sha on other ([a19689f](https://git.griefed.de/Griefed/ServerPackCreator/commit/a19689f0c2ce292cd35143871d365fc6b99cd7f5))
+* Replace old wiki links with new dedicated help-site ([3afa984](https://git.griefed.de/Griefed/ServerPackCreator/commit/3afa9842e5510249a9448faeadeba42ef178b8da))
+* REST API docs via Writerside ([67a5f4e](https://git.griefed.de/Griefed/ServerPackCreator/commit/67a5f4ed53afe629ad7993b633ede76f69242e6b))
+
+
+### 📦 Other
+
+* @Alistair1231 added ModernUI-, MineMenu-, EasyLAN- to clientside-mods ([d75a210](https://git.griefed.de/Griefed/ServerPackCreator/commit/d75a2100c8c59ace373d032310f11f6f435dd8ed))
+* Add clientside-mods recommended by @MoonstruckDev. Closes [#506](https://git.griefed.de/Griefed/ServerPackCreator/issues/506) ([93a0e9e](https://git.griefed.de/Griefed/ServerPackCreator/commit/93a0e9e4edcc5a307b67ec1af180779066448513))
+* Add intsall4j icons and info ([ede99e7](https://git.griefed.de/Griefed/ServerPackCreator/commit/ede99e7867dc6e577415975656c223d3bd5c8df3))
+* Add Jump Over Fences to clientside-mods. Thanks to @ModernGamingWorld for the report. Closes [#503](https://git.griefed.de/Griefed/ServerPackCreator/issues/503) ([137d673](https://git.griefed.de/Griefed/ServerPackCreator/commit/137d673a549ca29cb922d0e0c871b2d4157fe1ba))
+* Add missing PUID and PGID ([b94cb7f](https://git.griefed.de/Griefed/ServerPackCreator/commit/b94cb7f1e1be763d7a3d75259208a165ce1f2a8f))
+* Add Writerside to README ([cd2e48f](https://git.griefed.de/Griefed/ServerPackCreator/commit/cd2e48f90d85688248d5d0e012f2aa0323c203bc))
+* Add Yungs Menu Tweaks to clientside-mods list. Thanks to @Elrol for the report! ([85d3ba7](https://git.griefed.de/Griefed/ServerPackCreator/commit/85d3ba708219fc92ca790793269415a297c35b94))
+* bump npm packages ([b0f9697](https://git.griefed.de/Griefed/ServerPackCreator/commit/b0f9697dffe5be1102516fbd7d85bfbd5dbb2fca))
+* Comment out lib only needed in certain dev situations ([5614335](https://git.griefed.de/Griefed/ServerPackCreator/commit/5614335c003e1b904a21a4cb56b7cc2dd8c5ab61))
+* Ignores, doc updates, cleanups ([6660de4](https://git.griefed.de/Griefed/ServerPackCreator/commit/6660de4ded65c68ef97b3fd24f0b3ad2140797f7))
+* License header and template source ([b3327e7](https://git.griefed.de/Griefed/ServerPackCreator/commit/b3327e71d007ae1ebaedc44d3c69c4cb280c46f4))
+* Replace Java 17 remnants with 21 ([719ee28](https://git.griefed.de/Griefed/ServerPackCreator/commit/719ee28f0fe9d460e4b4cd80666c00594419e304))
+* Run file cleanup 30 min after database cleanup by default ([1ed4278](https://git.griefed.de/Griefed/ServerPackCreator/commit/1ed427880f39e7345356bfd3ffc82ce017fbafed))
+* Sort mods ([dd39fc0](https://git.griefed.de/Griefed/ServerPackCreator/commit/dd39fc089bda7a4dd244d08645d6b6865f55a06b))
+
+
+### 🦊 CI/CD
+
+* Include correctly ([4f15c6d](https://git.griefed.de/Griefed/ServerPackCreator/commit/4f15c6dc12de739adebab5f358d80634078663d8))
+* Move i18n to singular source ([1bdabb7](https://git.griefed.de/Griefed/ServerPackCreator/commit/1bdabb772f29b32e82d95709a69bf2fbe28ef77c))
+* Stop using own maven repo. Not necessary, no benefit. ([edf5c93](https://git.griefed.de/Griefed/ServerPackCreator/commit/edf5c93c14e7aa2222379b2b55999551647af9f2))
+* Bump actions versions ([2980d72](https://git.griefed.de/Griefed/ServerPackCreator/commit/2980d72a73374e2c5e27159b5e9043417e2ffb5e))
+* Bump actions versions ([1d0336b](https://git.griefed.de/Griefed/ServerPackCreator/commit/1d0336be9e7e83aa54993d58a39b2140fa8e6455))
+* Bump artifact download version ([f17591a](https://git.griefed.de/Griefed/ServerPackCreator/commit/f17591abbad870e96f2c8b9c73cae9689bc275d8))
+* Do not make Docker test dependant on Gradle anymore ([de3f065](https://git.griefed.de/Griefed/ServerPackCreator/commit/de3f065887f2fb9a686c6c776dc21f16a25b1219))
+* Remove lock, ensure docs are built ([28698ab](https://git.griefed.de/Griefed/ServerPackCreator/commit/28698ab3eeb0dca6e548662f839b9f38f49d81e1))
+* Split Writerside build into pre and latest ([7f990f5](https://git.griefed.de/Griefed/ServerPackCreator/commit/7f990f55a046b99349eface1d71b2c2b38f6beea))
+* Update tj-actions-branch-name ([e4b8220](https://git.griefed.de/Griefed/ServerPackCreator/commit/e4b82205e2e1150575cad62a76f2c1854c727edc))
+
+
+### 🛠 Fixes
+
+* Allow regeneration of already uploaded modpack. Prevent clashing of server packs via renaming. ([f57eaa1](https://git.griefed.de/Griefed/ServerPackCreator/commit/f57eaa103766e67609848856dafb7cc60bd3a15d))
+* Do not chown root-files ([a14b9e0](https://git.griefed.de/Griefed/ServerPackCreator/commit/a14b9e0abf5935ae9b30052af410d12fd53b582c))
+* Download correct modpack-file ([1437593](https://git.griefed.de/Griefed/ServerPackCreator/commit/14375934f8e413118a64196224fc486b07bd4e98))
+* Hopefully fix container not booting up correctly ([977fbc9](https://git.griefed.de/Griefed/ServerPackCreator/commit/977fbc93dddcb5802ef212ce12433126da1f57b4))
+* Only offer download for modpack if size is valid ([a807d35](https://git.griefed.de/Griefed/ServerPackCreator/commit/a807d3584a90d60e79a89c4c956da7ded937c38b))
+* Prevent Update Checks not being initialized from preventing SPC starting up ([db73e5e](https://git.griefed.de/Griefed/ServerPackCreator/commit/db73e5e8123eae24446f52228ef9143cbb84a759))
+* Re-add chmod to allow execution ([c681980](https://git.griefed.de/Griefed/ServerPackCreator/commit/c6819800337a10cf4469e1017b51705f73a34197))
+* Remove explicit chmod and chown ([25e04b2](https://git.griefed.de/Griefed/ServerPackCreator/commit/25e04b2982a5ef59d4a1bd822616c67c9fcd29da))
+
 ## [5.1.12-alpha.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12-alpha.7...5.1.12-alpha.8) (2024-02-11)
 
 
