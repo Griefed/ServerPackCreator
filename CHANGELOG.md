@@ -1,3 +1,36 @@
+## [5.1.12-alpha.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12-alpha.7...5.1.12-alpha.8) (2024-02-11)
+
+
+### 💎 Improvements
+
+* Allow configuring of JDBC URL, user and password in GUI ([ad22b28](https://git.griefed.de/Griefed/ServerPackCreator/commit/ad22b28bc49a7bebe132079952063ca95aade9cb))
+* Individual pages for mod- and server pack downloads ([0012bc4](https://git.griefed.de/Griefed/ServerPackCreator/commit/0012bc47dad4084e13d16461eb14f90197ddf85f))
+
+
+### 📔 Docs
+
+* Copy to correct location and change stage to reflect use-case ([a55f13e](https://git.griefed.de/Griefed/ServerPackCreator/commit/a55f13e571cc7857cd2d1f32e8b6cdf1a9ddccd1))
+* Include images ([c69dc4a](https://git.griefed.de/Griefed/ServerPackCreator/commit/c69dc4a3d437a3b4b07c85dc275d6c0bd3128c2b))
+* Latest on release, commit sha on other ([a19689f](https://git.griefed.de/Griefed/ServerPackCreator/commit/a19689f0c2ce292cd35143871d365fc6b99cd7f5))
+* Replace old wiki links with new dedicated help-site ([3afa984](https://git.griefed.de/Griefed/ServerPackCreator/commit/3afa9842e5510249a9448faeadeba42ef178b8da))
+* REST API docs via Writerside ([67a5f4e](https://git.griefed.de/Griefed/ServerPackCreator/commit/67a5f4ed53afe629ad7993b633ede76f69242e6b))
+
+
+### 📦 Other
+
+* @Alistair1231 added ModernUI-, MineMenu-, EasyLAN- to clientside-mods ([d75a210](https://git.griefed.de/Griefed/ServerPackCreator/commit/d75a2100c8c59ace373d032310f11f6f435dd8ed))
+* Add intsall4j icons and info ([ede99e7](https://git.griefed.de/Griefed/ServerPackCreator/commit/ede99e7867dc6e577415975656c223d3bd5c8df3))
+* Add Writerside to README ([cd2e48f](https://git.griefed.de/Griefed/ServerPackCreator/commit/cd2e48f90d85688248d5d0e012f2aa0323c203bc))
+* Replace Java 17 remnants with 21 ([719ee28](https://git.griefed.de/Griefed/ServerPackCreator/commit/719ee28f0fe9d460e4b4cd80666c00594419e304))
+* Sort mods ([dd39fc0](https://git.griefed.de/Griefed/ServerPackCreator/commit/dd39fc089bda7a4dd244d08645d6b6865f55a06b))
+
+
+### 🦊 CI/CD
+
+* Stop using own maven repo. Not necessary, no benefit. ([edf5c93](https://git.griefed.de/Griefed/ServerPackCreator/commit/edf5c93c14e7aa2222379b2b55999551647af9f2))
+* Remove lock, ensure docs are built ([28698ab](https://git.griefed.de/Griefed/ServerPackCreator/commit/28698ab3eeb0dca6e548662f839b9f38f49d81e1))
+* Split Writerside build into pre and latest ([7f990f5](https://git.griefed.de/Griefed/ServerPackCreator/commit/7f990f55a046b99349eface1d71b2c2b38f6beea))
+
 ## [5.1.12-alpha.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12-alpha.6...5.1.12-alpha.7) (2024-02-06)
 
 
