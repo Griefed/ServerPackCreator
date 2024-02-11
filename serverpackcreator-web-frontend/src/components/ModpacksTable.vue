@@ -37,8 +37,8 @@
         </q-td>
         <q-td v-for="col in props.cols" :key="col.name" :props="props" auto-width>
           <span v-if="col.name === 'download'">
-            <q-btn :href="buildDownloadUrl(props.row.id)" color="info" dense icon="download" round size="sm"
-                   type="a" v-if="props.row.size > 0">
+            <q-btn :to="'/download/modpack/' + props.row.id" color="info" dense icon="download" round size="sm"
+                   v-if="props.row.size > 0">
               <q-tooltip>
                 Download modpack
               </q-tooltip>
@@ -119,34 +119,10 @@ export default defineComponent({
         descending: true,
         page: 1,
         rowsPerPage: 25
-        // rowsNumber: xx if getting data from a server
       }
     };
   },
   methods: {
-    /*download(id: number) {
-      modpacks.get('download/' + id, {
-        responseType: 'blob'
-      }).then(response => {
-        //console.log(response)
-        const href = URL.createObjectURL(response.data)
-        const link = document.createElement('a')
-        const disposition = response.headers['content-disposition']
-        const fileName = disposition.replace('attachment; filename="','').replace('"','')
-        link.href = href
-        link.setAttribute('download',fileName)
-        document.body.appendChild(link);
-        link.click();
-
-        // clean up "a" element & remove ObjectURL
-        document.body.removeChild(link);
-        URL.revokeObjectURL(href);
-        this.loadData()
-      })
-    },*/
-    buildDownloadUrl(id: number): string {
-      return '/api/v2/modpacks/download/' + id
-    },
     loadData() {
       modpacks.get('all').then(response => {
         this.rows = [];

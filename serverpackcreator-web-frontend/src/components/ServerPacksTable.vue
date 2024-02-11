@@ -63,8 +63,8 @@
             {{ col.value }} MB
           </span>
           <span v-else-if="col.name === 'download'">
-            <q-btn :href="buildDownloadUrl(props.row.id)" color="info" dense icon="download" round size="sm"
-                   type="a" @click="props.row.downloads++" v-if="props.row.size > 0">
+            <q-btn :to="'/download/serverpack/' + props.row.id" color="info" dense icon="download" round size="sm"
+                   @click="props.row.downloads++" v-if="props.row.size > 0">
               <q-tooltip>
                 Download server pack
               </q-tooltip>
@@ -152,34 +152,10 @@ export default defineComponent({
         descending: true,
         page: 1,
         rowsPerPage: 25
-        // rowsNumber: xx if getting data from a server
       }
     };
   },
   methods: {
-    /*download(id: number) {
-      serverpacks.get('download/' + id, {
-        responseType: 'blob'
-      }).then(response => {
-        //console.log(response)
-        const href = URL.createObjectURL(response.data)
-        const link = document.createElement('a')
-        const disposition = response.headers['content-disposition']
-        const fileName = disposition.replace('attachment; filename="','').replace('"','')
-        link.href = href
-        link.setAttribute('download',fileName)
-        document.body.appendChild(link);
-        link.click();
-
-        // clean up "a" element & remove ObjectURL
-        document.body.removeChild(link);
-        URL.revokeObjectURL(href);
-        this.loadData()
-      })
-    },*/
-    buildDownloadUrl(id: number): string {
-      return '/api/v2/serverpacks/download/' + id
-    },
     voteServerPack(id: number, decision: string) {
       serverpacks.get('vote/' + id + '&' + decision).then(() => {
         this.$q.notify({

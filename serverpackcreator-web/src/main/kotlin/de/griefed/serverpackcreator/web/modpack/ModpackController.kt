@@ -205,7 +205,7 @@ class ModpackController @Autowired constructor(
                 modpackService.getModpackView(id).get()
             )
         } else {
-            ResponseEntity.notFound().build()
+            ResponseEntity.notFound().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).build()
         }
     }
 }

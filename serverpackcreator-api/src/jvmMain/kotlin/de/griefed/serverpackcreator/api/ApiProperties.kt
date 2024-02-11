@@ -134,6 +134,10 @@ actual class ApiProperties(
         "server.tomcat.accesslog.directory"
     private val pSpringDatasourceUrl =
         "spring.datasource.url"
+    private val pSpringDatasourceUsername =
+        "spring.datasource.username"
+    private val pSpringDatasourcePassword =
+        "spring.datasource.password"
 
     val home: File = if (System.getProperty("user.home").isNotEmpty()) {
         File(System.getProperty("user.home"))
@@ -199,11 +203,13 @@ actual class ApiProperties(
             "DurabilityNotifier-",
             "DynamicSurroundings-",
             "DynamicSurroundingsHuds-",
+            "EasyLAN-",
             "EffectsLeft-",
             "EiraMoticons_",
             "EnchantmentDescriptions-",
             "EnhancedVisuals_",
             "EquipmentCompare-",
+            "EuphoriaPatcher-",
             "FPS-Monitor-",
             "FabricCustomCursorMod-",
             "Fallingleaves-",
@@ -239,7 +245,9 @@ actual class ApiProperties(
             "LegendaryTooltips-",
             "LightOverlay-",
             "MinecraftCapes ",
+            "MineMenu-",
             "MoBends",
+            "ModernUI-",
             "MouseTweaks-",
             "MyServerIsCompatible-",
             "Neat ",
@@ -377,6 +385,7 @@ actual class ApiProperties(
             "justzoom_",
             "keymap-",
             "keywizard-",
+            "lazurite-",
             "lazydfu-",
             "lib39-",
             "light-overlay-",
@@ -1188,7 +1197,7 @@ actual class ApiProperties(
     @Suppress("MemberVisibilityCanBePrivate")
     var jdbcDatabaseUrl: String = "jdbc:postgresql://localhost:5432/serverpackcreator"
         get() {
-            var dbPath = internalProps.getProperty(pSpringDatasourceUrl, "")
+            var dbPath = internalProps.getProperty(pSpringDatasourceUrl, "jdbc:postgresql://localhost:5432/serverpackcreator")
             if (dbPath.isEmpty()) {
                 dbPath = "jdbc:postgresql://localhost:5432/serverpackcreator"
             }
@@ -1204,6 +1213,30 @@ actual class ApiProperties(
             }
             field = internalProps.getProperty(pSpringDatasourceUrl)
             log.info("Set database url to: $field.")
+            log.warn("Restart ServerPackCreator for this change to take effect.")
+        }
+
+    var jdbcDatabaseUsername: String = ""
+        get() {
+            field = internalProps.getProperty(pSpringDatasourceUsername,"")
+            return field
+        }
+        set(value) {
+            field = value
+            internalProps.setProperty(pSpringDatasourceUsername, field)
+            log.info("Set username url to: $field.")
+            log.warn("Restart ServerPackCreator for this change to take effect.")
+        }
+
+    var jdbcDatabasePassword: String = ""
+        get() {
+            field = internalProps.getProperty(pSpringDatasourcePassword, "")
+            return field
+        }
+        set(value) {
+            field = value
+            internalProps.setProperty(pSpringDatasourcePassword, field)
+            log.info("Set password url to: $field.")
             log.warn("Restart ServerPackCreator for this change to take effect.")
         }
 
@@ -1298,7 +1331,7 @@ actual class ApiProperties(
         }
 
     fun defaultWebserviceDatabase(): String {
-        return "jdbc\\:postgresql\\://localhost\\:5432/serverpackcreator"
+        return "jdbc:postgresql://localhost:5432/serverpackcreator"
     }
 
     /**
@@ -2164,7 +2197,7 @@ actual class ApiProperties(
             propertiesFile.outputStream().use {
                 internalProps.store(
                     it,
-                    "For details about each property, see https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help#serverpackcreatorproperties"
+                    "For details about each property, see https://help.serverpackcreator.de/settings-and-configs.html"
                 )
             }
             log.info("Saved properties to: $propertiesFile")
