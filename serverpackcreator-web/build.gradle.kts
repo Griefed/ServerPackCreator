@@ -41,7 +41,7 @@ dependencies {
     testRuntimeOnly("com.h2database:h2:2.2.220")
     testImplementation("org.springframework.boot:spring-boot-starter-test:3.1.0")
     developmentOnly("org.springframework.boot:spring-boot-devtools:3.0.4")
-    developmentOnly("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
+    //developmentOnly("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 }
 
 tasks.clean {

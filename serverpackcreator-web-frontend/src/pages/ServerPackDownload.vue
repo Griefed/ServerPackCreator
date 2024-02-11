@@ -82,15 +82,18 @@
       <q-card-section>
         <q-item>
           <q-item-section>
-            <q-item-label overline>
-              Download starting in {{ counter }}
+            <q-item-label overline v-if="canceled">
+              Download aborted...
+            </q-item-label>
+            <q-item-label overline v-else>
+              {{ counter === 0 ? 'Downloading...' : 'Download starting in ' + counter }}
             </q-item-label>
             <q-item-label>
               <q-linear-progress :value="counter / 100 * 20" rounded class="q-mt-md" animation-speed="200"/>
             </q-item-label>
           </q-item-section>
           <q-item-section side>
-            <q-btn round color="negative" icon="cancel" @click="this.count = false"/>
+            <q-btn round color="negative" icon="cancel" @click="this.count = false; this.canceled = true;"/>
           </q-item-section>
         </q-item>
       </q-card-section>
@@ -134,6 +137,7 @@ export default defineComponent({
       confirmedWorking: ref(0),
       dateCreated: ref(0),
       sha256: ref(''),
+      canceled: ref(false),
       count,
       counter
     };
@@ -162,7 +166,7 @@ export default defineComponent({
           this.counter -= 1;
           this.countDownTimer()
         }, 1000)
-      } else if (this.counter === 0 && this.count) {
+      } else if (this.counter === 0 && this.count && !this.canceled) {
         this.count = false;
         window.open(window.location.origin + this.buildDownloadUrl(this.$route.params.id.toString()));
       }
