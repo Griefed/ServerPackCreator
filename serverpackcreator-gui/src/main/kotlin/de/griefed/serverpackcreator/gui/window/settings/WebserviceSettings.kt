@@ -32,6 +32,7 @@ import de.griefed.serverpackcreator.gui.window.control.ControlPanel
 import de.griefed.serverpackcreator.gui.window.settings.components.Editor
 import de.griefed.serverpackcreator.gui.window.settings.components.TomcatBaseDirChooser
 import de.griefed.serverpackcreator.gui.window.settings.components.TomcatLogDirChooser
+import java.net.URI
 import javax.swing.JFileChooser
 import javax.swing.JOptionPane
 import javax.swing.event.ChangeListener
@@ -51,11 +52,39 @@ class WebserviceSettings(
     private val cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(CronType.SPRING)
     private val cronParser = CronParser(cronDefinition)
 
-    private val databaseURLIcon = StatusIcon(guiProps,Translations.settings_webservice_database_tooltip.toString())
-    private val databaseURLLabel = ElementLabel(Translations.settings_webservice_database_label.toString())
-    private val databaseURLSetting = ScrollTextField(guiProps, apiProperties.jdbcDatabaseUrl, Translations.settings_webservice_database_label.toString()) //TODO add editor for password and username
-    private val databaseURLRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) { databaseURLSetting.text = apiProperties.jdbcDatabaseUrl }
-    private val databaseURLReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { databaseURLSetting.text = apiProperties.defaultWebserviceDatabase() }
+    private val databaseHostIcon = StatusIcon(guiProps,Translations.settings_webservice_database_host_tooltip.toString())
+    private val databaseHostLabel = ElementLabel(Translations.settings_webservice_database_host_label.toString())
+    private val databaseHostSetting = ScrollTextField(guiProps, getHost(apiProperties.jdbcDatabaseUrl), Translations.settings_webservice_database_host_label.toString(), documentChangeListener)
+    private val databaseHostRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) { databaseHostSetting.text = getHost(apiProperties.jdbcDatabaseUrl) }
+    private val databaseHostReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { databaseHostSetting.text = getHost(apiProperties.defaultWebserviceDatabase()) }
+
+    private val databasePortIcon = StatusIcon(guiProps,Translations.settings_webservice_database_port_tooltip.toString())
+    private val databasePortLabel = ElementLabel(Translations.settings_webservice_database_port_label.toString())
+    private val databasePortSetting = ScrollTextField(guiProps, getPort(apiProperties.jdbcDatabaseUrl), Translations.settings_webservice_database_port_label.toString(), documentChangeListener)
+    private val databasePortRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) { databasePortSetting.text = getPort(apiProperties.jdbcDatabaseUrl) }
+    private val databasePortReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { databasePortSetting.text = getPort(apiProperties.defaultWebserviceDatabase()) }
+
+    private val databaseDatabaseIcon = StatusIcon(guiProps,Translations.settings_webservice_database_database_tooltip.toString())
+    private val databaseDatabaseLabel = ElementLabel(Translations.settings_webservice_database_database_label.toString())
+    private val databaseDatabaseSetting = ScrollTextField(guiProps, getDatabase(apiProperties.jdbcDatabaseUrl), Translations.settings_webservice_database_database_label.toString(), documentChangeListener)
+    private val databaseDatabaseRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) {
+        databaseDatabaseSetting.text = getDatabase(apiProperties.jdbcDatabaseUrl)
+    }
+    private val databaseDatabaseReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) {
+        databaseDatabaseSetting.text = getDatabase(apiProperties.defaultWebserviceDatabase())
+    }
+
+    private val databaseUsernameIcon = StatusIcon(guiProps,Translations.settings_webservice_database_username_tooltip.toString())
+    private val databaseUsernameLabel = ElementLabel(Translations.settings_webservice_database_username_label.toString())
+    private val databaseUsernameSetting = ScrollTextField(guiProps, apiProperties.jdbcDatabaseUsername, Translations.settings_webservice_database_username_label.toString(), documentChangeListener)
+    private val databaseUsernameRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) { databaseUsernameSetting.text = apiProperties.jdbcDatabaseUsername }
+    private val databaseUsernameReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { databaseUsernameSetting.text = "" }
+
+    private val databasePasswordIcon = StatusIcon(guiProps,Translations.settings_webservice_database_password_tooltip.toString())
+    private val databasePasswordLabel = ElementLabel(Translations.settings_webservice_database_password_label.toString())
+    private val databasePasswordSetting = ScrollTextField(guiProps, apiProperties.jdbcDatabasePassword, Translations.settings_webservice_database_password_label.toString(), documentChangeListener)
+    private val databasePasswordRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) { databasePasswordSetting.text = apiProperties.jdbcDatabasePassword }
+    private val databasePasswordReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { databasePasswordSetting.text = "" }
 
     private val cleanupScheduleIcon = StatusIcon(guiProps,Translations.settings_webservice_schedule_cleanup_tooltip.toString())
     private val cleanupScheduleLabel = ElementLabel(Translations.settings_webservice_schedule_cleanup_label.toString())
@@ -118,11 +147,39 @@ class WebserviceSettings(
         var y = 0
 
         y++
-        panel.add(databaseURLIcon, "cell 0 $y")
-        panel.add(databaseURLLabel, "cell 1 $y")
-        panel.add(databaseURLSetting, "cell 2 $y, grow")
-        panel.add(databaseURLRevert, "cell 3 $y")
-        panel.add(databaseURLReset, "cell 4 $y")
+        panel.add(databaseHostIcon, "cell 0 $y")
+        panel.add(databaseHostLabel, "cell 1 $y")
+        panel.add(databaseHostSetting, "cell 2 $y, grow")
+        panel.add(databaseHostRevert, "cell 3 $y")
+        panel.add(databaseHostReset, "cell 4 $y")
+
+        y++
+        panel.add(databasePortIcon, "cell 0 $y")
+        panel.add(databasePortLabel, "cell 1 $y")
+        panel.add(databasePortSetting, "cell 2 $y, grow")
+        panel.add(databasePortRevert, "cell 3 $y")
+        panel.add(databasePortReset, "cell 4 $y")
+
+        y++
+        panel.add(databaseDatabaseIcon, "cell 0 $y")
+        panel.add(databaseDatabaseLabel, "cell 1 $y")
+        panel.add(databaseDatabaseSetting, "cell 2 $y, grow")
+        panel.add(databaseDatabaseRevert, "cell 3 $y")
+        panel.add(databaseDatabaseReset, "cell 4 $y")
+
+        y++
+        panel.add(databaseUsernameIcon, "cell 0 $y")
+        panel.add(databaseUsernameLabel, "cell 1 $y")
+        panel.add(databaseUsernameSetting, "cell 2 $y, grow")
+        panel.add(databaseUsernameRevert, "cell 3 $y")
+        panel.add(databaseUsernameReset, "cell 4 $y")
+
+        y++
+        panel.add(databasePasswordIcon, "cell 0 $y")
+        panel.add(databasePasswordLabel, "cell 1 $y")
+        panel.add(databasePasswordSetting, "cell 2 $y, grow")
+        panel.add(databasePasswordRevert, "cell 3 $y")
+        panel.add(databasePasswordReset, "cell 4 $y")
 
         y++
         panel.add(logDirectoryIcon, "cell 0 $y")
@@ -162,8 +219,27 @@ class WebserviceSettings(
         panel.add(databaseCleanupReset, "cell 4 $y")
     }
 
+    private fun getHost(url: String): String {
+        val uri = URI(url.replace("jdbc:postgresql","http"))
+        return uri.host
+    }
+
+    private fun getPort(url: String): String {
+        val uri = URI(url.replace("jdbc:postgresql","http"))
+        return uri.port.toString()
+    }
+
+    private fun getDatabase(url: String): String {
+        val uri = URI(url.replace("jdbc:postgresql","http"))
+        return uri.path.substring(1)
+    }
+
     override fun loadSettings() {
-        databaseURLSetting.text = apiProperties.jdbcDatabaseUrl
+        databaseHostSetting.text = getHost(apiProperties.jdbcDatabaseUrl)
+        databasePortSetting.text = getPort(apiProperties.jdbcDatabaseUrl)
+        databaseDatabaseSetting.text = getDatabase(apiProperties.jdbcDatabaseUrl)
+        databaseUsernameSetting.text = apiProperties.jdbcDatabaseUsername
+        databasePasswordSetting.text = apiProperties.jdbcDatabasePassword
         cleanupScheduleSetting.text = apiProperties.webserviceCleanupSchedule
         logDirectorySetting.file = apiProperties.tomcatLogsDirectory.absoluteFile
         baseDirSetting.file = apiProperties.tomcatBaseDirectory.absoluteFile
@@ -172,7 +248,9 @@ class WebserviceSettings(
     }
 
     override fun saveSettings() {
-        apiProperties.jdbcDatabaseUrl = databaseURLSetting.text
+        apiProperties.jdbcDatabaseUrl = "jdbc:postgresql://${databaseHostSetting.text}:${databasePortSetting.text}/${databaseDatabaseSetting.text}"
+        apiProperties.jdbcDatabaseUsername = databaseUsernameSetting.text
+        apiProperties.jdbcDatabasePassword = databasePasswordSetting.text
         apiProperties.webserviceCleanupSchedule = cleanupScheduleSetting.text
         apiProperties.tomcatLogsDirectory = logDirectorySetting.file.absoluteFile
         apiProperties.tomcatBaseDirectory = baseDirSetting.file.absoluteFile
@@ -232,12 +310,14 @@ class WebserviceSettings(
 
     override fun hasUnsavedChanges(): Boolean {
         val changes =
-                databaseURLSetting.text != apiProperties.jdbcDatabaseUrl ||
-                cleanupScheduleSetting.text != apiProperties.webserviceCleanupSchedule ||
-                logDirectorySetting.file.absolutePath != apiProperties.tomcatLogsDirectory.absolutePath ||
-                baseDirSetting.file.absolutePath != apiProperties.tomcatBaseDirectory.absolutePath ||
-                versionScheduleSetting.text != apiProperties.webserviceVersionSchedule ||
-                databaseCleanupScheduleSetting.text != apiProperties.webserviceDatabaseCleanupSchedule
+            "jdbc:postgresql://${databaseHostSetting.text}:${databasePortSetting.text}/${databaseDatabaseSetting.text}" != apiProperties.jdbcDatabaseUrl ||
+                    databaseUsernameSetting.text != apiProperties.jdbcDatabaseUsername ||
+                    databasePasswordSetting.text != apiProperties.jdbcDatabasePassword ||
+                    cleanupScheduleSetting.text != apiProperties.webserviceCleanupSchedule ||
+                    logDirectorySetting.file.absolutePath != apiProperties.tomcatLogsDirectory.absolutePath ||
+                    baseDirSetting.file.absolutePath != apiProperties.tomcatBaseDirectory.absolutePath ||
+                    versionScheduleSetting.text != apiProperties.webserviceVersionSchedule ||
+                    databaseCleanupScheduleSetting.text != apiProperties.webserviceDatabaseCleanupSchedule
         if (changes) {
             title.showWarningIcon()
         } else {
