@@ -1,3 +1,32 @@
+## [5.1.12-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12-beta.1...5.1.12-beta.2) (2024-02-12)
+
+
+### :scissors: Refactor
+
+* Optimize imports ([58b18e4](https://git.griefed.de/Griefed/ServerPackCreator/commit/58b18e468333f1f05e1ee17597959195950a5a26))
+
+
+### 💈 Style
+
+* Change name of web-frontend to "ServerPackCreator" ([495fe65](https://git.griefed.de/Griefed/ServerPackCreator/commit/495fe65f99c0ad88626f6493d0883c90e6d986e0))
+* Gradient behind logo for easier viewing ([c180404](https://git.griefed.de/Griefed/ServerPackCreator/commit/c18040448dca0396d3e2e3037085ee07fafe37d3))
+
+
+### 📔 Docs
+
+* Disclaimers, rearrangements and proper placement ([52f5aff](https://git.griefed.de/Griefed/ServerPackCreator/commit/52f5aff7f56c3231dd1e4b041daec54841c4ab40))
+
+
+### 📦 Other
+
+* Add AnimaticaReforged and Xenon to clientside-mods. Thanks to [@nvb-uy](https://git.griefed.de/nvb-uy) for the report! ([17f4672](https://git.griefed.de/Griefed/ServerPackCreator/commit/17f4672a01414bf118048a5d3c3945bde6e190de))
+
+
+### 🛠 Fixes
+
+* Only check modloader server if a version is available to check with ([fc2a707](https://git.griefed.de/Griefed/ServerPackCreator/commit/fc2a7070447299037a3e2b3431c78f5393902ac7))
+* Scan Forge-style when using NeoForge ([6c0bb18](https://git.griefed.de/Griefed/ServerPackCreator/commit/6c0bb18713dd36889d31bde7ebb57c7d1b5efe8c))
+
 ## [5.1.12-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.11...5.1.12-beta.1) (2024-02-11)
 
 
