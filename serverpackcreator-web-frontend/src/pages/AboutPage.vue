@@ -13,8 +13,7 @@
               server pack for your new modpack version.<br>
             </div>
           </q-card-section>
-
-          <q-card-section class="col-5 flex flex-center">
+          <q-card-section class="col-5 flex flex-center" style="background: radial-gradient(circle, rgba(144,144,144,1) 0%, rgba(255,255,255,1) 60%);">
             <q-img
               class="rounded-borders"
               height="256px"
