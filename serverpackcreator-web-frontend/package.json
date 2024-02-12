@@ -2,7 +2,7 @@
   "name": "serverpackcreator-web-frontend",
   "version": "2.0.0",
   "description": "Frontend for the webservice of ServerPackCreator",
-  "productName": "ServerPackCreator Web Frontend",
+  "productName": "ServerPackCreator",
   "author": "Griefed <griefed@griefed.de>",
   "private": true,
   "scripts": {
