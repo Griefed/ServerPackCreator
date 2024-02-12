@@ -602,7 +602,7 @@ actual class ServerPackHandler actual constructor(
             when (modloader) {
                 "LegacyFabric", "Fabric" -> autodiscoveredClientMods.addAll(modScanner.fabricScanner.scan(filesInModsDir))
 
-                "Forge" -> if (minecraftVersion.split(".").dropLastWhile { it.isEmpty() }
+                "Forge", "NeoForge" -> if (minecraftVersion.split(".").dropLastWhile { it.isEmpty() }
                         .toTypedArray()[1].toInt() > 12) {
                     autodiscoveredClientMods.addAll(modScanner.tomlScanner.scan(filesInModsDir))
                 } else {

@@ -58,7 +58,7 @@ There are two kinds of pre-releases: Alphas and Betas
 |---------------------|-------------------------------|---------------------|
 | ![cli](img/cli.png) | ![gui dark](img/gui_dark.png) | ![web](img/web.png) |
 
-## Advantages/Disadvantages of CLI, GUI:
+## Advantages/Disadvantages of CLI, GUI and WEB:
 
 Each way of using ServerPackCreator has its advantages and disadvantages. Depending on your environment, it may be better to use one way over the other. This section highlights some of the
 advantages and disadvantages of each version to help you decide which way you are going to use.
@@ -167,138 +167,7 @@ version other than version 21. Things may break at **random**, at **any** place,
 You are welcome to try and use any other version, but do **not** report issues back to me if you do encounter problems
 when running ServerPackCreator with a more recent Java version.
 
-## 5. Plugins
-
-The plugin-section shows an excerpt from the README of the example plugin README. Check out the repository of the example plugin, linked below,
-for more details.
-
-### 5.1. Example plugin for ServerPackCreator
-
-This repository contains an example plugin. Available at [Example Plugin](serverpackcreator-plugin-example)
-
-ServerPackCreator provides several extension endpoints for [pf4j plugins](https://github.com/pf4j/pf4j), to add
-additional functionality. This example plugin demonstrates an implementation for all available extension endpoints of ServerPackCreator.
-
-The example plugin demonstrates how extension for ServerPackCreator are implemented, one small example for every extension
-point available in ServerPackCreator.
-
-### 5.2 Available Extensions
-
-#### 5.2.1 Configuration Panel Extension
-
-The configuration panel is intended to let you add a panel in which you, or the user of your plugin, may
-configure something for any of the extensions added by your plugin.
-
-![configpanel](img/configpanel.png)
-
-The above example lets you configure four text-fields, one for each extension point used during server pack
-configuration checking and server pack generation. More on this in **Configuration Check Extension**.
-
-Extension configurations are saved to the serverpackcreator.conf of the server pack and re-loaded along
-with everything else, like the Minecraft version, modloader and modloader version etc.
-
-#### 5.2.2 Tab Extension
-
-Tab extensions allow you to add whole tabs to the GUI of ServerPackCreator. These additional tabs are intended
-to let you add text-fields and such, which allow you to configure your global plugin configuration.
-You may add anything you want to it. The sky is the limit!
-
-![tab](img/tabextension.png)
-
-The above example adds a button which, when pressed, opens a minimalistic Tetris game in a new window.
-It's not supposed to be actually that entertaining, but rather to demonstrate that you can do what you want inside
-your tab.
-
-Below the big button are some text-fields which allow you to change some values of the global plugin-wide configuration.
-Global plugin-configurations are handed to you by ServerPackCreator when the tab is instantiated.
-
-Global plugin-configurations are passed to every extension, along with any available extension-specific configuration,
-automatically, so you don't have to worry about anything other than actually saving changes you made in the tab.
-
-Maybe have a timer auto-save every few seconds? Your tab, your choice! 😁
-
-#### 5.2.3 Configuration Check Extension
-
-The configuration check extension point allows you to run your own config checks, be that on any of the
-already available data from the server pack config tab, or your own data from the configuration panel, or your
-own tab, or whatever else you may want to check.
-
-![check](img/configcheck.png)
-
-The above example simply checks whether the string in `text` of the passed `CommentedConfig` in a list
-of passed configs contains text. If it does, then we add a custom error message to the list of errors encountered
-during configuration checks.
-That list is then displayed to the user after the configurations checks have all run.
-
-Make use of this extension point in combination with the **Configuration Panel Extension** and/or **Tab Extension** in order to
-check user input for any errors!
-
-#### 5.2.4 Pre Server Pack Generation Extension
-
-The Pre Server Pack Generation extensions run, as the name implies, *right before* the generation of a server pack really begins.
-You may use this to prepare the environment for any of the tailing extensions.
-
-![pregen](img/pregen.png)
-
-The above example shows the run of a PreGen extension, with the global plugin configuration as well as the extension-specific
-extension passed to it by ServerPackCreator.
-
-#### 5.2.5 Pre Server Pack ZIP-archive Creation Extension
-
-The Pre Server Pack ZIP-archive Creation extensions run, as the name implies, *right before* the creation of the server packs ZIP-archive is, or would be,
-started. Want to add any files to the ZIP-archive? Or make sure some file doesn't make it into the ZIP-archive?
-
-![prezip](img/prezip.png)
-
-The above example shows the run of a PreZip extension, with the global plugin configuration as well as the extension-specific
-extension passed to it by ServerPackCreator.
-
-#### 5.2.6 Post Server Pack Generation Extension
-
-The Post Server Pack Generation extensions run, as the name implies, *after* the generation of a server pack has finished.
-Want to add any files to the server pack, but don't want them to end up in the ZIP-archive? Maybe download,
-install and configure DynMap with some render-data? This would be the place to do that!
-
-![postgen](img/postgen.png)
-
-The above example shows the run of a PreGen extension, with the global plugin configuration as well as the extension-specific
-extension passed to it by ServerPackCreator.
-
----
-
-See now why the ConfigPanel, ConfigCheck and Tab extensions are so nice to have?
-The possibilities are (almost) **endless**!😁
-
-### 5.3 The reason for allowing ServerPackCreator to run plugin:
-
-Some people need additional functionality for their server packs, or have some additional wishes for
-them. Some of those things may not fit into the core functionality of ServerPackCreator itself.
-
-It may also be that it is such a niche feature, that I either don't have the time to code it in, or
-simply don't want to. Maybe it doesn't fit into the overall design of ServerPackCreator, too. Who knows, it could be any
-of those reasons or another.
-
-**Hence, the plugin functionality.**
-
-This allows people to write their own plugins to expand the functionality of ServerPackCreator with
-their own features as they see fit.
-
-### 5.4 Adding your own
-
-A curated list of officially acknowledged plugins can be found [here](https://addons.griefed.de) (redirects to [GitHub Pages](https://griefed.github.io/ServerPackCreator-Addons-Overview/#/))
-
-How to get your own plugin into this list:
-
-If you have written your own plugin for ServerPackCreator and you would like to see it added here,
-please open an issue over at [ServerPackCreator](https://github.com/Griefed/ServerPackCreator/issues/new?assignees=Griefed&labels=documentation&template=documentation-request.yml&title=%5BDocumentation%5D%3A+), using the Documentation template.
-
-For a plugin to be accepted, you must at least provide:
-- The name of and link to the repository, and therefore the plugin.
-- The owner of the repository, and therefore the plugin.
-- The branch of the repository where the main code resides in.
-- A description of the plugin.
-
-## 6 Running
+## 5 Running
 
 1. If you've used the installer to acquire ServerPackCreator, use the shortcut created by the installer to run
 ServerPackCreator. The installers provide their own Java runtime, so you do not need to install Java separately.
@@ -317,9 +186,18 @@ There are a couple of arguments which may or may not be helpful for you, dependi
 | `-gui`    | Run ServerPackCreator with our GUI. If a graphical environment is supported, this is the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.                     |
 | `--setup` | Set up and prepare the environment for subsequent runs of ServerPackCreator. This will create/copy all files needed for ServerPackCreator to function properly from inside its JAR-file and setup everything else, too. |
 
-### 6.1 Running ServerPackCreator as a webservice
+### 5.1 Running ServerPackCreator as a webservice
 
-#### 6.1.1 JAR
+**DISCLAIMER**
+
+**There is no publicly available instance of ServerPackCreators webservice due to security concerns with the ability to upload zip-archives. If you want to make use of the webservice, you will have to host your own instance.**
+**As such, you are advised to not make your instance of the webservice of ServerPackCreator publicly accessible.**
+
+ZIP-archives uploaded by anonymous people may contain illegal or otherwise dangerous data, which could corrupt your system or get you into legal trouble.
+
+If you want to open your webservice-instance to the public, make sure to properly protect it by putting it behind required authorization.
+
+#### 5.1.1 JAR
 
 1. Download the JAR-file from the latest release
 2. Run it once, using the `-web` argument. ServerPackCreator will crash, complaining about JDBC-related things. This is expected, don't worry.
@@ -334,7 +212,7 @@ There are a couple of arguments which may or may not be helpful for you, dependi
 6. Run ServerPackCreator, using the `-web`-argument, again
 7. Browse to `http://localhost:8080`
 
-##### 6.1.1.1 Tweaking the webservice
+##### 5.1.1.1 Tweaking the webservice
 
 You may edit the following properties inside the `serverpackcreator.properties` if you wish to change some parts of the webservice-behaviour:
 
@@ -354,7 +232,7 @@ You may edit the following properties inside the `serverpackcreator.properties` 
 | `de.griefed.serverpackcreator.serverpack.zip.exclude.enabled`          | Whether files should be excluded from a server pack archive.                                                                         |
 | `server.port`                                                          | The port at which the webservice will be available at. Default is `8080`.                                                            |
 
-#### 6.1.2 Docker (recommended)
+#### 5.1.2 Docker (recommended)
 
 The recommended, and easiest, way to deploy ServerPackCreator as a webservice is via [docker](https://www.docker.com/) and [docker-compose](https://docs.docker.com/compose/).
 
@@ -402,7 +280,7 @@ services:
       - ./logs:/app/serverpackcreator/logs # Path at which logs from the container will be stored at on your host : Path to the logs in the container. Only change the left value, if at all.
 ```
 
-##### 6.1.2.1 Tweaking the docker deployment
+##### 5.1.2.1 Tweaking the docker deployment
 
 You may edit the following container-properties if you wish to change some parts of the webservice-behaviour:
 
@@ -420,108 +298,7 @@ You may edit the following container-properties if you wish to change some parts
 | `SPC_SERVERPACK_ZIP_EXCLUDE`                  | Files or directories which should be excluded from a server pack archive.                                                            |
 | `SPC_SERVERPACK_ZIP_EXCLUDE_ENABLED`          | Whether files should be excluded from a server pack archive.                                                                         |
 
-
-### 6.1 Localization
-
-If you wish to run ServerPackCreator with your locale (if it is already supported), you can either:
-1. Run `java -jar ServerPackCreator-X.X.X.jar -lang yourLocale` for example `java -jar ServerPackCreator-X.X.X.jar -lang en`. This will create the lang.properties-file with your specified locale.
-2. Running `java -jar ServerPackCreator-x.x.x.jar` without `-lang en` or any other language will either set the locale to `en` by default, or use the already defined locale from the `serverpackcreator.properites`-file.
-3. Modify the `serverpackcreator.properties`-file and set your locale like this `lang=yourLocale` for example `lang=en`
-
-
-If you want to contribute translations to ServerPackCreator, check out the [i18n](serverpackcreator-api/src/commonMain/kotlin/de/griefed/serverpackcreator/api/i18n)-directory containing already available
-translations to see how they are set up. Then, make your changes, test them, and open a pull request on GitHub according
-to the [Contribution-Guidelines](CONTRIBUTING.md).
-
-#### 6.1.1 Adding a translation
-
-Say you want to translate ServerPackCreator to german. You would need to add a file called `Translations_de_DE.properties` to the folder [serverpackcreator-api/src/commonMain/i18n/](serverpackcreator-api/src/commonMain/i18n/). 
-
-English translations, as an example for how to define translations, can be found at:
-[serverpackcreator-api/src/commonMain/i18n/Translations_en_GB.properties](serverpackcreator-api/src/commonMain/i18n/Translations_en_GB.properties)
-
-You will see entries like
-
-```properties
-menubar.gui.menu.file=File
-menubar.gui.menu.edit=Edit
-menubar.gui.menu.view=View
-menubar.gui.menu.about=About
-menubar.gui.menu.help=Help
-```
-
-So, in order to translate them to german, in your `Translations_de_DE.properties`-file, you would add
-
-```properties
-menubar.gui.menu.file=Datei
-menubar.gui.menu.edit=Bearbeiten
-menubar.gui.menu.view=Ansicht
-menubar.gui.menu.about=Info
-menubar.gui.menu.help=Hilfe
-```
-
-To make these available whilst coding, rebuild the project. The [i18n4k](https://github.com/comahe-de/i18n4k)-plugin will
-generate the necessary code, which will, in turn, then be available for you to use and test. Alternatively, you can run the
-Gradle task `generateI18n4kFiles` to generate the translation-code.
-
-Then, either in your `serverpackcreator.properties` set `de.griefed.serverpackcreator.language=de_DE` or launch
-ServerPackCreator with the argument `-lang=de_DE`.
-
-Voilà! The menubar will now have german translations!
-
-## 7 Contributing
-
-Java documentation available at:
-- https://griefed.pages.griefed.de/ServerPackCreator/ or
-- https://griefed.github.io/ServerPackCreator/ or
-- https://griefed.gitlab.io/ServerPackCreator/
-
-**Read [contributions](https://github.com/Griefed/ServerPackCreator/blob/main/CONTRIBUTING.md) before considering contributing to ServerPackCreator.**
-
-A short excerpt:
-
-> If you want to contribute to ServerPackCreator, then the following procedure **must** be adhered to:
->
-> 1. Fork ServerPackCreator
-> 2. Create a new branch in your fork, following one of the following naming schemes:
->     1. The end of each branch name bust be suffixed with a one-word description fitting the changes made. Examples:
->         - griefed_chore_readme
->         - griefed_perf_curseforgemodpack
->         - griefed_feat_ziparchive
->     2. For more details on what the naming scheme entails, see `.releaserc.yml` in the base directory of the repository or scroll down to the **Commits**-section.
->     3. Schemes:
->         1. your_username_breaking_
->         2. your_username_build_
->         3. your_username_chore_
->         4. your_username_ci_
->         5. your_username_docs_
->         6. your_username_feat_
->         7. your_username_fix_
->         8. your_username_perf_
->         9. your_username_refactor_
->         10. your_username_revert_
->         11. your_username_style_
->         12. your_username_test_
->         13. your_username_other_
-> 3. Make your changes to your new branch:
->     1. Try to keep the changes atomic, so they best fit the name of the branch.
->     2. Follow conventional commit messages. See **Commits**-section for more details. Example:
->         - feat: Allow upload of modpack-export zip-archive to web-frontend
->         - refactor: Use apache commons-io for copying, instead of Files
-> 4. Open an issue on the main repository:
->     1. Issue title: Your Username - Branch type (e.g. feat) - Short description of your changes. Example:
->         - Griefed - feat - Allow upload of modpack-export zip-archive to web-frontend
->     2. Issue description: Fill in the sections the template provide.
->     3. Submit the new issue
-> 5. I will then create a new branch in the main repository, with the same name as your branch, to which you will **then** create a pull request to.
-> 6. If checks and tests pass, or any changes necessary have been made, the pull request is ready to be merged etc., I will merge it to your main repository branch.
-> 7. I can then merge your main repository branch into main/master/whatever locally, push these changes to my GitLab instance, which will in turn push these changes to GitHub.
-> 8. Done!
->
-> This is the only way to ensure that any changes made to ServerPackCreator always arrive on my GitLab instance first, then on GitHub.
-> Since I want to stay independent of GitHub and their architecture, I have to make use of my own GitLab installation. Hence, this procedure. So, if one day, GitHub vanishes, we still can provide people with ServerPackCreator from my GitLab instance.
-
-## 8. Awesomesauce!
+## 6. Awesomesauce!
 
 **None of this would have been possible without the excellent IDEs by JetBrains. They have kindly provided this open source project with an All Products Pack license.**
 **Additionally, ej-Technologies has provided an open-source license for JProfiler and install4j for ServerPackCreator, which allows me to resolve performance bottlenecks, pin down memory leaks and understand threading issues, as well as generated fancy high-end installers.
@@ -541,7 +318,7 @@ Huge shoutout and thank you!**
 
 ---
 
-## 10. Libraries and Licenses
+## 7. Libraries and Licenses
 
 This project would not be possible without [these awesome groups](licenses/licences.md), creators and developers and their wonderful libraries
 they have kindly provided to people such as me. 

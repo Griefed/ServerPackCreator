@@ -1164,6 +1164,9 @@ class ConfigEditor(
     @OptIn(DelicateCoroutinesApi::class)
     fun checkServer(): Boolean {
         var okay = true
+        if (modloaderVersionSetting.selectedItem == Translations.createserverpack_gui_createserverpack_forge_none.toString()) {
+            return true
+        }
         val mcVersion = mcVersionSetting.selectedItem!!.toString()
         val modloader = modloaderSetting.selectedItem!!.toString()
         val modloaderVersion = modloaderVersionSetting.selectedItem!!.toString()

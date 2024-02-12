@@ -163,6 +163,7 @@ actual class ApiProperties(
             "Ambience",
             "AmbientEnvironment-",
             "AmbientSounds_",
+            "AnimaticaReforged-",
             "AreYouBlind-",
             "Armor Status HUD-",
             "ArmorSoundTweak-",
@@ -466,6 +467,7 @@ actual class ApiProperties(
             "watermedia-",
             "whats-that-slot-forge-",
             "wisla-",
+            "xenon-",
             "xlifeheartcolors-",
             "yisthereautojump-"
         )
