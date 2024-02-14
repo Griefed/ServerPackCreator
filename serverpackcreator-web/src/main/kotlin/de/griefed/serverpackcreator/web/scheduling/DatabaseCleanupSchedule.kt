@@ -23,6 +23,7 @@ import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.web.modpack.ModpackRepository
 import de.griefed.serverpackcreator.web.modpack.ModpackService
 import de.griefed.serverpackcreator.web.modpack.ModpackStatus
+import de.griefed.serverpackcreator.web.serverpack.ServerPackRepository
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
@@ -34,10 +35,12 @@ import kotlin.io.path.listDirectoryEntries
 class DatabaseCleanupSchedule @Autowired constructor(
     private val modpackRepository: ModpackRepository,
     private val modpackService: ModpackService,
+    private val serverPackRepository: ServerPackRepository,
     apiProperties: ApiProperties
 ) {
     private val log = cachedLoggerOf(this.javaClass)
     private val modPackRoot: Path = apiProperties.modpacksDirectory.toPath()
+    private val serverPackRoot: Path = apiProperties.serverPacksDirectory.toPath()
 
     @Scheduled(cron = "\${de.griefed.serverpackcreator.spring.schedules.database.cleanup}")
     private fun cleanDatabase() {
@@ -50,6 +53,17 @@ class DatabaseCleanupSchedule @Autowired constructor(
             } else if (modpackFiles.find { modpackFile -> modpackFile.name.contains(modpack.fileID!!.toString(), ignoreCase = true) } == null) {
                 modpackService.deleteModpack(modpack.id)
                 log.info("Deleted Modpack: ${modpack.id}-${modpack.name}")
+            }
+        }
+
+        val serverPackFiles = serverPackRoot.listDirectoryEntries().map { it.toFile() }
+        for (serverpack in serverPackRepository.findAll()) {
+            if (serverPackFiles.find { serverPackFile -> serverPackFile.name.contains(serverpack.fileID!!.toString(), ignoreCase = true) } == null) {
+                val modpack = modpackService.getByServerPack(serverpack)
+                modpack.get().serverPacks.remove(serverpack)
+                serverPackRepository.delete(serverpack)
+                modpackService.saveModpack(modpack.get())
+                log.info("Deleted Server Pack ${serverpack.id} from modpack ${modpack.get().id}-${modpack.get().name}")
             }
         }
         log.info("Database cleanup completed.")

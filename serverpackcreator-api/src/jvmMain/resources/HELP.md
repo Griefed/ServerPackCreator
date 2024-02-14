@@ -534,6 +534,132 @@ example-plugin
 **Important:** If ServerPackCreator was running during the disabling of an plugins, you need to
 restart it in order for the plugins to become disabled.
 
+#### Example plugin for ServerPackCreator
+
+This repository contains an example plugin. Available at [Example Plugin](serverpackcreator-plugin-example)
+
+ServerPackCreator provides several extension endpoints for [pf4j plugins](https://github.com/pf4j/pf4j), to add
+additional functionality. This example plugin demonstrates an implementation for all available extension endpoints of ServerPackCreator.
+
+The example plugin demonstrates how extension for ServerPackCreator are implemented, one small example for every extension
+point available in ServerPackCreator.
+
+#### Available Extensions
+
+##### Configuration Panel Extension
+
+The configuration panel is intended to let you add a panel in which you, or the user of your plugin, may
+configure something for any of the extensions added by your plugin.
+
+![configpanel](img/configpanel.png)
+
+The above example lets you configure four text-fields, one for each extension point used during server pack
+configuration checking and server pack generation. More on this in **Configuration Check Extension**.
+
+Extension configurations are saved to the serverpackcreator.conf of the server pack and re-loaded along
+with everything else, like the Minecraft version, modloader and modloader version etc.
+
+##### Tab Extension
+
+Tab extensions allow you to add whole tabs to the GUI of ServerPackCreator. These additional tabs are intended
+to let you add text-fields and such, which allow you to configure your global plugin configuration.
+You may add anything you want to it. The sky is the limit!
+
+![tab](img/tabextension.png)
+
+The above example adds a button which, when pressed, opens a minimalistic Tetris game in a new window.
+It's not supposed to be actually that entertaining, but rather to demonstrate that you can do what you want inside
+your tab.
+
+Below the big button are some text-fields which allow you to change some values of the global plugin-wide configuration.
+Global plugin-configurations are handed to you by ServerPackCreator when the tab is instantiated.
+
+Global plugin-configurations are passed to every extension, along with any available extension-specific configuration,
+automatically, so you don't have to worry about anything other than actually saving changes you made in the tab.
+
+Maybe have a timer auto-save every few seconds? Your tab, your choice! 😁
+
+##### Configuration Check Extension
+
+The configuration check extension point allows you to run your own config checks, be that on any of the
+already available data from the server pack config tab, or your own data from the configuration panel, or your
+own tab, or whatever else you may want to check.
+
+![check](img/configcheck.png)
+
+The above example simply checks whether the string in `text` of the passed `CommentedConfig` in a list
+of passed configs contains text. If it does, then we add a custom error message to the list of errors encountered
+during configuration checks.
+That list is then displayed to the user after the configurations checks have all run.
+
+Make use of this extension point in combination with the **Configuration Panel Extension** and/or **Tab Extension** in order to
+check user input for any errors!
+
+##### Pre Server Pack Generation Extension
+
+The Pre Server Pack Generation extensions run, as the name implies, *right before* the generation of a server pack really begins.
+You may use this to prepare the environment for any of the tailing extensions.
+
+![pregen](img/pregen.png)
+
+The above example shows the run of a PreGen extension, with the global plugin configuration as well as the extension-specific
+extension passed to it by ServerPackCreator.
+
+##### Pre Server Pack ZIP-archive Creation Extension
+
+The Pre Server Pack ZIP-archive Creation extensions run, as the name implies, *right before* the creation of the server packs ZIP-archive is, or would be,
+started. Want to add any files to the ZIP-archive? Or make sure some file doesn't make it into the ZIP-archive?
+
+![prezip](img/prezip.png)
+
+The above example shows the run of a PreZip extension, with the global plugin configuration as well as the extension-specific
+extension passed to it by ServerPackCreator.
+
+##### Post Server Pack Generation Extension
+
+The Post Server Pack Generation extensions run, as the name implies, *after* the generation of a server pack has finished.
+Want to add any files to the server pack, but don't want them to end up in the ZIP-archive? Maybe download,
+install and configure DynMap with some render-data? This would be the place to do that!
+
+![postgen](img/postgen.png)
+
+The above example shows the run of a PreGen extension, with the global plugin configuration as well as the extension-specific
+extension passed to it by ServerPackCreator.
+
+---
+
+See now why the ConfigPanel, ConfigCheck and Tab extensions are so nice to have?
+The possibilities are (almost) **endless**!😁
+
+#### The reason for allowing ServerPackCreator to run plugins:
+
+Some people need additional functionality for their server packs, or have some additional wishes for
+them. Some of those things may not fit into the core functionality of ServerPackCreator itself.
+
+It may also be that it is such a niche feature, that I either don't have the time to code it in, or
+simply don't want to. Maybe it doesn't fit into the overall design of ServerPackCreator, too. Who knows, it could be any
+of those reasons or another.
+
+**Hence, the plugin functionality.**
+
+This allows people to write their own plugins to expand the functionality of ServerPackCreator with
+their own features as they see fit.
+
+#### Adding your own
+
+A curated list of officially acknowledged plugins can be found [here](https://addons.griefed.de) (redirects to [GitHub Pages](https://griefed.github.io/ServerPackCreator-Addons-Overview/#/))
+
+How to get your own plugin into this list:
+
+If you have written your own plugin for ServerPackCreator and you would like to see it added here,
+please open an issue over at [ServerPackCreator](https://github.com/Griefed/ServerPackCreator/issues/new?assignees=Griefed&labels=documentation&template=documentation-request.yml&title=%5BDocumentation%5D%3A+), using the Documentation template.
+
+For a plugin to be accepted, you must at least provide:
+- The name of and link to the repository, and therefore the plugin.
+- The owner of the repository, and therefore the plugin.
+- The branch of the repository where the main code resides in.
+- A description of the plugin.
+
 ## Configuration
 
 ### serverpackcreator.conf
@@ -705,6 +831,20 @@ Voila! The menubar will now have german translations!
 
 Keep in mind when using languages other than `en_GB`: Any key not found in your currently set
 language will fall back to the english default.
+
+## Deleting Server Packs in the Webservice
+
+Since Server Packs generated by the webservice of ServerPackCreator are meant to be served internally, there is currently no
+comfortable way of deleting them from the web-ui. Such a functionality may come in a later version, though. If you have a
+good idea, let me know via Discord or an issue on GitHub.
+
+That being said: You can delete a server pack by removing the corresponding file from the filesystem.
+1. Connect to the database using your favourite software
+2. List the entries in the `server_pack`-table
+3. Identify the server pack you want to remove. You may use the ID in the table in combination with the webui for this, for example.
+4. Note down the `fileid` of the desired server pack
+5. Delete the server pack from the `server-packs`-directory which has the previously noted ID as its name.
+6. Wait till the `de.griefed.serverpackcreator.spring.schedules.database.cleanup`-schedule runs. The server pack will be deleted from the database.
 
 ##
 

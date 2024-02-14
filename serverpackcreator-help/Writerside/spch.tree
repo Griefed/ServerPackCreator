@@ -13,6 +13,7 @@
     </toc-element>
     <toc-element topic="Help-Topic.md">
         <toc-element topic="Custom-Start-Arguments.md"/>
+        <toc-element topic="Deleting-Server-Packs-From-In-The-Webservice.md"/>
         <toc-element topic="Exclusions.md"/>
         <toc-element topic="Custom-Themes.md"/>
         <toc-element topic="Minecraft-Versions.md"/>
