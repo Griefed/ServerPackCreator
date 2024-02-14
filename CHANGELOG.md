@@ -1,3 +1,15 @@
+## [5.1.12-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12-beta.2...5.1.12-beta.3) (2024-02-14)
+
+
+### 💎 Improvements
+
+* Delete server packs which aren't available on the filesystem anymore ([7b31dc8](https://git.griefed.de/Griefed/ServerPackCreator/commit/7b31dc8ed03f64b04d0242756bcded400470aeb9))
+
+
+### 📔 Docs
+
+* Update license report and docs ([e343904](https://git.griefed.de/Griefed/ServerPackCreator/commit/e34390498474c2a37110887c1d3b93b306d7505a))
+
 ## [5.1.12-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12-beta.1...5.1.12-beta.2) (2024-02-12)
 
 
