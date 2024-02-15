@@ -1,3 +1,20 @@
+## [5.1.12-beta.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12-beta.3...5.1.12-beta.4) (2024-02-15)
+
+
+### 📔 Docs
+
+* Replace old property values with accurate ones ([572f29e](https://git.griefed.de/Griefed/ServerPackCreator/commit/572f29eca8b8fded4ae26eeab8577333b528a2fe))
+
+
+### 📦 Other
+
+* Oof, stupid typo ([cf8e4f7](https://git.griefed.de/Griefed/ServerPackCreator/commit/cf8e4f79294a78802fb753a75f89c9871d764994))
+
+
+### 🛠 Fixes
+
+* Correctly delete no longer available server pack ([e0cffec](https://git.griefed.de/Griefed/ServerPackCreator/commit/e0cffecfaafe34fab3a7371cff8110bbf10143ec))
+
 ## [5.1.12-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12-beta.2...5.1.12-beta.3) (2024-02-14)
 
 
