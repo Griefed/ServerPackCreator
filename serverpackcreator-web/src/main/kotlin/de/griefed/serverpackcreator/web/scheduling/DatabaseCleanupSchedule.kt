@@ -60,9 +60,9 @@ class DatabaseCleanupSchedule @Autowired constructor(
         for (serverpack in serverPackRepository.findAll()) {
             if (serverPackFiles.find { serverPackFile -> serverPackFile.name.contains(serverpack.fileID!!.toString(), ignoreCase = true) } == null) {
                 val modpack = modpackService.getByServerPack(serverpack)
-                modpack.get().serverPacks.remove(serverpack)
-                serverPackRepository.delete(serverpack)
+                modpack.get().serverPacks.removeIf { pack -> pack.id == serverpack.id }
                 modpackService.saveModpack(modpack.get())
+                serverPackRepository.delete(serverpack)
                 log.info("Deleted Server Pack ${serverpack.id} from modpack ${modpack.get().id}-${modpack.get().name}")
             }
         }

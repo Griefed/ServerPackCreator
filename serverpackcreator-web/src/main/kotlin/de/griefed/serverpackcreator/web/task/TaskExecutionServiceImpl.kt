@@ -200,7 +200,9 @@ class TaskExecutionServiceImpl @Autowired constructor(
             val serverPack = ServerPack()
             serverPack.size = serverPackFile.size().div(1048576.0).toInt()
             serverPack.runConfiguration = taskDetail.runConfiguration
-            serverPack.fileID = serverPackFile.name.replace("_server_pack.zip","").toLong()
+            serverPack.fileID = serverPackFile.name
+                .replace(".zip","", ignoreCase = true)
+                .replace("_server_pack.zip","", ignoreCase = true).toLong()
             serverPack.sha256 = String(Hex.encode(messageDigestInstance.digest(serverPackFile.readBytes())))
             serverPackService.saveServerPack(serverPack)
             taskDetail.modpack.serverPacks.addLast(serverPack)
