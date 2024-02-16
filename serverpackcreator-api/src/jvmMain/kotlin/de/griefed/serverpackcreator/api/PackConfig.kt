@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -313,9 +313,6 @@ actual open class PackConfig actual constructor() : Pack<File, JsonNode, PackCon
         config.close()
     }
 
-    /**
-     * @author Griefed
-     */
     private fun migrateCopyDirsToInclusions(config: FileConfig) {
         val copyDirs = config.get("copyDirs") as ArrayList<Any>
         val inclusions = ArrayList<InclusionSpecification>()
@@ -362,9 +359,6 @@ actual open class PackConfig actual constructor() : Pack<File, JsonNode, PackCon
         config.set<Any>(inclusionsKey, newInclusionsList)
     }
 
-    /**
-     * @author Griefed
-     */
     @Suppress("DuplicatedCode")
     actual override fun save(destination: File, apiProperties: ApiProperties): PackConfig {
         val conf = TomlFormat.instance().createConfig()

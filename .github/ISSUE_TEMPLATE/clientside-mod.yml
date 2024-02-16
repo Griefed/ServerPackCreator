@@ -1,0 +1,28 @@
+name: Clientside-mod Addition Request
+description: Request a mod to be added to the official list of clientside-only mods.
+title: "[Clientside-mod Addition Request]: "
+labels: ["enhancement"]
+assignees:
+  - Griefed
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for submitting a clientside-only mod to the official list in ServerPackCreator!
+  - type: input
+    id: link
+    attributes:
+      label: The link to the project on CurseForge or Modrinth
+      description: Provide the link to the project of this mod. Said link is required so I can verify that this is indeed a clientside-only mod.
+      placeholder: https://www.curseforge.com/minecraft/mc-mods/blind-accessibility
+      value: "Provide the link to the project of this mod. Said link is required so I can verify that this is indeed a clientside-only mod."
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/Griefed/ServerPackCreator/blob/main/CODE_OF_CONDUCT.md)
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true

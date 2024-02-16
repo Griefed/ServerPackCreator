@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.settings
 
-import Gui
+import Translations
 import com.cronutils.model.CronType
 import com.cronutils.model.definition.CronDefinitionBuilder
 import com.cronutils.parser.CronParser
@@ -29,8 +29,10 @@ import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.*
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.control.ControlPanel
-import de.griefed.serverpackcreator.gui.window.settings.components.*
-import java.io.File
+import de.griefed.serverpackcreator.gui.window.settings.components.Editor
+import de.griefed.serverpackcreator.gui.window.settings.components.TomcatBaseDirChooser
+import de.griefed.serverpackcreator.gui.window.settings.components.TomcatLogDirChooser
+import java.net.URI
 import javax.swing.JFileChooser
 import javax.swing.JOptionPane
 import javax.swing.event.ChangeListener
@@ -45,140 +47,139 @@ class WebserviceSettings(
     documentChangeListener: DocumentChangeListener,
     changeListener: ChangeListener,
     controlPanel: ControlPanel
-) : Editor(Gui.settings_webservice.toString(), guiProps) {
+) : Editor(Translations.settings_webservice.toString(), guiProps) {
 
     private val cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(CronType.SPRING)
     private val cronParser = CronParser(cronDefinition)
 
-    private val artemisDataDirectoryIcon = StatusIcon(guiProps, Gui.settings_webservice_artemisdata_tooltip.toString())
-    private val artemisDataDirectoryLabel = ElementLabel(Gui.settings_webservice_artemisdata_label.toString())
-    private val artemisDataDirectorySetting = ScrollTextFileField(guiProps,apiProperties.artemisDataDirectory.absoluteFile, documentChangeListener)
-    private val artemisDataDirectoryRevert = BalloonTipButton(null, guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) { artemisDataDirectorySetting.file = apiProperties.artemisDataDirectory.absoluteFile }
-    private val artemisDataDirectoryReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { artemisDataDirectorySetting.file = apiProperties.defaultArtemisDataDirectory().absoluteFile }
-    private val artemisDataDirectoryChoose = BalloonTipButton(null, guiProps.folderIcon,Gui.settings_select_directory.toString(), guiProps) {
-        val artemisChooser = ArtemisDataDirChooser(apiProperties,Gui.settings_webservice_artemisdata_chooser.toString())
-        if (artemisChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
-            if (artemisChooser.selectedFile.absoluteFile.testFileWrite()) {
-                artemisDataDirectorySetting.file = artemisChooser.selectedFile.absoluteFile
-            } else {
-                JOptionPane.showMessageDialog(
-                    mainFrame.frame,
-                    Gui.settings_directory_error(artemisChooser.selectedFile.absoluteFile)
-                )
-            }
-        }
+    private val databaseHostIcon = StatusIcon(guiProps,Translations.settings_webservice_database_host_tooltip.toString())
+    private val databaseHostLabel = ElementLabel(Translations.settings_webservice_database_host_label.toString())
+    private val databaseHostSetting = ScrollTextField(guiProps, getHost(apiProperties.jdbcDatabaseUrl), Translations.settings_webservice_database_host_label.toString(), documentChangeListener)
+    private val databaseHostRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) { databaseHostSetting.text = getHost(apiProperties.jdbcDatabaseUrl) }
+    private val databaseHostReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { databaseHostSetting.text = getHost(apiProperties.defaultWebserviceDatabase()) }
+
+    private val databasePortIcon = StatusIcon(guiProps,Translations.settings_webservice_database_port_tooltip.toString())
+    private val databasePortLabel = ElementLabel(Translations.settings_webservice_database_port_label.toString())
+    private val databasePortSetting = ScrollTextField(guiProps, getPort(apiProperties.jdbcDatabaseUrl), Translations.settings_webservice_database_port_label.toString(), documentChangeListener)
+    private val databasePortRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) { databasePortSetting.text = getPort(apiProperties.jdbcDatabaseUrl) }
+    private val databasePortReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { databasePortSetting.text = getPort(apiProperties.defaultWebserviceDatabase()) }
+
+    private val databaseDatabaseIcon = StatusIcon(guiProps,Translations.settings_webservice_database_database_tooltip.toString())
+    private val databaseDatabaseLabel = ElementLabel(Translations.settings_webservice_database_database_label.toString())
+    private val databaseDatabaseSetting = ScrollTextField(guiProps, getDatabase(apiProperties.jdbcDatabaseUrl), Translations.settings_webservice_database_database_label.toString(), documentChangeListener)
+    private val databaseDatabaseRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) {
+        databaseDatabaseSetting.text = getDatabase(apiProperties.jdbcDatabaseUrl)
+    }
+    private val databaseDatabaseReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) {
+        databaseDatabaseSetting.text = getDatabase(apiProperties.defaultWebserviceDatabase())
     }
 
-    private val artemisQueueMaxDiskUsageIcon = StatusIcon(guiProps,Gui.settings_webservice_artemisusage_tooltip.toString())
-    private val artemisQueueMaxDiskUsageLabel = ElementLabel(Gui.settings_webservice_artemisusage_label.toString())
-    private val artemisQueueMaxDiskUsageSetting = ActionSlider(10,90,apiProperties.artemisQueueMaxDiskUsage, changeListener)
-    private val artemisQueueMaxDiskUsageRevert = BalloonTipButton(null, guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) { artemisQueueMaxDiskUsageSetting.value = apiProperties.artemisQueueMaxDiskUsage }
-    private val artemisQueueMaxDiskUsageReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { artemisQueueMaxDiskUsageSetting.value = apiProperties.fallbackArtemisQueueMaxDiskUsage }
+    private val databaseUsernameIcon = StatusIcon(guiProps,Translations.settings_webservice_database_username_tooltip.toString())
+    private val databaseUsernameLabel = ElementLabel(Translations.settings_webservice_database_username_label.toString())
+    private val databaseUsernameSetting = ScrollTextField(guiProps, apiProperties.jdbcDatabaseUsername, Translations.settings_webservice_database_username_label.toString(), documentChangeListener)
+    private val databaseUsernameRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) { databaseUsernameSetting.text = apiProperties.jdbcDatabaseUsername }
+    private val databaseUsernameReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { databaseUsernameSetting.text = "" }
 
-    private val databaseFileIcon = StatusIcon(guiProps,Gui.settings_webservice_database_tooltip.toString())
-    private val databaseFileLabel = ElementLabel(Gui.settings_webservice_database_label.toString())
-    private val databaseFileSetting = ScrollTextFileField(guiProps,apiProperties.serverPackCreatorDatabase.absoluteFile, documentChangeListener)
-    private val databaseFileRevert = BalloonTipButton(null, guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) { databaseFileSetting.file = apiProperties.serverPackCreatorDatabase.absoluteFile }
-    private val databaseFileReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { databaseFileSetting.file = apiProperties.defaultWebserviceDatabase().absoluteFile }
-    private val databaseFileChoose = BalloonTipButton(null, guiProps.folderIcon,Gui.settings_select_directory.toString(), guiProps) {
-        val webserviceChooser = WebserviceDBDirChooser(apiProperties,Gui.settings_webservice_database_chooser.toString())
-        if (webserviceChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
-            if (webserviceChooser.selectedFile.absoluteFile.testFileWrite()) {
-                databaseFileSetting.file = File(webserviceChooser.selectedFile.absoluteFile,"serverpackcreator.db").absoluteFile
-            } else {
-                JOptionPane.showMessageDialog(
-                    mainFrame.frame,
-                    Gui.settings_directory_error(webserviceChooser.selectedFile.absoluteFile)
-                )
-            }
-        }
-    }
+    private val databasePasswordIcon = StatusIcon(guiProps,Translations.settings_webservice_database_password_tooltip.toString())
+    private val databasePasswordLabel = ElementLabel(Translations.settings_webservice_database_password_label.toString())
+    private val databasePasswordSetting = ScrollTextField(guiProps, apiProperties.jdbcDatabasePassword, Translations.settings_webservice_database_password_label.toString(), documentChangeListener)
+    private val databasePasswordRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) { databasePasswordSetting.text = apiProperties.jdbcDatabasePassword }
+    private val databasePasswordReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { databasePasswordSetting.text = "" }
 
-    private val cleanupScheduleIcon = StatusIcon(guiProps,Gui.settings_webservice_schedule_cleanup_tooltip.toString())
-    private val cleanupScheduleLabel = ElementLabel(Gui.settings_webservice_schedule_cleanup_label.toString())
-    private val cleanupScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceCleanupSchedule,Gui.settings_webservice_schedule_cleanup_label.toString(),documentChangeListener)
-    private val cleanupRevert = BalloonTipButton(null, guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) { cleanupScheduleSetting.text = apiProperties.webserviceCleanupSchedule }
-    private val cleanupReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { cleanupScheduleSetting.text = apiProperties.fallbackCleanupSchedule }
+    private val cleanupScheduleIcon = StatusIcon(guiProps,Translations.settings_webservice_schedule_cleanup_tooltip.toString())
+    private val cleanupScheduleLabel = ElementLabel(Translations.settings_webservice_schedule_cleanup_label.toString())
+    private val cleanupScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceCleanupSchedule,Translations.settings_webservice_schedule_cleanup_label.toString(),documentChangeListener)
+    private val cleanupRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) { cleanupScheduleSetting.text = apiProperties.webserviceCleanupSchedule }
+    private val cleanupReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { cleanupScheduleSetting.text = apiProperties.fallbackCleanupSchedule }
 
-    private val logDirectoryIcon = StatusIcon(guiProps,Gui.settings_webservice_tomcat_logs_tooltip.toString())
-    private val logDirectoryLabel = ElementLabel(Gui.settings_webservice_tomcat_logs_label.toString())
+    private val logDirectoryIcon = StatusIcon(guiProps,Translations.settings_webservice_tomcat_logs_tooltip.toString())
+    private val logDirectoryLabel = ElementLabel(Translations.settings_webservice_tomcat_logs_label.toString())
     private val logDirectorySetting = ScrollTextFileField(guiProps,apiProperties.tomcatLogsDirectory.absoluteFile, documentChangeListener)
-    private val logDirectoryRevert = BalloonTipButton(null, guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) { logDirectorySetting.file = apiProperties.tomcatLogsDirectory.absoluteFile }
-    private val logDirectoryReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { logDirectorySetting.file = apiProperties.defaultTomcatLogsDirectory().absoluteFile }
-    private val logDirectoryChoose = BalloonTipButton(null, guiProps.folderIcon,Gui.settings_select_directory.toString(), guiProps) {
-        val logDirectoryChooser = TomcatLogDirChooser(apiProperties,Gui.settings_webservice_tomcat_logs_chooser.toString())
+    private val logDirectoryRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) { logDirectorySetting.file = apiProperties.tomcatLogsDirectory.absoluteFile }
+    private val logDirectoryReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { logDirectorySetting.file = apiProperties.defaultTomcatLogsDirectory().absoluteFile }
+    private val logDirectoryChoose = BalloonTipButton(null, guiProps.folderIcon,Translations.settings_select_directory.toString(), guiProps) {
+        val logDirectoryChooser = TomcatLogDirChooser(apiProperties,Translations.settings_webservice_tomcat_logs_chooser.toString())
         if (logDirectoryChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             if (logDirectoryChooser.selectedFile.absoluteFile.testFileWrite()) {
                 logDirectorySetting.file = logDirectoryChooser.selectedFile.absoluteFile
             } else {
                 JOptionPane.showMessageDialog(
                     mainFrame.frame,
-                    Gui.settings_directory_error(logDirectoryChooser.selectedFile.absoluteFile)
+                    Translations.settings_directory_error(logDirectoryChooser.selectedFile.absoluteFile)
                 )
             }
         }
     }
 
-    private val baseDirIcon = StatusIcon(guiProps,Gui.settings_webservice_tomcat_dir_tooltip.toString())
-    private val baseDirLabel = ElementLabel(Gui.settings_webservice_tomcat_dir_label.toString())
+    private val baseDirIcon = StatusIcon(guiProps,Translations.settings_webservice_tomcat_dir_tooltip.toString())
+    private val baseDirLabel = ElementLabel(Translations.settings_webservice_tomcat_dir_label.toString())
     private val baseDirSetting = ScrollTextFileField(guiProps,apiProperties.tomcatBaseDirectory.absoluteFile, documentChangeListener)
-    private val baseDirRevert = BalloonTipButton(null, guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) { baseDirSetting.file = apiProperties.tomcatBaseDirectory.absoluteFile }
-    private val baseDirReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { baseDirSetting.file = apiProperties.defaultTomcatBaseDirectory().absoluteFile }
-    private val baseDirChoose = BalloonTipButton(null, guiProps.folderIcon,Gui.settings_select_directory.toString(), guiProps) {
-        val baseDirChooser = TomcatBaseDirChooser(apiProperties,Gui.settings_webservice_tomcat_dir_chooser.toString())
+    private val baseDirRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) { baseDirSetting.file = apiProperties.tomcatBaseDirectory.absoluteFile }
+    private val baseDirReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { baseDirSetting.file = apiProperties.defaultTomcatBaseDirectory().absoluteFile }
+    private val baseDirChoose = BalloonTipButton(null, guiProps.folderIcon,Translations.settings_select_directory.toString(), guiProps) {
+        val baseDirChooser = TomcatBaseDirChooser(apiProperties,Translations.settings_webservice_tomcat_dir_chooser.toString())
         if (baseDirChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             if (baseDirChooser.selectedFile.absoluteFile.testFileWrite()) {
                 baseDirSetting.file = baseDirChooser.selectedFile.absoluteFile
             } else {
                 JOptionPane.showMessageDialog(
                     mainFrame.frame,
-                    Gui.settings_directory_error(baseDirChooser.selectedFile.absoluteFile)
+                    Translations.settings_directory_error(baseDirChooser.selectedFile.absoluteFile)
                 )
             }
         }
     }
 
-    private val versionScheduleIcon = StatusIcon(guiProps,Gui.settings_webservice_schedule_versions_tooltip.toString())
-    private val versionScheduleLabel = ElementLabel(Gui.settings_webservice_schedule_versions_label.toString())
-    private val versionScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceVersionSchedule,Gui.settings_webservice_schedule_versions_label.toString(),documentChangeListener)
-    private val versionRevert = BalloonTipButton(null, guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) { versionScheduleSetting.text = apiProperties.webserviceVersionSchedule }
-    private val versionReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { versionScheduleSetting.text = apiProperties.fallbackVersionSchedule }
+    private val versionScheduleIcon = StatusIcon(guiProps,Translations.settings_webservice_schedule_versions_tooltip.toString())
+    private val versionScheduleLabel = ElementLabel(Translations.settings_webservice_schedule_versions_label.toString())
+    private val versionScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceVersionSchedule,Translations.settings_webservice_schedule_versions_label.toString(),documentChangeListener)
+    private val versionRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) { versionScheduleSetting.text = apiProperties.webserviceVersionSchedule }
+    private val versionReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { versionScheduleSetting.text = apiProperties.fallbackVersionSchedule }
 
-    private val databaseCleanupScheduleIcon = StatusIcon(guiProps,Gui.settings_webservice_schedule_database_tooltip.toString())
-    private val databaseCleanupScheduleLabel = ElementLabel(Gui.settings_webservice_schedule_database_label.toString())
-    private val databaseCleanupScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceDatabaseCleanupSchedule,Gui.settings_webservice_schedule_database_label.toString(),documentChangeListener)
-    private val databaseCleanupRevert = BalloonTipButton(null, guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) { databaseCleanupScheduleSetting.text = apiProperties.webserviceDatabaseCleanupSchedule }
-    private val databaseCleanupReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { databaseCleanupScheduleSetting.text = apiProperties.fallbackDatabaseCleanupSchedule }
+    private val databaseCleanupScheduleIcon = StatusIcon(guiProps,Translations.settings_webservice_schedule_database_tooltip.toString())
+    private val databaseCleanupScheduleLabel = ElementLabel(Translations.settings_webservice_schedule_database_label.toString())
+    private val databaseCleanupScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceDatabaseCleanupSchedule,Translations.settings_webservice_schedule_database_label.toString(),documentChangeListener)
+    private val databaseCleanupRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) { databaseCleanupScheduleSetting.text = apiProperties.webserviceDatabaseCleanupSchedule }
+    private val databaseCleanupReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { databaseCleanupScheduleSetting.text = apiProperties.fallbackDatabaseCleanupSchedule }
 
     init {
         loadSettings()
-        artemisQueueMaxDiskUsageSetting.paintTicks = true
-        artemisQueueMaxDiskUsageSetting.paintLabels = true
-        artemisQueueMaxDiskUsageSetting.majorTickSpacing = 10
-        artemisQueueMaxDiskUsageSetting.minorTickSpacing = 5
-
         var y = 0
-        panel.add(artemisQueueMaxDiskUsageIcon, "cell 0 $y")
-        panel.add(artemisQueueMaxDiskUsageLabel, "cell 1 $y")
-        panel.add(artemisQueueMaxDiskUsageSetting, "cell 2 $y, grow")
-        panel.add(artemisQueueMaxDiskUsageRevert, "cell 3 $y")
-        panel.add(artemisQueueMaxDiskUsageReset, "cell 4 $y")
 
         y++
-        panel.add(artemisDataDirectoryIcon, "cell 0 $y")
-        panel.add(artemisDataDirectoryLabel, "cell 1 $y")
-        panel.add(artemisDataDirectorySetting, "cell 2 $y, grow")
-        panel.add(artemisDataDirectoryRevert, "cell 3 $y")
-        panel.add(artemisDataDirectoryReset, "cell 4 $y")
-        panel.add(artemisDataDirectoryChoose, "cell 5 $y")
+        panel.add(databaseHostIcon, "cell 0 $y")
+        panel.add(databaseHostLabel, "cell 1 $y")
+        panel.add(databaseHostSetting, "cell 2 $y, grow")
+        panel.add(databaseHostRevert, "cell 3 $y")
+        panel.add(databaseHostReset, "cell 4 $y")
 
         y++
-        panel.add(databaseFileIcon, "cell 0 $y")
-        panel.add(databaseFileLabel, "cell 1 $y")
-        panel.add(databaseFileSetting, "cell 2 $y, grow")
-        panel.add(databaseFileRevert, "cell 3 $y")
-        panel.add(databaseFileReset, "cell 4 $y")
-        panel.add(databaseFileChoose, "cell 5 $y")
+        panel.add(databasePortIcon, "cell 0 $y")
+        panel.add(databasePortLabel, "cell 1 $y")
+        panel.add(databasePortSetting, "cell 2 $y, grow")
+        panel.add(databasePortRevert, "cell 3 $y")
+        panel.add(databasePortReset, "cell 4 $y")
+
+        y++
+        panel.add(databaseDatabaseIcon, "cell 0 $y")
+        panel.add(databaseDatabaseLabel, "cell 1 $y")
+        panel.add(databaseDatabaseSetting, "cell 2 $y, grow")
+        panel.add(databaseDatabaseRevert, "cell 3 $y")
+        panel.add(databaseDatabaseReset, "cell 4 $y")
+
+        y++
+        panel.add(databaseUsernameIcon, "cell 0 $y")
+        panel.add(databaseUsernameLabel, "cell 1 $y")
+        panel.add(databaseUsernameSetting, "cell 2 $y, grow")
+        panel.add(databaseUsernameRevert, "cell 3 $y")
+        panel.add(databaseUsernameReset, "cell 4 $y")
+
+        y++
+        panel.add(databasePasswordIcon, "cell 0 $y")
+        panel.add(databasePasswordLabel, "cell 1 $y")
+        panel.add(databasePasswordSetting, "cell 2 $y, grow")
+        panel.add(databasePasswordRevert, "cell 3 $y")
+        panel.add(databasePasswordReset, "cell 4 $y")
 
         y++
         panel.add(logDirectoryIcon, "cell 0 $y")
@@ -218,10 +219,27 @@ class WebserviceSettings(
         panel.add(databaseCleanupReset, "cell 4 $y")
     }
 
+    private fun getHost(url: String): String {
+        val uri = URI(url.replace("jdbc:postgresql","http"))
+        return uri.host
+    }
+
+    private fun getPort(url: String): String {
+        val uri = URI(url.replace("jdbc:postgresql","http"))
+        return uri.port.toString()
+    }
+
+    private fun getDatabase(url: String): String {
+        val uri = URI(url.replace("jdbc:postgresql","http"))
+        return uri.path.substring(1)
+    }
+
     override fun loadSettings() {
-        artemisDataDirectorySetting.file = apiProperties.artemisDataDirectory.absoluteFile
-        artemisQueueMaxDiskUsageSetting.value = apiProperties.artemisQueueMaxDiskUsage
-        databaseFileSetting.file = apiProperties.serverPackCreatorDatabase.absoluteFile
+        databaseHostSetting.text = getHost(apiProperties.jdbcDatabaseUrl)
+        databasePortSetting.text = getPort(apiProperties.jdbcDatabaseUrl)
+        databaseDatabaseSetting.text = getDatabase(apiProperties.jdbcDatabaseUrl)
+        databaseUsernameSetting.text = apiProperties.jdbcDatabaseUsername
+        databasePasswordSetting.text = apiProperties.jdbcDatabasePassword
         cleanupScheduleSetting.text = apiProperties.webserviceCleanupSchedule
         logDirectorySetting.file = apiProperties.tomcatLogsDirectory.absoluteFile
         baseDirSetting.file = apiProperties.tomcatBaseDirectory.absoluteFile
@@ -230,9 +248,9 @@ class WebserviceSettings(
     }
 
     override fun saveSettings() {
-        apiProperties.artemisDataDirectory = artemisDataDirectorySetting.file.absoluteFile
-        apiProperties.artemisQueueMaxDiskUsage = artemisQueueMaxDiskUsageSetting.value
-        apiProperties.serverPackCreatorDatabase = databaseFileSetting.file.absoluteFile
+        apiProperties.jdbcDatabaseUrl = "jdbc:postgresql://${databaseHostSetting.text}:${databasePortSetting.text}/${databaseDatabaseSetting.text}"
+        apiProperties.jdbcDatabaseUsername = databaseUsernameSetting.text
+        apiProperties.jdbcDatabasePassword = databasePasswordSetting.text
         apiProperties.webserviceCleanupSchedule = cleanupScheduleSetting.text
         apiProperties.tomcatLogsDirectory = logDirectorySetting.file.absoluteFile
         apiProperties.tomcatBaseDirectory = baseDirSetting.file.absoluteFile
@@ -242,45 +260,25 @@ class WebserviceSettings(
 
     override fun validateSettings(): List<String> {
         val errors = mutableListOf<String>()
-        if (!artemisDataDirectorySetting.file.absoluteFile.isDirectory || !artemisDataDirectorySetting.file.absoluteFile.canWrite()) {
-            artemisDataDirectoryIcon.error(Gui.settings_webservice_artemisdata_error.toString())
-            errors.add(Gui.settings_webservice_artemisdata_error.toString())
-        } else {
-            artemisDataDirectoryIcon.info()
-        }
-
-        if (artemisQueueMaxDiskUsageSetting.value < 10 || artemisQueueMaxDiskUsageSetting.value > 90 ) {
-            artemisQueueMaxDiskUsageIcon.error(Gui.settings_webservice_artemisusage_error.toString())
-            errors.add(Gui.settings_webservice_artemisusage_error.toString())
-        } else {
-            artemisQueueMaxDiskUsageIcon.info()
-        }
-
-        if (!databaseFileSetting.file.absoluteFile.parentFile.isDirectory || !databaseFileSetting.file.absoluteFile.parentFile.canWrite()) {
-            databaseFileIcon.error(Gui.settings_webservice_database_error.toString())
-            errors.add(Gui.settings_webservice_database_error.toString())
-        } else {
-            databaseFileIcon.info()
-        }
 
         try {
             cronParser.parse(cleanupScheduleSetting.text).validate()
             cleanupScheduleIcon.info()
         } catch (ex: IllegalArgumentException) {
-            cleanupScheduleIcon.error(Gui.settings_webservice_schedule_cleanup_error.toString())
-            errors.add(Gui.settings_webservice_schedule_cleanup_error.toString())
+            cleanupScheduleIcon.error(Translations.settings_webservice_schedule_cleanup_error.toString())
+            errors.add(Translations.settings_webservice_schedule_cleanup_error.toString())
         }
 
         if (!logDirectorySetting.file.absoluteFile.isDirectory || !logDirectorySetting.file.absoluteFile.canWrite()) {
-            logDirectoryIcon.error(Gui.settings_webservice_tomcat_logs_error.toString())
-            errors.add(Gui.settings_webservice_tomcat_logs_error.toString())
+            logDirectoryIcon.error(Translations.settings_webservice_tomcat_logs_error.toString())
+            errors.add(Translations.settings_webservice_tomcat_logs_error.toString())
         } else {
             logDirectoryIcon.info()
         }
 
         if (!baseDirSetting.file.absoluteFile.isDirectory || !baseDirSetting.file.absoluteFile.canWrite()) {
-            baseDirIcon.error(Gui.settings_webservice_tomcat_dir_error.toString())
-            errors.add(Gui.settings_webservice_tomcat_dir_error.toString())
+            baseDirIcon.error(Translations.settings_webservice_tomcat_dir_error.toString())
+            errors.add(Translations.settings_webservice_tomcat_dir_error.toString())
         } else {
             baseDirIcon.info()
         }
@@ -289,20 +287,20 @@ class WebserviceSettings(
             cronParser.parse(versionScheduleSetting.text).validate()
             versionScheduleIcon.info()
         } catch (ex: IllegalArgumentException) {
-            versionScheduleIcon.error(Gui.settings_webservice_schedule_versions_error.toString())
-            errors.add(Gui.settings_webservice_schedule_versions_error.toString())
+            versionScheduleIcon.error(Translations.settings_webservice_schedule_versions_error.toString())
+            errors.add(Translations.settings_webservice_schedule_versions_error.toString())
         }
 
         try {
             cronParser.parse(databaseCleanupScheduleSetting.text).validate()
             databaseCleanupScheduleIcon.info()
         } catch (ex: IllegalArgumentException) {
-            databaseCleanupScheduleIcon.error(Gui.settings_webservice_schedule_database_error.toString())
-            errors.add(Gui.settings_webservice_schedule_database_error.toString())
+            databaseCleanupScheduleIcon.error(Translations.settings_webservice_schedule_database_error.toString())
+            errors.add(Translations.settings_webservice_schedule_database_error.toString())
         }
 
         if (errors.isNotEmpty()) {
-            title.setAndShowErrorIcon(Gui.settings_webservice_errors.toString())
+            title.setAndShowErrorIcon(Translations.settings_webservice_errors.toString())
         } else {
             title.hideErrorIcon()
         }
@@ -311,14 +309,15 @@ class WebserviceSettings(
     }
 
     override fun hasUnsavedChanges(): Boolean {
-        val changes = artemisDataDirectorySetting.file.absolutePath != apiProperties.artemisDataDirectory.absolutePath ||
-                artemisQueueMaxDiskUsageSetting.value != apiProperties.artemisQueueMaxDiskUsage ||
-                databaseFileSetting.file.absolutePath != apiProperties.serverPackCreatorDatabase.absolutePath ||
-                cleanupScheduleSetting.text != apiProperties.webserviceCleanupSchedule ||
-                logDirectorySetting.file.absolutePath != apiProperties.tomcatLogsDirectory.absolutePath ||
-                baseDirSetting.file.absolutePath != apiProperties.tomcatBaseDirectory.absolutePath ||
-                versionScheduleSetting.text != apiProperties.webserviceVersionSchedule ||
-                databaseCleanupScheduleSetting.text != apiProperties.webserviceDatabaseCleanupSchedule
+        val changes =
+            "jdbc:postgresql://${databaseHostSetting.text}:${databasePortSetting.text}/${databaseDatabaseSetting.text}" != apiProperties.jdbcDatabaseUrl ||
+                    databaseUsernameSetting.text != apiProperties.jdbcDatabaseUsername ||
+                    databasePasswordSetting.text != apiProperties.jdbcDatabasePassword ||
+                    cleanupScheduleSetting.text != apiProperties.webserviceCleanupSchedule ||
+                    logDirectorySetting.file.absolutePath != apiProperties.tomcatLogsDirectory.absolutePath ||
+                    baseDirSetting.file.absolutePath != apiProperties.tomcatBaseDirectory.absolutePath ||
+                    versionScheduleSetting.text != apiProperties.webserviceVersionSchedule ||
+                    databaseCleanupScheduleSetting.text != apiProperties.webserviceDatabaseCleanupSchedule
         if (changes) {
             title.showWarningIcon()
         } else {

@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,9 +19,16 @@
  */
 package de.griefed.serverpackcreator.web.serverpack
 
+import de.griefed.serverpackcreator.web.data.ServerPack
+import de.griefed.serverpackcreator.web.data.ServerPackView
+import de.griefed.serverpackcreator.web.modpack.ModpackService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.util.MimeTypeUtils
 import org.springframework.web.bind.annotation.*
 
 /**
@@ -32,33 +39,98 @@ import org.springframework.web.bind.annotation.*
  */
 @RestController
 @CrossOrigin(origins = ["*"])
-@RequestMapping("/api/v1/packs")
-@Suppress("unused")
-class ServerPackController @Autowired constructor(private val serverPackService: ServerPackService) {
+@RequestMapping("/api/v2/serverpacks")
+class ServerPackController @Autowired constructor(
+    private val serverPackService: ServerPackService,
+    private val modpackService: ModpackService
+) {
+
     /**
-     * GET request for downloading a server pack by the id in the database.
+     * Download a server pack by its ID.
      *
-     * @param id The id of the server pack in the database.
+     * @param id The id of the server pack.
      * @return Gives the requester the requested file as a download, if it was found.
      * @author Griefed
      */
-    @GetMapping(value = ["/download/{id}"], produces = ["application/zip"])
-    fun downloadServerPack(@PathVariable id: Int): ResponseEntity<Resource?> {
-        return serverPackService.downloadServerPackById(id)
+    @GetMapping(value = ["/download/{id:[0-9]+}"], produces = ["application/zip"])
+    @ResponseBody
+    fun downloadServerPack(@PathVariable id: Int): ResponseEntity<Resource> {
+        val serverPack = serverPackService.getServerPack(id)
+        return if (serverPack.isPresent) {
+            val archive = serverPackService.getServerPackArchive(serverPack.get().fileID!!)
+            if (archive.isEmpty) {
+                ResponseEntity.notFound().build()
+            } else {
+                val modPack = modpackService.getByServerPack(serverPack.get())
+                serverPackService.updateDownloadCounter(id)
+                val fileName = modPack.get().name.replace(".zip","",ignoreCase = true)
+                ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType("application/zip"))
+                    .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"${fileName}_server_pack.zip\""
+                    )
+                    .body(ByteArrayResource(archive.get().readBytes()))
+            }
+        } else {
+            ResponseEntity.notFound().build()
+        }
     }
 
     /**
-     * GET request for retrieving a list of all available server packs.
+     * Download a server pack by the modpack and run-configuration ID.
      *
-     * @return A list of all available server packs on this instance.
+     * @param modPackId The id of the modpack from which the server pack was generated.
+     * @param runConfigurationId The ID of the run-configuration with which the server pack was generated.
+     * @return Gives the requester the requested file as a download, if it was found.
      * @author Griefed
      */
-    @get:GetMapping("all")
-    val allServerPacks: ResponseEntity<List<ServerPackModel>>
-        get() = ResponseEntity.ok().header("Content-Type", "application/json").body(
+    @GetMapping(value = ["/download/{modPackId:[0-9]+}&{runConfigurationId:[0-9]+}"], produces = ["application/zip"])
+    @ResponseBody
+    fun downloadServerPack(
+        @PathVariable modPackId: Int,
+        @PathVariable runConfigurationId: Int
+    ): ResponseEntity<Resource> {
+        val modpack = modpackService.getModpack(modPackId)
+        if (modpack.isEmpty) {
+            return ResponseEntity.notFound().build()
+        }
+        var serverpack: ServerPack? = null
+        for (pack in modpack.get().serverPacks) {
+            if (pack.runConfiguration!!.id == runConfigurationId) {
+                serverpack = pack
+            }
+        }
+        if (serverpack == null) {
+            return ResponseEntity.notFound().build()
+        }
+        return downloadServerPack(serverpack.id)
+    }
+
+    /**
+     * Retrieve a list of all available server packs.
+     *
+     * @author Griefed
+     */
+    @GetMapping("/all", produces = ["application/json"])
+    @ResponseBody
+    fun getAllServerPacks(): ResponseEntity<List<ServerPackView>> {
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).body(
             serverPackService.getServerPacks()
         )
+    }
 
+    @GetMapping("/{id:[0-9]+}", produces = ["application/json"])
+    @ResponseBody
+    fun getServerPack(@PathVariable id: Int): ResponseEntity<ServerPackView> {
+        return if (serverPackService.getServerPackView(id).isPresent) {
+            ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).body(
+                serverPackService.getServerPackView(id).get()
+            )
+        } else {
+            ResponseEntity.notFound().build()
+        }
+    }
 
     /**
      * GET request for voting whether a server pack works or not.
@@ -68,8 +140,9 @@ class ServerPackController @Autowired constructor(private val serverPackService:
      * @return ResponseEntity OK/BadRequest/NotFound
      * @author Griefed
      */
-    @GetMapping("vote/{voting}")
-    fun voteForServerPack(@PathVariable("voting") voting: String): ResponseEntity<Any> {
-        return serverPackService.voteForServerPack(voting)
+    @GetMapping("/vote/{id:[0-9]+}&{vote}")
+    @ResponseBody
+    fun voteForServerPack(@PathVariable("id") id: Int, @PathVariable("vote") vote: String): ResponseEntity<Any> {
+        return serverPackService.voteForServerPack(id, vote)
     }
 }

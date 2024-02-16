@@ -1,0 +1,862 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+paths:
+  /api/v2/modpacks/upload:
+    post:
+      tags:
+      - modpack-controller
+      operationId: uploadModPack
+      parameters:
+      - name: minecraftVersion
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: modloader
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: modloaderVersion
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: startArgs
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: clientMods
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: whiteListMods
+        in: query
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+              - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ZipResponse'
+  /api/v2/modpacks/generate:
+    post:
+      tags:
+      - modpack-controller
+      operationId: requestGeneration
+      parameters:
+      - name: modPackID
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: minecraftVersion
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: modloader
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: modloaderVersion
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: startArgs
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: clientMods
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: whiteListMods
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ZipResponse'
+  /api/v2/versions/quilt:
+    get:
+      tags:
+      - versions-controller
+      operationId: availableQuiltVersions
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /api/v2/versions/neoforge:
+    get:
+      tags:
+      - versions-controller
+      operationId: availableNeoForgeVersions
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /api/v2/versions/minecraft:
+    get:
+      tags:
+      - versions-controller
+      operationId: availableMinecraftVersions
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /api/v2/versions/legacyfabric:
+    get:
+      tags:
+      - versions-controller
+      operationId: availableLegacyFabricVersions
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /api/v2/versions/forge:
+    get:
+      tags:
+      - versions-controller
+      operationId: availableForgeVersions
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string
+  /api/v2/versions/forge/{minecraftversion}:
+    get:
+      tags:
+      - versions-controller
+      operationId: availableForgeVersionsForMinecraftVersion
+      parameters:
+      - name: minecraftversion
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /api/v2/versions/fabric:
+    get:
+      tags:
+      - versions-controller
+      operationId: availableFabricVersions
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /api/v2/versions/all:
+    get:
+      tags:
+      - versions-controller
+      operationId: availableVersions
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionMetaResponse'
+  /api/v2/settings/current:
+    get:
+      tags:
+      - settings-controller
+      operationId: getProperties
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+  /api/v2/serverpacks/{id}:
+    get:
+      tags:
+      - server-pack-controller
+      operationId: getServerPack
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerPackView'
+  /api/v2/serverpacks/vote/{id}&{vote}:
+    get:
+      tags:
+      - server-pack-controller
+      operationId: voteForServerPack
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: vote
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/v2/serverpacks/download/{modPackId}&{runConfigurationId}:
+    get:
+      tags:
+      - server-pack-controller
+      operationId: downloadServerPack
+      parameters:
+      - name: modPackId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: runConfigurationId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+  /api/v2/serverpacks/download/{id}:
+    get:
+      tags:
+      - server-pack-controller
+      operationId: downloadServerPack_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+  /api/v2/serverpacks/all:
+    get:
+      tags:
+      - server-pack-controller
+      operationId: getAllServerPacks
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServerPackView'
+  /api/v2/runconfigs/{id}:
+    get:
+      tags:
+      - run-configuration-controller
+      operationId: getModpack
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunConfiguration'
+  /api/v2/runconfigs/all:
+    get:
+      tags:
+      - run-configuration-controller
+      operationId: getAllRUnConfigurations
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RunConfiguration'
+  /api/v2/modpacks/{id}:
+    get:
+      tags:
+      - modpack-controller
+      operationId: getModpack_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModPackView'
+  /api/v2/modpacks/download/{id}:
+    get:
+      tags:
+      - modpack-controller
+      operationId: downloadModpack
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+  /api/v2/modpacks/all:
+    get:
+      tags:
+      - modpack-controller
+      operationId: getAllModPacks
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ModPackView'
+  /api/v2/events/status/{status}:
+    get:
+      tags:
+      - event-controller
+      operationId: getStatusEvents
+      parameters:
+      - name: status
+        in: path
+        required: true
+        schema:
+          type: string
+          enum:
+          - QUEUED
+          - CHECKING
+          - CHECKED
+          - GENERATING
+          - GENERATED
+          - ERROR
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QueueEvent'
+  /api/v2/events/serverpack/{id}:
+    get:
+      tags:
+      - event-controller
+      operationId: getServerPackEvents
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QueueEvent'
+  /api/v2/events/modpack/{id}:
+    get:
+      tags:
+      - event-controller
+      operationId: getModPackEvents
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QueueEvent'
+  /api/v2/events/all:
+    get:
+      tags:
+      - event-controller
+      operationId: getEvents
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QueueEvent'
+components:
+  schemas:
+    ZipResponse:
+      required:
+      - message
+      - success
+      type: object
+      properties:
+        message:
+          type: string
+        success:
+          type: boolean
+        modPackId:
+          type: integer
+          format: int32
+        runConfigId:
+          type: integer
+          format: int32
+        serverPackId:
+          type: integer
+          format: int32
+        status:
+          type: string
+          enum:
+          - QUEUED
+          - CHECKING
+          - CHECKED
+          - GENERATING
+          - GENERATED
+          - ERROR
+    VersionMetaResponse:
+      required:
+      - fabric
+      - forge
+      - legacyFabric
+      - minecraft
+      - neoForge
+      - quilt
+      type: object
+      properties:
+        minecraft:
+          type: array
+          items:
+            type: string
+        fabric:
+          type: array
+          items:
+            type: string
+        legacyFabric:
+          type: array
+          items:
+            type: string
+        quilt:
+          type: array
+          items:
+            type: string
+        forge:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+        neoForge:
+          type: array
+          items:
+            type: string
+    Settings:
+      required:
+      - aikarsFlags
+      - clientsideMods
+      - devBuild
+      - directoriesToExclude
+      - directoriesToInclude
+      - exclusionFilter
+      - isAutoExcludingModsEnabled
+      - isMinecraftPreReleasesAvailabilityEnabled
+      - isZipFileExclusionEnabled
+      - language
+      - supportedModloaders
+      - version
+      - whitelistMods
+      - zipArchiveExclusions
+      type: object
+      properties:
+        clientsideMods:
+          type: array
+          items:
+            type: string
+        whitelistMods:
+          type: array
+          items:
+            type: string
+        supportedModloaders:
+          type: array
+          items:
+            type: string
+        version:
+          type: string
+        devBuild:
+          type: boolean
+        directoriesToInclude:
+          type: array
+          items:
+            type: string
+        directoriesToExclude:
+          type: array
+          items:
+            type: string
+        zipArchiveExclusions:
+          type: array
+          items:
+            type: string
+        exclusionFilter:
+          type: string
+          enum:
+          - START
+          - END
+          - CONTAIN
+          - REGEX
+          - EITHER
+        isZipFileExclusionEnabled:
+          type: boolean
+        isAutoExcludingModsEnabled:
+          type: boolean
+        isMinecraftPreReleasesAvailabilityEnabled:
+          type: boolean
+        aikarsFlags:
+          type: string
+        language:
+          type: string
+    ClientMod:
+      required:
+      - id
+      - mod
+      type: object
+      properties:
+        mod:
+          type: string
+        id:
+          type: integer
+          format: int32
+    RunConfiguration:
+      required:
+      - clientMods
+      - id
+      - minecraftVersion
+      - modloader
+      - modloaderVersion
+      - startArgs
+      - whitelistedMods
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        minecraftVersion:
+          type: string
+        modloader:
+          type: string
+        modloaderVersion:
+          type: string
+        startArgs:
+          type: array
+          items:
+            $ref: '#/components/schemas/StartArgument'
+        clientMods:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClientMod'
+        whitelistedMods:
+          type: array
+          items:
+            $ref: '#/components/schemas/WhitelistedMod'
+    ServerPackView:
+      required:
+      - confirmedWorking
+      - dateCreated
+      - downloads
+      - id
+      - runConfiguration
+      - sha256
+      - size
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        size:
+          type: number
+          format: double
+        sha256:
+          type: string
+        downloads:
+          type: integer
+          format: int32
+        runConfiguration:
+          $ref: '#/components/schemas/RunConfiguration'
+        confirmedWorking:
+          type: integer
+          format: int32
+        dateCreated:
+          type: string
+          format: date-time
+    StartArgument:
+      required:
+      - argument
+      - id
+      type: object
+      properties:
+        argument:
+          type: string
+        id:
+          type: integer
+          format: int32
+    WhitelistedMod:
+      required:
+      - id
+      - mod
+      type: object
+      properties:
+        mod:
+          type: string
+        id:
+          type: integer
+          format: int32
+    ModPackView:
+      required:
+      - dateCreated
+      - id
+      - name
+      - projectID
+      - serverPacks
+      - sha256
+      - size
+      - source
+      - status
+      - versionID
+      type: object
+      properties:
+        name:
+          type: string
+        id:
+          type: integer
+          format: int32
+        size:
+          type: number
+          format: double
+        source:
+          type: string
+          enum:
+          - ZIP
+          - MODRINTH
+        status:
+          type: string
+          enum:
+          - QUEUED
+          - CHECKING
+          - CHECKED
+          - GENERATING
+          - GENERATED
+          - ERROR
+        sha256:
+          type: string
+        serverPacks:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServerPack'
+        projectID:
+          type: string
+        versionID:
+          type: string
+        dateCreated:
+          type: string
+          format: date-time
+    ServerPack:
+      required:
+      - confirmedWorking
+      - downloads
+      - id
+      - size
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        downloads:
+          type: integer
+          format: int32
+        confirmedWorking:
+          type: integer
+          format: int32
+        dateCreated:
+          type: string
+          format: date-time
+        fileID:
+          type: integer
+          format: int64
+        sha256:
+          type: string
+        runConfiguration:
+          $ref: '#/components/schemas/RunConfiguration'
+    ErrorEntry:
+      required:
+      - error
+      - id
+      type: object
+      properties:
+        error:
+          type: string
+        id:
+          type: integer
+          format: int32
+    QueueEvent:
+      required:
+      - errors
+      - id
+      - message
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        modPackId:
+          type: integer
+          format: int32
+        serverPackId:
+          type: integer
+          format: int32
+        status:
+          type: string
+          enum:
+          - QUEUED
+          - CHECKING
+          - CHECKED
+          - GENERATING
+          - GENERATED
+          - ERROR
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorEntry'

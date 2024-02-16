@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,10 +19,12 @@
  */
 package de.griefed.serverpackcreator.web
 
-import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
+import de.griefed.serverpackcreator.web.data.VersionMetaResponse
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
+import org.springframework.util.MimeTypeUtils
 import org.springframework.web.bind.annotation.*
 
 /**
@@ -31,14 +33,33 @@ import org.springframework.web.bind.annotation.*
  *
  * @author Griefed
  */
-@Suppress("unused")
 @RestController
 @CrossOrigin(origins = ["*"])
-@RequestMapping("/api/v1/versions")
+@RequestMapping("/api/v2/versions")
 class VersionsController @Autowired constructor(
-    private val versionMeta: VersionMeta,
-    private val utilities: Utilities
+    private val versionMeta: VersionMeta
 ) {
+
+    /**
+     * Get a list of all modloader versions that are not forge.
+     *
+     * @return Returns a list of all available Fabric versions.
+     * @author Griefed
+     */
+    @GetMapping("/all", produces = ["application/json"])
+    fun availableVersions(): ResponseEntity<VersionMetaResponse> {
+        val versionMetaResponse = VersionMetaResponse(
+            minecraft = versionMeta.minecraft.releaseVersionsDescending(),
+            fabric = versionMeta.fabric.loaderVersionsListDescending(),
+            legacyFabric = versionMeta.legacyFabric.loaderVersionsListDescending(),
+            quilt = versionMeta.quilt.loaderVersionsListDescending(),
+            forge = versionMeta.forge.getForgeMeta(),
+            neoForge = versionMeta.neoForge.neoForgeVersionsDescending()
+        )
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
+            .body(versionMetaResponse)
+    }
 
     /**
      * Get a list of all available Minecraft versions.
@@ -46,18 +67,12 @@ class VersionsController @Autowired constructor(
      * @return Returns a list of all available Minecraft verions.
      * @author Griefed
      */
-    @get:GetMapping(value = ["/minecraft"])
-    val availableMinecraftVersions: ResponseEntity<String>
-        get() = ResponseEntity.ok()
-            .header("Content-Type", "application/json")
-            .body(
-                ("{\"minecraft\":"
-                        + utilities.listUtilities
-                    .encapsulateListElements(
-                        versionMeta.minecraft.releaseVersionsDescending()
-                    )
-                        ) + "}"
-            )
+    @GetMapping("/minecraft", produces = ["application/json"])
+    fun availableMinecraftVersions(): ResponseEntity<List<String>> {
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
+            .body(versionMeta.minecraft.releaseVersionsDescending())
+    }
 
     /**
      * Get a list of all available Forge versions for a specific Minecraft version.
@@ -66,45 +81,42 @@ class VersionsController @Autowired constructor(
      * @return Returns a list of all available Forge versions for the specified Minecraft version.
      * @author Griefed
      */
-    @GetMapping(value = ["/forge/{minecraftversion}"])
-    fun getAvailableForgeVersions(
-        @PathVariable("minecraftversion") minecraftVersion: String?
-    ): ResponseEntity<String> {
-        return if (versionMeta.forge.supportedForgeVersionsAscending(minecraftVersion!!).isPresent) {
+    @GetMapping("/forge/{minecraftversion}", produces = ["application/json"])
+    fun availableForgeVersionsForMinecraftVersion(@PathVariable("minecraftversion") minecraftVersion: String): ResponseEntity<List<String>> {
+        return if (versionMeta.forge.supportedForgeVersionsDescending(minecraftVersion).isPresent) {
             ResponseEntity.ok()
-                .header("Content-Type", "application/json")
-                .body(
-                    ("{\"forge\":"
-                            + utilities.listUtilities
-                        .encapsulateListElements(
-                            versionMeta
-                                .forge
-                                .supportedForgeVersionsAscending(minecraftVersion)
-                                .get()
-                        )
-                            ) + "}"
-                )
+                .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
+                .body(versionMeta.forge.supportedForgeVersionsDescending(minecraftVersion).get())
         } else {
-            ResponseEntity.ok().header("Content-Type", "application/json").body("{\"forge\":[]}")
+            ResponseEntity.notFound().build()
         }
     }
 
     /**
-     * Get a list of all modloader versions that are not forge.
+     * Get a list of all available NeoForge versions.
      *
      * @return Returns a list of all available Fabric versions.
      * @author Griefed
      */
-    @get:GetMapping(value = ["/all"])
-    val availableVersions: ResponseEntity<String>
-        get() = ResponseEntity.ok()
-            .header("Content-Type", "application/json")
-            .body(
-                "{\"fabric\": ${utilities.listUtilities.encapsulateListElements(versionMeta.fabric.loaderVersionsListDescending())}," +
-                "\"legacyfabric\": ${utilities.listUtilities.encapsulateListElements(versionMeta.legacyFabric.loaderVersionsListDescending())}," +
-                "\"quilt\": ${utilities.listUtilities.encapsulateListElements(versionMeta.quilt.loaderVersionsListDescending())}," +
-                "\"neoforge\": ${utilities.listUtilities.encapsulateListElements(versionMeta.neoForge.neoForgeVersionsDescending())}}"
-            )
+    @GetMapping("/forge", produces = ["application/json"])
+    fun availableForgeVersions(): ResponseEntity<HashMap<String, List<String>>> {
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
+            .body(versionMeta.forge.getForgeMeta())
+    }
+
+    /**
+     * Get a list of all available NeoForge versions.
+     *
+     * @return Returns a list of all available Fabric versions.
+     * @author Griefed
+     */
+    @GetMapping("/neoforge", produces = ["application/json"])
+    fun availableNeoForgeVersions(): ResponseEntity<List<String>> {
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
+            .body(versionMeta.neoForge.neoForgeVersionsDescending())
+    }
 
     /**
      * Get a list of all available Fabric versions.
@@ -112,39 +124,12 @@ class VersionsController @Autowired constructor(
      * @return Returns a list of all available Fabric versions.
      * @author Griefed
      */
-    @get:GetMapping(value = ["/fabric"])
-    val availableFabricVersions: ResponseEntity<String>
-        get() = ResponseEntity.ok()
-            .header("Content-Type", "application/json")
-            .body(
-                ("{\"fabric\":"
-                        + utilities.listUtilities
-                    .encapsulateListElements(
-                        versionMeta.fabric.loaderVersionsListDescending()
-                    )
-                        ) + "}"
-            )
-
-    /**
-     * Get the Latest Fabric Installer and Release Fabric installer versions as a JSON object.
-     *
-     * @return Returns the Latest Fabric Installer and Release Fabric Installer as a JSON object.
-     * @author Griefed
-     */
-    @get:GetMapping(value = ["/fabric/installer"], produces = ["application/json"])
-    val availableFabricInstallerVersions: ResponseEntity<String>
-        get() = ResponseEntity.ok()
-            .header("Content-Type", "application/json")
-            .body(
-                (("{"
-                        + "\"release\":\""
-                        + versionMeta.fabric.releaseInstaller()
-                        ) + "\","
-                        + "\"latest\":\""
-                        + versionMeta.fabric.releaseInstaller()
-                        ) + "\""
-                        + "}"
-            )
+    @GetMapping("/fabric", produces = ["application/json"])
+    fun availableFabricVersions(): ResponseEntity<List<String>> {
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
+            .body(versionMeta.fabric.loaderVersionsListDescending())
+    }
 
     /**
      * Get a list of all available Fabric versions.
@@ -152,39 +137,12 @@ class VersionsController @Autowired constructor(
      * @return Returns a list of all available Fabric versions.
      * @author Griefed
      */
-    @get:GetMapping(value = ["/legacyfabric"])
-    val availableLegacyFabricVersions: ResponseEntity<String>
-        get() = ResponseEntity.ok()
-            .header("Content-Type", "application/json")
-            .body(
-                ("{\"legacyfabric\":"
-                        + utilities.listUtilities
-                    .encapsulateListElements(
-                        versionMeta.legacyFabric.loaderVersionsListDescending()
-                    )
-                        ) + "}"
-            )
-
-    /**
-     * Get the Latest Fabric Installer and Release Fabric installer versions as a JSON object.
-     *
-     * @return Returns the Latest Fabric Installer and Release Fabric Installer as a JSON object.
-     * @author Griefed
-     */
-    @get:GetMapping(value = ["/legacyfabric/installer"], produces = ["application/json"])
-    val availableLegacyFabricInstallerVersions: ResponseEntity<String>
-        get() = ResponseEntity.ok()
-            .header("Content-Type", "application/json")
-            .body(
-                (("{"
-                        + "\"release\":\""
-                        + versionMeta.legacyFabric.releaseInstaller()
-                        ) + "\","
-                        + "\"latest\":\""
-                        + versionMeta.legacyFabric.releaseInstaller()
-                        ) + "\""
-                        + "}"
-            )
+    @GetMapping("/legacyfabric", produces = ["application/json"])
+    fun availableLegacyFabricVersions(): ResponseEntity<List<String>> {
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
+            .body(versionMeta.legacyFabric.loaderVersionsListDescending())
+    }
 
     /**
      * Get a list of all available Fabric versions.
@@ -192,37 +150,10 @@ class VersionsController @Autowired constructor(
      * @return Returns a list of all available Fabric versions.
      * @author Griefed
      */
-    @get:GetMapping(value = ["/quilt"])
-    val availableQuiltVersions: ResponseEntity<String>
-        get() = ResponseEntity.ok()
-            .header("Content-Type", "application/json")
-            .body(
-                ("{\"quilt\":"
-                        + utilities.listUtilities
-                    .encapsulateListElements(
-                        versionMeta.quilt.loaderVersionsListDescending()
-                    )
-                        ) + "}"
-            )
-
-    /**
-     * Get the Latest Fabric Installer and Release Fabric installer versions as a JSON object.
-     *
-     * @return Returns the Latest Fabric Installer and Release Fabric Installer as a JSON object.
-     * @author Griefed
-     */
-    @get:GetMapping(value = ["/quilt/installer"], produces = ["application/json"])
-    val availableQuiltInstallerVersions: ResponseEntity<String>
-        get() = ResponseEntity.ok()
-            .header("Content-Type", "application/json")
-            .body(
-                (("{"
-                        + "\"release\":\""
-                        + versionMeta.quilt.releaseInstaller()
-                        ) + "\","
-                        + "\"latest\":\""
-                        + versionMeta.quilt.releaseInstaller()
-                        ) + "\""
-                        + "}"
-            )
+    @GetMapping("/quilt", produces = ["application/json"])
+    fun availableQuiltVersions(): ResponseEntity<List<String>> {
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
+            .body(versionMeta.quilt.loaderVersionsListDescending())
+    }
 }

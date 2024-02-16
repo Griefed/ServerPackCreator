@@ -1,11 +1,11 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Debug Fat Jar" type="JarApplication">
     <option name="JAR_PATH" value="$PROJECT_DIR$/serverpackcreator-app/build/libs/serverpackcreator-app-dev.jar" />
-    <option name="WORKING_DIRECTORY" value="D:\GitLab\ServerPackCreator - MS4" />
+    <option name="PROGRAM_PARAMETERS" value="-web" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$\serverpackcreator-app\tests" />
     <option name="ALTERNATIVE_JRE_PATH" />
-    <module name="ServerPackCreator" />
     <method v="2">
-      <option name="Gradle.BeforeRunTask" enabled="false" tasks="build" externalProjectPath="$PROJECT_DIR$" vmOptions="" scriptParameters="-x test --info --stacktrace" />
+      <option name="Gradle.BeforeRunTask" enabled="false" tasks="clean cleanAllTests build" externalProjectPath="$PROJECT_DIR$" vmOptions="" scriptParameters=" --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test" />
     </method>
   </configuration>
 </component>

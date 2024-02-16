@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.file
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
 import de.griefed.serverpackcreator.gui.GuiProps
@@ -43,7 +43,7 @@ class MainLogToHasteBinItem(
     private val apiProperties: ApiProperties,
     guiProps: GuiProps,
     mainFrame: JFrame
-) : HasteBinMenuItem(Gui.menubar_gui_menuitem_uploadlog.toString(), mainFrame, guiProps, webUtilities) {
+) : HasteBinMenuItem(Translations.menubar_gui_menuitem_uploadlog.toString(), mainFrame, guiProps, webUtilities) {
     private val log = cachedLoggerOf(this.javaClass)
     private val spcLogDocument: StyledDocument = DefaultStyledDocument()
     private val spcLogAttributeSet: SimpleAttributeSet = SimpleAttributeSet()
@@ -72,7 +72,7 @@ class MainLogToHasteBinItem(
             }
             displayUploadUrl(urlToHasteBin, spcLogWindowTextPane)
         } else {
-            errorDialog(Gui.menubar_gui_filetoolarge.toString(),Gui.menubar_gui_filetoolargetitle.toString())
+            errorDialog(Translations.menubar_gui_filetoolarge.toString(),Translations.menubar_gui_filetoolargetitle.toString())
         }
     }
 }

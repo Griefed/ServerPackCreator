@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.settings
 
-import Gui
+import Translations
 import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes
 import com.formdev.flatlaf.intellijthemes.FlatDarkPurpleIJTheme
 import de.griefed.serverpackcreator.gui.GuiProps
@@ -43,45 +43,45 @@ class GuiSettings(
     changeListener: ChangeListener,
     private val themeManager: ThemeManager,
     private val controlPanel: ControlPanel
-) : Editor(Gui.settings_gui.toString(), guiProps) {
+) : Editor(Translations.settings_gui.toString(), guiProps) {
 
-    private val fontSizeIcon = StatusIcon(guiProps,Gui.settings_gui_font_tooltip.toString())
-    private val fontSizeLabel = ElementLabel(Gui.settings_gui_font_label.toString())
+    private val fontSizeIcon = StatusIcon(guiProps,Translations.settings_gui_font_tooltip.toString())
+    private val fontSizeLabel = ElementLabel(Translations.settings_gui_font_label.toString())
     private val fontSizeSetting = ActionSlider(8,76, guiProps.fontSize,changeListener)
-    private val fontSizeRevert = BalloonTipButton(null, guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) {
+    private val fontSizeRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) {
         fontSizeSetting.value = guiProps.fontSize
     }
-    private val fontSizeReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) {
+    private val fontSizeReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) {
         fontSizeSetting.value = 12
     }
 
-    private val startFocusIcon = StatusIcon(guiProps,Gui.settings_gui_focus_start_tooltip.toString())
-    private val startFocusLabel = ElementLabel(Gui.settings_gui_focus_start_label.toString())
+    private val startFocusIcon = StatusIcon(guiProps,Translations.settings_gui_focus_start_tooltip.toString())
+    private val startFocusLabel = ElementLabel(Translations.settings_gui_focus_start_label.toString())
     private val startFocusSetting = ActionCheckBox(actionListener)
-    private val startFocusRevert = BalloonTipButton(null, guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) {
+    private val startFocusRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) {
         startFocusSetting.isSelected = guiProps.startFocusEnabled
     }
-    private val startFocusReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) {
+    private val startFocusReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) {
         startFocusSetting.isSelected = false
     }
 
-    private val generationFocusIcon = StatusIcon(guiProps,Gui.settings_gui_focus_generation_tooltip.toString())
-    private val generationFocusLabel = ElementLabel(Gui.settings_gui_focus_generation_label.toString())
+    private val generationFocusIcon = StatusIcon(guiProps,Translations.settings_gui_focus_generation_tooltip.toString())
+    private val generationFocusLabel = ElementLabel(Translations.settings_gui_focus_generation_label.toString())
     private val generationFocusSetting = ActionCheckBox(actionListener)
-    private val generationFocusRevert = BalloonTipButton(null, guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) {
+    private val generationFocusRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) {
         generationFocusSetting.isSelected = guiProps.generationFocusEnabled
     }
-    private val generationFocusReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) {
+    private val generationFocusReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) {
         generationFocusSetting.isSelected = false
     }
 
-    private val themeIcon = StatusIcon(guiProps,Gui.settings_gui_theme_tooltip.toString())
-    private val themeLabel = ElementLabel(Gui.settings_gui_theme_label.toString())
+    private val themeIcon = StatusIcon(guiProps,Translations.settings_gui_theme_tooltip.toString())
+    private val themeLabel = ElementLabel(Translations.settings_gui_theme_label.toString())
     private val themeSetting = ActionComboBox(DefaultComboBoxModel(themeManager.themes.map { it.name }.toTypedArray()),actionListener)
-    private val themeRevert = BalloonTipButton(null, guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) {
+    private val themeRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) {
         loadThemeFromProperties()
     }
-    private val themeReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) {
+    private val themeReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) {
         for (theme in FlatAllIJThemes.INFOS) {
             if (theme.className == FlatDarkPurpleIJTheme().javaClass.name) {
                 themeSetting.selectedItem = theme.name
@@ -89,13 +89,13 @@ class GuiSettings(
         }
     }
 
-    private val fontIcon = StatusIcon(guiProps,Gui.settings_gui_font_family_tooltip.toString())
-    private val fontLabel = ElementLabel(Gui.settings_gui_font_family_label.toString())
+    private val fontIcon = StatusIcon(guiProps,Translations.settings_gui_font_family_tooltip.toString())
+    private val fontLabel = ElementLabel(Translations.settings_gui_font_family_label.toString())
     private val fontSetting = ActionComboBox(DefaultComboBoxModel(GraphicsEnvironment.getLocalGraphicsEnvironment().availableFontFamilyNames),actionListener)
-    private val fontRevert = BalloonTipButton(null, guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) {
+    private val fontRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) {
         loadFontProperties()
     }
-    private val fontReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) {
+    private val fontReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) {
         for (font in GraphicsEnvironment.getLocalGraphicsEnvironment().availableFontFamilyNames) {
             if (font == "JetBrains Mono") {
                 fontSetting.selectedItem = font
@@ -103,13 +103,13 @@ class GuiSettings(
         }
     }
 
-    private val manualEditIcon = StatusIcon(guiProps, Gui.settings_gui_manualedit_tooltip.toString())
-    private val manualEditLabel = ElementLabel(Gui.settings_gui_manualedit_label.toString())
+    private val manualEditIcon = StatusIcon(guiProps, Translations.settings_gui_manualedit_tooltip.toString())
+    private val manualEditLabel = ElementLabel(Translations.settings_gui_manualedit_label.toString())
     private val manualEditSetting = ActionCheckBox(actionListener)
-    private val manualEditRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) {
+    private val manualEditRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) {
         manualEditSetting.isSelected = guiProps.allowManualEditing
     }
-    private val manualEditReset = BalloonTipButton(null, guiProps.resetIcon, Gui.settings_reset.toString(), guiProps) {
+    private val manualEditReset = BalloonTipButton(null, guiProps.resetIcon, Translations.settings_reset.toString(), guiProps) {
         manualEditSetting.isSelected = false
     }
 
@@ -192,7 +192,7 @@ class GuiSettings(
         guiProps.theme = themeSetting.selectedItem.toString()
         guiProps.font = FontUIResource(fontSetting.selectedItem.toString(),font.size,font.style)
         if (guiProps.allowManualEditing != manualEditSetting.isSelected) {
-            controlPanel.updateStatus(Gui.settings_gui_restart_manualedit(manualEditSetting.isSelected.toString()))
+            controlPanel.updateStatus(Translations.settings_gui_restart_manualedit(manualEditSetting.isSelected.toString()))
         }
         guiProps.allowManualEditing = manualEditSetting.isSelected
     }
@@ -200,13 +200,13 @@ class GuiSettings(
     override fun validateSettings(): List<String> {
         val errors = mutableListOf<String>()
         if (fontSizeSetting.value < 8 || fontSizeSetting.value > 76) {
-            fontSizeIcon.error(Gui.settings_gui_font_error.toString())
-            errors.add(Gui.settings_gui_font_error.toString())
+            fontSizeIcon.error(Translations.settings_gui_font_error.toString())
+            errors.add(Translations.settings_gui_font_error.toString())
         } else {
             fontSizeIcon.info()
         }
         if (errors.isNotEmpty()) {
-            title.setAndShowErrorIcon(Gui.settings_gui_errors.toString())
+            title.setAndShowErrorIcon(Translations.settings_gui_errors.toString())
         } else {
             title.hideErrorIcon()
         }

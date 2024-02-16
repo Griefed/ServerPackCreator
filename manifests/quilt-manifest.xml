@@ -3,8 +3,8 @@
   <groupId>org.quiltmc</groupId>
   <artifactId>quilt-loader</artifactId>
   <versioning>
-    <latest>0.22.1-beta.4</latest>
-    <release>0.22.1-beta.4</release>
+    <latest>0.23.1</latest>
+    <release>0.23.1</release>
     <versions>
       <version>0.16.0-beta.1</version>
       <version>0.16.0-beta.2</version>
@@ -224,7 +224,12 @@
       <version>0.22.1-beta.1</version>
       <version>0.22.1-beta.2</version>
       <version>0.22.1-beta.4</version>
+      <version>0.23.0-beta.1</version>
+      <version>0.23.0-beta.3</version>
+      <version>0.23.0</version>
+      <version>0.23.1-beta.1</version>
+      <version>0.23.1</version>
     </versions>
-    <lastUpdated>20231208154658</lastUpdated>
+    <lastUpdated>20240119215600</lastUpdated>
   </versioning>
 </metadata>

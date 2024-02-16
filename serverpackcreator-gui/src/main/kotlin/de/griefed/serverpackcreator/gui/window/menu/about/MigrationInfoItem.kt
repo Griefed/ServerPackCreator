@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.about
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
@@ -45,7 +45,7 @@ class MigrationInfoItem(
     migrationManager: MigrationManager,
     private val guiProps: GuiProps,
     private val mainFrame: MainFrame
-) : JMenuItem(Gui.menubar_gui_migration.toString()) {
+) : JMenuItem(Translations.menubar_gui_migration.toString()) {
     private val migrationWindowTextPane: JTextPane = JTextPane()
     private val migrationScrollPane = JScrollPane(
         migrationWindowTextPane,
@@ -121,7 +121,7 @@ class MigrationInfoItem(
             GlobalScope.launch(Dispatchers.Swing) {
                 DialogUtilities.createDialog(
                     migrationScrollPane,
-                    Gui.migration_message_title.toString(),
+                    Translations.migration_message_title.toString(),
                     mainFrame.frame,
                     JOptionPane.INFORMATION_MESSAGE,
                     JOptionPane.DEFAULT_OPTION,

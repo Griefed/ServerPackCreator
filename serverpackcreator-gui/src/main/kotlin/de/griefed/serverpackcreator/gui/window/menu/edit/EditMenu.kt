@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.edit
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
 import de.griefed.serverpackcreator.gui.GuiProps
@@ -39,7 +39,7 @@ class EditMenu(
     mainFrame: MainFrame,
     fileUtilities: FileUtilities,
     tabbedConfigsTab: TabbedConfigsTab
-) : JMenu(Gui.menubar_gui_menu_edit.toString()) {
+) : JMenu(Translations.menubar_gui_menu_edit.toString()) {
 
     private val openPack = OpenModpackItem(fileUtilities,tabbedConfigsTab)
     private val editProps = EditPropertiesItem(fileUtilities,tabbedConfigsTab)

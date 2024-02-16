@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.io.File
 import java.net.URI
-import java.net.URL
 
 class WebUtilitiesTest internal constructor() {
     private var webUtilities: WebUtilities =

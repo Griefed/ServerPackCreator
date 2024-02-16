@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.components
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
 import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
@@ -69,7 +69,7 @@ class ConfigCheckTimer(delay: Int, guiProps: GuiProps, tabbedConfigsTab: TabbedC
                     launch {
                         if (!editor.checkServer()) {
                             errors.add(
-                                Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_title(
+                                Translations.createserverpack_gui_createserverpack_checkboxserver_unavailable_title(
                                     editor.getMinecraftVersion(),
                                     editor.getModloader(),
                                     editor.getModloaderVersion()
@@ -78,9 +78,9 @@ class ConfigCheckTimer(delay: Int, guiProps: GuiProps, tabbedConfigsTab: TabbedC
                         }
                     }
                     launch {
-                        if (editor.getModloaderVersion() == Gui.createserverpack_gui_createserverpack_forge_none.toString()) {
+                        if (editor.getModloaderVersion() == Translations.createserverpack_gui_createserverpack_forge_none.toString()) {
                             errors.add(
-                                Gui.configuration_log_error_minecraft_modloader(
+                                Translations.configuration_log_error_minecraft_modloader(
                                     editor.getMinecraftVersion(),
                                     editor.getModloader()
                                 )
@@ -104,7 +104,7 @@ class ConfigCheckTimer(delay: Int, guiProps: GuiProps, tabbedConfigsTab: TabbedC
                 tabbedConfigsTab.title.hideWarningIcon()
             }
             if (errorsEncountered) {
-                tabbedConfigsTab.title.setAndShowErrorIcon(Gui.createserverpack_gui_tabs_errors.toString())
+                tabbedConfigsTab.title.setAndShowErrorIcon(Translations.createserverpack_gui_tabs_errors.toString())
             } else {
                 tabbedConfigsTab.title.hideErrorIcon()
             }

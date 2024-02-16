@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -31,7 +31,6 @@ import org.springframework.web.servlet.ModelAndView
  *
  * @author Griefed
  */
-@Suppress("unused")
 @RestController
 class RouteController {
     /**

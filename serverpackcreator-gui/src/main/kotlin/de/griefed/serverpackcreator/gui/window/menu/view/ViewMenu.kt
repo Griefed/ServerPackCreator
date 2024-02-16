@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.view
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.themes.ThemeManager
 import javax.swing.JMenu
@@ -30,7 +30,7 @@ import javax.swing.JSeparator
  *
  * @author Griefed
  */
-class ViewMenu(apiWrapper: ApiWrapper, themeManager: ThemeManager) : JMenu(Gui.menubar_gui_menu_view.toString()) {
+class ViewMenu(apiWrapper: ApiWrapper, themeManager: ThemeManager) : JMenu(Translations.menubar_gui_menu_view.toString()) {
 
     private val homeDir = HomeDirItem(apiWrapper.utilities.fileUtilities, apiWrapper.apiProperties)
     private val serverPacksDir = ServerPacksDirItem(apiWrapper.utilities.fileUtilities, apiWrapper.apiProperties)

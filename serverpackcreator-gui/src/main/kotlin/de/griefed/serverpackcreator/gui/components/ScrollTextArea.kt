@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.components
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.utilities.common.regexReplace
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.configs.components.ResizeIndicatorScrollPane
@@ -68,23 +68,23 @@ class ScrollTextArea(
     private val searchFor = JTextField(100)
     private val replaceWith = JTextField(100)
     private val search = arrayOf<Any>(
-        Gui.createserverpack_gui_textarea_search_message.toString(),
+        Translations.createserverpack_gui_textarea_search_message.toString(),
         searchFor
     )
     private val searchRegex = arrayOf<Any>(
-        Gui.createserverpack_gui_textarea_search_regex_message.toString(),
+        Translations.createserverpack_gui_textarea_search_regex_message.toString(),
         searchFor
     )
     private val searchAndReplace = arrayOf<Any>(
-        Gui.createserverpack_gui_textarea_replace_query.toString(),
+        Translations.createserverpack_gui_textarea_replace_query.toString(),
         searchFor,
-        Gui.createserverpack_gui_textarea_replace_replace.toString(),
+        Translations.createserverpack_gui_textarea_replace_replace.toString(),
         replaceWith
     )
     private val searchAndReplaceRegex = arrayOf<Any>(
-        Gui.createserverpack_gui_textarea_replace_regex_query.toString(),
+        Translations.createserverpack_gui_textarea_replace_regex_query.toString(),
         searchFor,
-        Gui.createserverpack_gui_textarea_replace_regex_replace.toString(),
+        Translations.createserverpack_gui_textarea_replace_regex_replace.toString(),
         replaceWith
     )
     val suggestionProvider: SuggestionProvider?
@@ -180,7 +180,7 @@ class ScrollTextArea(
         if (JOptionPane.showConfirmDialog(
                 parent,
                 search,
-                Gui.createserverpack_gui_textarea_search_title(name),
+                Translations.createserverpack_gui_textarea_search_title(name),
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE,
                 guiProps.inspectMediumIcon
@@ -216,7 +216,7 @@ class ScrollTextArea(
         if (JOptionPane.showConfirmDialog(
                 parent,
                 searchRegex,
-                Gui.createserverpack_gui_textarea_search_regex_title(name),
+                Translations.createserverpack_gui_textarea_search_regex_title(name),
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 guiProps.inspectMediumIcon
@@ -254,7 +254,7 @@ class ScrollTextArea(
         if (JOptionPane.showConfirmDialog(
                 parent,
                 searchAndReplace,
-                Gui.createserverpack_gui_textarea_replace_title(name),
+                Translations.createserverpack_gui_textarea_replace_title(name),
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 guiProps.inspectMediumIcon
@@ -273,7 +273,7 @@ class ScrollTextArea(
         if (JOptionPane.showConfirmDialog(
                 parent,
                 searchAndReplaceRegex,
-                Gui.createserverpack_gui_textarea_replace_regex_title(name),
+                Translations.createserverpack_gui_textarea_replace_regex_title(name),
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 guiProps.inspectMediumIcon
