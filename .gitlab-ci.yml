@@ -509,6 +509,7 @@ pages:
         - serverpackcreator-web-frontend/dist
 
 Update README:on-schedule:
+  stage: Documentation
   image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.19
   only:
     - schedules
