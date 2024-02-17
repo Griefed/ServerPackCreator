@@ -1,0 +1,40 @@
+name: Update README with blog posts and sponsors
+
+on:
+  workflow_dispatch:
+
+jobs:
+  blog:
+    runs-on: ubuntu-latest
+    name: Fetch and Generate Blog Posts
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Add GitHub Sponsors to Readme
+        uses: JamesIves/github-sponsors-readme-action@v1.3.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions-cool/contributor-helper@v1.2.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          update-files: 'README.md'
+          update-places: '<!-- contributors -->/<!-- contributors end-->'
+          repo: 'Griefed/ServerPackCreator'
+          show-total: false
+          style: 'base'
+          avatar-width: '70'
+
+      - name: Push
+        run: |
+          apt-get update && apt-get install git -y && \
+          git config user.name ${{ secrets.GIT_USER }} && \
+          git config user.email ${{ secrets.GIT_MAIL }} && \
+          git checkout -b master && \
+          pwd && ls -ahl && \
+          git add . && \
+          wait && \
+          git status && \
+          git commit -m 'Update fancy schmancy blog posts, sponsors and contribution graph' && \
+          git push "https://${{ secrets.GIT_USER }}:${{ secrets.GITLAB_TOKEN }}@${{ secrets.CI_SERVER_HOST }}/${{ secrets.GIT_USER }}/${{ secrets.GIT_USER }}.git" --all
