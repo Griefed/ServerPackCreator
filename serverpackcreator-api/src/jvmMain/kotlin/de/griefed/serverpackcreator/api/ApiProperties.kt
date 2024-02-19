@@ -1200,7 +1200,7 @@ actual class ApiProperties(
     var jdbcDatabaseUrl: String = "jdbc:postgresql://localhost:5432/serverpackcreator"
         get() {
             var dbPath = internalProps.getProperty(pSpringDatasourceUrl, "jdbc:postgresql://localhost:5432/serverpackcreator")
-            if (dbPath.isEmpty()) {
+            if (dbPath.isEmpty() || dbPath.startsWith("jdbc:sqlite")) {
                 dbPath = "jdbc:postgresql://localhost:5432/serverpackcreator"
             }
             internalProps.setProperty(pSpringDatasourceUrl, dbPath)

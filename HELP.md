@@ -774,13 +774,13 @@ Changes to properties not described below are not supported. If you changed a pr
 meant to fiddle around with, do not report an issue. Such issues will be closed without further
 comment.
 
-| Property                                  | Description                                                                                            |
-|-------------------------------------------|--------------------------------------------------------------------------------------------------------|
-| server.port                               | The port at which ServerPackCreator as a webservice will be available at.                              |
-| spring.datasource.url                     | Path to and name of the SQLite database which the webservice will use.                                 |
-| spring.servlet.multipart.max-file-size    | Maximum filesize for uploads.                                                                          |
-| spring.servlet.multipart.max-request-size | Maximum request size for file uploads.                                                                 |
-| spring.config.import                      | Additional properties-file to import properties from.                                                  |
+| Property                                  | Description                                                               |
+|-------------------------------------------|---------------------------------------------------------------------------|
+| server.port                               | The port at which ServerPackCreator as a webservice will be available at. |
+| spring.datasource.url                     | JDBC URL to your PostgreSQL host, port and database                       |
+| spring.servlet.multipart.max-file-size    | Maximum filesize for uploads.                                             |
+| spring.servlet.multipart.max-request-size | Maximum request size for file uploads.                                    |
+| spring.config.import                      | Additional properties-file to import properties from.                     |
 
 ## i18n in ServerPackCreator
 
