@@ -361,7 +361,12 @@ actual class JarUtilities {
      */
     fun jarInformation(classInJar: Class<*>): HashMap<String, String> {
         val sysInfo = HashMap<String, String>(10)
-        sysInfo["jarPath"] = classInJar.source().path
+        sysInfo["jarPath"] = if (classInJar.source().path.contains("!")) {
+            val index = classInJar.source().path.indexOfFirst { char -> char == '!' }
+            classInJar.source().path.substring(0,index)
+        } else {
+            classInJar.source().path
+        }
         sysInfo["jarName"] = classInJar.source().name
         sysInfo["javaVersion"] = System.getProperty("java.version")
         sysInfo["osArch"] = System.getProperty("os.arch")
