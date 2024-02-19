@@ -1,8 +1,10 @@
 
+import com.install4j.gradle.Install4jTask
 import de.griefed.common.gradle.LicenseAgreementRenderer
 import de.griefed.common.gradle.SubprojectLicenseFilter
 import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
 import java.io.FileInputStream
+import java.time.LocalDate
 import java.util.*
 
 plugins {
@@ -10,6 +12,7 @@ plugins {
     kotlin("jvm")
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
     id("com.github.jk1.dependency-license-report")
+    id("com.install4j.gradle")
 }
 
 val props = Properties()
@@ -128,4 +131,20 @@ tasks.register<Copy>("copyLicenseReport") {
 tasks.generateLicenseReport {
     mustRunAfter(tasks.getByName("cleanLicenseReport"))
     finalizedBy(tasks.getByName("copyLicenseReport"))
+}
+
+install4j {
+    installDir = file(project.properties["install4jHomeDir"].toString())
+    verbose = true
+}
+
+task("media", Install4jTask::class) {
+    dependsOn(tasks.build)
+    release = project.version.toString()
+    projectFile = "spc.install4j"
+    variables = hashMapOf<Any, Any>(
+        "projectDir" to rootDir.absolutePath,
+        "projectVersion" to project.version.toString(),
+        "projectYear" to LocalDate.now().year.toString()
+    )
 }

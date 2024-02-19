@@ -35,10 +35,6 @@ import org.apache.commons.io.monitor.FileAlterationListener
 import org.apache.commons.io.monitor.FileAlterationMonitor
 import org.apache.commons.io.monitor.FileAlterationObserver
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.domain.EntityScan
-import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.context.annotation.ComponentScan
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.xml.sax.SAXException
 import java.awt.GraphicsEnvironment
@@ -64,15 +60,11 @@ fun main(args: Array<String>) {
  * API-instance used to run a given instance of SPC.
  * @author Griefed
  */
-@SpringBootApplication
-@EnableConfigurationProperties
-@EntityScan(value = ["de.griefed.serverpackcreator.web"])
-@ComponentScan(value = ["de.griefed.serverpackcreator"])
 @EnableScheduling
 class ServerPackCreator(private val args: Array<String>) {
     private val log = cachedLoggerOf(this.javaClass)
-    final val commandlineParser: CommandlineParser = CommandlineParser(args)
-    final val apiWrapper = ApiWrapper.api(commandlineParser.propertiesFile, false)
+    val commandlineParser: CommandlineParser = CommandlineParser(args)
+    val apiWrapper = ApiWrapper.api(commandlineParser.propertiesFile, false)
     private val appInfo = JarInformation(ServerPackCreator::class.java, apiWrapper.jarUtilities)
 
     init {
