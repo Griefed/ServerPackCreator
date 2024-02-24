@@ -184,5 +184,9 @@ internal class NeoForgeLoader(
                 versionMeta[mcVersion] = newNeoForgeVersionsForMCVer
             }
         }
+
+        for ((key, value) in versionMeta.entries) {
+            versionMeta[key] = value.reversed()
+        }
     }
 }

@@ -195,9 +195,7 @@ actual class NeoForgeMeta actual constructor(
         if (!isMinecraftVersionSupported(minecraftVersion)) {
             Optional.empty()
         } else if (supportedNeoForgeVersionsAscending(minecraftVersion).isPresent) {
-            val latestMCVersion = supportedNeoForgeVersionsAscending(minecraftVersion).get().size - 1
-            val supported = supportedNeoForgeVersionsAscending(minecraftVersion).get()
-            Optional.of(supported[latestMCVersion])
+            Optional.of(supportedNeoForgeVersionsDescending(minecraftVersion).get()[0])
         } else {
             Optional.empty()
         }
@@ -225,7 +223,7 @@ actual class NeoForgeMeta actual constructor(
      * @return List of available NeoForge versions.
      * @author Griefed
      */
-    actual fun neoForgeVersionsAscending() = neoForgeLoader!!.neoForgeVersions
+    actual fun neoForgeVersionsAscending() = neoForgeLoader!!.neoForgeVersions.reversed().toMutableList()
 
     /**
      * Get the list of available NeoForge versions, in descending order.
@@ -233,7 +231,7 @@ actual class NeoForgeMeta actual constructor(
      * @return List of available NeoForge versions.
      * @author Griefed
      */
-    actual fun neoForgeVersionsDescending() = neoForgeVersionsAscending().reversed()
+    actual fun neoForgeVersionsDescending() = neoForgeVersionsAscending().toList()
 
     /**
      * Get the array of available NeoForge versions, in ascending order.
@@ -259,7 +257,7 @@ actual class NeoForgeMeta actual constructor(
      * @author Griefed
      */
     actual fun supportedNeoForgeVersionsAscending(minecraftVersion: String) =
-        Optional.ofNullable(neoForgeLoader?.versionMeta?.get(minecraftVersion))
+        Optional.ofNullable(neoForgeLoader?.versionMeta?.get(minecraftVersion)?.reversed())
 
     /**
      * Get a list of available NeoForge version for a given Minecraft version in descending order.
@@ -272,8 +270,7 @@ actual class NeoForgeMeta actual constructor(
         if (!isMinecraftVersionSupported(minecraftVersion)) {
             Optional.empty()
         } else {
-            val supported = supportedNeoForgeVersionsAscending(minecraftVersion).get()
-            Optional.ofNullable(supported.reversed())
+            Optional.ofNullable(neoForgeLoader?.versionMeta?.get(minecraftVersion))
         }
 
 
