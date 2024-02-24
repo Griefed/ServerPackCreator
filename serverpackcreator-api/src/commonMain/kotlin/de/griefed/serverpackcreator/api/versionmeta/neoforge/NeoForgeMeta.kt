@@ -15,7 +15,8 @@ import java.util.*
  */
 @Suppress("unused")
 expect class NeoForgeMeta(
-    neoForgeManifest: File,
+    oldNeoForgeManifest: File,
+    newNeoForgeManifest: File,
     utilities: Utilities,
     installerCacheDirectory: File
 ) {

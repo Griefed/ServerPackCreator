@@ -50,7 +50,10 @@ expect class VersionMeta {
     val forgeUrlManifest: URL
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val neoForgeUrlManifest: URL
+    val oldNeoForgeUrlManifest: URL
+
+    @Suppress("MemberVisibilityCanBePrivate")
+    val newNeoForgeUrlManifest: URL
 
     @Suppress("MemberVisibilityCanBePrivate")
     val fabricUrlManifest: URL

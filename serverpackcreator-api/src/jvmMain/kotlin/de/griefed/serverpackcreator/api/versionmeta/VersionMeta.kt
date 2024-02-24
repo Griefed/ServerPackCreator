@@ -66,7 +66,8 @@ import javax.xml.parsers.ParserConfigurationException
 actual class VersionMeta(
     private val minecraftManifest: File,
     private val forgeManifest: File,
-    private val neoForgeManifest: File,
+    private val oldNeoForgeManifest: File,
+    private val newNeoForgeManifest: File,
     private val fabricManifest: File,
     private val fabricInstallerManifest: File,
     private val fabricIntermediariesManifest: File,
@@ -103,8 +104,12 @@ actual class VersionMeta(
         URI("https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
-    actual val neoForgeUrlManifest =
+    actual val oldNeoForgeUrlManifest =
         URI("https://maven.neoforged.net/releases/net/neoforged/forge/maven-metadata.xml").toURL()
+
+    @Suppress("MemberVisibilityCanBePrivate")
+    actual val newNeoForgeUrlManifest =
+        URI("https://maven.neoforged.net/releases/net/neoforged/neoforge/maven-metadata.xml").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val fabricUrlManifest =
@@ -173,7 +178,8 @@ actual class VersionMeta(
             apiProperties.installerCacheDirectory
         )
         neoForge = NeoForgeMeta(
-            neoForgeManifest,
+            oldNeoForgeManifest,
+            newNeoForgeManifest,
             utilities,
             apiProperties.installerCacheDirectory
         )
@@ -237,7 +243,10 @@ actual class VersionMeta(
                 checkManifest(forgeManifest, forgeUrlManifest, Type.FORGE)
             }
             launch {
-                checkManifest(neoForgeManifest, neoForgeUrlManifest, Type.NEO_FORGE)
+                checkManifest(oldNeoForgeManifest, oldNeoForgeUrlManifest, Type.NEO_FORGE)
+            }
+            launch {
+                checkManifest(newNeoForgeManifest, newNeoForgeUrlManifest, Type.NEO_FORGE)
             }
             launch {
                 checkManifest(fabricIntermediariesManifest, fabricUrlIntermediariesManifest, Type.FABRIC_INTERMEDIARIES)

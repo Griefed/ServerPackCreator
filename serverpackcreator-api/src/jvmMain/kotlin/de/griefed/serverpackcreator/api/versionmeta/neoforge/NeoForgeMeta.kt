@@ -29,14 +29,15 @@ import java.util.*
 /**
  * NeoForge meta containing information about available NeoForge releases.
  *
- * @param neoForgeManifest The manifest from which to acquire version information.
+ * @param oldNeoForgeManifest The manifest from which to acquire version information.
  * @param utilities     Commonly used utilities across ServerPackCreator.
  *
  * @author Griefed
  */
 @Suppress("unused")
 actual class NeoForgeMeta actual constructor(
-    private val neoForgeManifest: File,
+    private val oldNeoForgeManifest: File,
+    private val newNeoForgeManifest: File,
     private val utilities: Utilities,
     installerCacheDirectory: File
 ) {
@@ -59,7 +60,7 @@ actual class NeoForgeMeta actual constructor(
     @Throws(IOException::class)
     fun initialize(injectedMinecraftMeta: MinecraftMeta) {
         if (neoForgeLoader == null) {
-            neoForgeLoader = NeoForgeLoader(neoForgeManifest, utilities, injectedMinecraftMeta)
+            neoForgeLoader = NeoForgeLoader(oldNeoForgeManifest, newNeoForgeManifest, utilities, injectedMinecraftMeta)
         }
     }
 

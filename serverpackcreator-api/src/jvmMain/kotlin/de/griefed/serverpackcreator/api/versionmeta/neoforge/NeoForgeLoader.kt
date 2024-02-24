@@ -30,14 +30,15 @@ import java.net.MalformedURLException
 /**
  * Information about available NeoForge loader versions in correlation to Minecraft versions.
  *
- * @param loaderManifest Node containing information about available NeoForge versions.
+ * @param oldNeoForgeManifest Node containing information about available NeoForge versions.
  * @param utilities      Commonly used utilities across ServerPackCreator.
  * @param minecraftMeta  Meta for retroactively updating the previously passed meta.
  *
  * @author Griefed
  */
 internal class NeoForgeLoader(
-    private val loaderManifest: File,
+    private val oldNeoForgeManifest: File,
+    private val newNeoForgeManifest: File,
     private val utilities: Utilities,
     private val minecraftMeta: MinecraftMeta
 ) {
@@ -83,11 +84,11 @@ internal class NeoForgeLoader(
         neoForgeToMinecraftMeta.clear()
         instanceMeta.clear()
 
-        val document: Document = utilities.xmlUtilities.getXml(loaderManifest)
-        val elements = document.getElementsByTagName(version)
-        val neoForgeVersionsForMCVer: MutableList<String> = ArrayList(100)
-        for (i in 0 until elements.length) {
-            val node = elements.item(i)
+        val oldNeoDocument: Document = utilities.xmlUtilities.getXml(oldNeoForgeManifest)
+        val oldNeoElements = oldNeoDocument.getElementsByTagName(version)
+        val oldNeoForgeVersionsForMCVer: MutableList<String> = ArrayList(100)
+        for (i in 0 until oldNeoElements.length) {
+            val node = oldNeoElements.item(i)
             val children = node.childNodes
             val item = children.item(0)
             val combination = item.nodeValue.split("-")
@@ -103,9 +104,9 @@ internal class NeoForgeLoader(
                 minecraftVersions.add(mcVersion)
             }
             neoForgeVersions.add(neoForgeVersion)
-            neoForgeVersionsForMCVer.add(neoForgeVersion)
+            oldNeoForgeVersionsForMCVer.add(neoForgeVersion)
             try {
-                val neoForgeInstance = NeoForgeInstance(
+                val neoForgeInstance = OldNeoForgeInstance(
                     mcVersion,
                     neoForgeVersion,
                     minecraftMeta
@@ -126,7 +127,62 @@ internal class NeoForgeLoader(
                     ex
                 )
             }
-            versionMeta[mcVersion] = neoForgeVersionsForMCVer
+            versionMeta[mcVersion] = oldNeoForgeVersionsForMCVer
+        }
+
+        val newNeoDocument: Document = utilities.xmlUtilities.getXml(newNeoForgeManifest)
+        val newNeoElements = newNeoDocument.getElementsByTagName(version)
+        for (mcVersion in minecraftMeta.allVersionsDescending()) {
+            if (mcVersion.length < 6) {
+                continue
+            }
+            val cutMinecraft = "^${mcVersion.substring(2)}.*".toRegex()
+            val newNeoForgeVersionsForMCVer: MutableList<String> = ArrayList(100)
+
+            for (i in 0 until newNeoElements.length) {
+                val node = newNeoElements.item(i)
+                val children = node.childNodes
+                val item = children.item(0)
+                val neoForgeVersion = item.nodeValue.toString()
+
+                if (neoForgeVersion.matches(cutMinecraft)) {
+                    if (!minecraftVersions.contains(mcVersion)) {
+                        minecraftVersions.add(mcVersion)
+                    }
+                    if (!neoForgeVersions.contains(neoForgeVersion)) {
+                        neoForgeVersions.add(neoForgeVersion)
+                    }
+                    if (!newNeoForgeVersionsForMCVer.contains(neoForgeVersion)) {
+                        newNeoForgeVersionsForMCVer.add(neoForgeVersion)
+                    }
+
+                    try {
+                        val neoForgeInstance = NewNeoForgeInstance(
+                            mcVersion,
+                            neoForgeVersion,
+                            minecraftMeta
+                        )
+                        instanceMeta["$mcVersion-$neoForgeVersion"] = neoForgeInstance
+                        neoForgeToMinecraftMeta[neoForgeVersion] = mcVersion
+                    } catch (ex: MalformedURLException) {
+
+                        // Well, in THEORY this should never be thrown, so we don't need to bother
+                        // with a thorough error message
+                        log.debug(
+                            "Could not create NeoForge instance for Minecraft $mcVersion and NeoForge $neoForgeVersion.",
+                            ex
+                        )
+                    } catch (ex: NoSuchElementException) {
+                        log.debug(
+                            "Could not create NeoForge instance for Minecraft $mcVersion and NeoForge $neoForgeVersion.",
+                            ex
+                        )
+                    }
+                }
+            }
+            if (newNeoForgeVersionsForMCVer.isNotEmpty()) {
+                versionMeta[mcVersion] = newNeoForgeVersionsForMCVer
+            }
         }
     }
 }

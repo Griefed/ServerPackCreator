@@ -158,7 +158,7 @@ class BeanConfiguration {
 
     @Bean
     fun neoForgeManifest(): File {
-        return apiWrapper().apiProperties.neoForgeVersionManifest
+        return apiWrapper().apiProperties.oldNeoForgeVersionManifest
     }
 
     @Bean
