@@ -41,7 +41,7 @@ class KeyComboManager(
     mainPanel: MainPanel
 ) {
 
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val configs = mainPanel.tabbedConfigsTab
     private val control = mainPanel.controlPanel
 

@@ -64,7 +64,7 @@ actual class ApiPlugins(
     private val versionMeta: VersionMeta,
     private val utilities: Utilities
 ) : JarPluginManager(apiProperties.pluginsDirectory.toPath()) {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val pluginsLog = logger("PluginsLogger")
     private val pluginConfigs: HashMap<String, CommentedConfig> = HashMap<String, CommentedConfig>(100)
     private val pluginConfigFiles = HashMap<String, File>(100)

@@ -50,7 +50,7 @@ class TaskExecutionServiceImpl @Autowired constructor(
     private val eventService: EventService
 ) :
     TaskExecutionService {
-    private val logger: KotlinLogger = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val blockingQueue: BlockingQueue<TaskDetail> = LinkedBlockingDeque()
 
     init {
@@ -65,21 +65,21 @@ class TaskExecutionServiceImpl @Autowired constructor(
             while (true) {
                 try {
                     if (!blockingQueue.isEmpty()) {
-                        logger.info("Processing Next Task from Queue")
+                        log.info("Processing Next Task from Queue")
                         val taskDetail = blockingQueue.take()
                         processTask(taskDetail)
                     } else {
                         Thread.sleep(1000)
                     }
                 } catch (e: InterruptedException) {
-                    logger.error("There was an error while processing ", e)
+                    log.error("There was an error while processing ", e)
                     Thread.currentThread().interrupt()
                 }
             }
         }
         thread.name = "GenerationThread"
         thread.start()
-        logger.info("Worker Thread ${thread.name} initiated successfully")
+        log.info("Worker Thread ${thread.name} initiated successfully")
     }
 
     /**
@@ -96,7 +96,7 @@ class TaskExecutionServiceImpl @Autowired constructor(
     }
 
     private fun processTask(taskDetail: TaskDetail) {
-        logger.info("Running on Thread ${Thread.currentThread().name}")
+        log.info("Running on Thread ${Thread.currentThread().name}")
         when (taskDetail.modpack.status) {
             ModpackStatus.QUEUED -> checkModpack(taskDetail)
             ModpackStatus.CHECKED -> {
@@ -108,7 +108,7 @@ class TaskExecutionServiceImpl @Autowired constructor(
             }
 
             ModpackStatus.GENERATED, ModpackStatus.ERROR -> finishing(taskDetail)
-            else -> logger.error("${taskDetail.modpack.status} does not merit unique processing.")
+            else -> log.error("${taskDetail.modpack.status} does not merit unique processing.")
         }
     }
 
@@ -130,11 +130,11 @@ class TaskExecutionServiceImpl @Autowired constructor(
             )
         }
         Runtime.getRuntime().gc()
-        logger.info("Remaining tasks in queue: ${getQueueSize()}")
+        log.info("Remaining tasks in queue: ${getQueueSize()}")
     }
 
     private fun checkModpack(taskDetail: TaskDetail) {
-        logger.info("Performing Modpack check for modpack : ${taskDetail.modpack.id}")
+        log.info("Performing Modpack check for modpack : ${taskDetail.modpack.id}")
         val zipFile = modpackService.getModPackArchive(taskDetail.modpack)
         if (zipFile.isEmpty) {
             throw StorageException("ModPack-file for ${taskDetail.modpack.id} not found.")
@@ -174,13 +174,13 @@ class TaskExecutionServiceImpl @Autowired constructor(
     }
 
     private fun generateFromModrinth(modpack: ModPack) {
-        logger.info("Server Pack will be generated from Modrinth modpack : ${modpack.id}")
-        logger.warn("Modrinth API will be available in Milestone 6.")
-        /*logger.info("Server Pack generated.")*/
+        log.info("Server Pack will be generated from Modrinth modpack : ${modpack.id}")
+        log.warn("Modrinth API will be available in Milestone 6.")
+        /*log.info("Server Pack generated.")*/
     }
 
     private fun generateFromZip(taskDetail: TaskDetail) {
-        logger.info("Server Pack will be generated from uploaded, zipped, modpack : ${taskDetail.modpack.id}")
+        log.info("Server Pack will be generated from uploaded, zipped, modpack : ${taskDetail.modpack.id}")
         taskDetail.modpack.status = ModpackStatus.GENERATING
         eventService.submit(
             taskDetail.modpack.id,
@@ -228,7 +228,7 @@ class TaskExecutionServiceImpl @Autowired constructor(
         }
         modpackService.saveModpack(taskDetail.modpack)
         submitTaskInQueue(taskDetail)
-        logger.info("Server Pack generated.")
+        log.info("Server Pack generated.")
     }
 
     /**

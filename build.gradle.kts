@@ -73,7 +73,8 @@ licenseReport {
     renderers = arrayOf(
         com.github.jk1.license.render.InventoryHtmlReportRenderer("index.html", "Dependency Licences"),
         com.github.jk1.license.render.InventoryMarkdownReportRenderer("licences.md", "Dependency Licenses"),
-        LicenseAgreementRenderer("LICENSE-AGREEMENT")
+        LicenseAgreementRenderer("LICENSE-AGREEMENT"),
+        LicenseAgreementRenderer("LICENSE-AGREEMENT.txt")
     )
 }
 
@@ -139,7 +140,7 @@ install4j {
 }
 
 task("media", Install4jTask::class) {
-    dependsOn(tasks.build)
+    mustRunAfter(tasks.build)
     release = project.version.toString()
     projectFile = "spc.install4j"
     variables = hashMapOf<Any, Any>(

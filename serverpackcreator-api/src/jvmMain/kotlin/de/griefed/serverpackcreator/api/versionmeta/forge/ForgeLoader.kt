@@ -41,7 +41,7 @@ internal class ForgeLoader(
     private val utilities: Utilities,
     private val minecraftMeta: MinecraftMeta
 ) {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     val minecraftVersions: MutableList<String> = ArrayList(100)
     val forgeVersions: MutableList<String> = ArrayList(100)
 

@@ -64,7 +64,7 @@ class InclusionsEditor(
     private val inclusionFilter: ScrollTextField,
     private val exclusionFilter: ScrollTextField
 ) : JSplitPane(HORIZONTAL_SPLIT) {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val expertPanel = JPanel(
         MigLayout(
             "left,wrap",

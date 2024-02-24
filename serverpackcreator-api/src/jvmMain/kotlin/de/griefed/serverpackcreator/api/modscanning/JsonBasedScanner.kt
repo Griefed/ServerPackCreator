@@ -34,7 +34,7 @@ import java.util.jar.JarFile
  * @author Griefed
  */
 abstract class JsonBasedScanner {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /**
      * Acquire a JsonNode from the specified file in the specified file.

@@ -40,7 +40,7 @@ actual class AnnotationScanner(
     private val objectMapper: ObjectMapper,
     private val utilities: Utilities
 ) : JsonBasedScanner(), Scanner<TreeSet<File>, Collection<File>> {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val additionalDependencyRegex = "(@.*|\\[.*)".toRegex()
     private val caches = "META-INF/fml_cache_annotation.json"
     private val annotations = "annotations"

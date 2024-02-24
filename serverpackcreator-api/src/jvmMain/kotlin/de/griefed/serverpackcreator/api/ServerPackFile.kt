@@ -35,7 +35,7 @@ import java.nio.file.Path
  */
 @Suppress("MemberVisibilityCanBePrivate")
 actual class ServerPackFile {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     val sourceFile: File
     val sourcePath: Path
     val destinationFile: File

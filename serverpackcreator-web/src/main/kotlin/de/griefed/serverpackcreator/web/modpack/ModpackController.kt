@@ -46,7 +46,7 @@ class ModpackController @Autowired constructor(
     private val runConfigurationService: RunConfigurationService,
     private val taskExecutionServiceImpl: TaskExecutionServiceImpl
 ) {
-    private val logger: KotlinLogger = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     @GetMapping("/download/{id:[0-9]+}", produces = ["application/zip"])
     @ResponseBody

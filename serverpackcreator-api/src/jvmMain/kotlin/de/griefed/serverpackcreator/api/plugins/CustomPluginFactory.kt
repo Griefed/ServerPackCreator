@@ -30,7 +30,7 @@ import org.pf4j.PluginWrapper
  * @author Griefed
  */
 class CustomPluginFactory: DefaultPluginFactory() {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     override fun createInstance(pluginClass: Class<*>, pluginWrapper: PluginWrapper): Plugin? {
         val context = PluginContext(pluginWrapper.runtimeMode)
         try {

@@ -46,7 +46,8 @@ class JarInformation(clazz: Class<*>, jarUtilities: JarUtilities = JarUtilities(
      *
      * @author Griefed
      */
-    val jarFolder: File
+    var jarFolder: File
+        private set
 
     /**
      * The .exe or JAR-file of ServerPackCreator.
@@ -107,10 +108,19 @@ class JarInformation(clazz: Class<*>, jarUtilities: JarUtilities = JarUtilities(
         sysInfo.putAll(jarUtilities.jarInformation(clazz))
         jarPath = Paths.get(sysInfo["jarPath"]!!)
         jarFile = jarPath.toFile()
-        jarFolder = if (jarFile.isFile) {
-            jarFile.parentFile
+        jarFolder = if (jarPath.toString().contains("!")) {
+            val temp = File(jarPath.toString().substringBefore('!'))
+            if (temp.isDirectory) {
+                temp
+            } else {
+                temp.parentFile
+            }
         } else {
-            jarFile
+            if (jarFile.isDirectory) {
+                jarFile
+            } else {
+                jarFile.parentFile
+            }
         }
         jarFileName = sysInfo["jarName"].toString()
         javaVersion = sysInfo["javaVersion"].toString()
