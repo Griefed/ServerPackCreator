@@ -179,7 +179,8 @@ actual class ApiWrapper private constructor(
         VersionMeta(
             apiProperties.minecraftVersionManifest,
             apiProperties.forgeVersionManifest,
-            apiProperties.neoForgeVersionManifest,
+            apiProperties.oldNeoForgeVersionManifest,
+            apiProperties.newNeoForgeVersionManifest,
             apiProperties.fabricVersionManifest,
             apiProperties.fabricInstallerManifest,
             apiProperties.fabricIntermediariesManifest,
