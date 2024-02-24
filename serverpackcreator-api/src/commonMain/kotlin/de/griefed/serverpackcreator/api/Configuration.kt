@@ -31,7 +31,7 @@ import mu.KotlinLogging
  * @author Griefed
  */
 abstract class Configuration<F, P> {
-    protected val log = KotlinLogging.logger {}
+    protected val log by lazy { KotlinLogging.logger {} }
     protected val forge = "^forge$".toRegex()
     protected val neoForge = "^neoforge$".toRegex()
     protected val fabric = "^fabric$".toRegex()

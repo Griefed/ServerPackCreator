@@ -44,7 +44,7 @@ class MainLogToHasteBinItem(
     guiProps: GuiProps,
     mainFrame: JFrame
 ) : HasteBinMenuItem(Translations.menubar_gui_menuitem_uploadlog.toString(), mainFrame, guiProps, webUtilities) {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val spcLogDocument: StyledDocument = DefaultStyledDocument()
     private val spcLogAttributeSet: SimpleAttributeSet = SimpleAttributeSet()
     private val spcLogWindowTextPane: JTextPane = JTextPane(spcLogDocument)

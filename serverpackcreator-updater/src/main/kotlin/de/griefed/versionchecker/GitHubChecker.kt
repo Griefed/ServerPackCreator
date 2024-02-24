@@ -26,7 +26,7 @@
 package de.griefed.versionchecker
 
 import com.fasterxml.jackson.databind.JsonNode
-import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URI
@@ -46,7 +46,7 @@ import java.util.*
  * @author Griefed
  */
 class GitHubChecker : VersionChecker {
-    private val logger = LogManager.getLogger(GitHubChecker::class.java)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val gitHubApi: URL
     private val gitHubApiLatest: URL
     private var repository: JsonNode? = null
@@ -102,7 +102,7 @@ class GitHubChecker : VersionChecker {
      * @return [Update]-instance, wrapped in an [Optional], containing information about the available update.
      */
     override fun check(currentVersion: String, checkForPreReleases: Boolean): Optional<Update> {
-        logger.debug("Current version: $currentVersion")
+        log.debug("Current version: $currentVersion")
         try {
             val newVersion = isUpdateAvailable(currentVersion, checkForPreReleases)
             if (newVersion != "up_to_date") {
@@ -152,9 +152,9 @@ class GitHubChecker : VersionChecker {
                 )
             }
         } catch (ex: NumberFormatException) {
-            logger.error("A version could not be parsed into integers.", ex)
+            log.error("A version could not be parsed into integers.", ex)
         } catch (ex: MalformedURLException) {
-            logger.error("URL could not be created.", ex)
+            log.error("URL could not be created.", ex)
         }
         return Optional.empty()
     }
@@ -175,7 +175,7 @@ class GitHubChecker : VersionChecker {
                 }
             }
         }
-        logger.debug("All versions: {}", versions)
+        log.debug("All versions: $versions")
 
         // In case the given repository does not have any releases
         return if (versions.size == 0) {
@@ -202,7 +202,7 @@ class GitHubChecker : VersionChecker {
                     version = alpha
                 }
             }
-            logger.debug("Latest version:{}", latest)
+            log.debug("Latest version: $latest")
             return version
         }
         return "no_release"

@@ -37,7 +37,7 @@ import javax.net.ssl.HttpsURLConnection
  */
 @Suppress("unused")
 actual class WebUtilities(private val apiProperties: ApiProperties) {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /**
      * Download the file from the specified URL to the specified destination, replacing the file if it

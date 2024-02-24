@@ -45,7 +45,7 @@ class ServerPackService @Autowired constructor(
     messageDigestInstance: MessageDigest,
     apiProperties: ApiProperties
 ) {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val rootLocation: Path = apiProperties.serverPacksDirectory.toPath()
     private val storage: StorageSystem = StorageSystem(rootLocation, messageDigestInstance)
 

@@ -53,7 +53,7 @@ class ControlPanel(
     private val apiWrapper: ApiWrapper,
     private val mainFrame: MainFrame
 ) {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val statusPanel = StatusPanel(guiProps)
 
     private val runGeneration = GenerationButton(guiProps) { generate() }

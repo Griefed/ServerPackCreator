@@ -41,7 +41,7 @@ internal class NeoForgeLoader(
     private val utilities: Utilities,
     private val minecraftMeta: MinecraftMeta
 ) {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     val minecraftVersions: MutableList<String> = ArrayList(100)
     val neoForgeVersions: MutableList<String> = ArrayList(100)
     private val version = "version"

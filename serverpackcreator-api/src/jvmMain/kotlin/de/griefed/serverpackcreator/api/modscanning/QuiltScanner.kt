@@ -38,7 +38,7 @@ actual class QuiltScanner(
     private val objectMapper: ObjectMapper,
     private val utilities: Utilities
 ) : JsonBasedScanner(), Scanner<TreeSet<File>, Collection<File>> {
-    private val logger = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val quiltModJson = "quilt.mod.json"
     private val quiltLoader = "quilt_loader"
     private val id = "id"
@@ -59,7 +59,7 @@ actual class QuiltScanner(
      * @author Griefed
      */
     override fun scan(jarFiles: Collection<File>): TreeSet<File> {
-        logger.info("Scanning Quilt mods for sideness...")
+        log.info("Scanning Quilt mods for sideness...")
         val modDependencies = ArrayList<Pair<String, Pair<String, String>>>()
         val clientMods = TreeSet<String>()
 
@@ -99,7 +99,7 @@ actual class QuiltScanner(
                 try {
                     if (utilities.jsonUtilities.nestedTextEqualsIgnoreCase(modJson, client, minecraft, environment)) {
                         clientMods.add(modId)
-                        logger.debug("Added clientMod: $modId")
+                        log.debug("Added clientMod: $modId")
                     }
                 } catch (ignored: NullPointerException) {
                 }
@@ -112,28 +112,28 @@ actual class QuiltScanner(
                             try {
                                 val dependencyId = utilities.jsonUtilities.getNestedText(dependency, id)
                                 if (!dependencyId.matches(dependencyExclusions) && modDependencies.add(Pair(dependencyId, Pair(mod.name, modId)))) {
-                                    logger.debug("Added dependency $dependencyId for $modId (${mod.name}).")
+                                    log.debug("Added dependency $dependencyId for $modId (${mod.name}).")
                                 }
                             } catch (ex: NullPointerException) {
-                                logger.debug("No dependencies for $modId (${mod.name}).")
+                                log.debug("No dependencies for $modId (${mod.name}).")
                             }
                         } else {
                             try {
                                 val dependencyText = dependency.asText()
                                 if (!dependencyText.matches(dependencyExclusions) && modDependencies.add(Pair(dependencyText, Pair(mod.name, modId)))) {
-                                    logger.debug("Added dependency ${dependency.asText()} for $modId (${mod.name}).")
+                                    log.debug("Added dependency ${dependency.asText()} for $modId (${mod.name}).")
                                 }
                             } catch (ex: NullPointerException) {
-                                logger.debug("No dependencies for $modId (${mod.name}).")
+                                log.debug("No dependencies for $modId (${mod.name}).")
                             }
                         }
                     }
                 } catch (ignored: NullPointerException) {
                 }
             } catch (ex: NullPointerException) {
-                logger.warn("Couldn't scan $mod as it contains no quilt.mod.json.")
+                log.warn("Couldn't scan $mod as it contains no quilt.mod.json.")
             } catch (ex: Exception) {
-                logger.error("Couldn't scan $mod", ex)
+                log.error("Couldn't scan $mod", ex)
             }
         }
     }

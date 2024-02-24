@@ -67,7 +67,7 @@ abstract class ConvenientJTable(
     tableColumnModel: DefaultTableColumnModel? = null,
     listSelectionModel: DefaultListSelectionModel? = null
 ) : JTable(tableModel, tableColumnModel, listSelectionModel) {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     val scrollPanel: ResizeIndicatorScrollPane
 
     init {

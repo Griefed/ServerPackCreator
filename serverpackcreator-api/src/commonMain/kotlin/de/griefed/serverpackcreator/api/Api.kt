@@ -23,7 +23,6 @@ import de.griefed.serverpackcreator.api.utilities.TomlParser
 import de.griefed.serverpackcreator.api.utilities.common.BooleanUtilities
 import de.griefed.serverpackcreator.api.utilities.common.ListUtilities
 import de.griefed.serverpackcreator.api.utilities.common.StringUtilities
-import mu.KotlinLogging
 
 /**
  * Basic implementations of the API-class holding properties and functions/methods which should be provided to the given
@@ -32,7 +31,6 @@ import mu.KotlinLogging
  * @author Griefed
  */
 abstract class Api<F> {
-    protected val log = KotlinLogging.logger {}
     protected val versionsRegex = ".*(alpha|beta|dev).*".toRegex()
     protected val xmlJsonRegex = ".*\\.(xml|json)".toRegex()
     protected var setupWasRun: Boolean = false

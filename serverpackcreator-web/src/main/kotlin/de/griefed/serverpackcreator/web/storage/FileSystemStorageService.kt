@@ -21,7 +21,6 @@ package de.griefed.serverpackcreator.web.storage
 
 import de.griefed.serverpackcreator.api.utilities.common.size
 import de.griefed.serverpackcreator.web.data.SavedFile
-import org.apache.logging.log4j.kotlin.KotlinLogger
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.bouncycastle.util.encoders.Hex
 import org.springframework.util.FileSystemUtils
@@ -37,7 +36,7 @@ class FileSystemStorageService(private val rootLocation: Path, private val messa
 
     constructor(rootLocation: Path) : this(rootLocation, MessageDigest.getInstance("SHA-256"))
 
-    private val logger: KotlinLogger = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     @Throws(StorageException::class)
     fun store(file: MultipartFile): Optional<SavedFile> {
@@ -52,7 +51,7 @@ class FileSystemStorageService(private val rootLocation: Path, private val messa
                 throw StorageException("Cannot store file outside current directory.")
             }
             file.transferTo(destinationFile)
-            logger.debug("Stored file to $destinationFile.")
+            log.debug("Stored file to $destinationFile.")
             val sha256 = String(Hex.encode(messageDigestInstance.digest(destinationFile.toFile().readBytes())))
             return Optional.of(
                 SavedFile(
@@ -73,7 +72,7 @@ class FileSystemStorageService(private val rootLocation: Path, private val messa
         return if (file != null && file.exists()) {
             Optional.of(file)
         } else {
-            logger.warn("Filesystem does not contain a file for $id.")
+            log.warn("Filesystem does not contain a file for $id.")
             Optional.empty()
         }
     }

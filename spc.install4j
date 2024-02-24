@@ -1,41 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <install4j version="10.0.7" transformSequenceNumber="10">
-  <directoryPresets config="./serverpackcreator-api/src/jvmMain/resources/log4j2.component.properties" />
+  <directoryPresets config="./img" />
   <application name="ServerPackCreator" applicationId="3565-3228-6904-0931" mediaDir="./media" compression="9" lzmaCompression="true" shortName="SPC" publisher="Griefed" publisherWeb="https://serverpackcreator.de" version="${compiler:projectVersion}" allPathsRelative="true" autoSave="true" macVolumeId="521d0a10ddf6d897">
     <variables>
       <variable name="projectDir" value="F:\GitLab\ServerPackCreator" description="Project directory of ServerPackCreator on your system" />
       <variable name="projectVersion" value="dev" description="The version with which to build this installer." />
       <variable name="projectYear" value="2024" />
     </variables>
-    <jreBundles jdkProviderId="Adoptium" release="21/jdk-21+35" />
+    <jreBundles jdkProviderId="Zulu" release="21/21.0.2" />
   </application>
   <files defaultOverwriteMode="1" defaultUninstallMode="2" launcherOverwriteMode="1" defaultFileMode="765" defaultDirMode="765">
     <mountPoints>
-      <mountPoint id="28" location="lib" />
       <mountPoint id="26" />
     </mountPoints>
     <entries>
-      <fileEntry mountPoint="28" file="${compiler:projectDir}/serverpackcreator-api/src/jvmMain/resources/log4j2.component.properties" overwriteMode="1" fileMode="664" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
-      <fileEntry mountPoint="28" file="${compiler:projectDir}/serverpackcreator-api/src/jvmMain/resources/log4j2.xml" overwriteMode="1" fileMode="664" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
-      <fileEntry mountPoint="28" file="${compiler:projectDir}/serverpackcreator-api/src/jvmMain/resources/serverpackcreator.properties" overwriteMode="5" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
-      <dirEntry mountPoint="28" file="${compiler:projectDir}/serverpackcreator-app/build/libs" overwriteMode="1" fileMode="755" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" subDirectory="libs" excludeSuffixes="javadoc.jar,sources.jar,plain.jar" />
       <fileEntry mountPoint="26" file="${compiler:projectDir}/CHANGELOG.md" overwriteMode="1" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
+      <fileEntry mountPoint="26" file="${compiler:projectDir}/serverpackcreator-api/src/jvmMain/resources/log4j2.xml" />
+      <fileEntry mountPoint="26" file="${compiler:projectDir}/serverpackcreator-api/src/jvmMain/resources/serverpackcreator.properties" overwriteMode="1" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
       <fileEntry mountPoint="26" file="${compiler:projectDir}/CODE_OF_CONDUCT.md" overwriteMode="1" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
       <fileEntry mountPoint="26" file="${compiler:projectDir}/CONTRIBUTING.md" overwriteMode="1" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
       <fileEntry mountPoint="26" file="${compiler:projectDir}/HELP.md" overwriteMode="1" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
       <fileEntry mountPoint="26" file="${compiler:projectDir}/LICENSE" overwriteMode="1" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
       <fileEntry mountPoint="26" file="${compiler:projectDir}/README.md" overwriteMode="1" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
       <fileEntry mountPoint="26" file="${compiler:projectDir}/SECURITY.md" overwriteMode="1" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
+      <dirEntry mountPoint="26" file="${compiler:projectDir}/serverpackcreator-app/build/libs" overwriteMode="1" fileMode="755" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" subDirectory="libs" excludeSuffixes="plain.jar" />
     </entries>
   </files>
   <launchers>
     <launcher name="ServerPackCreator-GUI" id="183" excludeFromMenu="true" icnsFile="${compiler:projectDir}/img/app.icns">
-      <executable name="ServerPackCreator-GUI" iconSet="true" iconFile="${compiler:projectDir}/img/icon.ico" executableDir="." stderrFile="error.log${installer:sys.installationDir}/logs/run.log" stderrMode="append" stdoutFile="error.log${installer:sys.installationDir}/logs/run.log" stdoutMode="append" executableMode="gui" executionLevel="highestAvailable" checkConsoleParameter="true">
+      <executable name="ServerPackCreator-GUI" iconSet="true" iconFile="${compiler:projectDir}/img/icon.ico" redirectStderr="false" stderrFile="error.log${installer:sys.installationDir}/logs/run.log" stderrMode="append" stdoutFile="error.log${installer:sys.installationDir}/logs/run.log" stdoutMode="append" executableMode="gui" singleInstance="true" checkConsoleParameter="true" globalSingleInstance="true" windowsSessionSingleInstance="false">
         <versionInfo include="true" fileDescription="Create server packs from Minecraft modpacks." legalCopyright="Copyright (C) ${compiler:projectYear} Griefed" internalName="ServerPackCreator" />
       </executable>
-      <java mainClass="org.springframework.boot.loader.launch.JarLauncher">
+      <java mainClass="org.springframework.boot.loader.launch.JarLauncher" arguments="-gui">
         <classPath>
-          <scanDirectory location="lib" failOnError="false" />
+          <scanDirectory location="." failOnError="false" />
         </classPath>
         <modulePath>
           <directory location="lib" failOnError="false" />
@@ -46,12 +44,12 @@
       </iconImageFiles>
     </launcher>
     <launcher name="ServerPackCreator" id="232" icnsFile="${compiler:projectDir}/img/app.icns">
-      <executable name="ServerPackCreator" iconSet="true" iconFile="${compiler:projectDir}/img/icon.ico" executableDir="." redirectStderr="false" stderrFile="error.log${installer:sys.installationDir}/logs/run.log" stderrMode="append" stdoutFile="error.log${installer:sys.installationDir}/logs/run.log" stdoutMode="append" executableMode="console" executionLevel="highestAvailable" checkConsoleParameter="true">
+      <executable name="ServerPackCreator" iconSet="true" iconFile="${compiler:projectDir}/img/icon.ico" redirectStderr="false" stderrFile="error.log${installer:sys.installationDir}/logs/run.log" stderrMode="append" stdoutFile="error.log${installer:sys.installationDir}/logs/run.log" stdoutMode="append" executableMode="console" singleInstance="true" checkConsoleParameter="true" globalSingleInstance="true">
         <versionInfo include="true" fileDescription="Create server packs from Minecraft modpacks." legalCopyright="Copyright (C) ${compiler:projectYear} Griefed" internalName="ServerPackCreator" />
       </executable>
       <java mainClass="org.springframework.boot.loader.launch.JarLauncher">
         <classPath>
-          <scanDirectory location="lib" failOnError="false" />
+          <scanDirectory location="." failOnError="false" />
         </classPath>
         <modulePath>
           <directory location="lib" failOnError="false" />
@@ -62,12 +60,12 @@
       </iconImageFiles>
     </launcher>
     <launcher name="ServerPackCreator-WEB" id="234" excludeFromMenu="true" icnsFile="${compiler:projectDir}/img/app.icns">
-      <executable name="ServerPackCreator-WEB" iconSet="true" iconFile="${compiler:projectDir}/img/icon.ico" executableDir="." redirectStderr="false" stderrFile="error.log${installer:sys.installationDir}/logs/run.log" stderrMode="append" stdoutFile="error.log${installer:sys.installationDir}/logs/run.log" stdoutMode="append" executableMode="console" executionLevel="highestAvailable" checkConsoleParameter="true">
+      <executable name="ServerPackCreator-WEB" iconSet="true" iconFile="${compiler:projectDir}/img/icon.ico" redirectStderr="false" stderrFile="~/ServerPackCreator/serverpackcreator.log" stderrMode="append" stdoutFile="~/ServerPackCreator/serverpackcreator.log" stdoutMode="append" executableMode="service" singleInstance="true" checkConsoleParameter="true" globalSingleInstance="true" dpiAware="false">
         <versionInfo include="true" fileDescription="Create server packs from Minecraft modpacks." legalCopyright="Copyright (C) ${compiler:projectYear} Griefed" internalName="ServerPackCreator" />
       </executable>
       <java mainClass="org.springframework.boot.loader.launch.JarLauncher" arguments="-web">
         <classPath>
-          <scanDirectory location="lib" failOnError="false" />
+          <scanDirectory location="." failOnError="false" />
         </classPath>
         <modulePath>
           <directory location="lib" failOnError="false" />
@@ -82,7 +80,40 @@
     <applications>
       <application id="installer" beanClass="com.install4j.runtime.beans.applications.InstallerApplication">
         <serializedBean>
+          <property name="customIconImageFiles">
+            <add>
+              <object class="com.install4j.api.beans.ExternalFile">
+                <string>${compiler:projectDir}/img/install_16x16.png</string>
+              </object>
+            </add>
+            <add>
+              <object class="com.install4j.api.beans.ExternalFile">
+                <string>${compiler:projectDir}/img/install_32x32.png</string>
+              </object>
+            </add>
+            <add>
+              <object class="com.install4j.api.beans.ExternalFile">
+                <string>${compiler:projectDir}/img/install_48x48.png</string>
+              </object>
+            </add>
+            <add>
+              <object class="com.install4j.api.beans.ExternalFile">
+                <string>${compiler:projectDir}/img/install_128x128.png</string>
+              </object>
+            </add>
+            <add>
+              <object class="com.install4j.api.beans.ExternalFile">
+                <string>${compiler:projectDir}/img/install_256x256.png</string>
+              </object>
+            </add>
+            <add>
+              <object class="com.install4j.api.beans.ExternalFile">
+                <string>${compiler:projectDir}/img/install_512x512.png</string>
+              </object>
+            </add>
+          </property>
           <property name="frameWidth" type="int" value="600" />
+          <property name="useCustomIcon" type="boolean" value="true" />
         </serializedBean>
         <startup>
           <screen id="1" beanClass="com.install4j.runtime.beans.screens.StartupScreen" rollbackBarrierExitCode="0">
@@ -206,6 +237,39 @@ return console.askOkCancel(message, true);
               </formComponent>
             </formComponents>
           </screen>
+          <screen id="320" beanClass="com.install4j.runtime.beans.screens.LicenseScreen" rollbackBarrierExitCode="0">
+            <formComponents>
+              <formComponent id="321" beanClass="com.install4j.runtime.beans.formcomponents.MultilineLabelComponent">
+                <serializedBean>
+                  <property name="labelText" type="string">${i18n:LicenseLabel3}</property>
+                </serializedBean>
+              </formComponent>
+              <formComponent id="322" beanClass="com.install4j.runtime.beans.formcomponents.LicenseComponent" useExternalParametrization="true" externalParametrizationName="License Agreement" externalParametrizationMode="include">
+                <serializedBean>
+                  <property name="displayedTextFile" id="LocalizedExternalFile0">
+                    <property name="languageIdToExternalFile">
+                      <entry>
+                        <string>en</string>
+                        <object class="com.install4j.api.beans.ExternalFile">
+                          <string>${compiler:projectDir}/licenses/LICENSE-AGREEMENT.txt</string>
+                        </object>
+                      </entry>
+                    </property>
+                  </property>
+                  <property name="fillVertical" type="boolean" value="true" />
+                  <property name="readAllRequired" type="boolean" value="true" />
+                </serializedBean>
+                <externalParametrizationPropertyNames>
+                  <propertyName>textSource</propertyName>
+                  <propertyName>displayedText</propertyName>
+                  <propertyName>displayedTextFile</propertyName>
+                  <propertyName>variableName</propertyName>
+                  <propertyName>acceptInitiallySelected</propertyName>
+                  <propertyName>readAllRequired</propertyName>
+                </externalParametrizationPropertyNames>
+              </formComponent>
+            </formComponents>
+          </screen>
           <screen id="8" beanClass="com.install4j.runtime.beans.screens.InstallationDirectoryScreen" rollbackBarrierExitCode="0">
             <condition>!context.getBooleanVariable("sys.confirmedUpdateInstallation")</condition>
             <actions>
@@ -216,6 +280,11 @@ return console.askOkCancel(message, true);
                   </property>
                 </serializedBean>
                 <condition>context.getVariable("sys.responseFile") == null</condition>
+              </action>
+              <action id="252" beanClass="com.install4j.runtime.beans.actions.registry.LoadInstallerVariablesAction" commentSet="true" comment="This action loads the installer variables from the preference store that have been saved by the &quot;Save installer variables to the Java preference store&quot; action on the &quot;Installation&quot; screen. &#xA;&#xA;It overrides installer variables that are loaded from the response file. The response file holds the settings as they were last made in the installer, but the settings that are actually usd by the application live in the preference store." actionElevationType="elevated" rollbackBarrierExitCode="0" multiExec="true">
+                <serializedBean>
+                  <property name="packageName" type="string">${compiler:sys.applicationId}</property>
+                </serializedBean>
               </action>
             </actions>
             <formComponents>
@@ -244,31 +313,7 @@ return console.askOkCancel(message, true);
               </formComponent>
             </formComponents>
           </screen>
-          <screen id="12" beanClass="com.install4j.runtime.beans.screens.ComponentsScreen" rollbackBarrierExitCode="0">
-            <formComponents>
-              <formComponent id="13" beanClass="com.install4j.runtime.beans.formcomponents.MultilineLabelComponent">
-                <serializedBean>
-                  <property name="labelText" type="string">${i18n:SelectComponentsLabel2}</property>
-                </serializedBean>
-                <visibilityScript>!context.isConsole()</visibilityScript>
-              </formComponent>
-              <formComponent id="14" beanClass="com.install4j.runtime.beans.formcomponents.ComponentSelectorComponent" useExternalParametrization="true" externalParametrizationName="Installation Components" externalParametrizationMode="include">
-                <serializedBean>
-                  <property name="fillVertical" type="boolean" value="true" />
-                </serializedBean>
-                <externalParametrizationPropertyNames>
-                  <propertyName>selectionChangedScript</propertyName>
-                </externalParametrizationPropertyNames>
-              </formComponent>
-            </formComponents>
-          </screen>
-          <screen id="47" beanClass="com.install4j.runtime.beans.screens.StandardProgramGroupScreen">
-            <serializedBean>
-              <property name="programGroupName" type="string">${compiler:sys.fullName}</property>
-            </serializedBean>
-            <condition>!context.getBooleanVariable("sys.confirmedUpdateInstallation")</condition>
-          </screen>
-          <screen name="Service options" id="48" beanClass="com.install4j.runtime.beans.screens.FormScreen">
+          <screen name="Configure Webservice" id="48" beanClass="com.install4j.runtime.beans.screens.FormScreen">
             <serializedBean>
               <property name="subTitle" type="string">Please choose options for the webservice</property>
               <property name="title" type="string">Webservice Options</property>
@@ -289,7 +334,6 @@ return true;</validation>
                   <property name="checkboxText" type="string">Install ServerPackCreator webservice</property>
                   <property name="coupledComponentIds">
                     <add type="string">51</add>
-                    <add type="string">52</add>
                   </property>
                   <property name="variableName" type="string">installService</property>
                 </serializedBean>
@@ -319,6 +363,8 @@ return true;</validation>
                             <serializedBean>
                               <property name="helpText" type="string">Hostname on which your database runs.</property>
                               <property name="initialText" type="string">localhost</property>
+                              <property name="labelFontStyle" type="enum" class="com.install4j.runtime.beans.formcomponents.FontStyle" value="BOLD" />
+                              <property name="labelFontType" type="enum" class="com.install4j.runtime.beans.formcomponents.FontType" value="DERIVED" />
                               <property name="labelText" type="string">Database Host</property>
                               <property name="variableName" type="string">databaseHost</property>
                             </serializedBean>
@@ -327,6 +373,8 @@ return true;</validation>
                             <serializedBean>
                               <property name="helpText" type="string">Port at which the database listens at on the database host.</property>
                               <property name="initialText" type="string">5432</property>
+                              <property name="labelFontStyle" type="enum" class="com.install4j.runtime.beans.formcomponents.FontStyle" value="BOLD" />
+                              <property name="labelFontType" type="enum" class="com.install4j.runtime.beans.formcomponents.FontType" value="DERIVED" />
                               <property name="labelText" type="string">Database Port</property>
                               <property name="variableName" type="string">databasePort</property>
                             </serializedBean>
@@ -337,6 +385,8 @@ return true;</validation>
                         <serializedBean>
                           <property name="helpText" type="string">The database to use with the webservice. </property>
                           <property name="initialText" type="string">serverpackcreator</property>
+                          <property name="labelFontStyle" type="enum" class="com.install4j.runtime.beans.formcomponents.FontStyle" value="BOLD" />
+                          <property name="labelFontType" type="enum" class="com.install4j.runtime.beans.formcomponents.FontType" value="DERIVED" />
                           <property name="labelText" type="string">Database Name</property>
                           <property name="variableName" type="string">databaseName</property>
                         </serializedBean>
@@ -346,6 +396,8 @@ return true;</validation>
                           <formComponent name="Database Username" id="65" beanClass="com.install4j.runtime.beans.formcomponents.TextfieldComponent">
                             <serializedBean>
                               <property name="helpText" type="string">Username with which the database will be accessed.</property>
+                              <property name="labelFontStyle" type="enum" class="com.install4j.runtime.beans.formcomponents.FontStyle" value="BOLD" />
+                              <property name="labelFontType" type="enum" class="com.install4j.runtime.beans.formcomponents.FontType" value="DERIVED" />
                               <property name="labelText" type="string">Database Username</property>
                               <property name="variableName" type="string">databaseUser</property>
                             </serializedBean>
@@ -353,6 +405,8 @@ return true;</validation>
                           <formComponent name="Database Password" id="66" beanClass="com.install4j.runtime.beans.formcomponents.PasswordComponent">
                             <serializedBean>
                               <property name="helpText" type="string">Password used to access the database.</property>
+                              <property name="labelFontStyle" type="enum" class="com.install4j.runtime.beans.formcomponents.FontStyle" value="BOLD" />
+                              <property name="labelFontType" type="enum" class="com.install4j.runtime.beans.formcomponents.FontType" value="DERIVED" />
                               <property name="labelText" type="string">Database Password</property>
                               <property name="variableName" type="string">databasePassword</property>
                             </serializedBean>
@@ -363,6 +417,8 @@ return true;</validation>
                         <serializedBean>
                           <property name="helpText" type="string">Port at which the webservice will be available at. Example: http://localhost:8080</property>
                           <property name="initialText" type="string">8080</property>
+                          <property name="labelFontStyle" type="enum" class="com.install4j.runtime.beans.formcomponents.FontStyle" value="BOLD" />
+                          <property name="labelFontType" type="enum" class="com.install4j.runtime.beans.formcomponents.FontType" value="DERIVED" />
                           <property name="labelText" type="string">Webservice Port</property>
                           <property name="variableName" type="string">webservicePort</property>
                         </serializedBean>
@@ -371,61 +427,115 @@ return true;</validation>
                   </group>
                 </beans>
               </group>
-              <formComponent id="52" beanClass="com.install4j.runtime.beans.formcomponents.CheckboxComponent">
+            </formComponents>
+          </screen>
+          <screen name="Select Home-Directory" id="328" beanClass="com.install4j.runtime.beans.screens.FormScreen" rollbackBarrierExitCode="0">
+            <serializedBean>
+              <property name="subTitle" type="string">Configure ServerPackCreatos new home</property>
+              <property name="title" type="string">Home-Directory</property>
+            </serializedBean>
+            <formComponents>
+              <formComponent id="329" beanClass="com.install4j.runtime.beans.formcomponents.MultilineLabelComponent" insetBottom="25" useExternalParametrization="true" externalParametrizationName="Header" externalParametrizationMode="include">
                 <serializedBean>
-                  <property name="checkboxText" type="string">Use a special user account for running the webservice</property>
-                  <property name="coupledComponentIds">
-                    <add type="string">53</add>
-                  </property>
-                  <property name="variableName" type="string">specialUserAccount</property>
+                  <property name="hideIfBlank" type="boolean" value="true" />
+                  <property name="labelText" type="string">Set the home-directory in which ServerPackCreator will create and store initial data as well as created data. Initial data are files such as manifests and templates, created data are files such as generated server packs.
+
+If you are installing this on a multi-user system and intend other users to use ServerPackCreator, choose a directory to which all users have access to.</property>
                 </serializedBean>
-                <visibilityScript>Util.isWindows()</visibilityScript>
+                <visibilityScript>!context.isConsole()</visibilityScript>
+                <externalParametrizationPropertyNames>
+                  <propertyName>labelText</propertyName>
+                </externalParametrizationPropertyNames>
               </formComponent>
-              <group id="53" beanClass="com.install4j.runtime.beans.groups.VerticalFormComponentGroup">
+              <formComponent id="330" beanClass="com.install4j.runtime.beans.formcomponents.DirectoryChooserComponent" useExternalParametrization="true" externalParametrizationName="Directory" externalParametrizationMode="include">
                 <serializedBean>
-                  <property name="insets">
-                    <object class="java.awt.Insets">
-                      <int>0</int>
-                      <int>20</int>
-                      <int>0</int>
-                      <int>0</int>
-                    </object>
-                  </property>
-                  <property name="visibilityScript">
-                    <object class="com.install4j.api.beans.ScriptProperty">
-                      <property name="value" type="string" />
-                    </object>
-                  </property>
+                  <property name="helpText" type="string">An existing directory where ServerPackCreatos data will be stored in, such as server packs, manifest, templates etc.</property>
+                  <property name="initialFile" type="string">${installer:sys.userHome}</property>
+                  <property name="labelFontStyle" type="enum" class="com.install4j.runtime.beans.formcomponents.FontStyle" value="BOLD" />
+                  <property name="labelFontType" type="enum" class="com.install4j.runtime.beans.formcomponents.FontType" value="DERIVED" />
+                  <property name="labelText" type="string">Home-Directory</property>
+                  <property name="nextOnEnter" type="boolean" value="true" />
+                  <property name="onlyWritable" type="boolean" value="true" />
+                  <property name="variableName" type="string">homeDirectory</property>
                 </serializedBean>
-                <beans>
-                  <formComponent id="54" beanClass="com.install4j.runtime.beans.formcomponents.UserSelectorComponent">
-                    <serializedBean>
-                      <property name="groupCreatedVariableName" type="string">groupCreated</property>
-                      <property name="labelText" type="string">Account name:</property>
-                      <property name="localGroupVariableName" type="string">localGroupForCreatedUser</property>
-                      <property name="onlyLocal" type="boolean" value="true" />
-                      <property name="passwordFormComponentId" type="string">1570</property>
-                      <property name="showCreateButton" type="boolean" value="true" />
-                      <property name="showWellKnownPrincipals" type="boolean" value="true" />
-                      <property name="userCreatedVariableName" type="string">userCreated</property>
-                      <property name="variableName" type="string">serviceAccount</property>
-                    </serializedBean>
-                    <visibilityScript>Util.isWindows()</visibilityScript>
-                  </formComponent>
-                  <formComponent id="55" beanClass="com.install4j.runtime.beans.formcomponents.PasswordComponent">
-                    <serializedBean>
-                      <property name="labelText" type="string">Password:</property>
-                      <property name="variableName" type="string">servicePassword</property>
-                    </serializedBean>
-                    <visibilityScript>Util.isWindows()</visibilityScript>
-                  </formComponent>
-                </beans>
-              </group>
+                <externalParametrizationPropertyNames>
+                  <propertyName>directoryDescription</propertyName>
+                  <propertyName>initialFile</propertyName>
+                  <propertyName>onlyWritable</propertyName>
+                  <propertyName>standardDirectoryName</propertyName>
+                  <propertyName>standardValidation</propertyName>
+                  <propertyName>validationScript</propertyName>
+                  <propertyName>variableName</propertyName>
+                </externalParametrizationPropertyNames>
+              </formComponent>
+              <formComponent id="333" beanClass="com.install4j.runtime.beans.formcomponents.LabelComponent">
+                <serializedBean>
+                  <property name="labelColor">
+                    <object class="java.awt.Color">
+                      <int>255</int>
+                      <int>0</int>
+                      <int>0</int>
+                      <int>255</int>
+                    </object>
+                  </property>
+                  <property name="labelFontStyle" type="enum" class="com.install4j.runtime.beans.formcomponents.FontStyle" value="BOLD" />
+                  <property name="labelFontType" type="enum" class="com.install4j.runtime.beans.formcomponents.FontType" value="DERIVED" />
+                  <property name="labelText" type="string">Caution!</property>
+                </serializedBean>
+              </formComponent>
+              <formComponent id="332" beanClass="com.install4j.runtime.beans.formcomponents.MultilineLabelComponent" insetBottom="25" useExternalParametrization="true" externalParametrizationName="Header" externalParametrizationMode="include">
+                <serializedBean>
+                  <property name="hideIfBlank" type="boolean" value="true" />
+                  <property name="labelText" type="string">Changing the home-directory after installation requires manual editing of ${installer:sys.installationDir}${installer:sys.fileSeparator}serverpackcreator.properties. Choose wisely!</property>
+                </serializedBean>
+                <visibilityScript>!context.isConsole()</visibilityScript>
+                <externalParametrizationPropertyNames>
+                  <propertyName>labelText</propertyName>
+                </externalParametrizationPropertyNames>
+              </formComponent>
+            </formComponents>
+          </screen>
+          <screen id="47" beanClass="com.install4j.runtime.beans.screens.StandardProgramGroupScreen">
+            <serializedBean>
+              <property name="programGroupName" type="string">${compiler:sys.fullName}</property>
+            </serializedBean>
+            <condition>!context.getBooleanVariable("sys.confirmedUpdateInstallation")</condition>
+          </screen>
+          <screen id="341" beanClass="com.install4j.runtime.beans.screens.AdditionalConfirmationsScreen" rollbackBarrierExitCode="0">
+            <formComponents>
+              <formComponent id="342" beanClass="com.install4j.runtime.beans.formcomponents.MultilineLabelComponent" insetBottom="10">
+                <serializedBean>
+                  <property name="labelText" type="string">${form:confirmationMessage}</property>
+                </serializedBean>
+                <visibilityScript>!context.isConsole()</visibilityScript>
+              </formComponent>
+              <formComponent name="Add an executable to the dock" id="343" beanClass="com.install4j.runtime.beans.formcomponents.CheckboxComponent">
+                <serializedBean>
+                  <property name="checkboxText" type="string">${i18n:AddToDock}</property>
+                  <property name="initiallySelected" type="boolean" value="true" />
+                  <property name="variableName" type="string">addToDockAction</property>
+                </serializedBean>
+                <visibilityScript>Util.isMacOS()</visibilityScript>
+              </formComponent>
+              <formComponent name="Add a desktop link" id="345" beanClass="com.install4j.runtime.beans.formcomponents.CheckboxComponent">
+                <serializedBean>
+                  <property name="checkboxText" type="string">${i18n:CreateDesktopIcon}</property>
+                  <property name="initiallySelected" type="boolean" value="true" />
+                  <property name="variableName" type="string">createDesktopLinkAction</property>
+                </serializedBean>
+              </formComponent>
             </formComponents>
           </screen>
           <screen id="15" beanClass="com.install4j.runtime.beans.screens.InstallationScreen" rollbackBarrier="true" rollbackBarrierExitCode="0">
             <actions>
               <group name="Stop Services" id="69" beanClass="com.install4j.runtime.beans.groups.ActionGroup">
+                <serializedBean>
+                  <property name="conditionExpression">
+                    <object class="com.install4j.api.beans.ScriptProperty">
+                      <property name="value" type="string">context.getBooleanVariable("installService")</property>
+                    </object>
+                  </property>
+                </serializedBean>
                 <beans>
                   <action id="70" beanClass="com.install4j.runtime.beans.actions.control.SetMessageAction" actionElevationType="none">
                     <serializedBean>
@@ -446,7 +556,7 @@ return true;</validation>
                           <string>ServerPackCreator-WEB</string>
                         </object>
                       </property>
-                      <property name="launcherId" type="null" />
+                      <property name="launcherId" type="string">234</property>
                       <property name="serviceName" type="string">ServerPackCreator-Webservice</property>
                     </serializedBean>
                   </action>
@@ -457,11 +567,13 @@ return true;</validation>
                   </action>
                 </beans>
               </group>
+              <action id="294" beanClass="com.install4j.runtime.beans.actions.control.SleepAction" actionElevationType="none" rollbackBarrierExitCode="0" />
               <action id="74" beanClass="com.install4j.runtime.beans.actions.misc.CheckRunningProcessesAction" commentSet="true" comment="Note that the &quot;Install Files&quot; action always checks that no process that are started from affected files are running. However, if you want to give your users the ability to close the applications automatically, you have to add this action before the &quot;Install Files&quot; action." actionElevationType="none" failureStrategy="quit">
                 <serializedBean>
                   <property name="closeStrategy" type="enum" class="com.install4j.runtime.beans.actions.misc.CloseStrategy" value="ASK_FOR_CLOSE_AND_TERMINATE" />
                 </serializedBean>
               </action>
+              <action id="295" beanClass="com.install4j.runtime.beans.actions.control.SleepAction" actionElevationType="none" rollbackBarrierExitCode="0" />
               <action id="17" beanClass="com.install4j.runtime.beans.actions.InstallFilesAction" actionElevationType="elevated" rollbackBarrierExitCode="0" failureStrategy="quit" errorMessage="${i18n:FileCorrupted}" />
               <action id="18" beanClass="com.install4j.runtime.beans.actions.desktop.CreateProgramGroupAction" actionElevationType="elevated" rollbackBarrierExitCode="0">
                 <serializedBean>
@@ -492,7 +604,7 @@ return true;</validation>
                   <property name="itemName" type="string">${compiler:sys.fullName} ${compiler:sys.version}</property>
                 </serializedBean>
               </action>
-              <group id="77" beanClass="com.install4j.runtime.beans.groups.ActionGroup">
+              <group name="Prepare Webservice" id="77" beanClass="com.install4j.runtime.beans.groups.ActionGroup">
                 <serializedBean>
                   <property name="conditionExpression">
                     <object class="com.install4j.api.beans.ScriptProperty">
@@ -501,7 +613,7 @@ return true;</validation>
                   </property>
                 </serializedBean>
                 <beans>
-                  <action id="75" beanClass="com.install4j.runtime.beans.actions.services.InstallServiceAction" actionElevationType="elevated">
+                  <action name="Install webservice" id="75" beanClass="com.install4j.runtime.beans.actions.services.InstallServiceAction" actionElevationType="elevated">
                     <serializedBean>
                       <property name="accountNameOrSid" type="string">${installer:serviceAccount}</property>
                       <property name="autoStart" type="boolean" value="false" />
@@ -511,7 +623,7 @@ return true;</validation>
                           <string>ServerPackCreator-WEB</string>
                         </object>
                       </property>
-                      <property name="launcherId" type="null" />
+                      <property name="launcherId" type="string">234</property>
                       <property name="macosIdentifier" type="string">de.griefed.serverpackcreator</property>
                       <property name="password" type="string">${installer:servicePassword}</property>
                       <property name="serviceAccount" type="enum" class="com.install4j.runtime.beans.actions.services.ServiceAccount" value="OTHER" />
@@ -520,34 +632,124 @@ return true;</validation>
                     </serializedBean>
                     <condition>context.getBooleanVariable("installService")</condition>
                   </action>
-                  <action id="238" beanClass="com.install4j.runtime.beans.actions.text.WriteTextFileAction" actionElevationType="elevated" rollbackBarrierExitCode="0">
+                  <action name="Set Webservice properties" id="327" beanClass="com.install4j.runtime.beans.actions.properties.WritePropertiesFileAction" actionElevationType="elevated" rollbackBarrierExitCode="0" errorMessage="Couldn't writer properties!">
                     <serializedBean>
-                      <property name="encoding" type="string">UTF-8</property>
+                      <property name="encoding" type="enum" class="com.install4j.runtime.beans.actions.properties.PropertiesFileEncoding" value="JAVA_PROPERTIES" />
                       <property name="file">
                         <object class="java.io.File">
-                          <string>${installer:sys.installationDir}/lib/overrides.properties</string>
+                          <string>${installer:sys.installationDir}/serverpackcreator.properties</string>
                         </object>
                       </property>
-                      <property name="text" type="string">spring.datasource.url=jdbc\:postgresql\://${installer:databaseHost}\:${installer:databasePort}/${installer:databaseName}
+                      <property name="propertiesSortMode" type="enum" class="com.install4j.runtime.beans.actions.properties.PropertiesSortMode" value="KEYS_ALPHABETICALLY" />
+                      <property name="sourcePropertyDefinitions" type="string">spring.datasource.url=jdbc\:postgresql\://${installer:databaseHost}\:${installer:databasePort}/${installer:databaseName}
 spring.datasource.username=${installer:databaseUser}
 spring.datasource.password=${installer:databasePassword}
 server.port=${installer:webservicePort}</property>
-                    </serializedBean>
-                  </action>
-                  <action id="79" beanClass="com.install4j.runtime.beans.actions.services.StartServiceAction" actionElevationType="elevated">
-                    <serializedBean>
-                      <property name="executable">
-                        <object class="java.io.File">
-                          <string>ServerPackCreator-WEB</string>
-                        </object>
-                      </property>
-                      <property name="launcherId" type="null" />
-                      <property name="serviceName" type="string">ServerPackCreator Webservice</property>
+                      <property name="updateExistingComments" type="boolean" value="true" />
+                      <property name="updateExistingKeys" type="boolean" value="true" />
                     </serializedBean>
                     <condition>context.getBooleanVariable("installService")</condition>
                   </action>
                 </beans>
               </group>
+              <action name="Set home-directory property" id="331" beanClass="com.install4j.runtime.beans.actions.properties.WritePropertiesFileAction" actionElevationType="elevated" rollbackBarrierExitCode="0" errorMessage="Couldn't writer properties!">
+                <serializedBean>
+                  <property name="encoding" type="enum" class="com.install4j.runtime.beans.actions.properties.PropertiesFileEncoding" value="JAVA_PROPERTIES" />
+                  <property name="file">
+                    <object class="java.io.File">
+                      <string>${installer:sys.installationDir}/serverpackcreator.properties</string>
+                    </object>
+                  </property>
+                  <property name="propertiesSortMode" type="enum" class="com.install4j.runtime.beans.actions.properties.PropertiesSortMode" value="KEYS_ALPHABETICALLY" />
+                  <property name="sourcePropertyDefinitions" type="string">de.griefed.serverpackcreator.home=${installer:homeDirectory}</property>
+                  <property name="updateExistingComments" type="boolean" value="true" />
+                  <property name="updateExistingKeys" type="boolean" value="true" />
+                </serializedBean>
+                <condition>context.getBooleanVariable("installService")</condition>
+              </action>
+              <action name="Set Log Path" id="337" beanClass="com.install4j.runtime.beans.actions.text.ModifyTextFileAction" actionElevationType="elevated" rollbackBarrierExitCode="0">
+                <serializedBean>
+                  <property name="encoding" type="string">UTF-8</property>
+                  <property name="files" type="array" class="java.io.File" length="1">
+                    <element index="0">
+                      <object class="java.io.File">
+                        <string>${installer:sys.installationDir}/log4j2.xml</string>
+                      </object>
+                    </element>
+                  </property>
+                  <property name="replaceValue" type="string">&lt;Property name="log-path"&gt;${installer:homeDirectory}\logs&lt;/Property&gt;</property>
+                  <property name="searchValue" type="string">&lt;Property name="log-path"&gt;logs&lt;/Property&gt;</property>
+                </serializedBean>
+              </action>
+              <action name="Set Log Level" id="338" beanClass="com.install4j.runtime.beans.actions.text.ModifyTextFileAction" actionElevationType="elevated" rollbackBarrierExitCode="0">
+                <serializedBean>
+                  <property name="encoding" type="string">UTF-8</property>
+                  <property name="files" type="array" class="java.io.File" length="1">
+                    <element index="0">
+                      <object class="java.io.File">
+                        <string>${installer:sys.installationDir}/log4j2.xml</string>
+                      </object>
+                    </element>
+                  </property>
+                  <property name="replaceValue" type="string">&lt;Property name="log-level-spc"&gt;DEBUG&lt;/Property&gt;</property>
+                  <property name="searchValue" type="string">&lt;Property name="log-level-spc"&gt;INFO&lt;/Property&gt;</property>
+                </serializedBean>
+                <condition>context.getCompilerVariable("projectVersion").contains("dev") || context.getCompilerVariable("projectVersion").contains("alpha") || context.getCompilerVariable("projectVersion").contains("beta") </condition>
+              </action>
+              <action id="254" beanClass="com.install4j.runtime.beans.actions.registry.SaveInstallerVariablesAction" commentSet="true" comment="The launchers will access the user-defined greeting by loading the installer variables saved to the preference store by this action. They do this through a helper class provided by the install4j API.&#xA;&#xA;Another way would have been to load the variable from the automatically created response file (through the same helper class). However, we want to save the settings on a per-user basis." actionElevationType="elevated" rollbackBarrierExitCode="0">
+                <serializedBean>
+                  <property name="installerVariables" type="array" elementType="string" length="9">
+                    <element index="0">databaseHost</element>
+                    <element index="1">databaseName</element>
+                    <element index="2">databasePort</element>
+                    <element index="3">databaseUser</element>
+                    <element index="4">installService</element>
+                    <element index="5">serviceAccount</element>
+                    <element index="6">specialUserAccount</element>
+                    <element index="7">sys.installationDir</element>
+                    <element index="8">:webservicePort</element>
+                  </property>
+                  <property name="packageName" type="string">${compiler:sys.applicationId}</property>
+                </serializedBean>
+              </action>
+              <action id="346" beanClass="com.install4j.runtime.beans.actions.desktop.CreateDesktopLinkAction" actionElevationType="elevated" rollbackBarrierExitCode="0">
+                <serializedBean>
+                  <property name="additionalDesktopFileEntries" type="string">Comment=Create server packs from Minecraft Forge, Fabric, Quilt or LegacyFabric modpacks.
+Categories=Utility;FileTools;Java;</property>
+                  <property name="allUsers" type="boolean" value="false" />
+                  <property name="description" type="string">Create server packs from Minecraft modpacks.</property>
+                  <property name="file">
+                    <object class="java.io.File">
+                      <string>ServerPackCreator</string>
+                    </object>
+                  </property>
+                  <property name="name" type="string">${compiler:sys.fullName}</property>
+                  <property name="unixIconFile">
+                    <object class="com.install4j.api.beans.ExternalFile">
+                      <string>${compiler:projectDir}/img/app.png</string>
+                    </object>
+                  </property>
+                  <property name="winIconFile">
+                    <object class="com.install4j.api.beans.ExternalFile">
+                      <string>${compiler:projectDir}/img/icon.ico</string>
+                    </object>
+                  </property>
+                </serializedBean>
+                <textOverrides>
+                  <property name="allUsers" value="${installer:sys.programGroupAllUsers}" />
+                </textOverrides>
+                <condition>context.getBooleanVariable("createDesktopLinkAction")</condition>
+              </action>
+              <action id="340" beanClass="com.install4j.runtime.beans.actions.desktop.AddToDockAction" actionElevationType="none" rollbackBarrierExitCode="0">
+                <serializedBean>
+                  <property name="executable">
+                    <object class="java.io.File">
+                      <string>ServerPackCreator-GUI</string>
+                    </object>
+                  </property>
+                </serializedBean>
+                <condition>context.getBooleanVariable("addToDockAction")</condition>
+              </action>
             </actions>
             <formComponents>
               <formComponent id="16" beanClass="com.install4j.runtime.beans.formcomponents.ProgressComponent">
@@ -630,6 +832,31 @@ server.port=${installer:webservicePort}</property>
                 </serializedBean>
                 <condition>context.getBooleanVariable("executeLauncherAction") &amp;&amp; context.isGui()</condition>
               </action>
+              <action id="79" beanClass="com.install4j.runtime.beans.actions.services.StartServiceAction" actionElevationType="elevated">
+                <serializedBean>
+                  <property name="executable">
+                    <object class="java.io.File">
+                      <string>ServerPackCreator-WEB</string>
+                    </object>
+                  </property>
+                  <property name="launcherId" type="string">234</property>
+                  <property name="serviceName" type="string">ServerPackCreator Webservice</property>
+                </serializedBean>
+                <condition>context.getBooleanVariable("executeServiceAction")</condition>
+              </action>
+              <action id="264" beanClass="com.install4j.runtime.beans.actions.misc.CreateResponseFileAction" actionElevationType="elevated" rollbackBarrierExitCode="0">
+                <serializedBean>
+                  <property name="excludedVariables" type="array" elementType="string" length="2">
+                    <element index="0">databasePassword</element>
+                    <element index="1">servicePassword</element>
+                  </property>
+                  <property name="file">
+                    <object class="java.io.File">
+                      <string>${installer:sys.installationDir}/varfile</string>
+                    </object>
+                  </property>
+                </serializedBean>
+              </action>
             </actions>
             <formComponents>
               <formComponent id="21" beanClass="com.install4j.runtime.beans.formcomponents.MultilineLabelComponent" insetBottom="10">
@@ -645,15 +872,55 @@ server.port=${installer:webservicePort}</property>
                 </serializedBean>
                 <visibilityScript>context.isGui()</visibilityScript>
               </formComponent>
+              <formComponent name="Execute Service" id="319" beanClass="com.install4j.runtime.beans.formcomponents.CheckboxComponent">
+                <serializedBean>
+                  <property name="checkboxText" type="string">${i18n:RunEntryExec("${compiler:sys.fullName}")} Service</property>
+                  <property name="variableName" type="string">executeServiceAction</property>
+                </serializedBean>
+                <visibilityScript>context.isGui() &amp;&amp; context.getBooleanVariable("installService")</visibilityScript>
+              </formComponent>
             </formComponents>
           </screen>
         </screens>
       </application>
       <application id="uninstaller" beanClass="com.install4j.runtime.beans.applications.UninstallerApplication">
         <serializedBean>
+          <property name="customIconImageFiles">
+            <add>
+              <object class="com.install4j.api.beans.ExternalFile">
+                <string>${compiler:projectDir}/img/uninstall_16x16.png</string>
+              </object>
+            </add>
+            <add>
+              <object class="com.install4j.api.beans.ExternalFile">
+                <string>${compiler:projectDir}/img/uninstall_32x32.png</string>
+              </object>
+            </add>
+            <add>
+              <object class="com.install4j.api.beans.ExternalFile">
+                <string>${compiler:projectDir}/img/uninstall_48x48.png</string>
+              </object>
+            </add>
+            <add>
+              <object class="com.install4j.api.beans.ExternalFile">
+                <string>${compiler:projectDir}/img/uninstall_128x128.png</string>
+              </object>
+            </add>
+            <add>
+              <object class="com.install4j.api.beans.ExternalFile">
+                <string>${compiler:projectDir}/img/uninstall_256x256.png</string>
+              </object>
+            </add>
+            <add>
+              <object class="com.install4j.api.beans.ExternalFile">
+                <string>${compiler:projectDir}/img/uninstall_512x512.png</string>
+              </object>
+            </add>
+          </property>
           <property name="customMacosExecutableName" type="string">${i18n:UninstallerMenuEntry(${compiler:sys.fullName})}</property>
           <property name="frameWidth" type="int" value="600" />
           <property name="unixMode" type="string">755</property>
+          <property name="useCustomIcon" type="boolean" value="true" />
           <property name="useCustomMacosExecutableName" type="boolean" value="true" />
         </serializedBean>
         <startup>
@@ -753,21 +1020,34 @@ return console.askYesNo(message, true);
               </formComponent>
             </formComponents>
           </screen>
+          <screen name="Service options" id="272" beanClass="com.install4j.runtime.beans.screens.FormScreen" enabled="false">
+            <serializedBean>
+              <property name="subTitle" type="string">Please choose options for the webservice</property>
+              <property name="title" type="string">Webservice Options</property>
+            </serializedBean>
+            <validation>if (!context.getBooleanVariable("specialUserAccount")) {
+    context.setVariable("serviceAccount", "NT AUTHORITY\\System");
+    context.setVariable("servicePassword", "");
+}
+return true;</validation>
+            <formComponents>
+              <formComponent id="273" beanClass="com.install4j.runtime.beans.formcomponents.MultilineHtmlLabelComponent">
+                <serializedBean>
+                  <property name="labelHtml" type="string">Delete the ServerPackCreator directory in your users home-directory, if it exists?</property>
+                </serializedBean>
+              </formComponent>
+              <formComponent id="274" beanClass="com.install4j.runtime.beans.formcomponents.CheckboxComponent">
+                <serializedBean>
+                  <property name="checkboxText" type="string">Delete Home-Directory</property>
+                  <property name="variableName" type="string">deleteHome</property>
+                </serializedBean>
+              </formComponent>
+            </formComponents>
+          </screen>
           <screen id="27" beanClass="com.install4j.runtime.beans.screens.UninstallationScreen" rollbackBarrierExitCode="0">
             <actions>
               <link id="84" targetId="69" />
-              <action name="Delete files created by the application" id="85" beanClass="com.install4j.runtime.beans.actions.files.DeleteFileAction" actionElevationType="elevated">
-                <serializedBean>
-                  <property name="files" type="array" class="java.io.File" length="1">
-                    <element index="0">
-                      <object class="java.io.File">
-                        <string>${installer:sys.userHome}/ServerPackCreator</string>
-                      </object>
-                    </element>
-                  </property>
-                  <property name="recursive" type="boolean" value="true" />
-                </serializedBean>
-              </action>
+              <action id="293" beanClass="com.install4j.runtime.beans.actions.control.SleepAction" actionElevationType="none" rollbackBarrierExitCode="0" />
               <action id="29" beanClass="com.install4j.runtime.beans.actions.UninstallFilesAction" actionElevationType="elevated" rollbackBarrierExitCode="0" />
             </actions>
             <formComponents>
@@ -1725,7 +2005,7 @@ return true;</property>
               <formComponent name="Watermark" id="5" beanClass="com.install4j.runtime.beans.formcomponents.SeparatorComponent" insetTop="0" insetLeft="5" insetBottom="0" useExternalParametrization="true" externalParametrizationName="Custom watermark" externalParametrizationMode="include">
                 <serializedBean>
                   <property name="enabledTitleText" type="boolean" value="false" />
-                  <property name="labelText" type="string">by Griefed</property>
+                  <property name="labelText" type="string">Copyright (C) ${compiler:projectYear} by Griefed</property>
                 </serializedBean>
                 <externalParametrizationPropertyNames>
                   <propertyName>labelText</propertyName>
@@ -1948,7 +2228,7 @@ return true;</property>
     </styles>
   </installerGui>
   <mediaSets>
-    <windows name="Windows 64-bit" id="154" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}" installDir="serverpackcreator" architecture="64">
+    <windows name="Windows 64-bit" id="154" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}" installDir="ServerPackCreator" architecture="64">
       <jreBundle usePack200="false">
         <modules>
           <defaultModules set="all" />

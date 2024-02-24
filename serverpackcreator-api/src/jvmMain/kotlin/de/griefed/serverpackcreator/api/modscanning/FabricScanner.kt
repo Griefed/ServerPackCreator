@@ -38,7 +38,7 @@ actual class FabricScanner(
     private val objectMapper: ObjectMapper,
     private val utilities: Utilities
 ) : JsonBasedScanner(), Scanner<TreeSet<File>, Collection<File>> {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val jar = "jar"
     private val fabricModJson = "fabric.mod.json"
     private val id = "id"

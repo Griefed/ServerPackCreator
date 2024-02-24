@@ -35,7 +35,7 @@ import kotlin.io.path.toPath
  */
 @Suppress("unused")
 actual class JarUtilities {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /**
      * Copy a file from inside our JAR-file to the host filesystem. The file will create exactly as specified in the
@@ -361,12 +361,7 @@ actual class JarUtilities {
      */
     fun jarInformation(classInJar: Class<*>): HashMap<String, String> {
         val sysInfo = HashMap<String, String>(10)
-        sysInfo["jarPath"] = if (classInJar.source().path.contains("!")) {
-            val index = classInJar.source().path.indexOfFirst { char -> char == '!' }
-            classInJar.source().path.substring(0,index)
-        } else {
-            classInJar.source().path
-        }
+        sysInfo["jarPath"] = classInJar.source().path
         sysInfo["jarName"] = classInJar.source().name
         sysInfo["javaVersion"] = System.getProperty("java.version")
         sysInfo["osArch"] = System.getProperty("os.arch")
