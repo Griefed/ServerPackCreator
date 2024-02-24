@@ -1,3 +1,10 @@
+## [5.1.14](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.13...5.1.14) (2024-02-24)
+
+
+### 🛠 Fixes
+
+* Support NeoForge for Minecraft 1.20.2 and up. Fixes [#486](https://git.griefed.de/Griefed/ServerPackCreator/issues/486) ([cd6cc81](https://git.griefed.de/Griefed/ServerPackCreator/commit/cd6cc81cd685c426a5724a9ed64a39071ad1c9d0))
+
 ## [5.1.13](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12...5.1.13) (2024-02-19)
 
 
