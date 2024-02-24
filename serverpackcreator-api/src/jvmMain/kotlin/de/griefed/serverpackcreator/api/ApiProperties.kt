@@ -1635,15 +1635,31 @@ actual class ApiProperties(
         private set
 
     /**
-     * NeoForge version manifest containing information about available NeoForge loader versions.
+     * Old NeoForge version manifest containing information about available NeoForge loader versions.
+     * This manifest only contains versions for Minecraft 1.20.1.
      *
      *
      * By default, the `neoforge-manifest.xml`-file resides in the `manifests`-directory
      * inside ServerPackCreators home-directory.
      */
-    var neoForgeVersionManifest: File = File(manifestsDirectory, "neoforge-manifest.xml").absoluteFile
+    var oldNeoForgeVersionManifest: File = File(manifestsDirectory, "neoforge-manifest.xml").absoluteFile
         get() {
             field = File(manifestsDirectory, "neoforge-manifest.xml").absoluteFile
+            return field
+        }
+        private set
+
+    /**
+     * New NeoForge version manifest containing information about available NeoForge loader versions.
+     * This manifest contains versions for Minecraft 1.20.2 and up.
+     *
+     *
+     * By default, the `neoforge-manifest-new.xml`-file resides in the `manifests`-directory
+     * inside ServerPackCreators home-directory.
+     */
+    var newNeoForgeVersionManifest: File = File(manifestsDirectory, "neoforge-manifest-new.xml").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "neoforge-manifest-new.xml").absoluteFile
             return field
         }
         private set
