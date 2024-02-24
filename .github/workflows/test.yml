@@ -49,7 +49,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
-          name: ${{ github.jobs[github.job].name }}"-${{ matrix.os }}
+          name: ${{ github.jobs[github.job].name }}-${{ matrix.os }}
           path: |
             media
             build
@@ -160,7 +160,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
-          name: ${{ github.jobs[github.job].name }}"
+          name: ${{ github.jobs[github.job].name }}
           path: |
             serverpackcreator-app/build/dist/ServerPackCreator-Portable-Linux-x86_64.AppImage
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
