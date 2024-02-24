@@ -1,3 +1,26 @@
+## [5.1.13](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12...5.1.13) (2024-02-19)
+
+
+### 📔 Docs
+
+* Remove old sqlite references ([ee12d2a](https://git.griefed.de/Griefed/ServerPackCreator/commit/ee12d2a10e3e056e6b6a6db5975a374ee846c245))
+
+
+### 📦 Other
+
+* Update changelog in resources ([688daeb](https://git.griefed.de/Griefed/ServerPackCreator/commit/688daeb6294c29f0f48733c63d7bd086d1f89698))
+
+
+### 🦊 CI/CD
+
+* Add job to update sponsors and contributors ([49f9f1a](https://git.griefed.de/Griefed/ServerPackCreator/commit/49f9f1a1e6be50ef4b1ba2ca76e9aa1fccd7ad69))
+* Add README Update to Documentation stage ([2d05895](https://git.griefed.de/Griefed/ServerPackCreator/commit/2d05895bbc49ec1bb2c2590028be26dabcf2feea))
+
+
+### 🛠 Fixes
+
+* Replace sqlite JDBC URL with postgresql ([2d705a7](https://git.griefed.de/Griefed/ServerPackCreator/commit/2d705a71552c3036410fb2ad6061a6346bc1cf76))
+
 ## [5.1.12](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.11...5.1.12) (2024-02-16)
 
 

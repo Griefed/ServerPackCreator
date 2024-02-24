@@ -2,10 +2,9 @@
 import com.install4j.gradle.Install4jTask
 import de.griefed.common.gradle.LicenseAgreementRenderer
 import de.griefed.common.gradle.SubprojectLicenseFilter
+import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
-import java.io.FileInputStream
 import java.time.LocalDate
-import java.util.*
 
 plugins {
     idea
@@ -15,22 +14,28 @@ plugins {
     id("com.install4j.gradle")
 }
 
-val props = Properties()
-FileInputStream(file("gradle.properties")).use {
-    props.load(it)
-}
-
 idea {
     project {
-        languageLevel = IdeaLanguageLevel(props.getProperty("jdkVersion"))
-        jdkName = props.getProperty("jdkVersion")
+        languageLevel = IdeaLanguageLevel(properties["jdkVersion"])
+        jdkName = properties["jdkVersion"] as String
         modules.forEach {
             it.isDownloadJavadoc = true
             it.isDownloadSources = true
-            it.languageLevel = IdeaLanguageLevel(props.getProperty("jdkVersion"))
-            it.jdkName = props.getProperty("jdkVersion")
+            it.languageLevel = IdeaLanguageLevel(properties["jdkVersion"])
+            it.jdkName = properties["jdkVersion"] as String
         }
     }
+}
+
+if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+    //Ensure your install4j installation is available under this location
+    setProperty("install4jHomeDir","C:\\Program Files\\install4j")
+} else if (Os.isFamily(Os.FAMILY_UNIX))  {
+    //Ensure your install4j installation is available under this location
+    setProperty("install4jHomeDir","/opt/install4j")
+} else if (Os.isFamily(Os.FAMILY_MAC)) {
+    //Ensure your install4j installation is available under this location
+    setProperty("install4jHomeDir","/Applications/install4j.app")
 }
 
 allprojects {
@@ -135,17 +140,17 @@ tasks.generateLicenseReport {
 }
 
 install4j {
-    installDir = file(project.properties["install4jHomeDir"].toString())
+    installDir = file(properties["install4jHomeDir"].toString())
     verbose = true
 }
 
 task("media", Install4jTask::class) {
     mustRunAfter(tasks.build)
-    release = project.version.toString()
+    release = version.toString()
     projectFile = "spc.install4j"
     variables = hashMapOf<Any, Any>(
         "projectDir" to rootDir.absolutePath,
-        "projectVersion" to project.version.toString(),
+        "projectVersion" to version.toString(),
         "projectYear" to LocalDate.now().year.toString()
     )
 }
