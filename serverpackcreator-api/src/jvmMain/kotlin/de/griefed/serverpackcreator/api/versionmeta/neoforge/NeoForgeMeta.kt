@@ -63,6 +63,10 @@ actual class NeoForgeMeta actual constructor(
         }
     }
 
+    fun getNeoForgeMeta(): HashMap<String, List<String>> {
+        return neoForgeLoader!!.versionMeta
+    }
+
     /**
      * Update this instances [NeoForgeLoader] with new information. Usually called after the NeoForge
      * manifest has been refreshed.
