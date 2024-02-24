@@ -2,7 +2,7 @@
 import com.install4j.gradle.Install4jTask
 import de.griefed.common.gradle.LicenseAgreementRenderer
 import de.griefed.common.gradle.SubprojectLicenseFilter
-import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.internal.os.OperatingSystem
 import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
 import java.time.LocalDate
 
@@ -25,17 +25,6 @@ idea {
             it.jdkName = properties["jdkVersion"] as String
         }
     }
-}
-
-if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-    //Ensure your install4j installation is available under this location
-    setProperty("install4jHomeDir","C:\\Program Files\\install4j")
-} else if (Os.isFamily(Os.FAMILY_UNIX))  {
-    //Ensure your install4j installation is available under this location
-    setProperty("install4jHomeDir","/opt/install4j")
-} else if (Os.isFamily(Os.FAMILY_MAC)) {
-    //Ensure your install4j installation is available under this location
-    setProperty("install4jHomeDir","/Applications/install4j.app")
 }
 
 allprojects {
@@ -140,7 +129,21 @@ tasks.generateLicenseReport {
 }
 
 install4j {
-    installDir = file(properties["install4jHomeDir"].toString())
+    //Set the install4jHomeDir-property for building on your own machine, or use the paths listed below according
+    //to your operating system family.
+    installDir = if (properties["install4jHomeDir"].toString().isNotBlank()) {
+        file(properties["install4jHomeDir"].toString())
+    } else if (OperatingSystem.current().isWindows) {
+        file("C:\\Program Files\\install4j")
+    } else if (OperatingSystem.current().isMacOsX) {
+        //Ensure your install4j installation is available under this location
+        file("/Applications/install4j.app")
+    } else if (OperatingSystem.current().isLinux)  {
+        //Ensure your install4j installation is available under this location
+        file("/opt/install4j")
+    } else {
+        file(properties["install4jHomeDir"].toString())
+    }
     verbose = true
 }
 

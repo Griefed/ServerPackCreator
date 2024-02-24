@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  jar:
+  jar-and-media:
     strategy:
       matrix:
         # and run on both Linux and Windows
@@ -289,7 +289,7 @@ jobs:
 #            serverpackcreator-app/build
 #          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
-  ubuntu-02:
+  appimage:
     runs-on: ubuntu-latest
     steps:
       # GET THE LATEST CODE
