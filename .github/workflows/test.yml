@@ -43,8 +43,8 @@ jobs:
 
       - name: Build with Gradle
         run: |
-          ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} -Pinstall4jHomeDir=/opt/install4j generateLicenseReport --info --full-stacktrace
-          ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} -Pinstall4jHomeDir=/opt/install4j build media --info --full-stacktrace
+          ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} generateLicenseReport --info --full-stacktrace
+          ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} build media --info --full-stacktrace
 
       - uses: actions/upload-artifact@v4
         if: ${{ always() }}
