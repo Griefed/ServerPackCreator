@@ -54,7 +54,7 @@ class VersionsController @Autowired constructor(
             legacyFabric = versionMeta.legacyFabric.loaderVersionsListDescending(),
             quilt = versionMeta.quilt.loaderVersionsListDescending(),
             forge = versionMeta.forge.getForgeMeta(),
-            neoForge = versionMeta.neoForge.neoForgeVersionsDescending()
+            neoForge = versionMeta.neoForge.getNeoForgeMeta()
         )
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
@@ -83,10 +83,11 @@ class VersionsController @Autowired constructor(
      */
     @GetMapping("/forge/{minecraftversion}", produces = ["application/json"])
     fun availableForgeVersionsForMinecraftVersion(@PathVariable("minecraftversion") minecraftVersion: String): ResponseEntity<List<String>> {
-        return if (versionMeta.forge.supportedForgeVersionsDescending(minecraftVersion).isPresent) {
+        val versions = versionMeta.forge.supportedForgeVersionsDescending(minecraftVersion)
+        return if (versions.isPresent) {
             ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
-                .body(versionMeta.forge.supportedForgeVersionsDescending(minecraftVersion).get())
+                .body(versions.get())
         } else {
             ResponseEntity.notFound().build()
         }
@@ -112,10 +113,29 @@ class VersionsController @Autowired constructor(
      * @author Griefed
      */
     @GetMapping("/neoforge", produces = ["application/json"])
-    fun availableNeoForgeVersions(): ResponseEntity<List<String>> {
+    fun availableNeoForgeVersions(): ResponseEntity<HashMap<String,List<String>>> {
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
-            .body(versionMeta.neoForge.neoForgeVersionsDescending())
+            .body(versionMeta.neoForge.getNeoForgeMeta())
+    }
+
+    /**
+     * Get a list of all available NeoForge versions.
+     *
+     * @return Returns a list of all available Fabric versions.
+     * @author Griefed
+     */
+    @GetMapping("/neoforge/{minecraftversion}", produces = ["application/json"])
+    fun availableNeoForgeVersionsForMinecraftVersion(@PathVariable("minecraftversion") minecraftVersion: String): ResponseEntity<List<String>> {
+        val versions = versionMeta.neoForge.supportedNeoForgeVersionsDescending(minecraftVersion)
+        return if (versions.isPresent) {
+            return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
+                .body(versions.get())
+        } else {
+            ResponseEntity.notFound().build()
+        }
+
     }
 
     /**
