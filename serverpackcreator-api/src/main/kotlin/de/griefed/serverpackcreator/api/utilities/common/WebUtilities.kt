@@ -74,7 +74,7 @@ class WebUtilities(private val apiProperties: ApiProperties) {
         file: File,
         downloadURL: URL
     ): Boolean {
-        file.createDirectories()
+        file.create()
         try {
             downloadURL.openStream().use { url ->
                 Channels.newChannel(url).use { channel ->

@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.api.versionmeta.fabric
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
-import de.griefed.serverpackcreator.api.utilities.common.createDirectories
+import de.griefed.serverpackcreator.api.utilities.common.create
 import de.griefed.serverpackcreator.api.versionmeta.Meta
 import org.xml.sax.SAXException
 import java.io.File
@@ -58,8 +58,8 @@ class FabricMeta(
     private val launchersDirectory: File = File(installerDirectory, "launchers")
 
     init {
-        installerDirectory.createDirectories(create = true, directory = true)
-        launchersDirectory.createDirectories(create = true, directory = true)
+        installerDirectory.create(create = true, directory = true)
+        launchersDirectory.create(create = true, directory = true)
     }
 
     @Suppress("MemberVisibilityCanBePrivate")

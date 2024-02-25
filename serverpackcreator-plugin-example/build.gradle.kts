@@ -79,6 +79,10 @@ tasks.sourcesJar {
     dependsOn(tasks.generateI18n4kFiles)
 }
 
+tasks.test {
+    dependsOn(":serverpackcreator-api:processTestResources")
+}
+
 tasks.jar {
     manifest {
         attributes(

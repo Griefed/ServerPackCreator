@@ -20,7 +20,7 @@
 package de.griefed.serverpackcreator.api.versionmeta.legacyfabric
 
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
-import de.griefed.serverpackcreator.api.utilities.common.createDirectories
+import de.griefed.serverpackcreator.api.utilities.common.create
 import de.griefed.serverpackcreator.api.versionmeta.Meta
 import org.xml.sax.SAXException
 import java.io.File
@@ -54,7 +54,7 @@ class LegacyFabricMeta constructor(
     private val installerDirectory: File = File(installerCacheDirectory, "legacyfabric")
 
     init {
-        installerDirectory.createDirectories(create = true, directory = true)
+        installerDirectory.create(create = true, directory = true)
     }
 
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)

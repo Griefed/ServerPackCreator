@@ -20,7 +20,7 @@
 package de.griefed.serverpackcreator.api.versionmeta.forge
 
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
-import de.griefed.serverpackcreator.api.utilities.common.createDirectories
+import de.griefed.serverpackcreator.api.utilities.common.create
 import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftMeta
 import java.io.File
 import java.io.IOException
@@ -44,7 +44,7 @@ class ForgeMeta constructor(
     private val installerDirectory: File = File(installerCacheDirectory, "forge")
 
     init {
-        installerDirectory.createDirectories(create = true, directory = true)
+        installerDirectory.create(create = true, directory = true)
     }
 
     /**

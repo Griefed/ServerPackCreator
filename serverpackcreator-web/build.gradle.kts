@@ -44,6 +44,10 @@ dependencies {
     //developmentOnly("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 }
 
+tasks.bootJar {
+    dependsOn(":serverpackcreator-api:processTestResources")
+}
+
 tasks.clean {
     doFirst {
         delete {
@@ -55,6 +59,7 @@ tasks.clean {
 }
 
 tasks.test {
+    dependsOn(":serverpackcreator-api:processTestResources")
     systemProperty("java.util.logging.manager","org.jboss.logmanager.LogManager")
     doFirst {
         val tests = File(projectDir,"tests").absoluteFile

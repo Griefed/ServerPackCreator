@@ -141,7 +141,7 @@ class ServerPackHandler(
             cleanupEnvironment(true, destination)
             val generationStopWatch = SimpleStopWatch().start()
             try {
-                File(destination).createDirectories(create = true, directory = true)
+                File(destination).create(create = true, directory = true)
             } catch (ignored: IOException) {
             }
             apiPlugins.runPreGenExtensions(packConfig, destination)
@@ -289,7 +289,7 @@ class ServerPackHandler(
         var acquired: List<ServerPackFile>
         val serverPackFiles: MutableList<ServerPackFile> = ArrayList(100000)
         try {
-            File(destination).createDirectories()
+            File(destination).create()
         } catch (ex: IOException) {
             log.error("Failed to create directory $destination")
         }
@@ -464,7 +464,7 @@ class ServerPackHandler(
 
             inclusion.source == "mods" -> {
                 try {
-                    serverDir.createDirectories()
+                    serverDir.create()
                 } catch (ignored: IOException) {
                 }
                 acquired = mutableListOf()

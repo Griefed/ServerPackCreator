@@ -22,7 +22,7 @@ package de.griefed.serverpackcreator.api.versionmeta
 import com.fasterxml.jackson.databind.ObjectMapper
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
-import de.griefed.serverpackcreator.api.utilities.common.createDirectories
+import de.griefed.serverpackcreator.api.utilities.common.create
 import de.griefed.serverpackcreator.api.utilities.common.readText
 import de.griefed.serverpackcreator.api.versionmeta.fabric.FabricIntermediaries
 import de.griefed.serverpackcreator.api.versionmeta.fabric.FabricMeta
@@ -414,7 +414,7 @@ class VersionMeta(
         manifestToRefresh: File,
         content: String
     ) {
-        manifestToRefresh.createDirectories()
+        manifestToRefresh.create()
         manifestToRefresh.writeText(content)
     }
 

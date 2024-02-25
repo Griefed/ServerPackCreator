@@ -141,7 +141,7 @@ class JarUtilities {
      */
     fun copyFileFromJar(fileToCopy: String, destinationFile: File, identifierClass: Class<*>) =
         if (!destinationFile.absoluteFile.exists()) {
-            destinationFile.createDirectories()
+            destinationFile.create()
             try {
                 identifierClass.getResourceAsStream("/$fileToCopy").use {
                     destinationFile.absoluteFile.outputStream().use { out -> it?.transferTo(out) }
@@ -267,7 +267,7 @@ class JarUtilities {
             log.error("Error walking source-directory.", ex)
         }
         try {
-            File(destination).createDirectories()
+            File(destination).create()
         } catch (ignored: FileAlreadyExistsException) {
         } catch (ex: IOException) {
             log.error("Error creating language directory.", ex)
@@ -275,7 +275,7 @@ class JarUtilities {
         for (entry in filesFromJar) {
             if (!File(destination, entry).absoluteFile.exists()) {
                 val extract = File(destination, entry).absoluteFile
-                extract.createDirectories()
+                extract.create()
                 try {
                     classToCopyFrom.getResourceAsStream("$source/$entry").use {
                         extract.outputStream().use { out -> it?.transferTo(out) }
@@ -330,7 +330,7 @@ class JarUtilities {
                 ).absoluteFile
                 log.debug("Destination: $destination")
                 if (!destination.exists()) {
-                    destination.createDirectories()
+                    destination.create()
                     try {
                         jarToCopyFrom.getInputStream(entry).use {
                             destination.outputStream().use { out -> it.transferTo(out) }

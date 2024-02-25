@@ -523,10 +523,10 @@ fun File.filteredWalk(
  * [create] without [directory] will result in this file being created as a file.
  *
  * @param create Whether the file or directory should be created. If left to `false`, then [directory] won't have any effect.
- * @param directory Whether a directory or file should be created. Requires [create] to be set to `true`.
+ * @param directory true to create a directory, false to create a file. Requires [create] to be true
  * @author Griefed
  */
-fun File.createDirectories(create: Boolean = true, directory: Boolean = true) {
+fun File.create(create: Boolean = false, directory: Boolean = false) {
     absoluteFile.toPath().createParentDirectories()
     if (create) {
         if (directory) {
