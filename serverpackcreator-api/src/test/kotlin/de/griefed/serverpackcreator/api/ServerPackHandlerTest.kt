@@ -73,7 +73,7 @@ internal class ServerPackHandlerTest {
         Assertions.assertTrue(File(forgeDir, "config").isDirectory)
         Assertions.assertTrue(File(forgeDir, "defaultconfigs").isDirectory)
         val modsDir = File(forgeDir, "mods")
-        Assertions.assertTrue(modsDir.isDirectory)
+        Assertions.assertTrue(modsDir.isDirectory, modsDir.absolutePath)
         Assertions.assertFalse(File(modsDir, "Ping-1.19-1.9.1.jar").isFile)
         Assertions.assertTrue(File(modsDir, "Ping-Wheel-1.6.1-forge-1.20.1.jar").isFile)
         Assertions.assertTrue(File(forgeDir, "scripts").isDirectory)
