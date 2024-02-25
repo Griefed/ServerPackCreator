@@ -582,7 +582,7 @@ actual class ConfigurationHandler(
             instanceJson.exists() -> {
                 // Check instance.json usually created by ATLauncher
                 try {
-                    updateConfigModelFromATLauncherInstance(packConfig, File(destination, "instance.json"))
+                    updateConfigModelFromInstance(packConfig, File(destination, "instance.json"))
                     packName = updatePackName(packConfig, "launcher", "name")
                 } catch (ex: IOException) {
                     log.error("Error parsing config.json from ZIP-file.", ex)
@@ -816,16 +816,43 @@ actual class ConfigurationHandler(
     }
 
     @Throws(IOException::class)
-    actual override fun updateConfigModelFromATLauncherInstance(packConfig: PackConfig, manifest: File) {
+    actual fun updateConfigModelFromInstance(packConfig: PackConfig, manifest: File) {
         packConfig.modpackJson = utilities.jsonUtilities.getJson(manifest)
         val json = packConfig.modpackJson!!
-        packConfig.minecraftVersion = json.get("id").asText()
-        val launcher = json.get("launcher")
-        val loaderVersion = launcher.get("loaderVersion")
-        packConfig.modloader = loaderVersion.get("type").asText()
-        packConfig.modloaderVersion = loaderVersion.get("version").asText()
-        val urlPath = arrayOf("launcher", "curseForgeProject", "logo", "thumbnailUrl")
-        val namePath = arrayOf("launcher", "name")
+        val urlPath: Array<String>
+        val namePath: Array<String>
+        if (json.get("id") != null) {
+            //ATLauncher
+            packConfig.minecraftVersion = json.get("id").asText()
+            packConfig.modloader = json.get("launcher").get("loaderVersion").get("type").asText()
+            packConfig.modloaderVersion = json.get("launcher").get("loaderVersion").get("version").asText()
+            urlPath = arrayOf("launcher", "curseForgeProject", "logo", "thumbnailUrl")
+            namePath = arrayOf("launcher", "name")
+        } else {
+            //xmcl
+            val runtime = json.get("runtime")
+            packConfig.minecraftVersion = runtime.get("minecraft").asText()
+            urlPath = arrayOf("icon")
+            namePath = arrayOf("name")
+            when {
+                runtime.get("forge").asText().isNotBlank() -> {
+                    packConfig.modloader = "Forge"
+                    packConfig.modloaderVersion = runtime.get("forge").asText()
+                }
+                runtime.get("fabricLoader").asText().isNotBlank() -> {
+                    packConfig.modloader = "Fabric"
+                    packConfig.modloaderVersion = runtime.get("fabricLoader").asText()
+                }
+                runtime.get("quiltLoader").asText().isNotBlank() -> {
+                    packConfig.modloader = "Quilt"
+                    packConfig.modloaderVersion = runtime.get("quiltLoader").asText()
+                }
+                runtime.get("neoForged").asText().isNotBlank() -> {
+                    packConfig.modloader = "NeoForge"
+                    packConfig.modloaderVersion = runtime.get("neoForged").asText()
+                }
+            }
+        }
         try {
             getAndSetIcon(json, packConfig, urlPath, namePath)
         } catch (_: NullPointerException) {

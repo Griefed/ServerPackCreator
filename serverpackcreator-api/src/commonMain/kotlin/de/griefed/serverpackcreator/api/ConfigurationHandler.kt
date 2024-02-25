@@ -72,7 +72,7 @@ expect class ConfigurationHandler {
     fun updatePackName(packConfig: PackConfig, vararg childNodes: String): String?
     fun updateConfigModelFromMinecraftInstance(packConfig: PackConfig, minecraftInstance: File)
     fun updateConfigModelFromModrinthManifest(packConfig: PackConfig, manifest: File)
-    fun updateConfigModelFromATLauncherInstance(packConfig: PackConfig, manifest: File)
+    fun updateConfigModelFromInstance(packConfig: PackConfig, manifest: File)
     fun updateConfigModelFromConfigJson(packConfig: PackConfig, config: File)
     fun updateConfigModelFromMMCPack(packConfig: PackConfig, mmcPack: File)
     fun updateDestinationFromInstanceCfg(instanceCfg: File): String
