@@ -40,8 +40,8 @@ dependencies {
 
 
     // Testing
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.1")
 }
 
 tasks.processResources {
@@ -77,6 +77,10 @@ tasks.processResources {
 // Explicit dependency to remove Gradle 8 warning
 tasks.sourcesJar {
     dependsOn(tasks.generateI18n4kFiles)
+}
+
+tasks.test {
+    dependsOn(":serverpackcreator-api:processTestResources")
 }
 
 tasks.jar {
