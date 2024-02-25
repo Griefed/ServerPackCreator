@@ -80,7 +80,6 @@ class SettingsHandling(
             (tab as Editor).saveSettings()
         }
         apiProperties.saveProperties(apiProperties.serverPackCreatorPropertiesFile)
-        apiProperties.saveOverrides()
         lastAction = Translations.settings_handle_saved(currentTime())
         checkAll()
         controlPanel.updateStatus(Translations.settings_info_saved(apiProperties.serverPackCreatorPropertiesFile.absolutePath))

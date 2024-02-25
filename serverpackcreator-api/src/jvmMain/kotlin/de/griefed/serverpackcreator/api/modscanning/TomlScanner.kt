@@ -36,7 +36,7 @@ import java.util.jar.JarFile
  */
 actual class TomlScanner(private val tomlParser: TomlParser) :
     Scanner<TreeSet<File>, Collection<File>> {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val mods = "mods"
     private val modId = "modId"
     private val modsToml = "META-INF/mods.toml"

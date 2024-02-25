@@ -46,7 +46,7 @@ import javax.swing.UIManager
  */
 class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: GuiProps) {
 
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val themeRegex = ".*\\.(properties|txt)".toRegex()
     private val lastModifiedMap: HashMap<File, Long> = HashMap()
     val themesDir: File = File(apiWrapper.apiProperties.homeDirectory, "themes").absoluteFile

@@ -38,7 +38,7 @@ class DatabaseCleanupSchedule @Autowired constructor(
     private val serverPackRepository: ServerPackRepository,
     apiProperties: ApiProperties
 ) {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val modPackRoot: Path = apiProperties.modpacksDirectory.toPath()
     private val serverPackRoot: Path = apiProperties.serverPacksDirectory.toPath()
 

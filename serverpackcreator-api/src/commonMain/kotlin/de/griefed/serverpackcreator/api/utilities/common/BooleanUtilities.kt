@@ -28,7 +28,7 @@ import mu.KotlinLogging
  */
 @Suppress("unused", "KDocUnresolvedReference")
 class BooleanUtilities {
-    private val log = KotlinLogging.logger {}
+    private val log by lazy { KotlinLogging.logger {} }
     private val yYeEsS = "[Yy][Ee][Ss]".toRegex()
     private val yY = "[Yy]".toRegex()
     private val one = "1".toRegex()

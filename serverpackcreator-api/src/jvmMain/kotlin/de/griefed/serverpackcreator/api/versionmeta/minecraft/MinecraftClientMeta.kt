@@ -45,7 +45,7 @@ internal class MinecraftClientMeta(
     private val utilities: Utilities,
     private val apiProperties: ApiProperties
 ) {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     val releases: MutableList<MinecraftClient> = ArrayList(100)
     val snapshots: MutableList<MinecraftClient> = ArrayList(200)
     val allVersions: MutableList<MinecraftClient> = ArrayList(300)

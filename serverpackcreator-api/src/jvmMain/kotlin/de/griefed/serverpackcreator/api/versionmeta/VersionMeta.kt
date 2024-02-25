@@ -80,7 +80,7 @@ actual class VersionMeta(
     private val utilities: Utilities,
     apiProperties: ApiProperties
 ) {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val legacyFabricUrlBase = "https://meta.legacyfabric.net"
 
     @Suppress("MemberVisibilityCanBePrivate")

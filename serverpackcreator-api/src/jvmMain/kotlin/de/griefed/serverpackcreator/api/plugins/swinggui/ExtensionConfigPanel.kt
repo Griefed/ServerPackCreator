@@ -25,6 +25,7 @@ import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.util.*
 import javax.swing.JPanel
 
@@ -59,7 +60,7 @@ actual abstract class ExtensionConfigPanel protected actual constructor(
     val pluginID: String
 ) : JPanel() {
     @Suppress("MemberVisibilityCanBePrivate")
-    protected val log: Logger = LogManager.getLogger(this.javaClass)
+    protected val log by lazy { cachedLoggerOf(this.javaClass) }
 
     @Suppress("MemberVisibilityCanBePrivate")
     protected val pluginsLog: Logger = LogManager.getLogger("AddonsLogger")

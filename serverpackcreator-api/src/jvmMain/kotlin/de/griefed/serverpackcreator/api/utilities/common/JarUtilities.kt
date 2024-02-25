@@ -35,7 +35,7 @@ import kotlin.io.path.toPath
  */
 @Suppress("unused")
 actual class JarUtilities {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /**
      * Copy a file from inside our JAR-file to the host filesystem. The file will create exactly as specified in the

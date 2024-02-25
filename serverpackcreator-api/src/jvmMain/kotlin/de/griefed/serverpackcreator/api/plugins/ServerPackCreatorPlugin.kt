@@ -49,7 +49,7 @@ import java.net.URI
  */
 @Suppress("unused")
 abstract class ServerPackCreatorPlugin(val context: PluginContext) : Plugin(), BaseInformation {
-    private val pluginLog = cachedLoggerOf(this.javaClass)
+    private val logger by lazy { cachedLoggerOf(this.javaClass) }
     final override val name: String
     final override val description: String
     final override val author: String
@@ -85,12 +85,12 @@ abstract class ServerPackCreatorPlugin(val context: PluginContext) : Plugin(), B
     @Throws(PluginRuntimeException::class)
     override fun start() {
         super.start()
-        log.info("Plugin-ID:          $id")
-        log.info("Plugin-Name:        $name")
-        log.info("Plugin-Description: $description")
-        log.info("Plugin-Author:      $author")
-        log.info("Plugin-Version:     $version")
-        log.info("Started: $name ($id)")
+        logger.info("Plugin-ID:          $id")
+        logger.info("Plugin-Name:        $name")
+        logger.info("Plugin-Description: $description")
+        logger.info("Plugin-Author:      $author")
+        logger.info("Plugin-Version:     $version")
+        logger.info("Started: $name ($id)")
         pluginsLog.info("Plugin-ID:          $id")
         pluginsLog.info("Plugin-Name:        $name")
         pluginsLog.info("Plugin-Description: $description")
@@ -110,7 +110,7 @@ abstract class ServerPackCreatorPlugin(val context: PluginContext) : Plugin(), B
     @Throws(PluginRuntimeException::class)
     override fun stop() {
         super.stop()
-        log.info("Stopped: $name ($id)")
+        logger.info("Stopped: $name ($id)")
         pluginsLog.info("Stopped: $name ($id)")
     }
 }
