@@ -15,8 +15,8 @@
     </mountPoints>
     <entries>
       <fileEntry mountPoint="26" file="${compiler:projectDir}/CHANGELOG.md" overwriteMode="1" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
-      <fileEntry mountPoint="26" file="${compiler:projectDir}/serverpackcreator-api/src/jvmMain/resources/log4j2.xml" />
-      <fileEntry mountPoint="26" file="${compiler:projectDir}/serverpackcreator-api/src/jvmMain/resources/serverpackcreator.properties" overwriteMode="1" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
+      <fileEntry mountPoint="26" file="${compiler:projectDir}/serverpackcreator-api/src/main/resources/log4j2.xml" />
+      <fileEntry mountPoint="26" file="${compiler:projectDir}/serverpackcreator-api/src/main/resources/serverpackcreator.properties" overwriteMode="1" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
       <fileEntry mountPoint="26" file="${compiler:projectDir}/CODE_OF_CONDUCT.md" overwriteMode="1" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
       <fileEntry mountPoint="26" file="${compiler:projectDir}/CONTRIBUTING.md" overwriteMode="1" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
       <fileEntry mountPoint="26" file="${compiler:projectDir}/HELP.md" overwriteMode="1" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />

@@ -70,7 +70,7 @@ else
 fi
 
 if [[ -z ${SPC_CONFIGURATION_FALLBACK_UPDATEURL} ]];then
-  echo "de.griefed.serverpackcreator.configuration.fallback.updateurl=https\://raw.githubusercontent.com/Griefed/ServerPackCreator/main/serverpackcreator-api/src/jvmMain/resources/serverpackcreator.properties" >> $OVERRIDES
+  echo "de.griefed.serverpackcreator.configuration.fallback.updateurl=https\://raw.githubusercontent.com/Griefed/ServerPackCreator/main/serverpackcreator-api/src/main/resources/serverpackcreator.properties" >> $OVERRIDES
 else
   echo "de.griefed.serverpackcreator.configuration.fallback.updateurl=$SPC_CONFIGURATION_FALLBACK_UPDATEURL" >> $OVERRIDES
 fi

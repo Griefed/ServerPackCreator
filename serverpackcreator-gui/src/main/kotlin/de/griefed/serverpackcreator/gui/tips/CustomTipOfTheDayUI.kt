@@ -23,8 +23,8 @@ import Translations
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.utilities.getAspectRatioScaledInstsance
 import io.ktor.util.reflect.*
-import tokyo.northside.swing.TipOfTheDay
-import tokyo.northside.swing.plaf.DefaultTipOfTheDayUI
+import tokyo.northside.tipoftheday.TipOfTheDay
+import tokyo.northside.tipoftheday.plaf.DefaultTipOfTheDayUI
 import java.awt.*
 import java.awt.event.*
 import java.util.*
