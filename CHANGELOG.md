@@ -1,3 +1,15 @@
+## [5.1.16](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.15...5.1.16) (2024-02-25)
+
+
+### :scissors: Refactor
+
+* Change expected class and interface accordingly ([ba66889](https://git.griefed.de/Griefed/ServerPackCreator/commit/ba668897e75d8a129a22f692d2c7533d49c1bd61))
+
+
+### 💎 Improvements
+
+* Support XMinecraftLaunchers instance.json ([4bc10d2](https://git.griefed.de/Griefed/ServerPackCreator/commit/4bc10d25b907c493adfd41bdb5707951b4e2b92b))
+
 ## [5.1.15](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.14...5.1.15) (2024-02-24)
 
 
