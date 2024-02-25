@@ -23,8 +23,8 @@ dependencies {
     api(project(":serverpackcreator-gui"))
     api(project(":serverpackcreator-web"))
     api(project(":serverpackcreator-updater"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.1")
 }
 
 springBoot {

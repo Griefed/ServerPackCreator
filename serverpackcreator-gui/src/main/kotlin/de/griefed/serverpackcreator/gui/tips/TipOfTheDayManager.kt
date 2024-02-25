@@ -23,9 +23,8 @@ import Translations
 import de.griefed.serverpackcreator.gui.GuiProps
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
-import tokyo.northside.swing.TipOfTheDay
-import tokyo.northside.swing.TipOfTheDay.ShowOnStartupChoice
-import tokyo.northside.swing.tips.DefaultTipOfTheDayModel
+import tokyo.northside.tipoftheday.TipOfTheDay
+import tokyo.northside.tipoftheday.tips.DefaultTipOfTheDayModel
 import java.util.*
 import javax.swing.JFrame
 import kotlin.reflect.full.memberProperties
@@ -80,7 +79,7 @@ class TipOfTheDayManager(private val mainFrame: JFrame, private val guiProps: Gu
         }
     }
 
-    inner class ShowOnStartup : ShowOnStartupChoice {
+    inner class ShowOnStartup : TipOfTheDay.ShowOnStartupChoice {
         override fun setShowingOnStartup(showOnStartup: Boolean) {
             guiProps.showTipOnStartup = showOnStartup
         }

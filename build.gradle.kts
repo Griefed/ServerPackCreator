@@ -73,7 +73,7 @@ licenseReport {
 }
 
 val appPlugins = File("serverpackcreator-app/tests/plugins")
-val apiPlugins = File("serverpackcreator-api/src/jvmTest/resources/testresources/plugins")
+val apiPlugins = File("serverpackcreator-api/src/test/resources/testresources/plugins")
 val kotlinPlugin =
     project.childProjects["serverpackcreator-plugin-example"]?.tasks?.jar?.get()?.archiveFile?.get()?.asFile?.toPath()
 val licenseReports = File("licenses")
