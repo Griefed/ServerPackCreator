@@ -211,7 +211,7 @@ jobs:
   prerelease:
     if: ${{ always() }}
     runs-on: ubuntu-latest
-    needs: [preparations, jar, mac-01, windows-01, windows-02, ubuntu-01, ubuntu-02]
+    needs: [preparations, jar-and-media, appimage]
 
     steps:
       # GET THE LATEST CODE
