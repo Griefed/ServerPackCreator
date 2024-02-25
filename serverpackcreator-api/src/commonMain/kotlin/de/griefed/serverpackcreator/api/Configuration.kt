@@ -424,13 +424,13 @@ abstract class Configuration<F, P> {
     /**
      * **`instance.json`**
      *
-     * Update the given ConfigurationModel with values gathered from a ATLauncher manifest.
+     * Update the given ConfigurationModel with values gathered from a ATLauncher or XMCL manifest.
      *
      * @param packConfig The model to update.
      * @param manifest           The manifest file.
      * @author Griefed
      */
-    abstract fun updateConfigModelFromATLauncherInstance(packConfig: PackConfig, manifest: F)
+    abstract fun updateConfigModelFromInstance(packConfig: PackConfig, manifest: F)
 
     /**
      * **`config.json`**

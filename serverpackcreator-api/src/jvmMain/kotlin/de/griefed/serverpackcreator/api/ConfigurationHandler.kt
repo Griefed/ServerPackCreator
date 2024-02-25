@@ -816,7 +816,7 @@ actual class ConfigurationHandler(
     }
 
     @Throws(IOException::class)
-    actual fun updateConfigModelFromInstance(packConfig: PackConfig, manifest: File) {
+    actual override fun updateConfigModelFromInstance(packConfig: PackConfig, manifest: File) {
         packConfig.modpackJson = utilities.jsonUtilities.getJson(manifest)
         val json = packConfig.modpackJson!!
         val urlPath: Array<String>
