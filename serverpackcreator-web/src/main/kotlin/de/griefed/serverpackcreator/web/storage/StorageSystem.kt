@@ -29,7 +29,7 @@ import java.security.MessageDigest
 import java.util.*
 
 class StorageSystem(private val fileSystemStorageService: FileSystemStorageService) {
-    private val logger: KotlinLogger = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     constructor(rootLocation: Path, messageDigest: MessageDigest) : this(
         FileSystemStorageService(rootLocation, messageDigest)
@@ -48,7 +48,7 @@ class StorageSystem(private val fileSystemStorageService: FileSystemStorageServi
         if (fileSys.isPresent) {
             return fileSys
         }
-        logger.error("File with ID $id could not be found.")
+        log.error("File with ID $id could not be found.")
         return Optional.empty()
     }
 

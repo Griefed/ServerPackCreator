@@ -181,7 +181,7 @@ private val scriptSettingsDefaultKeys = arrayOf(
  * @author Griefed
  */
 actual open class PackConfig actual constructor() : Pack<File, JsonNode, PackConfig>() {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     /**
      * Construct a new configuration model with custom values.
      *

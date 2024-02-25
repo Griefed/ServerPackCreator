@@ -57,7 +57,7 @@ class ConfigEditor(
     componentResizer: ComponentResizer
 ) : JScrollPane(), ServerPackConfigTab {
 
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val panel = JPanel(
         MigLayout(
             "left,wrap",
@@ -74,7 +74,7 @@ class ConfigEditor(
 
     private val modpackIcon = StatusIcon(guiProps,Translations.createserverpack_gui_createserverpack_labelmodpackdir_tip.toString())
     private val modpackLabel = ElementLabel(Translations.createserverpack_gui_createserverpack_labelmodpackdir.toString())
-    private val modpackSetting = ScrollTextFileField(guiProps,File(""), validationChangeListener)
+    private val modpackSetting = ScrollTextFileField(guiProps,apiWrapper.apiProperties.homeDirectory, validationChangeListener)
     private val modpackChooser = BalloonTipButton(null, guiProps.folderIcon, Translations.createserverpack_gui_browser.toString(), guiProps) { selectModpackDirectory() }
     private val modpackCheck = BalloonTipButton(null, guiProps.inspectIcon,Translations.createserverpack_gui_buttonmodpackdir_scan_tip.toString(), guiProps) { updateGuiFromSelectedModpack() }
 

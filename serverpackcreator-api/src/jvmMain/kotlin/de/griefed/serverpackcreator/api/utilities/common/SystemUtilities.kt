@@ -29,14 +29,11 @@ import java.io.File
  */
 @Suppress("unused")
 actual class SystemUtilities {
-    private val log = cachedLoggerOf(this.javaClass)
-    private val windowsDrives: List<String> = listOf(
-        "A:", "B:", "C:", "D:", "E:", "F:", "G:", "H:", "I:", "J:", "K:", "L:", "M:", "N:",
-        "O:", "P:", "Q:", "R:", "S:", "T:", "U:", "V:", "W:", "X:", "Y:", "Z:"
-    )
-    private val javaPathSuffix = "%s/bin/java"
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
+    private val windowsDriveRegex = "^[A-Z]:\\\\.*".toRegex()
+    private val javaPathSuffix = "%s${File.separator}bin${File.separator}java"
     private val javaHome = System.getProperty("java.home")
-    private val pathPrefix = "/"
+    private val unixRoot = "/"
     private val exeSuffix = "%s.exe"
 
     /**
@@ -50,13 +47,9 @@ actual class SystemUtilities {
         var javaPath = "Couldn't acquire JavaPath"
         if (File(javaHome).exists()) {
             javaPath = javaPathSuffix.format(javaHome)
-            if (!javaPath.startsWith(pathPrefix)) {
-                for (letter in windowsDrives) {
-                    if (javaPath.startsWith(letter)) {
-                        log.debug("We're running on Windows. Ensuring javaPath ends with .exe")
-                        javaPath = exeSuffix.format(javaPath)
-                    }
-                }
+            if (javaPath.matches(windowsDriveRegex)) {
+                log.debug("We're running on Windows. Ensuring javaPath ends with .exe")
+                javaPath = exeSuffix.format(javaPath)
             }
         }
         return javaPath

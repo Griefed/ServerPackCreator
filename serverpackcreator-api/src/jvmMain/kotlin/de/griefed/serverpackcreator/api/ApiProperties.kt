@@ -24,6 +24,14 @@ import de.comahe.i18n4k.config.I18n4kConfigDefault
 import de.comahe.i18n4k.i18n4k
 import de.comahe.i18n4k.toTag
 import de.griefed.serverpackcreator.api.utilities.common.*
+import org.apache.logging.log4j.core.Core
+import org.apache.logging.log4j.core.LoggerContext
+import org.apache.logging.log4j.core.config.Configuration
+import org.apache.logging.log4j.core.config.ConfigurationFactory
+import org.apache.logging.log4j.core.config.ConfigurationSource
+import org.apache.logging.log4j.core.config.Order
+import org.apache.logging.log4j.core.config.plugins.Plugin
+import org.apache.logging.log4j.core.config.xml.XmlConfiguration
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.BufferedReader
 import java.io.File
@@ -31,7 +39,6 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.net.URI
 import java.util.*
-import java.util.prefs.Preferences
 
 /**
  * Base settings of ServerPackCreator, such as working directories, default list of clientside-only
@@ -48,20 +55,20 @@ import java.util.prefs.Preferences
  * @author Griefed
  */
 @Suppress("unused")
+@Plugin(name = "ServerPackCreatorConfigFactory", category = Core.CATEGORY_NAME)
+@Order(50)
 actual class ApiProperties(
-    private val fileUtilities: FileUtilities,
-    private val systemUtilities: SystemUtilities,
-    private val listUtilities: ListUtilities,
-    jarUtilities: JarUtilities,
+    private val fileUtilities: FileUtilities = FileUtilities(),
+    private val systemUtilities: SystemUtilities = SystemUtilities(),
+    private val listUtilities: ListUtilities = ListUtilities(),
+    jarUtilities: JarUtilities = JarUtilities(),
     propertiesFile: File = File("serverpackcreator.properties")
-) {
-    private val log = cachedLoggerOf(javaClass)
+) : ConfigurationFactory() {
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val internalProps = Properties()
-    private val userPreferences = Preferences.userRoot().node("ServerPackCreator")
     private val serverPackCreatorProperties = "serverpackcreator.properties"
-    private val jarInformation: JarInformation = JarInformation(javaClass, jarUtilities)
-    private val jarFolderProperties: File =
-        File(jarInformation.jarFolder.absoluteFile, serverPackCreatorProperties).absoluteFile
+    private val jarInformation: JarInformation = JarInformation(this.javaClass, jarUtilities)
+    private val jarFolderProperties: File = File(jarInformation.jarFolder.absoluteFile, serverPackCreatorProperties)
     private val pVersionCheckPreRelease =
         "de.griefed.serverpackcreator.versioncheck.prerelease"
     private val pLanguage =
@@ -138,12 +145,15 @@ actual class ApiProperties(
         "spring.datasource.username"
     private val pSpringDatasourcePassword =
         "spring.datasource.password"
+    private val suffixes = arrayOf(".xml")
 
-    val home: File = if (System.getProperty("user.home").isNotEmpty()) {
-        File(System.getProperty("user.home"))
-    } else {
-        jarInformation.jarFolder.absoluteFile
-    }
+    /**
+     * Default home-directory for ServerPackCreator. The directory containing the
+     * ServerPackCreator JAR.
+     *
+     * @author Griefed
+     */
+    val home: File = jarInformation.jarFolder.absoluteFile
 
     private var fallbackModsWhitelist = TreeSet(
         listOf(
@@ -732,11 +742,17 @@ actual class ApiProperties(
      */
     val apiVersion: String = javaClass.getPackage().implementationVersion ?: "dev"
 
+    /**
+     * Whether the used build is a dev-build.
+     */
     val devBuild: Boolean
         get() {
             return apiVersion == "dev"
         }
 
+    /**
+     * Whether the used build is a pre-release.
+     */
     val preRelease: Boolean
         get() {
             return apiVersion.matches(alphaBetaRegex)
@@ -748,12 +764,6 @@ actual class ApiProperties(
         "4"
     }
 
-    init {
-        i18n4k = i18n4kConfig
-        i18n4kConfig.defaultLocale = Locale("en_GB")
-        loadProperties(propertiesFile, false)
-    }
-
     /**
      * Only the first call to this property will return true if this is the first time ServerPackCreator is being run
      * on a given host. Any subsequent call will return false. Handle with care!
@@ -761,11 +771,6 @@ actual class ApiProperties(
      * @author Griefed
      */
     val firstRun: Boolean
-
-    init {
-        firstRun = getBoolProperty("de.griefed.serverpackcreator.firstrun", true)
-        setBoolProperty("de.griefed.serverpackcreator.firstrun", false)
-    }
 
     /**
      * The default shell-template for the modded server start scripts. The file returned by this
@@ -1337,16 +1342,6 @@ actual class ApiProperties(
     }
 
     /**
-     * Default home-directory for ServerPackCreator. If there's no user-home, then the directory containing the
-     * ServerPackCreator JAR will be used as the home-directory for ServerPackCreator.
-     *
-     * @author Griefed
-     */
-    fun defaultHomeDirectory(): File {
-        return File(home, "ServerPackCreator").absoluteFile
-    }
-
-    /**
      * ServerPackCreators home directory, in which all important files and folders are stored in.
      *
      * Changes made to this variable are stored in an overrides.properties inside the installation directory of the
@@ -1356,25 +1351,29 @@ actual class ApiProperties(
      * [serverPacksDirectory], which can be configured independently of ServerPackCreators
      * home-directory.
      */
-    var homeDirectory: File = File(home, "ServerPackCreator").absoluteFile
+    var homeDirectory: File = home.absoluteFile
         get() {
-            val prop = internalProps.getProperty(pHomeDirectory)
-            field = if (internalProps.containsKey(pHomeDirectory) && File(prop).absoluteFile.isDirectory) {
-                File(prop).absoluteFile
-            } else if (jarInformation.jarPath.toFile().isDirectory) {
+            val customHome = if (internalProps.containsKey(pHomeDirectory)) {
+                internalProps.getProperty(pHomeDirectory)
+            } else {
+                ""
+            }
+            field = if (customHome.isNotBlank()) {
+                File(customHome).absoluteFile
+            } else if (jarInformation.jarPath.toFile().isDirectory || devBuild) {
                 // Dev environment
                 File("").absoluteFile
             } else {
-                File(home, "ServerPackCreator").absoluteFile
+                home.absoluteFile
             }
             if (!field.isDirectory) {
                 field.createDirectories(create = true, directory = true)
             }
+            internalProps.setProperty(pHomeDirectory, field.absolutePath)
             return field
         }
         set(value) {
             internalProps.setProperty(pHomeDirectory, value.absolutePath)
-            userPreferences.put(pHomeDirectory, value.absolutePath)
             field = value.absoluteFile
             log.info("Home directory set to: $field")
             log.warn("Restart ServerPackCreator for this change to take full effect.")
@@ -1388,6 +1387,16 @@ actual class ApiProperties(
     var serverPackCreatorPropertiesFile: File = File(homeDirectory, serverPackCreatorProperties).absoluteFile
         get() {
             field = File(homeDirectory, serverPackCreatorProperties).absoluteFile
+            return field
+        }
+        private set
+
+    /**
+     * Overrides which, well, override, any property which may be set in the regular [serverPackCreatorPropertiesFile].
+     */
+    var overridesPropertiesFile: File = File(homeDirectory,"overrides.properties")
+        get() {
+            field = File(homeDirectory,"overrides.properties")
             return field
         }
         private set
@@ -1905,15 +1914,19 @@ actual class ApiProperties(
         }
     }
 
-    private fun loadOverrides() : Properties {
+    private fun loadOverrides() {
         val tempProps = Properties()
-        val overrides = File(homeDirectory,"overrides.properties")
-        if (overrides.isFile) {
-            File(homeDirectory,"overrides.properties").inputStream().use {
+        if (overridesPropertiesFile.isFile) {
+            overridesPropertiesFile.inputStream().use {
                 tempProps.load(it)
             }
         }
-        return tempProps
+        for ((key,value) in tempProps) {
+            log.warn("Overriding:")
+            log.warn("  $key")
+            log.warn("  $value")
+        }
+        internalProps.putAll(tempProps)
     }
 
     /**
@@ -1959,24 +1972,14 @@ actual class ApiProperties(
         // Load the specified properties-file.
         loadFile(propertiesFile, props)
 
-        // Load all values from the overrides-properties
-        for (key in userPreferences.keys()) {
-            props[key] = userPreferences[key,null]
-        }
-
         internalProps.putAll(props)
         internalProps.setProperty(pTomcatBaseDirectory, homeDirectory.absolutePath)
         if (internalProps.getProperty(pLanguage) != "en_GB") {
             changeLocale(Locale(internalProps.getProperty(pLanguage)))
         }
 
-        val overrides = loadOverrides()
-        for ((key,value) in overrides) {
-            log.warn("Overriding:")
-            log.warn("  $key")
-            log.warn("  $value")
-        }
-        internalProps.putAll(overrides)
+        // Load all values from the overrides-properties
+        loadOverrides()
 
         if (updateFallback()) {
             log.info("Fallback lists updated.")
@@ -2222,17 +2225,6 @@ actual class ApiProperties(
         } catch (ex: IOException) {
             log.error("Couldn't write properties-file.", ex)
         }
-    }
-
-    /**
-     * Write the overrides-properties which, as the name implies, will override any other property loaded previously during [loadProperties].
-     * CAUTION: Depending on the type of installation, the overrides.properties will reside inside a directory which
-     * requires root/admin-privileges to write in. The directory in which this file will be created in is [getJarFolder].
-     *
-     * @author Griefed
-     */
-    fun saveOverrides() {
-        userPreferences.sync()
     }
 
     /**
@@ -2502,23 +2494,6 @@ actual class ApiProperties(
      */
     fun oldVersion(): String = internalProps.getProperty(pOldVersion, "")
 
-    init {
-        serverFilesDirectory.createDirectories(create = true, directory = true)
-        propertiesDirectory.createDirectories(create = true, directory = true)
-        iconsDirectory.createDirectories(create = true, directory = true)
-        configsDirectory.createDirectories(create = true, directory = true)
-        workDirectory.createDirectories(create = true, directory = true)
-        tempDirectory.createDirectories(create = true, directory = true)
-        modpacksDirectory.createDirectories(create = true, directory = true)
-        serverPacksDirectory.createDirectories(create = true, directory = true)
-        pluginsDirectory.createDirectories(create = true, directory = true)
-        pluginsConfigsDirectory.createDirectories(create = true, directory = true)
-        manifestsDirectory.createDirectories(create = true, directory = true)
-        minecraftServerManifestsDirectory.createDirectories(create = true, directory = true)
-        installerCacheDirectory.createDirectories(create = true, directory = true)
-        printSettings()
-    }
-
     @Suppress("MemberVisibilityCanBePrivate")
     fun printSettings() {
         log.info("============================== PROPERTIES ==============================")
@@ -2557,8 +2532,50 @@ actual class ApiProperties(
         log.info("============================== PROPERTIES ==============================")
     }
 
+    val installLocationXml: File = File(home,"log4j2.xml")
+    val log4jXml: File
+
     init {
-        System.setProperty("user.dir",homeDirectory.absolutePath)
+        i18n4k = i18n4kConfig
+        i18n4kConfig.defaultLocale = Locale("en_GB")
+        loadProperties(propertiesFile, false)
+        log4jXml = File(homeDirectory, "log4j2.xml")
+        try {
+            var log4j: String
+            val oldLogs = "<Property name=\"log-path\">logs</Property>"
+            val newLogs = "<Property name=\"log-path\">${logsDirectory.absolutePath}</Property>"
+            this.javaClass.getResourceAsStream("/log4j2.xml").use {
+                log4j = it?.readText().toString()
+                log4j = log4j.replace(oldLogs, newLogs)
+                if (devBuild || preRelease) {
+                    log4j = log4j.replace(
+                        "<Property name=\"log-level-spc\">INFO</Property>",
+                        "<Property name=\"log-level-spc\">DEBUG</Property>"
+                    )
+                }
+                log4jXml.writeText(log4j)
+            }
+        } catch (ex: IOException) {
+            println("Error reading/writing log4j2.xml.")
+            ex.printStackTrace()
+        }
+        firstRun = getBoolProperty("de.griefed.serverpackcreator.firstrun", true)
+        setBoolProperty("de.griefed.serverpackcreator.firstrun", false)
+        logsDirectory.createDirectories(create = true, directory = true)
+        serverFilesDirectory.createDirectories(create = true, directory = true)
+        propertiesDirectory.createDirectories(create = true, directory = true)
+        iconsDirectory.createDirectories(create = true, directory = true)
+        configsDirectory.createDirectories(create = true, directory = true)
+        workDirectory.createDirectories(create = true, directory = true)
+        tempDirectory.createDirectories(create = true, directory = true)
+        modpacksDirectory.createDirectories(create = true, directory = true)
+        serverPacksDirectory.createDirectories(create = true, directory = true)
+        pluginsDirectory.createDirectories(create = true, directory = true)
+        pluginsConfigsDirectory.createDirectories(create = true, directory = true)
+        manifestsDirectory.createDirectories(create = true, directory = true)
+        minecraftServerManifestsDirectory.createDirectories(create = true, directory = true)
+        installerCacheDirectory.createDirectories(create = true, directory = true)
+        printSettings()
         saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
     }
 
@@ -2569,6 +2586,88 @@ actual class ApiProperties(
         @JvmStatic
         actual fun getSeparator(): String {
             return File.separator
+        }
+    }
+
+    override fun getSupportedTypes(): Array<String> = suffixes
+
+    /**
+     * Depending on whether this is the first run of ServerPackCreator on a users machine, the default
+     * log4j2 configuration may be present at different locations. The default one is the config
+     * inside the home-directory of SPC, of which we will try to set up our logging with. If said file
+     * fails for whatever reason, we will try to use a config inside the directory from which SPC was
+     * executed. Should that fail, too, the config from the classpath is used, to ensure we always
+     * have default configs available. Should that fail, too, though, log4j is set up with its own
+     * default settings.
+     *
+     * @param loggerContext logger context passed from log4j itself
+     * @param source        configuration source passed from log4j itself. Attempts to overwrite it
+     * are made, but if all else fails it is used to set up logging with log4j's
+     * default config.
+     * @return Custom configuration with proper logs-directory set.
+     * @author Griefed
+     */
+    override fun getConfiguration(loggerContext: LoggerContext, source: ConfigurationSource): Configuration {
+        val configSource: ConfigurationSource
+        if (log4jXml.isFile) {
+            try {
+                return getXmlConfig(log4jXml, loggerContext)
+            } catch (ex: IOException) {
+                println("Couldn't parse $log4jXml.")
+                ex.printStackTrace()
+            }
+        } else if (installLocationXml.isFile) {
+            try {
+                return getXmlConfig(installLocationXml, loggerContext)
+            } catch (ex: IOException) {
+                println("Couldn't parse $installLocationXml.")
+                ex.printStackTrace()
+            }
+        }
+        try {
+            configSource = ConfigurationSource(this.javaClass.getResourceAsStream("/log4j2.xml")!!)
+            return CustomXMLConfiguration(loggerContext, configSource)
+        } catch (ex: IOException) {
+            println("Couldn't parse resource log4j2.xml.")
+            ex.printStackTrace()
+        }
+        return CustomXMLConfiguration(loggerContext, source)
+    }
+
+    private fun getXmlConfig(sourceFile: File, loggerContext: LoggerContext): CustomXMLConfiguration {
+        val configSource: ConfigurationSource
+        val stream = sourceFile.inputStream()
+        configSource = ConfigurationSource(stream, sourceFile)
+        val custom = CustomXMLConfiguration(loggerContext, configSource)
+        stream.close()
+        return custom
+    }
+
+    /**
+     * Custom XmlConfiguration to pass our custom log4j2.xml config to log4j.
+     *
+     * Set up the XML configuration with the passed context and config source. For the config source
+     * being used, [ApiProperties.getConfiguration] where
+     * multiple attempts at creating a new private val log by lazy { cachedLoggerOf(this.javaClass) } using our own log4j2.xml are made
+     * before the default log4j setup is used.
+     *
+     * @param loggerContext logger context passed from log4j itself
+     * @param configSource  configuration source passed from
+     * [ApiProperties.getConfiguration].
+     * @author Griefed
+     */
+    inner class CustomXMLConfiguration(loggerContext: LoggerContext?, configSource: ConfigurationSource?) :
+        XmlConfiguration(loggerContext, configSource) {
+
+        /**
+         * For now, all this does is call the [XmlConfiguration.doConfigure]-method to set up the
+         * configuration with the passed source from the constructor. Custom values and settings can be
+         * set here in the future, should a need arise to do so.
+         *
+         * @author Griefed
+         */
+        override fun doConfigure() {
+            super.doConfigure()
         }
     }
 }

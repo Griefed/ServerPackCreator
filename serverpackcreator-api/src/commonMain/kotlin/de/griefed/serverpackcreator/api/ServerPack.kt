@@ -30,7 +30,7 @@ import java.io.File
  * @author Griefed
  */
 abstract class ServerPack<F, TS, TF> {
-    protected val log = KotlinLogging.logger {}
+    protected val log by lazy { KotlinLogging.logger {} }
     protected val modFileEndings = listOf("jar", "disabled")
     protected val ending = "^\\.[0-9a-zA-Z]+$".toRegex()
     protected val variables = """

@@ -66,7 +66,7 @@ import java.util.*
 class MigrationManager(
     private val apiProperties: ApiProperties, private val tomlParser: TomlParser
 ) {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val migrationMethods = MigrationMethods()
     private val previous: String = apiProperties.oldVersion()
     private val current: String = apiProperties.apiVersion

@@ -44,7 +44,7 @@ import kotlin.streams.asStream
  * @author Griefed
  */
 actual class FileUtilities {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val windowsDrivers = "^[A-Za-z]:.*".toRegex()
     private val lnk = "lnk"
 

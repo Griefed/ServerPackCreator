@@ -25,7 +25,7 @@ package de.griefed.versionchecker
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -41,7 +41,7 @@ import java.util.*
  */
 @Suppress("unused")
 abstract class VersionChecker {
-    private val logger = LogManager.getLogger(VersionChecker::class.java)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     protected var allVersions: List<String>? = null
         private set
 
@@ -58,7 +58,7 @@ abstract class VersionChecker {
      * New prerelease available: `Current version: 2.0.0. A new PreRelease is available: 3.0.0-alpha.14. Download available at: https://github.com/Griefed/ServerPackCreator/releases/tag/3.0.0-alpha.14`
      */
     fun checkForUpdate(currentVersion: String, checkForPreReleases: Boolean): String {
-        logger.debug("Current version: $currentVersion")
+        log.debug("Current version: $currentVersion")
         return try {
             val newVersion = isUpdateAvailable(currentVersion, checkForPreReleases)
             if (newVersion == "up_to_date") {
@@ -67,7 +67,7 @@ abstract class VersionChecker {
                 newVersion + ";" + getDownloadUrl(newVersion!!)
             }
         } catch (ex: NumberFormatException) {
-            logger.error("A version could not be parsed into integers.", ex)
+            log.error("A version could not be parsed into integers.", ex)
             "No updates available."
         }
     }
@@ -114,9 +114,9 @@ abstract class VersionChecker {
      * parsed into integers.
      */
     protected fun compareSemantics(currentVersion: String, newVersion: String, comparison: Comparison): Boolean {
-        logger.debug("Current version: {}", currentVersion)
-        logger.debug("New version:     {}", newVersion)
-        logger.debug("Comparison:      {}", comparison)
+        log.debug("Current version: $currentVersion")
+        log.debug("New version:     $newVersion")
+        log.debug("Comparison:      $comparison")
         if (newVersion == "no_release") {
             return false
         }
@@ -421,7 +421,7 @@ abstract class VersionChecker {
                 }
             }
         }
-        logger.debug("Latest beta: $beta")
+        log.debug("Latest beta: $beta")
         return beta
     }
 
@@ -447,7 +447,7 @@ abstract class VersionChecker {
                 }
             }
         }
-        logger.debug("Latest alpha: $alpha")
+        log.debug("Latest alpha: $alpha")
         return alpha
     }
 

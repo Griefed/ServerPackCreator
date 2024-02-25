@@ -56,7 +56,7 @@ class SuggestionProvider(
     private val sourceComponent: JTextComponent,
     private val identifier: String
 ) {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val suggestionMenu = JPopupMenu()
     private var suggestionListModel = DefaultListModel<String>()
     private var suggestionList = JList(suggestionListModel)

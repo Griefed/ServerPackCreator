@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import de.griefed.serverpackcreator.api.modscanning.*
 import de.griefed.serverpackcreator.api.utilities.common.*
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
@@ -45,7 +46,7 @@ actual class ApiWrapper private constructor(
     val properties: File = File("serverpackcreator.properties"),
     runSetup: Boolean = true
 ) : Api<File>() {
-
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     /**
      * This instances settings used across ServerPackCreator, such as the working-directories, files
      * and other settings.

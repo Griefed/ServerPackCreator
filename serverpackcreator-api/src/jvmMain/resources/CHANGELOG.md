@@ -1,3 +1,10 @@
+## [5.1.15](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.14...5.1.15) (2024-02-24)
+
+
+### 🛠 Fixes
+
+* Correct ordering of NeoForge versions and usage in web-frontend ([bc477b0](https://git.griefed.de/Griefed/ServerPackCreator/commit/bc477b0969506340ce8e982c2f1c9605307f0c4a))
+
 ## [5.1.14](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.13...5.1.14) (2024-02-24)
 
 

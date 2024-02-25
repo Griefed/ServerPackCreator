@@ -32,7 +32,7 @@ import kotlin.coroutines.CoroutineContext
  */
 @Suppress("unused")
 class ListUtilities {
-    private val log = KotlinLogging.logger {}
+    private val log by lazy { KotlinLogging.logger {} }
     private val whitespace = "\\s+".toRegex()
 
     /**

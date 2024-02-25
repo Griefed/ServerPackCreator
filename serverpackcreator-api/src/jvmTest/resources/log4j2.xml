@@ -35,22 +35,6 @@
             <DefaultRolloverStrategy max="5" />
         </RollingFile>
 
-        <RollingFile name="InstallerLogger" fileName="${log-path}/modloader_installer.log" filePattern="${archive}/modloader_installer.log.%i">
-            <PatternLayout>
-                <Charset>
-                    ${charset}
-                </Charset>
-                <Pattern>
-                    ${pattern}
-                </Pattern>
-            </PatternLayout>
-            <Policies>
-                <OnStartupTriggeringPolicy />
-                <SizeBasedTriggeringPolicy size="10 MB" />
-            </Policies>
-            <DefaultRolloverStrategy max="5" />
-        </RollingFile>
-
         <RollingFile name="PluginsLogger" fileName="${log-path}/plugins.log" filePattern="${archive}/plugins.log.%i">
             <PatternLayout>
                 <Charset>
@@ -77,10 +61,6 @@
         <Logger name="de.griefed.serverpackcreator" level="ALL" additivity="false">
             <AppenderRef ref="Console" level="${log-level-spc}"/>
             <AppenderRef ref="ApplicationLogger" level="${log-level-spc}" />
-        </Logger>
-
-        <Logger name="InstallerLogger" level="ALL" additivity="false">
-            <AppenderRef ref="InstallerLogger" level="${log-level-spc}" />
         </Logger>
 
         <Logger name="PluginsLogger" level="ALL" additivity="false">
