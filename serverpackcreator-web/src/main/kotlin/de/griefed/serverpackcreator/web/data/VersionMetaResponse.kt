@@ -25,5 +25,5 @@ class VersionMetaResponse(
     val legacyFabric: List<String>,
     val quilt: List<String>,
     val forge: HashMap<String, List<String>>,
-    val neoForge: List<String>
+    val neoForge: HashMap<String,List<String>>
 )

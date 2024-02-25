@@ -573,7 +573,7 @@ export default defineComponent({
     const legacyFabricVersions = ref([]);
     const quiltVersions = ref([]);
     const forgeVersions = ref(new Map<string, Array<string>>);
-    const neoForgeVersions = ref([]);
+    const neoForgeVersions = ref(new Map<string, Array<string>>);
     const modloaderVersions = ref([]);
     const submitted = ref(false)
     const submitEmpty = ref(false)
@@ -764,6 +764,7 @@ export default defineComponent({
     selectedMinecraft(version: string) {
       this.minecraftVersion = version;
       this.updateForgeVersions();
+      this.updateNeoForgeVersions();
     },
     updateForgeVersions() {
       if (this.modloader === 'Forge') {
@@ -772,6 +773,17 @@ export default defineComponent({
           this.modloaderVersion = 'N/A';
         } else {
           this.modloaderVersions = this.forgeVersions[this.minecraftVersion];
+          this.modloaderVersion = this.modloaderVersions[0];
+        }
+      }
+    },
+    updateNeoForgeVersions() {
+      if (this.modloader === 'NeoForge') {
+        if (this.neoForgeVersions[this.minecraftVersion] === undefined) {
+          this.modloaderVersions = [];
+          this.modloaderVersion = 'N/A';
+        } else {
+          this.modloaderVersions = this.neoForgeVersions[this.minecraftVersion];
           this.modloaderVersion = this.modloaderVersions[0];
         }
       }
@@ -799,8 +811,7 @@ export default defineComponent({
           break;
 
         case 'NeoForge':
-          this.modloaderVersions = this.neoForgeVersions;
-          this.modloaderVersion = this.modloaderVersions[0];
+          this.updateNeoForgeVersions();
           break;
       }
     },
