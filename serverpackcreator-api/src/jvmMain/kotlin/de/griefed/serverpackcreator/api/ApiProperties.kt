@@ -1195,12 +1195,16 @@ actual class ApiProperties(
 
     /**
      * Path to the PostgreSQL database used by the webservice-side of ServerPackCreator.
+     *
+     * When setting this to a different URL, you may leave out the `jdbc:postgresql://`-part, it will be prefixed automatically.
      */
     @Suppress("MemberVisibilityCanBePrivate")
     var jdbcDatabaseUrl: String = "jdbc:postgresql://localhost:5432/serverpackcreator"
         get() {
-            var dbPath = internalProps.getProperty(pSpringDatasourceUrl, "jdbc:postgresql://localhost:5432/serverpackcreator")
-            if (dbPath.isEmpty() || dbPath.startsWith("jdbc:sqlite")) {
+            var dbPath =
+                internalProps.getProperty(pSpringDatasourceUrl, "jdbc:postgresql://localhost:5432/serverpackcreator")
+            if (dbPath.isEmpty() || dbPath.contains("jdbc:sqlite") || !dbPath.startsWith("jdbc:postgresql://")) {
+                log.warn("Your spring.datasource.url-property didn't match a PostgreSQL JDBC URL: $dbPath. It has been migrated to jdbc:postgresql://localhost:5432/serverpackcreator.")
                 dbPath = "jdbc:postgresql://localhost:5432/serverpackcreator"
             }
             internalProps.setProperty(pSpringDatasourceUrl, dbPath)
@@ -1208,8 +1212,8 @@ actual class ApiProperties(
             return field
         }
         set(value) {
-            if (!value.startsWith("jdbc:postgresql:")) {
-                internalProps.setProperty(pSpringDatasourceUrl, "jdbc:postgresql:$value")
+            if (!value.startsWith("jdbc:postgresql://")) {
+                internalProps.setProperty(pSpringDatasourceUrl, "jdbc:postgresql://$value")
             } else {
                 internalProps.setProperty(pSpringDatasourceUrl, value)
             }
@@ -1220,7 +1224,7 @@ actual class ApiProperties(
 
     var jdbcDatabaseUsername: String = ""
         get() {
-            field = internalProps.getProperty(pSpringDatasourceUsername,"")
+            field = internalProps.getProperty(pSpringDatasourceUsername, "")
             return field
         }
         set(value) {
@@ -1905,11 +1909,11 @@ actual class ApiProperties(
         }
     }
 
-    private fun loadOverrides() : Properties {
+    private fun loadOverrides(): Properties {
         val tempProps = Properties()
-        val overrides = File(homeDirectory,"overrides.properties")
+        val overrides = File(homeDirectory, "overrides.properties")
         if (overrides.isFile) {
-            File(homeDirectory,"overrides.properties").inputStream().use {
+            File(homeDirectory, "overrides.properties").inputStream().use {
                 tempProps.load(it)
             }
         }
@@ -1961,7 +1965,7 @@ actual class ApiProperties(
 
         // Load all values from the overrides-properties
         for (key in userPreferences.keys()) {
-            props[key] = userPreferences[key,null]
+            props[key] = userPreferences[key, null]
         }
 
         internalProps.putAll(props)
@@ -1971,7 +1975,7 @@ actual class ApiProperties(
         }
 
         val overrides = loadOverrides()
-        for ((key,value) in overrides) {
+        for ((key, value) in overrides) {
             log.warn("Overriding:")
             log.warn("  $key")
             log.warn("  $value")
@@ -2558,7 +2562,7 @@ actual class ApiProperties(
     }
 
     init {
-        System.setProperty("user.dir",homeDirectory.absolutePath)
+        System.setProperty("user.dir", homeDirectory.absolutePath)
         saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
     }
 

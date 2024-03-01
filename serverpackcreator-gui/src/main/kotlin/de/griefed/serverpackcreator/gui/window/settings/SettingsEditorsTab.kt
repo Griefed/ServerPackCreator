@@ -44,10 +44,11 @@ class SettingsEditorsTab(
     mainFrame: MainFrame,
     themeManager: ThemeManager,
     controlPanel: ControlPanel
-) :
-    TabPanel() {
+) : TabPanel() {
 
+    val title = SettingsTitle(guiProps)
     val settingsHandling = SettingsHandling(guiProps, this, apiProperties, mainFrame, controlPanel)
+
     private val componentResizer = ComponentResizer()
     private val checkTimer = SettingsCheckTimer(250, this, guiProps)
     private val documentChangeListener = object : DocumentChangeListener {
@@ -62,7 +63,6 @@ class SettingsEditorsTab(
     val global = GlobalSettings(guiProps, apiProperties, componentResizer, mainFrame, documentChangeListener, actionListener, tableModelListener, controlPanel)
     val webservice = WebserviceSettings(guiProps, apiProperties, mainFrame, documentChangeListener, changeListener, controlPanel)
     val gui = GuiSettings(guiProps, actionListener, changeListener, themeManager, controlPanel)
-    val title = SettingsTitle(guiProps)
 
     init {
         tabs.add(global)
