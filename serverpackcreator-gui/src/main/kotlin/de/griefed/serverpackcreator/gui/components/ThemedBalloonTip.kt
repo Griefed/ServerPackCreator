@@ -34,21 +34,29 @@ class ThemedBalloonTip(
     attachedComponent: JComponent,
     contents: JComponent,
     useCloseButton: Boolean,
-    private val guiProps: GuiProps
-) : BalloonTip(attachedComponent, contents, guiProps.balloonStyle, useCloseButton) {
+    private val guiProps: GuiProps,
+    orientation: Orientation = Orientation.LEFT_ABOVE,
+    attachLocation: AttachLocation = AttachLocation.ALIGNED,
+    horizontalOffset: Int = 15,
+    verticalOffset: Int = 15
+) : BalloonTip(attachedComponent, contents, guiProps.balloonStyle, orientation, attachLocation, horizontalOffset, verticalOffset, useCloseButton) {
 
     constructor(
         attachedComponent: JComponent,
         contents: JComponent,
         useCloseButton: Boolean,
         guiProps: GuiProps,
+        orientation: Orientation,
         actionListener: ActionListener
-    ) : this(attachedComponent, contents, useCloseButton, guiProps) {
-        closeButton.addActionListener(actionListener)
+    ) : this(attachedComponent, contents, useCloseButton, guiProps, orientation) {
+        val button = getDefaultCloseButton()
+        button.addActionListener(actionListener)
+        button.addActionListener { isVisible = false }
+        setCloseButton(button)
     }
 
     init {
-        super.setVisible(false)
+        isVisible = false
     }
 
     override fun setVisible(visible: Boolean) {
