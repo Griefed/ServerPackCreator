@@ -34,6 +34,7 @@ import de.griefed.serverpackcreator.gui.window.configs.components.advanced.Scrip
 import de.griefed.serverpackcreator.gui.window.configs.components.inclusions.InclusionsEditor
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
+import net.java.balloontip.BalloonTip
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Dimension
@@ -142,7 +143,7 @@ class ConfigEditor(
     private val pluginSettings = PluginsSettingsPanel(pluginPanels)
     private val pluginPanel = CollapsiblePanel(Translations.createserverpack_gui_plugins.toString(), pluginSettings)
 
-    private val modloaderVersionGuide = ThemedBalloonTip(modloaderVersionSetting,ElementLabel(Translations.firstrun_modloader_version.toString()),true, guiProps) {
+    private val modloaderVersionGuide = ThemedBalloonTip(modloaderVersionSetting,ElementLabel(Translations.firstrun_modloader_version.toString()),true, guiProps, BalloonTip.Orientation.LEFT_ABOVE) {
         JOptionPane.showMessageDialog(
             panel,
             Translations.firstrun_finish_message.toString(),
@@ -150,22 +151,22 @@ class ConfigEditor(
             JOptionPane.INFORMATION_MESSAGE
         )
     }
-    private val modloaderGuide = ThemedBalloonTip(modloaderSetting,ElementLabel(Translations.firstrun_modloader.toString()),true, guiProps) {
+    private val modloaderGuide = ThemedBalloonTip(modloaderSetting,ElementLabel(Translations.firstrun_modloader.toString()),true, guiProps, BalloonTip.Orientation.LEFT_ABOVE) {
         modloaderVersionGuide.isVisible = true
         modloaderVersionSetting.requestFocusInWindow()
     }
-    private val mcVersionRequiredJavaGuide = ThemedBalloonTip(javaVersionLabel,ElementLabel(Translations.firstrun_java.toString()),true, guiProps) {
+    private val mcVersionRequiredJavaGuide = ThemedBalloonTip(javaVersionLabel,ElementLabel(Translations.firstrun_java.toString()),true, guiProps, BalloonTip.Orientation.LEFT_ABOVE) {
         modloaderGuide.isVisible = true
         modloaderSetting.requestFocusInWindow()
     }
-    private val mcVersionGuide = ThemedBalloonTip(mcVersionSetting,ElementLabel(Translations.firstrun_minecraftversion.toString()),true, guiProps) {
+    private val mcVersionGuide = ThemedBalloonTip(mcVersionSetting,ElementLabel(Translations.firstrun_minecraftversion.toString()),true, guiProps, BalloonTip.Orientation.LEFT_ABOVE) {
         mcVersionRequiredJavaGuide.isVisible = true
     }
-    private val inclusionsGuide = ThemedBalloonTip(inclusionsSourceSetting,ElementLabel(Translations.firstrun_inclusions.toString()),true, guiProps) {
+    private val inclusionsGuide = ThemedBalloonTip(inclusionsSourceSetting,ElementLabel(Translations.firstrun_inclusions.toString()),true, guiProps, BalloonTip.Orientation.LEFT_ABOVE) {
         mcVersionGuide.isVisible = true
         mcVersionSetting.requestFocusInWindow()
     }
-    private val modpackGuide = ThemedBalloonTip(modpackSetting,ElementLabel(Translations.firstrun_modpack.toString()),true, guiProps) {
+    private val modpackGuide = ThemedBalloonTip(modpackSetting,ElementLabel(Translations.firstrun_modpack.toString()),true, guiProps, BalloonTip.Orientation.LEFT_ABOVE) {
         inclusionsGuide.isVisible = true
         inclusionsSourceSetting.highlight()
     }
