@@ -1,3 +1,17 @@
+## [5.1.18](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.17...5.1.18) (2024-03-21)
+
+
+### 🛠 Fixes
+
+* Allow repeated viewing of step-by-step guide ([6a352fe](https://git.griefed.de/Griefed/ServerPackCreator/commit/6a352feb4f16ea6ba4648092c7d5dc640d1be55c))
+
+## [5.1.17](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.16...5.1.17) (2024-03-01)
+
+
+### 🛠 Fixes
+
+* Prevent NPEs in JDBC URL and settings tab title fetch in GUI. ([919b017](https://git.griefed.de/Griefed/ServerPackCreator/commit/919b017722aacbbe284d4da3b7b9d78c474c4862))
+
 ## [5.1.16](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.15...5.1.16) (2024-02-25)
 
 
