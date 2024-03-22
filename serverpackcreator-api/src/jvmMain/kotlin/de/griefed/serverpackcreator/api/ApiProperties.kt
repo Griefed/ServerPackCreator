@@ -360,6 +360,7 @@ actual class ApiProperties(
             "fabricemotes-",
             "fancymenu_",
             "fancymenu_video_extension",
+            "fast-ip-ping-",
             "flickerfix-",
             "fm_audio_extension_",
             "forgemod_VoxelMap-",
