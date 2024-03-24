@@ -1,3 +1,10 @@
+## [5.1.18](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.17...5.1.18) (2024-03-21)
+
+
+### 🛠 Fixes
+
+* Allow repeated viewing of step-by-step guide ([6a352fe](https://git.griefed.de/Griefed/ServerPackCreator/commit/6a352feb4f16ea6ba4648092c7d5dc640d1be55c))
+
 ## [5.1.17](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.16...5.1.17) (2024-03-01)
 
 
