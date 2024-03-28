@@ -1,3 +1,17 @@
+## [5.1.19](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.18...5.1.19) (2024-03-28)
+
+
+### 📦 Other
+
+* Add fast-ip-ping- to the clientside-mods list. Thanks to @ModernGamingWorld for the report! ([7e8dd4e](https://git.griefed.de/Griefed/ServerPackCreator/commit/7e8dd4e6b081223cdd09ba677ccd81416f61c882))
+* Fix pt_BR thanks to [@arthurbarret0](https://git.griefed.de/arthurbarret0) ([2046baa](https://git.griefed.de/Griefed/ServerPackCreator/commit/2046baa23ade4f4504257bce3a7318ef7f57f62d))
+* Up to date changelog ([79dba08](https://git.griefed.de/Griefed/ServerPackCreator/commit/79dba0850e64ca061e4aa58fe182f502d6b17db9))
+
+
+### 🛠 Fixes
+
+* Use correct NeoForge installer URL ([5a8ae5d](https://git.griefed.de/Griefed/ServerPackCreator/commit/5a8ae5da970df42a98914430f6ca53833d8f3d6b))
+
 ## [5.1.18](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.17...5.1.18) (2024-03-21)
 
 
