@@ -769,22 +769,6 @@ actual class ApiProperties(
     }
 
     /**
-     * The default shell-template for the modded server start scripts. The file returned by this
-     * method does not represent the script-template in the `server_files`-directory. If you
-     * wish access the configured script templates inside the `server_files`-directory, use
-     * [scriptTemplates].
-     */
-    val defaultShellScriptTemplate = File("default_template.sh")
-
-    /**
-     * The default PowerShell-template for the modded server start scripts. The file returned by this
-     * method does not represent the script-template in the `server_files`-directory. If you
-     * wish access the configured script templates inside the `server_files`-directory, use
-     * [scriptTemplates].
-     */
-    val defaultPowerShellScriptTemplate = File("default_template.ps1")
-
-    /**
      * Directories to include in a server pack.
      */
     var directoriesToInclude = fallbackDirectoriesInclusion
@@ -989,9 +973,8 @@ actual class ApiProperties(
     @Suppress("SetterBackingFieldAssignment")
     var scriptTemplates: TreeSet<File> = TreeSet<File>()
         get() {
-            val entries = if (internalProps.getProperty(pServerPackScriptTemplates) != null
-                && internalProps.getProperty(pServerPackScriptTemplates) == "default_template.ps1,default_template.sh"
-            ) {
+            val scriptSetting = internalProps.getProperty(pServerPackScriptTemplates)
+            val entries = if (scriptSetting != null && scriptSetting == "default_template.ps1,default_template.sh") {
                 defaultScriptTemplates()
             } else {
                 getListProperty(
@@ -1802,6 +1785,22 @@ actual class ApiProperties(
             return field
         }
         private set
+
+    /**
+     * The default shell-template for the modded server start scripts. The file returned by this
+     * method does not represent the script-template in the `server_files`-directory. If you
+     * wish access the configured script templates inside the `server_files`-directory, use
+     * [scriptTemplates].
+     */
+    val defaultShellScriptTemplate = File(serverFilesDirectory, "default_template.sh")
+
+    /**
+     * The default PowerShell-template for the modded server start scripts. The file returned by this
+     * method does not represent the script-template in the `server_files`-directory. If you
+     * wish access the configured script templates inside the `server_files`-directory, use
+     * [scriptTemplates].
+     */
+    val defaultPowerShellScriptTemplate = File(serverFilesDirectory, "default_template.ps1")
 
     @Suppress("MemberVisibilityCanBePrivate")
     val fallbackScriptTemplates = defaultScriptTemplates().joinToString(",")

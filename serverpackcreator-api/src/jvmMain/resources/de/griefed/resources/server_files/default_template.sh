@@ -172,50 +172,33 @@ setup_neoforge() {
   echo ""
   echo "Running NeoForge checks and setup..."
 
-  FORGE_INSTALLER_URL="https://maven.neoforged.net/net/neoforged/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}-installer.jar"
+  FORGE_JAR_LOCATION="libraries/net/neoforged/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}-server.jar"
+  MINECRAFT_SERVER_JAR_LOCATION="libraries/net/minecraft/server/${MINECRAFT_VERSION}/server-${MINECRAFT_VERSION}.jar"
+  SERVER_RUN_COMMAND="-Dlog4j2.formatMsgNoLookups=true @user_jvm_args.txt @libraries/net/neoforged/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/unix_args.txt nogui"
 
-  FORGE_JAR_LOCATION="do_not_manually_edit"
-  IFS="." read -ra MINOR <<<"${MINECRAFT_VERSION}"
+  echo "Generating user_jvm_args.txt from variables..."
+  echo "Edit JAVA_ARGS in your variables.txt. Do not edit user_jvm_args.txt directly!"
+  echo "Manually made changes to user_jvm_args.txt will be lost in the nether!"
+  rm -f user_jvm_args.txt
+  {
+    echo "# Xmx and Xms set the maximum and minimum RAM usage, respectively."
+    echo "# They can take any number, followed by an M or a G."
+    echo "# M means Megabyte, G means Gigabyte."
+    echo "# For example, to set the maximum to 3GB: -Xmx3G"
+    echo "# To set the minimum to 2.5GB: -Xms2500M"
+    echo "# A good default for a modded server is 4GB."
+    echo "# Uncomment the next line to set it."
+    echo "# -Xmx4G"
+    echo "${JAVA_ARGS}"
+  } >>user_jvm_args.txt
 
-  if [[ ${MINOR[1]} -le 16 ]]; then
-    FORGE_JAR_LOCATION="forge.jar"
-    LAUNCHER_JAR_LOCATION="forge.jar"
-    MINECRAFT_SERVER_JAR_LOCATION="minecraft_server.${MINECRAFT_VERSION}.jar"
-    SERVER_RUN_COMMAND="-Dlog4j2.formatMsgNoLookups=true ${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"
-  else
-    FORGE_JAR_LOCATION="libraries/net/neoforged/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}-server.jar"
-    MINECRAFT_SERVER_JAR_LOCATION="libraries/net/minecraft/server/${MINECRAFT_VERSION}/server-${MINECRAFT_VERSION}.jar"
-    SERVER_RUN_COMMAND="-Dlog4j2.formatMsgNoLookups=true @user_jvm_args.txt @libraries/net/neoforged/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/unix_args.txt nogui"
 
-    echo "Generating user_jvm_args.txt from variables..."
-    echo "Edit JAVA_ARGS in your variables.txt. Do not edit user_jvm_args.txt directly!"
-    echo "Manually made changes to user_jvm_args.txt will be lost in the nether!"
-    rm -f user_jvm_args.txt
-    {
-      echo "# Xmx and Xms set the maximum and minimum RAM usage, respectively."
-      echo "# They can take any number, followed by an M or a G."
-      echo "# M means Megabyte, G means Gigabyte."
-      echo "# For example, to set the maximum to 3GB: -Xmx3G"
-      echo "# To set the minimum to 2.5GB: -Xms2500M"
-      echo "# A good default for a modded server is 4GB."
-      echo "# Uncomment the next line to set it."
-      echo "# -Xmx4G"
-      echo "${JAVA_ARGS}"
-    } >>user_jvm_args.txt
-  fi
-
-  if [[ $(downloadIfNotExist "${FORGE_JAR_LOCATION}" "neoforge-installer.jar" "${FORGE_INSTALLER_URL}") == "true" ]]; then
+  if [[ $(downloadIfNotExist "${FORGE_JAR_LOCATION}" "neoforge-installer.jar" "${NEOFORGE_INSTALLER_URL}") == "true" ]]; then
 
     echo "NeoForge Installer downloaded. Installing..."
     runJavaCommand "-jar neoforge-installer.jar --installServer"
-
-    if [[ ${MINOR[1]} -gt 16 ]]; then
-      rm -f run.bat
-      rm -f run.sh
-    else
-      echo "Renaming forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}.jar to forge.jar"
-      mv forge-"${MINECRAFT_VERSION}"-"${MODLOADER_VERSION}".jar forge.jar
-    fi
+    echo "Renaming forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}.jar to forge.jar"
+    mv forge-"${MINECRAFT_VERSION}"-"${MODLOADER_VERSION}".jar forge.jar
 
     if [[ -s "${FORGE_JAR_LOCATION}" ]]; then
       rm -f neoforge-installer.jar
