@@ -74,6 +74,7 @@ $LegacyFabricInstallerVersion = $ExternalVariables['LEGACYFABRIC_INSTALLER_VERSI
 $FabricInstallerVersion = $ExternalVariables['FABRIC_INSTALLER_VERSION']
 $QuiltInstallerVersion =$ExternalVariables['QUILT_INSTALLER_VERSION']
 $MinecraftServerUrl = $ExternalVariables['MINECRAFT_SERVER_URL']
+$NeoForgeInstallerUrl = $ExternalVariables['NEOFORGE_INSTALLER_URL']
 $JavaArgs = $ExternalVariables['JAVA_ARGS']
 $Java = $ExternalVariables['JAVA']
 
@@ -256,55 +257,33 @@ Function global:SetupNeoForge
 {
     ""
     "Running NeoForge checks and setup..."
-    $ForgeInstallerUrl = "https://maven.neoforged.net/net/neoforged/forge/${MinecraftVersion}-${ModLoaderVersion}/forge-${MinecraftVersion}-${ModLoaderVersion}-installer.jar"
-    $ForgeJarLocation = "do_not_manually_edit"
-    $MINOR = ${MinecraftVersion}.Split(".")
+    $ForgeJarLocation = "libraries/net/neoforged/forge/${MinecraftVersion}-${ModLoaderVersion}/forge-${MinecraftVersion}-${ModLoaderVersion}-server.jar"
+    $script:MinecraftServerJarLocation = "libraries/net/minecraft/server/${MinecraftVersion}/server-${MinecraftVersion}.jar"
+    $script:ServerRunCommand = "-Dlog4j2.formatMsgNoLookups=true @user_jvm_args.txt @libraries/net/neoforged/forge/${MinecraftVersion}-${ModLoaderVersion}/win_args.txt nogui"
 
-    if ([int]$MINOR[1] -le 16)
-    {
-        $ForgeJarLocation = "forge.jar"
-        $script:LauncherJarLocation = "forge.jar"
-        $script:MinecraftServerJarLocation = "minecraft_server.${MinecraftVersion}.jar"
-        $script:ServerRunCommand = "-Dlog4j2.formatMsgNoLookups=true ${JavaArgs} -jar ${LauncherJarLocation} nogui"
-    }
-    else
-    {
-        $ForgeJarLocation = "libraries/net/neoforged/forge/${MinecraftVersion}-${ModLoaderVersion}/forge-${MinecraftVersion}-${ModLoaderVersion}-server.jar"
-        $script:MinecraftServerJarLocation = "libraries/net/minecraft/server/${MinecraftVersion}/server-${MinecraftVersion}.jar"
-        $script:ServerRunCommand = "-Dlog4j2.formatMsgNoLookups=true @user_jvm_args.txt @libraries/net/neoforged/forge/${MinecraftVersion}-${ModLoaderVersion}/win_args.txt nogui"
+    Write-Host "Generating user_jvm_args.txt from variables..."
+    Write-Host "Edit JAVA_ARGS in your variables.txt. Do not edit user_jvm_args.txt directly!"
+    Write-Host "Manually made changes to user_jvm_args.txt will be lost in the nether!"
 
-        Write-Host "Generating user_jvm_args.txt from variables..."
-        Write-Host "Edit JAVA_ARGS in your variables.txt. Do not edit user_jvm_args.txt directly!"
-        Write-Host "Manually made changes to user_jvm_args.txt will be lost in the nether!"
+    DeleteFileSilently  'user_jvm_args.txt'
 
-        DeleteFileSilently  'user_jvm_args.txt'
+    "# Xmx and Xms set the maximum and minimum RAM usage, respectively.`n" +
+            "# They can take any number, followed by an M or a G.`n" +
+            "# M means Megabyte, G means Gigabyte.`n" +
+            "# For example, to set the maximum to 3GB: -Xmx3G`n" +
+            "# To set the minimum to 2.5GB: -Xms2500M`n" +
+            "# A good default for a modded server is 4GB.`n" +
+            "# Uncomment the next line to set it.`n" +
+            "# -Xmx4G`n" +
+            "${script:JavaArgs}" | Out-File user_jvm_args.txt -encoding utf8
 
-        "# Xmx and Xms set the maximum and minimum RAM usage, respectively.`n" +
-                "# They can take any number, followed by an M or a G.`n" +
-                "# M means Megabyte, G means Gigabyte.`n" +
-                "# For example, to set the maximum to 3GB: -Xmx3G`n" +
-                "# To set the minimum to 2.5GB: -Xms2500M`n" +
-                "# A good default for a modded server is 4GB.`n" +
-                "# Uncomment the next line to set it.`n" +
-                "# -Xmx4G`n" +
-                "${script:JavaArgs}" | Out-File user_jvm_args.txt -encoding utf8
-    }
 
-    if ((DownloadIfNotExists "${ForgeJarLocation}" "neoforge-installer.jar" "${ForgeInstallerUrl}"))
+    if ((DownloadIfNotExists "${ForgeJarLocation}" "neoforge-installer.jar" "${NeoForgeInstallerUrl}"))
     {
         "NeoForge Installer downloaded. Installing..."
         RunJavaCommand "-jar neoforge-installer.jar --installServer"
-
-        if ([int]$MINOR[1] -gt 16)
-        {
-            DeleteFileSilently  'run.bat'
-            DeleteFileSilently  'run.sh'
-        }
-        else
-        {
-            "Renaming forge-${MinecraftVersion}-${ModLoaderVersion}.jar to forge.jar"
-            Move-Item "forge-${MinecraftVersion}-${ModLoaderVersion}.jar" 'forge.jar'
-        }
+        "Renaming forge-${MinecraftVersion}-${ModLoaderVersion}.jar to forge.jar"
+        Move-Item "forge-${MinecraftVersion}-${ModLoaderVersion}.jar" 'forge.jar'
 
         if ((Test-Path -Path "${ForgeJarLocation}" -PathType Leaf))
         {

@@ -556,6 +556,13 @@ class ConfigurationHandler(
         packConfig.scriptSettings["SPC_QUILT_INSTALLER_VERSION_SPC"] = versionMeta.quilt.releaseInstaller()
         packConfig.scriptSettings["SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC"] =
             versionMeta.legacyFabric.releaseInstaller()
+        val neoForgeInstance = versionMeta.neoForge.getNeoForgeInstance(packConfig.minecraftVersion, packConfig.modloaderVersion)
+        packConfig.scriptSettings["SPC_NEOFORGE_INSTALLER_URL_SPC"] = if (neoForgeInstance.isPresent) {
+            versionMeta.neoForge.getNeoForgeInstance(packConfig.minecraftVersion, packConfig.modloaderVersion).get().installerUrl.toString()
+        } else {
+            "NONE"
+        }
+
     }
 
     /**
