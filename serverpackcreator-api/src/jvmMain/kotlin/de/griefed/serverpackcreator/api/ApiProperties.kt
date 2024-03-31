@@ -397,6 +397,7 @@ actual class ApiProperties(
             "lock_minecart_view-",
             "lootbeams-",
             "lwl-",
+            "macos-input-fixes-",
             "magnesium_extras-",
             "maptooltip-",
             "massunbind",
