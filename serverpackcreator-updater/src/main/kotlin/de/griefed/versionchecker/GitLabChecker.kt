@@ -26,6 +26,7 @@
 package de.griefed.versionchecker
 
 import com.fasterxml.jackson.databind.JsonNode
+import de.griefed.serverpackcreator.api.utilities.common.Comparison
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.net.MalformedURLException

@@ -115,9 +115,9 @@ abstract class Api<F> {
 
     /**
      * Initialize [ApiPlugins], [de.griefed.serverpackcreator.api.modscanning.ModScanner] (consisting of [TomlParser],
-     * [de.griefed.serverpackcreator.api.modscanning.AnnotationScanner],
+     * [de.griefed.serverpackcreator.api.modscanning.ForgeAnnotationScanner],
      * [de.griefed.serverpackcreator.api.modscanning.FabricScanner],
-     * [de.griefed.serverpackcreator.api.modscanning.TomlScanner],
+     * [de.griefed.serverpackcreator.api.modscanning.ForgeTomlScanner],
      * [de.griefed.serverpackcreator.api.modscanning.QuiltScanner]),
      * [ServerPackHandler].
      *

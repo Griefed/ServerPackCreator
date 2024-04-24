@@ -17,7 +17,7 @@ class ModScannerTest internal constructor() {
         val files: Collection<File> =
             File("src/jvmTest/resources/forge_tests/mods").filteredWalk(listOf("jar"), FilterType.ENDS_WITH)
 
-        val excluded: List<File> = modScanner.tomlScanner.scan(files).toList()
+        val excluded: List<File> = modScanner.forgeTomlScanner.scan(files).toList()
         Assertions.assertTrue(
             excluded.contains(File("src/jvmTest/resources/forge_tests/mods/aaaaa.jar"))
         )
@@ -173,7 +173,7 @@ class ModScannerTest internal constructor() {
         val files: Collection<File> =
             File("src/jvmTest/resources/forge_old/mods").filteredWalk(listOf("jar"), FilterType.ENDS_WITH)
 
-        val excluded: List<File> = modScanner.annotationScanner.scan(files).toList()
+        val excluded: List<File> = modScanner.forgeAnnotationScanner.scan(files).toList()
         Assertions.assertTrue(
             excluded.contains(File("src/jvmTest/resources/forge_old/mods/aaaaa.jar"))
         )

@@ -57,8 +57,8 @@ class BeanConfiguration {
     }
 
     @Bean
-    fun annotationScanner(): AnnotationScanner {
-        return apiWrapper().annotationScanner
+    fun annotationScanner(): ForgeAnnotationScanner {
+        return apiWrapper().forgeAnnotationScanner
     }
 
     @Bean
@@ -127,8 +127,13 @@ class BeanConfiguration {
     }
 
     @Bean
-    fun tomlScanner(): TomlScanner {
-        return apiWrapper().tomlScanner
+    fun ForgeTomlScanner(): ForgeTomlScanner {
+        return apiWrapper().forgeTomlScanner
+    }
+
+    @Bean
+    fun NeoForgeTomlScanner(): NeoForgeTomlScanner {
+        return apiWrapper().neoForgeTomlScanner
     }
 
     @Bean

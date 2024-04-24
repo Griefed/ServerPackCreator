@@ -260,7 +260,7 @@ actual class ApiWrapper private constructor(
      */
     @get:Synchronized
     actual val modScanner: ModScanner by lazy {
-        ModScanner(annotationScanner, fabricScanner, quiltScanner, tomlScanner)
+        ModScanner(forgeAnnotationScanner, fabricScanner, quiltScanner, forgeTomlScanner, neoForgeTomlScanner)
     }
 
     /**
@@ -272,8 +272,8 @@ actual class ApiWrapper private constructor(
      * @author Griefed
      */
     @get:Synchronized
-    actual val annotationScanner: AnnotationScanner by lazy {
-        AnnotationScanner(objectMapper, utilities)
+    actual val forgeAnnotationScanner: ForgeAnnotationScanner by lazy {
+        ForgeAnnotationScanner(objectMapper, utilities)
     }
 
     /**
@@ -316,7 +316,17 @@ actual class ApiWrapper private constructor(
      * @author Griefed
      */
     @get:Synchronized
-    actual val tomlScanner: TomlScanner = TomlScanner(tomlParser)
+    actual val forgeTomlScanner: ForgeTomlScanner = ForgeTomlScanner(tomlParser)
+
+    /**
+     * This instances toml scanner to determine the sideness of NeoForge mods for Minecraft 1.20.5 and
+     * newer.
+     *
+     * @return Scanner to determine the sideness of Forge mods for Minecraft 1.20.5 and newer.
+     * @author Griefed
+     */
+    @get:Synchronized
+    actual val neoForgeTomlScanner: NeoForgeTomlScanner = NeoForgeTomlScanner(tomlParser)
 
     init {
         if (runSetup) {
@@ -467,7 +477,7 @@ actual class ApiWrapper private constructor(
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     override fun stageThree() {
         apiPlugins
-        annotationScanner
+        forgeAnnotationScanner
         fabricScanner
         quiltScanner
         modScanner

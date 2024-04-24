@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package de.griefed.versionchecker
+package de.griefed.serverpackcreator.api.utilities.common
 
 enum class Comparison {
     /**

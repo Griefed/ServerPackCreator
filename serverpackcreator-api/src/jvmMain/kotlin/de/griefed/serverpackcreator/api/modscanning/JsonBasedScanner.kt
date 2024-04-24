@@ -29,7 +29,7 @@ import java.util.jar.JarFile
 
 /**
  * Helper-class containing methods implemented and used by JSON-based scanners, like the
- * [AnnotationScanner], [FabricScanner] and [QuiltScanner].
+ * [ForgeAnnotationScanner], [FabricScanner] and [QuiltScanner].
  *
  * @author Griefed
  */

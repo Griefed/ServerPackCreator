@@ -22,13 +22,15 @@
 package de.griefed.serverpackcreator.api.modscanning
 
 /**
- * `fml-cache-annotation.json`-based scanning of Forge-Minecraft mods of older versions.
+ * `mods.toml`-based scanning of Fabric-Minecraft mods for Minecraft 1.16.5 and newer.
  *
  * @author Griefed
  */
-expect class AnnotationScanner
+expect open class ForgeTomlScanner {
+    open val modsToml: String
+}
 
-val AnnotationScanner.dependencyCheck: Regex
-    get() = "(before:.*|after:.*|required-after:.*|)".toRegex()
-val AnnotationScanner.dependencyReplace: Regex
-    get() = "(@.*|\\[.*)".toRegex()
+val ForgeTomlScanner.forgeMinecraft: Regex
+    get() = "^(forge|minecraft)$".toRegex()
+val ForgeTomlScanner.bothServer: Regex
+    get() = "^(BOTH|SERVER)$".toRegex()

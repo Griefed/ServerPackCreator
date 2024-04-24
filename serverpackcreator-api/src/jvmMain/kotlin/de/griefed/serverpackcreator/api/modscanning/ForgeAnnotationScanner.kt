@@ -36,7 +36,7 @@ import java.util.*
  *
  * @author Griefed
  */
-actual class AnnotationScanner(
+actual class ForgeAnnotationScanner(
     private val objectMapper: ObjectMapper,
     private val utilities: Utilities
 ) : JsonBasedScanner(), Scanner<TreeSet<File>, Collection<File>> {

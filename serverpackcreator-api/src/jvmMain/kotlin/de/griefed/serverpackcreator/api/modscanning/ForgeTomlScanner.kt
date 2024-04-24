@@ -34,12 +34,12 @@ import java.util.jar.JarFile
  * @param tomlParser To parse .toml-files.
  * @Griefed
  */
-actual class TomlScanner(private val tomlParser: TomlParser) :
+actual open class ForgeTomlScanner(private val tomlParser: TomlParser) :
     Scanner<TreeSet<File>, Collection<File>> {
     private val log = cachedLoggerOf(this.javaClass)
     private val mods = "mods"
     private val modId = "modId"
-    private val modsToml = "META-INF/mods.toml"
+    actual open val modsToml = "META-INF/mods.toml"
     private val dependencies = "dependencies"
     private val side = "side"
     private val both = "BOTH"

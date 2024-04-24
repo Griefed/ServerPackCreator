@@ -602,11 +602,19 @@ actual class ServerPackHandler actual constructor(
             when (modloader) {
                 "LegacyFabric", "Fabric" -> autodiscoveredClientMods.addAll(modScanner.fabricScanner.scan(filesInModsDir))
 
-                "Forge", "NeoForge" -> if (minecraftVersion.split(".").dropLastWhile { it.isEmpty() }
+                "Forge" -> if (minecraftVersion.split(".").dropLastWhile { it.isEmpty() }
                         .toTypedArray()[1].toInt() > 12) {
-                    autodiscoveredClientMods.addAll(modScanner.tomlScanner.scan(filesInModsDir))
+                    autodiscoveredClientMods.addAll(modScanner.forgeTomlScanner.scan(filesInModsDir))
                 } else {
-                    autodiscoveredClientMods.addAll(modScanner.annotationScanner.scan(filesInModsDir))
+                    autodiscoveredClientMods.addAll(modScanner.forgeAnnotationScanner.scan(filesInModsDir))
+                }
+
+                "NeoForge" -> {
+                    if (SemanticVersionComparator.compareSemantics(minecraftVersion, "1.20.5")) {
+                        autodiscoveredClientMods.addAll(modScanner.neoForgeTomlScanner.scan(filesInModsDir))
+                    } else {
+                        autodiscoveredClientMods.addAll(modScanner.forgeTomlScanner.scan(filesInModsDir))
+                    }
                 }
 
                 "Quilt" -> {

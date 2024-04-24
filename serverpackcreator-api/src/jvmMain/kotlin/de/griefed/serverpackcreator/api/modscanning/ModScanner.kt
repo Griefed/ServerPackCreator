@@ -23,16 +23,17 @@ package de.griefed.serverpackcreator.api.modscanning
  * Easy-access class for scanning of mods inside a modpack. This class itself does not do much,
  * other than bringing the different mod-scanners to one place for ease-of-use.
  *
- * @param annotationScanner For scanning `fml-cache-annotation.json`
+ * @param forgeAnnotationScanner For scanning `fml-cache-annotation.json`
  * @param fabricScanner     For scanning `fabric.mod.json`
  * @param quiltScanner      For scanning `quilt.mod.json`
- * @param tomlScanner       For scanning `mods.toml`
+ * @param forgeTomlScanner       For scanning `mods.toml`
  *
  * @author Griefed
  */
 actual class ModScanner actual constructor(
-    actual val annotationScanner: AnnotationScanner,
+    actual val forgeAnnotationScanner: ForgeAnnotationScanner,
     actual val fabricScanner: FabricScanner,
     actual val quiltScanner: QuiltScanner,
-    actual val tomlScanner: TomlScanner
+    actual val forgeTomlScanner: ForgeTomlScanner,
+    actual val neoForgeTomlScanner: NeoForgeTomlScanner
 )

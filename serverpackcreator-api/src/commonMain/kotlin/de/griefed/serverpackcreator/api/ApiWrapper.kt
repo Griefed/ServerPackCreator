@@ -38,7 +38,7 @@ expect class ApiWrapper {
     val jsonUtilities: JsonUtilities
     val xmlUtilities: XmlUtilities
     val tomlParser: TomlParser
-    val tomlScanner: TomlScanner
+    val forgeTomlScanner: ForgeTomlScanner
 
     val webUtilities: WebUtilities
     val utilities: Utilities
@@ -47,7 +47,8 @@ expect class ApiWrapper {
     val apiPlugins: ApiPlugins
     val serverPackHandler: ServerPackHandler
     val modScanner: ModScanner
-    val annotationScanner: AnnotationScanner
+    val forgeAnnotationScanner: ForgeAnnotationScanner
     val fabricScanner: FabricScanner
     val quiltScanner: QuiltScanner
+    val neoForgeTomlScanner: NeoForgeTomlScanner
 }
