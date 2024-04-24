@@ -27,6 +27,7 @@ package de.griefed.versionchecker
 
 import com.fasterxml.jackson.databind.JsonNode
 import de.griefed.serverpackcreator.api.utilities.common.Comparison
+import de.griefed.serverpackcreator.api.utilities.common.SemanticVersionComparator
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.net.MalformedURLException
@@ -196,10 +197,10 @@ class GitHubChecker : VersionChecker {
             if (checkForPreRelease) {
                 val alpha = latestAlpha()
                 val beta = latestBeta()
-                if (beta != "no_betas" && compareSemantics(version!!, beta, Comparison.NEW)) {
+                if (beta != "no_betas" && SemanticVersionComparator.compareSemantics(version!!, beta, Comparison.NEW)) {
                     version = beta
                 }
-                if (alpha != "no_alphas" && compareSemantics(version!!, alpha, Comparison.NEW)) {
+                if (alpha != "no_alphas" && SemanticVersionComparator.compareSemantics(version!!, alpha, Comparison.NEW)) {
                     version = alpha
                 }
             }
