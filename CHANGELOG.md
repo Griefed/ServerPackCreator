@@ -1,3 +1,10 @@
+## [5.2.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.2.0...5.2.1) (2024-04-27)
+
+
+### 💎 Improvements
+
+* Check if Minecraft version is equal to or newer than 1.20.5 when using NeoForge ([db2f97c](https://git.griefed.de/Griefed/ServerPackCreator/commit/db2f97cfbaa272922506e821897b287eb9e7d586))
+
 ## [5.2.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.19...5.2.0) (2024-04-24)
 
 
