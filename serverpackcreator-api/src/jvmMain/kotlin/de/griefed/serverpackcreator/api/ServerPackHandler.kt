@@ -610,7 +610,7 @@ actual class ServerPackHandler actual constructor(
                 }
 
                 "NeoForge" -> {
-                    if (SemanticVersionComparator.compareSemantics(minecraftVersion, "1.20.5")) {
+                    if (SemanticVersionComparator.compareSemantics(minecraftVersion, "1.20.5", Comparison.EQUAL_OR_NEW)) {
                         autodiscoveredClientMods.addAll(modScanner.neoForgeTomlScanner.scan(filesInModsDir))
                     } else {
                         autodiscoveredClientMods.addAll(modScanner.forgeTomlScanner.scan(filesInModsDir))
