@@ -66,10 +66,12 @@ MINECRAFT_SERVER_JAR_LOCATION="do_not_manually_edit"
 LAUNCHER_JAR_LOCATION="do_not_manually_edit"
 SERVER_RUN_COMMAND="do_not_manually_edit"
 
-crash() {
+quitServer() {
   echo "Exiting..."
-  read -n 1 -s -r -p "Press any key to continue"
-  exit 1
+  if [[ "${WAIT_FOR_USER_INPUT}" == "true" ]]; then
+    read -n 1 -s -r -p "Press any key to continue"
+  fi
+  exit 0
 }
 
 # $1 = Filename to check for
@@ -161,7 +163,7 @@ setup_forge() {
     else
       rm -f forge-installer.jar
       echo "Something went wrong during the server installation. Please try again in a couple of minutes and check your internet connection."
-      crash
+      quitServer
     fi
 
   fi
@@ -207,7 +209,7 @@ setup_neoforge() {
     else
       rm -f neoforge-installer.jar
       echo "Something went wrong during the server installation. Please try again in a couple of minutes and check your internet connection."
-      crash
+      quitServer
     fi
 
   fi
@@ -231,7 +233,7 @@ setup_fabric() {
     downloadIfNotExist "fabric-server-launcher.jar" "fabric-server-launcher.jar" "${IMPROVED_FABRIC_LAUNCHER_URL}" >/dev/null
   elif [[ "${FABRIC_AVAILABLE}" != "200" ]]; then
     echo "Fabric is not available for Minecraft ${MINECRAFT_VERSION}, Fabric ${MODLOADER_VERSION}."
-    crash
+    quitServer
   elif [[ $(downloadIfNotExist "fabric-server-launch.jar" "fabric-installer.jar" "${FABRIC_INSTALLER_URL}") == "true" ]]; then
 
     echo "Installer downloaded..."
@@ -247,7 +249,7 @@ setup_fabric() {
       rm -f fabric-installer.jar
       echo "fabric-server-launch.jar not found. Maybe the Fabric servers are having trouble."
       echo "Please try again in a couple of minutes and check your internet connection."
-      crash
+      quitServer
     fi
 
   else
@@ -270,7 +272,7 @@ setup_quilt() {
 
   if [[ "${#QUILT_AVAILABLE}" -eq "2" ]]; then
     echo "Quilt is not available for Minecraft ${MINECRAFT_VERSION}, Quilt ${MODLOADER_VERSION}."
-    crash
+    quitServer
   elif [[ $(downloadIfNotExist "quilt-server-launch.jar" "quilt-installer.jar" "${QUILT_INSTALLER_URL}") == "true" ]]; then
     echo "Installer downloaded. Installing..."
     runJavaCommand "-jar quilt-installer.jar install server ${MINECRAFT_VERSION} --download-server --install-dir=."
@@ -282,7 +284,7 @@ setup_quilt() {
       rm -f quilt-installer.jar
       echo "quilt-server-launch.jar not found. Maybe the Quilt servers are having trouble."
       echo "Please try again in a couple of minutes and check your internet connection."
-      crash
+      quitServer
     fi
 
   fi
@@ -303,7 +305,7 @@ setup_legacyfabric() {
 
   if [[ "${#LEGACYFABRIC_AVAILABLE}" -eq "2" ]]; then
     echo "LegacyFabric is not available for Minecraft ${MINECRAFT_VERSION}, LegacyFabric ${MODLOADER_VERSION}."
-    crash
+    quitServer
   elif [[ $(downloadIfNotExist "fabric-server-launch.jar" "legacyfabric-installer.jar" "${LEGACYFABRIC_INSTALLER_URL}") == "true" ]]; then
     echo "Installer downloaded. Installing..."
     runJavaCommand "-jar legacyfabric-installer.jar server -mcversion ${MINECRAFT_VERSION} -loader ${MODLOADER_VERSION} -downloadMinecraft"
@@ -315,7 +317,7 @@ setup_legacyfabric() {
       rm -f legacyfabric-installer.jar
       echo "fabric-server-launch.jar not found. Maybe the LegacyFabric servers are having trouble."
       echo "Please try again in a couple of minutes and check your internet connection."
-      crash
+      quitServer
     fi
 
   fi
@@ -353,7 +355,7 @@ eula() {
     else
       echo "User did not agree to Mojang's EULA."
       echo "Entered: ${ANSWER}"
-      crash
+      quitServer
     fi
 
   fi
@@ -384,7 +386,7 @@ case ${MODLOADER} in
 
   *)
     echo "Incorrect modloader specified: ${MODLOADER}"
-    crash
+    quitServer
 esac
 
 if [[ "${PWD}" == *" "*  ]]; then
@@ -401,7 +403,7 @@ if [[ "${PWD}" == *" "*  ]]; then
     if [[ "${WHY}" == "Yes" ]]; then
         echo "Alrighty. Prepare for unforseen consequences, Mr. Freeman..."
     else
-        crash
+        quitServer
     fi
 fi
 
@@ -428,6 +430,4 @@ echo ""
 runJavaCommand "${SERVER_RUN_COMMAND}"
 
 echo ""
-echo "Exiting..."
-read -n 1 -s -r -p "Press any key to continue"
-exit 0
+quitServer

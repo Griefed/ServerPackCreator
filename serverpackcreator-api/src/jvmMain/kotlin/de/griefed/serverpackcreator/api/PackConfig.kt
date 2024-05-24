@@ -151,6 +151,8 @@ private const val spcLegacyFabricInstallerVersionKey = "SPC_LEGACYFABRIC_INSTALL
 
 private const val spcMinecraftServerUrlKey = "SPC_MINECRAFT_SERVER_URL_SPC"
 
+private const val spcWaitForUserInputKey = "SPC_WAIT_FOR_USER_INPUT_SPC"
+
 private val scriptSettingsDefaultKeys = arrayOf(
     spcVersionKey,
     spcMinecraftVersionKey,
@@ -160,7 +162,8 @@ private val scriptSettingsDefaultKeys = arrayOf(
     spcFabricInstallerVersionKey,
     spcQuiltInstallerVersionKey,
     spcLegacyFabricInstallerVersionKey,
-    spcMinecraftServerUrlKey
+    spcMinecraftServerUrlKey,
+    spcWaitForUserInputKey
 )
 
 /**
@@ -309,6 +312,9 @@ actual open class PackConfig actual constructor() : Pack<File, JsonNode, PackCon
         }
         if (!scriptSettings.containsKey(javaKey)) {
             scriptSettings[javaKey] = "java"
+        }
+        if (!scriptSettings.containsKey(spcWaitForUserInputKey)) {
+            scriptSettings[spcWaitForUserInputKey] = "true"
         }
         config.close()
     }

@@ -34,6 +34,14 @@ abstract class ServerPack<F, TS, TF> {
     protected val modFileEndings = listOf("jar", "disabled")
     protected val ending = "^\\.[0-9a-zA-Z]+$".toRegex()
     protected val variables = """
+        ###
+        # Remember:
+        #   Escape \ and : in your Java path on Windows with another \
+        #   Example:
+        #     From: C:\Program Files\Eclipse Adoptium\jdk-17.0.9.9-hotspot\bin\java.exe
+        #     To:   C\:\\Program Files\\Eclipse Adoptium\\jdk-17.0.9.9-hotspot\\bin\\java.exe
+        # More on escape characters at https://en.wikipedia.org/wiki/Escape_character
+        ###
         MINECRAFT_VERSION=SPC_MINECRAFT_VERSION_SPC
         MODLOADER=SPC_MODLOADER_SPC
         MODLOADER_VERSION=SPC_MODLOADER_VERSION_SPC
@@ -44,6 +52,7 @@ abstract class ServerPack<F, TS, TF> {
         NEOFORGE_INSTALLER_URL=SPC_NEOFORGE_INSTALLER_URL_SPC
         JAVA_ARGS="SPC_JAVA_ARGS_SPC"
         JAVA="SPC_JAVA_SPC"
+        WAIT_FOR_USER_INPUT=SPC_WAIT_FOR_USER_INPUT_SPC
     """.trimIndent()
 
     /**

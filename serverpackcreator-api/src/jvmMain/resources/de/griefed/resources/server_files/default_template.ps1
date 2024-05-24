@@ -77,6 +77,7 @@ $MinecraftServerUrl = $ExternalVariables['MINECRAFT_SERVER_URL']
 $NeoForgeInstallerUrl = $ExternalVariables['NEOFORGE_INSTALLER_URL']
 $JavaArgs = $ExternalVariables['JAVA_ARGS']
 $Java = $ExternalVariables['JAVA']
+$WaitForUserInput = $ExternalVariables['WAIT_FOR_USER_INPUT']
 
 # Clean up quotes from the Java variable
 if ($Java[0] -eq '"')
@@ -126,11 +127,14 @@ Function PauseScript
     $host.ui.RawUI.ReadKey("NoEcho,IncludeKeyDown") > $null
 }
 
-Function Crash
+Function QuitServer
 {
     Write-Host "Exiting..."
-    PauseScript
-    exit 1
+    if ("${WaitForUserInput}" -eq "true")
+    {
+        PauseScript
+    }
+    exit 0
 }
 
 Function global:RunJavaCommand
@@ -247,7 +251,7 @@ Function global:SetupForge
         {
             DeleteFileSilently  'forge-installer.jar'
             "Something went wrong during the server installation. Please try again in a couple of minutes and check your internet connection."
-            Crash
+            QuitServer
         }
     }
 }
@@ -295,7 +299,7 @@ Function global:SetupNeoForge
         {
             DeleteFileSilently  'neoforge-installer.jar'
             "Something went wrong during the server installation. Please try again in a couple of minutes and check your internet connection."
-            Crash
+            QuitServer
         }
     }
 }
@@ -334,7 +338,7 @@ Function global:SetupFabric
         if ("${FabricAvailable}" -ne "200")
         {
             "Fabric is not available for Minecraft ${MinecraftVersion}, Fabric ${ModLoaderVersion}."
-            Crash
+            QuitServer
         }
 
         if ((DownloadIfNotExists "fabric-server-launch.jar" "fabric-installer.jar" "${FabricInstallerUrl}"))
@@ -355,7 +359,7 @@ Function global:SetupFabric
                 DeleteFileSilently  'fabric-installer.jar'
                 "fabric-server-launch.jar not found. Maybe the Fabric servers are having trouble."
                 "Please try again in a couple of minutes and check your internet connection."
-                Crash
+                QuitServer
             }
         }
         else
@@ -378,7 +382,7 @@ Function global:SetupQuilt
     if ((ConvertFrom-JSON (Invoke-WebRequest -Uri "https://meta.fabricmc.net/v2/versions/intermediary/${MinecraftVersion}")).Length -eq 0)
     {
         "Quilt is not available for Minecraft ${MinecraftVersion}, Quilt ${ModLoaderVersion}."
-        Crash
+        QuitServer
     }
     elseif ((DownloadIfNotExists "quilt-server-launch.jar" "quilt-installer.jar" "${QuiltInstallerUrl}"))
     {
@@ -395,7 +399,7 @@ Function global:SetupQuilt
             DeleteFileSilently 'quilt-installer.jar'
             "quilt-server-launch.jar not found. Maybe the Quilt servers are having trouble."
             "Please try again in a couple of minutes and check your internet connection."
-            Crash
+            QuitServer
         }
 
     }
@@ -416,7 +420,7 @@ Function global:SetupLegacyFabric
     if ((ConvertFrom-JSON (Invoke-WebRequest -Uri "https://meta.legacyfabric.net/v2/versions/loader/${MinecraftVersion}")).Length -eq 0)
     {
         "LegacyFabric is not available for Minecraft ${MinecraftVersion}, LegacyFabric ${ModLoaderVersion}."
-        Crash
+        QuitServer
     }
     elseif ((DownloadIfNotExists "fabric-server-launch.jar" "legacyfabric-installer.jar" "${LegacyFabricInstallerUrl}"))
     {
@@ -433,7 +437,7 @@ Function global:SetupLegacyFabric
             DeleteFileSilently 'legacyfabric-installer.jar'
             "fabric-server-launch.jar not found. Maybe the LegacyFabric servers are having trouble."
             "Please try again in a couple of minutes and check your internet connection."
-            Crash
+            QuitServer
         }
 
     }
@@ -477,7 +481,7 @@ Function Eula
             "User did not agree to Mojang's EULA."
             "Entered: ${Answer}"
             "You can not run a Minecraft server unless you agree to Mojang#s EULA."
-            Crash
+            QuitServer
         }
     }
 }
@@ -497,7 +501,7 @@ if ( ${PSScriptRoot}.Contains(" "))
     }
     else
     {
-        Crash
+        QuitServer
     }
 }
 
@@ -527,7 +531,7 @@ switch ( ${ModLoader} )
     default
     {
         "Incorrect modloader specified: ${ModLoader}"
-        Crash
+        QuitServer
     }
 }
 
@@ -555,6 +559,4 @@ RunJavaCommand "-version"
 RunJavaCommand "${ServerRunCommand}"
 
 ""
-"Exiting..."
-PauseScript
-exit 0
+QuitServer
