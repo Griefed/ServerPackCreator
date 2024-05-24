@@ -35,8 +35,8 @@ class ThemedBalloonTip(
     contents: JComponent,
     useCloseButton: Boolean,
     private val guiProps: GuiProps,
-    orientation: Orientation = Orientation.LEFT_ABOVE,
-    attachLocation: AttachLocation = AttachLocation.ALIGNED,
+    orientation: Orientation = Orientation.LEFT_BELOW,
+    attachLocation: AttachLocation = AttachLocation.CENTER,
     horizontalOffset: Int = 15,
     verticalOffset: Int = 15
 ) : BalloonTip(attachedComponent, contents, guiProps.balloonStyle, orientation, attachLocation, horizontalOffset, verticalOffset, useCloseButton) {
@@ -46,9 +46,8 @@ class ThemedBalloonTip(
         contents: JComponent,
         useCloseButton: Boolean,
         guiProps: GuiProps,
-        orientation: Orientation,
         actionListener: ActionListener
-    ) : this(attachedComponent, contents, useCloseButton, guiProps, orientation) {
+    ) : this(attachedComponent, contents, useCloseButton, guiProps) {
         val button = getDefaultCloseButton()
         button.addActionListener(actionListener)
         button.addActionListener { isVisible = false }

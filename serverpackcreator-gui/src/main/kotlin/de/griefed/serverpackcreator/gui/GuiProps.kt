@@ -377,10 +377,12 @@ class GuiProps(private val apiProperties: ApiProperties) {
         }
     val balloonStyle: BalloonTipStyle
         get() {
-            return EdgedBalloonStyle(
+            val style = EdgedBalloonStyle(
                 UIManager.getColor(panelBackgroundProp),
                 UIManager.getColor(tabbedPaneUnderlineColorProp)
             )
+            style.flipY(true)
+            return style
         }
     val whitespace = "^.*,\\s*\\\\*$".toRegex()
     val imageRegex = ".*\\.([Pp][Nn][Gg]|[Jj][Pp][Gg]|[Jj][Pp][Ee][Gg]|[Bb][Mm][Pp])".toRegex()
