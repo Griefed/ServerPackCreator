@@ -1,3 +1,23 @@
+## [5.2.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.2.0...5.2.1) (2024-04-27)
+
+
+### 💎 Improvements
+
+* Check if Minecraft version is equal to or newer than 1.20.5 when using NeoForge ([db2f97c](https://git.griefed.de/Griefed/ServerPackCreator/commit/db2f97cfbaa272922506e821897b287eb9e7d586))
+
+## [5.2.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.19...5.2.0) (2024-04-24)
+
+
+### 📦 Other
+
+* Add macos-input-fixes- to ApiProperties ([6da4d7a](https://git.griefed.de/Griefed/ServerPackCreator/commit/6da4d7a750c571f567c22dbcec3ea58693eff6ce))
+* Latest changelog ([b174f8f](https://git.griefed.de/Griefed/ServerPackCreator/commit/b174f8f79ae757f79c4b5fccd4529dae228fc8d2))
+
+
+### 🚀 Features
+
+* Scan NeoForge 1.20.5 and up mods for sideness ([e09b202](https://git.griefed.de/Griefed/ServerPackCreator/commit/e09b2020864642506b8fcc1067a98332cef08603))
+
 ## [5.1.19](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.18...5.1.19) (2024-03-28)
 
 
