@@ -7,11 +7,7 @@ on:
 
 jobs:
   jar:
-    strategy:
-      matrix:
-        # and run on both Linux and Windows
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
 
       - uses: actions/checkout@v4.1.1
@@ -28,10 +24,6 @@ jobs:
           check-latest: true
           cache: 'gradle'
 
-      - name: Grant execute permission for gradlew
-        if: ${{ runner.os != 'Windows' }}
-        run: chmod +x gradlew
-
       - uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: wrapper
@@ -44,7 +36,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
-          name: build-artifacts-${{ matrix.os }}
+          name: build-artifacts-jar
           path: |
             build
             buildSrc/build
