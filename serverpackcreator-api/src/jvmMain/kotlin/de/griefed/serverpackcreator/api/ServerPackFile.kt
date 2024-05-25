@@ -92,14 +92,16 @@ actual class ServerPackFile {
      */
     @Suppress("removal")
     @Throws(SecurityException::class, UnsupportedOperationException::class, IOException::class)
-    actual fun copy() {
+    actual fun copy(overwrite: Boolean) {
         try {
-            sourceFile.copyTo(destinationFile, true)
+            sourceFile.copyTo(destinationFile, overwrite)
             log.debug("Successfully copied ServerPackFile")
             log.debug("    Source: $sourcePath")
             log.debug("    Destination: $destinationPath")
         } catch (ignored: DirectoryNotEmptyException) {
             // If the directory to be copied already exists we're good.
+        } catch (skip: FileAlreadyExistsException) {
+            log.warn("Skipping copying of $sourcePath because overwriting is disabled.")
         }
     }
 }

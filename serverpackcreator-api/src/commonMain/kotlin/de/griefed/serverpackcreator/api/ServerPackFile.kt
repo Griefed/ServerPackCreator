@@ -33,5 +33,5 @@ expect class ServerPackFile {
      *
      * @author Griefed
      */
-    fun copy()
+    fun copy(overwrite: Boolean = true)
 }

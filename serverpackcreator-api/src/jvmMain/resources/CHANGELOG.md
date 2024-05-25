@@ -1,3 +1,20 @@
+## [5.2.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.2.1...5.2.2) (2024-05-24)
+
+
+### 💎 Improvements
+
+* Allow deactivation of user input requirement. Add hint for escaping backslash in Java path in variables ([597c69e](https://git.griefed.de/Griefed/ServerPackCreator/commit/597c69eb32ecd1725fe6db6b1c9ae1a32ba79dc9))
+
+
+### 📦 Other
+
+* Add FadingNightvision and ItemLocks to clientside list ([672059c](https://git.griefed.de/Griefed/ServerPackCreator/commit/672059ccccea9b05f5f3289902db859346a0a53f))
+
+
+### 🛠 Fixes
+
+* Orientation of balloon tips so the step by step guide works better ([f8512fd](https://git.griefed.de/Griefed/ServerPackCreator/commit/f8512fd4f5fa742a7bd75ba54bb7fb4d791880e8))
+
 ## [5.2.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.2.0...5.2.1) (2024-04-27)
 
 

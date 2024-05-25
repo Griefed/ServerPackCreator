@@ -95,82 +95,94 @@ actual class ServerPackHandler actual constructor(
         * Check whether the server pack for the specified modpack already exists and whether overwrite is disabled.
         * If the server pack exists and overwrite is disabled, no new server pack will be generated.
         */
-        if (!apiProperties.isServerPacksOverwriteEnabled && File(destination).exists()) {
-            log.info("Server pack already exists and overwrite disabled.")
-        } else {
+        val generationStopWatch = SimpleStopWatch().start()
+        try {
+            File(destination).createDirectories(create = true, directory = true)
+        } catch (ignored: IOException) {
+        }
 
+        if (apiProperties.isServerPacksOverwriteEnabled) {
             // Make sure no files from previously generated server packs interrupt us.
             cleanupEnvironment(true, destination)
-            val generationStopWatch = SimpleStopWatch().start()
-            try {
-                File(destination).createDirectories(create = true, directory = true)
-            } catch (ignored: IOException) {
-            }
-            apiPlugins.runPreGenExtensions(packConfig, destination)
-
-            // Recursively copy all specified directories and files, excluding clientside-only mods, to server pack.
-            copyFiles(packConfig)
-
-            // If true, copy the server-icon.png from server_files to the server pack.
-            if (packConfig.isServerIconInclusionDesired) {
-                copyIcon(packConfig)
-            } else {
-                log.info("Not including servericon.")
-            }
-
-            // If true, copy the server.properties from server_files to the server pack.
-            if (packConfig.isServerPropertiesInclusionDesired) {
-                copyProperties(packConfig)
-            } else {
-                log.info("Not including server.properties.")
-            }
-            apiPlugins.runPreZipExtensions(packConfig, destination)
-
-            // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
-            if (packConfig.isZipCreationDesired) {
-
-                /*
-                * Create the start scripts for this server pack. Ignores custom SPC_JAVA_SPC setting if one
-                * is present. This is because a ZIP-archive, if one is created, is supposed to be uploaded
-                * to platforms like CurseForge. We must not have scripts with custom Java paths there.
-                */
-                createStartScripts(packConfig, false)
-                zipBuilder(packConfig)
-            } else {
-                log.info("Not creating zip archive of serverpack.")
-            }
-
-            /*
-             * If modloader is fabric, try and replace the old server-launch.jar with the new and improved
-             * one which also downloads the Minecraft server.
-             */
-            if (packConfig.modloader.equals("Fabric", ignoreCase = true)) {
-                provideImprovedFabricServerLauncher(packConfig)
-            }
-
-            /*
-            * Create the start scripts for this server pack to be used for local testing.
-            * The difference to the previous call is that these scripts respect the SPC_JAVA_SPC
-            * placeholder setting, if the user has set one
-            */
-            createStartScripts(packConfig, true)
-
-            // Inform user about location of newly generated server pack.
-            log.info("Server pack available at: $destination")
-            log.info("Server pack archive available at: ${destination}_server_pack.zip")
-            log.info("Done!")
-            apiPlugins.runPostGenExtensions(packConfig, destination)
-            log.debug("Generation took ${generationStopWatch.stop().getTime()}")
+        } else {
+            log.info("Overwrite disabled, not performing cleanup before server pack generation.")
+            deleteExistingServerPackZip(destination)
         }
+
+        apiPlugins.runPreGenExtensions(packConfig, destination)
+
+        // Recursively copy all specified directories and files, excluding clientside-only mods, to server pack.
+        copyFiles(packConfig, apiProperties.isServerPacksOverwriteEnabled)
+
+        // If true, copy the server-icon.png from server_files to the server pack.
+        if (packConfig.isServerIconInclusionDesired) {
+            copyIcon(packConfig)
+        } else {
+            log.info("Not including servericon.")
+        }
+
+        // If true, copy the server.properties from server_files to the server pack.
+        if (packConfig.isServerPropertiesInclusionDesired) {
+            copyProperties(packConfig)
+        } else {
+            log.info("Not including server.properties.")
+        }
+        apiPlugins.runPreZipExtensions(packConfig, destination)
+
+        // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
+        if (packConfig.isZipCreationDesired) {
+
+            /*
+            * Create the start scripts for this server pack. Ignores custom SPC_JAVA_SPC setting if one
+            * is present. This is because a ZIP-archive, if one is created, is supposed to be uploaded
+            * to platforms like CurseForge. We must not have scripts with custom Java paths there.
+            */
+            createStartScripts(packConfig, false)
+            zipBuilder(packConfig)
+        } else {
+            log.info("Not creating zip archive of serverpack.")
+        }
+
+        /*
+         * If modloader is fabric, try and replace the old server-launch.jar with the new and improved
+         * one which also downloads the Minecraft server.
+         */
+        if (packConfig.modloader.equals("Fabric", ignoreCase = true)) {
+            provideImprovedFabricServerLauncher(packConfig)
+        }
+
+        /*
+        * Create the start scripts for this server pack to be used for local testing.
+        * The difference to the previous call is that these scripts respect the SPC_JAVA_SPC
+        * placeholder setting, if the user has set one
+        */
+        createStartScripts(packConfig, true)
+
+        // Inform user about location of newly generated server pack.
+        log.info("Server pack available at: $destination")
+        log.info("Server pack archive available at: ${destination}_server_pack.zip")
+        log.info("Done!")
+        apiPlugins.runPostGenExtensions(packConfig, destination)
+        log.debug("Generation took ${generationStopWatch.stop().getTime()}")
+
         return true
     }
 
     override fun cleanupEnvironment(deleteZip: Boolean, destination: String) {
         log.info("Found old server pack at $destination. Cleaning up...")
+        deleteExistingServerPack(destination)
         File(destination).deleteQuietly()
         if (deleteZip) {
-            File(destination + "_server_pack.zip").deleteQuietly()
+            deleteExistingServerPackZip(destination)
         }
+    }
+
+    private fun deleteExistingServerPack(destination: String) {
+        File(destination).deleteQuietly()
+    }
+
+    private fun deleteExistingServerPackZip(destination: String) {
+        File(destination + "_server_pack.zip").deleteQuietly()
     }
 
     override fun copyFiles(
@@ -180,7 +192,8 @@ actual class ServerPackHandler actual constructor(
         whitelist: List<String>,
         minecraftVersion: String,
         destination: String,
-        modloader: String
+        modloader: String,
+        overwrite: Boolean
     ) {
         val exclusions = mutableListOf<Regex>()
         var acquired: List<ServerPackFile>
@@ -226,7 +239,7 @@ actual class ServerPackHandler actual constructor(
         log.info("Copying files to the server pack. This may take a while...")
         for (file in serverPackFiles) {
             try {
-                file.copy()
+                file.copy(overwrite)
             } catch (ex: IOException) {
                 log.error(
                     "An error occurred trying to copy " + file.sourceFile + " to " + file.destinationFile + ".",

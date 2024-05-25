@@ -846,6 +846,36 @@ That being said: You can delete a server pack by removing the corresponding file
 5. Delete the server pack from the `server-packs`-directory which has the previously noted ID as its name.
 6. Wait till the `de.griefed.serverpackcreator.spring.schedules.database.cleanup`-schedule runs. The server pack will be deleted from the database.
 
+## Keeping Data
+
+You can disable the cleanup of an already generated server pack in order to keep data between generations.
+This is useful if you ran the server pack and generated world or similar. Scripts, icon and properties will always be updated
+
+Keep in mind, though, that any ZIP-archived generated this way may contain data which is not allowed on platforms such as Modrinth or CurseForge.
+
+You may also run the risk of having duplicate mods if the mods in your modpack change or are updated between generations.
+If overwrites, and thus cleanups, are disabled, and you run into this 
+
+## Multiple Java Installations
+
+If you manage multiple modpacks and they require different Java versions to run, then you can make use of ServerPackCreators
+feature to use store paths to your Java installations. Changing the Miencraft version for your server pack will then update
+the path to the Java installation in the Advanced-Section to reflect the required Java install.
+
+Note: This path will not be present in the `variables.txt` in the ZIP-archive of your server pack. (Unless you disabled Server Pack Overwrites)
+
+1. Add the paths to your Java executables with their corresponding Java version:
+
+![java-settings](img/Javas-Setting.png)
+
+2. Update your server packs Minecraft version:
+
+![java-required](img/Javas-Required.png)
+
+3. Check the Advanced-section and notice the updated Java path:
+
+![java-updated](img/Javas-Updated.png)
+
 ##
 
 </topic>

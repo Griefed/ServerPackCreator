@@ -107,14 +107,15 @@ abstract class ServerPack<F, TS, TF> {
      * and the modloader used by the modpack and server pack.
      * @author Griefed
      */
-    fun copyFiles(packConfig: Pack<*, *, *>) = copyFiles(
+    fun copyFiles(packConfig: Pack<*, *, *>, overwrite: Boolean = true) = copyFiles(
         packConfig.modpackDir,
         packConfig.inclusions,
         packConfig.clientMods,
         packConfig.modsWhitelist,
         packConfig.minecraftVersion,
         getServerPackDestination(packConfig),
-        packConfig.modloader
+        packConfig.modloader,
+        overwrite
     )
 
     /**
@@ -208,7 +209,8 @@ abstract class ServerPack<F, TS, TF> {
         whitelist: List<String>,
         minecraftVersion: String,
         destination: String,
-        modloader: String
+        modloader: String,
+        overwrite: Boolean
     )
 
     /**
