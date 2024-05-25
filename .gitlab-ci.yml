@@ -377,7 +377,7 @@ Build Docker PreRelease:
 
 Writerside Build:
   stage: Documentation
-  image: registry.jetbrains.team/p/writerside/builder/writerside-builder:233.14389
+  image: registry.jetbrains.team/p/writerside/builder/writerside-builder:241.15989
   variables:
     ARTIFACT: webHelpSPCH2-all.zip
     INSTANCE: Writerside/spch
