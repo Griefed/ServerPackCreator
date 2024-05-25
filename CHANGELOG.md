@@ -1,3 +1,15 @@
+## [5.2.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.2.2...5.2.3) (2024-05-25)
+
+
+### 💎 Improvements
+
+* When disabling Server Pack Overwrites nothing is deleted, but certain data is updated ([ae40f16](https://git.griefed.de/Griefed/ServerPackCreator/commit/ae40f16478ed07f7481ea8bcd8a40a458be01a28))
+
+
+### 🧪 Tests
+
+* Run jar test only on ubuntu ([1983daf](https://git.griefed.de/Griefed/ServerPackCreator/commit/1983daf5095f04ca9ce81ef6b1e913915f53000b))
+
 ## [5.2.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.2.1...5.2.2) (2024-05-24)
 
 
