@@ -46,6 +46,7 @@ tasks.bootJar {
 }
 
 task("copyDependencies", Copy::class) {
+    dependsOn(":serverpackcreator-api:processTestResources")
     from(configurations.runtimeClasspath).into("${layout.buildDirectory.asFile.get()}/jars")
 }
 
