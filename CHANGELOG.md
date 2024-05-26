@@ -1,3 +1,16 @@
+## [6.0.0-alpha.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.2.3...6.0.0-alpha.1) (2024-05-26)
+
+
+### ✨ Milestone
+
+* New installers, stats & dashboard & up- and download tracking for the webservice ([0d4882d](https://git.griefed.de/Griefed/ServerPackCreator/commit/0d4882dbabcc61c4863109eac12eac507b7b1b34))
+
+
+### 📔 Docs
+
+* Correct some spelling mistakes and finish sentences. ([759c8b7](https://git.griefed.de/Griefed/ServerPackCreator/commit/759c8b777066b244c2c89a4a00eb62e09fd93c04))
+* Update writerside version ([30e38e2](https://git.griefed.de/Griefed/ServerPackCreator/commit/30e38e2901e61d3594f4491765aab336ea8a8e01))
+
 ## [5.2.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.2.2...5.2.3) (2024-05-25)
 
 
