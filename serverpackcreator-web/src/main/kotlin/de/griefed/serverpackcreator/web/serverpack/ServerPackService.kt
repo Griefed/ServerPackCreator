@@ -20,10 +20,7 @@
 package de.griefed.serverpackcreator.web.serverpack
 
 import de.griefed.serverpackcreator.api.ApiProperties
-import de.griefed.serverpackcreator.web.data.ServerPack
-import de.griefed.serverpackcreator.web.data.ServerPackView
 import de.griefed.serverpackcreator.web.storage.StorageSystem
-import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Sort
 import org.springframework.http.ResponseEntity
@@ -42,10 +39,10 @@ import kotlin.io.path.moveTo
 @Service
 class ServerPackService @Autowired constructor(
     private val serverPackRepository: ServerPackRepository,
+    private val serverPackDownloadRepository: ServerPackDownloadRepository,
     messageDigestInstance: MessageDigest,
     apiProperties: ApiProperties
 ) {
-    private val log = cachedLoggerOf(this.javaClass)
     private val rootLocation: Path = apiProperties.serverPacksDirectory.toPath()
     private val storage: StorageSystem = StorageSystem(rootLocation, messageDigestInstance)
 
@@ -60,11 +57,12 @@ class ServerPackService @Autowired constructor(
      * @param id The database id of the server pack.
      * @author Griefed
      */
-    fun updateDownloadCounter(id: Int): Optional<ServerPack> {
+    fun updateDownloadStats(id: Int): Optional<ServerPack> {
         val request = serverPackRepository.findById(id)
         if (request.isPresent) {
             val pack = request.get()
             pack.downloads++
+            serverPackDownloadRepository.save(ServerPackDownload(pack))
             return Optional.of(serverPackRepository.save(pack))
         } else {
             return Optional.empty()
@@ -78,7 +76,7 @@ class ServerPackService @Autowired constructor(
      * @param serverPack The server pack for which to update the download counter.
      * @author Griefed
      */
-    fun updateDownloadCounter(serverPack: ServerPack) {
+    fun updateDownloadStats(serverPack: ServerPack) {
         serverPack.downloads++
         serverPackRepository.save(serverPack)
     }
@@ -117,8 +115,8 @@ class ServerPackService @Autowired constructor(
      * @return List ServerPackModel. Returns a list of all available server packs.
      * @author Griefed
      */
-    fun getServerPacks(): List<ServerPackView> {
-        return serverPackRepository.findAllProjectedBy(Sort.by(Sort.Direction.DESC, "dateCreated"))
+    fun getServerPacks(): List<ServerPack> {
+        return serverPackRepository.findAll(Sort.by(Sort.Direction.DESC, "dateCreated"))
     }
 
     /**
@@ -178,7 +176,7 @@ class ServerPackService @Autowired constructor(
         return storage.load(id)
     }
 
-    fun getServerPackView(id: Int): Optional<ServerPackView> {
-        return serverPackRepository.findProjectedById(id)
+    fun getServerPackView(id: Int): Optional<ServerPack> {
+        return serverPackRepository.findById(id)
     }
 }

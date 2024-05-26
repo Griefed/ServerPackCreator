@@ -167,7 +167,7 @@
                 >
                   <q-linear-progress v-if="progress > 0" :stripe="progress === 1" class="absolute-full full-height" :value="progress"
                                      color="positive" track-color="primary" instant-feedback>
-                    <div class="absolute-full flex flex-center">
+                    <div class="absolute-full flex-center" style="display: flex; justify-content: flex-end; margin-right: 10px;">
                       <q-badge v-if="progress < 1" color="white" text-color="accent" :label="'Uploaded: ' + Math.round(progress * 100) + '%'"/>
                       <q-badge v-else color="white" text-color="accent" label="Upload done. Checking..."/>
                     </div>
@@ -186,7 +186,7 @@
                 <q-icon name="folder_zip" @click.stop.prevent/>
               </template>
               <template v-slot:append>
-                <q-icon name="close" @click.stop.prevent="file = null" class="cursor-pointer"/>
+                <q-icon v-if="!uploading" name="close" @click.stop.prevent="file = null" class="cursor-pointer"/>
                 <q-btn dense flat icon="help_outline" round @click="zipInfo = true"/>
               </template>
 

@@ -10,11 +10,12 @@ When using pre-release installers, make sure to uninstall the previous pre-relea
 own version checks may trigger an error out of my control. After uninstalling, install the newly downloaded one and
 you're good to go.
 
+Only use the installers if you are versed in system-administration, manually editing and removing services, editing registries,
+so on and so forth.
+
 #### Alphas
 
-Alphas are feature-incomplete and very likely to have bugs.
-Before submitting an issue, please check the corresponding [milestone](https://git.griefed.de/Griefed/ServerPackCreator/-/milestones) of this releases major version to see whether an issue for yours already exists there.
-Doing so saves both you and me a lot of time. Thanks in advance!
+Alphas are feature-incomplete and very likely to have bugs. Consider them broken by default. Use at your own risk!
 
 #### Betas
 

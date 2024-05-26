@@ -35,11 +35,6 @@ import org.apache.commons.io.monitor.FileAlterationListener
 import org.apache.commons.io.monitor.FileAlterationMonitor
 import org.apache.commons.io.monitor.FileAlterationObserver
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.domain.EntityScan
-import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.context.annotation.ComponentScan
-import org.springframework.scheduling.annotation.EnableScheduling
 import org.xml.sax.SAXException
 import java.awt.GraphicsEnvironment
 import java.io.File
@@ -64,21 +59,17 @@ fun main(args: Array<String>) {
  * API-instance used to run a given instance of SPC.
  * @author Griefed
  */
-@SpringBootApplication
-@EnableConfigurationProperties
-@EntityScan(value = ["de.griefed.serverpackcreator.web"])
-@ComponentScan(value = ["de.griefed.serverpackcreator"])
-@EnableScheduling
 class ServerPackCreator(private val args: Array<String>) {
-    private val log = cachedLoggerOf(this.javaClass)
-    final val commandlineParser: CommandlineParser = CommandlineParser(args)
-    final val apiWrapper = ApiWrapper.api(commandlineParser.propertiesFile, false)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
+    val commandlineParser: CommandlineParser = CommandlineParser(args)
+    val apiWrapper = ApiWrapper.api(commandlineParser.propertiesFile, false)
     private val appInfo = JarInformation(ServerPackCreator::class.java, apiWrapper.jarUtilities)
 
     init {
         if (commandlineParser.language != null) {
             apiWrapper.apiProperties.changeLocale(commandlineParser.language!!)
         }
+        apiWrapper.apiProperties.isExe()
     }
 
     @Suppress("MemberVisibilityCanBePrivate")
@@ -102,7 +93,8 @@ class ServerPackCreator(private val args: Array<String>) {
         log.info("Running in mode: $mode")
         log.info("App information:")
         log.info("App Folder:      ${appInfo.jarFolder}")
-        log.info("App Path:        ${appInfo.jarFile.absolutePath}")
+        log.info("App File:        ${appInfo.jarFile}")
+        log.info("App Path:        ${appInfo.jarPath}")
         log.info("App Name:        ${appInfo.jarFileName}")
         log.info("Java version:    ${apiWrapper.apiProperties.getJavaVersion()}")
         log.info("OS architecture: ${apiWrapper.apiProperties.getOSArch()}")

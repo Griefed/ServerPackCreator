@@ -5,7 +5,7 @@
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$\serverpackcreator-app\tests" />
     <option name="ALTERNATIVE_JRE_PATH" />
     <method v="2">
-      <option name="Gradle.BeforeRunTask" enabled="false" tasks="clean cleanAllTests build" externalProjectPath="$PROJECT_DIR$" vmOptions="" scriptParameters=" --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test" />
+      <option name="Gradle.BeforeRunTask" enabled="false" tasks="clean build" externalProjectPath="$PROJECT_DIR$" vmOptions="" scriptParameters=" --info --full-stacktrace -x :serverpackcreator-api:test -x :serverpackcreator-web:test" />
     </method>
   </configuration>
 </component>

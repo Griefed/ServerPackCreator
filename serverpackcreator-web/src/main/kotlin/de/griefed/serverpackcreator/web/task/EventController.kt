@@ -19,8 +19,7 @@
  */
 package de.griefed.serverpackcreator.web.task
 
-import de.griefed.serverpackcreator.web.data.QueueEvent
-import de.griefed.serverpackcreator.web.modpack.ModpackStatus
+import de.griefed.serverpackcreator.web.modpack.ModPackStatus
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
@@ -55,7 +54,7 @@ class EventController @Autowired constructor(private val eventService: EventServ
 
     @GetMapping("/status/{status:[A-Z]+}", produces = ["application/json"])
     @ResponseBody
-    fun getStatusEvents(@PathVariable status: ModpackStatus): ResponseEntity<List<QueueEvent>> {
+    fun getStatusEvents(@PathVariable status: ModPackStatus): ResponseEntity<List<QueueEvent>> {
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
             .body(eventService.loadAllByStatus(status))
     }

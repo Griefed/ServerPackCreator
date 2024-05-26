@@ -50,7 +50,7 @@ class UpdateDialogs(
     private val updateChecker: UpdateChecker,
     private val mainFrame: JFrame
 ) {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     var update: Optional<Update> = updateChecker.checkForUpdate(
         apiProperties.apiVersion,
         apiProperties.isCheckingForPreReleasesEnabled

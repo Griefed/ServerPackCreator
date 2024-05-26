@@ -1,3 +1,4 @@
+
 import java.time.LocalDate
 import java.util.*
 
@@ -22,8 +23,8 @@ dependencies {
     api(project(":serverpackcreator-gui"))
     api(project(":serverpackcreator-web"))
     api(project(":serverpackcreator-updater"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
 }
 
 springBoot {
@@ -38,6 +39,10 @@ tasks.clean {
             }
         }
     }
+}
+
+tasks.bootJar {
+    dependsOn(":serverpackcreator-api:processTestResources")
 }
 
 task("copyDependencies", Copy::class) {

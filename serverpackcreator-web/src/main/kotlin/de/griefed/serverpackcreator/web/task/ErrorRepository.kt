@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.web.task
 
-import de.griefed.serverpackcreator.web.data.ErrorEntry
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 import java.util.*

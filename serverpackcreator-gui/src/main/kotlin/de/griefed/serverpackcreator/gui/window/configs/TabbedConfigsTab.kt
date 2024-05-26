@@ -54,7 +54,7 @@ class TabbedConfigsTab(
     private val apiWrapper: ApiWrapper,
     private val mainFrame: MainFrame
 ) : TabPanel() {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val choose = arrayOf(Translations.createserverpack_gui_quickselect_choose.toString())
     private val noVersions = DefaultComboBoxModel(arrayOf(Translations.createserverpack_gui_createserverpack_forge_none.toString()))
     private val componentResizer = ComponentResizer()

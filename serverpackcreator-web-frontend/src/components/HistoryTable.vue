@@ -2,7 +2,7 @@
   <q-table class="sticky-header-table" :rows="rows" :columns="columns" row-key="id" bordered dense :filter="filter"
            no-data-label="No history available (yet)..." title="History / Event Log"
            no-results-label="The search didn't uncover any results"
-           :pagination="initialPagination" :loading="visible">
+           :pagination="initialPagination" :loading="visible" :visible-columns="visibleColumns">
     <template v-slot:loading>
       <q-inner-loading showing color="accent"/>
     </template>
@@ -13,6 +13,32 @@
           <q-icon name="search"/>
         </template>
       </q-input>
+      <q-separator inset spaced/>
+      <q-select
+        v-model="visibleColumns"
+        multiple
+        outlined
+        dense
+        options-dense
+        :display-value="$q.lang.table.columns"
+        emit-value
+        map-options
+        :options="columns"
+        option-value="name"
+        options-cover
+        style="min-width: 150px"
+      >
+        <template v-slot:option="{ itemProps, opt, selected, toggleOption }">
+          <q-item v-bind="itemProps">
+            <q-item-section>
+              <q-item-label>{{ opt.label }}</q-item-label>
+            </q-item-section>
+            <q-item-section side>
+              <q-toggle :model-value="selected" @update:model-value="toggleOption(opt)" />
+            </q-item-section>
+          </q-item>
+        </template>
+      </q-select>
     </template>
 
     <template v-slot:header="props">
@@ -25,7 +51,6 @@
         </q-th>
       </q-tr>
     </template>
-
     <template v-slot:body="props">
       <q-tr :props="props">
         <q-td auto-width>
@@ -122,6 +147,7 @@ export default defineComponent({
       },
       rows: ref([]),
       columns,
+      visibleColumns: ref([ 'modPackId', 'serverPackId', 'status', 'message', 'timestamp', 'errors' ]),
       initialPagination: {
         sortBy: 'timestamp',
         descending: true,

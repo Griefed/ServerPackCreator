@@ -1,7 +1,8 @@
 <template>
   <q-table class="sticky-header-table" :rows="rows" :columns="columns" row-key="id" title="Modpacks" bordered
            dense no-data-label="No modpacks available (yet)..." :filter="filter"
-           no-results-label="The search didn't uncover any results" :pagination="initialPagination" :loading="visible">
+           no-results-label="The search didn't uncover any results" :pagination="initialPagination" :loading="visible"
+           :visible-columns="visibleColumns">
     <template v-slot:loading>
       <q-inner-loading showing color="accent"/>
     </template>
@@ -12,6 +13,32 @@
           <q-icon name="search"/>
         </template>
       </q-input>
+      <q-separator inset spaced/>
+      <q-select
+        v-model="visibleColumns"
+        multiple
+        outlined
+        dense
+        options-dense
+        :display-value="$q.lang.table.columns"
+        emit-value
+        map-options
+        :options="columns"
+        option-value="name"
+        options-cover
+        style="min-width: 150px"
+      >
+        <template v-slot:option="{ itemProps, opt, selected, toggleOption }">
+          <q-item v-bind="itemProps">
+            <q-item-section>
+              <q-item-label>{{ opt.label }}</q-item-label>
+            </q-item-section>
+            <q-item-section side>
+              <q-toggle :model-value="selected" @update:model-value="toggleOption(opt)" />
+            </q-item-section>
+          </q-item>
+        </template>
+      </q-select>
     </template>
 
     <template v-slot:header="props">
@@ -38,7 +65,7 @@
         <q-td v-for="col in props.cols" :key="col.name" :props="props" auto-width>
           <span v-if="col.name === 'download'">
             <q-btn :to="'/download/modpack/' + props.row.id" color="info" dense icon="download" round size="sm"
-                   v-if="props.row.size > 0">
+                   @click="props.row.downloads++" v-if="props.row.size > 0" >
               <q-tooltip>
                 Download modpack
               </q-tooltip>
@@ -67,7 +94,9 @@ import ServerPacksTable from 'components/ServerPacksTable.vue';
 const columns = [
   {name: 'id', label: 'Modpack ID', field: 'id', sortable: true, align: 'left'},
   {name: 'name', label: 'Name', field: 'name', sortable: false, align: 'left'},
+  {name: 'fileID', label: 'File ID', field: 'fileID', sortable: false, align: 'left'},
   {name: 'download', label: 'Download', sortable: false, align: 'center'},
+  {name: 'downloads', label: 'Downloads', field: 'downloads', sortable: true, align: 'left'},
   {name: 'projectID', label: 'Project ID', field: 'projectID', sortable: true, align: 'left'},
   {name: 'versionID', label: 'Version ID', field: 'versionID', sortable: true, align: 'left'},
   {name: 'source', label: 'Source', field: 'source', sortable: false, align: 'left'},
@@ -114,6 +143,7 @@ export default defineComponent({
       },
       rows: ref([]),
       columns,
+      visibleColumns: ref([ 'id', 'name', 'download', 'downloads', 'status', 'size', 'serverPacks', 'sha256', 'dateCreated' ]),
       initialPagination: {
         sortBy: 'id',
         descending: true,

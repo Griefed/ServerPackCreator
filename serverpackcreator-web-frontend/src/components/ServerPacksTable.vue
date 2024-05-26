@@ -1,7 +1,8 @@
 <template>
   <q-table :rows="rows" :columns="columns" row-key="id" title="Server Packs" id="serverpacktable" :filter="filter"
            bordered dense no-data-label="No server packs available (yet)..."
-           no-results-label="The search didn't uncover any results" :pagination="initialPagination" :loading="visible">
+           no-results-label="The search didn't uncover any results" :pagination="initialPagination" :loading="visible"
+           :visible-columns="visibleColumns">
     <template v-slot:loading>
       <q-inner-loading showing color="accent"/>
     </template>
@@ -12,6 +13,32 @@
           <q-icon name="search"/>
         </template>
       </q-input>
+      <q-separator inset spaced/>
+      <q-select
+        v-model="visibleColumns"
+        multiple
+        outlined
+        dense
+        options-dense
+        :display-value="$q.lang.table.columns"
+        emit-value
+        map-options
+        :options="columns"
+        option-value="name"
+        options-cover
+        style="min-width: 150px"
+      >
+        <template v-slot:option="{ itemProps, opt, selected, toggleOption }">
+          <q-item v-bind="itemProps">
+            <q-item-section>
+              <q-item-label>{{ opt.label }}</q-item-label>
+            </q-item-section>
+            <q-item-section side>
+              <q-toggle :model-value="selected" @update:model-value="toggleOption(opt)" />
+            </q-item-section>
+          </q-item>
+        </template>
+      </q-select>
     </template>
 
     <template v-slot:header="props">
@@ -24,7 +51,6 @@
         </q-th>
       </q-tr>
     </template>
-
     <template v-slot:body="props">
       <q-tr :props="props">
         <q-td auto-width>
@@ -97,6 +123,7 @@ import RunConfigurationCard from 'components/RunConfigurationCard.vue';
 const columns = [
   {name: 'id', label: 'ServerPack ID', field: 'id', sortable: true, align: 'left'},
   {name: 'size', label: 'Size', field: 'size', sortable: false, align: 'left'},
+  {name: 'fileID', label: 'File ID', field: 'fileID', sortable: false, align: 'left'},
   {name: 'download', label: 'Download', sortable: false, align: 'center'},
   {name: 'downloads', label: 'Downloads', field: 'downloads', sortable: true, align: 'left'},
   {name: 'confirmedWorking', label: 'Confirmed Working', field: 'confirmedWorking', sortable: true, align: 'left'},
@@ -147,6 +174,7 @@ export default defineComponent({
       },
       rows: ref([]),
       columns,
+      visibleColumns: ref([ 'id', 'size', 'download', 'downloads', 'confirmedWorking', 'sha256', 'dateCreated' ]),
       initialPagination: {
         sortBy: 'id',
         descending: true,

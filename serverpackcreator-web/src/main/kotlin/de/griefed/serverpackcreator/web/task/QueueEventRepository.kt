@@ -19,8 +19,7 @@
  */
 package de.griefed.serverpackcreator.web.task
 
-import de.griefed.serverpackcreator.web.data.QueueEvent
-import de.griefed.serverpackcreator.web.modpack.ModpackStatus
+import de.griefed.serverpackcreator.web.modpack.ModPackStatus
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
@@ -28,5 +27,5 @@ import org.springframework.stereotype.Repository
 interface QueueEventRepository : JpaRepository<QueueEvent, Int> {
     fun findAllByModPackId(modPackId: Int): MutableList<QueueEvent>
     fun findAllByServerPackId(serverPackId: Int): MutableList<QueueEvent>
-    fun findAllByStatus(status: ModpackStatus): MutableList<QueueEvent>
+    fun findAllByStatus(status: ModPackStatus): MutableList<QueueEvent>
 }
