@@ -1,3 +1,10 @@
+## [6.0.0-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.1...6.0.0-alpha.2) (2024-05-26)
+
+
+### 🦊 CI/CD
+
+* Declare explicit dependency on serverpackcreator-api:processTestResources ([1e38e8a](https://git.griefed.de/Griefed/ServerPackCreator/commit/1e38e8ad1b0c038b4007d6adfcab315ff8aebf17))
+
 ## [6.0.0-alpha.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.2.3...6.0.0-alpha.1) (2024-05-26)
 
 
