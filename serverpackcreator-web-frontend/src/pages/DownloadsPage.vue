@@ -1,6 +1,6 @@
 <template>
-  <q-page class="col items-center justify-evenly">
-    <q-card square>
+  <q-page class="q-pa-sm">
+    <q-card rounded>
       <ModpacksTable class="table-size"/>
     </q-card>
   </q-page>
@@ -23,7 +23,7 @@ export default defineComponent({
 
 <style scoped>
 .table-size {
-  height: calc(100vh - 53px);;
+  height: calc(100vh - 67px);;
   box-sizing: border-box;
 }
 </style>

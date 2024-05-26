@@ -24,7 +24,6 @@ import de.griefed.serverpackcreator.gui.GuiProps
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import tokyo.northside.swing.TipOfTheDay
-import tokyo.northside.swing.TipOfTheDay.ShowOnStartupChoice
 import tokyo.northside.swing.tips.DefaultTipOfTheDayModel
 import java.util.*
 import javax.swing.JFrame
@@ -57,7 +56,7 @@ class TipOfTheDayManager(private val mainFrame: JFrame, private val guiProps: Gu
 
     @OptIn(DelicateCoroutinesApi::class)
     fun showTipOfTheDay() {
-        GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
+        GlobalScope.launch(Dispatchers.Swing, CoroutineStart.DEFAULT) {
             var random = (0..<tipOfTheDayModel.tipCount).random()
             if (guiProps.viewedTips.size == tipOfTheDayModel.tipCount) {
                 random = 0
@@ -69,7 +68,7 @@ class TipOfTheDayManager(private val mainFrame: JFrame, private val guiProps: Gu
             val newViewed = TreeSet(guiProps.viewedTips)
             newViewed.add(random)
             guiProps.viewedTips = newViewed
-            val tipOfTheDay = TipOfTheDay(tipOfTheDayModel)
+            val tipOfTheDay = TipOfTheDay(tipOfTheDayModel, false)
             tipOfTheDay.currentTip = random
             val customUI = CustomTipOfTheDayUI(tipOfTheDay, guiProps)
             tipOfTheDay.setUI(customUI)
@@ -80,7 +79,7 @@ class TipOfTheDayManager(private val mainFrame: JFrame, private val guiProps: Gu
         }
     }
 
-    inner class ShowOnStartup : ShowOnStartupChoice {
+    inner class ShowOnStartup : TipOfTheDay.ShowOnStartupChoice {
         override fun setShowingOnStartup(showOnStartup: Boolean) {
             guiProps.showTipOnStartup = showOnStartup
         }

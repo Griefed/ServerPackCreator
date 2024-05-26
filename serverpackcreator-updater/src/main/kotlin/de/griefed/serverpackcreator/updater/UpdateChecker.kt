@@ -33,7 +33,7 @@ import java.util.*
  * @author Griefed
  */
 class UpdateChecker(private val apiProperties: ApiProperties) {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private var gitHub: GitHubChecker? = null
 
     /**

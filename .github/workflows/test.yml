@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  jar:
+  jar-and-media:
     runs-on: ubuntu-latest
     steps:
 
@@ -28,16 +28,22 @@ jobs:
         with:
           gradle-version: wrapper
 
+      - uses: luangong/setup-install4j@v1
+        with:
+          version: 10.0.7
+          license: ${{ secrets.INSTALL4J_LICENSE }}
+
       - name: Build with Gradle
         run: |
           ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} generateLicenseReport --info --full-stacktrace
-          ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} build --info --full-stacktrace
+          ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} build media --info --full-stacktrace
 
       - uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
-          name: build-artifacts-jar
+          name: jar-and-media
           path: |
+            media
             build
             buildSrc/build
             serverpackcreator-api/build
@@ -49,233 +55,7 @@ jobs:
             serverpackcreator-plugin-example/build
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
-  mac-01:
-    runs-on: macos-latest
-    steps:
-      # GET THE LATEST CODE
-      - name: Checkout latest code
-        uses: actions/checkout@v4.1.1
-        with:
-          fetch-depth: 0
-
-      # BUILD PROJECT AND PUBLISH
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '21'
-          check-latest: true
-          cache: 'gradle'
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: wrapper
-
-      - name: Build installer
-        env:
-          GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} generateLicenseReport --info --full-stacktrace
-          ./gradlew :serverpackcreator-app:jpackage --info --full-stacktrace
-
-      - name: Rename
-        run: mv serverpackcreator-app/build/dist/* serverpackcreator-app/build/dist/ServerPackCreator-Installer-MacOS-dev.pkg
-
-      # UPLOAD OS-SPECIFICS
-      - name: Upload
-        uses: actions/upload-artifact@v4
-        if: ${{ always() }}
-        with:
-          name: mac-01-artifacts
-          path: |
-            serverpackcreator-app/build
-          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
-
-  windows-01:
-    runs-on: windows-latest
-    steps:
-      # GET THE LATEST CODE
-      - name: Checkout latest code
-        uses: actions/checkout@v4.1.1
-        with:
-          fetch-depth: 0
-
-      # BUILD PROJECT AND PUBLISH
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '21'
-          check-latest: true
-          cache: 'gradle'
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: wrapper
-
-      - name: Prepare wix-toolset
-        if: matrix.os == 'windows-latest'
-        run: echo "${env:path};${env:wix}bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
-
-      - name: Build installer
-        env:
-          GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} generateLicenseReport --info --full-stacktrace
-          ./gradlew :serverpackcreator-app:jpackage --info --full-stacktrace
-
-      - name: Rename
-        run: mv serverpackcreator-app/build/dist/* serverpackcreator-app/build/dist/ServerPackCreator-Installer-Windows-dev.msi
-
-      # UPLOAD OS-SPECIFICS
-      - name: Upload
-        uses: actions/upload-artifact@v4
-        if: ${{ always() }}
-        with:
-          name: windows-01-artifacts
-          path: |
-            serverpackcreator-app/build
-          if-no-files-found: warn # 'warn' or 'ig
-
-  windows-02:
-    runs-on: windows-latest
-    steps:
-      # GET THE LATEST CODE
-      - name: Checkout latest code
-        uses: actions/checkout@v4.1.1
-        with:
-          fetch-depth: 0
-
-      # BUILD PROJECT AND PUBLISH
-      - name: Set up JDK 21
-        id: java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '21'
-          check-latest: true
-          cache: 'gradle'
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: wrapper
-
-      - name: Prepare wix-toolset
-        if: matrix.os == 'windows-latest'
-        run: echo "${env:path};${env:wix}bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
-
-      - name: Prepare
-        env:
-          GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} generateLicenseReport --info --full-stacktrace
-          ./gradlew build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar --info --full-stacktrace
-
-      - name: Build Image
-        run: |
-          jpackage `
-            --app-version "6.6.6" `
-            --copyright "Copyright (C) 2024 Griefed" `
-            --description "Create server packs from Minecraft Forge, NeoForge, Fabric, Quilt or LegacyFabric modpacks." `
-            --dest "serverpackcreator-app\build\dist" `
-            --icon "serverpackcreator-app\jpackagerResources\app.ico" `
-            --input "serverpackcreator-app\build\jars" `
-            --java-options "-Dfile.encoding=UTF-8" `
-            --java-options "-Dlog4j2.formatMsgNoLookups=true" `
-            --main-class de.griefed.serverpackcreator.app.ServerPackCreatorKt `
-            --main-jar serverpackcreator-app-dev.jar `
-            --name ServerPackCreator `
-            --resource-dir "serverpackcreator-app\jpackagerResources" `
-            --runtime-image "${{ steps.java.outputs.path }}" `
-            --temp "serverpackcreator-app\build\tmp\jpackager" `
-            --type "app-image" `
-            --vendor "griefed.de" `
-            --verbose
-
-      - name: List
-        if: ${{ always() }}
-        run: dir serverpackcreator-app\build\dist
-
-      - name: Archive
-        uses: thedoctor0/zip-release@0.7.1
-        with:
-          type: 'zip'
-          directory: serverpackcreator-app/build/dist
-          path: 'ServerPackCreator'
-          filename: 'ServerPackCreator-Portable-Windows.zip'
-
-      - name: List
-        run: dir serverpackcreator-app\build\dist
-
-      # UPLOAD OS-SPECIFICS
-      - name: Upload
-        uses: actions/upload-artifact@v4
-        if: ${{ always() }}
-        with:
-          name: windows-02-artifacts
-          path: |
-            serverpackcreator-app/build/dist/ServerPackCreator-Portable-Windows.zip
-          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
-
-  ubuntu-01:
-    runs-on: ubuntu-latest
-    steps:
-      # GET THE LATEST CODE
-      - name: Checkout latest code
-        uses: actions/checkout@v4.1.1
-        with:
-          fetch-depth: 0
-
-      # BUILD PROJECT AND PUBLISH
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '21'
-          check-latest: true
-          cache: 'gradle'
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: wrapper
-
-      - name: Build installer
-        env:
-          GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} generateLicenseReport --info --full-stacktrace
-          ./gradlew :serverpackcreator-app:jpackage --info --full-stacktrace
-
-      - name: Rename
-        run: mv serverpackcreator-app/build/dist/* serverpackcreator-app/build/dist/ServerPackCreator-Installer-Ubuntu-dev-amd64.deb
-
-      # UPLOAD OS-SPECIFICS
-      - name: Upload
-        uses: actions/upload-artifact@v4
-        if: ${{ always() }}
-        with:
-          name: ubuntu-01-artifacts
-          path: |
-            serverpackcreator-app/build
-          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
-
-  ubuntu-02:
+  appimage:
     runs-on: ubuntu-latest
     steps:
       # GET THE LATEST CODE
@@ -307,7 +87,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} generateLicenseReport --info --full-stacktrace
-          ./gradlew build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar --info --full-stacktrace
+          ./gradlew build --info --full-stacktrace
 
       - name: Build Image
         run: |
@@ -317,10 +97,10 @@ jobs:
             --description "Create server packs from Minecraft Forge, NeoForge, Fabric, Quilt or LegacyFabric modpacks." \
             --dest serverpackcreator-app/build/dist \
             --icon serverpackcreator-app/jpackagerResources/app.png \
-            --input serverpackcreator-app/build/jars \
+            --input serverpackcreator-app/build/libs \
             --java-options "-Dfile.encoding=UTF-8" \
             --java-options "-Dlog4j2.formatMsgNoLookups=true" \
-            --main-class de.griefed.serverpackcreator.app.ServerPackCreatorKt \
+            --main-class org.springframework.boot.loader.launch.JarLauncher \
             --main-jar serverpackcreator-app-dev.jar \
             --name ServerPackCreator \
             --resource-dir serverpackcreator-app/jpackagerResources \
@@ -372,7 +152,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
-          name: ubuntu-02-artifacts
+          name: appimage
           path: |
             serverpackcreator-app/build/dist/ServerPackCreator-Portable-Linux-x86_64.AppImage
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`

@@ -19,9 +19,7 @@
  */
 package de.griefed.serverpackcreator.web.task
 
-import de.griefed.serverpackcreator.web.data.ErrorEntry
-import de.griefed.serverpackcreator.web.data.QueueEvent
-import de.griefed.serverpackcreator.web.modpack.ModpackStatus
+import de.griefed.serverpackcreator.web.modpack.ModPackStatus
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -35,7 +33,7 @@ class EventService @Autowired constructor(
     fun submit(
         modPackId: Int?,
         serverPackId: Int?,
-        status: ModpackStatus?,
+        status: ModPackStatus?,
         message: String,
         errors: List<String>? = null
     ) {
@@ -71,7 +69,7 @@ class EventService @Autowired constructor(
         return queueEventRepository.findAllByServerPackId(serverPackId)
     }
 
-    fun loadAllByStatus(status: ModpackStatus): MutableList<QueueEvent> {
+    fun loadAllByStatus(status: ModPackStatus): MutableList<QueueEvent> {
         return queueEventRepository.findAllByStatus(status)
     }
 }

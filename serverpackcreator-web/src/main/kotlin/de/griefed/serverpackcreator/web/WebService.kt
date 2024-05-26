@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,19 +27,25 @@ import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.scheduling.annotation.EnableScheduling
+import java.io.File
 
 @SpringBootApplication
 @EnableConfigurationProperties
 @EntityScan(value = ["de.griefed.serverpackcreator.web"])
 @EnableScheduling
 class WebService(private val api: ApiWrapper) {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     fun start(args: Array<String>): ConfigurableApplicationContext {
+        val userHome = System.getProperty("user.home")
         val lastIndex = "--spring.config.location=classpath:/application.properties," +
                 "classpath:/serverpackcreator.properties," +
                 "optional:file:./serverpackcreator.properties," +
-                "optional:file:${api.apiProperties.serverPackCreatorPropertiesFile.absolutePath}"
+                "optional:file:./overrides.properties," +
+                "optional:file:${api.apiProperties.serverPackCreatorPropertiesFile.absolutePath},"+
+                "optional:file:${api.apiProperties.overridesPropertiesFile.absolutePath}," +
+                "optional:file:${File(userHome,"serverpackcreator.properties").absolutePath}," +
+                "optional:file:${File(userHome,"overrides.properties").absolutePath}"
         val springArgs = if (args.isEmpty()) {
             arrayOf(lastIndex)
         } else {

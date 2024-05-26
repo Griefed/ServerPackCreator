@@ -14,7 +14,7 @@ class WebServiceTest internal constructor() {
             ApiWrapper.api(
                 File(
                     File("").absoluteFile.parent,
-                    "serverpackcreator-api/src/jvmTest/resources/serverpackcreator.properties"
+                    "serverpackcreator-api/src/test/resources/serverpackcreator.properties"
                 )
             )
         )

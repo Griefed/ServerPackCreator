@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.web.scheduling
 
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.deleteQuietly
-import de.griefed.serverpackcreator.web.modpack.ModpackRepository
+import de.griefed.serverpackcreator.web.modpack.ModPackRepository
 import de.griefed.serverpackcreator.web.serverpack.ServerPackRepository
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,11 +32,11 @@ import kotlin.io.path.listDirectoryEntries
 
 @Service
 class FileCleanupSchedule @Autowired constructor(
-    private val modpackRepository: ModpackRepository,
+    private val modpackRepository: ModPackRepository,
     private val serverPackRepository: ServerPackRepository,
     apiProperties: ApiProperties
 ) {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val modPackRoot: Path = apiProperties.modpacksDirectory.toPath()
     private val serverPackRoot: Path = apiProperties.serverPacksDirectory.toPath()
 

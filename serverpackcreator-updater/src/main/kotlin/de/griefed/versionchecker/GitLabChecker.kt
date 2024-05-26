@@ -26,6 +26,7 @@
 package de.griefed.versionchecker
 
 import com.fasterxml.jackson.databind.JsonNode
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import de.griefed.serverpackcreator.api.utilities.common.Comparison
 import de.griefed.serverpackcreator.api.utilities.common.SemanticVersionComparator
 import org.apache.logging.log4j.LogManager
@@ -48,7 +49,7 @@ import java.util.*
  * @author Griefed
  */
 class GitLabChecker : VersionChecker {
-    private val logger = LogManager.getLogger(GitLabChecker::class.java)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val gitLabApi: URL
     private var repository: JsonNode? = null
 
@@ -100,7 +101,7 @@ class GitLabChecker : VersionChecker {
      * @return [Update]-instance, wrapped in an [Optional], contianing information about the available update.
      */
     override fun check(currentVersion: String, checkForPreReleases: Boolean): Optional<Update> {
-        logger.debug("Current version: $currentVersion")
+        log.debug("Current version: $currentVersion")
         try {
             val newVersion = isUpdateAvailable(currentVersion, checkForPreReleases)
             if (newVersion != "up_to_date") {
@@ -153,9 +154,9 @@ class GitLabChecker : VersionChecker {
                 )
             }
         } catch (ex: NumberFormatException) {
-            logger.error("A version could not be parsed into integers.", ex)
+            log.error("A version could not be parsed into integers.", ex)
         } catch (ex: MalformedURLException) {
-            logger.error("URL could not be created.", ex)
+            log.error("URL could not be created.", ex)
         }
         return Optional.empty()
     }
@@ -176,7 +177,7 @@ class GitLabChecker : VersionChecker {
                 }
             }
         }
-        logger.debug("All versions: {}", versions)
+        log.debug("All versions: $versions")
 
         // In case the given repository does not have any releases
         return if (versions.size == 0) {
@@ -207,7 +208,7 @@ class GitLabChecker : VersionChecker {
                 return "no_release"
             }
             for (version in allVersions!!) {
-                logger.debug("version: $version")
+                log.debug("version: $version")
                 if (!version.contains("alpha") && !version.contains("beta") && SemanticVersionComparator.compareSemantics(
                         latest!!,
                         version,

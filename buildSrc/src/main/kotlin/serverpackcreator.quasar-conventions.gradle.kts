@@ -11,7 +11,7 @@ repositories {
 frontend {
     packageJsonDirectory.set(project.layout.projectDirectory.asFile)
 
-    nodeVersion.set("16.9.1")
+    nodeVersion.set("18.20.2")
     nodeInstallDirectory.set(project.layout.projectDirectory.dir("node"))
 
     yarnEnabled.set(false)

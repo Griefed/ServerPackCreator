@@ -45,7 +45,7 @@ class ConfigurationEditor(
     private val utilities: Utilities,
     private val versionMeta: VersionMeta
 ) {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")
     private val current = dateTimeFormatter.format(LocalDateTime.now())
     private val logFile: File = File(apiProperties.logsDirectory, "configurationCreator-$current.log")

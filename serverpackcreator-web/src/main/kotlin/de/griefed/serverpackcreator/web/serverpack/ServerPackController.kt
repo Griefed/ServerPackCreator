@@ -19,9 +19,7 @@
  */
 package de.griefed.serverpackcreator.web.serverpack
 
-import de.griefed.serverpackcreator.web.data.ServerPack
-import de.griefed.serverpackcreator.web.data.ServerPackView
-import de.griefed.serverpackcreator.web.modpack.ModpackService
+import de.griefed.serverpackcreator.web.modpack.ModPackService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
@@ -33,7 +31,7 @@ import org.springframework.web.bind.annotation.*
 
 /**
  * RestController for everything server pack related, like downloads.<br></br> All requests are in
- * `/api/v1/packs`.
+ * `/api/v2/serverpacks`.
  *
  * @author Griefed
  */
@@ -42,7 +40,7 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/v2/serverpacks")
 class ServerPackController @Autowired constructor(
     private val serverPackService: ServerPackService,
-    private val modpackService: ModpackService
+    private val modpackService: ModPackService
 ) {
 
     /**
@@ -62,7 +60,7 @@ class ServerPackController @Autowired constructor(
                 ResponseEntity.notFound().build()
             } else {
                 val modPack = modpackService.getByServerPack(serverPack.get())
-                serverPackService.updateDownloadCounter(id)
+                serverPackService.updateDownloadStats(id)
                 val fileName = modPack.get().name.replace(".zip","",ignoreCase = true)
                 ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType("application/zip"))
@@ -114,7 +112,7 @@ class ServerPackController @Autowired constructor(
      */
     @GetMapping("/all", produces = ["application/json"])
     @ResponseBody
-    fun getAllServerPacks(): ResponseEntity<List<ServerPackView>> {
+    fun getAllServerPacks(): ResponseEntity<List<ServerPack>> {
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).body(
             serverPackService.getServerPacks()
         )
@@ -122,10 +120,10 @@ class ServerPackController @Autowired constructor(
 
     @GetMapping("/{id:[0-9]+}", produces = ["application/json"])
     @ResponseBody
-    fun getServerPack(@PathVariable id: Int): ResponseEntity<ServerPackView> {
-        return if (serverPackService.getServerPackView(id).isPresent) {
+    fun getServerPack(@PathVariable id: Int): ResponseEntity<ServerPack> {
+        return if (serverPackService.getServerPack(id).isPresent) {
             ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).body(
-                serverPackService.getServerPackView(id).get()
+                serverPackService.getServerPack(id).get()
             )
         } else {
             ResponseEntity.notFound().build()

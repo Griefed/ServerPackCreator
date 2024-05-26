@@ -469,52 +469,6 @@ DAMAGES.
 
                      END OF TERMS AND CONDITIONS
 
-           How to Apply These Terms to Your New Libraries
-
-  If you develop a new library, and you want it to be of the greatest
-possible use to the public, we recommend making it free software that
-everyone can redistribute and change.  You can do so by permitting
-redistribution under these terms (or, alternatively, under the terms of the
-ordinary General Public License).
-
-  To apply these terms, attach the following notices to the library.  It is
-safest to attach them to the start of each source file to most effectively
-convey the exclusion of warranty; and each file should have at least the
-"copyright" line and a pointer to where the full notice is found.
-
-    <one line to give the library's name and a brief idea of what it does.>
-    Copyright (C) <year>  <name of author>
-
-    This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Lesser General Public
-    License as published by the Free Software Foundation; either
-    version 2.1 of the License, or (at your option) any later version.
-
-    This library is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public
-    License along with this library; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
-    USA
-
-Also add information on how to contact you by electronic and paper mail.
-
-You should also get your employer (if you work as a programmer) or your
-school, if any, to sign a "copyright disclaimer" for the library, if
-necessary.  Here is a sample; alter the names:
-
-  Yoyodyne, Inc., hereby disclaims all copyright interest in the
-  library `Frob' (a library for tweaking knobs) written by James Random
-  Hacker.
-
-  <signature of Ty Coon>, 1 April 1990
-  Ty Coon, President of Vice
-
-That's all there is to it!
-
 
 Used libraries / dependencies licenses:
 
@@ -546,8 +500,8 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (2 of 41)
 Group:   com.electronwill.night-config
 Name:    toml
-Version: 3.6.7
-POM Project URL: https://github.com/TheElectronWill/Night-Config
+Version: 3.7.1
+POM Project URL: https://github.com/TheElectronWill/night-config
 
 
 POM License: GNU Lesser General Public License v3.0
@@ -733,7 +687,7 @@ Library.
 (3 of 41)
 Group:   com.fasterxml.jackson.core
 Name:    jackson-databind
-Version: 2.15.3
+Version: 2.17.0
 Project URL: https://github.com/FasterXML/jackson\n\n
 Manifest license URL: https://www.apache.org/licenses/LICENSE-2.0
 
@@ -976,7 +930,7 @@ from the source code management (SCM) system project uses.
 (4 of 41)
 Group:   com.fasterxml.jackson.module
 Name:    jackson-module-kotlin
-Version: 2.14.2
+Version: 2.17.0
 Project URL: https://github.com/FasterXML/jackson-module-kotlin\n\n
 Manifest license URL: https://www.apache.org/licenses/LICENSE-2.0
 
@@ -990,7 +944,7 @@ Embedded license:
 This copy of Jackson JSON processor databind module is licensed under the
 Apache (Software) License, version 2.0 ("the License").
 See the License for details about distribution rights, and the
-specific rights regarding derivate works.
+specific rights regarding derivative works.
 
 You may obtain a copy of the License at:
 
@@ -1004,6 +958,10 @@ It was originally written by Tatu Saloranta (tatu.saloranta@iki.fi), and has
 been in development since 2007.
 It is currently developed by a community of developers, as well as supported
 commercially by FasterXML.com.
+
+## Copyright
+
+Copyright 2007-, Tatu Saloranta (tatu.saloranta@iki.fi)
 
 ## Licensing
 
@@ -1024,7 +982,7 @@ from the source code management (SCM) system project uses.
 (5 of 41)
 Group:   com.fasterxml.jackson.module
 Name:    jackson-module-kotlin
-Version: 2.15.3
+Version: 2.17.1
 Project URL: https://github.com/FasterXML/jackson-module-kotlin\n\n
 Manifest license URL: https://www.apache.org/licenses/LICENSE-2.0
 
@@ -1076,7 +1034,7 @@ from the source code management (SCM) system project uses.
 (6 of 41)
 Group:   com.formdev
 Name:    flatlaf
-Version: 3.2.5
+Version: 3.4
 POM Project URL: https://github.com/JFormDesigner/FlatLaf
 
 
@@ -1294,7 +1252,7 @@ Embedded license:
 (7 of 41)
 Group:   com.formdev
 Name:    flatlaf-extras
-Version: 3.2.5
+Version: 3.4
 POM Project URL: https://github.com/JFormDesigner/FlatLaf
 
 
@@ -1512,7 +1470,7 @@ Embedded license:
 (8 of 41)
 Group:   com.formdev
 Name:    flatlaf-fonts-inter
-Version: 3.19
+Version: 4.0
 POM Project URL: https://github.com/JFormDesigner/FlatLaf
 
 
@@ -1729,9 +1687,7 @@ Embedded license:
    limitations under the License.
 
 
-Copyright (c) 2016-2020 The Inter Project Authors.
-"Inter" is trademark of Rasmus Andersson.
-https://github.com/rsms/inter
+Copyright (c) 2016 The Inter Project Authors (https://github.com/rsms/inter)
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:
@@ -1830,7 +1786,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 (9 of 41)
 Group:   com.formdev
 Name:    flatlaf-fonts-jetbrains-mono
-Version: 2.242
+Version: 2.304
 POM Project URL: https://github.com/JFormDesigner/FlatLaf
 
 
@@ -2896,7 +2852,7 @@ Embedded license:
 (12 of 41)
 Group:   com.formdev
 Name:    flatlaf-intellij-themes
-Version: 3.2.5
+Version: 3.4
 POM Project URL: https://github.com/JFormDesigner/FlatLaf
 
 
@@ -3142,7 +3098,7 @@ URL: https://opensource.org/licenses/BSD-2-Clause
 (14 of 41)
 Group:   com.miglayout
 Name:    miglayout-swing
-Version: 11.2
+Version: 11.3
 POM Project URL: http://www.miglayout.com/
 
 
@@ -3162,7 +3118,7 @@ URL: https://opensource.org/licenses/0BSD
 (15 of 41)
 Group:   commons-io
 Name:    commons-io
-Version: 2.14.0
+Version: 2.16.1
 Project URL: https://commons.apache.org/proper/commons-io/\n\n
 Manifest license URL: https://www.apache.org/licenses/LICENSE-2.0
 
@@ -3379,7 +3335,7 @@ Embedded license:
 
 
 Apache Commons IO
-Copyright 2002-2023 The Apache Software Foundation
+Copyright 2002-2024 The Apache Software Foundation
 
 This product includes software developed at
 The Apache Software Foundation (https://www.apache.org/).
@@ -3390,7 +3346,7 @@ The Apache Software Foundation (https://www.apache.org/).
 (16 of 41)
 Group:   de.comahe.i18n4k
 Name:    i18n4k-core
-Version: 0.6.2
+Version: 0.7.0
 No license information found
 
 
@@ -3399,7 +3355,7 @@ No license information found
 (17 of 41)
 Group:   de.comahe.i18n4k
 Name:    i18n4k-core-jvm
-Version: 0.6.2
+Version: 0.7.0
 POM Project URL: https://comahe-de.github.io/i18n4k/
 
 
@@ -3419,7 +3375,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (18 of 41)
 Group:   de.jensklingenberg.ktorfit
 Name:    ktorfit-lib
-Version: 1.9.0
+Version: 1.14.0
 No license information found
 
 
@@ -3480,7 +3436,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (22 of 41)
 Group:   org.apache.logging.log4j
 Name:    log4j-api-kotlin
-Version: 1.3.0
+Version: 1.4.0
 Manifest license URL: https://www.apache.org/licenses/LICENSE-2.0
 
 
@@ -3707,7 +3663,7 @@ The Apache Software Foundation (http://www.apache.org/).
 (23 of 41)
 Group:   org.apache.logging.log4j
 Name:    log4j-core
-Version: 2.21.0
+Version: 2.23.1
 Manifest license URL: https://www.apache.org/licenses/LICENSE-2.0
 
 
@@ -3935,7 +3891,7 @@ Copyright 2005-2006 Tim Fennell
 (24 of 41)
 Group:   org.bouncycastle
 Name:    bcpkix-jdk18on
-Version: 1.77
+Version: 1.78
 POM Project URL: https://www.bouncycastle.org/java.html
 
 
@@ -3955,11 +3911,11 @@ URL: https://www.bouncycastle.org/licence.html
 (25 of 41)
 Group:   org.javassist
 Name:    javassist
-Version: 3.29.2-GA
+Version: 3.30.2-GA
 Manifest license URL: https://www.apache.org/licenses/LICENSE-2.0
 
 
-POM Project URL: http://www.javassist.org/
+POM Project URL: https://www.javassist.org/
 
 
 POM License: Apache License, Version 2.0
@@ -3994,7 +3950,7 @@ URL: https://www.mozilla.org/en-US/MPL/1.1
 (26 of 41)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-bom
-Version: 1.9.21
+Version: 1.9.23
 No license information found
 
 
@@ -4003,7 +3959,7 @@ No license information found
 (27 of 41)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-reflect
-Version: 1.9.10
+Version: 1.9.23
 POM Project URL: https://kotlinlang.org/
 
 
@@ -4022,8 +3978,8 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 (28 of 41)
 Group:   org.jetbrains.kotlin
-Name:    kotlin-reflect
-Version: 1.9.21
+Name:    kotlin-stdlib
+Version: 1.9.23
 POM Project URL: https://kotlinlang.org/
 
 
@@ -4043,7 +3999,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (29 of 41)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-stdlib
-Version: 1.9.21
+Version: 2.0.0-RC1
 POM Project URL: https://kotlinlang.org/
 
 
@@ -4063,7 +4019,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (30 of 41)
 Group:   org.jetbrains.kotlinx
 Name:    kotlinx-coroutines-core
-Version: 1.7.3
+Version: 1.8.0
 No license information found
 
 
@@ -4072,7 +4028,7 @@ No license information found
 (31 of 41)
 Group:   org.jetbrains.kotlinx
 Name:    kotlinx-coroutines-swing
-Version: 1.7.3
+Version: 1.8.0
 POM Project URL: https://github.com/Kotlin/kotlinx.coroutines
 
 
@@ -4092,7 +4048,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (32 of 41)
 Group:   org.jetbrains.kotlinx
 Name:    kotlinx-datetime
-Version: 0.4.1
+Version: 0.5.0
 No license information found
 
 
@@ -4101,7 +4057,7 @@ No license information found
 (33 of 41)
 Group:   org.pf4j
 Name:    pf4j
-Version: 3.10.0
+Version: 3.11.0
 POM License: Apache License, Version 2.0
  - https://www.apache.org/licenses/LICENSE-2.0
 
@@ -4118,7 +4074,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (34 of 41)
 Group:   org.postgresql
 Name:    postgresql
-Version: 42.6.0
+Version: 42.7.3
 Manifest Project URL: https://jdbc.postgresql.org/
 
 
@@ -4270,7 +4226,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (35 of 41)
 Group:   org.springframework.boot
 Name:    spring-boot-devtools
-Version: 3.0.4
+Version: 3.2.5
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -4483,8 +4439,8 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 3.0.4
-Copyright (c) 2012-2023 VMware, Inc.
+Spring Boot 3.2.5
+Copyright (c) 2012-2024 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
 (the "License"). You may not use this product except in compliance with
@@ -4495,7 +4451,7 @@ the License.
 (36 of 41)
 Group:   org.springframework.boot
 Name:    spring-boot-devtools
-Version: 3.2.0
+Version: 3.3.0
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -4708,8 +4664,8 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 3.2.0
-Copyright (c) 2012-2023 VMware, Inc.
+Spring Boot 3.3.0
+Copyright (c) 2012-2024 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
 (the "License"). You may not use this product except in compliance with
@@ -4720,7 +4676,7 @@ the License.
 (37 of 41)
 Group:   org.springframework.boot
 Name:    spring-boot-starter-data-jpa
-Version: 3.0.4
+Version: 3.2.5
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -4933,8 +4889,8 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 3.0.4
-Copyright (c) 2012-2023 VMware, Inc.
+Spring Boot 3.2.5
+Copyright (c) 2012-2024 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
 (the "License"). You may not use this product except in compliance with
@@ -4945,7 +4901,7 @@ the License.
 (38 of 41)
 Group:   org.springframework.boot
 Name:    spring-boot-starter-log4j2
-Version: 3.0.4
+Version: 3.2.4
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -5158,8 +5114,8 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 3.0.4
-Copyright (c) 2012-2023 VMware, Inc.
+Spring Boot 3.2.4
+Copyright (c) 2012-2024 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
 (the "License"). You may not use this product except in compliance with
@@ -5170,7 +5126,7 @@ the License.
 (39 of 41)
 Group:   org.springframework.boot
 Name:    spring-boot-starter-web
-Version: 3.1.0
+Version: 3.2.4
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -5383,8 +5339,8 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 3.1.0
-Copyright (c) 2012-2023 VMware, Inc.
+Spring Boot 3.2.4
+Copyright (c) 2012-2024 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
 (the "License"). You may not use this product except in compliance with
@@ -5395,7 +5351,7 @@ the License.
 (40 of 41)
 Group:   org.springframework.boot
 Name:    spring-boot-starter-web
-Version: 3.2.0
+Version: 3.3.0
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -5608,8 +5564,8 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 3.2.0
-Copyright (c) 2012-2023 VMware, Inc.
+Spring Boot 3.3.0
+Copyright (c) 2012-2024 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
 (the "License"). You may not use this product except in compliance with

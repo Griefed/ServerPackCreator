@@ -20,9 +20,9 @@
 package de.griefed.serverpackcreator.web.task
 
 import de.griefed.serverpackcreator.api.PackConfig
-import de.griefed.serverpackcreator.web.data.ModPack
-import de.griefed.serverpackcreator.web.data.RunConfiguration
-import de.griefed.serverpackcreator.web.data.ServerPack
+import de.griefed.serverpackcreator.web.modpack.ModPack
+import de.griefed.serverpackcreator.web.serverpack.ServerPack
+import de.griefed.serverpackcreator.web.serverpack.customizing.RunConfiguration
 import java.io.File
 
 class TaskDetail(val modpack: ModPack) {

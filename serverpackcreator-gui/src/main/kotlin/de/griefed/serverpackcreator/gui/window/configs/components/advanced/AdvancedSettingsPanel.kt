@@ -57,7 +57,7 @@ class AdvancedSettingsPanel(
         "[left,::64]5[left]5[left,grow]5[left,::64]5[left,::64]", "30"
     )
 ) {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val clientModsIcon = StatusIcon(guiProps,Translations.createserverpack_gui_createserverpack_labelclientmods_tip.toString())
     private val clientModsLabel = ElementLabel(Translations.createserverpack_gui_createserverpack_labelclientmods.toString())
     private val clientModsRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.createserverpack_gui_buttonclientmods_revert_tip.toString(), guiProps) { revertExclusions() }

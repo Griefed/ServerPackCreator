@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.web.task
 
-import de.griefed.serverpackcreator.web.data.ModPack
+import de.griefed.serverpackcreator.web.modpack.ModPack
 
 interface TaskExecutionService {
     fun submitTaskInQueue(taskDetail: TaskDetail)

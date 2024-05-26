@@ -106,8 +106,6 @@ tasks.jar {
     manifest {
         attributes(
             mapOf(
-                "Implementation-Title" to project.name,
-                "Implementation-Version" to project.version,
                 "Built-By" to System.getProperty("user.name"),
                 "Build-Timestamp" to SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(Date()),
                 "Created-By" to "Gradle ${gradle.gradleVersion}",

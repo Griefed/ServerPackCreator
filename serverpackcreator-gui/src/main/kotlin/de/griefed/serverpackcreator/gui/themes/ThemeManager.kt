@@ -27,7 +27,7 @@ import com.formdev.flatlaf.themes.FlatMacDarkLaf
 import com.formdev.flatlaf.themes.FlatMacLightLaf
 import com.formdev.flatlaf.util.StringUtils
 import de.griefed.serverpackcreator.api.ApiWrapper
-import de.griefed.serverpackcreator.api.utilities.common.createDirectories
+import de.griefed.serverpackcreator.api.utilities.common.create
 import de.griefed.serverpackcreator.gui.GuiProps
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Frame
@@ -46,14 +46,14 @@ import javax.swing.UIManager
  */
 class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: GuiProps) {
 
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val themeRegex = ".*\\.(properties|txt)".toRegex()
     private val lastModifiedMap: HashMap<File, Long> = HashMap()
     val themesDir: File = File(apiWrapper.apiProperties.homeDirectory, "themes").absoluteFile
     val themes = mutableListOf<ThemeInfo>()
 
     init {
-        themesDir.createDirectories(create = true, directory = true)
+        themesDir.create(create = true, directory = true)
         provideExamples()
         reloadThemes()
     }

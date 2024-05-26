@@ -29,19 +29,23 @@ configurations {
 
 dependencies {
     api(project(":serverpackcreator-api"))
-    api("org.jetbrains.kotlin:kotlin-reflect:1.9.10")
-    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
-    api("org.springframework.boot:spring-boot-starter-web:3.1.0")
-    api("org.springframework.boot:spring-boot-starter-log4j2:3.0.4")
-    api("org.springframework.boot:spring-boot-starter-data-jpa:3.0.4")
-    api("org.postgresql:postgresql:42.6.0")
-    api("org.javassist:javassist:3.29.2-GA")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.3")
-    testRuntimeOnly("com.h2database:h2:2.2.220")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:3.1.0")
-    developmentOnly("org.springframework.boot:spring-boot-devtools:3.0.4")
+    api("org.jetbrains.kotlin:kotlin-reflect:1.9.23")
+    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.0")
+    api("org.springframework.boot:spring-boot-starter-web:3.2.4")
+    api("org.springframework.boot:spring-boot-starter-log4j2:3.2.4")
+    api("org.springframework.boot:spring-boot-starter-data-jpa:3.2.5")
+    api("org.postgresql:postgresql:42.7.3")
+    api("org.javassist:javassist:3.30.2-GA")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
+    testRuntimeOnly("com.h2database:h2:2.2.224")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:3.2.4")
+    developmentOnly("org.springframework.boot:spring-boot-devtools:3.2.5")
     //developmentOnly("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
+}
+
+tasks.bootJar {
+    dependsOn(":serverpackcreator-api:processTestResources")
 }
 
 tasks.clean {
@@ -55,6 +59,7 @@ tasks.clean {
 }
 
 tasks.test {
+    dependsOn(":serverpackcreator-api:processTestResources")
     systemProperty("java.util.logging.manager","org.jboss.logmanager.LogManager")
     doFirst {
         val tests = File(projectDir,"tests").absoluteFile

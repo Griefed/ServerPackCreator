@@ -20,9 +20,9 @@
 package de.griefed.serverpackcreator.web.scheduling
 
 import de.griefed.serverpackcreator.api.ApiProperties
-import de.griefed.serverpackcreator.web.modpack.ModpackRepository
-import de.griefed.serverpackcreator.web.modpack.ModpackService
-import de.griefed.serverpackcreator.web.modpack.ModpackStatus
+import de.griefed.serverpackcreator.web.modpack.ModPackRepository
+import de.griefed.serverpackcreator.web.modpack.ModPackService
+import de.griefed.serverpackcreator.web.modpack.ModPackStatus
 import de.griefed.serverpackcreator.web.serverpack.ServerPackRepository
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.springframework.beans.factory.annotation.Autowired
@@ -33,12 +33,12 @@ import kotlin.io.path.listDirectoryEntries
 
 @Service
 class DatabaseCleanupSchedule @Autowired constructor(
-    private val modpackRepository: ModpackRepository,
-    private val modpackService: ModpackService,
+    private val modpackRepository: ModPackRepository,
+    private val modpackService: ModPackService,
     private val serverPackRepository: ServerPackRepository,
     apiProperties: ApiProperties
 ) {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val modPackRoot: Path = apiProperties.modpacksDirectory.toPath()
     private val serverPackRoot: Path = apiProperties.serverPacksDirectory.toPath()
 
@@ -47,7 +47,7 @@ class DatabaseCleanupSchedule @Autowired constructor(
         log.info("Cleaning database...")
         val modpackFiles = modPackRoot.listDirectoryEntries().map { it.toFile() }
         for (modpack in modpackRepository.findAll()) {
-            if (modpack.status == ModpackStatus.ERROR) {
+            if (modpack.status == ModPackStatus.ERROR) {
                 modpackService.deleteModpack(modpack.id)
                 log.info("Deleted Modpack: ${modpack.id}-${modpack.name}")
             } else if (modpackFiles.find { modpackFile -> modpackFile.name.contains(modpack.fileID!!.toString(), ignoreCase = true) } == null) {
