@@ -232,8 +232,14 @@ jobs:
         uses: sergeysova/jq-action@v2.3.0
         id: description
         with:
-          cmd: "jq .description version.json -r | sed -e 's/\\n/\\n/g' > description.txt && echo \"\n\n---\n\n### Note\n\n#### Alphas\n\nAlphas are feature-incomplete and very likely to have bugs. Before submitting an issue, please check the corresponding [milestone](https://git.griefed.de/Griefed/ServerPackCreator/-/milestones) of this releases major version to see whether an issue for yours already exists there.\nDoing so saves both you and me a lot of time. Thanks in advance!\n\n#### Betas\n\nBetas are feature-complete and probably have bugs.\n\n#### Installers\n\nWhen using pre-release installers, please uninstall previous versions of ServerPackCreator before installing a newer one.\" | sed -e 's/\\n/\\n/g' >> description.txt"
+          cmd: "jq .description version.json -r | sed -e 's/\\n/\\n/g' > description.txt"
           multiline: true
+
+      - name: General Pre-Info
+        id: preinfo
+        uses: jaywcjlove/github-action-read-file@v1.2.2
+        with:
+          path: misc/PRE-INFO.md
 
       - name: General Info
         id: info
