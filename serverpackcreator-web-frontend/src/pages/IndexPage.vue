@@ -1,7 +1,7 @@
 <template>
   <q-page class="q-pa-sm">
     <div class="row q-col-gutter-sm q-py-xs">
-      <div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
+      <div class="col">
         <q-card>
           <q-card-section>
             <div class="text-h6">Disk Usage(s)</div>
