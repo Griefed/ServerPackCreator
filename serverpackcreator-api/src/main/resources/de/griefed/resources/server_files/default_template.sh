@@ -118,11 +118,11 @@ setup_forge() {
     FORGE_JAR_LOCATION="forge.jar"
     LAUNCHER_JAR_LOCATION="forge.jar"
     MINECRAFT_SERVER_JAR_LOCATION="minecraft_server.${MINECRAFT_VERSION}.jar"
-    SERVER_RUN_COMMAND="-Dlog4j2.formatMsgNoLookups=true ${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"
+    SERVER_RUN_COMMAND="${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"
   else
     FORGE_JAR_LOCATION="libraries/net/minecraftforge/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}-server.jar"
     MINECRAFT_SERVER_JAR_LOCATION="libraries/net/minecraft/server/${MINECRAFT_VERSION}/server-${MINECRAFT_VERSION}.jar"
-    SERVER_RUN_COMMAND="-Dlog4j2.formatMsgNoLookups=true @user_jvm_args.txt @libraries/net/minecraftforge/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/unix_args.txt nogui"
+    SERVER_RUN_COMMAND="@user_jvm_args.txt @libraries/net/minecraftforge/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/unix_args.txt nogui"
 
     echo "Generating user_jvm_args.txt from variables..."
     echo "Edit JAVA_ARGS in your variables.txt. Do not edit user_jvm_args.txt directly!"
@@ -183,7 +183,7 @@ setup_neoforge() {
   fi
 
   MINECRAFT_SERVER_JAR_LOCATION="libraries/net/minecraft/server/${MINECRAFT_VERSION}/server-${MINECRAFT_VERSION}.jar"
-  SERVER_RUN_COMMAND="-Dlog4j2.formatMsgNoLookups=true @user_jvm_args.txt @${JAR_FOLDER}/unix_args.txt nogui"
+  SERVER_RUN_COMMAND="@user_jvm_args.txt @${JAR_FOLDER}/unix_args.txt nogui"
 
   echo "Generating user_jvm_args.txt from variables..."
   echo "Edit JAVA_ARGS in your variables.txt. Do not edit user_jvm_args.txt directly!"
@@ -264,7 +264,7 @@ setup_fabric() {
     MINECRAFT_SERVER_JAR_LOCATION="server.jar"
   fi
 
-  SERVER_RUN_COMMAND="-Dlog4j2.formatMsgNoLookups=true ${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"
+  SERVER_RUN_COMMAND="${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"
 }
 
 # If modloader = Quilt, run Quilt-specific checks
@@ -297,7 +297,7 @@ setup_quilt() {
 
   LAUNCHER_JAR_LOCATION="quilt-server-launch.jar"
   MINECRAFT_SERVER_JAR_LOCATION="server.jar"
-  SERVER_RUN_COMMAND="-Dlog4j2.formatMsgNoLookups=true ${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"
+  SERVER_RUN_COMMAND="${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"
 }
 
 # If modloader = LegacyFabric, run LegacyFabric-specific checks
@@ -330,7 +330,7 @@ setup_legacyfabric() {
 
   LAUNCHER_JAR_LOCATION="fabric-server-launch.jar"
   MINECRAFT_SERVER_JAR_LOCATION="server.jar"
-  SERVER_RUN_COMMAND="-Dlog4j2.formatMsgNoLookups=true ${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"
+  SERVER_RUN_COMMAND="${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"
 }
 
 # Check for a minecraft server and download it if necessary
@@ -428,18 +428,20 @@ echo "Quilt Installer Version:        ${QUILT_INSTALLER_VERSION}"
 echo "NeoForge Installer URL:         ${NEOFORGE_INSTALLER_URL}"
 echo "Minecraft Server URL:           ${MINECRAFT_SERVER_URL}"
 echo "Java Args:                      ${JAVA_ARGS}"
+echo "Additional Args:                ${ADDITIONAL_ARGS}"
 echo "Java Path:                      ${JAVA}"
 echo "Wait For User Input:            ${WAIT_FOR_USER_INPUT}"
 if [[ ${LAUNCHER_JAR_LOCATION} != "do_not_manually_edit" ]]; then
 {
     echo "Launcher JAR:                   ${LAUNCHER_JAR_LOCATION}"
 }
-echo "Run Command:       ${JAVA} ${SERVER_RUN_COMMAND}"
+fi
+echo "Run Command:       ${JAVA} ${ADDITIONAL_ARGS} ${SERVER_RUN_COMMAND}"
 echo "Java version:"
 "${JAVA}" -version
 echo ""
 
-runJavaCommand "${SERVER_RUN_COMMAND}"
+runJavaCommand "${ADDITIONAL_ARGS} ${SERVER_RUN_COMMAND}"
 
 echo ""
 quitServer

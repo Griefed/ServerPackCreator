@@ -78,6 +78,7 @@ $NeoForgeInstallerUrl = $ExternalVariables['NEOFORGE_INSTALLER_URL']
 $JavaArgs = $ExternalVariables['JAVA_ARGS']
 $Java = $ExternalVariables['JAVA']
 $WaitForUserInput = $ExternalVariables['WAIT_FOR_USER_INPUT']
+$AdditionalArgs = $ExternalVariables['ADDITIONAL_ARGS']
 
 # Clean up quotes from the Java variable
 if ($Java[0] -eq '"')
@@ -200,13 +201,13 @@ Function global:SetupForge
         $ForgeJarLocation = "forge.jar"
         $script:LauncherJarLocation = "forge.jar"
         $script:MinecraftServerJarLocation = "minecraft_server.${MinecraftVersion}.jar"
-        $script:ServerRunCommand = "-Dlog4j2.formatMsgNoLookups=true ${JavaArgs} -jar ${LauncherJarLocation} nogui"
+        $script:ServerRunCommand = "${JavaArgs} -jar ${LauncherJarLocation} nogui"
     }
     else
     {
         $ForgeJarLocation = "libraries/net/minecraftforge/forge/${MinecraftVersion}-${ModLoaderVersion}/forge-${MinecraftVersion}-${ModLoaderVersion}-server.jar"
         $script:MinecraftServerJarLocation = "libraries/net/minecraft/server/${MinecraftVersion}/server-${MinecraftVersion}.jar"
-        $script:ServerRunCommand = "-Dlog4j2.formatMsgNoLookups=true @user_jvm_args.txt @libraries/net/minecraftforge/forge/${MinecraftVersion}-${ModLoaderVersion}/win_args.txt nogui"
+        $script:ServerRunCommand = "@user_jvm_args.txt @libraries/net/minecraftforge/forge/${MinecraftVersion}-${ModLoaderVersion}/win_args.txt nogui"
 
         Write-Host "Generating user_jvm_args.txt from variables..."
         Write-Host "Edit JAVA_ARGS in your variables.txt. Do not edit user_jvm_args.txt directly!"
@@ -275,7 +276,7 @@ Function global:SetupNeoForge
     }
 
     $script:MinecraftServerJarLocation = "libraries/net/minecraft/server/${MinecraftVersion}/server-${MinecraftVersion}.jar"
-    $script:ServerRunCommand = "-Dlog4j2.formatMsgNoLookups=true @user_jvm_args.txt @${JarFolder}/win_args.txt nogui"
+    $script:ServerRunCommand = "@user_jvm_args.txt @${JarFolder}/win_args.txt nogui"
 
     Write-Host "Generating user_jvm_args.txt from variables..."
     Write-Host "Edit JAVA_ARGS in your variables.txt. Do not edit user_jvm_args.txt directly!"
@@ -379,7 +380,7 @@ Function global:SetupFabric
             $script:MinecraftServerJarLocation = "server.jar"
         }
     }
-    $script:ServerRunCommand = "-Dlog4j2.formatMsgNoLookups=true ${script:JavaArgs} -jar ${script:LauncherJarLocation} nogui"
+    $script:ServerRunCommand = "${script:JavaArgs} -jar ${script:LauncherJarLocation} nogui"
 }
 
 # If modloader = Quilt, run Quilt-specific checks
@@ -417,7 +418,7 @@ Function global:SetupQuilt
 
     $script:LauncherJarLocation = "quilt-server-launch.jar"
     $script:MinecraftServerJarLocation = "server.jar"
-    $script:ServerRunCommand = "-Dlog4j2.formatMsgNoLookups=true ${JavaArgs} -jar ${LauncherJarLocation} nogui"
+    $script:ServerRunCommand = "${JavaArgs} -jar ${LauncherJarLocation} nogui"
 }
 
 # If modloader = LegacyFabric, run LegacyFabric-specific checks
@@ -455,7 +456,7 @@ Function global:SetupLegacyFabric
 
     $script:LauncherJarLocation = "fabric-server-launch.jar"
     $script:MinecraftServerJarLocation = "server.jar"
-    $script:ServerRunCommand = "-Dlog4j2.formatMsgNoLookups=true ${JavaArgs} -jar ${LauncherJarLocation} nogui"
+    $script:ServerRunCommand = "${JavaArgs} -jar ${LauncherJarLocation} nogui"
 }
 
 # Check for a minecraft server and download it if necessary
@@ -561,18 +562,19 @@ Eula
 "NeoForge Installer URL:         ${NeoForgeInstallerUrl}"
 "Minecraft Server URL:           ${MinecraftServerUrl}"
 "Java Args:                      ${JavaArgs}"
+"Additional Args:                ${AdditionalArgs}"
 "Java Path:                      ${Java}"
 "Wait For User Input:            ${WaitForUserInput}"
 if (!("${LauncherJarLocation}" -eq "do_not_manually_edit"))
 {
     "Launcher JAR:                   ${LauncherJarLocation}"
 }
-"Run Command:       ${Java} ${ServerRunCommand}"
+"Run Command:       ${Java} ${AdditionalArgs} ${ServerRunCommand}"
 "Java version:"
 RunJavaCommand "-version"
 ""
 
-RunJavaCommand "${ServerRunCommand}"
+RunJavaCommand "${AdditionalArgs} ${ServerRunCommand}"
 
 ""
 QuitServer

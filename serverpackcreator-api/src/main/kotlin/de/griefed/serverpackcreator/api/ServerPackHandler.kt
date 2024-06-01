@@ -107,6 +107,7 @@ class ServerPackHandler(
         JAVA_ARGS="SPC_JAVA_ARGS_SPC"
         JAVA="SPC_JAVA_SPC"
         WAIT_FOR_USER_INPUT=SPC_WAIT_FOR_USER_INPUT_SPC
+        ADDITIONAL_ARGS=-Dlog4j2.formatMsgNoLookups=true
     """.trimIndent()
 
     /**

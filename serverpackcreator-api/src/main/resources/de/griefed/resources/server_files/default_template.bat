@@ -142,11 +142,11 @@ IF %MC_MINOR% LEQ 16 (
 	SET FORGEJARLOCATION=forge.jar
 	SET LAUNCHERJARLOCATION=forge.jar
 	SET MINECRAFTSERVERJARLOCATION=minecraft_server.%MINECRAFT_VERSION%.jar
-	SET SERVERRUNCOMANND=-Dlog4j2.formatMsgNoLookups^=true %JAVA_ARGS% -jar !LAUNCHERJARLOCATION! nogui
+	SET SERVERRUNCOMANND=%JAVA_ARGS% -jar !LAUNCHERJARLOCATION! nogui
 ) ELSE (
 	SET FORGEJARLOCATION=libraries/net/minecraftforge/forge/%MINECRAFT_VERSION%-%MODLOADER_VERSION%/forge-%MINECRAFT_VERSION%-%MODLOADER_VERSION%-server.jar
 	SET MINECRAFTSERVERJARLOCATION=libraries/net/minecraft/server/%MINECRAFT_VERSION%/server-%MINECRAFT_VERSION%.jar
-	SET SERVERRUNCOMANND=-Dlog4j2.formatMsgNoLookups^=true @user_jvm_args.txt @libraries/net/minecraftforge/forge/%MINECRAFT_VERSION%-%MODLOADER_VERSION%/win_args.txt nogui
+	SET SERVERRUNCOMANND=@user_jvm_args.txt @libraries/net/minecraftforge/forge/%MINECRAFT_VERSION%-%MODLOADER_VERSION%/win_args.txt nogui
 
 	ECHO Generating user_jvm_args.txt from variables...
 	ECHO Edit JAVA_ARGS in your variables.txt. Do not edit user_jvm_args.txt directly^^!
@@ -214,7 +214,7 @@ IF %MC_MINOR% EQU 20 (
 )
 
 SET MINECRAFTSERVERJARLOCATION=libraries/net/minecraft/server/%MINECRAFT_VERSION%/server-%MINECRAFT_VERSION%.jar
-SET SERVERRUNCOMANND=-Dlog4j2.formatMsgNoLookups^=true @user_jvm_args.txt @!JARFOLDER!/win_args.txt nogui
+SET SERVERRUNCOMANND=@user_jvm_args.txt @!JARFOLDER!/win_args.txt nogui
 
 ECHO Generating user_jvm_args.txt from variables...
 ECHO Edit JAVA_ARGS in your variables.txt. Do not edit user_jvm_args.txt directly^!
@@ -303,7 +303,7 @@ IF %IMPROVEDFABRICLAUNCHERAVAILABLE%==200 (
 		SET MINECRAFTSERVERJARLOCATION=server.jar
 	)
 )
-SET "SERVERRUNCOMANND=-Dlog4j2.formatMsgNoLookups^=true !JAVA_ARGS! -jar !LAUNCHERJARLOCATION! nogui"
+SET "SERVERRUNCOMANND=!JAVA_ARGS! -jar !LAUNCHERJARLOCATION! nogui"
 ECHO "%SERVERRUNCOMANND%"
 EXIT /B 0
 
@@ -342,7 +342,7 @@ IF %COUNT% EQU 0 (
 )
 SET LAUNCHERJARLOCATION=quilt-server-launch.jar
 SET MINECRAFTSERVERJARLOCATION=server.jar
-SET SERVERRUNCOMANND=-Dlog4j2.formatMsgNoLookups^=true %JAVA_ARGS% -jar !LAUNCHERJARLOCATION! nogui
+SET SERVERRUNCOMANND=%JAVA_ARGS% -jar !LAUNCHERJARLOCATION! nogui
 EXIT /B 0
 
 :: If modloader = LegacyFabric, run LegacyFabric-specific checks
@@ -383,7 +383,7 @@ IF %COUNT% EQU 0 (
 
 SET LAUNCHERJARLOCATION=fabric-server-launch.jar
 SET MINECRAFTSERVERJARLOCATION=server.jar
-SET SERVERRUNCOMANND=-Dlog4j2.formatMsgNoLookups^=true %JAVA_ARGS% -jar !LAUNCHERJARLOCATION! nogui
+SET SERVERRUNCOMANND=%JAVA_ARGS% -jar !LAUNCHERJARLOCATION! nogui
 EXIT /B 0
 
 :: Check for a minecraft server and download it if necessary
@@ -473,17 +473,18 @@ ECHO Quilt Installer Version:        %QUILT_INSTALLER_VERSION%
 ECHO NeoForge Installer URL:         %NEOFORGE_INSTALLER_URL%
 ECHO Minecraft Server URL:           %MINECRAFT_SERVER_URL%
 ECHO Java Args:                      %JAVA_ARGS%
+ECHO Additional Args:                %ADDITIONAL_ARGS%
 ECHO Java Path:                      %JAVA%
 ECHO Wait For User Input:            %WAIT_FOR_USER_INPUT%
 IF NOT !LAUNCHERJARLOCATION!=="do_not_manually_edit" (
     ECHO Launcher JAR:                   !LAUNCHERJARLOCATION!
 )
-ECHO Run Command:       %JAVA% !SERVERRUNCOMANND!
+ECHO Run Command:       %JAVA% %ADDITIONAL_ARGS% !SERVERRUNCOMANND!
 ECHO Java version:
 CALL:RUNJAVACOMMAND -version
 ECHO.
 
-CALL:RUNJAVACOMMAND "!SERVERRUNCOMANND!"
+CALL:RUNJAVACOMMAND "%ADDITIONAL_ARGS% !SERVERRUNCOMANND!"
 
 ECHO.
 CALL:QUITSERVER
