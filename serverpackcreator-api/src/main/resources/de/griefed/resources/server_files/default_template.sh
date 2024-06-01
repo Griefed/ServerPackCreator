@@ -66,6 +66,8 @@ MINECRAFT_SERVER_JAR_LOCATION="do_not_manually_edit"
 LAUNCHER_JAR_LOCATION="do_not_manually_edit"
 SERVER_RUN_COMMAND="do_not_manually_edit"
 
+IFS="." read -ra SEMANTICS <<<"${MINECRAFT_VERSION}"
+
 quitServer() {
   echo "Exiting..."
   if [[ "${WAIT_FOR_USER_INPUT}" == "true" ]]; then
@@ -109,13 +111,10 @@ checkJavaBitness() {
 setup_forge() {
   echo ""
   echo "Running Forge checks and setup..."
-
   FORGE_INSTALLER_URL="https://files.minecraftforge.net/maven/net/minecraftforge/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}-installer.jar"
-
   FORGE_JAR_LOCATION="do_not_manually_edit"
-  IFS="." read -ra MINOR <<<"${MINECRAFT_VERSION}"
 
-  if [[ ${MINOR[1]} -le 16 ]]; then
+  if [[ ${SEMANTICS[1]} -le 16 ]]; then
     FORGE_JAR_LOCATION="forge.jar"
     LAUNCHER_JAR_LOCATION="forge.jar"
     MINECRAFT_SERVER_JAR_LOCATION="minecraft_server.${MINECRAFT_VERSION}.jar"
@@ -147,7 +146,7 @@ setup_forge() {
     echo "Forge Installer downloaded. Installing..."
     runJavaCommand "-jar forge-installer.jar --installServer"
 
-    if [[ ${MINOR[1]} -gt 16 ]]; then
+    if [[ ${SEMANTICS[1]} -gt 16 ]]; then
       rm -f run.bat
       rm -f run.sh
     else
@@ -175,7 +174,6 @@ setup_neoforge() {
 
   FORGE_JAR_LOCATION="do_not_manually_edit"
   JAR_FOLDER="do_not_manually_edit"
-  IFS="." read -ra SEMANTICS <<<"${MINECRAFT_VERSION}"
   if [[ ${SEMANTICS[1]} -eq 20 ]] && [[ ${SEMANTICS[1]} -gt 1 ]]; then
         JAR_FOLDER="libraries/net/neoforged/neoforge/${MODLOADER_VERSION}"
         FORGE_JAR_LOCATION="${JAR_FOLDER}/neoforge-${MODLOADER_VERSION}-server.jar"

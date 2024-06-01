@@ -76,6 +76,12 @@ SET MINECRAFTSERVERJARLOCATION=do_not_manually_edit
 SET LAUNCHERJARLOCATION=do_not_manually_edit
 SET SERVERRUNCOMANND=do_not_manually_edit
 
+FOR /F "tokens=1,2,3 delims=." %%a IN ("%MINECRAFT_VERSION%") do (
+	SET /A MC_MAJOR=%%a
+	SET /A MC_MINOR=%%b
+	SET /A MC_PATCH=%%c
+)
+
 GOTO :MAIN
 
 :DELETEFILESILENTLY <FILE_TO_DELETE>
@@ -131,11 +137,6 @@ ECHO.
 ECHO Running Forge checks and setup...
 SET FORGEINSTALLERURL=https://files.minecraftforge.net/maven/net/minecraftforge/forge/%MINECRAFT_VERSION%-%MODLOADER_VERSION%/forge-%MINECRAFT_VERSION%-%MODLOADER_VERSION%-installer.jar
 SET FORGEJARLOCATION=do_not_manually_edit
-FOR /F "tokens=1,2,3 delims=." %%a IN ("%MINECRAFT_VERSION%") do (
-	SET /A MC_MAJOR=%%a
-	SET /A MC_MINOR=%%b
-	SET /A MC_PATCH=%%c
-)
 
 IF %MC_MINOR% LEQ 16 (
 	SET FORGEJARLOCATION=forge.jar
@@ -198,11 +199,6 @@ ECHO.
 ECHO Running NeoForge checks and setup...
 SET FORGEJARLOCATION=do_not_manually_edit
 SET JARFOLDER=do_not_manually_edit
-FOR /F "tokens=1,2,3 delims=." %%a IN ("%MINECRAFT_VERSION%") do (
-	SET /A MC_MAJOR=%%a
-	SET /A MC_MINOR=%%b
-	SET /A MC_PATCH=%%c
-)
 
 IF %MC_MINOR% EQU 20 (
 	IF %MC_PATCH% GTR 1 (

@@ -105,6 +105,8 @@ $MinecraftServerJarLocation = "do_not_manually_edit"
 $LauncherJarLocation = "do_not_manually_edit"
 $ServerRunCommand = "do_not_manually_edit"
 
+$SEMANTICS = ${MinecraftVersion}.Split(".")
+
 Function DeleteFileSilently
 {
     param ($FileToDelete)
@@ -192,9 +194,8 @@ Function global:SetupForge
     "Running Forge checks and setup..."
     $ForgeInstallerUrl = "https://files.minecraftforge.net/maven/net/minecraftforge/forge/${MinecraftVersion}-${ModLoaderVersion}/forge-${MinecraftVersion}-${ModLoaderVersion}-installer.jar"
     $ForgeJarLocation = "do_not_manually_edit"
-    $MINOR = ${MinecraftVersion}.Split(".")
 
-    if ([int]$MINOR[1] -le 16)
+    if ([int]$SEMANTICS[1] -le 16)
     {
         $ForgeJarLocation = "forge.jar"
         $script:LauncherJarLocation = "forge.jar"
@@ -229,7 +230,7 @@ Function global:SetupForge
         "Forge Installer downloaded. Installing..."
         RunJavaCommand "-jar forge-installer.jar --installServer"
 
-        if ([int]$MINOR[1] -gt 16)
+        if ([int]$SEMANTICS[1] -gt 16)
         {
             DeleteFileSilently  'run.bat'
             DeleteFileSilently  'run.sh'
@@ -262,7 +263,6 @@ Function global:SetupNeoForge
     "Running NeoForge checks and setup..."
     $ForgeJarLocation = "do_not_manually_edit"
     $JarFolder = "do_not_manually_edit"
-    $SEMANTICS = ${MinecraftVersion}.Split(".")
     if ([int]$SEMANTICS[1] -eq 20 -And [int]$SEMANTICS[2] -gt 1)
     {
         $JarFolder = "libraries/net/neoforged/neoforge/${ModLoaderVersion}"
