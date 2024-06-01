@@ -50,6 +50,16 @@
 #       You may acquire a Java 17 JRE here: https://adoptium.net/temurin/releases/?variant=openjdk17&version=17&package=jre&arch=x64&os=mac
 #       You may acquire a Java 18 JRE here: https://adoptium.net/temurin/releases/?variant=openjdk18&version=18&package=jre&arch=x64&os=mac
 
+# Glorious StackOverflow to the rescue: https://stackoverflow.com/questions/59895/how-do-i-get-the-directory-where-a-bash-script-is-located-from-within-the-script/246128#246128
+SOURCE=${BASH_SOURCE[0]}
+while [ -L "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR=$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )
+  SOURCE=$(readlink "$SOURCE")
+  [[ $SOURCE != /* ]] && SOURCE=$DIR/$SOURCE # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+DIR=$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )
+cd "${DIR}" >/dev/null 2>&1 || exit
+
 if [[ "$(id -u)" == "0" ]]; then
   echo "Warning! Running with administrator-privileges is not recommended."
 fi
@@ -178,7 +188,7 @@ setup_neoforge() {
 
   FORGE_JAR_LOCATION="do_not_manually_edit"
   JAR_FOLDER="do_not_manually_edit"
-  if [[ ${SEMANTICS[1]} -eq 20 ]] && [[ ${SEMANTICS[1]} -gt 1 ]]; then
+  if [[ ${SEMANTICS[1]} -eq 20 ]] && [[ ${SEMANTICS[2]} -gt 1 ]]; then
         JAR_FOLDER="libraries/net/neoforged/neoforge/${MODLOADER_VERSION}"
         FORGE_JAR_LOCATION="${JAR_FOLDER}/neoforge-${MODLOADER_VERSION}-server.jar"
   else
