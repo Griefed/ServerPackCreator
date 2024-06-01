@@ -421,15 +421,21 @@ eula
 
 echo ""
 echo "Starting server..."
-echo "Minecraft version: ${MINECRAFT_VERSION}"
-echo "Modloader:         ${MODLOADER}"
-echo "Modloader version: ${MODLOADER_VERSION}"
+echo "Minecraft version:              ${MINECRAFT_VERSION}"
+echo "Modloader:                      ${MODLOADER}"
+echo "Modloader version:              ${MODLOADER_VERSION}"
+echo "LegacyFabric Installer Version: ${LEGACYFABRIC_INSTALLER_VERSION}"
+echo "Fabric Installer Version:       ${FABRIC_INSTALLER_VERSION}"
+echo "Quilt Installer Version:        ${QUILT_INSTALLER_VERSION}"
+echo "NeoForge Installer URL:         ${NEOFORGE_INSTALLER_URL}"
+echo "Minecraft Server URL:           ${MINECRAFT_SERVER_URL}"
+echo "Java Args:                      ${JAVA_ARGS}"
+echo "Java Path:                      ${JAVA}"
+echo "Wait For User Input:            ${WAIT_FOR_USER_INPUT}"
 if [[ ${LAUNCHER_JAR_LOCATION} != "do_not_manually_edit" ]]; then
-  echo "Launcher JAR:      ${LAUNCHER_JAR_LOCATION}"
-fi
-echo ""
-echo "Java args:         ${JAVA_ARGS}"
-echo "Java path:         ${JAVA}"
+{
+    echo "Launcher JAR:                   ${LAUNCHER_JAR_LOCATION}"
+}
 echo "Run Command:       ${JAVA} ${SERVER_RUN_COMMAND}"
 echo "Java version:"
 "${JAVA}" -version

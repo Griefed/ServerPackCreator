@@ -552,16 +552,21 @@ Eula
 
 ""
 "Starting server..."
-"Minecraft version: ${MinecraftVersion}"
-"Modloader:         ${ModLoader}"
-"Modloader version: ${ModLoaderVersion}"
+"Minecraft version:              ${MinecraftVersion}"
+"Modloader:                      ${ModLoader}"
+"Modloader version:              ${ModLoaderVersion}"
+"LegacyFabric Installer Version: ${LegacyFabricInstallerVersion}"
+"Fabric Installer Version:       ${FabricInstallerVersion}"
+"Quilt Installer Version:        ${QuiltInstallerVersion}"
+"NeoForge Installer URL:         ${NeoForgeInstallerUrl}"
+"Minecraft Server URL:           ${MinecraftServerUrl}"
+"Java Args:                      ${JavaArgs}"
+"Java Path:                      ${Java}"
+"Wait For User Input:            ${WaitForUserInput}"
 if (!("${LauncherJarLocation}" -eq "do_not_manually_edit"))
 {
-    "Launcher JAR:      ${LauncherJarLocation}"
+    "Launcher JAR:                   ${LauncherJarLocation}"
 }
-""
-"Java args:         ${JavaArgs}"
-"Java path:         ${Java}"
 "Run Command:       ${Java} ${ServerRunCommand}"
 "Java version:"
 RunJavaCommand "-version"

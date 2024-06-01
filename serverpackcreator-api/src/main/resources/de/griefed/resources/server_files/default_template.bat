@@ -468,15 +468,20 @@ CALL:EULA
 
 ECHO.
 ECHO Starting server...
-ECHO Minecraft version: %MINECRAFT_VERSION%
-ECHO Modloader:         %MODLOADER%
-ECHO Modloader version: %MODLOADER_VERSION%
+ECHO Minecraft version:              %MINECRAFT_VERSION%
+ECHO Modloader:                      %MODLOADER%
+ECHO Modloader version:              %MODLOADER_VERSION%
+ECHO LegacyFabric Installer Version: %LEGACYFABRIC_INSTALLER_VERSION%
+ECHO Fabric Installer Version:       %FABRIC_INSTALLER_VERSION%
+ECHO Quilt Installer Version:        %QUILT_INSTALLER_VERSION%
+ECHO NeoForge Installer URL:         %NEOFORGE_INSTALLER_URL%
+ECHO Minecraft Server URL:           %MINECRAFT_SERVER_URL%
+ECHO Java Args:                      %JAVA_ARGS%
+ECHO Java Path:                      %JAVA%
+ECHO Wait For User Input:            %WAIT_FOR_USER_INPUT%
 IF NOT !LAUNCHERJARLOCATION!=="do_not_manually_edit" (
-    ECHO Launcher JAR:      !LAUNCHERJARLOCATION!
+    ECHO Launcher JAR:                   !LAUNCHERJARLOCATION!
 )
-ECHO.
-ECHO Java args:         %JAVA_ARGS%
-ECHO Java path:         %JAVA%
 ECHO Run Command:       %JAVA% !SERVERRUNCOMANND!
 ECHO Java version:
 CALL:RUNJAVACOMMAND -version
