@@ -244,7 +244,6 @@ Function global:SetupForge
         if ((Test-Path -Path "${ForgeJarLocation}" -PathType Leaf))
         {
             DeleteFileSilently  'forge-installer.jar'
-            DeleteFileSilently  'forge-installer.jar.log'
             "Installation complete. forge-installer.jar deleted."
         }
         else
@@ -261,9 +260,22 @@ Function global:SetupNeoForge
 {
     ""
     "Running NeoForge checks and setup..."
-    $ForgeJarLocation = "libraries/net/neoforged/forge/${MinecraftVersion}-${ModLoaderVersion}/forge-${MinecraftVersion}-${ModLoaderVersion}-server.jar"
+    $ForgeJarLocation = "do_not_manually_edit"
+    $JarFolder = "do_not_manually_edit"
+    $SEMANTICS = ${MinecraftVersion}.Split(".")
+    if ([int]$SEMANTICS[1] -eq 20 -And [int]$SEMANTICS[2] -gt 1)
+    {
+        $JarFolder = "libraries/net/neoforged/neoforge/${ModLoaderVersion}"
+        $ForgeJarLocation = "${JarFolder}/neoforge-${ModLoaderVersion}-server.jar"
+    }
+    else
+    {
+        $JarFolder = "libraries/net/neoforged/forge/${MinecraftVersion}-${ModLoaderVersion}"
+        $ForgeJarLocation = "${JarFolder}/forge-${MinecraftVersion}-${ModLoaderVersion}-server.jar"
+    }
+
     $script:MinecraftServerJarLocation = "libraries/net/minecraft/server/${MinecraftVersion}/server-${MinecraftVersion}.jar"
-    $script:ServerRunCommand = "-Dlog4j2.formatMsgNoLookups=true @user_jvm_args.txt @libraries/net/neoforged/forge/${MinecraftVersion}-${ModLoaderVersion}/win_args.txt nogui"
+    $script:ServerRunCommand = "-Dlog4j2.formatMsgNoLookups=true @user_jvm_args.txt @${JarFolder}/win_args.txt nogui"
 
     Write-Host "Generating user_jvm_args.txt from variables..."
     Write-Host "Edit JAVA_ARGS in your variables.txt. Do not edit user_jvm_args.txt directly!"
@@ -292,7 +304,6 @@ Function global:SetupNeoForge
         if ((Test-Path -Path "${ForgeJarLocation}" -PathType Leaf))
         {
             DeleteFileSilently  'neoforge-installer.jar'
-            DeleteFileSilently  'neoforge-installer.jar.log'
             "Installation complete. forge-installer.jar deleted."
         }
         else

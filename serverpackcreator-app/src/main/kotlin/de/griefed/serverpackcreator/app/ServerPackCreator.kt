@@ -452,6 +452,9 @@ class ServerPackCreator(private val args: Array<String>) {
                         } else if (check(file, apiWrapper.apiProperties.defaultShellScriptTemplate)) {
                             apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultShellScriptTemplate)
                             log.info("Restored default_template.sh.")
+                        } else if (check(file, apiWrapper.apiProperties.defaultBatchScriptTemplate)) {
+                            apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultBatchScriptTemplate)
+                            log.info("Restored default_template.bat.")
                         } else if (check(file, apiWrapper.apiProperties.defaultPowerShellScriptTemplate)) {
                             apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultPowerShellScriptTemplate)
                             log.info("Restored default_template.ps1.")

@@ -158,7 +158,6 @@ setup_forge() {
 
     if [[ -s "${FORGE_JAR_LOCATION}" ]]; then
       rm -f forge-installer.jar
-      rm -f forge-installer.jar.log
       echo "Installation complete. forge-installer.jar deleted."
     else
       rm -f forge-installer.jar
@@ -174,9 +173,19 @@ setup_neoforge() {
   echo ""
   echo "Running NeoForge checks and setup..."
 
-  FORGE_JAR_LOCATION="libraries/net/neoforged/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}-server.jar"
+  FORGE_JAR_LOCATION="do_not_manually_edit"
+  JAR_FOLDER="do_not_manually_edit"
+  IFS="." read -ra SEMANTICS <<<"${MINECRAFT_VERSION}"
+  if [[ ${SEMANTICS[1]} -eq 20 ]] && [[ ${SEMANTICS[1]} -gt 1 ]]; then
+        JAR_FOLDER="libraries/net/neoforged/neoforge/${MODLOADER_VERSION}"
+        FORGE_JAR_LOCATION="${JAR_FOLDER}/neoforge-${MODLOADER_VERSION}-server.jar"
+  else
+        JAR_FOLDER="libraries/net/neoforged/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}"
+        FORGE_JAR_LOCATION="${JAR_FOLDER}/forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}-server.jar"
+  fi
+
   MINECRAFT_SERVER_JAR_LOCATION="libraries/net/minecraft/server/${MINECRAFT_VERSION}/server-${MINECRAFT_VERSION}.jar"
-  SERVER_RUN_COMMAND="-Dlog4j2.formatMsgNoLookups=true @user_jvm_args.txt @libraries/net/neoforged/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/unix_args.txt nogui"
+  SERVER_RUN_COMMAND="-Dlog4j2.formatMsgNoLookups=true @user_jvm_args.txt @${JAR_FOLDER}/unix_args.txt nogui"
 
   echo "Generating user_jvm_args.txt from variables..."
   echo "Edit JAVA_ARGS in your variables.txt. Do not edit user_jvm_args.txt directly!"
@@ -204,7 +213,6 @@ setup_neoforge() {
 
     if [[ -s "${FORGE_JAR_LOCATION}" ]]; then
       rm -f neoforge-installer.jar
-      rm -f neoforge-installer.jar.log
       echo "Installation complete. neoforge-installer.jar deleted."
     else
       rm -f neoforge-installer.jar

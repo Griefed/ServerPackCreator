@@ -965,6 +965,9 @@ class ApiProperties(
         if (!powershellPresent) {
             newTemplates.add(File(serverFilesDirectory.absolutePath, defaultPowerShellScriptTemplate.name).absoluteFile)
         }
+        if (!batchPresent) {
+            newTemplates.add(File(serverFilesDirectory.absolutePath, defaultBatchScriptTemplate.name).absoluteFile)
+        }
 
         return newTemplates.toList()
     }
@@ -976,7 +979,7 @@ class ApiProperties(
     var scriptTemplates: TreeSet<File> = TreeSet<File>()
         get() {
             val scriptSetting = internalProps.getProperty(pServerPackScriptTemplates)
-            val entries = if (scriptSetting != null && scriptSetting == "default_template.ps1,default_template.sh") {
+            val entries = if (scriptSetting != null && scriptSetting == "default_template.ps1,default_template.sh,default_template.bat") {
                 defaultScriptTemplates()
             } else {
                 getListProperty(
@@ -1812,6 +1815,14 @@ class ApiProperties(
      * [scriptTemplates].
      */
     val defaultPowerShellScriptTemplate = File(serverFilesDirectory, "default_template.ps1")
+
+    /**
+     * The default Batch-template for the modded server start scripts. The file returned by this
+     * method does not represent the script-template in the `server_files`-directory. If you
+     * wish access the configured script templates inside the `server_files`-directory, use
+     * [scriptTemplates].
+     */
+    val defaultBatchScriptTemplate = File(serverFilesDirectory, "default_template.bat")
 
     @Suppress("MemberVisibilityCanBePrivate")
     val fallbackScriptTemplates = defaultScriptTemplates().joinToString(",")

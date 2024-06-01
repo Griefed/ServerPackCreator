@@ -505,6 +505,7 @@ class ApiWrapper private constructor(
         )
         overwriteServerFilesFile(apiProperties.defaultShellScriptTemplate)
         overwriteServerFilesFile(apiProperties.defaultPowerShellScriptTemplate)
+        overwriteServerFilesFile(apiProperties.defaultBatchScriptTemplate)
         if (serverProperties || serverIcon) {
             log.warn("#################################################################")
             log.warn("#.............ONE OR MORE DEFAULT FILE(S) GENERATED.............#")
