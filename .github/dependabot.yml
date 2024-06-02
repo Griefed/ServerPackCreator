@@ -33,6 +33,7 @@ updates:
     target-branch: "dependabot"
     pull-request-branch-name:
       separator: "-"
+
   - package-ecosystem: "gradle"
     directory: "/serverpackcreator-app"
     schedule:
@@ -45,56 +46,9 @@ updates:
     target-branch: "dependabot"
     pull-request-branch-name:
       separator: "-"
-  - package-ecosystem: "gradle"
-    directory: "/serverpackcreator-cli"
-    schedule:
-      interval: "monthly"
-    assignees:
-      - "Griefed"
-    labels:
-      - "dependencies"
-      - "gradle"
-    target-branch: "dependabot"
-    pull-request-branch-name:
-      separator: "-"
-  - package-ecosystem: "gradle"
-    directory: "/serverpackcreator-gui"
-    schedule:
-      interval: "monthly"
-    assignees:
-      - "Griefed"
-    labels:
-      - "dependencies"
-      - "gradle"
-    target-branch: "dependabot"
-    pull-request-branch-name:
-      separator: "-"
+
   - package-ecosystem: "gradle"
     directory: "/serverpackcreator-plugin-example"
-    schedule:
-      interval: "monthly"
-    assignees:
-      - "Griefed"
-    labels:
-      - "dependencies"
-      - "gradle"
-    target-branch: "dependabot"
-    pull-request-branch-name:
-      separator: "-"
-  - package-ecosystem: "gradle"
-    directory: "/serverpackcreator-updater"
-    schedule:
-      interval: "monthly"
-    assignees:
-      - "Griefed"
-    labels:
-      - "dependencies"
-      - "gradle"
-    target-branch: "dependabot"
-    pull-request-branch-name:
-      separator: "-"
-  - package-ecosystem: "gradle"
-    directory: "/serverpackcreator-web"
     schedule:
       interval: "monthly"
     assignees:

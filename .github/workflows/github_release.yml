@@ -63,8 +63,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" generateLicenseReport --info --full-stacktrace
-          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" build --info --full-stacktrace -x :serverpackcreator-api:test -x :serverpackcreator-web:test
-          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" media --info --full-stacktrace -x :serverpackcreator-api:test -x :serverpackcreator-web:test
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" build --info --full-stacktrace -x :serverpackcreator-api:test -x :serverpackcreator-app:test
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" media --info --full-stacktrace -x :serverpackcreator-api:test -x :serverpackcreator-app:test
 
       # UPLOAD ARTIFACTS
       - uses: actions/upload-artifact@v4
@@ -75,10 +75,6 @@ jobs:
             media
             serverpackcreator-api/build
             serverpackcreator-app/build
-            serverpackcreator-cli/build
-            serverpackcreator-gui/build
-            serverpackcreator-updater/build
-            serverpackcreator-web/build
             serverpackcreator-web-frontend/dist
             serverpackcreator-plugin-example/build
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`

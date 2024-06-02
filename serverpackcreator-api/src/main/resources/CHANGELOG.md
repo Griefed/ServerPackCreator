@@ -1,3 +1,48 @@
+## [6.0.0-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.2...6.0.0-alpha.3) (2024-06-02)
+
+
+### :scissors: Refactor
+
+* Move MC version semantics parsing to global ([560b9ee](https://git.griefed.de/Griefed/ServerPackCreator/commit/560b9ee4321149f5ddb60b9d79c3f9785a9293d6))
+
+
+### 💈 Style
+
+* Display drives in whole width column ([e828383](https://git.griefed.de/Griefed/ServerPackCreator/commit/e82838341ea5a525e92121e76967384f6b54c2e2))
+
+
+### 💎 Improvements
+
+* Check for variables.txt before continuing ([b906f74](https://git.griefed.de/Griefed/ServerPackCreator/commit/b906f74f1efd1e82ce7192645d79e2779f027797))
+* Focrce script dir as working dir. Access correct sematics index. ([6d92593](https://git.griefed.de/Griefed/ServerPackCreator/commit/6d92593d42edb8dd3d1e32df00eaa92403c27b46))
+* Force working dir to script directory ([a275bc4](https://git.griefed.de/Griefed/ServerPackCreator/commit/a275bc49635e79e6b786f51ea16ab0dad7bdb8fa))
+* List all variables before starting server ([e431b0e](https://git.griefed.de/Griefed/ServerPackCreator/commit/e431b0ee8769631dd8d9e3bc63272e35d2ef41e9))
+* Move standard args to extra variable Additional Args ([c772bd2](https://git.griefed.de/Griefed/ServerPackCreator/commit/c772bd259c01edd5d1b99b57ae48fc287ee47019))
+
+
+### 📔 Docs
+
+* Write pre-release body correctly ([615e17f](https://git.griefed.de/Griefed/ServerPackCreator/commit/615e17f66aa57dc8a3f38577faf57ea5650edcfc))
+
+
+### 🦊 CI/CD
+
+* Reintroduce Qodana, but with the community linter this time ([60691d7](https://git.griefed.de/Griefed/ServerPackCreator/commit/60691d7a0100521181de9ae69a4dfc0353a9c36f))
+* Remove no longer needed artifacts and rename installers ([2939dc0](https://git.griefed.de/Griefed/ServerPackCreator/commit/2939dc0b4822dac953225582d51db2b15419d9fe))
+* Split build and media into separate calls ([ae2bcd3](https://git.griefed.de/Griefed/ServerPackCreator/commit/ae2bcd358d8b1a145c91a8d215ee661320e3afc7))
+
+
+### 🚀 Features
+
+* Add Batch-script template for starting servers ([1f44df1](https://git.griefed.de/Griefed/ServerPackCreator/commit/1f44df195d8110fdc9c13a328c29ef9bd54b80ea))
+* Check for correct Java version before starting and crash if incompatible Java version was found ([5a86ca0](https://git.griefed.de/Griefed/ServerPackCreator/commit/5a86ca0cfa0da69ff43af378d109db572a0565f8))
+* Toggleable automatic server restart via RESTART true/[secure] variable ([5400aa5](https://git.griefed.de/Griefed/ServerPackCreator/commit/5400aa54cc2b87bd6ffc043d5f20015657d8549b))
+
+
+### 🛠 Fixes
+
+* Bring back NeoForge installer URL. ([ffdc78c](https://git.griefed.de/Griefed/ServerPackCreator/commit/ffdc78c4d3fd89dd1b745dcb5fcef2496845c980))
+
 ## [6.0.0-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.1...6.0.0-alpha.2) (2024-05-26)
 
 

@@ -2,10 +2,10 @@
   <configuration default="false" name="Debug Fat Jar" type="JarApplication">
     <option name="JAR_PATH" value="$PROJECT_DIR$/serverpackcreator-app/build/libs/serverpackcreator-app-dev.jar" />
     <option name="PROGRAM_PARAMETERS" value="-web" />
-    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$\serverpackcreator-app\tests" />
+    <option name="WORKING_DIRECTORY" value="F:\GitLab\ServerPackCreator - ms6\serverpackcreator-app\tests" />
     <option name="ALTERNATIVE_JRE_PATH" />
     <method v="2">
-      <option name="Gradle.BeforeRunTask" enabled="false" tasks="clean build" externalProjectPath="$PROJECT_DIR$" vmOptions="" scriptParameters=" --info --full-stacktrace -x :serverpackcreator-api:test -x :serverpackcreator-web:test" />
+      <option name="Gradle.BeforeRunTask" enabled="false" tasks="clean build" externalProjectPath="$PROJECT_DIR$" vmOptions="" scriptParameters=" --info --full-stacktrace -x :serverpackcreator-api:test -x :serverpackcreator-app:test" />
     </method>
   </configuration>
 </component>

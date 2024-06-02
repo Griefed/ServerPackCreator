@@ -40,12 +40,8 @@ allprojects {
 }
 evaluationDependsOnChildren()
 
-project("serverpackcreator-web").tasks.build.get().mustRunAfter(
-    project("serverpackcreator-web-frontend").tasks.build.get()
-)
-
 project("serverpackcreator-app").tasks.build.get().mustRunAfter(
-    project("serverpackcreator-web").tasks.build.get()
+    project("serverpackcreator-web-frontend").tasks.build.get()
 )
 
 nexusPublishing {
@@ -149,12 +145,12 @@ tasks.register<Copy>("copyPluginsApiUnitTests") {
 
 tasks.register<Delete>("cleanLicenseReport") {
     delete(licenseReports)
-    delete(projectDir.resolve("serverpackcreator-gui/src/main/resources/de/griefed/resources/gui/LICENSE-AGREEMENT"))
+    delete(projectDir.resolve("serverpackcreator-app/src/main/resources/de/griefed/resources/gui/LICENSE-AGREEMENT"))
 }
 
 tasks.register<Copy>("copyLicenseReport") {
     from(rootDir.resolve("licenses/LICENSE-AGREEMENT"))
-    into(rootDir.resolve("serverpackcreator-gui/src/main/resources/de/griefed/resources/gui"))
+    into(rootDir.resolve("serverpackcreator-app/src/main/resources/de/griefed/resources/gui"))
 }
 
 tasks.generateLicenseReport {

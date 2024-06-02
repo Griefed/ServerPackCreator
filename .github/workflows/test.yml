@@ -48,9 +48,6 @@ jobs:
             buildSrc/build
             serverpackcreator-api/build
             serverpackcreator-app/build
-            serverpackcreator-cli/build
-            serverpackcreator-web/build
-            serverpackcreator-updater/build
             serverpackcreator-web-frontend/dist
             serverpackcreator-plugin-example/build
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`

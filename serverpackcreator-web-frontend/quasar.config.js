@@ -61,7 +61,7 @@ module.exports = configure(function (/* ctx */) {
         node: 'node16'
       },
 
-      distDir: '../serverpackcreator-web/src/main/resources/static',
+      distDir: '../serverpackcreator-app/src/main/resources/static',
 
       vueRouterMode: 'hash', // available values: 'hash', 'history'
       // vueRouterBase,

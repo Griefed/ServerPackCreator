@@ -357,14 +357,14 @@ yarn.lock
 /work
 
 # ServerPackCreator Web
-serverpackcreator-web/src/main/resources/static
-serverpackcreator-web/tests/*
-!serverpackcreator-web/tests/.gitkeep
+serverpackcreator-app/src/main/resources/static
+serverpackcreator-app/tests/*
+!serverpackcreator-app/tests/.gitkeep
 serverpackcreator-web-frontend/.quasar/
 serverpackcreator-web-frontend/dist/
 serverpackcreator-web-frontend/node_modules/
 serverpackcreator-web-frontend/node/
-serverpackcreator-web/serverpackcreator.db
+serverpackcreator-app/serverpackcreator.db
 docker-compose-dev.yml
 
 # ServerPackCreator App
