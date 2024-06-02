@@ -93,13 +93,9 @@ jobs:
         with:
           name: jar-media-release
           path: |
-            media/*.deb
-            media/*.rpm
             media/*.dmg
             media/*.sh
-            media/*.gz
             media/*.exe
-            media/*.zip
             serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
             serverpackcreator-plugin-example/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}-Example-Plugin.jar
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
@@ -277,13 +273,9 @@ jobs:
           prerelease: false
           fail_on_unmatched_files: false
           files: |
-            media/*.deb
-            media/*.rpm
             media/*.dmg
             media/*.sh
-            media/*.gz
             media/*.exe
-            media/*.zip
             ServerPackCreator-${{ needs.preparations.outputs.version }}-Portable-Linux-x86_64.AppImage
             serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
             serverpackcreator-plugin-example/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}-Example-Plugin.jar

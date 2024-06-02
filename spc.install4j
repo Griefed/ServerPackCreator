@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<install4j version="10.0.7" transformSequenceNumber="10">
+<install4j version="10.0.8" transformSequenceNumber="10">
   <directoryPresets config="./img" />
-  <application name="ServerPackCreator" applicationId="3565-3228-6904-0931" mediaDir="./media" compression="9" lzmaCompression="true" commonExternalFiles="true" shrinkRuntime="false" shortName="SPC" publisher="Griefed" publisherWeb="https://serverpackcreator.de" version="${compiler:projectVersion}" allPathsRelative="true" autoSave="true" macVolumeId="521d0a10ddf6d897" javaMinVersion="21">
+  <application name="ServerPackCreator" applicationId="3565-3228-6904-0931" mediaDir="./media" mediaFilePattern="ServerPackCreator-${compiler:sys.version}-Installer-${compiler:sys.platform}" compression="9" lzmaCompression="true" commonExternalFiles="true" shrinkRuntime="false" shortName="SPC" publisher="Griefed" publisherWeb="https://serverpackcreator.de" version="${compiler:projectVersion}" allPathsRelative="true" autoSave="true" macVolumeId="521d0a10ddf6d897" javaMinVersion="21">
     <variables>
       <variable name="projectDir" value="F:\GitLab\ServerPackCreator" description="Project directory of ServerPackCreator on your system" />
       <variable name="projectVersion" value="dev" description="The version with which to build this installer." />
@@ -454,7 +454,7 @@ If you are installing this on a multi-user system and intend other users to use 
               <formComponent id="330" beanClass="com.install4j.runtime.beans.formcomponents.DirectoryChooserComponent" useExternalParametrization="true" externalParametrizationName="Directory" externalParametrizationMode="include">
                 <serializedBean>
                   <property name="helpText" type="string">An existing directory where ServerPackCreatos data will be stored in, such as server packs, manifest, templates etc.</property>
-                  <property name="initialFile" type="string">${installer:sys.userHome}</property>
+                  <property name="initialFile" type="string">${installer:sys.userHome}${installer:sys.fileSeparator}ServerPackCreator</property>
                   <property name="labelFontStyle" type="enum" class="com.install4j.runtime.beans.formcomponents.FontStyle" value="BOLD" />
                   <property name="labelFontType" type="enum" class="com.install4j.runtime.beans.formcomponents.FontType" value="DERIVED" />
                   <property name="labelText" type="string">Home-Directory</property>
@@ -2288,21 +2288,21 @@ return true;</property>
     </styles>
   </installerGui>
   <mediaSets>
-    <windows name="Windows 64-bit" id="154" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}" installDir="ServerPackCreator" architecture="64">
+    <windows name="Windows 64-bit" id="154" mediaFileName="ServerPackCreator-${compiler:sys.version}-Installer-Windows" installDir="ServerPackCreator" architecture="64">
       <jreBundle usePack200="false">
         <modules>
           <defaultModules set="all" />
         </modules>
       </jreBundle>
     </windows>
-    <unixInstaller name="Unix Installer" id="159" installDir="serverpackcreator">
+    <unixInstaller name="Unix Installer" id="159" mediaFileName="ServerPackCreator-${compiler:sys.version}-Installer-Linux" installDir="serverpackcreator">
       <jreBundle usePack200="false">
         <modules>
           <defaultModules set="all" />
         </modules>
       </jreBundle>
     </unixInstaller>
-    <macosArchive name="macOS Single Bundle Archive" id="158" architecture="universal" launcherId="183">
+    <macosArchive name="macOS Single Bundle Archive" id="158" mediaFileName="ServerPackCreator-${compiler:sys.version}-Installer-Mac" architecture="universal" launcherId="183">
       <jreBundle>
         <modules>
           <defaultModules set="all" />
