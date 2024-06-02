@@ -94,7 +94,16 @@ class ServerPackHandler(
         #   Example:
         #     From: C:\Program Files\Eclipse Adoptium\jdk-17.0.9.9-hotspot\bin\java.exe
         #     To:   C\:\\Program Files\\Eclipse Adoptium\\jdk-17.0.9.9-hotspot\\bin\\java.exe
-        # More on escape characters at https://en.wikipedia.org/wiki/Escape_character
+        #   More on escape characters at https://en.wikipedia.org/wiki/Escape_character
+        #
+        # WAIT_FOR_USER_INPUT true/false allows you to enable/disable user confirmation upon
+        #   graceful script ending.
+        # RESTART true/false allows you to enable/disable automatically restarting the server
+        #   should it crash.
+        #
+        # Variables are not reloaded between automatic restarts. If you've made changes to your
+        #   variables and you want them to take effect, stop the server and script, then
+        #   re-run it.
         ###
         MINECRAFT_VERSION=SPC_MINECRAFT_VERSION_SPC
         MODLOADER=SPC_MODLOADER_SPC
@@ -108,6 +117,7 @@ class ServerPackHandler(
         JAVA="SPC_JAVA_SPC"
         WAIT_FOR_USER_INPUT=SPC_WAIT_FOR_USER_INPUT_SPC
         ADDITIONAL_ARGS=-Dlog4j2.formatMsgNoLookups=true
+        RESTART=false
     """.trimIndent()
 
     /**

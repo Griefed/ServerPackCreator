@@ -45,7 +45,7 @@
 @ECHO OFF
 SETLOCAL EnableExtensions
 SETLOCAL EnableDelayedExpansion
-NET session >nul 2>&1
+NET session >NUL 2>&1
 
 
 PUSHD %~dp0
@@ -165,7 +165,7 @@ EXIT
 :CHECKJAVABITNESS
 SET "OLD=0"
 for /f "delims=" %%g in ('%JAVA% -version 2^>^&1') do (
-	ECHO.%%~g| FIND /I "32-Bit">Nul && ( 
+	ECHO.%%~g| FIND /I "32-Bit">NUL && (
 	  SET OLD=1
 	)
 )
@@ -515,10 +515,13 @@ ECHO Java version:
 CALL:RUNJAVACOMMAND -version
 ECHO.
 
-
+:RUN
 CALL:RUNJAVACOMMAND "%ADDITIONAL_ARGS% !SERVERRUNCOMANND!"
+IF NOT %RESTART%==true (
+    CALL:QUITSERVER
+)
+ECHO Automatically restarting server in 5 seconds. Press CTRL + C to abort and exit.
+TIMEOUT /T 5 /NOBREAK > NUL
+GOTO:RUN
 
-
-ECHO.
-CALL:QUITSERVER
 ECHO.

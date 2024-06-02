@@ -97,6 +97,7 @@ $JavaArgs = $ExternalVariables['JAVA_ARGS']
 $Java = $ExternalVariables['JAVA']
 $WaitForUserInput = $ExternalVariables['WAIT_FOR_USER_INPUT']
 $AdditionalArgs = $ExternalVariables['ADDITIONAL_ARGS']
+$Restart = $ExternalVariables['RESTART']
 
 if ($Java[0] -eq '"')
 {
@@ -568,8 +569,15 @@ if (!("${LauncherJarLocation}" -eq "do_not_manually_edit"))
 RunJavaCommand "-version"
 ""
 
-RunJavaCommand "${AdditionalArgs} ${ServerRunCommand}"
+while (true)
+{
+    RunJavaCommand "${AdditionalArgs} ${ServerRunCommand}"
+    if (!("${Restart}" -eq "true"))
+    {
+        QuitServer
+    }
+    "Automatically restarting server in 5 seconds. Press CTRL + C to abort and exit."
+    Start-Sleep -Seconds 5
+}
 
-""
-QuitServer
 ""

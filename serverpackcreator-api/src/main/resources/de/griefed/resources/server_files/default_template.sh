@@ -457,7 +457,7 @@ echo "Java Args:                      ${JAVA_ARGS}"
 echo "Additional Args:                ${ADDITIONAL_ARGS}"
 echo "Java Path:                      ${JAVA}"
 echo "Wait For User Input:            ${WAIT_FOR_USER_INPUT}"
-if [[ ${LAUNCHER_JAR_LOCATION} != "do_not_manually_edit" ]];then
+if [[ "${LAUNCHER_JAR_LOCATION}" != "do_not_manually_edit" ]];then
     echo "Launcher JAR:                   ${LAUNCHER_JAR_LOCATION}"
 fi
 echo "Run Command:       ${JAVA} ${ADDITIONAL_ARGS} ${SERVER_RUN_COMMAND}"
@@ -465,8 +465,14 @@ echo "Java version:"
 "${JAVA}" -version
 echo ""
 
-runJavaCommand "${ADDITIONAL_ARGS} ${SERVER_RUN_COMMAND}"
+while true
+do
+  runJavaCommand "${ADDITIONAL_ARGS} ${SERVER_RUN_COMMAND}"
+  if [[ "${RESTART}" != "true" ]]; then
+    quitServer
+  fi
+  echo "Automatically restarting server in 5 seconds. Press CTRL + C to abort and exit."
+  sleep 5
+done
 
-echo ""
-quitServer
 echo ""
