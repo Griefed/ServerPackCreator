@@ -252,6 +252,9 @@ class JarUtilities {
             "/$dirToCopy"
         }
         try {
+            val classSource = classToCopyFrom.getResource(source)
+            val classUri = classSource.toURI()
+            val walkPath = classUri.toPath()
             Files.walk(classToCopyFrom.getResource(source)?.toURI()?.toPath()).use {
                 for (path in it) {
                     val fileName = path.toString().replace("\\", "/")
@@ -322,12 +325,15 @@ class JarUtilities {
         while (entries.hasMoreElements()) {
             val entry: JarEntry = entries.nextElement()
             val entryName = entry.name
-            if (entryName.replace(jarDirectoryPrefix, "").startsWith("$directoryToCopy/")
-                && entryName.matches(fileEnding)
-            ) {
+            val check = if (jarDirectoryPrefix.isNotEmpty()) {
+                    "$jarDirectoryPrefix/$directoryToCopy"
+                } else {
+                directoryToCopy
+            }
+            if (entryName.startsWith(check) && entryName.matches(fileEnding)) {
                 val destination = File(
                     destinationDirectory,
-                    entryName.replace(jarDirectoryPrefix, "").replace(directoryToCopy, "")
+                    entryName.replace(check, "")
                 ).absoluteFile
                 log.debug("Destination: $destination")
                 if (!destination.exists()) {

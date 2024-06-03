@@ -29,7 +29,7 @@ import java.util.*
 
 private val nested = ".*[.]jar!.*[.]jar".toRegex()
 private val tmpDir = System.getProperty("java.io.tmpdir")
-private const val JAR = "file:"
+private const val FILE = "file:"
 
 /**
  * Acquire the JAR-file which contains this class. If JAR-file is a nested JAR-file, meaning the class is inside
@@ -38,7 +38,6 @@ private const val JAR = "file:"
  *
  * In any case the returned file will give you access to the JAR-file which contains class from which this method was called,
  * unless the class itself is nested more than one layer deep.
- * @param rootOnly Whether only the root of the parent JAR-file should be considered, ignoring potential nesting of the class.
  * @param tempDir The directory to which a nested JAR-file will be extracted to. If not specified, your systems default
  * temp-directory will be used.
  * @author Griefed
@@ -52,7 +51,7 @@ fun <T : Any> Class<T>.source(
     val url = classResource.toString()
 
     val source: File?
-    if (url.startsWith(JAR)) {
+    if (url.startsWith(FILE)) {
         try {
             val uri = URI(url)
             val file = Paths.get(uri).toFile()
@@ -65,23 +64,29 @@ fun <T : Any> Class<T>.source(
         source = File(jar.name)
     }
 
-    if (source != null) {
-        return if (source.path.matches(nested)) {
-            val inner = source.path.toString().substring(source.path.toString().lastIndexOf("!"))
-            val nestedJar = File(inner.substring(2))
-            if (!tempDir.isDirectory) throw JarAccessException("Invalid temp-directory $tempDir.")
-            ZipFile(source.path.toString().replace(inner, "")).use {
-                it.extractFile(
-                    nestedJar.toString(),
-                    tempDir.path,
-                    nestedJar.name
-                )
-            }
-            File(tempDir.path, nestedJar.name).absoluteFile
-        } else {
-            source
-        }
+    if (source == null) {
+        throw JarAccessException("Invalid Jar File URL String: clazz: $clazz, classResource: $classResource, url: $url")
     }
 
-    throw JarAccessException("Invalid Jar File URL String: clazz: $clazz, classResource: $classResource, url: $url")
+    return if (source.path.matches(nested)) {
+        val inner = source.path.toString().substring(source.path.toString().lastIndexOf("!"))
+        val nestedJar = File(inner.substring(2))
+        if (!tempDir.isDirectory) throw JarAccessException("Invalid temp-directory $tempDir.")
+        ZipFile(source.path.toString().replace(inner, "")).use {
+            it.extractFile(
+                nestedJar.toString(),
+                tempDir.path,
+                nestedJar.name
+            )
+        }
+        File(tempDir.path, nestedJar.name).absoluteFile
+    } else {
+        val tempSource = source.absolutePath
+        val newSource = if (tempSource.contains("!")) {
+            File(tempSource.substring(0, tempSource.indexOfFirst { letter -> letter == '!' }))
+        } else {
+            source.absoluteFile
+        }
+        newSource
+    }
 }

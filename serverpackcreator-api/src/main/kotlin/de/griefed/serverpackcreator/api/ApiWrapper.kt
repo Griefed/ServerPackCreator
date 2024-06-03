@@ -469,16 +469,11 @@ class ApiWrapper private constructor(
         }
 
         try {
-            var manifestPrefix = "BOOT-INF/classes"
-            if (apiProperties.isExe()) {
-                manifestPrefix = ""
-                //source = "de/griefed/resources/manifests"
-            }
             utilities.jarUtilities.copyFolderFromJar(
                 this.javaClass,
                 "de/griefed/resources/manifests",
                 apiProperties.manifestsDirectory.absolutePath,
-                manifestPrefix,
+                "",
                 xmlJsonRegex,
                 apiProperties.tempDirectory
             )

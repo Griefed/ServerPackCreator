@@ -1,3 +1,11 @@
+## [6.0.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.3...6.0.0-alpha.4) (2024-06-02)
+
+
+### 🦊 CI/CD
+
+* Merge cli, gui, web, updater into app ([9a70a19](https://git.griefed.de/Griefed/ServerPackCreator/commit/9a70a19d00e86cd86ff35883ebce3bd56cb177bd))
+* Qodana does not support Java 21 yet ([e42477f](https://git.griefed.de/Griefed/ServerPackCreator/commit/e42477fced280e7977d0b9a84d9cdff7ee85bacf))
+
 ## [6.0.0-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.2...6.0.0-alpha.3) (2024-06-02)
 
 
