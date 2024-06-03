@@ -98,6 +98,7 @@ $Java = $ExternalVariables['JAVA']
 $WaitForUserInput = $ExternalVariables['WAIT_FOR_USER_INPUT']
 $AdditionalArgs = $ExternalVariables['ADDITIONAL_ARGS']
 $Restart = $ExternalVariables['RESTART']
+$SkipJavaCheck = $ExternalVariables['SKIP_JAVA_CHECK']
 
 if ($Java[0] -eq '"')
 {
@@ -132,44 +133,52 @@ if ([int]$JavaFullversion[0] -eq 1)
 
 "Detected $($Semantics[0]).$($Semantics[1]).$($Semantics[2]) - Java $($JavaVersion)"
 
-if ([int]$Semantics[1] -le 16)
+
+if ("${SkipJavaCheck}" -eq "true")
 {
-    if (!([int]$JavaVersion -eq 8) -and !([int]$JavaVersion -eq 11))
-    {
-        CrashServer "Minecraft 1.16 and older requires Java 8 or 11 - found Java $($JavaVersion)"
-    }
+    "Skipping Java version check."
 }
-elseif ([int]$Semantics[1] -le 20)
-{
-    if ([int]$Semantics[1] -eq 20)
+else {
+    if ([int]$Semantics[1] -le 16)
     {
-        if (($Semantics.count -eq 2) -or ([int]$Semantics[2] -le 4))
+        if (!([int]$JavaVersion -eq 8) -and !([int]$JavaVersion -eq 11))
+        {
+            CrashServer "Minecraft 1.16 and older requires Java 8 or 11 - found Java $($JavaVersion)"
+        }
+    }
+    elseif ([int]$Semantics[1] -le 20)
+    {
+        if ([int]$Semantics[1] -eq 20)
+        {
+            if (($Semantics.count -eq 2) -or ([int]$Semantics[2] -le 4))
+            {
+                if ([int]$JavaVersion -lt 17)
+                {
+                    CrashServer "Minecraft 1.17 until 1.20.4 requires Java 17 or newer - found Java $($JavaVersion)"
+                }
+            }
+            elseif ([int]$JavaVersion -lt 21)
+            {
+                CrashServer "Minecraft 1.20.5 and newer requires Java 21 or newer - found Java $($JavaVersion)"
+            }
+        }
+        else
         {
             if ([int]$JavaVersion -lt 17)
             {
                 CrashServer "Minecraft 1.17 until 1.20.4 requires Java 17 or newer - found Java $($JavaVersion)"
             }
         }
-        elseif ([int]$JavaVersion -lt 21)
+    }
+    else
+    {
+        if ([int]$JavaVersion -lt 21)
         {
             CrashServer "Minecraft 1.20.5 and newer requires Java 21 or newer - found Java $($JavaVersion)"
         }
     }
-    else
-    {
-        if ([int]$JavaVersion -lt 17)
-        {
-            CrashServer "Minecraft 1.17 until 1.20.4 requires Java 17 or newer - found Java $($JavaVersion)"
-        }
-    }
 }
-else
-{
-    if ([int]$JavaVersion -lt 21)
-    {
-        CrashServer "Minecraft 1.20.5 and newer requires Java 21 or newer - found Java $($JavaVersion)"
-    }
-}
+
 
 Function DeleteFileSilently
 {
@@ -572,6 +581,11 @@ RunJavaCommand "-version"
 while (true)
 {
     RunJavaCommand "${AdditionalArgs} ${ServerRunCommand}"
+    if ("${SkipJavaCheck}" -eq "true")
+    {
+        "Java version check was skipped. Did the server stop or crash because of a Java version mismatch?"
+        "Detected $($Semantics[0]).$($Semantics[1]).$($Semantics[2]) - Java $($JavaVersion)"
+    }
     if (!("${Restart}" -eq "true"))
     {
         QuitServer

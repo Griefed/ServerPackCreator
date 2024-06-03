@@ -111,6 +111,10 @@ IF %JAVA_VERSION% EQU 1 (
 
 
 ECHO Detected %MC_MAJOR%.%MC_MINOR%.%MC_PATCH% - Java %JAVA_VERSION%
+IF %SKIP_JAVA_CHECK%==true (
+    ECHO Skipping Java version check.
+    GOTO:MAIN
+)
 
 
 IF %MC_MINOR% LEQ 16 (
@@ -517,6 +521,10 @@ ECHO.
 
 :RUN
 CALL:RUNJAVACOMMAND "%ADDITIONAL_ARGS% !SERVERRUNCOMANND!"
+IF %SKIP_JAVA_CHECK%==true (
+    ECHO Java version check was skipped. Did the server stop or crash because of a Java version mismatch?
+    ECHO Detected %MC_MAJOR%.%MC_MINOR%.%MC_PATCH% - Java %JAVA_VERSION%
+)
 IF NOT %RESTART%==true (
     CALL:QUITSERVER
 )

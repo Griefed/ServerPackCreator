@@ -98,29 +98,33 @@ fi
 
 echo "Detected ${SEMANTICS[0]}.${SEMANTICS[1]}.${SEMANTICS[2]} - Java ${JAVA_VERSION}"
 
-if [[ ${SEMANTICS[1]} -le 16 ]];then
-  if [[ ! "$JAVA_VERSION" -eq 8 ]] && [[ ! "$JAVA_VERSION" -eq 11 ]]; then
-      crashServer "Minecraft 1.16 and older requires Java 8 or 11 - found Java $JAVA_VERSION"
-  fi
-elif [[ ${SEMANTICS[1]} -le 20 ]];then
-  if [[ ${SEMANTICS[2]} -eq 20 ]];then
+if [[ "${SKIP_JAVA_CHECK}" == "true" ]]; then
+  echo "Skipping Java version check."
+else
+  if [[ ${SEMANTICS[1]} -le 16 ]];then
+    if [[ ! "$JAVA_VERSION" -eq 8 ]] && [[ ! "$JAVA_VERSION" -eq 11 ]]; then
+        crashServer "Minecraft 1.16 and older requires Java 8 or 11 - found Java $JAVA_VERSION"
+    fi
+  elif [[ ${SEMANTICS[1]} -le 20 ]];then
+    if [[ ${SEMANTICS[2]} -eq 20 ]];then
 
-    if [[ ${#SEMANTICS[@]} -eq 2 ]] || [[ ${SEMANTICS[2]} -le 4 ]];then
-      if [[ "$JAVA_VERSION" -lt 17 ]]; then
-        crashServer "Minecraft 1.17 until 1.20.4 requires Java 17 or newer - found Java $JAVA_VERSION"
+      if [[ ${#SEMANTICS[@]} -eq 2 ]] || [[ ${SEMANTICS[2]} -le 4 ]];then
+        if [[ "$JAVA_VERSION" -lt 17 ]]; then
+          crashServer "Minecraft 1.17 until 1.20.4 requires Java 17 or newer - found Java $JAVA_VERSION"
+        fi
+      elif [[ "$JAVA_VERSION" -lt 21 ]]; then
+          crashServer "Minecraft 1.20.5 and newer requires Java 21 or newer - found Java $JAVA_VERSION"
       fi
-    elif [[ "$JAVA_VERSION" -lt 21 ]]; then
+
+    else
+      if [[ "$JAVA_VERSION" -lt 17 ]]; then
+          crashServer "Minecraft 1.17 until 1.20.4 requires Java 17 or newer - found Java $JAVA_VERSION"
+      fi
+    fi
+  else
+    if [[ "$JAVA_VERSION" -lt 21 ]]; then
         crashServer "Minecraft 1.20.5 and newer requires Java 21 or newer - found Java $JAVA_VERSION"
     fi
-
-  else
-    if [[ "$JAVA_VERSION" -lt 17 ]]; then
-        crashServer "Minecraft 1.17 until 1.20.4 requires Java 17 or newer - found Java $JAVA_VERSION"
-    fi
-  fi
-else
-  if [[ "$JAVA_VERSION" -lt 21 ]]; then
-      crashServer "Minecraft 1.20.5 and newer requires Java 21 or newer - found Java $JAVA_VERSION"
   fi
 fi
 
@@ -468,6 +472,10 @@ echo ""
 while true
 do
   runJavaCommand "${ADDITIONAL_ARGS} ${SERVER_RUN_COMMAND}"
+  if [[ "${SKIP_JAVA_CHECK}" == "true" ]]; then
+    echo "Java version check was skipped. Did the server stop or crash because of a Java version mismatch?"
+    echo "Detected ${SEMANTICS[0]}.${SEMANTICS[1]}.${SEMANTICS[2]} - Java ${JAVA_VERSION}"
+  fi
   if [[ "${RESTART}" != "true" ]]; then
     quitServer
   fi
