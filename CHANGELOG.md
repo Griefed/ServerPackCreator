@@ -1,3 +1,20 @@
+## [6.0.0-alpha.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.4...6.0.0-alpha.5) (2024-06-03)
+
+
+### 📦 Other
+
+* Licenses and manifests ([aa0c0b2](https://git.griefed.de/Griefed/ServerPackCreator/commit/aa0c0b2bee8d05a73905c9364d58a6ac0edd660d))
+
+
+### 🚀 Features
+
+* Allow skipping of Java version check ([ba6936c](https://git.griefed.de/Griefed/ServerPackCreator/commit/ba6936cffc8b9358095dc9ee8900e00ef2d03f33))
+
+
+### 🛠 Fixes
+
+* Properly copy manifests and themes ([3099c70](https://git.griefed.de/Griefed/ServerPackCreator/commit/3099c703361d4852e4db75d32555da566db91304))
+
 ## [6.0.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.3...6.0.0-alpha.4) (2024-06-02)
 
 
