@@ -849,18 +849,24 @@ That being said: You can delete a server pack by removing the corresponding file
 ## Keeping Data
 
 You can disable the cleanup of an already generated server pack in order to keep data between generations.
-This is useful if you ran the server pack and generated world or similar. Scripts, icon and properties will always be updated
+This is useful if you ran the server pack and generated a world or similar things. Scripts, icon and properties will always be updated.
 
 Keep in mind, though, that any ZIP-archived generated this way may contain data which is not allowed on platforms such as Modrinth or CurseForge.
+Turning overwrites off is probably most useful if the modpack from which the server pack is generated didn't have a change of mods or mod-configs
+between generations.
 
 You may also run the risk of having duplicate mods if the mods in your modpack change or are updated between generations.
-If overwrites, and thus cleanups, are disabled, and you run into this
+If overwrites, and thus cleanups, are disabled, and you run into this, then only you yourself are to blame. 😅
+You have been warned.
 
 ## Multiple Java Installations
 
 If you manage multiple modpacks and they require different Java versions to run, then you can make use of ServerPackCreators
-feature to use store paths to your Java installations. Changing the Miencraft version for your server pack will then update
-the path to the Java installation in the Advanced-Section to reflect the required Java install.
+feature to store paths to your Java installations of different versions. Changing the Minecraft version for your server pack will then update
+the path to the Java installation in the Advanced-Section to reflect the required Java-install.
+
+This feature is most helpful when you want to quickly test the generated server pack without having to meddle with the
+Java path inside the `variables.txt` yourself.
 
 Note: This path will not be present in the `variables.txt` in the ZIP-archive of your server pack. If you disabled `Server Pack Overwrites`, then the updated Java path may end up in the `variables.txt` inside the ZIP-archive. Use with caution!
 
