@@ -288,6 +288,7 @@ class ApiProperties(
             "ResourceLoader-",
             "ResourcePackOrganizer",
             "Ryoamiclights-",
+            "RyoamicLights-",
             "ShoulderSurfing-",
             "ShulkerTooltip-",
             "SimpleDiscordRichPresence-",
