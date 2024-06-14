@@ -149,7 +149,7 @@ class ServerPackHandler(
      * @return `true` if the server pack was successfully generated.
      * @author Griefed
      */
-    fun run(packConfig: PackConfig): Boolean { //TODO return server pack object with info about it as well as whether it was successful
+    fun run(packConfig: PackConfig): Boolean {
         val destination = getServerPackDestination(packConfig)
         /*
         * Check whether the server pack for the specified modpack already exists and whether overwrite is disabled.
@@ -920,7 +920,7 @@ class ServerPackHandler(
         // Check whether scanning mods for sideness is activated.
         if (apiProperties.isAutoExcludingModsEnabled) {
             val scanningStopWatch = SimpleStopWatch().start()
-            when (modloader) { //TODO replace Modloader strings with ENUM
+            when (modloader) {
                 "LegacyFabric", "Fabric" -> autodiscoveredClientMods.addAll(modScanner.fabricScanner.scan(filesInModsDir))
 
                 "Forge" -> if (minecraftVersion.split(".").dropLastWhile { it.isEmpty() }
