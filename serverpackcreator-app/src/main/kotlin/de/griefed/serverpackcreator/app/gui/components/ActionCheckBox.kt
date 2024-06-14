@@ -27,10 +27,12 @@ import javax.swing.JCheckBox
  *
  * @author Griefed
  */
-class ActionCheckBox(title: String, actionListener: ActionListener) : JCheckBox(title) {
-    constructor(actionListener: ActionListener) : this("",actionListener)
+class ActionCheckBox(title: String, vararg actionListener: ActionListener) : JCheckBox(title) {
+    constructor(vararg actionListener: ActionListener) : this("",*actionListener)
 
     init {
-        this.addActionListener(actionListener)
+        for (listener in actionListener) {
+            this.addActionListener(listener)
+        }
     }
 }

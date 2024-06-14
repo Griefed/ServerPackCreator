@@ -158,6 +158,12 @@ class GlobalSettings(
     private val overwriteRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { overwriteSetting.isSelected = apiProperties.isServerPacksOverwriteEnabled }
     private val overwriteReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { overwriteSetting.isSelected = apiProperties.fallbackOverwriteEnabled }
 
+    private val updateServerPackIcon = StatusIcon(guiProps, Translations.settings_global_updateserverpack_tooltip.toString())
+    private val updateServerPackLabel = ElementLabel(Translations.settings_global_updateserverpack_label.toString())
+    private val updateServerPackSetting = ActionCheckBox(actionListener)
+    private val updateServerPackRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { updateServerPackSetting.isSelected = apiProperties.isUpdatingServerPacksEnabled }
+    private val updateServerPackReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { updateServerPackSetting.isSelected = apiProperties.fallbackUpdateServerPack }
+
     private val javaVariableIcon = StatusIcon(guiProps, Translations.settings_global_scriptjava_tooltip.toString())
     private val javaVariableLabel = ElementLabel(Translations.settings_global_scriptjava_label.toString())
     private val javaVariableSetting = ActionCheckBox(actionListener)
@@ -211,7 +217,17 @@ class GlobalSettings(
     private val javaPathsSetting = JavaPaths(guiProps, tableModelListener)
     private val javaPathsRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { javaPathsSetting.loadData(apiProperties.javaPaths) }
 
+    private val ensureUpdateOverwriteSetting = ActionListener {
+        if (overwriteSetting.isSelected) {
+            updateServerPackSetting.isEnabled = false
+            updateServerPackSetting.isSelected = false
+        } else {
+            updateServerPackSetting.isEnabled = true
+        }
+    }
+
     init {
+        overwriteSetting.addActionListener(ensureUpdateOverwriteSetting)
         loadSettings()
         val zipY: Int
         val inclusionsY: Int
@@ -329,6 +345,13 @@ class GlobalSettings(
         panel.add(overwriteReset, "cell 4 $y")
 
         y++
+        panel.add(updateServerPackIcon, "cell 0 $y")
+        panel.add(updateServerPackLabel, "cell 1 $y")
+        panel.add(updateServerPackSetting, "cell 2 $y, grow")
+        panel.add(updateServerPackRevert, "cell 3 $y")
+        panel.add(updateServerPackReset, "cell 4 $y")
+
+        y++
         panel.add(javaVariableIcon, "cell 0 $y")
         panel.add(javaVariableLabel, "cell 1 $y")
         panel.add(javaVariableSetting, "cell 2 $y, grow")
@@ -391,6 +414,7 @@ class GlobalSettings(
         exclusionSetting.selectedItem = apiProperties.exclusionFilter
         languageSetting.selectedItem = apiProperties.i18n4kConfig.locale
         overwriteSetting.isSelected = apiProperties.isServerPacksOverwriteEnabled
+        updateServerPackSetting.isSelected = apiProperties.isUpdatingServerPacksEnabled
         javaVariableSetting.isSelected = apiProperties.isJavaScriptAutoupdateEnabled
         prereleaseSetting.isSelected = apiProperties.isCheckingForPreReleasesEnabled
         zipExclusionsSetting.isSelected = apiProperties.isZipFileExclusionEnabled
@@ -414,6 +438,7 @@ class GlobalSettings(
         apiProperties.exclusionFilter = exclusionSetting.selectedItem as ExclusionFilter
         apiProperties.language = languageSetting.selectedItem as Locale
         apiProperties.isServerPacksOverwriteEnabled = overwriteSetting.isSelected
+        apiProperties.isUpdatingServerPacksEnabled = updateServerPackSetting.isSelected
         apiProperties.isJavaScriptAutoupdateEnabled = javaVariableSetting.isSelected
         apiProperties.isCheckingForPreReleasesEnabled = prereleaseSetting.isSelected
         apiProperties.isZipFileExclusionEnabled = zipExclusionsSetting.isSelected
@@ -509,6 +534,7 @@ class GlobalSettings(
         exclusionSetting.selectedItem.toString() != apiProperties.exclusionFilter.toString() ||
         languageSetting.selectedItem.toString().lowercase() != apiProperties.i18n4kConfig.locale.toString().lowercase() ||
         overwriteSetting.isSelected != apiProperties.isServerPacksOverwriteEnabled ||
+        updateServerPackSetting.isSelected != apiProperties.isUpdatingServerPacksEnabled ||
         javaVariableSetting.isSelected != apiProperties.isJavaScriptAutoupdateEnabled ||
         prereleaseSetting.isSelected != apiProperties.isCheckingForPreReleasesEnabled ||
         zipExclusionsSetting.isSelected != apiProperties.isZipFileExclusionEnabled ||

@@ -92,7 +92,7 @@ class ServerPackFile {
      */
     @Suppress("removal")
     @Throws(SecurityException::class, UnsupportedOperationException::class, IOException::class)
-    fun copy(overwrite: Boolean = true) {
+    fun copy(overwrite: Boolean = true) : File {
         try {
             sourceFile.copyTo(destinationFile, overwrite)
             log.debug("Successfully copied ServerPackFile")
@@ -103,5 +103,6 @@ class ServerPackFile {
         } catch (skip: FileAlreadyExistsException) {
             log.warn("Skipping copying of $sourcePath because overwriting is disabled.")
         }
+        return destinationFile
     }
 }

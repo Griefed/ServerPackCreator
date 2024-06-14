@@ -145,6 +145,8 @@ class ApiProperties(
         "spring.datasource.username"
     private val pSpringDatasourcePassword =
         "spring.datasource.password"
+    private val pUpdateServerPack = "de.griefed.serverpackcreator.serverpack.update"
+
     private val suffixes = arrayOf(".xml")
 
     /**
@@ -618,6 +620,7 @@ class ApiProperties(
     val fallbackCleanupSchedule = "0 0 0 * * *"
     val fallbackVersionSchedule = "0 0 0 * * *"
     val fallbackDatabaseCleanupSchedule = "0 0 0 * * *"
+    val fallbackUpdateServerPack = false
     private val checkedJavas = hashMapOf<String, Boolean>()
 
     @Suppress("MemberVisibilityCanBePrivate")
@@ -1152,6 +1155,20 @@ class ApiProperties(
             setBoolProperty(pAllowUseMinecraftSnapshots, value)
             field = value
             log.info("Minecraft pre-releases and snapshots available set to: $field")
+        }
+
+    /**
+     * Whether a server pack should be updated instead of cleanly generated.
+     */
+    var isUpdatingServerPacksEnabled = false
+        get() {
+            field = getBoolProperty(pUpdateServerPack, fallbackUpdateServerPack)
+            return field
+        }
+        set(value) {
+            setBoolProperty(pUpdateServerPack, value)
+            field = value
+            log.info("Server pack updating set to: $field")
         }
 
     /**

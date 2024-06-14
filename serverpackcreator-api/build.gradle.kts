@@ -20,7 +20,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-bom:1.9.23")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.23")
     implementation(files("${layout.buildDirectory.asFile.get()}/resources/"))
-    api("com.electronwill.night-config:toml:3.7.1")
+    api("com.electronwill.night-config:toml:3.7.2")
     api("com.fasterxml.jackson.core:jackson-databind:2.17.0")
     api("net.lingala.zip4j:zip4j:2.11.5")
     api("org.apache.logging.log4j:log4j-api-kotlin:1.4.0")

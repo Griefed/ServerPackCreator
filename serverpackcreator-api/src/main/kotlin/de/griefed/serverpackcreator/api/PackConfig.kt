@@ -271,6 +271,7 @@ open class PackConfig() {
         pluginsConfigs: HashMap<String, ArrayList<CommentedConfig>>
     ) : this() {
         this.clientMods.addAll(clientMods)
+        this.modsWhitelist.addAll(whitelist)
         this.inclusions.addAll(copyDirs)
         this.modpackDir = modpackDir
         this.minecraftVersion = minecraftVersion

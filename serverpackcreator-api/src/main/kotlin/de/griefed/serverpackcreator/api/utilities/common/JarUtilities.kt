@@ -255,7 +255,7 @@ class JarUtilities {
             val classSource = classToCopyFrom.getResource(source)
             val classUri = classSource.toURI()
             val walkPath = classUri.toPath()
-            Files.walk(classToCopyFrom.getResource(source)?.toURI()?.toPath()).use {
+            Files.walk(walkPath).use {
                 for (path in it) {
                     val fileName = path.toString().replace("\\", "/")
                     if (fileName.matches(fileEnding) && !fileName.endsWith(dirToCopy)) {

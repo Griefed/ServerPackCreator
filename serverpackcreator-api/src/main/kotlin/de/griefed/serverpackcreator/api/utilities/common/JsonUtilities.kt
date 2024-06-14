@@ -37,7 +37,7 @@ import java.net.URL
  */
 @Suppress("unused")
 class JsonUtilities(
-    private val objectMapper: ObjectMapper = ObjectMapper()
+    val objectMapper: ObjectMapper = ObjectMapper()
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
         .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature())

@@ -169,10 +169,31 @@ class ServerPackHandler(
             deleteExistingServerPackZip(destination)
         }
 
+        if (apiProperties.isUpdatingServerPacksEnabled) {
+            val existingManifest = File(destination, "manifest.json")
+            if (existingManifest.isFile) {
+                val oldManifest = utilities.jsonUtilities.objectMapper.readValue(existingManifest, ServerPackManifest::class.java)
+                val oldFiles : ArrayList<File> = ArrayList(10000)
+                var oldFile: File
+                for (entry in oldManifest.files) {
+                    oldFile = File(destination, entry)
+                    if (oldFile.isFile && !oldFile.isDirectory) {
+                        oldFiles.add(File(destination, entry))
+                    }
+                }
+                for (oldFile in oldFiles) {
+                    log.debug("Deleting old file: $oldFile")
+                    oldFile.deleteQuietly()
+                }
+            } else {
+                log.warn("Updating server packs enabled, but no manifest was found. Is this a new server pack?")
+            }
+        }
+
         apiPlugins.runPreGenExtensions(packConfig, destination)
 
         // Recursively copy all specified directories and files, excluding clientside-only mods, to server pack.
-        copyFiles(packConfig, apiProperties.isServerPacksOverwriteEnabled)
+        val files = copyFiles(packConfig, !(!apiProperties.isServerPacksOverwriteEnabled && !apiProperties.isUpdatingServerPacksEnabled))
 
         // If true, copy the server-icon.png from server_files to the server pack.
         if (packConfig.isServerIconInclusionDesired) {
@@ -187,6 +208,19 @@ class ServerPackHandler(
         } else {
             log.info("Not including server.properties.")
         }
+        val relativeFiles = files
+            .map { file -> file.absolutePath }
+            .map { entry -> entry.replace(destination,"")}
+            .map { entry -> entry.substring(1) }
+        val manifest = ServerPackManifest(
+            relativeFiles,
+            packConfig.minecraftVersion,
+            packConfig.modloader,
+            packConfig.modloaderVersion,
+            apiProperties.apiVersion
+        )
+        manifest.writeToFile(File(destination), utilities.jsonUtilities.objectMapper)
+
         apiPlugins.runPreZipExtensions(packConfig, destination)
 
         // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
@@ -201,14 +235,6 @@ class ServerPackHandler(
             zipBuilder(packConfig)
         } else {
             log.info("Not creating zip archive of serverpack.")
-        }
-
-        /*
-         * If modloader is fabric, try and replace the old server-launch.jar with the new and improved
-         * one which also downloads the Minecraft server.
-         */
-        if (packConfig.modloader.equals("Fabric", ignoreCase = true)) {
-            provideImprovedFabricServerLauncher(packConfig)
         }
 
         /*
@@ -320,10 +346,11 @@ class ServerPackHandler(
         destination: String,
         modloader: String,
         overwrite: Boolean
-    ) {
+    ) : List<File> {
         val exclusions = mutableListOf<Regex>()
         var acquired: List<ServerPackFile>
         val serverPackFiles: MutableList<ServerPackFile> = ArrayList(100000)
+        val copiedFiles: MutableList<File> = ArrayList(10000)
         try {
             File(destination).create()
         } catch (ex: IOException) {
@@ -341,7 +368,7 @@ class ServerPackHandler(
             } catch (ex: IOException) {
                 log.error("An error occurred copying the modpack to the server pack in lazy mode.", ex)
             }
-            return
+            return copiedFiles
         }
 
         for (inclusion in inclusions) {
@@ -365,7 +392,7 @@ class ServerPackHandler(
         log.info("Copying files to the server pack. This may take a while...")
         for (file in serverPackFiles) {
             try {
-                file.copy(overwrite)
+                copiedFiles.add(file.copy(overwrite))
             } catch (ex: IOException) {
                 log.error(
                     "An error occurred trying to copy " + file.sourceFile + " to " + file.destinationFile + ".",
@@ -373,6 +400,7 @@ class ServerPackHandler(
                 )
             }
         }
+        return copiedFiles
     }
 
     /**
