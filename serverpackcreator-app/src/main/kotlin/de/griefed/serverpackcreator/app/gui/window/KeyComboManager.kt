@@ -21,8 +21,8 @@ package de.griefed.serverpackcreator.app.gui.window
 
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.AWTEvent
-import java.awt.Toolkit
 import java.awt.event.KeyEvent
+import javax.swing.JFrame
 
 /**
  * Common key-combinations usable across ServerPackCreator, like loading and saving configs, generating
@@ -38,12 +38,14 @@ import java.awt.event.KeyEvent
  * @author Griefed
  */
 class KeyComboManager(
+    frame: JFrame,
     mainPanel: MainPanel
 ) {
 
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val configs = mainPanel.tabbedConfigsTab
     private val control = mainPanel.controlPanel
+    private val toolkit = frame.toolkit
 
     init {
         addCloseTabCombo()
@@ -58,7 +60,7 @@ class KeyComboManager(
      * @author Griefed
      */
     private fun addCloseTabCombo() {
-        Toolkit.getDefaultToolkit().addAWTEventListener({ e: AWTEvent ->
+        toolkit.addAWTEventListener({ e: AWTEvent ->
             val event = e as KeyEvent
             if (event.id == KeyEvent.KEY_RELEASED) {
                 when {
@@ -78,7 +80,7 @@ class KeyComboManager(
      * @author Griefed
      */
     private fun addNewTabCombo() {
-        Toolkit.getDefaultToolkit().addAWTEventListener({ e: AWTEvent ->
+        toolkit.addAWTEventListener({ e: AWTEvent ->
             val event = e as KeyEvent
             if (event.id == KeyEvent.KEY_RELEASED) {
                 when {
@@ -94,7 +96,7 @@ class KeyComboManager(
      * @author Griefed
      */
     private fun addSaveCurrentTabCombo() {
-        Toolkit.getDefaultToolkit().addAWTEventListener({ e: AWTEvent ->
+        toolkit.addAWTEventListener({ e: AWTEvent ->
             val event = e as KeyEvent
             if (event.id == KeyEvent.KEY_RELEASED) {
                 when {
@@ -110,7 +112,7 @@ class KeyComboManager(
      * @author Griefed
      */
     private fun addSaveAllTabsCombo() {
-        Toolkit.getDefaultToolkit().addAWTEventListener({ e: AWTEvent ->
+        toolkit.addAWTEventListener({ e: AWTEvent ->
             val event = e as KeyEvent
             if (event.id == KeyEvent.KEY_RELEASED) {
                 when {
@@ -126,7 +128,7 @@ class KeyComboManager(
      * @author Griefed
      */
     private fun addLoadConfigsCombo() {
-        Toolkit.getDefaultToolkit().addAWTEventListener({ e: AWTEvent ->
+        toolkit.addAWTEventListener({ e: AWTEvent ->
             val event = e as KeyEvent
             if (event.id == KeyEvent.KEY_RELEASED) {
                 when {
@@ -142,7 +144,7 @@ class KeyComboManager(
      * @author Griefed
      */
     private fun addStartGenerationCombo() {
-        Toolkit.getDefaultToolkit().addAWTEventListener({ e: AWTEvent ->
+        toolkit.addAWTEventListener({ e: AWTEvent ->
             val event = e as KeyEvent
             if (event.id == KeyEvent.KEY_RELEASED) {
                 when {

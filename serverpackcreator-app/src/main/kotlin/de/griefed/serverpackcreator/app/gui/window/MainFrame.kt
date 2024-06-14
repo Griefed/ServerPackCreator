@@ -46,18 +46,16 @@ class MainFrame(
 ) {
     val frame: JFrame = JFrame(Translations.createserverpack_gui_createandshowgui.toString())
     val mainPanel = MainPanel(guiProps, apiWrapper, guiProps.larsonScanner, this, themeManager)
-    private val updateDialogs: UpdateDialogs
-    private val menuBar: MainMenuBar
+    private val updateDialogs: UpdateDialogs = UpdateDialogs(
+        guiProps, apiWrapper.utilities.webUtilities,
+        apiWrapper.apiProperties, updateChecker, frame
+    )
+    private val menuBar: MainMenuBar = MainMenuBar(
+        guiProps, apiWrapper, updateDialogs,
+        this, migrationManager, themeManager
+    )
 
     init {
-        updateDialogs = UpdateDialogs(
-            guiProps, apiWrapper.utilities.webUtilities,
-            apiWrapper.apiProperties, updateChecker, frame
-        )
-        menuBar = MainMenuBar(
-            guiProps, apiWrapper, updateDialogs,
-            this, migrationManager, themeManager
-        )
         frame.jMenuBar = menuBar.menuBar
         frame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
         frame.addWindowListener(object : WindowAdapter() {
@@ -73,7 +71,7 @@ class MainFrame(
         guiProps.initFont()
         guiProps.larsonScanner.loadConfig(guiProps.idleConfig)
         guiProps.larsonScanner.play()
-        KeyComboManager(mainPanel)
+        KeyComboManager(frame, mainPanel)
     }
 
     /**
