@@ -1,7 +1,6 @@
 version: "1.0"
 profile:
   name: qodana.recommended
-projectJDK: azul-21
 exclude:
   - name: All
     paths:
