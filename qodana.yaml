@@ -1,12 +1,7 @@
 version: "1.0"
-
 profile:
   name: qodana.recommended
-
-projectJDK: 21
-
-linter: jetbrains/qodana-jvm-community:2024.1
-
+projectJDK: azul-21
 exclude:
   - name: All
     paths:
