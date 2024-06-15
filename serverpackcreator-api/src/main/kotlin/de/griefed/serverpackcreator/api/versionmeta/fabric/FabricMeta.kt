@@ -58,8 +58,8 @@ class FabricMeta(
     private val launchersDirectory: File = File(installerDirectory, "launchers")
 
     init {
-        installerDirectory.create(create = true, directory = true)
-        launchersDirectory.create(create = true, directory = true)
+        installerDirectory.create(createFileOrDir = true, asDirectory = true)
+        launchersDirectory.create(createFileOrDir = true, asDirectory = true)
     }
 
     @Suppress("MemberVisibilityCanBePrivate")

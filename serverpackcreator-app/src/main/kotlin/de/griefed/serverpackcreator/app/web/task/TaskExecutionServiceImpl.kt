@@ -183,9 +183,9 @@ class TaskExecutionServiceImpl @Autowired constructor(
             taskDetail.packConfig = modpackService
                 .getPackConfigForModpack(taskDetail.modpack, taskDetail.runConfiguration!!)
         }
-        if (serverPackHandler.run(taskDetail.packConfig!!)) {
-            val destination = serverPackHandler.getServerPackDestination(taskDetail.packConfig!!)
-            val serverPackZipOld = File("${destination}_server_pack.zip").absoluteFile
+        val generation = serverPackHandler.run(taskDetail.packConfig!!)
+        if (generation.success) {
+            val serverPackZipOld = generation.serverPackZip.get().absoluteFile
             val serverPackFile = serverPackService.moveServerPack(serverPackZipOld)
             val serverPack = ServerPack()
             serverPack.size = serverPackFile.size().div(1048576.0).toInt()
@@ -205,7 +205,7 @@ class TaskExecutionServiceImpl @Autowired constructor(
             )
             taskDetail.serverPack = serverPack
             taskDetail.serverPackFile = serverPackFile
-            File(destination).deleteQuietly()
+            generation.serverPack.deleteQuietly()
             File(taskDetail.packConfig!!.modpackDir).deleteQuietly()
         } else {
             taskDetail.modpack.status = ModPackStatus.ERROR

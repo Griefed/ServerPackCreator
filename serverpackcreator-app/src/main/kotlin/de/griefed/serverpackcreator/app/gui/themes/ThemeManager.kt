@@ -53,7 +53,7 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
     val themes = mutableListOf<ThemeInfo>()
 
     init {
-        themesDir.create(create = true, directory = true)
+        themesDir.create(createFileOrDir = true, asDirectory = true)
         provideExamples()
         reloadThemes()
     }

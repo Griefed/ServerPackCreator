@@ -1,3 +1,31 @@
+## [6.0.0-alpha.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.5...6.0.0-alpha.6) (2024-06-15)
+
+
+### 💎 Improvements
+
+* Better handling of toml-scanning failures ([4122d13](https://git.griefed.de/Griefed/ServerPackCreator/commit/4122d13a459362b327850c1496b3ca29430eade3))
+
+
+### 📔 Docs
+
+* Add help section for updating server packs ([43c5754](https://git.griefed.de/Griefed/ServerPackCreator/commit/43c5754927c7553747c8587fbfead59deb86ad80))
+
+
+### 📦 Other
+
+* Add RyoamicLights- to clientside mods list ([0e30f43](https://git.griefed.de/Griefed/ServerPackCreator/commit/0e30f43236a26b70819f1b20c77a2edf2dd41408))
+* Remove TODOs and update changelog. ([023415f](https://git.griefed.de/Griefed/ServerPackCreator/commit/023415fb58b27a8898256ca086433d10b54273ae))
+
+
+### 🚀 Features
+
+* Experimental server pack updating to prevent data loss. Check Global settings ([a10d47c](https://git.griefed.de/Griefed/ServerPackCreator/commit/a10d47c50fce6b54e970a185325046e9551f52d3))
+
+
+### 🛠 Fixes
+
+* Hopefully improve shortcut responsiveness ([d655165](https://git.griefed.de/Griefed/ServerPackCreator/commit/d655165950f9721f7c90d10b4fdd6cf719f1ab9f))
+
 ## [6.0.0-alpha.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.4...6.0.0-alpha.5) (2024-06-03)
 
 

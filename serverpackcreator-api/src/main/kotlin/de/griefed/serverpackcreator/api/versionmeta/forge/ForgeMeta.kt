@@ -44,7 +44,7 @@ class ForgeMeta constructor(
     private val installerDirectory: File = File(installerCacheDirectory, "forge")
 
     init {
-        installerDirectory.create(create = true, directory = true)
+        installerDirectory.create(createFileOrDir = true, asDirectory = true)
     }
 
     /**

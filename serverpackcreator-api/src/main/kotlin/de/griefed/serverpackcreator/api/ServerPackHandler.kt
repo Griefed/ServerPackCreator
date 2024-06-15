@@ -149,51 +149,59 @@ class ServerPackHandler(
      * @return `true` if the server pack was successfully generated.
      * @author Griefed
      */
-    fun run(packConfig: PackConfig): Boolean {
-        val destination = getServerPackDestination(packConfig)
+    fun run(packConfig: PackConfig): ServerPackGeneration {
+        val files : ArrayList<File> = ArrayList(10000)
+        val relativeFiles : ArrayList<String> = ArrayList(10000)
+        val serverPackManifest: ServerPackManifest
+        var serverPackZip: Optional<File> = Optional.empty()
+        val serverPack = File(getServerPackDestination(packConfig))
+        val existingManifest: File
+        val oldManifest: ServerPackManifest
+        var oldFile: File
+        val generationStopWatch = SimpleStopWatch().start()
+
         /*
         * Check whether the server pack for the specified modpack already exists and whether overwrite is disabled.
         * If the server pack exists and overwrite is disabled, no new server pack will be generated.
         */
-        val generationStopWatch = SimpleStopWatch().start()
         try {
-            File(destination).create(create = true, directory = true)
+            serverPack.create(createFileOrDir = true, asDirectory = true)
         } catch (ignored: IOException) {
         }
 
         if (apiProperties.isServerPacksOverwriteEnabled) {
             // Make sure no files from previously generated server packs interrupt us.
-            cleanupEnvironment(true, destination)
+            cleanupEnvironment(true, serverPack.absolutePath)
         } else {
             log.info("Overwrite disabled, not performing cleanup before server pack generation.")
-            deleteExistingServerPackZip(destination)
+            deleteExistingServerPackZip(serverPack.absolutePath)
         }
 
         if (apiProperties.isUpdatingServerPacksEnabled) {
-            val existingManifest = File(destination, "manifest.json")
+            existingManifest = File(serverPack.absolutePath, "manifest.json")
             if (existingManifest.isFile) {
-                val oldManifest = utilities.jsonUtilities.objectMapper.readValue(existingManifest, ServerPackManifest::class.java)
-                val oldFiles : ArrayList<File> = ArrayList(10000)
-                var oldFile: File
+                oldManifest = utilities.jsonUtilities.objectMapper.readValue(existingManifest, ServerPackManifest::class.java)
                 for (entry in oldManifest.files) {
-                    oldFile = File(destination, entry)
+                    oldFile = File(serverPack.absolutePath, entry)
                     if (oldFile.isFile && !oldFile.isDirectory) {
-                        oldFiles.add(File(destination, entry))
+                        log.debug("Deleting old file: ${oldFile.absolutePath}")
+                        oldFile.deleteQuietly()
                     }
-                }
-                for (oldFile in oldFiles) {
-                    log.debug("Deleting old file: $oldFile")
-                    oldFile.deleteQuietly()
                 }
             } else {
                 log.warn("Updating server packs enabled, but no manifest was found. Is this a new server pack?")
             }
         }
 
-        apiPlugins.runPreGenExtensions(packConfig, destination)
+        apiPlugins.runPreGenExtensions(packConfig, serverPack.absolutePath)
 
         // Recursively copy all specified directories and files, excluding clientside-only mods, to server pack.
-        val files = copyFiles(packConfig, !(!apiProperties.isServerPacksOverwriteEnabled && !apiProperties.isUpdatingServerPacksEnabled))
+        files.addAll(
+            copyFiles(
+                packConfig,
+                !(!apiProperties.isServerPacksOverwriteEnabled && !apiProperties.isUpdatingServerPacksEnabled)
+            )
+        )
 
         // If true, copy the server-icon.png from server_files to the server pack.
         if (packConfig.isServerIconInclusionDesired) {
@@ -208,20 +216,20 @@ class ServerPackHandler(
         } else {
             log.info("Not including server.properties.")
         }
-        val relativeFiles = files
+        relativeFiles.addAll(files
             .map { file -> file.absolutePath }
-            .map { entry -> entry.replace(destination,"")}
-            .map { entry -> entry.substring(1) }
-        val manifest = ServerPackManifest(
+            .map { entry -> entry.replace(serverPack.absolutePath,"")}
+            .map { entry -> entry.substring(1) })
+        serverPackManifest = ServerPackManifest(
             relativeFiles,
             packConfig.minecraftVersion,
             packConfig.modloader,
             packConfig.modloaderVersion,
             apiProperties.apiVersion
         )
-        manifest.writeToFile(File(destination), utilities.jsonUtilities.objectMapper)
+        serverPackManifest.writeToFile(serverPack, utilities.jsonUtilities.objectMapper)
 
-        apiPlugins.runPreZipExtensions(packConfig, destination)
+        apiPlugins.runPreZipExtensions(packConfig, serverPack.absolutePath)
 
         // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
         if (packConfig.isZipCreationDesired) {
@@ -232,7 +240,7 @@ class ServerPackHandler(
             * to platforms like CurseForge. We must not have scripts with custom Java paths there.
             */
             createStartScripts(packConfig, false)
-            zipBuilder(packConfig)
+            serverPackZip = zipBuilder(packConfig)
         } else {
             log.info("Not creating zip archive of serverpack.")
         }
@@ -245,13 +253,19 @@ class ServerPackHandler(
         createStartScripts(packConfig, true)
 
         // Inform user about location of newly generated server pack.
-        log.info("Server pack available at: $destination")
-        log.info("Server pack archive available at: ${destination}_server_pack.zip")
+        log.info("Server pack available at: ${serverPack.absolutePath}")
+        log.info("Server pack archive available at: ${serverPack.absolutePath}_server_pack.zip")
         log.info("Done!")
-        apiPlugins.runPostGenExtensions(packConfig, destination)
+        apiPlugins.runPostGenExtensions(packConfig, serverPack.absolutePath)
         log.debug("Generation took ${generationStopWatch.stop().getTime()}")
 
-        return true
+        return ServerPackGeneration(
+            serverPack.isDirectory && !serverPack.listFiles().isNullOrEmpty(),
+            serverPack,
+            serverPackZip,
+            packConfig,
+            files
+        )
     }
 
     /**
@@ -765,9 +779,10 @@ class ServerPackHandler(
         destination: String,
         modloader: String,
         modloaderVersion: String
-    ) {
+    ) : Optional<File> {
         log.info("Creating zip archive of serverpack...")
         val zipParameters = ZipParameters()
+        var zip: ZipFile? = null
         val filesToExclude: MutableList<File> = ArrayList(100)
         if (apiProperties.isZipFileExclusionEnabled) {
             for (entry in apiProperties.zipArchiveExclusions) {
@@ -788,7 +803,8 @@ class ServerPackHandler(
         zipParameters.isIncludeRootFolder = false
         zipParameters.fileComment = comment
         try {
-            ZipFile("${destination}_server_pack.zip").use {
+            zip = ZipFile("${destination}_server_pack.zip")
+            zip.use {
                 it.addFolder(File(destination), zipParameters)
                 it.comment = comment
             }
@@ -796,6 +812,7 @@ class ServerPackHandler(
             log.error("There was an error during zip creation.", ex)
         }
         log.info("Finished creation of zip archive.")
+        return Optional.ofNullable(zip?.file)
     }
 
     /**

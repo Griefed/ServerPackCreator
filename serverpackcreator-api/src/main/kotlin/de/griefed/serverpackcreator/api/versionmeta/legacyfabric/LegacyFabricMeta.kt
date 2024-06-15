@@ -54,7 +54,7 @@ class LegacyFabricMeta constructor(
     private val installerDirectory: File = File(installerCacheDirectory, "legacyfabric")
 
     init {
-        installerDirectory.create(create = true, directory = true)
+        installerDirectory.create(createFileOrDir = true, asDirectory = true)
     }
 
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)

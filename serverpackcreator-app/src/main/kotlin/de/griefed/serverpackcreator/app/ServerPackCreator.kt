@@ -364,7 +364,7 @@ class ServerPackCreator(private val args: Array<String>) {
             ) {
                 exitProcess(1)
             }
-            if (!apiWrapper.serverPackHandler.run(packConfig)) {
+            if (!apiWrapper.serverPackHandler.run(packConfig).success) {
                 exitProcess(1)
             }
         }

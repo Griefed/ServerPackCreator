@@ -1373,7 +1373,7 @@ class ApiProperties(
                 home.absoluteFile
             }
             if (!field.isDirectory) {
-                field.create(create = true, directory = true)
+                field.create(createFileOrDir = true, asDirectory = true)
             }
             internalProps.setProperty(pHomeDirectory, field.absolutePath)
             return field
@@ -2596,20 +2596,20 @@ class ApiProperties(
         }
         firstRun = getBoolProperty("de.griefed.serverpackcreator.firstrun", true)
         setBoolProperty("de.griefed.serverpackcreator.firstrun", false)
-        logsDirectory.create(create = true, directory = true)
-        serverFilesDirectory.create(create = true, directory = true)
-        propertiesDirectory.create(create = true, directory = true)
-        iconsDirectory.create(create = true, directory = true)
-        configsDirectory.create(create = true, directory = true)
-        workDirectory.create(create = true, directory = true)
-        tempDirectory.create(create = true, directory = true)
-        modpacksDirectory.create(create = true, directory = true)
-        serverPacksDirectory.create(create = true, directory = true)
-        pluginsDirectory.create(create = true, directory = true)
-        pluginsConfigsDirectory.create(create = true, directory = true)
-        manifestsDirectory.create(create = true, directory = true)
-        minecraftServerManifestsDirectory.create(create = true, directory = true)
-        installerCacheDirectory.create(create = true, directory = true)
+        logsDirectory.create(createFileOrDir = true, asDirectory = true)
+        serverFilesDirectory.create(createFileOrDir = true, asDirectory = true)
+        propertiesDirectory.create(createFileOrDir = true, asDirectory = true)
+        iconsDirectory.create(createFileOrDir = true, asDirectory = true)
+        configsDirectory.create(createFileOrDir = true, asDirectory = true)
+        workDirectory.create(createFileOrDir = true, asDirectory = true)
+        tempDirectory.create(createFileOrDir = true, asDirectory = true)
+        modpacksDirectory.create(createFileOrDir = true, asDirectory = true)
+        serverPacksDirectory.create(createFileOrDir = true, asDirectory = true)
+        pluginsDirectory.create(createFileOrDir = true, asDirectory = true)
+        pluginsConfigsDirectory.create(createFileOrDir = true, asDirectory = true)
+        manifestsDirectory.create(createFileOrDir = true, asDirectory = true)
+        minecraftServerManifestsDirectory.create(createFileOrDir = true, asDirectory = true)
+        installerCacheDirectory.create(createFileOrDir = true, asDirectory = true)
         printSettings()
         saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
     }

@@ -517,19 +517,19 @@ fun File.filteredWalk(
 /**
  * All parent directories are created, but not the file itself.
  *
- * [create] in combination with [directory] will result in this file being treated as a directory. As such, all
+ * [createFileOrDir] in combination with [asDirectory] will result in this file being treated as a directory. As such, all
  * parents will be created, along with this file itself being created as a directory.
  *
- * [create] without [directory] will result in this file being created as a file.
+ * [createFileOrDir] without [asDirectory] will result in this file being created as a file.
  *
- * @param create Whether the file or directory should be created. If left to `false`, then [directory] won't have any effect.
- * @param directory true to create a directory, false to create a file. Requires [create] to be true
+ * @param createFileOrDir Whether the file or directory should be created. If left to `false`, then [asDirectory] won't have any effect.
+ * @param asDirectory true to create a directory, false to create a file. Requires [createFileOrDir] to be true
  * @author Griefed
  */
-fun File.create(create: Boolean = false, directory: Boolean = false) {
+fun File.create(createFileOrDir: Boolean = false, asDirectory: Boolean = false) {
     absoluteFile.toPath().createParentDirectories()
-    if (create) {
-        if (directory) {
+    if (createFileOrDir) {
+        if (asDirectory) {
             this.mkdirs()
         } else {
             this.createNewFile()

@@ -170,7 +170,7 @@ class ControlPanel(
         log.info("Starting ServerPackCreator run.")
         statusPanel.updateStatus(Translations.createserverpack_log_info_buttoncreateserverpack_generating(File(packConfig.modpackDir).name))
         try {
-            apiWrapper.serverPackHandler.run(packConfig)
+            val generation = apiWrapper.serverPackHandler.run(packConfig)
             statusPanel.updateStatus(Translations.createserverpack_log_info_buttoncreateserverpack_ready.toString())
             if (guiProps.generationFocusEnabled) {
                 mainFrame.toFront()
@@ -185,7 +185,7 @@ class ControlPanel(
                 ) == 0
             ) {
                 try {
-                    Desktop.getDesktop().open(File(apiWrapper.serverPackHandler.getServerPackDestination(packConfig)))
+                    Desktop.getDesktop().open(generation.serverPack)
 
                 } catch (ex: IOException) {
                     log.error("Error opening file explorer for server pack.", ex)

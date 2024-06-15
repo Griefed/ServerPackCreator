@@ -45,7 +45,7 @@ class NeoForgeMeta(
     private val installerDirectory: File = File(installerCacheDirectory, "neoforge")
 
     init {
-        installerDirectory.create(create = true, directory = true)
+        installerDirectory.create(createFileOrDir = true, asDirectory = true)
     }
 
     /**
