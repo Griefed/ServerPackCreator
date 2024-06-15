@@ -117,13 +117,6 @@ Qodana:
         - qodana-2024.1-
       paths:
         - .qodana/cache
-  before_script:
-    - curl 
-      -fsSL "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.3%2B9/OpenJDK21U-jdk_x64_linux_hotspot_21.0.3_9.tar.gz"
-      -o jdk21.tar.gz
-    - rm -rf /root/.jdks/jdk || echo "Clean"
-    - mkdir -p /root/.jdks/jdk || echo "Exists"
-    - tar -xf jdk21.tar.gz --directory /root/.jdks/jdk --strip-components=1
   script:
     - qodana --save-report --results-dir=$CI_PROJECT_DIR/.qodana/results --cache-dir=$CI_PROJECT_DIR/.qodana/cache
   artifacts:
