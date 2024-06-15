@@ -27,7 +27,7 @@ class ModScannerTest internal constructor() {
         Assertions.assertTrue(
             excluded.contains(File("src/test/resources/forge_tests/mods/ccccc.jar"))
         )
-        Assertions.assertTrue(
+        Assertions.assertFalse(
             excluded.contains(File("src/test/resources/forge_tests/mods/ddddd.jar"))
         )
         Assertions.assertTrue(

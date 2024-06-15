@@ -78,7 +78,7 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
                 // get all mods required on the server
                 idsRequiredOnServer.addAll(getModIdsRequiredOnServer(config))
             } catch (e: Exception) {
-                log.debug("Could not fully scan ${modJar.name}. ${e.message}")
+                log.error("Could not scan ${modJar.name}. Consider reporting this: ${e.cause}: ${e.message}")
                 serverMods.add(modJar)
             }
         }
@@ -92,7 +92,7 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
                     }
                 }
             } catch (e: Exception) {
-                log.debug("Could not fully scan ${modJar.name}. ${e.message}")
+                log.error("Could not scan ${modJar.name}. Consider reporting this: ${e.cause}: ${e.message}")
                 serverMods.add(modJar)
             }
         }
