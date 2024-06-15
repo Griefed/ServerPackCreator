@@ -104,10 +104,8 @@ licenseReport {
 
 val appPlugins = File("serverpackcreator-app/tests/plugins")
 val apiPlugins = File("serverpackcreator-api/src/test/resources/testresources/plugins")
-val kotlinPlugin =
-    project.childProjects["serverpackcreator-plugin-example"]?.tasks?.jar?.get()?.archiveFile?.get()?.asFile?.toPath()
+val kotlinPlugin = project.childProjects["serverpackcreator-plugin-example"]?.tasks?.jar?.get()?.archiveFile?.get()?.asFile?.toPath()
 val licenseReports = File("licenses")
-
 tasks.register<Delete>("cleanAppPlugins") {
     delete(
         fileTree(appPlugins) {
@@ -115,7 +113,6 @@ tasks.register<Delete>("cleanAppPlugins") {
         }
     )
 }
-
 tasks.register<Copy>("copyExamplePluginsToApp") {
     dependsOn(
         "cleanAppPlugins",
@@ -125,7 +122,6 @@ tasks.register<Copy>("copyExamplePluginsToApp") {
     from(kotlinPlugin!!)
     into(appPlugins)
 }
-
 tasks.register<Delete>("cleanApiUnitTestPlugins") {
     delete(
         fileTree(apiPlugins) {
@@ -133,7 +129,6 @@ tasks.register<Delete>("cleanApiUnitTestPlugins") {
         }
     )
 }
-
 tasks.register<Copy>("copyPluginsApiUnitTests") {
     dependsOn(
         "cleanApiUnitTestPlugins",

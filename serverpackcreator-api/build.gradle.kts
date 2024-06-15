@@ -45,6 +45,7 @@ tasks.processResources {
 
 tasks.processResources {
     dependsOn(tasks.generateI18n4kFiles)
+    //API
     copy {
         from(rootProject.layout.projectDirectory.file("CHANGELOG.md"))
         into(layout.projectDirectory.dir("src/main/resources"))
@@ -68,6 +69,36 @@ tasks.processResources {
     copy {
         from(rootProject.layout.projectDirectory.file("README.md"))
         into(layout.projectDirectory.dir("src/main/resources"))
+    }
+
+    // Writerside
+    copy {
+        from(rootProject.layout.projectDirectory.file("CHANGELOG.md"))
+        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
+    }
+    copy {
+        from(rootProject.layout.projectDirectory.file("CODE_OF_CONDUCT.md"))
+        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
+    }
+    copy {
+        from(rootProject.layout.projectDirectory.file("CONTRIBUTING.md"))
+        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
+    }
+    copy {
+        from(rootProject.layout.projectDirectory.file("HELP.md"))
+        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
+    }
+    copy {
+        from(rootProject.layout.projectDirectory.file("LICENSE"))
+        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
+    }
+    copy {
+        from(rootProject.layout.projectDirectory.file("README.md"))
+        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
+    }
+    copy {
+        from(rootProject.layout.projectDirectory.dir("img"))
+        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics/img"))
     }
 }
 

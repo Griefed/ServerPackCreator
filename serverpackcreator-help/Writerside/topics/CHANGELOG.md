@@ -1,3 +1,219 @@
+## [6.0.0-alpha.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.4...6.0.0-alpha.5) (2024-06-03)
+
+
+### 📦 Other
+
+* Licenses and manifests ([aa0c0b2](https://git.griefed.de/Griefed/ServerPackCreator/commit/aa0c0b2bee8d05a73905c9364d58a6ac0edd660d))
+
+
+### 🚀 Features
+
+* Allow skipping of Java version check ([ba6936c](https://git.griefed.de/Griefed/ServerPackCreator/commit/ba6936cffc8b9358095dc9ee8900e00ef2d03f33))
+
+
+### 🛠 Fixes
+
+* Properly copy manifests and themes ([3099c70](https://git.griefed.de/Griefed/ServerPackCreator/commit/3099c703361d4852e4db75d32555da566db91304))
+
+## [6.0.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.3...6.0.0-alpha.4) (2024-06-02)
+
+
+### 🦊 CI/CD
+
+* Merge cli, gui, web, updater into app ([9a70a19](https://git.griefed.de/Griefed/ServerPackCreator/commit/9a70a19d00e86cd86ff35883ebce3bd56cb177bd))
+* Qodana does not support Java 21 yet ([e42477f](https://git.griefed.de/Griefed/ServerPackCreator/commit/e42477fced280e7977d0b9a84d9cdff7ee85bacf))
+
+## [6.0.0-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.2...6.0.0-alpha.3) (2024-06-02)
+
+
+### :scissors: Refactor
+
+* Move MC version semantics parsing to global ([560b9ee](https://git.griefed.de/Griefed/ServerPackCreator/commit/560b9ee4321149f5ddb60b9d79c3f9785a9293d6))
+
+
+### 💈 Style
+
+* Display drives in whole width column ([e828383](https://git.griefed.de/Griefed/ServerPackCreator/commit/e82838341ea5a525e92121e76967384f6b54c2e2))
+
+
+### 💎 Improvements
+
+* Check for variables.txt before continuing ([b906f74](https://git.griefed.de/Griefed/ServerPackCreator/commit/b906f74f1efd1e82ce7192645d79e2779f027797))
+* Focrce script dir as working dir. Access correct sematics index. ([6d92593](https://git.griefed.de/Griefed/ServerPackCreator/commit/6d92593d42edb8dd3d1e32df00eaa92403c27b46))
+* Force working dir to script directory ([a275bc4](https://git.griefed.de/Griefed/ServerPackCreator/commit/a275bc49635e79e6b786f51ea16ab0dad7bdb8fa))
+* List all variables before starting server ([e431b0e](https://git.griefed.de/Griefed/ServerPackCreator/commit/e431b0ee8769631dd8d9e3bc63272e35d2ef41e9))
+* Move standard args to extra variable Additional Args ([c772bd2](https://git.griefed.de/Griefed/ServerPackCreator/commit/c772bd259c01edd5d1b99b57ae48fc287ee47019))
+
+
+### 📔 Docs
+
+* Write pre-release body correctly ([615e17f](https://git.griefed.de/Griefed/ServerPackCreator/commit/615e17f66aa57dc8a3f38577faf57ea5650edcfc))
+
+
+### 🦊 CI/CD
+
+* Reintroduce Qodana, but with the community linter this time ([60691d7](https://git.griefed.de/Griefed/ServerPackCreator/commit/60691d7a0100521181de9ae69a4dfc0353a9c36f))
+* Remove no longer needed artifacts and rename installers ([2939dc0](https://git.griefed.de/Griefed/ServerPackCreator/commit/2939dc0b4822dac953225582d51db2b15419d9fe))
+* Split build and media into separate calls ([ae2bcd3](https://git.griefed.de/Griefed/ServerPackCreator/commit/ae2bcd358d8b1a145c91a8d215ee661320e3afc7))
+
+
+### 🚀 Features
+
+* Add Batch-script template for starting servers ([1f44df1](https://git.griefed.de/Griefed/ServerPackCreator/commit/1f44df195d8110fdc9c13a328c29ef9bd54b80ea))
+* Check for correct Java version before starting and crash if incompatible Java version was found ([5a86ca0](https://git.griefed.de/Griefed/ServerPackCreator/commit/5a86ca0cfa0da69ff43af378d109db572a0565f8))
+* Toggleable automatic server restart via RESTART true/[secure] variable ([5400aa5](https://git.griefed.de/Griefed/ServerPackCreator/commit/5400aa54cc2b87bd6ffc043d5f20015657d8549b))
+
+
+### 🛠 Fixes
+
+* Bring back NeoForge installer URL. ([ffdc78c](https://git.griefed.de/Griefed/ServerPackCreator/commit/ffdc78c4d3fd89dd1b745dcb5fcef2496845c980))
+
+## [6.0.0-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.1...6.0.0-alpha.2) (2024-05-26)
+
+
+### 🦊 CI/CD
+
+* Declare explicit dependency on serverpackcreator-api:processTestResources ([1e38e8a](https://git.griefed.de/Griefed/ServerPackCreator/commit/1e38e8ad1b0c038b4007d6adfcab315ff8aebf17))
+
+## [6.0.0-alpha.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.2.3...6.0.0-alpha.1) (2024-05-26)
+
+
+### ✨ Milestone
+
+* New installers, stats & dashboard & up- and download tracking for the webservice ([0d4882d](https://git.griefed.de/Griefed/ServerPackCreator/commit/0d4882dbabcc61c4863109eac12eac507b7b1b34))
+
+
+### 📔 Docs
+
+* Correct some spelling mistakes and finish sentences. ([759c8b7](https://git.griefed.de/Griefed/ServerPackCreator/commit/759c8b777066b244c2c89a4a00eb62e09fd93c04))
+* Update writerside version ([30e38e2](https://git.griefed.de/Griefed/ServerPackCreator/commit/30e38e2901e61d3594f4491765aab336ea8a8e01))
+
+## [5.2.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.2.2...5.2.3) (2024-05-25)
+
+
+### 💎 Improvements
+
+* When disabling Server Pack Overwrites nothing is deleted, but certain data is updated ([ae40f16](https://git.griefed.de/Griefed/ServerPackCreator/commit/ae40f16478ed07f7481ea8bcd8a40a458be01a28))
+
+
+### 🧪 Tests
+
+* Run jar test only on ubuntu ([1983daf](https://git.griefed.de/Griefed/ServerPackCreator/commit/1983daf5095f04ca9ce81ef6b1e913915f53000b))
+
+## [5.2.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.2.1...5.2.2) (2024-05-24)
+
+
+### 💎 Improvements
+
+* Allow deactivation of user input requirement. Add hint for escaping backslash in Java path in variables ([597c69e](https://git.griefed.de/Griefed/ServerPackCreator/commit/597c69eb32ecd1725fe6db6b1c9ae1a32ba79dc9))
+
+
+### 📦 Other
+
+* Add FadingNightvision and ItemLocks to clientside list ([672059c](https://git.griefed.de/Griefed/ServerPackCreator/commit/672059ccccea9b05f5f3289902db859346a0a53f))
+
+
+### 🛠 Fixes
+
+* Orientation of balloon tips so the step by step guide works better ([f8512fd](https://git.griefed.de/Griefed/ServerPackCreator/commit/f8512fd4f5fa742a7bd75ba54bb7fb4d791880e8))
+
+## [5.2.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.2.0...5.2.1) (2024-04-27)
+
+
+### 💎 Improvements
+
+* Check if Minecraft version is equal to or newer than 1.20.5 when using NeoForge ([db2f97c](https://git.griefed.de/Griefed/ServerPackCreator/commit/db2f97cfbaa272922506e821897b287eb9e7d586))
+
+## [5.2.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.19...5.2.0) (2024-04-24)
+
+
+### 📦 Other
+
+* Add macos-input-fixes- to ApiProperties ([6da4d7a](https://git.griefed.de/Griefed/ServerPackCreator/commit/6da4d7a750c571f567c22dbcec3ea58693eff6ce))
+* Latest changelog ([b174f8f](https://git.griefed.de/Griefed/ServerPackCreator/commit/b174f8f79ae757f79c4b5fccd4529dae228fc8d2))
+
+
+### 🚀 Features
+
+* Scan NeoForge 1.20.5 and up mods for sideness ([e09b202](https://git.griefed.de/Griefed/ServerPackCreator/commit/e09b2020864642506b8fcc1067a98332cef08603))
+
+## [5.1.19](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.18...5.1.19) (2024-03-28)
+
+
+### 📦 Other
+
+* Add fast-ip-ping- to the clientside-mods list. Thanks to @ModernGamingWorld for the report! ([7e8dd4e](https://git.griefed.de/Griefed/ServerPackCreator/commit/7e8dd4e6b081223cdd09ba677ccd81416f61c882))
+* Fix pt_BR thanks to [@arthurbarret0](https://git.griefed.de/arthurbarret0) ([2046baa](https://git.griefed.de/Griefed/ServerPackCreator/commit/2046baa23ade4f4504257bce3a7318ef7f57f62d))
+* Up to date changelog ([79dba08](https://git.griefed.de/Griefed/ServerPackCreator/commit/79dba0850e64ca061e4aa58fe182f502d6b17db9))
+
+
+### 🛠 Fixes
+
+* Use correct NeoForge installer URL ([5a8ae5d](https://git.griefed.de/Griefed/ServerPackCreator/commit/5a8ae5da970df42a98914430f6ca53833d8f3d6b))
+
+## [5.1.18](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.17...5.1.18) (2024-03-21)
+
+
+### 🛠 Fixes
+
+* Allow repeated viewing of step-by-step guide ([6a352fe](https://git.griefed.de/Griefed/ServerPackCreator/commit/6a352feb4f16ea6ba4648092c7d5dc640d1be55c))
+
+## [5.1.17](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.16...5.1.17) (2024-03-01)
+
+
+### 🛠 Fixes
+
+* Prevent NPEs in JDBC URL and settings tab title fetch in GUI. ([919b017](https://git.griefed.de/Griefed/ServerPackCreator/commit/919b017722aacbbe284d4da3b7b9d78c474c4862))
+
+## [5.1.16](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.15...5.1.16) (2024-02-25)
+
+
+### :scissors: Refactor
+
+* Change expected class and interface accordingly ([ba66889](https://git.griefed.de/Griefed/ServerPackCreator/commit/ba668897e75d8a129a22f692d2c7533d49c1bd61))
+
+
+### 💎 Improvements
+
+* Support XMinecraftLaunchers instance.json ([4bc10d2](https://git.griefed.de/Griefed/ServerPackCreator/commit/4bc10d25b907c493adfd41bdb5707951b4e2b92b))
+
+## [5.1.15](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.14...5.1.15) (2024-02-24)
+
+
+### 🛠 Fixes
+
+* Correct ordering of NeoForge versions and usage in web-frontend ([bc477b0](https://git.griefed.de/Griefed/ServerPackCreator/commit/bc477b0969506340ce8e982c2f1c9605307f0c4a))
+
+## [5.1.14](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.13...5.1.14) (2024-02-24)
+
+
+### 🛠 Fixes
+
+* Support NeoForge for Minecraft 1.20.2 and up. Fixes [#486](https://git.griefed.de/Griefed/ServerPackCreator/issues/486) ([cd6cc81](https://git.griefed.de/Griefed/ServerPackCreator/commit/cd6cc81cd685c426a5724a9ed64a39071ad1c9d0))
+
+## [5.1.13](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12...5.1.13) (2024-02-19)
+
+
+### 📔 Docs
+
+* Remove old sqlite references ([ee12d2a](https://git.griefed.de/Griefed/ServerPackCreator/commit/ee12d2a10e3e056e6b6a6db5975a374ee846c245))
+
+
+### 📦 Other
+
+* Update changelog in resources ([688daeb](https://git.griefed.de/Griefed/ServerPackCreator/commit/688daeb6294c29f0f48733c63d7bd086d1f89698))
+
+
+### 🦊 CI/CD
+
+* Add job to update sponsors and contributors ([49f9f1a](https://git.griefed.de/Griefed/ServerPackCreator/commit/49f9f1a1e6be50ef4b1ba2ca76e9aa1fccd7ad69))
+* Add README Update to Documentation stage ([2d05895](https://git.griefed.de/Griefed/ServerPackCreator/commit/2d05895bbc49ec1bb2c2590028be26dabcf2feea))
+
+
+### 🛠 Fixes
+
+* Replace sqlite JDBC URL with postgresql ([2d705a7](https://git.griefed.de/Griefed/ServerPackCreator/commit/2d705a71552c3036410fb2ad6061a6346bc1cf76))
+
 ## [5.1.12](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.11...5.1.12) (2024-02-16)
 
 

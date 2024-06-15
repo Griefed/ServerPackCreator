@@ -856,6 +856,22 @@ Keep in mind, though, that any ZIP-archived generated this way may contain data 
 You may also run the risk of having duplicate mods if the mods in your modpack change or are updated between generations.
 If overwrites, and thus cleanups, are disabled, and you run into this
 
+### Updating Server Packs (Experimental)
+
+An experimental feature allows you to update your server pack without losing data. If you've run your server pack locally, played around a bit
+and have a world you would like to keep, losing this data due to re-generating your server pack would suck. (MAKE BACKUPS!)
+
+In order to try out updating your server packs, *deactivate* `Server Pack Overrides` and *activate* `Update Server Packs`:
+
+![updating_server_packs](img/updating_server_packs.png)
+
+If you are using ServerPackCreator from the commandline, change the following properties to:
+
+```properties
+de.griefed.serverpackcreator.serverpack.overwrite.enabled=false
+de.griefed.serverpackcreator.serverpack.update=true
+```
+
 ## Multiple Java Installations
 
 If you manage multiple modpacks and they require different Java versions to run, then you can make use of ServerPackCreators

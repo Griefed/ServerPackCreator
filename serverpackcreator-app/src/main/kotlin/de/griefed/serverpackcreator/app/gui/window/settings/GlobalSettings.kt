@@ -217,14 +217,7 @@ class GlobalSettings(
     private val javaPathsSetting = JavaPaths(guiProps, tableModelListener)
     private val javaPathsRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { javaPathsSetting.loadData(apiProperties.javaPaths) }
 
-    private val ensureUpdateOverwriteSetting = ActionListener {
-        if (overwriteSetting.isSelected) {
-            updateServerPackSetting.isEnabled = false
-            updateServerPackSetting.isSelected = false
-        } else {
-            updateServerPackSetting.isEnabled = true
-        }
-    }
+    private val ensureUpdateOverwriteSetting = ActionListener { changeUpdateSettingState() }
 
     init {
         overwriteSetting.addActionListener(ensureUpdateOverwriteSetting)
@@ -424,6 +417,8 @@ class GlobalSettings(
         preInstallFilesSetting.text = apiProperties.preInstallCleanupFiles.joinToString(", ")
         postInstallFilesSetting.text = apiProperties.postInstallCleanupFiles.joinToString(", ")
         javaPathsSetting.loadData(apiProperties.javaPaths)
+
+        changeUpdateSettingState()
     }
 
     override fun saveSettings() {
@@ -450,6 +445,8 @@ class GlobalSettings(
         val javaPaths = javaPathsSetting.getData()
         javaPaths.remove("placeholder")
         apiProperties.javaPaths = javaPaths
+
+        changeUpdateSettingState()
     }
 
     override fun validateSettings(): List<String> {
@@ -550,5 +547,14 @@ class GlobalSettings(
             title.hideWarningIcon()
         }
         return changes
+    }
+
+    private fun changeUpdateSettingState() {
+        if (overwriteSetting.isSelected) {
+            updateServerPackSetting.isEnabled = false
+            updateServerPackSetting.isSelected = false
+        } else {
+            updateServerPackSetting.isEnabled = true
+        }
     }
 }
