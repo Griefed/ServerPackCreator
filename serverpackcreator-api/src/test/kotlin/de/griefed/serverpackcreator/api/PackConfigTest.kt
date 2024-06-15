@@ -28,6 +28,10 @@ class PackConfigTest internal constructor() {
         packConfig.modloader = modloader
         Assertions.assertEquals("LegacyFabric", packConfig.modloader)
         Assertions.assertNotEquals(modloader, packConfig.modloader)
+        modloader = "nEoFoRgE"
+        packConfig.modloader = modloader
+        Assertions.assertEquals("NeoForge", packConfig.modloader)
+        Assertions.assertNotEquals(modloader, packConfig.modloader)
     }
 
     @Suppress("SpellCheckingInspection")

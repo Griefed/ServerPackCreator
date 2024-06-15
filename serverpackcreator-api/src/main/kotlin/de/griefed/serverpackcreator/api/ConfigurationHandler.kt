@@ -1173,6 +1173,11 @@ class ConfigurationHandler(
                     packConfig.modloader = "Forge"
                     packConfig.modloaderVersion = value.asText()
                 }
+
+                "neoforge" -> {
+                    packConfig.modloader = "NeoForge"
+                    packConfig.modloaderVersion = value.asText()
+                }
             }
         }
     }
@@ -1268,6 +1273,11 @@ class ConfigurationHandler(
 
                 "org.quiltmc.quilt-loader" -> {
                     packConfig.modloader = "Quilt"
+                    packConfig.modloaderVersion = version
+                }
+
+                "net.neoforged" -> {
+                    packConfig.modloader = "NeoForge"
                     packConfig.modloaderVersion = version
                 }
             }

@@ -211,6 +211,10 @@ internal class ConfigurationHandlerTest {
         Assertions.assertTrue(check.modloaderChecksPassed)
         check = configurationHandler.checkModloader("LegacyFabric")
         Assertions.assertTrue(check.modloaderChecksPassed)
+        check = configurationHandler.checkModloader("nEoFoRgE")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        check = configurationHandler.checkModloader("NeoForge")
+        Assertions.assertTrue(check.modloaderChecksPassed)
         check = configurationHandler.checkModloader("modloader")
         Assertions.assertFalse(check.modloaderChecksPassed)
     }
@@ -251,6 +255,31 @@ internal class ConfigurationHandlerTest {
         Assertions.assertTrue(check.modloaderChecksPassed)
         Assertions.assertTrue(check.modloaderVersionChecksPassed)
         check = configurationHandler.checkModloaderVersion("LegacyFabric", "0.999.3", "1.12.2")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertFalse(check.modloaderVersionChecksPassed)
+    }
+
+    @Test
+    fun isNeoForgeVersionCorrectTest() {
+        var check = configurationHandler.checkModloaderVersion("NeoForge", "20.6.118", "1.20.6")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertTrue(check.modloaderVersionChecksPassed)
+        check = configurationHandler.checkModloaderVersion("NeoForge", "20.5.21-beta", "1.20.5")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertTrue(check.modloaderVersionChecksPassed)
+        check = configurationHandler.checkModloaderVersion("NeoForge", "20.4.237", "1.20.4")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertTrue(check.modloaderVersionChecksPassed)
+        check = configurationHandler.checkModloaderVersion("NeoForge", "20.3.8-beta", "1.20.3")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertTrue(check.modloaderVersionChecksPassed)
+        check = configurationHandler.checkModloaderVersion("NeoForge", "20.2.88", "1.20.2")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertTrue(check.modloaderVersionChecksPassed)
+        check = configurationHandler.checkModloaderVersion("NeoForge", "47.1.106", "1.20.1")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertTrue(check.modloaderVersionChecksPassed)
+        check = configurationHandler.checkModloaderVersion("NeoForge", "0.999.3", "1.20.6")
         Assertions.assertTrue(check.modloaderChecksPassed)
         Assertions.assertFalse(check.modloaderVersionChecksPassed)
     }
@@ -634,8 +663,8 @@ internal class ConfigurationHandlerTest {
                 inclusions,
                 "src/test/resources/fabric_tests",
                 javaPath,
-                "1.16.5",
                 "Fabric",
+                "1.16.5",
                 "0.11.3",
                 javaArgs,
                 "",
@@ -705,8 +734,8 @@ internal class ConfigurationHandlerTest {
                 inclusions,
                 "src/test/resources/forge_tests",
                 javaPath,
-                "1.16.5",
                 "Forge",
+                "1.16.5",
                 "36.1.2",
                 javaArgs,
                 "",
