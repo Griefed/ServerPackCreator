@@ -454,6 +454,7 @@ actual class ApiProperties(
             "simple-rpc-",
             "simpleautorun-",
             "smartcursor-",
+            "smarthud-",
             "smoothboot-",
             "smoothfocus-",
             "sodium-fabric-",
