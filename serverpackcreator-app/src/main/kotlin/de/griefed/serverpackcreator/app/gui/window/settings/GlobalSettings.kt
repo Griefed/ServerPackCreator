@@ -22,7 +22,7 @@ package de.griefed.serverpackcreator.app.gui.window.settings
 import Translations
 import de.comahe.i18n4k.Locale
 import de.griefed.serverpackcreator.api.ApiProperties
-import de.griefed.serverpackcreator.api.ExclusionFilter
+import de.griefed.serverpackcreator.api.config.ExclusionFilter
 import de.griefed.serverpackcreator.api.utilities.common.testFileWrite
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.components.*

@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.api
+package de.griefed.serverpackcreator.api.config
 
 /**
  * A FileInclusionSpecification is at minimum a source-declaration from which files and directories will be included

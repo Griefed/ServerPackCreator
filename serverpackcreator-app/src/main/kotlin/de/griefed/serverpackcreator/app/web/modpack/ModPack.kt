@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.app.web.modpack
 
-import de.griefed.serverpackcreator.api.ModpackSource
+import de.griefed.serverpackcreator.api.config.ModpackSource
 import de.griefed.serverpackcreator.app.web.serverpack.ServerPack
 import jakarta.persistence.*
 import org.hibernate.annotations.Cascade

@@ -17,8 +17,13 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.api
+package de.griefed.serverpackcreator.api.serverpack
 
+import de.griefed.serverpackcreator.api.ApiPlugins
+import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.api.config.ExclusionFilter
+import de.griefed.serverpackcreator.api.config.InclusionSpecification
+import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.api.modscanning.ModScanner
 import de.griefed.serverpackcreator.api.utilities.SimpleStopWatch
 import de.griefed.serverpackcreator.api.utilities.common.*

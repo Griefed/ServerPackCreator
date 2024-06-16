@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.app.gui.window.configs.components.inclusions
 
-import de.griefed.serverpackcreator.api.InclusionSpecification
+import de.griefed.serverpackcreator.api.config.InclusionSpecification
 import java.awt.Component
 import javax.swing.JLabel
 import javax.swing.JList

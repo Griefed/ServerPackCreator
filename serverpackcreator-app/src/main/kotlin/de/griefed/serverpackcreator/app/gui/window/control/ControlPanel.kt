@@ -21,8 +21,8 @@ package de.griefed.serverpackcreator.app.gui.window.control
 
 import Translations
 import de.griefed.serverpackcreator.api.ApiWrapper
-import de.griefed.serverpackcreator.api.ConfigCheck
-import de.griefed.serverpackcreator.api.PackConfig
+import de.griefed.serverpackcreator.api.config.ConfigCheck
+import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.window.MainFrame
 import de.griefed.serverpackcreator.app.gui.window.configs.TabbedConfigsTab

@@ -19,8 +19,8 @@
  */
 package de.griefed.serverpackcreator.api.plugins.swinggui
 
-import de.griefed.serverpackcreator.api.InclusionSpecification
-import de.griefed.serverpackcreator.api.PackConfig
+import de.griefed.serverpackcreator.api.config.InclusionSpecification
+import de.griefed.serverpackcreator.api.config.PackConfig
 import java.io.File
 
 /**

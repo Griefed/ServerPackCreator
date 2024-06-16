@@ -22,7 +22,7 @@ package de.griefed.serverpackcreator.app
 import Translations
 import de.comahe.i18n4k.Locale
 import de.griefed.serverpackcreator.api.ApiWrapper
-import de.griefed.serverpackcreator.api.PackConfig
+import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.api.utilities.common.JarInformation
 import de.griefed.serverpackcreator.api.utilities.common.readText
 import de.griefed.serverpackcreator.app.cli.ConfigurationEditor

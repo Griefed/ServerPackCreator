@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator.api
 
+import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.api.utilities.common.readText
 import net.lingala.zip4j.ZipFile
 import org.junit.jupiter.api.Assertions

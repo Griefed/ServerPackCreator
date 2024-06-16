@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.api
+package de.griefed.serverpackcreator.api.serverpack
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.File

@@ -1,6 +1,7 @@
 package de.griefed.serverpackcreator.api
 
 import com.electronwill.nightconfig.core.CommentedConfig
+import de.griefed.serverpackcreator.api.config.PackConfig
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.io.File

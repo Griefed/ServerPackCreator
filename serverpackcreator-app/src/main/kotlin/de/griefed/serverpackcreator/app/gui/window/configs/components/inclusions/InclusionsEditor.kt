@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.app.gui.window.configs.components.inclusion
 
 import Translations
 import de.griefed.serverpackcreator.api.ApiWrapper
-import de.griefed.serverpackcreator.api.InclusionSpecification
+import de.griefed.serverpackcreator.api.config.InclusionSpecification
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.components.*
 import de.griefed.serverpackcreator.app.gui.window.configs.ConfigEditor

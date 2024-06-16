@@ -17,10 +17,12 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.api
+package de.griefed.serverpackcreator.api.config
 
 import Translations
 import com.fasterxml.jackson.databind.JsonNode
+import de.griefed.serverpackcreator.api.ApiPlugins
+import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.InvalidFileTypeException
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.utilities.common.isNotValidZipFile

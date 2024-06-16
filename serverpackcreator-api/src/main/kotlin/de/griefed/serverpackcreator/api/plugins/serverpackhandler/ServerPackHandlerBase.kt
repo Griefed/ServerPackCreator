@@ -22,7 +22,7 @@ package de.griefed.serverpackcreator.api.plugins.serverpackhandler
 
 import com.electronwill.nightconfig.core.CommentedConfig
 import de.griefed.serverpackcreator.api.ApiProperties
-import de.griefed.serverpackcreator.api.PackConfig
+import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.api.plugins.ExtensionException
 import de.griefed.serverpackcreator.api.plugins.ExtensionInformation
 import de.griefed.serverpackcreator.api.utilities.common.Utilities

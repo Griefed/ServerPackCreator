@@ -19,8 +19,8 @@
  */
 package de.griefed.serverpackcreator.app.web.task
 
-import de.griefed.serverpackcreator.api.ConfigurationHandler
-import de.griefed.serverpackcreator.api.ServerPackHandler
+import de.griefed.serverpackcreator.api.config.ConfigurationHandler
+import de.griefed.serverpackcreator.api.serverpack.ServerPackHandler
 import de.griefed.serverpackcreator.api.utilities.common.deleteQuietly
 import de.griefed.serverpackcreator.api.utilities.common.size
 import de.griefed.serverpackcreator.app.web.modpack.ModPack

@@ -1,3 +1,20 @@
+## [6.0.0-alpha.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.6...6.0.0-alpha.7) (2024-06-16)
+
+
+### :scissors: Refactor
+
+* Return object containing server pack info instead of simpel boolean ([cb57660](https://git.griefed.de/Griefed/ServerPackCreator/commit/cb57660c40adb778ec00b199b1060c6d05e91ff6))
+
+
+### 📔 Docs
+
+* Require people to inform the dev of a clientside mod. Add info regarding list resetting ([491f136](https://git.griefed.de/Griefed/ServerPackCreator/commit/491f136a837a97837e7cb4714ac345c1c8ab12ad))
+
+
+### 🛠 Fixes
+
+* Check for NeoForge when parsing manifests ([4409c6d](https://git.griefed.de/Griefed/ServerPackCreator/commit/4409c6da941b355e21b1e73315a2e77e64626368))
+
 ## [6.0.0-alpha.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.5...6.0.0-alpha.6) (2024-06-15)
 
 

@@ -22,6 +22,8 @@ package de.griefed.serverpackcreator.api
 import com.electronwill.nightconfig.core.CommentedConfig
 import com.electronwill.nightconfig.core.file.FileNotFoundAction
 import com.electronwill.nightconfig.toml.TomlParser
+import de.griefed.serverpackcreator.api.config.ConfigCheck
+import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.api.plugins.CustomPluginFactory
 import de.griefed.serverpackcreator.api.plugins.ExtensionException
 import de.griefed.serverpackcreator.api.plugins.ExtensionInformation

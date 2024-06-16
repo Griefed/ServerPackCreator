@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.api
+package de.griefed.serverpackcreator.api.serverpack
 
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File

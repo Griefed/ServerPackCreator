@@ -17,8 +17,16 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.api
+package de.griefed.serverpackcreator.api.serverpack
 
-enum class ModpackSource {
-    ZIP, MODRINTH, CURSEFORGE, DIRECTORY
-}
+import de.griefed.serverpackcreator.api.config.PackConfig
+import java.io.File
+import java.util.*
+
+class ServerPackGeneration(
+    val success: Boolean,
+    val serverPack: File,
+    val serverPackZip: Optional<File>,
+    val packConfig: PackConfig,
+    val files: List<File>
+)

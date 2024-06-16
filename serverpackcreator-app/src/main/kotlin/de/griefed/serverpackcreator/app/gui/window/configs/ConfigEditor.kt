@@ -22,9 +22,9 @@ package de.griefed.serverpackcreator.app.gui.window.configs
 import Translations
 import com.electronwill.nightconfig.core.CommentedConfig
 import de.griefed.serverpackcreator.api.ApiWrapper
-import de.griefed.serverpackcreator.api.ConfigCheck
-import de.griefed.serverpackcreator.api.InclusionSpecification
-import de.griefed.serverpackcreator.api.PackConfig
+import de.griefed.serverpackcreator.api.config.ConfigCheck
+import de.griefed.serverpackcreator.api.config.InclusionSpecification
+import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.api.plugins.swinggui.ServerPackConfigTab
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.components.*

@@ -20,7 +20,7 @@
 package de.griefed.serverpackcreator.app.web
 
 import de.griefed.serverpackcreator.api.ApiProperties
-import de.griefed.serverpackcreator.api.ExclusionFilter
+import de.griefed.serverpackcreator.api.config.ExclusionFilter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity

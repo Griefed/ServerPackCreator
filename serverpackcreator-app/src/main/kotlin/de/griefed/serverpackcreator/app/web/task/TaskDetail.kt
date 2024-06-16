@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.app.web.task
 
-import de.griefed.serverpackcreator.api.PackConfig
+import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.app.web.modpack.ModPack
 import de.griefed.serverpackcreator.app.web.serverpack.ServerPack
 import de.griefed.serverpackcreator.app.web.serverpack.customizing.RunConfiguration
