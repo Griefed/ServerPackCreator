@@ -626,6 +626,62 @@ install and configure DynMap with some render-data? This would be the place to d
 The above example shows the run of a PreGen extension, with the global plugin configuration as well as the extension-specific
 extension passed to it by ServerPackCreator.
 
+#### Listeners
+
+In addition to extensions you may also register a variety of listeners to run your own code. Adding those listeners is
+easier than writing extensions, but they're also more restricted in the values you get to work with.
+
+Here's a very basic example, just to give you an idea how much easier the listeners are, compared to the extensions:
+
+```kotlin
+        val genericListener = object : SPCGenericListener {
+            override fun run() {
+                println("Helloooooo. I'm a SPCGenericListener!")
+                println("Helloooooo. I'm a SPCGenericListener!")
+                println("Helloooooo. I'm a SPCGenericListener!")
+            }
+
+        }
+        val configListener = object : SPCConfigCheckListener {
+            override fun run(packConfig: PackConfig, configCheck: ConfigCheck) {
+                println("Helloooooo. I'm a SPCConfigCheckListener!")
+                println(packConfig.modpackDir)
+            }
+
+        }
+        val preServerPackListener = object : SPCPreServerPackGenerationListener {
+            override fun run(packConfig: PackConfig, serverPackPath: Path) {
+                println("Helloooooo. I'm a SPCPreServerPackGenerationListener!")
+                println(packConfig.modpackDir)
+                println(serverPackPath.toString())
+            }
+
+        }
+        val preZipListener = object : SPCPreServerPackZipListener {
+            override fun run(packConfig: PackConfig, serverPackPath: Path) {
+                println("Helloooooo. I'm a SPCPreServerPackZipListener!")
+                println(packConfig.modpackDir)
+                println(serverPackPath.toString())
+            }
+
+        }
+        val postGenListener = object : SPCPostGenListener {
+            override fun run(packConfig: PackConfig, serverPackPath: Path) {
+                println("Helloooooo. I'm a SPCPostGenListener!")
+                println(packConfig.modpackDir)
+                println(serverPackPath.toString())
+            }
+
+        }
+
+        ApiWrapper.api().configurationHandler.addEventListener(genericListener)
+        ApiWrapper.api().configurationHandler.addEventListener(configListener)
+        ApiWrapper.api().serverPackHandler.addEventListener(genericListener)
+        ApiWrapper.api().serverPackHandler.addEventListener(preServerPackListener)
+        ApiWrapper.api().serverPackHandler.addEventListener(preZipListener)
+        ApiWrapper.api().serverPackHandler.addEventListener(postGenListener)
+```
+
 ---
 
 See now why the ConfigPanel, ConfigCheck and Tab extensions are so nice to have?

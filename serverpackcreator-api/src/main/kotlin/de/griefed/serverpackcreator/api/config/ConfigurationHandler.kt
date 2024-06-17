@@ -23,6 +23,8 @@ import Translations
 import com.fasterxml.jackson.databind.JsonNode
 import de.griefed.serverpackcreator.api.ApiPlugins
 import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.api.utilities.SPCConfigCheckListener
+import de.griefed.serverpackcreator.api.utilities.SPCGenericListener
 import de.griefed.serverpackcreator.api.utilities.common.InvalidFileTypeException
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.utilities.common.isNotValidZipFile
@@ -59,15 +61,35 @@ class ConfigurationHandler(
     private val apiPlugins: ApiPlugins
 ) {
     private val zipRegex = "\\.[Zz][Ii][Pp]".toRegex()
-    protected val log by lazy { KotlinLogging.logger {} }
-    protected val forge = "^forge$".toRegex()
-    protected val neoForge = "^neoforge$".toRegex()
-    protected val fabric = "^fabric$".toRegex()
-    protected val quilt = "^quilt$".toRegex()
-    protected val legacyFabric = "^legacyfabric$".toRegex()
-    protected val whitespace = "^\\s+$".toRegex()
-    protected val previous = ".*_\\d".toRegex()
-    protected val zipCheck = "^\\w+[/\\\\]$".toRegex()
+    val log by lazy { KotlinLogging.logger {} }
+    val forge = "^forge$".toRegex()
+    val neoForge = "^neoforge$".toRegex()
+    val fabric = "^fabric$".toRegex()
+    val quilt = "^quilt$".toRegex()
+    val legacyFabric = "^legacyfabric$".toRegex()
+    val whitespace = "^\\s+$".toRegex()
+    val previous = ".*_\\d".toRegex()
+    val zipCheck = "^\\w+[/\\\\]$".toRegex()
+
+    private val spcGenericEventListeners: ArrayList<SPCGenericListener> = ArrayList(0)
+    private val spcConfigEventListeners: ArrayList<SPCConfigCheckListener> = ArrayList(0)
+
+    fun addEventListener(genericEventListener: SPCGenericListener) {
+        spcGenericEventListeners.add(genericEventListener)
+    }
+
+    fun addEventListener(configEventListener: SPCConfigCheckListener) {
+        spcConfigEventListeners.add(configEventListener)
+    }
+
+    private fun runEventListeners(packConfig: PackConfig,configCheck: ConfigCheck = ConfigCheck()) {
+        for (listener in spcGenericEventListeners) {
+            listener.run()
+        }
+        for (listener in spcConfigEventListeners) {
+            listener.run(packConfig, configCheck)
+        }
+    }
 
     /**
      * Check the passed configuration-file. If any check returns `true` then the server pack
@@ -205,6 +227,7 @@ class ConfigurationHandler(
         checkForProjectInformation(packConfig)
 
         apiPlugins.runConfigCheckExtensions(packConfig, configCheck)
+        runEventListeners(packConfig, configCheck)
 
         if (quietCheck) {
             printConfigurationModel(packConfig)

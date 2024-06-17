@@ -25,7 +25,7 @@ import de.griefed.serverpackcreator.api.config.ExclusionFilter
 import de.griefed.serverpackcreator.api.config.InclusionSpecification
 import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.api.modscanning.ModScanner
-import de.griefed.serverpackcreator.api.utilities.SimpleStopWatch
+import de.griefed.serverpackcreator.api.utilities.*
 import de.griefed.serverpackcreator.api.utilities.common.*
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import net.lingala.zip4j.ZipFile
@@ -38,6 +38,7 @@ import java.io.File
 import java.io.IOException
 import java.net.MalformedURLException
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 import java.util.regex.PatternSyntaxException
@@ -126,6 +127,51 @@ class ServerPackHandler(
         SKIP_JAVA_CHECK=false
     """.trimIndent()
 
+    private val spcGenericEventListeners: ArrayList<SPCGenericListener> = ArrayList(0)
+    private val spcPreServerPackGenerationListener: ArrayList<SPCPreServerPackGenerationListener> = ArrayList(0)
+    private val spcPreServerPackZipListener: ArrayList<SPCPreServerPackZipListener> = ArrayList(0)
+    private val spcPostGenListener: ArrayList<SPCPostGenListener> = ArrayList(0)
+
+    fun addEventListener(genericEventListener: SPCGenericListener) {
+        spcGenericEventListeners.add(genericEventListener)
+    }
+
+    fun addEventListener(preServerPackGenerationListener: SPCPreServerPackGenerationListener) {
+        spcPreServerPackGenerationListener.add(preServerPackGenerationListener)
+    }
+
+    fun addEventListener(preServerPackZipListener: SPCPreServerPackZipListener) {
+        spcPreServerPackZipListener.add(preServerPackZipListener)
+    }
+
+    fun addEventListener(postGenListener: SPCPostGenListener) {
+        spcPostGenListener.add(postGenListener)
+    }
+
+    private fun runGenericEventListeners() {
+        for (listener in spcGenericEventListeners) {
+            listener.run()
+        }
+    }
+
+    private fun runPreServerPackGenerationListeners(packConfig: PackConfig, serverPackPath: Path) {
+        for (listener in spcPreServerPackGenerationListener) {
+            listener.run(packConfig, serverPackPath)
+        }
+    }
+
+    private fun runPreServerPackZipListeners(packConfig: PackConfig, serverPackPath: Path) {
+        for (listener in spcPreServerPackZipListener) {
+            listener.run(packConfig, serverPackPath)
+        }
+    }
+
+    private fun runPostGenListeners(packConfig: PackConfig, serverPackPath: Path) {
+        for (listener in spcPostGenListener) {
+            listener.run(packConfig, serverPackPath)
+        }
+    }
+
     /**
      * Acquire the destination directory in which the server pack will be generated. The directory in
      * which the server pack will be created has all its spaces replaces with underscores, so
@@ -199,6 +245,8 @@ class ServerPackHandler(
         }
 
         apiPlugins.runPreGenExtensions(packConfig, serverPack.absolutePath)
+        runPreServerPackGenerationListeners(packConfig, serverPack.absoluteFile.toPath())
+        runGenericEventListeners()
 
         // Recursively copy all specified directories and files, excluding clientside-only mods, to server pack.
         files.addAll(
@@ -235,6 +283,8 @@ class ServerPackHandler(
         serverPackManifest.writeToFile(serverPack, utilities.jsonUtilities.objectMapper)
 
         apiPlugins.runPreZipExtensions(packConfig, serverPack.absolutePath)
+        runPreServerPackZipListeners(packConfig, serverPack.absoluteFile.toPath())
+        runGenericEventListeners()
 
         // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
         if (packConfig.isZipCreationDesired) {
@@ -262,6 +312,8 @@ class ServerPackHandler(
         log.info("Server pack archive available at: ${serverPack.absolutePath}_server_pack.zip")
         log.info("Done!")
         apiPlugins.runPostGenExtensions(packConfig, serverPack.absolutePath)
+        runPostGenListeners(packConfig, serverPack.absoluteFile.toPath())
+        runGenericEventListeners()
         log.debug("Generation took ${generationStopWatch.stop().getTime()}")
 
         return ServerPackGeneration(
