@@ -136,7 +136,7 @@ internal class NeoForgeLoader(
             /*if (mcVersion.length < 6) { //Why did I do this in the first place? O.o
                 continue
             }*/
-            val cutMinecraft = "^${mcVersion.substring(2)}.*".toRegex()
+            val mcVersionMinorPatch = "^${mcVersion.substring(2)}.*".toRegex()
             val newNeoForgeVersionsForMCVer: MutableList<String> = ArrayList(100)
 
             for (i in 0 until newNeoElements.length) {
@@ -145,7 +145,7 @@ internal class NeoForgeLoader(
                 val item = children.item(0)
                 val neoForgeVersion = item.nodeValue.toString()
 
-                if (neoForgeVersion.matches(cutMinecraft)) {
+                if (neoForgeVersion.matches(mcVersionMinorPatch)) {
                     if (!minecraftVersions.contains(mcVersion)) {
                         minecraftVersions.add(mcVersion)
                     }
