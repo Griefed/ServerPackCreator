@@ -133,9 +133,9 @@ internal class NeoForgeLoader(
         val newNeoDocument: Document = utilities.xmlUtilities.getXml(newNeoForgeManifest)
         val newNeoElements = newNeoDocument.getElementsByTagName(version)
         for (mcVersion in minecraftMeta.allVersionsDescending()) {
-            if (mcVersion.length < 6) {
+            /*if (mcVersion.length < 6) { //Why did I do this in the first place? O.o
                 continue
-            }
+            }*/
             val cutMinecraft = "^${mcVersion.substring(2)}.*".toRegex()
             val newNeoForgeVersionsForMCVer: MutableList<String> = ArrayList(100)
 
