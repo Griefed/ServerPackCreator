@@ -1,3 +1,35 @@
+## [6.0.0-alpha.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.7...6.0.0-alpha.8) (2024-06-18)
+
+
+### :scissors: Refactor
+
+* Move classes into separate packages ([195c900](https://git.griefed.de/Griefed/ServerPackCreator/commit/195c900d625708bc5c51d6391ee778289f5ea974))
+
+
+### 📦 Other
+
+* Add RyoamicLights- to clientside mods list ([237d68b](https://git.griefed.de/Griefed/ServerPackCreator/commit/237d68b604aab3087d7e0aa2f553b9f10ebc8aa6))
+* Add smarthud to clientside-list ([ea18a9e](https://git.griefed.de/Griefed/ServerPackCreator/commit/ea18a9e79693276815b16181b4aecd462d86b0d5))
+* Add smarthud to clientside-list ([7c8afa2](https://git.griefed.de/Griefed/ServerPackCreator/commit/7c8afa2d14b4104c6f8254e6cd148f0c0ded34bd))
+
+
+### 🚀 Features
+
+* Simple listeners for ease of use, in addition to extensions ([cc10fed](https://git.griefed.de/Griefed/ServerPackCreator/commit/cc10fed307bbf15e73262bd34fae54acbb5837d8))
+
+
+### 🛠 Fixes
+
+* Allow usage of MC 1.12 with NeoForge ([9a656f1](https://git.griefed.de/Griefed/ServerPackCreator/commit/9a656f1ff4851284ca5b26f560f80fcaf25c69cd))
+* Allow usage of MC 1.12 with NeoForge ([9b5db56](https://git.griefed.de/Griefed/ServerPackCreator/commit/9b5db5643f88395dc480b4e7db99e6cb5c089065))
+
+## [5.2.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.2.4...5.2.5) (2024-06-19)
+
+
+### 🛠 Fixes
+
+* Correctly assess new or equal version in semantic comparator ([2be43aa](https://git.griefed.de/Griefed/ServerPackCreator/commit/2be43aaade7d43674860120ce62d86cb08e01494))
+
 ## [5.2.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.2.3...5.2.4) (2024-06-18)
 
 

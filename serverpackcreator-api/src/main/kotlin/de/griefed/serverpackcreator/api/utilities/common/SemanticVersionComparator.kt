@@ -77,16 +77,26 @@ class SemanticVersionComparator {
          */
         private fun getSemantics(version: String): List<Int> {
             val semantics: MutableList<Int> = ArrayList(3)
-            val versionNumbers = version.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            val versionNumbers = version.split("\\.".toRegex())
+                .dropLastWhile { it.isEmpty() }
+                .toTypedArray()
             semantics.add(0, versionNumbers[0].toInt())
             semantics.add(1, versionNumbers[1].toInt())
-            if (versionNumbers[2].contains("-")) {
-                semantics.add(
-                    2,
-                    versionNumbers[2].split("-".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0].toInt()
-                )
+
+            if (versionNumbers.size >= 3) {
+                if (versionNumbers[2].contains("-")) {
+                    semantics.add(
+                        2,
+                        versionNumbers[2].split("-".toRegex())
+                            .dropLastWhile { it.isEmpty() }
+                            .toTypedArray()[0].toInt()
+                    )
+                } else {
+                    semantics.add(2, versionNumbers[2].toInt())
+                }
             } else {
-                semantics.add(2, versionNumbers[2].toInt())
+                // Versions like 1.21, 2.34 etc. don't have patch. Treat patch as 0
+                semantics.add(2, 0)
             }
             return semantics
         }
@@ -141,7 +151,17 @@ class SemanticVersionComparator {
             currentMinor: Int,
             currentPatch: Int
         ): Boolean {
-            return newMajor >= currentMajor && newMinor >= currentMinor && newPatch >= currentPatch
+            return if (newMajor == currentMajor && newMinor == currentMinor && newPatch == currentPatch) {
+                // equal version
+                true
+            } else if (newMajor > currentMajor) {
+                // new major update
+                true
+            } else if (newMajor == currentMajor && newMinor > currentMinor) {
+                // new minor update
+                true
+                // new patch update if true
+            } else newMajor == currentMajor && newMinor == currentMinor && newPatch > currentPatch
         }
 
         /**
