@@ -1,3 +1,22 @@
+## [5.2.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.2.3...5.2.4) (2024-06-18)
+
+
+### 📔 Docs
+
+* Correct some spelling mistakes and finish sentences. ([759c8b7](https://git.griefed.de/Griefed/ServerPackCreator/commit/759c8b777066b244c2c89a4a00eb62e09fd93c04))
+* Update writerside version ([30e38e2](https://git.griefed.de/Griefed/ServerPackCreator/commit/30e38e2901e61d3594f4491765aab336ea8a8e01))
+
+
+### 📦 Other
+
+* Add RyoamicLights- to clientside mods list ([237d68b](https://git.griefed.de/Griefed/ServerPackCreator/commit/237d68b604aab3087d7e0aa2f553b9f10ebc8aa6))
+* Add smarthud to clientside-list ([ea18a9e](https://git.griefed.de/Griefed/ServerPackCreator/commit/ea18a9e79693276815b16181b4aecd462d86b0d5))
+
+
+### 🛠 Fixes
+
+* Allow usage of MC 1.12 with NeoForge ([9b5db56](https://git.griefed.de/Griefed/ServerPackCreator/commit/9b5db5643f88395dc480b4e7db99e6cb5c089065))
+
 ## [5.2.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.2.2...5.2.3) (2024-05-25)
 
 
