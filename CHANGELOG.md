@@ -1,3 +1,10 @@
+## [5.2.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.2.4...5.2.5) (2024-06-19)
+
+
+### 🛠 Fixes
+
+* Correctly assess new or equal version in semantic comparator ([2be43aa](https://git.griefed.de/Griefed/ServerPackCreator/commit/2be43aaade7d43674860120ce62d86cb08e01494))
+
 ## [5.2.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.2.3...5.2.4) (2024-06-18)
 
 
