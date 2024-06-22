@@ -63,7 +63,10 @@ internal class ServerPackHandlerTest {
         val shell = File(apiProperties.serverPacksDirectory, "forge_tests/start.sh")
         val vars = File(apiProperties.serverPacksDirectory, "forge_tests/variables.txt")
         val forgeZip = ZipFile(File(apiProperties.serverPacksDirectory, "forge_tests_server_pack.zip"))
-        apiProperties.scriptTemplates = TreeSet(apiProperties.defaultScriptTemplates())
+        val customScripts = apiProperties.defaultStartScriptTemplates()
+        customScripts["sh"] = File(apiProperties.serverFilesDirectory,"custom_template.sh").absolutePath
+        customScripts["ps1"] = File(apiProperties.serverFilesDirectory,"custom_template.ps1").absolutePath
+        apiProperties.startScriptTemplates = customScripts
         configurationHandler.checkConfiguration(
             File("src/test/resources/testresources/spcconfs/serverpackcreator.conf"),
             packConfig

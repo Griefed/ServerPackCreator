@@ -122,7 +122,7 @@ class GlobalSettings(
     private val aikarsRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { aikarsSetting.text = apiProperties.aikarsFlags }
     private val aikarsReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { aikarsSetting.text = apiProperties.fallbackAikarsFlags }
 
-    private val scriptIcon = StatusIcon(guiProps, Translations.settings_global_scripts_tooltip.toString())
+/*    private val scriptIcon = StatusIcon(guiProps, Translations.settings_global_scripts_tooltip.toString())
     private val scriptLabel = ElementLabel(Translations.settings_global_scripts_label.toString())
     private val scriptSetting = ScrollTextArea(apiProperties.scriptTemplates.joinToString(", "),Translations.settings_global_scripts_label.toString(), changeListener, guiProps)
     private val scriptRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { scriptSetting.text = apiProperties.scriptTemplates.joinToString(", ") }
@@ -132,7 +132,12 @@ class GlobalSettings(
         if (scriptChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             scriptSetting.text = scriptChooser.selectedFiles.joinToString(", ") { it.absolutePath }
         }
-    }
+    }*/
+
+    private val scriptIcon = StatusIcon(guiProps, Translations.settings_global_scripts_tooltip.toString())
+    private val scriptLabel = ElementLabel(Translations.settings_global_scripts_label.toString())
+    private val scriptSetting = ScriptTemplates(guiProps, tableModelListener)
+    private val scriptRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { scriptSetting.loadData(apiProperties.defaultStartScriptTemplates()) }
 
     private val fallbackURLIcon = StatusIcon(guiProps, Translations.settings_global_fallbackurl_tooltip.toString())
     private val fallbackURLLabel = ElementLabel(Translations.settings_global_fallbackurl_label.toString())
@@ -278,15 +283,6 @@ class GlobalSettings(
         panel.add(aikarsReset, "cell 4 $y")
 
         y++
-        scriptY = y
-        panel.add(scriptIcon, "cell 0 $y")
-        panel.add(scriptLabel, "cell 1 $y")
-        panel.add(scriptSetting, "cell 2 $y, grow, w 10:500:,h 150!")
-        panel.add(scriptRevert, "cell 3 $y")
-        panel.add(scriptReset, "cell 4 $y")
-        panel.add(scriptChoose, "cell 5 $y")
-
-        y++
         preInstallY = y
         panel.add(preInstallFilesIcon, "cell 0 $y")
         panel.add(preInstallFilesLabel, "cell 1 $y")
@@ -301,6 +297,15 @@ class GlobalSettings(
         panel.add(postInstallFilesSetting, "cell 2 $y, grow, w 10:500:,h 150!")
         panel.add(postInstallFilesRevert, "cell 3 $y")
         panel.add(postInstallFilesReset, "cell 4 $y")
+
+        y++
+        scriptY = y
+        panel.add(scriptIcon, "cell 0 $y")
+        panel.add(scriptLabel, "cell 1 $y")
+        panel.add(scriptSetting.scrollPanel, "cell 2 $y, grow, w 10:500:,h 150!")
+        panel.add(scriptRevert, "cell 3 $y")
+        /*panel.add(scriptReset, "cell 4 $y")
+        panel.add(scriptChoose, "cell 5 $y")*/
 
         y++
         javaPathsY = y
@@ -402,7 +407,7 @@ class GlobalSettings(
         zipSetting.text = apiProperties.zipArchiveExclusions.joinToString(", ")
         inclusionsSetting.text = apiProperties.directoriesToInclude.joinToString(", ")
         aikarsSetting.text = apiProperties.aikarsFlags
-        scriptSetting.text = apiProperties.scriptTemplates.joinToString(", ")
+        scriptSetting.loadData(apiProperties.startScriptTemplates)
         fallbackURLSetting.text = apiProperties.updateUrl.toString()
         exclusionSetting.selectedItem = apiProperties.exclusionFilter
         languageSetting.selectedItem = apiProperties.i18n4kConfig.locale
@@ -428,7 +433,6 @@ class GlobalSettings(
         apiProperties.zipArchiveExclusions = TreeSet(zipSetting.text.replace(", ",",").split(","))
         apiProperties.directoriesToInclude = TreeSet(inclusionsSetting.text.replace(", ",",").split(","))
         apiProperties.aikarsFlags = aikarsSetting.text
-        apiProperties.scriptTemplates = TreeSet(scriptSetting.text.replace(", ",",").split(",").map { File(it).absoluteFile })
         apiProperties.updateUrl = URI(fallbackURLSetting.text).toURL()
         apiProperties.exclusionFilter = exclusionSetting.selectedItem as ExclusionFilter
         apiProperties.language = languageSetting.selectedItem as Locale
@@ -442,6 +446,11 @@ class GlobalSettings(
         apiProperties.isAutoExcludingModsEnabled = autodetectionSetting.isSelected
         apiProperties.preInstallCleanupFiles = TreeSet(preInstallFilesSetting.text.replace(", ",",").split(","))
         apiProperties.postInstallCleanupFiles = TreeSet(postInstallFilesSetting.text.replace(", ",",").split(","))
+
+        val scriptTemplates = scriptSetting.getData()
+        scriptTemplates.remove("placeholder")
+        apiProperties.startScriptTemplates = scriptTemplates
+
         val javaPaths = javaPathsSetting.getData()
         javaPaths.remove("placeholder")
         apiProperties.javaPaths = javaPaths
@@ -486,9 +495,9 @@ class GlobalSettings(
             inclusionsIcon.info()
         }
 
-        if (scriptSetting.text.matches(guiProps.whitespace)) {
-            scriptIcon.error(Translations.settings_check_whitespace.toString())
-            errors.add(Translations.settings_check_whitespace.toString())
+        if (scriptSetting.getData().entries.any { (key, value) -> !File(value).isFile }) {
+            scriptIcon.error(Translations.settings_global_scripts_missing.toString())
+            errors.add(Translations.settings_global_scripts_missing.toString())
         } else {
             scriptIcon.info()
         }
@@ -520,13 +529,14 @@ class GlobalSettings(
     override fun hasUnsavedChanges(): Boolean {
         val javaPaths = javaPathsSetting.getData()
         javaPaths.remove("placeholder")
+        val scriptTemplates = scriptSetting.getData()
+        scriptTemplates.remove("placeholder")
         val changes = /*homeSetting.file.absolutePath != apiProperties.homeDirectory.absolutePath ||*/
         javaSetting.file.absolutePath != File(apiProperties.javaPath).absolutePath ||
         serverPacksSetting.file.absolutePath != apiProperties.serverPacksDirectory.absolutePath ||
         zipSetting.text != apiProperties.zipArchiveExclusions.joinToString(", ") ||
         inclusionsSetting.text != apiProperties.directoriesToInclude.joinToString(", ") ||
         aikarsSetting.text != apiProperties.aikarsFlags ||
-        scriptSetting.text != apiProperties.scriptTemplates.joinToString(", ") ||
         fallbackURLSetting.text != apiProperties.updateUrl.toString() ||
         exclusionSetting.selectedItem.toString() != apiProperties.exclusionFilter.toString() ||
         languageSetting.selectedItem.toString().lowercase() != apiProperties.i18n4kConfig.locale.toString().lowercase() ||
@@ -540,6 +550,7 @@ class GlobalSettings(
         autodetectionSetting.isSelected != apiProperties.isAutoExcludingModsEnabled ||
         preInstallFilesSetting.text != apiProperties.preInstallCleanupFiles.joinToString(", ") ||
         postInstallFilesSetting.text != apiProperties.postInstallCleanupFiles.joinToString(", ") ||
+        scriptTemplates != apiProperties.startScriptTemplates
         javaPaths != apiProperties.javaPaths
         if (changes) {
             title.showWarningIcon()

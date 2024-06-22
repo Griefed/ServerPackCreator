@@ -530,5 +530,18 @@ class MigrationManager(
                 )
             }
         }
+
+        private fun SixPointZeroPointZero() {
+            val changes: MutableList<String> = ArrayList<String>(10)
+            val previousSetting = apiProperties.scriptTemplates
+            val newSetting = hashMapOf<String, String>()
+
+            var type: String
+            for (template in previousSetting) {
+                type = template.name.substring(template.name.lastIndexOf("."))
+                newSetting[type] = template.absolutePath
+                changes.add(Translations.migrationmanager_migration_sixpointzeropointzero_scripts_template("$type = ${template.absolutePath}"))
+            }
+        }
     }
 }

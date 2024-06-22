@@ -114,8 +114,11 @@ class ApiProperties(
         "de.griefed.serverpackcreator.serverpack.zip.exclude"
     private val pServerPackZipExclusionEnabled =
         "de.griefed.serverpackcreator.serverpack.zip.exclude.enabled"
+    @Deprecated("Deprecated as of 6.0.0")
     private val pServerPackScriptTemplates =
         "de.griefed.serverpackcreator.serverpack.script.template"
+    private val pServerPackStartScriptTemplatesPrefix =
+        "de.griefed.serverpackcreator.serverpack.script.template."
     private val pPostInstallCleanupFiles =
         "de.griefed.serverpackcreator.install.post.files"
     private val pPreInstallCleanupFiles =
@@ -927,6 +930,7 @@ class ApiProperties(
      *
      * @author Griefed
      */
+    @Deprecated("Deprecated as of 6.0.0", ReplaceWith("defaultScriptTemplateMap"))
     fun defaultScriptTemplates(): List<File> {
         // See whether we have custom files.
         val currentFiles = serverFilesDirectory.walk().maxDepth(1).filter {
@@ -978,10 +982,7 @@ class ApiProperties(
         return newTemplates.toList()
     }
 
-    /**
-     * Start-script templates to use during server pack generation.
-     */
-    @Suppress("SetterBackingFieldAssignment")
+    @Deprecated("Deprecated as of 6.0.0",ReplaceWith("startScriptTemplates"))
     var scriptTemplates: TreeSet<File> = TreeSet<File>()
         get() {
             val scriptSetting = internalProps.getProperty(pServerPackScriptTemplates)
@@ -1006,6 +1007,50 @@ class ApiProperties(
             for (template in field) {
                 log.info("    " + template.path)
             }
+        }
+
+    /**
+     * Default map of start-script templates: sh, ps1, bat.
+     */
+    fun defaultStartScriptTemplates() : HashMap<String, String> {
+        return hashMapOf(
+            Pair("sh", File(serverFilesDirectory.absolutePath, defaultShellScriptTemplate.name).absolutePath),
+            Pair("ps1", File(serverFilesDirectory.absolutePath, defaultPowerShellScriptTemplate.name).absolutePath),
+            Pair("bat", File(serverFilesDirectory.absolutePath, defaultBatchScriptTemplate.name).absolutePath)
+        )
+    }
+
+    /**
+     * Start-script templates to use during server pack generation.
+     * Each key represents a different template and script-type.
+     */
+    var startScriptTemplates: HashMap<String,String> = hashMapOf()
+        get() {
+            val templateProps = internalProps.keys
+                .filter { entry -> (entry as String).startsWith(pServerPackStartScriptTemplatesPrefix) }
+                .map { entry -> entry as String }
+            var type: String
+            if (templateProps.isEmpty() || templateProps.any { entry -> entry.replace(pServerPackStartScriptTemplatesPrefix,"").isBlank() }) {
+                log.error("Found empty definitions for start script templates. Using defaults.")
+                field = defaultStartScriptTemplates()
+            } else {
+                for (templateProp in templateProps) {
+                    type = templateProp.replace(pServerPackStartScriptTemplatesPrefix,"")
+                    field[type] = File(internalProps[templateProp] as String).absolutePath
+                }
+            }
+            if (field.isEmpty()) {
+                log.error("No start script templates defined. Using defaults.")
+                field = defaultStartScriptTemplates()
+            }
+            return field
+        }
+        set(map) {
+            for ((key, value) in map) {
+                defineProperty("$pServerPackStartScriptTemplatesPrefix$key", value)
+                log.info("Set $pServerPackStartScriptTemplatesPrefix$key to $value")
+            }
+            field = map
         }
 
     /**
@@ -1824,7 +1869,7 @@ class ApiProperties(
      * The default shell-template for the modded server start scripts. The file returned by this
      * method does not represent the script-template in the `server_files`-directory. If you
      * wish access the configured script templates inside the `server_files`-directory, use
-     * [scriptTemplates].
+     * [startScriptTemplates].
      */
     val defaultShellScriptTemplate = File(serverFilesDirectory, "default_template.sh")
 
@@ -1832,7 +1877,7 @@ class ApiProperties(
      * The default PowerShell-template for the modded server start scripts. The file returned by this
      * method does not represent the script-template in the `server_files`-directory. If you
      * wish access the configured script templates inside the `server_files`-directory, use
-     * [scriptTemplates].
+     * [startScriptTemplates].
      */
     val defaultPowerShellScriptTemplate = File(serverFilesDirectory, "default_template.ps1")
 
@@ -1840,12 +1885,9 @@ class ApiProperties(
      * The default Batch-template for the modded server start scripts. The file returned by this
      * method does not represent the script-template in the `server_files`-directory. If you
      * wish access the configured script templates inside the `server_files`-directory, use
-     * [scriptTemplates].
+     * [startScriptTemplates].
      */
     val defaultBatchScriptTemplate = File(serverFilesDirectory, "default_template.bat")
-
-    @Suppress("MemberVisibilityCanBePrivate")
-    val fallbackScriptTemplates = defaultScriptTemplates().joinToString(",")
 
     /**
      * Directory in which the properties for quick selection are to be stored in and retrieved from.
@@ -2563,8 +2605,8 @@ class ApiProperties(
             log.info("    Java $key path: $value")
         }
         log.info("Using script templates:")
-        for (template in scriptTemplates) {
-            log.info("    " + template.path)
+        for ((key, value) in startScriptTemplates) {
+            log.info("    $key: $value")
         }
         log.info("============================== PROPERTIES ==============================")
     }

@@ -47,7 +47,7 @@ import kotlin.io.path.absolute
 
 /**
  * Everything revolving around creating a server pack. The intended workflow is to create a [PackConfig] and run
- * it through any of the available [ConfigurationHandler.checkConfiguration]-variants, and then call [run] with the
+ * it through any of the available [de.griefed.serverpackcreator.api.config.ConfigurationHandler.checkConfiguration]-variants, and then call [run] with the
  * previously checked configuration model. You may run with an unchecked configuration model, but no guarantees or
  * promises, yes not even support, is given for running a model without checking it first.
  *
@@ -797,7 +797,18 @@ class ServerPackHandler(
      * @author Griefed
      */
     fun createStartScripts(scriptSettings: HashMap<String, String>, destination: String, isLocal: Boolean) {
-        for (template in apiProperties.scriptTemplates) {
+        var script: File
+        var content: String
+        for ((key, value) in apiProperties.startScriptTemplates) {
+            try {
+                script = File(destination, "start.$key")
+                content = replacePlaceholders(isLocal, File(value).readText(), scriptSettings).replace("\r", "")
+                script.writeText(content)
+            } catch (ex: Exception) {
+                log.error("$key-File not accessible: $value.", ex)
+            }
+        }
+        /*for (template in apiProperties.scriptTemplates) {
             try {
                 val fileEnding = template.toString().substring(template.toString().lastIndexOf(".") + 1)
                 val destinationScript = File(destination, "start.$fileEnding")
@@ -807,7 +818,7 @@ class ServerPackHandler(
             } catch (ex: Exception) {
                 log.error("File not accessible: $template.", ex)
             }
-        }
+        }*/
         try {
             val destinationVariables = File(destination, "variables.txt")
             var variablesContent = variables
@@ -999,7 +1010,7 @@ class ServerPackHandler(
      * @param modsDir                 The mods-directory of the modpack of which to generate a list of
      * all its contents.
      * @param userSpecifiedClientMods A list of all clientside-only mods.
-     * @param userSpecifiedWhitelist  A list of mods to include regardless if a match was found in [userSpecifiedClientMods].
+     * @param userSpecifiedModsWhitelist  A list of mods to include regardless if a match was found in [userSpecifiedClientMods].
      * @param minecraftVersion        The Minecraft version the modpack uses. When the modloader is
      * Forge, this determines whether Annotations or Tomls are
      * scanned.
