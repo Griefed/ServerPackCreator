@@ -78,9 +78,7 @@ crashServer() {
 }
 
 if [[ ! -s "variables.txt" ]]; then
-  echo "ERROR! variables.txt not present. Without it the server can not be installed, configured or started."
-  pause
-  exit 1
+  crashServer "ERROR! variables.txt not present. Without it the server can not be installed, configured or started."
 fi
 
 source "variables.txt"
@@ -136,13 +134,24 @@ quitServer() {
   exit 0
 }
 
+commandAvailable() {
+  command -v "$1" > /dev/null 2>&1
+}
+
 downloadIfNotExist() {
   if [[ ! -s "${1}" ]]; then
 
     echo "${1} could not be found." >&2
     echo "Downloading ${2}" >&2
     echo "from ${3}" >&2
-    curl -# -L -o "./${2}" "${3}"
+
+    if commandAvailable curl ; then
+      curl -# -L -o "./${2}" "${3}"
+    elif commandAvailable wget ; then
+      wget --show-progress -O "./${2}" "${3}"
+    else
+      crashServer "[ERROR] wget or curl is required to download files."
+    fi
 
     if [[ -s "${2}" ]]; then
       echo "Download complete." >&2
