@@ -578,7 +578,7 @@ if (!("${LauncherJarLocation}" -eq "do_not_manually_edit"))
 RunJavaCommand "-version"
 ""
 
-while (true)
+while ($true)
 {
     RunJavaCommand "${AdditionalArgs} ${ServerRunCommand}"
     if ("${SkipJavaCheck}" -eq "true")
