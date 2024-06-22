@@ -1,3 +1,10 @@
+## [6.0.0-alpha.10](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.9...6.0.0-alpha.10) (2024-06-22)
+
+
+### 💎 Improvements
+
+* Check for curl, use wget if not available, crash if both are absent ([e179cd9](https://git.griefed.de/Griefed/ServerPackCreator/commit/e179cd99b61a962534670c36c40dd604265fe132))
+
 ## [6.0.0-alpha.9](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.8...6.0.0-alpha.9) (2024-06-19)
 
 
