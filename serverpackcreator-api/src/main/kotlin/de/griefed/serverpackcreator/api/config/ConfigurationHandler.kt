@@ -606,30 +606,64 @@ class ConfigurationHandler(
      */
     fun ensureScriptSettingsDefaults(packConfig: PackConfig) {
         val server = versionMeta.minecraft.getServer(packConfig.minecraftVersion)
-        if (!server.isPresent || !server.get().url().isPresent) {
-            packConfig.scriptSettings["SPC_MINECRAFT_SERVER_URL_SPC"] = ""
-        } else {
-            packConfig.scriptSettings["SPC_MINECRAFT_SERVER_URL_SPC"] = server.get().url().get().toString()
-        }
+
+        //From modpack -> server pack specific values
         packConfig.scriptSettings["SPC_SERVERPACKCREATOR_VERSION_SPC"] = apiProperties.apiVersion
         packConfig.scriptSettings["SPC_MINECRAFT_VERSION_SPC"] = packConfig.minecraftVersion
         packConfig.scriptSettings["SPC_MODLOADER_SPC"] = packConfig.modloader
         packConfig.scriptSettings["SPC_MODLOADER_VERSION_SPC"] = packConfig.modloaderVersion
         packConfig.scriptSettings["SPC_JAVA_ARGS_SPC"] = packConfig.javaArgs
-        if (!packConfig.scriptSettings.containsKey("SPC_JAVA_SPC")) {
-            packConfig.scriptSettings["SPC_JAVA_SPC"] = "java"
-        }
         packConfig.scriptSettings["SPC_FABRIC_INSTALLER_VERSION_SPC"] = versionMeta.fabric.releaseInstaller()
         packConfig.scriptSettings["SPC_QUILT_INSTALLER_VERSION_SPC"] = versionMeta.quilt.releaseInstaller()
-        packConfig.scriptSettings["SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC"] =
-            versionMeta.legacyFabric.releaseInstaller()
+        packConfig.scriptSettings["SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC"] = versionMeta.legacyFabric.releaseInstaller()
+
+        if (server.isEmpty || server.get().url().isEmpty) {
+            packConfig.scriptSettings["SPC_MINECRAFT_SERVER_URL_SPC"] = ""
+            packConfig.scriptSettings["SPC_RECOMMENDED_JAVA_VERSION_SPC"] = ""
+        } else {
+            packConfig.scriptSettings["SPC_MINECRAFT_SERVER_URL_SPC"] = server.get().url().get().toString()
+            if (server.get().javaVersion().isPresent) {
+                packConfig.scriptSettings["SPC_RECOMMENDED_JAVA_VERSION_SPC"] = server.get().javaVersion().get().toString()
+            } else {
+                packConfig.scriptSettings["SPC_RECOMMENDED_JAVA_VERSION_SPC"] = "?"
+            }
+        }
+
         val neoForgeInstance = versionMeta.neoForge.getNeoForgeInstance(packConfig.minecraftVersion, packConfig.modloaderVersion)
         packConfig.scriptSettings["SPC_NEOFORGE_INSTALLER_URL_SPC"] = if (neoForgeInstance.isPresent) {
-            versionMeta.neoForge.getNeoForgeInstance(packConfig.minecraftVersion, packConfig.modloaderVersion).get().installerUrl.toString()
+            neoForgeInstance.get().installerUrl.toString()
         } else {
             "NONE"
         }
 
+        // Additional, fluff
+        if (!packConfig.scriptSettings.containsKey("SPC_RESTART_SPC")) {
+            packConfig.scriptSettings["SPC_RESTART_SPC"] = "false"
+        }
+        if (!packConfig.scriptSettings.containsKey("SPC_SKIP_JAVA_CHECK_SPC")) {
+            packConfig.scriptSettings["SPC_SKIP_JAVA_CHECK_SPC"] = "false"
+        }
+        if (!packConfig.scriptSettings.containsKey("SPC_JDK_VENDOR_SPC")) {
+            packConfig.scriptSettings["SPC_JDK_VENDOR_SPC"] = "temurin"
+        }
+        if (!packConfig.scriptSettings.containsKey("SPC_JABBA_INSTALL_URL_SH_SPC")) {
+            packConfig.scriptSettings["SPC_JABBA_INSTALL_URL_SPC"] = "https://github.com/Jabba-Team/jabba/raw/main/install.sh"
+        }
+        if (!packConfig.scriptSettings.containsKey("SPC_JABBA_INSTALL_URL_PS_SPC")) {
+            packConfig.scriptSettings["SPC_JABBA_INSTALL_URL_SPC"] = "https://github.com/Jabba-Team/jabba/raw/main/install.ps1"
+        }
+        if (!packConfig.scriptSettings.containsKey("SPC_JABBA_INSTALL_VERSION_SPC")) {
+            packConfig.scriptSettings["SPC_JABBA_INSTALL_VERSION_SPC"] = "0.13.0"
+        }
+        if (!packConfig.scriptSettings.containsKey("SPC_ADDITIONAL_ARGS_SPC")) {
+            packConfig.scriptSettings["SPC_ADDITIONAL_ARGS_SPC"] = "-Dlog4j2.formatMsgNoLookups=true"
+        }
+        if (!packConfig.scriptSettings.containsKey("SPC_JAVA_SPC")) {
+            packConfig.scriptSettings["SPC_JAVA_SPC"] = "java"
+        }
+        if (!packConfig.scriptSettings.containsKey("SPC_WAIT_FOR_USER_INPUT_SPC")) {
+            packConfig.scriptSettings["SPC_WAIT_FOR_USER_INPUT_SPC"] = "true"
+        }
     }
 
     /**

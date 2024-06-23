@@ -1,3 +1,10 @@
+## [6.0.0-alpha.9](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.8...6.0.0-alpha.9) (2024-06-19)
+
+
+### 🛠 Fixes
+
+* Correctly assess new or equal version in semantic comparator ([2be43aa](https://git.griefed.de/Griefed/ServerPackCreator/commit/2be43aaade7d43674860120ce62d86cb08e01494))
+
 ## [6.0.0-alpha.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.7...6.0.0-alpha.8) (2024-06-18)
 
 

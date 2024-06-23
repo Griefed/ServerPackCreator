@@ -465,9 +465,9 @@ class ApiWrapper private constructor(
 
         System.setProperty("file.encoding", StandardCharsets.UTF_8.name())
         if (!utilities.fileUtilities.isReadWritePermissionSet(apiProperties.getJarFolder())) {
-            log.error(
-                "One or more file or directory has no read- or write-permission." + " This may lead to corrupted server packs!" + " Check the permissions of the ServerPackCreator base directory!"
-            )
+            log.error("One or more file or directory has no read- or write-permission. " +
+                    "This may lead to corrupted server packs! " +
+                    "Check the permissions of the ServerPackCreator base directory!")
         }
 
         try {
@@ -503,6 +503,9 @@ class ApiWrapper private constructor(
         overwriteServerFilesFile(apiProperties.defaultShellScriptTemplate)
         overwriteServerFilesFile(apiProperties.defaultPowerShellScriptTemplate)
         overwriteServerFilesFile(apiProperties.defaultBatchScriptTemplate)
+        overwriteServerFilesFile(apiProperties.defaultJavaShellScriptTemplate)
+        overwriteServerFilesFile(apiProperties.defaultJavaPowerShellScriptTemplate)
+        overwriteServerFilesFile(apiProperties.defaultJavaBatchScriptTemplate)
         if (serverProperties || serverIcon) {
             log.warn("#################################################################")
             log.warn("#.............ONE OR MORE DEFAULT FILE(S) GENERATED.............#")
