@@ -119,6 +119,8 @@ class ApiProperties(
         "de.griefed.serverpackcreator.serverpack.script.template"
     private val pServerPackStartScriptTemplatesPrefix =
         "de.griefed.serverpackcreator.serverpack.script.template."
+    private val pServerPackJavaScriptTemplatesPrefix =
+        "de.griefed.serverpackcreator.serverpack.java.template."
     private val pPostInstallCleanupFiles =
         "de.griefed.serverpackcreator.install.post.files"
     private val pPreInstallCleanupFiles =
@@ -1054,6 +1056,50 @@ class ApiProperties(
         }
 
     /**
+     * Default map of start-script templates: sh, ps1, bat.
+     */
+    fun defaultJavaScriptTemplates() : HashMap<String, String> {
+        return hashMapOf(
+            Pair("sh", File(serverFilesDirectory.absolutePath, defaultJavaShellScriptTemplate.name).absolutePath),
+            Pair("ps1", File(serverFilesDirectory.absolutePath, defaultJavaPowerShellScriptTemplate.name).absolutePath),
+            Pair("bat", File(serverFilesDirectory.absolutePath, defaultJavaBatchScriptTemplate.name).absolutePath)
+        )
+    }
+
+    /**
+     * Start-script templates to use during server pack generation.
+     * Each key represents a different template and script-type.
+     */
+    var javaScriptTemplates: HashMap<String,String> = hashMapOf()
+        get() {
+            val templateProps = internalProps.keys
+                .filter { entry -> (entry as String).startsWith(pServerPackJavaScriptTemplatesPrefix) }
+                .map { entry -> entry as String }
+            var type: String
+            if (templateProps.isEmpty() || templateProps.any { entry -> entry.replace(pServerPackJavaScriptTemplatesPrefix,"").isBlank() }) {
+                log.error("Found empty definitions for java script templates. Using defaults.")
+                field = defaultStartScriptTemplates()
+            } else {
+                for (templateProp in templateProps) {
+                    type = templateProp.replace(pServerPackJavaScriptTemplatesPrefix,"")
+                    field[type] = File(internalProps[templateProp] as String).absolutePath
+                }
+            }
+            if (field.isEmpty()) {
+                log.error("No java script templates defined. Using defaults.")
+                field = defaultStartScriptTemplates()
+            }
+            return field
+        }
+        set(map) {
+            for ((key, value) in map) {
+                defineProperty("$pServerPackJavaScriptTemplatesPrefix$key", value)
+                log.info("Set $pServerPackJavaScriptTemplatesPrefix$key to $value")
+            }
+            field = map
+        }
+
+    /**
      * The URL from which a .properties-file is read during updating of the fallback clientside-mods list.
      * The default can be found in [fallbackUpdateURL].
      */
@@ -1888,6 +1934,30 @@ class ApiProperties(
      * [startScriptTemplates].
      */
     val defaultBatchScriptTemplate = File(serverFilesDirectory, "default_template.bat")
+
+    /**
+     * The default shell-template for the modded server start scripts. The file returned by this
+     * method does not represent the script-template in the `server_files`-directory. If you
+     * wish access the configured script templates inside the `server_files`-directory, use
+     * [javaScriptTemplates].
+     */
+    val defaultJavaShellScriptTemplate = File(serverFilesDirectory, "default_java_template.sh")
+
+    /**
+     * The default PowerShell-template for the modded server start scripts. The file returned by this
+     * method does not represent the script-template in the `server_files`-directory. If you
+     * wish access the configured script templates inside the `server_files`-directory, use
+     * [javaScriptTemplates].
+     */
+    val defaultJavaPowerShellScriptTemplate = File(serverFilesDirectory, "default_java_template.ps1")
+
+    /**
+     * The default Batch-template for the modded server start scripts. The file returned by this
+     * method does not represent the script-template in the `server_files`-directory. If you
+     * wish access the configured script templates inside the `server_files`-directory, use
+     * [javaScriptTemplates].
+     */
+    val defaultJavaBatchScriptTemplate = File(serverFilesDirectory, "default_java_template.bat")
 
     /**
      * Directory in which the properties for quick selection are to be stored in and retrieved from.

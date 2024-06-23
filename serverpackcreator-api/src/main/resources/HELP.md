@@ -40,11 +40,11 @@ Happy theming!
 
 ## Start Script Templates (3.8.x and up)
 
-As of 3.8.0, ServerPackCreator creates start scripts based on templates.
-Inside the `server_files`-directory you will find the two default templates:
+Inside the `server_files`-directory you will find the three default templates:
 
 1. `default_template.ps1`
 2. `default_template.sh`
+3. `default-template.bat`
 
 You have two options now:
 
@@ -87,18 +87,67 @@ then immediately closing* again, consult the **Running Powershell scripts**-sect
 ### Default values
 
 ServerPackCreator always supplies a couple of default key-value-pairs during script creation.
+These are stored in a separate file called `variables.txt`.
 
-| Key                               | Value                                                                                                                                                                                                                                                                                           |
-|-----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| SPC_SERVERPACKCREATOR_VERSION_SPC | The version of ServerPackCreator with which the start script was created.                                                                                                                                                                                                                       |
-| SPC_MINECRAFT_VERSION_SPC         | The Minecraft version of the modpack from which the server pack is created.                                                                                                                                                                                                                     |
-| SPC_MODLOADER_SPC                 | The modloader of the modpack from which the server pack is created.                                                                                                                                                                                                                             |
-| SPC_MODLOADER_VERSION_SPC         | The modloader version of the modpack from which the server pack is created.                                                                                                                                                                                                                     |
-| SPC_MINECRAFT_SERVER_URL_SPC      | The download URL corresponding to the Minecraft version of the modpack from which the server pack is created.                                                                                                                                                                                   |
-| SPC_JAVA_ARGS_SPC                 | Java JVM args which are to be used when running the server pack.                                                                                                                                                                                                                                |
-| SPC_JAVA_SPC                      | `java` by default. Start scripts in ZIP-archives will always receive `java` as the value. You may change the value in the table provided in the GUI if you need a different Java path for local testing and debugging. Scripts in the unzipped server pack will have the custom value avaiable. |
-| SPC_FABRIC_INSTALLER_VERSION_SPC  | The latest release version of the Fabric installer during the creation of the start scripts.                                                                                                                                                                                                    |
-| SPC_QUILT_INSTALLER_VERSION_SPC   | The latest release version of the Quilt installer during the creation of the start scripts.                                                                                                                                                                                                     |
+The following placeholders will be replaced by ServerPackCreator during the creation of the scripts and variables.txt.
+
+| Key                                    | Value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+|----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| SPC_SERVERPACKCREATOR_VERSION_SPC      | The version of ServerPackCreator with which the start script was created.                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| SPC_MINECRAFT_VERSION_SPC              | The Minecraft version of the modpack from which the server pack is created.                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| SPC_MODLOADER_SPC                      | The modloader of the modpack from which the server pack is created.                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| SPC_MODLOADER_VERSION_SPC              | The modloader version of the modpack from which the server pack is created.                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| SPC_MINECRAFT_SERVER_URL_SPC           | The download URL corresponding to the Minecraft version of the modpack from which the server pack is created.                                                                                                                                                                                                                                                                                                                                                                                                   |
+| SPC_JAVA_ARGS_SPC                      | Java JVM args which are to be used when running the server pack.                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| SPC_JAVA_SPC                           | `java` by default. Start scripts in ZIP-archives will always receive `java` as the value. You may change the value in the table provided in the GUI if you need a different Java path for local testing and debugging. Scripts in the unzipped server pack will have the custom value avaiable.                                                                                                                                                                                                                 |
+| SPC_FABRIC_INSTALLER_VERSION_SPC       | The latest release version of the Fabric installer during creation.                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| SPC_QUILT_INSTALLER_VERSION_SPC        | The latest release version of the Quilt installer during creation.                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC | The latest release version of the LegacyFabric installer during creation.                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| SPC_NEOFORGE_INSTALLER_URL_SPC         | The URL to the NeoForge installer for the given Minecraft & NeoForge version, supplied during creation.                                                                                                                                                                                                                                                                                                                                                                                                         |
+| SPC_RECOMMENDED_JAVA_VERSION_SPC       | The recommended Java version to use with the modded server, as stated by Mojang themselves.                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| SPC_WAIT_FOR_USER_INPUT_SPC            | true/false allows you to enable/disable user confirmation upon graceful script ending.                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| SPC_ADDITIONAL_ARGS_SPC                | Additional arguments to supply to the JVM when starting the server. `-Dlog4j2.formatMsgNoLookups=true` by default.                                                                                                                                                                                                                                                                                                                                                                                              |
+| SPC_RESTART_SPC                        | true/false allows you to enable/disable automatically restarting the server should it crash.                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| SPC_SKIP_JAVA_CHECK_SPC                | true/false allows you to disable/enable the compatibility check of your Minecraft version and the provided Java version, as well as the automatic installation of a compatible Java version, should JAVA be set to 'java'.                                                                                                                                                                                                                                                                                      |
+| SPC_JDK_VENDOR_SPC                     | For the automatic installation of a JDK compatible with the Minecraft version of your server pack. For an extensive list of available vendors, check out https://github.com/Jabba-Team/jabba/blob/c19c6ce2ae9645c39bbdca07b6c4e2ea39155f73/index.json<br>   Note - For the installation to take place:<br>- SKIP_JAVA_CHECK must be set to 'false'<br>- JAVA be set to 'java'<br>- No 'java' command be available OR<br>- The available Java version behind 'java' be incompatible with your Minecraft version. |
+| SPC_JABBA_INSTALL_URL_SPC              | The URL to the install-script for Jabba.                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| SPC_JABBA_INSTALL_VERSION_SPC          | The version of Jabba to install.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+
+Jabba is a piece of software which makes the installation and usage of a JDK according to the system you are on very easy.
+It is used by the `install_java.xxx`-scripts to supply the correct Java version for your modded server should the criteria
+mentioned in the `SPC_SKIP_JAVA_CHECK_SPC` and `SPC_JDK_VENDOR_SPC` be satisfied.
+
+#### variables.txt contents
+
+The contents of the variables are as follows. See `### Default values` above for details, descriptions and explanations.
+
+| Key                            | Value                                  |
+|--------------------------------|----------------------------------------|
+| MINECRAFT_VERSION              | SPC_MINECRAFT_VERSION_SPC              |
+| MODLOADER                      | SPC_MODLOADER_SPC                      |
+| MODLOADER_VERSION              | SPC_MODLOADER_VERSION_SPC              |
+| LEGACYFABRIC_INSTALLER_VERSION | SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC |
+| FABRIC_INSTALLER_VERSION       | SPC_FABRIC_INSTALLER_VERSION_SPC       |
+| QUILT_INSTALLER_VERSION        | SPC_QUILT_INSTALLER_VERSION_SPC        |
+| NEOFORGE_INSTALLER_URL         | SPC_NEOFORGE_INSTALLER_URL_SPC         |
+| MINECRAFT_SERVER_URL           | SPC_MINECRAFT_SERVER_URL_SPC           |
+| RECOMMENDED_JAVA_VERSION       | SPC_RECOMMENDED_JAVA_VERSION_SPC       |
+| JAVA_ARGS                      | "SPC_JAVA_ARGS_SPC"                    |
+| JAVA                           | "SPC_JAVA_SPC"                         |
+| WAIT_FOR_USER_INPUT            | SPC_WAIT_FOR_USER_INPUT_SPC            |
+| ADDITIONAL_ARGS                | SPC_ADDITIONAL_ARGS_SPC                |
+| RESTART                        | SPC_RESTART_SPC                        |
+| SKIP_JAVA_CHECK                | SPC_SKIP_JAVA_CHECK_SPC                |
+| JDK_VENDOR                     | SPC_JDK_VENDOR_SPC                     |
+| JABBA_INSTALL_URL              | SPC_JABBA_INSTALL_URL_SPC              |
+| JABBA_INSTALL_VERSION          | SPC_JABBA_INSTALL_VERSION_SPC          |
+
+Plus any additional custom key-value pair you added to your server pack config.
+
+#### Custom key-value pairs in the variables.txt
+
+In order to add custom key-value pairs to the variables.txt, make sure to pre- and suffix your keys with `CUSTOM_` and
+`_CUSTOM`. Every key which matches this criteria gets added to the end of the variables.txt during its creation. 
 
 ### Placeholders and values (3.14.x and up)
 
@@ -107,8 +156,8 @@ Make sure to map your desired value to the appropriate placeholder key.
 The GUI provides a table where you can configure these, or any other values, to your liking.
 
 The way this system works is that ServerPackCreator scans the given template for any occurance of a
-given placeholder, say `SPC_JAVA_SPC`, and replaces that occurance in the template with the assigned
-value, `java` by default unless you changed it.
+given placeholder, say `SPC_JAVA_SPC`, and replaces that occurrence in the template with the assigned
+value, `java` by default unless you changed it. (Also `java` for the ZIP-archive, if any is created.)
 After every configured placeholder has been replaced with the configured value, the resulting text
 is written to the start scripts, based on the file-endings of your provided templates.
 BAM! Template engine with customizable content!
@@ -126,11 +175,30 @@ BAM! Template engine with customizable content!
 
 
 > **Default placeholder limitations**
-> Of all available default placeholders mentioned above, only one of them can be overriden via a given configuration.
+> Of all available default placeholders mentioned above, only one of them can be overridden via a given configuration.
 > Said placeholder is `SPC_JAVA_SPC`. This one allows you to set a different Java executable/binary path for your local scripts,
 > to make testing your server pack easier. The files in the ZIP-archive will always have the `SPC_JAVA_SPC=java` key-value-pair,
 > to ensure any given user of your server pack has the value most likely to work on their system.
 > {.is-warning}
+
+### Java Install Templates
+
+Starting from version 6.0.0, ServerPackCreator will install the required Java version for the modded Minecraft server
+using a set of install-scripts. These are based on templates, just like the start scripts.
+
+In the `server_files`-directory, you will find a couple of files which follow the naming convention of `default_java_template.xxx`
+where `xxx` represents the type of the script, e.g. bat, ps1 or sh.
+
+Changing these templates follows the same procedure as the start scripts. The properties are as follows:
+
+```properties
+de.griefed.serverpackcreator.serverpack.java.template.bat=...
+de.griefed.serverpackcreator.serverpack.java.template.ps1=...
+de.griefed.serverpackcreator.serverpack.java.template.sh=...
+```
+
+You may also use the GUI, Settings -> Global -> Java Script Templates -> Reset to default values, to reset the
+entirety of the template setting to factory defaults.
 
 ### Changing the default templates
 
@@ -145,56 +213,40 @@ and set the property for the templates accordingly.
 
 In other words:
 
-1. Copy the desired template to a name of your liking, e.g. `custom-template.ps1`
-   and `custom-template.sh`
+1. Copy the desired template to a name of your liking, e.g. `custom-template.sh`
 2. Make your changes to these custom templates
-3. Set `de.griefed.serverpackcreator.serverpack.script.template`
-   to `custom-template.ps1,custom-template.sh`
+3. Set `de.griefed.serverpackcreator.serverpack.script.template.sh` to `/path/to/custom/templates/custom-template.sh`
 4. ...
 5. Profit
 
-Now the default templates will not be used to create start scripts for your server packs, but
-instead, your custom-templates will be used.
+Repeat the same for `ps1` or `bat` if you so desire. Keep in mind to change the properties accordingly.
+The last section of the property-key determines the type of the script, see the following for an example:
 
-### Adding/removing templates
+```properties
+de.griefed.serverpackcreator.serverpack.script.template.bat=...
+de.griefed.serverpackcreator.serverpack.script.template.ps1=...
+de.griefed.serverpackcreator.serverpack.script.template.sh=...
+```
 
-1. The file-endings of the templates determine the file ending of the start script (`template.bat`
-   becomes `start.bat`, `template.sh` becomes `start.sh` and so on)
-2. Put your template(s) into the `server_files`-directory
-3. Edit the `serverpackcreator.properties`-file and change
-   the `de.griefed.serverpackcreator.serverpack.script.template`-property accordingly
+Each of these represents the path to a template, for bat, ps1 and sh respectively. If you wish to add a template for
+another type, simply add a property which ends with your desired type, like so
 
-**Example:**
-Say you've written a very nice template for some `.bat`
--scripts, `my-awesome-batch-script-template.bat`, and want ServerPackCreator to use said template
-during the script creation.
-In that case you would need to put said template into the `server_files`-directory,
-set `de.griefed.serverpackcreator.serverpack.script.template`
-to `my-awesome-batch-script-template.bat` so it looks
-like `de.griefed.serverpackcreator.serverpack.script.template=my-awesome-batch-script-template.bat`
-and you've good to go.
-
-When you now generate a server pack, a `start.bat`-script will be created based on
-your `my-awesome-batch-script-template.bat`-template.
-
-So, at the end, after writing your template and adding it to your ServerPackCreator configuration,
-your folders and config should look/contain like the following:
-
-- **ServerPackCreator
-  Properties:** `de.griefed.serverpackcreator.serverpack.script.template=default_template.ps1,default_template.sh,my-awesome-batch-script-template.bat`
-- **server_files-folder should contain:**
-    - default_template.ps1
-    - default_template.sh
-    - my-awesome-batch-script-template.bat
-    - [...]
-
-This will result in ServerPackCreator creating three scripts: `start.bat`, `start.ps1`, `start.sh`
+`de.griefed.serverpackcreator.serverpack.script.template.zsh=...`
 
 > **Encoding**
 > When writing custom templates, you must store them with **UTF-8** encoding. That is the encoding in
 > which ServerPackCreator reads them. So in order for control characters or any other special
 > characters to work as you expect them to, make sure to encode your custom templates in **UTF-8**!
 > {.is-warning}
+
+
+### Removing templates
+
+If you wish to return back to the default template for any of the types supported by default (bat, ps1, sh),
+simply remove the property from the `serverpackcreator.properties` and restart ServerPackCreator.
+
+You may also use the GUI, Settings -> Global -> Script Templates -> Reset to default values, to reset the
+entirety of the template setting to factory defaults.
 
 ## Automatically updating script Java placeholder (3.14.x and up)
 
@@ -912,7 +964,7 @@ Keep in mind, though, that any ZIP-archived generated this way may contain data 
 You may also run the risk of having duplicate mods if the mods in your modpack change or are updated between generations.
 If overwrites, and thus cleanups, are disabled, and you run into this
 
-### Updating Server Packs (Experimental)
+### Updating Server Packs (Experimental, v6.0.0 and up)
 
 An experimental feature allows you to update your server pack without losing data. If you've run your server pack locally, played around a bit
 and have a world you would like to keep, losing this data due to re-generating your server pack would suck. (MAKE BACKUPS!)

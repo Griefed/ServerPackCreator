@@ -609,10 +609,9 @@ class ConfigEditor(
     }
 
     override fun acquireRequiredJavaVersion(): String {
-        return if (apiWrapper.versionMeta.minecraft.getServer(getMinecraftVersion()).isPresent
-            && apiWrapper.versionMeta.minecraft.getServer(getMinecraftVersion()).get().javaVersion().isPresent
-        ) {
-            apiWrapper.versionMeta.minecraft.getServer(getMinecraftVersion()).get().javaVersion().get().toString()
+        val server = apiWrapper.versionMeta.minecraft.getServer(getMinecraftVersion())
+        return if (server.isPresent && server.get().javaVersion().isPresent) {
+            server.get().javaVersion().get().toString()
         } else {
             "?"
         }

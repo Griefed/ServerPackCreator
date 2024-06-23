@@ -106,6 +106,18 @@ class ServerPackHandler(
         #   graceful script ending.
         # RESTART true/false allows you to enable/disable automatically restarting the server
         #   should it crash.
+        # SKIP_JAVA_CHECK true/false allows you to disable/enable the compatibility check
+        #   of your Minecraft version and the provided Java version, as well as the automatic
+        #   installation of a compatible Java version, should JAVA be set to 'java'.
+        # JDK_VENDOR is for the automatic installation of a JDK compatible with the Minecraft
+        #   version of your server pack. For an extensive list of available vendors, check out
+        #   https://github.com/Jabba-Team/jabba/blob/c19c6ce2ae9645c39bbdca07b6c4e2ea39155f73/index.json
+        #   Note - For the installation to take place:
+        #   - SKIP_JAVA_CHECK must be set to 'false'
+        #   - JAVA be set to 'java'
+        #   - No 'java' command be available OR
+        #   - The available Java version behind 'java' be incompatible with your Minecraft version.
+        # JABBA_VERSION has no effect on the installation of Jabba when using PowerShell.
         #
         # Variables are not reloaded between automatic restarts. If you've made changes to your
         #   variables and you want them to take effect, stop the server and script, then
@@ -119,12 +131,17 @@ class ServerPackHandler(
         QUILT_INSTALLER_VERSION=SPC_QUILT_INSTALLER_VERSION_SPC
         NEOFORGE_INSTALLER_URL=SPC_NEOFORGE_INSTALLER_URL_SPC
         MINECRAFT_SERVER_URL=SPC_MINECRAFT_SERVER_URL_SPC
+        RECOMMENDED_JAVA_VERSION=SPC_RECOMMENDED_JAVA_VERSION_SPC
         JAVA_ARGS="SPC_JAVA_ARGS_SPC"
         JAVA="SPC_JAVA_SPC"
         WAIT_FOR_USER_INPUT=SPC_WAIT_FOR_USER_INPUT_SPC
-        ADDITIONAL_ARGS=-Dlog4j2.formatMsgNoLookups=true
-        RESTART=false
-        SKIP_JAVA_CHECK=false
+        ADDITIONAL_ARGS=SPC_ADDITIONAL_ARGS_SPC
+        RESTART=SPC_RESTART_SPC
+        SKIP_JAVA_CHECK=SPC_SKIP_JAVA_CHECK_SPC
+        JDK_VENDOR=SPC_JDK_VENDOR_SPC
+        JABBA_INSTALL_URL_SH=SPC_JABBA_INSTALL_URL_SH_SPC
+        JABBA_INSTALL_URL_PS=SPC_JABBA_INSTALL_URL_PS_SPC
+        JABBA_INSTALL_VERSION=SPC_JABBA_INSTALL_VERSION_SPC
     """.trimIndent()
 
     private val spcGenericEventListeners: ArrayList<SPCGenericListener> = ArrayList(0)
@@ -808,21 +825,27 @@ class ServerPackHandler(
                 log.error("$key-File not accessible: $value.", ex)
             }
         }
-        /*for (template in apiProperties.scriptTemplates) {
+
+        for ((key, value) in apiProperties.javaScriptTemplates) {
             try {
-                val fileEnding = template.toString().substring(template.toString().lastIndexOf(".") + 1)
-                val destinationScript = File(destination, "start.$fileEnding")
-                var scriptContent: String = template.readText()
-                scriptContent = replacePlaceholders(isLocal, scriptContent, scriptSettings)
-                destinationScript.writeText(scriptContent.replace("\r", ""))
+                script = File(destination, "install_java.$key")
+                content = replacePlaceholders(isLocal, File(value).readText(), scriptSettings).replace("\r", "")
+                script.writeText(content)
             } catch (ex: Exception) {
-                log.error("File not accessible: $template.", ex)
+                log.error("$key-File not accessible: $value.", ex)
             }
-        }*/
+        }
+
         try {
             val destinationVariables = File(destination, "variables.txt")
             var variablesContent = variables
             variablesContent = replacePlaceholders(isLocal, variablesContent, scriptSettings)
+            for ((key, value) in scriptSettings) {
+                if (key.startsWith("CUSTOM_") && key.endsWith("_CUSTOM")) {
+                    val varKey = key.replace("CUSTOM_","").replace("_CUSTOM","")
+                    variablesContent += "\n$varKey=$value"
+                }
+            }
             destinationVariables.writeText(variablesContent.replace("\r", ""))
         } catch (ex: Exception) {
             log.error("File not accessible: ${File(destination, "variables.txt")}.", ex)

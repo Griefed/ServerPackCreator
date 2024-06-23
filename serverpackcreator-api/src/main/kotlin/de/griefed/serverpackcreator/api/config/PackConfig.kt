@@ -154,6 +154,20 @@ private const val spcMinecraftServerUrlKey = "SPC_MINECRAFT_SERVER_URL_SPC"
 
 private const val spcWaitForUserInputKey = "SPC_WAIT_FOR_USER_INPUT_SPC"
 
+private const val spcRestartServerKey = "SPC_RESTART_SPC"
+
+private const val spcSkipJavaCheckKey = "SPC_SKIP_JAVA_CHECK_SPC"
+
+private const val spcJDKVendorKey = "SPC_JDK_VENDOR_SPC"
+
+private const val spcJabbaInstallURLShKey = "SPC_JABBA_INSTALL_URL_SH_SPC"
+
+private const val spcJabbaInstallURLPSKey = "SPC_JABBA_INSTALL_URL_PS_SPC"
+
+private const val spcJabbaInstallVersionKey = "SPC_JABBA_INSTALL_VERSION_SPC"
+
+private const val spcAdditionalArgsKey = "SPC_ADDITIONAL_ARGS_SPC"
+
 private val scriptSettingsDefaultKeys = arrayOf(
     spcVersionKey,
     spcMinecraftVersionKey,
@@ -164,7 +178,14 @@ private val scriptSettingsDefaultKeys = arrayOf(
     spcQuiltInstallerVersionKey,
     spcLegacyFabricInstallerVersionKey,
     spcMinecraftServerUrlKey,
-    spcWaitForUserInputKey
+    spcWaitForUserInputKey,
+    spcRestartServerKey,
+    spcSkipJavaCheckKey,
+    spcJDKVendorKey,
+    spcJabbaInstallURLShKey,
+    spcJabbaInstallURLPSKey,
+    spcJabbaInstallVersionKey,
+    spcAdditionalArgsKey
 )
 
 /**
@@ -282,9 +303,9 @@ open class PackConfig() {
         this.serverPackSuffix = serverPackSuffix
         this.serverIconPath = serverIconPath
         this.serverPropertiesPath = serverPropertiesPath
-        isServerIconInclusionDesired = includeServerIcon
-        isServerPropertiesInclusionDesired = includeServerProperties
-        isZipCreationDesired = includeZipCreation
+        this.isServerIconInclusionDesired = includeServerIcon
+        this.isServerPropertiesInclusionDesired = includeServerProperties
+        this.isZipCreationDesired = includeZipCreation
         this.scriptSettings.putAll(scriptSettings)
         this.pluginsConfigs.putAll(pluginsConfigs)
     }
@@ -364,6 +385,28 @@ open class PackConfig() {
         if (!scriptSettings.containsKey(spcWaitForUserInputKey)) {
             scriptSettings[spcWaitForUserInputKey] = "true"
         }
+        if (!scriptSettings.containsKey(spcRestartServerKey)) {
+            scriptSettings[spcRestartServerKey] = "false"
+        }
+        if (!scriptSettings.containsKey(spcSkipJavaCheckKey)) {
+            scriptSettings[spcSkipJavaCheckKey] = "false"
+        }
+        if (!scriptSettings.containsKey(spcJDKVendorKey)) {
+            scriptSettings[spcJDKVendorKey] = "temurin"
+        }
+        if (!scriptSettings.containsKey(spcJabbaInstallURLShKey)) {
+            scriptSettings[spcJabbaInstallURLShKey] = "https://github.com/Jabba-Team/jabba/raw/main/install.sh"
+        }
+        if (!scriptSettings.containsKey(spcJabbaInstallURLPSKey)) {
+            scriptSettings[spcJabbaInstallURLPSKey] = "https://github.com/Jabba-Team/jabba/raw/main/install.ps1"
+        }
+        if (!scriptSettings.containsKey(spcJabbaInstallVersionKey)) {
+            scriptSettings[spcJabbaInstallVersionKey] = "0.13.0"
+        }
+        if (!scriptSettings.containsKey(spcAdditionalArgsKey)) {
+            scriptSettings[spcAdditionalArgsKey] = "-Dlog4j2.formatMsgNoLookups=true"
+        }
+
         config.close()
     }
 
