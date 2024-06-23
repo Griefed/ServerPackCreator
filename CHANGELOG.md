@@ -1,3 +1,20 @@
+## [6.0.0-alpha.11](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.10...6.0.0-alpha.11) (2024-06-23)
+
+
+### 💎 Improvements
+
+* Set script templates via conveniet table and map ([53476ca](https://git.griefed.de/Griefed/ServerPackCreator/commit/53476ca3a16370c7745441c36be235c42da81a0b))
+
+
+### 🚀 Features
+
+* Automatic Java installation and Java install-script templating. Custom variables in variables.txt. ([1ba5b35](https://git.griefed.de/Griefed/ServerPackCreator/commit/1ba5b35cf5314508f30d6735da0f6d4c37b0443c))
+
+
+### 🛠 Fixes
+
+* Correctly call boolean in while-loop condition ([baa311e](https://git.griefed.de/Griefed/ServerPackCreator/commit/baa311efeb0e1ed2435b2dea799b20c333353b9e))
+
 ## [6.0.0-alpha.10](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.9...6.0.0-alpha.10) (2024-06-22)
 
 
