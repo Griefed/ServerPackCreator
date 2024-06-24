@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.app.gui.window.configs.components
 
 import Translations
+import de.griefed.serverpackcreator.api.config.ConfigurationHandler
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.window.configs.ConfigEditor
 import de.griefed.serverpackcreator.app.gui.window.configs.TabbedConfigsTab
@@ -34,17 +35,27 @@ import javax.swing.Timer
  * @author Griefed
  */
 @OptIn(DelicateCoroutinesApi::class)
-class ConfigCheckTimer(delay: Int, guiProps: GuiProps, tabbedConfigsTab: TabbedConfigsTab) : Timer(delay,
+class ConfigCheckTimer(delay: Int, guiProps: GuiProps, configHandler: ConfigurationHandler, tabbedConfigsTab: TabbedConfigsTab) : Timer(delay,
     ActionListener {
         GlobalScope.launch(guiProps.configDispatcher, CoroutineStart.UNDISPATCHED) {
             var errorsEncountered = false
             tabbedConfigsTab.allTabs.parallelStream().forEach { component ->
                 val errors = mutableListOf<String>()
                 val editor = component as ConfigEditor
+                val pack = editor.getCurrentConfiguration()
+
                 runBlocking {
                     launch {
                         errors.addAll(editor.validateModpackDir())
-                        editor.title.title = File(editor.getModpackDirectory()).name
+                        val name = configHandler.checkManifests(editor.getModpackDirectory(), pack)
+                        @Suppress("IfThenToElvis")
+                        editor.title.title = if (pack.name != null) {
+                            pack.name!!
+                        } else if (name != null) {
+                            name
+                        } else {
+                            File(editor.getModpackDirectory()).name
+                        }
                     }
                     launch {
                         errors.addAll(editor.validateSuffix())

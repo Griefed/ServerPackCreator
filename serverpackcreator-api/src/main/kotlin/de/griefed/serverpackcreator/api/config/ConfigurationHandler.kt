@@ -880,7 +880,7 @@ class ConfigurationHandler(
      * Check whether various manifests from various launchers exist and use them to update our
      * ConfigurationModel and pack name.
      *
-     * @param destination        The destination in which the manifests are.
+     * @param destination The destination in which the manifests are.
      * @param packConfig The ConfigurationModel to update.
      * @param configCheck Collection of encountered errors, if any, for convenient result-checks.
      * @return The name of the modpack currently being checked. `null` if the name could not be
@@ -889,27 +889,44 @@ class ConfigurationHandler(
      */
     fun checkManifests(destination: String, packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck()): String? {
         var packName: String? = null
-        val manifestJson = File(destination, "manifest.json")
-        val minecraftInstanceJson = File(destination, "minecraftinstance.json")
-        val modrinthIndexJson = File(destination, "modrinth.index.json")
-        val instanceJson = File(destination, "instance.json")
-        val configJson = File(destination, "config.json")
-        val mmcPackJson = File(destination, "mmc-pack.json")
-        val instanceCfg = File(destination, "instance.cfg")
+        val curseManifest = File(destination, "manifest.json")
+        val curseMinecraftInstance = File(destination, "minecraftinstance.json")
+        val atLauncherInstance = File(destination, "instance.json")
+        val gdLauncherInstance = File(File(destination).parentFile,"instance.json")
+        val mmcPack = File(destination, "mmc-pack.json")
+        val mmcInstance = File(destination, "instance.cfg")
         when {
-            minecraftInstanceJson.exists() -> {
+            curseMinecraftInstance.exists() -> {
                 // Check minecraftinstance.json usually created by Overwolf's CurseForge launcher.
+                // Check misc/curseforge/minecraftinstance.json in the repo
                 try {
-                    updateConfigModelFromMinecraftInstance(packConfig, minecraftInstanceJson)
-                    packName = updatePackName(packConfig, "name")
+                    updateConfigModelFromMinecraftInstance(packConfig, curseMinecraftInstance)
+                    packName = if (packConfig.name != null) {
+                        packConfig.name!!
+                    } else {
+                        updatePackName(packConfig, "name")
+                    }
                 } catch (ex: IOException) {
                     log.error("Error parsing minecraftinstance.json from ZIP-file.", ex)
                     configCheck.modpackErrors.add(Translations.configuration_log_error_zip_instance.toString())
                 }
             }
 
-            instanceJson.exists() -> {
+            curseManifest.exists() -> {
+                // Check manifest.json usually created by Overwolf's CurseForge launcher.
+                // Check misc/curseforge/manifest.json in the repo
+                try {
+                    updateConfigModelFromCurseManifest(packConfig, curseManifest)
+                    packName = updatePackName(packConfig, "name")
+                } catch (ex: IOException) {
+                    log.error("Error parsing CurseForge manifest.json from ZIP-file.", ex)
+                    configCheck.modpackErrors.add(Translations.configuration_log_error_zip_manifest.toString())
+                }
+            }
+
+            atLauncherInstance.exists() -> {
                 // Check instance.json usually created by ATLauncher
+                // Check misc/atlauncher/instance.json in the repo
                 try {
                     updateConfigModelFromATLauncherInstance(packConfig, File(destination, "instance.json"))
                     packName = updatePackName(packConfig, "launcher", "name")
@@ -919,31 +936,11 @@ class ConfigurationHandler(
                 }
             }
 
-            manifestJson.exists() -> {
-                try {
-                    updateConfigModelFromCurseManifest(packConfig, manifestJson)
-                    packName = updatePackName(packConfig, "name")
-                } catch (ex: IOException) {
-                    log.error("Error parsing CurseForge manifest.json from ZIP-file.", ex)
-                    configCheck.modpackErrors.add(Translations.configuration_log_error_zip_manifest.toString())
-                }
-            }
 
-            modrinthIndexJson.exists() -> {
-                // Check modrinth.index.json usually available if the modpack is from Modrinth
+            gdLauncherInstance.exists() -> {
+                // Check the instance.json usually created by new versions of GDLauncher, in the parent folder.
                 try {
-                    updateConfigModelFromModrinthManifest(packConfig, modrinthIndexJson)
-                    packName = updatePackName(packConfig, "name")
-                } catch (ex: IOException) {
-                    log.error("Error parsing modrinth.index.json from ZIP-file.", ex)
-                    configCheck.modpackErrors.add(Translations.configuration_log_error_zip_config.toString())
-                }
-            }
-
-            configJson.exists() -> {
-                // Check the config.json usually created by GDLauncher.
-                try {
-                    updateConfigModelFromConfigJson(packConfig, configJson)
+                    updateConfigModelFromGDInstanceJson(packConfig, gdLauncherInstance)
                     packName = updatePackName(packConfig, "loader", "sourceName")
                 } catch (ex: IOException) {
                     log.error("Error parsing config.json from ZIP-file.", ex)
@@ -951,17 +948,18 @@ class ConfigurationHandler(
                 }
             }
 
-            mmcPackJson.exists() -> {
+            mmcPack.exists() -> {
                 // Check mmc-pack.json usually created by MultiMC.
                 try {
-                    updateConfigModelFromMMCPack(packConfig, mmcPackJson)
+                    updateConfigModelFromMMCPack(packConfig, mmcPack)
                 } catch (ex: IOException) {
                     log.error("Error parsing mmc-pack.json from ZIP-file.", ex)
                     configCheck.modpackErrors.add(Translations.configuration_log_error_zip_mmcpack.toString())
                 }
                 try {
-                    if (instanceCfg.exists()) {
-                        packName = updateDestinationFromInstanceCfg(instanceCfg)
+                    if (mmcInstance.exists()) {
+                        packName = updateDestinationFromInstanceCfg(mmcInstance)
+                        packConfig.name = packName
                     }
                 } catch (ex: IOException) {
                     log.error("Couldn't read instance.cfg.", ex)
@@ -1145,6 +1143,7 @@ class ConfigurationHandler(
         packConfig.minecraftVersion = minecraft.get("version").asText()
         packConfig.modloader = modloaderAndVersion[0]
         packConfig.modloaderVersion = modloaderAndVersion[1]
+        packConfig.name = packConfig.modpackJson!!.get("name").asText()
     }
 
     /**
@@ -1164,7 +1163,11 @@ class ConfigurationHandler(
                 it, *childNodes
             )
         }
-        modpackDir + File.separator + packName
+        if (packName != null) {
+            packName
+        } else {
+            File(modpackDir).name
+        }
     } catch (npe: NullPointerException) {
         null
     }
@@ -1185,10 +1188,10 @@ class ConfigurationHandler(
         packConfig.modpackJson = utilities.jsonUtilities.getJson(minecraftInstance)
         val json = packConfig.modpackJson!!
         val base = json.get("baseModLoader")
-        val modloaderInfo = base.get("name").asText()
-        val modloader = modloaderInfo.split("-")[0]
+        val modloaderInfo = base.get("name").asText().split("-")
+        val modloader = modloaderInfo[0]
         packConfig.modloader = getModLoaderCase(modloader)
-        packConfig.modloaderVersion = base.get("forgeVersion").asText()
+        packConfig.modloaderVersion = modloaderInfo[1]
         packConfig.minecraftVersion = base.get("minecraftVersion").asText()
         val urlPath = arrayOf("installedModpack", "thumbnailUrl")
         val namePath = arrayOf("name")
@@ -1198,6 +1201,10 @@ class ConfigurationHandler(
         } catch (ex: Exception) {
             log.error("Error acquiring icon.", ex)
         }
+        packConfig.name = packConfig.modpackJson!!.get("name").asText()
+        packConfig.projectID = packConfig.modpackJson!!.get("projectID").asText()
+        packConfig.versionID = packConfig.modpackJson!!.get("fileID").asText()
+        packConfig.source = ModpackSource.CURSEFORGE
     }
 
     /**
@@ -1267,6 +1274,10 @@ class ConfigurationHandler(
         } catch (ex: Exception) {
             log.error("Error acquiring icon.", ex)
         }
+        packConfig.name = packConfig.modpackJson!!.get("launcher").get("name").asText()
+        packConfig.projectID = packConfig.modpackJson!!.get("curseForgeProject").get("id").asText()
+        packConfig.versionID = packConfig.modpackJson!!.get("curseForgeFile").get("id").asText()
+        packConfig.source = ModpackSource.CURSEFORGE
     }
 
     @Throws(NullPointerException::class)
@@ -1297,7 +1308,35 @@ class ConfigurationHandler(
         packConfig.modloader = getModLoaderCase(loader.get("loaderType").asText())
         packConfig.minecraftVersion = loader.get("mcVersion").asText()
         packConfig.modloaderVersion =
-            loader.get("loaderVersion").asText().replace(packConfig.minecraftVersion + "-", "")
+            loader.get("loaderVersion").asText().replace("${packConfig.minecraftVersion}-", "")
+    }
+
+    /**
+     * **`parentDirectory/instance.json`**
+     *
+     * Update the given PackConfig with values gathered from the modpacks instance.json. An
+     * instance.json is usually created by GDLauncher and located in the modpacks parent directory of the data-directory.
+     *
+     * @param packConfig An instance containing a configuration for a modpack from which to
+     * create a server pack.
+     * @param instance             The instance.json-file of the modpack to read.
+     */
+    @Throws(IOException::class)
+    fun updateConfigModelFromGDInstanceJson(packConfig: PackConfig, instance: File) {
+        packConfig.modpackJson = utilities.jsonUtilities.getJson(instance)
+        val version = packConfig.modpackJson!!.get("game_configuration").get("version")
+        packConfig.modloader = version.get("modloaders")[0].get("type").asText()
+        packConfig.minecraftVersion = version.get("release").asText()
+        packConfig.modloaderVersion = version.get("modloaders")[0].get("version").asText().replace("${packConfig.minecraftVersion}-","")
+        packConfig.name = packConfig.modpackJson!!.get("name").asText()
+        packConfig.projectID = packConfig.modpackJson!!.get("modpack").get("project_id").asInt().toString()
+        packConfig.versionID = packConfig.modpackJson!!.get("modpack").get("file_id").asInt().toString()
+        val source = packConfig.modpackJson!!.get("modpack").get("platform").asText()
+        packConfig.source = if (source == "Curseforge") {
+            ModpackSource.CURSEFORGE
+        } else {
+            ModpackSource.MODRINTH
+        }
     }
 
     /**

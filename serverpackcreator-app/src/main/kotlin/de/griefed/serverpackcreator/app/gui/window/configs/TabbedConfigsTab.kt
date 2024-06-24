@@ -58,7 +58,7 @@ class TabbedConfigsTab(
     private val choose = arrayOf(Translations.createserverpack_gui_quickselect_choose.toString())
     private val noVersions = DefaultComboBoxModel(arrayOf(Translations.createserverpack_gui_createserverpack_forge_none.toString()))
     private val componentResizer = ComponentResizer()
-    private val timer = ConfigCheckTimer(500, guiProps,this)
+    private val timer = ConfigCheckTimer(500, guiProps, apiWrapper.configurationHandler,this)
     val selectedEditor: ConfigEditor?
         get() {
             return if (activeTab != null) {

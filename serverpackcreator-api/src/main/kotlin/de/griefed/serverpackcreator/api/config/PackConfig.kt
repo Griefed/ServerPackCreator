@@ -250,8 +250,8 @@ open class PackConfig() {
     open var projectID: String? = null
     open var versionID: String? = null
     open var source: ModpackSource = ModpackSource.DIRECTORY
-    open var fileName: String? = null
-    open var fileDiskName: String? = null
+    open var name: String? = null
+    open var diskName: String? = null
 
     /**
      * Construct a new configuration model with custom values.

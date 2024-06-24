@@ -1,0 +1,29 @@
+{
+  "_version": "1",
+  "name": "DawnCraft - Echoes of Legends",
+  "icon": "icon.gif",
+  "created_at": "2024-06-14T19:19:45.020091Z",
+  "updated_at": "2024-06-14T19:19:45.020091500Z",
+  "last_played": null,
+  "seconds_played": 0,
+  "modpack": {
+    "platform": "Curseforge",
+    "project_id": 829758,
+    "file_id": 5399247,
+    "locked": true
+  },
+  "game_configuration": {
+    "version": {
+      "release": "1.18.2",
+      "modloaders": [
+        {
+          "type": "Forge",
+          "version": "1.18.2-40.2.17"
+        }
+      ]
+    },
+    "global_java_args": true
+  },
+  "mod_sources": null,
+  "notes": ""
+}
