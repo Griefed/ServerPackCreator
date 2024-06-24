@@ -64,6 +64,7 @@ $ExternalVariables = Get-Content -raw -LiteralPath $ExternalVariablesFile | Conv
 $RecommendedJavaVersion = $ExternalVariables['RECOMMENDED_JAVA_VERSION']
 $JabbaInstallURL = $ExternalVariables['JABBA_INSTALL_URL_PS']
 $JDKVendor = $ExternalVariables['JDK_VENDOR']
+$Env:JABBA_VERSION = "$ExternalVariables['JABBA_VERSION']"
 
 Function CommandAvailable($cmdname)
 {

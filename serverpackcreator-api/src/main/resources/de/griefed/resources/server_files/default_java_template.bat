@@ -61,8 +61,10 @@ WHERE %~1 >nul 2>&1 && (
 :INSTALLJABBA
 ECHO Downloading and installing jabba.
 CALL:COMMANDAVAILABLE "%JAVA%"
-IF NOT ERRORLEVEL 0 (
-	Write-Host "Downloading and installing jabba."
+IF ERRORLEVEL 0 (
+    ECHO Jabba already installed.
+) ELSE (
+	ECHO Downloading and installing jabba.
 	PowerShell  ^
 		[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 ^
 		Invoke-Expression ( ^

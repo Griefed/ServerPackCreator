@@ -122,15 +122,16 @@ else
       installJava
     else
       getJavaVersion
-      if [[ "$JAVA_VERSION" -lt RECOMMENDED_JAVA_VERSION ]];then
+      if [[ "$JAVA_VERSION" -lt $RECOMMENDED_JAVA_VERSION ]];then
         installJava
       fi
     fi
   else
     getJavaVersion
     echo "Detected ${SEMANTICS[0]}.${SEMANTICS[1]}.${SEMANTICS[2]} - Java ${JAVA_VERSION}"
-    if [[ "$JAVA_VERSION" -lt RECOMMENDED_JAVA_VERSION ]];then
+    if [[ "$JAVA_VERSION" -lt $RECOMMENDED_JAVA_VERSION ]];then
       installJava
+      JAVA="java"
     fi
   fi
 fi

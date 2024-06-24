@@ -63,6 +63,33 @@ PAUSE
 EXIT 1
 
 
+:COMMANDAVAILABLE <COMMAND_TO_CHECK>
+WHERE %~1 >nul 2>&1 && (
+    EXIT /B 0
+) || (
+    EXIT /B 2
+)
+
+
+:GETJAVAVERSION
+FOR /F tokens^=2-5^ delims^=.-_^" %%j IN ('"%JAVA%" -fullversion 2^>^&1') DO SET "JAVA_VERSION=%%j"
+IF %JAVA_VERSION% EQU 1 (
+    FOR /F tokens^=3-5^ delims^=.-_^" %%j IN ('"%JAVA%" -fullversion 2^>^&1') DO SET "JAVA_VERSION=%%j"
+)
+EXIT /B 0
+
+
+:INSTALLJAVA
+ECHO No suitable Java installation was found on your system. Proceeding to Java installation.
+CALL install_java.bat
+CALL:COMMANDAVAILABLE "%JAVA%"
+IF ERRORLEVEL 0 (
+	EXIT /B 0
+) ELSE (
+    CALL:CRASHSERVER "Java installation failed. Couldn't find %JAVA%."
+)
+
+
 :START
 
 
@@ -98,31 +125,6 @@ FOR /F "tokens=1,2,3 delims=." %%a IN ("%MINECRAFT_VERSION%") do (
 	SET /A MC_PATCH=%%c
 )
 
-:COMMANDAVAILABLE <COMMAND_TO_CHECK>
-WHERE %~1 >nul 2>&1 && (
-    EXIT /B 0
-) || (
-    EXIT /B 2
-)
-
-
-:GETJAVAVERSION
-FOR /F tokens^=2-5^ delims^=.-_^" %%j IN ('"%JAVA%" -fullversion 2^>^&1') DO SET "JAVA_VERSION=%%j"
-IF %JAVA_VERSION% EQU 1 (
-    FOR /F tokens^=3-5^ delims^=.-_^" %%j IN ('"%JAVA%" -fullversion 2^>^&1') DO SET "JAVA_VERSION=%%j"
-)
-EXIT /B 0
-
-
-:INSTALLJAVA
-ECHO No suitable Java installation was found on your system. Proceeding to Java installation.
-CALL install_java.bat
-CALL:COMMANDAVAILABLE "%JAVA%"
-IF NOT ERRORLEVEL 0 (
-	CALL:CRASHSERVER "Java installation failed. Couldn't find %JAVA%."
-)
-EXIT /B 0
-
 
 IF %SKIP_JAVA_CHECK%==true (
     ECHO Skipping Java version check.
@@ -130,19 +132,20 @@ IF %SKIP_JAVA_CHECK%==true (
 ) ELSE (
 	IF %JAVA%==java (
 		CALL:COMMANDAVAILABLE "%JAVA%"
-		IF NOT ERRORLEVEL 0 (
-			CALL:INSTALLJAVA
-		) ELSE (
+		IF ERRORLEVEL 0 (
 			CALL:GETJAVAVERSION
-			IF !JAVA_VERSION! LSS %RECOMMENDED_JAVA_VERSION% (
-				CALL:INSTALLJAVA
-			)
+            IF !JAVA_VERSION! LSS %RECOMMENDED_JAVA_VERSION% (
+                CALL:INSTALLJAVA
+            )
+		) ELSE (
+			CALL:INSTALLJAVA
 		)
 	) ELSE (
 		CALL:GETJAVAVERSION
 		ECHO Detected %MC_MAJOR%.%MC_MINOR%.%MC_PATCH% - Java !JAVA_VERSION!
 		IF !JAVA_VERSION! LSS %RECOMMENDED_JAVA_VERSION% (
 			CALL:INSTALLJAVA
+			SET JAVA=java
 		)
 	)
 )

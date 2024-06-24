@@ -27,6 +27,8 @@
 # As such, you will not be able to run the start.ps-scripts just yet. You need to allow running
 # unsigned scripts first. See https://superuser.com/a/106363 for a short explanation on how to
 # enable/allow running unsigned scripts with Powershell.
+#   You may run `start-process PowerShell -verb runas "Set-ExecutionPolicy RemoteSigned"` from a regular
+#   PowerShell to allow running of the start-script.
 #   ATTENTION:
 #       Bear in mind that this introduces a security risk on your system. After making the changes from the
 #       link above, you can run any Powershell script you like, and as such, introduce any and all security
@@ -154,7 +156,7 @@ Function InstallJava()
 {
     Write-Host "No suitable Java installation was found on your system. Proceeding to Java installation."
     . .\install_java.ps1
-    if (!(CommandAvailable -cmdname "`"${Java}`""))
+    if (!(CommandAvailable -cmdname "${Java}"))
     {
         CrashServer "Java installation failed. Couldn't find ${Java}."
     }
@@ -168,7 +170,7 @@ else
 {
     if ("${Java}" -eq "java")
     {
-        if (!(CommandAvailable -cmdname "`"${Java}`""))
+        if (!(CommandAvailable -cmdname "${Java}"))
         {
             InstallJava
         }
@@ -188,6 +190,7 @@ else
         if ([int]$script:JavaVersion -le [int]$RecommendedJavaVersion)
         {
             InstallJava
+            $script:Java = "java"
         }
     }
 }
