@@ -1078,7 +1078,7 @@ class ApiProperties(
             var type: String
             if (templateProps.isEmpty() || templateProps.any { entry -> entry.replace(pServerPackJavaScriptTemplatesPrefix,"").isBlank() }) {
                 log.error("Found empty definitions for java script templates. Using defaults.")
-                field = defaultStartScriptTemplates()
+                field = defaultJavaScriptTemplates()
             } else {
                 for (templateProp in templateProps) {
                     type = templateProp.replace(pServerPackJavaScriptTemplatesPrefix,"")
@@ -1087,7 +1087,7 @@ class ApiProperties(
             }
             if (field.isEmpty()) {
                 log.error("No java script templates defined. Using defaults.")
-                field = defaultStartScriptTemplates()
+                field = defaultJavaScriptTemplates()
             }
             return field
         }
@@ -1936,7 +1936,7 @@ class ApiProperties(
     val defaultBatchScriptTemplate = File(serverFilesDirectory, "default_template.bat")
 
     /**
-     * The default shell-template for the modded server start scripts. The file returned by this
+     * The default shell-template for the java-install scripts. The file returned by this
      * method does not represent the script-template in the `server_files`-directory. If you
      * wish access the configured script templates inside the `server_files`-directory, use
      * [javaScriptTemplates].
@@ -1944,7 +1944,7 @@ class ApiProperties(
     val defaultJavaShellScriptTemplate = File(serverFilesDirectory, "default_java_template.sh")
 
     /**
-     * The default PowerShell-template for the modded server start scripts. The file returned by this
+     * The default PowerShell-template for the java-install scripts. The file returned by this
      * method does not represent the script-template in the `server_files`-directory. If you
      * wish access the configured script templates inside the `server_files`-directory, use
      * [javaScriptTemplates].
@@ -1952,7 +1952,7 @@ class ApiProperties(
     val defaultJavaPowerShellScriptTemplate = File(serverFilesDirectory, "default_java_template.ps1")
 
     /**
-     * The default Batch-template for the modded server start scripts. The file returned by this
+     * The default Batch-template for the java-install scripts. The file returned by this
      * method does not represent the script-template in the `server_files`-directory. If you
      * wish access the configured script templates inside the `server_files`-directory, use
      * [javaScriptTemplates].
