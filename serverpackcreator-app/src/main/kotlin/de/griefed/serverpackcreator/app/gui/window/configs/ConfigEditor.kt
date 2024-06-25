@@ -460,8 +460,7 @@ class ConfigEditor(
     }
 
     override fun saveCurrentConfiguration(): File {
-        val modpackName =
-            apiWrapper.utilities.stringUtilities.pathSecureText(File(getModpackDirectory()).name + ".conf")
+        val modpackName = apiWrapper.utilities.stringUtilities.pathSecureText( title.title + ".conf")
         val config = if (configFile != null) {
             configFile!!
         } else {
