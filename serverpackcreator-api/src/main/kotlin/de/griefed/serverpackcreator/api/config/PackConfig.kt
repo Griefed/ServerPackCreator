@@ -528,8 +528,8 @@ open class PackConfig() {
         conf.setComment(pluginsKey, pluginsComment)
         conf.set<Any>(pluginsKey, plugins)
 
-        TomlFormat.instance().createWriter()
-            .write(conf, destination, WritingMode.REPLACE, StandardCharsets.UTF_8)
+        TomlFormat.instance().createWriter().write(conf, destination, WritingMode.REPLACE, StandardCharsets.UTF_8)
+        log.debug("Saved config to ${destination.absolutePath}")
         return this
     }
 

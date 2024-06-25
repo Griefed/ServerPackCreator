@@ -254,30 +254,25 @@ class ConfigurationHandler(
             log.info("Modpack is not a directory. Skipping project information gathering.")
             return
         }
-        val instance = File(modpackDirectory, "minecraftinstance.json")
-        val profile = File(modpackDirectory, "profile.json")
-        var projectID: String? = null
-        var versionID: String? = null
-        var source: ModpackSource = packConfig.source
+
+        val subConfig = PackConfig()
+        var name: String? = null
 
         try {
-            if (instance.isFile) {
-                projectID = utilities.jsonUtilities.getJson(instance).get("projectID").asText()
-                versionID = utilities.jsonUtilities.getJson(instance).get("fileID").asText()
-                source = ModpackSource.CURSEFORGE
-            } else if (profile.isFile) {
-                projectID = utilities.jsonUtilities.getJson(profile).get("metadata").get("linked_data").get("project_id").asText()
-                versionID = utilities.jsonUtilities.getJson(profile).get("metadata").get("linked_data").get("version_id").asText()
-                source = ModpackSource.MODRINTH
-            }
+            name = checkManifests(packConfig.modpackDir, subConfig)
         } catch (ex: NullPointerException) {
             log.error("Could not retrieve project and/or file IDs.", ex)
         }
 
-        if (projectID != null && versionID != null && source != packConfig.source) {
-            packConfig.projectID = projectID
-            packConfig.versionID = versionID
-            packConfig.source = source
+        packConfig.projectID = subConfig.projectID
+        packConfig.versionID = subConfig.versionID
+        packConfig.source = subConfig.source
+        packConfig.name = if (subConfig.name != null) {
+            subConfig.name
+        } else if (name != null) {
+            name
+        } else {
+            modpackDirectory.name
         }
     }
 

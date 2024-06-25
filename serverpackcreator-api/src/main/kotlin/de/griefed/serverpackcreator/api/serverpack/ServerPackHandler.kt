@@ -203,7 +203,12 @@ class ServerPackHandler(
      * @author Griefed
      */
     fun getServerPackDestination(packConfig: PackConfig): String {
-        var serverPackToBe = File(packConfig.modpackDir).name + packConfig.serverPackSuffix
+        var serverPackToBe = if (packConfig.name != null) {
+            packConfig.name!!
+        } else {
+            File(packConfig.modpackDir).name
+        }
+        serverPackToBe += packConfig.serverPackSuffix
         serverPackToBe = utilities.stringUtilities.pathSecureText(serverPackToBe.replace(" ", "_"))
         return File(apiProperties.serverPacksDirectory, serverPackToBe).absolutePath
     }
