@@ -1,3 +1,17 @@
+## [6.0.0-alpha.12](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.11...6.0.0-alpha.12) (2024-06-24)
+
+
+### 📦 Other
+
+* Latest changelogs ([7bfd2d3](https://git.griefed.de/Griefed/ServerPackCreator/commit/7bfd2d3f6c15dcdf12694d8c18b5792826b07785))
+
+
+### 🛠 Fixes
+
+* Get modpack name from manifests where possible ([71f27a9](https://git.griefed.de/Griefed/ServerPackCreator/commit/71f27a9eba3c218a9716ffce2af67a44ca4ae596))
+* Set correct templates for Java installation ([aee756f](https://git.griefed.de/Griefed/ServerPackCreator/commit/aee756f9b9a72269c529ee7612ddac185a07982f))
+* Various start and Java install script fixes ([7c0cef8](https://git.griefed.de/Griefed/ServerPackCreator/commit/7c0cef86798a037d9c25c355e7f4e0a8189a3f4c))
+
 ## [6.0.0-alpha.11](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.10...6.0.0-alpha.11) (2024-06-23)
 
 
