@@ -302,7 +302,25 @@ class ConfigEditor(
         }
 
         if (chooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
-            setModpackDirectory(chooser.selectedFile.path)
+            val filesInFolder = chooser.selectedFile.listFiles() ?: arrayOf()
+            val fileNames = filesInFolder.map { file -> file.name }
+            if (fileNames.contains("instance") && fileNames.contains("instance.json")) {
+                if (JOptionPane.showConfirmDialog(
+                        panel.parent,
+                        Translations.createserverpack_gui_modpack_select_gdlauncher_message.toString(),
+                        Translations.createserverpack_gui_modpack_select_gdlauncher_title.toString(),
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.INFORMATION_MESSAGE,
+                        guiProps.infoIcon
+                    ) == 0
+                ) {
+                    setModpackDirectory(File(chooser.selectedFile,"instance").path)
+                } else {
+                    setModpackDirectory(chooser.selectedFile.path)
+                }
+            } else {
+                setModpackDirectory(chooser.selectedFile.path)
+            }
             updateGuiFromSelectedModpack()
             log.debug("Selected modpack directory: " + chooser.selectedFile.path)
         }
