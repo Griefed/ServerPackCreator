@@ -203,6 +203,7 @@ class ApiProperties(
             "BorderlessWindow-",
             "CTM-",
             "ChunkAnimator-",
+            "Clear-Water-",
             "ClientTweaks_",
             "CompletionistsIndex-",
             "Controller Support-",
