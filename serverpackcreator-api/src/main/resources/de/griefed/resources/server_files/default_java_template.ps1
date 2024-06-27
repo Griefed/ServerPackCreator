@@ -52,52 +52,51 @@
 # ATTENTION:
 #   This script will NOT modify the JAVA_HOME variable for your user.
 
-$ExternalVariablesFile = -join ("${BaseDir}", "\variables.txt");
-
-if (!(Test-Path -Path $ExternalVariablesFile -PathType Leaf))
+Function Global:RunJavaInstallation
 {
-    "ERROR! variables.txt not present. Without it the server can not be installed, configured or started."
-    exit 1
-}
+    $ExternalVariablesFile = -join ("${BaseDir}", "\variables.txt");
 
-$ExternalVariables = Get-Content -raw -LiteralPath $ExternalVariablesFile | ConvertFrom-StringData
-$RecommendedJavaVersion = $ExternalVariables['RECOMMENDED_JAVA_VERSION']
-$JabbaInstallURL = $ExternalVariables['JABBA_INSTALL_URL_PS']
-$JDKVendor = $ExternalVariables['JDK_VENDOR']
-$Env:JABBA_VERSION = "$ExternalVariables['JABBA_VERSION']"
-
-Function CommandAvailable($cmdname)
-{
-    return [bool](Get-Command -Name $cmdname -ErrorAction SilentlyContinue)
-}
-
-Function InstallJabba()
-{
-    Write-Host "Downloading and installing jabba."
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    Invoke-Expression (
-    Invoke-WebRequest "${script:JabbaInstallURL}" -UseBasicParsing
-    ).Content
-}
-
-if (!(CommandAvailable -cmdname 'jabba'))
-{
-    Write-Host "Automated Java installation requires a piece of Software called 'Jabba'."
-    Write-Host "Type 'I agree' if you agree to the installation of the aforementioned software."
-    $Answer = Read-Host -Prompt 'Response: '
-    if (${Answer} -eq "I agree")
+    if (!(Test-Path -Path $ExternalVariablesFile -PathType Leaf))
     {
-        InstallJava
-    }
-    else
-    {
-        Write-Host "User did not agree to Jabba installation. Aborting Java installation process."
+        "ERROR! variables.txt not present. Without it the server can not be installed, configured or started."
         exit 1
     }
+
+    $ExternalVariables = Get-Content -raw -LiteralPath $ExternalVariablesFile | ConvertFrom-StringData
+    $RecommendedJavaVersion = $ExternalVariables['RECOMMENDED_JAVA_VERSION']
+    $JabbaInstallURL = $ExternalVariables['JABBA_INSTALL_URL_PS']
+    $JDKVendor = $ExternalVariables['JDK_VENDOR']
+    $Java = $ExternalVariables['JAVA']
+    $Env:JABBA_VERSION = $ExternalVariables['JABBA_VERSION']
+
+    if (!(Test-Path -Path $home\.jabba\jabba.ps1 -PathType Leaf))
+    {
+        Write-Host "Automated Java installation requires a piece of Software called 'Jabba'."
+        Write-Host "Type 'I agree' if you agree to the installation of the aforementioned software."
+        $Answer = Read-Host -Prompt 'Answer'
+        if (${Answer} -eq "I agree")
+        {
+            Write-Host "Downloading and installing jabba."
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+            Invoke-Expression (
+            Invoke-WebRequest "${JabbaInstallURL}" -UseBasicParsing
+            ).Content
+            . $home\.jabba\jabba.ps1
+        }
+        else
+        {
+            Write-Host "User did not agree to Jabba installation. Aborting Java installation process."
+            exit 1
+        }
+    }
+
+    . $home\.jabba\jabba.ps1
+
+    Write-Host "Downloading and using Java ${JDKVendor}@${RecommendedJavaVersion}"
+    jabba install "${JDKVendor}@${RecommendedJavaVersion}"
+    jabba use "${JDKVendor}@${RecommendedJavaVersion}"
+
+    CMD /C ${Java} -version WARUM IST POWERSHELL SO EIN HAUFEN STINKENDE SCHEIßE
+
+    Write-Host "Installation finished. Returning to start-script."
 }
-
-Write-Host "Downloading and using Java ${JDKVendor}@${RecommendedJavaVersion}"
-jabba install "${JDKVendor}@${RecommendedJavaVersion}"
-jabba use "${JDKVendor}@${RecommendedJavaVersion}"
-
-Write-Host "Installation finished. Returning to start-script."

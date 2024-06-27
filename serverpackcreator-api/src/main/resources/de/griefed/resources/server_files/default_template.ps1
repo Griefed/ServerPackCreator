@@ -156,6 +156,7 @@ Function InstallJava()
 {
     Write-Host "No suitable Java installation was found on your system. Proceeding to Java installation."
     . .\install_java.ps1
+    RunJavaInstallation
     if (!(CommandAvailable -cmdname "${Java}"))
     {
         CrashServer "Java installation failed. Couldn't find ${Java}."
@@ -508,7 +509,7 @@ Function Eula
         "Mojang's EULA has not yet been accepted. In order to run a Minecraft server, you must accept Mojang's EULA."
         "Mojang's EULA is available to read at https://aka.ms/MinecraftEULA"
         "If you agree to Mojang's EULA then type 'I agree'"
-        $Answer = Read-Host -Prompt 'Answer: '
+        $Answer = Read-Host -Prompt 'Answer'
         if (${Answer} -eq "I agree")
         {
             "User agreed to Mojang's EULA."
