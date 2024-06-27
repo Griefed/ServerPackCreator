@@ -81,7 +81,6 @@ Function Global:RunJavaInstallation
             Invoke-Expression (
             Invoke-WebRequest "${JabbaInstallURL}" -UseBasicParsing
             ).Content
-            . $home\.jabba\jabba.ps1
         }
         else
         {
