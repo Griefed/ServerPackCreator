@@ -144,6 +144,42 @@ class ServerPackHandler(
         JABBA_INSTALL_VERSION=SPC_JABBA_INSTALL_VERSION_SPC
     """.trimIndent()
 
+    private val howToStartTheServer = """
+        # How To Start / Run The Server
+        
+        If your `variables.txt` has `JAVA=java` set, then a suitable Java version for your Minecraft server will
+        be installed automatically.
+        
+        ## Linux
+        
+        Run `.\start.sh` or `bash start.sh` to start the server.
+        
+        ## Windows
+        
+        Run `start.bat`.
+        Do **not** delete the PowerShell (ps1) files!
+        
+        ### Convenience
+        
+        You may run `start.ps1` from a console-window manually, but using the Batch-script is recommended.
+        Running PowerShell-scripts requires changing the ExecutionPolicy of your Windows-system. The Batch-script
+        can bypass this for the start-script.
+        
+        TL;DR: start.bat better than start.ps1
+        
+        ## MacOS
+        
+        Run `.\start.sh` or `bash start.sh` to start the server.
+        
+        # Issues with this server pack
+        
+        If you downloaded this server pack from the internet and you run into issues with this server pack, then please
+        contact the creators of the server pack about your issue(s).
+        
+        If you've created this server pack yourself and you run into issues, feel free to contact the developers of
+        ServerPackCreator for support.
+    """.trimIndent()
+
     private val spcGenericEventListeners: ArrayList<SPCGenericListener> = ArrayList(0)
     private val spcPreServerPackGenerationListener: ArrayList<SPCPreServerPackGenerationListener> = ArrayList(0)
     private val spcPreServerPackZipListener: ArrayList<SPCPreServerPackZipListener> = ArrayList(0)
@@ -854,6 +890,13 @@ class ServerPackHandler(
             destinationVariables.writeText(variablesContent.replace("\r", ""))
         } catch (ex: Exception) {
             log.error("File not accessible: ${File(destination, "variables.txt")}.", ex)
+        }
+
+        try {
+            val howToStartTheScriptReadme = File(destination, "HOW-TO-RUN.md")
+            howToStartTheScriptReadme.writeText(howToStartTheServer.replace("\r", ""))
+        } catch (ex: Exception) {
+            log.error("File not accessible: ${File(destination, "HOW-TO-RUN.md")}.", ex)
         }
     }
 
