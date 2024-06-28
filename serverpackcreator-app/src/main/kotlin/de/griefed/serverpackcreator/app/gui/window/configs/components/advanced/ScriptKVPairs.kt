@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.app.gui.window.configs.components.advanced
 
 import Translations
+import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.components.ConvenientJTable
 import de.griefed.serverpackcreator.app.gui.window.configs.ConfigEditor
@@ -49,8 +50,10 @@ class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : Convenient
      * @author Griefed
      */
     override fun loadData(data: HashMap<String, String>, clearDataBeforeLoad: Boolean) {
-        if (!data.containsKey("SPC_JAVA_SPC")) {
-            data["SPC_JAVA_SPC"] = "java"
+        for ((key,value) in PackConfig.defaultScriptSettings()) {
+            if (!data.containsKey(key)) {
+                data[key] = value
+            }
         }
         super.loadData(data, clearDataBeforeLoad)
     }

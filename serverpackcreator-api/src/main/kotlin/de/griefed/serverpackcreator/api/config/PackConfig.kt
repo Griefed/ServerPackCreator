@@ -379,32 +379,11 @@ open class PackConfig() {
             }
         } catch (ignored: Exception) {
         }
-        if (!scriptSettings.containsKey(javaKey)) {
-            scriptSettings[javaKey] = "java"
-        }
-        if (!scriptSettings.containsKey(spcWaitForUserInputKey)) {
-            scriptSettings[spcWaitForUserInputKey] = "true"
-        }
-        if (!scriptSettings.containsKey(spcRestartServerKey)) {
-            scriptSettings[spcRestartServerKey] = "false"
-        }
-        if (!scriptSettings.containsKey(spcSkipJavaCheckKey)) {
-            scriptSettings[spcSkipJavaCheckKey] = "false"
-        }
-        if (!scriptSettings.containsKey(spcJDKVendorKey)) {
-            scriptSettings[spcJDKVendorKey] = "temurin"
-        }
-        if (!scriptSettings.containsKey(spcJabbaInstallURLShKey)) {
-            scriptSettings[spcJabbaInstallURLShKey] = "https://github.com/Jabba-Team/jabba/raw/main/install.sh"
-        }
-        if (!scriptSettings.containsKey(spcJabbaInstallURLPSKey)) {
-            scriptSettings[spcJabbaInstallURLPSKey] = "https://github.com/Jabba-Team/jabba/raw/main/install.ps1"
-        }
-        if (!scriptSettings.containsKey(spcJabbaInstallVersionKey)) {
-            scriptSettings[spcJabbaInstallVersionKey] = "0.13.0"
-        }
-        if (!scriptSettings.containsKey(spcAdditionalArgsKey)) {
-            scriptSettings[spcAdditionalArgsKey] = "-Dlog4j2.formatMsgNoLookups=true"
+
+        for ((key,value) in defaultScriptSettings()) {
+            if (!scriptSettings.containsKey(key)) {
+                scriptSettings[key] = value
+            }
         }
 
         config.close()
@@ -516,6 +495,10 @@ open class PackConfig() {
 
         val scripts: Config = TomlFormat.newConfig()
         for ((key, value) in scriptSettings) {
+            /*
+                Only store non-default pairs, so the user always has the up to date values
+                when loading the config the next time
+            */
             if (scriptSettingsDefaultKeys.all { key != it }) {
                 scripts.set<Any>(key, value)
             }
@@ -585,5 +568,21 @@ open class PackConfig() {
                 " isServerIconInclusionDesired=$isServerIconInclusionDesired," +
                 " isServerPropertiesInclusionDesired=$isServerPropertiesInclusionDesired," +
                 " isZipCreationDesired=$isZipCreationDesired)"
+    }
+
+    companion object {
+        fun defaultScriptSettings(): HashMap<String, String> {
+            return hashMapOf(
+                Pair(javaKey,"java"),
+                Pair(spcWaitForUserInputKey,"true"),
+                Pair(spcRestartServerKey,"false"),
+                Pair(spcSkipJavaCheckKey,"false"),
+                Pair(spcJDKVendorKey,"temurin"),
+                Pair(spcJabbaInstallURLShKey,"https://github.com/Jabba-Team/jabba/raw/main/install.sh"),
+                Pair(spcJabbaInstallURLPSKey,"https://github.com/Jabba-Team/jabba/raw/main/install.ps1"),
+                Pair(spcJabbaInstallVersionKey,"0.13.0"),
+                Pair(spcAdditionalArgsKey,"-Dlog4j2.formatMsgNoLookups=true")
+            )
+        }
     }
 }

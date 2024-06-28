@@ -631,33 +631,11 @@ class ConfigurationHandler(
             "NONE"
         }
 
-        // Additional, fluff
-        if (!packConfig.scriptSettings.containsKey("SPC_RESTART_SPC")) {
-            packConfig.scriptSettings["SPC_RESTART_SPC"] = "false"
-        }
-        if (!packConfig.scriptSettings.containsKey("SPC_SKIP_JAVA_CHECK_SPC")) {
-            packConfig.scriptSettings["SPC_SKIP_JAVA_CHECK_SPC"] = "false"
-        }
-        if (!packConfig.scriptSettings.containsKey("SPC_JDK_VENDOR_SPC")) {
-            packConfig.scriptSettings["SPC_JDK_VENDOR_SPC"] = "temurin"
-        }
-        if (!packConfig.scriptSettings.containsKey("SPC_JABBA_INSTALL_URL_SH_SPC")) {
-            packConfig.scriptSettings["SPC_JABBA_INSTALL_URL_SPC"] = "https://github.com/Jabba-Team/jabba/raw/main/install.sh"
-        }
-        if (!packConfig.scriptSettings.containsKey("SPC_JABBA_INSTALL_URL_PS_SPC")) {
-            packConfig.scriptSettings["SPC_JABBA_INSTALL_URL_SPC"] = "https://github.com/Jabba-Team/jabba/raw/main/install.ps1"
-        }
-        if (!packConfig.scriptSettings.containsKey("SPC_JABBA_INSTALL_VERSION_SPC")) {
-            packConfig.scriptSettings["SPC_JABBA_INSTALL_VERSION_SPC"] = "0.13.0"
-        }
-        if (!packConfig.scriptSettings.containsKey("SPC_ADDITIONAL_ARGS_SPC")) {
-            packConfig.scriptSettings["SPC_ADDITIONAL_ARGS_SPC"] = "-Dlog4j2.formatMsgNoLookups=true"
-        }
-        if (!packConfig.scriptSettings.containsKey("SPC_JAVA_SPC")) {
-            packConfig.scriptSettings["SPC_JAVA_SPC"] = "java"
-        }
-        if (!packConfig.scriptSettings.containsKey("SPC_WAIT_FOR_USER_INPUT_SPC")) {
-            packConfig.scriptSettings["SPC_WAIT_FOR_USER_INPUT_SPC"] = "true"
+        // Make sure default values are present
+        for ((key,value) in PackConfig.defaultScriptSettings()) {
+            if (!packConfig.scriptSettings.containsKey(key)) {
+                packConfig.scriptSettings[key] = value
+            }
         }
     }
 
