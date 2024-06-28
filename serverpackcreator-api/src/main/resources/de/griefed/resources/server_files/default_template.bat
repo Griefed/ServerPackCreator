@@ -27,6 +27,8 @@
 :: Do not delete the PowerShell (.ps1) files or this script will stop working!
 @ECHO OFF
 
+PUSHD %~dp0
+
 SET SCRIPTDIR=%~dp0
 SET PSSCRIPTPATH=%SCRIPTDIR%start.ps1
 PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& '%PSSCRIPTPATH%'";
