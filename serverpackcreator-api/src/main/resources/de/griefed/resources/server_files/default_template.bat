@@ -26,7 +26,7 @@
 :: This batch-script will run the start.ps1 script without you, the user, having to fiddle with admin-things.
 :: Do not delete the PowerShell (.ps1) files or this script will stop working!
 @ECHO OFF
-@ECHO OFF
+
 SET SCRIPTDIR=%~dp0
 SET PSSCRIPTPATH=%SCRIPTDIR%start.ps1
 PowerShell -NoProfile -ExecutionPolicy Bypass -Command "& '%PSSCRIPTPATH%'";
