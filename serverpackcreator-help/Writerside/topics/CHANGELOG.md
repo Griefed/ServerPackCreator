@@ -1,3 +1,35 @@
+## [6.0.0-alpha.13](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.12...6.0.0-alpha.13) (2024-06-28)
+
+
+### :scissors: Refactor
+
+* Remove redundant sourcing ([3a13b38](https://git.griefed.de/Griefed/ServerPackCreator/commit/3a13b38a96279b0c4ae9e85ce7af02b1eaf92785))
+
+
+### 👀 Reverts
+
+* Remove Java Batch-template as we use PowerShell from Batch now ([75e779a](https://git.griefed.de/Griefed/ServerPackCreator/commit/75e779a899d9231c32084da8a4c596719d979f72))
+
+
+### 💎 Improvements
+
+* Add how-to-run file to tell users which script to run ([a30ca34](https://git.griefed.de/Griefed/ServerPackCreator/commit/a30ca34e79f57c0a7e5a0bd816add951250003cd))
+* Check if modpack is from GDLauncher, offer instance selection ([f8d10a0](https://git.griefed.de/Griefed/ServerPackCreator/commit/f8d10a04387a5edbc941dd2d03bdc5ed1efd259a))
+
+
+### 📦 Other
+
+* Add Clear Water to clientside-mods list ([b202d2d](https://git.griefed.de/Griefed/ServerPackCreator/commit/b202d2d91d7826ce5a404ec43a85246453777862))
+* Latest changelogs ([0c8a52a](https://git.griefed.de/Griefed/ServerPackCreator/commit/0c8a52a822c9a56b200edd1baaed94ce74ecf73e))
+
+
+### 🛠 Fixes
+
+* Correctly source and call Java installation ([2b3e370](https://git.griefed.de/Griefed/ServerPackCreator/commit/2b3e370b4417f3338b61f659bef1152237345242))
+* Ensure server pack name mirrors modpack name ([6e85779](https://git.griefed.de/Griefed/ServerPackCreator/commit/6e85779995757c3ef8b03a91f52011044b2b7442))
+* Run PowerShell from Batch script. Re-order Java install call ([b0de641](https://git.griefed.de/Griefed/ServerPackCreator/commit/b0de641442568909e6726c511c76b4cca96ac6de))
+* Use config title as config name for saving ([b29fffa](https://git.griefed.de/Griefed/ServerPackCreator/commit/b29fffa403a8cd633438a0b3171a6852c69017e9))
+
 ## [6.0.0-alpha.12](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.11...6.0.0-alpha.12) (2024-06-24)
 
 
