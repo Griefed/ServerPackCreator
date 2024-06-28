@@ -1062,8 +1062,7 @@ class ApiProperties(
     fun defaultJavaScriptTemplates() : HashMap<String, String> {
         return hashMapOf(
             Pair("sh", File(serverFilesDirectory.absolutePath, defaultJavaShellScriptTemplate.name).absolutePath),
-            Pair("ps1", File(serverFilesDirectory.absolutePath, defaultJavaPowerShellScriptTemplate.name).absolutePath),
-            Pair("bat", File(serverFilesDirectory.absolutePath, defaultJavaBatchScriptTemplate.name).absolutePath)
+            Pair("ps1", File(serverFilesDirectory.absolutePath, defaultJavaPowerShellScriptTemplate.name).absolutePath)
         )
     }
 
