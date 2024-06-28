@@ -190,8 +190,8 @@ else
         Write-Host "Detected $($Semantics[0]).$($Semantics[1]).$($Semantics[2]) - Java $($JavaVersion)"
         if ([int]$script:JavaVersion -le [int]$RecommendedJavaVersion)
         {
-            InstallJava
             $script:Java = "java"
+            InstallJava
         }
     }
 }
