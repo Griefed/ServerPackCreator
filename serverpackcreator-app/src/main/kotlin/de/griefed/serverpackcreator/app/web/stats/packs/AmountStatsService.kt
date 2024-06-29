@@ -33,6 +33,39 @@ class AmountStatsService @Autowired constructor(
 ) {
     val stats: AmountStatsData
         get() {
-            return AmountStatsData(modpackRepository.findAll().size, serverPackRepository.findAll().size, runConfigurationRepository.findAll().size)
+            val modloaders = hashMapOf<String, Int>()
+            val minecraftVersions = HashMap<String, Int>()
+            val modloaderVersions = HashMap<String, Int>()
+
+            for (serverPack in serverPackRepository.findAll()) {
+                val runConfig = serverPack.runConfiguration!!
+                if (!minecraftVersions.containsKey(runConfig.minecraftVersion)) {
+                    minecraftVersions[runConfig.minecraftVersion] = 1
+                } else {
+                    minecraftVersions[runConfig.minecraftVersion] = minecraftVersions[runConfig.minecraftVersion]!! + 1
+                }
+
+                if (!modloaders.containsKey(runConfig.modloader)) {
+                    modloaders[runConfig.modloader] = 1
+                } else {
+                    modloaders[runConfig.modloader] = modloaders[runConfig.modloader]!! + 1
+                }
+
+                val modloaderVersion = "${runConfig.modloader}-${runConfig.modloaderVersion}"
+                if (!modloaderVersions.containsKey(modloaderVersion)) {
+                    modloaderVersions[modloaderVersion] = 1
+                } else {
+                    modloaderVersions[modloaderVersion] = modloaderVersions[modloaderVersion]!! + 1
+                }
+            }
+
+            return AmountStatsData(
+                modpackRepository.findAll().size,
+                serverPackRepository.findAll().size,
+                runConfigurationRepository.findAll().size,
+                minecraftVersions,
+                modloaders,
+                modloaderVersions
+            )
         }
 }

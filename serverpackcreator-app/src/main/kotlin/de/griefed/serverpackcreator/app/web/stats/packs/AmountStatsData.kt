@@ -19,4 +19,11 @@
  */
 package de.griefed.serverpackcreator.app.web.stats.packs
 
-data class AmountStatsData(val modPacks: Int, val serverPacks: Int, val runConfigurations: Int)
+data class AmountStatsData(
+    val modPacks: Int,
+    val serverPacks: Int,
+    val runConfigurations: Int,
+    val minecraftVersions: HashMap<String, Int>,
+    val modloaders: HashMap<String, Int>,
+    val modloaderVersions: HashMap<String, Int>
+)
