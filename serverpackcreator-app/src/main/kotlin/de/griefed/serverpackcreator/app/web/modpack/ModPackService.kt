@@ -29,6 +29,8 @@ import de.griefed.serverpackcreator.app.web.serverpack.customizing.RunConfigurat
 import de.griefed.serverpackcreator.app.web.storage.StorageException
 import de.griefed.serverpackcreator.app.web.storage.StorageSystem
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -109,8 +111,12 @@ class ModPackService @Autowired constructor(
         return modpackRepository.findById(id)
     }
 
-    fun getModpacks(): List<ModPack> {
-        return modpackRepository.findAll(Sort.by(Sort.Direction.DESC, "dateCreated"))
+    fun getModpacks(sort: Sort = Sort.by(Sort.Direction.DESC, "dateCreated")): List<ModPack> {
+        return modpackRepository.findAll(sort)
+    }
+
+    fun getModpacks(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "dateCreated")) : Page<ModPack> {
+        return modpackRepository.findAll(sizedPage.withSort(sort))
     }
 
     fun getByServerPack(id: Int) : Optional<ModPack> {

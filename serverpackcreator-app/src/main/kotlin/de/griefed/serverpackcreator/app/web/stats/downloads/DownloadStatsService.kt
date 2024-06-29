@@ -29,6 +29,9 @@ import de.griefed.serverpackcreator.app.web.serverpack.ServerPackDownloadReposit
 import de.griefed.serverpackcreator.app.web.serverpack.ServerPackRepository
 import de.griefed.serverpackcreator.app.web.stats.creation.AmountPerDate
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -40,17 +43,33 @@ class DownloadStatsService @Autowired constructor(
     private val serverPackRepository: ServerPackRepository,
 ) {
 
-    fun modPackDownloads(): List<AmountPerDate> {
+    fun modPackDownloads(sort: Sort = Sort.by(Sort.Direction.DESC, "date")): List<AmountPerDate> {
         val dates = mutableListOf<LocalDateTime>()
-        for (download in modPackDownloadRepository.findAll().filter { it.downloadedAt != null }) {
+        for (download in modPackDownloadRepository.findAll(sort).filter { it.downloadedAt != null }) {
             dates.add(download.downloadedAt!!.toLocalDateTime())
         }
         return count(dates)
     }
 
-    fun serverPackDownloads(): List<AmountPerDate> {
+    fun modPackDownloads(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "date")): List<AmountPerDate> {
         val dates = mutableListOf<LocalDateTime>()
-        for (download in serverPackDownloadRepository.findAll().filter { it.downloadedAt != null }) {
+        for (download in modPackDownloadRepository.findAll(sizedPage.withSort(sort)).filter { it.downloadedAt != null }) {
+            dates.add(download.downloadedAt!!.toLocalDateTime())
+        }
+        return count(dates)
+    }
+
+    fun serverPackDownloads(sort: Sort = Sort.by(Sort.Direction.DESC, "date")): List<AmountPerDate> {
+        val dates = mutableListOf<LocalDateTime>()
+        for (download in serverPackDownloadRepository.findAll(sort).filter { it.downloadedAt != null }) {
+            dates.add(download.downloadedAt!!.toLocalDateTime())
+        }
+        return count(dates)
+    }
+
+    fun serverPackDownloads(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "date")): List<AmountPerDate> {
+        val dates = mutableListOf<LocalDateTime>()
+        for (download in serverPackDownloadRepository.findAll(sizedPage.withSort(sort)).filter { it.downloadedAt != null }) {
             dates.add(download.downloadedAt!!.toLocalDateTime())
         }
         return count(dates)
@@ -76,12 +95,20 @@ class DownloadStatsService @Autowired constructor(
         return "${date.year}-${date.monthValue}-${date.dayOfMonth}"
     }
 
-    fun allModPackDownloadsHistory(): List<ModPackDownload> {
-        return modPackDownloadRepository.findAll()
+    fun allModPackDownloadsHistory(sort: Sort = Sort.by(Sort.Direction.DESC, "downloadedAt")): List<ModPackDownload> {
+        return modPackDownloadRepository.findAll(sort)
     }
 
-    fun allServerPackDownloadsHistory(): List<ServerPackDownload> {
-        return serverPackDownloadRepository.findAll()
+    fun allModPackDownloadsHistory(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "downloadedAt")): Page<ModPackDownload> {
+        return modPackDownloadRepository.findAll(sizedPage.withSort(sort))
+    }
+
+    fun allServerPackDownloadsHistory(sort: Sort = Sort.by(Sort.Direction.DESC, "downloadedAt")): List<ServerPackDownload> {
+        return serverPackDownloadRepository.findAll(sort)
+    }
+
+    fun allServerPackDownloadsHistory(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "downloadedAt")): Page<ServerPackDownload> {
+        return serverPackDownloadRepository.findAll(sizedPage.withSort(sort))
     }
 
     fun downloadHistoryForModPack(modPackID: Int): List<ModPackDownload> {

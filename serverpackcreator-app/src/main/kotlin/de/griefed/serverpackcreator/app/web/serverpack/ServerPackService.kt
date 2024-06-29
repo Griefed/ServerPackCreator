@@ -22,6 +22,8 @@ package de.griefed.serverpackcreator.app.web.serverpack
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.app.web.storage.StorageSystem
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
@@ -109,14 +111,12 @@ class ServerPackService @Autowired constructor(
         }
     }
 
-    /**
-     * Get a list of all available server packs.
-     *
-     * @return List ServerPackModel. Returns a list of all available server packs.
-     * @author Griefed
-     */
-    fun getServerPacks(): List<ServerPack> {
-        return serverPackRepository.findAll(Sort.by(Sort.Direction.DESC, "dateCreated"))
+    fun getServerPacks(sort: Sort = Sort.by(Sort.Direction.DESC, "dateCreated")): List<ServerPack> {
+        return serverPackRepository.findAll(sort)
+    }
+
+    fun getServerPacks(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "dateCreated")) : Page<ServerPack> {
+        return serverPackRepository.findAll(sizedPage.withSort(sort))
     }
 
     /**

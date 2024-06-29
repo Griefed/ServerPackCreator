@@ -23,6 +23,7 @@ import de.griefed.serverpackcreator.app.web.modpack.ModPackService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -115,6 +116,21 @@ class ServerPackController @Autowired constructor(
     fun getAllServerPacks(): ResponseEntity<List<ServerPack>> {
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).body(
             serverPackService.getServerPacks()
+        )
+    }
+
+    @GetMapping("/allpaginated", produces = ["application/json"])
+    @ResponseBody
+    fun getAllServerPacksPaginated(
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "100") size: Int
+    ): ResponseEntity<List<ServerPack>> {
+        val serverPacks = mutableListOf<ServerPack>()
+        val sizedPage = PageRequest.of(page, size)
+        val pageServerPacks = serverPackService.getServerPacks(sizedPage)
+        serverPacks.addAll(pageServerPacks.content)
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).body(
+            serverPacks
         )
     }
 

@@ -28,6 +28,7 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -194,6 +195,21 @@ class ModPackController @Autowired constructor(
     fun getAllModPacks(): ResponseEntity<List<ModPack>> {
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).body(
             modpackService.getModpacks()
+        )
+    }
+
+    @GetMapping("/allpaginated", produces = ["application/json"])
+    @ResponseBody
+    fun getAllModPacksPaginated(
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "100") size: Int
+    ): ResponseEntity<List<ModPack>> {
+        val modpacks = mutableListOf<ModPack>()
+        val sizedPage = PageRequest.of(page, size)
+        val pageModpacks = modpackService.getModpacks(sizedPage)
+        modpacks.addAll(pageModpacks.content)
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).body(
+            modpacks
         )
     }
 

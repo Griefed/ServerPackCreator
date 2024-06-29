@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.app.web.task
 
 import de.griefed.serverpackcreator.app.web.modpack.ModPackStatus
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.util.MimeTypeUtils
@@ -36,6 +37,21 @@ class EventController @Autowired constructor(private val eventService: EventServ
     fun getEvents(): ResponseEntity<List<QueueEvent>> {
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
             .body(eventService.loadAll())
+    }
+
+    @GetMapping("/allpaginated", produces = ["application/json"])
+    @ResponseBody
+    fun getAllEventsPaginated(
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "100") size: Int
+    ): ResponseEntity<List<QueueEvent>> {
+        val queueEvents = mutableListOf<QueueEvent>()
+        val sizedPage = PageRequest.of(page, size)
+        val pageQueueEvents = eventService.loadAll(sizedPage)
+        queueEvents.addAll(pageQueueEvents.content)
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).body(
+            queueEvents
+        )
     }
 
     @GetMapping("/modpack/{id:[0-9]+}", produces = ["application/json"])

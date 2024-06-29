@@ -29,6 +29,7 @@ import de.griefed.serverpackcreator.app.web.stats.downloads.DownloadStatsService
 import de.griefed.serverpackcreator.app.web.stats.packs.AmountStatsData
 import de.griefed.serverpackcreator.app.web.stats.packs.AmountStatsService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.util.MimeTypeUtils
@@ -52,11 +53,37 @@ class StatsController @Autowired constructor(
         )
     }
 
+    @GetMapping("/downloads/modpackspaginated", produces = ["application/json"])
+    @ResponseBody
+    fun modPackDownloadsPaginated(
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "100") size: Int
+    ): ResponseEntity<List<AmountPerDate>> {
+        val sizedPage = PageRequest.of(page, size)
+        val paged = downloadStatsService.modPackDownloads(sizedPage)
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).body(
+            paged
+        )
+    }
+
     @GetMapping("/downloads/serverpacks")
     @ResponseBody
     fun serverPackDownloads(): ResponseEntity<List<AmountPerDate>> {
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).body(
             downloadStatsService.serverPackDownloads()
+        )
+    }
+
+    @GetMapping("/downloads/serverpackspaginated", produces = ["application/json"])
+    @ResponseBody
+    fun serverPackDownloadsPaginated(
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "100") size: Int
+    ): ResponseEntity<List<AmountPerDate>> {
+        val sizedPage = PageRequest.of(page, size)
+        val paged = downloadStatsService.serverPackDownloads(sizedPage)
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).body(
+            paged
         )
     }
 
@@ -68,11 +95,37 @@ class StatsController @Autowired constructor(
         )
     }
 
+    @GetMapping("/downloads/modpacks/historypaginated", produces = ["application/json"])
+    @ResponseBody
+    fun modPackDownloadHistoryPaginated(
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "100") size: Int
+    ): ResponseEntity<List<ModPackDownload>> {
+        val sizedPage = PageRequest.of(page, size)
+        val paged = downloadStatsService.allModPackDownloadsHistory(sizedPage)
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).body(
+            paged.content
+        )
+    }
+
     @GetMapping("/downloads/serverpacks/history")
     @ResponseBody
     fun serverPackDownloadHistory(): ResponseEntity<List<ServerPackDownload>> {
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).body(
             downloadStatsService.allServerPackDownloadsHistory()
+        )
+    }
+
+    @GetMapping("/downloads/serverpacks/historypaginated")
+    @ResponseBody
+    fun serverPackDownloadHistoryPaginated(
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "100") size: Int
+    ): ResponseEntity<List<ServerPackDownload>> {
+        val sizedPage = PageRequest.of(page, size)
+        val paged = downloadStatsService.allServerPackDownloadsHistory(sizedPage)
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).body(
+            paged.content
         )
     }
 

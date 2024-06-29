@@ -21,6 +21,8 @@ package de.griefed.serverpackcreator.app.web.task
 
 import de.griefed.serverpackcreator.app.web.modpack.ModPackStatus
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 
@@ -57,8 +59,12 @@ class EventService @Autowired constructor(
         queueEventRepository.save(event)
     }
 
-    fun loadAll(): MutableList<QueueEvent> {
-        return queueEventRepository.findAll(Sort.by(Sort.Direction.DESC, "timestamp"))
+    fun loadAll(sort: Sort = Sort.by(Sort.Direction.DESC, "timestamp")): MutableList<QueueEvent> {
+        return queueEventRepository.findAll(sort)
+    }
+
+    fun loadAll(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "dateCreated")) : Page<QueueEvent> {
+        return queueEventRepository.findAll(sizedPage.withSort(sort))
     }
 
     fun loadAllByModPackId(modPackId: Int): MutableList<QueueEvent> {
