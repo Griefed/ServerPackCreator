@@ -26,7 +26,6 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-allopen:1.9.23")
     implementation("org.jetbrains.kotlin.plugin.jpa:org.jetbrains.kotlin.plugin.jpa.gradle.plugin:1.9.23")
     implementation("org.jetbrains.dokka:dokka-gradle-plugin:1.9.20")
-    implementation("org.panteleyev:jpackage-gradle-plugin:1.5.2")
     implementation("com.github.jk1:gradle-license-report:2.5")
     implementation("org.siouan.frontend-jdk11:org.siouan.frontend-jdk11.gradle.plugin:6.0.0")
     implementation("gradle.plugin.install4j.install4j.buildtools:gradle_publish:10.0.7")

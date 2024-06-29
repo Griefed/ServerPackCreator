@@ -1,3 +1,22 @@
+## [6.0.0-alpha.14](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.13...6.0.0-alpha.14) (2024-06-28)
+
+
+### :scissors: Refactor
+
+* Remove redundant echo off ([785817e](https://git.griefed.de/Griefed/ServerPackCreator/commit/785817e08350d384236e65e47097d316b80d2a75))
+
+
+### 📦 Other
+
+* Latest changelogs ([a935b7a](https://git.griefed.de/Griefed/ServerPackCreator/commit/a935b7ad23876da06c4fa4ebdeed091ec71a8a63))
+
+
+### 🛠 Fixes
+
+* Check if versions are equal to prevent runs with never versions ([dd47c40](https://git.griefed.de/Griefed/ServerPackCreator/commit/dd47c40dc97d4ba519c11010124c102e043fbe1d))
+* Make sure we are in the scripts directory ([a87f04d](https://git.griefed.de/Griefed/ServerPackCreator/commit/a87f04dd3f47201e09dd7f9a14c4c94cfcac3966))
+* Provide correct defaults for script settings. Load script setting default during config creation in GUI ([97fa0dd](https://git.griefed.de/Griefed/ServerPackCreator/commit/97fa0dd6a56a21dc176cd2be8a24197bc04ff116))
+
 ## [6.0.0-alpha.13](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.12...6.0.0-alpha.13) (2024-06-28)
 
 
