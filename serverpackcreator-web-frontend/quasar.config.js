@@ -31,6 +31,7 @@ module.exports = configure(function (/* ctx */) {
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
     boot: [
       'i18n',
+      'apexcharts',
       'axios'
     ],
 
@@ -60,7 +61,7 @@ module.exports = configure(function (/* ctx */) {
         node: 'node16'
       },
 
-      distDir: '../serverpackcreator-web/src/main/resources/static',
+      distDir: '../serverpackcreator-app/src/main/resources/static',
 
       vueRouterMode: 'hash', // available values: 'hash', 'history'
       // vueRouterBase,

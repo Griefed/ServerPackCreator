@@ -22,24 +22,19 @@ package de.griefed.serverpackcreator.app
 import Translations
 import de.comahe.i18n4k.Locale
 import de.griefed.serverpackcreator.api.ApiWrapper
-import de.griefed.serverpackcreator.api.PackConfig
+import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.api.utilities.common.JarInformation
 import de.griefed.serverpackcreator.api.utilities.common.readText
-import de.griefed.serverpackcreator.cli.ConfigurationEditor
-import de.griefed.serverpackcreator.gui.MainWindow
-import de.griefed.serverpackcreator.gui.splash.SplashScreen
-import de.griefed.serverpackcreator.updater.MigrationManager
-import de.griefed.serverpackcreator.updater.UpdateChecker
-import de.griefed.serverpackcreator.web.WebService
+import de.griefed.serverpackcreator.app.cli.ConfigurationEditor
+import de.griefed.serverpackcreator.app.gui.MainWindow
+import de.griefed.serverpackcreator.app.gui.splash.SplashScreen
+import de.griefed.serverpackcreator.app.updater.MigrationManager
+import de.griefed.serverpackcreator.app.updater.UpdateChecker
+import de.griefed.serverpackcreator.app.web.WebService
 import org.apache.commons.io.monitor.FileAlterationListener
 import org.apache.commons.io.monitor.FileAlterationMonitor
 import org.apache.commons.io.monitor.FileAlterationObserver
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.domain.EntityScan
-import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.context.annotation.ComponentScan
-import org.springframework.scheduling.annotation.EnableScheduling
 import org.xml.sax.SAXException
 import java.awt.GraphicsEnvironment
 import java.io.File
@@ -64,21 +59,17 @@ fun main(args: Array<String>) {
  * API-instance used to run a given instance of SPC.
  * @author Griefed
  */
-@SpringBootApplication
-@EnableConfigurationProperties
-@EntityScan(value = ["de.griefed.serverpackcreator.web"])
-@ComponentScan(value = ["de.griefed.serverpackcreator"])
-@EnableScheduling
 class ServerPackCreator(private val args: Array<String>) {
-    private val log = cachedLoggerOf(this.javaClass)
-    final val commandlineParser: CommandlineParser = CommandlineParser(args)
-    final val apiWrapper = ApiWrapper.api(commandlineParser.propertiesFile, false)
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
+    val commandlineParser: CommandlineParser = CommandlineParser(args)
+    val apiWrapper = ApiWrapper.api(commandlineParser.propertiesFile, false)
     private val appInfo = JarInformation(ServerPackCreator::class.java, apiWrapper.jarUtilities)
 
     init {
         if (commandlineParser.language != null) {
             apiWrapper.apiProperties.changeLocale(commandlineParser.language!!)
         }
+        apiWrapper.apiProperties.isExe()
     }
 
     @Suppress("MemberVisibilityCanBePrivate")
@@ -102,7 +93,8 @@ class ServerPackCreator(private val args: Array<String>) {
         log.info("Running in mode: $mode")
         log.info("App information:")
         log.info("App Folder:      ${appInfo.jarFolder}")
-        log.info("App Path:        ${appInfo.jarFile.absolutePath}")
+        log.info("App File:        ${appInfo.jarFile}")
+        log.info("App Path:        ${appInfo.jarPath}")
         log.info("App Name:        ${appInfo.jarFileName}")
         log.info("Java version:    ${apiWrapper.apiProperties.getJavaVersion()}")
         log.info("OS architecture: ${apiWrapper.apiProperties.getOSArch()}")
@@ -372,7 +364,7 @@ class ServerPackCreator(private val args: Array<String>) {
             ) {
                 exitProcess(1)
             }
-            if (!apiWrapper.serverPackHandler.run(packConfig)) {
+            if (!apiWrapper.serverPackHandler.run(packConfig).success) {
                 exitProcess(1)
             }
         }
@@ -460,6 +452,9 @@ class ServerPackCreator(private val args: Array<String>) {
                         } else if (check(file, apiWrapper.apiProperties.defaultShellScriptTemplate)) {
                             apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultShellScriptTemplate)
                             log.info("Restored default_template.sh.")
+                        } else if (check(file, apiWrapper.apiProperties.defaultBatchScriptTemplate)) {
+                            apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultBatchScriptTemplate)
+                            log.info("Restored default_template.bat.")
                         } else if (check(file, apiWrapper.apiProperties.defaultPowerShellScriptTemplate)) {
                             apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultPowerShellScriptTemplate)
                             log.info("Restored default_template.ps1.")

@@ -1,31 +1,32 @@
 
+import com.install4j.gradle.Install4jTask
 import de.griefed.common.gradle.LicenseAgreementRenderer
 import de.griefed.common.gradle.SubprojectLicenseFilter
+import org.cyclonedx.model.AttachmentText
+import org.cyclonedx.model.License
+import org.cyclonedx.model.OrganizationalContact
+import org.gradle.internal.os.OperatingSystem
 import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
-import java.io.FileInputStream
-import java.util.*
+import java.time.LocalDate
 
 plugins {
     idea
     kotlin("jvm")
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
     id("com.github.jk1.dependency-license-report")
-}
-
-val props = Properties()
-FileInputStream(file("gradle.properties")).use {
-    props.load(it)
+    id("com.install4j.gradle")
+    id("org.cyclonedx.bom") version "1.8.2"
 }
 
 idea {
     project {
-        languageLevel = IdeaLanguageLevel(props.getProperty("jdkVersion"))
-        jdkName = props.getProperty("jdkVersion")
+        languageLevel = IdeaLanguageLevel(properties["jdkVersion"])
+        jdkName = properties["jdkVersion"] as String
         modules.forEach {
             it.isDownloadJavadoc = true
             it.isDownloadSources = true
-            it.languageLevel = IdeaLanguageLevel(props.getProperty("jdkVersion"))
-            it.jdkName = props.getProperty("jdkVersion")
+            it.languageLevel = IdeaLanguageLevel(properties["jdkVersion"])
+            it.jdkName = properties["jdkVersion"] as String
         }
     }
 }
@@ -36,15 +37,15 @@ allprojects {
         google()
         mavenCentral()
     }
+
+    tasks.withType<Test> {
+        jvmArgs("-XX:+EnableDynamicAgentLoading", "-Djdk.attach.allowAttachSelf=true")
+    }
 }
 evaluationDependsOnChildren()
 
-project("serverpackcreator-web").tasks.build.get().mustRunAfter(
-    project("serverpackcreator-web-frontend").tasks.build.get()
-)
-
 project("serverpackcreator-app").tasks.build.get().mustRunAfter(
-    project("serverpackcreator-web").tasks.build.get()
+    project("serverpackcreator-web-frontend").tasks.build.get()
 )
 
 nexusPublishing {
@@ -55,6 +56,36 @@ nexusPublishing {
             username.set(System.getenv("OSSRH_USERNAME"))
             password.set(System.getenv("OSSRH_PASSWORD"))
         }
+    }
+}
+
+tasks.cyclonedxBom {
+    setIncludeConfigs(listOf("runtimeClasspath"))
+    setSkipConfigs(listOf("compileClasspath", "testCompileClasspath"))
+    setProjectType("application")
+    setSchemaVersion("1.5")
+    setDestination(project.file("build/reports"))
+    setOutputName("bom")
+    //setOutputFormat("json")
+    setIncludeBomSerialNumber(true)
+
+    val organizationalContact = OrganizationalContact()
+    organizationalContact.name = "Griefed"
+    organizationalContact.email = "griefed@griefed.de"
+    setOrganizationalEntity { oe ->
+        oe.name = "Griefed"
+        oe.urls = listOf("griefed.de")
+        oe.addContact(organizationalContact)
+    }
+
+    val attachementText = AttachmentText()
+    attachementText.text = File(projectDir,"LICENSE").readText()
+    val license = License()
+    license.name = "LGPL-2.1"
+    license.setLicenseText(attachementText)
+    license.url = "https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE"
+    setLicenseChoice { lc ->
+        lc.addLicense(license)
     }
 }
 
@@ -70,16 +101,15 @@ licenseReport {
     renderers = arrayOf(
         com.github.jk1.license.render.InventoryHtmlReportRenderer("index.html", "Dependency Licences"),
         com.github.jk1.license.render.InventoryMarkdownReportRenderer("licences.md", "Dependency Licenses"),
-        LicenseAgreementRenderer("LICENSE-AGREEMENT")
+        LicenseAgreementRenderer("LICENSE-AGREEMENT"),
+        LicenseAgreementRenderer("LICENSE-AGREEMENT.txt")
     )
 }
 
 val appPlugins = File("serverpackcreator-app/tests/plugins")
-val apiPlugins = File("serverpackcreator-api/src/jvmTest/resources/testresources/plugins")
-val kotlinPlugin =
-    project.childProjects["serverpackcreator-plugin-example"]?.tasks?.jar?.get()?.archiveFile?.get()?.asFile?.toPath()
+val apiPlugins = File("serverpackcreator-api/src/test/resources/testresources/plugins")
+val kotlinPlugin = project.childProjects["serverpackcreator-plugin-example"]?.tasks?.jar?.get()?.archiveFile?.get()?.asFile?.toPath()
 val licenseReports = File("licenses")
-
 tasks.register<Delete>("cleanAppPlugins") {
     delete(
         fileTree(appPlugins) {
@@ -87,7 +117,6 @@ tasks.register<Delete>("cleanAppPlugins") {
         }
     )
 }
-
 tasks.register<Copy>("copyExamplePluginsToApp") {
     dependsOn(
         "cleanAppPlugins",
@@ -97,7 +126,6 @@ tasks.register<Copy>("copyExamplePluginsToApp") {
     from(kotlinPlugin!!)
     into(appPlugins)
 }
-
 tasks.register<Delete>("cleanApiUnitTestPlugins") {
     delete(
         fileTree(apiPlugins) {
@@ -105,7 +133,6 @@ tasks.register<Delete>("cleanApiUnitTestPlugins") {
         }
     )
 }
-
 tasks.register<Copy>("copyPluginsApiUnitTests") {
     dependsOn(
         "cleanApiUnitTestPlugins",
@@ -117,15 +144,45 @@ tasks.register<Copy>("copyPluginsApiUnitTests") {
 
 tasks.register<Delete>("cleanLicenseReport") {
     delete(licenseReports)
-    delete(projectDir.resolve("serverpackcreator-gui/src/main/resources/de/griefed/resources/gui/LICENSE-AGREEMENT"))
+    delete(projectDir.resolve("serverpackcreator-app/src/main/resources/de/griefed/resources/gui/LICENSE-AGREEMENT"))
 }
 
 tasks.register<Copy>("copyLicenseReport") {
     from(rootDir.resolve("licenses/LICENSE-AGREEMENT"))
-    into(rootDir.resolve("serverpackcreator-gui/src/main/resources/de/griefed/resources/gui"))
+    into(rootDir.resolve("serverpackcreator-app/src/main/resources/de/griefed/resources/gui"))
 }
 
 tasks.generateLicenseReport {
     mustRunAfter(tasks.getByName("cleanLicenseReport"))
     finalizedBy(tasks.getByName("copyLicenseReport"))
+}
+
+install4j {
+    //Set the install4jHomeDir-property for building on your own machine, or use the paths listed below according
+    //to your operating system family.
+    installDir = if (properties["install4jHomeDir"].toString().isNotBlank()) {
+        file(properties["install4jHomeDir"].toString())
+    } else if (OperatingSystem.current().isWindows) {
+        file("C:\\Program Files\\install4j")
+    } else if (OperatingSystem.current().isMacOsX) {
+        //Ensure your install4j installation is available under this location
+        file("/Applications/install4j.app")
+    } else if (OperatingSystem.current().isLinux)  {
+        //Ensure your install4j installation is available under this location
+        file("/opt/install4j")
+    } else {
+        file(properties["install4jHomeDir"].toString())
+    }
+    verbose = true
+}
+
+task("media", Install4jTask::class) {
+    mustRunAfter(tasks.build)
+    release = version.toString()
+    projectFile = "spc.install4j"
+    variables = hashMapOf<Any, Any>(
+        "projectDir" to rootDir.absolutePath,
+        "projectVersion" to version.toString(),
+        "projectYear" to LocalDate.now().year.toString()
+    )
 }

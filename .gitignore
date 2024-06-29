@@ -357,14 +357,14 @@ yarn.lock
 /work
 
 # ServerPackCreator Web
-serverpackcreator-web/src/main/resources/static
-serverpackcreator-web/tests/*
-!serverpackcreator-web/tests/.gitkeep
+serverpackcreator-app/src/main/resources/static
+serverpackcreator-app/tests/*
+!serverpackcreator-app/tests/.gitkeep
 serverpackcreator-web-frontend/.quasar/
 serverpackcreator-web-frontend/dist/
 serverpackcreator-web-frontend/node_modules/
 serverpackcreator-web-frontend/node/
-serverpackcreator-web/serverpackcreator.db
+serverpackcreator-app/serverpackcreator.db
 docker-compose-dev.yml
 
 # ServerPackCreator App
@@ -377,11 +377,12 @@ serverpackcreator-app/src/main/resources/static
 serverpackcreator-api/main/resources/VERSION.txt
 serverpackcreator-api/tests/*
 !serverpackcreator-api/tests/.gitkeep
-serverpackcreator-api/src/jvmTest/resources/forge_tests_copy/
-serverpackcreator-api/src/jvmTest/resources/fabric_tests_copy/
-serverpackcreator-api/src/jvmTest/resources/legacyfabric_tests_copy/
-serverpackcreator-api/src/jvmTest/resources/quilt_tests_copy/
-serverpackcreator-api/src/jvmTest/resources/fabric_tests_server_pack.zip
-serverpackcreator-api/src/jvmTest/resources/forge_tests_server_pack.zip
-serverpackcreator-api/src/jvmTest/resources/quilt_tests_server_pack.zip
+serverpackcreator-api/src/test/resources/forge_tests_copy/
+serverpackcreator-api/src/test/resources/fabric_tests_copy/
+serverpackcreator-api/src/test/resources/legacyfabric_tests_copy/
+serverpackcreator-api/src/test/resources/quilt_tests_copy/
+serverpackcreator-api/src/test/resources/fabric_tests_server_pack.zip
+serverpackcreator-api/src/test/resources/forge_tests_server_pack.zip
+serverpackcreator-api/src/test/resources/quilt_tests_server_pack.zip
 
+/media/

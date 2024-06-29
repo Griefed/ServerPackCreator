@@ -24,11 +24,67 @@
  */
 package de.griefed.example.kotlin
 
+import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.api.config.ConfigCheck
+import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.api.plugins.PluginContext
 import de.griefed.serverpackcreator.api.plugins.ServerPackCreatorPlugin
+import de.griefed.serverpackcreator.api.utilities.*
+import java.nio.file.Path
 
 /**
  * Extremely simplified plugin by extending [ServerPackCreatorPlugin], which takes care of the basics for you.
  * @author Griefed
  */
-class Example(context: PluginContext) : ServerPackCreatorPlugin(context)
+class Example(context: PluginContext) : ServerPackCreatorPlugin(context) {
+
+    init {
+        val genericListener = object : SPCGenericListener {
+            override fun run() {
+                println("Helloooooo. I'm a SPCGenericListener!")
+                println("Helloooooo. I'm a SPCGenericListener!")
+                println("Helloooooo. I'm a SPCGenericListener!")
+            }
+
+        }
+        val configListener = object : SPCConfigCheckListener {
+            override fun run(packConfig: PackConfig, configCheck: ConfigCheck) {
+                println("Helloooooo. I'm a SPCConfigCheckListener!")
+                println(packConfig.modpackDir)
+            }
+
+        }
+        val preServerPackListener = object : SPCPreServerPackGenerationListener {
+            override fun run(packConfig: PackConfig, serverPackPath: Path) {
+                println("Helloooooo. I'm a SPCPreServerPackGenerationListener!")
+                println(packConfig.modpackDir)
+                println(serverPackPath.toString())
+            }
+
+        }
+        val preZipListener = object : SPCPreServerPackZipListener {
+            override fun run(packConfig: PackConfig, serverPackPath: Path) {
+                println("Helloooooo. I'm a SPCPreServerPackZipListener!")
+                println(packConfig.modpackDir)
+                println(serverPackPath.toString())
+            }
+
+        }
+        val postGenListener = object : SPCPostGenListener {
+            override fun run(packConfig: PackConfig, serverPackPath: Path) {
+                println("Helloooooo. I'm a SPCPostGenListener!")
+                println(packConfig.modpackDir)
+                println(serverPackPath.toString())
+            }
+
+        }
+
+        ApiWrapper.api().configurationHandler.addEventListener(genericListener)
+        ApiWrapper.api().configurationHandler.addEventListener(configListener)
+        ApiWrapper.api().serverPackHandler.addEventListener(genericListener)
+        ApiWrapper.api().serverPackHandler.addEventListener(preServerPackListener)
+        ApiWrapper.api().serverPackHandler.addEventListener(preZipListener)
+        ApiWrapper.api().serverPackHandler.addEventListener(postGenListener)
+    }
+
+}

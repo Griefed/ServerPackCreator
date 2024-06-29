@@ -11,7 +11,7 @@ RUN \
   dos2unix gradlew && chmod +x gradlew && \
   sh gradlew -Pversion="$VERSION" \
     build --info --full-stacktrace \
-    -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test && \
+    -x :serverpackcreator-api:test -x :serverpackcreator-app:test && \
   wget -O zulu21.tar.gz https://cdn.azul.com/zulu/bin/zulu21.30.15-ca-jdk21.0.1-linux_x64.tar.gz && \
   tar -xvf zulu21.tar.gz -C /tmp/serverpackcreator/java --strip-components=1
 

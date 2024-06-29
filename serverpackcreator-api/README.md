@@ -64,12 +64,6 @@ val runSetup = true
 val api = ApiWrapper.api(propertiesFile, language, runSetup)
 ```
 
-For concrete usage examples, browser any of the other modules in this repository:
-
-- CLI: [serverpackcreator-cli](../serverpackcreator-cli)
-- GUI: [serverpackcreator-gui](../serverpackcreator-gui)
-- WEB: [serverpackcreator-web](../serverpackcreator-web)
-
 ## i18n
 
 The web-frontend has it's own i18n implementation, as it is not written in Java or Kotlin.
