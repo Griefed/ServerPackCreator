@@ -51,13 +51,3 @@ jobs:
             serverpackcreator-web-frontend/dist
             serverpackcreator-plugin-example/build
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
-
-      # UPLOAD OS-SPECIFICS
-      - name: Upload
-        uses: actions/upload-artifact@v4
-        if: ${{ always() }}
-        with:
-          name: appimage
-          path: |
-            serverpackcreator-app/build/dist/ServerPackCreator-Portable-Linux-x86_64.AppImage
-          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`

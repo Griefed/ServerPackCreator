@@ -100,7 +100,7 @@ jobs:
   release:
     if: ${{ always() }}
     runs-on: ubuntu-latest
-    needs: [preparations, jar-and-media, appimage]
+    needs: [preparations, jar-and-media]
 
     steps:
       # GET THE LATEST CODE
@@ -152,10 +152,6 @@ jobs:
         with:
           name: jar-media-release
 
-      - uses: actions/download-artifact@v4
-        with:
-          name: appimage-release
-
       # GENERATE RELEASE
       - name: Create Release
         id: create_release
@@ -172,7 +168,6 @@ jobs:
             media/*.dmg
             media/*.sh
             media/*.exe
-            ServerPackCreator-${{ needs.preparations.outputs.version }}-Portable-Linux-x86_64.AppImage
             serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
             serverpackcreator-plugin-example/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}-Example-Plugin.jar
 
