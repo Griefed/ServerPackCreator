@@ -204,7 +204,7 @@ class GitHubChecker : VersionChecker {
                     version = alpha
                 }
             }
-            log.debug("Latest version: $latest")
+            log.trace("Latest version: $latest")
             return version
         }
         return "no_release"
