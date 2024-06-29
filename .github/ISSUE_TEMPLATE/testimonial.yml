@@ -1,0 +1,55 @@
+name: Testimonial Submission
+description: Supply a testimonial for your modpack to be added to the ServerPackCreator homepage
+title: "[Testimonial Submission]: <Name of your Modpack>"
+assignees:
+  - Griefed
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for submitting a testimonial for the homepage of ServerPackCreator!
+        Once the testimonial has been added and the homepage updated make sure to visit the homepage to take a look at it!
+        
+        To get an idea of how a testimonial looks like, visit the [ServerPackCreator Homepage](https://serverpackcreator.de/#/)
+        and scroll to the bottom. A testimonial should ideally be the reason for why you, or your group, uses ServerPackCreator
+        for the creation of your server packs.
+  - type: input
+    id: profile
+    attributes:
+      label: Profile/User/Group Name
+      description: Name of the profile on CurseForge or Modrinth which owns and manages the modpack
+      value: "Enter Profile Name Here"
+    validations:
+      required: true
+  - type: input
+    id: iconLink
+    attributes:
+      label: Link to the icon-file of your modpack
+      description: Should be 150x150 pixels in resolution
+      value: "Link to the icon-file"
+    validations:
+      required: true
+  - type: input
+    id: modpackLink
+    attributes:
+      label: Modpack-Link
+      description: Direct link to the modpack on CurseForge or Modrinth. Short-URLs are not accepted.
+      value: "Link to CurseForge or Modrinth modpack"
+    validations:
+      required: true
+  - type: textarea
+    id: testimonial
+    attributes:
+      label: Testimonial
+      description: 350 characters or less. The testimonial to display alongside your modpack's icon and your profile name.
+      value: "Your reason for using ServerPackCreator for your modpack's server packs"
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/Griefed/ServerPackCreator/blob/main/CODE_OF_CONDUCT.md)
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
