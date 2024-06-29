@@ -201,11 +201,11 @@ You may also use the GUI, Settings -> Global -> Java Script Templates -> Reset t
 entirety of the template setting to factory defaults.
 
 > **Attention when writing PowerShell Install Templates**
-> When writing a PowerShell Java Installation Template make sure that everything is wrappen in a function called
+> When writing a PowerShell Java Installation Template make sure that everything is wrapped in a function called
 > 
 > RunJavaInstallation
 > 
-> The Install template gets sourced in the start-script and the function called from inside the start script. Unless you
+> The Install-template gets sourced in the start-script and the function called from inside the start script. Unless you
 > know a better way of handling this, this is the way it's gotta be, unfortunately.
 > {.is-warning}
 
