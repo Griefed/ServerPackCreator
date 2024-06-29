@@ -37,6 +37,10 @@ allprojects {
         google()
         mavenCentral()
     }
+
+    tasks.withType<Test> {
+        jvmArgs("-XX:+EnableDynamicAgentLoading", "-Djdk.attach.allowAttachSelf=true")
+    }
 }
 evaluationDependsOnChildren()
 
