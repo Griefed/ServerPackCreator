@@ -35,6 +35,7 @@ import java.awt.Font
 import java.awt.Image
 import java.util.*
 import java.util.concurrent.Executors
+import java.util.prefs.Preferences
 import javax.swing.ImageIcon
 import javax.swing.UIManager
 import javax.swing.plaf.FontUIResource
@@ -480,6 +481,8 @@ class GuiProps(private val apiProperties: ApiProperties) {
             storeGuiProperty(allowManualEditingProp,field.toString())
         }
 
+    private val spcPreferences = Preferences.userRoot().node("ServerPackCreator")
+
     /**
      * Update the [larsonScanner] and GUI configurations to match the current theme.
      *
@@ -505,6 +508,14 @@ class GuiProps(private val apiProperties: ApiProperties) {
             tabbedPaneFocusColor
         )
         larsonScanner.loadConfig(config)
+    }
+
+    fun getPreference(pref: String) : Optional<String> {
+        return Optional.ofNullable(spcPreferences.get(pref, null))
+    }
+
+    fun storePreference(pref: String, value: String) {
+        spcPreferences.put(pref, value)
     }
 
     /**

@@ -293,7 +293,9 @@ class ConfigEditor(
     }
 
     private fun selectModpackDirectory() {
-        val chooser = if (File(getModpackDirectory()).isDirectory) {
+        val chooser = if (guiProps.getPreference("lastmodpackchooserdir").isPresent) {
+            ModpackChooser(File(guiProps.getPreference("lastmodpackchooserdir").get()), guiProps.defaultFileChooserDimension)
+        } else if (File(getModpackDirectory()).isDirectory) {
             ModpackChooser(File(getModpackDirectory()), guiProps.defaultFileChooserDimension)
         } else if (File(getModpackDirectory()).isFile) {
             ModpackChooser(File(File(getModpackDirectory()).parent), guiProps.defaultFileChooserDimension)
@@ -327,7 +329,9 @@ class ConfigEditor(
     }
 
     private fun selectServerProperties() {
-        val serverPropertiesChooser = if (File(getServerPropertiesPath()).isFile) {
+        val serverPropertiesChooser = if (guiProps.getPreference("lastserverpropertieschooserdir").isPresent) {
+            ServerIconChooser(File(guiProps.getPreference("lastserverpropertieschooserdir").get()), guiProps.defaultFileChooserDimension)
+        } else if (File(getServerPropertiesPath()).isFile) {
             ServerPropertiesChooser(File(getServerPropertiesPath()), guiProps.defaultFileChooserDimension)
         } else {
             ServerPropertiesChooser(guiProps.defaultFileChooserDimension)
@@ -338,7 +342,9 @@ class ConfigEditor(
     }
 
     private fun selectServerIcon() {
-        val serverIconChooser = if (File(getServerIconPath()).isFile) {
+        val serverIconChooser = if (guiProps.getPreference("lastservericonchooserdir").isPresent) {
+            ServerIconChooser(File(guiProps.getPreference("lastservericonchooserdir").get()), guiProps.defaultFileChooserDimension)
+        } else if (File(getServerIconPath()).isFile) {
             ServerIconChooser(File(getServerIconPath()), guiProps.defaultFileChooserDimension)
         } else {
             ServerIconChooser(guiProps.defaultFileChooserDimension)
@@ -401,6 +407,9 @@ class ConfigEditor(
     }
 
     override fun setModpackDirectory(directory: String) {
+        if (File(directory).parentFile.isDirectory) {
+            guiProps.storePreference("lastmodpackchooserdir",File(directory).parent)
+        }
         modpackSetting.text = directory
     }
 
@@ -413,6 +422,9 @@ class ConfigEditor(
     }
 
     override fun setServerIconPath(path: String) {
+        if (File(path).parentFile.isDirectory) {
+            guiProps.storePreference("lastservericonchooserdir",File(path).parent)
+        }
         iconSetting.text = path
     }
 
@@ -421,6 +433,9 @@ class ConfigEditor(
     }
 
     override fun setServerPropertiesPath(path: String) {
+        if (File(path).parentFile.isDirectory) {
+            guiProps.storePreference("lastserverpropertieschooserdir",File(path).parent)
+        }
         propertiesSetting.text = path
     }
 
