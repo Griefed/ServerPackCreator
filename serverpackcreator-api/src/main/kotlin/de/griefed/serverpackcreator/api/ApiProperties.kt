@@ -1034,7 +1034,7 @@ class ApiProperties(
                 .map { entry -> entry as String }
             var type: String
             if (templateProps.isEmpty() || templateProps.any { entry -> entry.replace(pServerPackStartScriptTemplatesPrefix,"").isBlank() }) {
-                log.error("Found empty definitions for start script templates. Using defaults.")
+                log.warn("Found empty definitions for start script templates. Using defaults.")
                 field = defaultStartScriptTemplates()
             } else {
                 for (templateProp in templateProps) {
@@ -1077,7 +1077,7 @@ class ApiProperties(
                 .map { entry -> entry as String }
             var type: String
             if (templateProps.isEmpty() || templateProps.any { entry -> entry.replace(pServerPackJavaScriptTemplatesPrefix,"").isBlank() }) {
-                log.error("Found empty definitions for java script templates. Using defaults.")
+                log.warn("Found empty definitions for java script templates. Using defaults.")
                 field = defaultJavaScriptTemplates()
             } else {
                 for (templateProp in templateProps) {
@@ -1392,7 +1392,7 @@ class ApiProperties(
      */
     var javaPath = "java"
         get() {
-            val prop = internalProps.getProperty(pJavaForServerInstall, "")
+            val prop = internalProps.getProperty(pJavaForServerInstall, null)
             field = if (checkJavaPath(prop)) {
                 prop
             } else {
@@ -2322,10 +2322,10 @@ class ApiProperties(
      * acquire the path automatically.
      * @author Griefed
      */
-    fun acquireJavaPath(pathToJava: String = ""): String {
+    fun acquireJavaPath(pathToJava: String? = null): String {
         var checkedJavaPath: String
         try {
-            if (pathToJava.isNotEmpty()) {
+            if (!pathToJava.isNullOrBlank()) {
                 if (checkJavaPath(pathToJava)) {
                     return pathToJava
                 }
@@ -2392,8 +2392,8 @@ class ApiProperties(
      * @return `true` if the path is valid.
      * @author Griefed
      */
-    private fun checkJavaPath(pathToJava: String): Boolean {
-        if (pathToJava.isEmpty()) {
+    private fun checkJavaPath(pathToJava: String?): Boolean {
+        if (pathToJava.isNullOrBlank()) {
             return false
         }
         if (checkedJavas.containsKey(pathToJava)) {

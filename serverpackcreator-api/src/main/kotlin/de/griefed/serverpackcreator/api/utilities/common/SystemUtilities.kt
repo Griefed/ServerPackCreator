@@ -30,11 +30,9 @@ import java.io.File
 @Suppress("unused")
 class SystemUtilities {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
-    private val windowsDriveRegex = "^[A-Z]:\\\\.*".toRegex()
+    private val windowsDriveRegex = "^[a-zA-Z]:\\\\.*".toRegex()
     private val javaPathSuffix = "%s${File.separator}bin${File.separator}java"
     private val javaHome = System.getProperty("java.home")
-    private val unixRoot = "/"
-    private val exeSuffix = "%s.exe"
 
     /**
      * Automatically acquire the path to the systems default Java installation.
@@ -47,9 +45,9 @@ class SystemUtilities {
         var javaPath = "Couldn't acquire JavaPath"
         if (File(javaHome).exists()) {
             javaPath = javaPathSuffix.format(javaHome)
-            if (javaPath.matches(windowsDriveRegex)) {
+            if (javaPath.matches(windowsDriveRegex) || File("${javaPath}.exe").isFile) {
                 log.debug("We're running on Windows. Ensuring javaPath ends with .exe")
-                javaPath = exeSuffix.format(javaPath)
+                javaPath = "${javaPath}.exe"
             }
         }
         return javaPath
