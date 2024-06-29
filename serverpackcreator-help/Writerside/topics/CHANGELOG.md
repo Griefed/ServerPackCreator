@@ -1,3 +1,25 @@
+## [6.0.0-alpha.16](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.15...6.0.0-alpha.16) (2024-06-29)
+
+
+### 👀 Reverts
+
+* Do not ship AppImages ([86b0674](https://git.griefed.de/Griefed/ServerPackCreator/commit/86b0674f6d607331f4d69c0bb75481dd56177d2e))
+
+
+### 📦 Other
+
+* Latest changelogs ([c782edd](https://git.griefed.de/Griefed/ServerPackCreator/commit/c782edde2712b87ba33431afe9738a32a32c0c5b))
+
+
+### 🦊 CI/CD
+
+* Remove references to AppImages ([3ca06f4](https://git.griefed.de/Griefed/ServerPackCreator/commit/3ca06f40458aa558f341e35894b716f75a4a4052))
+
+
+### 🧪 Tests
+
+* Explicitly allow dynamic agent loading ([3fa83f9](https://git.griefed.de/Griefed/ServerPackCreator/commit/3fa83f93048ed5592c6e79cffb6f1b560dbb8df0))
+
 ## [6.0.0-alpha.15](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.14...6.0.0-alpha.15) (2024-06-29)
 
 
