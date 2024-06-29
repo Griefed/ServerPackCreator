@@ -76,6 +76,13 @@ class MainMenuBar(
     /**
      * @author Griefed
      */
+    fun showFallbacksUpdatedMessage() {
+        edit.showFallbacksUpdatedMessage()
+    }
+
+    /**
+     * @author Griefed
+     */
     fun showTip() {
         about.showTip()
     }

@@ -106,7 +106,9 @@ class MainWindow(
                 if (apiWrapper.apiProperties.preRelease || migrationManager.migrationMessages.isNotEmpty()) {
                     main.displayMigrationMessages()
                 }
-                if (guiProps.showTipOnStartup) {
+                if (apiWrapper.apiProperties.fallbackUpdated) {
+                    main.showFallbacksUpdatedMessage()
+                } else if (guiProps.showTipOnStartup) {
                     main.showTip()
                 }
             }

@@ -2509,6 +2509,14 @@ class ApiProperties(
         }
 
     /**
+     * Whether the fallback lists for clientside-mods and whitelisted mods have been updated.
+     *
+     * `true` if either was updated.
+     */
+    var fallbackUpdated: Boolean = false
+        private set
+
+    /**
      * Update the fallback clientside-only mod-list of our `serverpackcreator.properties` from
      * the main-repository or one of its mirrors.
      *
@@ -2528,39 +2536,32 @@ class ApiProperties(
         } catch (e: IOException) {
             log.debug("GitHub could not be reached.", e)
         }
-        var updated = false
+        fallbackUpdated = false
         if (properties != null) {
-            if (properties!!.getProperty(pConfigurationFallbackModsList) != null &&
-                internalProps.getProperty(pConfigurationFallbackModsList)
-                != properties!!.getProperty(pConfigurationFallbackModsList)
-            ) {
-                internalProps.setProperty(
-                    pConfigurationFallbackModsList,
-                    properties!!.getProperty(pConfigurationFallbackModsList)
-                )
+            val newBlacklist = properties!!.getProperty(pConfigurationFallbackModsWhiteList)
+            val currentBlacklist = internalProps.getProperty(pConfigurationFallbackModsList)
+            if (newBlacklist != null && currentBlacklist != newBlacklist) {
+                internalProps.setProperty(pConfigurationFallbackModsList,newBlacklist)
                 clientsideMods.clear()
                 clientsideMods.addAll(internalProps.getProperty(pConfigurationFallbackModsList).split(","))
                 log.info("The fallback-list for clientside only mods has been updated to: $clientsideMods")
-                updated = true
+                fallbackUpdated = true
             }
-            if (properties!!.getProperty(pConfigurationFallbackModsWhiteList) != null &&
-                internalProps.getProperty(pConfigurationFallbackModsWhiteList)
-                != properties!!.getProperty(pConfigurationFallbackModsWhiteList)
-            ) {
-                internalProps.setProperty(
-                    pConfigurationFallbackModsWhiteList,
-                    properties!!.getProperty(pConfigurationFallbackModsWhiteList)
-                )
+
+            val newWhitelist = properties!!.getProperty(pConfigurationFallbackModsWhiteList)
+            val currentWhitelist = internalProps.getProperty(pConfigurationFallbackModsWhiteList)
+            if (newWhitelist != null && currentWhitelist != newWhitelist) {
+                internalProps.setProperty(pConfigurationFallbackModsWhiteList,newWhitelist)
                 modsWhitelist.clear()
                 modsWhitelist.addAll(internalProps.getProperty(pConfigurationFallbackModsWhiteList).split(","))
                 log.info("The fallback-list for whitelisted mods has been updated to: $modsWhitelist")
-                updated = true
+                fallbackUpdated = true
             }
         }
-        if (updated) {
+        if (fallbackUpdated) {
             saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
         }
-        return updated
+        return fallbackUpdated
     }
 
     /**

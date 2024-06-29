@@ -53,4 +53,11 @@ class EditMenu(
         add(JSeparator())
         add(updateDefaultMods)
     }
+
+    /**
+     * @author Griefed
+     */
+    fun showFallbacksUpdatedMessage() {
+        updateDefaultMods.showFallbacksUpdatedMessage()
+    }
 }

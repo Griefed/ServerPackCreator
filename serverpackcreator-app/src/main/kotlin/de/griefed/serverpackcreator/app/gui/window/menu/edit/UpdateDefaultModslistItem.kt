@@ -45,13 +45,7 @@ class UpdateDefaultModslistItem(
      */
     private fun updateFallbacks() {
         if (apiProperties.updateFallback()) {
-            JOptionPane.showMessageDialog(
-                mainFrame,
-                Translations.menubar_gui_menuitem_updatefallback_updated.toString(),
-                Translations.menubar_gui_menuitem_updatefallback_title.toString(),
-                JOptionPane.INFORMATION_MESSAGE,
-                guiProps.infoIcon
-            )
+            showFallbacksUpdatedMessage()
         } else {
             JOptionPane.showMessageDialog(
                 mainFrame,
@@ -61,5 +55,18 @@ class UpdateDefaultModslistItem(
                 guiProps.infoIcon
             )
         }
+    }
+
+    /**
+     * @author Griefed
+     */
+    fun showFallbacksUpdatedMessage() {
+        JOptionPane.showMessageDialog(
+            mainFrame,
+            Translations.menubar_gui_menuitem_updatefallback_updated.toString(),
+            Translations.menubar_gui_menuitem_updatefallback_title.toString(),
+            JOptionPane.INFORMATION_MESSAGE,
+            guiProps.infoIcon
+        )
     }
 }

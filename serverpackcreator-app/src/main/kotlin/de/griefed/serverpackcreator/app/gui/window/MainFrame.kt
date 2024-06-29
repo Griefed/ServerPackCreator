@@ -91,6 +91,13 @@ class MainFrame(
     /**
      * @author Griefed
      */
+    fun showFallbacksUpdatedMessage() {
+        menuBar.showFallbacksUpdatedMessage()
+    }
+
+    /**
+     * @author Griefed
+     */
     fun showTip() {
         menuBar.showTip()
     }
