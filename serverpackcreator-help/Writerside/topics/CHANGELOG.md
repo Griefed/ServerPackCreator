@@ -1,3 +1,10 @@
+## [6.0.0-alpha.15](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.14...6.0.0-alpha.15) (2024-06-29)
+
+
+### 🛠 Fixes
+
+* See if recent "Read-only file system" error in AppImage is resolved in newer version ([b7c7c6e](https://git.griefed.de/Griefed/ServerPackCreator/commit/b7c7c6ed614a34c5eb1dee3e739fd0652461f9ab))
+
 ## [6.0.0-alpha.14](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.13...6.0.0-alpha.14) (2024-06-28)
 
 
