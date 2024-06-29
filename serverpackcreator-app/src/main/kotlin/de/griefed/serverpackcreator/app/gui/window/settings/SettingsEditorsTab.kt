@@ -60,7 +60,15 @@ class SettingsEditorsTab(
     private val changeListener = ChangeListener { checkTimer.restart() }
     private val tableModelListener = TableModelListener { checkTimer.restart() }
 
-    val global = GlobalSettings(guiProps, apiProperties, componentResizer, mainFrame, documentChangeListener, actionListener, tableModelListener, controlPanel)
+    val global = GlobalSettings(
+        guiProps,
+        apiProperties,
+        componentResizer,
+        mainFrame,
+        documentChangeListener,
+        actionListener,
+        tableModelListener
+    )
     val webservice = WebserviceSettings(guiProps, apiProperties, mainFrame, documentChangeListener, changeListener, controlPanel)
     val gui = GuiSettings(guiProps, actionListener, changeListener, themeManager, controlPanel)
 
