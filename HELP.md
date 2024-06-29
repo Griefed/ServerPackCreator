@@ -110,7 +110,8 @@ The following placeholders will be replaced by ServerPackCreator during the crea
 | SPC_RESTART_SPC                        | true/false allows you to enable/disable automatically restarting the server should it crash.                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | SPC_SKIP_JAVA_CHECK_SPC                | true/false allows you to disable/enable the compatibility check of your Minecraft version and the provided Java version, as well as the automatic installation of a compatible Java version, should JAVA be set to 'java'.                                                                                                                                                                                                                                                                                      |
 | SPC_JDK_VENDOR_SPC                     | For the automatic installation of a JDK compatible with the Minecraft version of your server pack. For an extensive list of available vendors, check out https://github.com/Jabba-Team/jabba/blob/c19c6ce2ae9645c39bbdca07b6c4e2ea39155f73/index.json<br>   Note - For the installation to take place:<br>- SKIP_JAVA_CHECK must be set to 'false'<br>- JAVA be set to 'java'<br>- No 'java' command be available OR<br>- The available Java version behind 'java' be incompatible with your Minecraft version. |
-| SPC_JABBA_INSTALL_URL_SPC              | The URL to the install-script for Jabba.                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| SPC_JABBA_INSTALL_URL_PS_SPC           | The URL to the PowerShell install-script for Jabba.                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| SPC_JABBA_INSTALL_URL_SH_SPC           | The URL to the Shell install-script for Jabba.                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | SPC_JABBA_INSTALL_VERSION_SPC          | The version of Jabba to install.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 Jabba is a piece of software which makes the installation and usage of a JDK according to the system you are on very easy.
@@ -121,26 +122,26 @@ mentioned in the `SPC_SKIP_JAVA_CHECK_SPC` and `SPC_JDK_VENDOR_SPC` be satisfied
 
 The contents of the variables are as follows. See `### Default values` above for details, descriptions and explanations.
 
-| Key                            | Value                                  |
-|--------------------------------|----------------------------------------|
-| MINECRAFT_VERSION              | SPC_MINECRAFT_VERSION_SPC              |
-| MODLOADER                      | SPC_MODLOADER_SPC                      |
-| MODLOADER_VERSION              | SPC_MODLOADER_VERSION_SPC              |
-| LEGACYFABRIC_INSTALLER_VERSION | SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC |
-| FABRIC_INSTALLER_VERSION       | SPC_FABRIC_INSTALLER_VERSION_SPC       |
-| QUILT_INSTALLER_VERSION        | SPC_QUILT_INSTALLER_VERSION_SPC        |
-| NEOFORGE_INSTALLER_URL         | SPC_NEOFORGE_INSTALLER_URL_SPC         |
-| MINECRAFT_SERVER_URL           | SPC_MINECRAFT_SERVER_URL_SPC           |
-| RECOMMENDED_JAVA_VERSION       | SPC_RECOMMENDED_JAVA_VERSION_SPC       |
-| JAVA_ARGS                      | "SPC_JAVA_ARGS_SPC"                    |
-| JAVA                           | "SPC_JAVA_SPC"                         |
-| WAIT_FOR_USER_INPUT            | SPC_WAIT_FOR_USER_INPUT_SPC            |
-| ADDITIONAL_ARGS                | SPC_ADDITIONAL_ARGS_SPC                |
-| RESTART                        | SPC_RESTART_SPC                        |
-| SKIP_JAVA_CHECK                | SPC_SKIP_JAVA_CHECK_SPC                |
-| JDK_VENDOR                     | SPC_JDK_VENDOR_SPC                     |
-| JABBA_INSTALL_URL              | SPC_JABBA_INSTALL_URL_SPC              |
-| JABBA_INSTALL_VERSION          | SPC_JABBA_INSTALL_VERSION_SPC          |
+| Key                            | Value                                                        |
+|--------------------------------|--------------------------------------------------------------|
+| MINECRAFT_VERSION              | SPC_MINECRAFT_VERSION_SPC                                    |
+| MODLOADER                      | SPC_MODLOADER_SPC                                            |
+| MODLOADER_VERSION              | SPC_MODLOADER_VERSION_SPC                                    |
+| LEGACYFABRIC_INSTALLER_VERSION | SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC                       |
+| FABRIC_INSTALLER_VERSION       | SPC_FABRIC_INSTALLER_VERSION_SPC                             |
+| QUILT_INSTALLER_VERSION        | SPC_QUILT_INSTALLER_VERSION_SPC                              |
+| NEOFORGE_INSTALLER_URL         | SPC_NEOFORGE_INSTALLER_URL_SPC                               |
+| MINECRAFT_SERVER_URL           | SPC_MINECRAFT_SERVER_URL_SPC                                 |
+| RECOMMENDED_JAVA_VERSION       | SPC_RECOMMENDED_JAVA_VERSION_SPC                             |
+| JAVA_ARGS                      | "SPC_JAVA_ARGS_SPC"                                          |
+| JAVA                           | "SPC_JAVA_SPC"                                               |
+| WAIT_FOR_USER_INPUT            | SPC_WAIT_FOR_USER_INPUT_SPC                                  |
+| ADDITIONAL_ARGS                | SPC_ADDITIONAL_ARGS_SPC                                      |
+| RESTART                        | SPC_RESTART_SPC                                              |
+| SKIP_JAVA_CHECK                | SPC_SKIP_JAVA_CHECK_SPC                                      |
+| JDK_VENDOR                     | SPC_JDK_VENDOR_SPC                                           |
+| JABBA_INSTALL_URL              | SPC_JABBA_INSTALL_URL_PS_SPC or SPC_JABBA_INSTALL_URL_SH_SPC |
+| JABBA_INSTALL_VERSION          | SPC_JABBA_INSTALL_VERSION_SPC                                |
 
 Plus any additional custom key-value pair you added to your server pack config.
 
