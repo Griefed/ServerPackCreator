@@ -93,6 +93,7 @@ class ServerPackHandler(
     val log by lazy { cachedLoggerOf(this.javaClass) }
     val modFileEndings = listOf("jar", "disabled")
     val ending = "^\\.[0-9a-zA-Z]+$".toRegex()
+
     val variables = """
         ###
         # Remember:
@@ -118,6 +119,21 @@ class ServerPackHandler(
         #   - No 'java' command be available OR
         #   - The available Java version behind 'java' be incompatible with your Minecraft version.
         # JABBA_VERSION has no effect on the installation of Jabba when using PowerShell.
+        # MINECRAFT_VERSION should be edited manually. If you change this version, then MINECRAFT_SERVER_URL will no longer
+        #   point at the correct server JAR required to run your server. If you find that the Minecraft version is
+        #   incorrect, please contact the creator of this server pack. If you created this server pack yourself,
+        #   please regenerate it with the correct Minecraft version.
+        #   The same applies to MODLOADER_VERSION when you are using NeoForge.
+        #
+        # DO NOT EDIT THE FOLLOWING VARIABLES MANUALLY
+        #   - MINECRAFT_VERSION
+        #   - MINECRAFT_SERVER_URL
+        #   - MODLOADER
+        #   - MODLOADER_VERSION when using NeoForge.
+        #   - NEOFORGE_INSTALLER_URL
+        #   - FABRIC_INSTALLER_VERSION
+        #   - QUILT_INSTALLER_VERSION
+        #   - LEGACYFABRIC_INSTALLER_VERSION
         #
         # Variables are not reloaded between automatic restarts. If you've made changes to your
         #   variables and you want them to take effect, stop the server and script, then
@@ -143,7 +159,6 @@ class ServerPackHandler(
         JABBA_INSTALL_URL_PS=SPC_JABBA_INSTALL_URL_PS_SPC
         JABBA_INSTALL_VERSION=SPC_JABBA_INSTALL_VERSION_SPC
     """.trimIndent()
-
     private val howToStartTheServer = """
         # How To Start / Run The Server
         
