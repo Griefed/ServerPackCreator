@@ -28,7 +28,6 @@ import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.components.*
 import de.griefed.serverpackcreator.app.gui.window.MainFrame
 import de.griefed.serverpackcreator.app.gui.window.configs.components.ComponentResizer
-import de.griefed.serverpackcreator.app.gui.window.control.ControlPanel
 import de.griefed.serverpackcreator.app.gui.window.settings.components.*
 import java.awt.event.ActionListener
 import java.io.File
@@ -50,29 +49,31 @@ class GlobalSettings(
     mainFrame: MainFrame,
     changeListener: DocumentChangeListener,
     actionListener: ActionListener,
-    tableModelListener: TableModelListener,
-    controlPanel: ControlPanel
+    tableModelListener: TableModelListener
 ) : Editor(Translations.settings_global.toString(), guiProps) {
 
-//    private val homeIcon = StatusIcon(guiProps, Translations.settings_global_home_tooltip.toString())
-//    private val homeLabel = ElementLabel(Translations.settings_global_home_label.toString())
-//    private val homeSetting = ScrollTextFileField(guiProps, apiProperties.homeDirectory.absoluteFile, changeListener)
-//    private val homeRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { homeSetting.file = apiProperties.homeDirectory }
-//    private val homeReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { homeSetting.file = apiProperties.home }
-//    private val homeChoose = BalloonTipButton(null, guiProps.folderIcon,Translations.settings_select_directory.toString(), guiProps) {
-//        val homeChooser = HomeDirChooser(apiProperties,Translations.settings_global_home_chooser.toString())
-//        if (homeChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
-//            if (homeChooser.selectedFile.absoluteFile.testFileWrite()) {
-//                homeSetting.file = homeChooser.selectedFile.absoluteFile
-//            } else {
-//                JOptionPane.showMessageDialog(
-//                    mainFrame.frame,
-//                    Translations.settings_directory_error(homeChooser.selectedFile.absolutePath)
-//                )
-//            }
-//        }
-//    }
+    /*
+    private val homeIcon = StatusIcon(guiProps, Translations.settings_global_home_tooltip.toString())
+    private val homeLabel = ElementLabel(Translations.settings_global_home_label.toString())
+    private val homeSetting = ScrollTextFileField(guiProps, apiProperties.homeDirectory.absoluteFile, changeListener)
+    private val homeRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { homeSetting.file = apiProperties.homeDirectory }
+    private val homeReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { homeSetting.file = apiProperties.home }
+    private val homeChoose = BalloonTipButton(null, guiProps.folderIcon,Translations.settings_select_directory.toString(), guiProps) {
+        val homeChooser = HomeDirChooser(apiProperties,Translations.settings_global_home_chooser.toString())
+        if (homeChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
+            if (homeChooser.selectedFile.absoluteFile.testFileWrite()) {
+                homeSetting.file = homeChooser.selectedFile.absoluteFile
+            } else {
+                JOptionPane.showMessageDialog(
+                    mainFrame.frame,
+                    Translations.settings_directory_error(homeChooser.selectedFile.absolutePath)
+                )
+            }
+        }
+    }
+    */
 
+    /*
     private val javaIcon = StatusIcon(guiProps, Translations.settings_global_java_tooltip.toString())
     private val javaLabel = ElementLabel(Translations.settings_global_java_label.toString())
     private val javaSetting = ScrollTextFileField(guiProps, File(apiProperties.javaPath).absoluteFile, changeListener)
@@ -84,6 +85,7 @@ class GlobalSettings(
             javaSetting.file = javaChooser.selectedFile.absoluteFile
         }
     }
+    */
 
     private val serverPacksIcon = StatusIcon(guiProps, Translations.settings_global_serverpacks_tooltip.toString())
     private val serverPacksLabel = ElementLabel(Translations.settings_global_serverpacks_label.toString())
@@ -121,18 +123,6 @@ class GlobalSettings(
     private val aikarsSetting = ScrollTextArea(apiProperties.aikarsFlags,Translations.settings_global_aikars_label.toString(), changeListener, guiProps)
     private val aikarsRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { aikarsSetting.text = apiProperties.aikarsFlags }
     private val aikarsReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { aikarsSetting.text = apiProperties.fallbackAikarsFlags }
-
-/*    private val scriptIcon = StatusIcon(guiProps, Translations.settings_global_scripts_tooltip.toString())
-    private val scriptLabel = ElementLabel(Translations.settings_global_scripts_label.toString())
-    private val scriptSetting = ScrollTextArea(apiProperties.scriptTemplates.joinToString(", "),Translations.settings_global_scripts_label.toString(), changeListener, guiProps)
-    private val scriptRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { scriptSetting.text = apiProperties.scriptTemplates.joinToString(", ") }
-    private val scriptReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { scriptSetting.text = apiProperties.defaultScriptTemplates().joinToString(", ") }
-    private val scriptChoose = BalloonTipButton(null, guiProps.folderIcon,Translations.settings_select_directory.toString(), guiProps) {
-        val scriptChooser = ScriptTemplatesChooser(apiProperties,Translations.settings_global_scripts_chooser.toString())
-        if (scriptChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
-            scriptSetting.text = scriptChooser.selectedFiles.joinToString(", ") { it.absolutePath }
-        }
-    }*/
 
     private val scriptIcon = StatusIcon(guiProps, Translations.settings_global_scripts_tooltip.toString())
     private val scriptLabel = ElementLabel(Translations.settings_global_scripts_label.toString())
@@ -241,13 +231,17 @@ class GlobalSettings(
         val postInstallY: Int
         val javaPathsY: Int
         var y = 0
-//        panel.add(homeIcon, "cell 0 $y")
-//        panel.add(homeLabel, "cell 1 $y")
-//        panel.add(homeSetting, "cell 2 $y, grow")
-//        panel.add(homeRevert, "cell 3 $y")
-//        panel.add(homeReset, "cell 4 $y")
-//        panel.add(homeChoose, "cell 5 $y")
 
+        /*
+        panel.add(homeIcon, "cell 0 $y")
+        panel.add(homeLabel, "cell 1 $y")
+        panel.add(homeSetting, "cell 2 $y, grow")
+        panel.add(homeRevert, "cell 3 $y")
+        panel.add(homeReset, "cell 4 $y")
+        panel.add(homeChoose, "cell 5 $y")
+        */
+
+        /*
         y++
         panel.add(javaIcon, "cell 0 $y")
         panel.add(javaLabel, "cell 1 $y")
@@ -255,8 +249,9 @@ class GlobalSettings(
         panel.add(javaRevert, "cell 3 $y")
         panel.add(javaReset, "cell 4 $y")
         panel.add(javaChoose, "cell 5 $y")
+        */
 
-        y++
+        //y++
         panel.add(serverPacksIcon, "cell 0 $y")
         panel.add(serverPacksLabel, "cell 1 $y")
         panel.add(serverPacksSetting, "cell 2 $y, grow")
@@ -413,8 +408,8 @@ class GlobalSettings(
     }
 
     override fun loadSettings() {
-//        homeSetting.file = apiProperties.homeDirectory.absoluteFile
-        javaSetting.file = File(apiProperties.javaPath).absoluteFile
+        //homeSetting.file = apiProperties.homeDirectory.absoluteFile
+        //javaSetting.file = File(apiProperties.javaPath).absoluteFile
         serverPacksSetting.file = apiProperties.serverPacksDirectory.absoluteFile
         zipSetting.text = apiProperties.zipArchiveExclusions.joinToString(", ")
         inclusionsSetting.text = apiProperties.directoriesToInclude.joinToString(", ")
@@ -440,8 +435,8 @@ class GlobalSettings(
     }
 
     override fun saveSettings() {
-//        apiProperties.homeDirectory = homeSetting.file.absoluteFile
-        apiProperties.javaPath = javaSetting.file.absolutePath
+        //apiProperties.homeDirectory = homeSetting.file.absoluteFile
+        //apiProperties.javaPath = javaSetting.file.absolutePath
         apiProperties.serverPacksDirectory = serverPacksSetting.file.absoluteFile
         apiProperties.zipArchiveExclusions = TreeSet(zipSetting.text.replace(", ",",").split(","))
         apiProperties.directoriesToInclude = TreeSet(inclusionsSetting.text.replace(", ",",").split(","))
@@ -477,19 +472,24 @@ class GlobalSettings(
 
     override fun validateSettings(): List<String> {
         val errors = mutableListOf<String>()
-//        if (!homeSetting.file.absoluteFile.isDirectory || !homeSetting.file.absoluteFile.canWrite()) {
-//            homeIcon.error(Translations.settings_check_home.toString())
-//            errors.add(Translations.settings_check_home.toString())
-//        } else {
-//            homeIcon.info()
-//        }
 
-        if (!javaSetting.file.absoluteFile.isFile || !javaSetting.file.absoluteFile.canRead() || !javaSetting.file.absoluteFile.canExecute()) {
-            javaIcon.error(Translations.settings_check_java.toString())
-            errors.add(Translations.settings_check_java.toString())
+        /*
+        if (!homeSetting.file.absoluteFile.isDirectory || !homeSetting.file.absoluteFile.canWrite()) {
+            homeIcon.error(Translations.settings_check_home.toString())
+            errors.add(Translations.settings_check_home.toString())
         } else {
-            javaIcon.info()
+            homeIcon.info()
         }
+        */
+
+        /*
+        if (!javaSetting.file.absoluteFile.isFile || !javaSetting.file.absoluteFile.canRead() || !javaSetting.file.absoluteFile.canExecute()) {
+          javaIcon.error(Translations.settings_check_java.toString())
+          errors.add(Translations.settings_check_java.toString())
+        } else {
+          javaIcon.info()
+        }
+        */
 
         if (!serverPacksSetting.file.absoluteFile.isDirectory || !serverPacksSetting.file.absoluteFile.canWrite()) {
             serverPacksIcon.error(Translations.settings_check_serverpacks.toString())
@@ -558,7 +558,7 @@ class GlobalSettings(
         val javaScriptTemplates = javaScriptSetting.getData()
         javaScriptTemplates.remove("placeholder")
         val changes = /*homeSetting.file.absolutePath != apiProperties.homeDirectory.absolutePath ||*/
-        javaSetting.file.absolutePath != File(apiProperties.javaPath).absolutePath ||
+        /*javaSetting.file.absolutePath != File(apiProperties.javaPath).absolutePath ||*/
         serverPacksSetting.file.absolutePath != apiProperties.serverPacksDirectory.absolutePath ||
         zipSetting.text != apiProperties.zipArchiveExclusions.joinToString(", ") ||
         inclusionsSetting.text != apiProperties.directoriesToInclude.joinToString(", ") ||
