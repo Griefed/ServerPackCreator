@@ -1,3 +1,36 @@
+## [6.0.0-alpha.17](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.16...6.0.0-alpha.17) (2024-06-29)
+
+
+### 💎 Improvements
+
+* Add pagination for the most important queries ([a5d3c1f](https://git.griefed.de/Griefed/ServerPackCreator/commit/a5d3c1faedafe5fd135e830113f67b050b0b539c))
+* Remember last parent-dir in modpack, icon and properties filechoosers ([5714954](https://git.griefed.de/Griefed/ServerPackCreator/commit/57149548bad65663c8fb01ee4d3ba17aefd3bee9))
+* Stats for used Minecraft versions, modloaders and modloader versions ([e13ce00](https://git.griefed.de/Griefed/ServerPackCreator/commit/e13ce007bb138c71b69760ed2954b6ca85621734))
+
+
+### 📔 Docs
+
+* Fix a typo ([8fbaf59](https://git.griefed.de/Griefed/ServerPackCreator/commit/8fbaf597667e850a560ddaf2c7a0bb8e7c9afa5f))
+* Minor typo ([c5e7f79](https://git.griefed.de/Griefed/ServerPackCreator/commit/c5e7f79ecf203ba58509a325c0bfeab905def228))
+
+
+### 📦 Other
+
+* Add info about variables which should NOT be edited manually ([0163bc6](https://git.griefed.de/Griefed/ServerPackCreator/commit/0163bc65c07724a52acd185d1b9d45f74ec74110))
+* mOrE cHaNgElOgS you know the drill by now ([813c2ce](https://git.griefed.de/Griefed/ServerPackCreator/commit/813c2ce88c48a5dde4da985f813bdcc003e88902))
+* Testimonial issue template for GitHub ([9a25e03](https://git.griefed.de/Griefed/ServerPackCreator/commit/9a25e03e60f9b639d9927716d9346202d7d984c8))
+
+
+### 🧪 Tests
+
+* Set working dir to a relative one to ensure we end up in correct one ([621b63b](https://git.griefed.de/Griefed/ServerPackCreator/commit/621b63b584d43bdb039d37a650d57b2f9754820f))
+* Whoops. Better set test-path from project dir ([14fea96](https://git.griefed.de/Griefed/ServerPackCreator/commit/14fea96feed0f503ca60cc81aaff3599de36ac07))
+
+
+### 🚀 Features
+
+* Inform user about updated mod-lists when starting ([571c3b8](https://git.griefed.de/Griefed/ServerPackCreator/commit/571c3b84af42d26ea2960e52a837bc883eff6b83))
+
 ## [6.0.0-alpha.16](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-alpha.15...6.0.0-alpha.16) (2024-06-29)
 
 
