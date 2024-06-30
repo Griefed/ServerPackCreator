@@ -1,3 +1,36 @@
+## [6.0.0-beta.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.5...6.0.0-beta.6) (2024-06-30)
+
+
+### :scissors: Refactor
+
+* Make loadOverrides public to allow easy change of the props without affecting memorized property files ([a6c4656](https://git.griefed.de/Griefed/ServerPackCreator/commit/a6c4656f95fab55ab1f03ca2da537f1dc690830c))
+
+
+### 👀 Reverts
+
+* Set timeout back after increasing it for testing ([6dc668e](https://git.griefed.de/Griefed/ServerPackCreator/commit/6dc668ea6e81f185e1070902c687a7a477218a52))
+
+
+### 💈 Style
+
+* Have the history page display the same border as other pages ([30b74be](https://git.griefed.de/Griefed/ServerPackCreator/commit/30b74be9c6e5883c35c63f46e8486b095b9846e5))
+
+
+### 📦 Other
+
+* Chaaaaangelooooooogs ([1f837fb](https://git.griefed.de/Griefed/ServerPackCreator/commit/1f837fb67eee7cef7a0a3c8076a818c9c27f95f6))
+* Changelogs, changelogs, changelogs ([873cabf](https://git.griefed.de/Griefed/ServerPackCreator/commit/873cabf2c721b16e8c6565c4dc340a9a44dec4bc))
+
+
+### 🧨 Breaking changes!
+
+* Remove donut-piecharts as they currently break the web-ui when hosting (dafuq?) ([241af22](https://git.griefed.de/Griefed/ServerPackCreator/commit/241af2293f1d3b2aeb53e2781e8a0d1096b01606))
+
+
+### 🛠 Fixes
+
+* Always store the properties in the home-dir ([dc41d69](https://git.griefed.de/Griefed/ServerPackCreator/commit/dc41d69bc079e242632ffe2259777e7af51a5f41))
+
 ## [6.0.0-beta.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.4...6.0.0-beta.5) (2024-06-30)
 
 
