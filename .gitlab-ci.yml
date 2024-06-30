@@ -83,10 +83,6 @@ Build Test:
         - serverpackcreator-api/build
         - serverpackcreator-app/build
         - serverpackcreator-plugin-example/build
-        - serverpackcreator-web-frontend/.quasar
-        - serverpackcreator-web-frontend/node_modules
-        - serverpackcreator-web-frontend/node
-        - serverpackcreator-web-frontend/dist
 
 Docker Test:
   stage: Tests
@@ -199,10 +195,6 @@ Build Release:
         - serverpackcreator-api/build
         - serverpackcreator-app/build
         - serverpackcreator-plugin-example/build
-        - serverpackcreator-web-frontend/.quasar
-        - serverpackcreator-web-frontend/node_modules
-        - serverpackcreator-web-frontend/node
-        - serverpackcreator-web-frontend/dist
 
 Sign Java Publication:
   stage: Build Release
@@ -233,11 +225,6 @@ Sign Java Publication:
         - serverpackcreator-api/build
         - serverpackcreator-app/build
         - serverpackcreator-plugin-example/build
-        - serverpackcreator-web-frontend/.quasar
-        - serverpackcreator-web-frontend/node_modules
-        - serverpackcreator-web-frontend/node
-        - serverpackcreator-web-frontend/dist
-
 Publish GitHub:
   stage: Build Release
   image: docker.griefed.dev/eclipse-temurin:21-jdk
@@ -261,10 +248,6 @@ Publish GitHub:
         - serverpackcreator-api/build
         - serverpackcreator-app/build
         - serverpackcreator-plugin-example/build
-        - serverpackcreator-web-frontend/.quasar
-        - serverpackcreator-web-frontend/node_modules
-        - serverpackcreator-web-frontend/node
-        - serverpackcreator-web-frontend/dist
 
 Publish GitLab:
   stage: Build Release
@@ -289,10 +272,6 @@ Publish GitLab:
         - serverpackcreator-api/build
         - serverpackcreator-app/build
         - serverpackcreator-plugin-example/build
-        - serverpackcreator-web-frontend/.quasar
-        - serverpackcreator-web-frontend/node_modules
-        - serverpackcreator-web-frontend/node
-        - serverpackcreator-web-frontend/dist
 
 Publish GitGriefed:
   stage: Build Release
@@ -317,11 +296,6 @@ Publish GitGriefed:
         - serverpackcreator-api/build
         - serverpackcreator-app/build
         - serverpackcreator-plugin-example/build
-        - serverpackcreator-web-frontend/.quasar
-        - serverpackcreator-web-frontend/node_modules
-        - serverpackcreator-web-frontend/node
-        - serverpackcreator-web-frontend/dist
-
 Publish OSSRH:
   stage: Build Release
   image: docker.griefed.dev/eclipse-temurin:21-jdk
@@ -345,10 +319,6 @@ Publish OSSRH:
         - serverpackcreator-api/build
         - serverpackcreator-app/build
         - serverpackcreator-plugin-example/build
-        - serverpackcreator-web-frontend/.quasar
-        - serverpackcreator-web-frontend/node_modules
-        - serverpackcreator-web-frontend/node
-        - serverpackcreator-web-frontend/dist
 
 Build Docker Release:
   stage: Build Release
@@ -518,10 +488,6 @@ pages:
         - serverpackcreator-api/build
         - serverpackcreator-app/build
         - serverpackcreator-plugin-example/build
-        - serverpackcreator-web-frontend/.quasar
-        - serverpackcreator-web-frontend/node_modules
-        - serverpackcreator-web-frontend/node
-        - serverpackcreator-web-frontend/dist
 
 Update README:on-schedule:
   stage: Documentation
