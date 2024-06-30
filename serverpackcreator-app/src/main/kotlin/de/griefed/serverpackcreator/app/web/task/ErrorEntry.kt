@@ -25,19 +25,12 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.Id
 
 @Entity
-class ErrorEntry {
+class ErrorEntry(@Column var error: String) {
 
     @Id
     @GeneratedValue
     @Column(updatable = false, nullable = false)
     var id: Int = 0
-
-    @Column
-    var error: String
-
-    constructor(error: String) {
-        this.error = error
-    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

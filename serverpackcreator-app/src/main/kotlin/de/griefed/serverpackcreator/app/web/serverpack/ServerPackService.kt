@@ -131,7 +131,7 @@ class ServerPackService @Autowired constructor(
     /**
      * Move the specified file to a new one which will receive a new filename based on the current time in milliseconds.
      * This is done to prevent clashes in case a server pack is generated from an existing modpack, using a new
-     * [de.griefed.serverpackcreator.app.web.data.RunConfiguration].
+     * [de.griefed.serverpackcreator.app.web.serverpack.customizing.RunConfiguration].
      *
      * @author Griefed
      */

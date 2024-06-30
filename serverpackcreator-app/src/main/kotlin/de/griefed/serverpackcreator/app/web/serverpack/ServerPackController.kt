@@ -149,7 +149,8 @@ class ServerPackController @Autowired constructor(
     /**
      * GET request for voting whether a server pack works or not.
      *
-     * @param voting The vote, consisting of the id of the server pack and whether the vote should be
+     * @param id   The id of the server pack to vote for.
+     * @param vote The vote, consisting of the id of the server pack and whether the vote should be
      * incremented or decremented. Example `42,up` or `23,down`.
      * @return ResponseEntity OK/BadRequest/NotFound
      * @author Griefed

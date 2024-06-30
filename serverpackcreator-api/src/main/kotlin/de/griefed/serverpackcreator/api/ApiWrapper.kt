@@ -40,7 +40,6 @@ import javax.xml.parsers.ParserConfigurationException
  * API wrapper, allowing you to conveniently initialize, setup and use the different aspects of ServerPackCreator.
  *
  * @param properties serverpackcreator.properties-file containing settings and configurations to load the API with.
- * @param language   Language to use with ServerPackCreator. Ensure to use a language for which you have the localization available.
  * @param runSetup   Whether to run the file-setup during API inizialization.
  * @author Griefed
  */
@@ -227,7 +226,7 @@ class ApiWrapper private constructor(
     }
 
     /**
-     * This instances ConfigurationHandler for checking a given [PackConfig] for
+     * This instances ConfigurationHandler for checking a given [de.griefed.serverpackcreator.api.config.PackConfig] for
      * validity, so a server pack can safely be created from it.
      *
      * @return Handler for config checking.
@@ -266,7 +265,7 @@ class ApiWrapper private constructor(
     }
 
     /**
-     * This instances ServerPackHandler used to turn a [PackConfig] into a server pack.
+     * This instances ServerPackHandler used to turn a [de.griefed.serverpackcreator.api.config.PackConfig] into a server pack.
      *
      * @return The ServerPackHandler with which config models can be used to create server packs.
      * @throws IOException                  When the [VersionMeta] had to be instantiated, but
@@ -374,7 +373,6 @@ class ApiWrapper private constructor(
          *
          * @param properties A ServerPackCreator properties-file to use for API initialization. This files may contain
          * configurations for the home-directory and many other settings. For details, see the [Wiki](https://help.serverpackcreator.de/settings-and-configs.html).
-         * @param language The language with which to initialize the localization. Format: `en_gb` or `de_de`
          * @param runSetup Whether to run the initial setup, creating and copying all required files to the filesystem and
          * ensuring the home-directory is properly set up and available to the API.
          * @author Griefed

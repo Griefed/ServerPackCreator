@@ -26,7 +26,7 @@ import javax.swing.UIManager
 import javax.swing.plaf.ColorUIResource
 
 /**
- * Status label used in [ControlPanel] to display latest INFO-type messages.
+ * Status label used in [de.griefed.serverpackcreator.app.gui.window.control.ControlPanel] to display latest INFO-type messages.
  *
  * @author Griefed
  */

@@ -34,9 +34,9 @@ interface RunConfigurationRepository : JpaRepository<RunConfiguration, Int> {
         minecraftVersion: String,
         modloader: String,
         modloaderVersion: String,
-        startArgs: Collection<StartArgument>,
-        clientMods: Collection<ClientMod>,
-        whitelistedMods: Collection<WhitelistedMod>
+        startArgs: MutableCollection<MutableList<StartArgument>>,
+        clientMods: MutableCollection<MutableList<ClientMod>>,
+        whitelistedMods: MutableCollection<MutableList<WhitelistedMod>>
     ): Optional<RunConfiguration>
 
     fun findAllByMinecraftVersion(minecraftVersion: String): List<RunConfiguration>

@@ -252,12 +252,12 @@ class GlobalSettings(
         */
 
         //y++
-        panel.add(serverPacksIcon, "cell 0 $y")
-        panel.add(serverPacksLabel, "cell 1 $y")
-        panel.add(serverPacksSetting, "cell 2 $y, grow")
-        panel.add(serverPacksRevert, "cell 3 $y")
-        panel.add(serverPacksReset, "cell 4 $y")
-        panel.add(serverPacksChoose, "cell 5 $y")
+        panel.add(serverPacksIcon, "cell 0 0")
+        panel.add(serverPacksLabel, "cell 1 0")
+        panel.add(serverPacksSetting, "cell 2 0, grow")
+        panel.add(serverPacksRevert, "cell 3 0")
+        panel.add(serverPacksReset, "cell 4 0")
+        panel.add(serverPacksChoose, "cell 5 0")
 
         y++
         zipY = y

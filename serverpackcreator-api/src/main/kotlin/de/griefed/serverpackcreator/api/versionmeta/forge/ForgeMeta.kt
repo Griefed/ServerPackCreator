@@ -35,7 +35,7 @@ import java.util.*
  * @author Griefed
  */
 @Suppress("unused")
-class ForgeMeta constructor(
+class ForgeMeta(
     private val forgeManifest: File,
     private val utilities: Utilities,
     installerCacheDirectory: File

@@ -54,7 +54,7 @@ class ModPackService @Autowired constructor(
      * Increment the download counter for a given modpack entry in the database identified by the
      * database id.
      *
-     * @param id The database id of the modpack.
+     * @param modPack The database id of the modpack.
      * @author Griefed
      */
     fun updateDownloadStats(modPack: ModPack): Optional<ModPack> {

@@ -82,12 +82,12 @@ class AdvancedSettingsPanel(
     init {
         var column = 0
         // Mod Exclusions
-        add(clientModsIcon, "cell 0 $column 1 3")
-        add(clientModsLabel, "cell 1 $column 1 3")
-        add(exclusions, "cell 2 $column 1 3,grow,w 10:500:,h 150!")
-        add(clientModsRevert, "cell 3 $column 2 1, h 30!, aligny center, alignx center,growx")
-        add(clientModsChooser, "cell 3 ${column + 1} 2 1, h 30!, aligny center, alignx center,growx")
-        add(clientModsReset, "cell 3 ${column + 2} 2 1, h 30!, aligny top, alignx center,growx")
+        add(clientModsIcon, "cell 0 0 1 3")
+        add(clientModsLabel, "cell 1 0 1 3")
+        add(exclusions, "cell 2 0 1 3,grow,w 10:500:,h 150!")
+        add(clientModsRevert, "cell 3 0 2 1, h 30!, aligny center, alignx center,growx")
+        add(clientModsChooser, "cell 3 1 2 1, h 30!, aligny center, alignx center,growx")
+        add(clientModsReset, "cell 3 2 2 1, h 30!, aligny top, alignx center,growx")
 
         // Mod Whitelist
         column += 3

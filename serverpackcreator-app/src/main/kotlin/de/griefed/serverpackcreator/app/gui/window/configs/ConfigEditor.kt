@@ -202,11 +202,11 @@ class ConfigEditor(
         // "cell column row width height"
         var column = 0
         // Modpack directory
-        panel.add(modpackIcon, "cell 0 $column,grow")
-        panel.add(modpackLabel, "cell 1 $column,grow")
-        panel.add(modpackSetting, "cell 2 $column,grow")
-        panel.add(modpackChooser, "cell 3 $column, h 30!,w 30!")
-        panel.add(modpackCheck, "cell 4 $column")
+        panel.add(modpackIcon, "cell 0 0,grow")
+        panel.add(modpackLabel, "cell 1 0,grow")
+        panel.add(modpackSetting, "cell 2 0,grow")
+        panel.add(modpackChooser, "cell 3 0, h 30!,w 30!")
+        panel.add(modpackCheck, "cell 4 0")
 
         // Server Properties
         column++ //1

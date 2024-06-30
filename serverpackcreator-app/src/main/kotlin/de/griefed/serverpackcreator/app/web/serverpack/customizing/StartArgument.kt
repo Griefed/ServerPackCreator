@@ -25,19 +25,12 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.Id
 
 @Entity
-class StartArgument {
+class StartArgument(@Column var argument: String) {
 
     @Id
     @GeneratedValue
     @Column(updatable = false, nullable = false)
     var id: Int = 0
-
-    @Column
-    var argument: String = ""
-
-    constructor(argument: String) {
-        this.argument = argument
-    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

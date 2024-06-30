@@ -39,6 +39,7 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStreamReader
 import java.net.URI
+import java.net.URL
 import java.util.*
 
 /**
@@ -1104,7 +1105,7 @@ class ApiProperties(
      * The URL from which a .properties-file is read during updating of the fallback clientside-mods list.
      * The default can be found in [fallbackUpdateURL].
      */
-    var updateUrl = URI(fallbackUpdateURL).toURL()
+    var updateUrl: URL = URI(fallbackUpdateURL).toURL()
         get() {
             field = URI(acquireProperty(pConfigurationFallbackUpdateURL, fallbackUpdateURL)).toURL()
             return field
@@ -2834,17 +2835,5 @@ class ApiProperties(
      * @author Griefed
      */
     inner class CustomXMLConfiguration(loggerContext: LoggerContext?, configSource: ConfigurationSource?) :
-        XmlConfiguration(loggerContext, configSource) {
-
-        /**
-         * For now, all this does is call the [XmlConfiguration.doConfigure]-method to set up the
-         * configuration with the passed source from the constructor. Custom values and settings can be
-         * set here in the future, should a need arise to do so.
-         *
-         * @author Griefed
-         */
-        override fun doConfigure() {
-            super.doConfigure()
-        }
-    }
+        XmlConfiguration(loggerContext, configSource)
 }

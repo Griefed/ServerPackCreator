@@ -133,11 +133,11 @@ class GuiSettings(
         }
 
         var y = 0
-        panel.add(fontSizeIcon, "cell 0 $y")
-        panel.add(fontSizeLabel, "cell 1 $y")
-        panel.add(fontSizeSetting, "cell 2 $y, grow")
-        panel.add(fontSizeRevert, "cell 3 $y")
-        panel.add(fontSizeReset, "cell 4 $y")
+        panel.add(fontSizeIcon, "cell 0 0")
+        panel.add(fontSizeLabel, "cell 1 0")
+        panel.add(fontSizeSetting, "cell 2 0, grow")
+        panel.add(fontSizeRevert, "cell 3 0")
+        panel.add(fontSizeReset, "cell 4 0")
 
         y++
         panel.add(startFocusIcon, "cell 0 $y")

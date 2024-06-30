@@ -1,3 +1,35 @@
+## [6.0.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.1...6.0.0-beta.2) (2024-06-30)
+
+
+### :scissors: Refactor
+
+* Change logging to trace so debug doesn't get spammed to the nether and back ([a6b80b2](https://git.griefed.de/Griefed/ServerPackCreator/commit/a6b80b2382227d099db6e2007de2af46afad5316))
+* Remove unneeded object from constructor ([a632041](https://git.griefed.de/Griefed/ServerPackCreator/commit/a6320418741b16c377193a3574f82ad4e772185b))
+
+
+### 💎 Improvements
+
+* Initiate appInfo before wrapper, use overrides if exists in app-dir ([f5c72a8](https://git.griefed.de/Griefed/ServerPackCreator/commit/f5c72a801a690a0991c21e8606912c4451a3ff17))
+* Sync properties across all loaded ones if they still exist ([ea22538](https://git.griefed.de/Griefed/ServerPackCreator/commit/ea225381a4a6bbf5b23d405cd5e0591b72d43ec5))
+
+
+### 📔 Docs
+
+* Add small overrides-bit. Extend Java placeholder for local testing ([276bdd2](https://git.griefed.de/Griefed/ServerPackCreator/commit/276bdd249472970d349246dc78d1ff6c04cf7051))
+* Latest changelog and fixed HELP ([443d9a8](https://git.griefed.de/Griefed/ServerPackCreator/commit/443d9a8997bf6ae21aafa65cb2b72d25d5e47870))
+* Remove no longer used properties. Cleanups. More property descriptions. ([f1997c8](https://git.griefed.de/Griefed/ServerPackCreator/commit/f1997c887eb63822bbd931d3233ca2a4047e5614))
+
+
+### 📦 Other
+
+* Replace MSI with EXE ([fac3ac0](https://git.griefed.de/Griefed/ServerPackCreator/commit/fac3ac08d891ba771ca8e5d444e3740fa19dca13))
+
+
+### 🛠 Fixes
+
+* Handle Windows drive detected better. Ensure .exe suffix is present on windows. ([e593264](https://git.griefed.de/Griefed/ServerPackCreator/commit/e593264a513a076bcf14e2637869152dc5635baf))
+* Load properties from home-directory ([b5d38ad](https://git.griefed.de/Griefed/ServerPackCreator/commit/b5d38ad13a4324f8b92b55286808af68e2ddb65b))
+
 ## [6.0.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.2.5...6.0.0-beta.1) (2024-06-29)
 
 

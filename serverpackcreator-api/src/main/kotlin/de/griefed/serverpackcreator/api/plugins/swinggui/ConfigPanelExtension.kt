@@ -41,7 +41,7 @@ interface ConfigPanelExtension : ExtensionInformation {
      * add a panel which lets the user configure the version of the mod to use. When the user then
      * runs the server pack generation, your setting will be stored in the subsequently generated
      * serverpackcreator.conf, and could be used in any of the
-     * [de.griefed.serverpackcreator.api.ServerPackHandler] extension-points, which would then
+     * [de.griefed.serverpackcreator.api.serverpack.ServerPackHandler] extension-points, which would then
      * download the version you specified via this here panel.
      *
      * @param versionMeta           Instance of [VersionMeta] so you can work with available Minecraft, Forge, Fabric,

@@ -25,19 +25,12 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.Id
 
 @Entity
-class ClientMod {
+class ClientMod(@Column var mod: String) {
 
     @Id
     @GeneratedValue
     @Column(updatable = false, nullable = false)
     var id: Int = 0
-
-    @Column
-    var mod: String = ""
-
-    constructor(mod: String) {
-        this.mod = mod
-    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

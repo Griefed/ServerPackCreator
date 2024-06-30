@@ -26,6 +26,7 @@ import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
 import java.net.MalformedURLException
+import java.net.URL
 import java.util.*
 import javax.xml.parsers.ParserConfigurationException
 
@@ -41,7 +42,7 @@ import javax.xml.parsers.ParserConfigurationException
  * @author Griefed
  */
 @Suppress("unused")
-class LegacyFabricMeta constructor(
+class LegacyFabricMeta(
     gameVersionsManifest: File,
     loaderVersionsManifest: File,
     installerVersionsManifest: File,
@@ -104,7 +105,7 @@ class LegacyFabricMeta constructor(
     /**
      * @author Griefed
      */
-    override fun isInstallerUrlAvailable(version: String) =
+    override fun isInstallerUrlAvailable(version: String): Boolean =
         try {
             installerVersions.specificURL(version).isPresent
         } catch (e: MalformedURLException) {
@@ -115,17 +116,17 @@ class LegacyFabricMeta constructor(
      * @author Griefed
      */
     @Throws(MalformedURLException::class)
-    override fun getInstallerUrl(version: String) = installerVersions.specificURL(version)
+    override fun getInstallerUrl(version: String): Optional<URL> = installerVersions.specificURL(version)
 
     /**
      * @author Griefed
      */
-    override fun isVersionValid(version: String) = loaderVersions.allVersions.contains(version)
+    override fun isVersionValid(version: String): Boolean = loaderVersions.allVersions.contains(version)
 
     /**
      * @author Griefed
      */
-    override fun isMinecraftSupported(minecraftVersion: String) =
+    override fun isMinecraftSupported(minecraftVersion: String): Boolean =
         gameVersions.allVersions.contains(minecraftVersion)
 
     /**
@@ -134,5 +135,5 @@ class LegacyFabricMeta constructor(
      * @return All Legacy Fabric supported Minecraft versions.
      * @author Griefed
      */
-    fun supportedMinecraftVersions() = gameVersions.allVersions
+    fun supportedMinecraftVersions(): MutableList<String> = gameVersions.allVersions
 }

@@ -177,6 +177,7 @@ class ConfigurationHandler(
             && !utilities.fileUtilities.isReadPermissionSet(packConfig.serverIconPath)
         ) {
             configCheck.serverIconErrors.add(Translations.configuration_log_error_checkcopydirs_read(packConfig.serverIconPath))
+            @Suppress("LoggingSimilarMessage")
             log.error("No read-permission for ${packConfig.serverIconPath}")
         }
         if (!checkIconAndProperties(packConfig.serverPropertiesPath)) {
@@ -187,6 +188,7 @@ class ConfigurationHandler(
             && !utilities.fileUtilities.isReadPermissionSet(packConfig.serverPropertiesPath)
         ) {
             configCheck.serverPropertiesErrors.add(Translations.configuration_log_error_checkcopydirs_read(packConfig.serverPropertiesPath))
+            @Suppress("LoggingSimilarMessage")
             log.error("No read-permission for ${packConfig.serverPropertiesPath}")
         }
 
@@ -267,6 +269,7 @@ class ConfigurationHandler(
         packConfig.projectID = subConfig.projectID
         packConfig.versionID = subConfig.versionID
         packConfig.source = subConfig.source
+        @Suppress("IfThenToElvis")
         packConfig.name = if (subConfig.name != null) {
             subConfig.name
         } else if (name != null) {
@@ -1136,6 +1139,7 @@ class ConfigurationHandler(
                 it, *childNodes
             )
         }
+        @Suppress("IfThenToElvis")
         if (packName != null) {
             packName
         } else {

@@ -84,51 +84,51 @@ class VersionMeta(
     private val legacyFabricUrlBase = "https://meta.legacyfabric.net"
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val legacyFabricUrlGame =
+    val legacyFabricUrlGame: URL =
         URI("$legacyFabricUrlBase/v2/versions/game").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val legacyFabricUrlLoader =
+    val legacyFabricUrlLoader: URL =
         URI("$legacyFabricUrlBase/v2/versions/loader").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val legacyfabricUrlManifest =
+    val legacyfabricUrlManifest: URL =
         URI("https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/maven-metadata.xml").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val minecraftUrlManifest =
+    val minecraftUrlManifest: URL =
         URI("https://launchermeta.mojang.com/mc/game/version_manifest.json").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val forgeUrlManifest =
+    val forgeUrlManifest: URL =
         URI("https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val oldNeoForgeUrlManifest =
+    val oldNeoForgeUrlManifest: URL =
         URI("https://maven.neoforged.net/releases/net/neoforged/forge/maven-metadata.xml").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val newNeoForgeUrlManifest =
+    val newNeoForgeUrlManifest: URL =
         URI("https://maven.neoforged.net/releases/net/neoforged/neoforge/maven-metadata.xml").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val fabricUrlManifest =
+    val fabricUrlManifest: URL =
         URI("https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val fabricUrlIntermediariesManifest =
+    val fabricUrlIntermediariesManifest: URL =
         URI("https://meta.fabricmc.net/v2/versions/intermediary").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val fabricUrlInstallerManifest =
+    val fabricUrlInstallerManifest: URL =
         URI("https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val quiltUrlManifest =
+    val quiltUrlManifest: URL =
         URI("https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-loader/maven-metadata.xml").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val quiltUrlInstallerManifest =
+    val quiltUrlInstallerManifest: URL =
         URI("https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/maven-metadata.xml").toURL()
 
     /**

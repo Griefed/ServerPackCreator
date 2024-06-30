@@ -30,7 +30,7 @@ import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import java.util.*
 
 /**
- * Base-interface from which every [de.griefed.serverpackcreator.api.ServerPackHandler]-extension interface starts from.
+ * Base-interface from which every [de.griefed.serverpackcreator.api.serverpack.ServerPackHandler]-extension interface starts from.
  *
  * @author Griefed
  */

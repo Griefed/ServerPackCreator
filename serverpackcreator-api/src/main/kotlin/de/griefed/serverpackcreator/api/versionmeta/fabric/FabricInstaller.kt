@@ -183,7 +183,7 @@ internal class FabricInstaller(
     fun improvedLauncherUrl(
         minecraftVersion: String,
         fabricVersion: String
-    ) = URI(
+    ): URL = URI(
         improvedLauncherUrlTemplate.format(
             minecraftVersion,
             fabricVersion,
