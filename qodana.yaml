@@ -5,7 +5,7 @@ profile:
 
 projectJDK: azul-21
 
-linter: jetbrains/qodana-jvm-community:2024.1
+linter: jetbrains/qodana-jvm-community
 
 exclude:
   - name: All
