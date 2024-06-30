@@ -1,3 +1,15 @@
+## [6.0.0-beta.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.6...6.0.0-beta.7) (2024-06-30)
+
+
+### 📦 Other
+
+* Chaaaaangeloooooooogs ([64b282a](https://git.griefed.de/Griefed/ServerPackCreator/commit/64b282acd7b3fab62e98157efb557eef6f10f480))
+
+
+### 🛠 Fixes
+
+* Catch errors in web-UI ([bdc36fd](https://git.griefed.de/Griefed/ServerPackCreator/commit/bdc36fdaf492f55b4d79dd86f4ce219c04dcf5a9))
+
 ## [6.0.0-beta.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.5...6.0.0-beta.6) (2024-06-30)
 
 
