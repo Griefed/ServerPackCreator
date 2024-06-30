@@ -134,3 +134,7 @@ tasks.build {
         tasks.dokkaJavadocJar
     }
 }
+
+tasks.signMavenJavaPublication {
+    dependsOn(tasks.dokkaJavadocJar)
+}
