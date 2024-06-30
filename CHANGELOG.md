@@ -1,3 +1,10 @@
+## [6.0.0-beta.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.4...6.0.0-beta.5) (2024-06-30)
+
+
+### 🦊 CI/CD
+
+* Declare dependency on dokkaJavaDocJar from signMaven ([7cd1570](https://git.griefed.de/Griefed/ServerPackCreator/commit/7cd15705d2b219baaea4a8f373b1d826236bb56d))
+
 ## [6.0.0-beta.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.3...6.0.0-beta.4) (2024-06-30)
 
 
