@@ -262,15 +262,15 @@ entirety of the template setting to factory defaults.
 
 As of ServerPackCreator version 3.14.x you can define properties which, when configured correctly,
 will set the `SPC_JAVA_SPC`-placeholder in the script variables depending on which Java version is
-required by Minecraft.
+required by Minecraft. This makes testing your server pack on your system much easier, as you no longer need
+to edit the `variables.txt` after you generated your server pack.
 
-The two property in question:
+The property in question:
 
 - `de.griefed.serverpackcreator.script.javaN`
 
 Where `N` represents the version of the Java installation you want to make available to
 ServerPackCreator for script placeholder editing.
-
 Set any of these to the exact path to your correlating Java executable or binary file.
 
 Examples:
@@ -285,7 +285,10 @@ ServerPackCreator will set the value for the `SPC_JAVA_SPC`-placeholder to eithe
 depending on whether the Minecraft version requires Java 8 or Java 17.
 
 The `SPC_JAVA_SPC`-placeholder in the scripts in the ZIP-archives, should you choose to let
-ServerPackCreator create one, will still be set to `java`.
+ServerPackCreator create one, will still be set to `java`. This is to ensure that anyone who downloads or uses your
+server pack will use their own Java version, or has the required Java version installed by the start-scripts.
+It is discouraged to create a ZIP-file yourself, as a manually created ZIP-file may contain files disallowed on
+CurseForge/Modrinth/etc..
 
 ### Deactivating the automatic updating of the Java placeholder
 
@@ -863,7 +866,6 @@ spring.output.ansi.enabled=ALWAYS
 spring.servlet.multipart.max-file-size=5000MB
 spring.servlet.multipart.max-request-size=5000MB
 spring.transaction.default-timeout=3600
-
 ```
 
 | Property                                                             | Description                                                                                                                                                                            |
@@ -898,12 +900,18 @@ spring.transaction.default-timeout=3600
 | de.griefed.serverpackcreator.serverpack.java.template.sh             | Path to the default Shell-template used for Java-installation-script generation.                                                                                                       |
 | de.griefed.serverpackcreator.serverpack.update                       | `true` or `false`. Whether ServerPackCreator should attempt to update a server pack which was previously generated through ServerPackCreator. Requires overwrites to be disabled.      |
 
+If at any point you wish to override one of these properties (apart from the ones which get dynamically updated), you may
+place an `overrides.properties` in your ServerPackCreator home-directory. Any property in that file will override any
+already existing one during start-up. Check the logs when using overrides, as any property loaded from your overrides will be printed to the
+logs, too.
+
 
 If any `spring.*` or `server.*` property above has no description in the table below, it is not to be touched. Changing any of
 these can break ServerPackCreator or cause otherwise unwanted behaviour.
 Changes to properties not described below are not supported. If you changed a property you were not
 meant to fiddle around with, do not report an issue. Such issues will be closed without further
 comment.
+
 
 | Property                                  | Description                                                               |
 |-------------------------------------------|---------------------------------------------------------------------------|
