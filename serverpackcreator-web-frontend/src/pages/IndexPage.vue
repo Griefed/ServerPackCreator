@@ -43,22 +43,6 @@
           </q-card-section>
         </q-card>
       </div>
-      <div class="col-lg-3 col-md-6 col-sm-12 col-xs-12">
-        <q-card>
-          <q-card-section>
-            <div class="text-h6">Modpacks - Server Packs - Run Configurations</div>
-            <ModServerRunPieChart endpoint="packs" ></ModServerRunPieChart>
-          </q-card-section>
-        </q-card>
-      </div>
-      <div class="col-lg-3 col-md-6 col-sm-12 col-xs-12">
-        <q-card>
-          <q-card-section>
-            <div class="text-h6">Minecraft Versions, Modloaders, Modloader Versions</div>
-            <UsagesPieChart endpoint="packs" ></UsagesPieChart>
-          </q-card-section>
-        </q-card>
-      </div>
     </div>
   </q-page>
 </template>
@@ -67,12 +51,10 @@
 import { defineComponent } from 'vue';
 import AreaTimeSeriesChart from 'components/charts/AreaTimeSeriesChart.vue';
 import DiskUsageBarGraph from 'components/charts/DiskUsageBarGraph.vue';
-import ModServerRunPieChart from 'components/charts/ModServerRunPieChart.vue';
-import UsagesPieChart from 'components/charts/UsagesPieChart.vue';
 
 export default defineComponent({
   name: 'IndexPage',
-  components: { UsagesPieChart, ModServerRunPieChart, DiskUsageBarGraph,  AreaTimeSeriesChart },
+  components: {DiskUsageBarGraph,  AreaTimeSeriesChart },
   setup () {
     return {
 
