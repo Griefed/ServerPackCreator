@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.app
 
 import de.comahe.i18n4k.Locale
+import de.griefed.serverpackcreator.api.utilities.common.JarInformation
 import java.awt.GraphicsEnvironment
 import java.io.File
 
@@ -40,10 +41,14 @@ import java.io.File
  *
  * @author Griefed
  */
-open class CommandlineParser(args: Array<String>) {
+open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
     var mode: Mode = Mode.GUI
     var language: Locale? = null
-    var propertiesFile: File = File("serverpackcreator.properties")
+    var propertiesFile: File = if (File(appInfo.jarFolder, "overrides.properties").isFile) {
+        File(appInfo.jarFolder, "overrides.properties")
+    } else {
+        File(appInfo.jarFolder, "serverpackcreator.properties")
+    }
 
     init {
         val argsList = args.toList()

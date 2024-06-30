@@ -24,6 +24,7 @@ import de.comahe.i18n4k.Locale
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.api.utilities.common.JarInformation
+import de.griefed.serverpackcreator.api.utilities.common.JarUtilities
 import de.griefed.serverpackcreator.api.utilities.common.readText
 import de.griefed.serverpackcreator.app.cli.ConfigurationEditor
 import de.griefed.serverpackcreator.app.gui.MainWindow
@@ -61,9 +62,9 @@ fun main(args: Array<String>) {
  */
 class ServerPackCreator(private val args: Array<String>) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
-    val commandlineParser: CommandlineParser = CommandlineParser(args)
-    val apiWrapper = ApiWrapper.api(commandlineParser.propertiesFile, false)
-    private val appInfo = JarInformation(ServerPackCreator::class.java, apiWrapper.jarUtilities)
+    private val appInfo = JarInformation(ServerPackCreator::class.java, JarUtilities())
+    val commandlineParser: CommandlineParser = CommandlineParser(args, appInfo)
+    val apiWrapper = ApiWrapper.api(commandlineParser.propertiesFile, false, appInfo)
 
     init {
         if (commandlineParser.language != null) {
