@@ -21,55 +21,57 @@ class ApiPropertiesTest internal constructor() {
 
     @Test
     fun test() {
-        var apiProperties = ApiProperties(
-            fileUtilities, systemUtilities, listUtilities, jarUtilities,
-            File("src/test/resources/testresources/properties/filters/contains.properties")
+        val propFiles = listOf(
+            /*0*/File("src/test/resources/testresources/properties/filters/contains.properties"),
+            /*1*/File("src/test/resources/testresources/properties/filters/either.properties"),
+            /*2*/File("src/test/resources/testresources/properties/filters/end.properties"),
+            /*3*/File("src/test/resources/testresources/properties/filters/regex.properties"),
+            /*4*/File("src/test/resources/testresources/properties/filters/start.properties"),
+            /*5*/File("src/test/resources/serverpackcreator.properties")
         )
+        val apiProperties = ApiProperties(
+            fileUtilities, systemUtilities, listUtilities, jarUtilities,
+            File("src/test/resources/serverpackcreator.properties")
+        )
+        apiProperties.clearPropertyFileList()
+
+        apiProperties.loadOverrides(propFiles[0])
         Assertions.assertEquals(
             ExclusionFilter.CONTAIN,
             apiProperties.exclusionFilter
         )
-        apiProperties = ApiProperties(
-            fileUtilities, systemUtilities, listUtilities, jarUtilities,
-            File("src/test/resources/testresources/properties/filters/either.properties")
-        )
+
+        apiProperties.loadOverrides(propFiles[1])
         Assertions.assertEquals(
             ExclusionFilter.EITHER,
             apiProperties.exclusionFilter
         )
-        apiProperties = ApiProperties(
-            fileUtilities, systemUtilities, listUtilities, jarUtilities,
-            File("src/test/resources/testresources/properties/filters/end.properties")
-        )
+
+        apiProperties.loadOverrides(propFiles[2])
         Assertions.assertEquals(
             ExclusionFilter.END,
             apiProperties.exclusionFilter
         )
-        apiProperties = ApiProperties(
-            fileUtilities, systemUtilities, listUtilities, jarUtilities,
-            File("src/test/resources/testresources/properties/filters/regex.properties")
-        )
+
+        apiProperties.loadOverrides(propFiles[3])
         Assertions.assertEquals(
             ExclusionFilter.REGEX,
             apiProperties.exclusionFilter
         )
-        apiProperties = ApiProperties(
-            fileUtilities, systemUtilities, listUtilities, jarUtilities,
-            File("src/test/resources/testresources/properties/filters/start.properties")
-        )
+
+        apiProperties.loadOverrides(propFiles[4])
         Assertions.assertEquals(
             ExclusionFilter.START,
             apiProperties.exclusionFilter
         )
-        apiProperties = ApiProperties(
-            fileUtilities, systemUtilities, listUtilities, jarUtilities,
-            File("src/test/resources/serverpackcreator.properties")
-        )
+
+        apiProperties.loadOverrides(propFiles[5])
         Assertions.assertNotNull(apiProperties.javaPath)
         Assertions.assertTrue(
             File(apiProperties.javaPath).exists(),
             "Java not found: ${File(apiProperties.javaPath).path}"
         )
+
         Assertions.assertNotNull(apiProperties.serverPackCreatorPropertiesFile)
         Assertions.assertEquals(
             File(apiProperties.homeDirectory, "serverpackcreator.properties"),

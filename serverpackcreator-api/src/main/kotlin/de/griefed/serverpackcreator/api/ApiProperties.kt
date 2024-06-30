@@ -2072,10 +2072,10 @@ class ApiProperties(
         }
     }
 
-    private fun loadOverrides() {
+    fun loadOverrides(properties: File = overridesPropertiesFile) {
         val tempProps = Properties()
-        if (overridesPropertiesFile.isFile) {
-            overridesPropertiesFile.inputStream().use {
+        if (properties.isFile) {
+            properties.inputStream().use {
                 tempProps.load(it)
             }
         }
@@ -2146,7 +2146,7 @@ class ApiProperties(
         }
 
         // Load all values from the overrides-properties
-        loadOverrides()
+        loadOverrides(overridesPropertiesFile)
 
         if (updateFallback()) {
             log.info("Fallback lists updated.")
@@ -2671,6 +2671,10 @@ class ApiProperties(
      * @return Old version used before updating. Empty if this is the first run of ServerPackCreator.
      */
     fun oldVersion(): String = internalProps.getProperty(pOldVersion, "")
+
+    fun clearPropertyFileList() {
+        propertyFiles.clear()
+    }
 
     @Suppress("MemberVisibilityCanBePrivate")
     fun printSettings() {
