@@ -1,5 +1,5 @@
 <template>
-  <q-page class="col items-center justify-evenly">
+  <q-page class="q-pa-sm">
     <q-card square>
       <HistoryTable class="table-size"/>
     </q-card>
