@@ -2386,7 +2386,7 @@ class ApiProperties(
         toSave.add(propertiesFile)
 
         for (props in toSave) {
-            if (!props.isFile) {
+            if (!props.isFile && props != serverPackCreatorPropertiesFile) {
                 //Skip if the file no longer exists
                 continue
             }
