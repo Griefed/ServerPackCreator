@@ -10,8 +10,6 @@ variables:
   SEMANTIC_RELEASE_PACKAGE: "$CI_PROJECT_NAME"
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
-  CACHE_FALLBACK_KEY: "cache-fallback-$CI_PROJECT_ID"
-  CACHE_KEY: "cache-$CI_COMMIT_REF_SLUG"
 
 services:
   - name: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.9
@@ -73,16 +71,6 @@ Build Test:
     reports:
       junit:
         - serverpackcreator-api/build/test-results/test/TEST-*.xml
-  cache:
-    - key: $CACHE_KEY
-      policy: $POLICY
-      paths:
-        - buildSrc/.gradle
-        - buildSrc/build
-        - .gradle
-        - serverpackcreator-api/build
-        - serverpackcreator-app/build
-        - serverpackcreator-plugin-example/build
 
 Docker Test:
   stage: Tests
@@ -100,25 +88,6 @@ Docker Test:
   retry: 1
   rules:
     - if: '$CI_SERVER_HOST == "git.griefed.de"' # Remove once GitLab no longer throws javax.net.ssl.SSLHandshakeException: Remote host terminated the handshake
-
-#Qodana:
-#  stage: Tests
-#  image:
-#    name: jetbrains/qodana-jvm-community
-#    entrypoint: [""]
-#  cache:
-#    - key: qodana-2024.1-$CI_DEFAULT_BRANCH-$CI_COMMIT_REF_SLUG
-#      fallback_keys:
-#        - qodana-2024.1-$CI_DEFAULT_BRANCH-
-#        - qodana-2024.1-
-#      paths:
-#        - .qodana/cache
-#  script:
-#    - qodana --save-report --results-dir=$CI_PROJECT_DIR/.qodana/results --cache-dir=$CI_PROJECT_DIR/.qodana/cache
-#  artifacts:
-#    paths:
-#      - .qodana/results/
-#    expose_as: 'Qodana report'
 
 Generate Release:
   stage: Release
@@ -185,16 +154,6 @@ Build Release:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-  cache:
-    - key: $CACHE_KEY
-      policy: pull
-      paths:
-        - buildSrc/.gradle
-        - buildSrc/build
-        - .gradle
-        - serverpackcreator-api/build
-        - serverpackcreator-app/build
-        - serverpackcreator-plugin-example/build
 
 Sign Java Publication:
   stage: Build Release
@@ -215,16 +174,7 @@ Sign Java Publication:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-  cache:
-    - key: $CACHE_KEY
-      policy: pull
-      paths:
-        - buildSrc/.gradle
-        - buildSrc/build
-        - .gradle
-        - serverpackcreator-api/build
-        - serverpackcreator-app/build
-        - serverpackcreator-plugin-example/build
+
 Publish GitHub:
   stage: Build Release
   image: docker.griefed.dev/eclipse-temurin:21-jdk
@@ -238,16 +188,6 @@ Publish GitHub:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-  cache:
-    - key: $CACHE_KEY
-      policy: pull
-      paths:
-        - buildSrc/.gradle
-        - buildSrc/build
-        - .gradle
-        - serverpackcreator-api/build
-        - serverpackcreator-app/build
-        - serverpackcreator-plugin-example/build
 
 Publish GitLab:
   stage: Build Release
@@ -262,16 +202,6 @@ Publish GitLab:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-  cache:
-    - key: $CACHE_KEY
-      policy: pull
-      paths:
-        - buildSrc/.gradle
-        - buildSrc/build
-        - .gradle
-        - serverpackcreator-api/build
-        - serverpackcreator-app/build
-        - serverpackcreator-plugin-example/build
 
 Publish GitGriefed:
   stage: Build Release
@@ -286,16 +216,7 @@ Publish GitGriefed:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-  cache:
-    - key: $CACHE_KEY
-      policy: pull
-      paths:
-        - buildSrc/.gradle
-        - buildSrc/build
-        - .gradle
-        - serverpackcreator-api/build
-        - serverpackcreator-app/build
-        - serverpackcreator-plugin-example/build
+
 Publish OSSRH:
   stage: Build Release
   image: docker.griefed.dev/eclipse-temurin:21-jdk
@@ -309,16 +230,6 @@ Publish OSSRH:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-  cache:
-    - key: $CACHE_KEY
-      policy: pull
-      paths:
-        - buildSrc/.gradle
-        - buildSrc/build
-        - .gradle
-        - serverpackcreator-api/build
-        - serverpackcreator-app/build
-        - serverpackcreator-plugin-example/build
 
 Build Docker Release:
   stage: Build Release
@@ -478,16 +389,6 @@ pages:
     expire_in: 1 week
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-  cache:
-    - key: $CACHE_KEY
-      policy: pull
-      paths:
-        - buildSrc/.gradle
-        - buildSrc/build
-        - .gradle
-        - serverpackcreator-api/build
-        - serverpackcreator-app/build
-        - serverpackcreator-plugin-example/build
 
 Update README:on-schedule:
   stage: Documentation
