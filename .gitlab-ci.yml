@@ -219,7 +219,7 @@ Sign Java Publication:
     - chmod +x gradlew
   script:
     - echo "**** Publishing Maven Artifacts ****"
-    - "./gradlew dokkaJavadocJar signJvmPublication -Pversion=${CI_COMMIT_TAG} --info --stacktrace -x :serverpackcreator-api:test -x :serverpackcreator-app:test"
+    - "./gradlew dokkaJavadocJar signMavenJavaPublication -Pversion=${CI_COMMIT_TAG} --info --stacktrace -x :serverpackcreator-api:test -x :serverpackcreator-app:test"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'

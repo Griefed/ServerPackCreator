@@ -124,39 +124,6 @@ tasks.jar {
 }
 
 publishing {
-    publications.withType<MavenPublication> {
-        groupId = project.group.toString()
-        artifactId = project.name
-        version = project.version.toString()
-        artifact(tasks["javadocJar"])
-        pom {
-            name.set("ServerPackCreator")
-            description.set("ServerPackCreators API, to create server packs from Forge, Fabric, Quilt, LegacyFabric and NeoForge modpacks.")
-            url.set("https://git.griefed.de/Griefed/ServerPackCreator")
-
-            licenses {
-                license {
-                    name.set("GNU Lesser General Public License v2.1")
-                    url.set("https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html")
-                }
-            }
-
-            developers {
-                developer {
-                    id.set("griefed")
-                    name.set("Griefed")
-                    email.set("griefed@griefed.de")
-                }
-            }
-
-            scm {
-                connection.set("scm:git:git:git.griefed.de/Griefed/ServerPackCreator.git")
-                developerConnection.set("scm:git:ssh://git.griefed.de/Griefed/ServerPackCreator.git")
-                url.set("https://git.griefed.de/Griefed/ServerPackCreator")
-            }
-        }
-    }
-
     repositories {
         maven {
             name = "GitHubPackages"
@@ -186,6 +153,41 @@ publishing {
             }
             authentication {
                 create<HttpHeaderAuthentication>("header")
+            }
+        }
+    }
+
+    publications {
+        register("mavenJava", MavenPublication::class) {
+            groupId = project.group.toString()
+            artifactId = project.name
+            version = project.version.toString()
+            artifact(tasks["javadocJar"])
+            pom {
+                name.set("ServerPackCreator")
+                description.set("ServerPackCreators API, to create server packs from Forge, Fabric, Quilt, LegacyFabric and NeoForge modpacks.")
+                url.set("https://git.griefed.de/Griefed/ServerPackCreator")
+
+                licenses {
+                    license {
+                        name.set("GNU Lesser General Public License v2.1")
+                        url.set("https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html")
+                    }
+                }
+
+                developers {
+                    developer {
+                        id.set("griefed")
+                        name.set("Griefed")
+                        email.set("griefed@griefed.de")
+                    }
+                }
+
+                scm {
+                    connection.set("scm:git:git:git.griefed.de/Griefed/ServerPackCreator.git")
+                    developerConnection.set("scm:git:ssh://git.griefed.de/Griefed/ServerPackCreator.git")
+                    url.set("https://git.griefed.de/Griefed/ServerPackCreator")
+                }
             }
         }
     }
