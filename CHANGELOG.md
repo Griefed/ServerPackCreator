@@ -1,3 +1,20 @@
+## [6.0.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.2...6.0.0-beta.3) (2024-06-30)
+
+
+### 📔 Docs
+
+* Update docs in resources ([53cde87](https://git.griefed.de/Griefed/ServerPackCreator/commit/53cde871d5eb7a24485929ecc0af96a10a1c9825))
+
+
+### 🦊 CI/CD
+
+* Qodana works locally at least. Remove explicit version for linter. ([44af8ad](https://git.griefed.de/Griefed/ServerPackCreator/commit/44af8ad0a5d159e5145ad3ebb385e3afe1dd3e47))
+
+
+### 🛠 Fixes
+
+* Bring back signing task after moving away from Kotlin Multiplatform ([a7380c1](https://git.griefed.de/Griefed/ServerPackCreator/commit/a7380c1b1492dd7a7565000dfdba0655a8f61f04))
+
 ## [6.0.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.1...6.0.0-beta.2) (2024-06-30)
 
 
