@@ -90,8 +90,6 @@ class ApiProperties(
         "de.griefed.serverpackcreator.serverpack.autodiscovery.enabled"
     private val pServerPackAutoDiscoveryEnabledLegacy =
         "de.griefed.serverpackcreator.serverpack.autodiscoverenabled"
-    private val pGuiDarkMode =
-        "de.griefed.serverpackcreator.gui.darkmode"
     private val pConfigurationDirectoriesServerPacks =
         "de.griefed.serverpackcreator.configuration.directories.serverpacks"
     private val pServerPackCleanupEnabled =
@@ -100,20 +98,13 @@ class ApiProperties(
         "de.griefed.serverpackcreator.serverpack.overwrite.enabled"
     private val pConfigurationDirectoriesShouldExclude =
         "de.griefed.serverpackcreator.configuration.directories.shouldexclude"
-    private val pSpringSchedulesDatabaseCleanup =
-        "de.griefed.serverpackcreator.spring.schedules.database.cleanup"
-    private val pStringSchedulesFilesCleanup =
-        "de.griefed.serverpackcreator.spring.schedules.files.cleanup"
-    private val pSpringSchedulesVersionMetaRefresh =
-        "de.griefed.serverpackcreator.spring.schedules.versions.refresh"
-    private val pConfigurationSaveLastLoadedConfigEnabled =
-        "de.griefed.serverpackcreator.configuration.saveloadedconfig"
     private val pConfigurationDirectoriesMustInclude =
         "de.griefed.serverpackcreator.configuration.directories.mustinclude"
     private val pServerPackZipExclusions =
         "de.griefed.serverpackcreator.serverpack.zip.exclude"
     private val pServerPackZipExclusionEnabled =
         "de.griefed.serverpackcreator.serverpack.zip.exclude.enabled"
+
     @Deprecated("Deprecated as of 6.0.0")
     private val pServerPackScriptTemplates =
         "de.griefed.serverpackcreator.serverpack.script.template"
@@ -985,18 +976,19 @@ class ApiProperties(
         return newTemplates.toList()
     }
 
-    @Deprecated("Deprecated as of 6.0.0",ReplaceWith("startScriptTemplates"))
+    @Deprecated("Deprecated as of 6.0.0", ReplaceWith("startScriptTemplates"))
     var scriptTemplates: TreeSet<File> = TreeSet<File>()
         get() {
             val scriptSetting = internalProps.getProperty(pServerPackScriptTemplates)
-            val entries = if (scriptSetting != null && scriptSetting == "default_template.ps1,default_template.sh,default_template.bat") {
-                defaultScriptTemplates()
-            } else {
-                getListProperty(
-                    pServerPackScriptTemplates,
-                    defaultScriptTemplates().joinToString(",") { it.absolutePath }
-                ).map { File(it).absoluteFile }
-            }
+            val entries =
+                if (scriptSetting != null && scriptSetting == "default_template.ps1,default_template.sh,default_template.bat") {
+                    defaultScriptTemplates()
+                } else {
+                    getListProperty(
+                        pServerPackScriptTemplates,
+                        defaultScriptTemplates().joinToString(",") { it.absolutePath }
+                    ).map { File(it).absoluteFile }
+                }
             field.clear()
             field.addAll(entries)
             return field
@@ -1015,7 +1007,7 @@ class ApiProperties(
     /**
      * Default map of start-script templates: sh, ps1, bat.
      */
-    fun defaultStartScriptTemplates() : HashMap<String, String> {
+    fun defaultStartScriptTemplates(): HashMap<String, String> {
         return hashMapOf(
             Pair("sh", File(serverFilesDirectory.absolutePath, defaultShellScriptTemplate.name).absolutePath),
             Pair("ps1", File(serverFilesDirectory.absolutePath, defaultPowerShellScriptTemplate.name).absolutePath),
@@ -1027,18 +1019,20 @@ class ApiProperties(
      * Start-script templates to use during server pack generation.
      * Each key represents a different template and script-type.
      */
-    var startScriptTemplates: HashMap<String,String> = hashMapOf()
+    var startScriptTemplates: HashMap<String, String> = hashMapOf()
         get() {
             val templateProps = internalProps.keys
                 .filter { entry -> (entry as String).startsWith(pServerPackStartScriptTemplatesPrefix) }
                 .map { entry -> entry as String }
             var type: String
-            if (templateProps.isEmpty() || templateProps.any { entry -> entry.replace(pServerPackStartScriptTemplatesPrefix,"").isBlank() }) {
+            if (templateProps.isEmpty() || templateProps.any { entry ->
+                    entry.replace(pServerPackStartScriptTemplatesPrefix, "").isBlank()
+                }) {
                 log.warn("Found empty definitions for start script templates. Using defaults.")
                 field = defaultStartScriptTemplates()
             } else {
                 for (templateProp in templateProps) {
-                    type = templateProp.replace(pServerPackStartScriptTemplatesPrefix,"")
+                    type = templateProp.replace(pServerPackStartScriptTemplatesPrefix, "")
                     field[type] = File(internalProps[templateProp] as String).absolutePath
                 }
             }
@@ -1059,7 +1053,7 @@ class ApiProperties(
     /**
      * Default map of start-script templates: sh, ps1, bat.
      */
-    fun defaultJavaScriptTemplates() : HashMap<String, String> {
+    fun defaultJavaScriptTemplates(): HashMap<String, String> {
         return hashMapOf(
             Pair("sh", File(serverFilesDirectory.absolutePath, defaultJavaShellScriptTemplate.name).absolutePath),
             Pair("ps1", File(serverFilesDirectory.absolutePath, defaultJavaPowerShellScriptTemplate.name).absolutePath)
@@ -1070,18 +1064,23 @@ class ApiProperties(
      * Start-script templates to use during server pack generation.
      * Each key represents a different template and script-type.
      */
-    var javaScriptTemplates: HashMap<String,String> = hashMapOf()
+    var javaScriptTemplates: HashMap<String, String> = hashMapOf()
         get() {
             val templateProps = internalProps.keys
                 .filter { entry -> (entry as String).startsWith(pServerPackJavaScriptTemplatesPrefix) }
                 .map { entry -> entry as String }
             var type: String
-            if (templateProps.isEmpty() || templateProps.any { entry -> entry.replace(pServerPackJavaScriptTemplatesPrefix,"").isBlank() }) {
+            if (templateProps.isEmpty() || templateProps.any { entry ->
+                    entry.replace(
+                        pServerPackJavaScriptTemplatesPrefix,
+                        ""
+                    ).isBlank()
+                }) {
                 log.warn("Found empty definitions for java script templates. Using defaults.")
                 field = defaultJavaScriptTemplates()
             } else {
                 for (templateProp in templateProps) {
-                    type = templateProp.replace(pServerPackJavaScriptTemplatesPrefix,"")
+                    type = templateProp.replace(pServerPackJavaScriptTemplatesPrefix, "")
                     field[type] = File(internalProps[templateProp] as String).absolutePath
                 }
             }
@@ -1493,9 +1492,9 @@ class ApiProperties(
     /**
      * Overrides which, well, override, any property which may be set in the regular [serverPackCreatorPropertiesFile].
      */
-    var overridesPropertiesFile: File = File(homeDirectory,"overrides.properties")
+    var overridesPropertiesFile: File = File(homeDirectory, "overrides.properties")
         get() {
-            field = File(homeDirectory,"overrides.properties")
+            field = File(homeDirectory, "overrides.properties")
             return field
         }
         private set
@@ -2047,17 +2046,24 @@ class ApiProperties(
             log.warn("Properties-file does not exist: ${propertiesFile.absolutePath}.")
             return
         }
-        props.entries.removeIf { entry -> entry.value.toString().isBlank() }
+
         try {
+            //Temp props to load the ones from the specified file into
             val tempProps = Properties()
             propertiesFile.inputStream().use {
                 tempProps.load(it)
             }
+
             tempProps.entries.removeIf { entry -> entry.value.toString().isBlank() }
+
+            //Write temp props into passed props
             for ((key, value) in tempProps.entries) {
                 props[key] = value
             }
-            log.info("Loaded properties from $propertiesFile.")
+
+            props.entries.removeIf { entry -> entry.value.toString().isBlank() }
+
+            log.info("Loaded properties from ${propertiesFile.absolutePath}.")
         } catch (ex: Exception) {
             log.error("Couldn't read properties from ${propertiesFile.absolutePath}.", ex)
         }
@@ -2070,7 +2076,7 @@ class ApiProperties(
                 tempProps.load(it)
             }
         }
-        for ((key,value) in tempProps) {
+        for ((key, value) in tempProps) {
             log.warn("Overriding:")
             log.warn("  $key")
             log.warn("  $value")
@@ -2095,12 +2101,16 @@ class ApiProperties(
      * configuration.
      * @author Griefed
      */
-    fun loadProperties(propertiesFile: File = File(serverPackCreatorProperties), saveProps: Boolean = true) {
+    fun loadProperties(
+        propertiesFile: File = File(serverPackCreatorProperties).absoluteFile,
+        saveProps: Boolean = true
+    ) {
         val props = Properties()
         val jarFolderFile = File(jarInformation.jarFolder.absoluteFile, serverPackCreatorProperties).absoluteFile
         val serverPackCreatorHomeDir = File(home, "ServerPackCreator").absoluteFile
         val homeDirFile = File(serverPackCreatorHomeDir, serverPackCreatorProperties).absoluteFile
-        val relativeDirFile = File(serverPackCreatorProperties).absoluteFile
+        val relativeDirFile =
+            File(serverPackCreatorProperties).absoluteFile //TODO where is this? It gets loaded when run through installer
 
         // Load the properties file from the classpath, providing default values.
         try {
@@ -2122,6 +2132,11 @@ class ApiProperties(
         loadFile(propertiesFile, props)
 
         internalProps.putAll(props)
+
+        //Acquisition done, now, load from the home-directory
+        loadFile(serverPackCreatorPropertiesFile, props)
+        internalProps.putAll(props)
+
         internalProps.setProperty(pTomcatBaseDirectory, homeDirectory.absolutePath)
         if (internalProps.getProperty(pLanguage) != "en_GB") {
             changeLocale(Locale(internalProps.getProperty(pLanguage)))
@@ -2541,7 +2556,7 @@ class ApiProperties(
             val newBlacklist = properties!!.getProperty(pConfigurationFallbackModsWhiteList)
             val currentBlacklist = internalProps.getProperty(pConfigurationFallbackModsList)
             if (newBlacklist != null && currentBlacklist != newBlacklist) {
-                internalProps.setProperty(pConfigurationFallbackModsList,newBlacklist)
+                internalProps.setProperty(pConfigurationFallbackModsList, newBlacklist)
                 clientsideMods.clear()
                 clientsideMods.addAll(internalProps.getProperty(pConfigurationFallbackModsList).split(","))
                 log.info("The fallback-list for clientside only mods has been updated to: $clientsideMods")
@@ -2551,7 +2566,7 @@ class ApiProperties(
             val newWhitelist = properties!!.getProperty(pConfigurationFallbackModsWhiteList)
             val currentWhitelist = internalProps.getProperty(pConfigurationFallbackModsWhiteList)
             if (newWhitelist != null && currentWhitelist != newWhitelist) {
-                internalProps.setProperty(pConfigurationFallbackModsWhiteList,newWhitelist)
+                internalProps.setProperty(pConfigurationFallbackModsWhiteList, newWhitelist)
                 modsWhitelist.clear()
                 modsWhitelist.addAll(internalProps.getProperty(pConfigurationFallbackModsWhiteList).split(","))
                 log.info("The fallback-list for whitelisted mods has been updated to: $modsWhitelist")
@@ -2682,7 +2697,7 @@ class ApiProperties(
         log.info("============================== PROPERTIES ==============================")
     }
 
-    val installLocationXml: File = File(home,"log4j2.xml")
+    val installLocationXml: File = File(home, "log4j2.xml")
     val log4jXml: File
 
     init {

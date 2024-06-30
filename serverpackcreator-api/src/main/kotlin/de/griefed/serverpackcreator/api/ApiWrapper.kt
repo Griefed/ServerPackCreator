@@ -52,6 +52,7 @@ class ApiWrapper private constructor(
     val xmlJsonRegex = ".*\\.(xml|json)".toRegex()
     var setupWasRun: Boolean = false
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+
     /**
      * This instances settings used across ServerPackCreator, such as the working-directories, files
      * and other settings.

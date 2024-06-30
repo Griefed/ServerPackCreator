@@ -64,7 +64,7 @@ class ServerPackCreator(private val args: Array<String>) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val appInfo = JarInformation(ServerPackCreator::class.java, JarUtilities())
     val commandlineParser: CommandlineParser = CommandlineParser(args, appInfo)
-    val apiWrapper = ApiWrapper.api(commandlineParser.propertiesFile, false, appInfo)
+    val apiWrapper = ApiWrapper.api(commandlineParser.propertiesFile, false)
 
     init {
         if (commandlineParser.language != null) {
