@@ -94,3 +94,7 @@ tasks.test {
         }
     }
 }
+
+tasks.signMavenJavaPublication {
+    dependsOn(tasks.dokkaJavadocJar)
+}
