@@ -30,13 +30,14 @@ import java.util.*
 @Repository
 interface RunConfigurationRepository : JpaRepository<RunConfiguration, Int> {
     // lol, dat method name
+    @Suppress("SpringDataRepositoryMethodParametersInspection")
     fun findByMinecraftVersionAndModloaderAndModloaderVersionAndStartArgsInAndClientModsInAndWhitelistedModsIn(
         minecraftVersion: String,
         modloader: String,
         modloaderVersion: String,
-        startArgs: MutableCollection<MutableList<StartArgument>>,
-        clientMods: MutableCollection<MutableList<ClientMod>>,
-        whitelistedMods: MutableCollection<MutableList<WhitelistedMod>>
+        startArgs: MutableList<StartArgument>,
+        clientMods: MutableList<ClientMod>,
+        whitelistedMods: MutableList<WhitelistedMod>
     ): Optional<RunConfiguration>
 
     fun findAllByMinecraftVersion(minecraftVersion: String): List<RunConfiguration>
