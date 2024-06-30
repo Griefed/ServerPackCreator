@@ -1,3 +1,25 @@
+## [6.0.0-beta.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.3...6.0.0-beta.4) (2024-06-30)
+
+
+### :scissors: Refactor
+
+* Various style and order changes. ([4a48057](https://git.griefed.de/Griefed/ServerPackCreator/commit/4a48057f756552637231b0fe24cea0a7640b1a7c))
+
+
+### 👀 Reverts
+
+* Switch back to regular mutable lists ([1b88129](https://git.griefed.de/Griefed/ServerPackCreator/commit/1b881293b8e16bdad09359e0e95f8770fb3a77df))
+
+
+### 📦 Other
+
+* Changelogs and updated properties ([f62c1d3](https://git.griefed.de/Griefed/ServerPackCreator/commit/f62c1d330f37160f4734db5b23457c66544499ff))
+
+
+### 🦊 CI/CD
+
+* Make signing dependant on Dokka Javadoc Jar ([817b596](https://git.griefed.de/Griefed/ServerPackCreator/commit/817b5968ad3234b1245527e52bb63242c958b788))
+
 ## [6.0.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.2...6.0.0-beta.3) (2024-06-30)
 
 
