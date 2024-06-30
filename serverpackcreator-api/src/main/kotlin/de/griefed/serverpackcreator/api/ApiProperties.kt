@@ -146,6 +146,8 @@ class ApiProperties(
 
     private val suffixes = arrayOf(".xml")
 
+    private val propertyFiles: MutableList<File> = mutableListOf()
+
     /**
      * Default home-directory for ServerPackCreator. The directory containing the
      * ServerPackCreator JAR.
@@ -2062,7 +2064,7 @@ class ApiProperties(
             }
 
             props.entries.removeIf { entry -> entry.value.toString().isBlank() }
-
+            propertyFiles.add(propertiesFile)
             log.info("Loaded properties from ${propertiesFile.absolutePath}.")
         } catch (ex: Exception) {
             log.error("Couldn't read properties from ${propertiesFile.absolutePath}.", ex)
@@ -2378,16 +2380,26 @@ class ApiProperties(
     @Suppress("MemberVisibilityCanBePrivate")
     fun saveProperties(propertiesFile: File) {
         cleanupInternalProps()
-        try {
-            propertiesFile.outputStream().use {
-                internalProps.store(
-                    it,
-                    "For details about each property, see https://help.serverpackcreator.de/settings-and-configs.html"
-                )
+        val toSave = TreeSet<File>()
+        toSave.addAll(propertyFiles)
+        toSave.add(propertiesFile)
+
+        for (props in toSave) {
+            if (!props.isFile) {
+                //Skip if the file no longer exists
+                continue
             }
+            try {
+                props.outputStream().use {
+                    internalProps.store(
+                        it,
+                        "For details about each property, see https://help.serverpackcreator.de/settings-and-configs.html"
+                    )
+                }
             log.info("Saved properties to: $propertiesFile")
-        } catch (ex: IOException) {
-            log.error("Couldn't write properties-file.", ex)
+            } catch (ex: IOException) {
+                log.error("Couldn't write properties-file.", ex)
+            }
         }
     }
 
