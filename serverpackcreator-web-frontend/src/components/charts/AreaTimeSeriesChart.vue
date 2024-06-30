@@ -71,6 +71,14 @@ export default defineComponent({
           data: formattedData
         }]
         this.$refs.chart1.updateSeries(this.series, true);
+      }).catch(error => {
+        this.$q.notify({
+          timeout: 5000,
+          progress: true,
+          icon: 'error',
+          color: 'negative',
+          message: 'Could not retrieve data: ' + error
+        });
       })
     }
   },

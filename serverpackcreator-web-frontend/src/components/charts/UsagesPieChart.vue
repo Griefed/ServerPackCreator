@@ -89,6 +89,14 @@ export default defineComponent({
           series: series
         })
 
+      }).catch(error => {
+        this.$q.notify({
+          timeout: 5000,
+          progress: true,
+          icon: 'error',
+          color: 'negative',
+          message: 'Could not retrieve data: ' + error
+        });
       })
     }
   },
