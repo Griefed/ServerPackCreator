@@ -1,3 +1,17 @@
+## [6.0.0-beta.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.7...6.0.0-beta.8) (2024-06-30)
+
+
+### 👀 Reverts
+
+* Screw Apexcharts. Get rid of it. Remove IndexPage and redirect to submissions ([34c82a9](https://git.griefed.de/Griefed/ServerPackCreator/commit/34c82a9e50caf67a058dbdf2567d93df996f494f))
+
+
+### 🦊 CI/CD
+
+* Re-gen lock ([e1c07b4](https://git.griefed.de/Griefed/ServerPackCreator/commit/e1c07b4f9ba6d9a2b0c7b15dc24e892040ee5b84))
+* Disable caching for frontend ([c2942e8](https://git.griefed.de/Griefed/ServerPackCreator/commit/c2942e8fabc4babe5c316adec93e7e6b61309156))
+* Get rid of caching for a while ([a76e63c](https://git.griefed.de/Griefed/ServerPackCreator/commit/a76e63c3fca4a44b7d9aef1d98396121e26034be))
+
 ## [6.0.0-beta.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.6...6.0.0-beta.7) (2024-06-30)
 
 
