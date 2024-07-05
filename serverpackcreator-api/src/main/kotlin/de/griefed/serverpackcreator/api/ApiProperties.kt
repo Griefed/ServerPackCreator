@@ -34,10 +34,7 @@ import org.apache.logging.log4j.core.config.Order
 import org.apache.logging.log4j.core.config.plugins.Plugin
 import org.apache.logging.log4j.core.config.xml.XmlConfiguration
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import java.io.BufferedReader
-import java.io.File
-import java.io.IOException
-import java.io.InputStreamReader
+import java.io.*
 import java.net.URI
 import java.net.URL
 import java.util.*
@@ -2397,9 +2394,11 @@ class ApiProperties(
                         "For details about each property, see https://help.serverpackcreator.de/settings-and-configs.html"
                     )
                 }
-            log.info("Saved properties to: $propertiesFile")
+                log.info("Saved properties to: $propertiesFile")
+            } catch (ex: FileNotFoundException) {
+                log.error("Couldn't write properties-file ${props.absolutePath}. File either doesn't exist or we don't have write-permission.")
             } catch (ex: IOException) {
-                log.error("Couldn't write properties-file.", ex)
+                log.error("Couldn't write properties-file ${props.absolutePath}.", ex)
             }
         }
     }
