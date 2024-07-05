@@ -43,9 +43,7 @@ private const val FILE = "file:"
  * @author Griefed
  */
 @Throws(JarAccessException::class)
-fun <T : Any> Class<T>.source(
-    tempDir: File = File(tmpDir)
-): File {
+fun <T : Any> Class<T>.source(tempDir: File = File(tmpDir)): File {
     val clazz = "$simpleName.class"
     val classResource: URL = getResource(clazz) ?: throw JarAccessException("Class resource is null")
     val url = classResource.toString()
