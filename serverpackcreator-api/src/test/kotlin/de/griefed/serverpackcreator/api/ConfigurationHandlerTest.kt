@@ -591,14 +591,8 @@ internal class ConfigurationHandlerTest {
     fun checkIconAndPropertiesTest() {
         Assertions.assertTrue(configurationHandler.checkIconAndProperties(""))
         Assertions.assertFalse(configurationHandler.checkIconAndProperties("/some/path"))
-        Assertions.assertTrue(
-            configurationHandler.checkIconAndProperties(
-                File(
-                    projectDir.path,
-                    "/img/prosper.png"
-                ).path
-            )
-        )
+        Assertions.assertTrue(configurationHandler.checkIconAndProperties(apiProperties.defaultServerIcon.absolutePath))
+        Assertions.assertTrue(configurationHandler.checkIconAndProperties(apiProperties.defaultServerProperties.absolutePath))
     }
 
     @Test
