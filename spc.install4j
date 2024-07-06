@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <install4j version="10.0.8" transformSequenceNumber="10">
   <directoryPresets config="./img" />
-  <application name="ServerPackCreator" applicationId="3565-3228-6904-0931" mediaDir="./media" mediaFilePattern="ServerPackCreator-${compiler:sys.version}-Installer-${compiler:sys.platform}" compression="9" lzmaCompression="true" commonExternalFiles="true" shrinkRuntime="false" shortName="SPC" publisher="Griefed" publisherWeb="https://serverpackcreator.de" version="${compiler:projectVersion}" allPathsRelative="true" autoSave="true" macVolumeId="521d0a10ddf6d897" javaMinVersion="21">
+  <application name="ServerPackCreator" applicationId="3565-3228-6904-0931" mediaDir="./media" mediaFilePattern="ServerPackCreator-${compiler:sys.version}-Installer-${compiler:sys.platform}" compression="9" lzmaCompression="true" shrinkRuntime="false" shortName="SPC" publisher="Griefed" publisherWeb="https://serverpackcreator.de" version="${compiler:projectVersion}" allPathsRelative="true" autoSave="true" macVolumeId="521d0a10ddf6d897" javaMinVersion="21">
     <variables>
       <variable name="projectDir" value="F:\GitLab\ServerPackCreator - ms6" description="Project directory of ServerPackCreator on your system" />
       <variable name="projectVersion" value="dev" description="The version with which to build this installer." />
       <variable name="projectYear" value="2024" />
     </variables>
-    <jreBundles jdkProviderId="Zulu" release="21/21.0.3">
+    <jreBundles jdkProviderId="Adoptium" release="21/jdk-21.0.3+9">
       <modules>
         <defaultModules set="all" />
       </modules>
@@ -33,7 +33,7 @@
   <launchers>
     <launcher name="ServerPackCreator-CLI" id="232" excludeFromMenu="true" icnsFile="${compiler:projectDir}/img/app.icns">
       <executable name="ServerPackCreator-CLI" iconSet="true" iconFile="${compiler:projectDir}/img/icon.ico" executableDir="." redirectStderr="false" stderrFile="error.log${installer:sys.installationDir}/logs/run.log" stderrMode="append" stdoutFile="error.log${installer:sys.installationDir}/logs/run.log" stdoutMode="append" executableMode="console" checkConsoleParameter="true" globalSingleInstance="true" dpiAware="true">
-        <versionInfo include="true" fileDescription="Create server packs from Minecraft modpacks." legalCopyright="Copyright (C) ${compiler:projectYear} Griefed" internalName="ServerPackCreator" />
+        <versionInfo include="true" fileDescription="Create server packs from Minecraft modpacks." legalCopyright="Copyright (C) ${compiler:projectYear} Griefed" internalName="ServerPackCreator-CLI" />
       </executable>
       <java mainClass="org.springframework.boot.loader.launch.JarLauncher">
         <classPath>
@@ -64,8 +64,8 @@
       </iconImageFiles>
     </launcher>
     <launcher name="ServerPackCreator" id="354">
-      <executable name="ServerPackCreator" iconSet="true" executableDir="." executableMode="gui" checkConsoleParameter="true" dpiAware="true">
-        <versionInfo include="true" fileDescription="ServerPackCreator GUI Launcher" legalCopyright="Copyright (C) ${compiler:projectYear} Griefed" internalName="ServerPackCreatorGUI" />
+      <executable name="ServerPackCreator" iconSet="true" executableDir="." stderrFile="~/serverpackcreator-run-error.log" executableMode="gui" checkConsoleParameter="true" dpiAware="true">
+        <versionInfo include="true" fileDescription="ServerPackCreator Launcher" legalCopyright="Copyright (C) ${compiler:projectYear} Griefed" internalName="ServerPackCreator" />
       </executable>
       <java mainClass="org.springframework.boot.loader.launch.JarLauncher">
         <classPath>
@@ -121,9 +121,15 @@
           <property name="frameWidth" type="int" value="600" />
           <property name="useCustomIcon" type="boolean" value="true" />
         </serializedBean>
-        <customScript>if [[ "$(whoami)" == "root" ]];then
-    echo "Do not run the installer as root!"
-    echo "Use your regular user, NO SUDO!"
+        <customScript>if [ "$(id -u)" = "0" ]; then
+  echo "###########################################"
+  echo "##----------------WARNING----------------##"
+  echo "###########################################"
+  echo ""
+  echo "Running with administrator-privileges is not recommended."
+  echo "Run the installation script without sudo and not as root."
+  echo "Otherwise permissions, links and menu entries will be broken!"
+  echo "You have been warned!"
 fi</customScript>
         <startup>
           <screen id="1" beanClass="com.install4j.runtime.beans.screens.StartupScreen" rollbackBarrierExitCode="0">
@@ -332,9 +338,10 @@ return console.askOkCancel(message, true);
               <formComponent id="329" beanClass="com.install4j.runtime.beans.formcomponents.MultilineLabelComponent" insetBottom="25" useExternalParametrization="true" externalParametrizationName="Header" externalParametrizationMode="include">
                 <serializedBean>
                   <property name="hideIfBlank" type="boolean" value="true" />
-                  <property name="labelText" type="string">Set the home-directory in which ServerPackCreator will create and store initial data as well as created data. Initial data are files such as manifests and templates, created data are files such as generated server packs.
+                  <property name="labelText" type="string">Set the home-directory in which ServerPackCreator will create and store its data, such as the generated server packs.
 
-If you are installing this on a multi-user system and intend other users to use ServerPackCreator, choose a directory to which all users have access to.</property>
+If you are installing this on a multi-user system and intend other users to use ServerPackCreator, the other users will need to change their home-directory
+if they so desire. By default $USERHOME/ServerPackCreator will be used for them.</property>
                 </serializedBean>
                 <visibilityScript>!context.isConsole()</visibilityScript>
                 <externalParametrizationPropertyNames>
@@ -360,31 +367,6 @@ If you are installing this on a multi-user system and intend other users to use 
                   <propertyName>standardValidation</propertyName>
                   <propertyName>validationScript</propertyName>
                   <propertyName>variableName</propertyName>
-                </externalParametrizationPropertyNames>
-              </formComponent>
-              <formComponent id="333" beanClass="com.install4j.runtime.beans.formcomponents.LabelComponent">
-                <serializedBean>
-                  <property name="labelColor">
-                    <object class="java.awt.Color">
-                      <int>255</int>
-                      <int>0</int>
-                      <int>0</int>
-                      <int>255</int>
-                    </object>
-                  </property>
-                  <property name="labelFontStyle" type="enum" class="com.install4j.runtime.beans.formcomponents.FontStyle" value="BOLD" />
-                  <property name="labelFontType" type="enum" class="com.install4j.runtime.beans.formcomponents.FontType" value="DERIVED" />
-                  <property name="labelText" type="string">Caution!</property>
-                </serializedBean>
-              </formComponent>
-              <formComponent id="332" beanClass="com.install4j.runtime.beans.formcomponents.MultilineLabelComponent" insetBottom="25" useExternalParametrization="true" externalParametrizationName="Header" externalParametrizationMode="include">
-                <serializedBean>
-                  <property name="hideIfBlank" type="boolean" value="true" />
-                  <property name="labelText" type="string">Changing the home-directory after installation requires manual editing of ${installer:sys.installationDir}${installer:sys.fileSeparator}serverpackcreator.properties. Choose wisely!</property>
-                </serializedBean>
-                <visibilityScript>!context.isConsole()</visibilityScript>
-                <externalParametrizationPropertyNames>
-                  <propertyName>labelText</propertyName>
                 </externalParametrizationPropertyNames>
               </formComponent>
             </formComponents>
@@ -501,7 +483,7 @@ If you are installing this on a multi-user system and intend other users to use 
                 </serializedBean>
                 <condition>context.getBooleanVariable("createDesktopLinkAction")</condition>
               </action>
-              <action name="Set home-directory property" id="331" beanClass="com.install4j.runtime.beans.actions.properties.WritePropertiesFileAction" actionElevationType="elevated" rollbackBarrierExitCode="0" errorMessage="Couldn't writer properties!">
+              <action name="Set home-directory property" id="331" beanClass="com.install4j.runtime.beans.actions.properties.WritePropertiesFileAction" enabled="false" actionElevationType="elevated" rollbackBarrierExitCode="0" errorMessage="Couldn't writer properties!">
                 <serializedBean>
                   <property name="encoding" type="enum" class="com.install4j.runtime.beans.actions.properties.PropertiesFileEncoding" value="JAVA_PROPERTIES" />
                   <property name="file">
@@ -513,6 +495,13 @@ If you are installing this on a multi-user system and intend other users to use 
                   <property name="sourcePropertyDefinitions" type="string">de.griefed.serverpackcreator.home=${installer:homeDirectory}</property>
                   <property name="updateExistingComments" type="boolean" value="true" />
                   <property name="updateExistingKeys" type="boolean" value="true" />
+                </serializedBean>
+              </action>
+              <action id="377" beanClass="com.install4j.runtime.beans.actions.registry.SetPreferenceKeyAction" actionElevationType="elevated" rollbackBarrierExitCode="0">
+                <serializedBean>
+                  <property name="key" type="string">de.griefed.serverpackcreator.home</property>
+                  <property name="packageName" type="string">ServerPackCreator</property>
+                  <property name="value" type="string">${installer:homeDirectory}</property>
                 </serializedBean>
               </action>
               <action name="Set Log Path" id="337" beanClass="com.install4j.runtime.beans.actions.text.ModifyTextFileAction" actionElevationType="elevated" rollbackBarrierExitCode="0">
