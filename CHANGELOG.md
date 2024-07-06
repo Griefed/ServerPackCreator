@@ -1,3 +1,17 @@
+## [6.0.0-beta.10](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.9...6.0.0-beta.10) (2024-07-06)
+
+
+### 💎 Improvements
+
+* Store home as user-node Java prefs store prop. Allow override via `--home "/path/to/dir"` arg. Check for home before startup. ([34dba53](https://git.griefed.de/Griefed/ServerPackCreator/commit/34dba53c9ff064e4e114110e6694d7a22939bec5))
+
+
+### 🦊 CI/CD
+
+* Ensure test-dir is used at all times. Various misc changes ([0479ffe](https://git.griefed.de/Griefed/ServerPackCreator/commit/0479ffe9f97d6cd7d298fd3c97990145467b7009))
+* Warn about root. Set home as Java prefs store prop. Use AdoptiumJDK instead of Zulu. ([a68c67f](https://git.griefed.de/Griefed/ServerPackCreator/commit/a68c67f46d8d786ece8e3f2f2cfcf0c49245a46b))
+* Include checksums in release notes and artifacts ([7edc8fb](https://git.griefed.de/Griefed/ServerPackCreator/commit/7edc8fb04a0fe147cffc1aaa5f3ddaa84ed1ad12))
+
 ## [6.0.0-beta.9](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.8...6.0.0-beta.9) (2024-07-05)
 
 
