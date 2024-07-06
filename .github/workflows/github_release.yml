@@ -140,14 +140,6 @@ jobs:
             printf "\n\n............\n\nRelease notes truncated. For more details, see the [CHANGELOG](https://github.com/Griefed/ServerPackCreator/blob/${{ needs.preparations.outputs.version }}/CHANGELOG.md).\n\n" >> description.txt
           fi
 
-      - name: Append Release Info
-        uses: DamianReeves/write-file-action@v1.2
-        with:
-          path: description.txt
-          write-mode: append
-          contents: |
-            ${{ steps.info.outputs.content }}
-
       - uses: actions/download-artifact@v4
         with:
           name: jar-media-release
@@ -162,11 +154,21 @@ jobs:
             serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
             serverpackcreator-plugin-example/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}-Example-Plugin.jar
 
-      - name: Append Checksums
-        id: info
+      - name: Read Checksums
+        id: readchecksums
         uses: jaywcjlove/github-action-read-file@v1.2.2
         with:
           path: checksum.txt
+
+      - name: Append Checksums Info
+        uses: DamianReeves/write-file-action@v1.2
+        with:
+          path: description.txt
+          write-mode: append
+          contents: |
+            ${{ steps.preinfo.outputs.content }}
+            ${{ steps.info.outputs.content }}
+            ${{ steps.readchecksums.outputs.content }}
 
       # GENERATE RELEASE
       - name: Create Release
