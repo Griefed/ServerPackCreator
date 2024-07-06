@@ -143,8 +143,8 @@ jobs:
 
       - name: Check length and truncate if needed
         run: |
-          if [[ $(wc -c description.txt | awk '{print $1}') -ge 8000 ]]; then
-            truncate -s 8000 description.txt
+          if [[ $(wc -c description.txt | awk '{print $1}') -ge 7500 ]]; then
+            truncate -s 7500 description.txt
             printf "\n\n............\n\nRelease notes truncated. For more details, see the [CHANGELOG](https://github.com/Griefed/ServerPackCreator/blob/${{ needs.preparations.outputs.version }}/CHANGELOG.md).\n\n" >> description.txt
           fi
 
@@ -161,6 +161,22 @@ jobs:
         with:
           name: jar-media-release
 
+      - name: Generate checksum
+        uses: jmgilman/actions-generate-checksum@v1
+        with:
+          patterns: |
+            media/*.dmg
+            media/*.sh
+            media/*.exe
+            serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
+            serverpackcreator-plugin-example/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}-Example-Plugin.jar
+
+      - name: Append Checksums
+        id: info
+        uses: jaywcjlove/github-action-read-file@v1.2.2
+        with:
+          path: checksum.txt
+
       # GENERATE RELEASE
       - name: Create Release
         id: create_release
@@ -174,6 +190,7 @@ jobs:
           prerelease: true
           fail_on_unmatched_files: false
           files: |
+            checksum.txt
             media/*.dmg
             media/*.sh
             media/*.exe
