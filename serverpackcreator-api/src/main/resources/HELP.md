@@ -484,15 +484,56 @@ ServerPackCreator has three main modes in which it can operate or in which you c
 There are a couple more ways to use/run ServerPackCreator which may or may not be helpful for you,
 depending on how you plan on using it:
 
-| Argument  | Description                                                                                                                                                                                                             |
-|-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `-help`   | Print ServerPackCreators help to commandline.                                                                                                                                                                           |
-| `-update` | Check whether a newer version of ServerPackCreator is available.                                                                                                                                                        |
-| `-cgen`   | Run ServerPackCreators configuration generation.                                                                                                                                                                        |
-| `-cli`    | Run ServerPackCreator in commandline-mode. If **no** graphical environment is supported, this is the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.         |
-| `-web`    | Run ServerPackCreator as a webservice.                                                                                                                                                                                  |
-| `-gui`    | Run ServerPackCreator with our GUI. If a graphical environment is supported, this is the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.                     |
-| `--setup` | Set up and prepare the environment for subsequent runs of ServerPackCreator. This will create/copy all files needed for ServerPackCreator to function properly from inside its JAR-file and setup everything else, too. |
+```
+  -lang: Allows you to use one of the available languages for ServerPackCreator. I can not
+         guarantee that each of the following available languages is 100% translated.
+         You best choice is en_us, or not specifying any as that is the default, because
+         I write ServerPackCreator with english in mind. Available usages:
+         -lang en_us
+         -lang uk_ua
+         -lang de_de
+
+  -cgen: Only available for the commandline interface. This will start the generation of
+         a new configuration file. You will be asked to enter information about your modpack
+         step-by-step. Each setting you enter will be checked for errors before it is saved.
+         If everything you enter is valid and without errors, it will be written to a new
+         serverpackcreator.conf and ServerPackCreator will immediately start a run with said
+         configuration file, generating a server pack for you.
+
+-update: Check whether a new version of ServerPackCreator is available for download.
+         If an update is available, the version and link to the release of said update are
+         written to the console so you can from work with it from there.
+         Note: Automatic updates are currently not planned nor supported, and neither are
+         downloads of any available updates to your system. You need to update manually.
+
+   -cli: Run ServerPackCreator in Command-line interface mode. Checks the serverpackcreator.conf
+         for errors and if none are found, starts the generation of a server pack with the configuration
+         provided by your serverpackcreator.conf.
+
+   -web: Run ServerPackCreator as a webservice available at http://localhost:8080. The webservice
+         provides the same functionality as running ServerPackCreator in GUI mode (so no Commandline
+         arguments and a non-headless environment) as well as a REST API which can be used in different ways.
+         For more information about the REST API, please see the Java documentation:
+          - GitHub Pages: https://griefed.github.io/ServerPackCreator/
+          - GitLab Pages: https://griefed.pages.griefed.de/ServerPackCreator/
+
+   -gui: Run ServerPackCreator using the graphical user interface. If your environment supports
+         graphics, i.e. is not headless, then this is the default mode in which ServerPackCreator
+         started as when no arguments are used.
+
+--setup: Set up and prepare the environment for subsequent runs of ServerPackCreator.
+         This will create/copy all files needed for ServerPackCreator to function
+         properly from inside its JAR-file and setup everything else, too. You can pass a properties-file, too
+         if you so desire.
+         Examples:
+         --setup "/path/to/custom.properties"
+         --setup "C:\path\to\custom.properties"
+
+--home:  Override the home-directory setting for your user.
+         Examples:
+         --home "/path/to/directory"
+         --home "C:\users\<YOUR_USER>\SPC"
+```
 
 Each of these modes has its advantages and disadvantages.
 

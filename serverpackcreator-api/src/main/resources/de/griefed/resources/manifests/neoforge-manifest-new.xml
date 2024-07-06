@@ -3,8 +3,8 @@
   <groupId>net.neoforged</groupId>
   <artifactId>neoforge</artifactId>
   <versioning>
-    <latest>20.4.235</latest>
-    <release>20.4.235</release>
+    <latest>21.0.61-beta</latest>
+    <release>21.0.61-beta</release>
     <versions>
       <version>20.2.3-beta</version>
       <version>20.2.4-beta</version>
@@ -410,7 +410,104 @@
       <version>20.6.81-beta</version>
       <version>20.6.82-beta</version>
       <version>20.4.235</version>
+      <version>20.6.83-beta</version>
+      <version>20.6.84-beta</version>
+      <version>20.6.85-beta</version>
+      <version>20.6.87-beta</version>
+      <version>20.6.88-beta</version>
+      <version>20.6.89-beta</version>
+      <version>20.6.91-beta</version>
+      <version>20.6.90-beta</version>
+      <version>20.6.92-beta</version>
+      <version>20.6.93-beta</version>
+      <version>20.6.95-beta</version>
+      <version>20.6.94-beta</version>
+      <version>20.6.96-beta</version>
+      <version>20.6.97-beta</version>
+      <version>20.6.98-beta</version>
+      <version>20.6.99-beta</version>
+      <version>20.6.100-beta</version>
+      <version>20.6.103-beta</version>
+      <version>20.6.104-beta</version>
+      <version>20.6.105-beta</version>
+      <version>20.6.106-beta</version>
+      <version>20.6.107-beta</version>
+      <version>20.6.108-beta</version>
+      <version>20.6.109-beta</version>
+      <version>20.6.110-beta</version>
+      <version>20.6.111-beta</version>
+      <version>20.4.236</version>
+      <version>20.6.112-beta</version>
+      <version>20.4.237</version>
+      <version>20.6.113-beta</version>
+      <version>20.6.114-beta</version>
+      <version>20.6.115</version>
+      <version>20.6.116</version>
+      <version>21.0.0-beta</version>
+      <version>21.0.1-beta</version>
+      <version>21.0.2-beta</version>
+      <version>21.0.3-beta</version>
+      <version>21.0.4-beta</version>
+      <version>20.6.117</version>
+      <version>21.0.5-beta</version>
+      <version>21.0.6-beta</version>
+      <version>21.0.8-beta</version>
+      <version>21.0.7-beta</version>
+      <version>20.6.118</version>
+      <version>21.0.9-beta</version>
+      <version>21.0.10-beta</version>
+      <version>20.6.119</version>
+      <version>21.0.11-beta</version>
+      <version>21.0.12-beta</version>
+      <version>21.0.13-beta</version>
+      <version>21.0.14-beta</version>
+      <version>21.0.15-beta</version>
+      <version>21.0.16-beta</version>
+      <version>21.0.17-beta</version>
+      <version>21.0.18-beta</version>
+      <version>21.0.19-beta</version>
+      <version>21.0.20-beta</version>
+      <version>21.0.21-beta</version>
+      <version>21.0.22-beta</version>
+      <version>21.0.23-beta</version>
+      <version>21.0.24-beta</version>
+      <version>21.0.25-beta</version>
+      <version>21.0.26-beta</version>
+      <version>21.0.27-beta</version>
+      <version>21.0.28-beta</version>
+      <version>21.0.29-beta</version>
+      <version>21.0.30-beta</version>
+      <version>21.0.31-beta</version>
+      <version>21.0.32-beta</version>
+      <version>21.0.33-beta</version>
+      <version>21.0.35-beta</version>
+      <version>21.0.36-beta</version>
+      <version>21.0.37-beta</version>
+      <version>21.0.38-beta</version>
+      <version>21.0.39-beta</version>
+      <version>21.0.40-beta</version>
+      <version>21.0.41-beta</version>
+      <version>21.0.42-beta</version>
+      <version>21.0.43-beta</version>
+      <version>21.0.44-beta</version>
+      <version>21.0.45-beta</version>
+      <version>21.0.46-beta</version>
+      <version>21.0.47-beta</version>
+      <version>21.0.48-beta</version>
+      <version>21.0.49-beta</version>
+      <version>21.0.50-beta</version>
+      <version>21.0.51-beta</version>
+      <version>21.0.52-beta</version>
+      <version>21.0.53-beta</version>
+      <version>21.0.54-beta</version>
+      <version>21.0.55-beta</version>
+      <version>21.0.56-beta</version>
+      <version>21.0.57-beta</version>
+      <version>21.0.58-beta</version>
+      <version>21.0.59-beta</version>
+      <version>21.0.60-beta</version>
+      <version>21.0.61-beta</version>
     </versions>
-    <lastUpdated>20240526110052</lastUpdated>
+    <lastUpdated>20240706082834</lastUpdated>
   </versioning>
 </metadata>

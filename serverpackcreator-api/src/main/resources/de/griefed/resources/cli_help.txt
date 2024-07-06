@@ -45,7 +45,16 @@ How to use ServerPackCreator:
 
     --setup: Set up and prepare the environment for subsequent runs of ServerPackCreator.
              This will create/copy all files needed for ServerPackCreator to function
-             properly from inside its JAR-file and setup everything else, too.
+             properly from inside its JAR-file and setup everything else, too. You can pass a properties-file, too
+             if you so desire.
+             Examples:
+             --setup "/path/to/custom.properties"
+             --setup "C:\path\to\custom.properties"
+
+    --home:  Override the home-directory setting for your user.
+             Examples:
+             --home "/path/to/directory"
+             --home "C:\users\<YOUR_USER>\SPC"
 
  Support:
 

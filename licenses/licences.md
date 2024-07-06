@@ -1,7 +1,7 @@
 
 # Dependency Licenses
 ## Dependency License Report
-_2024-06-03 19:44:55 MESZ_
+_2024-07-06 17:07:25 MESZ_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.cronutils` **Name:** `cron-utils` **Version:** `9.2.1` 
@@ -173,7 +173,7 @@ _2024-06-03 19:44:55 MESZ_
 
 ## GNU Lesser General Public License v3.0
 
-**31** **Group:** `com.electronwill.night-config` **Name:** `toml` **Version:** `3.7.1` 
+**31** **Group:** `com.electronwill.night-config` **Name:** `toml` **Version:** `3.7.2` 
 > - **POM Project URL**: [https://github.com/TheElectronWill/night-config](https://github.com/TheElectronWill/night-config)
 > - **POM License**: GNU Lesser General Public License v3.0 - [https://www.gnu.org/licenses/lgpl-3.0.txt](https://www.gnu.org/licenses/lgpl-3.0.txt)
 
