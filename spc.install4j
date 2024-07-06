@@ -121,6 +121,7 @@
           <property name="frameWidth" type="int" value="600" />
           <property name="useCustomIcon" type="boolean" value="true" />
         </serializedBean>
+        <customScript>trap "rm -rf ServerPackCreator-*-Installer-Linux.sh.*.dir" EXIT</customScript>
         <startup>
           <screen id="1" beanClass="com.install4j.runtime.beans.screens.StartupScreen" rollbackBarrierExitCode="0">
             <actions>
