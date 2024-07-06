@@ -5,6 +5,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.prefs.Preferences
 
 repositories {
     mavenCentral()
@@ -99,6 +100,11 @@ fun cleanup() {
         .forEach {
             it.deleteRecursively()
         }
+    Preferences.userRoot().node("ServerPackCreator").removeNode()
+    Preferences.userRoot().node("ServerPackCreator").put(
+        "de.griefed.serverpackcreator.home",
+        projectDir.resolve("tests").absolutePath
+    )
 }
 
 tasks.jar {

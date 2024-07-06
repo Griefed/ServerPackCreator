@@ -1,3 +1,26 @@
+## [6.0.0-beta.9](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.8...6.0.0-beta.9) (2024-07-05)
+
+
+### :scissors: Refactor
+
+* Better logging for writing errors ([f535c85](https://git.griefed.de/Griefed/ServerPackCreator/commit/f535c85f8cad7fb062d4c735c381662256b2c199))
+* Remove unnecessary line break ([4e06d17](https://git.griefed.de/Griefed/ServerPackCreator/commit/4e06d17d26cca7359f2a674ad4fa8f9680f7b38f))
+
+
+### 💎 Improvements
+
+* Various installer fixes and improvements ([ef1ab35](https://git.griefed.de/Griefed/ServerPackCreator/commit/ef1ab35498bea719f5dc6d4ac0fbf8fbefeff73d))
+
+
+### 📦 Other
+
+* Yet more changelogs :D ([c6c3e78](https://git.griefed.de/Griefed/ServerPackCreator/commit/c6c3e78e424c7d9e0365a3577fa9e2214700df75))
+
+
+### 🦊 CI/CD
+
+* Only publish api to maven ([530f0d1](https://git.griefed.de/Griefed/ServerPackCreator/commit/530f0d110e477d3190bd6d6bd1e3eb6c3aebfb90))
+
 ## [6.0.0-beta.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.7...6.0.0-beta.8) (2024-06-30)
 
 

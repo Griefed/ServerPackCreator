@@ -1,7 +1,0 @@
-[Desktop Entry]
-Name=ServerPackCreator
-Comment=Create server packs from Minecraft Forge, Fabric, Quilt or LegacyFabric modpacks.
-Exec=ServerPackCreator
-Icon=ServerPackCreator
-Type=Application
-Categories=Utility;FileTools;Java;
