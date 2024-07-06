@@ -121,16 +121,6 @@
           <property name="frameWidth" type="int" value="600" />
           <property name="useCustomIcon" type="boolean" value="true" />
         </serializedBean>
-        <customScript>if [ "$(id -u)" = "0" ]; then
-  echo "###########################################"
-  echo "##----------------WARNING----------------##"
-  echo "###########################################"
-  echo ""
-  echo "Running with administrator-privileges is not recommended."
-  echo "Run the installation script without sudo and not as root."
-  echo "Otherwise permissions, links and menu entries will be broken!"
-  echo "You have been warned!"
-fi</customScript>
         <startup>
           <screen id="1" beanClass="com.install4j.runtime.beans.screens.StartupScreen" rollbackBarrierExitCode="0">
             <actions>
