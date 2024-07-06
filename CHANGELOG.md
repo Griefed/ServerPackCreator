@@ -1,3 +1,16 @@
+## [6.0.0-beta.13](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.12...6.0.0-beta.13) (2024-07-06)
+
+
+### 🦊 CI/CD
+
+* Bump install4j to 10.0.8 ([afbeb67](https://git.griefed.de/Griefed/ServerPackCreator/commit/afbeb67f1f3549d5f801dcae530205fae3de1da1))
+
+
+### 🛠 Fixes
+
+* Only display restart notice upon saving ([015d00d](https://git.griefed.de/Griefed/ServerPackCreator/commit/015d00db3b049ff236c118bce2fc042cee7db6c3))
+* Try and fix the errors during temp file removal by trapping an rm command ([d1bfb7a](https://git.griefed.de/Griefed/ServerPackCreator/commit/d1bfb7a9d4b105fbb377764406103d890ed55b9d))
+
 ## [6.0.0-beta.12](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.11...6.0.0-beta.12) (2024-07-06)
 
 
