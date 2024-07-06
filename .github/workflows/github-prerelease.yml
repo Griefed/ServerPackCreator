@@ -56,7 +56,7 @@ jobs:
 
       - uses: luangong/setup-install4j@v1
         with:
-          version: 10.0.7
+          version: 10.0.8
           license: ${{ secrets.INSTALL4J_LICENSE }}
 
       - name: Build release
