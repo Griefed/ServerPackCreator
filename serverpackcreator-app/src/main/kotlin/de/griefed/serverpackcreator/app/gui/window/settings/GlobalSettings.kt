@@ -404,8 +404,6 @@ class GlobalSettings(
     }
 
     override fun loadSettings() {
-        val showRestartNotice = checkRestartNoticeRequired()
-
         homeSetting.file = apiProperties.homeDirectory.absoluteFile
         //javaSetting.file = File(apiProperties.javaPath).absoluteFile
         serverPacksSetting.file = apiProperties.serverPacksDirectory.absoluteFile
@@ -430,10 +428,6 @@ class GlobalSettings(
         javaPathsSetting.loadData(apiProperties.javaPaths)
 
         changeUpdateSettingState()
-
-        if (showRestartNotice) {
-            mainFrame.showRestartNotice()
-        }
     }
 
     private fun checkRestartNoticeRequired(): Boolean {
