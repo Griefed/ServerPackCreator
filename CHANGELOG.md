@@ -1,3 +1,25 @@
+## [6.0.0-beta.12](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.11...6.0.0-beta.12) (2024-07-06)
+
+
+### 👀 Reverts
+
+* Remove root-check as it did not work the way it was intended to ([dd0a1e9](https://git.griefed.de/Griefed/ServerPackCreator/commit/dd0a1e9d4a1c28e9e4fb8da0cd695c76a45fa1e8))
+
+
+### 📔 Docs
+
+* Update changelog, readme, help, manifests, license agreement and report ([d6f6a46](https://git.griefed.de/Griefed/ServerPackCreator/commit/d6f6a4655aee660823f913b39cdb184dcca3bb7c))
+
+
+### 📦 Other
+
+* Remove unnecessary lniks and text ([c90debd](https://git.griefed.de/Griefed/ServerPackCreator/commit/c90debd075e37887f37bbb6377f3c59c2d15a3d5))
+
+
+### 🦊 CI/CD
+
+* Remove checksum appending, as it doesn't work anyway ([dfd71fe](https://git.griefed.de/Griefed/ServerPackCreator/commit/dfd71fe234506213a46c29c03d607c6ae87131e8))
+
 ## [6.0.0-beta.11](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.10...6.0.0-beta.11) (2024-07-06)
 
 
