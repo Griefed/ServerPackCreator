@@ -1,3 +1,15 @@
+## [6.0.0-beta.11](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.10...6.0.0-beta.11) (2024-07-06)
+
+
+### 🧪 Tests
+
+* Use apiProps to get server icon and props paths ([858b298](https://git.griefed.de/Griefed/ServerPackCreator/commit/858b298936d1611f44e63c1b372eb10ea374bc5d))
+
+
+### 🛠 Fixes
+
+* Fix GitHub workflows ([200ecdf](https://git.griefed.de/Griefed/ServerPackCreator/commit/200ecdf63cc1d37a8131367051eec7cb06eb76e0))
+
 ## [6.0.0-beta.10](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.9...6.0.0-beta.10) (2024-07-06)
 
 
