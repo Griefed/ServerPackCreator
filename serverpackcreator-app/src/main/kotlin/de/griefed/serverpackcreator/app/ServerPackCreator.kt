@@ -20,6 +20,9 @@
 package de.griefed.serverpackcreator.app
 
 import Translations
+import com.formdev.flatlaf.FlatLaf
+import com.formdev.flatlaf.fonts.jetbrains_mono.FlatJetBrainsMonoFont
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMaterialDarkerIJTheme
 import de.comahe.i18n4k.Locale
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.config.PackConfig
@@ -42,8 +45,12 @@ import java.io.File
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.Executors
+import java.util.prefs.Preferences
+import javax.swing.JFileChooser
+import javax.swing.JOptionPane
 import javax.xml.parsers.ParserConfigurationException
 import kotlin.system.exitProcess
+
 
 /**
  * Entry point for the app. Creates a new instance of [ServerPackCreator] and executes [ServerPackCreator.run] with the
@@ -64,6 +71,45 @@ class ServerPackCreator(private val args: Array<String>) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val appInfo = JarInformation(ServerPackCreator::class.java, JarUtilities())
     val commandlineParser: CommandlineParser = CommandlineParser(args, appInfo)
+
+    init {
+        val prefs = Optional.ofNullable(
+            Preferences.userRoot().node("ServerPackCreator").get("de.griefed.serverpackcreator.home", null)
+        )
+        if (commandlineParser.mode == Mode.GUI && prefs.isEmpty && commandlineParser.homeDir.isEmpty) {
+
+            FlatJetBrainsMonoFont.install()
+            FlatLaf.setPreferredFontFamily(FlatJetBrainsMonoFont.FAMILY)
+            FlatMaterialDarkerIJTheme.setup()
+
+            val decision = JOptionPane.showConfirmDialog(
+                null,
+                """
+                     You haven't set the home-directory yet.
+                     Running ServerPackCreator for the first time, or updating from an older version?
+                     Please select the home-directory for ServerPackCreator. 
+                     """.trimIndent(),
+                "Pick a home-directory",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+            )
+            if (decision == 0) {
+                val chooser = JFileChooser()
+                chooser.currentDirectory = File(System.getProperty("user.home"))
+                chooser.fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
+                chooser.isMultiSelectionEnabled = false
+                chooser.dialogTitle = "Pick a home-directory for ServerPackCreator"
+                val result = chooser.showOpenDialog(null)
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    Preferences.userRoot().node("ServerPackCreator").put(
+                        "de.griefed.serverpackcreator.home",
+                        chooser.selectedFile.absolutePath
+                    )
+                }
+            }
+        }
+    }
+
     val apiWrapper = ApiWrapper.api(commandlineParser.propertiesFile, false)
 
     init {

@@ -95,6 +95,13 @@ enum class Mode(private val argument: String) {
     SETUP("--setup"),
 
     /**
+     * When specified, this will override any and all configurations of any and all properties which specify a home-directory
+     * for ServerPackCreator. This argument can be used for the initial run of ServerPackCreator, or to change the
+     * home-directory later on.
+     */
+    HOME("--home"),
+
+    /**
      * **Priority 7**
      *
      *

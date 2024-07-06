@@ -511,11 +511,11 @@ class GuiProps(private val apiProperties: ApiProperties) {
     }
 
     fun getPreference(pref: String) : Optional<String> {
-        return Optional.ofNullable(spcPreferences.get(pref, null))
+        return apiProperties.getPreference(pref)
     }
 
     fun storePreference(pref: String, value: String) {
-        spcPreferences.put(pref, value)
+        apiProperties.storePreference(pref, value)
     }
 
     /**

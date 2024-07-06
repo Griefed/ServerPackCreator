@@ -38,6 +38,7 @@ import java.io.*
 import java.net.URI
 import java.net.URL
 import java.util.*
+import java.util.prefs.Preferences
 
 /**
  * Base settings of ServerPackCreator, such as working directories, default list of clientside-only
@@ -65,6 +66,7 @@ class ApiProperties(
 ) : ConfigurationFactory() {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val internalProps = Properties()
+    private val spcPreferences = Preferences.userRoot().node("ServerPackCreator")
     private val serverPackCreatorProperties = "serverpackcreator.properties"
     private val jarInformation: JarInformation = JarInformation(this.javaClass, jarUtilities)
     private val jarFolderProperties: File = File(jarInformation.jarFolder.absoluteFile, serverPackCreatorProperties)
@@ -919,6 +921,15 @@ class ApiProperties(
             }
         }
 
+    fun getPreference(pref: String) : Optional<String> {
+        return Optional.ofNullable(spcPreferences.get(pref, null))
+    }
+
+    fun storePreference(pref: String, value: String) {
+        spcPreferences.put(pref, value)
+        spcPreferences.sync()
+    }
+
     /**
      * Default list of script templates used by ServerPackCreator.
      *
@@ -1451,29 +1462,33 @@ class ApiProperties(
      */
     var homeDirectory: File = home.absoluteFile
         get() {
-            val customHome = if (internalProps.containsKey(pHomeDirectory)) {
+            val setting = if (getPreference(pHomeDirectory).isPresent) {
+                getPreference(pHomeDirectory).get()
+            } else if (internalProps.containsKey(pHomeDirectory) && internalProps.getProperty(pHomeDirectory).isNotBlank()) {
                 internalProps.getProperty(pHomeDirectory)
-            } else {
-                ""
-            }
-            field = if (customHome.isNotBlank()) {
-                File(customHome).absoluteFile
             } else if (jarInformation.jarPath.toFile().isDirectory || devBuild) {
                 // Dev environment
-                File("").absoluteFile
+                File("").absolutePath
+            } else if (File(System.getProperty("user.home")).isDirectory) {
+                File(System.getProperty("user.home"),"ServerPackCreator").absolutePath
             } else {
-                home.absoluteFile
+                home.absolutePath
             }
+
+            internalProps.remove(pHomeDirectory)
+            storePreference(pHomeDirectory, setting)
+            field = File(getPreference(pHomeDirectory).get()).absoluteFile
+
             if (!field.isDirectory) {
                 field.create(createFileOrDir = true, asDirectory = true)
             }
-            internalProps.setProperty(pHomeDirectory, field.absolutePath)
+
             return field
         }
         set(value) {
-            internalProps.setProperty(pHomeDirectory, value.absolutePath)
+            storePreference(pHomeDirectory, value.absolutePath)
             field = value.absoluteFile
-            log.info("Home directory set to: $field")
+            log.info("Home-directory set to: $field")
             log.warn("Restart ServerPackCreator for this change to take full effect.")
         }
 

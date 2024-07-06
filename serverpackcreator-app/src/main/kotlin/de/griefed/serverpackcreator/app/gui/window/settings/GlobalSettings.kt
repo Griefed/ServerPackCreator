@@ -46,13 +46,12 @@ class GlobalSettings(
     private val guiProps: GuiProps,
     private val apiProperties: ApiProperties,
     componentResizer: ComponentResizer,
-    mainFrame: MainFrame,
+    private val mainFrame: MainFrame,
     changeListener: DocumentChangeListener,
     actionListener: ActionListener,
     tableModelListener: TableModelListener
 ) : Editor(Translations.settings_global.toString(), guiProps) {
 
-    /*
     private val homeIcon = StatusIcon(guiProps, Translations.settings_global_home_tooltip.toString())
     private val homeLabel = ElementLabel(Translations.settings_global_home_label.toString())
     private val homeSetting = ScrollTextFileField(guiProps, apiProperties.homeDirectory.absoluteFile, changeListener)
@@ -71,7 +70,6 @@ class GlobalSettings(
             }
         }
     }
-    */
 
     /*
     private val javaIcon = StatusIcon(guiProps, Translations.settings_global_java_tooltip.toString())
@@ -232,14 +230,12 @@ class GlobalSettings(
         val javaPathsY: Int
         var y = 0
 
-        /*
-        panel.add(homeIcon, "cell 0 $y")
-        panel.add(homeLabel, "cell 1 $y")
-        panel.add(homeSetting, "cell 2 $y, grow")
-        panel.add(homeRevert, "cell 3 $y")
-        panel.add(homeReset, "cell 4 $y")
-        panel.add(homeChoose, "cell 5 $y")
-        */
+        panel.add(homeIcon, "cell 0 0")
+        panel.add(homeLabel, "cell 1 0")
+        panel.add(homeSetting, "cell 2 0, grow")
+        panel.add(homeRevert, "cell 3 0")
+        panel.add(homeReset, "cell 4 0")
+        panel.add(homeChoose, "cell 5 0")
 
         /*
         y++
@@ -251,13 +247,13 @@ class GlobalSettings(
         panel.add(javaChoose, "cell 5 $y")
         */
 
-        //y++
-        panel.add(serverPacksIcon, "cell 0 0")
-        panel.add(serverPacksLabel, "cell 1 0")
-        panel.add(serverPacksSetting, "cell 2 0, grow")
-        panel.add(serverPacksRevert, "cell 3 0")
-        panel.add(serverPacksReset, "cell 4 0")
-        panel.add(serverPacksChoose, "cell 5 0")
+        y++
+        panel.add(serverPacksIcon, "cell 0 $y")
+        panel.add(serverPacksLabel, "cell 1 $y")
+        panel.add(serverPacksSetting, "cell 2 $y, grow")
+        panel.add(serverPacksRevert, "cell 3 $y")
+        panel.add(serverPacksReset, "cell 4 $y")
+        panel.add(serverPacksChoose, "cell 5 $y")
 
         y++
         zipY = y
@@ -408,7 +404,9 @@ class GlobalSettings(
     }
 
     override fun loadSettings() {
-        //homeSetting.file = apiProperties.homeDirectory.absoluteFile
+        val showRestartNotice = checkRestartNoticeRequired()
+
+        homeSetting.file = apiProperties.homeDirectory.absoluteFile
         //javaSetting.file = File(apiProperties.javaPath).absoluteFile
         serverPacksSetting.file = apiProperties.serverPacksDirectory.absoluteFile
         zipSetting.text = apiProperties.zipArchiveExclusions.joinToString(", ")
@@ -432,10 +430,30 @@ class GlobalSettings(
         javaPathsSetting.loadData(apiProperties.javaPaths)
 
         changeUpdateSettingState()
+
+        if (showRestartNotice) {
+            mainFrame.showRestartNotice()
+        }
+    }
+
+    private fun checkRestartNoticeRequired(): Boolean {
+        var showRestartNotice = false
+        if (homeSetting.file != apiProperties.homeDirectory.absoluteFile) {
+            showRestartNotice = true
+        }
+        if (snapshotsSetting.isSelected != apiProperties.isMinecraftPreReleasesAvailabilityEnabled) {
+            showRestartNotice = true
+        }
+        if (languageSetting.selectedItem != apiProperties.i18n4kConfig.locale) {
+            showRestartNotice = true
+        }
+        return showRestartNotice
     }
 
     override fun saveSettings() {
-        //apiProperties.homeDirectory = homeSetting.file.absoluteFile
+        val showRestartNotice = checkRestartNoticeRequired()
+
+        apiProperties.homeDirectory = homeSetting.file.absoluteFile
         //apiProperties.javaPath = javaSetting.file.absolutePath
         apiProperties.serverPacksDirectory = serverPacksSetting.file.absoluteFile
         apiProperties.zipArchiveExclusions = TreeSet(zipSetting.text.replace(", ",",").split(","))
@@ -468,19 +486,21 @@ class GlobalSettings(
         apiProperties.javaPaths = javaPaths
 
         changeUpdateSettingState()
+
+        if (showRestartNotice) {
+            mainFrame.showRestartNotice()
+        }
     }
 
     override fun validateSettings(): List<String> {
         val errors = mutableListOf<String>()
 
-        /*
         if (!homeSetting.file.absoluteFile.isDirectory || !homeSetting.file.absoluteFile.canWrite()) {
             homeIcon.error(Translations.settings_check_home.toString())
             errors.add(Translations.settings_check_home.toString())
         } else {
             homeIcon.info()
         }
-        */
 
         /*
         if (!javaSetting.file.absoluteFile.isFile || !javaSetting.file.absoluteFile.canRead() || !javaSetting.file.absoluteFile.canExecute()) {
@@ -557,7 +577,7 @@ class GlobalSettings(
         scriptTemplates.remove("placeholder")
         val javaScriptTemplates = javaScriptSetting.getData()
         javaScriptTemplates.remove("placeholder")
-        val changes = /*homeSetting.file.absolutePath != apiProperties.homeDirectory.absolutePath ||*/
+        val changes = homeSetting.file.absolutePath != apiProperties.homeDirectory.absolutePath ||
         /*javaSetting.file.absolutePath != File(apiProperties.javaPath).absolutePath ||*/
         serverPacksSetting.file.absolutePath != apiProperties.serverPacksDirectory.absolutePath ||
         zipSetting.text != apiProperties.zipArchiveExclusions.joinToString(", ") ||
