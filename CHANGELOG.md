@@ -1,3 +1,10 @@
+## [6.0.0-beta.15](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.14...6.0.0-beta.15) (2024-07-07)
+
+
+### 🛠 Fixes
+
+* Add AppImages to release artifacts ([3b46871](https://git.griefed.de/Griefed/ServerPackCreator/commit/3b46871db55921df22f18f867e8ccaa1fc01de5b))
+
 ## [6.0.0-beta.14](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.13...6.0.0-beta.14) (2024-07-07)
 
 
