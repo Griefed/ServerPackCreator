@@ -72,7 +72,7 @@ jobs:
 
       - name: Build AppImage
         run: |
-          ./create-appimage.sh "${{ steps.branch-name.outputs.current_branch }}"
+          ./create-appimage.sh "${{ needs.preparations.outputs.version }}"
 
       # UPLOAD ARTIFACTS
       - uses: actions/upload-artifact@v4
@@ -101,7 +101,7 @@ jobs:
             media/*.dmg
             media/*.sh
             media/*.exe
-            appimage/ServerPackCreator*.AppImage
+            appimage/ServerPackCreator-${{ needs.preparations.outputs.version }}-x86_64.AppImage
             serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
             serverpackcreator-plugin-example/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}-Example-Plugin.jar
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
@@ -166,7 +166,7 @@ jobs:
             media/*.dmg
             media/*.sh
             media/*.exe
-            appimage/ServerPackCreator*.AppImage
+            appimage/ServerPackCreator-${{ needs.preparations.outputs.version }}-x86_64.AppImage
             serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
             serverpackcreator-plugin-example/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}-Example-Plugin.jar
 
@@ -196,7 +196,7 @@ jobs:
             media/*.dmg
             media/*.sh
             media/*.exe
-            appimage/ServerPackCreator*.AppImage
+            appimage/ServerPackCreator-${{ needs.preparations.outputs.version }}-x86_64.AppImage
             serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
             serverpackcreator-plugin-example/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}-Example-Plugin.jar
 
