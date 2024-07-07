@@ -1,5 +1,3 @@
-
-
 plugins {
     id("serverpackcreator.dokka-conventions")
     id("org.springframework.boot") apply false

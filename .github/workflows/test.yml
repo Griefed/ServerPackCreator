@@ -30,13 +30,23 @@ jobs:
 
       - uses: luangong/setup-install4j@v1
         with:
-          version: 10.0.7
+          version: 10.0.8
           license: ${{ secrets.INSTALL4J_LICENSE }}
+
+      - name: Set Permissions
+        run: |
+          chmod +x create-appimage.sh
+          chmod +x gradlew
 
       - name: Build with Gradle
         run: |
-          ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} generateLicenseReport --info --full-stacktrace
-          ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} build media --info --full-stacktrace
+          ./gradlew -Pversion="${{ steps.branch-name.outputs.current_branch }}" generateLicenseReport --info --full-stacktrace
+          ./gradlew -Pversion="${{ steps.branch-name.outputs.current_branch }}" build --info --full-stacktrace
+          ./gradlew -Pversion="${{ steps.branch-name.outputs.current_branch }}" media --info --full-stacktrace
+
+      - name: Build AppImage
+        run: |
+          ./create-appimage.sh "${{ steps.branch-name.outputs.current_branch }}"
 
       - uses: actions/upload-artifact@v4
         if: ${{ always() }}
@@ -46,6 +56,7 @@ jobs:
             media
             build
             buildSrc/build
+            appimage/ServerPackCreator*.AppImage
             serverpackcreator-api/build
             serverpackcreator-app/build
             serverpackcreator-web-frontend/dist

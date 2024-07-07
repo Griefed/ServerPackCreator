@@ -82,6 +82,7 @@ cwallet.sso.lck
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 .idea
+.kotlin
 
 # Gradle and Maven with auto-import
 # When using Gradle or Maven with auto-import, you should exclude module files,
@@ -385,4 +386,5 @@ serverpackcreator-api/src/test/resources/fabric_tests_server_pack.zip
 serverpackcreator-api/src/test/resources/forge_tests_server_pack.zip
 serverpackcreator-api/src/test/resources/quilt_tests_server_pack.zip
 
-/media/
+media
+appimage

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+    <id>de.griefed.ServerPackCreator</id>
+    <metadata_license>MIT</metadata_license>
+    <project_license>LGPL-2.1</project_license>
+    <name>ServerPackCreator</name>
+    <summary>Create server packs from Minecraft modpacks</summary>
+    <description>
+        <p>ServerPackCreator creates a server pack from any given Forge, Fabric, Quilt, LegacyFabric and NeoForge modpack.</p>
+        <p>Whenever you are working on an update to your modpack, you simply run ServerPackCreator and BAM! You've got yourself a server pack for your new modpack version.</p>
+        <ul>
+            <li>ServerPackCreator is not a guarantee for working server packs. It helps you create them, but you must still test them!</li>
+            <li>You are still expected to be knowledgeable about your modpack, server packs in general, server administration and managing your Java installations. ServerPackCreator is not intended to take all the work off your shoulders!</li>
+            <li>When using alpha, beta or in-dev version of ServerPackCreator, it is advised to make a backup of your ServerPackCreator-directory in your home-directory.</li>
+            <li>Things will break with alpha releases, stuff may break when using beta releases.</li>
+            <li>If you distribute server packs generated with a pre-release (alpha, beta) of ServerPackCreator, you do so at your own risk.</li>
+            <li>I (Griefed) will not be held responsible for errors in your server pack caused by you using a pre-release.</li>
+            <li>I (Griefed) will not be held responsible for errors in your server pack in general. Test your server packs before you ship them!</li>
+        </ul>
+    </description>
+    <launchable type="desktop-id">de.griefed.ServerPackCreator.desktop</launchable>
+    <url type="homepage">https://serverpackcreator.de</url>
+    <url type="bugtracker">https://github.com/Griefed/ServerPackCreator/issuess/</url>
+    <url type="donation">https://github.com/sponsors/Griefed</url>
+    <url type="help">https://help.serverpackcreator.de/help-topic.html</url>
+    <update_contact>griefed_AT_griefed.de</update_contact>
+    <screenshots>
+        <screenshot type="default">
+            <caption>Manage your server pack configs</caption>
+            <image>https://raw.githubusercontent.com/Griefed/ServerPackCreator/main/img/gui_dark.png</image>
+        </screenshot>
+    </screenshots>
+    <categories>
+        <category>Utility</category>
+        <category>FileTools</category>
+        <category>Java</category>
+    </categories>
+    <provides>
+        <id>de.griefed.ServerPackCreator.desktop</id>
+    </provides>
+    <developer id="de.griefed">
+        <name>Griefed</name>
+    </developer>
+    <content_rating type="oars-1.0">
+        <content_attribute id="language-humor">mild</content_attribute>
+    </content_rating>
+</component>

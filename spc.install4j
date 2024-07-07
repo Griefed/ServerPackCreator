@@ -450,6 +450,7 @@ if they so desire. By default $USERHOME/ServerPackCreator will be used for them.
               </action>
               <action id="373" beanClass="com.install4j.runtime.beans.actions.desktop.CreateDesktopLinkAction" actionElevationType="elevated" rollbackBarrierExitCode="0">
                 <serializedBean>
+                  <property name="additionalDesktopFileEntries" type="string">Comment=Create server packs from Minecraft modpacks.</property>
                   <property name="file">
                     <object class="java.io.File">
                       <string>ServerPackCreator</string>
