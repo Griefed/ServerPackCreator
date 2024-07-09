@@ -48,17 +48,17 @@ dependencies {
 
     //WEB
     api("org.jetbrains.kotlin:kotlin-reflect:1.9.23")
-    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.0")
-    api("org.springframework.boot:spring-boot-starter-web:3.2.4")
-    api("org.springframework.boot:spring-boot-starter-log4j2:3.2.4")
-    api("org.springframework.boot:spring-boot-starter-data-jpa:3.2.5")
+    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.1")
+    api("org.springframework.boot:spring-boot-starter-web:3.3.1")
+    api("org.springframework.boot:spring-boot-starter-log4j2:3.3.1")
+    api("org.springframework.boot:spring-boot-starter-data-jpa:3.3.0")
     api("org.postgresql:postgresql:42.7.3")
     api("org.javassist:javassist:3.30.2-GA")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
     testRuntimeOnly("com.h2database:h2:2.2.224")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:3.2.4")
-    developmentOnly("org.springframework.boot:spring-boot-devtools:3.2.5")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:3.3.1")
+    developmentOnly("org.springframework.boot:spring-boot-devtools:3.3.0")
     //developmentOnly("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 }
 

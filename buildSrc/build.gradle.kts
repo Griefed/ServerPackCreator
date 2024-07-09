@@ -21,7 +21,7 @@ FileInputStream(file("../gradle.properties")).use {
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:${props.getProperty("kotlinVersion")}")
-    implementation("org.springframework.boot:spring-boot-gradle-plugin:3.3.0")
+    implementation("org.springframework.boot:spring-boot-gradle-plugin:3.3.1")
     implementation("io.spring.gradle:dependency-management-plugin:1.1.5")
     implementation("org.jetbrains.kotlin:kotlin-allopen:1.9.23")
     implementation("org.jetbrains.kotlin.plugin.jpa:org.jetbrains.kotlin.plugin.jpa.gradle.plugin:1.9.23")
