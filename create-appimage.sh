@@ -20,7 +20,16 @@ TEMP=${BASE}/temp
 APPDIR=${BASE}/ServerPackCreator.AppDir
 
 rm -rf ${BASE}/*
-mkdir -p ${INPUT} ${DEST} ${TEMP} ${APPDIR}
+mkdir -p \
+  ${INPUT} \
+  ${DEST} \
+  ${TEMP} \
+  ${APPDIR}/usr/share/applications \
+  ${APPDIR}/usr/icons/hicolor/256x256/apps \
+  ${APPDIR}/usr/icons/hicolor/512x512/apps \
+  ${APPDIR}/usr/icons/hicolor/scalable/apps \
+  ${APPDIR}/usr/share/applications \
+  ${APPDIR}/usr/share/metainfo
 
 goback() {
   cd "${DIR}"
@@ -60,14 +69,6 @@ jpackage \
 #
 # CREATE APPIMAGE
 #
-mkdir -p \
-  ${APPDIR}/usr/share/applications \
-  ${APPDIR}/usr/icons/hicolor/256x256/apps \
-  ${APPDIR}/usr/icons/hicolor/512x512/apps \
-  ${APPDIR}/usr/icons/hicolor/scalable/apps \
-  ${APPDIR}/usr/share/applications \
-  ${APPDIR}/usr/share/metainfo
-
 {
   echo "#!/usr/bin/env xdg-open"
   echo "[Desktop Entry]"
@@ -86,7 +87,7 @@ cp -rf \
   ${APPDIR}
 
 cp -f \
-  misc/de.griefed.ServerPackCreator.appdata.xml \
+  misc/appdata.xml \
   ${APPDIR}/usr/share/metainfo/de.griefed.ServerPackCreator.appdata.xml
 
 cp -f \
@@ -121,9 +122,11 @@ ln -s \
 
 cd ..
 
-curl \
-  -L https://github.com/probonopd/go-appimage/releases/download/continuous/appimagetool-833-x86_64.AppImage \
-  -o appimagetool.AppImage
+wget -c https://github.com/$(wget -q https://github.com/probonopd/go-appimage/releases/expanded_assets/continuous -O - | grep "appimagetool-.*-x86_64.AppImage" | head -n 1 | cut -d '"' -f 2)
+
+mv \
+  appimagetool-*.AppImage \
+  appimagetool.AppImage
 
 chmod +x \
   appimagetool.AppImage
@@ -133,6 +136,7 @@ export PATH=./squashfs-root/usr/bin:${PATH}
 export VERSION="${VERSION:-dev}"
 
 ./appimagetool.AppImage \
+  --standalone \
   ./ServerPackCreator.AppDir
 
 mv \

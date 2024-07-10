@@ -1,3 +1,10 @@
+## [6.0.0-beta.14](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.13...6.0.0-beta.14) (2024-07-07)
+
+
+### 👀 Reverts
+
+* Bring back AppImages to v6 ([309815c](https://git.griefed.de/Griefed/ServerPackCreator/commit/309815c2ef21679a3cfa94d638658166c77cee77))
+
 ## [6.0.0-beta.13](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.12...6.0.0-beta.13) (2024-07-06)
 
 

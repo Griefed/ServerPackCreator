@@ -348,6 +348,9 @@ yarn.lock
 /build
 /.gradle
 
+# Other
+*.asc
+
 ### ServerPackCreator ###
 /configs
 /logs
