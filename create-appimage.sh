@@ -45,26 +45,26 @@ cp -f \
 # CREATE IMAGE
 #
 jpackage \
-	--app-version "${VERSION}" \
+  --app-version "${VERSION}" \
   --name "ServerPackCreator" \
-	--copyright "Copyright (C) ${YEAR} Griefed" \
-	--description "Create server packs from Minecraft Forge, NeoForge, Fabric, Quilt or LegacyFabric modpacks." \
-	--vendor "Griefed" \
-	--icon img/icon.png \
-	--dest ${DEST} \
-	--java-options "-Dfile.encoding=UTF-8" \
-	--java-options "-Dlog4j2.formatMsgNoLookups=true" \
-	--java-options "-DServerPackCreator" \
-	--java-options "-Dname=ServerPackCreator" \
-	--java-options "-Dspring.application.name=ServerPackCreator" \
-	--java-options "-Dcom.apple.mrj.application.apple.menu.about.name=ServerPackCreator" \
-	--main-class org.springframework.boot.loader.launch.JarLauncher \
-	--main-jar "serverpackcreator.jar" \
-	--input "${INPUT}/" \
-	--runtime-image "${JAVA_HOME}" \
-	--temp "${TEMP}" \
-	--type "app-image" \
-	--verbose
+  --copyright "Copyright (C) ${YEAR} Griefed" \
+  --description "Create server packs from Minecraft Forge, NeoForge, Fabric, Quilt or LegacyFabric modpacks." \
+  --vendor "Griefed" \
+  --icon img/icon.png \
+  --dest ${DEST} \
+  --java-options "-Dfile.encoding=UTF-8" \
+  --java-options "-Dlog4j2.formatMsgNoLookups=true" \
+  --java-options "-DServerPackCreator" \
+  --java-options "-Dname=ServerPackCreator" \
+  --java-options "-Dspring.application.name=ServerPackCreator" \
+  --java-options "-Dcom.apple.mrj.application.apple.menu.about.name=ServerPackCreator" \
+  --main-class org.springframework.boot.loader.launch.JarLauncher \
+  --main-jar "serverpackcreator.jar" \
+  --input "${INPUT}/" \
+  --runtime-image "${JAVA_HOME}" \
+  --temp "${TEMP}" \
+  --type "app-image" \
+  --verbose
 
 #
 # CREATE APPIMAGE
@@ -138,6 +138,8 @@ export VERSION="${VERSION:-dev}"
 ./appimagetool.AppImage \
   --standalone \
   ./ServerPackCreator.AppDir
+
+ls -hat
 
 mv \
   ServerPackCreator*.AppImage \

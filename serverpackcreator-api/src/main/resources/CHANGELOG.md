@@ -1,3 +1,23 @@
+## [6.0.0-beta.16](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.15...6.0.0-beta.16) (2024-07-12)
+
+
+### 🔩 Dependencies
+
+* Update a couple of dependencies ([0030a43](https://git.griefed.de/Griefed/ServerPackCreator/commit/0030a436fddcb591d2cbd605671a143b43b02065))
+
+
+### 🦊 CI/CD
+
+* Change AppImage tool to continuous. Hopefully fix appdata not being copied. ([184124a](https://git.griefed.de/Griefed/ServerPackCreator/commit/184124a3c49dfdeb5488bb6caccd07b8d74b3e55))
+* Correctly copy appdata-xml ([9ecdd53](https://git.griefed.de/Griefed/ServerPackCreator/commit/9ecdd53260d14e4e284d89777af2cdf8977ecbf2))
+
+## [6.0.0-beta.15](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.14...6.0.0-beta.15) (2024-07-07)
+
+
+### 🛠 Fixes
+
+* Add AppImages to release artifacts ([3b46871](https://git.griefed.de/Griefed/ServerPackCreator/commit/3b46871db55921df22f18f867e8ccaa1fc01de5b))
+
 ## [6.0.0-beta.14](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.13...6.0.0-beta.14) (2024-07-07)
 
 
