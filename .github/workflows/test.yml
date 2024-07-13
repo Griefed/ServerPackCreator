@@ -55,7 +55,7 @@ jobs:
             media
             build
             buildSrc/build
-            appimage/ServerPackCreator*.AppImage
+            appimage/ServerPackCreator*.AppImage*
             serverpackcreator-api/build
             serverpackcreator-app/build
             serverpackcreator-web-frontend/dist

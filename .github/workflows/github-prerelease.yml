@@ -166,7 +166,7 @@ jobs:
             media/*.dmg
             media/*.sh
             media/*.exe
-            appimage/ServerPackCreator-${{ needs.preparations.outputs.version }}-x86_64.AppImage
+            appimage/ServerPackCreator-${{ needs.preparations.outputs.version }}-x86_64.AppImage*
             serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
             serverpackcreator-plugin-example/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}-Example-Plugin.jar
 
@@ -196,7 +196,7 @@ jobs:
             media/*.dmg
             media/*.sh
             media/*.exe
-            appimage/ServerPackCreator-${{ needs.preparations.outputs.version }}-x86_64.AppImage
+            appimage/ServerPackCreator-${{ needs.preparations.outputs.version }}-x86_64.AppImage*
             serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
             serverpackcreator-plugin-example/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}-Example-Plugin.jar
 
