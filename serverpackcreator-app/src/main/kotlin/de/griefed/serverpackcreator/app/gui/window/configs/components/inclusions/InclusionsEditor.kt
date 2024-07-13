@@ -477,7 +477,11 @@ class InclusionsEditor(
      */
     fun setServerFiles(entries: List<InclusionSpecification>) {
         inclusionModel.clear()
-        inclusionModel.addAll(entries)
+        for (entry in entries) {
+            if (inclusionModel.toArray().all { (it as InclusionSpecification).source != entry.source }) {
+                inclusionModel.addElement(entry)
+            }
+        }
         validate()
     }
 
@@ -560,7 +564,9 @@ class InclusionsEditor(
                 serverFiles.add(createInclusionSpec(entry))
             }
             setServerFiles(serverFiles.toMutableList())
-            log.debug("Selected directories: $serverFiles")
+            for (added in serverFiles) {
+                log.debug("Selected directories: ${added.source}")
+            }
         }
         validate()
     }
