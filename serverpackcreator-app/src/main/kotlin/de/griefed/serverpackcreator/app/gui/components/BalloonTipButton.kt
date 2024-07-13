@@ -68,4 +68,8 @@ open class BalloonTipButton(text: String?, icon: Icon, toolTip: String, guiProps
             }
         })
     }
+
+    override fun setToolTipText(text: String) {
+        toolTipLabel.text = text
+    }
 }

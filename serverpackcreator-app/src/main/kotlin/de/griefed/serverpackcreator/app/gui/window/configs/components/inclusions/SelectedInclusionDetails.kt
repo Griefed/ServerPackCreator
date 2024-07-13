@@ -33,7 +33,7 @@ import javax.swing.text.DefaultHighlighter
  *
  * @author Griefed
  */
-class InclusionTip(
+class SelectedInclusionDetails(
     name: String,
     private val guiProps: GuiProps,
     private val textPane: JTextPane = JTextPane(),

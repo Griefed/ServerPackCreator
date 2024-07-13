@@ -65,7 +65,7 @@ class InclusionsEditor(
     private val exclusionFilter: ScrollTextField
 ) : JSplitPane(HORIZONTAL_SPLIT) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
-    private val expertPanel = JPanel(
+    private val expertInclusionSettingsPanel = JPanel(
         MigLayout(
             "left,wrap",
             "0[left,::64]5[left,::150]5[left,grow]0",
@@ -79,6 +79,8 @@ class InclusionsEditor(
             "30"
         )
     )
+    // TODO prevent duplicate entries
+    // TODO move inclusions selection button
     private val leftPanel = JPanel(BorderLayout())
     private val inclusionModel = DefaultListModel<InclusionSpecification>()
     private val list = JList(inclusionModel)
@@ -86,7 +88,7 @@ class InclusionsEditor(
 
     private val sourceIcon = StatusIcon(guiProps,Translations.createserverpack_gui_inclusions_editor_source_info.toString())
     private val sourceLabel = ElementLabel(Translations.createserverpack_gui_inclusions_editor_source.toString())
-    private val sourceAdd = BalloonTipButton(null, guiProps.folderIcon, Translations.settings_gui_manualedit_select.toString(), guiProps) { selectSource() }
+    private val sourceSelect = BalloonTipButton(null, guiProps.folderIcon, Translations.settings_gui_manualedit_select.toString(), guiProps) { selectSource() }
 
     private val destinationIcon = StatusIcon(guiProps,Translations.createserverpack_gui_inclusions_editor_destination_info.toString())
     private val destinationLabel = ElementLabel(Translations.createserverpack_gui_inclusions_editor_destination.toString())
@@ -97,13 +99,13 @@ class InclusionsEditor(
     private val exclusionIcon = StatusIcon(guiProps,Translations.createserverpack_gui_inclusions_editor_exclusion_info.toString())
     private val exclusionLabel = ElementLabel(Translations.createserverpack_gui_inclusions_editor_exclusion.toString())
 
-    private val toggleVisibility = JToggleButton(guiProps.toggleHelpIcon)
-    private val fileAdd = BalloonTipButton(null, guiProps.addIcon,Translations.createserverpack_gui_inclusions_editor_add.toString(), guiProps) { addEntry("") }
-    private val fileRemove = BalloonTipButton(null, guiProps.deleteIcon,Translations.createserverpack_gui_inclusions_editor_delete.toString(), guiProps) { removeSelectedEntry() }
-    private val tip = InclusionTip(Translations.createserverpack_gui_inclusions_editor_tip_name.toString(), guiProps)
-    private val filesShowBrowser = BalloonTipButton(null, guiProps.folderIcon, Translations.createserverpack_gui_browser.toString(), guiProps) { selectInclusions() }
-    private val filesRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.createserverpack_gui_buttoncopydirs_revert_tip.toString(), guiProps) { revertInclusions() }
-    private val filesReset = BalloonTipButton(null, guiProps.resetIcon, Translations.createserverpack_gui_buttoncopydirs_reset_tip.toString(), guiProps) { setInclusionsFromStringList(apiWrapper.apiProperties.directoriesToInclude.toMutableList()) }
+    private val toggleDetailsDisplay = JToggleButton(guiProps.toggleHelpIcon)
+    private val addInclEntry = BalloonTipButton(null, guiProps.entriesAddIcon,Translations.createserverpack_gui_inclusions_editor_add.toString(), guiProps) { addEntry("") }
+    private val remInclEntry = BalloonTipButton(null, guiProps.entriesRemoveIcon,Translations.createserverpack_gui_inclusions_editor_delete.toString(), guiProps) { removeSelectedEntry() }
+    private val selectedInclusionDetailsScrollPanel = SelectedInclusionDetails(Translations.createserverpack_gui_inclusions_editor_tip_name.toString(), guiProps)
+    private val inclusionsSelection = BalloonTipButton(null, guiProps.folderAddIcon, Translations.createserverpack_gui_browser.toString(), guiProps) { selectInclusions() }
+    private val inclusionsRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.createserverpack_gui_buttoncopydirs_revert_tip.toString(), guiProps) { revertInclusions() }
+    private val inclusionsReset = BalloonTipButton(null, guiProps.resetIcon, Translations.createserverpack_gui_buttoncopydirs_reset_tip.toString(), guiProps) { setInclusionsFromStringList(apiWrapper.apiProperties.directoriesToInclude.toMutableList()) }
 
     private var selectedInclusion: InclusionSpecification? = null
     private val delay = 250
@@ -192,32 +194,33 @@ class InclusionsEditor(
         list.cellRenderer = InclusionSpecificationRenderer()
         list.addListSelectionListener { event -> selectionOccurred(event) }
         leftPanel.add(listScroller, BorderLayout.CENTER)
-        tip.text = Translations.createserverpack_gui_inclusions_editor_tip_default.toString()
-        expertPanel.isVisible = false
-        toggleVisibility.addActionListener { toggleVisibility() }
+        selectedInclusionDetailsScrollPanel.text = Translations.createserverpack_gui_inclusions_editor_tip_default.toString()
+        expertInclusionSettingsPanel.isVisible = false
+        toggleDetailsDisplay.addActionListener { toggleVisibility() }
 
-        expertPanel.add(destinationIcon, "cell 0 0")
-        expertPanel.add(destinationLabel, "cell 1 0")
-        expertPanel.add(destination, "cell 2 0, grow,w 50:50:")
-        expertPanel.add(inclusionIcon, "cell 0 1")
-        expertPanel.add(inclusionLabel, "cell 1 1")
-        expertPanel.add(inclusionFilter, "cell 2 1, grow,w 50:50:")
-        expertPanel.add(exclusionIcon, "cell 0 2")
-        expertPanel.add(exclusionLabel, "cell 1 2")
-        expertPanel.add(exclusionFilter, "cell 2 2, grow,w 50:50:")
+        expertInclusionSettingsPanel.add(destinationIcon, "cell 0 0")
+        expertInclusionSettingsPanel.add(destinationLabel, "cell 1 0")
+        expertInclusionSettingsPanel.add(destination, "cell 2 0, grow,w 50:50:")
+        expertInclusionSettingsPanel.add(inclusionIcon, "cell 0 1")
+        expertInclusionSettingsPanel.add(inclusionLabel, "cell 1 1")
+        expertInclusionSettingsPanel.add(inclusionFilter, "cell 2 1, grow,w 50:50:")
+        expertInclusionSettingsPanel.add(exclusionIcon, "cell 0 2")
+        expertInclusionSettingsPanel.add(exclusionLabel, "cell 1 2")
+        expertInclusionSettingsPanel.add(exclusionFilter, "cell 2 2, grow,w 50:50:")
 
         rightPanel.add(sourceIcon, "cell 0 0")
-        rightPanel.add(toggleVisibility, "cell 0 1")
-        rightPanel.add(fileAdd, "cell 0 2")
-        rightPanel.add(fileRemove, "cell 0 3")
+        rightPanel.add(toggleDetailsDisplay, "cell 0 1")
+        rightPanel.add(inclusionsSelection, "cell 0 2")
+        rightPanel.add(addInclEntry, "cell 0 3")
+        rightPanel.add(remInclEntry, "cell 0 4")
         rightPanel.add(sourceLabel, "cell 1 0")
         rightPanel.add(source, "cell 2 0, grow, w 50:50:")
-        rightPanel.add(sourceAdd, "cell 2 0")
-        rightPanel.add(expertPanel, "cell 1 1 2 3, grow, w 50:50:, hidemode 3")
-        rightPanel.add(tip, "cell 1 1 2 3, grow, w 50:50:, h 150:200:, hidemode 3")
-        rightPanel.add(filesShowBrowser, "cell 3 0")
-        rightPanel.add(filesRevert, "cell 3 1")
-        rightPanel.add(filesReset, "cell 3 2")
+        rightPanel.add(sourceSelect, "cell 2 0")
+        rightPanel.add(expertInclusionSettingsPanel, "cell 1 1 2 4, grow, w 50:50:, h 150:200:, hidemode 3")
+        rightPanel.add(selectedInclusionDetailsScrollPanel, "cell 1 1 2 4, grow, w 50:50:, h 150:200:, hidemode 3")
+        //rightPanel.add(inclusionsSelection, "cell 3 0")
+        rightPanel.add(inclusionsRevert, "cell 3 2")
+        rightPanel.add(inclusionsReset, "cell 3 3")
         source.addDocumentListener(sourceListener)
         destination.addDocumentListener(destinationListener)
         inclusionFilter.addDocumentListener(inclusionListener)
@@ -235,7 +238,7 @@ class InclusionsEditor(
             return
         }
         list.clearSelection()
-        tip.text = Translations.createserverpack_gui_inclusions_editor_tip_default.toString()
+        selectedInclusionDetailsScrollPanel.text = Translations.createserverpack_gui_inclusions_editor_tip_default.toString()
         source.isEditable = guiProps.allowManualEditing
         destination.isEditable = false
         inclusionFilter.isEditable = false
@@ -252,10 +255,10 @@ class InclusionsEditor(
     @OptIn(DelicateCoroutinesApi::class)
     private fun updateTip() {
         GlobalScope.launch(guiProps.miscDispatcher) {
-            tip.isEnabled = false
+            selectedInclusionDetailsScrollPanel.isEnabled = false
             list.isEnabled = false
-            tip.text = Translations.createserverpack_gui_inclusions_editor_tip_updating.toString()
-            tip.updateUI()
+            selectedInclusionDetailsScrollPanel.text = Translations.createserverpack_gui_inclusions_editor_tip_updating.toString()
+            selectedInclusionDetailsScrollPanel.updateUI()
             val inclusionSelection = selectedInclusion!!
             var tipContent = ""
             try {
@@ -309,11 +312,11 @@ class InclusionsEditor(
             }
             if (inclusionSelection == selectedInclusion) {
                 try {
-                    tip.text = tipContent
-                    tip.updateUI()
+                    selectedInclusionDetailsScrollPanel.text = tipContent
+                    selectedInclusionDetailsScrollPanel.updateUI()
                 } catch (_: NullPointerException) {
                 }
-                tip.isEnabled = true
+                selectedInclusionDetailsScrollPanel.isEnabled = true
                 list.isEnabled = true
             } else {
                 updateTip()
@@ -439,6 +442,11 @@ class InclusionsEditor(
         destination.text = selectedInclusion!!.destination ?: ""
         inclusionFilter.text = selectedInclusion!!.inclusionFilter ?: ""
         exclusionFilter.text = selectedInclusion!!.exclusionFilter ?: ""
+        if (source.text.isNotBlank()) {
+            remInclEntry.toolTipText = Translations.createserverpack_gui_inclusions_editor_delete_withselection(source.text)
+        } else {
+            remInclEntry.toolTipText = Translations.createserverpack_gui_inclusions_editor_delete.toString()
+        }
         tipUpdateTimer.restart()
     }
 
@@ -446,12 +454,12 @@ class InclusionsEditor(
      * @author Griefed
      */
     private fun toggleVisibility() {
-        expertPanel.isVisible = !expertPanel.isVisible
-        tip.isVisible = !tip.isVisible
-        if (expertPanel.isVisible) {
-            toggleVisibility.icon = guiProps.toggleExpertIcon
+        expertInclusionSettingsPanel.isVisible = !expertInclusionSettingsPanel.isVisible
+        selectedInclusionDetailsScrollPanel.isVisible = !selectedInclusionDetailsScrollPanel.isVisible
+        if (expertInclusionSettingsPanel.isVisible) {
+            toggleDetailsDisplay.icon = guiProps.toggleExpertIcon
         } else {
-            toggleVisibility.icon = guiProps.toggleHelpIcon
+            toggleDetailsDisplay.icon = guiProps.toggleHelpIcon
         }
     }
 
