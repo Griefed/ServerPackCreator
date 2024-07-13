@@ -79,8 +79,6 @@ class InclusionsEditor(
             "30"
         )
     )
-    // TODO prevent duplicate entries
-    // TODO move inclusions selection button
     private val leftPanel = JPanel(BorderLayout())
     private val inclusionModel = DefaultListModel<InclusionSpecification>()
     private val list = JList(inclusionModel)
@@ -214,7 +212,7 @@ class InclusionsEditor(
         rightPanel.add(addInclEntry, "cell 0 3")
         rightPanel.add(remInclEntry, "cell 0 4")
         rightPanel.add(sourceLabel, "cell 1 0")
-        rightPanel.add(source, "cell 2 0, grow, w 50:50:")
+        rightPanel.add(source, "cell 2 0 2 1, grow, w 50:50:")
         rightPanel.add(sourceSelect, "cell 2 0")
         rightPanel.add(expertInclusionSettingsPanel, "cell 1 1 2 4, grow, w 50:50:, h 150:200:, hidemode 3")
         rightPanel.add(selectedInclusionDetailsScrollPanel, "cell 1 1 2 4, grow, w 50:50:, h 150:200:, hidemode 3")
