@@ -101,7 +101,7 @@ class InclusionsEditor(
     private val addInclEntry = BalloonTipButton(null, guiProps.entriesAddIcon,Translations.createserverpack_gui_inclusions_editor_add.toString(), guiProps) { addEntry("") }
     private val remInclEntry = BalloonTipButton(null, guiProps.entriesRemoveIcon,Translations.createserverpack_gui_inclusions_editor_delete.toString(), guiProps) { removeSelectedEntry() }
     private val selectedInclusionDetailsScrollPanel = SelectedInclusionDetails(Translations.createserverpack_gui_inclusions_editor_tip_name.toString(), guiProps)
-    private val inclusionsSelection = BalloonTipButton(null, guiProps.folderAddIcon, Translations.createserverpack_gui_browser.toString(), guiProps) { selectInclusions() }
+    private val inclusionsSelection = BalloonTipButton(null, guiProps.folderAddIcon, Translations.createserverpack_gui_inclusions_editor_select.toString(), guiProps) { selectInclusions() }
     private val inclusionsRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.createserverpack_gui_buttoncopydirs_revert_tip.toString(), guiProps) { revertInclusions() }
     private val inclusionsReset = BalloonTipButton(null, guiProps.resetIcon, Translations.createserverpack_gui_buttoncopydirs_reset_tip.toString(), guiProps) { setInclusionsFromStringList(apiWrapper.apiProperties.directoriesToInclude.toMutableList()) }
 
