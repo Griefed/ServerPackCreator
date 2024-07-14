@@ -31,7 +31,7 @@ import java.io.File
 class SystemUtilities {
 
     companion object {
-        private val log by lazy { cachedLoggerOf(Companion::class.java) }
+        private val log by lazy { cachedLoggerOf(SystemUtilities::class.java) }
         private val windowsDriveRegex = "^[a-zA-Z]:\\\\.*".toRegex()
         private val javaPathSuffix = "%s${File.separator}bin${File.separator}java"
         private val javaHome = System.getProperty("java.home")

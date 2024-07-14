@@ -29,7 +29,7 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 @Suppress("unused", "KDocUnresolvedReference")
 class BooleanUtilities {
     companion object {
-        private val log by lazy { cachedLoggerOf(Companion::class.java) }
+        private val log by lazy { cachedLoggerOf(BooleanUtilities::class.java) }
 
         private val yYeEsS = "[Yy][Ee][Ss]".toRegex()
         private val yY = "[Yy]".toRegex()

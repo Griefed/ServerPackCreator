@@ -36,7 +36,7 @@ import kotlin.io.path.toPath
 @Suppress("unused")
 class JarUtilities {
     companion object {
-        private val log by lazy { cachedLoggerOf(Companion::class.java) }
+        private val log by lazy { cachedLoggerOf(JarUtilities::class.java) }
 
         /**
          * Copy a file from inside our JAR-file to the host filesystem. The file will create exactly as specified in the

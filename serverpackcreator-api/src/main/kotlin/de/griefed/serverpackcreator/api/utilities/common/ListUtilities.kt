@@ -34,7 +34,7 @@ import kotlin.coroutines.CoroutineContext
 class ListUtilities {
 
     companion object {
-        private val log by lazy { cachedLoggerOf(Companion::class.java) }
+        private val log by lazy { cachedLoggerOf(ListUtilities::class.java) }
         private val whitespace = "\\s+".toRegex()
 
         /**
