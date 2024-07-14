@@ -61,60 +61,8 @@ class ApiWrapper private constructor(
      */
     @get:Synchronized
     val apiProperties: ApiProperties by lazy {
-        ApiProperties(fileUtilities, systemUtilities, listUtilities, jarUtilities, properties)
+        ApiProperties(properties)
     }
-
-    /**
-     * This instances common boolean utilities used across ServerPackCreator.
-     *
-     * @return Common boolean utilities used across ServerPackCreator.
-     * @author Griefed
-     */
-    val booleanUtilities: BooleanUtilities = BooleanUtilities()
-
-    /**
-     * This instances common String utilities used across ServerPackCreator.
-     *
-     * @return Common String utilities used across ServerPackCreator.
-     * @author Griefed
-     */
-    val stringUtilities: StringUtilities = StringUtilities()
-
-
-    /**
-     * This instances common list utilities used across ServerPackCreator.
-     *
-     * @return Common list utilities used across ServerPackCreator.
-     * @author Griefed
-     */
-    val listUtilities: ListUtilities = ListUtilities()
-
-    /**
-     * This instances common file utilities used across ServerPackCreator.
-     *
-     * @return Common file utilities used across ServerPackCreator.
-     * @author Griefed
-     */
-    @get:Synchronized
-    val fileUtilities: FileUtilities = FileUtilities()
-
-    /**
-     * This instances common JAR-utilities used across ServerPackCreator.
-     *
-     * @return Common JAR-utilities used across ServerPackCreator.
-     * @author Griefed
-     */
-    @get:Synchronized
-    val jarUtilities: JarUtilities = JarUtilities()
-
-    /**
-     * This instances common system utilities used across ServerPackCreator.
-     *
-     * @return Common system utilities used across ServerPackCreator.
-     * @author Griefed
-     */
-    @get:Synchronized
-    val systemUtilities: SystemUtilities = SystemUtilities()
 
     /**
      * This instances JSON-ObjectMapper used across ServerPackCreator with which this instance was
@@ -181,12 +129,6 @@ class ApiWrapper private constructor(
     @get:Synchronized
     val utilities: Utilities by lazy {
         Utilities(
-            booleanUtilities,
-            fileUtilities,
-            jarUtilities,
-            listUtilities,
-            stringUtilities,
-            systemUtilities,
             webUtilities,
             jsonUtilities,
             xmlUtilities
@@ -449,28 +391,28 @@ class ApiWrapper private constructor(
      * @author Griefed
      */
     fun stageOne() {
-        utilities.jarUtilities.copyFileFromJar(
+        JarUtilities.copyFileFromJar(
             "README.md", true, this.javaClass, apiProperties.homeDirectory.absoluteFile.toString()
         )
-        utilities.jarUtilities.copyFileFromJar(
+        JarUtilities.copyFileFromJar(
             "HELP.md", true, this.javaClass, apiProperties.homeDirectory.absoluteFile.toString()
         )
-        utilities.jarUtilities.copyFileFromJar(
+        JarUtilities.copyFileFromJar(
             "CHANGELOG.md", true, this.javaClass, apiProperties.homeDirectory.absoluteFile.toString()
         )
-        utilities.jarUtilities.copyFileFromJar(
+        JarUtilities.copyFileFromJar(
             "LICENSE", true, this.javaClass, apiProperties.homeDirectory.absoluteFile.toString()
         )
 
         System.setProperty("file.encoding", StandardCharsets.UTF_8.name())
-        if (!utilities.fileUtilities.isReadWritePermissionSet(apiProperties.getJarFolder())) {
+        if (!FileUtilities.isReadWritePermissionSet(apiProperties.getJarFolder())) {
             log.error("One or more file or directory has no read- or write-permission. " +
                     "This may lead to corrupted server packs! " +
                     "Check the permissions of the ServerPackCreator base directory!")
         }
 
         try {
-            utilities.jarUtilities.copyFolderFromJar(
+            JarUtilities.copyFolderFromJar(
                 this.javaClass,
                 "de/griefed/resources/manifests",
                 apiProperties.manifestsDirectory.absolutePath,
@@ -577,7 +519,7 @@ class ApiWrapper private constructor(
      * @return `true` if the file was generated.
      * @author Griefed
      */
-    fun checkServerFilesFile(fileToCheckFor: File) = utilities.jarUtilities.copyFileFromJar(
+    fun checkServerFilesFile(fileToCheckFor: File) = JarUtilities.copyFileFromJar(
         "de/griefed/resources/server_files/${fileToCheckFor.name}",
         File(apiProperties.serverFilesDirectory, fileToCheckFor.name),
         this.javaClass

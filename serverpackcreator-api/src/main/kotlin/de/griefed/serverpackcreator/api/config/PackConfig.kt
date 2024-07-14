@@ -27,6 +27,7 @@ import com.electronwill.nightconfig.core.io.WritingMode
 import com.electronwill.nightconfig.toml.TomlFormat
 import com.fasterxml.jackson.databind.JsonNode
 import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.api.utilities.common.StringUtilities
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
@@ -361,8 +362,7 @@ open class PackConfig() {
         modloader = config.getOrElse(modLoaderKey, "")
         modloaderVersion = config.getOrElse(modLoaderVersionKey, "")
         javaArgs = config.getOrElse(javaArgsKey, "")
-        serverPackSuffix = utilities.stringUtilities
-            .pathSecureText(config.getOrElse(serverPackSuffixKey, ""))
+        serverPackSuffix = StringUtilities.pathSecureText(config.getOrElse(serverPackSuffixKey, ""))
         serverIconPath = config.getOrElse(serverIconPathKey, "")
         serverPropertiesPath = config.getOrElse(serverPropertiesPathKey, "")
         isServerIconInclusionDesired = config.getOrElse(includeServerIconKey, false)

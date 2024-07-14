@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.app.gui.window.configs
 import Translations
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.config.PackConfig
+import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
 import de.griefed.serverpackcreator.api.utilities.common.InvalidFileTypeException
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.components.TabPanel
@@ -211,7 +212,7 @@ class TabbedConfigsTab(
         if (configChooser.showOpenDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             val files = configChooser.selectedFiles.map { file ->
                 try {
-                    File(apiWrapper.fileUtilities.resolveLink(file)).absoluteFile
+                    File(FileUtilities.resolveLink(file)).absoluteFile
                 } catch (ex: InvalidFileTypeException) {
                     log.error("Could not resolve link/symlink. Using entry from user input for checks.", ex)
                     file.absoluteFile

@@ -37,10 +37,9 @@ import java.nio.file.Paths
  *  * Whether an exe is being used for running ServerPackCreator
  *
  * @param clazz The class from which to acquire information about the containing JAR-file and general location.
- * @param jarUtilities Common JAR-file-related utilities.
  *
  */
-class JarInformation(clazz: Class<*>, jarUtilities: JarUtilities = JarUtilities()) {
+class JarInformation(clazz: Class<*>) {
     /**
      * The folder containing the ServerPackCreator.exe or JAR-file.
      *
@@ -105,7 +104,7 @@ class JarInformation(clazz: Class<*>, jarUtilities: JarUtilities = JarUtilities(
 
     init {
         val sysInfo = HashMap<String, String>(10)
-        sysInfo.putAll(jarUtilities.jarInformation(clazz))
+        sysInfo.putAll(JarUtilities.jarInformation(clazz))
         jarPath = Paths.get(sysInfo["jarPath"]!!)
         jarFile = jarPath.toFile()
         jarFolder = if (jarPath.toString().contains("!")) {

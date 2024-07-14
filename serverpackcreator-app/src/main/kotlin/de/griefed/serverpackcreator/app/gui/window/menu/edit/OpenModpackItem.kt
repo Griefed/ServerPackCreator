@@ -32,7 +32,7 @@ import javax.swing.JMenuItem
  *
  * @author Griefed
  */
-class OpenModpackItem(private val fileUtilities: FileUtilities, private val tabbedConfigsTab: TabbedConfigsTab) :
+class OpenModpackItem(private val tabbedConfigsTab: TabbedConfigsTab) :
     JMenuItem(Translations.menubar_gui_menuitem_modpack.toString()) {
     init {
         this.addActionListener { openModpack() }
@@ -47,9 +47,9 @@ class OpenModpackItem(private val fileUtilities: FileUtilities, private val tabb
         }
         val modpack = File(tabbedConfigsTab.selectedEditor!!.getModpackDirectory())
         if (modpack.isFile) {
-            fileUtilities.openFile(modpack)
+            FileUtilities.openFile(modpack)
         } else {
-            fileUtilities.openFolder(modpack)
+            FileUtilities.openFolder(modpack)
         }
 
     }

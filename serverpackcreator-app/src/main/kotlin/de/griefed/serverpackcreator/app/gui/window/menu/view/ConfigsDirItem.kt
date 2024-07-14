@@ -30,10 +30,9 @@ import javax.swing.JMenuItem
  * @author Griefed
  */
 class ConfigsDirItem(
-    fileUtilities: FileUtilities,
     apiProperties: ApiProperties
 ) : JMenuItem(Translations.menubar_gui_menuitem_configdir.toString()) {
     init {
-        this.addActionListener { fileUtilities.openFolder(apiProperties.configsDirectory) }
+        this.addActionListener { FileUtilities.openFolder(apiProperties.configsDirectory) }
     }
 }

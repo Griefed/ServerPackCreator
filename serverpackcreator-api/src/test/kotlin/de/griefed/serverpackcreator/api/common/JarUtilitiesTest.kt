@@ -1,18 +1,15 @@
 package de.griefed.serverpackcreator.api.common
 
-import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.utilities.common.JarUtilities
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.io.File
 
 class JarUtilitiesTest internal constructor() {
-    private var jarUtilities: JarUtilities =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).jarUtilities
 
     @Test
     fun copyFileFromJarTest() {
-        jarUtilities.copyFileFromJar(
+        JarUtilities.copyFileFromJar(
             "banner.txt", JarUtilitiesTest::class.java,
             File("tests").absolutePath
         )
@@ -21,7 +18,7 @@ class JarUtilitiesTest internal constructor() {
 
     @Test
     fun systemInformationTest() {
-        val system: HashMap<String, String> = jarUtilities.jarInformation(JarUtilitiesTest::class.java)
+        val system: HashMap<String, String> = JarUtilities.jarInformation(JarUtilitiesTest::class.java)
         Assertions.assertNotNull(system)
         Assertions.assertNotNull(system["jarPath"])
         Assertions.assertTrue(system["jarPath"]!!.isNotEmpty())
@@ -40,7 +37,7 @@ class JarUtilitiesTest internal constructor() {
     @Test
     fun copyFolderFromJarTest() {
         try {
-            jarUtilities.copyFolderFromJar(
+            JarUtilities.copyFolderFromJar(
                 JarUtilitiesTest::class.java,
                 "/de/griefed/resources/manifests",
                 "tests/manifestTest",

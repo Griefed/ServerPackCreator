@@ -23,7 +23,6 @@ import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.intellijthemes.FlatDarkPurpleIJTheme
 import de.griefed.serverpackcreator.api.ApiProperties
-import de.griefed.serverpackcreator.api.utilities.ReticulatingSplines
 import de.griefed.serverpackcreator.app.gui.utilities.ImageUtilities
 import de.griefed.serverpackcreator.app.gui.utilities.getScaledInstance
 import de.griefed.serverpackcreator.app.gui.window.control.components.LarsonScanner
@@ -336,7 +335,6 @@ class GuiProps(private val apiProperties: ApiProperties) {
     val largeSettingsIcon = settingsIcon.getScaledInstance(largeSize, largeSize)
     val largeHelpIcon = helpIcon.getScaledInstance(largeSize, largeSize)
     val defaultFileChooserDimension = Dimension(750, 450)
-    val reticulatingSplines: ReticulatingSplines = ReticulatingSplines()
     val larsonScanner = LarsonScanner()
     val idleConfig: LarsonScanner.ScannerConfig
         get() {

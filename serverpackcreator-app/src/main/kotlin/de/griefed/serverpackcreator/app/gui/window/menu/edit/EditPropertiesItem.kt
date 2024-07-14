@@ -30,7 +30,7 @@ import javax.swing.JMenuItem
  *
  * @author Griefed
  */
-class EditPropertiesItem(private val fileUtilities: FileUtilities, private val tabbedConfigsTab: TabbedConfigsTab) :
+class EditPropertiesItem(private val tabbedConfigsTab: TabbedConfigsTab) :
     JMenuItem(Translations.menubar_gui_menuitem_properties.toString()) {
     init {
         this.addActionListener { openProperties() }
@@ -43,6 +43,6 @@ class EditPropertiesItem(private val fileUtilities: FileUtilities, private val t
         if (tabbedConfigsTab.selectedEditor == null || !File(tabbedConfigsTab.selectedEditor!!.getServerPropertiesPath()).isFile) {
             return
         }
-        fileUtilities.openFile(tabbedConfigsTab.selectedEditor!!.getServerPropertiesPath())
+        FileUtilities.openFile(tabbedConfigsTab.selectedEditor!!.getServerPropertiesPath())
     }
 }

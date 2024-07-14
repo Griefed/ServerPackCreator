@@ -30,12 +30,6 @@ import javax.xml.parsers.DocumentBuilderFactory
  */
 @Suppress("unused")
 class Utilities {
-    val booleanUtilities: BooleanUtilities
-    val fileUtilities: FileUtilities
-    val jarUtilities: JarUtilities
-    val listUtilities: ListUtilities
-    val stringUtilities: StringUtilities
-    val systemUtilities: SystemUtilities
     val webUtilities: WebUtilities
     val jsonUtilities: JsonUtilities
     val xmlUtilities: XmlUtilities
@@ -50,45 +44,21 @@ class Utilities {
         objectMapper: ObjectMapper,
         documentBuilderFactory: DocumentBuilderFactory
     ) {
-        booleanUtilities = BooleanUtilities()
-        fileUtilities = FileUtilities()
-        jarUtilities = JarUtilities()
-        listUtilities = ListUtilities()
-        stringUtilities = StringUtilities()
-        systemUtilities = SystemUtilities()
         webUtilities = WebUtilities(apiProperties)
         jsonUtilities = JsonUtilities(objectMapper)
         xmlUtilities = XmlUtilities(documentBuilderFactory)
     }
 
     /**
-     * @param booleanUtilities Common [Boolean]-related utilities.
-     * @param fileUtilities    Common [java.io.File]-related utilities.
-     * @param jarUtilities     Common JAR-file-related utilities.
-     * @param listUtilities    Common list-related utilities.
-     * @param stringUtilities  Common [String]-related utilities.
-     * @param systemUtilities  Common System- and OS-related utilities.
      * @param webUtilities     Common Web-based-related utilities.
      * @param jsonUtilities    Common JSON-related utilities.
      * @param xmlUtilities     Common XML-related utilities.
      */
     constructor(
-        booleanUtilities: BooleanUtilities,
-        fileUtilities: FileUtilities,
-        jarUtilities: JarUtilities,
-        listUtilities: ListUtilities,
-        stringUtilities: StringUtilities,
-        systemUtilities: SystemUtilities,
         webUtilities: WebUtilities,
         jsonUtilities: JsonUtilities,
         xmlUtilities: XmlUtilities
     ) {
-        this.booleanUtilities = booleanUtilities
-        this.fileUtilities = fileUtilities
-        this.jarUtilities = jarUtilities
-        this.listUtilities = listUtilities
-        this.stringUtilities = stringUtilities
-        this.systemUtilities = systemUtilities
         this.webUtilities = webUtilities
         this.jsonUtilities = jsonUtilities
         this.xmlUtilities = xmlUtilities

@@ -29,7 +29,7 @@ import javax.swing.JMenuItem
  *
  * @author Griefed
  */
-class HomeDirItem(private val fileUtilities: FileUtilities, private val apiProperties: ApiProperties) :
+class HomeDirItem(private val apiProperties: ApiProperties) :
     JMenuItem(Translations.menubar_gui_menuitem_spcdir.toString()) {
     init {
         this.addActionListener { openHomeDir() }
@@ -39,6 +39,6 @@ class HomeDirItem(private val fileUtilities: FileUtilities, private val apiPrope
      * @author Griefed
      */
     private fun openHomeDir() {
-        fileUtilities.openFolder(apiProperties.homeDirectory)
+        FileUtilities.openFolder(apiProperties.homeDirectory)
     }
 }

@@ -30,10 +30,9 @@ import javax.swing.JMenuItem
  * @author Griefed
  */
 class ServerPacksDirItem(
-    fileUtilities: FileUtilities,
     apiProperties: ApiProperties
 ) : JMenuItem(Translations.menubar_gui_menuitem_serverpacksdir.toString()) {
     init {
-        this.addActionListener { fileUtilities.openFolder(apiProperties.serverPacksDirectory) }
+        this.addActionListener { FileUtilities.openFolder(apiProperties.serverPacksDirectory) }
     }
 }

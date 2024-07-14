@@ -29,7 +29,7 @@ import javax.swing.JMenuItem
  *
  * @author Griefed
  */
-class ServerFilesDirItem(private val fileUtilities: FileUtilities, private val apiProperties: ApiProperties) :
+class ServerFilesDirItem(private val apiProperties: ApiProperties) :
     JMenuItem(Translations.menubar_gui_menuitem_serverfilesdir.toString()) {
     init {
         this.addActionListener { openServerFilesDir() }
@@ -39,6 +39,6 @@ class ServerFilesDirItem(private val fileUtilities: FileUtilities, private val a
      * @author Griefed
      */
     private fun openServerFilesDir() {
-        fileUtilities.openFolder(apiProperties.serverFilesDirectory)
+        FileUtilities.openFolder(apiProperties.serverFilesDirectory)
     }
 }

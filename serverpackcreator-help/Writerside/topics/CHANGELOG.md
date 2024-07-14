@@ -1,3 +1,27 @@
+## [6.0.0-beta.17](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.16...6.0.0-beta.17) (2024-07-13)
+
+
+### 💎 Improvements
+
+* Make inclusion source field span one column more ([7e835f7](https://git.griefed.de/Griefed/ServerPackCreator/commit/7e835f787840df1b217ad87f625be341635c3239))
+* Make it clear what the add-button for multiple inclusions does in the tooltip ([9424379](https://git.griefed.de/Griefed/ServerPackCreator/commit/94243794f35fce62276adc048ed8deaa9865ccd9))
+* Rearrange inclusion buttons, change icons, for improved UX. Mention selected entry in remove-button ([b4b0a39](https://git.griefed.de/Griefed/ServerPackCreator/commit/b4b0a39c7a7f607bd3254c91b45aa327de8e4f92))
+
+
+### 📦 Other
+
+* Changelog update, list appimage build dir ([3566308](https://git.griefed.de/Griefed/ServerPackCreator/commit/3566308a6dd0ae1486bf6c1145287d98f5557e79))
+
+
+### 🦊 CI/CD
+
+* Upload zsync artifact, too ([4d013a1](https://git.griefed.de/Griefed/ServerPackCreator/commit/4d013a1d738659ad13995505f924aa653f61ccc7))
+
+
+### 🛠 Fixes
+
+* Prevent adding of duplicates to inclusions ([5c80eb8](https://git.griefed.de/Griefed/ServerPackCreator/commit/5c80eb8c6745f190aacf48220bd6a906089da24f))
+
 ## [6.0.0-beta.16](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.15...6.0.0-beta.16) (2024-07-12)
 
 

@@ -25,12 +25,10 @@ import de.griefed.serverpackcreator.api.ApiPlugins
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.SPCConfigCheckListener
 import de.griefed.serverpackcreator.api.utilities.SPCGenericListener
-import de.griefed.serverpackcreator.api.utilities.common.InvalidFileTypeException
-import de.griefed.serverpackcreator.api.utilities.common.Utilities
-import de.griefed.serverpackcreator.api.utilities.common.isNotValidZipFile
+import de.griefed.serverpackcreator.api.utilities.common.*
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
-import mu.KotlinLogging
 import net.lingala.zip4j.ZipFile
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.io.IOException
 import java.net.URI
@@ -61,7 +59,7 @@ class ConfigurationHandler(
     private val apiPlugins: ApiPlugins
 ) {
     private val zipRegex = "\\.[Zz][Ii][Pp]".toRegex()
-    val log by lazy { KotlinLogging.logger {} }
+    val log by lazy { cachedLoggerOf(this.javaClass) }
     val forge = "^forge$".toRegex()
     val neoForge = "^neoforge$".toRegex()
     val fabric = "^fabric$".toRegex()
@@ -174,7 +172,7 @@ class ConfigurationHandler(
             // This log is meant to be read by the user, therefore we allow translation.
         } else if (packConfig.serverIconPath.isNotEmpty()
             && File(packConfig.serverIconPath).exists()
-            && !utilities.fileUtilities.isReadPermissionSet(packConfig.serverIconPath)
+            && !FileUtilities.isReadPermissionSet(packConfig.serverIconPath)
         ) {
             configCheck.serverIconErrors.add(Translations.configuration_log_error_checkcopydirs_read(packConfig.serverIconPath))
             @Suppress("LoggingSimilarMessage")
@@ -185,7 +183,7 @@ class ConfigurationHandler(
             log.error("The specified server.properties does not exist: ${packConfig.serverPropertiesPath}")
         } else if (packConfig.serverPropertiesPath.isNotEmpty()
             && File(packConfig.serverPropertiesPath).exists()
-            && !utilities.fileUtilities.isReadPermissionSet(packConfig.serverPropertiesPath)
+            && !FileUtilities.isReadPermissionSet(packConfig.serverPropertiesPath)
         ) {
             configCheck.serverPropertiesErrors.add(Translations.configuration_log_error_checkcopydirs_read(packConfig.serverPropertiesPath))
             @Suppress("LoggingSimilarMessage")
@@ -309,9 +307,9 @@ class ConfigurationHandler(
      */
     fun sanitizeLinks(packConfig: PackConfig) {
         log.info("Checking configuration for links...")
-        if (packConfig.modpackDir.isNotEmpty() && utilities.fileUtilities.isLink(packConfig.modpackDir)) {
+        if (packConfig.modpackDir.isNotEmpty() && FileUtilities.isLink(packConfig.modpackDir)) {
             try {
-                packConfig.modpackDir = utilities.fileUtilities.resolveLink(packConfig.modpackDir)
+                packConfig.modpackDir = FileUtilities.resolveLink(packConfig.modpackDir)
                 log.info("Resolved modpack directory link to: ${packConfig.modpackDir}")
             } catch (ex: InvalidFileTypeException) {
                 log.error("Couldn't resolve link for modpack directory.", ex)
@@ -319,9 +317,9 @@ class ConfigurationHandler(
                 log.error("Couldn't resolve link for modpack directory.", ex)
             }
         }
-        if (packConfig.serverIconPath.isNotEmpty() && utilities.fileUtilities.isLink(packConfig.serverIconPath)) {
+        if (packConfig.serverIconPath.isNotEmpty() && FileUtilities.isLink(packConfig.serverIconPath)) {
             try {
-                packConfig.serverIconPath = utilities.fileUtilities.resolveLink(packConfig.serverIconPath)
+                packConfig.serverIconPath = FileUtilities.resolveLink(packConfig.serverIconPath)
                 log.info("Resolved server-icon link to: ${packConfig.serverIconPath}")
             } catch (ex: InvalidFileTypeException) {
                 log.error("Couldn't resolve link for server-icon.", ex)
@@ -329,9 +327,9 @@ class ConfigurationHandler(
                 log.error("Couldn't resolve link for server-icon.", ex)
             }
         }
-        if (packConfig.serverPropertiesPath.isNotEmpty() && utilities.fileUtilities.isLink(packConfig.serverPropertiesPath)) {
+        if (packConfig.serverPropertiesPath.isNotEmpty() && FileUtilities.isLink(packConfig.serverPropertiesPath)) {
             try {
-                packConfig.serverPropertiesPath = utilities.fileUtilities.resolveLink(packConfig.serverPropertiesPath)
+                packConfig.serverPropertiesPath = FileUtilities.resolveLink(packConfig.serverPropertiesPath)
                 log.info("Resolved server-properties link to: ${packConfig.serverPropertiesPath}")
             } catch (ex: InvalidFileTypeException) {
                 log.error("Couldn't resolve link for server-properties.", ex)
@@ -341,20 +339,19 @@ class ConfigurationHandler(
         }
         if (packConfig.inclusions.isNotEmpty()) {
             val copyDirs: ArrayList<InclusionSpecification> = packConfig.inclusions
-            val fileUtils = utilities.fileUtilities
             var inclusionChanges = false
             var entry: InclusionSpecification
             var link: String
             for (inclusion in packConfig.inclusions.indices) {
                 entry = packConfig.inclusions[inclusion]
 
-                if (!entry.source.startsWith(packConfig.modpackDir) && fileUtils.isLink(entry.source)) {
-                    link = fileUtils.resolveLink(entry.source)
+                if (!entry.source.startsWith(packConfig.modpackDir) && FileUtilities.isLink(entry.source)) {
+                    link = FileUtilities.resolveLink(entry.source)
                     entry.source = link
                     inclusionChanges = true
                     log.info("Resolved source to $link.")
-                } else if (fileUtils.isLink(packConfig.modpackDir + File.separator + entry.source)) {
-                    link = fileUtils.resolveLink("${packConfig.modpackDir}${File.separator}${entry.source}")
+                } else if (FileUtilities.isLink(packConfig.modpackDir + File.separator + entry.source)) {
+                    link = FileUtilities.resolveLink("${packConfig.modpackDir}${File.separator}${entry.source}")
                     entry.source = link
                     inclusionChanges = true
                     log.info("Resolved copy-directories link to: $link")
@@ -431,7 +428,7 @@ class ConfigurationHandler(
         //unzippedModpack = unzipDestination(unzippedModpack)
 
         // Extract the archive to the modpack directory.
-        utilities.fileUtilities.unzipArchive(packConfig.modpackDir, unzippedModpack)
+        FileUtilities.unzipArchive(packConfig.modpackDir, unzippedModpack)
         packConfig.modpackDir = unzippedModpack
 
         // Expand the already set copyDirs with suggestions from extracted ZIP-archive.
@@ -458,7 +455,7 @@ class ConfigurationHandler(
         if (packName == null) {
             packName = unzippedModpack
         }
-        packName = File(utilities.stringUtilities.pathSecureTextAlternative(packName)).path
+        packName = File(StringUtilities.pathSecureTextAlternative(packName)).path
 
         // Does the modpack contain a server-icon or server.properties? If so, include
         // them in the server pack.
@@ -708,7 +705,7 @@ class ConfigurationHandler(
                     configCheck.inclusionErrors.add(Translations.configuration_log_error_checkcopydirs_filenotfound(inclusion.source))
                 }
                 if (inclusion.hasDestination()
-                    && !utilities.stringUtilities.checkForInvalidPathCharacters(inclusion.destination!!)) {
+                    && !StringUtilities.checkForInvalidPathCharacters(inclusion.destination!!)) {
                     log.warn("Invalid destination specified: ${inclusion.destination}.")
                     inclusion.destination = null
                     configCheck.inclusionErrors.add(Translations.configuration_log_error_checkcopydirs_destination(inclusion.source))
@@ -1034,7 +1031,7 @@ class ConfigurationHandler(
         } else {
             // This log is meant to be read by the user, therefore we allow translation.
             log.info("Client mods specified. Client mods are:")
-            utilities.listUtilities.printListToLogChunked(clientsideMods, 5, "    ", true)
+            ListUtilities.printListToLogChunked(clientsideMods, 5, "    ", true)
         }
         // This log is meant to be read by the user, therefore we allow translation.
         log.info("Inclusions:")

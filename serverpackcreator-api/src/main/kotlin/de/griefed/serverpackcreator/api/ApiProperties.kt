@@ -45,12 +45,6 @@ import java.util.prefs.Preferences
  * mods, default list of directories to include in a server pack, script templates, java paths and
  * much more.
  *
- * @param fileUtilities   Instance of {@link FileUtilities} for file-operations.
- * @param systemUtilities Instance of {@link SystemUtilities} to acquire the Java path
- *                        automatically.
- * @param listUtilities   Used to print the configured fallback modlists in chunks.
- * @param jarUtilities    Instance of {@link JarUtilities} used to acquire .exe or JAR-, as well
- *                        as system information.
  * @param propertiesFile  serverpackcreator.properties-file containing settings and configurations to load the API with.
  * @author Griefed
  */
@@ -58,17 +52,13 @@ import java.util.prefs.Preferences
 @Plugin(name = "ServerPackCreatorConfigFactory", category = Core.CATEGORY_NAME)
 @Order(50)
 class ApiProperties(
-    private val fileUtilities: FileUtilities = FileUtilities(),
-    private val systemUtilities: SystemUtilities = SystemUtilities(),
-    private val listUtilities: ListUtilities = ListUtilities(),
-    jarUtilities: JarUtilities = JarUtilities(),
     propertiesFile: File = File("serverpackcreator.properties")
 ) : ConfigurationFactory() {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val internalProps = Properties()
     private val spcPreferences = Preferences.userRoot().node("ServerPackCreator")
     private val serverPackCreatorProperties = "serverpackcreator.properties"
-    private val jarInformation: JarInformation = JarInformation(this.javaClass, jarUtilities)
+    private val jarInformation: JarInformation = JarInformation(this.javaClass)
     private val jarFolderProperties: File = File(jarInformation.jarFolder.absoluteFile, serverPackCreatorProperties)
     private val pVersionCheckPreRelease =
         "de.griefed.serverpackcreator.versioncheck.prerelease"
@@ -2363,22 +2353,22 @@ class ApiProperties(
                     return "$pathToJava.exe"
                 }
                 if (checkJavaPath("$pathToJava.lnk")) {
-                    return fileUtilities.resolveLink(File("$pathToJava.lnk"))
+                    return FileUtilities.resolveLink(File("$pathToJava.lnk"))
                 }
             }
-            checkedJavaPath = systemUtilities.acquireJavaPathFromSystem()
+            checkedJavaPath = SystemUtilities.acquireJavaPathFromSystem()
             log.debug("Acquired path to Java installation: $checkedJavaPath")
         } catch (ex: NullPointerException) {
             log.info("Java setting invalid or otherwise not usable. Using system default.")
-            checkedJavaPath = systemUtilities.acquireJavaPathFromSystem()
+            checkedJavaPath = SystemUtilities.acquireJavaPathFromSystem()
             log.debug("Automatically acquired path to Java installation: $checkedJavaPath", ex)
         } catch (ex: InvalidFileTypeException) {
             log.info("Java setting invalid or otherwise not usable. Using system default.")
-            checkedJavaPath = systemUtilities.acquireJavaPathFromSystem()
+            checkedJavaPath = SystemUtilities.acquireJavaPathFromSystem()
             log.debug("Automatically acquired path to Java installation: $checkedJavaPath", ex)
         } catch (ex: IOException) {
             log.info("Java setting invalid or otherwise not usable. Using system default.")
-            checkedJavaPath = systemUtilities.acquireJavaPathFromSystem()
+            checkedJavaPath = SystemUtilities.acquireJavaPathFromSystem()
             log.debug("Automatically acquired path to Java installation: $checkedJavaPath", ex)
         }
         return checkedJavaPath
@@ -2442,14 +2432,14 @@ class ApiProperties(
             return checkedJavas[pathToJava]!!
         }
         val result: Boolean
-        when (fileUtilities.checkFileType(pathToJava)) {
+        when (FileUtilities.checkFileType(pathToJava)) {
             FileType.FILE -> {
                 result = testJava(pathToJava)
             }
 
             FileType.LINK, FileType.SYMLINK -> {
                 result = try {
-                    testJava(fileUtilities.resolveLink(File(pathToJava)))
+                    testJava(FileUtilities.resolveLink(File(pathToJava)))
                 } catch (ex: InvalidFileTypeException) {
                     log.error("Could not read Java link/symlink.", ex)
                     false
@@ -2714,9 +2704,9 @@ class ApiProperties(
         log.info("User specified clientside-only mod exclusion filter set to: $exclusionFilter")
         log.info("Automatically update SPC_JAVA_SPC-placeholder in script variables table set to: $isJavaScriptAutoupdateEnabled")
         log.info("Clientside-mods set to:")
-        listUtilities.printListToLogChunked(clientsideMods.toList(), 5, "    ", true)
+        ListUtilities.printListToLogChunked(clientsideMods.toList(), 5, "    ", true)
         log.info("Regex clientside-mods-list set to:")
-        listUtilities.printListToLogChunked(clientsideModsRegex.toList(), 5, "    ", true)
+        ListUtilities.printListToLogChunked(clientsideModsRegex.toList(), 5, "    ", true)
         log.info("Available Java paths for scripts:")
         for ((key, value) in javaPaths) {
             log.info("    Java $key path: $value")

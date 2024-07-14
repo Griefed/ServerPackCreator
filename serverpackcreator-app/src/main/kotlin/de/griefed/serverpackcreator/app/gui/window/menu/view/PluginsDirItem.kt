@@ -29,7 +29,7 @@ import javax.swing.JMenuItem
  *
  * @author Griefed
  */
-class PluginsDirItem(private val fileUtilities: FileUtilities, private val apiProperties: ApiProperties) :
+class PluginsDirItem(private val apiProperties: ApiProperties) :
     JMenuItem(Translations.menubar_gui_menuitem_pluginsdir.toString()) {
     init {
         this.addActionListener { openPluginsDir() }
@@ -39,6 +39,6 @@ class PluginsDirItem(private val fileUtilities: FileUtilities, private val apiPr
      * @author Griefed
      */
     private fun openPluginsDir() {
-        fileUtilities.openFolder(apiProperties.pluginsDirectory)
+        FileUtilities.openFolder(apiProperties.pluginsDirectory)
     }
 }

@@ -29,27 +29,30 @@ import java.io.File
  */
 @Suppress("unused")
 class SystemUtilities {
-    private val log by lazy { cachedLoggerOf(this.javaClass) }
-    private val windowsDriveRegex = "^[a-zA-Z]:\\\\.*".toRegex()
-    private val javaPathSuffix = "%s${File.separator}bin${File.separator}java"
-    private val javaHome = System.getProperty("java.home")
 
-    /**
-     * Automatically acquire the path to the systems default Java installation.
-     *
-     * @return String. The path to the systems default Java installation.
-     * @author Griefed
-     */
-    fun acquireJavaPathFromSystem(): String {
-        log.debug("Acquiring path to Java installation from system properties...")
-        var javaPath = "Couldn't acquire JavaPath"
-        if (File(javaHome).exists()) {
-            javaPath = javaPathSuffix.format(javaHome)
-            if (javaPath.matches(windowsDriveRegex) || File("${javaPath}.exe").isFile) {
-                log.debug("We're running on Windows. Ensuring javaPath ends with .exe")
-                javaPath = "${javaPath}.exe"
+    companion object {
+        private val log by lazy { cachedLoggerOf(Companion::class.java) }
+        private val windowsDriveRegex = "^[a-zA-Z]:\\\\.*".toRegex()
+        private val javaPathSuffix = "%s${File.separator}bin${File.separator}java"
+        private val javaHome = System.getProperty("java.home")
+
+        /**
+         * Automatically acquire the path to the systems default Java installation.
+         *
+         * @return String. The path to the systems default Java installation.
+         * @author Griefed
+         */
+        fun acquireJavaPathFromSystem(): String {
+            log.debug("Acquiring path to Java installation from system properties...")
+            var javaPath = "Couldn't acquire JavaPath"
+            if (File(javaHome).exists()) {
+                javaPath = javaPathSuffix.format(javaHome)
+                if (javaPath.matches(windowsDriveRegex) || File("${javaPath}.exe").isFile) {
+                    log.debug("We're running on Windows. Ensuring javaPath ends with .exe")
+                    javaPath = "${javaPath}.exe"
+                }
             }
+            return javaPath
         }
-        return javaPath
     }
 }

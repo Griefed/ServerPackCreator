@@ -29,7 +29,7 @@ import javax.swing.JMenuItem
  *
  * @author Griefed
  */
-class OpenPropertiesDirectory(private val fileUtilities: FileUtilities, private val apiProperties: ApiProperties) :
+class OpenPropertiesDirectory(private val apiProperties: ApiProperties) :
     JMenuItem(Translations.menubar_gui_menuitem_serverproperties.toString()) {
 
     init {
@@ -40,6 +40,6 @@ class OpenPropertiesDirectory(private val fileUtilities: FileUtilities, private 
      * @author Griefed
      */
     private fun openProperties() {
-        fileUtilities.openFile(apiProperties.propertiesDirectory)
+        FileUtilities.openFile(apiProperties.propertiesDirectory)
     }
 }

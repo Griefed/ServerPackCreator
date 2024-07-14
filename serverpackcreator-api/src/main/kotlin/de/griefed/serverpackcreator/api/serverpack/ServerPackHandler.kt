@@ -260,7 +260,7 @@ class ServerPackHandler(
             File(packConfig.modpackDir).name
         }
         serverPackToBe += packConfig.serverPackSuffix
-        serverPackToBe = utilities.stringUtilities.pathSecureText(serverPackToBe.replace(" ", "_"))
+        serverPackToBe = StringUtilities.pathSecureText(serverPackToBe.replace(" ", "_"))
         return File(apiProperties.serverPacksDirectory, serverPackToBe).absolutePath
     }
 

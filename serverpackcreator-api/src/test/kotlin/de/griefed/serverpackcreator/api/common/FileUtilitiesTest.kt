@@ -1,6 +1,5 @@
 package de.griefed.serverpackcreator.api.common
 
-import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
 import de.griefed.serverpackcreator.api.utilities.common.deleteQuietly
 import org.junit.jupiter.api.Assertions
@@ -9,14 +8,12 @@ import java.io.File
 import java.io.IOException
 
 class FileUtilitiesTest internal constructor() {
-    private var fileUtilities: FileUtilities =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).fileUtilities
 
     @Test
     fun unzipArchiveTest() {
         val modpackDir = "src/test/resources/curseforge_tests"
         val zipFile = "src/test/resources/curseforge_tests/modpack.zip"
-        fileUtilities.unzipArchive(zipFile, modpackDir)
+        FileUtilities.unzipArchive(zipFile, modpackDir)
         Assertions.assertTrue(
             File("src/test/resources/curseforge_tests/manifest.json").exists()
         )
@@ -38,7 +35,7 @@ class FileUtilitiesTest internal constructor() {
         val destination = File("destination.file")
         source.createNewFile()
         destination.createNewFile()
-        fileUtilities.replaceFile(source, destination)
+        FileUtilities.replaceFile(source, destination)
         Assertions.assertFalse(source.exists())
         Assertions.assertTrue(destination.exists())
         destination.deleteQuietly()

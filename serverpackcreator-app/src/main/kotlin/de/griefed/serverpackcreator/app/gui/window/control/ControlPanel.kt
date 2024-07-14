@@ -23,6 +23,7 @@ import Translations
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.config.ConfigCheck
 import de.griefed.serverpackcreator.api.config.PackConfig
+import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.window.MainFrame
 import de.griefed.serverpackcreator.app.gui.window.configs.TabbedConfigsTab
@@ -54,11 +55,11 @@ class ControlPanel(
     private val mainFrame: MainFrame
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
-    private val statusPanel = StatusPanel(guiProps)
+    private val statusPanel = StatusPanel()
 
     private val runGeneration = GenerationButton(guiProps) { generate() }
     private val serverPacks = ServerPacksButton(guiProps) {
-        apiWrapper.utilities.fileUtilities.openFolder(apiWrapper.apiProperties.serverPacksDirectory)
+        FileUtilities.openFolder(apiWrapper.apiProperties.serverPacksDirectory)
     }
     val panel = JPanel()
 

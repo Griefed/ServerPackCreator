@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.app.gui.splash
 
-import de.griefed.serverpackcreator.api.utilities.ReticulatingSplines
 import javax.swing.JWindow
 
 /**
@@ -28,7 +27,6 @@ import javax.swing.JWindow
  * @author Griefed
  */
 class SplashScreen(version: String) {
-    private val reticulatingSplines = ReticulatingSplines()
     private val splash = JWindow()
     private val text: Reticulation
     private val bar: Progress
@@ -37,7 +35,7 @@ class SplashScreen(version: String) {
         val props = SplashProps()
         val splashes = Splashes()
         val image = splashes.getRandomSplash
-        text = Reticulation(image.iconWidth, image.iconHeight, props, reticulatingSplines)
+        text = Reticulation(image.iconWidth, image.iconHeight, props)
         bar = Progress(image.iconWidth, image.iconHeight, props)
 
         splash.contentPane = BackgroundPanel(image.image, BackgroundPanel.ACTUAL, 0.0f, 0.0f)

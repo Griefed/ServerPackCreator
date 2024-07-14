@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.app.gui.window.configs.components.inclusion
 import Translations
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.config.InclusionSpecification
+import de.griefed.serverpackcreator.api.utilities.common.StringUtilities
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.components.*
 import de.griefed.serverpackcreator.app.gui.window.configs.ConfigEditor
@@ -366,7 +367,7 @@ class InclusionsEditor(
      */
     fun destinationWasEdited() {
         if (list.model.size > 0 && !list.isSelectionEmpty) {
-            if (apiWrapper.stringUtilities.checkForInvalidPathCharacters(destination.text)) {
+            if (StringUtilities.checkForInvalidPathCharacters(destination.text)) {
                 list.selectedValue.destination = destination.text
                 destinationIcon.info()
                 list.updateUI()

@@ -31,7 +31,6 @@ import javax.swing.JMenuItem
  * @author Griefed
  */
 class ServerPackCreatorLogItem(
-    private val fileUtilities: FileUtilities,
     private val apiProperties: ApiProperties
 ) : JMenuItem(Translations.menubar_gui_menuitem_spclog.toString()) {
     init {
@@ -42,6 +41,6 @@ class ServerPackCreatorLogItem(
      * @author Griefed
      */
     private fun openServerPackCreatorLog() {
-        fileUtilities.openFile(File(apiProperties.logsDirectory, "serverpackcreator.log"))
+        FileUtilities.openFile(File(apiProperties.logsDirectory, "serverpackcreator.log"))
     }
 }

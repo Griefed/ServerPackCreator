@@ -1,24 +1,11 @@
 package de.griefed.serverpackcreator.api
 
 import de.griefed.serverpackcreator.api.config.ExclusionFilter
-import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
-import de.griefed.serverpackcreator.api.utilities.common.JarUtilities
-import de.griefed.serverpackcreator.api.utilities.common.ListUtilities
-import de.griefed.serverpackcreator.api.utilities.common.SystemUtilities
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.io.File
 
 class ApiPropertiesTest internal constructor() {
-    private val fileUtilities: FileUtilities =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).fileUtilities
-    private val systemUtilities: SystemUtilities =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).systemUtilities
-    private val listUtilities: ListUtilities =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).listUtilities
-    private val jarUtilities: JarUtilities =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).jarUtilities
-
     @Test
     fun test() {
         val propFiles = listOf(
@@ -29,10 +16,7 @@ class ApiPropertiesTest internal constructor() {
             /*4*/File("src/test/resources/testresources/properties/filters/start.properties"),
             /*5*/File("src/test/resources/serverpackcreator.properties")
         )
-        val apiProperties = ApiProperties(
-            fileUtilities, systemUtilities, listUtilities, jarUtilities,
-            File("src/test/resources/serverpackcreator.properties")
-        )
+        val apiProperties = ApiProperties(File("src/test/resources/serverpackcreator.properties"))
         apiProperties.clearPropertyFileList()
 
         apiProperties.loadOverrides(propFiles[0])

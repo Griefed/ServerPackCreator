@@ -30,7 +30,7 @@ import javax.swing.JMenuItem
  *
  * @author Griefed
  */
-class EditIconItem(private val fileUtilities: FileUtilities, private val tabbedConfigsTab: TabbedConfigsTab) :
+class EditIconItem(private val tabbedConfigsTab: TabbedConfigsTab) :
     JMenuItem(Translations.menubar_gui_menuitem_icon.toString()) {
     init {
         this.addActionListener { openIcon() }
@@ -43,6 +43,6 @@ class EditIconItem(private val fileUtilities: FileUtilities, private val tabbedC
         if (tabbedConfigsTab.selectedEditor == null || !File(tabbedConfigsTab.selectedEditor!!.getServerIconPath()).isFile) {
             return
         }
-        fileUtilities.openFile(tabbedConfigsTab.selectedEditor!!.getServerIconPath())
+        FileUtilities.openFile(tabbedConfigsTab.selectedEditor!!.getServerIconPath())
     }
 }

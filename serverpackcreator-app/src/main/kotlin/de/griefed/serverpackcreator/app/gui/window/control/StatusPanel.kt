@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.app.gui.window.control
 
-import de.griefed.serverpackcreator.app.gui.GuiProps
+import de.griefed.serverpackcreator.api.utilities.ReticulatingSplines
 import de.griefed.serverpackcreator.app.gui.window.control.components.StatusLabel
 import net.miginfocom.swing.MigLayout
 import javax.swing.JLabel
@@ -30,14 +30,14 @@ import javax.swing.JPanel
  *
  * @author Griefed
  */
-class StatusPanel(guiProps: GuiProps) {
+class StatusPanel {
     val panel = JPanel()
-    private val statusLine0 = StatusLabel("...${guiProps.reticulatingSplines.reticulate()}", 20)
-    private val statusLine1 = StatusLabel("...${guiProps.reticulatingSplines.reticulate()}", 50)
-    private val statusLine2 = StatusLabel("...${guiProps.reticulatingSplines.reticulate()}", 100)
-    private val statusLine3 = StatusLabel("...${guiProps.reticulatingSplines.reticulate()}", 150)
-    private val statusLine4 = StatusLabel("...${guiProps.reticulatingSplines.reticulate()}", 200)
-    private val statusLine5 = StatusLabel("...${guiProps.reticulatingSplines.reticulate()}")
+    private val statusLine0 = StatusLabel("...${ReticulatingSplines.reticulate()}", 20)
+    private val statusLine1 = StatusLabel("...${ReticulatingSplines.reticulate()}", 50)
+    private val statusLine2 = StatusLabel("...${ReticulatingSplines.reticulate()}", 100)
+    private val statusLine3 = StatusLabel("...${ReticulatingSplines.reticulate()}", 150)
+    private val statusLine4 = StatusLabel("...${ReticulatingSplines.reticulate()}", 200)
+    private val statusLine5 = StatusLabel("...${ReticulatingSplines.reticulate()}")
 
     init {
         panel.layout = MigLayout("fillx", "0[grow]0")

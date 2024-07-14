@@ -27,6 +27,7 @@ import com.formdev.flatlaf.themes.FlatMacDarkLaf
 import com.formdev.flatlaf.themes.FlatMacLightLaf
 import com.formdev.flatlaf.util.StringUtils
 import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.api.utilities.common.JarUtilities
 import de.griefed.serverpackcreator.api.utilities.common.create
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
@@ -78,7 +79,7 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
                 themesPrefix = ""
                 //source = "de/griefed/resources/manifests"
             }
-            apiWrapper.utilities.jarUtilities.copyFolderFromJar(
+            JarUtilities.copyFolderFromJar(
                 this.javaClass,
                 "de/griefed/resources/gui/themes",
                 themesDir.absolutePath,

@@ -21,7 +21,6 @@ package de.griefed.serverpackcreator.app.gui.window.menu.edit
 
 import Translations
 import de.griefed.serverpackcreator.api.ApiProperties
-import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.window.MainFrame
 import de.griefed.serverpackcreator.app.gui.window.configs.TabbedConfigsTab
@@ -37,13 +36,12 @@ class EditMenu(
     apiProperties: ApiProperties,
     guiProps: GuiProps,
     mainFrame: MainFrame,
-    fileUtilities: FileUtilities,
     tabbedConfigsTab: TabbedConfigsTab
 ) : JMenu(Translations.menubar_gui_menu_edit.toString()) {
 
-    private val openPack = OpenModpackItem(fileUtilities,tabbedConfigsTab)
-    private val editProps = EditPropertiesItem(fileUtilities,tabbedConfigsTab)
-    private val editIcon = EditIconItem(fileUtilities,tabbedConfigsTab)
+    private val openPack = OpenModpackItem(tabbedConfigsTab)
+    private val editProps = EditPropertiesItem(tabbedConfigsTab)
+    private val editIcon = EditIconItem(tabbedConfigsTab)
     private val updateDefaultMods = UpdateDefaultModslistItem(apiProperties,mainFrame.frame, guiProps)
 
     init {

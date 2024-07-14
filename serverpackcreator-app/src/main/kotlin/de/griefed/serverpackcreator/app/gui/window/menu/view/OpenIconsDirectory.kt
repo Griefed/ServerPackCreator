@@ -29,7 +29,7 @@ import javax.swing.JMenuItem
  *
  * @author Griefed
  */
-class OpenIconsDirectory(private val fileUtilities: FileUtilities, private val apiProperties: ApiProperties) :
+class OpenIconsDirectory(private val apiProperties: ApiProperties) :
     JMenuItem(Translations.menubar_gui_menuitem_servericon.toString()) {
 
     init {
@@ -40,6 +40,6 @@ class OpenIconsDirectory(private val fileUtilities: FileUtilities, private val a
      * @author Griefed
      */
     private fun openIcon() {
-        fileUtilities.openFile(apiProperties.iconsDirectory)
+        FileUtilities.openFile(apiProperties.iconsDirectory)
     }
 }

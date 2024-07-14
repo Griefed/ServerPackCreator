@@ -31,7 +31,6 @@ import javax.swing.JMenuItem
  * @author Griefed
  */
 class PluginsLogItem(
-    private val fileUtilities: FileUtilities,
     private val apiProperties: ApiProperties
 ) : JMenuItem(Translations.menubar_gui_menuitem_pluginlog.toString()) {
     init {
@@ -42,6 +41,6 @@ class PluginsLogItem(
      * @author Griefed
      */
     private fun openPluginsLog() {
-        fileUtilities.openFile(File(apiProperties.logsDirectory, "plugins.log"))
+        FileUtilities.openFile(File(apiProperties.logsDirectory, "plugins.log"))
     }
 }

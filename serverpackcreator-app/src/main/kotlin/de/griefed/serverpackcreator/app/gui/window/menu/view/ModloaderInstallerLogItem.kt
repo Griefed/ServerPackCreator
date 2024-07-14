@@ -31,7 +31,6 @@ import javax.swing.JMenuItem
  * @author Griefed
  */
 class ModloaderInstallerLogItem(
-    private val fileUtilities: FileUtilities,
     private val apiProperties: ApiProperties
 ) : JMenuItem(Translations.menubar_gui_menuitem_modloaderlog.toString()) {
     init {
@@ -42,6 +41,6 @@ class ModloaderInstallerLogItem(
      * @author Griefed
      */
     private fun openModloaderInstallerLog() {
-        fileUtilities.openFile(File(apiProperties.logsDirectory, "modloader_installer.log"))
+        FileUtilities.openFile(File(apiProperties.logsDirectory, "modloader_installer.log"))
     }
 }

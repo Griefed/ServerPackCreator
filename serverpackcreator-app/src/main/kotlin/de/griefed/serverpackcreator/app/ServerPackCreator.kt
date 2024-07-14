@@ -69,7 +69,7 @@ fun main(args: Array<String>) {
  */
 class ServerPackCreator(private val args: Array<String>) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
-    private val appInfo = JarInformation(ServerPackCreator::class.java, JarUtilities())
+    private val appInfo = JarInformation(ServerPackCreator::class.java)
     val commandlineParser: CommandlineParser = CommandlineParser(args, appInfo)
 
     init {
@@ -231,7 +231,7 @@ class ServerPackCreator(private val args: Array<String>) {
      */
     private fun createDefaultConfig(): Boolean {
         return if (!apiWrapper.apiProperties.defaultConfig.exists()) {
-            apiWrapper.utilities.jarUtilities.copyFileFromJar(
+            JarUtilities.copyFileFromJar(
                 "de/griefed/resources/${apiWrapper.apiProperties.defaultConfig.name}",
                 apiWrapper.apiProperties.defaultConfig, this.javaClass
             )
@@ -520,7 +520,7 @@ class ServerPackCreator(private val args: Array<String>) {
                 }
 
                 private fun createFile(toCreate: File) {
-                    apiWrapper.utilities.jarUtilities.copyFileFromJar(
+                    JarUtilities.copyFileFromJar(
                         toCreate.name, ServerPackCreator::class.java,
                         toCreate.parent
                     )

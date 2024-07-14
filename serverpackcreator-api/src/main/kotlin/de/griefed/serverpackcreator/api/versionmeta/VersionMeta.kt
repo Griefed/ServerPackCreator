@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.api.versionmeta
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.api.utilities.common.JarUtilities
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.utilities.common.create
 import de.griefed.serverpackcreator.api.utilities.common.readText
@@ -371,7 +372,7 @@ class VersionMeta(
                     }
                 }
             } catch (ex: SAXException) {
-                utilities.jarUtilities.copyFileFromJar(
+                JarUtilities.copyFileFromJar(
                     "de/griefed/resources/manifests/${manifestToCheck.name}",
                     manifestToCheck,
                     true,

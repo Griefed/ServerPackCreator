@@ -27,7 +27,10 @@ import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.config.ConfigurationHandler
 import de.griefed.serverpackcreator.api.modscanning.*
 import de.griefed.serverpackcreator.api.serverpack.ServerPackHandler
-import de.griefed.serverpackcreator.api.utilities.common.*
+import de.griefed.serverpackcreator.api.utilities.common.JsonUtilities
+import de.griefed.serverpackcreator.api.utilities.common.Utilities
+import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
+import de.griefed.serverpackcreator.api.utilities.common.XmlUtilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -71,11 +74,6 @@ class BeanConfiguration {
     }
 
     @Bean
-    fun booleanUtilities(): BooleanUtilities {
-        return apiWrapper().booleanUtilities
-    }
-
-    @Bean
     fun configurationHandler(): ConfigurationHandler {
         return apiWrapper().configurationHandler
     }
@@ -86,23 +84,8 @@ class BeanConfiguration {
     }
 
     @Bean
-    fun fileUtilities(): FileUtilities {
-        return apiWrapper().fileUtilities
-    }
-
-    @Bean
-    fun jarUtilities(): JarUtilities {
-        return apiWrapper().jarUtilities
-    }
-
-    @Bean
     fun jsonUtilities(): JsonUtilities {
         return apiWrapper().jsonUtilities
-    }
-
-    @Bean
-    fun listUtilities(): ListUtilities {
-        return apiWrapper().listUtilities
     }
 
     @Bean
@@ -118,16 +101,6 @@ class BeanConfiguration {
     @Bean
     fun serverPackHandler(): ServerPackHandler {
         return apiWrapper().serverPackHandler
-    }
-
-    @Bean
-    fun stringUtilities(): StringUtilities {
-        return apiWrapper().stringUtilities
-    }
-
-    @Bean
-    fun systemUtilities(): SystemUtilities {
-        return apiWrapper().systemUtilities
     }
 
     @Bean

@@ -50,7 +50,7 @@ class MainMenuBar(
     val menuBar: JMenuBar = JMenuBar()
     private val updateButton = BalloonTipButton(null, guiProps.updateAnimation, Translations.update_dialog_available.toString(), guiProps)
     private val file = FileMenu(mainFrame.mainPanel.tabbedConfigsTab,apiWrapper.apiProperties,mainFrame,apiWrapper.utilities, guiProps)
-    private val edit = EditMenu(apiWrapper.apiProperties, guiProps,mainFrame,apiWrapper.fileUtilities,mainFrame.mainPanel.tabbedConfigsTab)
+    private val edit = EditMenu(apiWrapper.apiProperties, guiProps,mainFrame,mainFrame.mainPanel.tabbedConfigsTab)
     private val view = ViewMenu(apiWrapper, themeManager)
     private val about = AboutMenu(apiWrapper.utilities.webUtilities,updateDialogs,apiWrapper,migrationManager, guiProps,mainFrame,updateButton)
 

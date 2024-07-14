@@ -26,6 +26,9 @@ import de.griefed.serverpackcreator.api.config.ConfigCheck
 import de.griefed.serverpackcreator.api.config.InclusionSpecification
 import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.api.plugins.swinggui.ServerPackConfigTab
+import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
+import de.griefed.serverpackcreator.api.utilities.common.ListUtilities
+import de.griefed.serverpackcreator.api.utilities.common.StringUtilities
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.components.*
 import de.griefed.serverpackcreator.app.gui.window.configs.components.*
@@ -355,12 +358,12 @@ class ConfigEditor(
     }
 
     override fun setClientSideMods(entries: MutableList<String>) {
-        advSetExclusionsSetting.text = apiWrapper.utilities.stringUtilities.buildString(entries)
+        advSetExclusionsSetting.text = StringUtilities.buildString(entries)
         validateInputFields()
     }
 
     override fun setWhitelist(entries: MutableList<String>) {
-        advSetWhitelistSetting.text = apiWrapper.utilities.stringUtilities.buildString(entries)
+        advSetWhitelistSetting.text = StringUtilities.buildString(entries)
         validateInputFields()
     }
 
@@ -429,7 +432,7 @@ class ConfigEditor(
     }
 
     override fun setServerPackSuffix(suffix: String) {
-        suffixSetting.text = apiWrapper.utilities.stringUtilities.pathSecureText(suffix)
+        suffixSetting.text = StringUtilities.pathSecureText(suffix)
     }
 
     override fun setServerPropertiesPath(path: String) {
@@ -452,7 +455,7 @@ class ConfigEditor(
     }
 
     override fun getClientSideModsList(): MutableList<String> {
-        return apiWrapper.utilities.listUtilities.cleanList(
+        return ListUtilities.cleanList(
             getClientSideMods().split(",")
                 .dropLastWhile { it.isEmpty() }
                 .toMutableList()
@@ -460,7 +463,7 @@ class ConfigEditor(
     }
 
     override fun getWhitelistList(): MutableList<String> {
-        return apiWrapper.utilities.listUtilities.cleanList(
+        return ListUtilities.cleanList(
             getWhitelist().split(",")
                 .dropLastWhile { it.isEmpty() }
                 .toMutableList()
@@ -493,7 +496,7 @@ class ConfigEditor(
     }
 
     override fun saveCurrentConfiguration(): File {
-        val modpackName = apiWrapper.utilities.stringUtilities.pathSecureText( title.title + ".conf")
+        val modpackName = StringUtilities.pathSecureText( title.title + ".conf")
         val config = if (configFile != null) {
             configFile!!
         } else {
@@ -590,7 +593,7 @@ class ConfigEditor(
     }
 
     override fun getServerPackSuffix(): String {
-        return apiWrapper.utilities.stringUtilities.pathSecureText(suffixSetting.text)
+        return StringUtilities.pathSecureText(suffixSetting.text)
     }
 
     override fun getServerPropertiesPath(): String {
@@ -892,7 +895,7 @@ class ConfigEditor(
      */
     fun validateSuffix(): List<String> {
         val errors: MutableList<String> = ArrayList(10)
-        if (apiWrapper.utilities.stringUtilities.checkForIllegalCharacters(suffixSetting.text)) {
+        if (StringUtilities.checkForIllegalCharacters(suffixSetting.text)) {
             suffixIcon.info()
         } else {
             errors.add(Translations.configuration_log_error_serverpack_suffix.toString())
@@ -1303,9 +1306,9 @@ class ConfigEditor(
      */
     private fun openServerProperties() {
         if (File(getServerPropertiesPath()).isFile) {
-            apiWrapper.utilities.fileUtilities.openFile(getServerPropertiesPath())
+            FileUtilities.openFile(getServerPropertiesPath())
         } else {
-            apiWrapper.utilities.fileUtilities.openFile(apiWrapper.apiProperties.defaultServerProperties)
+            FileUtilities.openFile(apiWrapper.apiProperties.defaultServerProperties)
         }
     }
 

@@ -30,10 +30,9 @@ import javax.swing.JMenuItem
  * @author Griefed
  */
 class ThemesDirItem(
-    fileUtilities: FileUtilities,
     themeManager: ThemeManager
 ) : JMenuItem(Translations.menubar_gui_menuitem_themesdir.toString()) {
     init {
-        this.addActionListener { fileUtilities.openFolder(themeManager.themesDir) }
+        this.addActionListener { FileUtilities.openFolder(themeManager.themesDir) }
     }
 }

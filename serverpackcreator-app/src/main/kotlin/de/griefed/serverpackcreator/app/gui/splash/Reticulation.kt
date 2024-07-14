@@ -33,7 +33,6 @@ class Reticulation(
     width: Int,
     height: Int,
     props: SplashProps,
-    private val reticulatingSplines: ReticulatingSplines
 ) : JLabel() {
     init {
         font = Font("arial", Font.BOLD, 20)
@@ -50,6 +49,6 @@ class Reticulation(
      * @author Griefed
      */
     fun reticulate() {
-        text = reticulatingSplines.reticulate()
+        text = ReticulatingSplines.reticulate()
     }
 }

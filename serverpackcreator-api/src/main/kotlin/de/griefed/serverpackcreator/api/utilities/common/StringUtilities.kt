@@ -28,255 +28,258 @@ package de.griefed.serverpackcreator.api.utilities.common
  */
 @Suppress("unused")
 class StringUtilities {
-    /**
-     * Converts a list of Strings, for example from a list, into a concatenated String.
-     *
-     * @param strings List of strings that will be concatenated into one string
-     * @return Returns concatenated string that contains all provided values.
-     * @author Griefed
-     */
-    fun buildString(strings: List<String>) = buildString(strings.toString())
 
-    /**
-     * Converts a sequence of Strings, for example from a list, into a concatenated String.
-     *
-     * @param args Strings that will be concatenated into one string
-     * @return Returns concatenated string that contains all provided values.
-     * @author whitebear60
-     * @author Griefed
-     */
-    fun buildString(vararg args: String) =
-        StringBuilder(args.contentToString()).removeRange(0, 2).reversed().removeRange(0, 2).reversed().toString()
+    companion object {
+        /**
+         * Converts a list of Strings, for example from a list, into a concatenated String.
+         *
+         * @param strings List of strings that will be concatenated into one string
+         * @return Returns concatenated string that contains all provided values.
+         * @author Griefed
+         */
+        fun buildString(strings: List<String>) = buildString(strings.toString())
 
-    /**
-     * Remove commonly forbidden characters from the passed string, making the resulting String safe
-     * to use for files, paths, directories etc. If the passed text ends with a
-     * SPACE`(&#32;&#32;)` or a DOT`(&#32;.&#32;)`, they are also removed.
-     *
-     * Replaced/removed are:
-     *  * **&#47;**
-     *  * **&#60;**
-     *  * **&#62;**
-     *  * **&#58;**
-     *  * **&#34;**
-     *  * **&#92;**
-     *  * **&#124;**
-     *  * **&#63;**
-     *  * **&#42;**
-     *  * **&#35;**
-     *  * **&#37;**
-     *  * **&#38;**
-     *  * **&#123;**
-     *  * **&#125;**
-     *  * **&#36;**
-     *  * **&#33;**
-     *  * **&#39;**
-     *  * **&#64;**
-     *  * **&#43;**
-     *  * **&#180;**
-     *  * **&#96;**
-     *  * **&#61;**
-     *  * **&#91;**
-     *  * **&#93;**
-     *
-     * @param text The text which you want to be made safe.
-     * @return The passed String safe for use for files, paths, directories etc.
-     * @author Griefed
-     */
-    @Suppress("MemberVisibilityCanBePrivate")
-    fun pathSecureText(text: String): String {
-        var secured = text
-        while (secured.endsWith(".") || secured.endsWith(" ")) {
-            val toReplace = secured.substring(secured.length - 1)
-            secured = secured.replace(toReplace, "")
+        /**
+         * Converts a sequence of Strings, for example from a list, into a concatenated String.
+         *
+         * @param args Strings that will be concatenated into one string
+         * @return Returns concatenated string that contains all provided values.
+         * @author whitebear60
+         * @author Griefed
+         */
+        fun buildString(vararg args: String) =
+            StringBuilder(args.contentToString()).removeRange(0, 2).reversed().removeRange(0, 2).reversed().toString()
+
+        /**
+         * Remove commonly forbidden characters from the passed string, making the resulting String safe
+         * to use for files, paths, directories etc. If the passed text ends with a
+         * SPACE`(&#32;&#32;)` or a DOT`(&#32;.&#32;)`, they are also removed.
+         *
+         * Replaced/removed are:
+         *  * **&#47;**
+         *  * **&#60;**
+         *  * **&#62;**
+         *  * **&#58;**
+         *  * **&#34;**
+         *  * **&#92;**
+         *  * **&#124;**
+         *  * **&#63;**
+         *  * **&#42;**
+         *  * **&#35;**
+         *  * **&#37;**
+         *  * **&#38;**
+         *  * **&#123;**
+         *  * **&#125;**
+         *  * **&#36;**
+         *  * **&#33;**
+         *  * **&#39;**
+         *  * **&#64;**
+         *  * **&#43;**
+         *  * **&#180;**
+         *  * **&#96;**
+         *  * **&#61;**
+         *  * **&#91;**
+         *  * **&#93;**
+         *
+         * @param text The text which you want to be made safe.
+         * @return The passed String safe for use for files, paths, directories etc.
+         * @author Griefed
+         */
+        @Suppress("MemberVisibilityCanBePrivate")
+        fun pathSecureText(text: String): String {
+            var secured = text
+            while (secured.endsWith(".") || secured.endsWith(" ")) {
+                val toReplace = secured.substring(secured.length - 1)
+                secured = secured.replace(toReplace, "")
+            }
+            return secured
+                .replace("/", "")
+                .replace("<", "")
+                .replace(">", "")
+                .replace(":", "")
+                .replace("\"", "")
+                .replace("\\", "")
+                .replace("|", "")
+                .replace("?", "")
+                .replace("*", "")
+                .replace("#", "")
+                .replace("%", "")
+                .replace("&", "")
+                .replace("{", "")
+                .replace("}", "")
+                .replace("$", "")
+                .replace("!", "")
+                .replace("'", "")
+                .replace("@", "")
+                .replace("+", "")
+                .replace("´", "")
+                .replace("`", "")
+                .replace("=", "")
+                .replace("[", "")
+                .replace("]", "")
         }
-        return secured
-            .replace("/", "")
-            .replace("<", "")
-            .replace(">", "")
-            .replace(":", "")
-            .replace("\"", "")
-            .replace("\\", "")
-            .replace("|", "")
-            .replace("?", "")
-            .replace("*", "")
-            .replace("#", "")
-            .replace("%", "")
-            .replace("&", "")
-            .replace("{", "")
-            .replace("}", "")
-            .replace("$", "")
-            .replace("!", "")
-            .replace("'", "")
-            .replace("@", "")
-            .replace("+", "")
-            .replace("´", "")
-            .replace("`", "")
-            .replace("=", "")
-            .replace("[", "")
-            .replace("]", "")
-    }
 
-    /**
-     * Remove commonly forbidden characters from the passed string, making the resulting String safe
-     * to use for files, paths, directories etc. If the passed text ends with a
-     * SPACE`(&#32;&#32;)` or a DOT`(&#32;.&#32;)`, they are also removed.
-     *
-     * Contrary to [pathSecureText], this method does **NOT** remove **&#47;** or **&#92;**.
-     *
-     *
-     * Replaced/removed are:
-     *  * **&#60;**
-     *  * **&#62;**
-     *  * **&#58;**
-     *  * **&#34;**
-     *  * **&#124;**
-     *  * **&#63;**
-     *  * **&#42;**
-     *  * **&#35;**
-     *  * **&#37;**
-     *  * **&#38;**
-     *  * **&#123;**
-     *  * **&#125;**
-     *  * **&#36;**
-     *  * **&#33;**
-     *  * **&#64;**
-     *  * **&#43;**
-     *  * **&#180;**
-     *  * **&#96;**
-     *  * **&#61;**
-     *  * **&#91;**
-     *  * **&#93;**
-     *
-     * @param text The text which you want to be made safe.
-     * @return The passed String safe for use for files, paths, directories etc.
-     * @author Griefed
-     */
-    fun pathSecureTextAlternative(text: String): String {
-        var secured = text
-        while (secured.endsWith(".") || secured.endsWith(" ")) {
-            val toReplace = secured.substring(secured.length - 1)
-            secured = secured.replace(toReplace, "")
+        /**
+         * Remove commonly forbidden characters from the passed string, making the resulting String safe
+         * to use for files, paths, directories etc. If the passed text ends with a
+         * SPACE`(&#32;&#32;)` or a DOT`(&#32;.&#32;)`, they are also removed.
+         *
+         * Contrary to [pathSecureText], this method does **NOT** remove **&#47;** or **&#92;**.
+         *
+         *
+         * Replaced/removed are:
+         *  * **&#60;**
+         *  * **&#62;**
+         *  * **&#58;**
+         *  * **&#34;**
+         *  * **&#124;**
+         *  * **&#63;**
+         *  * **&#42;**
+         *  * **&#35;**
+         *  * **&#37;**
+         *  * **&#38;**
+         *  * **&#123;**
+         *  * **&#125;**
+         *  * **&#36;**
+         *  * **&#33;**
+         *  * **&#64;**
+         *  * **&#43;**
+         *  * **&#180;**
+         *  * **&#96;**
+         *  * **&#61;**
+         *  * **&#91;**
+         *  * **&#93;**
+         *
+         * @param text The text which you want to be made safe.
+         * @return The passed String safe for use for files, paths, directories etc.
+         * @author Griefed
+         */
+        fun pathSecureTextAlternative(text: String): String {
+            var secured = text
+            while (secured.endsWith(".") || secured.endsWith(" ")) {
+                val toReplace = secured.substring(secured.length - 1)
+                secured = secured.replace(toReplace, "")
+            }
+            return secured
+                .replace("<", "")
+                .replace(">", "")
+                .replace(":", "")
+                .replace("\"", "")
+                .replace("|", "")
+                .replace("?", "")
+                .replace("*", "")
+                .replace("#", "")
+                .replace("%", "")
+                .replace("&", "")
+                .replace("{", "")
+                .replace("}", "")
+                .replace("$", "")
+                .replace("!", "")
+                .replace("@", "")
+                .replace("+", "")
+                .replace("´", "")
+                .replace("`", "")
+                .replace("=", "")
+                .replace("[", "")
+                .replace("]", "")
         }
-        return secured
-            .replace("<", "")
-            .replace(">", "")
-            .replace(":", "")
-            .replace("\"", "")
-            .replace("|", "")
-            .replace("?", "")
-            .replace("*", "")
-            .replace("#", "")
-            .replace("%", "")
-            .replace("&", "")
-            .replace("{", "")
-            .replace("}", "")
-            .replace("$", "")
-            .replace("!", "")
-            .replace("@", "")
-            .replace("+", "")
-            .replace("´", "")
-            .replace("`", "")
-            .replace("=", "")
-            .replace("[", "")
-            .replace("]", "")
+
+        /**
+         * Check the passed string whether it contains any of the following characters:
+         *  * **&#47;**
+         *  * **&#60;**
+         *  * **&#62;**
+         *  * **&#58;**
+         *  * **&#34;**
+         *  * **&#92;**
+         *  * **&#124;**
+         *  * **&#63;**
+         *  * **&#42;**
+         *  * **&#35;**
+         *  * **&#37;**
+         *  * **&#38;**
+         *  * **&#123;**
+         *  * **&#125;**
+         *  * **&#36;**
+         *  * **&#33;**
+         *  * **&#64;**
+         *  * **&#43;**
+         *  * **&#180;**
+         *  * **&#96;**
+         *  * **&#61;**
+         *
+         * @param text The text you want to check.
+         * @return `true` if none of these characters were found.
+         * @author Griefed
+         */
+        fun checkForIllegalCharacters(text: String) =
+            (!text.contains("/")
+                    && !text.contains("<")
+                    && !text.contains(">")
+                    && !text.contains(":")
+                    && !text.contains("\"")
+                    && !text.contains("\\")
+                    && !text.contains("|")
+                    && !text.contains("?")
+                    && !text.contains("*")
+                    && !text.contains("#")
+                    && !text.contains("%")
+                    && !text.contains("&")
+                    && !text.contains("{")
+                    && !text.contains("}")
+                    && !text.contains("$")
+                    && !text.contains("!")
+                    && !text.contains("@")
+                    && !text.contains("+")
+                    && !text.contains("`")
+                    && !text.contains("´")
+                    && !text.contains("="))
+
+        /**
+         * Check the passed string whether it contains characters invalid in a path-declaration:
+         *  * **&#60;**
+         *  * **&#62;**
+         *  * **&#58;**
+         *  * **&#34;**
+         *  * **&#124;**
+         *  * **&#63;**
+         *  * **&#42;**
+         *  * **&#35;**
+         *  * **&#37;**
+         *  * **&#38;**
+         *  * **&#123;**
+         *  * **&#125;**
+         *  * **&#36;**
+         *  * **&#33;**
+         *  * **&#64;**
+         *  * **&#180;**
+         *  * **&#96;**
+         *  * **&#61;**
+         *
+         * @param text The text you want to check.
+         * @return `true` if none of these characters were found.
+         * @author Griefed
+         */
+        fun checkForInvalidPathCharacters(text: String) =
+            (!text.contains("<")
+                    || !text.contains(">")
+                    || !text.contains(":")
+                    || !text.contains("\"")
+                    || !text.contains("|")
+                    || !text.contains("?")
+                    || !text.contains("*")
+                    || !text.contains("#")
+                    || !text.contains("%")
+                    || !text.contains("&")
+                    || !text.contains("{")
+                    || !text.contains("}")
+                    || !text.contains("$")
+                    || !text.contains("!")
+                    || !text.contains("@")
+                    || !text.contains("`")
+                    || !text.contains("´")
+                    || !text.contains("="))
     }
-
-    /**
-     * Check the passed string whether it contains any of the following characters:
-     *  * **&#47;**
-     *  * **&#60;**
-     *  * **&#62;**
-     *  * **&#58;**
-     *  * **&#34;**
-     *  * **&#92;**
-     *  * **&#124;**
-     *  * **&#63;**
-     *  * **&#42;**
-     *  * **&#35;**
-     *  * **&#37;**
-     *  * **&#38;**
-     *  * **&#123;**
-     *  * **&#125;**
-     *  * **&#36;**
-     *  * **&#33;**
-     *  * **&#64;**
-     *  * **&#43;**
-     *  * **&#180;**
-     *  * **&#96;**
-     *  * **&#61;**
-     *
-     * @param text The text you want to check.
-     * @return `true` if none of these characters were found.
-     * @author Griefed
-     */
-    fun checkForIllegalCharacters(text: String) =
-        (!text.contains("/")
-                && !text.contains("<")
-                && !text.contains(">")
-                && !text.contains(":")
-                && !text.contains("\"")
-                && !text.contains("\\")
-                && !text.contains("|")
-                && !text.contains("?")
-                && !text.contains("*")
-                && !text.contains("#")
-                && !text.contains("%")
-                && !text.contains("&")
-                && !text.contains("{")
-                && !text.contains("}")
-                && !text.contains("$")
-                && !text.contains("!")
-                && !text.contains("@")
-                && !text.contains("+")
-                && !text.contains("`")
-                && !text.contains("´")
-                && !text.contains("="))
-
-    /**
-     * Check the passed string whether it contains characters invalid in a path-declaration:
-     *  * **&#60;**
-     *  * **&#62;**
-     *  * **&#58;**
-     *  * **&#34;**
-     *  * **&#124;**
-     *  * **&#63;**
-     *  * **&#42;**
-     *  * **&#35;**
-     *  * **&#37;**
-     *  * **&#38;**
-     *  * **&#123;**
-     *  * **&#125;**
-     *  * **&#36;**
-     *  * **&#33;**
-     *  * **&#64;**
-     *  * **&#180;**
-     *  * **&#96;**
-     *  * **&#61;**
-     *
-     * @param text The text you want to check.
-     * @return `true` if none of these characters were found.
-     * @author Griefed
-     */
-    fun checkForInvalidPathCharacters(text: String) =
-        (!text.contains("<")
-                || !text.contains(">")
-                || !text.contains(":")
-                || !text.contains("\"")
-                || !text.contains("|")
-                || !text.contains("?")
-                || !text.contains("*")
-                || !text.contains("#")
-                || !text.contains("%")
-                || !text.contains("&")
-                || !text.contains("{")
-                || !text.contains("}")
-                || !text.contains("$")
-                || !text.contains("!")
-                || !text.contains("@")
-                || !text.contains("`")
-                || !text.contains("´")
-                || !text.contains("="))
 }
 
 /**
