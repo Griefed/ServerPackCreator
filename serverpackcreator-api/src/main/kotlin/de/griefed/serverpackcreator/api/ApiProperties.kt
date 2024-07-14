@@ -2114,8 +2114,7 @@ class ApiProperties(
         val jarFolderFile = File(jarInformation.jarFolder.absoluteFile, serverPackCreatorProperties).absoluteFile
         val serverPackCreatorHomeDir = File(home, "ServerPackCreator").absoluteFile
         val homeDirFile = File(serverPackCreatorHomeDir, serverPackCreatorProperties).absoluteFile
-        val relativeDirFile =
-            File(serverPackCreatorProperties).absoluteFile //TODO where is this? It gets loaded when run through installer
+        val relativeDirFile = File(serverPackCreatorProperties).absoluteFile
 
         // Load the properties file from the classpath, providing default values.
         try {
