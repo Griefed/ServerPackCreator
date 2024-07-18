@@ -877,6 +877,9 @@ class ServerPackHandler(
                 script = File(destination, "start.$key")
                 content = replacePlaceholders(isLocal, File(value).readText(), scriptSettings).replace("\r", "")
                 script.writeText(content)
+                script.setExecutable(true)
+                script.setReadable(true)
+                script.setWritable(false)
             } catch (ex: Exception) {
                 log.error("$key-File not accessible: $value.", ex)
             }
@@ -887,6 +890,9 @@ class ServerPackHandler(
                 script = File(destination, "install_java.$key")
                 content = replacePlaceholders(isLocal, File(value).readText(), scriptSettings).replace("\r", "")
                 script.writeText(content)
+                script.setExecutable(true)
+                script.setReadable(true)
+                script.setWritable(false)
             } catch (ex: Exception) {
                 log.error("$key-File not accessible: $value.", ex)
             }
@@ -903,6 +909,9 @@ class ServerPackHandler(
                 }
             }
             destinationVariables.writeText(variablesContent.replace("\r", ""))
+            destinationVariables.setReadable(true)
+            destinationVariables.setWritable(true)
+            destinationVariables.setExecutable(false)
         } catch (ex: Exception) {
             log.error("File not accessible: ${File(destination, "variables.txt")}.", ex)
         }
@@ -910,6 +919,9 @@ class ServerPackHandler(
         try {
             val howToStartTheScriptReadme = File(destination, "HOW-TO-RUN.md")
             howToStartTheScriptReadme.writeText(howToStartTheServer.replace("\r", ""))
+            howToStartTheScriptReadme.setExecutable(false)
+            howToStartTheScriptReadme.setReadable(true)
+            howToStartTheScriptReadme.setWritable(false)
         } catch (ex: Exception) {
             log.error("File not accessible: ${File(destination, "HOW-TO-RUN.md")}.", ex)
         }
