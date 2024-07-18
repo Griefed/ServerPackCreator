@@ -168,10 +168,10 @@ class TabbedConfigsTab(
         configChooser.dialogType = JFileChooser.SAVE_DIALOG
         if (configChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             if (configChooser.selectedFile.path.endsWith(".conf")) {
-                editor.getCurrentConfiguration().save(configChooser.selectedFile.absoluteFile, apiWrapper.apiProperties)
+                editor.getCurrentConfiguration().save(configChooser.selectedFile.absoluteFile)
                 log.debug("Saved configuration to: ${configChooser.selectedFile.absoluteFile}")
             } else {
-                editor.getCurrentConfiguration().save(File("${configChooser.selectedFile.absoluteFile}.conf"), apiWrapper.apiProperties)
+                editor.getCurrentConfiguration().save(File("${configChooser.selectedFile.absoluteFile}.conf"))
                 log.debug("Saved configuration to: ${configChooser.selectedFile.absoluteFile}.conf")
             }
         }
@@ -193,7 +193,7 @@ class TabbedConfigsTab(
     @Suppress("MemberVisibilityCanBePrivate")
     fun loadConfig(configFile: File, tab: ConfigEditor = addTab()) {
         if (configFile.isFile) {
-            tab.loadConfiguration(PackConfig(apiWrapper.utilities, configFile), configFile)
+            tab.loadConfiguration(PackConfig(configFile), configFile)
         } else {
             GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
                 JOptionPane.showMessageDialog(

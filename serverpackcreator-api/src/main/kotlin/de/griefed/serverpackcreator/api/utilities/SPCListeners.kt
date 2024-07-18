@@ -27,18 +27,67 @@ interface SPCGenericListener {
     fun run()
 }
 
+/**
+ * Config check-listener executed during the checking of a given server pack configuration.
+ *
+ * @author Griefed
+ */
 interface SPCConfigCheckListener {
-    fun run(packConfig: PackConfig,configCheck: ConfigCheck = ConfigCheck())
+
+    /**
+     * Run the given listener with a config and a config check object.
+     *
+     * @param packConfig A pack config from which a server pack can be generated.
+     * @param configCheck Config check object holding check results.
+     */
+    fun run(packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck())
 }
 
+/**
+ * Pre-Server Pack listener executed before a server pack is generated.
+ *
+ * @author Griefed
+ */
 interface SPCPreServerPackGenerationListener {
+
+    /**
+     * Run the given listener with a config and path to the server pack.
+     *
+     * @param packConfig A pack config from which a server pack can be generated.
+     * @param serverPackPath The path to the server pack in question.
+     */
     fun run(packConfig: PackConfig, serverPackPath: Path)
 }
 
+/**
+ * Pre ZIP-archive listener executed before a server pack ZIP-archive is created.
+ * Whether a ZIP-archive for a server pack is actually generated has no effect on whether this listener gets fired.
+ *
+ * @author Griefed
+ */
 interface SPCPreServerPackZipListener {
+
+    /**
+     * Run the given listener with a config and path to the server pack.
+     *
+     * @param packConfig A pack config from which a server pack can be generated.
+     * @param serverPackPath The path to the server pack in question.
+     */
     fun run(packConfig: PackConfig, serverPackPath: Path)
 }
 
+/**
+ * Post Generation listener executed after the server pack was generated.
+ *
+ * @author Griefed
+ */
 interface SPCPostGenListener {
+
+    /**
+     * Run the given listener with a config and path to the server pack.
+     *
+     * @param packConfig A pack config from which a server pack can be generated.
+     * @param serverPackPath The path to the server pack in question.
+     */
     fun run(packConfig: PackConfig, serverPackPath: Path)
 }

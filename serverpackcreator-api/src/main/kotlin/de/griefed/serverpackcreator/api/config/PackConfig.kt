@@ -27,8 +27,8 @@ import com.electronwill.nightconfig.core.io.WritingMode
 import com.electronwill.nightconfig.toml.TomlFormat
 import com.fasterxml.jackson.databind.JsonNode
 import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.utilities.common.StringUtilities
-import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.io.FileNotFoundException
@@ -314,7 +314,6 @@ open class PackConfig() {
     /**
      * Create a new configuration model from a config file.
      *
-     * @param utilities  Instance of our SPC utilities.
      * @param configFile Configuration file to load.
      * @throws FileNotFoundException  if the specified file can not be found.
      * @throws NoFormatFoundException if the configuration format could not be determined by
@@ -323,7 +322,7 @@ open class PackConfig() {
      */
     @Throws(NoFormatFoundException::class, FileNotFoundException::class)
     @Suppress("UNCHECKED_CAST")
-    constructor(utilities: Utilities, configFile: File) : this() {
+    constructor(configFile: File) : this() {
         if (!configFile.exists()) {
             throw FileNotFoundException("Couldn't find file: $configFile")
         }
@@ -435,8 +434,11 @@ open class PackConfig() {
         config.set<Any>(inclusionsKey, newInclusionsList)
     }
 
+    /**
+     * Save this configuration to disk.
+     */
     @Suppress("DuplicatedCode")
-    fun save(destination: File, apiProperties: ApiProperties): PackConfig {
+    fun save(destination: File, apiProperties: ApiProperties = ApiWrapper.api().apiProperties): PackConfig {
         val conf = TomlFormat.instance().createConfig()
 
         conf.setComment(configVersionKey, configVersionComment)

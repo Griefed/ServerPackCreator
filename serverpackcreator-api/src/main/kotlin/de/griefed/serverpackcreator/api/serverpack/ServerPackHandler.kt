@@ -350,8 +350,7 @@ class ServerPackHandler(
             relativeFiles,
             packConfig.minecraftVersion,
             packConfig.modloader,
-            packConfig.modloaderVersion,
-            apiProperties.apiVersion
+            packConfig.modloaderVersion
         )
         serverPackManifest.writeToFile(serverPack, utilities.jsonUtilities.objectMapper)
 

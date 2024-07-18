@@ -45,8 +45,7 @@ class FabricScanner(
     private val client = "client"
     private val environment = "environment"
     private val depends = "depends"
-
-    val dependencyExclusions: Regex
+    private val dependencyExclusions: Regex
         get() = "(fabric|fabricloader|java|minecraft)".toRegex()
 
     /**

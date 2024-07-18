@@ -29,7 +29,7 @@ import java.util.*
 import java.util.jar.JarFile
 
 /**
- * `mods.toml`-based scanning of Fabric-Minecraft mods for Minecraft 1.16.5 and newer.
+ * `mods.toml`-based scanning of Forge-Minecraft mods for Minecraft 1.16.5 and newer.
  *
  * @param tomlParser To parse .toml-files.
  * @Griefed

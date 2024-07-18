@@ -20,27 +20,37 @@
 package de.griefed.serverpackcreator.api.serverpack
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import de.griefed.serverpackcreator.api.ApiWrapper
 import java.io.File
 
+/**
+ * The server pack manifest shipped with every modpack. It includes information about the
+ * * Minecraft version
+ * * Modloader
+ * * Modloader version
+ * * ServerPackCreator version used in the generation of this server pack
+ * * A list of relative files included in a server pack
+ *
+ * @author Griefed
+ */
+@Suppress("unused")
 class ServerPackManifest {
     var files: List<String> = ArrayList(10000)
     var minecraftVersion: String = ""
     var modloader: String = ""
     var modloaderVersion: String = ""
-    var serverPackCreatorVersion: String = ""
+    val serverPackCreatorVersion: String = ApiWrapper.api().apiProperties.apiVersion
 
     constructor(
         files: List<String>,
         minecraftVersion: String,
         modloader: String,
         modloaderVersion: String,
-        serverPackCreatorVersion: String
     ) {
         this.files = files
         this.minecraftVersion = minecraftVersion
         this.modloader = modloader
         this.modloaderVersion = modloaderVersion
-        this.serverPackCreatorVersion = serverPackCreatorVersion
     }
 
     constructor()

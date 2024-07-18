@@ -108,7 +108,7 @@ class ConfigurationHandler(
      */
     fun checkConfiguration(configFile: File, packConfig: PackConfig = PackConfig(), configCheck: ConfigCheck = ConfigCheck(), quietCheck: Boolean = false): ConfigCheck {
         try {
-            val fileConf = PackConfig(utilities, configFile)
+            val fileConf = PackConfig(configFile)
             packConfig.setClientMods(fileConf.clientMods)
             packConfig.setInclusions(fileConf.inclusions)
             packConfig.setModsWhitelist(fileConf.modsWhitelist)

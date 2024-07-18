@@ -45,22 +45,38 @@ class InclusionSpecification(
     var exclusionFilter: String? = null
 ) {
 
+    /**
+     * Whether this inclusion-spec has an Inclusion-Filter present.
+     */
     fun hasInclusionFilter(): Boolean {
         return inclusionFilter != null && inclusionFilter!!.isNotBlank()
     }
 
+    /**
+     * Whether this inclusion-spec has an Exclusion-Filter present.
+     */
     fun hasExclusionFilter(): Boolean {
         return exclusionFilter != null && exclusionFilter!!.isNotBlank()
     }
 
+    /**
+     * Whether this inclusion-spec has a destination in the server-pack-to-be set.
+     */
     fun hasDestination(): Boolean {
         return !destination.isNullOrBlank()
     }
 
+    /**
+     * Whether this inclusion-spec is a global filter to be applied to every inclusion.
+     * A global filter requires the source to be empty and/or blank and an inclusion- or exclusion-filter to be set.
+     */
     fun isGlobalFilter(): Boolean {
         return (source.isBlank() && hasInclusionFilter()) || (source.isBlank() && hasExclusionFilter())
     }
 
+    /**
+     * Get this inclusion-spec as a hashmap.
+     */
     fun asHashMap(): HashMap<String,String> {
         val map = HashMap<String,String>()
         map["source"] = source

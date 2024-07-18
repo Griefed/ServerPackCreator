@@ -23,10 +23,37 @@ import de.griefed.serverpackcreator.api.config.PackConfig
 import java.io.File
 import java.util.*
 
+/**
+ * Returned by [de.griefed.serverpackcreator.api.serverpack.ServerPackHandler.run]. Contains information about the
+ * generated server pack, or the server pack which was attempted to be generated.
+ *
+ * @author Griefed
+ */
 class ServerPackGeneration(
+    /**
+     * Whether the generation was successful.
+     */
     val success: Boolean,
+
+    /**
+     * The generated server pack as a file. This usually points towards a directory on the file-system.
+     */
     val serverPack: File,
+
+    /**
+     * The server pack ZIP-archive, if one was generated. [Optional] for ease of use, as not every server pack generation
+     * also creates a ZIP-archive.
+     */
     val serverPackZip: Optional<File>,
+
+    /**
+     * The configuration used in the generation of this server pack.
+     */
     val packConfig: PackConfig,
+
+    /**
+     * A list of all files in the server pack. These are absolute files, mind you. If you need relative-files, iterate
+     * through this list and remove the path to the server pack from each entry to receive a list of relative paths.
+     */
     val files: List<File>
 )

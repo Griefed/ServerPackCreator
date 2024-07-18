@@ -107,7 +107,7 @@ class ConfigurationEditor(
             try {
                 cliLog(Translations.cli_config_load_edit_input.toString())
                 fileName = getNextLine(scanner)
-                packConfig = PackConfig(utilities, File(fileName))
+                packConfig = PackConfig(File(fileName))
                 configLoaded = true
             } catch (e: FileNotFoundException) {
                 cliLog(Translations.cli_config_load_edit_error(e.message.toString()))
@@ -781,12 +781,12 @@ class ConfigurationEditor(
         if (BooleanUtilities.readBoolean()) {
             cliLog(Translations.cli_config_save_name.toString())
             val customFileName = File(StringUtilities.pathSecureText(getNextLine(scanner))).absoluteFile
-            packConfig.save(customFileName, apiProperties)
+            packConfig.save(customFileName)
             cliLog(Translations.cli_config_save_saved(customFileName.absolutePath))
             cliLog(Translations.cli_config_save_info.toString())
             cliLog(Translations.cli_config_save_load(customFileName))
         } else {
-            packConfig.save(apiProperties.defaultConfig, apiProperties)
+            packConfig.save(apiProperties.defaultConfig)
             cliLog(Translations.cli_config_save_saved_default.toString())
         }
     }

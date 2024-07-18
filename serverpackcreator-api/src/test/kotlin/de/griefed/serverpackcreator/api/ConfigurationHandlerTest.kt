@@ -670,7 +670,7 @@ internal class ConfigurationHandlerTest {
                 includeZipCreation = true,
                 scriptSettings = HashMap<String, String>(10),
                 pluginsConfigs = HashMap<String, ArrayList<CommentedConfig>>(10)
-            ).save(File("tests/serverpackcreatorfabric.conf"), apiProperties)
+            ).save(File("tests/serverpackcreatorfabric.conf"))
         )
         Assertions.assertTrue(File("tests/serverpackcreatorfabric.conf").exists())
     }
@@ -741,7 +741,7 @@ internal class ConfigurationHandlerTest {
                 includeZipCreation = true,
                 scriptSettings = HashMap<String, String>(10),
                 pluginsConfigs = HashMap<String, ArrayList<CommentedConfig>>(10)
-            ).save(File("tests/serverpackcreatorforge.conf"), apiProperties)
+            ).save(File("tests/serverpackcreatorforge.conf"))
         )
         Assertions.assertTrue(File("tests/serverpackcreatorforge.conf").exists())
     }
@@ -792,7 +792,7 @@ internal class ConfigurationHandlerTest {
         packConfig.modloader = "Forge"
         packConfig.modloaderVersion = "36.1.2"
         packConfig.javaArgs = "tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j"
-        Assertions.assertNotNull(packConfig.save(File("tests/somefile.conf"), apiProperties))
+        Assertions.assertNotNull(packConfig.save(File("tests/somefile.conf")))
         Assertions.assertTrue(File("tests/somefile.conf").exists())
     }
 

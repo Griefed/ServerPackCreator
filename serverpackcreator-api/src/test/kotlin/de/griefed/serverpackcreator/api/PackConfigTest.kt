@@ -40,7 +40,6 @@ class PackConfigTest internal constructor() {
     @Throws(FileNotFoundException::class, ParserConfigurationException::class)
     fun scriptSettingsTest() {
         val packConfig = PackConfig(
-            ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).utilities,
             File("src/test/resources/testresources/spcconfs/scriptSettings.conf")
         )
         Assertions.assertEquals(
@@ -125,7 +124,7 @@ class PackConfigTest internal constructor() {
         val afterFile = File(apiProperties.homeDirectory,"after.conf")
         packConfig.save(afterFile, apiProperties)
         val after = PackConfig(
-            ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).utilities, afterFile
+            afterFile
         )
         Assertions.assertEquals(after.serverIconPath, packConfig.serverIconPath)
         Assertions.assertEquals(after.serverPackSuffix, packConfig.serverPackSuffix)

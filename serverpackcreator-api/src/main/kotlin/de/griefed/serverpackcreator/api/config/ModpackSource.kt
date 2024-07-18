@@ -19,6 +19,9 @@
  */
 package de.griefed.serverpackcreator.api.config
 
+/**
+ * Source-indicator for where the modpack came from. Entries are self-explanatory.
+ */
 enum class ModpackSource {
     ZIP, MODRINTH, CURSEFORGE, DIRECTORY
 }
