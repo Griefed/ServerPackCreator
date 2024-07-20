@@ -211,6 +211,15 @@ Function DeleteFileSilently
     $ErrorActionPreference = "Continue";
 }
 
+Function WriteFileUTF8NoBom
+{
+    param ($FilePath, $Content)
+    $AbsolutePath = Join-Path -Path "$BaseDir" -ChildPath "$FilePath"
+    New-Item $AbsolutePath -type file
+    $Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
+    [IO.File]::WriteAllLines(($FilePath | Resolve-Path), $Content, $Utf8NoBomEncoding)
+}
+
 Function QuitServer
 {
     Write-Host "Exiting..."
@@ -284,7 +293,7 @@ Function global:SetupForge
         Write-Host "Edit JAVA_ARGS in your variables.txt. Do not edit user_jvm_args.txt directly!"
         Write-Host "Manually made changes to user_jvm_args.txt will be lost in the nether!"
         DeleteFileSilently  'user_jvm_args.txt'
-        "# Xmx and Xms set the maximum and minimum RAM usage, respectively.`n" +
+        $Content = "# Xmx and Xms set the maximum and minimum RAM usage, respectively.`n" +
                 "# They can take any number, followed by an M or a G.`n" +
                 "# M means Megabyte, G means Gigabyte.`n" +
                 "# For example, to set the maximum to 3GB: -Xmx3G`n" +
@@ -292,7 +301,9 @@ Function global:SetupForge
                 "# A good default for a modded server is 4GB.`n" +
                 "# Uncomment the next line to set it.`n" +
                 "# -Xmx4G`n" +
-                "${script:JavaArgs}" | Out-File user_jvm_args.txt -encoding utf8
+                "${script:JavaArgs}"
+        WriteFileUTF8NoBom "user_jvm_args.txt" $Content
+
     }
     if ((DownloadIfNotExists "${ForgeJarLocation}" "forge-installer.jar" "${ForgeInstallerUrl}"))
     {
@@ -345,7 +356,7 @@ Function global:SetupNeoForge
     Write-Host "Edit JAVA_ARGS in your variables.txt. Do not edit user_jvm_args.txt directly!"
     Write-Host "Manually made changes to user_jvm_args.txt will be lost in the nether!"
     DeleteFileSilently  'user_jvm_args.txt'
-    "# Xmx and Xms set the maximum and minimum RAM usage, respectively.`n" +
+    $Content = "# Xmx and Xms set the maximum and minimum RAM usage, respectively.`n" +
             "# They can take any number, followed by an M or a G.`n" +
             "# M means Megabyte, G means Gigabyte.`n" +
             "# For example, to set the maximum to 3GB: -Xmx3G`n" +
@@ -353,7 +364,9 @@ Function global:SetupNeoForge
             "# A good default for a modded server is 4GB.`n" +
             "# Uncomment the next line to set it.`n" +
             "# -Xmx4G`n" +
-            "${script:JavaArgs}" | Out-File user_jvm_args.txt -encoding utf8
+            "${script:JavaArgs}"
+    WriteFileUTF8NoBom "user_jvm_args.txt" $Content
+
     if ((DownloadIfNotExists "${ForgeJarLocation}" "neoforge-installer.jar" "${NeoForgeInstallerUrl}"))
     {
         "NeoForge Installer downloaded. Installing..."
