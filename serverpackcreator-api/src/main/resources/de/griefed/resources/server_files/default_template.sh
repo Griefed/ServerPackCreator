@@ -191,11 +191,26 @@ setup_forge() {
     LAUNCHER_JAR_LOCATION="forge.jar"
     MINECRAFT_SERVER_JAR_LOCATION="minecraft_server.${MINECRAFT_VERSION}.jar"
     SERVER_RUN_COMMAND="${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"
-  else
-    FORGE_JAR_LOCATION="libraries/net/minecraftforge/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}-server.jar"
-    MINECRAFT_SERVER_JAR_LOCATION="libraries/net/minecraft/server/${MINECRAFT_VERSION}/server-${MINECRAFT_VERSION}.jar"
-    SERVER_RUN_COMMAND="@user_jvm_args.txt @libraries/net/minecraftforge/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/unix_args.txt nogui"
 
+    if [[ $(downloadIfNotExist "${FORGE_JAR_LOCATION}" "forge-installer.jar" "${FORGE_INSTALLER_URL}") == "true" ]]; then
+
+        echo "Forge Installer downloaded. Installing..."
+        runJavaCommand "-jar forge-installer.jar --installServer"
+
+        echo "Renaming forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}.jar to forge.jar"
+        mv forge-"${MINECRAFT_VERSION}"-"${MODLOADER_VERSION}".jar forge.jar
+        mv forge-"${MINECRAFT_VERSION}"-"${MODLOADER_VERSION}-universal".jar forge.jar
+
+        if [[ -s "${FORGE_JAR_LOCATION}" ]]; then
+          rm -f forge-installer.jar
+          echo "Installation complete. forge-installer.jar deleted."
+        else
+          rm -f forge-installer.jar
+          crashServer "Something went wrong during the server installation. Please try again in a couple of minutes and check your internet connection."
+        fi
+
+      fi
+  else
     echo "Generating user_jvm_args.txt from variables..."
     echo "Edit JAVA_ARGS in your variables.txt. Do not edit user_jvm_args.txt directly!"
     echo "Manually made changes to user_jvm_args.txt will be lost in the nether!"
@@ -211,50 +226,17 @@ setup_forge() {
       echo "# -Xmx4G"
       echo "${JAVA_ARGS}"
     } >>user_jvm_args.txt
-  fi
 
-  if [[ $(downloadIfNotExist "${FORGE_JAR_LOCATION}" "forge-installer.jar" "${FORGE_INSTALLER_URL}") == "true" ]]; then
+    SERVER_RUN_COMMAND="@user_jvm_args.txt -jar server.jar --installer-force --installer ${FORGE_INSTALLER_URL} nogui"
 
-    echo "Forge Installer downloaded. Installing..."
-    runJavaCommand "-jar forge-installer.jar --installServer"
-
-    if [[ ${SEMANTICS[1]} -gt 16 ]]; then
-      rm -f run.bat
-      rm -f run.sh
-    else
-      echo "Renaming forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}.jar to forge.jar"
-      mv forge-"${MINECRAFT_VERSION}"-"${MODLOADER_VERSION}".jar forge.jar
-      mv forge-"${MINECRAFT_VERSION}"-"${MODLOADER_VERSION}-universal".jar forge.jar
-    fi
-
-    if [[ -s "${FORGE_JAR_LOCATION}" ]]; then
-      rm -f forge-installer.jar
-      echo "Installation complete. forge-installer.jar deleted."
-    else
-      rm -f forge-installer.jar
-      crashServer "Something went wrong during the server installation. Please try again in a couple of minutes and check your internet connection."
-    fi
-
+    rm -f server.jar
+    downloadIfNotExist "server.jar" "server.jar" "https://github.com/neoforged/ServerStarterJar/releases/latest/download/server.jar"
   fi
 }
 
 setup_neoforge() {
   echo ""
   echo "Running NeoForge checks and setup..."
-
-  FORGE_JAR_LOCATION="do_not_manually_edit"
-  JAR_FOLDER="do_not_manually_edit"
-  if [[ ${SEMANTICS[1]} -eq 20 ]] && [[ ${SEMANTICS[2]} -gt 1 ]]; then
-        JAR_FOLDER="libraries/net/neoforged/neoforge/${MODLOADER_VERSION}"
-        FORGE_JAR_LOCATION="${JAR_FOLDER}/neoforge-${MODLOADER_VERSION}-server.jar"
-  else
-        JAR_FOLDER="libraries/net/neoforged/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}"
-        FORGE_JAR_LOCATION="${JAR_FOLDER}/forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}-server.jar"
-  fi
-
-  MINECRAFT_SERVER_JAR_LOCATION="libraries/net/minecraft/server/${MINECRAFT_VERSION}/server-${MINECRAFT_VERSION}.jar"
-  SERVER_RUN_COMMAND="@user_jvm_args.txt @${JAR_FOLDER}/unix_args.txt nogui"
-
   echo "Generating user_jvm_args.txt from variables..."
   echo "Edit JAVA_ARGS in your variables.txt. Do not edit user_jvm_args.txt directly!"
   echo "Manually made changes to user_jvm_args.txt will be lost in the nether!"
@@ -271,23 +253,10 @@ setup_neoforge() {
     echo "${JAVA_ARGS}"
   } >>user_jvm_args.txt
 
+  SERVER_RUN_COMMAND="@user_jvm_args.txt -jar server.jar --installer-force --installer ${MODLOADER_VERSION} nogui"
 
-  if [[ $(downloadIfNotExist "${FORGE_JAR_LOCATION}" "neoforge-installer.jar" "${NEOFORGE_INSTALLER_URL}") == "true" ]]; then
-
-    echo "NeoForge Installer downloaded. Installing..."
-    runJavaCommand "-jar neoforge-installer.jar --installServer"
-    echo "Renaming forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}.jar to forge.jar"
-    mv forge-"${MINECRAFT_VERSION}"-"${MODLOADER_VERSION}".jar forge.jar
-
-    if [[ -s "${FORGE_JAR_LOCATION}" ]]; then
-      rm -f neoforge-installer.jar
-      echo "Installation complete. neoforge-installer.jar deleted."
-    else
-      rm -f neoforge-installer.jar
-      crashServer "Something went wrong during the server installation. Please try again in a couple of minutes and check your internet connection."
-    fi
-
-  fi
+  rm -f server.jar
+  downloadIfNotExist "server.jar" "server.jar" "https://github.com/neoforged/ServerStarterJar/releases/latest/download/server.jar"
 }
 
 setup_fabric() {
@@ -394,7 +363,7 @@ minecraft() {
   echo ""
   if [[ "${MODLOADER}" == "Fabric" && "$IMPROVED_FABRIC_LAUNCHER_AVAILABLE" == "200" ]]; then
     echo "Skipping Minecraft Server JAR checks because we are using the improved Fabric Server Launcher."
-  else
+  elif [[ "${MINECRAFT_SERVER_JAR_LOCATION}" != "do_not_manually_edit" ]]; then
     downloadIfNotExist "${MINECRAFT_SERVER_JAR_LOCATION}" "${MINECRAFT_SERVER_JAR_LOCATION}" "${MINECRAFT_SERVER_URL}" >/dev/null
   fi
 }

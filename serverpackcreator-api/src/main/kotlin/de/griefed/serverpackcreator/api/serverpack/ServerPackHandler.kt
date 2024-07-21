@@ -165,6 +165,11 @@ class ServerPackHandler(
         If your `variables.txt` has `JAVA=java` set, then a suitable Java version for your Minecraft server will
         be installed automatically.
         
+        Forge and NeoForge 1.17 and up will create run.xx-scripts due to the ServerStarterJar being used to install
+        and run the server. It is safe to ignore these and continue using the start.xx-scripts.
+        Deleting the run.xx-scripts will result in the server being installed again by the ServerStarterJar. More about
+        the ServerStarterJar at https://github.com/neoforged/ServerStarterJar
+        
         ## Linux
         
         Run `.\start.sh` or `bash start.sh` to start the server.

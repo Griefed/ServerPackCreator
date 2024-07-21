@@ -497,13 +497,7 @@ open class PackConfig() {
 
         val scripts: Config = TomlFormat.newConfig()
         for ((key, value) in scriptSettings) {
-            /*
-                Only store non-default pairs, so the user always has the up to date values
-                when loading the config the next time
-            */
-            if (scriptSettingsDefaultKeys.all { key != it }) {
-                scripts.set<Any>(key, value)
-            }
+            scripts.set<Any>(key, value)
         }
         conf.setComment(scriptsKey, scriptsComment)
         conf.add(scriptsKey, scripts)
@@ -577,7 +571,7 @@ open class PackConfig() {
             return hashMapOf(
                 Pair(javaKey,"java"),
                 Pair(spcWaitForUserInputKey,"true"),
-                Pair(spcRestartServerKey,"false"),
+                Pair(spcRestartServerKey,"true"),
                 Pair(spcSkipJavaCheckKey,"false"),
                 Pair(spcJDKVendorKey,"temurin"),
                 Pair(spcJabbaInstallURLShKey,"https://github.com/Jabba-Team/jabba/raw/main/install.sh"),

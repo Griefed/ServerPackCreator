@@ -283,12 +283,30 @@ Function global:SetupForge
         $script:LauncherJarLocation = "forge.jar"
         $script:MinecraftServerJarLocation = "minecraft_server.${MinecraftVersion}.jar"
         $script:ServerRunCommand = "${JavaArgs} -jar ${LauncherJarLocation} nogui"
+
+        if ((DownloadIfNotExists "${ForgeJarLocation}" "forge-installer.jar" "${ForgeInstallerUrl}"))
+        {
+            "Forge Installer downloaded. Installing..."
+            RunJavaCommand "-jar forge-installer.jar --installServer"
+
+            "Renaming forge-${MinecraftVersion}-${ModLoaderVersion}.jar to forge.jar"
+            Move-Item "forge-${MinecraftVersion}-${ModLoaderVersion}.jar" 'forge.jar'
+            Move-Item "forge-${MinecraftVersion}-${ModLoaderVersion}-universal.jar" 'forge.jar'
+
+            if ((Test-Path -Path "${ForgeJarLocation}" -PathType Leaf))
+            {
+                DeleteFileSilently  'forge-installer.jar'
+                "Installation complete. forge-installer.jar deleted."
+            }
+            else
+            {
+                DeleteFileSilently  'forge-installer.jar'
+                CrashServer "Something went wrong during the server installation. Please try again in a couple of minutes and check your internet connection."
+            }
+        }
     }
     else
     {
-        $ForgeJarLocation = "libraries/net/minecraftforge/forge/${MinecraftVersion}-${ModLoaderVersion}/forge-${MinecraftVersion}-${ModLoaderVersion}-server.jar"
-        $script:MinecraftServerJarLocation = "libraries/net/minecraft/server/${MinecraftVersion}/server-${MinecraftVersion}.jar"
-        $script:ServerRunCommand = "@user_jvm_args.txt @libraries/net/minecraftforge/forge/${MinecraftVersion}-${ModLoaderVersion}/win_args.txt nogui"
         Write-Host "Generating user_jvm_args.txt from variables..."
         Write-Host "Edit JAVA_ARGS in your variables.txt. Do not edit user_jvm_args.txt directly!"
         Write-Host "Manually made changes to user_jvm_args.txt will be lost in the nether!"
@@ -304,32 +322,10 @@ Function global:SetupForge
                 "${script:JavaArgs}"
         WriteFileUTF8NoBom "user_jvm_args.txt" $Content
 
-    }
-    if ((DownloadIfNotExists "${ForgeJarLocation}" "forge-installer.jar" "${ForgeInstallerUrl}"))
-    {
-        "Forge Installer downloaded. Installing..."
-        RunJavaCommand "-jar forge-installer.jar --installServer"
-        if ([int]$Semantics[1] -gt 16)
-        {
-            DeleteFileSilently  'run.bat'
-            DeleteFileSilently  'run.sh'
-        }
-        else
-        {
-            "Renaming forge-${MinecraftVersion}-${ModLoaderVersion}.jar to forge.jar"
-            Move-Item "forge-${MinecraftVersion}-${ModLoaderVersion}.jar" 'forge.jar'
-            Move-Item "forge-${MinecraftVersion}-${ModLoaderVersion}-universal.jar" 'forge.jar'
-        }
-        if ((Test-Path -Path "${ForgeJarLocation}" -PathType Leaf))
-        {
-            DeleteFileSilently  'forge-installer.jar'
-            "Installation complete. forge-installer.jar deleted."
-        }
-        else
-        {
-            DeleteFileSilently  'forge-installer.jar'
-            CrashServer "Something went wrong during the server installation. Please try again in a couple of minutes and check your internet connection."
-        }
+        $script:ServerRunCommand = "@user_jvm_args.txt -jar server.jar --installer-force --installer ${ForgeInstallerUrl} nogui"
+
+        DeleteFileSilently  'server.jar'
+        DownloadIfNotExists "server.jar" "server.jar" "https://github.com/neoforged/ServerStarterJar/releases/latest/download/server.jar"
     }
 }
 
@@ -338,20 +334,6 @@ Function global:SetupNeoForge
 {
     ""
     "Running NeoForge checks and setup..."
-    $ForgeJarLocation = "do_not_manually_edit"
-    $JarFolder = "do_not_manually_edit"
-    if ([int]$Semantics[1] -eq 20 -And [int]$Semantics[2] -gt 1)
-    {
-        $JarFolder = "libraries/net/neoforged/neoforge/${ModLoaderVersion}"
-        $ForgeJarLocation = "${JarFolder}/neoforge-${ModLoaderVersion}-server.jar"
-    }
-    else
-    {
-        $JarFolder = "libraries/net/neoforged/forge/${MinecraftVersion}-${ModLoaderVersion}"
-        $ForgeJarLocation = "${JarFolder}/forge-${MinecraftVersion}-${ModLoaderVersion}-server.jar"
-    }
-    $script:MinecraftServerJarLocation = "libraries/net/minecraft/server/${MinecraftVersion}/server-${MinecraftVersion}.jar"
-    $script:ServerRunCommand = "@user_jvm_args.txt @${JarFolder}/win_args.txt nogui"
     Write-Host "Generating user_jvm_args.txt from variables..."
     Write-Host "Edit JAVA_ARGS in your variables.txt. Do not edit user_jvm_args.txt directly!"
     Write-Host "Manually made changes to user_jvm_args.txt will be lost in the nether!"
@@ -367,23 +349,10 @@ Function global:SetupNeoForge
             "${script:JavaArgs}"
     WriteFileUTF8NoBom "user_jvm_args.txt" $Content
 
-    if ((DownloadIfNotExists "${ForgeJarLocation}" "neoforge-installer.jar" "${NeoForgeInstallerUrl}"))
-    {
-        "NeoForge Installer downloaded. Installing..."
-        RunJavaCommand "-jar neoforge-installer.jar --installServer"
-        "Renaming forge-${MinecraftVersion}-${ModLoaderVersion}.jar to forge.jar"
-        Move-Item "forge-${MinecraftVersion}-${ModLoaderVersion}.jar" 'forge.jar'
-        if ((Test-Path -Path "${ForgeJarLocation}" -PathType Leaf))
-        {
-            DeleteFileSilently  'neoforge-installer.jar'
-            "Installation complete. forge-installer.jar deleted."
-        }
-        else
-        {
-            DeleteFileSilently  'neoforge-installer.jar'
-            CrashServer "Something went wrong during the server installation. Please try again in a couple of minutes and check your internet connection."
-        }
-    }
+    $script:ServerRunCommand = "@user_jvm_args.txt -jar server.jar --installer-force --installer ${ModLoaderVersion} nogui"
+
+    DeleteFileSilently  'server.jar'
+    DownloadIfNotExists "server.jar" "server.jar" "https://github.com/neoforged/ServerStarterJar/releases/latest/download/server.jar"
 }
 
 Function global:SetupFabric
@@ -509,7 +478,7 @@ Function global:Minecraft
     {
         "Skipping Minecraft Server JAR checks because we are using the improved Fabric Server Launcher."
     }
-    else
+    elseif (${MinecraftServerJarLocation} -ne "do_not_manually_edit")
     {
         (DownloadIfNotExists "${MinecraftServerJarLocation}" "${MinecraftServerJarLocation}" "${MinecraftServerUrl}") > $null
     }
