@@ -1,3 +1,31 @@
+## [6.0.0-beta.18](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.17...6.0.0-beta.18) (2024-07-18)
+
+
+### :scissors: Refactor
+
+* Remove unused classes. Move stateless utils to companion object to simplify usage ([ead1173](https://git.griefed.de/Griefed/ServerPackCreator/commit/ead1173421837e249f353e41adb2f2a22647d952))
+* Use parent class instead of Companio to prevent ClassDefNotFound ([6e4bd59](https://git.griefed.de/Griefed/ServerPackCreator/commit/6e4bd59ca4eb1b478b95a917c1d39a6020eaad39))
+
+
+### 💎 Improvements
+
+* Set permissions for scripts, variables and info files to help with running the server pack ([3081d70](https://git.griefed.de/Griefed/ServerPackCreator/commit/3081d706297b496a09d01bc2fe3236bbcf617c60))
+
+
+### 📔 Docs
+
+* Add and expand existing docs in the API ([0328871](https://git.griefed.de/Griefed/ServerPackCreator/commit/0328871fa71f3256bfbee06aa0e95a8a4a0df319))
+
+
+### 📦 Other
+
+* Remove finished TODO ([89529d8](https://git.griefed.de/Griefed/ServerPackCreator/commit/89529d8fabd225013e9f0e2092087a639d63858e))
+
+
+### 🦊 CI/CD
+
+* Include zsync in release artifacts ([18de4c5](https://git.griefed.de/Griefed/ServerPackCreator/commit/18de4c5489c6a7bf6382cf3db3e844031b76eba8))
+
 ## [6.0.0-beta.17](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.16...6.0.0-beta.17) (2024-07-13)
 
 
