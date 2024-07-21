@@ -1,3 +1,15 @@
+## [6.0.0-beta.19](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.18...6.0.0-beta.19) (2024-07-21)
+
+
+### 💎 Improvements
+
+* Create user_jvm_args without BOM from PowerShell scripts, making it compatible with NeoForge ServerStarterJar ([fd82ae7](https://git.griefed.de/Griefed/ServerPackCreator/commit/fd82ae7d00951fd736c6a9c01699980097dd2ac4))
+
+
+### 📔 Docs
+
+* Replace PKG with DMG ([bafb082](https://git.griefed.de/Griefed/ServerPackCreator/commit/bafb08258d92dec05404e2d0f6b6bd94f4e1e2fa))
+
 ## [6.0.0-beta.18](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.17...6.0.0-beta.18) (2024-07-18)
 
 
