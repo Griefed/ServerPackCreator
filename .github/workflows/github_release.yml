@@ -47,7 +47,6 @@ jobs:
 
       - name: Set Permissions
         run: |
-          chmod +x create-appimage.sh
           chmod +x gradlew
 
       - uses: gradle/actions/setup-gradle@v3
@@ -68,9 +67,6 @@ jobs:
           ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" build --info --full-stacktrace -x :serverpackcreator-api:test -x :serverpackcreator-app:test
           ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" media --info --full-stacktrace -x :serverpackcreator-api:test -x :serverpackcreator-app:test
 
-      - name: Build AppImage
-        run: |
-          ./create-appimage.sh "${{ needs.preparations.outputs.version }}"
 
       # UPLOAD ARTIFACTS
       - uses: actions/upload-artifact@v4
@@ -99,8 +95,6 @@ jobs:
             media/*.dmg
             media/*.sh
             media/*.exe
-            appimage/ServerPackCreator-${{ needs.preparations.outputs.version }}-x86_64.AppImage
-            appimage/ServerPackCreator-${{ needs.preparations.outputs.version }}-x86_64.AppImage.zsync
             serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
             serverpackcreator-plugin-example/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}-Example-Plugin.jar
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
@@ -159,8 +153,6 @@ jobs:
             media/*.dmg
             media/*.sh
             media/*.exe
-            appimage/ServerPackCreator-${{ needs.preparations.outputs.version }}-x86_64.AppImage
-            appimage/ServerPackCreator-${{ needs.preparations.outputs.version }}-x86_64.AppImage.zsync
             serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
             serverpackcreator-plugin-example/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}-Example-Plugin.jar
 
@@ -190,8 +182,6 @@ jobs:
             media/*.dmg
             media/*.sh
             media/*.exe
-            appimage/ServerPackCreator-${{ needs.preparations.outputs.version }}-x86_64.AppImage
-            appimage/ServerPackCreator-${{ needs.preparations.outputs.version }}-x86_64.AppImage.zsync
             serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
             serverpackcreator-plugin-example/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}-Example-Plugin.jar
 

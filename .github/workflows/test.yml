@@ -34,7 +34,6 @@ jobs:
 
       - name: Set Permissions
         run: |
-          chmod +x create-appimage.sh
           chmod +x gradlew
 
       - name: Build with Gradle
@@ -42,10 +41,6 @@ jobs:
           ./gradlew -Pversion="${{ steps.branch-name.outputs.current_branch }}" generateLicenseReport --info --full-stacktrace
           ./gradlew -Pversion="${{ steps.branch-name.outputs.current_branch }}" build --info --full-stacktrace
           ./gradlew -Pversion="${{ steps.branch-name.outputs.current_branch }}" media --info --full-stacktrace
-
-      - name: Build AppImage
-        run: |
-          ./create-appimage.sh "${{ steps.branch-name.outputs.current_branch }}"
 
       - uses: actions/upload-artifact@v4
         if: ${{ always() }}
@@ -55,7 +50,6 @@ jobs:
             media
             build
             buildSrc/build
-            appimage/ServerPackCreator*.AppImage*
             serverpackcreator-api/build
             serverpackcreator-app/build
             serverpackcreator-web-frontend/dist
