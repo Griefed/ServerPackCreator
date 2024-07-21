@@ -1,3 +1,15 @@
+## [6.0.0-beta.20](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.19...6.0.0-beta.20) (2024-07-21)
+
+
+### 💎 Improvements
+
+* Use NeoForges ServerStartJar for Forge and NeoForge servers, MC 1.17 and up ([f7e6fef](https://git.griefed.de/Griefed/ServerPackCreator/commit/f7e6fef785afba34f288043723f99ef886f41663))
+
+
+### 📔 Docs
+
+* Changelogs ([99700c0](https://git.griefed.de/Griefed/ServerPackCreator/commit/99700c0bf2106d5d171a80fb1fe336cbe4d4d402))
+
 ## [6.0.0-beta.19](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.18...6.0.0-beta.19) (2024-07-21)
 
 
