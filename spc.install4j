@@ -1114,14 +1114,14 @@ return console.askYesNo(message, true);
     </styles>
   </installerGui>
   <mediaSets>
-    <windows name="Windows 64-bit" id="154" mediaFileName="ServerPackCreator-${compiler:sys.version}-Installer-Windows" installDir="ServerPackCreator" architecture="64">
+    <windows name="Windows 64-bit" id="154" mediaFileName="ServerPackCreator-${compiler:sys.version}-Installer-Windows-x86_64" installDir="ServerPackCreator" architecture="64">
       <jreBundle usePack200="false">
         <modules>
           <defaultModules set="all" />
         </modules>
       </jreBundle>
     </windows>
-    <unixInstaller name="Unix Installer" id="159" mediaFileName="ServerPackCreator-${compiler:sys.version}-Installer-Linux" installDir="serverpackcreator">
+    <unixInstaller name="Unix Installer" id="159" mediaFileName="ServerPackCreator-${compiler:sys.version}-Installer-Linux-amd64" installDir="serverpackcreator">
       <jreBundle usePack200="false">
         <modules>
           <defaultModules set="all" />
