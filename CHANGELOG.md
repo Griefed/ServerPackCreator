@@ -1,3 +1,15 @@
+## [6.0.0-beta.21](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.20...6.0.0-beta.21) (2024-07-21)
+
+
+### 👀 Reverts
+
+* Scrap AppImage distribution as it doesn't work reliably ([14f3996](https://git.griefed.de/Griefed/ServerPackCreator/commit/14f3996fc80ec2c440a4450eb720eb105d21bd94))
+
+
+### 📦 Other
+
+* Add architecture to Windows and Linux installer filenames ([724a8b8](https://git.griefed.de/Griefed/ServerPackCreator/commit/724a8b8677e051d1a2702a0025149d1a59ff02c4))
+
 ## [6.0.0-beta.20](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.19...6.0.0-beta.20) (2024-07-21)
 
 
