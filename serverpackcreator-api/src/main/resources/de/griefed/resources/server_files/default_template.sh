@@ -227,7 +227,7 @@ setup_forge() {
       echo "${JAVA_ARGS}"
     } >>user_jvm_args.txt
 
-    SERVER_RUN_COMMAND="@user_jvm_args.txt -jar server.jar --installer-force --installer ${FORGE_INSTALLER_URL} nogui"
+    SERVER_RUN_COMMAND="@user_jvm_args.txt -Djava.security.manager=allow -jar server.jar --installer-force --installer ${FORGE_INSTALLER_URL} nogui"
 
     rm -f server.jar
     downloadIfNotExist "server.jar" "server.jar" "https://github.com/neoforged/ServerStarterJar/releases/latest/download/server.jar"

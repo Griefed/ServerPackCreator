@@ -322,7 +322,7 @@ Function global:SetupForge
                 "${script:JavaArgs}"
         WriteFileUTF8NoBom "user_jvm_args.txt" $Content
 
-        $script:ServerRunCommand = "@user_jvm_args.txt -jar server.jar --installer-force --installer ${ForgeInstallerUrl} nogui"
+        $script:ServerRunCommand = "@user_jvm_args.txt -Djava.security.manager=allow -jar server.jar --installer-force --installer ${ForgeInstallerUrl} nogui"
 
         DeleteFileSilently  'server.jar'
         DownloadIfNotExists "server.jar" "server.jar" "https://github.com/neoforged/ServerStarterJar/releases/latest/download/server.jar"
