@@ -623,14 +623,6 @@ class ConfigurationHandler(
                 packConfig.scriptSettings["SPC_RECOMMENDED_JAVA_VERSION_SPC"] = "?"
             }
         }
-
-        val neoForgeInstance = versionMeta.neoForge.getNeoForgeInstance(packConfig.minecraftVersion, packConfig.modloaderVersion)
-        packConfig.scriptSettings["SPC_NEOFORGE_INSTALLER_URL_SPC"] = if (neoForgeInstance.isPresent) {
-            neoForgeInstance.get().installerUrl.toString()
-        } else {
-            "NONE"
-        }
-
         // Make sure default values are present
         for ((key,value) in PackConfig.defaultScriptSettings()) {
             if (!packConfig.scriptSettings.containsKey(key)) {

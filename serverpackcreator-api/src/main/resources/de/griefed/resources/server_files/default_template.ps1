@@ -102,7 +102,6 @@ $LegacyFabricInstallerVersion = $ExternalVariables['LEGACYFABRIC_INSTALLER_VERSI
 $FabricInstallerVersion = $ExternalVariables['FABRIC_INSTALLER_VERSION']
 $QuiltInstallerVersion = $ExternalVariables['QUILT_INSTALLER_VERSION']
 $MinecraftServerUrl = $ExternalVariables['MINECRAFT_SERVER_URL']
-$NeoForgeInstallerUrl = $ExternalVariables['NEOFORGE_INSTALLER_URL']
 $JavaArgs = $ExternalVariables['JAVA_ARGS']
 $Java = $ExternalVariables['JAVA']
 $WaitForUserInput = $ExternalVariables['WAIT_FOR_USER_INPUT']
@@ -349,7 +348,14 @@ Function global:SetupNeoForge
             "${script:JavaArgs}"
     WriteFileUTF8NoBom "user_jvm_args.txt" $Content
 
-    $script:ServerRunCommand = "@user_jvm_args.txt -jar server.jar --installer-force --installer ${ModLoaderVersion} nogui"
+    if ([int]$Semantics[1] -eq 20 -And ($Semantics.count -eq 2 -Or [int]$Semantics[2] -eq 1))
+    {
+        $script:ServerRunCommand = "@user_jvm_args.txt -jar server.jar --installer-force --installer https://maven.neoforged.net/releases/net/neoforged/forge/${MinecraftVersion}-${ModLoaderVersion}/forge-${MinecraftVersion}-${ModLoaderVersion}-installer.jar nogui"
+    }
+    else
+    {
+        $script:ServerRunCommand = "@user_jvm_args.txt -jar server.jar --installer-force --installer ${ModLoaderVersion} nogui"
+    }
 
     DeleteFileSilently  'server.jar'
     DownloadIfNotExists "server.jar" "server.jar" "https://github.com/neoforged/ServerStarterJar/releases/latest/download/server.jar"

@@ -253,7 +253,11 @@ setup_neoforge() {
     echo "${JAVA_ARGS}"
   } >>user_jvm_args.txt
 
-  SERVER_RUN_COMMAND="@user_jvm_args.txt -jar server.jar --installer-force --installer ${MODLOADER_VERSION} nogui"
+  if [[ ${SEMANTICS[1]} -eq 20 ]] && [[ ${#SEMANTICS[@]} -eq 2 || ${SEMANTICS[2]} -eq 1 ]]; then
+    SERVER_RUN_COMMAND="@user_jvm_args.txt -jar server.jar --installer-force --installer https://maven.neoforged.net/releases/net/neoforged/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}-installer.jar nogui"
+  else
+    SERVER_RUN_COMMAND="@user_jvm_args.txt -jar server.jar --installer-force --installer ${MODLOADER_VERSION} nogui"
+  fi
 
   rm -f server.jar
   downloadIfNotExist "server.jar" "server.jar" "https://github.com/neoforged/ServerStarterJar/releases/latest/download/server.jar"
@@ -439,7 +443,6 @@ echo "Modloader version:              ${MODLOADER_VERSION}"
 echo "LegacyFabric Installer Version: ${LEGACYFABRIC_INSTALLER_VERSION}"
 echo "Fabric Installer Version:       ${FABRIC_INSTALLER_VERSION}"
 echo "Quilt Installer Version:        ${QUILT_INSTALLER_VERSION}"
-echo "NeoForge Installer URL:         ${NEOFORGE_INSTALLER_URL}"
 echo "Minecraft Server URL:           ${MINECRAFT_SERVER_URL}"
 echo "Java Args:                      ${JAVA_ARGS}"
 echo "Additional Args:                ${ADDITIONAL_ARGS}"
