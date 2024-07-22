@@ -63,7 +63,7 @@ import kotlin.io.path.absolute
  *  * [copyProperties]
  *  * [ApiPlugins.runPreZipExtensions]
  *  * [zipBuilder]
- *  * [createStartScripts]
+ *  * [createServerRunFiles]
  *  * [ApiPlugins.runPostGenExtensions]
  *
  * If you want to execute extensions, see
@@ -371,7 +371,7 @@ class ServerPackHandler(
             * is present. This is because a ZIP-archive, if one is created, is supposed to be uploaded
             * to platforms like CurseForge. We must not have scripts with custom Java paths there.
             */
-            createStartScripts(packConfig, false)
+            createServerRunFiles(packConfig, false)
             serverPackZip = zipBuilder(packConfig)
         } else {
             log.info("Not creating zip archive of serverpack.")
@@ -382,7 +382,7 @@ class ServerPackHandler(
         * The difference to the previous call is that these scripts respect the SPC_JAVA_SPC
         * placeholder setting, if the user has set one
         */
-        createStartScripts(packConfig, true)
+        createServerRunFiles(packConfig, true)
 
         // Inform user about location of newly generated server pack.
         log.info("Server pack available at: ${serverPack.absolutePath}")
@@ -585,7 +585,7 @@ class ServerPackHandler(
 
     /**
      * Create start-scripts for the generated server pack using the templates the user has defined for
-     * their instance of ServerPackCreator in the property `de.griefed.serverpackcreator.serverpack.script.template`.
+     * their instance of ServerPackCreator.
      *
      * @param packConfig Configuration model containing modpack specific values. keys to be
      * replaced with their respective values in the start scripts, as well
@@ -596,8 +596,8 @@ class ServerPackHandler(
      * for a server pack about to be zipped.
      * @author Griefed
      */
-    fun createStartScripts(packConfig: PackConfig, isLocal: Boolean) =
-        createStartScripts(packConfig.scriptSettings, getServerPackDestination(packConfig), isLocal)
+    fun createServerRunFiles(packConfig: PackConfig, isLocal: Boolean) =
+        createServerRunFiles(packConfig.scriptSettings, getServerPackDestination(packConfig), isLocal)
 
     /**
      * Creates a ZIP-archive of the server pack previously generated. Depending on the property
@@ -863,7 +863,7 @@ class ServerPackHandler(
 
     /**
      * Create start-scripts for the generated server pack using the templates the user has defined for
-     * their instance of ServerPackCreator in the property `de.griefed.serverpackcreator.serverpack.script.template`.
+     * their instance of ServerPackCreator.
      *
      * @param scriptSettings Key-value pairs to replace in the script. A given key in the script is
      * replaced with its value.
@@ -873,7 +873,7 @@ class ServerPackHandler(
      * server pack about to be zipped.
      * @author Griefed
      */
-    fun createStartScripts(scriptSettings: HashMap<String, String>, destination: String, isLocal: Boolean) {
+    fun createServerRunFiles(scriptSettings: HashMap<String, String>, destination: String, isLocal: Boolean) {
         var script: File
         var content: String
         for ((key, value) in apiProperties.startScriptTemplates) {
@@ -1441,6 +1441,8 @@ class ServerPackHandler(
                 result.replace(key, value.escapePath())
             } else if (!isLocal && key == "SPC_JAVA_SPC") {
                 result.replace(key, "java")
+            } else if (!isLocal && key == "SPC_RESTART_SPC") {
+                result.replace(key, "true")
             } else {
                 result.replace(key, value)
             }

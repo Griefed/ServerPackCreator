@@ -571,7 +571,7 @@ open class PackConfig() {
             return hashMapOf(
                 Pair(javaKey,"java"),
                 Pair(spcWaitForUserInputKey,"true"),
-                Pair(spcRestartServerKey,"true"),
+                Pair(spcRestartServerKey,"false"),
                 Pair(spcSkipJavaCheckKey,"false"),
                 Pair(spcJDKVendorKey,"temurin"),
                 Pair(spcJabbaInstallURLShKey,"https://github.com/Jabba-Team/jabba/raw/main/install.sh"),
