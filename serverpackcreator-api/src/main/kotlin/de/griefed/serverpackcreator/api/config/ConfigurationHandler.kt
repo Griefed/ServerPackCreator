@@ -585,7 +585,6 @@ class ConfigurationHandler(
      *
      *  1. `SPC_SERVERPACKCREATOR_VERSION_SPC` : `ServerPackCreator version with which the scripts were created`
      *  1. `SPC_MINECRAFT_VERSION_SPC` : `Minecraft version of the modpack`
-     *  1. `SPC_MINECRAFT_SERVER_URL_SPC` : `Download-URL to the Minecraft server
     ` *
      *  1. `SPC_MODLOADER_SPC` : `The modloader of the modpack`
      *  1. `SPC_MODLOADER_VERSION_SPC` : `The modloader version of the modpack
@@ -613,10 +612,8 @@ class ConfigurationHandler(
         packConfig.scriptSettings["SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC"] = versionMeta.legacyFabric.releaseInstaller()
 
         if (server.isEmpty || server.get().url().isEmpty) {
-            packConfig.scriptSettings["SPC_MINECRAFT_SERVER_URL_SPC"] = ""
             packConfig.scriptSettings["SPC_RECOMMENDED_JAVA_VERSION_SPC"] = ""
         } else {
-            packConfig.scriptSettings["SPC_MINECRAFT_SERVER_URL_SPC"] = server.get().url().get().toString()
             if (server.get().javaVersion().isPresent) {
                 packConfig.scriptSettings["SPC_RECOMMENDED_JAVA_VERSION_SPC"] = server.get().javaVersion().get().toString()
             } else {

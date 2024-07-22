@@ -88,7 +88,6 @@ fi
 
 source "variables.txt"
 
-MINECRAFT_SERVER_JAR_LOCATION="do_not_manually_edit"
 LAUNCHER_JAR_LOCATION="do_not_manually_edit"
 SERVER_RUN_COMMAND="do_not_manually_edit"
 JAVA_VERSION="do_not_manually_edit"
@@ -189,7 +188,6 @@ setup_forge() {
   if [[ ${SEMANTICS[1]} -le 16 ]]; then
     FORGE_JAR_LOCATION="forge.jar"
     LAUNCHER_JAR_LOCATION="forge.jar"
-    MINECRAFT_SERVER_JAR_LOCATION="minecraft_server.${MINECRAFT_VERSION}.jar"
     SERVER_RUN_COMMAND="${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"
 
     if [[ $(downloadIfNotExist "${FORGE_JAR_LOCATION}" "forge-installer.jar" "${FORGE_INSTALLER_URL}") == "true" ]]; then
@@ -269,9 +267,18 @@ setup_fabric() {
 
   FABRIC_INSTALLER_URL="https://maven.fabricmc.net/net/fabricmc/fabric-installer/${FABRIC_INSTALLER_VERSION}/fabric-installer-${FABRIC_INSTALLER_VERSION}.jar"
   FABRIC_CHECK_URL="https://meta.fabricmc.net/v2/versions/loader/${MINECRAFT_VERSION}/${MODLOADER_VERSION}/server/json"
-  FABRIC_AVAILABLE="$(curl -LI ${FABRIC_CHECK_URL} -o /dev/null -w '%{http_code}\n' -s)"
   IMPROVED_FABRIC_LAUNCHER_URL="https://meta.fabricmc.net/v2/versions/loader/${MINECRAFT_VERSION}/${MODLOADER_VERSION}/${FABRIC_INSTALLER_VERSION}/server/jar"
-  IMPROVED_FABRIC_LAUNCHER_AVAILABLE="$(curl -LI ${IMPROVED_FABRIC_LAUNCHER_URL} -o /dev/null -w '%{http_code}\n' -s)"
+
+  if commandAvailable curl ; then
+    FABRIC_AVAILABLE="$(curl -LI ${FABRIC_CHECK_URL} -o /dev/null -w '%{http_code}\n' -s)"
+  elif commandAvailable wget ; then
+    FABRIC_AVAILABLE="$(wget --server-response ${FABRIC_CHECK_URL}  2>&1 | awk '/^  HTTP/{print $2}')"
+  fi
+  if commandAvailable curl ; then
+    IMPROVED_FABRIC_LAUNCHER_AVAILABLE="$(curl -LI ${IMPROVED_FABRIC_LAUNCHER_URL} -o /dev/null -w '%{http_code}\n' -s)"
+  elif commandAvailable wget ; then
+    IMPROVED_FABRIC_LAUNCHER_AVAILABLE="$(wget --server-response ${IMPROVED_FABRIC_LAUNCHER_URL}  2>&1 | awk '/^  HTTP/{print $2}')"
+  fi
 
   if [[ "$IMPROVED_FABRIC_LAUNCHER_AVAILABLE" == "200" ]]; then
     echo "Improved Fabric Server Launcher available..."
@@ -284,7 +291,6 @@ setup_fabric() {
 
     echo "Installer downloaded..."
     LAUNCHER_JAR_LOCATION="fabric-server-launch.jar"
-    MINECRAFT_SERVER_JAR_LOCATION="server.jar"
     runJavaCommand "-jar fabric-installer.jar server -mcversion ${MINECRAFT_VERSION} -loader ${MODLOADER_VERSION} -downloadMinecraft"
 
     if [[ -s "fabric-server-launch.jar" ]]; then
@@ -298,8 +304,7 @@ setup_fabric() {
 
   else
     echo "fabric-server-launch.jar present. Moving on..."
-    LAUNCHER_JAR_LOCATION="fabric-server-launcher.jar"
-    MINECRAFT_SERVER_JAR_LOCATION="server.jar"
+    LAUNCHER_JAR_LOCATION="fabric-server-launch.jar"
   fi
 
   SERVER_RUN_COMMAND="${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"
@@ -311,7 +316,11 @@ setup_quilt() {
 
   QUILT_INSTALLER_URL="https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/${QUILT_INSTALLER_VERSION}/quilt-installer-${QUILT_INSTALLER_VERSION}.jar"
   QUILT_CHECK_URL="https://meta.fabricmc.net/v2/versions/intermediary/${MINECRAFT_VERSION}"
-  QUILT_AVAILABLE="$(curl -LI ${QUILT_CHECK_URL} -o /dev/null -w '%{http_code}\n' -s)"
+  if commandAvailable curl ; then
+    QUILT_AVAILABLE="$(curl -LI ${QUILT_CHECK_URL} -o /dev/null -w '%{http_code}\n' -s)"
+  elif commandAvailable wget ; then
+    QUILT_AVAILABLE="$(wget --server-response ${QUILT_CHECK_URL}  2>&1 | awk '/^  HTTP/{print $2}')"
+  fi
 
   if [[ "${#QUILT_AVAILABLE}" -eq "2" ]]; then
     crashServer "Quilt is not available for Minecraft ${MINECRAFT_VERSION}, Quilt ${MODLOADER_VERSION}."
@@ -330,7 +339,6 @@ setup_quilt() {
   fi
 
   LAUNCHER_JAR_LOCATION="quilt-server-launch.jar"
-  MINECRAFT_SERVER_JAR_LOCATION="server.jar"
   SERVER_RUN_COMMAND="${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"
 }
 
@@ -340,7 +348,11 @@ setup_legacyfabric() {
 
   LEGACYFABRIC_INSTALLER_URL="https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/${LEGACYFABRIC_INSTALLER_VERSION}/fabric-installer-${LEGACYFABRIC_INSTALLER_VERSION}.jar"
   LEGACYFABRIC_CHECK_URL="https://meta.legacyfabric.net/v2/versions/loader/${MINECRAFT_VERSION}"
-  LEGACYFABRIC_AVAILABLE="$(curl -LI ${LEGACYFABRIC_CHECK_URL} -o /dev/null -w '%{http_code}\n' -s)"
+  if commandAvailable curl ; then
+    LEGACYFABRIC_AVAILABLE="$(curl -LI ${LEGACYFABRIC_CHECK_URL} -o /dev/null -w '%{http_code}\n' -s)"
+  elif commandAvailable wget ; then
+    IMPROVED_FABRIC_LAUNCHER_AVAILABLE="$(wget --server-response ${LEGACYFABRIC_CHECK_URL}  2>&1 | awk '/^  HTTP/{print $2}')"
+  fi
 
   if [[ "${#LEGACYFABRIC_AVAILABLE}" -eq "2" ]]; then
     crashServer "LegacyFabric is not available for Minecraft ${MINECRAFT_VERSION}, LegacyFabric ${MODLOADER_VERSION}."
@@ -359,17 +371,7 @@ setup_legacyfabric() {
   fi
 
   LAUNCHER_JAR_LOCATION="fabric-server-launch.jar"
-  MINECRAFT_SERVER_JAR_LOCATION="server.jar"
   SERVER_RUN_COMMAND="${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"
-}
-
-minecraft() {
-  echo ""
-  if [[ "${MODLOADER}" == "Fabric" && "$IMPROVED_FABRIC_LAUNCHER_AVAILABLE" == "200" ]]; then
-    echo "Skipping Minecraft Server JAR checks because we are using the improved Fabric Server Launcher."
-  elif [[ "${MINECRAFT_SERVER_JAR_LOCATION}" != "do_not_manually_edit" ]]; then
-    downloadIfNotExist "${MINECRAFT_SERVER_JAR_LOCATION}" "${MINECRAFT_SERVER_JAR_LOCATION}" "${MINECRAFT_SERVER_URL}" >/dev/null
-  fi
 }
 
 eula() {
@@ -432,7 +434,6 @@ case ${MODLOADER} in
 esac
 
 checkJavaBitness
-minecraft
 eula
 
 echo ""
@@ -443,7 +444,6 @@ echo "Modloader version:              ${MODLOADER_VERSION}"
 echo "LegacyFabric Installer Version: ${LEGACYFABRIC_INSTALLER_VERSION}"
 echo "Fabric Installer Version:       ${FABRIC_INSTALLER_VERSION}"
 echo "Quilt Installer Version:        ${QUILT_INSTALLER_VERSION}"
-echo "Minecraft Server URL:           ${MINECRAFT_SERVER_URL}"
 echo "Java Args:                      ${JAVA_ARGS}"
 echo "Additional Args:                ${ADDITIONAL_ARGS}"
 echo "Java Path:                      ${JAVA}"

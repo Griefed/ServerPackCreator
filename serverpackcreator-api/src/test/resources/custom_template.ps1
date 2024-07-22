@@ -24,7 +24,6 @@ $Java = "SPC_JAVA_SPC"
 $LegacyFabricInstallerVersion = "SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC"
 $FabricInstallerVersion = "SPC_FABRIC_INSTALLER_VERSION_SPC"
 $QuiltInstallerVersion = "SPC_QUILT_INSTALLER_VERSION_SPC"
-$MinecraftServerUrl = "SPC_MINECRAFT_SERVER_URL_SPC"
 
 # Variables with do_not_manually_edit are set automatically during script execution,
 # so manually editing them will have no effect, as they will be overridden.

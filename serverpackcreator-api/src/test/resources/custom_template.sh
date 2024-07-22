@@ -23,7 +23,6 @@ JAVA="SPC_JAVA_SPC"
 LEGACYFABRIC_INSTALLER_VERSION="SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC"
 FABRIC_INSTALLER_VERSION="SPC_FABRIC_INSTALLER_VERSION_SPC"
 QUILT_INSTALLER_VERSION="SPC_QUILT_INSTALLER_VERSION_SPC"
-MINECRAFT_SERVER_URL="SPC_MINECRAFT_SERVER_URL_SPC"
 
 # Variables with do_not_manually_edit are set automatically during script execution,
 # so manually editing them will have no effect, as they will be overridden.

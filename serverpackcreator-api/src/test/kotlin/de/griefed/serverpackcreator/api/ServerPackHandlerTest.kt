@@ -110,13 +110,6 @@ internal class ServerPackHandlerTest {
         Assertions.assertTrue(variables.contains("LEGACYFABRIC_INSTALLER_VERSION=${versionMeta.legacyFabric.releaseInstaller()}"))
         Assertions.assertTrue(variables.contains("FABRIC_INSTALLER_VERSION=${versionMeta.fabric.releaseInstaller()}"))
         Assertions.assertTrue(variables.contains("QUILT_INSTALLER_VERSION=${versionMeta.quilt.releaseInstaller()}"))
-        Assertions.assertTrue(
-            variables.contains(
-                "MINECRAFT_SERVER_URL=${
-                    versionMeta.minecraft.getServer(packConfig.minecraftVersion).get().url().get()
-                }"
-            )
-        )
         Assertions.assertTrue(variables.contains("JAVA_ARGS=${packConfig.javaArgs}"))
         Assertions.assertTrue(variables.contains("JAVA=\"C\\:\\\\Program Files\\\\Java\\\\jdk1.8.0_301\\\\bin\\\\java.exe\""))
 

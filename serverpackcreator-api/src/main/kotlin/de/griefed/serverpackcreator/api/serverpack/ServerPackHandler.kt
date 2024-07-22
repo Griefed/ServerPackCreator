@@ -119,17 +119,13 @@ class ServerPackHandler(
         #   - No 'java' command be available OR
         #   - The available Java version behind 'java' be incompatible with your Minecraft version.
         # JABBA_VERSION has no effect on the installation of Jabba when using PowerShell.
-        # MINECRAFT_VERSION should be edited manually. If you change this version, then MINECRAFT_SERVER_URL will no longer
-        #   point at the correct server JAR required to run your server. If you find that the Minecraft version is
-        #   incorrect, please contact the creator of this server pack. If you created this server pack yourself,
-        #   please regenerate it with the correct Minecraft version.
-        #   The same applies to MODLOADER_VERSION when you are using NeoForge.
+        # MINECRAFT_VERSION is tightly coupled with the modloader version. Be careful when changing this, as the new
+        #   new version you set may not be compatible with the modloader and modloader version combination.
+        # MODLOADER and MODLOADER_VERSION same thing as with MINECRAFT_VERSION. Changing any of these three values may
+        #   have unforseen consequences. Well, I say unforseen, it mostly causes the server to straight up not start,
+        #   because of incompatibilities. Be very careful when changing these!
         #
         # DO NOT EDIT THE FOLLOWING VARIABLES MANUALLY
-        #   - MINECRAFT_VERSION
-        #   - MINECRAFT_SERVER_URL
-        #   - MODLOADER
-        #   - MODLOADER_VERSION when using NeoForge.
         #   - FABRIC_INSTALLER_VERSION
         #   - QUILT_INSTALLER_VERSION
         #   - LEGACYFABRIC_INSTALLER_VERSION
@@ -144,7 +140,6 @@ class ServerPackHandler(
         LEGACYFABRIC_INSTALLER_VERSION=SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC
         FABRIC_INSTALLER_VERSION=SPC_FABRIC_INSTALLER_VERSION_SPC
         QUILT_INSTALLER_VERSION=SPC_QUILT_INSTALLER_VERSION_SPC
-        MINECRAFT_SERVER_URL=SPC_MINECRAFT_SERVER_URL_SPC
         RECOMMENDED_JAVA_VERSION=SPC_RECOMMENDED_JAVA_VERSION_SPC
         JAVA_ARGS="SPC_JAVA_ARGS_SPC"
         JAVA="SPC_JAVA_SPC"

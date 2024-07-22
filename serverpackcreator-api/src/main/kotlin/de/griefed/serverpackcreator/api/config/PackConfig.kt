@@ -151,8 +151,6 @@ private const val spcQuiltInstallerVersionKey = "SPC_QUILT_INSTALLER_VERSION_SPC
 
 private const val spcLegacyFabricInstallerVersionKey = "SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC"
 
-private const val spcMinecraftServerUrlKey = "SPC_MINECRAFT_SERVER_URL_SPC"
-
 private const val spcWaitForUserInputKey = "SPC_WAIT_FOR_USER_INPUT_SPC"
 
 private const val spcRestartServerKey = "SPC_RESTART_SPC"
@@ -178,7 +176,6 @@ private val scriptSettingsDefaultKeys = arrayOf(
     spcFabricInstallerVersionKey,
     spcQuiltInstallerVersionKey,
     spcLegacyFabricInstallerVersionKey,
-    spcMinecraftServerUrlKey,
     spcWaitForUserInputKey,
     spcRestartServerKey,
     spcSkipJavaCheckKey,

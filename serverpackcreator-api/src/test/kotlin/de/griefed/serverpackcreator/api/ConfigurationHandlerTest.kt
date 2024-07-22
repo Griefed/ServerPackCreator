@@ -342,9 +342,6 @@ internal class ConfigurationHandlerTest {
         Assertions.assertTrue(check.serverPropertiesChecksPassed)
         Assertions.assertTrue(check.modloaderVersionChecksPassed)
         Assertions.assertTrue(
-            packConfig.scriptSettings.containsKey("SPC_MINECRAFT_SERVER_URL_SPC")
-        )
-        Assertions.assertTrue(
             packConfig.scriptSettings.containsKey("SPC_SERVERPACKCREATOR_VERSION_SPC")
         )
         Assertions.assertTrue(
@@ -383,11 +380,6 @@ internal class ConfigurationHandlerTest {
             packConfig.scriptSettings["SPC_JAVA_ARGS_SPC"]
         )
         Assertions.assertEquals("java", packConfig.scriptSettings["SPC_JAVA_SPC"])
-        Assertions.assertEquals(
-            versionMeta.minecraft.getServer(packConfig.minecraftVersion).get().url()
-                .get().toString(),
-            packConfig.scriptSettings["SPC_MINECRAFT_SERVER_URL_SPC"]
-        )
         Assertions.assertEquals(
             apiProperties.apiVersion,
             packConfig.scriptSettings["SPC_SERVERPACKCREATOR_VERSION_SPC"]

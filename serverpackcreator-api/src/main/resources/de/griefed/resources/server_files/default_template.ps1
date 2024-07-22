@@ -101,7 +101,6 @@ $ModLoaderVersion = $ExternalVariables['MODLOADER_VERSION']
 $LegacyFabricInstallerVersion = $ExternalVariables['LEGACYFABRIC_INSTALLER_VERSION']
 $FabricInstallerVersion = $ExternalVariables['FABRIC_INSTALLER_VERSION']
 $QuiltInstallerVersion = $ExternalVariables['QUILT_INSTALLER_VERSION']
-$MinecraftServerUrl = $ExternalVariables['MINECRAFT_SERVER_URL']
 $JavaArgs = $ExternalVariables['JAVA_ARGS']
 $Java = $ExternalVariables['JAVA']
 $WaitForUserInput = $ExternalVariables['WAIT_FOR_USER_INPUT']
@@ -128,7 +127,6 @@ if ($JavaArgs[$JavaArgs.Length - 1] -eq '"')
     $JavaArgs = $JavaArgs.Substring(0, $JavaArgs.Length - 1)
 }
 
-$MinecraftServerJarLocation = "do_not_manually_edit"
 $LauncherJarLocation = "do_not_manually_edit"
 $ServerRunCommand = "do_not_manually_edit"
 $JavaVersion = "do_not_manually_edit"
@@ -280,7 +278,6 @@ Function global:SetupForge
     {
         $ForgeJarLocation = "forge.jar"
         $script:LauncherJarLocation = "forge.jar"
-        $script:MinecraftServerJarLocation = "minecraft_server.${MinecraftVersion}.jar"
         $script:ServerRunCommand = "${JavaArgs} -jar ${LauncherJarLocation} nogui"
 
         if ((DownloadIfNotExists "${ForgeJarLocation}" "forge-installer.jar" "${ForgeInstallerUrl}"))
@@ -397,7 +394,6 @@ Function global:SetupFabric
         {
             "Installer downloaded..."
             $script:LauncherJarLocation = "fabric-server-launch.jar"
-            $script:MinecraftServerJarLocation = "server.jar"
             RunJavaCommand "-jar fabric-installer.jar server -mcversion ${MinecraftVersion} -loader ${ModLoaderVersion} -downloadMinecraft"
             if ((Test-Path -Path 'fabric-server-launch.jar' -PathType Leaf))
             {
@@ -413,8 +409,8 @@ Function global:SetupFabric
         }
         else
         {
-            $script:LauncherJarLocation = "fabric-server-launcher.jar"
-            $script:MinecraftServerJarLocation = "server.jar"
+            "fabric-server-launch.jar present. Moving on..."
+            $script:LauncherJarLocation = "fabric-server-launch.jar"
         }
     }
     $script:ServerRunCommand = "${script:JavaArgs} -jar ${script:LauncherJarLocation} nogui"
@@ -445,7 +441,6 @@ Function global:SetupQuilt
         }
     }
     $script:LauncherJarLocation = "quilt-server-launch.jar"
-    $script:MinecraftServerJarLocation = "server.jar"
     $script:ServerRunCommand = "${JavaArgs} -jar ${LauncherJarLocation} nogui"
 }
 
@@ -474,20 +469,7 @@ Function global:SetupLegacyFabric
         }
     }
     $script:LauncherJarLocation = "fabric-server-launch.jar"
-    $script:MinecraftServerJarLocation = "server.jar"
     $script:ServerRunCommand = "${JavaArgs} -jar ${LauncherJarLocation} nogui"
-}
-
-Function global:Minecraft
-{
-    if (($ModLoader -eq "Fabric") -and (${ImprovedFabricLauncherAvailable} -eq "200"))
-    {
-        "Skipping Minecraft Server JAR checks because we are using the improved Fabric Server Launcher."
-    }
-    elseif (${MinecraftServerJarLocation} -ne "do_not_manually_edit")
-    {
-        (DownloadIfNotExists "${MinecraftServerJarLocation}" "${MinecraftServerJarLocation}" "${MinecraftServerUrl}") > $null
-    }
 }
 
 Function Eula
@@ -556,7 +538,6 @@ switch (${ModLoader})
 }
 
 CheckJavaBitness
-Minecraft
 Eula
 
 ""
@@ -567,8 +548,6 @@ Eula
 "LegacyFabric Installer Version: ${LegacyFabricInstallerVersion}"
 "Fabric Installer Version:       ${FabricInstallerVersion}"
 "Quilt Installer Version:        ${QuiltInstallerVersion}"
-"NeoForge Installer URL:         ${NeoForgeInstallerUrl}"
-"Minecraft Server URL:           ${MinecraftServerUrl}"
 "Java Args:                      ${JavaArgs}"
 "Additional Args:                ${AdditionalArgs}"
 "Java Path:                      ${Java}"
