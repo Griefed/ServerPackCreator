@@ -35,6 +35,23 @@
 # ATTENTION:
 #   This script will NOT modify the JAVA_HOME variable for your user.
 
+commandAvailable() {
+  command -v "$1" > /dev/null 2>&1
+}
+
+installJabba() {
+  echo "Downloading and installing jabba."
+  if commandAvailable curl ; then
+    curl -sL $JABBA_INSTALL_URL_SH | bash && . ~/.jabba/jabba.sh
+  elif commandAvailable wget ; then
+    wget -qO- $JABBA_INSTALL_URL_SH | bash && . ~/.jabba/jabba.sh
+  else
+    echo "[ERROR] wget or curl is required to install jabba."
+    exit 1
+  fi
+  [ -s "$JABBA_HOME/jabba.sh" ] && source "$JABBA_HOME/jabba.sh"
+}
+
 GBLIC_VERSION=$(ldd --version | awk '/ldd/{print $NF}')
 IFS="." read -ra GBLIC_SEMANTICS <<<"${GBLIC_VERSION}"
 
@@ -54,23 +71,6 @@ source "variables.txt"
 
 export JABBA_VERSION=${JABBA_INSTALL_VERSION}
 
-commandAvailable() {
-  command -v "$1" > /dev/null 2>&1
-}
-
-installJabba() {
-  echo "Downloading and installing jabba."
-  if commandAvailable curl ; then
-    curl -sL $JABBA_INSTALL_URL_SH | bash && . ~/.jabba/jabba.sh
-  elif commandAvailable wget ; then
-    wget -qO- $JABBA_INSTALL_URL_SH | bash && . ~/.jabba/jabba.sh
-  else
-    echo "[ERROR] wget or curl is required to install jabba."
-    exit 1
-  fi
-  [ -s "$JABBA_HOME/jabba.sh" ] && source "$JABBA_HOME/jabba.sh"
-}
-
 if [[ -s ~/.jabba/jabba.sh ]];then
   source ~/.jabba/jabba.sh
 elif ! commandAvailable jabba ; then
@@ -86,7 +86,6 @@ elif ! commandAvailable jabba ; then
     exit 1
   fi
 fi
-
 
 echo "Downloading and using Java ${JDK_VENDOR}@${RECOMMENDED_JAVA_VERSION}"
 jabba install ${JDK_VENDOR}@${RECOMMENDED_JAVA_VERSION}
