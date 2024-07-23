@@ -321,7 +321,7 @@ setupQuilt() {
   SERVER_RUN_COMMAND="${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"
 }
 
-# setupFabric
+# setupLegacyFabric
 # Download and install a LegacyFabric server for $MODLOADER_VERSION.
 # Checks are also performed to determine whether LegacyFabric is available for $MINECRAFT_VERSION.
 setupLegacyFabric() {
