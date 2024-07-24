@@ -52,5 +52,5 @@ jobs:
             ./media/*.dmg
             ./media/*.sh
             ./media/*.exe
-            ./serverpackcreator-app/build/libs/serverpackcreator-dev.jar
+            ./serverpackcreator-app/build/libs/serverpackcreator-app-dev.jar
             ./serverpackcreator-plugin-example/build/libs/serverpackcreator-plugin-example-dev.jar
