@@ -49,9 +49,8 @@ jobs:
           prerelease: true
           title: "Continuous Build"
           files: |
-            ./checksum.txt
             ./media/*.dmg
             ./media/*.sh
             ./media/*.exe
-            ./serverpackcreator-app/build/libs/ServerPackCreator-dev.jar
-            ./serverpackcreator-plugin-example/build/libs/ServerPackCreator-dev-Example-Plugin.jar
+            ./serverpackcreator-app/build/libs/serverpackcreator-dev.jar
+            ./serverpackcreator-plugin-example/build/libs/serverpackcreator-plugin-example-dev.jar
