@@ -41,6 +41,16 @@ jobs:
           ./gradlew build --info --full-stacktrace
           ./gradlew media --info --full-stacktrace
 
+      - name: Generate checksum
+        uses: jmgilman/actions-generate-checksum@v1
+        with:
+          patterns: |
+            media/*.dmg
+            media/*.sh
+            media/*.exe
+            serverpackcreator-app/build/libs/serverpackcreator-app-dev.jar
+            serverpackcreator-plugin-example/build/libs/serverpackcreator-plugin-example-dev.jar
+
       - name: Upload to GitHub Releases
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
@@ -49,6 +59,7 @@ jobs:
           prerelease: true
           title: "Continuous Build"
           files: |
+            ./checksum.txt
             ./media/*.dmg
             ./media/*.sh
             ./media/*.exe
