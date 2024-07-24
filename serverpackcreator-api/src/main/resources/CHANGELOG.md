@@ -1,3 +1,23 @@
+## [6.0.0-beta.22](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.21...6.0.0-beta.22) (2024-07-22)
+
+
+### 💎 Improvements
+
+* Allow ignoring of Forge installer exit via ServerStarterJar custom SecurityManager ([256bd6e](https://git.griefed.de/Griefed/ServerPackCreator/commit/256bd6e3db45196422a8186bda9d5ba043289682))
+
+
+### 📔 Docs
+
+* Changelogs ([aa88194](https://git.griefed.de/Griefed/ServerPackCreator/commit/aa8819498f5ad8e03f9e8fc7cf34cffbbcf5c596))
+* Changelogs ([497a234](https://git.griefed.de/Griefed/ServerPackCreator/commit/497a234a6ac0893753ca08faf364c48c4e21f8b4))
+
+
+### 🛠 Fixes
+
+* Remove MC and URL. Typo in Fabric-function. wget if curl is unavailable in bash. ([af69564](https://git.griefed.de/Griefed/ServerPackCreator/commit/af695647848d603ee26276b98007ed37a44932c2))
+* Set restart of server to true for ZIP, default for local to [secure] ([75bb7c1](https://git.griefed.de/Griefed/ServerPackCreator/commit/75bb7c1e070744b91689eeedbffbe60b13027109))
+* Use either modloader version or constructed URL for NeoForge installers depending on MC version ([c426640](https://git.griefed.de/Griefed/ServerPackCreator/commit/c426640decbd1544ccbaf5d87ae83cd21566e75f))
+
 ## [6.0.0-beta.21](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.20...6.0.0-beta.21) (2024-07-21)
 
 
