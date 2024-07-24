@@ -6,7 +6,7 @@ on:
 jobs:
   blog:
     runs-on: ubuntu-latest
-    name: Fetch and Generate Blog Posts
+    name: "Fetch and Generate Blog Posts"
     steps:
       - name: Checkout
         uses: actions/checkout@v4

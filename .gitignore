@@ -352,18 +352,16 @@ yarn.lock
 *.asc
 
 ### ServerPackCreator ###
-/configs
-/logs
-/modpacks
-/plugins
-/server-packs
-/server_files
-/work
+configs
+modpacks
+plugins
+server-packs
+server_files
+work
+licenses/*
+!licenses/.gitkeep
 
 # ServerPackCreator Web
-serverpackcreator-app/src/main/resources/static
-serverpackcreator-app/tests/*
-!serverpackcreator-app/tests/.gitkeep
 serverpackcreator-web-frontend/.quasar/
 serverpackcreator-web-frontend/dist/
 serverpackcreator-web-frontend/node_modules/
@@ -374,8 +372,8 @@ docker-compose-dev.yml
 # ServerPackCreator App
 serverpackcreator-app/tests/*
 !serverpackcreator-app/tests/.gitkeep
-serverpackcreator-app/src/main/resources/static
-!serverpackcreator-app/src/main/resources/static.gitkeep
+serverpackcreator-app/src/main/resources/static/*
+!serverpackcreator-app/src/main/resources/static/.gitkeep
 
 # ServerPackCreator API
 serverpackcreator-api/main/resources/VERSION.txt
