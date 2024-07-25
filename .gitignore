@@ -376,6 +376,13 @@ serverpackcreator-app/src/main/resources/static/*
 !serverpackcreator-app/src/main/resources/static/.gitkeep
 
 # ServerPackCreator API
+serverpackcreator-api/src/main/resources/CHANGELOG.md
+serverpackcreator-api/src/main/resources/CODE_OF_CONDUCT.md
+serverpackcreator-api/src/main/resources/CONTRIBUTING.md
+serverpackcreator-api/src/main/resources/HELP.md
+serverpackcreator-api/src/main/resources/LICENSE
+serverpackcreator-api/src/main/resources/README.md
+serverpackcreator-api/src/main/resources/SECURITY.md
 serverpackcreator-api/main/resources/VERSION.txt
 serverpackcreator-api/tests/*
 !serverpackcreator-api/tests/.gitkeep
@@ -387,5 +394,15 @@ serverpackcreator-api/src/test/resources/fabric_tests_server_pack.zip
 serverpackcreator-api/src/test/resources/forge_tests_server_pack.zip
 serverpackcreator-api/src/test/resources/quilt_tests_server_pack.zip
 
+# ServerPackCreator Writerside
+serverpackcreator-help/Writerside/topics/CHANGELOG.md
+serverpackcreator-help/Writerside/topics/CODE_OF_CONDUCT.md
+serverpackcreator-help/Writerside/topics/CONTRIBUTING.md
+serverpackcreator-help/Writerside/topics/HELP.md
+serverpackcreator-help/Writerside/topics/LICENSE.md
+serverpackcreator-help/Writerside/topics/README.md
+serverpackcreator-help/Writerside/topics/SECURITY.md
+
+# ServerPackCreator
 media
 appimage

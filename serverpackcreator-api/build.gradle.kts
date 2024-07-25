@@ -70,6 +70,10 @@ tasks.processResources {
         from(rootProject.layout.projectDirectory.file("README.md"))
         into(layout.projectDirectory.dir("src/main/resources"))
     }
+    copy {
+        from(rootProject.layout.projectDirectory.file("SECURITY.md"))
+        into(layout.projectDirectory.dir("src/main/resources"))
+    }
 
     // Writerside
     copy {
@@ -91,9 +95,14 @@ tasks.processResources {
     copy {
         from(rootProject.layout.projectDirectory.file("LICENSE"))
         into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
+        rename("LICENSE","LICENSE.md")
     }
     copy {
         from(rootProject.layout.projectDirectory.file("README.md"))
+        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
+    }
+    copy {
+        from(rootProject.layout.projectDirectory.file("SECURITY.md"))
         into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
     }
     copy {
