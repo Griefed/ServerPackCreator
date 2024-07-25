@@ -109,7 +109,6 @@ licenseReport {
 val appPlugins = File("serverpackcreator-app/tests/plugins")
 val apiPlugins = File("serverpackcreator-api/src/test/resources/testresources/plugins")
 val kotlinPlugin = project.childProjects["serverpackcreator-plugin-example"]?.tasks?.jar?.get()?.archiveFile?.get()?.asFile?.toPath()
-val licenseReports = File("licenses")
 tasks.register<Delete>("cleanAppPlugins") {
     delete(
         fileTree(appPlugins) {
@@ -143,7 +142,6 @@ tasks.register<Copy>("copyPluginsApiUnitTests") {
 }
 
 tasks.register<Delete>("cleanLicenseReport") {
-    delete(licenseReports)
     delete(projectDir.resolve("serverpackcreator-app/src/main/resources/de/griefed/resources/gui/LICENSE-AGREEMENT"))
 }
 
