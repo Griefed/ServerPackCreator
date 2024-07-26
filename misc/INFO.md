@@ -1,6 +1,9 @@
 
 ---
 
+If you are updating from version 5 or older and used the installers, then make sure to uninstall any previous version(s)
+before using the installers for versions 6 and newer.
+
 ### Additional Installer-Notes
 
 It is recommended to have administration-privileges when using the Windows and macOS installers.
