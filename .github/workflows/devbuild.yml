@@ -57,7 +57,7 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "continuous"
           prerelease: true
-          title: "Development Build"
+          title: "Development Build ${{ github.sha }}"
           files: |
             ./checksum.txt
             ./media/*.dmg
