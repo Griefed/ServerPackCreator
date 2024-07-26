@@ -48,7 +48,7 @@
             </div>
         </div>
         <div class="filter-section" id="filter-section">
-                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button>
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":serverpackcreator-api:dokkaHtml/main">jvm</button>
         </div>
     </div>
     <div class="navigation-controls">
@@ -61,168 +61,148 @@
                 <div class="sidebar--inner" id="sideMenu"></div>
             </div>
             <div id="main">
-<div class="main-content" data-page-type="package" id="content" pageIds="serverpackcreator-api::mslinks////PointingToDeclaration//655084441">
+<div class="main-content" data-page-type="package" id="content" pageIds="serverpackcreator-api::mslinks////PointingToDeclaration//146430706">
   <div class="breadcrumbs"><a href="../../index.html">serverpackcreator-api</a><span class="delimiter">/</span><span class="current">mslinks</span></div>
   <div class="cover ">
     <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
-    <div class="platform-hinted UnderCoverText with-platform-tabs" data-platform-hinted="data-platform-hinted">
-      <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><p class="paragraph">Retrieved from <a href="https://github.com/DmitriiShamrikov/mslinks">DmitriiShamrikov/mslinks</a> and altered for use in ServerPackCreator</p><p class="paragraph">Licensed under <a href="https://github.com/DmitriiShamrikov/mslinks/blob/master/LICENSE">WTFPL</a>, more at <a href="http://www.wtfpl.net/about/">wtfpl.net</a></p><p class="paragraph">Library for parsing and creating Windows shortcut files (.lnk)</p><p class="paragraph">This is an implementation of <a href="http://msdn.microsoft.com/en-us/library/dd871305.aspx">Shell Link (.LNK) Binary File Format</a> plus some reverse engineering. The library doesn't depend on any Windows-specific API, so it can be used in any environment.</p><p class="paragraph">This library allows opening existing .lnk files as well as creating new ones from scrath. You can set up many properties of the link such as working directory, command line arguments, icon, console text color, etc. The supported targets include:</p><ul><li><p class="paragraph">Files and directories on local filesystem with a drive letter as a root (absolute paths like <code class="lang-kotlin">C:\path\to\target</code>)</p></li><li><p class="paragraph">Files and directories in Samba shares (network paths like <code class="lang-kotlin">\\host\share\path\to\target</code>)</p></li><li><p class="paragraph">Files and directories in special Windows folders, such as Desktop, Documents, Downloads, etc. See available <a href="https://github.com/DmitriiShamrikov/mslinks/wiki/GUIDs-table">GUIDs</a></p></li></ul><p class="paragraph">What is not supported (yet):</p><ul><li><p class="paragraph">Environment variables. They can be used in target path, but they are substituted at creation time, meaning the variables are taken from your (caller) environment, not the user's one</p></li><li><p class="paragraph">Non-filesystem targets like Control Panel, Printers, etc</p></li></ul><p class="paragraph">The composition of classes reflect the data layout described in the format <a href="http://msdn.microsoft.com/en-us/library/dd871305.aspx">specification</a>, so it's recommended to take a look there if you are looking for something specific or want a detailed explanation of flags and constants. Otherwise, you can use <code class="lang-kotlin">ShellLinkHelper</code> class that provides methods for some general tasks.</p></div>    </div>
+    <div class="platform-hinted UnderCoverText" data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><p class="paragraph">Retrieved from <a href="https://github.com/DmitriiShamrikov/mslinks">DmitriiShamrikov/mslinks</a> and altered for use in ServerPackCreator</p><p class="paragraph">Licensed under <a href="https://github.com/DmitriiShamrikov/mslinks/blob/master/LICENSE">WTFPL</a>, more at <a href="http://www.wtfpl.net/about/">wtfpl.net</a></p><p class="paragraph">Library for parsing and creating Windows shortcut files (.lnk)</p><p class="paragraph">This is an implementation of <a href="http://msdn.microsoft.com/en-us/library/dd871305.aspx">Shell Link (.LNK) Binary File Format</a> plus some reverse engineering. The library doesn't depend on any Windows-specific API, so it can be used in any environment.</p><p class="paragraph">This library allows opening existing .lnk files as well as creating new ones from scrath. You can set up many properties of the link such as working directory, command line arguments, icon, console text color, etc. The supported targets include:</p><ul><li><p class="paragraph">Files and directories on local filesystem with a drive letter as a root (absolute paths like <code class="lang-kotlin">C:\path\to\target</code>)</p></li><li><p class="paragraph">Files and directories in Samba shares (network paths like <code class="lang-kotlin">\\host\share\path\to\target</code>)</p></li><li><p class="paragraph">Files and directories in special Windows folders, such as Desktop, Documents, Downloads, etc. See available <a href="https://github.com/DmitriiShamrikov/mslinks/wiki/GUIDs-table">GUIDs</a></p></li></ul><p class="paragraph">What is not supported (yet):</p><ul><li><p class="paragraph">Environment variables. They can be used in target path, but they are substituted at creation time, meaning the variables are taken from your (caller) environment, not the user's one</p></li><li><p class="paragraph">Non-filesystem targets like Control Panel, Printers, etc</p></li></ul><p class="paragraph">The composition of classes reflect the data layout described in the format <a href="http://msdn.microsoft.com/en-us/library/dd871305.aspx">specification</a>, so it's recommended to take a look there if you are looking for something specific or want a detailed explanation of flags and constants. Otherwise, you can use <code class="lang-kotlin">ShellLinkHelper</code> class that provides methods for some general tasks.</p></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button></div>
     <div class="tabs-section-body">
       <div data-togglable="TYPE">
         <h2 class="">Types</h2>
-        <div class="table"><a data-name="-1044393459%2FClasslikes%2F655084441" anchor-label="LinkInfo" id="-1044393459%2FClasslikes%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+        <div class="table"><a data-name="-1044393459%2FClasslikes%2F146430706" anchor-label="LinkInfo" id="-1044393459%2FClasslikes%2F146430706" data-filterable-set=":serverpackcreator-api:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-link-info/index.html"><span>Link</span><wbr></wbr><span><span>Info</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1044393459%2FClasslikes%2F655084441"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1044393459%2FClasslikes%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-link-info/index.html">LinkInfo</a> : <a href="-serializable/index.html">Serializable</a></div></div>                  </div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-link-info/index.html">LinkInfo</a> : <a href="-serializable/index.html">Serializable</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1654662929%2FClasslikes%2F655084441" anchor-label="LinkTargetIDList" id="1654662929%2FClasslikes%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+<a data-name="1654662929%2FClasslikes%2F146430706" anchor-label="LinkTargetIDList" id="1654662929%2FClasslikes%2F146430706" data-filterable-set=":serverpackcreator-api:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-link-target-i-d-list/index.html"><span>Link</span><wbr></wbr><span>Target</span><wbr></wbr><span><span>IDList</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1654662929%2FClasslikes%2F655084441"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1654662929%2FClasslikes%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-link-target-i-d-list/index.html">LinkTargetIDList</a> : <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/LinkedList.html">LinkedList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../mslinks.data/-item-i-d/index.html">ItemID</a><span class="token operator">?</span><span class="token operator">&gt; </span>, <a href="-serializable/index.html">Serializable</a></div></div>                  </div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-link-target-i-d-list/index.html">LinkTargetIDList</a> : <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/LinkedList.html">LinkedList</a><span class="token operator">&lt;</span><a href="../mslinks.data/-item-i-d/index.html">ItemID</a><span class="token operator">?</span><span class="token operator">&gt; </span>, <a href="-serializable/index.html">Serializable</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1016987318%2FClasslikes%2F655084441" anchor-label="Serializable" id="1016987318%2FClasslikes%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+<a data-name="1016987318%2FClasslikes%2F146430706" anchor-label="Serializable" id="1016987318%2FClasslikes%2F146430706" data-filterable-set=":serverpackcreator-api:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-serializable/index.html"><span><span>Serializable</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1016987318%2FClasslikes%2F655084441"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1016987318%2FClasslikes%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-serializable/index.html">Serializable</a></div></div>                  </div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-serializable/index.html">Serializable</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="267936003%2FClasslikes%2F655084441" anchor-label="ShellLink" id="267936003%2FClasslikes%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+<a data-name="267936003%2FClasslikes%2F146430706" anchor-label="ShellLink" id="267936003%2FClasslikes%2F146430706" data-filterable-set=":serverpackcreator-api:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-shell-link/index.html"><span>Shell</span><wbr></wbr><span><span>Link</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="267936003%2FClasslikes%2F655084441"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="267936003%2FClasslikes%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-shell-link/index.html">ShellLink</a></div></div>                  </div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-shell-link/index.html">ShellLink</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1450748496%2FClasslikes%2F655084441" anchor-label="ShellLinkException" id="1450748496%2FClasslikes%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+<a data-name="1450748496%2FClasslikes%2F146430706" anchor-label="ShellLinkException" id="1450748496%2FClasslikes%2F146430706" data-filterable-set=":serverpackcreator-api:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-shell-link-exception/index.html"><span>Shell</span><wbr></wbr><span>Link</span><wbr></wbr><span><span>Exception</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1450748496%2FClasslikes%2F655084441"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1450748496%2FClasslikes%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-shell-link-exception/index.html">ShellLinkException</a> : <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Exception.html">Exception</a></div></div>                  </div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-shell-link-exception/index.html">ShellLinkException</a> : <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Exception.html">Exception</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="2129434998%2FClasslikes%2F655084441" anchor-label="ShellLinkHeader" id="2129434998%2FClasslikes%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+<a data-name="2129434998%2FClasslikes%2F146430706" anchor-label="ShellLinkHeader" id="2129434998%2FClasslikes%2F146430706" data-filterable-set=":serverpackcreator-api:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-shell-link-header/index.html"><span>Shell</span><wbr></wbr><span>Link</span><wbr></wbr><span><span>Header</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2129434998%2FClasslikes%2F655084441"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2129434998%2FClasslikes%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-shell-link-header/index.html">ShellLinkHeader</a> : <a href="-serializable/index.html">Serializable</a></div></div>                  </div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-shell-link-header/index.html">ShellLinkHeader</a> : <a href="-serializable/index.html">Serializable</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1893219467%2FClasslikes%2F655084441" anchor-label="ShellLinkHelper" id="-1893219467%2FClasslikes%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+<a data-name="-1893219467%2FClasslikes%2F146430706" anchor-label="ShellLinkHelper" id="-1893219467%2FClasslikes%2F146430706" data-filterable-set=":serverpackcreator-api:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-shell-link-helper/index.html"><span>Shell</span><wbr></wbr><span>Link</span><wbr></wbr><span><span>Helper</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1893219467%2FClasslikes%2F655084441"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1893219467%2FClasslikes%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-shell-link-helper/index.html">ShellLinkHelper</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">var </span>link<span class="token operator">: </span><a href="-shell-link/index.html">ShellLink</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Helper class to manipulate ShellLink properties in batches for common tasks ShellLink can be used directly without helper for more detailed set up</p></div></div>                  </div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-shell-link-helper/index.html">ShellLinkHelper</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">var </span>link<span class="token operator">: </span><a href="-shell-link/index.html">ShellLink</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Helper class to manipulate ShellLink properties in batches for common tasks ShellLink can be used directly without helper for more detailed set up</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-463313586%2FClasslikes%2F655084441" anchor-label="UnsupportedCLSIDException" id="-463313586%2FClasslikes%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+<a data-name="-463313586%2FClasslikes%2F146430706" anchor-label="UnsupportedCLSIDException" id="-463313586%2FClasslikes%2F146430706" data-filterable-set=":serverpackcreator-api:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-unsupported-c-l-s-i-d-exception/index.html"><span>Unsupported</span><wbr></wbr><span><span>CLSIDException</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-463313586%2FClasslikes%2F655084441"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-463313586%2FClasslikes%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-unsupported-c-l-s-i-d-exception/index.html">UnsupportedCLSIDException</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clsid<span class="token operator">: </span><a href="../mslinks.data/-g-u-i-d/index.html">GUID</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span> : <a href="-shell-link-exception/index.html">ShellLinkException</a></div></div>                  </div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-unsupported-c-l-s-i-d-exception/index.html">UnsupportedCLSIDException</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clsid<span class="token operator">: </span><a href="../mslinks.data/-g-u-i-d/index.html">GUID</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span> : <a href="-shell-link-exception/index.html">ShellLinkException</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="228625353%2FClasslikes%2F655084441" anchor-label="UnsupportedItemIDException" id="228625353%2FClasslikes%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+<a data-name="228625353%2FClasslikes%2F146430706" anchor-label="UnsupportedItemIDException" id="228625353%2FClasslikes%2F146430706" data-filterable-set=":serverpackcreator-api:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-unsupported-item-i-d-exception/index.html"><span>Unsupported</span><wbr></wbr><span>Item</span><wbr></wbr><span><span>IDException</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="228625353%2FClasslikes%2F655084441"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="228625353%2FClasslikes%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-unsupported-item-i-d-exception/index.html">UnsupportedItemIDException</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">typeFlags<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span> : <a href="-shell-link-exception/index.html">ShellLinkException</a></div></div>                  </div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-unsupported-item-i-d-exception/index.html">UnsupportedItemIDException</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">typeFlags<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span> : <a href="-shell-link-exception/index.html">ShellLinkException</a></div></div></div>
                 </div>
               </div>
             </div>
