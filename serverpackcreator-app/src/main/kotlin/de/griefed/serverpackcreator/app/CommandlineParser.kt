@@ -20,8 +20,12 @@
 package de.griefed.serverpackcreator.app
 
 import de.comahe.i18n4k.Locale
+import de.griefed.serverpackcreator.api.utilities.common.JarInformation
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.GraphicsEnvironment
 import java.io.File
+import java.util.*
+import java.util.prefs.Preferences
 
 /**
  * The Commandline Parser checks the passed commandline arguments to determine the mode to run in.
@@ -40,10 +44,17 @@ import java.io.File
  *
  * @author Griefed
  */
-open class CommandlineParser(args: Array<String>) {
+open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     var mode: Mode = Mode.GUI
     var language: Locale? = null
-    var propertiesFile: File = File("serverpackcreator.properties")
+    var propertiesFile: File = if (File(appInfo.jarFolder, "overrides.properties").isFile) {
+        File(appInfo.jarFolder, "overrides.properties")
+    } else {
+        File(appInfo.jarFolder, "serverpackcreator.properties")
+    }
+
+    var homeDir: Optional<File> = Optional.empty()
 
     init {
         val argsList = args.toList()
@@ -59,6 +70,22 @@ open class CommandlineParser(args: Array<String>) {
             Locale(argsList[argsList.indexOf(Mode.LANG.argument()) + 1])
         } else {
             null
+        }
+
+        /*
+        * Check whether the user wants to set the home-directory
+        */
+        if (argsList.any { entry -> entry.contains(Mode.HOME.argument()) }) {
+            val setupPos = argsList.indexOf(Mode.HOME.argument()) + 1
+            val setupArg = argsList[setupPos]
+            val setupFile = File(setupArg).absoluteFile
+            if (argsList.size > 1 && setupFile.isDirectory) {
+                homeDir = Optional.of(setupFile)
+            }
+            if (homeDir.isPresent) {
+                Preferences.userRoot().node("ServerPackCreator").put("de.griefed.serverpackcreator.home",homeDir.get().absolutePath)
+                log.info("Home-directory overwritten: ${homeDir.get().absolutePath}")
+            }
         }
 
         run {

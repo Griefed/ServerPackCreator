@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="WebService" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+    <module name="serverpackcreator.serverpackcreator-app.main" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="de.griefed.serverpackcreator.app.web.WebService" />
+    <option name="WORKING_DIRECTORY" value="file://$ProjectFileDir$/serverpackcreator-app/tests" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

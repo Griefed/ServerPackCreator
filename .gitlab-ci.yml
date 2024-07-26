@@ -10,8 +10,6 @@ variables:
   SEMANTIC_RELEASE_PACKAGE: "$CI_PROJECT_NAME"
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
-  CACHE_FALLBACK_KEY: "cache-fallback-$CI_PROJECT_ID"
-  CACHE_KEY: "cache-$CI_COMMIT_REF_SLUG"
 
 services:
   - name: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.9
@@ -39,6 +37,18 @@ Build Test:
   script:
     - echo "**** Building ServerPackCreator ****"
     - "./gradlew build --info --full-stacktrace"
+    - "./gradlew cyclonedxBom --info --full-stacktrace"
+    - echo "**** Uploading BOM ****"
+    - |
+      curl -X "POST" "$DEPENDENCYTRACK_URL" \
+        -H 'Content-Type: multipart/form-data' \
+        -H "X-Api-Key: $DEPENDENCYTRACK_TOKEN" \
+        -F "autoCreate=true" \
+        -F "projectName=ServerPackCreator" \
+        -F "projectVersion=$CI_COMMIT_BRANCH" \
+        -F "parentName=ServerPackCreator" \
+        -F "parentVersion=branches" \
+        -F "bom=@build/reports/bom.xml"
   retry: 1
   rules:
     - if: '$CI_SERVER_HOST == "git.griefed.de"'
@@ -54,35 +64,13 @@ Build Test:
     expose_as: "Gradle-Test-Artifacts"
     paths:
       - serverpackcreator-api/build
-      - serverpackcreator-gui/build
-      - serverpackcreator-cli/build
-      - serverpackcreator-web/build
       - serverpackcreator-app/build
-      - serverpackcreator-updater/build
       - serverpackcreator-web-frontend/dist
       - serverpackcreator-plugin-example/build
     expire_in: 1 week
     reports:
       junit:
-        - serverpackcreator-api/build/test-results/jvmTest/TEST-*.xml
-  cache:
-    - key: $CACHE_KEY
-      policy: $POLICY
-      paths:
-        - buildSrc/.gradle
-        - buildSrc/build
-        - .gradle
-        - serverpackcreator-api/build
-        - serverpackcreator-gui/build
-        - serverpackcreator-cli/build
-        - serverpackcreator-web/build
-        - serverpackcreator-app/build
-        - serverpackcreator-updater/build
-        - serverpackcreator-plugin-example/build
-        - serverpackcreator-web-frontend/.quasar
-        - serverpackcreator-web-frontend/node_modules
-        - serverpackcreator-web-frontend/node
-        - serverpackcreator-web-frontend/dist
+        - serverpackcreator-api/build/test-results/test/TEST-*.xml
 
 Docker Test:
   stage: Tests
@@ -135,7 +123,8 @@ Build Release:
   script:
     - echo "**** Building ServerPackCreator ****"
     - "./gradlew generateLicenseReport -Pversion=${CI_COMMIT_TAG} --info --full-stacktrace"
-    - "./gradlew build -Pversion=${CI_COMMIT_TAG} --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test"
+    - "./gradlew build -Pversion=${CI_COMMIT_TAG} --info --full-stacktrace -x :serverpackcreator-api:test -x :serverpackcreator-app:test"
+    - "./gradlew cyclonedxBom -Pversion=${CI_COMMIT_TAG} --info --full-stacktrace"
     - echo "**** Listing build directory ****"
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto */build
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto */build/*
@@ -143,27 +132,28 @@ Build Release:
     - 'curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file serverpackcreator-app/build/libs/serverpackcreator-app-${CI_COMMIT_TAG}.jar "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar"'
     - echo "**** Create asset links ****"
     - 'curl --request POST --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" --data tag_name="${CI_COMMIT_TAG}" --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar" --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar" --data link_type="package" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
+    - echo "**** Uploading BOM ****"
+    - |
+      curl -X "POST" "$DEPENDENCYTRACK_URL" \
+        -H 'Content-Type: multipart/form-data' \
+        -H "X-Api-Key: $DEPENDENCYTRACK_TOKEN" \
+        -F "autoCreate=true" \
+        -F "projectName=ServerPackCreator" \
+        -F "projectVersion=${CI_COMMIT_TAG%%.*}" \
+        -F "bom=@build/reports/bom.xml"
+    - |
+      curl -X "POST" "$DEPENDENCYTRACK_URL" \
+        -H 'Content-Type: multipart/form-data' \
+        -H "X-Api-Key: $DEPENDENCYTRACK_TOKEN" \
+        -F "autoCreate=true" \
+        -F "projectName=ServerPackCreator" \
+        -F "projectVersion=${CI_COMMIT_TAG}" \
+        -F "parentName=ServerPackCreator" \
+        -F "parentVersion=${CI_COMMIT_TAG%%.*}" \
+        -F "bom=@build/reports/bom.xml"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-  cache:
-    - key: $CACHE_KEY
-      policy: pull
-      paths:
-        - buildSrc/.gradle
-        - buildSrc/build
-        - .gradle
-        - serverpackcreator-api/build
-        - serverpackcreator-gui/build
-        - serverpackcreator-cli/build
-        - serverpackcreator-web/build
-        - serverpackcreator-app/build
-        - serverpackcreator-updater/build
-        - serverpackcreator-plugin-example/build
-        - serverpackcreator-web-frontend/.quasar
-        - serverpackcreator-web-frontend/node_modules
-        - serverpackcreator-web-frontend/node
-        - serverpackcreator-web-frontend/dist
 
 Sign Java Publication:
   stage: Build Release
@@ -180,28 +170,10 @@ Sign Java Publication:
     - chmod +x gradlew
   script:
     - echo "**** Publishing Maven Artifacts ****"
-    - "./gradlew dokkaJavadocJar signJvmPublication -Pversion=${CI_COMMIT_TAG} --info --stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test"
+    - "./gradlew dokkaJavadocJar :serverpackcreator-api:signMavenJavaPublication -Pversion=${CI_COMMIT_TAG} --info --stacktrace -x :serverpackcreator-api:test -x :serverpackcreator-app:test"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-  cache:
-    - key: $CACHE_KEY
-      policy: pull
-      paths:
-        - buildSrc/.gradle
-        - buildSrc/build
-        - .gradle
-        - serverpackcreator-api/build
-        - serverpackcreator-gui/build
-        - serverpackcreator-cli/build
-        - serverpackcreator-web/build
-        - serverpackcreator-app/build
-        - serverpackcreator-updater/build
-        - serverpackcreator-plugin-example/build
-        - serverpackcreator-web-frontend/.quasar
-        - serverpackcreator-web-frontend/node_modules
-        - serverpackcreator-web-frontend/node
-        - serverpackcreator-web-frontend/dist
 
 Publish GitHub:
   stage: Build Release
@@ -212,28 +184,10 @@ Publish GitHub:
       artifacts: true
   script:
     - echo "**** Publishing Maven Artifacts to GitHub ****"
-    - "./gradlew publishAllPublicationsToGitHubPackagesRepository -Pversion=${CI_COMMIT_TAG} --info --stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test"
+    - "./gradlew :serverpackcreator-api:publishMavenJavaPublicationToGitHubPackagesRepository -Pversion=${CI_COMMIT_TAG} --info --stacktrace -x :serverpackcreator-api:test -x :serverpackcreator-app:test"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-  cache:
-    - key: $CACHE_KEY
-      policy: pull
-      paths:
-        - buildSrc/.gradle
-        - buildSrc/build
-        - .gradle
-        - serverpackcreator-api/build
-        - serverpackcreator-gui/build
-        - serverpackcreator-cli/build
-        - serverpackcreator-web/build
-        - serverpackcreator-app/build
-        - serverpackcreator-updater/build
-        - serverpackcreator-plugin-example/build
-        - serverpackcreator-web-frontend/.quasar
-        - serverpackcreator-web-frontend/node_modules
-        - serverpackcreator-web-frontend/node
-        - serverpackcreator-web-frontend/dist
 
 Publish GitLab:
   stage: Build Release
@@ -244,28 +198,10 @@ Publish GitLab:
       artifacts: true
   script:
     - echo "**** Publishing Maven Artifacts to GitLab ****"
-    - "./gradlew publishAllPublicationsToGitLabRepository -Pversion=${CI_COMMIT_TAG} --info --stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test"
+    - "./gradlew :serverpackcreator-api:publishMavenJavaPublicationToGitLabRepository -Pversion=${CI_COMMIT_TAG} --info --stacktrace -x :serverpackcreator-api:test -x :serverpackcreator-app:test"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-  cache:
-    - key: $CACHE_KEY
-      policy: pull
-      paths:
-        - buildSrc/.gradle
-        - buildSrc/build
-        - .gradle
-        - serverpackcreator-api/build
-        - serverpackcreator-gui/build
-        - serverpackcreator-cli/build
-        - serverpackcreator-web/build
-        - serverpackcreator-app/build
-        - serverpackcreator-updater/build
-        - serverpackcreator-plugin-example/build
-        - serverpackcreator-web-frontend/.quasar
-        - serverpackcreator-web-frontend/node_modules
-        - serverpackcreator-web-frontend/node
-        - serverpackcreator-web-frontend/dist
 
 Publish GitGriefed:
   stage: Build Release
@@ -276,28 +212,10 @@ Publish GitGriefed:
       artifacts: true
   script:
     - echo "**** Publishing Maven Artifacts GitGriefed ****"
-    - "./gradlew publishAllPublicationsToGitGriefedRepository -Pversion=${CI_COMMIT_TAG} --info --stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test"
+    - "./gradlew :serverpackcreator-api:publishMavenJavaPublicationToGitGriefedRepository -Pversion=${CI_COMMIT_TAG} --info --stacktrace -x :serverpackcreator-api:test -x :serverpackcreator-app:test"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-  cache:
-    - key: $CACHE_KEY
-      policy: pull
-      paths:
-        - buildSrc/.gradle
-        - buildSrc/build
-        - .gradle
-        - serverpackcreator-api/build
-        - serverpackcreator-gui/build
-        - serverpackcreator-cli/build
-        - serverpackcreator-web/build
-        - serverpackcreator-app/build
-        - serverpackcreator-updater/build
-        - serverpackcreator-plugin-example/build
-        - serverpackcreator-web-frontend/.quasar
-        - serverpackcreator-web-frontend/node_modules
-        - serverpackcreator-web-frontend/node
-        - serverpackcreator-web-frontend/dist
 
 Publish OSSRH:
   stage: Build Release
@@ -308,28 +226,10 @@ Publish OSSRH:
       artifacts: true
   script:
     - echo "**** Publishing Maven Artifacts to OSSRH ****"
-    - "./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository -Pversion=${CI_COMMIT_TAG} --info --stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test"
+    - "./gradlew :serverpackcreator-api:publishToSonatype closeAndReleaseSonatypeStagingRepository -Pversion=${CI_COMMIT_TAG} --info --stacktrace -x :serverpackcreator-api:test -x :serverpackcreator-app:test"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-  cache:
-    - key: $CACHE_KEY
-      policy: pull
-      paths:
-        - buildSrc/.gradle
-        - buildSrc/build
-        - .gradle
-        - serverpackcreator-api/build
-        - serverpackcreator-gui/build
-        - serverpackcreator-cli/build
-        - serverpackcreator-web/build
-        - serverpackcreator-app/build
-        - serverpackcreator-updater/build
-        - serverpackcreator-plugin-example/build
-        - serverpackcreator-web-frontend/.quasar
-        - serverpackcreator-web-frontend/node_modules
-        - serverpackcreator-web-frontend/node
-        - serverpackcreator-web-frontend/dist
 
 Build Docker Release:
   stage: Build Release
@@ -489,24 +389,6 @@ pages:
     expire_in: 1 week
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-  cache:
-    - key: $CACHE_KEY
-      policy: pull
-      paths:
-        - buildSrc/.gradle
-        - buildSrc/build
-        - .gradle
-        - serverpackcreator-api/build
-        - serverpackcreator-gui/build
-        - serverpackcreator-cli/build
-        - serverpackcreator-web/build
-        - serverpackcreator-app/build
-        - serverpackcreator-updater/build
-        - serverpackcreator-plugin-example/build
-        - serverpackcreator-web-frontend/.quasar
-        - serverpackcreator-web-frontend/node_modules
-        - serverpackcreator-web-frontend/node
-        - serverpackcreator-web-frontend/dist
 
 Update README:on-schedule:
   stage: Documentation

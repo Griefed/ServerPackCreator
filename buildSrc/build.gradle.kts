@@ -21,15 +21,14 @@ FileInputStream(file("../gradle.properties")).use {
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:${props.getProperty("kotlinVersion")}")
-    implementation("org.springframework.boot:spring-boot-gradle-plugin:3.2.0")
-    implementation("io.spring.gradle:dependency-management-plugin:1.1.4")
-    implementation("org.jetbrains.kotlin:kotlin-allopen:1.9.10")
-    implementation("org.jetbrains.kotlin.plugin.jpa:org.jetbrains.kotlin.plugin.jpa.gradle.plugin:1.9.21")
-    implementation("org.jetbrains.dokka:dokka-gradle-plugin:1.9.10")
-    implementation("org.panteleyev:jpackage-gradle-plugin:1.5.2")
+    implementation("org.springframework.boot:spring-boot-gradle-plugin:3.3.1")
+    implementation("io.spring.gradle:dependency-management-plugin:1.1.5")
+    implementation("org.jetbrains.kotlin:kotlin-allopen:1.9.23")
+    implementation("org.jetbrains.kotlin.plugin.jpa:org.jetbrains.kotlin.plugin.jpa.gradle.plugin:1.9.23")
+    implementation("org.jetbrains.dokka:dokka-gradle-plugin:1.9.20")
     implementation("com.github.jk1:gradle-license-report:2.5")
     implementation("org.siouan.frontend-jdk11:org.siouan.frontend-jdk11.gradle.plugin:6.0.0")
-
+    implementation("gradle.plugin.install4j.install4j.buildtools:gradle_publish:10.0.7")
 }
 
 tasks.compileKotlin<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {

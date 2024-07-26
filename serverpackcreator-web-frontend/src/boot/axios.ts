@@ -18,28 +18,36 @@ const baseUrl = '/api/v2/';
 const versions = axios.create({
   baseURL: baseUrl + 'versions',
   method: 'get',
-  timeout: 5000,
+  timeout: 5000
 });
 const settings = axios.create({
   baseURL: baseUrl + 'settings/',
   method: 'get',
-  timeout: 5000,
+  timeout: 5000
 });
 const events = axios.create({
   baseURL: baseUrl + 'events/',
   method: 'get',
-  timeout: 5000,
+  timeout: 5000
 });
 const serverpacks = axios.create({
   baseURL: baseUrl + 'serverpacks/',
   method: 'get',
-  timeout: 5000,
+  timeout: 5000
 });
 const modpacks = axios.create({
   baseURL: baseUrl + 'modpacks/',
+  timeout: 5000
 });
 const runConfigs = axios.create({
-  baseURL: baseUrl + 'runconfigs/'
+  baseURL: baseUrl + 'runconfigs/',
+  method: 'get',
+  timeout: 5000
+})
+const stats = axios.create({
+  baseURL: baseUrl + '/stats',
+  method: 'get',
+  timeout: 5000
 })
 
 export default boot(({ app }) => {
@@ -54,7 +62,8 @@ export default boot(({ app }) => {
   app.config.globalProperties.$events = events;
   app.config.globalProperties.$serverpacks = serverpacks;
   app.config.globalProperties.$modpacks = modpacks;
-  app.config.globalProperties.$runConfigs = runConfigs
+  app.config.globalProperties.$runConfigs = runConfigs;
+  app.config.globalProperties.$stats = stats;
 });
 
-export { versions, settings, events, serverpacks, modpacks, runConfigs };
+export { versions, settings, events, serverpacks, modpacks, runConfigs, stats };

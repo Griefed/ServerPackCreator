@@ -82,6 +82,7 @@ cwallet.sso.lck
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 .idea
+.kotlin
 
 # Gradle and Maven with auto-import
 # When using Gradle or Maven with auto-import, you should exclude module files,
@@ -347,41 +348,61 @@ yarn.lock
 /build
 /.gradle
 
+# Other
+*.asc
+
 ### ServerPackCreator ###
-/configs
-/logs
-/modpacks
-/plugins
-/server-packs
-/server_files
-/work
+configs
+modpacks
+plugins
+server-packs
+server_files
+work
+licenses/*
+!licenses/.gitkeep
 
 # ServerPackCreator Web
-serverpackcreator-web/src/main/resources/static
-serverpackcreator-web/tests/*
-!serverpackcreator-web/tests/.gitkeep
 serverpackcreator-web-frontend/.quasar/
 serverpackcreator-web-frontend/dist/
 serverpackcreator-web-frontend/node_modules/
 serverpackcreator-web-frontend/node/
-serverpackcreator-web/serverpackcreator.db
+serverpackcreator-app/serverpackcreator.db
 docker-compose-dev.yml
 
 # ServerPackCreator App
 serverpackcreator-app/tests/*
 !serverpackcreator-app/tests/.gitkeep
-serverpackcreator-app/src/main/resources/static
-!serverpackcreator-app/src/main/resources/static.gitkeep
+serverpackcreator-app/src/main/resources/static/*
+!serverpackcreator-app/src/main/resources/static/.gitkeep
 
 # ServerPackCreator API
+serverpackcreator-api/src/main/resources/CHANGELOG.md
+serverpackcreator-api/src/main/resources/CODE_OF_CONDUCT.md
+serverpackcreator-api/src/main/resources/CONTRIBUTING.md
+serverpackcreator-api/src/main/resources/HELP.md
+serverpackcreator-api/src/main/resources/LICENSE
+serverpackcreator-api/src/main/resources/README.md
+serverpackcreator-api/src/main/resources/SECURITY.md
 serverpackcreator-api/main/resources/VERSION.txt
 serverpackcreator-api/tests/*
 !serverpackcreator-api/tests/.gitkeep
-serverpackcreator-api/src/jvmTest/resources/forge_tests_copy/
-serverpackcreator-api/src/jvmTest/resources/fabric_tests_copy/
-serverpackcreator-api/src/jvmTest/resources/legacyfabric_tests_copy/
-serverpackcreator-api/src/jvmTest/resources/quilt_tests_copy/
-serverpackcreator-api/src/jvmTest/resources/fabric_tests_server_pack.zip
-serverpackcreator-api/src/jvmTest/resources/forge_tests_server_pack.zip
-serverpackcreator-api/src/jvmTest/resources/quilt_tests_server_pack.zip
+serverpackcreator-api/src/test/resources/forge_tests_copy/
+serverpackcreator-api/src/test/resources/fabric_tests_copy/
+serverpackcreator-api/src/test/resources/legacyfabric_tests_copy/
+serverpackcreator-api/src/test/resources/quilt_tests_copy/
+serverpackcreator-api/src/test/resources/fabric_tests_server_pack.zip
+serverpackcreator-api/src/test/resources/forge_tests_server_pack.zip
+serverpackcreator-api/src/test/resources/quilt_tests_server_pack.zip
 
+# ServerPackCreator Writerside
+serverpackcreator-help/Writerside/topics/CHANGELOG.md
+serverpackcreator-help/Writerside/topics/CODE_OF_CONDUCT.md
+serverpackcreator-help/Writerside/topics/CONTRIBUTING.md
+serverpackcreator-help/Writerside/topics/HELP.md
+serverpackcreator-help/Writerside/topics/LICENSE.md
+serverpackcreator-help/Writerside/topics/README.md
+serverpackcreator-help/Writerside/topics/SECURITY.md
+
+# ServerPackCreator
+media
+appimage

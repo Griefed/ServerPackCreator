@@ -40,11 +40,11 @@ Happy theming!
 
 ## Start Script Templates (3.8.x and up)
 
-As of 3.8.0, ServerPackCreator creates start scripts based on templates.
-Inside the `server_files`-directory you will find the two default templates:
+Inside the `server_files`-directory you will find the three default templates:
 
 1. `default_template.ps1`
 2. `default_template.sh`
+3. `default-template.bat`
 
 You have two options now:
 
@@ -87,18 +87,64 @@ then immediately closing* again, consult the **Running Powershell scripts**-sect
 ### Default values
 
 ServerPackCreator always supplies a couple of default key-value-pairs during script creation.
+These are stored in a separate file called `variables.txt`.
 
-| Key                               | Value                                                                                                                                                                                                                                                                                           |
-|-----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| SPC_SERVERPACKCREATOR_VERSION_SPC | The version of ServerPackCreator with which the start script was created.                                                                                                                                                                                                                       |
-| SPC_MINECRAFT_VERSION_SPC         | The Minecraft version of the modpack from which the server pack is created.                                                                                                                                                                                                                     |
-| SPC_MODLOADER_SPC                 | The modloader of the modpack from which the server pack is created.                                                                                                                                                                                                                             |
-| SPC_MODLOADER_VERSION_SPC         | The modloader version of the modpack from which the server pack is created.                                                                                                                                                                                                                     |
-| SPC_MINECRAFT_SERVER_URL_SPC      | The download URL corresponding to the Minecraft version of the modpack from which the server pack is created.                                                                                                                                                                                   |
-| SPC_JAVA_ARGS_SPC                 | Java JVM args which are to be used when running the server pack.                                                                                                                                                                                                                                |
-| SPC_JAVA_SPC                      | `java` by default. Start scripts in ZIP-archives will always receive `java` as the value. You may change the value in the table provided in the GUI if you need a different Java path for local testing and debugging. Scripts in the unzipped server pack will have the custom value avaiable. |
-| SPC_FABRIC_INSTALLER_VERSION_SPC  | The latest release version of the Fabric installer during the creation of the start scripts.                                                                                                                                                                                                    |
-| SPC_QUILT_INSTALLER_VERSION_SPC   | The latest release version of the Quilt installer during the creation of the start scripts.                                                                                                                                                                                                     |
+The following placeholders will be replaced by ServerPackCreator during the creation of the scripts and variables.txt.
+
+| Key                                    | Value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+|----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| SPC_SERVERPACKCREATOR_VERSION_SPC      | The version of ServerPackCreator with which the start script was created.                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| SPC_MINECRAFT_VERSION_SPC              | The Minecraft version of the modpack from which the server pack is created.                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| SPC_MODLOADER_SPC                      | The modloader of the modpack from which the server pack is created.                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| SPC_MODLOADER_VERSION_SPC              | The modloader version of the modpack from which the server pack is created.                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| SPC_JAVA_ARGS_SPC                      | Java JVM args which are to be used when running the server pack.                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| SPC_JAVA_SPC                           | `java` by default. Start scripts in ZIP-archives will always receive `java` as the value. You may change the value in the table provided in the GUI if you need a different Java path for local testing and debugging. Scripts in the unzipped server pack will have the custom value avaiable.                                                                                                                                                                                                                 |
+| SPC_FABRIC_INSTALLER_VERSION_SPC       | The latest release version of the Fabric installer during creation.                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| SPC_QUILT_INSTALLER_VERSION_SPC        | The latest release version of the Quilt installer during creation.                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC | The latest release version of the LegacyFabric installer during creation.                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| SPC_RECOMMENDED_JAVA_VERSION_SPC       | The recommended Java version to use with the modded server, as stated by Mojang themselves.                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| SPC_WAIT_FOR_USER_INPUT_SPC            | true/false allows you to enable/disable user confirmation upon graceful script ending.                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| SPC_ADDITIONAL_ARGS_SPC                | Additional arguments to supply to the JVM when starting the server. `-Dlog4j2.formatMsgNoLookups=true` by default.                                                                                                                                                                                                                                                                                                                                                                                              |
+| SPC_RESTART_SPC                        | true/false allows you to enable/disable automatically restarting the server should it crash.                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| SPC_SKIP_JAVA_CHECK_SPC                | true/false allows you to disable/enable the compatibility check of your Minecraft version and the provided Java version, as well as the automatic installation of a compatible Java version, should JAVA be set to 'java'.                                                                                                                                                                                                                                                                                      |
+| SPC_JDK_VENDOR_SPC                     | For the automatic installation of a JDK compatible with the Minecraft version of your server pack. For an extensive list of available vendors, check out https://github.com/Jabba-Team/jabba/blob/c19c6ce2ae9645c39bbdca07b6c4e2ea39155f73/index.json<br>   Note - For the installation to take place:<br>- SKIP_JAVA_CHECK must be set to 'false'<br>- JAVA be set to 'java'<br>- No 'java' command be available OR<br>- The available Java version behind 'java' be incompatible with your Minecraft version. |
+| SPC_JABBA_INSTALL_URL_PS_SPC           | The URL to the PowerShell install-script for Jabba.                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| SPC_JABBA_INSTALL_URL_SH_SPC           | The URL to the Shell install-script for Jabba.                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| SPC_JABBA_INSTALL_VERSION_SPC          | The version of Jabba to install.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+
+Jabba is a piece of software which makes the installation and usage of a JDK according to the system you are on very easy.
+It is used by the `install_java.xxx`-scripts to supply the correct Java version for your modded server should the criteria
+mentioned in the `SPC_SKIP_JAVA_CHECK_SPC` and `SPC_JDK_VENDOR_SPC` be satisfied.
+
+#### variables.txt contents
+
+The contents of the variables are as follows. See `### Default values` above for details, descriptions and explanations.
+
+| Key                            | Value                                                        |
+|--------------------------------|--------------------------------------------------------------|
+| MINECRAFT_VERSION              | SPC_MINECRAFT_VERSION_SPC                                    |
+| MODLOADER                      | SPC_MODLOADER_SPC                                            |
+| MODLOADER_VERSION              | SPC_MODLOADER_VERSION_SPC                                    |
+| LEGACYFABRIC_INSTALLER_VERSION | SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC                       |
+| FABRIC_INSTALLER_VERSION       | SPC_FABRIC_INSTALLER_VERSION_SPC                             |
+| QUILT_INSTALLER_VERSION        | SPC_QUILT_INSTALLER_VERSION_SPC                              |
+| RECOMMENDED_JAVA_VERSION       | SPC_RECOMMENDED_JAVA_VERSION_SPC                             |
+| JAVA_ARGS                      | "SPC_JAVA_ARGS_SPC"                                          |
+| JAVA                           | "SPC_JAVA_SPC"                                               |
+| WAIT_FOR_USER_INPUT            | SPC_WAIT_FOR_USER_INPUT_SPC                                  |
+| ADDITIONAL_ARGS                | SPC_ADDITIONAL_ARGS_SPC                                      |
+| RESTART                        | SPC_RESTART_SPC                                              |
+| SKIP_JAVA_CHECK                | SPC_SKIP_JAVA_CHECK_SPC                                      |
+| JDK_VENDOR                     | SPC_JDK_VENDOR_SPC                                           |
+| JABBA_INSTALL_URL              | SPC_JABBA_INSTALL_URL_PS_SPC or SPC_JABBA_INSTALL_URL_SH_SPC |
+| JABBA_INSTALL_VERSION          | SPC_JABBA_INSTALL_VERSION_SPC                                |
+
+Plus any additional custom key-value pair you added to your server pack config.
+
+#### Custom key-value pairs in the variables.txt
+
+In order to add custom key-value pairs to the variables.txt, make sure to pre- and suffix your keys with `CUSTOM_` and
+`_CUSTOM`. Every key which matches this criteria gets added to the end of the variables.txt during its creation. 
 
 ### Placeholders and values (3.14.x and up)
 
@@ -107,8 +153,8 @@ Make sure to map your desired value to the appropriate placeholder key.
 The GUI provides a table where you can configure these, or any other values, to your liking.
 
 The way this system works is that ServerPackCreator scans the given template for any occurance of a
-given placeholder, say `SPC_JAVA_SPC`, and replaces that occurance in the template with the assigned
-value, `java` by default unless you changed it.
+given placeholder, say `SPC_JAVA_SPC`, and replaces that occurrence in the template with the assigned
+value, `java` by default unless you changed it. (Also `java` for the ZIP-archive, if any is created.)
 After every configured placeholder has been replaced with the configured value, the resulting text
 is written to the start scripts, based on the file-endings of your provided templates.
 BAM! Template engine with customizable content!
@@ -126,10 +172,38 @@ BAM! Template engine with customizable content!
 
 
 > **Default placeholder limitations**
-> Of all available default placeholders mentioned above, only one of them can be overriden via a given configuration.
+> Of all available default placeholders mentioned above, only one of them can be overridden via a given configuration.
 > Said placeholder is `SPC_JAVA_SPC`. This one allows you to set a different Java executable/binary path for your local scripts,
 > to make testing your server pack easier. The files in the ZIP-archive will always have the `SPC_JAVA_SPC=java` key-value-pair,
 > to ensure any given user of your server pack has the value most likely to work on their system.
+> {.is-warning}
+
+### Java Install Templates
+
+Starting from version 6.0.0, ServerPackCreator will install the required Java version for the modded Minecraft server
+using a set of install-scripts. These are based on templates, just like the start scripts.
+
+In the `server_files`-directory, you will find a couple of files which follow the naming convention of `default_java_template.xxx`
+where `xxx` represents the type of the script, e.g. bat, ps1 or sh.
+
+Changing these templates follows the same procedure as the start scripts. The properties are as follows:
+
+```properties
+de.griefed.serverpackcreator.serverpack.java.template.bat=...
+de.griefed.serverpackcreator.serverpack.java.template.ps1=...
+de.griefed.serverpackcreator.serverpack.java.template.sh=...
+```
+
+You may also use the GUI, Settings -> Global -> Java Script Templates -> Reset to default values, to reset the
+entirety of the template setting to factory defaults.
+
+> **Attention when writing PowerShell Install Templates**
+> When writing a PowerShell Java Installation Template make sure that everything is wrapped in a function called
+> 
+> RunJavaInstallation
+> 
+> The Install-template gets sourced in the start-script and the function called from inside the start script. Unless you
+> know a better way of handling this, this is the way it's gotta be, unfortunately.
 > {.is-warning}
 
 ### Changing the default templates
@@ -145,50 +219,25 @@ and set the property for the templates accordingly.
 
 In other words:
 
-1. Copy the desired template to a name of your liking, e.g. `custom-template.ps1`
-   and `custom-template.sh`
+1. Copy the desired template to a name of your liking, e.g. `custom-template.sh`
 2. Make your changes to these custom templates
-3. Set `de.griefed.serverpackcreator.serverpack.script.template`
-   to `custom-template.ps1,custom-template.sh`
+3. Set `de.griefed.serverpackcreator.serverpack.script.template.sh` to `/path/to/custom/templates/custom-template.sh`
 4. ...
 5. Profit
 
-Now the default templates will not be used to create start scripts for your server packs, but
-instead, your custom-templates will be used.
+Repeat the same for `ps1` or `bat` if you so desire. Keep in mind to change the properties accordingly.
+The last section of the property-key determines the type of the script, see the following for an example:
 
-### Adding/removing templates
+```properties
+de.griefed.serverpackcreator.serverpack.script.template.bat=...
+de.griefed.serverpackcreator.serverpack.script.template.ps1=...
+de.griefed.serverpackcreator.serverpack.script.template.sh=...
+```
 
-1. The file-endings of the templates determine the file ending of the start script (`template.bat`
-   becomes `start.bat`, `template.sh` becomes `start.sh` and so on)
-2. Put your template(s) into the `server_files`-directory
-3. Edit the `serverpackcreator.properties`-file and change
-   the `de.griefed.serverpackcreator.serverpack.script.template`-property accordingly
+Each of these represents the path to a template, for bat, ps1 and sh respectively. If you wish to add a template for
+another type, simply add a property which ends with your desired type, like so
 
-**Example:**
-Say you've written a very nice template for some `.bat`
--scripts, `my-awesome-batch-script-template.bat`, and want ServerPackCreator to use said template
-during the script creation.
-In that case you would need to put said template into the `server_files`-directory,
-set `de.griefed.serverpackcreator.serverpack.script.template`
-to `my-awesome-batch-script-template.bat` so it looks
-like `de.griefed.serverpackcreator.serverpack.script.template=my-awesome-batch-script-template.bat`
-and you've good to go.
-
-When you now generate a server pack, a `start.bat`-script will be created based on
-your `my-awesome-batch-script-template.bat`-template.
-
-So, at the end, after writing your template and adding it to your ServerPackCreator configuration,
-your folders and config should look/contain like the following:
-
-- **ServerPackCreator
-  Properties:** `de.griefed.serverpackcreator.serverpack.script.template=default_template.ps1,default_template.sh,my-awesome-batch-script-template.bat`
-- **server_files-folder should contain:**
-    - default_template.ps1
-    - default_template.sh
-    - my-awesome-batch-script-template.bat
-    - [...]
-
-This will result in ServerPackCreator creating three scripts: `start.bat`, `start.ps1`, `start.sh`
+`de.griefed.serverpackcreator.serverpack.script.template.zsh=...`
 
 > **Encoding**
 > When writing custom templates, you must store them with **UTF-8** encoding. That is the encoding in
@@ -196,19 +245,28 @@ This will result in ServerPackCreator creating three scripts: `start.bat`, `star
 > characters to work as you expect them to, make sure to encode your custom templates in **UTF-8**!
 > {.is-warning}
 
+
+### Removing templates
+
+If you wish to return back to the default template for any of the types supported by default (bat, ps1, sh),
+simply remove the property from the `serverpackcreator.properties` and restart ServerPackCreator.
+
+You may also use the GUI, Settings -> Global -> Script Templates -> Reset to default values, to reset the
+entirety of the template setting to factory defaults.
+
 ## Automatically updating script Java placeholder (3.14.x and up)
 
 As of ServerPackCreator version 3.14.x you can define properties which, when configured correctly,
 will set the `SPC_JAVA_SPC`-placeholder in the script variables depending on which Java version is
-required by Minecraft.
+required by Minecraft. This makes testing your server pack on your system much easier, as you no longer need
+to edit the `variables.txt` after you generated your server pack.
 
-The two property in question:
+The property in question:
 
 - `de.griefed.serverpackcreator.script.javaN`
 
 Where `N` represents the version of the Java installation you want to make available to
 ServerPackCreator for script placeholder editing.
-
 Set any of these to the exact path to your correlating Java executable or binary file.
 
 Examples:
@@ -223,7 +281,10 @@ ServerPackCreator will set the value for the `SPC_JAVA_SPC`-placeholder to eithe
 depending on whether the Minecraft version requires Java 8 or Java 17.
 
 The `SPC_JAVA_SPC`-placeholder in the scripts in the ZIP-archives, should you choose to let
-ServerPackCreator create one, will still be set to `java`.
+ServerPackCreator create one, will still be set to `java`. This is to ensure that anyone who downloads or uses your
+server pack will use their own Java version, or has the required Java version installed by the start-scripts.
+It is discouraged to create a ZIP-file yourself, as a manually created ZIP-file may contain files disallowed on
+CurseForge/Modrinth/etc..
 
 ### Deactivating the automatic updating of the Java placeholder
 
@@ -419,15 +480,56 @@ ServerPackCreator has three main modes in which it can operate or in which you c
 There are a couple more ways to use/run ServerPackCreator which may or may not be helpful for you,
 depending on how you plan on using it:
 
-| Argument  | Description                                                                                                                                                                                                             |
-|-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `-help`   | Print ServerPackCreators help to commandline.                                                                                                                                                                           |
-| `-update` | Check whether a newer version of ServerPackCreator is available.                                                                                                                                                        |
-| `-cgen`   | Run ServerPackCreators configuration generation.                                                                                                                                                                        |
-| `-cli`    | Run ServerPackCreator in commandline-mode. If **no** graphical environment is supported, this is the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.         |
-| `-web`    | Run ServerPackCreator as a webservice.                                                                                                                                                                                  |
-| `-gui`    | Run ServerPackCreator with our GUI. If a graphical environment is supported, this is the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.                     |
-| `--setup` | Set up and prepare the environment for subsequent runs of ServerPackCreator. This will create/copy all files needed for ServerPackCreator to function properly from inside its JAR-file and setup everything else, too. |
+```
+  -lang: Allows you to use one of the available languages for ServerPackCreator. I can not
+         guarantee that each of the following available languages is 100% translated.
+         You best choice is en_us, or not specifying any as that is the default, because
+         I write ServerPackCreator with english in mind. Available usages:
+         -lang en_us
+         -lang uk_ua
+         -lang de_de
+
+  -cgen: Only available for the commandline interface. This will start the generation of
+         a new configuration file. You will be asked to enter information about your modpack
+         step-by-step. Each setting you enter will be checked for errors before it is saved.
+         If everything you enter is valid and without errors, it will be written to a new
+         serverpackcreator.conf and ServerPackCreator will immediately start a run with said
+         configuration file, generating a server pack for you.
+
+-update: Check whether a new version of ServerPackCreator is available for download.
+         If an update is available, the version and link to the release of said update are
+         written to the console so you can from work with it from there.
+         Note: Automatic updates are currently not planned nor supported, and neither are
+         downloads of any available updates to your system. You need to update manually.
+
+   -cli: Run ServerPackCreator in Command-line interface mode. Checks the serverpackcreator.conf
+         for errors and if none are found, starts the generation of a server pack with the configuration
+         provided by your serverpackcreator.conf.
+
+   -web: Run ServerPackCreator as a webservice available at http://localhost:8080. The webservice
+         provides the same functionality as running ServerPackCreator in GUI mode (so no Commandline
+         arguments and a non-headless environment) as well as a REST API which can be used in different ways.
+         For more information about the REST API, please see the Java documentation:
+          - GitHub Pages: https://griefed.github.io/ServerPackCreator/
+          - GitLab Pages: https://griefed.pages.griefed.de/ServerPackCreator/
+
+   -gui: Run ServerPackCreator using the graphical user interface. If your environment supports
+         graphics, i.e. is not headless, then this is the default mode in which ServerPackCreator
+         started as when no arguments are used.
+
+--setup: Set up and prepare the environment for subsequent runs of ServerPackCreator.
+         This will create/copy all files needed for ServerPackCreator to function
+         properly from inside its JAR-file and setup everything else, too. You can pass a properties-file, too
+         if you so desire.
+         Examples:
+         --setup "/path/to/custom.properties"
+         --setup "C:\path\to\custom.properties"
+
+--home:  Override the home-directory setting for your user.
+         Examples:
+         --home "/path/to/directory"
+         --home "C:\users\<YOUR_USER>\SPC"
+```
 
 Each of these modes has its advantages and disadvantages.
 
@@ -626,6 +728,62 @@ install and configure DynMap with some render-data? This would be the place to d
 The above example shows the run of a PreGen extension, with the global plugin configuration as well as the extension-specific
 extension passed to it by ServerPackCreator.
 
+#### Listeners
+
+In addition to extensions you may also register a variety of listeners to run your own code. Adding those listeners is
+easier than writing extensions, but they're also more restricted in the values you get to work with.
+
+Here's a very basic example, just to give you an idea how much easier the listeners are, compared to the extensions:
+
+```kotlin
+        val genericListener = object : SPCGenericListener {
+            override fun run() {
+                println("Helloooooo. I'm a SPCGenericListener!")
+                println("Helloooooo. I'm a SPCGenericListener!")
+                println("Helloooooo. I'm a SPCGenericListener!")
+            }
+
+        }
+        val configListener = object : SPCConfigCheckListener {
+            override fun run(packConfig: PackConfig, configCheck: ConfigCheck) {
+                println("Helloooooo. I'm a SPCConfigCheckListener!")
+                println(packConfig.modpackDir)
+            }
+
+        }
+        val preServerPackListener = object : SPCPreServerPackGenerationListener {
+            override fun run(packConfig: PackConfig, serverPackPath: Path) {
+                println("Helloooooo. I'm a SPCPreServerPackGenerationListener!")
+                println(packConfig.modpackDir)
+                println(serverPackPath.toString())
+            }
+
+        }
+        val preZipListener = object : SPCPreServerPackZipListener {
+            override fun run(packConfig: PackConfig, serverPackPath: Path) {
+                println("Helloooooo. I'm a SPCPreServerPackZipListener!")
+                println(packConfig.modpackDir)
+                println(serverPackPath.toString())
+            }
+
+        }
+        val postGenListener = object : SPCPostGenListener {
+            override fun run(packConfig: PackConfig, serverPackPath: Path) {
+                println("Helloooooo. I'm a SPCPostGenListener!")
+                println(packConfig.modpackDir)
+                println(serverPackPath.toString())
+            }
+
+        }
+
+        ApiWrapper.api().configurationHandler.addEventListener(genericListener)
+        ApiWrapper.api().configurationHandler.addEventListener(configListener)
+        ApiWrapper.api().serverPackHandler.addEventListener(genericListener)
+        ApiWrapper.api().serverPackHandler.addEventListener(preServerPackListener)
+        ApiWrapper.api().serverPackHandler.addEventListener(preZipListener)
+        ApiWrapper.api().serverPackHandler.addEventListener(postGenListener)
+```
+
 ---
 
 See now why the ConfigPanel, ConfigCheck and Tab extensions are so nice to have?
@@ -685,94 +843,112 @@ The serverpackcreator.conf file allows you to customize a couple of different th
 ### serverpackcreator.properties
 
 ```properties
-# Supported languages: [en_us, uk_ua, de_de]
-de.griefed.serverpackcreator.versioncheck.prerelease=false
-de.griefed.serverpackcreator.language=en_us
-de.griefed.serverpackcreator.configuration.fallbackmodslist=3dskinlayers-,Absolutely-Not-A-Zoom-Mod-,AdvancedChat-,AdvancedChatCore-,AdvancedChatHUD-,AdvancedCompas-,Ambience,AmbientEnvironment-,AmbientSounds_,AreYouBlind-,Armor Status HUD-,ArmorSoundTweak-,BH-Menu-,Batty's Coordinates PLUS Mod,BetterAdvancements-,BetterAnimationsCollection-,BetterDarkMode-,BetterF3-,BetterFoliage-,BetterPingDisplay-,BetterPlacement-,BetterTaskbar-,BetterThirdPerson,BetterTitleScreen-,Blur-,BorderlessWindow-,CTM-,ChunkAnimator-,ClientTweaks_,Controller Support-,Controlling-,CraftPresence-,CustomCursorMod-,CustomMainMenu-,DefaultOptions_,DefaultSettings-,DeleteWorldsToTrash-,DetailArmorBar-,Ding-,DistantHorizons-,DripSounds-,Durability101-,DurabilityNotifier-,DynamicSurroundings-,DynamicSurroundingsHuds-,EffectsLeft-,EiraMoticons_,EnchantmentDescriptions-,EnhancedVisuals_,EquipmentCompare-,FPS-Monitor-,FabricCustomCursorMod-,Fallingleaves-,FancySpawnEggs,FancyVideo-API-,FirstPersonMod,FogTweaker-,ForgeCustomCursorMod-,FpsReducer-,FpsReducer2-,FullscreenWindowed-,GameMenuModOption-,HealthOverlay-,HorseStatsMod-,InventoryEssentials_,InventoryHud_[1.17.1].forge-,InventorySpam-,InventoryTweaks-,ItemBorders-,ItemPhysicLite_,ItemStitchingFix-,JBRA-Client-,JustEnoughCalculation-,JustEnoughEffects-,JustEnoughProfessions-,JustEnoughResources-,LLOverlayReloaded-,LOTRDRP-,LegendaryTooltips,LegendaryTooltips-,LightOverlay-,MoBends,MouseTweaks-,MyServerIsCompatible-,Neat ,Neat-,NekosEnchantedBooks-,NoAutoJump-,NoFog-,Notes-,NotifMod-,OldJavaWarning-,OptiFine,OptiFine_,OptiForge,OptiForge-,PackMenu-,PackModeMenu-,PickUpNotifier-,Ping-,PresenceFootsteps-,RPG-HUD-,ReAuth-,ResourceLoader-,ResourcePackOrganizer,ShoulderSurfing-,ShulkerTooltip-,SimpleDiscordRichPresence-,SimpleWorldTimer-,SoundFilters-,SpawnerFix-,TRansliterationLib-,TipTheScales-,Tips-,Toast Control-,Toast-Control-,ToastControl-,TravelersTitles-,VoidFog-,WindowedFullscreen-,WorldNameRandomizer-,[1.12.2]DamageIndicatorsMod-,[1.12.2]bspkrscore-,antighost-,anviltooltipmod-,appleskin-,armorchroma-,armorpointspp-,auditory-,authme-,auto-reconnect-,autojoin-,autoreconnect-,axolotl-item-fix-,backtools-,bannerunlimited-,beenfo-1.19-,better-recipe-book-,betterbiomeblend-,bhmenu-,blur-,borderless-mining-,catalogue-,charmonium-,chat_heads-,cherishedworlds-,cirback-1.0-,classicbar-,clickadv-,clienttweaks-,combat_music-,configured-,controllable-,cullleaves-,cullparticles-,custom-crosshair-mod-,customdiscordrpc-,darkness-,dashloader-,defaultoptions-,desiredservers-,discordrpc-,drippyloadingscreen-,drippyloadingscreen_,dynamic-fps-,dynamic-music-,dynamiclights-,dynmus-,effective-,eggtab-,eguilib-,eiramoticons-,enchantment-lore-,entity-texture-features-,entityculling-,exhaustedstamina-,extremesoundmuffler-,fabricemotes-,fancymenu_,fancymenu_video_extension,findme-,flickerfix-,fm_audio_extension_,forgemod_VoxelMap-,freelook-,galacticraft-rpc-,gamestagesviewer-,grid-,helium-,hiddenrecipebook_,infinitemusic-,inventoryprofiles,invtweaks-,itemzoom,itlt-,jeed-,jehc-,jeiintegration_,just-enough-harvestcraft-,justenoughbeacons-,justenoughdrags-,justzoom_,keymap-,keywizard-,konkrete_,konkrete_forge_,lazydfu-,light-overlay-,lightfallclient-,loadmyresources_,lock_minecart_view-,lootbeams-,lwl-,magnesium_extras-,maptooltip-,massunbind,mcbindtype-,mcwifipnp-,medievalmusic-,mightyarchitect-,mindful-eating-,minetogether-,mobplusplus-,modcredits-,modernworldcreation_,modmenu-,modnametooltip-,modnametooltip_,moreoverlays-,mousewheelie-,movement-vision-,multihotbar-,music-duration-reducer-,musicdr-,neiRecipeHandlers-,ngrok-lan-expose-mod-,nopotionshift_,notenoughanimations-,oculus-,ornaments-,overloadedarmorbar-,panorama-,paperdoll-,phosphor-,preciseblockplacing-,realm-of-lost-souls-,rebrand-,replanter-,rubidium-,rubidium_extras-,screenshot-to-clipboard-,shutupexperimentalsettings-,shutupmodelloader-,signtools-,simple-rpc-,simpleautorun-,smartcursor-,smoothboot-,smoothfocus-,sounddeviceoptions-,soundreloader-,spoticraft-,tconplanner-,timestamps-,tooltipscroller-,torchoptimizer-,torohealth-,totaldarkness,toughnessbar-,wisla-,xlifeheartcolors-,yisthereautojump-
-de.griefed.serverpackcreator.configuration.fallbackmodslist.regex=^3dskinlayers-.*$,^Absolutely-Not-A-Zoom-Mod-.*$,^AdvancedChat-.*$,^AdvancedChatCore-.*$,^AdvancedChatHUD-.*$,^AdvancedCompas-.*$,^Ambience.*$,^AmbientEnvironment-.*$,^AmbientSounds_.*$,^AreYouBlind-.*$,^Armor Status HUD-.*$,^ArmorSoundTweak-.*$,^BH-Menu-.*$,^Batty's Coordinates PLUS Mod.*$,^BetterAdvancements-.*$,^BetterAnimationsCollection-.*$,^BetterDarkMode-.*$,^BetterF3-.*$,^BetterFoliage-.*$,^BetterPingDisplay-.*$,^BetterPlacement-.*$,^BetterTaskbar-.*$,^BetterThirdPerson.*$,^BetterTitleScreen-.*$,^Blur-.*$,^BorderlessWindow-.*$,^CTM-.*$,^ChunkAnimator-.*$,^ClientTweaks_.*$,^Controller Support-.*$,^Controlling-.*$,^CraftPresence-.*$,^CustomCursorMod-.*$,^CustomMainMenu-.*$,^DefaultOptions_.*$,^DefaultSettings-.*$,^DeleteWorldsToTrash-.*$,^DetailArmorBar-.*$,^Ding-.*$,^DistantHorizons-.*$,^DripSounds-.*$,^Durability101-.*$,^DurabilityNotifier-.*$,^DynamicSurroundings-.*$,^DynamicSurroundingsHuds-.*$,^EffectsLeft-.*$,^EiraMoticons_.*$,^EnchantmentDescriptions-.*$,^EnhancedVisuals_.*$,^EquipmentCompare-.*$,^FPS-Monitor-.*$,^FabricCustomCursorMod-.*$,^Fallingleaves-.*$,^FancySpawnEggs.*$,^FancyVideo-API-.*$,^FirstPersonMod.*$,^FogTweaker-.*$,^ForgeCustomCursorMod-.*$,^FpsReducer-.*$,^FpsReducer2-.*$,^FullscreenWindowed-.*$,^GameMenuModOption-.*$,^HealthOverlay-.*$,^HorseStatsMod-.*$,^InventoryEssentials_.*$,^InventoryHud_[1.17.1].forge-.*$,^InventorySpam-.*$,^InventoryTweaks-.*$,^ItemBorders-.*$,^ItemPhysicLite_.*$,^ItemStitchingFix-.*$,^JBRA-Client-.*$,^JustEnoughCalculation-.*$,^JustEnoughEffects-.*$,^JustEnoughProfessions-.*$,^JustEnoughResources-.*$,^LLOverlayReloaded-.*$,^LOTRDRP-.*$,^LegendaryTooltips-.*$,^LegendaryTooltips.*$,^LightOverlay-.*$,^MoBends.*$,^MouseTweaks-.*$,^MyServerIsCompatible-.*$,^Neat .*$,^Neat-.*$,^NekosEnchantedBooks-.*$,^NoAutoJump-.*$,^NoFog-.*$,^Notes-.*$,^NotifMod-.*$,^OldJavaWarning-.*$,^OptiFine.*$,^OptiFine_.*$,^OptiForge-.*$,^OptiForge.*$,^PackMenu-.*$,^PackModeMenu-.*$,^PickUpNotifier-.*$,^Ping-.*$,^PresenceFootsteps-.*$,^RPG-HUD-.*$,^ReAuth-.*$,^ResourceLoader-.*$,^ResourcePackOrganizer.*$,^ShoulderSurfing-.*$,^ShulkerTooltip-.*$,^SimpleDiscordRichPresence-.*$,^SimpleWorldTimer-.*$,^SoundFilters-.*$,^SpawnerFix-.*$,^TRansliterationLib-.*$,^TipTheScales-.*$,^Tips-.*$,^Toast Control-.*$,^Toast-Control-.*$,^ToastControl-.*$,^TravelersTitles-.*$,^VoidFog-.*$,^WindowedFullscreen-.*$,^WorldNameRandomizer-.*$,^[1.12.2]DamageIndicatorsMod-.*$,^[1.12.2]bspkrscore-.*$,^antighost-.*$,^anviltooltipmod-.*$,^appleskin-.*$,^armorchroma-.*$,^armorpointspp-.*$,^auditory-.*$,^authme-.*$,^auto-reconnect-.*$,^autojoin-.*$,^autoreconnect-.*$,^axolotl-item-fix-.*$,^backtools-.*$,^bannerunlimited-.*$,^beenfo-1.19-.*$,^better-recipe-book-.*$,^betterbiomeblend-.*$,^bhmenu-.*$,^blur-.*$,^borderless-mining-.*$,^catalogue-.*$,^charmonium-.*$,^chat_heads-.*$,^cherishedworlds-.*$,^cirback-1.0-.*$,^classicbar-.*$,^clickadv-.*$,^clienttweaks-.*$,^combat_music-.*$,^configured-.*$,^controllable-.*$,^cullleaves-.*$,^cullparticles-.*$,^custom-crosshair-mod-.*$,^customdiscordrpc-.*$,^darkness-.*$,^dashloader-.*$,^defaultoptions-.*$,^desiredservers-.*$,^discordrpc-.*$,^drippyloadingscreen-.*$,^drippyloadingscreen_.*$,^dynamic-fps-.*$,^dynamic-music-.*$,^dynamiclights-.*$,^dynmus-.*$,^effective-.*$,^eggtab-.*$,^eguilib-.*$,^eiramoticons-.*$,^enchantment-lore-.*$,^entity-texture-features-.*$,^entityculling-.*$,^exhaustedstamina-.*$,^extremesoundmuffler-.*$,^fabricemotes-.*$,^fancymenu_.*$,^fancymenu_video_extension.*$,^findme-.*$,^flickerfix-.*$,^fm_audio_extension_.*$,^forgemod_VoxelMap-.*$,^freelook-.*$,^galacticraft-rpc-.*$,^gamestagesviewer-.*$,^grid-.*$,^helium-.*$,^hiddenrecipebook_.*$,^infinitemusic-.*$,^inventoryprofiles.*$,^invtweaks-.*$,^itemzoom.*$,^itlt-.*$,^jeed-.*$,^jehc-.*$,^jeiintegration_.*$,^just-enough-harvestcraft-.*$,^justenoughbeacons-.*$,^justenoughdrags-.*$,^justzoom_.*$,^keymap-.*$,^keywizard-.*$,^konkrete_.*$,^konkrete_forge_.*$,^lazydfu-.*$,^light-overlay-.*$,^lightfallclient-.*$,^loadmyresources_.*$,^lock_minecart_view-.*$,^lootbeams-.*$,^lwl-.*$,^magnesium_extras-.*$,^maptooltip-.*$,^massunbind.*$,^mcbindtype-.*$,^mcwifipnp-.*$,^medievalmusic-.*$,^mightyarchitect-.*$,^mindful-eating-.*$,^minetogether-.*$,^mobplusplus-.*$,^modcredits-.*$,^modernworldcreation_.*$,^modmenu-.*$,^modnametooltip-.*$,^modnametooltip_.*$,^moreoverlays-.*$,^mousewheelie-.*$,^movement-vision-.*$,^multihotbar-.*$,^music-duration-reducer-.*$,^musicdr-.*$,^neiRecipeHandlers-.*$,^ngrok-lan-expose-mod-.*$,^nopotionshift_.*$,^notenoughanimations-.*$,^oculus-.*$,^ornaments-.*$,^overloadedarmorbar-.*$,^panorama-.*$,^paperdoll-.*$,^phosphor-.*$,^preciseblockplacing-.*$,^realm-of-lost-souls-.*$,^rebrand-.*$,^replanter-.*$,^rubidium-.*$,^rubidium_extras-.*$,^screenshot-to-clipboard-.*$,^shutupexperimentalsettings-.*$,^shutupmodelloader-.*$,^signtools-.*$,^simple-rpc-.*$,^simpleautorun-.*$,^smartcursor-.*$,^smoothboot-.*$,^smoothfocus-.*$,^sounddeviceoptions-.*$,^soundreloader-.*$,^spoticraft-.*$,^tconplanner-.*$,^timestamps-.*$,^tooltipscroller-.*$,^torchoptimizer-.*$,^torohealth-.*$,^totaldarkness.*$,^toughnessbar-.*$,^wisla-.*$,^xlifeheartcolors-.*$,^yisthereautojump-.*$
-de.griefed.serverpackcreator.configuration.hastebinserver=https://haste.zneix.eu/documents
-de.griefed.serverpackcreator.configuration.aikar=-Xms4G -Xmx4G -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true
-de.griefed.serverpackcreator.serverpack.autodiscovery.enabled=true
-de.griefed.serverpackcreator.gui.darkmode=true
+de.griefed.serverpackcreator.configuration.aikar=-Xms4G -Xmx4G -XX\:+UseG1GC -XX\:+ParallelRefProcEnabled -XX\:MaxGCPauseMillis\=200 -XX\:+UnlockExperimentalVMOptions -XX\:+DisableExplicitGC -XX\:+AlwaysPreTouch -XX\:G1NewSizePercent\=30 -XX\:G1MaxNewSizePercent\=40 -XX\:G1HeapRegionSize\=8M -XX\:G1ReservePercent\=20 -XX\:G1HeapWastePercent\=5 -XX\:G1MixedGCCountTarget\=4 -XX\:InitiatingHeapOccupancyPercent\=15 -XX\:G1MixedGCLiveThresholdPercent\=90 -XX\:G1RSetUpdatingPauseTimePercent\=5 -XX\:SurvivorRatio\=32 -XX\:+PerfDisableSharedMem -XX\:MaxTenuringThreshold\=1 -Dusing.aikars.flags\=https\://mcflags.emc.gs -Daikars.new.flags\=true
+de.griefed.serverpackcreator.configuration.directories.mustinclude=addonpacks,blueprints,config,configs,customnpcs,defaultconfigs,global_data_packs,global_packs,kubejs,maps,mods,openloader,scripts,shrines-saves,structures,structurize,worldshape,Zoestria
 de.griefed.serverpackcreator.configuration.directories.serverpacks=
+de.griefed.serverpackcreator.configuration.directories.shouldexclude=animation,asm,cache,changelogs,craftpresence,crash-reports,downloads,icons,libraries,local,logs,overrides,packmenu,profileImage,profileImage,resourcepacks,screenshots,server_pack,shaderpacks,simple-rpc,tv-cache
+de.griefed.serverpackcreator.configuration.fallback.updateurl=https\://raw.githubusercontent.com/Griefed/ServerPackCreator/main/serverpackcreator-api/src/main/resources/serverpackcreator.properties
+de.griefed.serverpackcreator.configuration.fallbackmodslist=3dskinlayers-,Absolutely-Not-A-Zoom-Mod-,AdvancedChat-,AdvancedChatCore-,AdvancedChatHUD-,AdvancedCompas-,Ambience,AmbientEnvironment-,AmbientSounds_,AnimaticaReforged-,AreYouBlind-,Armor Status HUD-,ArmorSoundTweak-,BH-Menu-,Batty's Coordinates PLUS Mod,BetterAdvancements-,BetterAnimationsCollection-,BetterModsButton-,BetterDarkMode-,BetterF3-,BetterFog-,BetterFoliage-,BetterPingDisplay-,BetterPlacement-,BetterTaskbar-,BetterThirdPerson,BetterTitleScreen-,Blur-,BorderlessWindow-,CTM-,ChunkAnimator-,Clear-Water-,ClientTweaks_,CompletionistsIndex-,Controller Support-,Controlling-,CraftPresence-,CullLessLeaves-Reforged-,CustomCursorMod-,CustomMainMenu-,DefaultOptions_,DefaultSettings-,DeleteWorldsToTrash-,DetailArmorBar-,Ding-,DistantHorizons-,DripSounds-,Durability101-,DurabilityNotifier-,DynamicSurroundings-,DynamicSurroundingsHuds-,EasyLAN-,EffectsLeft-,EiraMoticons_,EnchantmentDescriptions-,EnhancedVisuals_,EquipmentCompare-,EuphoriaPatcher-,FPS-Monitor-,FabricCustomCursorMod-,FadingNightVision-,Fallingleaves-,FancySpawnEggs,FancyVideo-API-,farsight-,FirstPersonMod,FogTweaker-,ForgeCustomCursorMod-,FpsReducer-,FpsReducer2-,FullscreenWindowed-,GameMenuModOption-,HealthOverlay-,HeldItemTooltips-,HorseStatsMod-,ImmediatelyFastReforged-,InventoryEssentials_,InventoryHud_[1.17.1].forge-,InventorySpam-,InventoryTweaks-,ItemBorders-,ItemLocks-,ItemPhysicLite_,ItemStitchingFix-,JBRA-Client-,JustEnoughCalculation-,JustEnoughEffects-,JustEnoughProfessions-,LeaveMyBarsAlone-,LLOverlayReloaded-,LOTRDRP-,LegendaryTooltips,LegendaryTooltips-,LightOverlay-,MinecraftCapes,MineMenu-,MoBends,ModernUI-,MouseTweaks-,MyServerIsCompatible-,Neat,Neat-,NekosEnchantedBooks-,NoAutoJump-,NoFog-,Notes-,NotifMod-,OldJavaWarning-,OptiFine,OptiFine_,OptiForge,OptiForge-,OverflowingBars-,PackMenu-,PackModeMenu-,PickUpNotifier-,Ping-,PingHUD-,PresenceFootsteps-,RPG-HUD-,ReAuth-,Reforgium-,ResourceLoader-,ResourcePackOrganizer,Ryoamiclights-,RyoamicLights-,ShoulderSurfing-,ShulkerTooltip-,SimpleDiscordRichPresence-,SimpleWorldTimer-,SoundFilters-,SpawnerFix-,StylishEffects-,TextruesRubidiumOptions-,TRansliterationLib-,TipTheScales-,Tips-,Toast Control-,Toast-Control-,ToastControl-,TravelersTitles-,VoidFog-,VR-Combat_,WindowedFullscreen-,WorldNameRandomizer-,YeetusExperimentus-,YungsMenuTweaks-,[1.12.2]DamageIndicatorsMod-,[1.12.2]bspkrscore-,antighost-,anviltooltipmod-,appleskin-,armorchroma-,armorpointspp-,auditory-,authme-,auto-reconnect-,autojoin-,autoreconnect-,axolotl-item-fix-,backtools-,bannerunlimited-,beenfo-1.19-,better-recipe-book-,betterbiomeblend-,bhmenu-,blur-,borderless-mining-,cat_jam-,catalogue-,charmonium-,chat_heads-,cherishedworlds-,cirback-1.0-,classicbar-,clickadv-,clienttweaks-,combat_music-,connectedness-,controllable-,cullleaves-,cullparticles-,custom-crosshair-mod-,customdiscordrpc-,darkness-,dashloader-,defaultoptions-,desiredservers-,discordrpc-,drippyloadingscreen-,drippyloadingscreen_,durabilitytooltip-,dynamic-fps-,dynamic-music-,dynamiclights-,dynmus-,effective-,eggtab-,eguilib-,eiramoticons-,embeddium-,enchantment-lore-,entity-texture-features-,entityculling-,essential_,exhaustedstamina-,extremesoundmuffler-,fabricemotes-,fancymenu_,fancymenu_video_extension,fast-ip-ping-,flickerfix-,fm_audio_extension_,forgemod_VoxelMap-,freelook-,galacticraft-rpc-,gamestagesviewer-,gpumemleakfix-,grid-,helium-,hiddenrecipebook_,hiddenrecipebook-,infinitemusic-,inventoryprofiles,invtweaks-,itemzoom,itlt-,jeed-,jehc-,jeiintegration_,jumpoverfences-,just-enough-harvestcraft-,justenoughbeacons-,justenoughdrags-,justzoom_,keymap-,keywizard-,lazurite-,lazydfu-,lib39-,light-overlay-,lightfallclient-,lightspeed-,loadmyresources_,lock_minecart_view-,lootbeams-,lwl-,macos-input-fixes-,magnesium_extras-,maptooltip-,massunbind,mcbindtype-,mcwifipnp-,medievalmusic-,memoryusagescreen-,mightyarchitect-,mindful-eating-,minetogether-,mobplusplus-,modcredits-,modernworldcreation_,modnametooltip-,modnametooltip_,moreoverlays-,mousewheelie-,movement-vision-,multihotbar-,music-duration-reducer-,musicdr-,neiRecipeHandlers-,ngrok-lan-expose-mod-,no_nv_flash-,nopotionshift_,notenoughanimations-,oculus-,ornaments-,overloadedarmorbar-,panorama-,paperdoll-,physics-mod-,phosphor-,preciseblockplacing-,radon-,realm-of-lost-souls-,rebind_narrator-,rebind-narrator-,rebindnarrator-,rebrand-,reforgium-,replanter-,rrls-,rubidium-,rubidium_extras-,screenshot-to-clipboard-,servercountryflags-,shutupexperimentalsettings-,shutupmodelloader-,signtools-,simple-rpc-,simpleautorun-,smartcursor-,smarthud-,smoothboot-,smoothfocus-,sodium-fabric-,sounddeviceoptions-,soundreloader-,spoticraft-,skinlayers3d-forge,textrues_embeddium_options-,tconplanner-,timestamps-,tooltipscroller-,torchoptimizer-,torohealth-,totaldarkness,toughnessbar-,watermedia-,whats-that-slot-forge-,wisla-,xenon-,xlifeheartcolors-,yisthereautojump-
+de.griefed.serverpackcreator.configuration.hastebinserver=https\://haste.zneix.eu/documents
+de.griefed.serverpackcreator.configuration.modswhitelist=Ping-Wheel-
+de.griefed.serverpackcreator.home=/home/griefed/ServerPackCreator
+de.griefed.serverpackcreator.java=
+de.griefed.serverpackcreator.language=en_GB
+de.griefed.serverpackcreator.minecraft.snapshots=false
+de.griefed.serverpackcreator.script.java.autoupdate=true
+de.griefed.serverpackcreator.serverpack.autodiscovery.enabled=true
+de.griefed.serverpackcreator.serverpack.autodiscovery.filter=START
 de.griefed.serverpackcreator.serverpack.cleanup.enabled=true
 de.griefed.serverpackcreator.serverpack.overwrite.enabled=true
-de.griefed.serverpackcreator.configuration.directories.shouldexclude=animation,asm,cache,changelogs,craftpresence,crash-reports,downloads,icons,libraries,local,logs,overrides,packmenu,profileImage,profileImage,resourcepacks,screenshots,server_pack,shaderpacks,simple-rpc,tv-cache
+de.griefed.serverpackcreator.serverpack.zip.exclude=minecraft_server.MINECRAFT_VERSION.jar,server.jar,libraries/net/minecraft/server/MINECRAFT_VERSION/server-MINECRAFT_VERSION.jar
+de.griefed.serverpackcreator.serverpack.zip.exclude.enabled=true
 de.griefed.serverpackcreator.spring.schedules.database.cleanup=0 0 0 * * *
 de.griefed.serverpackcreator.spring.schedules.files.cleanup=0 30 0 * * *
 de.griefed.serverpackcreator.spring.schedules.versions.refresh=0 0 0 * * *
-de.griefed.serverpackcreator.configuration.saveloadedconfig=false
-de.griefed.serverpackcreator.configuration.directories.mustinclude=addonpacks,blueprints,config,configs,customnpcs,defaultconfigs,global_data_packs,global_packs,kubejs,maps,mods,openloader,scripts,shrines-saves,structures,structurize,worldshape,Zoestria
-de.griefed.serverpackcreator.serverpack.zip.exclude=minecraft_server.MINECRAFT_VERSION.jar,server.jar,libraries/net/minecraft/server/MINECRAFT_VERSION/server-MINECRAFT_VERSION.jar
-de.griefed.serverpackcreator.serverpack.zip.exclude.enabled=true
-de.griefed.serverpackcreator.serverpack.script.template=default_template.ps1,default_template.sh
-de.griefed.serverpackcreator.minecraft.snapshots=false
-de.griefed.serverpackcreator.serverpack.autodiscovery.filter=START
-de.griefed.serverpackcreator.java=
-de.griefed.serverpackcreator.script.java.autoupdate=true
+de.griefed.serverpackcreator.versioncheck.prerelease=false
+de.griefed.serverpackcreator.serverpack.script.template.bat=
+de.griefed.serverpackcreator.serverpack.script.template.ps1=
+de.griefed.serverpackcreator.serverpack.script.template.sh=
+de.griefed.serverpackcreator.serverpack.java.template.ps1=
+de.griefed.serverpackcreator.serverpack.java.template.sh=
+de.griefed.serverpackcreator.serverpack.update=false
+# Webservice-specific props
+server.error.include-message=ALWAYS
+server.error.include-stacktrace=ALWAYS
+server.error.whitelabel.enabled=false
+server.port=8080
+server.tomcat.accesslog.directory=logs
+server.tomcat.accesslog.enabled=true
+server.tomcat.accesslog.file-date-format=_yyyy-MM-dd
+server.tomcat.accesslog.pattern=common
+server.tomcat.accesslog.prefix=tomcat_access
+server.tomcat.accesslog.suffix=.log
+server.tomcat.basedir=
+spring.application.name=ServerPackCreator
+spring.datasource.driverClassName=org.postgresql.Driver
+spring.datasource.tomcat.max-active=50
+spring.datasource.tomcat.max-idle=15
+spring.datasource.tomcat.min-idle=8
+spring.datasource.password=
+spring.datasource.username=
+spring.datasource.url=jdbc\:postgresql\://localhost\:5432/serverpackcreator
+spring.jdbc.template.query-timeout=3600
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.generate-ddl=true
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.open-in-view=false
+spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation=true
+spring.jpa.properties.hibernate.jdbc.use_streams_for_binary=true
+spring.output.ansi.enabled=ALWAYS
+spring.servlet.multipart.max-file-size=5000MB
+spring.servlet.multipart.max-request-size=5000MB
+spring.transaction.default-timeout=3600
 ```
 
 | Property                                                             | Description                                                                                                                                                                            |
 |----------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| de.griefed.serverpackcreator.versioncheck.prerelease                 | `true` or `false`. Whether to check for available pre-releases, too, when checking for updates.                                                                                        |
-| de.griefed.serverpackcreator.language                                | The language in which ServerPackCreator should run.                                                                                                                                    |
-| de.griefed.serverpackcreator.configuration.fallbackmodslist          | Comma separated fallback-list of clientside-only mods. Do not edit this manually.                                                                                                      |
-| de.griefed.serverpackcreator.configuration.fallbackmodslist.regex    | Comma separated fallback-list of clientside-only mods in regex format. Do not edit this manually.                                                                                      |
-| de.griefed.serverpackcreator.configuration.hastebinserver            | Address of a HasteBin server to use for config and logs uploading.                                                                                                                     |
 | de.griefed.serverpackcreator.configuration.aikar                     | Aikars commonly used Minecraft server JVM flags to potentially increase the performance of your Minecraft server.                                                                      |
-| de.griefed.serverpackcreator.serverpack.autodiscovery.enabled        | `true` or `false`. Whether to try and determine sideness of mods in a modpack automatically and exclude them if they are clientside-only. Set this to `false` to disable it.           |
-| de.griefed.serverpackcreator.gui.darkmode                            | GUI-only. `true` or `false`. Whether to use dark-mode in the GUI.                                                                                                                      |
+| de.griefed.serverpackcreator.configuration.directories.mustinclude   | List of directories which must be included in a server pack.                                                                                                                           |
 | de.griefed.serverpackcreator.configuration.directories.serverpacks   | The directory in which server packs will be generated and stored in.                                                                                                                   |
+| de.griefed.serverpackcreator.configuration.directories.shouldexclude | List of directories which should not be in a server pack.                                                                                                                              |
+| de.griefed.serverpackcreator.configuration.fallback.updateurl        | URL to a Properties file which contains definitions for the clientside- and whitelist-mods to use as an update source during start-up.                                                 |
+| de.griefed.serverpackcreator.configuration.fallbackmodslist          | Comma separated fallback-list of clientside-only mods. Do not edit this manually.                                                                                                      |
+| de.griefed.serverpackcreator.configuration.hastebinserver            | Address of a HasteBin server to use for config and logs uploading.                                                                                                                     |
+| de.griefed.serverpackcreator.configuration.modswhitelist             | Whitelisted mods which will always get included, no matter if they are present in the clienstide-list or detected by ServerPackCreator automatically.                                  |
+| de.griefed.serverpackcreator.home                                    | The home-directory of ServerPackCreator. Only change this manually if you know what you are doing.                                                                                     |
+| de.griefed.serverpackcreator.java                                    | Path to the Java installation used by ServerPackCreator. Currently has no effect on anything.                                                                                          |
+| de.griefed.serverpackcreator.language                                | The language in which ServerPackCreator should run.                                                                                                                                    |
+| de.griefed.serverpackcreator.minecraft.snapshots                     | `true` or `false`. Whether Minecraft snapshot versions should be available to the user in the GUI.                                                                                     |
+| de.griefed.serverpackcreator.script.java.autoupdate                  | `true` or `false`. Whether the `java`-placeholder in the script settings of a server pack config should be updated with local Java paths (if they are configured accordingly).         |
+| de.griefed.serverpackcreator.serverpack.autodiscovery.enabled        | `true` or `false`. Whether to try and determine sideness of mods in a modpack automatically and exclude them if they are clientside-only. Set this to `false` to disable it.           |
+| de.griefed.serverpackcreator.serverpack.autodiscovery.filter         | Filter method by which to exclude user-specified clientside-only mods. `START`, `END`, `REGEX`, `CONTAIN`, `EITHER`                                                                    |
 | de.griefed.serverpackcreator.serverpack.cleanup.enabled              | `true` or `false`. Whether to cleanup files after generating a server pack.                                                                                                            |
 | de.griefed.serverpackcreator.serverpack.overwrite.enabled            | `true` or `false`. Whether an already existing server pack should be overwritten.                                                                                                      |
-| de.griefed.serverpackcreator.configuration.directories.shouldexclude | List of directories which should not be in a server pack.                                                                                                                              |
+| de.griefed.serverpackcreator.serverpack.zip.exclude                  | Files to exclude from the server pack ZIP-archive. You may use `MINECRAFT_VERSION` as a placeholder for the Minecraft version of your modpack/server pack if a files name contains it. | 
+| de.griefed.serverpackcreator.serverpack.zip.exclude.enabled          | `true` or `false`. Whether exclusion of files from a server packs ZIP-archive is enabled.                                                                                              | 
 | de.griefed.serverpackcreator.spring.schedules.database.cleanup       | Web-only. Cron-schedule at which checks are run and server packs cleaned up.                                                                                                           |
 | de.griefed.serverpackcreator.spring.schedules.files.cleanup          | Web-only. Cron-schedule at which checks are run and files from server pack generations are cleaned up.                                                                                 |
 | de.griefed.serverpackcreator.spring.schedules.versions.refresh       | Web-only. Cron-schedule at which the available Minecraft, Forge and Fabric versions are refreshed.                                                                                     |
-| de.griefed.serverpackcreator.configuration.saveloadedconfig          | GUI-only. `true` or `false`. Whether to overwrite the last manually loaded configuration file, too.                                                                                    |
-| de.griefed.serverpackcreator.configuration.directories.mustinclude   | List of directories which must be included in a server pack.                                                                                                                           |
-| de.griefed.serverpackcreator.serverpack.zip.exclude                  | Files to exclude from the server pack ZIP-archive. You may use `MINECRAFT_VERSION` as a placeholder for the Minecraft version of your modpack/server pack if a files name contains it. | 
-| de.griefed.serverpackcreator.serverpack.zip.exclude.enabled          | `true` or `false`. Whether exclusion of files from a server packs ZIP-archive is enabled.                                                                                              | 
-| de.griefed.serverpackcreator.serverpack.script.template              | Start-script template to use for server start script creation.                                                                                                                         | 
-| de.griefed.serverpackcreator.minecraft.snapshots                     | Whether Minecraft snapshot versions should be available to the user in the GUI.                                                                                                        | 
-| de.griefed.serverpackcreator.serverpack.autodiscovery.filter         | Filter method by which to exclude user-specified clientside-only mods. `START`, `END`, `REGEX`, `CONTAIN`, `EITHER`                                                                    |
+| de.griefed.serverpackcreator.versioncheck.prerelease                 | `true` or `false`. Whether to check for available pre-releases, too, when checking for updates.                                                                                        |
+| de.griefed.serverpackcreator.serverpack.script.template.bat          | Path to the default Batch-template used for start-script generation.                                                                                                                   |
+| de.griefed.serverpackcreator.serverpack.script.template.ps1          | Path to the default PowerShell-template used for start-script generation.                                                                                                              |
+| de.griefed.serverpackcreator.serverpack.script.template.sh           | Path to the default Shell-template used for start-script generation.                                                                                                                   |
+| de.griefed.serverpackcreator.serverpack.java.template.ps1            | Path to the default PowerShell-template used for Java-installation-script generation.                                                                                                  |
+| de.griefed.serverpackcreator.serverpack.java.template.sh             | Path to the default Shell-template used for Java-installation-script generation.                                                                                                       |
+| de.griefed.serverpackcreator.serverpack.update                       | `true` or `false`. Whether ServerPackCreator should attempt to update a server pack which was previously generated through ServerPackCreator. Requires overwrites to be disabled.      |
 
-`application.properties`
+If at any point you wish to override one of these properties (apart from the ones which get dynamically updated), you may
+place an `overrides.properties` in your ServerPackCreator home-directory. Any property in that file will override any
+already existing one during start-up. Check the logs when using overrides, as any property loaded from your overrides will be printed to the
+logs, too.
 
-```properties
-server.port=8080
-server.error.whitelabel.enabled=false
-server.tomcat.basedir=.
-server.tomcat.accesslog.enabled=true
-server.tomcat.accesslog.directory=logs
-server.tomcat.accesslog.file-date-format=_yyyy-MM-dd
-server.tomcat.accesslog.prefix=tomcat_access
-server.tomcat.accesslog.suffix=.log
-server.tomcat.accesslog.pattern=common
-spring.output.ansi.enabled=ALWAYS
-server.error.include-message=ALWAYS
-server.error.include-stacktrace=ALWAYS
-spring.application.name=ServerPackCreator
-spring.datasource.url=org.hibernate.dialect.PostgreSQLDialect
-spring.datasource.driver-class-name=org.postgresql.Driver
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
-spring.jpa.open-in-view=false
-spring.jdbc.template.query-timeout=3600
-spring.transaction.default-timeout=3600
-spring.datasource.tomcat.max-active=50
-spring.datasource.tomcat.max-idle=15
-spring.datasource.tomcat.min-idle=8
-spring.servlet.multipart.max-file-size=500MB
-spring.servlet.multipart.max-request-size=500MB
-spring.config.import=classpath:application.properties,classpath:serverpackcreator.properties,optional:file:./serverpackcreator.properties
-```
 
-If a property above has no description in the table below, it is not to be touched. Changing any of
+If any `spring.*` or `server.*` property above has no description in the table below, it is not to be touched. Changing any of
 these can break ServerPackCreator or cause otherwise unwanted behaviour.
 Changes to properties not described below are not supported. If you changed a property you were not
 meant to fiddle around with, do not report an issue. Such issues will be closed without further
 comment.
+
 
 | Property                                  | Description                                                               |
 |-------------------------------------------|---------------------------------------------------------------------------|
@@ -781,6 +957,8 @@ comment.
 | spring.servlet.multipart.max-file-size    | Maximum filesize for uploads.                                             |
 | spring.servlet.multipart.max-request-size | Maximum request size for file uploads.                                    |
 | spring.config.import                      | Additional properties-file to import properties from.                     |
+| spring.datasource.password                | Password to authenticate against the specified database with.             |
+| spring.datasource.username                | Username to authenticate against the specified database with.             |
 
 ## i18n in ServerPackCreator
 
@@ -849,24 +1027,34 @@ That being said: You can delete a server pack by removing the corresponding file
 ## Keeping Data
 
 You can disable the cleanup of an already generated server pack in order to keep data between generations.
-This is useful if you ran the server pack and generated a world or similar things. Scripts, icon and properties will always be updated.
+This is useful if you ran the server pack and generated world or similar. Scripts, icon and properties will always be updated
 
 Keep in mind, though, that any ZIP-archived generated this way may contain data which is not allowed on platforms such as Modrinth or CurseForge.
-Turning overwrites off is probably most useful if the modpack from which the server pack is generated didn't have a change of mods or mod-configs
-between generations.
 
 You may also run the risk of having duplicate mods if the mods in your modpack change or are updated between generations.
-If overwrites, and thus cleanups, are disabled, and you run into this, then only you yourself are to blame. 😅
-You have been warned.
+If overwrites, and thus cleanups, are disabled, and you run into this
+
+### Updating Server Packs (Experimental, v6.0.0 and up)
+
+An experimental feature allows you to update your server pack without losing data. If you've run your server pack locally, played around a bit
+and have a world you would like to keep, losing this data due to re-generating your server pack would suck. (MAKE BACKUPS!)
+
+In order to try out updating your server packs, *deactivate* `Server Pack Overrides` and *activate* `Update Server Packs`:
+
+![updating_server_packs](img/updating_server_packs.png)
+
+If you are using ServerPackCreator from the commandline, change the following properties to:
+
+```properties
+de.griefed.serverpackcreator.serverpack.overwrite.enabled=false
+de.griefed.serverpackcreator.serverpack.update=true
+```
 
 ## Multiple Java Installations
 
 If you manage multiple modpacks and they require different Java versions to run, then you can make use of ServerPackCreators
-feature to store paths to your Java installations of different versions. Changing the Minecraft version for your server pack will then update
-the path to the Java installation in the Advanced-Section to reflect the required Java-install.
-
-This feature is most helpful when you want to quickly test the generated server pack without having to meddle with the
-Java path inside the `variables.txt` yourself.
+feature to use store paths to your Java installations. Changing the Miencraft version for your server pack will then update
+the path to the Java installation in the Advanced-Section to reflect the required Java install.
 
 Note: This path will not be present in the `variables.txt` in the ZIP-archive of your server pack. If you disabled `Server Pack Overwrites`, then the updated Java path may end up in the `variables.txt` inside the ZIP-archive. Use with caution!
 

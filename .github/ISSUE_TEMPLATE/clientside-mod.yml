@@ -1,6 +1,6 @@
 name: Clientside-mod Addition Request
 description: Request a mod to be added to the official list of clientside-only mods.
-title: "[Clientside-mod Addition Request]: "
+title: "[Clientside-mod Addition Request]: <Name of the Mod>"
 labels: ["enhancement"]
 assignees:
   - Griefed
@@ -9,15 +9,31 @@ body:
     attributes:
       value: |
         Thank you for submitting a clientside-only mod to the official list in ServerPackCreator!
+        
+        Once the mod has been added to the list, make sure to reset your own list in your server pack config in ServerPackCreator.
+        Head to the `Advanced`-section of a given server pack config, in there, there is the server pack specific list of clientside-only mods.
+        You can change it to your hearts desire, but more importantly: If you want to have the latest official list, use the buttons on the right
+        to reset it to the default value.
+        
+        You may also use this list to confirm that the removal of a given mod prevents the server from crashing **before** submitting
+        a clientside-only mod request here. :)
   - type: input
     id: link
     attributes:
       label: The link to the project on CurseForge or Modrinth
       description: Provide the link to the project of this mod. Said link is required so I can verify that this is indeed a clientside-only mod.
-      placeholder: https://www.curseforge.com/minecraft/mc-mods/blind-accessibility
+      placeholder: https://www.curseforge.com/minecraft/mc-mods/some-mod
       value: "Provide the link to the project of this mod. Said link is required so I can verify that this is indeed a clientside-only mod."
     validations:
       required: true
+  - type: checkboxes
+    id: informed
+    attributes:
+      label: I have informed the developer of the mod about their mod crashing a server
+      description: Before submitting a clientside-only mod to ServerPackCreator, please inform the developer of the mod in question about their mod crashing a given Minecraft server.
+      options:
+        - label: I have informed the developer
+          required: true
   - type: checkboxes
     id: terms
     attributes:

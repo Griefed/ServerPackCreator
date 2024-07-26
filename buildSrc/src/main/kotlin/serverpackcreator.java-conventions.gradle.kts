@@ -5,6 +5,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.prefs.Preferences
 
 repositories {
     mavenCentral()
@@ -99,6 +100,11 @@ fun cleanup() {
         .forEach {
             it.deleteRecursively()
         }
+    Preferences.userRoot().node("ServerPackCreator").removeNode()
+    Preferences.userRoot().node("ServerPackCreator").put(
+        "de.griefed.serverpackcreator.home",
+        projectDir.resolve("tests").absolutePath
+    )
 }
 
 tasks.jar {
@@ -106,8 +112,6 @@ tasks.jar {
     manifest {
         attributes(
             mapOf(
-                "Implementation-Title" to project.name,
-                "Implementation-Version" to project.version,
                 "Built-By" to System.getProperty("user.name"),
                 "Build-Timestamp" to SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(Date()),
                 "Created-By" to "Gradle ${gradle.gradleVersion}",
@@ -126,39 +130,6 @@ tasks.jar {
 }
 
 publishing {
-    publications.withType<MavenPublication> {
-        groupId = project.group.toString()
-        artifactId = project.name
-        version = project.version.toString()
-        artifact(tasks["javadocJar"])
-        pom {
-            name.set("ServerPackCreator")
-            description.set("ServerPackCreators API, to create server packs from Forge, Fabric, Quilt, LegacyFabric and NeoForge modpacks.")
-            url.set("https://git.griefed.de/Griefed/ServerPackCreator")
-
-            licenses {
-                license {
-                    name.set("GNU Lesser General Public License v2.1")
-                    url.set("https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html")
-                }
-            }
-
-            developers {
-                developer {
-                    id.set("griefed")
-                    name.set("Griefed")
-                    email.set("griefed@griefed.de")
-                }
-            }
-
-            scm {
-                connection.set("scm:git:git:git.griefed.de/Griefed/ServerPackCreator.git")
-                developerConnection.set("scm:git:ssh://git.griefed.de/Griefed/ServerPackCreator.git")
-                url.set("https://git.griefed.de/Griefed/ServerPackCreator")
-            }
-        }
-    }
-
     repositories {
         maven {
             name = "GitHubPackages"
@@ -188,6 +159,41 @@ publishing {
             }
             authentication {
                 create<HttpHeaderAuthentication>("header")
+            }
+        }
+    }
+
+    publications {
+        register("mavenJava", MavenPublication::class) {
+            groupId = project.group.toString()
+            artifactId = project.name
+            version = project.version.toString()
+            artifact(tasks["javadocJar"])
+            pom {
+                name.set("ServerPackCreator")
+                description.set("ServerPackCreators API, to create server packs from Forge, Fabric, Quilt, LegacyFabric and NeoForge modpacks.")
+                url.set("https://git.griefed.de/Griefed/ServerPackCreator")
+
+                licenses {
+                    license {
+                        name.set("GNU Lesser General Public License v2.1")
+                        url.set("https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html")
+                    }
+                }
+
+                developers {
+                    developer {
+                        id.set("griefed")
+                        name.set("Griefed")
+                        email.set("griefed@griefed.de")
+                    }
+                }
+
+                scm {
+                    connection.set("scm:git:git:git.griefed.de/Griefed/ServerPackCreator.git")
+                    developerConnection.set("scm:git:ssh://git.griefed.de/Griefed/ServerPackCreator.git")
+                    url.set("https://git.griefed.de/Griefed/ServerPackCreator")
+                }
             }
         }
     }

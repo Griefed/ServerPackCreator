@@ -1,0 +1,67 @@
+name: Continuous
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+jobs:
+  continuous:
+    name: "Continuous Pre-Release"
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v4.1.1
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+          check-latest: true
+          cache: 'gradle'
+
+      - uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: wrapper
+
+      - uses: luangong/setup-install4j@v1
+        with:
+          version: 10.0.8
+          license: ${{ secrets.INSTALL4J_LICENSE }}
+
+      - name: Set Permissions
+        run: |
+          chmod +x gradlew
+
+      - name: Build with Gradle
+        run: |
+          ./gradlew generateLicenseReport --info --full-stacktrace
+          ./gradlew build --info --full-stacktrace
+          ./gradlew media --info --full-stacktrace
+
+      - name: Generate checksum
+        uses: jmgilman/actions-generate-checksum@v1
+        with:
+          patterns: |
+            media/*.dmg
+            media/*.sh
+            media/*.exe
+            serverpackcreator-app/build/libs/serverpackcreator-app-dev.jar
+            serverpackcreator-plugin-example/build/libs/serverpackcreator-plugin-example-dev.jar
+
+      - name: Upload to GitHub Releases
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "continuous"
+          prerelease: true
+          title: "Development Build ${{ github.sha }}"
+          files: |
+            ./checksum.txt
+            ./media/*.dmg
+            ./media/*.sh
+            ./media/*.exe
+            ./serverpackcreator-app/build/libs/serverpackcreator-app-dev.jar
+            ./serverpackcreator-plugin-example/build/libs/serverpackcreator-plugin-example-dev.jar

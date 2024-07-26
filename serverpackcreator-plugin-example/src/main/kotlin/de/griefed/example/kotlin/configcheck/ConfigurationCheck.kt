@@ -27,8 +27,8 @@ package de.griefed.example.kotlin.configcheck
 import com.electronwill.nightconfig.core.CommentedConfig
 import com.electronwill.nightconfig.toml.TomlWriter
 import de.griefed.serverpackcreator.api.ApiProperties
-import de.griefed.serverpackcreator.api.ConfigCheck
-import de.griefed.serverpackcreator.api.PackConfig
+import de.griefed.serverpackcreator.api.config.ConfigCheck
+import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.api.plugins.configurationhandler.ConfigCheckExtension
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
