@@ -1,3 +1,39 @@
+## [6.0.0-beta.23](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.22...6.0.0-beta.23) (2024-07-26)
+
+
+### :scissors: Refactor
+
+* Reorder code to improve readibility ([4562342](https://git.griefed.de/Griefed/ServerPackCreator/commit/456234254658ccddcff3d40867086e012624b2cf))
+
+
+### 👀 Reverts
+
+* Set Writerside version back to 241.15989 for the time being ([1d9fbbd](https://git.griefed.de/Griefed/ServerPackCreator/commit/1d9fbbdf078d311ebdb871bd2a48ea42f9265987))
+
+
+### 📔 Docs
+
+* Add comments, descriptions and explanations for the scripts ([013d2d8](https://git.griefed.de/Griefed/ServerPackCreator/commit/013d2d87d3fd288a498f0168dece748c3499031c))
+* Changelogs, again :D ([3d06b76](https://git.griefed.de/Griefed/ServerPackCreator/commit/3d06b76c29281acb1770616b07f02b9d8778834c))
+* Fix function typo in comment ([ac30d87](https://git.griefed.de/Griefed/ServerPackCreator/commit/ac30d87897ddeb5aa379d134d32db4f6f7565685))
+* Remove licenses and reports. CI ensures they are present during build ([1960ffb](https://git.griefed.de/Griefed/ServerPackCreator/commit/1960ffb3a26caf930214c35d320b57bb848c33c5))
+
+
+### 📦 Other
+
+* Add continuously changing docs to ignore list. Add them during build. ([588f69f](https://git.griefed.de/Griefed/ServerPackCreator/commit/588f69fbf9adbb004495fba7800f847a1f0caf8c))
+
+
+### 🦊 CI/CD
+
+* Remove unnecessary delete ([0ecdb38](https://git.griefed.de/Griefed/ServerPackCreator/commit/0ecdb380931db9221627380f3fc15b33fac1d966))
+* Add checksum for continous release ([ea379ea](https://git.griefed.de/Griefed/ServerPackCreator/commit/ea379eaee75c1b7f591cf59343c1ccd778468c46))
+* Add workflow for continuous build releases for the develop branch ([0b5d06b](https://git.griefed.de/Griefed/ServerPackCreator/commit/0b5d06b433cbf756f52f7cbe758e82ea255ad7f5))
+* Fix app jar path ([6528266](https://git.griefed.de/Griefed/ServerPackCreator/commit/65282662504eb78d0016cd176ccbb1355d91f026))
+* Fix artifact names to include them in the continuous release ([4d0c7ae](https://git.griefed.de/Griefed/ServerPackCreator/commit/4d0c7ae3d10406debf348aa9fcc5097732867d56))
+* Rename workflow and release title to fit use-case ([89be54e](https://git.griefed.de/Griefed/ServerPackCreator/commit/89be54ea5ffe238068a35513621c7fc6f2bb4bdc))
+* Update Writerside docker image ([42eb815](https://git.griefed.de/Griefed/ServerPackCreator/commit/42eb815913dd44f7802704448a84f63ce6b3712d))
+
 ## [6.0.0-beta.22](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0-beta.21...6.0.0-beta.22) (2024-07-22)
 
 
