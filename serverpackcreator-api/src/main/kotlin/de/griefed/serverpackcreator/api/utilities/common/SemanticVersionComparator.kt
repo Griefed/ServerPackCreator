@@ -27,6 +27,44 @@ package de.griefed.serverpackcreator.api.utilities.common
  */
 class SemanticVersionComparator {
     companion object {
+
+        /**
+         * Check a list of versions following the semantic-scheme and find the latest one.
+         *
+         * @author Griefed
+         *
+         * @throws NumberFormatException If any of the versions in the list can not be parsed correctly, possibly due to
+         * not being in the expected semantic-format, or because they contain letters.
+         */
+        fun findNewestVersion(versions: List<String>): String {
+            var newest = versions[0]
+            for (version in versions) {
+                if (!versions.all { compareSemantics(newest, version) }) {
+                    newest = version
+                }
+            }
+            return newest
+        }
+
+        /**
+         * Check a list of versions following the semantic-scheme and find the oldest one.
+         *
+         * @author Griefed
+         *
+         * @throws NumberFormatException If any of the versions in the list can not be parsed correctly, possibly due to
+         * not being in the expected semantic-format, or because they contain letters.
+         */
+        fun findOldestVersion(versions: List<String>): String {
+            var oldest = versions[0]
+            var i = 0
+            for (version in versions) {
+                if (versions.all { compareSemantics(oldest, version, Comparison.EQUAL_OR_NEW) }) {
+                    oldest = version
+                }
+            }
+            return oldest
+        }
+
         /**
          * Compare the given new version against the given current version, depending on comparison type `EQUAL`,
          * `NEW`, or `EQUAL_OR_NEW`.
