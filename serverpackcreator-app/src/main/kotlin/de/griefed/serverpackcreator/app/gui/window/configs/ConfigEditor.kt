@@ -71,9 +71,9 @@ class ConfigEditor(
     private val validationChangeListener = object : DocumentChangeListener { override fun update(e: DocumentEvent) { validateInputFields() }}
     private val validationActionListener = ActionListener { validateInputFields() }
     private val updateMinecraftActionListener = ActionListener { updateMinecraftValues() }
-    private val legacyFabricModel = DefaultComboBoxModel(apiWrapper.versionMeta.legacyFabric.loaderVersionsArrayDescending())
-    private val fabricModel = DefaultComboBoxModel(apiWrapper.versionMeta.fabric.loaderVersionsArrayDescending())
-    private val quiltModel = DefaultComboBoxModel(apiWrapper.versionMeta.quilt.loaderVersionsArrayDescending())
+    private val legacyFabricModel = DefaultComboBoxModel(apiWrapper.versionMeta.legacyFabric.loaderVersions().toTypedArray())
+    private val fabricModel = DefaultComboBoxModel(apiWrapper.versionMeta.fabric.loaderVersions().reversed().toTypedArray())
+    private val quiltModel = DefaultComboBoxModel(apiWrapper.versionMeta.quilt.loaderVersions().reversed().toTypedArray())
 
     private val modpackIcon = StatusIcon(guiProps,Translations.createserverpack_gui_createserverpack_labelmodpackdir_tip.toString())
     private val modpackLabel = ElementLabel(Translations.createserverpack_gui_createserverpack_labelmodpackdir.toString())
@@ -111,7 +111,7 @@ class ConfigEditor(
 
     private val mcVersionIcon = StatusIcon(guiProps,Translations.createserverpack_gui_createserverpack_labelminecraft_tip.toString())
     private val mcVersionLabel = ElementLabel(Translations.createserverpack_gui_createserverpack_labelminecraft.toString())
-    private val mcVersionSetting = ActionComboBox(DefaultComboBoxModel(apiWrapper.versionMeta.minecraft.settingsDependantVersionsArrayDescending()),updateMinecraftActionListener)
+    private val mcVersionSetting = ActionComboBox(DefaultComboBoxModel(apiWrapper.versionMeta.minecraft.settingsDependantVersions()),updateMinecraftActionListener)
 
     private val javaVersionIcon = StatusIcon(guiProps,Translations.createserverpack_gui_createserverpack_minecraft_java_tooltip.toString())
     private val javaVersionLabel = ElementLabel(Translations.createserverpack_gui_createserverpack_minecraft_java.toString(), 16)
@@ -806,10 +806,10 @@ class ConfigEditor(
      * @author Griefed
      */
     private fun updateForgeModel(minecraftVersion: String = mcVersionSetting.selectedItem!!.toString()) {
-        if (apiWrapper.versionMeta.forge.supportedForgeVersionsDescendingArray(minecraftVersion).isPresent) {
+        if (apiWrapper.versionMeta.forge.isMinecraftVersionSupported(minecraftVersion)) {
             setModloaderVersions(
                 DefaultComboBoxModel(
-                    apiWrapper.versionMeta.forge.supportedForgeVersionsDescendingArray(minecraftVersion).get()
+                    apiWrapper.versionMeta.forge.supportedForgeVersions(minecraftVersion).get().toTypedArray()
                 )
             )
         } else {
@@ -825,10 +825,10 @@ class ConfigEditor(
      * @author Griefed
      */
     private fun updateNeoForgeModel(minecraftVersion: String = mcVersionSetting.selectedItem!!.toString()) {
-        if (apiWrapper.versionMeta.neoForge.supportedNeoForgeVersionsDescendingArray(minecraftVersion).isPresent) {
+        if (apiWrapper.versionMeta.neoForge.isMinecraftVersionSupported(minecraftVersion)) {
             setModloaderVersions(
                 DefaultComboBoxModel(
-                    apiWrapper.versionMeta.neoForge.supportedNeoForgeVersionsDescendingArray(minecraftVersion).get()
+                    apiWrapper.versionMeta.neoForge.supportedNeoForgeVersions(minecraftVersion).get().toTypedArray()
                 )
             )
         } else {

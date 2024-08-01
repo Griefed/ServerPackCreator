@@ -35,9 +35,7 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @CrossOrigin(origins = ["*"])
 @RequestMapping("/api/v2/versions")
-class VersionsController @Autowired constructor(
-    private val versionMeta: VersionMeta
-) {
+class VersionsController @Autowired constructor(private val versionMeta: VersionMeta) {
 
     /**
      * Get a list of all modloader versions that are not forge.
@@ -48,10 +46,10 @@ class VersionsController @Autowired constructor(
     @GetMapping("/all", produces = ["application/json"])
     fun availableVersions(): ResponseEntity<VersionMetaResponse> {
         val versionMetaResponse = VersionMetaResponse(
-            minecraft = versionMeta.minecraft.releaseVersionsDescending(),
-            fabric = versionMeta.fabric.loaderVersionsListDescending(),
-            legacyFabric = versionMeta.legacyFabric.loaderVersionsListDescending(),
-            quilt = versionMeta.quilt.loaderVersionsListDescending(),
+            minecraft = versionMeta.minecraft.clientReleases().map { it.version },
+            fabric = versionMeta.fabric.loaderVersions().reversed(),
+            legacyFabric = versionMeta.legacyFabric.loaderVersions(),
+            quilt = versionMeta.quilt.loaderVersions().reversed(),
             forge = versionMeta.forge.getForgeMeta(),
             neoForge = versionMeta.neoForge.getNeoForgeMeta()
         )
@@ -70,7 +68,7 @@ class VersionsController @Autowired constructor(
     fun availableMinecraftVersions(): ResponseEntity<List<String>> {
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
-            .body(versionMeta.minecraft.releaseVersionsDescending())
+            .body(versionMeta.minecraft.clientReleases().map { it.version })
     }
 
     /**
@@ -82,7 +80,7 @@ class VersionsController @Autowired constructor(
      */
     @GetMapping("/forge/{minecraftversion}", produces = ["application/json"])
     fun availableForgeVersionsForMinecraftVersion(@PathVariable("minecraftversion") minecraftVersion: String): ResponseEntity<List<String>> {
-        val versions = versionMeta.forge.supportedForgeVersionsDescending(minecraftVersion)
+        val versions = versionMeta.forge.supportedForgeVersions(minecraftVersion)
         return if (versions.isPresent) {
             ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
@@ -126,7 +124,7 @@ class VersionsController @Autowired constructor(
      */
     @GetMapping("/neoforge/{minecraftversion}", produces = ["application/json"])
     fun availableNeoForgeVersionsForMinecraftVersion(@PathVariable("minecraftversion") minecraftVersion: String): ResponseEntity<List<String>> {
-        val versions = versionMeta.neoForge.supportedNeoForgeVersionsDescending(minecraftVersion)
+        val versions = versionMeta.neoForge.supportedNeoForgeVersions(minecraftVersion)
         return if (versions.isPresent) {
             return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
@@ -147,7 +145,7 @@ class VersionsController @Autowired constructor(
     fun availableFabricVersions(): ResponseEntity<List<String>> {
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
-            .body(versionMeta.fabric.loaderVersionsListDescending())
+            .body(versionMeta.fabric.loaderVersions().reversed())
     }
 
     /**
@@ -160,7 +158,7 @@ class VersionsController @Autowired constructor(
     fun availableLegacyFabricVersions(): ResponseEntity<List<String>> {
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
-            .body(versionMeta.legacyFabric.loaderVersionsListDescending())
+            .body(versionMeta.legacyFabric.loaderVersions())
     }
 
     /**
@@ -173,6 +171,6 @@ class VersionsController @Autowired constructor(
     fun availableQuiltVersions(): ResponseEntity<List<String>> {
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
-            .body(versionMeta.quilt.loaderVersionsListDescending())
+            .body(versionMeta.quilt.loaderVersions().reversed())
     }
 }
