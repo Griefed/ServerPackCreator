@@ -97,42 +97,12 @@ class FabricMeta(
     /**
      * @author Griefed
      */
-    override fun loaderVersionsListAscending() = fabricLoader.loaders
+    override fun loaderVersions() = fabricLoader.loaders
 
     /**
      * @author Griefed
      */
-    override fun loaderVersionsListDescending() = fabricLoader.loaders.reversed()
-
-    /**
-     * @author Griefed
-     */
-    override fun loaderVersionsArrayAscending() = fabricLoader.loaders.toTypedArray()
-
-    /**
-     * @author Griefed
-     */
-    override fun loaderVersionsArrayDescending() = fabricLoader.loaders.reversed().toTypedArray()
-
-    /**
-     * @author Griefed
-     */
-    override fun installerVersionsListAscending() = fabricInstaller.installers
-
-    /**
-     * @author Griefed
-     */
-    override fun installerVersionsListDescending() = fabricInstaller.installers.reversed()
-
-    /**
-     * @author Griefed
-     */
-    override fun installerVersionsArrayAscending() = fabricInstaller.installers.toTypedArray()
-
-    /**
-     * @author Griefed
-     */
-    override fun installerVersionsArrayDescending() = fabricInstaller.installers.reversed().toTypedArray()
+    override fun installerVersions() = fabricInstaller.installers
 
     /**
      * @author Griefed

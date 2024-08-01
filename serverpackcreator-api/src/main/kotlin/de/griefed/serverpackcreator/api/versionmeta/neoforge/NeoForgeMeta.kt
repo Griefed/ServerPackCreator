@@ -194,8 +194,9 @@ class NeoForgeMeta(
     fun newestNeoForgeVersion(minecraftVersion: String) =
         if (!isMinecraftVersionSupported(minecraftVersion)) {
             Optional.empty()
-        } else if (supportedNeoForgeVersionsAscending(minecraftVersion).isPresent) {
-            Optional.of(supportedNeoForgeVersionsDescending(minecraftVersion).get()[0])
+        } else if (supportedNeoForgeVersions(minecraftVersion).isPresent) {
+            val supported = supportedNeoForgeVersions(minecraftVersion).get()
+            Optional.ofNullable(supported[0])
         } else {
             Optional.empty()
         }
@@ -210,9 +211,8 @@ class NeoForgeMeta(
     fun oldestNeoForgeVersion(minecraftVersion: String) =
         if (!isMinecraftVersionSupported(minecraftVersion)) {
             Optional.empty()
-        } else if (supportedNeoForgeVersionsAscending(minecraftVersion).isPresent) {
-            val supported = supportedNeoForgeVersionsAscending(minecraftVersion).get()
-            Optional.ofNullable(supported[0])
+        } else if (supportedNeoForgeVersions(minecraftVersion).isPresent) {
+            Optional.of(supportedNeoForgeVersions(minecraftVersion).get()[0])
         } else {
             Optional.empty()
         }
@@ -223,31 +223,7 @@ class NeoForgeMeta(
      * @return List of available NeoForge versions.
      * @author Griefed
      */
-    fun neoForgeVersionsAscending() = neoForgeLoader!!.neoForgeVersions.reversed().toMutableList()
-
-    /**
-     * Get the list of available NeoForge versions, in descending order.
-     *
-     * @return List of available NeoForge versions.
-     * @author Griefed
-     */
-    fun neoForgeVersionsDescending() = neoForgeVersionsAscending().toList()
-
-    /**
-     * Get the array of available NeoForge versions, in ascending order.
-     *
-     * @return Array of available NeoForge versions.
-     * @author Griefed
-     */
-    fun neoForgeVersionsAscendingArray() = neoForgeVersionsAscending().toTypedArray()
-
-    /**
-     * Get the array of available NeoForge versions, in descending order.
-     *
-     * @return Array of available NeoForge versions.
-     * @author Griefed
-     */
-    fun neoForgeVersionsDescendingArray() = neoForgeVersionsDescending().toTypedArray()
+    fun neoForgeVersions() = neoForgeLoader!!.neoForgeVersions
 
     /**
      * Get a list of available NeoForge version for a given Minecraft version in ascending order.
@@ -256,59 +232,8 @@ class NeoForgeMeta(
      * @return List of available NeoForge versions for the given Minecraft version in ascending order.
      * @author Griefed
      */
-    fun supportedNeoForgeVersionsAscending(minecraftVersion: String) =
-        Optional.ofNullable(neoForgeLoader?.versionMeta?.get(minecraftVersion)?.reversed())
-
-    /**
-     * Get a list of available NeoForge version for a given Minecraft version in descending order.
-     *
-     * @param minecraftVersion Minecraft version.
-     * @return List of available NeoForge versions for the given Minecraft version in descending order.
-     * @author Griefed
-     */
-    fun supportedNeoForgeVersionsDescending(minecraftVersion: String) =
-        if (!isMinecraftVersionSupported(minecraftVersion)) {
-            Optional.empty()
-        } else {
-            Optional.ofNullable(neoForgeLoader?.versionMeta?.get(minecraftVersion))
-        }
-
-
-    /**
-     * Get an array of available NeoForge version for a given Minecraft version, in ascending order,
-     * wrapped in an [Optional].
-     *
-     * @param minecraftVersion Minecraft version.
-     * @return Array of available NeoForge versions for the given Minecraft version, in ascending order,
-     * wrapped in an [Optional]
-     * @author Griefed
-     */
-    fun supportedNeoForgeVersionsAscendingArray(minecraftVersion: String) =
-        if (!isMinecraftVersionSupported(minecraftVersion)) {
-            Optional.empty()
-        } else {
-            val supported = supportedNeoForgeVersionsAscending(minecraftVersion).get()
-            Optional.of(
-                supported.toTypedArray()
-            )
-        }
-
-    /**
-     * Get an array of available NeoForge version for a given Minecraft version, in descending order,
-     * wrapped in an [Optional].
-     *
-     * @param minecraftVersion Minecraft version.
-     * @return Array of available NeoForge versions for the given Minecraft version, in descending order,
-     * wrapped in an [Optional]
-     * @author Griefed
-     */
-    fun supportedNeoForgeVersionsDescendingArray(minecraftVersion: String) =
-        if (!isMinecraftVersionSupported(minecraftVersion)) {
-            Optional.empty()
-        } else {
-            val supported = supportedNeoForgeVersionsDescending(minecraftVersion).get()
-            Optional.of(supported.toTypedArray())
-        }
+    fun supportedNeoForgeVersions(minecraftVersion: String) =
+        Optional.ofNullable(neoForgeLoader?.versionMeta?.get(minecraftVersion))
 
     /**
      * Get the Minecraft version for a given NeoForge version, wrapped in an [Optional].
@@ -326,31 +251,7 @@ class NeoForgeMeta(
      * @return List of NeoForge supported Minecraft versions, in ascending order.
      * @author Griefed
      */
-    fun supportedMinecraftVersionsAscending() = neoForgeLoader!!.minecraftVersions
-
-    /**
-     * Get the list of NeoForge supported Minecraft versions, in descending order.
-     *
-     * @return List of NeoForge supported Minecraft versions, in descending order.
-     * @author Griefed
-     */
-    fun supportedMinecraftVersionsDescending() = supportedMinecraftVersionsAscending().reversed()
-
-    /**
-     * Get the array of NeoForge supported Minecraft versions, in ascending order.
-     *
-     * @return Array of NeoForge supported Minecraft versions, in ascending order.
-     * @author Griefed
-     */
-    fun supportedMinecraftVersionsAscendingArray() = supportedMinecraftVersionsAscending().toTypedArray()
-
-    /**
-     * Get the array of NeoForge supported Minecraft versions, in descending order.
-     *
-     * @return Array of NeoForge supported Minecraft versions, in descending order.
-     * @author Griefed
-     */
-    fun supportedMinecraftVersionsDescendingArray() = supportedMinecraftVersionsDescending().toTypedArray()
+    fun supportedMinecraftVersions() = neoForgeLoader!!.minecraftVersions
 
     /**
      * Get the NeoForge server installer URL for a given NeoForge version, wrapped in an [Optional].

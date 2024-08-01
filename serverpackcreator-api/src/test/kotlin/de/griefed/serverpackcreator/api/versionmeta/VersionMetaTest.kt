@@ -28,27 +28,11 @@ class VersionMetaTest {
         Assertions.assertNotNull(versionMeta.minecraft.latestRelease().minecraftServer)
         Assertions.assertNotNull(versionMeta.minecraft.latestRelease().url)
         Assertions.assertEquals(versionMeta.minecraft.latestRelease().type, Type.RELEASE)
-        Assertions.assertNotNull(versionMeta.minecraft.releaseVersionsDescending())
-        Assertions.assertNotNull(versionMeta.minecraft.releaseVersionsAscending())
-        Assertions.assertNotNull(versionMeta.minecraft.releaseVersionsArrayDescending())
-        Assertions.assertEquals(
-            versionMeta.minecraft.releaseVersionsArrayDescending().size,
-            versionMeta.minecraft.releaseVersionsDescending().size
-        )
-        Assertions.assertEquals(
-            versionMeta.minecraft.releaseVersionsArrayDescending()[0],
-            versionMeta.minecraft.releaseVersionsArrayAscending().last()
-        )
-        Assertions.assertNotNull(versionMeta.minecraft.releaseVersionsArrayAscending())
-        Assertions.assertEquals(
-            versionMeta.minecraft.releaseVersionsArrayAscending().size,
-            versionMeta.minecraft.releaseVersionsAscending().size
-        )
-        Assertions.assertEquals(
-            versionMeta.minecraft.releaseVersionsArrayAscending()[0],
-            versionMeta.minecraft.releaseVersionsArrayDescending().last()
-        )
-        for (release in versionMeta.minecraft.releasesDescending()) {
+        Assertions.assertNotNull(versionMeta.minecraft.allVersions())
+        Assertions.assertNotNull(versionMeta.minecraft.clientReleases())
+        Assertions.assertNotNull(versionMeta.minecraft.clientSnapshots())
+        Assertions.assertNotNull(versionMeta.minecraft.serverReleases())
+        for (release in versionMeta.minecraft.clientReleases()) {
             Assertions.assertNotNull(release)
             Assertions.assertNotNull(release.version)
             Assertions.assertNotNull(release.minecraftServer)
@@ -67,27 +51,7 @@ class VersionMetaTest {
         Assertions.assertNotNull(versionMeta.minecraft.latestSnapshot().version)
         Assertions.assertNotNull(versionMeta.minecraft.latestSnapshot().url)
         Assertions.assertEquals(versionMeta.minecraft.latestSnapshot().type, Type.SNAPSHOT)
-        Assertions.assertNotNull(versionMeta.minecraft.snapshotVersionsDescending())
-        Assertions.assertNotNull(versionMeta.minecraft.snapshotVersionsAscending())
-        Assertions.assertNotNull(versionMeta.minecraft.snapshotVersionsArrayDescending())
-        Assertions.assertEquals(
-            versionMeta.minecraft.snapshotVersionsArrayDescending().size,
-            versionMeta.minecraft.snapshotVersionsDescending().size
-        )
-        Assertions.assertEquals(
-            versionMeta.minecraft.snapshotVersionsArrayDescending()[0],
-            versionMeta.minecraft.snapshotVersionsArrayAscending().last()
-        )
-        Assertions.assertNotNull(versionMeta.minecraft.snapshotVersionsArrayAscending())
-        Assertions.assertEquals(
-            versionMeta.minecraft.snapshotVersionsArrayAscending().size,
-            versionMeta.minecraft.snapshotVersionsAscending().size
-        )
-        Assertions.assertEquals(
-            versionMeta.minecraft.snapshotVersionsArrayAscending()[0],
-            versionMeta.minecraft.snapshotVersionsArrayDescending().last()
-        )
-        for (release in versionMeta.minecraft.releasesDescending()) {
+        for (release in versionMeta.minecraft.clientReleases()) {
             Assertions.assertNotNull(release)
             Assertions.assertNotNull(release.version)
             Assertions.assertNotNull(release.url)
@@ -102,92 +66,21 @@ class VersionMetaTest {
                 }
             }
         }
-        for (mcVer in versionMeta.minecraft.releaseVersionsAscending()) {
-            Assertions.assertTrue(versionMeta.minecraft.getClient(mcVer).isPresent)
+        for (releaseClient in versionMeta.minecraft.clientReleases()) {
+            Assertions.assertTrue(versionMeta.minecraft.getClient(releaseClient.version).isPresent)
         }
-        Assertions.assertNotNull(versionMeta.minecraft.releasesArrayAscending())
-        Assertions.assertEquals(
-            versionMeta.minecraft.releasesArrayAscending().size,
-            versionMeta.minecraft.releasesAscending().size
-        )
-        Assertions.assertEquals(
-            versionMeta.minecraft.releasesArrayAscending()[0],
-            versionMeta.minecraft.releasesArrayDescending().last()
-        )
-        Assertions.assertNotNull(versionMeta.minecraft.snapshotsDescending())
-        Assertions.assertNotNull(versionMeta.minecraft.snapshotsAscending())
-        Assertions.assertNotNull(versionMeta.minecraft.snapshotsArrayDescending())
-        Assertions.assertEquals(
-            versionMeta.minecraft.snapshotsArrayDescending().size,
-            versionMeta.minecraft.snapshotsDescending().size
-        )
-        Assertions.assertEquals(
-            versionMeta.minecraft.snapshotsArrayDescending()[0],
-            versionMeta.minecraft.snapshotsArrayAscending().last()
-        )
-        Assertions.assertNotNull(versionMeta.minecraft.snapshotsArrayAscending())
-        Assertions.assertEquals(
-            versionMeta.minecraft.snapshotsArrayAscending().size,
-            versionMeta.minecraft.snapshotsAscending().size
-        )
-        Assertions.assertEquals(
-            versionMeta.minecraft.snapshotsArrayAscending()[0],
-            versionMeta.minecraft.snapshotsArrayDescending().last()
-        )
         Assertions.assertNotNull(versionMeta.minecraft.getServer("1.16.5").get())
         Assertions.assertTrue(versionMeta.minecraft.isServerAvailable("1.16.5"))
         Assertions.assertFalse(versionMeta.minecraft.isServerAvailable("1.16.6"))
         Assertions.assertNotNull(versionMeta.minecraft.latestReleaseServer())
         Assertions.assertNotNull(versionMeta.minecraft.latestSnapshotServer())
-        Assertions.assertNotNull(versionMeta.minecraft.releasesServersDescending())
-        Assertions.assertNotNull(versionMeta.minecraft.releasesServersAscending())
-        for (snapshot in versionMeta.minecraft.snapshotsDescending()) {
+        for (snapshot in versionMeta.minecraft.clientSnapshots()) {
             Assertions.assertNotNull(snapshot)
             Assertions.assertNotNull(snapshot.version)
             Assertions.assertNotNull(snapshot.url)
             Assertions.assertEquals(snapshot.type, Type.SNAPSHOT)
         }
-        Assertions.assertNotNull(versionMeta.minecraft.releasesServersArrayDescending())
-        Assertions.assertEquals(
-            versionMeta.minecraft.releasesServersArrayDescending().size,
-            versionMeta.minecraft.releasesServersDescending().size
-        )
-        Assertions.assertEquals(
-            versionMeta.minecraft.releasesServersArrayDescending()[0],
-            versionMeta.minecraft.releasesServersArrayAscending().last()
-        )
-        Assertions.assertNotNull(versionMeta.minecraft.releasesServersArrayAscending())
-        Assertions.assertEquals(
-            versionMeta.minecraft.releasesServersArrayAscending().size,
-            versionMeta.minecraft.releasesServersAscending().size
-        )
-        Assertions.assertEquals(
-            versionMeta.minecraft.releasesServersArrayAscending()[0],
-            versionMeta.minecraft.releasesServersArrayDescending().last()
-        )
-        Assertions.assertNotNull(versionMeta.minecraft.snapshotsServersDescending())
-        Assertions.assertNotNull(versionMeta.minecraft.snapshotsServersAscending())
-        Assertions.assertNotNull(versionMeta.minecraft.snapshotsServersArrayDescending())
-        Assertions.assertEquals(
-            versionMeta.minecraft.snapshotsServersArrayDescending().size,
-            versionMeta.minecraft.snapshotsServersDescending().size
-        )
-        Assertions.assertEquals(
-            versionMeta.minecraft.snapshotsServersArrayDescending()[0],
-            versionMeta.minecraft.snapshotsServersArrayAscending().last()
-        )
-        Assertions.assertNotNull(versionMeta.minecraft.snapshotsServersArrayAscending())
-        Assertions.assertEquals(
-            versionMeta.minecraft.snapshotsServersArrayAscending().size,
-            versionMeta.minecraft.snapshotsServersAscending().size
-        )
-        Assertions.assertEquals(
-            versionMeta.minecraft.snapshotsServersArrayAscending()[0],
-            versionMeta.minecraft.snapshotsServersArrayDescending().last()
-        )
-        for (version in versionMeta.minecraft.snapshotsAscending()) {
-            version.minecraftServer.url().isPresent
-        }
+        Assertions.assertNotNull(versionMeta.minecraft.serverSnapshots())
     }
 
     @Test
@@ -213,11 +106,8 @@ class VersionMetaTest {
         Assertions.assertNotNull(versionMeta.forge.getForgeInstance("40.0.45").get())
         Assertions.assertTrue(versionMeta.forge.getForgeInstance("40.0.45").isPresent)
         Assertions.assertFalse(versionMeta.forge.getForgeInstance("40.0.45123").isPresent)
-        Assertions.assertNotNull(versionMeta.forge.forgeVersionsAscending())
-        Assertions.assertNotNull(versionMeta.forge.forgeVersionsDescending())
-        Assertions.assertNotNull(versionMeta.forge.forgeVersionsAscendingArray())
-        Assertions.assertNotNull(versionMeta.forge.forgeVersionsDescendingArray())
-        for (forgeVersion in versionMeta.forge.forgeVersionsAscending()) {
+        Assertions.assertNotNull(versionMeta.forge.forgeVersions())
+        for (forgeVersion in versionMeta.forge.forgeVersions()) {
             Assertions.assertTrue(versionMeta.forge.getForgeInstance(forgeVersion).isPresent)
             Assertions.assertNotNull(versionMeta.forge.getForgeInstance(forgeVersion).get())
             Assertions.assertNotNull(
@@ -233,7 +123,7 @@ class VersionMetaTest {
                 versionMeta.forge.getForgeInstance(forgeVersion).get().minecraftClient()
             )
         }
-        for (minecraftVersion in versionMeta.forge.supportedMinecraftVersionsAscending()) {
+        for (minecraftVersion in versionMeta.forge.supportedMinecraftVersions()) {
             Assertions.assertTrue(
                 versionMeta.forge.getForgeInstances(minecraftVersion).isPresent
             )
@@ -245,7 +135,7 @@ class VersionMetaTest {
                 Assertions.assertNotNull(instance.minecraftClient())
             }
         }
-        for (minecraftVersion in versionMeta.forge.supportedMinecraftVersionsDescending()) {
+        for (minecraftVersion in versionMeta.forge.supportedMinecraftVersions()) {
             Assertions.assertTrue(
                 versionMeta.forge.getForgeInstances(minecraftVersion).isPresent
             )
@@ -265,71 +155,17 @@ class VersionMetaTest {
         Assertions.assertNotNull(versionMeta.forge.oldestForgeVersion("1.18.2").get())
         Assertions.assertTrue(versionMeta.forge.oldestForgeVersion("1.18.2").isPresent)
         Assertions.assertFalse(versionMeta.forge.oldestForgeVersion("1.18.2123").isPresent)
-        Assertions.assertNotNull(versionMeta.forge.supportedMinecraftVersionsAscendingArray())
-        Assertions.assertEquals(
-            versionMeta.forge.supportedMinecraftVersionsAscendingArray().size,
-            versionMeta.forge.supportedMinecraftVersionsAscending().size
-        )
-        Assertions.assertEquals(
-            versionMeta.forge.supportedMinecraftVersionsAscendingArray()[0],
-            versionMeta.forge.supportedMinecraftVersionsDescendingArray().last()
-        )
-        Assertions.assertNotNull(versionMeta.forge.supportedMinecraftVersionsDescendingArray())
-        Assertions.assertEquals(
-            versionMeta.forge.supportedMinecraftVersionsDescendingArray().size,
-            versionMeta.forge.supportedMinecraftVersionsDescending().size
-        )
-        Assertions.assertEquals(
-            versionMeta.forge.supportedMinecraftVersionsDescendingArray()[0],
-            versionMeta.forge.supportedMinecraftVersionsAscendingArray().last()
-        )
-        Assertions.assertNotNull(versionMeta.forge.supportedForgeVersionsAscending("1.16.5").get())
+        Assertions.assertNotNull(versionMeta.forge.supportedMinecraftVersions())
+        Assertions.assertNotNull(versionMeta.forge.supportedForgeVersions("1.16.5").get())
         Assertions.assertTrue(
-            versionMeta.forge.supportedForgeVersionsAscending("1.16.5").isPresent
+            versionMeta.forge.supportedForgeVersions("1.16.5").isPresent
         )
         Assertions.assertFalse(
-            versionMeta.forge.supportedForgeVersionsAscending("1.16.5123").isPresent
+            versionMeta.forge.supportedForgeVersions("1.16.5123").isPresent
         )
-        Assertions.assertNotNull(versionMeta.forge.supportedForgeVersionsDescending("1.16.5").get())
-        Assertions.assertTrue(
-            versionMeta.forge.supportedForgeVersionsDescending("1.16.5").isPresent
-        )
-        Assertions.assertFalse(
-            versionMeta.forge.supportedForgeVersionsDescending("1.16.5123").isPresent
-        )
+        Assertions.assertNotNull(versionMeta.forge.supportedForgeVersions("1.16.5").get())
         Assertions.assertNotNull(
-            versionMeta.forge.supportedForgeVersionsAscendingArray("1.16.5").get()
-        )
-        Assertions.assertTrue(
-            versionMeta.forge.supportedForgeVersionsAscendingArray("1.16.5").isPresent
-        )
-        Assertions.assertFalse(
-            versionMeta.forge.supportedForgeVersionsAscendingArray("1.16.5123").isPresent
-        )
-        Assertions.assertEquals(
-            versionMeta.forge.supportedForgeVersionsAscendingArray("1.16.5").get().size,
-            versionMeta.forge.supportedForgeVersionsAscending("1.16.5").get().size
-        )
-        Assertions.assertEquals(
-            versionMeta.forge.supportedForgeVersionsAscendingArray("1.16.5").get()[0],
-            versionMeta.forge.supportedForgeVersionsDescendingArray("1.16.5").get().last()
-        )
-        Assertions.assertNotNull(
-            versionMeta.forge.supportedForgeVersionsDescendingArray("1.16.5").get()
-        )
-        Assertions.assertTrue(
-            versionMeta.forge.supportedForgeVersionsDescendingArray("1.16.5").isPresent
-        )
-        Assertions.assertFalse(
-            versionMeta.forge.supportedForgeVersionsDescendingArray("1.16.5123").isPresent
-        )
-        Assertions.assertEquals(
-            versionMeta.forge.supportedForgeVersionsDescendingArray("1.16.5").get().size,
-            versionMeta.forge.supportedForgeVersionsDescending("1.16.5").get().size
-        )
-        Assertions.assertEquals(
-            versionMeta.forge.supportedForgeVersionsDescendingArray("1.16.5").get()[0],
-            versionMeta.forge.supportedForgeVersionsAscendingArray("1.16.5").get().last()
+            versionMeta.forge.supportedForgeVersions("1.16.5").get()
         )
         Assertions.assertNotNull(versionMeta.forge.installerUrl("40.0.45").get())
         Assertions.assertTrue(versionMeta.forge.installerUrl("40.0.45").isPresent)
@@ -338,38 +174,15 @@ class VersionMetaTest {
 
     @Test
     fun fabric() {
-        Assertions.assertNotNull(versionMeta.fabric.loaderVersionsListAscending())
-        Assertions.assertNotNull(versionMeta.fabric.loaderVersionsListDescending())
-        Assertions.assertNotNull(versionMeta.fabric.loaderVersionsArrayAscending())
-        Assertions.assertNotNull(versionMeta.fabric.loaderVersionsArrayDescending())
+        Assertions.assertNotNull(versionMeta.fabric.loaderVersions())
         Assertions.assertNotNull(versionMeta.fabric.latestLoader())
         Assertions.assertNotNull(versionMeta.fabric.releaseLoader())
         Assertions.assertNotNull(versionMeta.fabric.latestInstaller())
         Assertions.assertNotNull(versionMeta.fabric.releaseInstaller())
-        Assertions.assertNotNull(versionMeta.fabric.installerVersionsListAscending())
-        Assertions.assertNotNull(versionMeta.fabric.installerVersionsListDescending())
-        Assertions.assertNotNull(versionMeta.fabric.installerVersionsListAscending())
-        Assertions.assertNotNull(versionMeta.fabric.installerVersionsArrayAscending())
-        Assertions.assertEquals(
-            versionMeta.fabric.installerVersionsArrayAscending().size,
-            versionMeta.fabric.installerVersionsListAscending().size
-        )
-        Assertions.assertEquals(
-            versionMeta.fabric.installerVersionsArrayAscending()[0],
-            versionMeta.fabric.installerVersionsArrayDescending().last()
-        )
-        Assertions.assertNotNull(versionMeta.fabric.installerVersionsArrayDescending())
-        Assertions.assertEquals(
-            versionMeta.fabric.installerVersionsArrayDescending().size,
-            versionMeta.fabric.installerVersionsListDescending().size
-        )
-        Assertions.assertEquals(
-            versionMeta.fabric.installerVersionsArrayDescending()[0],
-            versionMeta.fabric.installerVersionsArrayAscending().last()
-        )
+        Assertions.assertNotNull(versionMeta.fabric.installerVersions())
         Assertions.assertNotNull(versionMeta.fabric.latestInstallerUrl())
         Assertions.assertNotNull(versionMeta.fabric.releaseInstallerUrl())
-        for (version in versionMeta.fabric.installerVersionsListAscending()) {
+        for (version in versionMeta.fabric.installerVersions()) {
             Assertions.assertTrue(versionMeta.fabric.isInstallerUrlAvailable(version))
             Assertions.assertNotNull(versionMeta.fabric.getInstallerUrl(version).get())
         }
@@ -381,38 +194,15 @@ class VersionMetaTest {
 
     @Test
     fun quilt() {
-        Assertions.assertNotNull(versionMeta.quilt.loaderVersionsListAscending())
-        Assertions.assertNotNull(versionMeta.quilt.loaderVersionsListDescending())
-        Assertions.assertNotNull(versionMeta.quilt.loaderVersionsArrayAscending())
-        Assertions.assertNotNull(versionMeta.quilt.loaderVersionsArrayDescending())
+        Assertions.assertNotNull(versionMeta.quilt.loaderVersions())
         Assertions.assertNotNull(versionMeta.quilt.latestLoader())
         Assertions.assertNotNull(versionMeta.quilt.releaseLoader())
         Assertions.assertNotNull(versionMeta.quilt.latestInstaller())
         Assertions.assertNotNull(versionMeta.quilt.releaseInstaller())
-        Assertions.assertNotNull(versionMeta.quilt.installerVersionsListAscending())
-        Assertions.assertNotNull(versionMeta.quilt.installerVersionsListDescending())
-        Assertions.assertNotNull(versionMeta.quilt.installerVersionsListAscending())
-        Assertions.assertNotNull(versionMeta.quilt.installerVersionsArrayAscending())
-        Assertions.assertEquals(
-            versionMeta.quilt.installerVersionsArrayAscending().size,
-            versionMeta.quilt.installerVersionsListAscending().size
-        )
-        Assertions.assertEquals(
-            versionMeta.quilt.installerVersionsArrayAscending()[0],
-            versionMeta.quilt.installerVersionsArrayDescending().last()
-        )
-        Assertions.assertNotNull(versionMeta.quilt.installerVersionsArrayDescending())
-        Assertions.assertEquals(
-            versionMeta.quilt.installerVersionsArrayDescending().size,
-            versionMeta.quilt.installerVersionsListDescending().size
-        )
-        Assertions.assertEquals(
-            versionMeta.quilt.installerVersionsArrayDescending()[0],
-            versionMeta.quilt.installerVersionsArrayAscending().last()
-        )
+        Assertions.assertNotNull(versionMeta.quilt.installerVersions())
         Assertions.assertNotNull(versionMeta.quilt.latestInstallerUrl())
         Assertions.assertNotNull(versionMeta.quilt.releaseInstallerUrl())
-        for (version in versionMeta.quilt.installerVersionsListAscending()) {
+        for (version in versionMeta.quilt.installerVersions()) {
             Assertions.assertTrue(versionMeta.quilt.isInstallerUrlAvailable(version))
             Assertions.assertNotNull(versionMeta.quilt.getInstallerUrl(version).get())
         }
@@ -425,38 +215,15 @@ class VersionMetaTest {
     @Test
     @Throws(MalformedURLException::class)
     fun legacyFabric() {
-        Assertions.assertNotNull(versionMeta.legacyFabric.loaderVersionsListAscending())
-        Assertions.assertNotNull(versionMeta.legacyFabric.loaderVersionsListDescending())
-        Assertions.assertNotNull(versionMeta.legacyFabric.loaderVersionsArrayAscending())
-        Assertions.assertNotNull(versionMeta.legacyFabric.loaderVersionsArrayDescending())
+        Assertions.assertNotNull(versionMeta.legacyFabric.loaderVersions())
         Assertions.assertNotNull(versionMeta.legacyFabric.latestLoader())
         Assertions.assertNotNull(versionMeta.legacyFabric.releaseLoader())
         Assertions.assertNotNull(versionMeta.legacyFabric.latestInstaller())
         Assertions.assertNotNull(versionMeta.legacyFabric.releaseInstaller())
-        Assertions.assertNotNull(versionMeta.legacyFabric.installerVersionsListAscending())
-        Assertions.assertNotNull(versionMeta.legacyFabric.installerVersionsListDescending())
-        Assertions.assertNotNull(versionMeta.legacyFabric.installerVersionsListAscending())
-        Assertions.assertNotNull(versionMeta.legacyFabric.installerVersionsArrayAscending())
-        Assertions.assertEquals(
-            versionMeta.legacyFabric.installerVersionsArrayAscending().size,
-            versionMeta.legacyFabric.installerVersionsListAscending().size
-        )
-        Assertions.assertEquals(
-            versionMeta.legacyFabric.installerVersionsArrayAscending()[0],
-            versionMeta.legacyFabric.installerVersionsArrayDescending().last()
-        )
-        Assertions.assertNotNull(versionMeta.legacyFabric.installerVersionsArrayDescending())
-        Assertions.assertEquals(
-            versionMeta.legacyFabric.installerVersionsArrayDescending().size,
-            versionMeta.legacyFabric.installerVersionsListDescending().size
-        )
-        Assertions.assertEquals(
-            versionMeta.legacyFabric.installerVersionsArrayDescending()[0],
-            versionMeta.legacyFabric.installerVersionsArrayAscending().last()
-        )
+        Assertions.assertNotNull(versionMeta.legacyFabric.installerVersions())
         Assertions.assertNotNull(versionMeta.legacyFabric.latestInstallerUrl())
         Assertions.assertNotNull(versionMeta.legacyFabric.releaseInstallerUrl())
-        for (version in versionMeta.legacyFabric.installerVersionsListAscending()) {
+        for (version in versionMeta.legacyFabric.installerVersions()) {
             Assertions.assertTrue(versionMeta.legacyFabric.isInstallerUrlAvailable(version))
             try {
                 Assertions.assertNotNull(versionMeta.legacyFabric.getInstallerUrl(version).get())

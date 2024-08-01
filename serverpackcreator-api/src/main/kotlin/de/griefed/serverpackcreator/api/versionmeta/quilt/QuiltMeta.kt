@@ -64,14 +64,8 @@ class QuiltMeta(
     override fun releaseLoader() = quiltLoader.release!!
     override fun latestInstaller() = quiltInstaller.latestInstaller!!
     override fun releaseInstaller() = quiltInstaller.releaseInstaller!!
-    override fun loaderVersionsListAscending() = quiltLoader.loaders
-    override fun loaderVersionsListDescending() = quiltLoader.loaders.reversed()
-    override fun loaderVersionsArrayAscending() = quiltLoader.loaders.toTypedArray()
-    override fun loaderVersionsArrayDescending() = quiltLoader.loaders.reversed().toTypedArray()
-    override fun installerVersionsListAscending() = quiltInstaller.installers
-    override fun installerVersionsListDescending() = quiltInstaller.installers.reversed()
-    override fun installerVersionsArrayAscending() = quiltInstaller.installers.toTypedArray()
-    override fun installerVersionsArrayDescending() = quiltInstaller.installers.reversed().toTypedArray()
+    override fun loaderVersions() = quiltLoader.loaders
+    override fun installerVersions() = quiltInstaller.installers
     override fun latestInstallerUrl() = quiltInstaller.latestInstallerUrl!!
     override fun releaseInstallerUrl() = quiltInstaller.releaseInstallerUrl!!
 

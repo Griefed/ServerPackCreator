@@ -74,31 +74,7 @@ interface Meta {
      * @return Available loader versions in ascending order.
      * @author Griefed
      */
-    fun loaderVersionsListAscending(): List<String>
-
-    /**
-     * List of available loader versions in descending order.
-     *
-     * @return Available loader versions in descending order.
-     * @author Griefed
-     */
-    fun loaderVersionsListDescending(): List<String>
-
-    /**
-     * Array of available loader versions in ascending order.
-     *
-     * @return Available loader versions in ascending order.
-     * @author Griefed
-     */
-    fun loaderVersionsArrayAscending(): Array<String>
-
-    /**
-     * Array of available loader versions in descending order.
-     *
-     * @return Available loader versions in descending order.
-     * @author Griefed
-     */
-    fun loaderVersionsArrayDescending(): Array<String>
+    fun loaderVersions(): List<String>
 
     /**
      * List of available installer version in ascending order.
@@ -106,31 +82,7 @@ interface Meta {
      * @return Available installer version in ascending order.
      * @author Griefed
      */
-    fun installerVersionsListAscending(): List<String>
-
-    /**
-     * List of available installer version in descending order.
-     *
-     * @return Available installer version in descending order.
-     * @author Griefed
-     */
-    fun installerVersionsListDescending(): List<String>
-
-    /**
-     * Array of available installer version in ascending order.
-     *
-     * @return Available installer version in ascending order.
-     * @author Griefed
-     */
-    fun installerVersionsArrayAscending(): Array<String>
-
-    /**
-     * Array of available installer version in descending order.
-     *
-     * @return Available installer version in descending order.
-     * @author Griefed
-     */
-    fun installerVersionsArrayDescending(): Array<String>
+    fun installerVersions(): List<String>
 
     /**
      * Get the URL to the latest installer.

@@ -189,10 +189,9 @@ class ForgeMeta(
     fun newestForgeVersion(minecraftVersion: String) =
         if (!isMinecraftVersionSupported(minecraftVersion)) {
             Optional.empty()
-        } else if (supportedForgeVersionsAscending(minecraftVersion).isPresent) {
-            val latestMCVersion = supportedForgeVersionsAscending(minecraftVersion).get().size - 1
-            val supported = supportedForgeVersionsAscending(minecraftVersion).get()
-            Optional.of(supported[latestMCVersion])
+        } else if (supportedForgeVersions(minecraftVersion).isPresent) {
+            val supported = supportedForgeVersions(minecraftVersion).get()
+            Optional.ofNullable(supported[0])
         } else {
             Optional.empty()
         }
@@ -207,9 +206,10 @@ class ForgeMeta(
     fun oldestForgeVersion(minecraftVersion: String) =
         if (!isMinecraftVersionSupported(minecraftVersion)) {
             Optional.empty()
-        } else if (supportedForgeVersionsAscending(minecraftVersion).isPresent) {
-            val supported = supportedForgeVersionsAscending(minecraftVersion).get()
-            Optional.ofNullable(supported[0])
+        } else if (supportedForgeVersions(minecraftVersion).isPresent) {
+            val latestMCVersion = supportedForgeVersions(minecraftVersion).get().size - 1
+            val supported = supportedForgeVersions(minecraftVersion).get()
+            Optional.of(supported[latestMCVersion])
         } else {
             Optional.empty()
         }
@@ -220,31 +220,7 @@ class ForgeMeta(
      * @return List of available Forge versions.
      * @author Griefed
      */
-    fun forgeVersionsAscending() = forgeLoader!!.forgeVersions
-
-    /**
-     * Get the list of available Forge versions, in descending order.
-     *
-     * @return List of available Forge versions.
-     * @author Griefed
-     */
-    fun forgeVersionsDescending() = forgeVersionsAscending().reversed()
-
-    /**
-     * Get the array of available Forge versions, in ascending order.
-     *
-     * @return Array of available Forge versions.
-     * @author Griefed
-     */
-    fun forgeVersionsAscendingArray() = forgeVersionsAscending().toTypedArray()
-
-    /**
-     * Get the array of available Forge versions, in descending order.
-     *
-     * @return Array of available Forge versions.
-     * @author Griefed
-     */
-    fun forgeVersionsDescendingArray() = forgeVersionsDescending().toTypedArray()
+    fun forgeVersions() = forgeLoader!!.forgeVersions
 
     /**
      * Get a list of available Forge version for a given Minecraft version in ascending order.
@@ -253,60 +229,8 @@ class ForgeMeta(
      * @return List of available Forge versions for the given Minecraft version in ascending order.
      * @author Griefed
      */
-    fun supportedForgeVersionsAscending(minecraftVersion: String) =
+    fun supportedForgeVersions(minecraftVersion: String) =
         Optional.ofNullable(forgeLoader?.versionMeta?.get(minecraftVersion))
-
-    /**
-     * Get a list of available Forge version for a given Minecraft version in descending order.
-     *
-     * @param minecraftVersion Minecraft version.
-     * @return List of available Forge versions for the given Minecraft version in descending order.
-     * @author Griefed
-     */
-    fun supportedForgeVersionsDescending(minecraftVersion: String) =
-        if (!isMinecraftVersionSupported(minecraftVersion)) {
-            Optional.empty()
-        } else {
-            val supported = supportedForgeVersionsAscending(minecraftVersion).get()
-            Optional.ofNullable(supported.reversed())
-        }
-
-
-    /**
-     * Get an array of available Forge version for a given Minecraft version, in ascending order,
-     * wrapped in an [Optional].
-     *
-     * @param minecraftVersion Minecraft version.
-     * @return Array of available Forge versions for the given Minecraft version, in ascending order,
-     * wrapped in an [Optional]
-     * @author Griefed
-     */
-    fun supportedForgeVersionsAscendingArray(minecraftVersion: String) =
-        if (!isMinecraftVersionSupported(minecraftVersion)) {
-            Optional.empty()
-        } else {
-            val supported = supportedForgeVersionsAscending(minecraftVersion).get()
-            Optional.of(
-                supported.toTypedArray()
-            )
-        }
-
-    /**
-     * Get an array of available Forge version for a given Minecraft version, in descending order,
-     * wrapped in an [Optional].
-     *
-     * @param minecraftVersion Minecraft version.
-     * @return Array of available Forge versions for the given Minecraft version, in descending order,
-     * wrapped in an [Optional]
-     * @author Griefed
-     */
-    fun supportedForgeVersionsDescendingArray(minecraftVersion: String) =
-        if (!isMinecraftVersionSupported(minecraftVersion)) {
-            Optional.empty()
-        } else {
-            val supported = supportedForgeVersionsDescending(minecraftVersion).get()
-            Optional.of(supported.toTypedArray())
-        }
 
     /**
      * Get the Minecraft version for a given Forge version, wrapped in an [Optional].
@@ -324,31 +248,7 @@ class ForgeMeta(
      * @return List of Forge supported Minecraft versions, in ascending order.
      * @author Griefed
      */
-    fun supportedMinecraftVersionsAscending() = forgeLoader!!.minecraftVersions
-
-    /**
-     * Get the list of Forge supported Minecraft versions, in descending order.
-     *
-     * @return List of Forge supported Minecraft versions, in descending order.
-     * @author Griefed
-     */
-    fun supportedMinecraftVersionsDescending() = supportedMinecraftVersionsAscending().reversed()
-
-    /**
-     * Get the array of Forge supported Minecraft versions, in ascending order.
-     *
-     * @return Array of Forge supported Minecraft versions, in ascending order.
-     * @author Griefed
-     */
-    fun supportedMinecraftVersionsAscendingArray() = supportedMinecraftVersionsAscending().toTypedArray()
-
-    /**
-     * Get the array of Forge supported Minecraft versions, in descending order.
-     *
-     * @return Array of Forge supported Minecraft versions, in descending order.
-     * @author Griefed
-     */
-    fun supportedMinecraftVersionsDescendingArray() = supportedMinecraftVersionsDescending().toTypedArray()
+    fun supportedMinecraftVersions() = forgeLoader!!.minecraftVersions
 
     /**
      * Get the Forge server installer URL for a given Forge version, wrapped in an [Optional].
