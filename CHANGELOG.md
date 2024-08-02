@@ -1,3 +1,42 @@
+## [6.1.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0...6.1.0) (2024-08-02)
+
+
+### :scissors: Refactor
+
+* Remove cluttering order methods. Trim down available methods. ([95fd86f](https://git.griefed.de/Griefed/ServerPackCreator/commit/95fd86f312fd020bc35ec21218d1ad1b8bd0ec0a))
+
+
+### 💈 Style
+
+* Make advanced panel font bold and a little bigger ([3370d2c](https://git.griefed.de/Griefed/ServerPackCreator/commit/3370d2c6c4cb9df0369b01ab96513cfc88255a51))
+
+
+### 💎 Improvements
+
+* Allow searching version-lists for oldest and newest via SemanticVersionComparator ([18c15bd](https://git.griefed.de/Griefed/ServerPackCreator/commit/18c15bd9c8e9a4fa928416d81e3c7714961edc1d))
+* Tip Of The Day entry for the new tip-popup to add mods to exclusions or whitelist ([c9c1d8e](https://git.griefed.de/Griefed/ServerPackCreator/commit/c9c1d8e550dae0ac8e0f373744ce12f275cedeff))
+
+
+### 📦 Other
+
+* Add Chat Ping to clientside-mods list. ([82760cf](https://git.griefed.de/Griefed/ServerPackCreator/commit/82760cff9ce1f2114caa0a78b943a9f0d75952fa))
+* Add missing release notes from 2.0.3 to 1.5.1 ([7f31641](https://git.griefed.de/Griefed/ServerPackCreator/commit/7f31641a3f2e063853f43240b0d2020a284ec32a))
+
+
+### 🦊 CI/CD
+
+* Remove SHA from release title ([1ec862e](https://git.griefed.de/Griefed/ServerPackCreator/commit/1ec862e5abbe06ef375dc3e5878ad390cba293b2))
+
+
+### 🚀 Features
+
+* Popup-menu to quickly add mods to exclusion- or whitelist from within tip ([ad3892a](https://git.griefed.de/Griefed/ServerPackCreator/commit/ad3892a5f9d75bb67e28cfb1cf187232f3209ae1))
+
+
+### 🛠 Fixes
+
+* Correctly order version lists for ease of use ([7e18ae5](https://git.griefed.de/Griefed/ServerPackCreator/commit/7e18ae5fb4fc0e2016a8e3311581d77d44167bec))
+
 ## [6.0.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.2.5...6.0.0) (2024-07-26)
 
 
