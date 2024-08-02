@@ -114,6 +114,10 @@ class ScrollTextArea(
             textArea.text = value
         }
 
+    fun append(text: String) {
+        textArea.append(text)
+    }
+
     /**
      * @author Griefed
      */

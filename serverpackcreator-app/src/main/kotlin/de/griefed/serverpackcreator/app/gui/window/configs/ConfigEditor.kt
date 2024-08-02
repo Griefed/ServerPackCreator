@@ -97,13 +97,27 @@ class ConfigEditor(
     private val iconChooser = BalloonTipButton(null, guiProps.folderIcon, Translations.createserverpack_gui_browser.toString(), guiProps) { selectServerIcon() }
     private val iconPreview = IconPreview(guiProps)
 
+    private val advSetExclusionsSetting = ScrollTextArea(apiWrapper.apiProperties.clientSideMods().joinToString(","),Translations.createserverpack_gui_createserverpack_labelclientmods.toString(),validationChangeListener, guiProps)
+    private val advSetWhitelistSetting = ScrollTextArea(apiWrapper.apiProperties.whitelistedMods().joinToString(","),Translations.createserverpack_gui_createserverpack_labelwhitelistmods.toString(),validationChangeListener, guiProps)
+
     private val inclusionsSourceSetting = ScrollTextField(guiProps, "", "source")
     private val inclusionsDestinationSetting = ScrollTextField(guiProps, "", "destination")
     private val inclusionsInclusionFilterSetting = ScrollTextField(guiProps, "", "inclusion")
     private val inclusionsExclusionFilterSetting = ScrollTextField(guiProps, "", "exclusion")
     private val inclusionsIcon = StatusIcon(guiProps,Translations.createserverpack_gui_createserverpack_labelcopydirs_tip.toString())
     private val inclusionsLabel = ElementLabel(Translations.createserverpack_gui_createserverpack_labelcopydirs.toString())
-    private val inclusionsSetting = InclusionsEditor(guiProps.defaultFileChooserDimension, guiProps,this,apiWrapper,inclusionsSourceSetting,inclusionsDestinationSetting,inclusionsInclusionFilterSetting,inclusionsExclusionFilterSetting)
+    private val inclusionsSetting = InclusionsEditor(
+        guiProps.defaultFileChooserDimension,
+        guiProps,
+        this,
+        apiWrapper,
+        inclusionsSourceSetting,
+        inclusionsDestinationSetting,
+        inclusionsInclusionFilterSetting,
+        inclusionsExclusionFilterSetting,
+        advSetExclusionsSetting,
+        advSetWhitelistSetting
+    )
 
     private val suffixIcon = StatusIcon(guiProps,Translations.createserverpack_gui_createserverpack_labelsuffix_tip.toString())
     private val suffixLabel = ElementLabel(Translations.createserverpack_gui_createserverpack_labelsuffix.toString())
@@ -134,8 +148,6 @@ class ConfigEditor(
     private val includePropertiesIcon = StatusIcon(guiProps,Translations.createserverpack_gui_createserverpack_checkboxproperties_tip.toString())
     private val includePropertiesSetting = ActionCheckBox(Translations.createserverpack_gui_createserverpack_checkboxproperties.toString(),validationActionListener)
 
-    private val advSetExclusionsSetting = ScrollTextArea(apiWrapper.apiProperties.clientSideMods().joinToString(","),Translations.createserverpack_gui_createserverpack_labelclientmods.toString(),validationChangeListener, guiProps)
-    private val advSetWhitelistSetting = ScrollTextArea(apiWrapper.apiProperties.whitelistedMods().joinToString(","),Translations.createserverpack_gui_createserverpack_labelwhitelistmods.toString(),validationChangeListener, guiProps)
     private val advSetJavaArgsSetting = ScrollTextArea("-Xmx4G -Xms4G",Translations.createserverpack_gui_createserverpack_javaargs.toString(),validationChangeListener, guiProps)
     private val advSetScriptKVPairsSetting = ScriptKVPairs(guiProps, this)
     private val advSetPanel = AdvancedSettingsPanel(this, advSetExclusionsSetting, advSetWhitelistSetting, advSetJavaArgsSetting, advSetScriptKVPairsSetting, guiProps, apiWrapper.apiProperties)
