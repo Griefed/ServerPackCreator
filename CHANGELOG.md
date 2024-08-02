@@ -8417,3 +8417,396 @@
 * **deps:** update dependency org.slf4j:slf4j-log4j12 to v2.0.0-alpha2 ([5fa1789](https://git.griefed.de/Griefed/ServerPackCreator/commit/5fa1789f78dab6628a8a0da6bbee8082265be6a1))
 * **deps:** update lsiobase/alpine docker tag to v3.14 ([b948a93](https://git.griefed.de/Griefed/ServerPackCreator/commit/b948a9310eb0ba22aaaac642961d5e378332f319))
 * **deps:** update openjdk docker tag to v8 ([47eb9da](https://git.griefed.de/Griefed/ServerPackCreator/commit/47eb9dafd26226349c6e1ffda566e205b7c40d4a))
+
+### 2.0.3
+
+Automatic release of version: **2.0.3**
+**Changes in this release:**
+
+### New Features
+
+* Add comment to files in ZIP-archive stating "Server pack made with ServerPackCreator by Griefed". Nobody looks at the comments anyway, so why not ([e14c020e](https://github.com/Griefed/ServerPackCreator/commit/e14c020e4cdd474068804f7f82eac6a9285ac713))
+* Expanded list of clientside-only mods for when a user doesn't specify theirs ([6af72b44](https://github.com/Griefed/ServerPackCreator/commit/6af72b44bc848a804662ca8d87e49ac0a12fb8a3))
+
+### 2.0.2
+
+Automatic release of version: **2.0.2**
+**Changes in this release:**
+
+### Bug Fixes
+
+* Exclude Minecraft server JAR from ZIP archive creation instead of deleting it from said archive ([f6436ed4](https://github.com/Griefed/ServerPackCreator/commit/f6436ed44578207a5803b01bb47ea3c22771606d),[ee7a882e](https://github.com/Griefed/ServerPackCreator/commit/ee7a882efc6121f98f639490b84ef8e1d3768d3b))
+* Minor spelling mistake in language key ([ae4b2583](https://github.com/Griefed/ServerPackCreator/commit/ae4b25839b8d8cec8dd51cfd6f3e4e4d8f3b134f))
+
+### Build System / Dependencies
+
+* Add srikanth-lingala/zip4j dependency ([0402666b](https://github.com/Griefed/ServerPackCreator/commit/0402666b51fb5aa4cfbe3d802e741dab00deb87e))
+* Update Gradle to 7.0.2 ([90ee32a2](https://github.com/Griefed/ServerPackCreator/commit/90ee32a2f56877e18a791b2866759d041b201a3d))
+
+### Chores
+
+* Don't code when tired ([7c869c7c](https://github.com/Griefed/ServerPackCreator/commit/7c869c7c6e2d407e48856294a01c1ba99b357b49))
+* Whoops ([8960f623](https://github.com/Griefed/ServerPackCreator/commit/8960f623e45c0b2e3568f7f04ad7090cdd462e0e))
+* Update README with JetBrains info and logos. HYPE ([5aa29ec4](https://github.com/Griefed/ServerPackCreator/commit/5aa29ec4121d90dc642381885ff5ca9b70b7892f))
+* **deps:**
+    * Bump junit-jupiter-api from 5.7.1 to 5.7.2 ([feb87887](https://github.com/Griefed/ServerPackCreator/commit/feb87887d1555d0a0ea431633449d5b53ee186fa))
+    * Bump mockito-core from 3.9.0 to 3.10.0 ([ed592315](https://github.com/Griefed/ServerPackCreator/commit/ed5923152703ceb12c9de59aba97228612181541))
+
+### Documentation Changes
+
+* Update docs ([a1896f45](https://github.com/Griefed/ServerPackCreator/commit/a1896f453c1c092f50b133ecb3d8de164357d2db),[c3168f3e](https://github.com/Griefed/ServerPackCreator/commit/c3168f3edbf148659b21e3bfcf9582315821bb7c))
+* Add link to known issues to README ([ae7fe621](https://github.com/Griefed/ServerPackCreator/commit/ae7fe62150562c9f8b80319ed37f17c188faf64d))
+
+### 2.0.1
+
+Automatic release of version: **2.0.1**
+**Changes in this release:**
+
+### Bug Fixes
+
+* **GUI:**
+    * Open filechoosers over parent frame ([4f993355](https://github.com/Griefed/ServerPackCreator/commit/4f9933556fccd6b1302632a2bc12ee92aa958d56))
+
+### Continuous Integration
+
+* Fix release naming ([e6658b58](https://github.com/Griefed/ServerPackCreator/commit/e6658b58cea5f7c9395c78f073aa98e9c0924c85))
+
+### 2.0.0
+
+Automatic release of version: **2.0.0**
+**Changes in this release:**
+
+### Bug Fixes
+
+* Write getters/setters for improved control over variables ([9848a77b](https://github.com/Griefed/ServerPackCreator/commit/9848a77b2866648ab69bdc11f9e084d1e60ccbb2))
+* Ensure modpackdir and javapaths contain forward-slashes ([c47e7125](https://github.com/Griefed/ServerPackCreator/commit/c47e71253015d03e20bd40bcfcea6acb1bce93f7))
+* If clientMods is empty, use fallback ([beae5517](https://github.com/Griefed/ServerPackCreator/commit/beae5517efe54c6dcab9fbc931c0da46964eada8))
+* If clientMods is empty, pass default list of clientside mods ([dc4ff4f2](https://github.com/Griefed/ServerPackCreator/commit/dc4ff4f2c2ed7abb3e06c742ddccd75b8069b9c4))
+
+### Build System / Dependencies
+
+* Small readability change ([e3b3cdda](https://github.com/Griefed/ServerPackCreator/commit/e3b3cddad3b499b138b8ca5483c0e669d18abb5e))
+* Exclude unnecessary files from build ([ca440f59](https://github.com/Griefed/ServerPackCreator/commit/ca440f59bf434cc610e26bda6848f7a9ec01d7cc))
+* Small changes ([1861a3d1](https://github.com/Griefed/ServerPackCreator/commit/1861a3d17442fb216479a1e2856590dcbb4fdaee))
+* Some minor changes to Gradle setup ([05097cb3](https://github.com/Griefed/ServerPackCreator/commit/05097cb36d2705d7491bfb39c45322f35eaf83c5))
+
+### Chores
+
+* Update README ([ef3c5b11](https://github.com/Griefed/ServerPackCreator/commit/ef3c5b116d11a646f91ade70176cb7e374581bb3))
+
+### Documentation Changes
+
+* Fix docs (whoops) ([a9ac7af2](https://github.com/Griefed/ServerPackCreator/commit/a9ac7af2d658cfeaf9e81e282c335f625656e835))
+* update docs ([62d50abb](https://github.com/Griefed/ServerPackCreator/commit/62d50abb41e8ac509db2750275f2ad9701c8559f))
+* Update docs ([13e50f9b](https://github.com/Griefed/ServerPackCreator/commit/13e50f9be12162935b21cced8faf57805d4ea83b),[553b36ab](https://github.com/Griefed/ServerPackCreator/commit/553b36ab9ab2bf8c88cc05c04a24eaf8f194e190),[2a6224b4](https://github.com/Griefed/ServerPackCreator/commit/2a6224b4d3a56bb479d3f48657ec1e628405be22))
+* Add info regarding new return ([71fef1a0](https://github.com/Griefed/ServerPackCreator/commit/71fef1a0443c6cba1d1f92280d301e54ed51d4f1))
+
+### New Features
+
+* **GUI:**
+    * Open dialog and ask user whether to open explorer for server pack ([531d9a89](https://github.com/Griefed/ServerPackCreator/commit/531d9a89a0c1a6dd35f184f176d5050cfbea23b4))
+    * Remove no longer needed/working background colour. ([86c9f763](https://github.com/Griefed/ServerPackCreator/commit/86c9f7636acbdb4db9ba1ec65c5c1fa3c31a820d))
+    * Ensure tabs are at the top. ([0da6fa94](https://github.com/Griefed/ServerPackCreator/commit/0da6fa940d155357580749bb019bc770c7fb34b8))
+    * Add button to display help dialog for more detaild explanations of fields in GUI ([bc06d801](https://github.com/Griefed/ServerPackCreator/commit/bc06d8019e96d2b944d8240ea025d964bc63353c))
+    * Tail full log, do not use substring. Previous commit allows us to read the full log ([50ec86a6](https://github.com/Griefed/ServerPackCreator/commit/50ec86a670eff7d1d6e716e257c7296669cd2592))
+    * Allow resizing, remove minimum size. ([08c0a429](https://github.com/Griefed/ServerPackCreator/commit/08c0a42909735720bcf0b2f5e476d82e2fb9cad5))
+    * Move Swing properties to respective classes ([309ad275](https://github.com/Griefed/ServerPackCreator/commit/309ad27586cf3665e95cabe961c8e6f7df0862b0),[dabbff5d](https://github.com/Griefed/ServerPackCreator/commit/dabbff5d68a98dc2f950ef009b0da9134da60db0))
+    * Fix errors from merge conflicts. I hate merge conflicts. ([c641206b](https://github.com/Griefed/ServerPackCreator/commit/c641206b2eaba72460e6d3c4ab21dccf63c51045),[1962c0e3](https://github.com/Griefed/ServerPackCreator/commit/1962c0e3730a3a9591ab9baec0942ca797a3992b),[462ad128](https://github.com/Griefed/ServerPackCreator/commit/462ad12881d8e8e5ca1023f56dc9023be13c4ed8),[abd09d69](https://github.com/Griefed/ServerPackCreator/commit/abd09d697c4bea25de3222f89eea39ca16c0ac4b),[dbea04ee](https://github.com/Griefed/ServerPackCreator/commit/dbea04eeb8d8c98b199933d7fb9532ca84181fe5))
+    * Respect varying Look and Feels in relation to button size ([2f172130](https://github.com/Griefed/ServerPackCreator/commit/2f1721308e891a96bf952e8c64b52f7cbdf5a495))
+    * Add separator between textpane and buttons ([2b5626c0](https://github.com/Griefed/ServerPackCreator/commit/2b5626c0e8cf6a1d54f874c62ceaada7d228a5f9))
+    * Set scrollpane to correct size ([e76fac3e](https://github.com/Griefed/ServerPackCreator/commit/e76fac3e267b700af797fb2b4c937ba6a7e838b4))
+    * Remove filter. Try to open FileChooser in Java dir. Defaults to current dir if Java could not be detected ([8556dc22](https://github.com/Griefed/ServerPackCreator/commit/8556dc224adb9d364aa5011617a2514a37701fec))
+    * Remove unnecessary comment ([f8c8da08](https://github.com/Griefed/ServerPackCreator/commit/f8c8da0803c2e0db9c8f984172a84dc73eda64b4))
+    * Remove autoscroll, didn't work ([ba882a3e](https://github.com/Griefed/ServerPackCreator/commit/ba882a3efa8b2c5460ce842122428fc067d3a167))
+    * Improve button size and placement for Windows and Linux. Change placement for checkboxes ([ad42a70d](https://github.com/Griefed/ServerPackCreator/commit/ad42a70d2bc37f5ebf69d6fcc02eb5c2cd27c666))
+    * Only init Localization once ([e0bee4a8](https://github.com/Griefed/ServerPackCreator/commit/e0bee4a82bac4ec1b2c799103c8e0f02d2c05444))
+    * Update README ([05779848](https://github.com/Griefed/ServerPackCreator/commit/05779848aefb6a196f4c511efb346cf27ef6813e))
+    * Replace ScheduledExecutor with commons-io Tailer ([946b2488](https://github.com/Griefed/ServerPackCreator/commit/946b2488a46a997602764291106ab98948c3190c))
+    * Display latest log entry in createServerPackButton after press ([d68b06a5](https://github.com/Griefed/ServerPackCreator/commit/d68b06a5fee408f64b6b4ada778607183212a868))
+    * Clear log tabs when the new creation of a server pack is started. ([e5095a90](https://github.com/Griefed/ServerPackCreator/commit/e5095a90d0b788bf60574d4c066bbbfd95a8aace))
+* **i18n:**
+    * Provide language keys for writeConfigToFile, which in turn will render configs translated ([97604ed4](https://github.com/Griefed/ServerPackCreator/commit/97604ed434ad7a33b9cea63e132a579dc6470599))
+    * Add missing language keys to other locales ([42fed419](https://github.com/Griefed/ServerPackCreator/commit/42fed419cea2aa467a1ac500303fcbfb6d55bf34))
+    * Language keys for help button in CreateServerPack-tab in GUI ([0ce4b594](https://github.com/Griefed/ServerPackCreator/commit/0ce4b5944d75961ffb811fa2e842d27247f6d8cc))
+    * Language keys for about tab in GUI ([793a1eb8](https://github.com/Griefed/ServerPackCreator/commit/793a1eb8d4c72102a8323ac04b1872cdbad400c0))
+    * Correct language keys for GUI checkboxes ([c06f0137](https://github.com/Griefed/ServerPackCreator/commit/c06f01371420ed5e21b96b148560cebf7066bd99))
+    * Provide language keys for clientside-only mods fallback list ([a4566139](https://github.com/Griefed/ServerPackCreator/commit/a45661390ac2ed0cf8cf99d8c6cc3f681965e03c))
+    * Language keys for GUI as well as working init for LocalizationManager in GUI ([79fa4912](https://github.com/Griefed/ServerPackCreator/commit/79fa491284f341aa817ba88444b0a7f110a94fed))
+    * Some language key changes ([623bba55](https://github.com/Griefed/ServerPackCreator/commit/623bba5524ee87e559656d6572a30a8f35476524))
+    * Add missing language key ([8f9080e2](https://github.com/Griefed/ServerPackCreator/commit/8f9080e2ead7c49922a41a11c0329553d7a15b88))
+
+### Other Changes
+
+* Write get and set for config ([54f8e2d8](https://github.com/Griefed/ServerPackCreator/commit/54f8e2d81ca709e674e15097f2722d79095fb8db))
+* Reduce access modifiers ([c7f7470f](https://github.com/Griefed/ServerPackCreator/commit/c7f7470f811345a6d1d6958661449d295c3a4716))
+* Just some comments ([fd15fdc1](https://github.com/Griefed/ServerPackCreator/commit/fd15fdc1c30343aca4e9142f627b9b64717390f0))
+* Small update to main doc ([21e8cc64](https://github.com/Griefed/ServerPackCreator/commit/21e8cc649599a0b9177b17bce55f7d96895bf2b6))
+* Minor changes ([674e6827](https://github.com/Griefed/ServerPackCreator/commit/674e68271cd1a88a27eb8b718930150eda8297cb))
+* Just some more whitespace ([f8ff0c02](https://github.com/Griefed/ServerPackCreator/commit/f8ff0c02cab6ed1e87fcb7da65a740ca8990261c))
+* Refactor checkLocaleFile to static ([3b68abe5](https://github.com/Griefed/ServerPackCreator/commit/3b68abe511afcb91079601399f5a74521469c3c5))
+* Small change to Contributing, small change to CreateServerPack ([cedbb4c4](https://github.com/Griefed/ServerPackCreator/commit/cedbb4c4d17650a0c6c8c84a048a7897117cad6d))
+
+### Refactors
+
+* **DI:**
+    * Add screenshot ([a41e7981](https://github.com/Griefed/ServerPackCreator/commit/a41e798182ef7f82136dd81403b0fc1bb77e46d4))
+    * Update README ([2adef344](https://github.com/Griefed/ServerPackCreator/commit/2adef3448ebb3b2467bb08ff07f07bf18fac92dc))
+    * Clear clientMods when entering loop. Add trailing spaces after asking user for input. ([e702c4d3](https://github.com/Griefed/ServerPackCreator/commit/e702c4d350a93f62a6ca6c26e05bbd8d91d57f44))
+    * Update docs ([8cda5a83](https://github.com/Griefed/ServerPackCreator/commit/8cda5a83b5a6a4c2211b0ad8ebf00293c2a55517),[3bd258fa](https://github.com/Griefed/ServerPackCreator/commit/3bd258fa935b2726f7416f26b7e879adeefbdc69),[09ab7850](https://github.com/Griefed/ServerPackCreator/commit/09ab7850a2814ace67c69da71fa9ceb00f07a2c8))
+    * Fix list of suggested directories not being printed to logs ([20c18333](https://github.com/Griefed/ServerPackCreator/commit/20c18333f4c2648a39aa791441361ec85c9568cc))
+    * Refactor to DefaultFiles as it is more appropriate for said class ([c0439219](https://github.com/Griefed/ServerPackCreator/commit/c0439219b0bac5d9197f951efe91642fcc572e3d))
+    * Make appropriate fields final. Adhere to final naming convention. Minor refactorings. ([1a451091](https://github.com/Griefed/ServerPackCreator/commit/1a451091ba9a7713c6e5d75a2adbdd26cc18f2be))
+    * Move bufferedImage so we can use localization for logging ([ac567340](https://github.com/Griefed/ServerPackCreator/commit/ac5673403301ad89ae92b8baeed5be687ba6c76f))
+    * Some comments here and there ([e8166e0d](https://github.com/Griefed/ServerPackCreator/commit/e8166e0dcf22c629c06b65710a9828de0102e405))
+    * Testfiles ([773f4ad7](https://github.com/Griefed/ServerPackCreator/commit/773f4ad7607f3a9a97387fc927ad632a906c2e6f))
+    * Wrote more tests for remaining methods ([24b4e564](https://github.com/Griefed/ServerPackCreator/commit/24b4e5642c2aecc9367a9b2d38627963d34331d3))
+    * Setters changed: Config, ModLoader. Better return in isCurse. Improved suggestCopyDirs ([acbdd535](https://github.com/Griefed/ServerPackCreator/commit/acbdd535d07406113dc792075ce141222f6e6c6e))
+    * Refactor excludeClientMods to use removeIf, instead of nested for-loop ([6c5c5702](https://github.com/Griefed/ServerPackCreator/commit/6c5c57024376dabe43c8e9f05a3d7782e64ff3cd))
+    * Try to fix test which fails of GitHub only ([76003b31](https://github.com/Griefed/ServerPackCreator/commit/76003b310228667224b4bf1610e55c760bca96b4))
+    * Improve some tests ([6ab52543](https://github.com/Griefed/ServerPackCreator/commit/6ab5254384abfb7783d0eb2dd34cc8d5ab2c330f))
+    * More logging to help with debugging ([4e750f3b](https://github.com/Griefed/ServerPackCreator/commit/4e750f3bb5e8b541623e82e402989d5e3411e0cb))
+    * Improve excludeClientMods ([905a92af](https://github.com/Griefed/ServerPackCreator/commit/905a92afc00c70eeb799d3e42ed6ca4cba40bb31))
+    * Try and fix tests which fail on GitHub ([1bc76710](https://github.com/Griefed/ServerPackCreator/commit/1bc7671074e6935fab0f40c65dfb2f5cf7b38a7b),[4aad6f8f](https://github.com/Griefed/ServerPackCreator/commit/4aad6f8ff7c80e51f04e91bcd11affe35a7eeca9),[d9c7a561](https://github.com/Griefed/ServerPackCreator/commit/d9c7a561f6748ccdc76227b899ed7871eaf83672),[ca1215a0](https://github.com/Griefed/ServerPackCreator/commit/ca1215a0bb35ecd24b8aac4b4ec62db7d56c6547))
+    * Getters and setters for project related things ([166aff20](https://github.com/Griefed/ServerPackCreator/commit/166aff201d7bd8077ec27320cf1f718ef2b7b399))
+    * More tests and some other improvements here and there ([7e965122](https://github.com/Griefed/ServerPackCreator/commit/7e96512296ecedc6d97bf98825904b63b18a799f))
+    * Some more whitespace ([cb288ca3](https://github.com/Griefed/ServerPackCreator/commit/cb288ca3b1504e15fdb32d3b472569c31207e18b),[52dc9dd7](https://github.com/Griefed/ServerPackCreator/commit/52dc9dd79a559692800c0e1972ee79de0e3dfd32))
+    * Add some assertions ([495526e6](https://github.com/Griefed/ServerPackCreator/commit/495526e6652f4e416c8dfe071288e3c6b9307fcd))
+    * Try and fix tests which only fail on GitHub ([3ffce755](https://github.com/Griefed/ServerPackCreator/commit/3ffce75529c07689216cdcdc9de98438740618ff),[2c006b7b](https://github.com/Griefed/ServerPackCreator/commit/2c006b7b27d892e07b8d2dcbd9142229ce928031),[598e45d5](https://github.com/Griefed/ServerPackCreator/commit/598e45d582b2da01dbc822b73931f8a40a39b033),[ac4559b7](https://github.com/Griefed/ServerPackCreator/commit/ac4559b7f6b0aa105a6e22734954fc637983e264))
+    * Write more tests and, improve some docs, add some getters ([0d2a1baa](https://github.com/Griefed/ServerPackCreator/commit/0d2a1baa4d2e1021ed9e97cb3c18048fa03934a8))
+    * Fix minor issue in docs ([fd761bf0](https://github.com/Griefed/ServerPackCreator/commit/fd761bf0c802d9057dd7a7552b4ec06c4a386886),[73d9d3b1](https://github.com/Griefed/ServerPackCreator/commit/73d9d3b113e37304119d71ba54c67f013210969b))
+    * Write more tests and move tests to correct class ([02393dd4](https://github.com/Griefed/ServerPackCreator/commit/02393dd4e765effbf394a86c20486a70f6a130b6))
+    * Addendum to license block ([85bede99](https://github.com/Griefed/ServerPackCreator/commit/85bede99f27ae8abb824dfb24777c50087c6b469))
+    * Smartscroll logging tabs ([d84ce149](https://github.com/Griefed/ServerPackCreator/commit/d84ce14944d465a948c1e7ca1f08dc3b07e36a65))
+    * Paint the background image into the background of the tabbed pane as well. ([a632c6d4](https://github.com/Griefed/ServerPackCreator/commit/a632c6d4380feacbcc34033f16c18d435a16502c),[e96fc918](https://github.com/Griefed/ServerPackCreator/commit/e96fc918441531063aec0f60f71650bbfb75eb1e),[0eaeacab](https://github.com/Griefed/ServerPackCreator/commit/0eaeacabcf97ffeae06a5413e7f190b0e8b6c4f5))
+    * Small fixes in javadoc ([b70a0a7e](https://github.com/Griefed/ServerPackCreator/commit/b70a0a7e0690f52c898871af29a79ccd9d5ac2a9))
+    * Whoops ([a9fb5b8c](https://github.com/Griefed/ServerPackCreator/commit/a9fb5b8ce327a2f08a792d3776157195134862f1))
+    * Remove borders and implement mouse hover. Add "(optional)" to javapath label ([59d5aa36](https://github.com/Griefed/ServerPackCreator/commit/59d5aa360bf12909e74fb01ce9480b8a453c9245))
+    * Get rid of pmd. Not that useful anyway. ([d66eb708](https://github.com/Griefed/ServerPackCreator/commit/d66eb708388211078df4be0d8c3b9290ee26304b))
+    * Add a tiled background to the JFrame holding the JTabbedPane for better visibility of content in the banner. ([744d2ecf](https://github.com/Griefed/ServerPackCreator/commit/744d2ecf3469fff72979e13db9720a46490d53d2))
+    * Explicitly extend JComponent ([43db8307](https://github.com/Griefed/ServerPackCreator/commit/43db830709ed61146c895a0fd3d67544211060b0))
+    * Remove borders for filechooser buttons ([1cad3526](https://github.com/Griefed/ServerPackCreator/commit/1cad352639c6a94ea53eea83552935eb7dabf250))
+    * Implement HasteBin wrapper and change button functionality to create pastes of configuration and serverpackcreator.log files ([0e68979c](https://github.com/Griefed/ServerPackCreator/commit/0e68979c4788969526f7a78aab9ee9d10e5d4c18),[53cca064](https://github.com/Griefed/ServerPackCreator/commit/53cca064002d67356e16d598b153fe6c17474d1b))
+    * Remove no longer needed TODO ([78dedeb9](https://github.com/Griefed/ServerPackCreator/commit/78dedeb93b39df0515d6726adbe215508a178bfe))
+    * Add check whether user is satisfied with modpack directory and list directories in modpack directory when asked to specify copy directories ([1f2e28dd](https://github.com/Griefed/ServerPackCreator/commit/1f2e28dd3371ddf96a7fbf81c01ea4e9dcb24e7f))
+    * Update javadocs ([87cef199](https://github.com/Griefed/ServerPackCreator/commit/87cef199feab89805ac00b06a8d585b002e118df),[e5703e4c](https://github.com/Griefed/ServerPackCreator/commit/e5703e4c3d090d65ee2ade1fa0683708c5f57cff),[eb891ff0](https://github.com/Griefed/ServerPackCreator/commit/eb891ff03188b79ac34b39798540110c4b026c75),[5f820e15](https://github.com/Griefed/ServerPackCreator/commit/5f820e15b12fdd269b9f8e0e240fc53ab86ad571),[a0e608f9](https://github.com/Griefed/ServerPackCreator/commit/a0e608f9bec7d4dcbc7940b7860f63421694e3e7),[3dbc1899](https://github.com/Griefed/ServerPackCreator/commit/3dbc18995144ca762d2c0de5b3a79900b7c66696),[21b71e58](https://github.com/Griefed/ServerPackCreator/commit/21b71e585809e37a154f4a741c8d7852ea117e8a),[eb3ca328](https://github.com/Griefed/ServerPackCreator/commit/eb3ca3283c7de9e2b70e0bab93b6786569356f71),[5c86612d](https://github.com/Griefed/ServerPackCreator/commit/5c86612d33c8291671d79e65e05154fd1af7a8e4),[0eafc231](https://github.com/Griefed/ServerPackCreator/commit/0eafc231fd01bf1fd1204a843d7df72d6e0db26b),[fb07268d](https://github.com/Griefed/ServerPackCreator/commit/fb07268d81c0e81028727fd7ae8150a195d45c15),[813f015d](https://github.com/Griefed/ServerPackCreator/commit/813f015d490356db237b6f286ca8ba8ceac4d603))
+    * Update javadocs and minor refactorings ([1f1cd501](https://github.com/Griefed/ServerPackCreator/commit/1f1cd5012fdb21a2fe163cbbc4dacf5fc38cc7b3),[67556b18](https://github.com/Griefed/ServerPackCreator/commit/67556b18655919a597384b2a57ffc3898f3c1e1a),[8b5de129](https://github.com/Griefed/ServerPackCreator/commit/8b5de129cb6ab30a73aaeaf02fd0da325db7136a),[ceffa740](https://github.com/Griefed/ServerPackCreator/commit/ceffa7403e3ce3a66e437653651b84c18c56ed0a),[65f659df](https://github.com/Griefed/ServerPackCreator/commit/65f659df9e87913e0b8e0ed1fa0281a302481ce5),[b66d9752](https://github.com/Griefed/ServerPackCreator/commit/b66d975229faf28352634493dfeb29c23dbe0a08))
+    * Update javadocs and minor refactorings of variable names. ([cb5d6967](https://github.com/Griefed/ServerPackCreator/commit/cb5d6967863f65aaec91320b47f27dfdea3cb486))
+    * Prepare for rewrite ([f16eeaff](https://github.com/Griefed/ServerPackCreator/commit/f16eeaff07839c0752293aed575dd8aaa7e7857f))
+    * Update javadocs, improve creation of modpack from CurseForge ID combination, improve GUI for CurseForge modpack creation ([cc7ec267](https://github.com/Griefed/ServerPackCreator/commit/cc7ec26702b91d2c01b1b57e9bd89bcd47ed337e),[20eb829d](https://github.com/Griefed/ServerPackCreator/commit/20eb829d9c52eb1d713a0964a815f3138e71c51e),[64f0ea76](https://github.com/Griefed/ServerPackCreator/commit/64f0ea763078da8bae2a874b24c360e978387e8c))
+    * Update javadocs, make creation of modpack if CurseForge projectID,fileID was provided optional, write getter for ObjectMapper ([e30f4355](https://github.com/Griefed/ServerPackCreator/commit/e30f43555a235f162723bed776df250e9f95d027))
+    * Update javadocs and a couple of minor fixes ([36c846ff](https://github.com/Griefed/ServerPackCreator/commit/36c846ff69cdfd5f87602a1a1a59537cd47362ad),[c9be1b72](https://github.com/Griefed/ServerPackCreator/commit/c9be1b72e3dc515ab6c4dd304a59a24701570785),[80d59e7e](https://github.com/Griefed/ServerPackCreator/commit/80d59e7e16ecc3e0fbc04f32544efac499a45f9d))
+    * Include LICENSE and CONTRIBUTING.md in JAR ([c298b533](https://github.com/Griefed/ServerPackCreator/commit/c298b533cc163e80a118228fd199eedde22de357))
+    * Fix language keys and writeConfigToFile ([680ad86f](https://github.com/Griefed/ServerPackCreator/commit/680ad86f0371e158bb7a981109ae08c3da367c8e))
+    * Include license excerpt at top of source files ([545fdb7a](https://github.com/Griefed/ServerPackCreator/commit/545fdb7a1a06f5df39111772c7373d94dcd0d0e4))
+    * CurseCreateModpack injection ([766c776f](https://github.com/Griefed/ServerPackCreator/commit/766c776fcd1ce7a0eb2bc3380fc460b46e6497d5))
+    * Prioritize LocalizationManager during setup ([f3d95f08](https://github.com/Griefed/ServerPackCreator/commit/f3d95f080ed955558ac60448fa038e234932d4bd))
+    * Don't run on GitHub....because waihfvpoöihdrsgeds ([1580465b](https://github.com/Griefed/ServerPackCreator/commit/1580465b4322bae57fe1be994d3039be0e59ed22))
+    * Set up constructors properly ([020a492d](https://github.com/Griefed/ServerPackCreator/commit/020a492d81a18f92b91dbff24fafcc13233a2f8e),[fffe2163](https://github.com/Griefed/ServerPackCreator/commit/fffe21631ab0d328894c2bc8e1c717af3eadd4bc))
+    * Fix initialization of LocalizationManager in regards to GUI. Rename injectedConfigCheck to injectedConfiguration ([d8c5eeea](https://github.com/Griefed/ServerPackCreator/commit/d8c5eeea754ffdbde8bc2a3a79e4fbfbf8b17b36))
+    * Update run configurations for local runs (not for public consumption, you would need to reconfigure this) ([02afe092](https://github.com/Griefed/ServerPackCreator/commit/02afe0923fff907094883184a89415e010f67a36))
+    * Make logger static again (whoops) ([c6dbf8c2](https://github.com/Griefed/ServerPackCreator/commit/c6dbf8c2455c50315f3d260b611a0c6a5b78a253))
+    * Include Minecraft version if modloader is Forge so Minecraft server jar is always deleted ([3e2571c1](https://github.com/Griefed/ServerPackCreator/commit/3e2571c1d862c8c314efbe68d0968ca9e7506133))
+    * Update CONTRIBUTING.md and README.md ([ef8d1618](https://github.com/Griefed/ServerPackCreator/commit/ef8d1618eeecf22111dbda90381448ed8cd92236))
+    * gitignore stuff ([500e96e8](https://github.com/Griefed/ServerPackCreator/commit/500e96e8d146367b0f1b554138a2220a2e726f28))
+    * Fix passing locale to LocalizationManager ([b2a8dcef](https://github.com/Griefed/ServerPackCreator/commit/b2a8dcef2c7365e6937648a030bcdc7fe6452c2a))
+    * Restructure and rewrite SPC for dependency injection. Removes Reference for now. Get rid of statics where possible. ([04daf560](https://github.com/Griefed/ServerPackCreator/commit/04daf560f21489740aece081ba309e0942b7869e))
+
+### 1.6.1
+
+Automatic release of version: **1.6.1**
+**Changes in this release:**
+
+### Bug Fixes
+
+* Fix version check for Forge. They appear to have changed their metadata to no longer include the Minecraft version. ([b29616f2](https://github.com/Griefed/ServerPackCreator/commit/b29616f2df19a6c96927f8d5639e1b0e86c77f86))
+
+### Chores
+
+* update contributors ([31b71429](https://github.com/Griefed/ServerPackCreator/commit/31b71429557987c01236a6c141c29836b41a2e70))
+* **deps:**
+    * bump edu.sc.seis.launch4j from 2.4.9 to 2.5.0 ([93c112ef](https://github.com/Griefed/ServerPackCreator/commit/93c112efae995e2a05547aea4ae67a304cd79f30),[54ec8150](https://github.com/Griefed/ServerPackCreator/commit/54ec815094b7167c4b618216d94e6d2d1d4484c1))
+
+### Continuous Integration
+
+* Get svg of contributors ([d7082f76](https://github.com/Griefed/ServerPackCreator/commit/d7082f769bb13fafe4112c6d33a9aa536723c67e))
+* Add greetiings workflow ([80229731](https://github.com/Griefed/ServerPackCreator/commit/802297317927788924ba130ca4813a141931a1f8))
+
+### Documentation Changes
+
+* Update docs ([dbfd3d8d](https://github.com/Griefed/ServerPackCreator/commit/dbfd3d8d31097110c4fb7eeae0fce6e0f1eb35d6))
+
+### New Features
+
+* **i18n:**
+    * Add language keys from 2.x ([143234b2](https://github.com/Griefed/ServerPackCreator/commit/143234b283a10e79c278ad191c5d859cac249447))
+
+### 1.6.0
+
+Automatic release of version: **1.6.0**
+**Changes in this release:**
+
+### Bug Fixes
+
+* Fixed lang load error when lang.properties exists but empty or filled incorrectly. ([8f5115b1](https://github.com/Griefed/ServerPackCreator/commit/8f5115b1087af7b87b60ab8d821aa521ed903db0))
+
+### Chores
+
+* **deps:**
+    * bump jackson-databind from 2.12.2 to 2.12.3 ([19041818](https://github.com/Griefed/ServerPackCreator/commit/19041818fc704b5951e4db2aa1657268ecc6024c),[115c730d](https://github.com/Griefed/ServerPackCreator/commit/115c730dc11a9f1c2d6d74ca4e231b5174760b4d))
+
+### Documentation Changes
+
+* Update docs ([52e0cd29](https://github.com/Griefed/ServerPackCreator/commit/52e0cd2922fdf325ee1eb540b94d9b93a7bb9c14))
+* Upload javadoc to extra directory for gh.pages test ([7c79e9f4](https://github.com/Griefed/ServerPackCreator/commit/7c79e9f419d7dd33008b4d7217620172d5986a6f))
+
+### New Features
+
+* Add Localization Manager by whitebear60 ([c4512e19](https://github.com/Griefed/ServerPackCreator/commit/c4512e19f9276ba1abc84f2731b83cfc05e2ef4e))
+* **i18n:**
+    * Create default localization file if non exists. If executing SPC with specific locale, write locale to file. ([8b8a5a8e](https://github.com/Griefed/ServerPackCreator/commit/8b8a5a8e3900e7e00aba7529de36c8216f3afa5d))
+    * Add german translations. Change paths to resource bundle. Add info regarding localization to README ([a9d489e5](https://github.com/Griefed/ServerPackCreator/commit/a9d489e56815999358449109b6c84a9a4d7b19ba))
+
+### Other Changes
+
+* Supply build file for DockerWSL so I can test the build locally as well ([8efed537](https://github.com/Griefed/ServerPackCreator/commit/8efed537edfa11573b17b15b6629fca181aaf8b5))
+
+### 1.5.4
+
+Automatic release of version: **1.5.4**
+**Changes in this release:**
+
+### Bug Fixes
+
+* Fix path in Dockerfile ([bfebc62b](https://github.com/Griefed/ServerPackCreator/commit/bfebc62b59ba8016d08e50c2ce3d9ba150fed104))
+
+### Build System / Dependencies
+
+* Update to Gradle 6.8. Ensure we can update to 7.0 once released. Implement more tests/checks and test building of .exe for Windows. ([3dfee414](https://github.com/Griefed/ServerPackCreator/commit/3dfee414bfb1dea08383667a5e4bb75542334492))
+
+### Chores
+
+* **deps:**
+    * bump mockito-core from 3.8.0 to 3.9.0 ([57766963](https://github.com/Griefed/ServerPackCreator/commit/57766963351e0b81e420474d085e8dbd71b36876),[ee0cca24](https://github.com/Griefed/ServerPackCreator/commit/ee0cca245304caa52261316daebfd2eef1c85df5))
+
+### Continuous Integration
+
+* Test Dockerfile ([6f9e944e](https://github.com/Griefed/ServerPackCreator/commit/6f9e944ee5c302fa3a835370cd26831943ec77be))
+* Fix workflow ([7d15ab51](https://github.com/Griefed/ServerPackCreator/commit/7d15ab513f6e2514896327a74514a49c5d87a513),[dbcdebf2](https://github.com/Griefed/ServerPackCreator/commit/dbcdebf2cac69987efe5200902d956784aab8d53),[ddd94967](https://github.com/Griefed/ServerPackCreator/commit/ddd949677095589c7c4f36c0fe685b64e97aa117))
+* Fix ID for executable upload ([785573d6](https://github.com/Griefed/ServerPackCreator/commit/785573d6440222413baebd2ca10affd41af5c8d2))
+* Name jobs accordingly ([0472fe83](https://github.com/Griefed/ServerPackCreator/commit/0472fe83c9ae409213eccffe16729e06f9b03b14))
+
+### New Features
+
+* Print input, ask user whether they agree to input, restart input when false. ([338dbc00](https://github.com/Griefed/ServerPackCreator/commit/338dbc0054aa632faecd58748e9f9fa1431b2dcb))
+
+### Other Changes
+
+* Include .exe in releases. Update README with info regarding .exe. ([694abc32](https://github.com/Griefed/ServerPackCreator/commit/694abc32c9b77c438dfba655c25292523b6fe4db))
+* Don't enter cgen mode when using .exe ([2cff7f31](https://github.com/Griefed/ServerPackCreator/commit/2cff7f31fd55ab6535faf579639269ec17f50748))
+* Remove unnecessary " from conf ([7490911c](https://github.com/Griefed/ServerPackCreator/commit/7490911c9f0c2e84f717d5bcb118c37611f2300b))
+* Improve code quality, ensure streams are closed, improve readability. ([81da552b](https://github.com/Griefed/ServerPackCreator/commit/81da552b7a53a30810ed6ab179597766e03aaf5c))
+* Minor changes to ignores. ([df58a322](https://github.com/Griefed/ServerPackCreator/commit/df58a32246983ec7fb432644c2f871e46e21bb6a))
+* More readability changes. ([5ae47708](https://github.com/Griefed/ServerPackCreator/commit/5ae47708b18749ee2040f9f884515b0259452719))
+* More readability changes. Moved resources to de.griefed. Provided some example files. ([829c0055](https://github.com/Griefed/ServerPackCreator/commit/829c0055e0fcb7bfded367ab4a9b79d0c7669549))
+* Try and make the code a little bit more readable. As well as some more work towards localization by replaces string concatenation with String.format(). Smaller under-the-hood changes. ([8725cc41](https://github.com/Griefed/ServerPackCreator/commit/8725cc4180f4328bec21e4700e8a3ea31e869909))
+* Try and make the code a little bit easier to read. ([8c92cde1](https://github.com/Griefed/ServerPackCreator/commit/8c92cde11379d87bcf1cb73046caee6e62eec9a4))
+
+### Tests
+
+* **JUnit:**
+    * More tests for FilesSetup. ([4496cfd2](https://github.com/Griefed/ServerPackCreator/commit/4496cfd2991d81b98ea9f772788955031c0a4877))
+
+### 1.5.3
+
+Automatic release of version: **1.5.3**
+**Changes in this release:**
+
+### Bug Fixes
+
+* Fix issue [#39](https://github.com/Griefed/ServerPackCreator/pull/39) by excluding clientside-only mods from copy operation. Deprecates deleteClientMods ([4db7f7f3](https://github.com/Griefed/ServerPackCreator/commit/4db7f7f3f9f5e3604b27d58fc087e65cc5505942))
+* Enhance copyFiles so it does not copy clientside-only mods to server pack. Fixes issue [#39](https://github.com/Griefed/ServerPackCreator/pull/39), finally. ([9e6b429b](https://github.com/Griefed/ServerPackCreator/commit/9e6b429ba4fc94cabbe3589fb3340bdfdb79788a))
+
+### Documentation Changes
+
+* Write docs for new excludeClientMods ([a3fdee9b](https://github.com/Griefed/ServerPackCreator/commit/a3fdee9bc66d7437bc68438f91a76d48c8779668))
+
+### Tests
+
+* "Deactivate" tests for GitHub infrastructure until I figure out how to run them on their infrastructure. ([f057e58d](https://github.com/Griefed/ServerPackCreator/commit/f057e58d1e340beb4125de8cd82e646703c34a1d))
+
+### 1.5.2
+
+Automatic release of version: **1.5.2**
+**Changes in this release:**
+
+### Bug Fixes
+
+* Clientside-only mods deletion fixed. Closes issue [#39](https://github.com/Griefed/ServerPackCreator/pull/39) ([b537ae0f](https://github.com/Griefed/ServerPackCreator/commit/b537ae0fd3668970a8d62f1db524e29d973e4fe7))
+
+### Chores
+
+* **deps:**
+    * bump junit-jupiter-api from 5.6.0 to 5.7.1 ([e21652cf](https://github.com/Griefed/ServerPackCreator/commit/e21652cff4801762163614b42721901253dd36e3),[51337c6b](https://github.com/Griefed/ServerPackCreator/commit/51337c6be79b1617993c1e3674266d4ec089042c))
+    * bump mockito-core from 2.1.0 to 3.8.0 ([c72390f8](https://github.com/Griefed/ServerPackCreator/commit/c72390f8b49f4626213c18bda233d53e8f939ffc),[fb690371](https://github.com/Griefed/ServerPackCreator/commit/fb690371537859b2950fd52c2eaf9617bda3fd59))
+
+### Other Changes
+
+* List client side mods again when deleting ([2c31dfaa](https://github.com/Griefed/ServerPackCreator/commit/2c31dfaa801bbff6623e5a5b532497ab71b4ad6c))
+
+### Tests
+
+* **JUnit:**
+    * More testfiles... ([8d543294](https://github.com/Griefed/ServerPackCreator/commit/8d543294950f39973af0888b61a132e2f71d93d3))
+
+### 1.5.1
+
+Automatic release of version: **1.5.1**
+**Changes in this release:**
+
+### Bug Fixes
+
+* Make log message regarding CurseForge project and file ID a little better. ([a3a854b9](https://github.com/Griefed/ServerPackCreator/commit/a3a854b9313c8ecf80c74cf7a7de0a4636a98ed1))
+* Harden CurseForge related checks and information gathering to prevent nulls ([4ecdfe16](https://github.com/Griefed/ServerPackCreator/commit/4ecdfe1630719c29f2bd0ec2f9823ac56c28289a))
+
+### Chores
+
+* Housekeeping ([6f1c9095](https://github.com/Griefed/ServerPackCreator/commit/6f1c9095877e863521a5083f8007ad814cb9261b))
+* README stuff ([97de621a](https://github.com/Griefed/ServerPackCreator/commit/97de621a8fb5ce5a56181c72f3e50185a8ededfd))
+* Update README with Docker-related information ([c59ae3fa](https://github.com/Griefed/ServerPackCreator/commit/c59ae3fa1740ef851d1c85d72d9f6ceb6fa7ef88))
+* **deps:**
+    * bump actions/setup-java from v1 to v2 ([8ea936da](https://github.com/Griefed/ServerPackCreator/commit/8ea936dab71d05d0b2aabcb30b4f6608c78fae24),[587b7450](https://github.com/Griefed/ServerPackCreator/commit/587b74508056809ce6c5dde331392fc3b2733c81))
+
+### Continuous Integration
+
+* Bump setup-java to v2 ([cdbb0bfa](https://github.com/Griefed/ServerPackCreator/commit/cdbb0bfaaee8de3526cb59681791bd82295a7fea),[9a09983a](https://github.com/Griefed/ServerPackCreator/commit/9a09983a32f83b80f506c2a91b2f92056aa1941a))
+
+### Other Changes
+
+* Remove unnecessary whitespace ([cf449a77](https://github.com/Griefed/ServerPackCreator/commit/cf449a77abff6868e396ebb3c2662b754e3e5094))
+* Move unused methods to bottom. ([fd24b7f4](https://github.com/Griefed/ServerPackCreator/commit/fd24b7f46becdcfdbf2c1f8494809d682165df10))
+* Remove code relating to tests ([d2299e2a](https://github.com/Griefed/ServerPackCreator/commit/d2299e2acade8c364e886e2c4fdc1ded147d82bf))
+* Remove comment block relating to tests ([161fbf70](https://github.com/Griefed/ServerPackCreator/commit/161fbf701fbef872971df0238b1001df37d49f5b))
+* Remove unnecessary blank line... ([64710d34](https://github.com/Griefed/ServerPackCreator/commit/64710d34df2c7437e72e7cdcc5865bbbffe5d073))
+
+### Tests
+
+* **JUnit:**
+    * Only run tests during initial build, but not in Dockerfile. ([27d271d6](https://github.com/Griefed/ServerPackCreator/commit/27d271d69a51f03923e6fa0317bd9a51ac1ecf1b))
+    * Only run these tests when we are not on GitHub architecture ([828a0e8e](https://github.com/Griefed/ServerPackCreator/commit/828a0e8e4d3d979b99504aa7a08cd7c537b3771d))
+    * Only run these tests when we are not on GitHub architecture. ([0cc8fd38](https://github.com/Griefed/ServerPackCreator/commit/0cc8fd387a968a49da763598ff13bb896edf9fb8))
+    * Deactivate a couple of tests until I figure out how to successfully run them on GitHub's infrastructure ([2f94da41](https://github.com/Griefed/ServerPackCreator/commit/2f94da4185a65ed0222eee20005d5a12d2762743))
+    * Deactivate a couple of tests until I figure out how to run them on GitHub's infrastructure... ([3fb1770e](https://github.com/Griefed/ServerPackCreator/commit/3fb1770e4b904e512bc10f60f61766e021134ec0),[d506a6db](https://github.com/Griefed/ServerPackCreator/commit/d506a6db13a833cea84bcff56070a3b9bf57af71))
+    * Well that didn't work... ([94ea2e16](https://github.com/Griefed/ServerPackCreator/commit/94ea2e16c4ca7c59751a76acd6636959d67494c0))
+    * Test for java on GitHub Runner ([0bd985ea](https://github.com/Griefed/ServerPackCreator/commit/0bd985ea74a6e7cfddba435e447059a682f39fac))
+    * Write tests for CLISetup ([8597477d](https://github.com/Griefed/ServerPackCreator/commit/8597477dd4ea205e88a2a8d0981b84d4782483cd))
+    * Write tests for ConfigCheck. ([47428ae5](https://github.com/Griefed/ServerPackCreator/commit/47428ae5de221d8d428b724de82aea25ea209254))
+    * Provide default file for config tests. ([43370378](https://github.com/Griefed/ServerPackCreator/commit/43370378f8c864bc9b6e6487ce930a92e37afe2a))
+    * Write tests for CopyFiles. ([2d082eb5](https://github.com/Griefed/ServerPackCreator/commit/2d082eb5a1b675edbde1c752ee8afae958a7a241))
+    * Write tests for ServerSetup. ([b0ece51d](https://github.com/Griefed/ServerPackCreator/commit/b0ece51d088476da50d027642630064ae4f3cca1))
+    * I mean....why not. ([c154017e](https://github.com/Griefed/ServerPackCreator/commit/c154017e092cedd404c6a819d045e468be168b03))
+    * Move exit on default file generated to main to ensure tests run smoothly. ([c7fa2e3f](https://github.com/Griefed/ServerPackCreator/commit/c7fa2e3f0fd1cb2c804926459b5651432f4ef7fd))
+    * Write tests for FilesSetup methods. ([3fc77e21](https://github.com/Griefed/ServerPackCreator/commit/3fc77e21c20a7c3185b7b011b1dcc3fd33454f6d))
+    * Write tests for ServerUtilities methods. ([26c797a0](https://github.com/Griefed/ServerPackCreator/commit/26c797a01bbaa3997366789b28de8e1a05a110e8))
+    * Add test-files used by test-methods. ([5558ffc7](https://github.com/Griefed/ServerPackCreator/commit/5558ffc77df02806f74cc6a39b6d4ba99ad820b7))
+    * Re-implement Test-platform so I can start working on writing unit tests. ([d867507f](https://github.com/Griefed/ServerPackCreator/commit/d867507f0fe16593d8117aededa7112f46a47ae1))
+    * Expand ignores with test related files not needed on GitHub or in Docker. ([7f55af52](https://github.com/Griefed/ServerPackCreator/commit/7f55af52e8cf20b9bf1c3c6ac293425f8896528c))

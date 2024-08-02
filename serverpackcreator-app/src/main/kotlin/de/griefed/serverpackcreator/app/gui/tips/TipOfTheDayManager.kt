@@ -23,6 +23,7 @@ import Translations
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import tokyo.northside.swing.TipOfTheDay
 import tokyo.northside.swing.tips.DefaultTipOfTheDayModel
 import java.util.*
@@ -36,6 +37,7 @@ import kotlin.reflect.full.memberProperties
  */
 class TipOfTheDayManager(private val mainFrame: JFrame, private val guiProps: GuiProps) {
 
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val showOnStartupChoice = ShowOnStartup()
     private val tipOfTheDayModel = DefaultTipOfTheDayModel()
 
@@ -65,6 +67,7 @@ class TipOfTheDayManager(private val mainFrame: JFrame, private val guiProps: Gu
                     random = (0..<tipOfTheDayModel.tipCount).random()
                 }
             }
+            log.debug("Tip to render: $random")
             val newViewed = TreeSet(guiProps.viewedTips)
             newViewed.add(random)
             guiProps.viewedTips = newViewed

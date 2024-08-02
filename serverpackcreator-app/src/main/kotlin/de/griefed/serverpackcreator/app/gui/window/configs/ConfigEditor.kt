@@ -71,9 +71,9 @@ class ConfigEditor(
     private val validationChangeListener = object : DocumentChangeListener { override fun update(e: DocumentEvent) { validateInputFields() }}
     private val validationActionListener = ActionListener { validateInputFields() }
     private val updateMinecraftActionListener = ActionListener { updateMinecraftValues() }
-    private val legacyFabricModel = DefaultComboBoxModel(apiWrapper.versionMeta.legacyFabric.loaderVersionsArrayDescending())
-    private val fabricModel = DefaultComboBoxModel(apiWrapper.versionMeta.fabric.loaderVersionsArrayDescending())
-    private val quiltModel = DefaultComboBoxModel(apiWrapper.versionMeta.quilt.loaderVersionsArrayDescending())
+    private val legacyFabricModel = DefaultComboBoxModel(apiWrapper.versionMeta.legacyFabric.loaderVersions().toTypedArray())
+    private val fabricModel = DefaultComboBoxModel(apiWrapper.versionMeta.fabric.loaderVersions().reversed().toTypedArray())
+    private val quiltModel = DefaultComboBoxModel(apiWrapper.versionMeta.quilt.loaderVersions().reversed().toTypedArray())
 
     private val modpackIcon = StatusIcon(guiProps,Translations.createserverpack_gui_createserverpack_labelmodpackdir_tip.toString())
     private val modpackLabel = ElementLabel(Translations.createserverpack_gui_createserverpack_labelmodpackdir.toString())
@@ -97,13 +97,27 @@ class ConfigEditor(
     private val iconChooser = BalloonTipButton(null, guiProps.folderIcon, Translations.createserverpack_gui_browser.toString(), guiProps) { selectServerIcon() }
     private val iconPreview = IconPreview(guiProps)
 
+    private val advSetExclusionsSetting = ScrollTextArea(apiWrapper.apiProperties.clientSideMods().joinToString(","),Translations.createserverpack_gui_createserverpack_labelclientmods.toString(),validationChangeListener, guiProps)
+    private val advSetWhitelistSetting = ScrollTextArea(apiWrapper.apiProperties.whitelistedMods().joinToString(","),Translations.createserverpack_gui_createserverpack_labelwhitelistmods.toString(),validationChangeListener, guiProps)
+
     private val inclusionsSourceSetting = ScrollTextField(guiProps, "", "source")
     private val inclusionsDestinationSetting = ScrollTextField(guiProps, "", "destination")
     private val inclusionsInclusionFilterSetting = ScrollTextField(guiProps, "", "inclusion")
     private val inclusionsExclusionFilterSetting = ScrollTextField(guiProps, "", "exclusion")
     private val inclusionsIcon = StatusIcon(guiProps,Translations.createserverpack_gui_createserverpack_labelcopydirs_tip.toString())
     private val inclusionsLabel = ElementLabel(Translations.createserverpack_gui_createserverpack_labelcopydirs.toString())
-    private val inclusionsSetting = InclusionsEditor(guiProps.defaultFileChooserDimension, guiProps,this,apiWrapper,inclusionsSourceSetting,inclusionsDestinationSetting,inclusionsInclusionFilterSetting,inclusionsExclusionFilterSetting)
+    private val inclusionsSetting = InclusionsEditor(
+        guiProps.defaultFileChooserDimension,
+        guiProps,
+        this,
+        apiWrapper,
+        inclusionsSourceSetting,
+        inclusionsDestinationSetting,
+        inclusionsInclusionFilterSetting,
+        inclusionsExclusionFilterSetting,
+        advSetExclusionsSetting,
+        advSetWhitelistSetting
+    )
 
     private val suffixIcon = StatusIcon(guiProps,Translations.createserverpack_gui_createserverpack_labelsuffix_tip.toString())
     private val suffixLabel = ElementLabel(Translations.createserverpack_gui_createserverpack_labelsuffix.toString())
@@ -111,7 +125,7 @@ class ConfigEditor(
 
     private val mcVersionIcon = StatusIcon(guiProps,Translations.createserverpack_gui_createserverpack_labelminecraft_tip.toString())
     private val mcVersionLabel = ElementLabel(Translations.createserverpack_gui_createserverpack_labelminecraft.toString())
-    private val mcVersionSetting = ActionComboBox(DefaultComboBoxModel(apiWrapper.versionMeta.minecraft.settingsDependantVersionsArrayDescending()),updateMinecraftActionListener)
+    private val mcVersionSetting = ActionComboBox(DefaultComboBoxModel(apiWrapper.versionMeta.minecraft.settingsDependantVersions()),updateMinecraftActionListener)
 
     private val javaVersionIcon = StatusIcon(guiProps,Translations.createserverpack_gui_createserverpack_minecraft_java_tooltip.toString())
     private val javaVersionLabel = ElementLabel(Translations.createserverpack_gui_createserverpack_minecraft_java.toString(), 16)
@@ -134,8 +148,6 @@ class ConfigEditor(
     private val includePropertiesIcon = StatusIcon(guiProps,Translations.createserverpack_gui_createserverpack_checkboxproperties_tip.toString())
     private val includePropertiesSetting = ActionCheckBox(Translations.createserverpack_gui_createserverpack_checkboxproperties.toString(),validationActionListener)
 
-    private val advSetExclusionsSetting = ScrollTextArea(apiWrapper.apiProperties.clientSideMods().joinToString(","),Translations.createserverpack_gui_createserverpack_labelclientmods.toString(),validationChangeListener, guiProps)
-    private val advSetWhitelistSetting = ScrollTextArea(apiWrapper.apiProperties.whitelistedMods().joinToString(","),Translations.createserverpack_gui_createserverpack_labelwhitelistmods.toString(),validationChangeListener, guiProps)
     private val advSetJavaArgsSetting = ScrollTextArea("-Xmx4G -Xms4G",Translations.createserverpack_gui_createserverpack_javaargs.toString(),validationChangeListener, guiProps)
     private val advSetScriptKVPairsSetting = ScriptKVPairs(guiProps, this)
     private val advSetPanel = AdvancedSettingsPanel(this, advSetExclusionsSetting, advSetWhitelistSetting, advSetJavaArgsSetting, advSetScriptKVPairsSetting, guiProps, apiWrapper.apiProperties)
@@ -806,10 +818,10 @@ class ConfigEditor(
      * @author Griefed
      */
     private fun updateForgeModel(minecraftVersion: String = mcVersionSetting.selectedItem!!.toString()) {
-        if (apiWrapper.versionMeta.forge.supportedForgeVersionsDescendingArray(minecraftVersion).isPresent) {
+        if (apiWrapper.versionMeta.forge.isMinecraftVersionSupported(minecraftVersion)) {
             setModloaderVersions(
                 DefaultComboBoxModel(
-                    apiWrapper.versionMeta.forge.supportedForgeVersionsDescendingArray(minecraftVersion).get()
+                    apiWrapper.versionMeta.forge.supportedForgeVersions(minecraftVersion).get().toTypedArray()
                 )
             )
         } else {
@@ -825,10 +837,10 @@ class ConfigEditor(
      * @author Griefed
      */
     private fun updateNeoForgeModel(minecraftVersion: String = mcVersionSetting.selectedItem!!.toString()) {
-        if (apiWrapper.versionMeta.neoForge.supportedNeoForgeVersionsDescendingArray(minecraftVersion).isPresent) {
+        if (apiWrapper.versionMeta.neoForge.isMinecraftVersionSupported(minecraftVersion)) {
             setModloaderVersions(
                 DefaultComboBoxModel(
-                    apiWrapper.versionMeta.neoForge.supportedNeoForgeVersionsDescendingArray(minecraftVersion).get()
+                    apiWrapper.versionMeta.neoForge.supportedNeoForgeVersions(minecraftVersion).get().toTypedArray()
                 )
             )
         } else {

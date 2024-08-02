@@ -63,7 +63,9 @@ class InclusionsEditor(
     private val source: ScrollTextField,
     private val destination: ScrollTextField,
     private val inclusionFilter: ScrollTextField,
-    private val exclusionFilter: ScrollTextField
+    private val exclusionFilter: ScrollTextField,
+    exclusionSettings: ScrollTextArea,
+    whitelistSettings: ScrollTextArea
 ) : JSplitPane(HORIZONTAL_SPLIT) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val expertInclusionSettingsPanel = JPanel(
@@ -82,8 +84,8 @@ class InclusionsEditor(
     )
     private val leftPanel = JPanel(BorderLayout())
     private val inclusionModel = DefaultListModel<InclusionSpecification>()
-    private val list = JList(inclusionModel)
-    private val listScroller = JScrollPane(list)
+    private val inclusionList = JList(inclusionModel)
+    private val listScroller = JScrollPane(inclusionList)
 
     private val sourceIcon = StatusIcon(guiProps,Translations.createserverpack_gui_inclusions_editor_source_info.toString())
     private val sourceLabel = ElementLabel(Translations.createserverpack_gui_inclusions_editor_source.toString())
@@ -101,7 +103,7 @@ class InclusionsEditor(
     private val toggleDetailsDisplay = JToggleButton(guiProps.toggleHelpIcon)
     private val addInclEntry = BalloonTipButton(null, guiProps.entriesAddIcon,Translations.createserverpack_gui_inclusions_editor_add.toString(), guiProps) { addEntry("") }
     private val remInclEntry = BalloonTipButton(null, guiProps.entriesRemoveIcon,Translations.createserverpack_gui_inclusions_editor_delete.toString(), guiProps) { removeSelectedEntry() }
-    private val selectedInclusionDetailsScrollPanel = SelectedInclusionDetails(Translations.createserverpack_gui_inclusions_editor_tip_name.toString(), guiProps)
+    private val selectedInclusionDetailsScrollPanel = SelectedInclusionDetails(Translations.createserverpack_gui_inclusions_editor_tip_name.toString(), guiProps, exclusionSettings, whitelistSettings, inclusionList)
     private val inclusionsSelection = BalloonTipButton(null, guiProps.folderAddIcon, Translations.createserverpack_gui_inclusions_editor_select.toString(), guiProps) { selectInclusions() }
     private val inclusionsRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.createserverpack_gui_buttoncopydirs_revert_tip.toString(), guiProps) { revertInclusions() }
     private val inclusionsReset = BalloonTipButton(null, guiProps.resetIcon, Translations.createserverpack_gui_buttoncopydirs_reset_tip.toString(), guiProps) { setInclusionsFromStringList(apiWrapper.apiProperties.directoriesToInclude.toMutableList()) }
@@ -148,9 +150,9 @@ class InclusionsEditor(
         }
 
         fun clearSelection(e: MouseEvent) {
-            val index = list.locationToIndex(e.point)
-            val bounds = list.getCellBounds(index, index)
-            if (bounds == null || !bounds.contains(e.point) || list.model.size <= 0) {
+            val index = inclusionList.locationToIndex(e.point)
+            val bounds = inclusionList.getCellBounds(index, index)
+            if (bounds == null || !bounds.contains(e.point) || inclusionList.model.size <= 0) {
                 emtpySelection()
             } else {
                 enableInputs()
@@ -173,7 +175,7 @@ class InclusionsEditor(
         }
 
         fun checkSize() {
-            if (list.model.size <= 0 || list.isSelectionEmpty) {
+            if (inclusionList.model.size <= 0 || inclusionList.isSelectionEmpty) {
                 emtpySelection()
             }
         }
@@ -187,11 +189,11 @@ class InclusionsEditor(
         dividerLocation = 150
         setLeftComponent(leftPanel)
         setRightComponent(rightPanel)
-        list.visibleRowCount = -1
-        list.layoutOrientation = JList.HORIZONTAL_WRAP
-        list.selectionMode = ListSelectionModel.SINGLE_SELECTION
-        list.cellRenderer = InclusionSpecificationRenderer()
-        list.addListSelectionListener { event -> selectionOccurred(event) }
+        inclusionList.visibleRowCount = -1
+        inclusionList.layoutOrientation = JList.HORIZONTAL_WRAP
+        inclusionList.selectionMode = ListSelectionModel.SINGLE_SELECTION
+        inclusionList.cellRenderer = InclusionSpecificationRenderer()
+        inclusionList.addListSelectionListener { event -> selectionOccurred(event) }
         leftPanel.add(listScroller, BorderLayout.CENTER)
         selectedInclusionDetailsScrollPanel.text = Translations.createserverpack_gui_inclusions_editor_tip_default.toString()
         expertInclusionSettingsPanel.isVisible = false
@@ -225,18 +227,18 @@ class InclusionsEditor(
         inclusionFilter.addDocumentListener(inclusionListener)
         exclusionFilter.addDocumentListener(exclusionListener)
 
-        list.addMouseListener(listMouseAdapter)
-        list.model.addListDataListener(listModelDataAdapter)
-        if (list.model.size <= 0) {
+        inclusionList.addMouseListener(listMouseAdapter)
+        inclusionList.model.addListDataListener(listModelDataAdapter)
+        if (inclusionList.model.size <= 0) {
             emtpySelection()
         }
     }
 
     private fun emtpySelection() {
-        if (list.model.size > 0 || list.valueIsAdjusting) {
+        if (inclusionList.model.size > 0 || inclusionList.valueIsAdjusting) {
             return
         }
-        list.clearSelection()
+        inclusionList.clearSelection()
         selectedInclusionDetailsScrollPanel.text = Translations.createserverpack_gui_inclusions_editor_tip_default.toString()
         source.isEditable = guiProps.allowManualEditing
         destination.isEditable = false
@@ -255,7 +257,7 @@ class InclusionsEditor(
     private fun updateTip() {
         GlobalScope.launch(guiProps.miscDispatcher) {
             selectedInclusionDetailsScrollPanel.isEnabled = false
-            list.isEnabled = false
+            inclusionList.isEnabled = false
             selectedInclusionDetailsScrollPanel.text = Translations.createserverpack_gui_inclusions_editor_tip_updating.toString()
             selectedInclusionDetailsScrollPanel.updateUI()
             val inclusionSelection = selectedInclusion!!
@@ -316,7 +318,7 @@ class InclusionsEditor(
                 } catch (_: NullPointerException) {
                 }
                 selectedInclusionDetailsScrollPanel.isEnabled = true
-                list.isEnabled = true
+                inclusionList.isEnabled = true
             } else {
                 updateTip()
             }
@@ -327,8 +329,8 @@ class InclusionsEditor(
      * @author Griefed
      */
     fun updateIndex() {
-        if (!list.valueIsAdjusting) {
-            list.selectedIndex = 0
+        if (!inclusionList.valueIsAdjusting) {
+            inclusionList.selectedIndex = 0
             enableInputs()
         }
     }
@@ -347,11 +349,11 @@ class InclusionsEditor(
     fun sourceWasEdited() {
         GlobalScope.launch(Dispatchers.Swing) {
             delay(200)
-            if (list.model.size > 0 && !list.isSelectionEmpty && !list.valueIsAdjusting) {
+            if (inclusionList.model.size > 0 && !inclusionList.isSelectionEmpty && !inclusionList.valueIsAdjusting) {
                 if (File(configEditor.getModpackDirectory(), source.text).exists() || File(source.text).exists()) {
-                    list.selectedValue.source = source.text
+                    inclusionList.selectedValue.source = source.text
                     tipUpdateTimer.restart()
-                    list.updateUI()
+                    inclusionList.updateUI()
                     sourceIcon.info()
                 } else {
                     tipUpdateTimer.stop()
@@ -366,11 +368,11 @@ class InclusionsEditor(
      * @author Griefed
      */
     fun destinationWasEdited() {
-        if (list.model.size > 0 && !list.isSelectionEmpty) {
+        if (inclusionList.model.size > 0 && !inclusionList.isSelectionEmpty) {
             if (StringUtilities.checkForInvalidPathCharacters(destination.text)) {
-                list.selectedValue.destination = destination.text
+                inclusionList.selectedValue.destination = destination.text
                 destinationIcon.info()
-                list.updateUI()
+                inclusionList.updateUI()
             } else {
                 tipUpdateTimer.stop()
                 destinationIcon.error(Translations.createserverpack_gui_inclusions_editor_destination_error(destination.text))
@@ -382,13 +384,13 @@ class InclusionsEditor(
      * @author Griefed
      */
     fun inclusionFilterWasEdited() {
-        if (list.model.size > 0 && !list.isSelectionEmpty) {
+        if (inclusionList.model.size > 0 && !inclusionList.isSelectionEmpty) {
             try {
                 inclusionFilter.text.toRegex()
-                list.selectedValue.inclusionFilter = inclusionFilter.text
+                inclusionList.selectedValue.inclusionFilter = inclusionFilter.text
                 tipUpdateTimer.restart()
                 inclusionIcon.info()
-                list.updateUI()
+                inclusionList.updateUI()
             } catch (ex: PatternSyntaxException) {
                 tipUpdateTimer.stop()
                 var exception = ex.message ?: ex.description
@@ -405,13 +407,13 @@ class InclusionsEditor(
      * @author Griefed
      */
     fun exclusionFilterWasEdited() {
-        if (list.model.size > 0 && !list.isSelectionEmpty) {
+        if (inclusionList.model.size > 0 && !inclusionList.isSelectionEmpty) {
             try {
                 exclusionFilter.text.toRegex()
-                list.selectedValue.exclusionFilter = exclusionFilter.text
+                inclusionList.selectedValue.exclusionFilter = exclusionFilter.text
                 tipUpdateTimer.restart()
                 exclusionIcon.info()
-                list.updateUI()
+                inclusionList.updateUI()
             } catch (ex: PatternSyntaxException) {
                 tipUpdateTimer.stop()
                 var exception = ex.message ?: ex.description
@@ -429,14 +431,14 @@ class InclusionsEditor(
      */
     private fun selectionOccurred(event: ListSelectionEvent) {
         when {
-            list.valueIsAdjusting -> return
+            inclusionList.valueIsAdjusting -> return
             event.valueIsAdjusting -> return
-            list.selectedIndex == -1 || list.model.size <= 0 -> {
+            inclusionList.selectedIndex == -1 || inclusionList.model.size <= 0 -> {
                 emtpySelection()
                 return
             }
         }
-        selectedInclusion = list.selectedValue
+        selectedInclusion = inclusionList.selectedValue
         source.text = selectedInclusion!!.source
         destination.text = selectedInclusion!!.destination ?: ""
         inclusionFilter.text = selectedInclusion!!.inclusionFilter ?: ""
@@ -488,7 +490,7 @@ class InclusionsEditor(
 
     override fun validate() {
         super.validate()
-        list.updateUI()
+        inclusionList.updateUI()
         listScroller.updateUI()
         configEditor.validateInputFields()
     }
@@ -513,9 +515,9 @@ class InclusionsEditor(
      */
     private fun addEntry(entry: InclusionSpecification) {
         inclusionModel.addElement(entry)
-        list.selectedIndex = list.lastVisibleIndex
-        if (list.model.size == 1) {
-            list.selectedIndex = 0
+        inclusionList.selectedIndex = inclusionList.lastVisibleIndex
+        if (inclusionList.model.size == 1) {
+            inclusionList.selectedIndex = 0
         }
         validate()
     }
@@ -525,10 +527,10 @@ class InclusionsEditor(
      */
     private fun removeEntry(index: Int): InclusionSpecification {
         val removed = inclusionModel.remove(index)
-        if (list.model.size == 1) {
-            list.selectedIndex = 0
+        if (inclusionList.model.size == 1) {
+            inclusionList.selectedIndex = 0
         }
-        if (list.model.size <= 0) {
+        if (inclusionList.model.size <= 0) {
             emtpySelection()
         }
         validate()
@@ -539,12 +541,12 @@ class InclusionsEditor(
      * @author Griefed
      */
     private fun removeSelectedEntry() {
-        var selected = list.selectedIndex
-        removeEntry(list.selectedIndex)
-        if (selected++ < list.lastVisibleIndex) {
-            list.selectedIndex = --selected
+        var selected = inclusionList.selectedIndex
+        removeEntry(inclusionList.selectedIndex)
+        if (selected++ < inclusionList.lastVisibleIndex) {
+            inclusionList.selectedIndex = --selected
         } else {
-            list.selectedIndex = list.lastVisibleIndex
+            inclusionList.selectedIndex = inclusionList.lastVisibleIndex
         }
     }
 

@@ -69,14 +69,8 @@ class LegacyFabricMeta(
     override fun releaseLoader() = loaderVersions.releases[0]
     override fun latestInstaller() = installerVersions.latest!!
     override fun releaseInstaller() = installerVersions.release!!
-    override fun loaderVersionsListAscending() = loaderVersionsListDescending().reversed().toMutableList()
-    override fun loaderVersionsListDescending() = loaderVersions.allVersions
-    override fun loaderVersionsArrayAscending() = loaderVersionsListAscending().toTypedArray()
-    override fun loaderVersionsArrayDescending() = loaderVersionsListDescending().toTypedArray()
-    override fun installerVersionsListAscending() = installerVersions.allVersions
-    override fun installerVersionsListDescending() = installerVersionsListAscending().reversed().toMutableList()
-    override fun installerVersionsArrayAscending() = installerVersionsListAscending().toTypedArray()
-    override fun installerVersionsArrayDescending() = installerVersionsListDescending().toTypedArray()
+    override fun loaderVersions() = loaderVersions.allVersions
+    override fun installerVersions() = installerVersions.allVersions
 
     @Throws(MalformedURLException::class)
     override fun latestInstallerUrl() = installerVersions.latestURL()

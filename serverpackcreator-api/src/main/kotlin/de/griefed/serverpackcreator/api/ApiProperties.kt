@@ -185,6 +185,7 @@ class ApiProperties(
             "Blur-",
             "BorderlessWindow-",
             "CTM-",
+            "Chat Ping ",
             "ChunkAnimator-",
             "Clear-Water-",
             "ClientTweaks_",

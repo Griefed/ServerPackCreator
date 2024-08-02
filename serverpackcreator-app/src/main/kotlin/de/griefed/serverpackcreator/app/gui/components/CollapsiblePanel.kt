@@ -19,10 +19,7 @@
  */
 package de.griefed.serverpackcreator.app.gui.components
 
-import java.awt.BorderLayout
-import java.awt.Component
-import java.awt.FontMetrics
-import java.awt.Rectangle
+import java.awt.*
 import java.awt.event.*
 import javax.swing.BorderFactory
 import javax.swing.JPanel
@@ -179,6 +176,7 @@ class CollapsiblePanel(
     }
 
     init {
+        border.titleFont = border.titleFont.deriveFont(Font.BOLD).deriveFont(13F)
         setBorder(border)
         layout = BorderLayout()
         addMouseListener(titleListener)

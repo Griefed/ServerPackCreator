@@ -20,11 +20,15 @@
 package de.griefed.serverpackcreator.app.gui.window.configs.components.inclusions
 
 import Translations
+import de.griefed.serverpackcreator.api.config.InclusionSpecification
 import de.griefed.serverpackcreator.app.gui.GuiProps
+import de.griefed.serverpackcreator.app.gui.components.ScrollTextArea
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import javax.swing.*
 import javax.swing.text.DefaultHighlighter
 
@@ -36,14 +40,11 @@ import javax.swing.text.DefaultHighlighter
 class SelectedInclusionDetails(
     name: String,
     private val guiProps: GuiProps,
-    private val textPane: JTextPane = JTextPane(),
-    verticalScrollbarVisibility: Int = VERTICAL_SCROLLBAR_ALWAYS,
-    horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_NEVER
-) : JScrollPane(
-    textPane,
-    verticalScrollbarVisibility,
-    horizontalScrollbarVisibility
-), KeyListener {
+    private val exclusionSettings: ScrollTextArea,
+    private val whitelistSettings: ScrollTextArea,
+    private val inclusionList: JList<InclusionSpecification>,
+    private val textPane: JTextPane = JTextPane()
+) : JScrollPane(textPane, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_NEVER), KeyListener {
 
     private val searchFor = JTextField(100)
     private val search = arrayOf<Any>(
@@ -59,6 +60,37 @@ class SelectedInclusionDetails(
         setName(name)
         textPane.isEditable = false
         textPane.addKeyListener(this)
+
+        val menu = JPopupMenu()
+        val addToExclusions = JMenuItem(Translations.createserverpack_gui_inclusions_editor_tip_add_exclusion.toString())
+        val addToWhitelist = JMenuItem(Translations.createserverpack_gui_inclusions_editor_tip_add_whitelist.toString())
+        addToExclusions.addActionListener { exclusionSettings.append(", ${textPane.selectedText}") }
+        addToWhitelist.addActionListener { whitelistSettings.append(", ${textPane.selectedText}") }
+        menu.add(addToExclusions)
+        menu.add(addToWhitelist)
+        textPane.addMouseListener(object: MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
+                val selection = inclusionList.selectedValue
+                if (inclusionList.isSelectionEmpty) {
+                    return
+                }
+                if (!SwingUtilities.isRightMouseButton(e)) {
+                    return
+                }
+                when (selection.source) {
+                    "mods" -> {
+                        if (textPane.selectedText.isNullOrEmpty()) {
+                            addToExclusions.isEnabled = false
+                            addToWhitelist.isEnabled = false
+                        } else {
+                            addToExclusions.isEnabled = true
+                            addToWhitelist.isEnabled = true
+                        }
+                        menu.show(e.component, e.x, e.y)
+                    }
+                }
+            }
+        })
     }
 
     var text: String = ""
