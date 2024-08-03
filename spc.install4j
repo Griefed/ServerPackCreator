@@ -13,7 +13,7 @@
       </modules>
     </jreBundles>
   </application>
-  <files defaultOverwriteMode="1" defaultUninstallMode="2" launcherOverwriteMode="1" defaultFileMode="755" preserveMode="true">
+  <files defaultOverwriteMode="1" defaultUninstallMode="2" launcherOverwriteMode="1" defaultFileMode="755">
     <mountPoints>
       <mountPoint id="26" />
     </mountPoints>
@@ -390,6 +390,18 @@ if they so desire. By default $USERHOME/ServerPackCreator will be used for them.
               <action id="74" beanClass="com.install4j.runtime.beans.actions.misc.CheckRunningProcessesAction" commentSet="true" comment="Note that the &quot;Install Files&quot; action always checks that no process that are started from affected files are running. However, if you want to give your users the ability to close the applications automatically, you have to add this action before the &quot;Install Files&quot; action." actionElevationType="none" failureStrategy="quit">
                 <serializedBean>
                   <property name="closeStrategy" type="enum" class="com.install4j.runtime.beans.actions.misc.CloseStrategy" value="ASK_FOR_CLOSE_AND_TERMINATE" />
+                </serializedBean>
+              </action>
+              <action id="379" beanClass="com.install4j.runtime.beans.actions.files.DeleteFileAction" actionElevationType="elevated" rollbackBarrierExitCode="0">
+                <serializedBean>
+                  <property name="files" type="array" class="java.io.File" length="1">
+                    <element index="0">
+                      <object class="java.io.File">
+                        <string>.</string>
+                      </object>
+                    </element>
+                  </property>
+                  <property name="recursive" type="boolean" value="true" />
                 </serializedBean>
               </action>
               <action id="17" beanClass="com.install4j.runtime.beans.actions.InstallFilesAction" actionElevationType="elevated" rollbackBarrierExitCode="0" failureStrategy="quit" errorMessage="${i18n:FileCorrupted}" />
