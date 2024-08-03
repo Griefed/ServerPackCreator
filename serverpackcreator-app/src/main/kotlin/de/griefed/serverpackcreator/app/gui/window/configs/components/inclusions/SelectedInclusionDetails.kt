@@ -70,14 +70,16 @@ class SelectedInclusionDetails(
         menu.add(addToWhitelist)
         textPane.addMouseListener(object: MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
-                val selection = inclusionList.selectedValue
+                if (inclusionList.valueIsAdjusting) {
+                    return
+                }
                 if (inclusionList.isSelectionEmpty) {
                     return
                 }
                 if (!SwingUtilities.isRightMouseButton(e)) {
                     return
                 }
-                when (selection.source) {
+                when (inclusionList.selectedValue.source) {
                     "mods" -> {
                         if (textPane.selectedText.isNullOrEmpty()) {
                             addToExclusions.isEnabled = false
