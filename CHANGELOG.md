@@ -1,3 +1,10 @@
+## [6.1.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.1.0...6.1.1) (2024-08-03)
+
+
+### 🛠 Fixes
+
+* Delete install directory contents before installation ([d494a8d](https://git.griefed.de/Griefed/ServerPackCreator/commit/d494a8d1c1edbf19d9818b270b6a0d5a2f7b441e))
+
 ## [6.1.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.0.0...6.1.0) (2024-08-02)
 
 
