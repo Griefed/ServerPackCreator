@@ -112,7 +112,7 @@ class ServerPackHandler(
         #   installation of a compatible Java version, should JAVA be set to 'java'.
         # JDK_VENDOR is for the automatic installation of a JDK compatible with the Minecraft
         #   version of your server pack. For an extensive list of available vendors, check out
-        #   https://github.com/Jabba-Team/jabba/blob/c19c6ce2ae9645c39bbdca07b6c4e2ea39155f73/index.json
+        #   https://github.com/Jabba-Team/index/blob/main/index.json
         #   Note - For the installation to take place:
         #   - SKIP_JAVA_CHECK must be set to 'false'
         #   - JAVA be set to 'java'
