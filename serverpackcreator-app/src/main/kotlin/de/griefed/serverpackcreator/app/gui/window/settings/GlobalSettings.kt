@@ -54,7 +54,7 @@ class GlobalSettings(
 
     private val homeIcon = StatusIcon(guiProps, Translations.settings_global_home_tooltip.toString())
     private val homeLabel = ElementLabel(Translations.settings_global_home_label.toString())
-    private val homeSetting = ScrollTextFileField(guiProps, apiProperties.homeDirectory.absoluteFile, changeListener)
+    private val homeSetting = ScrollTextFileField(guiProps, apiProperties.homeDirectory.absoluteFile, FileFieldDropType.FOLDER, changeListener)
     private val homeRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { homeSetting.file = apiProperties.homeDirectory }
     private val homeReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { homeSetting.file = apiProperties.home }
     private val homeChoose = BalloonTipButton(null, guiProps.folderIcon,Translations.settings_select_directory.toString(), guiProps) {
@@ -87,7 +87,7 @@ class GlobalSettings(
 
     private val serverPacksIcon = StatusIcon(guiProps, Translations.settings_global_serverpacks_tooltip.toString())
     private val serverPacksLabel = ElementLabel(Translations.settings_global_serverpacks_label.toString())
-    private val serverPacksSetting = ScrollTextFileField(guiProps, apiProperties.serverPacksDirectory.absoluteFile, changeListener)
+    private val serverPacksSetting = ScrollTextFileField(guiProps, apiProperties.serverPacksDirectory.absoluteFile, FileFieldDropType.FOLDER, changeListener)
     private val serverPacksRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { serverPacksSetting.file = apiProperties.serverPacksDirectory }
     private val serverPacksReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { serverPacksSetting.file = apiProperties.defaultServerPacksDirectory() }
     private val serverPacksChoose = BalloonTipButton(null, guiProps.folderIcon,Translations.settings_select_directory.toString(), guiProps) {

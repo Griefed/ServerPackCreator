@@ -94,7 +94,7 @@ class WebserviceSettings(
 
     private val logDirectoryIcon = StatusIcon(guiProps,Translations.settings_webservice_tomcat_logs_tooltip.toString())
     private val logDirectoryLabel = ElementLabel(Translations.settings_webservice_tomcat_logs_label.toString())
-    private val logDirectorySetting = ScrollTextFileField(guiProps,apiProperties.tomcatLogsDirectory.absoluteFile, documentChangeListener)
+    private val logDirectorySetting = ScrollTextFileField(guiProps,apiProperties.tomcatLogsDirectory.absoluteFile, FileFieldDropType.FOLDER, documentChangeListener)
     private val logDirectoryRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) { logDirectorySetting.file = apiProperties.tomcatLogsDirectory.absoluteFile }
     private val logDirectoryReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { logDirectorySetting.file = apiProperties.defaultTomcatLogsDirectory().absoluteFile }
     private val logDirectoryChoose = BalloonTipButton(null, guiProps.folderIcon,Translations.settings_select_directory.toString(), guiProps) {
@@ -113,7 +113,7 @@ class WebserviceSettings(
 
     private val baseDirIcon = StatusIcon(guiProps,Translations.settings_webservice_tomcat_dir_tooltip.toString())
     private val baseDirLabel = ElementLabel(Translations.settings_webservice_tomcat_dir_label.toString())
-    private val baseDirSetting = ScrollTextFileField(guiProps,apiProperties.tomcatBaseDirectory.absoluteFile, documentChangeListener)
+    private val baseDirSetting = ScrollTextFileField(guiProps,apiProperties.tomcatBaseDirectory.absoluteFile, FileFieldDropType.FOLDER, documentChangeListener)
     private val baseDirRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) { baseDirSetting.file = apiProperties.tomcatBaseDirectory.absoluteFile }
     private val baseDirReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { baseDirSetting.file = apiProperties.defaultTomcatBaseDirectory().absoluteFile }
     private val baseDirChoose = BalloonTipButton(null, guiProps.folderIcon,Translations.settings_select_directory.toString(), guiProps) {

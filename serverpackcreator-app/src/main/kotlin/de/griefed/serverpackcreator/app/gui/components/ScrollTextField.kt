@@ -22,9 +22,11 @@ package de.griefed.serverpackcreator.app.gui.components
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.window.configs.components.SuggestionProvider
 import java.awt.Toolkit
+import java.awt.dnd.DropTarget
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import javax.swing.BorderFactory
+import javax.swing.DropMode
 import javax.swing.JScrollPane
 import javax.swing.JTextField
 import javax.swing.event.DocumentListener
@@ -90,6 +92,22 @@ open class ScrollTextField(
         } else {
             null
         }
+    }
+
+    override fun getDropTarget(): DropTarget {
+        return textField.dropTarget
+    }
+
+    override fun setDropTarget(dropTarget: DropTarget) {
+        textField.dropTarget = dropTarget
+    }
+
+    fun setDropMode(mode: DropMode) {
+        textField.dropMode = mode
+    }
+
+    fun getDropMode(): DropMode {
+        return textField.dropMode
     }
 
     /**

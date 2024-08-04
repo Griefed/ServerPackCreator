@@ -20,7 +20,12 @@
 package de.griefed.serverpackcreator.app.gui.components
 
 import de.griefed.serverpackcreator.app.gui.GuiProps
+import java.awt.datatransfer.DataFlavor
+import java.awt.dnd.DnDConstants
+import java.awt.dnd.DropTarget
+import java.awt.dnd.DropTargetDropEvent
 import java.io.File
+import javax.swing.DropMode
 import javax.swing.JTextField
 
 /**
@@ -32,10 +37,11 @@ import javax.swing.JTextField
 class ScrollTextFileField(
     guiProps: GuiProps,
     text: String,
+    dropType: FileFieldDropType,
     textField: JTextField = JTextField(text),
     horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_AS_NEEDED
 ) : ScrollTextField(guiProps, text, null, textField, horizontalScrollbarVisibility) {
-    constructor(guiProps: GuiProps,file: File, documentChangeListener: DocumentChangeListener) : this(guiProps,file.absolutePath) {
+    constructor(guiProps: GuiProps,file: File, dropType: FileFieldDropType, documentChangeListener: DocumentChangeListener) : this(guiProps,file.absolutePath, dropType) {
         this.addDocumentListener(documentChangeListener)
     }
 
@@ -50,5 +56,68 @@ class ScrollTextFileField(
     init {
         textField.isEditable = guiProps.allowManualEditing
         file = File(text).absoluteFile
+
+        textField.setDropMode(DropMode.INSERT)
+        textField.dropTarget = object : DropTarget() {
+            override fun drop(event: DropTargetDropEvent?) {
+                val transferable = event?.transferable ?: return
+                if (!event.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+                    return
+                }
+                val files : List<File>
+
+                try {
+                    event.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE)
+                    files = transferable.getTransferData(DataFlavor.javaFileListFlavor) as List<File>
+                } catch (e: Exception) {
+                    return
+                }
+
+                if (files.size != 1) {
+                    return
+                }
+
+                val file = files[0]
+
+                when (dropType) {
+                    FileFieldDropType.FILE -> {
+                        if (!file.isFile || file.isDirectory) {
+                            return
+                        }
+                    }
+
+                    FileFieldDropType.FOLDER -> {
+                        if (!file.isDirectory) {
+                            return
+                        }
+                    }
+
+                    FileFieldDropType.FOLDER_OR_ZIP -> {
+                        if (!file.isDirectory && !file.name.endsWith(".zip", ignoreCase = true)) {
+                            return
+                        }
+                    }
+
+                    FileFieldDropType.IMAGE -> {
+                        if (!file.isFile || file.isDirectory ||
+                            (!file.name.endsWith(".png", ignoreCase = true) &&
+                                    !file.name.endsWith(".jpg", ignoreCase = true) &&
+                                    !file.name.endsWith(".jpeg", ignoreCase = true) &&
+                                    !file.name.endsWith(".bmp", ignoreCase = true))) {
+                            return
+                        }
+                    }
+
+                    FileFieldDropType.PROPERTIES -> {
+                        if (!file.isFile || file.isDirectory ||
+                            !file.name.endsWith(".properties", ignoreCase = true)) {
+                            return
+                        }
+                    }
+                }
+
+                this@ScrollTextFileField.file = file
+            }
+        }
     }
 }

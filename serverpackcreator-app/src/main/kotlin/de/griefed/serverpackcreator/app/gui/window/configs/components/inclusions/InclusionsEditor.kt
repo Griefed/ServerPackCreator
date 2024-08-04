@@ -32,6 +32,7 @@ import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.BorderLayout
 import java.awt.Dimension
+import java.awt.datatransfer.DataFlavor
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
@@ -194,6 +195,9 @@ class InclusionsEditor(
         inclusionList.selectionMode = ListSelectionModel.SINGLE_SELECTION
         inclusionList.cellRenderer = InclusionSpecificationRenderer()
         inclusionList.addListSelectionListener { event -> selectionOccurred(event) }
+        inclusionList.dropMode = DropMode.INSERT
+        inclusionList.transferHandler = InclusionsListHandler(this)
+
         leftPanel.add(listScroller, BorderLayout.CENTER)
         selectedInclusionDetailsScrollPanel.text = Translations.createserverpack_gui_inclusions_editor_tip_default.toString()
         expertInclusionSettingsPanel.isVisible = false
@@ -219,7 +223,7 @@ class InclusionsEditor(
         rightPanel.add(sourceSelect, "cell 2 0")
         rightPanel.add(expertInclusionSettingsPanel, "cell 1 1 2 4, grow, w 50:50:, h 150:200:, hidemode 3")
         rightPanel.add(selectedInclusionDetailsScrollPanel, "cell 1 1 2 4, grow, w 50:50:, h 150:200:, hidemode 3")
-        //rightPanel.add(inclusionsSelection, "cell 3 0")
+
         rightPanel.add(inclusionsRevert, "cell 3 2")
         rightPanel.add(inclusionsReset, "cell 3 3")
         source.addDocumentListener(sourceListener)
@@ -507,13 +511,13 @@ class InclusionsEditor(
      */
     @Suppress("SameParameterValue")
     private fun addEntry(entry: String) {
-        addEntry(InclusionSpecification(entry))
+        addEntry(createInclusionSpec(File(entry)))
     }
 
     /**
      * @author Griefed
      */
-    private fun addEntry(entry: InclusionSpecification) {
+    fun addEntry(entry: InclusionSpecification) {
         inclusionModel.addElement(entry)
         inclusionList.selectedIndex = inclusionList.lastVisibleIndex
         if (inclusionList.model.size == 1) {
@@ -593,7 +597,7 @@ class InclusionsEditor(
     /**
      * @author Griefed
      */
-    private fun createInclusionSpec(sourceFile: File): InclusionSpecification {
+    fun createInclusionSpec(sourceFile: File): InclusionSpecification {
         return if (sourceFile.path.startsWith(configEditor.getModpackDirectory())) {
             val cleaned = sourceFile.path.replace(configEditor.getModpackDirectory() + File.separator, "")
             InclusionSpecification(cleaned)
@@ -646,5 +650,36 @@ class InclusionsEditor(
         guiProps.storeGuiProperty(
             "autocomplete.${exclusionFilter.identifier}",
             exclusionSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
+    }
+
+    class InclusionsListHandler(private val editor: InclusionsEditor): TransferHandler() {
+        override fun canImport(support: TransferSupport): Boolean {
+            if (!support.isDrop) {
+                return false
+            }
+            return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)
+        }
+
+        override fun importData(support: TransferSupport): Boolean {
+            if (!canImport(support)) {
+                return false
+            }
+
+            val transferable = support.transferable
+            val files: List<File>
+            try {
+                files = transferable.getTransferData(DataFlavor.javaFileListFlavor) as List<File>
+            } catch (e: Exception) {
+                return false
+            }
+
+            val inclSpecs = files.map { editor.createInclusionSpec(it) }
+
+            for (spec in inclSpecs) {
+                editor.addEntry(spec)
+            }
+
+            return true
+        }
     }
 }

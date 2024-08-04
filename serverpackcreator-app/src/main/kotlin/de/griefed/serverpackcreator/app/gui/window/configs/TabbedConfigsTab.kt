@@ -38,6 +38,10 @@ import org.apache.commons.io.monitor.FileAlterationListener
 import org.apache.commons.io.monitor.FileAlterationMonitor
 import org.apache.commons.io.monitor.FileAlterationObserver
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
+import java.awt.datatransfer.DataFlavor
+import java.awt.dnd.DnDConstants
+import java.awt.dnd.DropTarget
+import java.awt.dnd.DropTargetDropEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
@@ -86,6 +90,29 @@ class TabbedConfigsTab(
                 }
             }
 
+        }
+
+        tabs.dropTarget = object : DropTarget() {
+            override fun drop(event: DropTargetDropEvent) {
+                val transferable = event?.transferable ?: return
+                if (!event.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+                    return
+                }
+                val files : List<File>
+
+                try {
+                    event.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE)
+                    files = transferable.getTransferData(DataFlavor.javaFileListFlavor) as List<File>
+                } catch (e: Exception) {
+                    return
+                }
+
+                for (file in files) {
+                    if (file.name.endsWith(".conf", ignoreCase = true)) {
+                        loadConfig(file)
+                    }
+                }
+            }
         }
 
         val lastLoadedConfigs = guiProps.getGuiProperty("lastloaded")

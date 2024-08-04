@@ -77,13 +77,13 @@ class ConfigEditor(
 
     private val modpackIcon = StatusIcon(guiProps,Translations.createserverpack_gui_createserverpack_labelmodpackdir_tip.toString())
     private val modpackLabel = ElementLabel(Translations.createserverpack_gui_createserverpack_labelmodpackdir.toString())
-    private val modpackSetting = ScrollTextFileField(guiProps,apiWrapper.apiProperties.homeDirectory, validationChangeListener)
+    private val modpackSetting = ScrollTextFileField(guiProps,apiWrapper.apiProperties.homeDirectory, FileFieldDropType.FOLDER_OR_ZIP, validationChangeListener)
     private val modpackChooser = BalloonTipButton(null, guiProps.folderIcon, Translations.createserverpack_gui_browser.toString(), guiProps) { selectModpackDirectory() }
     private val modpackCheck = BalloonTipButton(null, guiProps.inspectIcon,Translations.createserverpack_gui_buttonmodpackdir_scan_tip.toString(), guiProps) { updateGuiFromSelectedModpack() }
 
     private val propertiesIcon = StatusIcon(guiProps,Translations.createserverpack_gui_createserverpack_labelpropertiespath_tip.toString())
     private val propertiesLabel = ElementLabel(Translations.createserverpack_gui_createserverpack_labelpropertiespath.toString())
-    private val propertiesSetting = ScrollTextFileField(guiProps,apiWrapper.apiProperties.defaultServerProperties, validationChangeListener)
+    private val propertiesSetting = ScrollTextFileField(guiProps,apiWrapper.apiProperties.defaultServerProperties, FileFieldDropType.PROPERTIES, validationChangeListener)
     private val propertiesQuickSelectLabel = ElementLabel(Translations.createserverpack_gui_quickselect.toString())
     private val propertiesQuickSelect = QuickSelect(tabbedConfigsTab.propertiesQuickSelections()) { setProperties() }
     private val propertiesChooser = BalloonTipButton(null, guiProps.folderIcon, Translations.createserverpack_gui_browser.toString(), guiProps) { selectServerProperties() }
@@ -91,7 +91,7 @@ class ConfigEditor(
 
     private val iconIcon = StatusIcon(guiProps,Translations.createserverpack_gui_createserverpack_labeliconpath_tip.toString())
     private val iconLabel = ElementLabel(Translations.createserverpack_gui_createserverpack_labeliconpath.toString())
-    private val iconSetting = ScrollTextFileField(guiProps,apiWrapper.apiProperties.defaultServerIcon, validationChangeListener)
+    private val iconSetting = ScrollTextFileField(guiProps,apiWrapper.apiProperties.defaultServerIcon, FileFieldDropType.IMAGE, validationChangeListener)
     private val iconQuickSelectLabel = ElementLabel(Translations.createserverpack_gui_quickselect.toString())
     private val iconQuickSelect = QuickSelect(tabbedConfigsTab.iconQuickSelections()) { setIcon() }
     private val iconChooser = BalloonTipButton(null, guiProps.folderIcon, Translations.createserverpack_gui_browser.toString(), guiProps) { selectServerIcon() }
