@@ -1,3 +1,23 @@
+## [6.2.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.1.1...6.2.0) (2024-08-04)
+
+
+### :scissors: Refactor
+
+* Improve value checks for tip rightclick ([1308f0c](https://git.griefed.de/Griefed/ServerPackCreator/commit/1308f0c092373a00c4ff8db54236043ed4816aa0))
+
+
+### 📦 Other
+
+* Add modernfix to directories which should be included ([56bbdfe](https://git.griefed.de/Griefed/ServerPackCreator/commit/56bbdfedcae0f836faa87499e562a64d06f1458e))
+* Correct link to list of JDK vendors in variables-help ([78d6ad7](https://git.griefed.de/Griefed/ServerPackCreator/commit/78d6ad7dc2e23b71f955212a9c592032a4fe1e44))
+
+
+### 🚀 Features
+
+* **Drag and Drop:** Conveniently drag and drop files and/or folders for modpack, server icon and properties, and directories in settings ([5716828](https://git.griefed.de/Griefed/ServerPackCreator/commit/5716828da88a37a3cc6c060954b906eec4be39af))
+* **Drag and Drop:** Conveniently drag and drop files and/or folders from your PC into server-files ([f422b6d](https://git.griefed.de/Griefed/ServerPackCreator/commit/f422b6da81ddc663a088331dffaf54e94be23346))
+* **Drag and Drop:** Conveniently drag and drop server pack config files into config tab pane to load it in a new tab ([34563c1](https://git.griefed.de/Griefed/ServerPackCreator/commit/34563c1266470b124a09aa23f1cf610ce4875ce5))
+
 ## [6.1.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.1.0...6.1.1) (2024-08-03)
 
 
