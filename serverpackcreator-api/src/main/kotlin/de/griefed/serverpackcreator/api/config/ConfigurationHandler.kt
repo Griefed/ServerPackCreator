@@ -599,8 +599,6 @@ class ConfigurationHandler(
      * @author Griefed
      */
     fun ensureScriptSettingsDefaults(packConfig: PackConfig) {
-        val server = versionMeta.minecraft.getServer(packConfig.minecraftVersion)
-
         //From modpack -> server pack specific values
         packConfig.scriptSettings["SPC_SERVERPACKCREATOR_VERSION_SPC"] = apiProperties.apiVersion
         packConfig.scriptSettings["SPC_MINECRAFT_VERSION_SPC"] = packConfig.minecraftVersion
@@ -611,15 +609,12 @@ class ConfigurationHandler(
         packConfig.scriptSettings["SPC_QUILT_INSTALLER_VERSION_SPC"] = versionMeta.quilt.releaseInstaller()
         packConfig.scriptSettings["SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC"] = versionMeta.legacyFabric.releaseInstaller()
 
-        if (server.isEmpty || server.get().url().isEmpty) {
-            packConfig.scriptSettings["SPC_RECOMMENDED_JAVA_VERSION_SPC"] = ""
-        } else {
-            if (server.get().javaVersion().isPresent) {
-                packConfig.scriptSettings["SPC_RECOMMENDED_JAVA_VERSION_SPC"] = server.get().javaVersion().get().toString()
-            } else {
-                packConfig.scriptSettings["SPC_RECOMMENDED_JAVA_VERSION_SPC"] = "?"
-            }
+        if (!packConfig.scriptSettings.containsKey("SPC_RECOMMENDED_JAVA_VERSION_SPC")) {
+            val server = versionMeta.minecraft.getServer(packConfig.minecraftVersion)
+            @Suppress("UNNECESSARY_SAFE_CALL")
+            packConfig.scriptSettings["SPC_RECOMMENDED_JAVA_VERSION_SPC"] = server.get()?.javaVersion()?.get()?.toString() ?: "?"
         }
+
         // Make sure default values are present
         for ((key,value) in PackConfig.defaultScriptSettings()) {
             if (!packConfig.scriptSettings.containsKey(key)) {
