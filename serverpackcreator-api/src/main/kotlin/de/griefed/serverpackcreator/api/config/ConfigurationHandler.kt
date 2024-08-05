@@ -611,8 +611,11 @@ class ConfigurationHandler(
 
         if (!packConfig.scriptSettings.containsKey("SPC_RECOMMENDED_JAVA_VERSION_SPC")) {
             val server = versionMeta.minecraft.getServer(packConfig.minecraftVersion)
-            @Suppress("UNNECESSARY_SAFE_CALL")
-            packConfig.scriptSettings["SPC_RECOMMENDED_JAVA_VERSION_SPC"] = server.get()?.javaVersion()?.get()?.toString() ?: "?"
+            if (server.isPresent && server.get().javaVersion().isPresent) {
+                packConfig.scriptSettings["SPC_RECOMMENDED_JAVA_VERSION_SPC"] = server.get().javaVersion().get().toString()
+            } else {
+                packConfig.scriptSettings["SPC_RECOMMENDED_JAVA_VERSION_SPC"] = "?"
+            }
         }
 
         // Make sure default values are present

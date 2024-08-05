@@ -46,6 +46,7 @@ internal class ConfigurationHandlerTest {
         Assertions.assertFalse(check.modloaderVersionChecksPassed)
         Assertions.assertFalse(check.modloaderChecksPassed)
         Assertions.assertFalse(check.inclusionsChecksPassed)
+        Assertions.assertFalse(check.allChecksPassed)
     }
 
     @Test
@@ -60,6 +61,7 @@ internal class ConfigurationHandlerTest {
         Assertions.assertTrue(check.serverPropertiesChecksPassed)
         Assertions.assertFalse(check.modloaderVersionChecksPassed)
         Assertions.assertFalse(check.minecraftVersionChecksPassed)
+        Assertions.assertFalse(check.allChecksPassed)
     }
 
     @Test
