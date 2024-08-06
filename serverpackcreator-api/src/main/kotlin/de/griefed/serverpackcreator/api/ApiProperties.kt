@@ -497,6 +497,7 @@ class ApiProperties(
             "global_packs",
             "kubejs",
             "maps",
+            "modernfix",
             "mods",
             "openloader",
             "scripts",
