@@ -1,3 +1,20 @@
+## [6.2.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.2.0...6.2.1) (2024-08-06)
+
+
+### 💎 Improvements
+
+* Allow custom Recommended Java Version for server pack. Handle with care! You are solely responsible for your custom setting of this value! ([7c3bfe1](https://git.griefed.de/Griefed/ServerPackCreator/commit/7c3bfe18ab7eea9a42c82294167898b8fc604748))
+
+
+### 📦 Other
+
+* Add modernfix folder to inclusion list in code, too ([0b647c8](https://git.griefed.de/Griefed/ServerPackCreator/commit/0b647c894b153df663819b5bfab022d01af4662e))
+
+
+### 🛠 Fixes
+
+* Re-add server and Java version availability checks ([7b4b15b](https://git.griefed.de/Griefed/ServerPackCreator/commit/7b4b15b668e911f7e2b7c56ce93a5aaae1e0512f))
+
 ## [6.2.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.1.1...6.2.0) (2024-08-04)
 
 
