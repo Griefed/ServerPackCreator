@@ -386,9 +386,16 @@ class ServerPackHandler(
         runGenericEventListeners()
         log.debug("Generation took ${generationStopWatch.stop().getTime()}")
 
+        log.info("Performing security scans")
+        val findings = mutableListOf<String>()
+        log.info("Performing Nekodetector scan")
+        findings.addAll(SecurityScans.scanUsingNekodetector(serverPack.toPath()))
+        log.info("Performing jNeedle scan")
+        findings.addAll(SecurityScans.scanUsingJNeedle(serverPack.toPath()))
+
         return ServerPackGeneration(
-            serverPack.isDirectory && !serverPack.listFiles().isNullOrEmpty(),
             serverPack,
+            findings,
             serverPackZip,
             packConfig,
             files

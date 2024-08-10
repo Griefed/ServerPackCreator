@@ -12,7 +12,7 @@ repositories {
 }
 
 plugins {
-    `java`
+    java
     `java-library`
     `maven-publish`
     signing

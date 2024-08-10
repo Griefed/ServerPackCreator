@@ -176,21 +176,25 @@ class ControlPanel(
             if (guiProps.generationFocusEnabled) {
                 mainFrame.toFront()
             }
-            if (JOptionPane.showConfirmDialog(
-                    panel.parent,
-                    Translations.createserverpack_gui_createserverpack_openfolder_browse.toString(),
-                    Translations.createserverpack_gui_createserverpack_openfolder_title.toString(),
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.INFORMATION_MESSAGE,
-                    guiProps.infoIcon
-                ) == 0
-            ) {
-                try {
-                    Desktop.getDesktop().open(generation.serverPack)
+            if (generation.success) {
+                if (JOptionPane.showConfirmDialog(
+                        panel.parent,
+                        Translations.createserverpack_gui_createserverpack_openfolder_browse.toString(),
+                        Translations.createserverpack_gui_createserverpack_openfolder_title.toString(),
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.INFORMATION_MESSAGE,
+                        guiProps.infoIcon
+                    ) == 0
+                ) {
+                    try {
+                        Desktop.getDesktop().open(generation.serverPack)
 
-                } catch (ex: IOException) {
-                    log.error("Error opening file explorer for server pack.", ex)
+                    } catch (ex: IOException) {
+                        log.error("Error opening file explorer for server pack.", ex)
+                    }
                 }
+            } else {
+                generationFailed(generation.errors)
             }
         } catch (ex: Exception) {
             log.error("An error occurred when generating the server pack.", ex)
