@@ -1,3 +1,20 @@
+## [6.3.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.2.1...6.3.0) (2024-08-10)
+
+
+### 💎 Improvements
+
+* Display generation errors in GUI ([e74a90a](https://git.griefed.de/Griefed/ServerPackCreator/commit/e74a90a1d47e22054383b71924d34e79b019ed43))
+
+
+### 🔩 Dependencies
+
+* Update dependencies where possible ([24fda66](https://git.griefed.de/Griefed/ServerPackCreator/commit/24fda661edc3c57b385d751c597d893ae440b05c))
+
+
+### 🚀 Features
+
+* Scan mod- and server pack using Nekodetector and jNeedle ([f18e134](https://git.griefed.de/Griefed/ServerPackCreator/commit/f18e134c14c09c05ab4430fcb766e3f57eef11d2))
+
 ## [6.2.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.2.0...6.2.1) (2024-08-06)
 
 
