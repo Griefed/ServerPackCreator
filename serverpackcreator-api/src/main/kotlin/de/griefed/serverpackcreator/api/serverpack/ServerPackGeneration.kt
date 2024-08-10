@@ -31,14 +31,14 @@ import java.util.*
  */
 class ServerPackGeneration(
     /**
-     * Whether the generation was successful.
-     */
-    val success: Boolean,
-
-    /**
      * The generated server pack as a file. This usually points towards a directory on the file-system.
      */
     val serverPack: File,
+
+    /**
+     * List of errors encountered during server pack generation.
+     */
+    val errors: List<String>,
 
     /**
      * The server pack ZIP-archive, if one was generated. [Optional] for ease of use, as not every server pack generation
@@ -56,4 +56,12 @@ class ServerPackGeneration(
      * through this list and remove the path to the server pack from each entry to receive a list of relative paths.
      */
     val files: List<File>
-)
+) {
+    /**
+     * Whether the generation was successful.
+     */
+    val success: Boolean
+        get() {
+            return errors.isEmpty()
+        }
+}

@@ -25,6 +25,7 @@ import de.griefed.serverpackcreator.api.ApiPlugins
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.SPCConfigCheckListener
 import de.griefed.serverpackcreator.api.utilities.SPCGenericListener
+import de.griefed.serverpackcreator.api.utilities.SecurityScans
 import de.griefed.serverpackcreator.api.utilities.common.*
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import net.lingala.zip4j.ZipFile
@@ -166,6 +167,13 @@ class ConfigurationHandler(
             packConfig.setModsWhitelist(apiProperties.whitelistedMods().toMutableList())
         }
 
+        val modpack = File(packConfig.modpackDir)
+        log.info("Performing security scans")
+        log.info("Performing Nekodetector scan")
+        configCheck.otherErrors.addAll(SecurityScans.scanUsingNekodetector(modpack.toPath()))
+        log.info("Performing jNeedle scan")
+        configCheck.otherErrors.addAll(SecurityScans.scanUsingJNeedle(modpack.toPath()))
+
         if (!checkIconAndProperties(packConfig.serverIconPath)) {
             configCheck.serverIconErrors.add(Translations.configuration_log_error_servericon(packConfig.serverIconPath))
             log.error("The specified server-icon does not exist: ${packConfig.serverIconPath}")
@@ -190,7 +198,6 @@ class ConfigurationHandler(
             log.error("No read-permission for ${packConfig.serverPropertiesPath}")
         }
 
-        val modpack = File(packConfig.modpackDir)
         if (modpack.isDirectory) {
             isDir(packConfig, configCheck)
         } else if (modpack.isFile && modpack.name.endsWith("zip")) {

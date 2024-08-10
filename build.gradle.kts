@@ -36,6 +36,7 @@ allprojects {
         gradlePluginPortal()
         google()
         mavenCentral()
+        maven("https://jitpack.io")
     }
 
     tasks.withType<Test> {

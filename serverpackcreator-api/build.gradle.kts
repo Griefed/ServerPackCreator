@@ -1,4 +1,5 @@
 
+import java.net.URI
 import java.util.prefs.Preferences
 
 plugins {
@@ -9,6 +10,7 @@ plugins {
 
 repositories {
     mavenCentral()
+    maven("https://jitpack.io")
 }
 
 dependencies {
@@ -29,8 +31,10 @@ dependencies {
     api("org.pf4j:pf4j:3.11.0")
     api("org.bouncycastle:bcpkix-jdk18on:1.78")
 
+    api("com.github.MCRcortex:nekodetector:Version-1.1-pre")
+    api("dev.kosmx.needle:jneedle:1.0.1")
+
     testImplementation("org.jetbrains.kotlin:kotlin-test:1.9.24")
-    testImplementation("org.jetbrains.kotlin:kotlin-test:1.9.23")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.3")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
 }
