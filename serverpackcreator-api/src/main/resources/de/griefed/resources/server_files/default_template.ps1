@@ -613,7 +613,14 @@ else
         else
         {
             GetJavaVersion
-            if ([int]$script:JavaVersion -ne [int]$RecommendedJavaVersion)
+            if ($script:JavaVersion -match '[0-9]+')
+            {
+                if ($script:JavaVersion -ne $RecommendedJavaVersion)
+                {
+                    InstallJava
+                }
+            }
+            else
             {
                 InstallJava
             }
@@ -623,7 +630,7 @@ else
     {
         GetJavaVersion
         Write-Host "Detected $($Semantics[0]).$($Semantics[1]).$($Semantics[2]) - Java $($JavaVersion)"
-        if ([int]$script:JavaVersion -ne [int]$RecommendedJavaVersion)
+        if ($script:JavaVersion -ne $RecommendedJavaVersion)
         {
             $script:Java = "java"
             InstallJava

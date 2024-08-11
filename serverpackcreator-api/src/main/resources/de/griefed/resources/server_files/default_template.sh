@@ -416,7 +416,11 @@ else
       installJava
     else
       getJavaVersion
-      if [[ "$JAVA_VERSION" != "$RECOMMENDED_JAVA_VERSION" ]];then
+      if [[ "$JAVA_VERSION" =~ [0-9]+ ]];then
+        if [[ "$JAVA_VERSION" != "$RECOMMENDED_JAVA_VERSION" ]];then
+          installJava
+        fi
+      else
         installJava
       fi
     fi
