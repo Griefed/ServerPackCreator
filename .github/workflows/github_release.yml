@@ -101,6 +101,41 @@ jobs:
             serverpackcreator-plugin-example/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}-Example-Plugin.jar
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
+      - name: Collect files
+        run: |
+          mkdir ${{ needs.preparations.outputs.version }}
+          cp serverpackcreator-api/build/libs/*.jar ${{ needs.preparations.outputs.version }}/
+          cp serverpackcreator-app/build/libs/*.jar ${{ needs.preparations.outputs.version }}/
+          cp serverpackcreator-plugin-example/build/libs/*.jar ${{ needs.preparations.outputs.version }}/
+          cp media/* ${{ needs.preparations.outputs.version }}/
+
+      - name: Upload release to version-dir
+        uses: nogsantos/scp-deploy@master
+        with:
+          src: ./${{ needs.preparations.outputs.version }}
+          host: ${{ secrets.SPCUPLOAD_HOST }}
+          remote: "${{ secrets.SPCUPLOAD_TARGET }}"
+          user: ${{ secrets.SPCUPLOAD_USERNAME }}
+          key: ${{ secrets.SPCUPLOAD_KEY }}
+
+      - name: Cleanup latest
+        id: action-ssh
+        uses: tiyee/action-ssh@v1.0.1
+        with:
+          host: ${{ secrets.SPCUPLOAD_HOST }}
+          username: ${{ secrets.SPCUPLOAD_USERNAME }}
+          privateKey: ${{ secrets.SPCUPLOAD_KEY }}
+          command: 'rm -f ${{ secrets.SPCUPLOAD_TARGET }}/latest/*'
+
+      - name: Upload release to latest-dir
+        uses: nogsantos/scp-deploy@master
+        with:
+          src: ./${{ needs.preparations.outputs.version }}/*
+          host: ${{ secrets.SPCUPLOAD_HOST }}
+          remote: "${{ secrets.SPCUPLOAD_TARGET }}/latest"
+          user: ${{ secrets.SPCUPLOAD_USERNAME }}
+          key: ${{ secrets.SPCUPLOAD_KEY }}
+
   release:
     name: "Release"
     if: ${{ always() }}
