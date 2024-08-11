@@ -1,3 +1,15 @@
+## [6.3.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.0...6.3.1) (2024-08-11)
+
+
+### 🦊 CI/CD
+
+* Configure install4j updater. Upload release assets to download server. ([85f4941](https://git.griefed.de/Griefed/ServerPackCreator/commit/85f4941a5542058f74a31f7856d4695d8fd043b9))
+
+
+### 🛠 Fixes
+
+* Remove unnecessary int cast and check for expected version format to better handle custom versions like GraalVM ([f8aef38](https://git.griefed.de/Griefed/ServerPackCreator/commit/f8aef38907fbd2716df98699772e15780034d7f8))
+
 ## [6.3.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.2.1...6.3.0) (2024-08-10)
 
 
