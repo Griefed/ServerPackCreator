@@ -65,3 +65,29 @@ jobs:
             ./media/*.exe
             ./serverpackcreator-app/build/libs/serverpackcreator-app-dev.jar
             ./serverpackcreator-plugin-example/build/libs/serverpackcreator-plugin-example-dev.jar
+
+      - name: Collect files
+        run: |
+          mkdir continuous
+          cp serverpackcreator-api/build/libs/*.jar continuous/
+          cp serverpackcreator-app/build/libs/*.jar continuous/
+          cp serverpackcreator-plugin-example/build/libs/*.jar continuous/
+          cp media/* continuous/
+
+      - name: Cleanup continuous
+        id: action-ssh
+        uses: tiyee/action-ssh@v1.0.1
+        with:
+          host: ${{ secrets.SPCUPLOAD_HOST }}
+          username: ${{ secrets.SPCUPLOAD_USERNAME }}
+          privateKey: ${{ secrets.SPCUPLOAD_KEY }}
+          command: 'rm -rf ~/spc/continuous'
+
+      - name: Copy folder content recursively to remote
+        uses: nogsantos/scp-deploy@master
+        with:
+          src: ./continuous
+          host: ${{ secrets.SPCUPLOAD_HOST }}
+          remote: "${{ secrets.SPCUPLOAD_TARGET }}"
+          user: ${{ secrets.SPCUPLOAD_USERNAME }}
+          key: ${{ secrets.SPCUPLOAD_KEY }}
