@@ -443,6 +443,21 @@ if they so desire. By default $USERHOME/ServerPackCreator will be used for them.
                         </property>
                       </object>
                     </add>
+                    <add>
+                      <object class="com.install4j.runtime.beans.screens.components.ProgramGroupFileConfig">
+                        <property name="iconFile">
+                          <object class="com.install4j.api.beans.ExternalFile">
+                            <string>./img/load.ico</string>
+                          </object>
+                        </property>
+                        <property name="name" type="string">Check For Update</property>
+                        <property name="target">
+                          <object class="java.io.File">
+                            <string>updater</string>
+                          </object>
+                        </property>
+                      </object>
+                    </add>
                   </property>
                   <property name="programGroupName" type="string">ServerPackCreator</property>
                   <property name="uninstallerMenuName" type="string">${i18n:UninstallerMenuEntry(${compiler:sys.fullName})}</property>
