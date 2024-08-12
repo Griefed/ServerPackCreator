@@ -67,16 +67,19 @@ installJabba() {
   [ -s "$JABBA_HOME/jabba.sh" ] && source "$JABBA_HOME/jabba.sh"
 }
 
-GBLIC_VERSION=$(ldd --version | awk '/ldd/{print $NF}')
-IFS="." read -ra GBLIC_SEMANTICS <<<"${GBLIC_VERSION}"
+# if ldd is not available, we may be on MacOS
+if commandAvailable ldd ; then
+  GBLIC_VERSION=$(ldd --version | awk '/ldd/{print $NF}')
+  IFS="." read -ra GBLIC_SEMANTICS <<<"${GBLIC_VERSION}"
 
-# Older Linux systems aren't supported, sadly. This mainly affects Ubuntu 20 and Linux distributions from around that time
-# which use glibc versions older than 2.32 & 2.34.
-if [[ ${GBLIC_SEMANTICS[1]} -lt 32 ]];then
-  echo "Jabba only supports systems with glibc 2.32 & 2.34 onward. You have $GBLIC_VERSION. Automated Java installation can not proceed."
-  echo "DO NOT ATTEMPT TO UPDATE OR UPGRADE YOUR INSTALLED VERSION OF GLIBC! DOING SO MAY CORRUPT YOUR ENTIRE SYSTEM!"
-  echo "Instead, consider upgrading to a newer version of your OS. Example: In case of Ubuntu 20 LTS, consider upgrading to 22 LTS or 24 LTS."
-  exit 1
+  # Older Linux systems aren't supported, sadly. This mainly affects Ubuntu 20 and Linux distributions from around that time
+  # which use glibc versions older than 2.32 & 2.34.
+  if [[ ${GBLIC_SEMANTICS[1]} -lt 32 ]];then
+    echo "Jabba only supports systems with glibc 2.32 & 2.34 onward. You have $GBLIC_VERSION. Automated Java installation can not proceed."
+    echo "DO NOT ATTEMPT TO UPDATE OR UPGRADE YOUR INSTALLED VERSION OF GLIBC! DOING SO MAY CORRUPT YOUR ENTIRE SYSTEM!"
+    echo "Instead, consider upgrading to a newer version of your OS. Example: In case of Ubuntu 20 LTS, consider upgrading to 22 LTS or 24 LTS."
+    exit 1
+  fi
 fi
 
 if [[ ! -s "variables.txt" ]]; then
