@@ -71,6 +71,29 @@ jobs:
           ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" build --info --full-stacktrace -x :serverpackcreator-api:test -x :serverpackcreator-app:test
           ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" media --info --full-stacktrace -x :serverpackcreator-api:test -x :serverpackcreator-app:test
 
+      - name: Rename JAR and Plugin
+        run: |
+          mv serverpackcreator-app/build/libs/serverpackcreator-app-${{ needs.preparations.outputs.version }}.jar serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
+          mv serverpackcreator-plugin-example/build/libs/serverpackcreator-plugin-example-${{ needs.preparations.outputs.version }}.jar serverpackcreator-plugin-example/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}-Example-Plugin.jar
+
+      - name: Collect files
+        run: |
+          mkdir ${{ needs.preparations.outputs.version }}
+          cp serverpackcreator-api/build/libs/*.jar ${{ needs.preparations.outputs.version }}/
+          cp serverpackcreator-app/build/libs/*.jar ${{ needs.preparations.outputs.version }}/
+          cp serverpackcreator-plugin-example/build/libs/*.jar ${{ needs.preparations.outputs.version }}/
+          cp media/* ${{ needs.preparations.outputs.version }}/
+
+      - name: Generate checksum
+        uses: jmgilman/actions-generate-checksum@v1
+        with:
+          patterns: |
+            ${{ needs.preparations.outputs.version }}/*
+
+      - name: Collect checksum
+        run: |
+          cp checksum.txt ${{ needs.preparations.outputs.version }}/
+
       # UPLOAD ARTIFACTS
       - uses: actions/upload-artifact@v4
         if: ${{ always() }}
@@ -84,22 +107,13 @@ jobs:
             serverpackcreator-plugin-example/build
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
-      - name: Rename JAR and Plugin
-        run: |
-          mv serverpackcreator-app/build/libs/serverpackcreator-app-${{ needs.preparations.outputs.version }}.jar serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
-          mv serverpackcreator-plugin-example/build/libs/serverpackcreator-plugin-example-${{ needs.preparations.outputs.version }}.jar serverpackcreator-plugin-example/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}-Example-Plugin.jar
-
       # UPLOAD ARTIFACTS
       - uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
           name: jar-media-release
           path: |
-            media/*.dmg
-            media/*.sh
-            media/*.exe
-            serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
-            serverpackcreator-plugin-example/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}-Example-Plugin.jar
+            ${{ needs.preparations.outputs.version }}
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
   prerelease:
@@ -155,18 +169,9 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: jar-media-release
+          path: ${{ needs.preparations.outputs.version }}
 
-      - name: Generate checksum
-        uses: jmgilman/actions-generate-checksum@v1
-        with:
-          patterns: |
-            media/*.dmg
-            media/*.sh
-            media/*.exe
-            serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
-            serverpackcreator-plugin-example/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}-Example-Plugin.jar
-
-      - name: Append Checksums Info
+      - name: Append Info
         uses: DamianReeves/write-file-action@v1.2
         with:
           path: description.txt
@@ -188,12 +193,21 @@ jobs:
           prerelease: true
           fail_on_unmatched_files: false
           files: |
-            checksum.txt
-            media/*.dmg
-            media/*.sh
-            media/*.exe
-            serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
-            serverpackcreator-plugin-example/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}-Example-Plugin.jar
+            ${{ needs.preparations.outputs.version }}/*
+
+      - name: Get source archives
+        run: |
+          wget -O ${{ needs.preparations.outputs.version }}/source.zip https://github.com/Griefed/ServerPackCreator/archive/refs/tags/${{ needs.preparations.outputs.version }}.zip
+          wget -O ${{ needs.preparations.outputs.version }}/source.tar.gz https://github.com/Griefed/ServerPackCreator/archive/refs/tags/${{ needs.preparations.outputs.version }}.tar.gz
+
+      - name: Upload release to version-dir
+        uses: nogsantos/scp-deploy@master
+        with:
+          src: ./${{ needs.preparations.outputs.version }}
+          host: ${{ secrets.SPCUPLOAD_HOST }}
+          remote: "${{ secrets.SPCUPLOAD_TARGET }}"
+          user: ${{ secrets.SPCUPLOAD_USERNAME }}
+          key: ${{ secrets.SPCUPLOAD_KEY }}
 
   news:
     name: "News on Discord"

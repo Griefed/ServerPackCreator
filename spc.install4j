@@ -443,6 +443,21 @@ if they so desire. By default $USERHOME/ServerPackCreator will be used for them.
                         </property>
                       </object>
                     </add>
+                    <add>
+                      <object class="com.install4j.runtime.beans.screens.components.ProgramGroupFileConfig">
+                        <property name="iconFile">
+                          <object class="com.install4j.api.beans.ExternalFile">
+                            <string>./img/load.ico</string>
+                          </object>
+                        </property>
+                        <property name="name" type="string">Check For Update</property>
+                        <property name="target">
+                          <object class="java.io.File">
+                            <string>updater</string>
+                          </object>
+                        </property>
+                      </object>
+                    </add>
                   </property>
                   <property name="programGroupName" type="string">ServerPackCreator</property>
                   <property name="uninstallerMenuName" type="string">${i18n:UninstallerMenuEntry(${compiler:sys.fullName})}</property>
@@ -486,20 +501,6 @@ if they so desire. By default $USERHOME/ServerPackCreator will be used for them.
                   </property>
                 </serializedBean>
                 <condition>context.getBooleanVariable("createDesktopLinkAction")</condition>
-              </action>
-              <action name="Set home-directory property" id="331" beanClass="com.install4j.runtime.beans.actions.properties.WritePropertiesFileAction" enabled="false" actionElevationType="elevated" rollbackBarrierExitCode="0" errorMessage="Couldn't writer properties!">
-                <serializedBean>
-                  <property name="encoding" type="enum" class="com.install4j.runtime.beans.actions.properties.PropertiesFileEncoding" value="JAVA_PROPERTIES" />
-                  <property name="file">
-                    <object class="java.io.File">
-                      <string>${installer:sys.installationDir}/serverpackcreator.properties</string>
-                    </object>
-                  </property>
-                  <property name="propertiesSortMode" type="enum" class="com.install4j.runtime.beans.actions.properties.PropertiesSortMode" value="KEYS_ALPHABETICALLY" />
-                  <property name="sourcePropertyDefinitions" type="string">de.griefed.serverpackcreator.home=${installer:homeDirectory}</property>
-                  <property name="updateExistingComments" type="boolean" value="true" />
-                  <property name="updateExistingKeys" type="boolean" value="true" />
-                </serializedBean>
               </action>
               <action id="377" beanClass="com.install4j.runtime.beans.actions.registry.SetPreferenceKeyAction" actionElevationType="elevated" rollbackBarrierExitCode="0">
                 <serializedBean>

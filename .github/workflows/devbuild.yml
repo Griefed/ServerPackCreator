@@ -41,15 +41,25 @@ jobs:
           ./gradlew build --info --full-stacktrace
           ./gradlew media --info --full-stacktrace
 
+      - name: Collect files
+        run: |
+          mkdir continuous
+          cp serverpackcreator-api/build/libs/*.jar continuous/
+          cp serverpackcreator-app/build/libs/*.jar continuous/
+          cp serverpackcreator-plugin-example/build/libs/*.jar continuous/
+          cp media/*.dmg continuous/
+          cp media/*.sh continuous/
+          cp media/*.exe continuous/
+
       - name: Generate checksum
         uses: jmgilman/actions-generate-checksum@v1
         with:
           patterns: |
-            media/*.dmg
-            media/*.sh
-            media/*.exe
-            serverpackcreator-app/build/libs/serverpackcreator-app-dev.jar
-            serverpackcreator-plugin-example/build/libs/serverpackcreator-plugin-example-dev.jar
+            continuous/*
+
+      - name: Collect checksum
+        run: |
+          cp checksum.txt continuous/
 
       - name: Upload to GitHub Releases
         uses: "marvinpinto/action-automatic-releases@latest"
@@ -59,20 +69,12 @@ jobs:
           prerelease: true
           title: "Development Build"
           files: |
-            ./checksum.txt
-            ./media/*.dmg
-            ./media/*.sh
-            ./media/*.exe
-            ./serverpackcreator-app/build/libs/serverpackcreator-app-dev.jar
-            ./serverpackcreator-plugin-example/build/libs/serverpackcreator-plugin-example-dev.jar
+            continuous/*
 
-      - name: Collect files
+      - name: Get source archives
         run: |
-          mkdir continuous
-          cp serverpackcreator-api/build/libs/*.jar continuous/
-          cp serverpackcreator-app/build/libs/*.jar continuous/
-          cp serverpackcreator-plugin-example/build/libs/*.jar continuous/
-          cp media/* continuous/
+          wget -O continuous/source.zip https://github.com/Griefed/ServerPackCreator/archive/refs/tags/continuous.zip
+          wget -O continuous/source.tar.gz https://github.com/Griefed/ServerPackCreator/archive/refs/tags/continuous.tar.gz
 
       - name: Cleanup continuous
         id: action-ssh
