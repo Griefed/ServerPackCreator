@@ -41,6 +41,12 @@ jobs:
           ./gradlew build --info --full-stacktrace
           ./gradlew media --info --full-stacktrace
 
+      - name: Generate checksum
+        uses: jmgilman/actions-generate-checksum@v1
+        with:
+          patterns: |
+            continuous/*
+
       - name: Collect files
         run: |
           mkdir continuous
@@ -51,12 +57,6 @@ jobs:
           cp media/*.sh continuous/
           cp media/*.exe continuous/
           cp checksum.txt continuous/
-
-      - name: Generate checksum
-        uses: jmgilman/actions-generate-checksum@v1
-        with:
-          patterns: |
-            continuous/*
 
       - name: Upload to GitHub Releases
         uses: "marvinpinto/action-automatic-releases@latest"
