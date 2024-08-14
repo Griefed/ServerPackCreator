@@ -1,3 +1,23 @@
+## [6.3.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.1...6.3.2) (2024-08-14)
+
+
+### 📦 Other
+
+* Add update checker to Windows program group entries ([1ce8216](https://git.griefed.de/Griefed/ServerPackCreator/commit/1ce82168229a912993ef075a1a298ad073dd0a45))
+* Icon for updater ([d6d1226](https://git.griefed.de/Griefed/ServerPackCreator/commit/d6d12265e8a35b49abb7beebd9c662318748cd08))
+
+
+### 🦊 CI/CD
+
+* Add files to releae assets and simplify asset collection ([c97bee7](https://git.griefed.de/Griefed/ServerPackCreator/commit/c97bee71244fb1dd371ae676cdad1ac6ad59b45e))
+* Generate checksum before trying to copy it ([25ea614](https://git.griefed.de/Griefed/ServerPackCreator/commit/25ea614a29401242fc988c3fb178e0ff0caa1d2c))
+* Order steps correctly ([50c574e](https://git.griefed.de/Griefed/ServerPackCreator/commit/50c574e153260492b919286256dd9679d4576ff3))
+
+
+### 🛠 Fixes
+
+* If ldd is not available, don't check the glibc version. ([1d785f3](https://git.griefed.de/Griefed/ServerPackCreator/commit/1d785f39124d61e4efcc96f94eddddc2fd6a1b55))
+
 ## [6.3.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.0...6.3.1) (2024-08-11)
 
 
