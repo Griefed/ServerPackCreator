@@ -72,7 +72,6 @@ jobs:
       - name: Rename JAR and Plugin
         run: |
           mv serverpackcreator-app/build/libs/serverpackcreator-app-${{ needs.preparations.outputs.version }}.jar serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
-          mv serverpackcreator-plugin-example/build/libs/serverpackcreator-plugin-example-${{ needs.preparations.outputs.version }}.jar serverpackcreator-plugin-example/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}-Example-Plugin.jar
 
       - name: Collect files
         run: |
@@ -81,6 +80,7 @@ jobs:
           cp serverpackcreator-app/build/libs/*.jar ${{ needs.preparations.outputs.version }}/
           cp serverpackcreator-plugin-example/build/libs/*.jar ${{ needs.preparations.outputs.version }}/
           cp media/* ${{ needs.preparations.outputs.version }}/
+          rm -f ${{ needs.preparations.outputs.version }}/output.txt ${{ needs.preparations.outputs.version }}/*plain.jar 
 
       - name: Generate checksum
         uses: jmgilman/actions-generate-checksum@v1

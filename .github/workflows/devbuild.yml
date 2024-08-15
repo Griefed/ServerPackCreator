@@ -50,6 +50,7 @@ jobs:
           cp media/*.dmg continuous/
           cp media/*.sh continuous/
           cp media/*.exe continuous/
+          rm -f continuous/output.txt continuous/*plain.jar 
 
       - name: Generate checksum
         uses: jmgilman/actions-generate-checksum@v1
