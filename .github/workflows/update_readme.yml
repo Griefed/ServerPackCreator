@@ -32,10 +32,10 @@ jobs:
           apt-get update && apt-get install git -y && \
           git config user.name ${{ secrets.GIT_USER }} && \
           git config user.email ${{ secrets.GIT_MAIL }} && \
-          git checkout -b master && \
+          git checkout -b main && \
           pwd && ls -ahl && \
           git add . && \
           wait && \
           git status && \
           git commit -m 'Update sponsors and contribution graph' && \
-          git push "https://${{ secrets.GIT_USER }}:${{ secrets.GITLAB_TOKEN }}@${{ secrets.CI_SERVER_HOST }}/${{ secrets.GIT_USER }}/${{ secrets.CI_PROJECT_TITLE }}.git" --all
+          git push "https://${{ secrets.GIT_USER }}:${{ secrets.GITLAB_TOKEN }}@${{ secrets.CI_SERVER_HOST }}/${{ secrets.GIT_USER }}/${{ secrets.CI_PROJECT_TITLE }}.git"
