@@ -312,11 +312,83 @@ Huge shoutout and thank you!**
 
 ### Sponsors
 
-<!-- sponsors --><a href="https://github.com/kreezxil"><img src="https://github.com/kreezxil.png" width="60px" alt="" /></a><!-- sponsors -->
+<!-- sponsors --><a href="https://github.com/kreezxil"><img src="https://github.com/kreezxil.png" width="60px" alt="kreezxil" /></a><a href="https://github.com/kyber-6"><img src="https://github.com/kyber-6.png" width="60px" alt="Kyber" /></a><a href="https://github.com/Calmingstorm"><img src="https://github.com/Calmingstorm.png" width="60px" alt="" /></a><!-- sponsors -->
 
 ### Contributors
 
 <!-- contributors -->
+
+<table>
+  <tr>
+    <td width="150" align="center">
+      <a href="https://github.com/Griefed" title="Griefed">
+        <img src="https://avatars.githubusercontent.com/u/44273438?v=4" width="70" />
+        <br />
+        Griefed
+      </a>
+    </td>
+    <td width="150" align="center">
+      <a href="https://github.com/apps/dependabot" title="dependabot[bot]">
+        <img src="https://avatars.githubusercontent.com/in/29110?v=4" width="70" />
+        <br />
+        dependabot[bot]
+      </a>
+    </td>
+    <td width="150" align="center">
+      <a href="https://github.com/whitebear60" title="whitebear60">
+        <img src="https://avatars.githubusercontent.com/u/42472132?v=4" width="70" />
+        <br />
+        whitebear60
+      </a>
+    </td>
+    <td width="150" align="center">
+      <a href="https://github.com/MoonstruckDev" title="MoonstruckDev">
+        <img src="https://avatars.githubusercontent.com/u/105180230?v=4" width="70" />
+        <br />
+        MoonstruckDev
+      </a>
+    </td>
+    <td width="150" align="center">
+      <a href="https://github.com/apps/dependabot-preview" title="dependabot-preview[bot]">
+        <img src="https://avatars.githubusercontent.com/in/2141?v=4" width="70" />
+        <br />
+        dependabot-preview[bot]
+      </a>
+    </td>
+  </tr><tr>
+    <td width="150" align="center">
+      <a href="https://github.com/Alistair1231" title="Alistair1231">
+        <img src="https://avatars.githubusercontent.com/u/26165288?v=4" width="70" />
+        <br />
+        Alistair1231
+      </a>
+    </td>
+    <td width="150" align="center">
+      <a href="https://github.com/arthurbarret0" title="arthurbarret0">
+        <img src="https://avatars.githubusercontent.com/u/54091091?v=4" width="70" />
+        <br />
+        arthurbarret0
+      </a>
+    </td>
+    <td width="150" align="center">
+      <a href="https://github.com/kyber-6" title="kyber-6">
+        <img src="https://avatars.githubusercontent.com/u/100732009?v=4" width="70" />
+        <br />
+        kyber-6
+      </a>
+    </td>
+    <td width="150" align="center">
+      <a href="https://github.com/apps/github-actions" title="github-actions[bot]">
+        <img src="https://avatars.githubusercontent.com/in/15368?v=4" width="70" />
+        <br />
+        github-actions[bot]
+      </a>
+    </td>
+    <td width="150" align="center">
+    </td>
+  </tr>
+</table>
+
 <!-- contributors end-->
 
 ---
