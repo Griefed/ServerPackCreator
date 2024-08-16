@@ -12,7 +12,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Add GitHub Sponsors to Readme
-        uses: JamesIves/github-sponsors-readme-action@v1.4
+        uses: JamesIves/github-sponsors-readme-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           active-only: false
