@@ -411,6 +411,7 @@ Update README:on-schedule:
         -s GIT_MAIL=$GIT_MAIL \
         -s GITLAB_TOKEN=$GITLAB_TOKEN \
         -s CI_SERVER_HOST=$CI_SERVER_HOST \
+        -s CI_PROJECT_TITLE=$CI_PROJECT_TITLE \
         -W '.github/workflows/update_readme.yml'
   after_script:
     - |-

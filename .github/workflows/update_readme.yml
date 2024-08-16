@@ -37,5 +37,5 @@ jobs:
           git add . && \
           wait && \
           git status && \
-          git commit -m 'Update fancy schmancy blog posts, sponsors and contribution graph' && \
-          git push "https://${{ secrets.GIT_USER }}:${{ secrets.GITLAB_TOKEN }}@${{ secrets.CI_SERVER_HOST }}/${{ secrets.GIT_USER }}/${{ secrets.GIT_USER }}.git" --all
+          git commit -m 'Update sponsors and contribution graph' && \
+          git push "https://${{ secrets.GIT_USER }}:${{ secrets.GITLAB_TOKEN }}@${{ secrets.CI_SERVER_HOST }}/${{ secrets.GIT_USER }}/${{ secrets.CI_PROJECT_TITLE }}.git" --all
