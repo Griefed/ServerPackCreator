@@ -318,10 +318,3 @@ Huge shoutout and thank you!**
 
 <!-- contributors -->
 <!-- contributors end-->
-
----
-
-## 7. Libraries and Licenses
-
-This project would not be possible without [these awesome groups](licenses/licences.md), creators and developers and their wonderful libraries
-they have kindly provided to people such as me. 
