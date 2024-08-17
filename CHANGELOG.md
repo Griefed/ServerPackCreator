@@ -1,3 +1,20 @@
+## [6.3.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.3...6.3.4) (2024-08-17)
+
+
+### 📦 Other
+
+* Remove old paths and values for IDE ([82858d9](https://git.griefed.de/Griefed/ServerPackCreator/commit/82858d90b1a8b456346361326f225f47fe2b65eb))
+
+
+### 🦊 CI/CD
+
+* Do not include test-resources, only main ([b22893a](https://git.griefed.de/Griefed/ServerPackCreator/commit/b22893a0ebece5de50b6d9cc14914ed5f3d92e2c))
+
+
+### 🛠 Fixes
+
+* Prevent method-lambdas from interrupting semantic parsing ([e501475](https://git.griefed.de/Griefed/ServerPackCreator/commit/e501475819307d9dd2079597ad893ad1bcb2009c))
+
 ## [6.3.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.2...6.3.3) (2024-08-17)
 
 
