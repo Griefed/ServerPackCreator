@@ -1,3 +1,23 @@
+## [6.3.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.2...6.3.3) (2024-08-17)
+
+
+### 📦 Other
+
+* Icons for writerside ([5debdcd](https://git.griefed.de/Griefed/ServerPackCreator/commit/5debdcd0da797540b7581cc17f7b0150f53a25ca))
+* Remove license block ([a768796](https://git.griefed.de/Griefed/ServerPackCreator/commit/a7687960c782ffb07600dca4d674e69c1742492c))
+
+
+### 🦊 CI/CD
+
+* Update i18n4k to 0.9.0 ([059a0ed](https://git.griefed.de/Griefed/ServerPackCreator/commit/059a0ed702c322bdff49c8462a8af8e0f8048ddd))
+* Upgrade Gradle to 8.10. Update and centralize buildSrc lib management ([98b9d7c](https://git.griefed.de/Griefed/ServerPackCreator/commit/98b9d7cb074709fa7933f3b38a12f90d03250d4f))
+* Checkout main, do not push all ([b6a2e0c](https://git.griefed.de/Griefed/ServerPackCreator/commit/b6a2e0cd1a641bfc7452322ea17554c73bb4e569))
+* Limit workflow runs and remove unnecessary steps ([80a605e](https://git.griefed.de/Griefed/ServerPackCreator/commit/80a605e56a2c8f53fbd7176bce4cd64cb4fa87a0))
+* Pass project title and change commit message ([316b0e0](https://git.griefed.de/Griefed/ServerPackCreator/commit/316b0e0dc503c4bf1d1273a2adde8d20105908f6))
+* Regular checkout.. ([95a4761](https://git.griefed.de/Griefed/ServerPackCreator/commit/95a476107f4fe78f1465371b9ba26b2cd459ec81))
+* Remove output.txt and plain.jar from assets. They're not needed. ([27afb9b](https://git.griefed.de/Griefed/ServerPackCreator/commit/27afb9bdaacc2919e4ff555120946d42e5dc8c8d))
+* Use [@v1](https://git.griefed.de/v1) as [@v1](https://git.griefed.de/v1).4 apparently does not work ([fa7ca0d](https://git.griefed.de/Griefed/ServerPackCreator/commit/fa7ca0d16f291c76f1a2effc11f9034b38b060be))
+
 ## [6.3.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.1...6.3.2) (2024-08-14)
 
 
