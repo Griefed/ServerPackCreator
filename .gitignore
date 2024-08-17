@@ -361,6 +361,10 @@ work
 licenses/*
 !licenses/.gitkeep
 
+# ServerPackCreator Exampel Plugin
+serverpackcreator-plugin-example/tests/*
+!serverpackcreator-plugin-example/tests/.gitkeep
+
 # ServerPackCreator Web
 serverpackcreator-web-frontend/.quasar/
 serverpackcreator-web-frontend/dist/

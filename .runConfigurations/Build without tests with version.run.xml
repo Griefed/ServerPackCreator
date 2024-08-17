@@ -4,7 +4,7 @@
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$" />
       <option name="externalSystemIdString" value="GRADLE" />
-      <option name="scriptParameters" value="-Pversion=6.0.0 --info --full-stacktrace -x :serverpackcreator-api:test -x :serverpackcreator-app:test" />
+      <option name="scriptParameters" value="-Pversion=6.3.4 --info --full-stacktrace -x :serverpackcreator-api:test -x :serverpackcreator-app:test" />
       <option name="taskDescriptions">
         <list />
       </option>
