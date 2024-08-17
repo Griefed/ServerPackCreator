@@ -1,7 +1,7 @@
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpm
 
 plugins {
-    id("org.siouan.frontend-jdk11")
+    id("org.siouan.frontend-jdk21")
 }
 
 repositories {
@@ -13,8 +13,6 @@ frontend {
 
     nodeVersion.set("18.20.2")
     nodeInstallDirectory.set(project.layout.projectDirectory.dir("node"))
-
-    yarnEnabled.set(false)
 
     cleanScript.set("run clean")
     assembleScript.set("run build")
@@ -28,6 +26,8 @@ frontend {
     } else if (System.getProperty("os.arch").equals("aarch64")) {
         nodeDistributionUrlPathPattern.set("vVERSION/node-vVERSION-linux-arm64.TYPE")
     }
+
+    verboseModeEnabled.set(true)
 }
 
 tasks.register("installQuasar", RunNpm::class) {

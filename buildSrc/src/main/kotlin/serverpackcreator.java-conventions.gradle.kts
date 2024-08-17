@@ -1,6 +1,5 @@
 @file:Suppress("UnstableApiUsage")
 
-import de.griefed.common.gradle.constant.JDK_VERSION
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import java.text.SimpleDateFormat
@@ -22,7 +21,7 @@ plugins {
 java {
     // Auto JDK setup
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(JDK_VERSION))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
     withSourcesJar()
     withJavadocJar()

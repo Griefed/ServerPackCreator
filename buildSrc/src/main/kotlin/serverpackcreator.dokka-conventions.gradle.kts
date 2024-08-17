@@ -1,4 +1,3 @@
-import de.griefed.common.gradle.constant.JDK_VERSION
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.gradle.DokkaTask
 
@@ -24,7 +23,7 @@ tasks.withType<DokkaTask>().configureEach {
             skipDeprecated.set(false)
             reportUndocumented.set(true)
             skipEmptyPackages.set(true)
-            jdkVersion.set(JDK_VERSION.toInt())
+            jdkVersion.set(21)
             suppressGeneratedFiles.set(false)
             includes.from(
                 projectDir.resolve("module.md")

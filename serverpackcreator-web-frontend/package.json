@@ -5,6 +5,8 @@
   "productName": "ServerPackCreator",
   "author": "Griefed <griefed@griefed.de>",
   "private": true,
+  "type": "module",
+  "packageManager": "npm@6.13.4",
   "scripts": {
     "lint": "eslint --ext .js,.ts,.vue ./",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",

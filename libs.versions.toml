@@ -1,0 +1,42 @@
+[versions]
+
+# https://kotlinlang.org/docs/releases.html#release-dbbbetails
+kotlin = "2.0.10"
+
+# https://kotlinlang.org/docs/all-open-plugin.html#gradle
+kotlinAllOpen = "2.0.10"
+
+# https://mvnrepository.com/artifact/org.jetbrains.kotlin.plugin.jpa/org.jetbrains.kotlin.plugin.jpa.gradle.plugin
+kotlinJpa = "2.0.10"
+
+# https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-gradle-plugin
+springGradle = "3.3.2"
+
+# https://mvnrepository.com/artifact/io.spring.gradle/dependency-management-plugin
+springDependencyMan = "1.1.6"
+
+# https://kotlinlang.org/docs/dokka-get-started.html
+dokka = "1.9.20"
+
+# https://github.com/jk1/Gradle-License-Report
+licenseReport = "2.9"
+
+# https://plugins.gradle.org/plugin/org.siouan.frontend-jdk11
+frontendPlugin = "8.1.0"
+
+# https://plugins.gradle.org/plugin/com.install4j.gradle
+install4j = "10.0.8"
+
+[libraries]
+
+kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlinAllOpen = { module = "org.jetbrains.kotlin:kotlin-allopen", version.ref = "kotlinAllOpen" }
+kotlinJpa = { module = "org.jetbrains.kotlin.plugin.jpa:org.jetbrains.kotlin.plugin.jpa.gradle.plugin", version.ref = "kotlinJpa" }
+
+springGradlePlugin = { module = "org.springframework.boot:spring-boot-gradle-plugin", version.ref = "springGradle" }
+springDependencyMan = { module = "io.spring.gradle:dependency-management-plugin", version.ref = "springDependencyMan" }
+
+dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
+licenseReport = { module = "com.github.jk1:gradle-license-report", version.ref = "licenseReport" }
+frontendPlugin = { module = "org.siouan:frontend-jdk21", version.ref = "frontendPlugin" }
+install4j = { module = "gradle.plugin.install4j.install4j.buildtools:gradle_publish", version.ref = "install4j" }

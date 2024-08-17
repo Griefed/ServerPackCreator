@@ -20,13 +20,11 @@ plugins {
 
 idea {
     project {
-        languageLevel = IdeaLanguageLevel(properties["jdkVersion"])
-        jdkName = properties["jdkVersion"] as String
+        languageLevel = IdeaLanguageLevel(21)
         modules.forEach {
             it.isDownloadJavadoc = true
             it.isDownloadSources = true
-            it.languageLevel = IdeaLanguageLevel(properties["jdkVersion"])
-            it.jdkName = properties["jdkVersion"] as String
+            it.languageLevel = IdeaLanguageLevel(21)
         }
     }
 }
