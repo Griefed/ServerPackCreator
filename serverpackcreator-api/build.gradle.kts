@@ -5,7 +5,7 @@ import java.util.prefs.Preferences
 plugins {
     id("serverpackcreator.kotlin-conventions")
     id("serverpackcreator.dokka-conventions")
-    id("de.comahe.i18n4k") version "0.7.0"
+    id("de.comahe.i18n4k") version "0.9.0"
 }
 
 repositories {
@@ -17,8 +17,8 @@ dependencies {
     api("io.github.microutils:kotlin-logging:3.0.5")
     api("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
     api("de.jensklingenberg.ktorfit:ktorfit-lib:2.0.1")
-    api("de.comahe.i18n4k:i18n4k-core:0.7.0")
-    api("de.comahe.i18n4k:i18n4k-core-jvm:0.7.0")
+    api("de.comahe.i18n4k:i18n4k-core:0.9.0")
+    api("de.comahe.i18n4k:i18n4k-core-jvm:0.9.0")
     implementation("org.jetbrains.kotlin:kotlin-bom:1.9.25")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.0.0")
     implementation(files("${layout.buildDirectory.asFile.get()}/resources/"))
