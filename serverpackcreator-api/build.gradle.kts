@@ -21,7 +21,7 @@ dependencies {
     api("de.comahe.i18n4k:i18n4k-core-jvm:0.9.0")
     implementation("org.jetbrains.kotlin:kotlin-bom:1.9.25")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.0.0")
-    implementation(files("${layout.buildDirectory.asFile.get()}/resources/"))
+    implementation(files("${layout.buildDirectory.asFile.get()}/resources/main"))
     api("com.electronwill.night-config:toml:3.7.2")
     api("com.fasterxml.jackson.core:jackson-databind:2.17.0")
     api("net.lingala.zip4j:zip4j:2.11.5")
@@ -41,10 +41,6 @@ dependencies {
 
 tasks.sourcesJar {
     dependsOn(tasks.generateI18n4kFiles)
-}
-
-tasks.processResources {
-
 }
 
 tasks.processResources {
