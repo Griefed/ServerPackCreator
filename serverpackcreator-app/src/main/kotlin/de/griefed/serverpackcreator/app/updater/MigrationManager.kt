@@ -225,9 +225,9 @@ class MigrationManager(
         // Current MAJOR version equal and current MINOR version smaller?
         return if (checkAgainst[0] == old[0] && checkAgainst[1] < old[1]) {
             true
-        } else checkAgainst[0] == old[0] && checkAgainst[1] == old[1] && checkAgainst[2] < old[2]
 
-        // Current MAJOR version equal, current MINOR equal, current PATCH version smaller?
+            // Current MAJOR version equal, current MINOR equal, current PATCH version smaller?
+        } else checkAgainst[0] == old[0] && checkAgainst[1] == old[1] && checkAgainst[2] < old[2]
     }
 
     /**
@@ -238,7 +238,7 @@ class MigrationManager(
      * @author Griefed
      */
     private fun semantics(version: String): IntArray {
-        return version.split(Regex("\\.")).map { it.toInt() }.toIntArray()
+        return version.replace("[0-9]*\$lambda\$[0-9]*".toRegex(),"").split(Regex("\\.")).map { it.toInt() }.toIntArray()
     }
 
     /**
