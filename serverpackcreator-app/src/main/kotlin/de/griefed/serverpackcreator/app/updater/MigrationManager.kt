@@ -157,7 +157,7 @@ class MigrationManager(
         val methodMap = HashMap<String, Method>(100)
         val methodVersions = TreeSet<String>()
         for (method in methods) {
-            val methodVersion = toSemantic(method.name)
+            val methodVersion = toSemantic(method.name.replace("\\\$[0-9]*lambda\\\$[0-9]*".toRegex(),""))
             methodMap[methodVersion] = method
             methodVersions.add(methodVersion)
         }
@@ -238,7 +238,7 @@ class MigrationManager(
      * @author Griefed
      */
     private fun semantics(version: String): IntArray {
-        return version.replace("[0-9]*\$lambda\$[0-9]*".toRegex(),"").split(Regex("\\.")).map { it.toInt() }.toIntArray()
+        return version.replace("\\\$[0-9]*lambda\\\$[0-9]*".toRegex(),"").split(Regex("\\.")).map { it.toInt() }.toIntArray()
     }
 
     /**
