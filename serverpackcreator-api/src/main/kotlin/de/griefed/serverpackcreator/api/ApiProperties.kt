@@ -353,6 +353,7 @@ class ApiProperties(
             "dynamic-music-",
             "dynamiclights-",
             "dynmus-",
+            "e4mc-",
             "effective-",
             "eggtab-",
             "eguilib-",
