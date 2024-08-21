@@ -1,3 +1,10 @@
+## [6.3.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.4...6.3.5) (2024-08-18)
+
+
+### 🛠 Fixes
+
+* Prevent lambdas from preventing int cast ([94e4dcb](https://git.griefed.de/Griefed/ServerPackCreator/commit/94e4dcb6f0cb2a62526ddf1944ad551bf92635d9))
+
 ## [6.3.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.3...6.3.4) (2024-08-17)
 
 
