@@ -1,3 +1,20 @@
+## [6.3.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.5...6.3.6) (2024-08-28)
+
+
+### :scissors: Refactor
+
+* Never trust autocompletion :D ([39af694](https://git.griefed.de/Griefed/ServerPackCreator/commit/39af694f47360d72445f296a5a26af9a6b088af4))
+
+
+### 👀 Reverts
+
+* Disable jNeedle scans to prevent deadlocks ([f0186a7](https://git.griefed.de/Griefed/ServerPackCreator/commit/f0186a7de858dbcaa83548f67c2795ae29d33caa)), closes [/github.com/KosmX/jneedle/discussions/49#discussioncomment-10450234](https://git.griefed.de/Griefed//github.com/KosmX/jneedle/discussions/49/issues/discussioncomment-10450234)
+
+
+### 📦 Other
+
+* Add e4mc to clientside-mods list. Thanks to [@devilswarchild](https://git.griefed.de/devilswarchild) for the report. ([1982c83](https://git.griefed.de/Griefed/ServerPackCreator/commit/1982c83f5e65f45766a6bb905636e84f7afda9de))
+
 ## [6.3.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.4...6.3.5) (2024-08-18)
 
 
