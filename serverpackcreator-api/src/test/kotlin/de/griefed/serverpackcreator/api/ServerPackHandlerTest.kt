@@ -73,7 +73,7 @@ internal class ServerPackHandlerTest {
         )
         val generation = serverPackHandler.run(packConfig)
         val props = File(generation.serverPack, "server.properties")
-        Assertions.assertTrue(serverPackHandler.run(packConfig).success)
+        Assertions.assertTrue(generation.success)
         Assertions.assertTrue(File(generation.serverPack, "config").isDirectory)
         Assertions.assertTrue(File(generation.serverPack, "defaultconfigs").isDirectory)
         val modsDir = File(generation.serverPack, "mods")

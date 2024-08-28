@@ -53,7 +53,7 @@ class SecurityScans {
                 log.info("Scanning $destination for infections using Nekodetector...")
                 val output: (String) -> String = { "" }
                 val run = Main.run(Runtime.getRuntime().availableProcessors(), destination, true, output)
-                if (run.stage1Detections.isEmpty() || run.stage2Detections.isNotEmpty()) {
+                if (run.stage1Detections.isNotEmpty() || run.stage2Detections.isNotEmpty()) {
                     results.add("Nekodetector infections found! Remove these mods, perform a virus-scan and report the mods on the platform you got them from!")
                 }
                 if (run.stage1Detections.isNotEmpty()) {
