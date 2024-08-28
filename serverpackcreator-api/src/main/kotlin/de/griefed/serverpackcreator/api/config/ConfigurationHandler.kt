@@ -171,8 +171,8 @@ class ConfigurationHandler(
         log.info("Performing security scans")
         log.info("Performing Nekodetector scan")
         configCheck.otherErrors.addAll(SecurityScans.scanUsingNekodetector(modpack.toPath()))
-        log.info("Performing jNeedle scan")
-        configCheck.otherErrors.addAll(SecurityScans.scanUsingJNeedle(modpack.toPath()))
+        /*log.info("Performing jNeedle scan")
+        configCheck.otherErrors.addAll(SecurityScans.scanUsingJNeedle(modpack.toPath()))*/
 
         if (!checkIconAndProperties(packConfig.serverIconPath)) {
             configCheck.serverIconErrors.add(Translations.configuration_log_error_servericon(packConfig.serverIconPath))

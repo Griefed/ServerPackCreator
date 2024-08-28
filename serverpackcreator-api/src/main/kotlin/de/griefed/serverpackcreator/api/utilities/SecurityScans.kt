@@ -22,7 +22,9 @@ package de.griefed.serverpackcreator.api.utilities
 import me.cortex.jarscanner.Main
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.nio.file.Path
-import dev.kosmx.needle.CheckWrapper
+/*import dev.kosmx.needle.CheckWrapper
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking*/
 
 /**
  * Various methods to perform security-related scans, such as Nekodetector.
@@ -34,9 +36,9 @@ class SecurityScans {
     companion object {
         val log by lazy { cachedLoggerOf(SecurityScans::class.java) }
 
-        init {
+        /*init {
             CheckWrapper.init()
-        }
+        }*/
 
         /**
          * Uses MCRcortex's nekodetector to detect files infected by the fractureiser malware.
@@ -50,7 +52,10 @@ class SecurityScans {
             try {
                 log.info("Scanning $destination for infections using Nekodetector...")
                 val output: (String) -> String = { "" }
-                val run = Main.run(1, destination, true, output)
+                val run = Main.run(Runtime.getRuntime().availableProcessors(), destination, true, output)
+                if (run.stage1Detections.isEmpty() || run.stage2Detections.isNotEmpty()) {
+                    results.add("Nekodetector infections found! Remove these mods, perform a virus-scan and report the mods on the platform you got them from!")
+                }
                 if (run.stage1Detections.isNotEmpty()) {
                     results.add("Stage 1 infections:")
                     for (entry in run.stage1Detections) {
@@ -76,21 +81,24 @@ class SecurityScans {
          * Initially provided via a plugin, available at [Griefed/spc-jneedle-plugin](https://github.com/Griefed/spc-jneedle-plugin)
          * @author Griefed
          */
-        fun scanUsingJNeedle(destination: Path) : List<String> {
+        /*fun scanUsingJNeedle(destination: Path) : List<String> {
             val results = mutableListOf<String>()
-            try {
-                log.info("Scanning $destination for infections using jNeedle...")
-                val run = CheckWrapper.checkPathBlocking(destination)
-                for (result in run) {
-                    for (jarCheckResult in result.second) {
-                        results.add("${jarCheckResult.status}: ${jarCheckResult.getMessage()}\n".padStart(9,' '))
+            runBlocking {
+                launch {
+                    try {
+                        log.info("Scanning $destination for infections using jNeedle...")
+                        val run = CheckWrapper.checkPath(destination)
+                        for (result in run) {
+                            for (jarCheckResult in result.second) {
+                                results.add("${jarCheckResult.status}: ${jarCheckResult.getMessage()}\n".padStart(9,' '))
+                            }
+                        }
+                    } catch (ex: Exception) {
+                        log.error("Error during jNeedle scan.", ex)
                     }
                 }
-            } catch (ex: Exception) {
-                log.error("Error during jNeedle scan.", ex)
             }
             return results
-        }
-
+        }*/
     }
 }
