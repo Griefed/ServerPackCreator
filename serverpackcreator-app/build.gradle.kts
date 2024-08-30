@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.ir.backend.js.compile
+
 plugins {
     id("serverpackcreator.dokka-conventions")
     id("org.springframework.boot") apply false
@@ -7,6 +9,7 @@ plugins {
 repositories {
     mavenCentral()
     maven { url = uri("https://repo.spring.io/milestone") }
+    maven { url = uri("https://maven.ej-technologies.com/repository") }
 }
 
 dependencyManagement {
@@ -45,6 +48,7 @@ dependencies {
     api("net.java.balloontip:balloontip:1.2.4.1")
     api("com.cronutils:cron-utils:9.2.1")
     api("tokyo.northside:tipoftheday:0.4.2")
+    compileOnly("com.install4j:install4j-runtime:10.0.9")
 
     //WEB
     api("org.jetbrains.kotlin:kotlin-reflect:1.9.23")
