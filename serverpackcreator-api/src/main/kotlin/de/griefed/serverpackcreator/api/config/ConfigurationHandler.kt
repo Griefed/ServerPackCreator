@@ -1243,9 +1243,13 @@ class ConfigurationHandler(
             log.error("Error acquiring icon.", ex)
         }
         packConfig.name = packConfig.modpackJson!!.get("launcher").get("name").asText()
-        packConfig.projectID = packConfig.modpackJson!!.get("curseForgeProject").get("id").asText()
-        packConfig.versionID = packConfig.modpackJson!!.get("curseForgeFile").get("id").asText()
-        packConfig.source = ModpackSource.CURSEFORGE
+        try {
+            packConfig.projectID = packConfig.modpackJson!!.get("launcher").get("curseForgeProject").get("id").asText()
+            packConfig.versionID = packConfig.modpackJson!!.get("curseForgeFile").get("id").asText()
+            packConfig.source = ModpackSource.CURSEFORGE
+        } catch (ex: Exception) {
+            log.error("Error acquiring modpack-source details. Please report this to ServerPackCreator in GitHub.", ex)
+        }
     }
 
     @Throws(NullPointerException::class)
