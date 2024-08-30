@@ -1,3 +1,10 @@
+## [6.3.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.7...6.3.8) (2024-08-30)
+
+
+### 💎 Improvements
+
+* Allow starting of update from within the app when using installers ([be6e0b0](https://git.griefed.de/Griefed/ServerPackCreator/commit/be6e0b0d63fb493796923a99df1eef5ac86201fc))
+
 ## [6.3.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.6...6.3.7) (2024-08-30)
 
 
