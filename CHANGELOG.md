@@ -1,3 +1,15 @@
+## [6.3.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.6...6.3.7) (2024-08-30)
+
+
+### 🦊 CI/CD
+
+* Ensure drafts are deleted after publishing a new dev-release ([c92e0c0](https://git.griefed.de/Griefed/ServerPackCreator/commit/c92e0c0f10b02327e74034dc5efd0b68f517d891))
+
+
+### 🛠 Fixes
+
+* Prevent crash of modpack scan due to incorrect CurseForge projecet ID acquisition ([7a5a7d7](https://git.griefed.de/Griefed/ServerPackCreator/commit/7a5a7d71986cea13dc9be4ae57fc86c6f93b9b75))
+
 ## [6.3.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.5...6.3.6) (2024-08-28)
 
 
