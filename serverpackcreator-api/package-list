@@ -661,6 +661,11 @@ $dokka.location:/Translations/update_dialog_available/#/PointingToDeclaration/s
 $dokka.location:/Translations/update_dialog_clipboard/#/PointingToDeclaration/serverpackcreator-api/[root]/-translations/update_dialog_clipboard.html
 $dokka.location:/Translations/update_dialog_new/#/PointingToDeclaration/serverpackcreator-api/[root]/-translations/update_dialog_new.html
 $dokka.location:/Translations/update_dialog_no/#/PointingToDeclaration/serverpackcreator-api/[root]/-translations/update_dialog_no.html
+$dokka.location:/Translations/update_dialog_update/#/PointingToDeclaration/serverpackcreator-api/[root]/-translations/update_dialog_update.html
+$dokka.location:/Translations/update_dialog_update_failed_cause/#/PointingToDeclaration/serverpackcreator-api/[root]/-translations/update_dialog_update_failed_cause.html
+$dokka.location:/Translations/update_dialog_update_failed_message/#/PointingToDeclaration/serverpackcreator-api/[root]/-translations/update_dialog_update_failed_message.html
+$dokka.location:/Translations/update_dialog_update_message/#/PointingToDeclaration/serverpackcreator-api/[root]/-translations/update_dialog_update_message.html
+$dokka.location:/Translations/update_dialog_update_title/#/PointingToDeclaration/serverpackcreator-api/[root]/-translations/update_dialog_update_title.html
 $dokka.location:/Translations/update_dialog_yes/#/PointingToDeclaration/serverpackcreator-api/[root]/-translations/update_dialog_yes.html
 $dokka.location:/Translations/updates_log_info_none/#/PointingToDeclaration/serverpackcreator-api/[root]/-translations/updates_log_info_none.html
 $dokka.location:de.griefed.serverpackcreator.api.config////PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api.config/index.html
