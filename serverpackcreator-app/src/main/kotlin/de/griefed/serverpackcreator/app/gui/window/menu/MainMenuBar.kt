@@ -48,22 +48,19 @@ class MainMenuBar(
     themeManager: ThemeManager
 ) {
     val menuBar: JMenuBar = JMenuBar()
-    private val updateButton = BalloonTipButton(null, guiProps.updateAnimation, Translations.update_dialog_available.toString(), guiProps)
     private val file = FileMenu(mainFrame.mainPanel.tabbedConfigsTab,apiWrapper.apiProperties,mainFrame,apiWrapper.utilities, guiProps)
     private val edit = EditMenu(apiWrapper.apiProperties, guiProps,mainFrame,mainFrame.mainPanel.tabbedConfigsTab)
     private val view = ViewMenu(apiWrapper, themeManager)
-    private val about = AboutMenu(apiWrapper.utilities.webUtilities,updateDialogs,apiWrapper,migrationManager, guiProps,mainFrame,updateButton)
+    private val about = AboutMenu(apiWrapper.utilities.webUtilities,updateDialogs,apiWrapper,migrationManager, guiProps,mainFrame, updateDialogs.updateButton)
 
     init {
-        updateButton.isBorderPainted = false
-        updateButton.isContentAreaFilled = false
-        updateButton.isVisible = updateDialogs.update.isPresent
+
 
         menuBar.add(file)
         menuBar.add(edit)
         menuBar.add(view)
         menuBar.add(about)
-        menuBar.add(updateButton)
+        menuBar.add(updateDialogs.updateButton)
     }
 
     /**

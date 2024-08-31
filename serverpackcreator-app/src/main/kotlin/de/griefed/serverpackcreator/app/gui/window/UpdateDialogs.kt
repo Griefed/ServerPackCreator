@@ -27,9 +27,11 @@ import com.install4j.api.launcher.Variables
 import com.install4j.api.update.ApplicationDisplayMode
 import com.install4j.api.update.UpdateDescriptor
 import com.install4j.api.update.UpdateDescriptorEntry
+import com.install4j.api.update.UpdateScheduleRegistry
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
 import de.griefed.serverpackcreator.app.gui.GuiProps
+import de.griefed.serverpackcreator.app.gui.components.BalloonTipButton
 import de.griefed.serverpackcreator.app.gui.utilities.DialogUtilities
 import de.griefed.serverpackcreator.app.updater.UpdateChecker
 import de.griefed.serverpackcreator.app.updater.versionchecker.Update
@@ -60,6 +62,7 @@ class UpdateDialogs(
     private val mainFrame: JFrame
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+    val updateButton = BalloonTipButton(null, guiProps.updateAnimation, Translations.update_dialog_available.toString(), guiProps)
     var update: Optional<Update> = updateChecker.checkForUpdate(
         apiProperties.apiVersion,
         apiProperties.isCheckingForPreReleasesEnabled
@@ -69,6 +72,9 @@ class UpdateDialogs(
         private set
 
     init {
+        updateButton.isBorderPainted = false
+        updateButton.isContentAreaFilled = false
+        updateButton.isVisible = update.isPresent
         checkForUpdateWithApi()
     }
 
