@@ -196,12 +196,12 @@ class UpdateDialogs(
                                 i4JUpdatable = true
                             }
                         } catch (e: InterruptedException) {
-                            e.printStackTrace()
+                            log.error("Update interrupted.", e)
                         } catch (e: ExecutionException) {
                             val cause = e.cause
                             // UserCanceledException means that the user has canceled the proxy dialog
                             if (cause !is UserCanceledException) {
-                                e.printStackTrace()
+                                log.error("Update could not be executed.", e)
                             }
                         }
                     }
@@ -253,9 +253,9 @@ class UpdateDialogs(
                         )
                     }
                 } catch (e: InterruptedException) {
-                    e.printStackTrace()
+                    log.error("Update interrupted.", e)
                 } catch (e: ExecutionException) {
-                    e.printStackTrace()
+                    log.error("Update could not be executed.", e)
                     JOptionPane.showMessageDialog(
                         mainFrame,
                         Translations.update_dialog_update_failed_cause(e.cause!!.message.toString()),
