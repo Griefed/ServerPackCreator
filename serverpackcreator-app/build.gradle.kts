@@ -80,8 +80,20 @@ tasks.clean {
     }
 }
 
+tasks.processResources {
+    dependsOn(":copyLicenseReport")
+}
+
+tasks.sourcesJar {
+    dependsOn(":copyLicenseReport")
+}
+
 tasks.bootJar {
     dependsOn(":serverpackcreator-api:processTestResources")
+}
+
+tasks.build {
+    dependsOn(":generateLicenseReport")
 }
 
 tasks.test {

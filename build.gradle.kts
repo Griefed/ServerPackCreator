@@ -44,6 +44,7 @@ allprojects {
 evaluationDependsOnChildren()
 
 project("serverpackcreator-app").tasks.build.get().mustRunAfter(
+    tasks.getByName("generateLicenseReport"),
     project("serverpackcreator-web-frontend").tasks.build.get()
 )
 
@@ -174,7 +175,8 @@ install4j {
 }
 
 task("media", Install4jTask::class) {
-    mustRunAfter(tasks.build)
+    dependsOn(tasks.build)
+    verbose = true
     release = version.toString()
     projectFile = "spc.install4j"
     variables = hashMapOf<Any, Any>(
