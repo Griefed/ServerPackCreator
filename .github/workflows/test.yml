@@ -34,7 +34,6 @@ jobs:
 
       - name: Build with Gradle
         run: |
-          ./gradlew -Pversion="${{ steps.branch-name.outputs.current_branch }}" generateLicenseReport --info --full-stacktrace
           ./gradlew -Pversion="${{ steps.branch-name.outputs.current_branch }}" build --info --full-stacktrace
 
       - uses: actions/upload-artifact@v4

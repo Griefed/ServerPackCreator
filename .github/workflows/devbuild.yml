@@ -36,7 +36,6 @@ jobs:
 
       - name: Build with Gradle
         run: |
-          ./gradlew generateLicenseReport --info --full-stacktrace
           ./gradlew build --info --full-stacktrace
           ./gradlew media --info --full-stacktrace
 

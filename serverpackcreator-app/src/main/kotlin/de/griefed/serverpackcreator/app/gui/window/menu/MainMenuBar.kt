@@ -19,10 +19,8 @@
  */
 package de.griefed.serverpackcreator.app.gui.window.menu
 
-import Translations
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.app.gui.GuiProps
-import de.griefed.serverpackcreator.app.gui.components.BalloonTipButton
 import de.griefed.serverpackcreator.app.gui.themes.ThemeManager
 import de.griefed.serverpackcreator.app.gui.window.MainFrame
 import de.griefed.serverpackcreator.app.gui.window.UpdateDialogs
@@ -48,22 +46,26 @@ class MainMenuBar(
     themeManager: ThemeManager
 ) {
     val menuBar: JMenuBar = JMenuBar()
-    private val updateButton = BalloonTipButton(null, guiProps.updateAnimation, Translations.update_dialog_available.toString(), guiProps)
     private val file = FileMenu(mainFrame.mainPanel.tabbedConfigsTab,apiWrapper.apiProperties,mainFrame,apiWrapper.utilities, guiProps)
     private val edit = EditMenu(apiWrapper.apiProperties, guiProps,mainFrame,mainFrame.mainPanel.tabbedConfigsTab)
     private val view = ViewMenu(apiWrapper, themeManager)
-    private val about = AboutMenu(apiWrapper.utilities.webUtilities,updateDialogs,apiWrapper,migrationManager, guiProps,mainFrame,updateButton)
+    private val about = AboutMenu(
+        apiWrapper.utilities.webUtilities,
+        updateDialogs,
+        apiWrapper,
+        migrationManager,
+        guiProps,
+        mainFrame
+    )
 
     init {
-        updateButton.isBorderPainted = false
-        updateButton.isContentAreaFilled = false
-        updateButton.isVisible = updateDialogs.update.isPresent
+
 
         menuBar.add(file)
         menuBar.add(edit)
         menuBar.add(view)
         menuBar.add(about)
-        menuBar.add(updateButton)
+        menuBar.add(updateDialogs.updateButton)
     }
 
     /**

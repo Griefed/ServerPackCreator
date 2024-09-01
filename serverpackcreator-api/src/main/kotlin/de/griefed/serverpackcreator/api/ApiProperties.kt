@@ -51,15 +51,14 @@ import java.util.prefs.Preferences
 @Suppress("unused")
 @Plugin(name = "ServerPackCreatorConfigFactory", category = Core.CATEGORY_NAME)
 @Order(50)
-class ApiProperties(
-    propertiesFile: File = File("serverpackcreator.properties")
-) : ConfigurationFactory() {
+class ApiProperties(propertiesFile: File = File("serverpackcreator.properties")) : ConfigurationFactory() {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val internalProps = Properties()
     private val spcPreferences = Preferences.userRoot().node("ServerPackCreator")
     private val serverPackCreatorProperties = "serverpackcreator.properties"
     private val jarInformation: JarInformation = JarInformation(this.javaClass)
     private val jarFolderProperties: File = File(jarInformation.jarFolder.absoluteFile, serverPackCreatorProperties)
+
     private val pVersionCheckPreRelease =
         "de.griefed.serverpackcreator.versioncheck.prerelease"
     private val pLanguage =
@@ -94,10 +93,6 @@ class ApiProperties(
         "de.griefed.serverpackcreator.serverpack.zip.exclude"
     private val pServerPackZipExclusionEnabled =
         "de.griefed.serverpackcreator.serverpack.zip.exclude.enabled"
-
-    @Deprecated("Deprecated as of 6.0.0")
-    private val pServerPackScriptTemplates =
-        "de.griefed.serverpackcreator.serverpack.script.template"
     private val pServerPackStartScriptTemplatesPrefix =
         "de.griefed.serverpackcreator.serverpack.script.template."
     private val pServerPackJavaScriptTemplatesPrefix =
@@ -133,6 +128,11 @@ class ApiProperties(
     private val pSpringDatasourcePassword =
         "spring.datasource.password"
     private val pUpdateServerPack = "de.griefed.serverpackcreator.serverpack.update"
+    private val pLogLevel = "de.griefed.serverpackcreator.loglevel"
+
+    @Deprecated("Deprecated as of 6.0.0")
+    private val pServerPackScriptTemplates =
+        "de.griefed.serverpackcreator.serverpack.script.template"
 
     private val suffixes = arrayOf(".xml")
 
@@ -671,7 +671,6 @@ class ApiProperties(
         }
         private set
 
-
     /**
      * Modloaders supported by ServerPackCreator.
      */
@@ -769,6 +768,17 @@ class ApiProperties(
      * @author Griefed
      */
     val firstRun: Boolean
+
+    var logLevel = "INFO"
+        get() {
+            field = acquireProperty(pLogLevel, "INFO").uppercase()
+            return field
+        }
+        set(value) {
+            field = value.uppercase()
+            defineProperty(pLogLevel, field)
+            setLoggingLevel(field)
+        }
 
     /**
      * Directories to include in a server pack.
@@ -2737,18 +2747,21 @@ class ApiProperties(
             this.javaClass.getResourceAsStream("/log4j2.xml").use {
                 log4j = it?.readText().toString()
                 log4j = log4j.replace(oldLogs, newLogs)
-                if (devBuild || preRelease) {
-                    log4j = log4j.replace(
-                        "<Property name=\"log-level-spc\">INFO</Property>",
-                        "<Property name=\"log-level-spc\">DEBUG</Property>"
-                    )
+                if (!log4jXml.isFile || devBuild || preRelease) {
+                    log4jXml.writeText(log4j)
                 }
-                log4jXml.writeText(log4j)
             }
         } catch (ex: IOException) {
             println("Error reading/writing log4j2.xml.")
             ex.printStackTrace()
         }
+
+        if (devBuild || preRelease) {
+            logLevel = "DEBUG"
+        } else {
+            setLoggingLevel(logLevel)
+        }
+
         firstRun = getBoolProperty("de.griefed.serverpackcreator.firstrun", true)
         setBoolProperty("de.griefed.serverpackcreator.firstrun", false)
         logsDirectory.create(createFileOrDir = true, asDirectory = true)
@@ -2767,6 +2780,15 @@ class ApiProperties(
         installerCacheDirectory.create(createFileOrDir = true, asDirectory = true)
         printSettings()
         saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
+    }
+
+    private fun setLoggingLevel(level: String) {
+        var loggingConfig = log4jXml.readText()
+        loggingConfig = loggingConfig.replace(
+            "<Property name=\"log-level-spc\">.*</Property>".toRegex(),
+            "<Property name=\"log-level-spc\">${level.uppercase()}</Property>"
+        )
+        log4jXml.writeText(loggingConfig)
     }
 
     companion object {
