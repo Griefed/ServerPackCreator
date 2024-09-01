@@ -27,7 +27,6 @@ import com.install4j.api.launcher.Variables
 import com.install4j.api.update.ApplicationDisplayMode
 import com.install4j.api.update.UpdateDescriptor
 import com.install4j.api.update.UpdateDescriptorEntry
-import com.install4j.api.update.UpdateScheduleRegistry
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
 import de.griefed.serverpackcreator.app.gui.GuiProps
@@ -36,9 +35,11 @@ import de.griefed.serverpackcreator.app.gui.utilities.DialogUtilities
 import de.griefed.serverpackcreator.app.updater.UpdateChecker
 import de.griefed.serverpackcreator.app.updater.versionchecker.Update
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
+import java.awt.EventQueue
 import java.awt.Toolkit
 import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.StringSelection
+import java.awt.event.ActionListener
 import java.io.IOException
 import java.net.URISyntaxException
 import java.nio.file.Files
@@ -62,19 +63,23 @@ class UpdateDialogs(
     private val mainFrame: JFrame
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+    private var i4JUpdatable = false
+    private var i4JDownload = false
+    private var i4JExecute = false
     val updateButton = BalloonTipButton(null, guiProps.updateAnimation, Translations.update_dialog_available.toString(), guiProps)
+    val updateCheckListener = ActionListener { checkForUpdate() }
     var update: Optional<Update> = updateChecker.checkForUpdate(
         apiProperties.apiVersion,
         apiProperties.isCheckingForPreReleasesEnabled
     )
         private set
-    var i4JUpdatable = false
-        private set
+
 
     init {
         updateButton.isBorderPainted = false
         updateButton.isContentAreaFilled = false
         updateButton.isVisible = update.isPresent
+        updateButton.addActionListener(updateCheckListener)
         checkForUpdateWithApi()
     }
 
@@ -102,7 +107,7 @@ class UpdateDialogs(
             )
             jTextPane.isOpaque = false
             jTextPane.isEditable = false
-            if (i4JUpdatable) {
+            if (i4JUpdatable && (i4JDownload || i4JExecute)) {
                 options[0] = Translations.update_dialog_update.toString()
             } else {
                 options[0] = Translations.update_dialog_yes.toString()
@@ -126,14 +131,18 @@ class UpdateDialogs(
             )) {
                 0 -> try {
                     if (i4JUpdatable) {
-                        downloadAndUpdate()
+                        if (i4JDownload) {
+                            downloadAndUpdate()
+                        } else if (i4JExecute) {
+                            executeUpdate()
+                        } else {
+                            webUtilities.openLinkInBrowser(update.get().url().toURI())
+                        }
                     } else {
                         webUtilities.openLinkInBrowser(update.get().url().toURI())
                     }
-                } catch (ex: RuntimeException) {
-                    log.error("Error opening browser.", ex)
-                } catch (ex: URISyntaxException) {
-                    log.error("Error opening browser.", ex)
+                } catch (ex: Exception) {
+                    log.error("Error performing action.", ex)
                 }
 
                 1 -> clipboard.setContents(StringSelection(update.get().url().toString()), null)
@@ -148,9 +157,12 @@ class UpdateDialogs(
     /**
      * @author Griefed
      */
-    fun checkForUpdate(): Boolean {
+    fun checkForUpdate() {
         update = updateChecker.checkForUpdate(apiProperties.apiVersion, apiProperties.isCheckingForPreReleasesEnabled)
-        checkForUpdateWithApi()
+        updateButton.isVisible = update.isPresent
+        if (i4JUpdatable && !i4JDownload && !i4JExecute) {
+            checkForUpdateI4J()
+        }
         if (!displayUpdateDialog()) {
             DialogUtilities.createDialog(
                 Translations.menubar_gui_menuitem_updates_none.toString() + "   ",
@@ -161,12 +173,27 @@ class UpdateDialogs(
                 resizable = true
             )
         }
-        return update.isPresent
+    }
+
+    private fun checkForUpdateI4J() {
+        // Here, the "Standalone update downloader" application is launched in a new process.
+        // The ID of the installer application is shown in the install4j IDE on the Installer->Screens & Actions step
+        // when the "Show IDs" toggle button is selected.
+        // Use the "Integration wizard" button on the "Launcher integration" tab in the configuration
+        // panel of the installer application, to get such a code snippet.
+        try {
+            ApplicationLauncher.launchApplication("380", null, false, null)
+            // This call returns immediately, because the "blocking" argument is set to false
+        } catch (e: IOException) {
+            log.error("Error launching updater.", e)
+            JOptionPane.showMessageDialog(mainFrame, "Could not launch updater.", "Error", JOptionPane.ERROR_MESSAGE)
+        }
     }
 
     private fun isUpdatable(): Boolean {
         try {
             val installationDirectory = Paths.get(Variables.getInstallerVariable("sys.installationDir").toString())
+            i4JUpdatable = true
             return !Files.getFileStore(installationDirectory).isReadOnly && (Util.isWindows() || Util.isMacOS() || (Util.isLinux() && !Util.isArchive()))
         } catch (ex: IOException) {
             log.error("Error checking for install4j updatability.", ex)
@@ -198,8 +225,13 @@ class UpdateDialogs(
                             val updateDescriptorEntry: UpdateDescriptorEntry? = get()
                             // only installers and single bundle archives on macOS are supported for background updates
                             if (updateDescriptorEntry != null && (!updateDescriptorEntry.isArchive || updateDescriptorEntry.isSingleBundle)) {
-                                // An update is available for download
-                                i4JUpdatable = true
+                                if (!updateDescriptorEntry.isDownloaded) {
+                                    // An update is available for download
+                                    i4JDownload = true
+                                } else if (com.install4j.api.update.UpdateChecker.isUpdateScheduled()) {
+                                    // The update has been downloaded, but the installation did not succeed yet.
+                                    i4JExecute = true
+                                }
                             }
                         } catch (e: InterruptedException) {
                             log.error("Update interrupted.", e)
@@ -229,7 +261,32 @@ class UpdateDialogs(
             override fun doInBackground(): Any? {
                 // Note the third argument which makes the call to the background update downloader blocking.
                 // The callback receives progress information from the update downloader and changes the text on the button
-                ApplicationLauncher.launchApplication("442", null, true, null)
+                ApplicationLauncher.launchApplication("442", null, true, object : ApplicationLauncher.Callback {
+                    override fun exited(exitValue: Int) {
+                    }
+
+                    override fun prepareShutdown() {
+                    }
+
+                    override fun createProgressListener(): ApplicationLauncher.ProgressListener {
+                        return object : ApplicationLauncher.ProgressListenerAdapter() {
+                            var downloading: Boolean = false
+                            override fun actionStarted(id: String) {
+                                downloading = id == "downloadFile"
+                            }
+
+                            override fun percentCompleted(value: Int) {
+                                if (downloading) {
+                                    setProgressText(value)
+                                }
+                            }
+
+                            override fun indeterminateProgress(indeterminateProgress: Boolean) {
+                                setProgressText(-1)
+                            }
+                        }
+                    }
+                })
                 // At this point, the update downloader has returned, and we can check if the "Schedule update installation"
                 // action has registered an update installer for execution
                 // We now switch to the EDT in done() for terminating the application
@@ -239,6 +296,7 @@ class UpdateDialogs(
             override fun done() {
                 try {
                     get() // rethrow exceptions that occurred in doInBackground() wrapped in an ExecutionException
+                    setProgressText(null)
                     if (com.install4j.api.update.UpdateChecker.isUpdateScheduled()) {
                         JOptionPane.showMessageDialog(
                             mainFrame,
@@ -271,6 +329,18 @@ class UpdateDialogs(
                 }
             }
         }.execute()
+    }
+
+    private fun setProgressText(percent: Int?) {
+        EventQueue.invokeLater {
+            if (percent == null) {
+                updateButton.text = null
+            } else if (percent < 0) {
+                updateButton.text = "Download in progress ..."
+            } else {
+                updateButton.text = "Download in progress ($percent% complete)"
+            }
+        }
     }
 
     private fun executeUpdate() {

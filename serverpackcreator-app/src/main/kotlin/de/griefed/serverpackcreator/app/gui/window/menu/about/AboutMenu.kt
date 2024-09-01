@@ -23,7 +23,6 @@ import Translations
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
 import de.griefed.serverpackcreator.app.gui.GuiProps
-import de.griefed.serverpackcreator.app.gui.components.BalloonTipButton
 import de.griefed.serverpackcreator.app.gui.window.MainFrame
 import de.griefed.serverpackcreator.app.gui.window.UpdateDialogs
 import de.griefed.serverpackcreator.app.updater.MigrationManager
@@ -42,11 +41,10 @@ class AboutMenu(
     apiWrapper: ApiWrapper,
     migrationManager: MigrationManager,
     guiProps: GuiProps,
-    mainFrame: MainFrame,
-    updateButton: BalloonTipButton
+    mainFrame: MainFrame
 ) : JMenu(Translations.menubar_gui_menu_about.toString()) {
 
-    private val update = UpdateCheckItem(updateDialogs,updateButton)
+    private val update = UpdateCheckItem(updateDialogs)
     private val migration = MigrationInfoItem(apiWrapper, migrationManager, guiProps, mainFrame)
     private val help = WikiHelpItem(webUtilities)
     private val page = GitHubPageItem(webUtilities)
