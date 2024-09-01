@@ -514,6 +514,8 @@ $dokka.location:/Translations/settings_global_javascripts_tooltip/#/PointingToDe
 $dokka.location:/Translations/settings_global_javascripts_value/#/PointingToDeclaration/serverpackcreator-api/[root]/-translations/settings_global_javascripts_value.html
 $dokka.location:/Translations/settings_global_language_label/#/PointingToDeclaration/serverpackcreator-api/[root]/-translations/settings_global_language_label.html
 $dokka.location:/Translations/settings_global_language_tooltip/#/PointingToDeclaration/serverpackcreator-api/[root]/-translations/settings_global_language_tooltip.html
+$dokka.location:/Translations/settings_global_loglevel_label/#/PointingToDeclaration/serverpackcreator-api/[root]/-translations/settings_global_loglevel_label.html
+$dokka.location:/Translations/settings_global_loglevel_tooltip/#/PointingToDeclaration/serverpackcreator-api/[root]/-translations/settings_global_loglevel_tooltip.html
 $dokka.location:/Translations/settings_global_overwrite_label/#/PointingToDeclaration/serverpackcreator-api/[root]/-translations/settings_global_overwrite_label.html
 $dokka.location:/Translations/settings_global_overwrite_tooltip/#/PointingToDeclaration/serverpackcreator-api/[root]/-translations/settings_global_overwrite_tooltip.html
 $dokka.location:/Translations/settings_global_prerelease_label/#/PointingToDeclaration/serverpackcreator-api/[root]/-translations/settings_global_prerelease_label.html
@@ -1592,6 +1594,7 @@ $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/loadOverrides/#ja
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/loadProperties/#java.io.File#kotlin.Boolean/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/load-properties.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/loadProperties/#kotlin.Boolean/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/load-properties.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/log4jXml/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/log4j-xml.html
+$dokka.location:de.griefed.serverpackcreator.api/ApiProperties/logLevel/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/log-level.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/logsDirectory/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/logs-directory.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/manifestsDirectory/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/manifests-directory.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/minecraftServerManifestsDirectory/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/minecraft-server-manifests-directory.html
