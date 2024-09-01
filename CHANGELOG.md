@@ -1,3 +1,23 @@
+## [6.3.9](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.8...6.3.9) (2024-09-01)
+
+
+### :scissors: Refactor
+
+* Improve error logging for update ([3772e58](https://git.griefed.de/Griefed/ServerPackCreator/commit/3772e58f5e31ca10152b242d2000fbcd0619cc87))
+* Move updateButton to UpdateDialogs ([1969baf](https://git.griefed.de/Griefed/ServerPackCreator/commit/1969baf6e2b13789dba93148b9e95810e4bffad2))
+
+
+### 💎 Improvements
+
+* Allow changing of log-level in GUI global settings ([7fc630c](https://git.griefed.de/Griefed/ServerPackCreator/commit/7fc630ca5500ff2092f8fe76cb4e7cd632443cdb))
+* Download or execute update depending on current state of installation ([897311f](https://git.griefed.de/Griefed/ServerPackCreator/commit/897311f1843b203003962fcb7e5a875a8ef062be))
+
+
+### 🦊 CI/CD
+
+* Generate license report before build ([c951bda](https://git.griefed.de/Griefed/ServerPackCreator/commit/c951bdaa87bd392775f9341e2d8bb7fdc0b971a5))
+* Update buildSrc deps ([b93a538](https://git.griefed.de/Griefed/ServerPackCreator/commit/b93a5382a96971cadfea9de3434c54ceeb2e2378))
+
 ## [6.3.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.7...6.3.8) (2024-08-30)
 
 
