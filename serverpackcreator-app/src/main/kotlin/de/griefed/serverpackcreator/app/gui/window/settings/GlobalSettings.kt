@@ -150,6 +150,12 @@ class GlobalSettings(
     private val languageRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { languageSetting.selectedItem = apiProperties.i18n4kConfig.locale }
     private val languageReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { languageSetting.selectedItem = apiProperties.i18n4kConfig.defaultLocale }
 
+    private val logLevelIcon = StatusIcon(guiProps, Translations.settings_global_loglevel_tooltip.toString())
+    private val logLevelLabel = ElementLabel(Translations.settings_global_loglevel_label.toString())
+    private val logLevelSetting = ActionComboBox<String>(DefaultComboBoxModel(arrayOf("FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE", "ALL")), actionListener)
+    private val logLevelRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { logLevelSetting.selectedItem = apiProperties.logLevel }
+    private val logLevelReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { logLevelSetting.selectedItem = if (apiProperties.devBuild || apiProperties.preRelease) { "DEBUG" } else { "INFO" } }
+
     private val overwriteIcon = StatusIcon(guiProps, Translations.settings_global_overwrite_tooltip.toString())
     private val overwriteLabel = ElementLabel(Translations.settings_global_overwrite_label.toString())
     private val overwriteSetting = ActionCheckBox(actionListener)
@@ -338,6 +344,13 @@ class GlobalSettings(
         panel.add(languageReset, "cell 4 $y")
 
         y++
+        panel.add(logLevelIcon, "cell 0 $y")
+        panel.add(logLevelLabel, "cell 1 $y")
+        panel.add(logLevelSetting, "cell 2 $y, grow")
+        panel.add(logLevelRevert, "cell 3 $y")
+        panel.add(logLevelReset, "cell 4 $y")
+
+        y++
         panel.add(overwriteIcon, "cell 0 $y")
         panel.add(overwriteLabel, "cell 1 $y")
         panel.add(overwriteSetting, "cell 2 $y, grow")
@@ -413,6 +426,7 @@ class GlobalSettings(
         fallbackURLSetting.text = apiProperties.updateUrl.toString()
         exclusionSetting.selectedItem = apiProperties.exclusionFilter
         languageSetting.selectedItem = apiProperties.i18n4kConfig.locale
+        logLevelSetting.selectedItem = apiProperties.logLevel
         overwriteSetting.isSelected = apiProperties.isServerPacksOverwriteEnabled
         updateServerPackSetting.isSelected = apiProperties.isUpdatingServerPacksEnabled
         javaVariableSetting.isSelected = apiProperties.isJavaScriptAutoupdateEnabled
@@ -456,6 +470,7 @@ class GlobalSettings(
         apiProperties.updateUrl = URI(fallbackURLSetting.text).toURL()
         apiProperties.exclusionFilter = exclusionSetting.selectedItem as ExclusionFilter
         apiProperties.language = languageSetting.selectedItem as Locale
+        apiProperties.logLevel = logLevelSetting.selectedItem.toString()
         apiProperties.isServerPacksOverwriteEnabled = overwriteSetting.isSelected
         apiProperties.isUpdatingServerPacksEnabled = updateServerPackSetting.isSelected
         apiProperties.isJavaScriptAutoupdateEnabled = javaVariableSetting.isSelected
@@ -580,6 +595,7 @@ class GlobalSettings(
         fallbackURLSetting.text != apiProperties.updateUrl.toString() ||
         exclusionSetting.selectedItem.toString() != apiProperties.exclusionFilter.toString() ||
         languageSetting.selectedItem.toString().lowercase() != apiProperties.i18n4kConfig.locale.toString().lowercase() ||
+        logLevelSetting.selectedItem.toString().uppercase() != apiProperties.logLevel.uppercase() ||
         overwriteSetting.isSelected != apiProperties.isServerPacksOverwriteEnabled ||
         updateServerPackSetting.isSelected != apiProperties.isUpdatingServerPacksEnabled ||
         javaVariableSetting.isSelected != apiProperties.isJavaScriptAutoupdateEnabled ||
