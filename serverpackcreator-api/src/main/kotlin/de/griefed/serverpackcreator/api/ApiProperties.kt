@@ -155,154 +155,154 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     @Suppress("SpellCheckingInspection")
     private var fallbackMods = TreeSet(
         listOf(
-            "3dskinlayers-",
-            "Absolutely-Not-A-Zoom-Mod-",
-            "AdvancedChat-",
-            "AdvancedChatCore-",
-            "AdvancedChatHUD-",
-            "AdvancedCompas-",
-            "Ambience",
-            "AmbientEnvironment-",
-            "AmbientSounds_",
-            "AnimaticaReforged-",
-            "AreYouBlind-",
-            "Armor Status HUD-",
-            "ArmorSoundTweak-",
+            "3dskinlayers-",                //https://www.curseforge.com/minecraft/mc-mods/skin-layers-3d
+            "Absolutely-Not-A-Zoom-Mod-",   //https://www.curseforge.com/minecraft/mc-mods/absolutely-not-a-zoom-mod
+            "AdvancedChat-",                //https://www.curseforge.com/minecraft/mc-mods/advancedchat
+            "AdvancedChatCore-",            //https://www.curseforge.com/minecraft/mc-mods/advancedchatcore
+            "AdvancedChatHUD-",             //https://www.curseforge.com/minecraft/mc-mods/advancedchathud
+            "AdvancedCompas-",              //https://www.curseforge.com/minecraft/mc-mods/advanced-compass
+            "Ambience",                     //https://www.curseforge.com/minecraft/mc-mods/ambience-music-mod
+            "AmbientEnvironment-",          //https://www.curseforge.com/minecraft/mc-mods/ambient-environment
+            "AmbientSounds_",               //https://www.curseforge.com/minecraft/mc-mods/ambientsounds
+            "AnimaticaReforged-",           //https://www.curseforge.com/minecraft/mc-mods/animaticareforged
+            "AreYouBlind-",                 //https://www.curseforge.com/minecraft/mc-mods/are-you-blind
+            "Armor Status HUD-",            //https://www.curseforge.com/minecraft/mc-mods/armorstatushud
+            "ArmorSoundTweak-",             //https://www.curseforge.com/minecraft/mc-mods/armor-sound-tweak
             "BH-Menu-",
-            "Batty's Coordinates PLUS Mod",
-            "BetterAdvancements-",
-            "BetterAnimationsCollection-",
-            "BetterModsButton-",
-            "BetterDarkMode-",
-            "BetterF3-",
-            "BetterFog-",
-            "BetterFoliage-",
-            "BetterPingDisplay-",
-            "BetterPlacement-",
-            "BetterTaskbar-",
-            "BetterThirdPerson",
-            "BetterTitleScreen-",
-            "Blur-",
-            "BorderlessWindow-",
-            "CTM-",
-            "Chat Ping ",
-            "ChunkAnimator-",
-            "Clear-Water-",
-            "ClientTweaks_",
-            "CompletionistsIndex-",
-            "Controller Support-",
-            "Controlling-",
-            "CraftPresence-",
-            "CullLessLeaves-Reforged-",
-            "CustomCursorMod-",
-            "CustomMainMenu-",
-            "DefaultOptions_",
-            "DefaultSettings-",
-            "DeleteWorldsToTrash-",
-            "DetailArmorBar-",
-            "Ding-",
-            "DistantHorizons-",
-            "DripSounds-",
-            "Durability101-",
-            "DurabilityNotifier-",
-            "DynamicSurroundings-",
-            "DynamicSurroundingsHuds-",
-            "EasyLAN-",
-            "EffectsLeft-",
-            "EiraMoticons_",
-            "EnchantmentDescriptions-",
-            "EnhancedVisuals_",
-            "EquipmentCompare-",
-            "EuphoriaPatcher-",
-            "FPS-Monitor-",
-            "FabricCustomCursorMod-",
-            "FadingNightVision-",
-            "Fallingleaves-",
-            "FancySpawnEggs",
-            "FancyVideo-API-",
-            "farsight-",
-            "FirstPersonMod",
-            "FogTweaker-",
-            "ForgeCustomCursorMod-",
-            "FpsReducer-",
-            "FpsReducer2-",
-            "FullscreenWindowed-",
-            "GameMenuModOption-",
-            "HealthOverlay-",
-            "HeldItemTooltips-",
-            "HorseStatsMod-",
-            "ImmediatelyFastReforged-",
-            "InventoryEssentials_",
-            "InventoryHud_[1.17.1].forge-",
-            "InventorySpam-",
-            "InventoryTweaks-",
-            "ItemBorders-",
-            "ItemLocks-",
-            "ItemPhysicLite_",
-            "ItemStitchingFix-",
-            "JBRA-Client-",
-            "JustEnoughCalculation-",
-            "JustEnoughEffects-",
-            "JustEnoughProfessions-",
-            "LeaveMyBarsAlone-",
-            "LLOverlayReloaded-",
-            "LOTRDRP-",
-            "LegendaryTooltips",
-            "LegendaryTooltips-",
-            "LightOverlay-",
-            "MinecraftCapes ",
-            "MineMenu-",
-            "MoBends",
-            "ModernUI-",
-            "MouseTweaks-",
-            "MyServerIsCompatible-",
-            "Neat ",
-            "Neat-",
-            "NekosEnchantedBooks-",
-            "NoAutoJump-",
-            "NoFog-",
-            "Notes-",
-            "NotifMod-",
-            "OldJavaWarning-",
-            "OptiFine",
-            "OptiFine_",
-            "OptiForge",
-            "OptiForge-",
-            "OverflowingBars-",
-            "PackMenu-",
-            "PackModeMenu-",
-            "PickUpNotifier-",
-            "Ping-",
-            "PingHUD-",
-            "PresenceFootsteps-",
-            "RPG-HUD-",
-            "ReAuth-",
-            "Reforgium-",
-            "ResourceLoader-",
-            "ResourcePackOrganizer",
-            "Ryoamiclights-",
-            "RyoamicLights-",
-            "ShoulderSurfing-",
-            "ShulkerTooltip-",
-            "SimpleDiscordRichPresence-",
-            "SimpleWorldTimer-",
-            "SoundFilters-",
-            "SpawnerFix-",
-            "StylishEffects-",
-            "TextruesRubidiumOptions-",
-            "TRansliterationLib-",
-            "TipTheScales-",
-            "Tips-",
-            "Toast Control-",
-            "Toast-Control-",
-            "ToastControl-",
-            "TravelersTitles-",
-            "VoidFog-",
-            "VR-Combat_",
-            "WindowedFullscreen-",
-            "WorldNameRandomizer-",
-            "YeetusExperimentus-",
-            "YungsMenuTweaks-",
+            "Batty's Coordinates PLUS Mod", //https://www.curseforge.com/minecraft/mc-mods/batty-ui & https://www.curseforge.com/minecraft/mc-mods/battys-ui-mod-forge
+            "BetterAdvancements-",          //https://www.curseforge.com/minecraft/mc-mods/better-advancements
+            "BetterAnimationsCollection-",  //https://www.curseforge.com/minecraft/mc-mods/better-animations-collection
+            "BetterModsButton-",            //https://www.curseforge.com/minecraft/mc-mods/better-mods-button
+            "BetterDarkMode-",              //https://www.curseforge.com/minecraft/mc-mods/betterdarkmode
+            "BetterF3-",                    //https://www.curseforge.com/minecraft/mc-mods/betterf3
+            "BetterFog-",                   //https://www.curseforge.com/minecraft/mc-mods/better-fog
+            "BetterFoliage-",               //https://www.curseforge.com/minecraft/mc-mods/better-foliage
+            "BetterPingDisplay-",           //https://www.curseforge.com/minecraft/mc-mods/better-ping-display
+            "BetterPlacement-",             //https://www.curseforge.com/minecraft/mc-mods/better-placement
+            "BetterTaskbar-",               //https://www.curseforge.com/minecraft/mc-mods/better-taskbar
+            "BetterThirdPerson",            //https://www.curseforge.com/minecraft/mc-mods/better-third-person
+            "BetterTitleScreen-",           //https://www.curseforge.com/minecraft/mc-mods/better-title-screen
+            "Blur-",                        //https://www.curseforge.com/minecraft/mc-mods/blur
+            "BorderlessWindow-",            //https://www.curseforge.com/minecraft/mc-mods/borderless
+            "CTM-",                         //https://www.curseforge.com/minecraft/mc-mods/ctm
+            "Chat Ping ",                   //https://www.curseforge.com/minecraft/mc-mods/chatping
+            "ChunkAnimator-",               //
+            "Clear-Water-",                 //
+            "ClientTweaks_",                //
+            "CompletionistsIndex-",         //
+            "Controller Support-",          //
+            "Controlling-",                 //
+            "CraftPresence-",               //
+            "CullLessLeaves-Reforged-",     //
+            "CustomCursorMod-",             //
+            "CustomMainMenu-",              //
+            "DefaultOptions_",              //
+            "DefaultSettings-",             //
+            "DeleteWorldsToTrash-",         //
+            "DetailArmorBar-",              //
+            "Ding-",                        //
+            "DistantHorizons-",             //
+            "DripSounds-",                  //
+            "Durability101-",               //
+            "DurabilityNotifier-",          //
+            "DynamicSurroundings-",         //
+            "DynamicSurroundingsHuds-",     //
+            "EasyLAN-",                     //
+            "EffectsLeft-",                 //
+            "EiraMoticons_",                //
+            "EnchantmentDescriptions-",     //
+            "EnhancedVisuals_",             //
+            "EquipmentCompare-",            //
+            "EuphoriaPatcher-",             //
+            "FPS-Monitor-",                 //
+            "FabricCustomCursorMod-",       //
+            "FadingNightVision-",           //
+            "Fallingleaves-",               //
+            "FancySpawnEggs",               //
+            "FancyVideo-API-",              //
+            "farsight-",                    //
+            "FirstPersonMod",               //
+            "FogTweaker-",                  //
+            "ForgeCustomCursorMod-",        //
+            "FpsReducer-",                  //
+            "FpsReducer2-",                 //
+            "FullscreenWindowed-",          //
+            "GameMenuModOption-",           //
+            "HealthOverlay-",               //
+            "HeldItemTooltips-",            //
+            "HorseStatsMod-",               //
+            "ImmediatelyFastReforged-",     //
+            "InventoryEssentials_",         //
+            "InventoryHud_[1.17.1].forge-", //
+            "InventorySpam-",               //
+            "InventoryTweaks-",             //
+            "ItemBorders-",                 //
+            "ItemLocks-",                   //
+            "ItemPhysicLite_",              //
+            "ItemStitchingFix-",            //
+            "JBRA-Client-",                 //
+            "JustEnoughCalculation-",       //
+            "JustEnoughEffects-",           //
+            "JustEnoughProfessions-",       //
+            "LeaveMyBarsAlone-",            //
+            "LLOverlayReloaded-",           //
+            "LOTRDRP-",                     //
+            "LegendaryTooltips",            //
+            "LegendaryTooltips-",           //
+            "LightOverlay-",                //
+            "MinecraftCapes ",              //
+            "MineMenu-",                    //
+            "MoBends",                      //
+            "ModernUI-",                    //
+            "MouseTweaks-",                 //
+            "MyServerIsCompatible-",        //
+            "Neat ",                        //
+            "Neat-",                        //
+            "NekosEnchantedBooks-",         //
+            "NoAutoJump-",                  //
+            "NoFog-",                       //
+            "Notes-",                       //
+            "NotifMod-",                    //
+            "OldJavaWarning-",              //
+            "OptiFine",                     //
+            "OptiFine_",                    //
+            "OptiForge",                    //
+            "OptiForge-",                   //
+            "OverflowingBars-",             //
+            "PackMenu-",                    //
+            "PackModeMenu-",                //
+            "PickUpNotifier-",              //
+            "Ping-",                        //
+            "PingHUD-",                     //
+            "PresenceFootsteps-",           //
+            "RPG-HUD-",                     //
+            "ReAuth-",                      //
+            "Reforgium-",                   //
+            "ResourceLoader-",              //
+            "ResourcePackOrganizer",        //
+            "Ryoamiclights-",               //
+            "RyoamicLights-",               //
+            "ShoulderSurfing-",             //
+            "ShulkerTooltip-",              //
+            "SimpleDiscordRichPresence-",   //
+            "SimpleWorldTimer-",            //
+            "SoundFilters-",                //
+            "SpawnerFix-",                  //
+            "StylishEffects-",              //
+            "TextruesRubidiumOptions-",     //
+            "TRansliterationLib-",          //
+            "TipTheScales-",                //
+            "Tips-",                        //
+            "Toast Control-",               //
+            "Toast-Control-",               //
+            "ToastControl-",                //
+            "TravelersTitles-",             //
+            "VoidFog-",                     //
+            "VR-Combat_",                   //
+            "WindowedFullscreen-",          //
+            "WorldNameRandomizer-",         //
+            "YeetusExperimentus-",          //
+            "YungsMenuTweaks-",             //
             "[1.12.2]DamageIndicatorsMod-",
             "[1.12.2]bspkrscore-",
             "antighost-",
@@ -352,6 +352,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "dynamic-fps-",
             "dynamic-music-",
             "dynamiclights-",
+            "dynamiclightsreforged-", //https://www.curseforge.com/minecraft/mc-mods/dynamiclights-reforged
             "dynmus-",
             "e4mc-",
             "effective-",
@@ -464,10 +465,11 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "smoothboot-",
             "smoothfocus-",
             "sodium-fabric-",
+            "sodiumdynamiclights-", //https://www.curseforge.com/minecraft/mc-mods/dynamiclights-reforged
             "sounddeviceoptions-",
             "soundreloader-",
             "spoticraft-",
-            "skinlayers3d-forge",
+            "skinlayers3d-forge", //https://www.curseforge.com/minecraft/mc-mods/skin-layers-3d
             "tconplanner-",
             "textrues_embeddium_options-",
             "timestamps-",
