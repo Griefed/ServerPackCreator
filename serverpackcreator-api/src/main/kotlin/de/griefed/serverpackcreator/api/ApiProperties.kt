@@ -155,333 +155,338 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     @Suppress("SpellCheckingInspection")
     private var fallbackMods = TreeSet(
         listOf(
-            "3dskinlayers-",
-            "Absolutely-Not-A-Zoom-Mod-",
-            "AdvancedChat-",
-            "AdvancedChatCore-",
-            "AdvancedChatHUD-",
-            "AdvancedCompas-",
-            "Ambience",
-            "AmbientEnvironment-",
-            "AmbientSounds_",
-            "AnimaticaReforged-",
-            "AreYouBlind-",
-            "Armor Status HUD-",
-            "ArmorSoundTweak-",
-            "BH-Menu-",
-            "Batty's Coordinates PLUS Mod",
-            "BetterAdvancements-",
-            "BetterAnimationsCollection-",
-            "BetterModsButton-",
-            "BetterDarkMode-",
-            "BetterF3-",
-            "BetterFog-",
-            "BetterFoliage-",
-            "BetterPingDisplay-",
-            "BetterPlacement-",
-            "BetterTaskbar-",
-            "BetterThirdPerson",
-            "BetterTitleScreen-",
-            "Blur-",
-            "BorderlessWindow-",
-            "CTM-",
-            "Chat Ping ",
-            "ChunkAnimator-",
-            "Clear-Water-",
-            "ClientTweaks_",
-            "CompletionistsIndex-",
-            "Controller Support-",
-            "Controlling-",
-            "CraftPresence-",
-            "CullLessLeaves-Reforged-",
-            "CustomCursorMod-",
-            "CustomMainMenu-",
-            "DefaultOptions_",
-            "DefaultSettings-",
-            "DeleteWorldsToTrash-",
-            "DetailArmorBar-",
-            "Ding-",
-            "DistantHorizons-",
-            "DripSounds-",
-            "Durability101-",
-            "DurabilityNotifier-",
-            "DynamicSurroundings-",
-            "DynamicSurroundingsHuds-",
-            "EasyLAN-",
-            "EffectsLeft-",
-            "EiraMoticons_",
-            "EnchantmentDescriptions-",
-            "EnhancedVisuals_",
-            "EquipmentCompare-",
-            "EuphoriaPatcher-",
-            "FPS-Monitor-",
-            "FabricCustomCursorMod-",
-            "FadingNightVision-",
-            "Fallingleaves-",
-            "FancySpawnEggs",
-            "FancyVideo-API-",
-            "farsight-",
-            "FirstPersonMod",
-            "FogTweaker-",
-            "ForgeCustomCursorMod-",
-            "FpsReducer-",
-            "FpsReducer2-",
-            "FullscreenWindowed-",
-            "GameMenuModOption-",
-            "HealthOverlay-",
-            "HeldItemTooltips-",
-            "HorseStatsMod-",
-            "ImmediatelyFastReforged-",
-            "InventoryEssentials_",
-            "InventoryHud_[1.17.1].forge-",
-            "InventorySpam-",
-            "InventoryTweaks-",
-            "ItemBorders-",
-            "ItemLocks-",
-            "ItemPhysicLite_",
-            "ItemStitchingFix-",
-            "JBRA-Client-",
-            "JustEnoughCalculation-",
-            "JustEnoughEffects-",
-            "JustEnoughProfessions-",
-            "LeaveMyBarsAlone-",
-            "LLOverlayReloaded-",
-            "LOTRDRP-",
-            "LegendaryTooltips",
-            "LegendaryTooltips-",
-            "LightOverlay-",
-            "MinecraftCapes ",
-            "MineMenu-",
-            "MoBends",
-            "ModernUI-",
-            "MouseTweaks-",
-            "MyServerIsCompatible-",
-            "Neat ",
-            "Neat-",
-            "NekosEnchantedBooks-",
-            "NoAutoJump-",
-            "NoFog-",
-            "Notes-",
-            "NotifMod-",
-            "OldJavaWarning-",
-            "OptiFine",
-            "OptiFine_",
-            "OptiForge",
-            "OptiForge-",
-            "OverflowingBars-",
-            "PackMenu-",
-            "PackModeMenu-",
-            "PickUpNotifier-",
-            "Ping-",
-            "PingHUD-",
-            "PresenceFootsteps-",
-            "RPG-HUD-",
-            "ReAuth-",
-            "Reforgium-",
-            "ResourceLoader-",
-            "ResourcePackOrganizer",
-            "Ryoamiclights-",
-            "RyoamicLights-",
-            "ShoulderSurfing-",
-            "ShulkerTooltip-",
-            "SimpleDiscordRichPresence-",
-            "SimpleWorldTimer-",
-            "SoundFilters-",
-            "SpawnerFix-",
-            "StylishEffects-",
-            "TextruesRubidiumOptions-",
-            "TRansliterationLib-",
-            "TipTheScales-",
-            "Tips-",
-            "Toast Control-",
-            "Toast-Control-",
-            "ToastControl-",
-            "TravelersTitles-",
-            "VoidFog-",
-            "VR-Combat_",
-            "WindowedFullscreen-",
-            "WorldNameRandomizer-",
-            "YeetusExperimentus-",
-            "YungsMenuTweaks-",
-            "[1.12.2]DamageIndicatorsMod-",
-            "[1.12.2]bspkrscore-",
-            "antighost-",
-            "anviltooltipmod-",
-            "appleskin-",
-            "armorchroma-",
-            "armorpointspp-",
-            "auditory-",
-            "authme-",
-            "auto-reconnect-",
-            "autojoin-",
-            "autoreconnect-",
-            "axolotl-item-fix-",
-            "backtools-",
-            "bannerunlimited-",
-            "beenfo-1.19-",
-            "better-clouds-",
-            "better-recipe-book-",
-            "betterbiomeblend-",
-            "bhmenu-",
-            "blur-",
-            "borderless-mining-",
-            "cat_jam-",
-            "catalogue-",
-            "charmonium-",
-            "chat_heads-",
-            "cherishedworlds-",
-            "cirback-1.0-",
-            "classicbar-",
-            "clickadv-",
-            "clienttweaks-",
-            "combat_music-",
-            "connectedness-",
-            "controllable-",
-            "cullleaves-",
-            "cullparticles-",
-            "custom-crosshair-mod-",
-            "customdiscordrpc-",
-            "darkness-",
-            "dashloader-",
-            "defaultoptions-",
-            "desiredservers-",
-            "discordrpc-",
-            "drippyloadingscreen-",
-            "drippyloadingscreen_",
-            "durabilitytooltip-",
-            "dynamic-fps-",
-            "dynamic-music-",
-            "dynamiclights-",
-            "dynmus-",
-            "e4mc-",
-            "effective-",
-            "eggtab-",
-            "eguilib-",
-            "eiramoticons-",
-            "embeddium-",
-            "enchantment-lore-",
-            "entity-texture-features-",
-            "entityculling-",
-            "essential_",
-            "exhaustedstamina-",
-            "extremesoundmuffler-",
-            "fabricemotes-",
-            "fancymenu_",
-            "fancymenu_video_extension",
-            "fast-ip-ping-",
-            "flickerfix-",
-            "fm_audio_extension_",
-            "forgemod_VoxelMap-",
-            "freecam-",
-            "freelook-",
-            "galacticraft-rpc-",
-            "gamestagesviewer-",
-            "gpumemleakfix-",
-            "grid-",
-            "helium-",
-            "hiddenrecipebook_",
-            "hiddenrecipebook-",
-            "infinitemusic-",
-            "inventoryprofiles",
-            "invtweaks-",
-            "itemzoom",
-            "itlt-",
-            "jeed-",
-            "jehc-",
-            "jeiintegration_",
-            "jumpoverfences-",
-            "just-enough-harvestcraft-",
-            "justenoughbeacons-",
-            "justenoughdrags-",
-            "justzoom_",
-            "keymap-",
-            "keywizard-",
-            "lazurite-",
-            "lazydfu-",
-            "lib39-",
-            "light-overlay-",
-            "lightfallclient-",
-            "lightspeed-",
-            "loadmyresources_",
-            "lock_minecart_view-",
-            "lootbeams-",
-            "lwl-",
-            "macos-input-fixes-",
-            "magnesium_extras-",
-            "maptooltip-",
-            "massunbind",
-            "mcbindtype-",
-            "mcwifipnp-",
-            "medievalmusic-",
-            "memoryusagescreen-",
-            "mightyarchitect-",
-            "mindful-eating-",
-            "minetogether-",
-            "mobplusplus-",
-            "modcredits-",
-            "modernworldcreation_",
-            "modnametooltip-",
-            "modnametooltip_",
-            "moreoverlays-",
-            "mousewheelie-",
-            "movement-vision-",
-            "multihotbar-",
-            "music-duration-reducer-",
-            "musicdr-",
-            "neiRecipeHandlers-",
-            "ngrok-lan-expose-mod-",
-            "no_nv_flash-",
-            "nopotionshift_",
-            "notenoughanimations-",
-            "oculus-",
-            "ornaments-",
-            "overloadedarmorbar-",
-            "panorama-",
-            "paperdoll-",
-            "physics-mod-",
-            "phosphor-",
-            "preciseblockplacing-",
-            "radon-",
-            "realm-of-lost-souls-",
-            "rebind_narrator-",
-            "rebind-narrator-",
-            "rebindnarrator-",
-            "rebrand-",
-            "reforgium-",
-            "replanter-",
-            "rrls-",
-            "rubidium-",
-            "rubidium_extras-",
-            "screenshot-to-clipboard-",
-            "servercountryflags-",
-            "shutupexperimentalsettings-",
-            "shutupmodelloader-",
-            "signtools-",
-            "simple-rpc-",
-            "simpleautorun-",
-            "smartcursor-",
-            "smarthud-",
-            "smoothboot-",
-            "smoothfocus-",
-            "sodium-fabric-",
-            "sounddeviceoptions-",
-            "soundreloader-",
-            "spoticraft-",
-            "skinlayers3d-forge",
-            "tconplanner-",
-            "textrues_embeddium_options-",
-            "timestamps-",
-            "tooltipscroller-",
-            "torchoptimizer-",
-            "torohealth-",
-            "totaldarkness",
-            "toughnessbar-",
-            "watermedia-",
-            "whats-that-slot-forge-",
-            "wisla-",
-            "xenon-",
-            "xlifeheartcolors-",
-            "yisthereautojump-"
+            "3dskinlayers-",                //https://www.curseforge.com/minecraft/mc-mods/skin-layers-3d
+            "Absolutely-Not-A-Zoom-Mod-",   //https://www.curseforge.com/minecraft/mc-mods/absolutely-not-a-zoom-mod
+            "AdvancedChat-",                //https://www.curseforge.com/minecraft/mc-mods/advancedchat
+            "AdvancedChatCore-",            //https://www.curseforge.com/minecraft/mc-mods/advancedchatcore
+            "AdvancedChatHUD-",             //https://www.curseforge.com/minecraft/mc-mods/advancedchathud
+            "AdvancedCompas-",              //https://www.curseforge.com/minecraft/mc-mods/advanced-compass
+            "Ambience",                     //https://www.curseforge.com/minecraft/mc-mods/ambience-music-mod
+            "AmbientEnvironment-",          //https://www.curseforge.com/minecraft/mc-mods/ambient-environment
+            "AmbientSounds_",               //https://www.curseforge.com/minecraft/mc-mods/ambientsounds
+            "AnimaticaReforged-",           //https://www.curseforge.com/minecraft/mc-mods/animaticareforged
+            "AreYouBlind-",                 //https://www.curseforge.com/minecraft/mc-mods/are-you-blind
+            "Armor Status HUD-",            //https://www.curseforge.com/minecraft/mc-mods/armorstatushud
+            "ArmorSoundTweak-",             //https://www.curseforge.com/minecraft/mc-mods/armor-sound-tweak
+            "BH-Menu-",                     //https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-forge & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-fabric & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-neoforge
+            "Batty's Coordinates PLUS Mod", //https://www.curseforge.com/minecraft/mc-mods/batty-ui & https://www.curseforge.com/minecraft/mc-mods/battys-ui-mod-forge
+            "BetterAdvancements-",          //https://www.curseforge.com/minecraft/mc-mods/better-advancements
+            "BetterAnimationsCollection-",  //https://www.curseforge.com/minecraft/mc-mods/better-animations-collection
+            "BetterModsButton-",            //https://www.curseforge.com/minecraft/mc-mods/better-mods-button
+            "BetterDarkMode-",              //https://www.curseforge.com/minecraft/mc-mods/betterdarkmode
+            "BetterF3-",                    //https://www.curseforge.com/minecraft/mc-mods/betterf3
+            "BetterFog-",                   //https://www.curseforge.com/minecraft/mc-mods/better-fog
+            "BetterFoliage-",               //https://www.curseforge.com/minecraft/mc-mods/better-foliage
+            "BetterPingDisplay-",           //https://www.curseforge.com/minecraft/mc-mods/better-ping-display
+            "BetterPlacement-",             //https://www.curseforge.com/minecraft/mc-mods/better-placement
+            "BetterTaskbar-",               //https://www.curseforge.com/minecraft/mc-mods/better-taskbar
+            "BetterThirdPerson",            //https://www.curseforge.com/minecraft/mc-mods/better-third-person
+            "BetterTitleScreen-",           //https://www.curseforge.com/minecraft/mc-mods/better-title-screen
+            "Blur-",                        //https://www.curseforge.com/minecraft/mc-mods/blur
+            "BorderlessWindow-",            //https://www.curseforge.com/minecraft/mc-mods/borderless
+            "CTM-",                         //https://www.curseforge.com/minecraft/mc-mods/ctm
+            "Chat Ping ",                   //https://www.curseforge.com/minecraft/mc-mods/chatping
+            "ChunkAnimator-",               //https://www.curseforge.com/minecraft/mc-mods/chunk-animator
+            "Clear-Water-",                 //https://www.curseforge.com/minecraft/mc-mods/clear-water
+            "ClientTweaks_",                //https://www.curseforge.com/minecraft/mc-mods/client-tweaks
+            "CompletionistsIndex-",         //https://www.curseforge.com/minecraft/mc-mods/completionists-index
+            "Controller Support-",          //https://www.curseforge.com/minecraft/mc-mods/controller-mod
+            "Controlling-",                 //https://www.curseforge.com/minecraft/mc-mods/controlling
+            "CraftPresence-",               //https://www.curseforge.com/minecraft/mc-mods/craftpresence
+            "CullLessLeaves-",              //https://www.curseforge.com/minecraft/mc-mods/cull-less-leaves & https://www.curseforge.com/minecraft/mc-mods/culllessleaves-reforged
+            "CustomCursorMod-",             //https://www.curseforge.com/minecraft/mc-mods/custom-cursor
+            "CustomMainMenu-",              //https://www.curseforge.com/minecraft/mc-mods/custom-main-menu
+            "DefaultOptions_",              //https://www.curseforge.com/minecraft/mc-mods/default-options
+            "DefaultSettings-",             //https://www.curseforge.com/minecraft/mc-mods/defaultsettings
+            "DeleteWorldsToTrash-",         //https://www.curseforge.com/minecraft/mc-mods/delete-worlds-to-trash-forge
+            "DetailArmorBar-",              //https://www.curseforge.com/minecraft/mc-mods/detail-armor-bar-forge
+            "Ding-",                        //https://www.curseforge.com/minecraft/mc-mods/ding
+            "DistantHorizons-",             //https://www.curseforge.com/minecraft/mc-mods/distant-horizons
+            "DripSounds-",                  //https://www.curseforge.com/minecraft/mc-mods/waterdripsound
+            "Durability101-",               //https://www.curseforge.com/minecraft/mc-mods/durability101
+            "DurabilityNotifier-",          //https://www.curseforge.com/minecraft/mc-mods/durability-notifier
+            "DynamicSurroundings-",         //https://www.curseforge.com/minecraft/mc-mods/dynamic-surroundings
+            "DynamicSurroundingsHuds-",     //https://www.curseforge.com/minecraft/mc-mods/dynamic-surroundings-huds
+            "EasyLAN-",                     //https://www.curseforge.com/minecraft/mc-mods/easylan
+            "EffectsLeft-",                 //https://www.curseforge.com/minecraft/mc-mods/effectsleft
+            "EiraMoticons_",                //no longer available, legacy entry
+            "EnchantmentDescriptions-",     //https://www.curseforge.com/minecraft/mc-mods/enchantment-descriptions
+            "EnhancedVisuals_",             //https://www.curseforge.com/minecraft/mc-mods/enhancedvisuals
+            "EquipmentCompare-",            //https://www.curseforge.com/minecraft/mc-mods/equipment-compare
+            "EuphoriaPatcher-",             //https://www.curseforge.com/minecraft/mc-mods/euphoria-patches
+            "FPS-Monitor-",                 //https://www.curseforge.com/minecraft/mc-mods/fps-monitor
+            "FabricCustomCursorMod-",       //https://www.curseforge.com/minecraft/mc-mods/cursor-mod
+            "FadingNightVision-",           //https://www.curseforge.com/minecraft/mc-mods/fading-night-vision
+            "Fallingleaves-",               //https://www.curseforge.com/minecraft/mc-mods/falling-leaves-forge
+            "FancySpawnEggs",               //https://www.curseforge.com/minecraft/mc-mods/fancy-spawn-eggs
+            "FancyVideo-API-",              //https://www.curseforge.com/minecraft/mc-mods/fancyvideo-api
+            "farsight-",                    //https://www.curseforge.com/minecraft/modpacks/farsight
+            "FirstPersonMod",               //https://www.curseforge.com/minecraft/mc-mods/first-person-model
+            "FogTweaker-",                  //https://www.curseforge.com/minecraft/mc-mods/fog-tweaker
+            "ForgeCustomCursorMod-",        //https://www.curseforge.com/minecraft/mc-mods/cursor-mod
+            "FpsReducer-",                  //https://www.curseforge.com/minecraft/mc-mods/fps-reducer
+            "FpsReducer2-",                 //https://www.curseforge.com/minecraft/mc-mods/fps-reducer
+            "FullscreenWindowed-",          //https://www.curseforge.com/minecraft/mc-mods/fullscreen-windowed-borderless-for-minecraft
+            "GameMenuModOption-",           //https://www.curseforge.com/minecraft/mc-mods/gamemenumodoption
+            "HealthOverlay-",               //https://www.curseforge.com/minecraft/mc-mods/health-overlay
+            "HeldItemTooltips-",            //https://www.curseforge.com/minecraft/mc-mods/held-item-tooltips
+            "HorseStatsMod-",               //https://www.curseforge.com/minecraft/bukkit-plugins/horsestats
+            "ImmediatelyFast-",             //https://www.curseforge.com/minecraft/mc-mods/immediatelyfast
+            "ImmediatelyFastReforged-",     //https://www.curseforge.com/minecraft/mc-mods/immediatelyfast-reforged
+            "InventoryEssentials_",         //https://www.curseforge.com/minecraft/mc-mods/inventory-essentials
+            "InventoryHud_",                //https://www.curseforge.com/minecraft/mc-mods/inventory-hud-forge
+            "InventorySpam-",               //https://www.curseforge.com/minecraft/mc-mods/inventory-spam
+            "InventoryTweaks-",             //https://www.curseforge.com/minecraft/mc-mods/inventorytweak
+            "ItemBorders-",                 //https://www.curseforge.com/minecraft/mc-mods/item-borders
+            "ItemLocks-",                   //https://www.curseforge.com/minecraft/mc-mods/itemlocks
+            "ItemPhysicLite_",              //https://www.curseforge.com/minecraft/mc-mods/itemphysic-lite
+            "ItemStitchingFix-",            //https://www.curseforge.com/minecraft/mc-mods/item-stitching-fix
+            "JBRA-Client-",                 //https://www.curseforge.com/minecraft/mc-mods/jingames-jbra-client
+            "JustEnoughCalculation-",       //https://www.curseforge.com/minecraft/mc-mods/just-enough-calculation
+            "JustEnoughEffects-",           //https://www.curseforge.com/minecraft/mc-mods/just-enough-effects
+            "JustEnoughProfessions-",       //https://www.curseforge.com/minecraft/mc-mods/just-enough-professions-jep
+            "LeaveMyBarsAlone-",            //https://www.curseforge.com/minecraft/mc-mods/leave-my-bars-alone
+            "LLOverlayReloaded-",           //https://www.curseforge.com/minecraft/mc-mods/light-level-overlay-reloaded
+            "LOTRDRP-",                     //https://www.curseforge.com/minecraft/mc-mods/lotr-drp
+            "LegendaryTooltips",            //https://www.curseforge.com/minecraft/mc-mods/legendary-tooltips
+            "LegendaryTooltips-",           //https://www.curseforge.com/minecraft/mc-mods/legendary-tooltips
+            "LightOverlay-",                //https://www.curseforge.com/minecraft/mc-mods/light-level-overlay-display
+            "MinecraftCapes ",              //https://www.curseforge.com/minecraft/mc-mods/minecraftcapes-mod
+            "MineMenu-",                    //https://www.curseforge.com/minecraft/mc-mods/minemenu
+            "MoBends",                      //https://www.curseforge.com/minecraft/mc-mods/mo-bends
+            "ModernUI-",                    //Gone? Reduces to atoms?
+            "MouseTweaks-",                 //https://www.curseforge.com/minecraft/mc-mods/mouse-tweaks
+            "MyServerIsCompatible-",        //https://www.curseforge.com/minecraft/mc-mods/my-server-is-compatible
+            "Neat ",                        //https://www.curseforge.com/minecraft/mc-mods/neat
+            "Neat-",                        //https://www.curseforge.com/minecraft/mc-mods/neat
+            "NekosEnchantedBooks-",         //https://www.curseforge.com/minecraft/mc-mods/nekos-enchanted-books
+            "NoAutoJump-",                  //https://www.curseforge.com/minecraft/mc-mods/no-autojump
+            "NoFog-",                       //https://www.curseforge.com/minecraft/mc-mods/nofog
+            "Notes-",                       //https://www.curseforge.com/minecraft/mc-mods/notes
+            "NotifMod-",                    //https://www.curseforge.com/minecraft/mc-mods/notifmod
+            "OldJavaWarning-",              //https://www.curseforge.com/minecraft/mc-mods/oldjavawarning
+            "OptiFine",                     //https://optifine.net/home
+            "OptiFine_",                    //https://optifine.net/home
+            "OptiForge",                    //https://www.curseforge.com/minecraft/mc-mods/optiforge
+            "OptiForge-",                   //https://www.curseforge.com/minecraft/mc-mods/optiforge
+            "OverflowingBars-",             //https://www.curseforge.com/minecraft/mc-mods/overflowing-bars
+            "PackMenu-",                    //https://www.curseforge.com/minecraft/mc-mods/packmenu
+            "PackModeMenu-",                //https://www.curseforge.com/minecraft/mc-mods/packmodemenu
+            "PickUpNotifier-",              //https://www.curseforge.com/minecraft/mc-mods/pick-up-notifier
+            "Ping-",                        //https://www.curseforge.com/minecraft/mc-mods/ping
+            "PingHUD-",                     //https://www.curseforge.com/minecraft/mc-mods/pinghud
+            "PresenceFootsteps-",           //https://www.curseforge.com/minecraft/mc-mods/presence-footsteps
+            "RPG-HUD-",                     //https://www.curseforge.com/minecraft/mc-mods/rpg-hud
+            "ReAuth-",                      //https://www.curseforge.com/minecraft/mc-mods/reauth
+            "Reforgium-",                   //https://www.curseforge.com/minecraft/mc-mods/reforgium
+            "ResourceLoader-",              //https://www.curseforge.com/minecraft/mc-mods/resource-reloader
+            "ResourcePackOrganizer",        //https://www.curseforge.com/minecraft/mc-mods/resource-pack-organizer
+            "Ryoamiclights-",               //https://www.curseforge.com/minecraft/mc-mods/ryoamiclights
+            "RyoamicLights-",               //https://www.curseforge.com/minecraft/mc-mods/ryoamiclights
+            "ShoulderSurfing-",             //https://www.curseforge.com/minecraft/mc-mods/shoulder-surfing-reloaded
+            "ShulkerTooltip-",              //https://www.curseforge.com/minecraft/mc-mods/shulkerboxtooltip
+            "SimpleDiscordRichPresence-",   //https://www.curseforge.com/minecraft/mc-mods/simple-discord-rich-presence
+            "SimpleWorldTimer-",            //https://www.curseforge.com/minecraft/mc-mods/simple-world-timer
+            "SoundFilters-",                //https://www.curseforge.com/minecraft/mc-mods/sound-filters
+            "SpawnerFix-",                  //https://www.curseforge.com/minecraft/mc-mods/spawner-fix
+            "StylishEffects-",              //https://www.curseforge.com/minecraft/mc-mods/stylish-effects
+            "TextruesRubidiumOptions-",     //https://www.curseforge.com/minecraft/mc-mods/textrues-rubidium-options
+            "TRansliterationLib-",          //https://www.curseforge.com/minecraft/mc-mods/transliterationlib
+            "TipTheScales-",                //https://www.curseforge.com/minecraft/mc-mods/tipthescales
+            "Tips-",                        //https://www.curseforge.com/minecraft/mc-mods/tips
+            "Toast Control-",               //https://www.curseforge.com/minecraft/mc-mods/toast-control
+            "Toast-Control-",               //https://www.curseforge.com/minecraft/mc-mods/toast-control
+            "ToastControl-",                //https://www.curseforge.com/minecraft/mc-mods/toast-control
+            "TravelersTitles-",             //https://www.curseforge.com/minecraft/mc-mods/travelers-titles
+            "VoidFog-",                     //https://www.curseforge.com/minecraft/mc-mods/void-fog
+            "VR-Combat_",                   //https://www.curseforge.com/minecraft/mc-mods/vr-combat
+            "WindowedFullscreen-",          //https://www.curseforge.com/minecraft/mc-mods/windowed-fullscreen
+            "WorldNameRandomizer-",         //https://www.curseforge.com/minecraft/mc-mods/world-name-randomizer
+            "YeetusExperimentus-",          //https://www.curseforge.com/minecraft/mc-mods/yeetusexperimentus
+            "YungsMenuTweaks-",             //https://www.curseforge.com/minecraft/mc-mods/yungs-menu-tweaks
+            "[1.12.2]DamageIndicatorsMod-", //https://www.curseforge.com/minecraft/mc-mods/damage-indicators-mod
+            "[1.12.2]bspkrscore-",          //https://www.curseforge.com/minecraft/mc-mods/bspkrscore
+            "antighost-",                   //https://www.curseforge.com/minecraft/mc-mods/antighost
+            "anviltooltipmod-",             //https://www.curseforge.com/minecraft/mc-mods/anvil-tooltip-mod
+            "armorchroma-",                 //https://www.curseforge.com/minecraft/mc-mods/armor-chroma
+            "armorpointspp-",               //https://www.curseforge.com/minecraft/mc-mods/armorpoints
+            "auditory-",                    //https://www.curseforge.com/minecraft/mc-mods/auditory
+            "authme-",                      //Gone? Reduces to atoms?
+            "auto-reconnect-",              //https://www.curseforge.com/minecraft/mc-mods/auto-reconnect
+            "autojoin-",                    //https://www.curseforge.com/minecraft/mc-mods/autojoin
+            "autoreconnect-",               //https://www.curseforge.com/minecraft/mc-mods/autoreconnect
+            "axolotl-item-fix-",            //Gone? Reduces to atoms?
+            "backtools-",                   //https://www.curseforge.com/minecraft/mc-mods/backtools
+            "bannerunlimited-",             //https://www.curseforge.com/minecraft/mc-mods/banner-unlimited
+            "beenfo-",                      //https://www.curseforge.com/minecraft/mc-mods/beenfo
+            "better-clouds-",               //Gone? Reduces to atoms?
+            "better-recipe-book-",          //Gone? Reduces to atoms?
+            "betterbiomeblend-",            //https://www.curseforge.com/minecraft/mc-mods/better-biome-blend
+            "bhmenu-",                      //https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-forge & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-fabric & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-neoforge
+            "blur-",                        //https://www.curseforge.com/minecraft/mc-mods/blur
+            "borderless-mining-",           //https://www.curseforge.com/minecraft/mc-mods/borderless-mining
+            "cat_jam-",                     //https://www.curseforge.com/minecraft/mc-mods/cat_jam
+            "catalogue-",                   //https://www.curseforge.com/minecraft/mc-mods/catalogue
+            "charmonium-",                  //https://www.curseforge.com/minecraft/mc-mods/charmonium
+            "chat_heads-",                  //https://www.curseforge.com/minecraft/mc-mods/chat-heads
+            "cherishedworlds-",             //https://www.curseforge.com/minecraft/mc-mods/cherished-worlds
+            "cirback-1.0-",                 //Gone? Reduces to atoms?
+            "classicbar-",                  //https://www.curseforge.com/minecraft/mc-mods/classic-bars
+            "clickadv-",                    //https://www.curseforge.com/minecraft/mc-mods/clickable-advancements
+            "clienttweaks-",                //https://www.curseforge.com/minecraft/mc-mods/client-tweaks
+            "combat_music-",                //https://www.curseforge.com/minecraft/mc-mods/combat-music
+            "connectedness-",               //https://www.curseforge.com/minecraft/mc-mods/connectedness
+            "controllable-",                //https://www.curseforge.com/minecraft/mc-mods/controllable
+            "cullleaves-",                  //https://www.curseforge.com/minecraft/mc-mods/cull-leaves
+            "cullparticles-",               //https://www.curseforge.com/minecraft/mc-mods/cull-particles
+            "custom-crosshair-mod-",        //https://www.curseforge.com/minecraft/mc-mods/custom-crosshair-mod
+            "customdiscordrpc-",            //https://www.curseforge.com/minecraft/mc-mods/custom-discordrpc
+            "darkness-",                    //Gone? Reduces to atoms?
+            "dashloader-",                  //https://www.curseforge.com/minecraft/mc-mods/dashloader
+            "defaultoptions-",              //https://www.curseforge.com/minecraft/mc-mods/default-options
+            "desiredservers-",              //https://www.curseforge.com/minecraft/mc-mods/desired-servers
+            "discordrpc-",                  //https://www.curseforge.com/minecraft/mc-mods/discordrpc
+            "drippyloadingscreen-",         //https://www.curseforge.com/minecraft/mc-mods/drippy-loading-screen
+            "drippyloadingscreen_",         //https://www.curseforge.com/minecraft/mc-mods/drippy-loading-screen
+            "durabilitytooltip-",           //https://www.curseforge.com/minecraft/mc-mods/durability-tooltip
+            "dynamic-fps-",                 //https://www.curseforge.com/minecraft/mc-mods/dynamic-fps
+            "dynamic-music-",               //https://www.curseforge.com/minecraft/mc-mods/dynamic-music
+            "dynamiclights-",               //https://www.curseforge.com/minecraft/mc-mods/dynamic-lights
+            "dynamiclightsreforged-",       //https://www.curseforge.com/minecraft/mc-mods/dynamiclights-reforged
+            "dynmus-",                      //Gone? Reduces to atoms?
+            "e4mc-",                        //https://www.curseforge.com/minecraft/mc-mods/e4mc
+            "effective-",                   //https://www.curseforge.com/minecraft/mc-mods/effective
+            "eggtab-",                      //https://www.curseforge.com/minecraft/mc-mods/eggtab-fabric
+            "eguilib-",                     //https://www.curseforge.com/minecraft/mc-mods/eguilib
+            "eiramoticons-",                //Gone? Reduces to atoms?
+            "embeddium-",                   //https://www.curseforge.com/minecraft/mc-mods/embeddium
+            "enchantment-lore-",            //https://www.curseforge.com/minecraft/mc-mods/enchantment-lore
+            "entity-texture-features-",     //https://www.curseforge.com/minecraft/mc-mods/entity-texture-features-fabric
+            "entityculling-",               //https://www.curseforge.com/minecraft/mc-mods/entity-culling
+            "essential_",                   //Gone? Reduces to atoms?
+            "exhaustedstamina-",            //https://www.curseforge.com/minecraft/mc-mods/exhausted-stamina
+            "extremesoundmuffler-",         //https://www.curseforge.com/minecraft/mc-mods/extreme-sound-muffler
+            "fabricemotes-",                //https://www.curseforge.com/minecraft/mc-mods/fabric-emotes
+            "fancymenu_",                   //https://www.curseforge.com/minecraft/mc-mods/fancymenu
+            "fancymenu_video_extension",    //https://www.curseforge.com/minecraft/mc-mods/video-extension-for-fancymenu-forge
+            "fast-ip-ping-",                //https://www.curseforge.com/minecraft/mc-mods/fast-ip-ping
+            "firstperson-",                 //https://www.curseforge.com/minecraft/mc-mods/first-person-model
+            "flickerfix-",                  //https://www.curseforge.com/minecraft/mc-mods/flickerfix
+            "fm_audio_extension_",          //https://www.curseforge.com/minecraft/mc-mods/audio-extension-for-fancymenu-forge
+            "fabricmod_VoxelMap-",          //https://www.curseforge.com/minecraft/mc-mods/voxelmap
+            "forgemod_VoxelMap-",           //https://www.curseforge.com/minecraft/mc-mods/voxelmap
+            "freecam-",                     //https://www.curseforge.com/minecraft/mc-mods/free-cam
+            "freelook-",                    //https://www.curseforge.com/minecraft/mc-mods/freelook
+            "galacticraft-rpc-",            //https://www.curseforge.com/minecraft/mc-mods/galacticraft-rpc
+            "gamestagesviewer-",            //https://www.curseforge.com/minecraft/mc-mods/game-stages-viewer
+            "gpumemleakfix-",               //https://www.curseforge.com/minecraft/mc-mods/fix-gpu-memory-leak
+            "grid-",                        //https://www.curseforge.com/minecraft/mc-mods/grid
+            "helium-",                      //Gone? Reduces to atoms?
+            "hiddenrecipebook_",            //https://www.curseforge.com/minecraft/mc-mods/hidden-recipe-book
+            "hiddenrecipebook-",            //https://www.curseforge.com/minecraft/mc-mods/hidden-recipe-book
+            "infinitemusic-",               //https://www.curseforge.com/minecraft/mc-mods/infinite-music
+            "inventoryhud.",                //https://www.curseforge.com/minecraft/mc-mods/inventory-hud-forge
+            "inventoryprofiles",            //https://www.curseforge.com/minecraft/mc-mods/inventory-profiles
+            "invtweaks-",                   //https://www.curseforge.com/minecraft/bukkit-plugins/invtweaks
+            "itemzoom",                     //https://www.curseforge.com/minecraft/mc-mods/itemzoom
+            "itlt-",                        //https://www.curseforge.com/minecraft/mc-mods/its-the-little-things
+            "jeed-",                        //https://www.curseforge.com/minecraft/mc-mods/just-enough-effect-descriptions-jeed
+            "jehc-",                        //https://www.curseforge.com/minecraft/mc-mods/just-enough-harvestcraft
+            "jeiintegration_",              //https://www.curseforge.com/minecraft/mc-mods/jei-integration
+            "jumpoverfences-",              //https://www.curseforge.com/minecraft/mc-mods/jumpoverfences
+            "just-enough-harvestcraft-",    //https://www.curseforge.com/minecraft/mc-mods/just-enough-harvestcraft
+            "justenoughbeacons-",           //https://www.curseforge.com/minecraft/mc-mods/just-enough-beacons
+            "justenoughdrags-",             //https://www.curseforge.com/minecraft/mc-mods/just-enough-drags
+            "justzoom_",                    //https://www.curseforge.com/minecraft/mc-mods/just-zoom
+            "keymap-",                      //https://www.curseforge.com/minecraft/mc-mods/keymap
+            "keywizard-",                   //https://www.curseforge.com/minecraft/mc-mods/keyboard-wizard
+            "lazurite-",                    //https://www.curseforge.com/minecraft/mc-mods/lazurite
+            "lazydfu-",                     //https://www.curseforge.com/minecraft/mc-mods/lazydfu
+            "lib39-",                       //https://www.curseforge.com/minecraft/mc-mods/lib39
+            "light-overlay-",               //https://www.curseforge.com/minecraft/mc-mods/light-overlay
+            "lightfallclient-",             //https://www.curseforge.com/minecraft/mc-mods/lightfallclient-updated
+            "lightspeed-",                  //https://www.curseforge.com/minecraft/mc-mods/lightspeedmod
+            "loadmyresources_",             //https://www.curseforge.com/minecraft/mc-mods/load-my-resources-forge
+            "lock_minecart_view-",          //Gone? Reduces to atoms?
+            "lootbeams-",                   //https://www.curseforge.com/minecraft/mc-mods/lootbeams
+            "lwl-",                         //Gone? Reduces to atoms?
+            "macos-input-fixes-",           //https://www.curseforge.com/minecraft/mc-mods/macos-input-fixes
+            "magnesium_extras-",            //Gone? Reduces to atoms?
+            "maptooltip-",                  //https://www.curseforge.com/minecraft/mc-mods/map-tooltip
+            "massunbind",                   //https://www.curseforge.com/minecraft/mc-mods/mass-key-unbinder
+            "mcbindtype-",                  //https://www.curseforge.com/minecraft/mc-mods/mcbindtype
+            "mcwifipnp-",                   //https://www.curseforge.com/minecraft/mc-mods/mcwifipnp
+            "medievalmusic-",               //https://www.curseforge.com/minecraft/mc-mods/medieval-music
+            "memoryusagescreen-",           //https://www.curseforge.com/minecraft/mc-mods/memory-usage-screen
+            "mightyarchitect-",             //https://www.curseforge.com/minecraft/mc-mods/the-mighty-architect
+            "mindful-eating-",              //https://www.curseforge.com/minecraft/mc-mods/mindful-eating
+            "minetogether-",                //https://www.curseforge.com/minecraft/mc-mods/creeperhost-minetogether
+            "mobplusplus-",                 //Gone? Reduces to atoms?
+            "modcredits-",                  //https://www.curseforge.com/minecraft/mc-mods/mod-credits
+            "modernworldcreation_",         //https://www.curseforge.com/minecraft/mc-mods/modernworldcreation
+            "modnametooltip-",              //https://www.curseforge.com/minecraft/mc-mods/mod-name-tooltip
+            "modnametooltip_",              //https://www.curseforge.com/minecraft/mc-mods/mod-name-tooltip
+            "moreoverlays-",                //https://www.curseforge.com/minecraft/mc-mods/more-overlays
+            "mousewheelie-",                //https://www.curseforge.com/minecraft/mc-mods/mouse-wheelie
+            "movement-vision-",             //https://www.curseforge.com/minecraft/mc-mods/movement-vision
+            "multihotbar-",                 //https://www.curseforge.com/minecraft/mc-mods/multi-hotbar
+            "music-duration-reducer-",      //https://www.curseforge.com/minecraft/mc-mods/music-duration-reducer
+            "musicdr-",                     //Gone? Reduces to atoms?
+            "neiRecipeHandlers-",           //Gone? Reduces to atoms?
+            "ngrok-lan-expose-mod-",        //Gone? Reduces to atoms?
+            "no_nv_flash-",                 //https://www.curseforge.com/minecraft/mc-mods/no-nv-flash
+            "nopotionshift_",               //https://www.curseforge.com/minecraft/mc-mods/no-potion-shift
+            "notenoughanimations-",         //https://www.curseforge.com/minecraft/mc-mods/not-enough-animations
+            "oculus-",                      //https://www.curseforge.com/minecraft/mc-mods/oculus
+            "ornaments-",                   //https://www.curseforge.com/minecraft/mc-mods/ornaments
+            "overloadedarmorbar-",          //https://www.curseforge.com/minecraft/mc-mods/overloaded-armor-bar
+            "panorama-",                    //https://www.curseforge.com/minecraft/mc-mods/panorama
+            "paperdoll-",                   //https://www.curseforge.com/minecraft/mc-mods/paperdoll
+            "physics-mod-",                 //https://www.curseforge.com/minecraft/mc-mods/physics-mod
+            "phosphor-",                    //https://www.curseforge.com/minecraft/mc-mods/phosphor
+            "preciseblockplacing-",         //Gone? Reduces to atoms?
+            "radon-",                       //https://www.curseforge.com/minecraft/mc-mods/radon
+            "realm-of-lost-souls-",         //https://www.curseforge.com/minecraft/mc-mods/bobs-realm-of-lost-souls
+            "rebind_narrator-",             //https://www.curseforge.com/minecraft/mc-mods/rebind-narrator
+            "rebind-narrator-",             //https://www.curseforge.com/minecraft/mc-mods/rebind-narrator
+            "rebindnarrator-",              //https://www.curseforge.com/minecraft/mc-mods/rebind-narrator
+            "rebrand-",                     //https://www.curseforge.com/minecraft/mc-mods/rebrand
+            "reforgium-",                   //https://www.curseforge.com/minecraft/mc-mods/reforgium
+            "replanter-",                   //https://www.curseforge.com/minecraft/mc-mods/replanter
+            "rrls-",                        //https://www.curseforge.com/minecraft/mc-mods/rrls
+            "rubidium-",                    //https://www.curseforge.com/minecraft/mc-mods/rubidium
+            "rubidium_extras-",             //https://www.curseforge.com/minecraft/mc-mods/rubidium-extra
+            "screenshot-to-clipboard-",     //https://www.curseforge.com/minecraft/mc-mods/screenshot-to-clipboard
+            "servercountryflags-",          //https://www.curseforge.com/minecraft/mc-mods/server-country-flags
+            "shutupexperimentalsettings-",  //https://www.curseforge.com/minecraft/mc-mods/shutup-experimental-settings
+            "shutupmodelloader-",           //https://www.curseforge.com/minecraft/mc-mods/shut-up-model-loader
+            "signtools-",                   //https://www.curseforge.com/minecraft/bukkit-plugins/signtools
+            "simple-rpc-",                  //https://www.curseforge.com/minecraft/mc-mods/simple-discord-rpc
+            "simpleautorun-",               //Gone? Reduces to atoms?
+            "smartcursor-",                 //https://www.curseforge.com/minecraft/mc-mods/smartcursor
+            "smarthud-",                    //https://www.curseforge.com/minecraft/mc-mods/smart-hud
+            "smoothboot-",                  //https://www.curseforge.com/minecraft/mc-mods/smoothboot
+            "smoothfocus-",                 //https://www.curseforge.com/minecraft/mc-mods/smoothfocus
+            "sodium-fabric-",               //https://www.curseforge.com/minecraft/mc-mods/sodium
+            "sodiumdynamiclights-",         //https://www.curseforge.com/minecraft/mc-mods/dynamiclights-reforged
+            "sounddeviceoptions-",          //https://www.curseforge.com/minecraft/mc-mods/more-sound-config
+            "soundreloader-",               //https://www.curseforge.com/minecraft/mc-mods/sound-reloader
+            "spoticraft-",                  //https://www.curseforge.com/minecraft/mc-mods/spoticraft-inactive
+            "skinlayers3d-forge",           //https://www.curseforge.com/minecraft/mc-mods/skin-layers-3d
+            "tconplanner-",                 //https://www.curseforge.com/minecraft/mc-mods/tinkers-planner
+            "textrues_embeddium_options-",  //https://www.curseforge.com/minecraft/mc-mods/textrues-embeddium-options
+            "timestamps-",                  //https://www.curseforge.com/minecraft/mc-mods/timestamps
+            "tooltipscroller-",             //https://www.curseforge.com/minecraft/mc-mods/tooltip-scroller
+            "torchoptimizer-",              //https://www.curseforge.com/minecraft/mc-mods/torch-optimizer
+            "torohealth-",                  //https://www.curseforge.com/minecraft/mc-mods/torohealth-damage-indicators
+            "totaldarkness",                //https://www.curseforge.com/minecraft/mc-mods/total-darkness
+            "toughnessbar-",                //https://www.curseforge.com/minecraft/mc-mods/armor-toughness-bar
+            "watermedia-",                  //https://www.curseforge.com/minecraft/mc-mods/watermedia
+            "whats-that-slot-forge-",       //https://www.curseforge.com/minecraft/mc-mods/whats-that-slot
+            "wisla-",                       //https://www.curseforge.com/minecraft/mc-mods/wisla
+            "xenon-",                       //https://www.curseforge.com/minecraft/mc-mods/xenon
+            "xlifeheartcolors-",            //https://www.curseforge.com/minecraft/mc-mods/x-life-heart-colors
+            "yisthereautojump-"             //https://www.curseforge.com/minecraft/mc-mods/y-is-there-autojump-forge
         )
     )
 
