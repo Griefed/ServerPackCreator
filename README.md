@@ -294,7 +294,89 @@ You may edit the following container-properties if you wish to change some parts
 | `SPC_SERVERPACK_ZIP_EXCLUDE`                  | Files or directories which should be excluded from a server pack archive.                                                            |
 | `SPC_SERVERPACK_ZIP_EXCLUDE_ENABLED`          | Whether files should be excluded from a server pack archive.                                                                         |
 
-## 6. Awesomesauce!
+## 6. API
+
+ServerPackCreator's API is available on maven for use in your own projects: https://central.sonatype.com/artifact/de.griefed.serverpackcreator/serverpackcreator-api
+
+Note: The API does not include the REST-API of the webservice in the app. It is explicitly *not* part of the ServerPackCreator API.
+
+### Implementation
+
+Replace `$VERSION` with the version you want to use.
+
+#### Maven
+
+```XML
+<dependency>
+    <groupId>de.griefed.serverpackcreator</groupId>
+    <artifactId>serverpackcreator-api</artifactId>
+    <version>$VERSION</version>
+</dependency>
+```
+
+#### Gradle
+
+```kotlin
+implementation 'de.griefed.serverpackcreator:serverpackcreator-api:$VERSION'
+```
+
+#### Gradle Kotlin
+
+```kotlin
+implementation("de.griefed.serverpackcreator:serverpackcreator-api:$VERSION")
+```
+
+### Example
+
+Initialize the API with your properties file, containing some basic settings for the API to use.
+`/path/to/file.properties` represents the path to your properties-file.
+
+Make sure to select a directory which doesn't contain any vital data for the API, as the API will setup and create
+any and all required files in said directory. Best to give it its own directory all to itself.
+
+For information about possible settings, see https://help.serverpackcreator.de/settings-and-configs.html#serverpackcreator-properties
+
+```kotlin
+val spcAPI = ApiWrapper.api(File("/path/to/file.properties"))
+```
+
+After initializing the API you can now access the ConfigurationHandler as well as the ServerPackHandler, among other things.
+Here's a very basic example:
+
+```kotlin
+val packConfig = PackConfig()
+val configCheck = spcAPI.configurationHandler.checkConfiguration(File("/path/to/serverpack-config.conf"), packConfig)
+
+if (configCheck.allChecksPassed) {
+    val serverPackGeneration = spcAPI.serverPackHandler.run(packConfig)
+
+    if (serverPackGeneration.success) {
+        println("Path to your server pack: ${serverPackGeneration.serverPack.absolutePath}")
+
+        if (serverPackGeneration.serverPackZip.isPresent) {
+            println("Path to your server pack ZIP: ${serverPackGeneration.serverPackZip.get().absolutePath}")
+        }
+        
+    } else {
+        
+        println("Encountered the following errors during generation:")
+        for (error in serverPackGeneration.errors) {
+            println(error)
+        }
+        
+    }
+    
+} else {
+    
+    println("There are errors in your server pack config:")
+    for (error in configCheck.encounteredErrors) {
+        println(error)
+    }
+    
+}
+```
+
+## 7. Awesomesauce!
 
 **None of this would have been possible without the excellent IDEs by JetBrains. They have kindly provided this open source project with an All Products Pack license.**
 **Additionally, ej-Technologies has provided an open-source license for JProfiler and install4j for ServerPackCreator, which allows me to resolve performance bottlenecks, pin down memory leaks and understand threading issues, as well as generated fancy high-end installers.
