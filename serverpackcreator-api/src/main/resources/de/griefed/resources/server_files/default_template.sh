@@ -142,7 +142,28 @@ downloadIfNotExist() {
 # runJavaCommand(command)
 # Runs the command $1 using the Java installation set in $JAVA.
 runJavaCommand() {
+  # shellcheck disable=SC2086
   "$JAVA" ${1}
+}
+
+# refreshServerJar
+# Refresh the ServerStarterJar used for running Forge and NeoForge servers.
+# Depending on the value of SERVERSTARTERJAR_FORCE_FETCH in the variables.txt the server.jar is force-refreshed.
+# Meaning: If true, the server.jar will be deleted and then downloaded again.
+# Depending on the value of SERVERSTARTERJAR_VERSION in the variables.txt a different version is fetched. More on
+# this value in the variables.txt
+refreshServerJar() {
+  if [[ "${SERVERSTARTERJAR_FORCE_FETCH}" == "true" ]]; then
+    rm -f server.jar
+  fi
+
+  if [[ "${SERVERSTARTERJAR_VERSION}" == "latest" ]]; then
+    SERVERSTARTERJAR_DOWNLOAD_URL="https://github.com/neoforged/ServerStarterJar/releases/latest/download/server.jar"
+  else
+    SERVERSTARTERJAR_DOWNLOAD_URL="https://github.com/neoforged/ServerStarterJar/releases/download/${SERVERSTARTERJAR_VERSION}/server.jar"
+  fi
+
+  downloadIfNotExist "server.jar" "server.jar" "${SERVERSTARTERJAR_DOWNLOAD_URL}"
 }
 
 # setupForge
@@ -196,8 +217,7 @@ setupForge() {
 
     SERVER_RUN_COMMAND="@user_jvm_args.txt -Djava.security.manager=allow -jar server.jar --installer-force --installer ${FORGE_INSTALLER_URL} nogui"
 
-    rm -f server.jar
-    downloadIfNotExist "server.jar" "server.jar" "https://github.com/neoforged/ServerStarterJar/releases/latest/download/server.jar"
+    refreshServerJar
   fi
 }
 
@@ -229,8 +249,7 @@ setupNeoForge() {
     SERVER_RUN_COMMAND="@user_jvm_args.txt -jar server.jar --installer-force --installer ${MODLOADER_VERSION} nogui"
   fi
 
-  rm -f server.jar
-  downloadIfNotExist "server.jar" "server.jar" "https://github.com/neoforged/ServerStarterJar/releases/latest/download/server.jar"
+  refreshServerJar
 }
 
 # setupFabric

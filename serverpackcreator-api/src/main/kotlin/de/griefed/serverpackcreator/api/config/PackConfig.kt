@@ -167,24 +167,9 @@ private const val spcJabbaInstallVersionKey = "SPC_JABBA_INSTALL_VERSION_SPC"
 
 private const val spcAdditionalArgsKey = "SPC_ADDITIONAL_ARGS_SPC"
 
-private val scriptSettingsDefaultKeys = arrayOf(
-    spcVersionKey,
-    spcMinecraftVersionKey,
-    spcModloaderKey,
-    spcModloaderVersionKey,
-    spcJavaArgsKey,
-    spcFabricInstallerVersionKey,
-    spcQuiltInstallerVersionKey,
-    spcLegacyFabricInstallerVersionKey,
-    spcWaitForUserInputKey,
-    spcRestartServerKey,
-    spcSkipJavaCheckKey,
-    spcJDKVendorKey,
-    spcJabbaInstallURLShKey,
-    spcJabbaInstallURLPSKey,
-    spcJabbaInstallVersionKey,
-    spcAdditionalArgsKey
-)
+private const val spcServerStarterJarForceFetchKey = "SPC_SERVERSTARTERJAR_FORCE_FETCH_SPC"
+
+private const val spcServerStarterJarVersionKey = "SPC_SERVERSTARTERJAR_VERSION_SPC"
 
 /**
  * A PackConfig contains the settings required to create a server pack.
@@ -574,7 +559,9 @@ open class PackConfig() {
                 Pair(spcJabbaInstallURLShKey,"https://github.com/Jabba-Team/jabba/raw/main/install.sh"),
                 Pair(spcJabbaInstallURLPSKey,"https://github.com/Jabba-Team/jabba/raw/main/install.ps1"),
                 Pair(spcJabbaInstallVersionKey,"0.13.0"),
-                Pair(spcAdditionalArgsKey,"-Dlog4j2.formatMsgNoLookups=true")
+                Pair(spcAdditionalArgsKey,"-Dlog4j2.formatMsgNoLookups=true"),
+                Pair(spcServerStarterJarForceFetchKey, "true"),
+                Pair(spcServerStarterJarVersionKey, "latest")
             )
         }
     }
