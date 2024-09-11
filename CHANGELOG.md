@@ -1,3 +1,22 @@
+## [6.3.10](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.9...6.3.10) (2024-09-11)
+
+
+### 💎 Improvements
+
+* Allow toggling of ServerStarterJar refresh, allow specifying version of SSJ to download ([ffe294f](https://git.griefed.de/Griefed/ServerPackCreator/commit/ffe294fbde6417aef4f8dfa4a976e8f8724e95a6))
+
+
+### 📔 Docs
+
+* Add basic API implementation example ([c4f18c0](https://git.griefed.de/Griefed/ServerPackCreator/commit/c4f18c05e1f6720fcba279aff4042259317e2ede))
+
+
+### 📦 Other
+
+* Add dynamiclightsreforged, new filename for Sodium Dynamic Lights ([16489fd](https://git.griefed.de/Griefed/ServerPackCreator/commit/16489fd18aff092b64d3e4e6ead7f7f66e73b3cf))
+* Last batch of project links. Also remove appleskin from list as it sometimes is required on servers. ([b498ec8](https://git.griefed.de/Griefed/ServerPackCreator/commit/b498ec8c6a60b58b21189f737ff1932d945da545))
+* Next batch of project links, and some additions to include filename changes of some mods ([7400450](https://git.griefed.de/Griefed/ServerPackCreator/commit/7400450775ac7f156d4da5711ef19a65fd0feea2))
+
 ## [6.3.9](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.8...6.3.9) (2024-09-01)
 
 
