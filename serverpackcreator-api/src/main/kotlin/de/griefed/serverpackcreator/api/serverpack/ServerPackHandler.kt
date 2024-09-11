@@ -118,12 +118,21 @@ class ServerPackHandler(
         #   - JAVA be set to 'java'
         #   - No 'java' command be available OR
         #   - The available Java version behind 'java' be incompatible with your Minecraft version.
-        # JABBA_VERSION has no effect on the installation of Jabba when using PowerShell.
+        # JABBA_INSTALL_VERSION has no effect on the installation of Jabba when using PowerShell.
         # MINECRAFT_VERSION is tightly coupled with the modloader version. Be careful when changing this, as the new
         #   new version you set may not be compatible with the modloader and modloader version combination.
         # MODLOADER and MODLOADER_VERSION same thing as with MINECRAFT_VERSION. Changing any of these three values may
         #   have unforseen consequences. Well, I say unforseen, it mostly causes the server to straight up not start,
         #   because of incompatibilities. Be very careful when changing these!
+        # SERVERSTARTERJAR_FORCE_FETCH true/false allows you to enable/disable the force-refreshing of the server.jar
+        #   when using Forge or NeoForge as your modloader. Force-refreshing means the file is replaced with a freshly
+        #   downloaded one every time you run the start scripts.
+        # SERVERSTARTERJAR_VERSION allows you to manually set the version of the server.jar downloaded by the scripts.
+        #   If you want to always use the latest version, set this to exactly "latest". For a specific version, see
+        #   https://github.com/neoforged/ServerStarterJar/releases and use the tags on the left as the version,
+        #   e.g. 0.1.24 or 0.1.25. When setting a specific version, make sure the release you pick actually has a server.jar
+        #   available for download. When the download fails with the "latest"-setting, then pick a specific one and/or
+        #   contact the devs of the ServerStarterJar about the latest release not having a server.jar to download.
         #
         # DO NOT EDIT THE FOLLOWING VARIABLES MANUALLY
         #   - FABRIC_INSTALLER_VERSION
@@ -151,6 +160,8 @@ class ServerPackHandler(
         JABBA_INSTALL_URL_SH=SPC_JABBA_INSTALL_URL_SH_SPC
         JABBA_INSTALL_URL_PS=SPC_JABBA_INSTALL_URL_PS_SPC
         JABBA_INSTALL_VERSION=SPC_JABBA_INSTALL_VERSION_SPC
+        SERVERSTARTERJAR_FORCE_FETCH=SPC_SERVERSTARTERJAR_FORCE_FETCH_SPC
+        SERVERSTARTERJAR_VERSION=SPC_SERVERSTARTERJAR_VERSION_SPC
     """.trimIndent()
     private val howToStartTheServer = """
         # How To Start / Run The Server

@@ -283,6 +283,36 @@ Function DownloadIfNotExists
 #>
 }
 
+Function global:RefreshServerJar
+{
+    if ("${ServerStarterJarForceFetch}" -eq "true")
+    {
+        DeleteFileSilently  'server.jar'
+    }
+
+    $ServerStarterJarDownloadURL = ""
+    if ("${ServerStarterJarVersion}" -eq "latest")
+    {
+        $ServerStarterJarDownloadURL = "https://github.com/neoforged/ServerStarterJar/releases/latest/download/server.jar"
+    }
+    else
+    {
+        $ServerStarterJarDownloadURL = "https://github.com/neoforged/ServerStarterJar/releases/download/${ServerStarterJarVersion}/server.jar"
+    }
+
+    DownloadIfNotExists "server.jar" "server.jar" "${ServerStarterJarDownloadURL}"
+
+<#
+    .SYNOPSIS
+
+    Refresh the ServerStarterJar used for running Forge and NeoForge servers.
+    Depending on the value of SERVERSTARTERJAR_FORCE_FETCH in the variables.txt the server.jar is force-refreshed.
+    Meaning: If true, the server.jar will be deleted and then downloaded again.
+    Depending on the value of SERVERSTARTERJAR_VERSION in the variables.txt a different version is fetched. More on
+    this value in the variables.txt
+#>
+}
+
 Function global:SetupForge
 {
     ""
@@ -335,8 +365,7 @@ Function global:SetupForge
 
         $script:ServerRunCommand = "@user_jvm_args.txt -Djava.security.manager=allow -jar server.jar --installer-force --installer ${ForgeInstallerUrl} nogui"
 
-        DeleteFileSilently  'server.jar'
-        DownloadIfNotExists "server.jar" "server.jar" "https://github.com/neoforged/ServerStarterJar/releases/latest/download/server.jar"
+        RefreshServerJar
     }
 
 <#
@@ -376,8 +405,7 @@ Function global:SetupNeoForge
         $script:ServerRunCommand = "@user_jvm_args.txt -jar server.jar --installer-force --installer ${ModLoaderVersion} nogui"
     }
 
-    DeleteFileSilently  'server.jar'
-    DownloadIfNotExists "server.jar" "server.jar" "https://github.com/neoforged/ServerStarterJar/releases/latest/download/server.jar"
+    RefreshServerJar
 
 <#
     .SYNOPSIS
@@ -574,6 +602,8 @@ $AdditionalArgs = $ExternalVariables['ADDITIONAL_ARGS']
 $Restart = $ExternalVariables['RESTART']
 $SkipJavaCheck = $ExternalVariables['SKIP_JAVA_CHECK']
 $RecommendedJavaVersion = $ExternalVariables['RECOMMENDED_JAVA_VERSION']
+$ServerStarterJarForceFetch = $ExternalVariables['SERVERSTARTERJAR_FORCE_FETCH']
+$ServerStarterJarVersion = $ExternalVariables['SERVERSTARTERJAR_VERSION']
 $LauncherJarLocation = "do_not_manually_edit"
 $ServerRunCommand = "do_not_manually_edit"
 $JavaVersion = "do_not_manually_edit"
