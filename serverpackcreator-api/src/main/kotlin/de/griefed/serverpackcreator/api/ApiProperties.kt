@@ -327,6 +327,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "borderless-mining-",           //https://www.curseforge.com/minecraft/mc-mods/borderless-mining
             "cat_jam-",                     //https://www.curseforge.com/minecraft/mc-mods/cat_jam
             "catalogue-",                   //https://www.curseforge.com/minecraft/mc-mods/catalogue
+            "cfwinfo-",                     //https://www.curseforge.com/minecraft/mc-mods/create-fuel-and-water-information
             "charmonium-",                  //https://www.curseforge.com/minecraft/mc-mods/charmonium
             "chat_heads-",                  //https://www.curseforge.com/minecraft/mc-mods/chat-heads
             "cherishedworlds-",             //https://www.curseforge.com/minecraft/mc-mods/cherished-worlds
