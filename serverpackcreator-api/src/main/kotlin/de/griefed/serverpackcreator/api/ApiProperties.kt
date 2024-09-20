@@ -2590,7 +2590,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         }
         fallbackUpdated = false
         if (properties != null) {
-            val newBlacklist = properties!!.getProperty(pConfigurationFallbackModsWhiteList)
+            val newBlacklist = properties!!.getProperty(pConfigurationFallbackModsList)
             val currentBlacklist = internalProps.getProperty(pConfigurationFallbackModsList)
             if (newBlacklist != null && currentBlacklist != newBlacklist) {
                 internalProps.setProperty(pConfigurationFallbackModsList, newBlacklist)
