@@ -239,7 +239,7 @@ class UpdateDialogs(
                             val cause = e.cause
                             // UserCanceledException means that the user has canceled the proxy dialog
                             if (cause !is UserCanceledException) {
-                                log.error("Update could not be executed.", e)
+                                log.error("Update could not be executed: ${e.message}.")
                             }
                         }
                     }
