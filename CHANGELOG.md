@@ -1,3 +1,20 @@
+## [6.3.11](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.10...6.3.11) (2024-09-20)
+
+
+### :scissors: Refactor
+
+* Trim error message ([500132d](https://git.griefed.de/Griefed/ServerPackCreator/commit/500132da33a798b8ad3e16a19df85d19956e1656))
+
+
+### 📦 Other
+
+* Add Create: Fuel & Water Information to list of clientside-mods. Thanks to [@kreezxil](https://git.griefed.de/kreezxil) for the report. ([3ff0b74](https://git.griefed.de/Griefed/ServerPackCreator/commit/3ff0b74c8ae420f97666c4ff01ea22fb1a32f83a))
+
+
+### 🛠 Fixes
+
+* Fetch correct fallback property during clientside-mod list comparison ([6d1a855](https://git.griefed.de/Griefed/ServerPackCreator/commit/6d1a85539c136251ff556e492629a14d55e3fa23))
+
 ## [6.3.10](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.9...6.3.10) (2024-09-11)
 
 
