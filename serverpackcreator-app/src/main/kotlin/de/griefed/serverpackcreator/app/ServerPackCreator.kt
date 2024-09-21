@@ -164,6 +164,14 @@ class ServerPackCreator(private val args: Array<String>) {
                 interactiveCommandLine.configGenCommand.run()
             }
 
+            Mode.CONFIG -> {
+                apiWrapper.stageOne()
+                migrationManager.migrate()
+                apiWrapper.stageTwo()
+                apiWrapper.stageThree()
+                interactiveCommandLine.runHeadlessCommand.runHeadless(commandlineParser.serverPackConfig.get())
+            }
+
             Mode.CLI -> {
                 apiWrapper.stageOne()
                 migrationManager.migrate()

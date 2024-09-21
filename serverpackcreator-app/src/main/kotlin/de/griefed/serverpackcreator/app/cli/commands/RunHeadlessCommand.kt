@@ -1,8 +1,26 @@
+/* Copyright (C) 2024  Griefed
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
+ *
+ * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
+ */
 package de.griefed.serverpackcreator.app.cli.commands
 
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.config.PackConfig
-import de.griefed.serverpackcreator.api.utilities.common.SystemUtilities
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.xml.sax.SAXException
 import picocli.CommandLine
@@ -14,10 +32,11 @@ import javax.xml.parsers.ParserConfigurationException
 
 @Suppress("DuplicatedCode")
 @CommandLine.Command(
-    name = "run",
+    name = "run", mixinStandardHelpOptions = true,
     description = [
         "Run a config check and server pack generation using the default server pack config.",
-        "The default config file is expected at '</path/to/ServerPackCreator-home-directory/serverpackcreator.conf'."
+        "The default config file is expected at '</path/to/ServerPackCreator-home-directory/serverpackcreator.conf'.",
+        "Windows Users: You can use / instead of \\ in your paths, too."
                   ],
     subcommands = [ClearScreen::class, CommandLine.HelpCommand::class]
 )
@@ -35,9 +54,35 @@ class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) 
             "You will be asked to enter the path to the desired config after starting this command."
         ]
     )
-    fun withSpecificConfig() {
-        val config = requestConfigFile()
+    fun withSpecificConfig(@CommandLine.Option(
+        names = ["-c", "--config"],
+        description = [
+            "The path to the config file.",
+            "Windows Users: You can use / instead of \\ in your paths, too."
+                      ],
+        usageHelp = true,
+        required = false
+    ) configFile: String?) {
+        val config = if (configFile == null) {
+            requestConfigFile()
+        } else {
+            File(configFile)
+        }
         runHeadless(config)
+    }
+
+    @CommandLine.Command(
+        mixinStandardHelpOptions = true, subcommands = [CommandLine.HelpCommand::class],
+        description = [
+            "Run server pack generations for all configs in the config-directory.",
+            "The config-directory is inside ServerPackCreators home-directory."
+        ]
+    )
+    fun withAllInConfigDir() {
+        val configs = apiWrapper.apiProperties.configsDirectory.listFiles()
+        for (config in configs) {
+            runHeadless(config)
+        }
     }
 
     private fun requestConfigFile(): File {

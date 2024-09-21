@@ -1,3 +1,22 @@
+/* Copyright (C) 2024  Griefed
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
+ *
+ * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
+ */
 package de.griefed.serverpackcreator.app.cli
 
 import de.griefed.serverpackcreator.api.ApiWrapper
@@ -9,7 +28,6 @@ import org.jline.console.CmdLine
 import org.jline.console.SystemRegistry
 import org.jline.console.impl.Builtins
 import org.jline.console.impl.SystemRegistryImpl
-import org.jline.jansi.AnsiConsole
 import org.jline.keymap.KeyMap
 import org.jline.reader.*
 import org.jline.reader.impl.DefaultParser
@@ -24,7 +42,6 @@ import picocli.shell.jline3.PicocliCommands.PicocliCommandsFactory
 import java.io.PrintWriter
 import java.nio.file.Path
 import java.util.function.Supplier
-
 
 class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: UpdateChecker) {
 
@@ -50,12 +67,7 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
 
     @CommandLine.Command(
         name = "",
-        description = [
-            "Example interactive shell with completion and autosuggestions. Hit @|magenta <TAB>|@ to see available commands.",
-            "Hit @|magenta ALT-S|@ to toggle tailtips.",
-            ""
-        ],
-        footer = ["", "Press Ctl-D to exit."],
+        description = ["Interactive shell with completion and autosuggestions."],
         subcommands = [
             ConfigGenCommand::class,
             HelpCommand::class,
@@ -68,7 +80,7 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
             CommandLine.HelpCommand::class
         ]
     )
-    class CliCommands internal constructor() : Runnable {
+    class CliCommands : Runnable {
         private var reader: LineReaderImpl? = null
         var out: PrintWriter? = null
 
