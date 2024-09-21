@@ -25,11 +25,9 @@ import com.formdev.flatlaf.fonts.jetbrains_mono.FlatJetBrainsMonoFont
 import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMaterialDarkerIJTheme
 import de.comahe.i18n4k.Locale
 import de.griefed.serverpackcreator.api.ApiWrapper
-import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.api.utilities.common.JarInformation
 import de.griefed.serverpackcreator.api.utilities.common.JarUtilities
-import de.griefed.serverpackcreator.api.utilities.common.readText
-import de.griefed.serverpackcreator.app.cli.ConfigurationEditor
+import de.griefed.serverpackcreator.app.cli.InteractiveCommandLine
 import de.griefed.serverpackcreator.app.gui.MainWindow
 import de.griefed.serverpackcreator.app.gui.splash.SplashScreen
 import de.griefed.serverpackcreator.app.updater.MigrationManager
@@ -49,8 +47,6 @@ import java.util.prefs.Preferences
 import javax.swing.JFileChooser
 import javax.swing.JOptionPane
 import javax.xml.parsers.ParserConfigurationException
-import kotlin.system.exitProcess
-
 
 /**
  * Entry point for the app. Creates a new instance of [ServerPackCreator] and executes [ServerPackCreator.run] with the
@@ -126,13 +122,8 @@ class ServerPackCreator(private val args: Array<String>) {
     }
 
     @get:Synchronized
-    val configurationEditor: ConfigurationEditor by lazy {
-        ConfigurationEditor(
-            apiWrapper.configurationHandler,
-            apiWrapper.apiProperties,
-            apiWrapper.utilities,
-            apiWrapper.versionMeta
-        )
+    val interactiveCommandLine: InteractiveCommandLine by lazy {
+        InteractiveCommandLine(apiWrapper, updateChecker)
     }
 
     fun run(mode: Mode = Mode.GUI) {
@@ -140,7 +131,7 @@ class ServerPackCreator(private val args: Array<String>) {
         log.info("Running in mode: $mode")
         log.info("App information:")
         log.info("App Folder:      ${appInfo.jarFolder}")
-        log.info("App File:        ${appInfo.jarFile}")
+        log.info("Appy File:        ${appInfo.jarFile}")
         log.info("App Path:        ${appInfo.jarPath}")
         log.info("App Name:        ${appInfo.jarFileName}")
         log.info("Java version:    ${apiWrapper.apiProperties.getJavaVersion()}")
@@ -150,19 +141,14 @@ class ServerPackCreator(private val args: Array<String>) {
 
         when (mode) {
             Mode.HELP -> {
-                System.setProperty("java.awt.headless", "true")
-                printHelp()
-                continuedRunOptions()
+                interactiveCommandLine.helpCommand.run()
             }
 
             Mode.UPDATE -> {
-                System.setProperty("java.awt.headless", "true")
-                updateChecker.updateCheck(true)
-                continuedRunOptions()
+                interactiveCommandLine.updateCommand.run()
             }
 
             Mode.WEB -> {
-                System.setProperty("java.awt.headless", "true")
                 apiWrapper.stageOne()
                 migrationManager.migrate()
                 apiWrapper.stageTwo()
@@ -172,22 +158,18 @@ class ServerPackCreator(private val args: Array<String>) {
             }
 
             Mode.CGEN -> {
-                System.setProperty("java.awt.headless", "true")
                 apiWrapper.stageOne()
                 migrationManager.migrate()
                 apiWrapper.stageTwo()
-                createDefaultConfig()
-                runConfigurationEditor()
-                continuedRunOptions()
+                interactiveCommandLine.configGenCommand.run()
             }
 
             Mode.CLI -> {
-                System.setProperty("java.awt.headless", "true")
                 apiWrapper.stageOne()
                 migrationManager.migrate()
                 apiWrapper.stageTwo()
                 apiWrapper.stageThree()
-                runHeadless()
+                interactiveCommandLine.run(args)
             }
 
             Mode.GUI -> {
@@ -210,64 +192,13 @@ class ServerPackCreator(private val args: Array<String>) {
             }
 
             Mode.SETUP -> {
-                System.setProperty("java.awt.headless", "true")
-                apiWrapper.setup(force = true)
+                interactiveCommandLine.setupCommand.run()
                 log.info("Setup completed.")
                 log.debug("Exiting...")
             }
 
             Mode.EXIT -> log.debug("Exiting...")
             else -> log.debug("Exiting...")
-        }
-    }
-
-    /**
-     * Check whether a `serverpackcreator.conf`-file exists. If it doesn't exist, and we are not
-     * running in [Mode.CLI] or [Mode.CGEN], create an unconfigured default one which can
-     * then be loaded into the GUI.
-     *
-     * @return `true` if a `serverpackcreator.conf`-file was created.
-     * @author Griefed
-     */
-    private fun createDefaultConfig(): Boolean {
-        return if (!apiWrapper.apiProperties.defaultConfig.exists()) {
-            JarUtilities.copyFileFromJar(
-                "de/griefed/resources/${apiWrapper.apiProperties.defaultConfig.name}",
-                apiWrapper.apiProperties.defaultConfig, this.javaClass
-            )
-        } else {
-            false
-        }
-    }
-
-    /**
-     * Prints the help-text to the console. The help text contains information about:
-     *
-     *  * running ServerPackCreator in different modes:
-     *
-     *  * [Mode.CGEN]
-     *  * [Mode.UPDATE]
-     *  * [Mode.CLI]
-     *  * [Mode.WEB]
-     *  * [Mode.GUI]
-     *  * [Mode.SETUP]
-     *
-     *  * available languages
-     *  * where to report issues
-     *  * where to get support
-     *  * where to find the wiki
-     *  * how to support me
-     *
-     *
-     * @author Griefed
-     */
-    private fun printHelp() {
-        try {
-            println(
-                this.javaClass.getResourceAsStream("/de/griefed/resources/cli_help.txt")!!.readText()
-            )
-        } catch (e: IOException) {
-            throw RuntimeException(e)
         }
     }
 
@@ -316,25 +247,25 @@ class ServerPackCreator(private val args: Array<String>) {
                 }
                 when (selection) {
                     1 -> {
-                        printHelp()
+                        interactiveCommandLine.helpCommand.run()
                         printMenu()
                         selection = 100
                     }
 
                     2 -> {
-                        updateChecker.updateCheck(true)
+                        interactiveCommandLine.updateCommand.run()
                         printMenu()
                         selection = 100
                     }
 
                     3 -> {
-                        changeLocale()
+                        interactiveCommandLine.languageCommand.run()
                         printMenu()
                         selection = 100
                     }
 
                     4 -> {
-                        runConfigurationEditor()
+                        interactiveCommandLine.configGenCommand.run()
                         printMenu()
                         selection = 100
                     }
@@ -362,58 +293,6 @@ class ServerPackCreator(private val args: Array<String>) {
             7 -> run(Mode.GUI)
             0 -> println("Exiting...")
             else -> println("Exiting...")
-        }
-    }
-
-    /**
-     * Run in [Mode.CGEN] and allow the user to load, edit and create a
-     * `serverpackcreator.conf`-file using the CLI.
-     *
-     * @throws IOException                  When the [de.griefed.serverpackcreator.api.versionmeta.VersionMeta] had to be instantiated, but
-     * an error occurred during the parsing of a manifest.
-     * @throws ParserConfigurationException When the [de.griefed.serverpackcreator.api.versionmeta.VersionMeta] had to be instantiated, but
-     * an error occurred during the parsing of a manifest.
-     * @throws SAXException                 When the [de.griefed.serverpackcreator.api.versionmeta.VersionMeta] had to be instantiated, but
-     * an error occurred during the parsing of a manifest.
-     * @author Griefed
-     */
-    @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
-    private fun runConfigurationEditor() {
-        configurationEditor.continuedRunOptions()
-    }
-
-    /**
-     * Run ServerPackCreator in [Mode.CLI]. Requires a `serverpackcreator.conf`-file to be
-     * present.
-     *
-     * @throws IOException                  When the [de.griefed.serverpackcreator.api.versionmeta.VersionMeta] had to be instantiated, but
-     * an error occurred during the parsing of a manifest.
-     * @throws ParserConfigurationException When the [de.griefed.serverpackcreator.api.versionmeta.VersionMeta] had to be instantiated, but
-     * an error occurred during the parsing of a manifest.
-     * @throws SAXException                 When the [de.griefed.serverpackcreator.api.versionmeta.VersionMeta] had to be instantiated, but
-     * an error occurred during the parsing of a manifest.
-     * @author Griefed
-     */
-    @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
-    private fun runHeadless() {
-        if (!apiWrapper.apiProperties.defaultConfig.exists()) {
-            log.warn("No serverpackcreator.conf found...")
-            log.info("If you want to run ServerPackCreator in CLI-mode, a serverpackcreator.conf is required.")
-            log.info(
-                "Either copy an existing config, or run ServerPackCreator with the '-cgen'-argument to generate one via commandline."
-            )
-            exitProcess(1)
-        } else {
-            val packConfig = PackConfig()
-            if (!apiWrapper.configurationHandler.checkConfiguration(
-                    apiWrapper.apiProperties.defaultConfig, packConfig
-                ).allChecksPassed
-            ) {
-                exitProcess(1)
-            }
-            if (!apiWrapper.serverPackHandler.run(packConfig).success) {
-                exitProcess(1)
-            }
         }
     }
 

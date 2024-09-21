@@ -83,10 +83,7 @@ class UpdateChecker(private val apiProperties: ApiProperties) {
      * @return The update, if available, as well as the download URL.
      * @author Griefed
      */
-    fun checkForUpdate(
-        version: String,
-        preReleaseCheck: Boolean
-    ): Optional<Update> {
+    fun checkForUpdate(version: String, preReleaseCheck: Boolean): Optional<Update> {
         if (version.equals("dev", ignoreCase = true) || gitHub == null) {
             log.warn("Not checking for updates. Either using a dev-version, or GitHub Checking is not initialized.")
             return Optional.empty<Update>()
@@ -102,7 +99,7 @@ class UpdateChecker(private val apiProperties: ApiProperties) {
      * @param logToConsole Whether to log update information to console or to logs.
      * @author Griefed
      */
-    fun updateCheck(logToConsole: Boolean = false) {
+    fun updateCheck(logToConsole: Boolean = false): Boolean {
         refresh()
         val update: Optional<Update> = checkForUpdate(
             apiProperties.apiVersion,
@@ -126,5 +123,7 @@ class UpdateChecker(private val apiProperties: ApiProperties) {
                 log.info("No updates available.")
             }
         }
+
+        return update.isPresent
     }
 }

@@ -29,7 +29,6 @@ import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.api.utilities.common.BooleanUtilities
 import de.griefed.serverpackcreator.api.utilities.common.ListUtilities
 import de.griefed.serverpackcreator.api.utilities.common.StringUtilities
-import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
@@ -49,7 +48,6 @@ import kotlin.io.path.moveTo
 class ConfigurationEditor(
     private val configurationHandler: ConfigurationHandler,
     private val apiProperties: ApiProperties,
-    private val utilities: Utilities,
     private val versionMeta: VersionMeta
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
