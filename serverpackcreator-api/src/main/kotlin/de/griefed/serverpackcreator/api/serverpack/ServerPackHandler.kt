@@ -287,7 +287,11 @@ class ServerPackHandler(
         val relativeFiles : ArrayList<String> = ArrayList(10000)
         val serverPackManifest: ServerPackManifest
         var serverPackZip: Optional<File> = Optional.empty()
-        val serverPack = File(getServerPackDestination(packConfig))
+        val serverPack = if (packConfig.customDestination.isPresent) {
+            packConfig.customDestination.get()
+        } else {
+            File(getServerPackDestination(packConfig))
+        }
         val existingManifest: File
         val oldManifest: ServerPackManifest
         var oldFile: File
@@ -297,17 +301,17 @@ class ServerPackHandler(
         * Check whether the server pack for the specified modpack already exists and whether overwrite is disabled.
         * If the server pack exists and overwrite is disabled, no new server pack will be generated.
         */
-        try {
-            serverPack.create(createFileOrDir = true, asDirectory = true)
-        } catch (ignored: IOException) {
-        }
-
         if (apiProperties.isServerPacksOverwriteEnabled) {
             // Make sure no files from previously generated server packs interrupt us.
             cleanupEnvironment(true, serverPack.absolutePath)
         } else {
             log.info("Overwrite disabled, not performing cleanup before server pack generation.")
             deleteExistingServerPackZip(serverPack.absolutePath)
+        }
+
+        try {
+            serverPack.create(createFileOrDir = true, asDirectory = true)
+        } catch (ignored: IOException) {
         }
 
         if (apiProperties.isUpdatingServerPacksEnabled) {
@@ -333,21 +337,27 @@ class ServerPackHandler(
         // Recursively copy all specified directories and files, excluding clientside-only mods, to server pack.
         files.addAll(
             copyFiles(
-                packConfig,
+                packConfig.modpackDir,
+                packConfig.inclusions,
+                packConfig.clientMods,
+                packConfig.modsWhitelist,
+                packConfig.minecraftVersion,
+                serverPack.absolutePath,
+                packConfig.modloader,
                 !(!apiProperties.isServerPacksOverwriteEnabled && !apiProperties.isUpdatingServerPacksEnabled)
             )
         )
 
         // If true, copy the server-icon.png from server_files to the server pack.
         if (packConfig.isServerIconInclusionDesired) {
-            copyIcon(packConfig)
+            copyIcon(serverPack.absolutePath, packConfig.serverIconPath)
         } else {
             log.info("Not including servericon.")
         }
 
         // If true, copy the server.properties from server_files to the server pack.
         if (packConfig.isServerPropertiesInclusionDesired) {
-            copyProperties(packConfig)
+            copyProperties(serverPack.absolutePath, packConfig.serverPropertiesPath)
         } else {
             log.info("Not including server.properties.")
         }
@@ -375,8 +385,13 @@ class ServerPackHandler(
             * is present. This is because a ZIP-archive, if one is created, is supposed to be uploaded
             * to platforms like CurseForge. We must not have scripts with custom Java paths there.
             */
-            createServerRunFiles(packConfig, false)
-            serverPackZip = zipBuilder(packConfig)
+            createServerRunFiles(packConfig.scriptSettings, serverPack.absolutePath, false)
+            serverPackZip = zipBuilder(
+                packConfig.minecraftVersion,
+                serverPack.absolutePath,
+                packConfig.modloader,
+                packConfig.modloaderVersion
+            )
         } else {
             log.info("Not creating zip archive of serverpack.")
         }
@@ -386,7 +401,7 @@ class ServerPackHandler(
         * The difference to the previous call is that these scripts respect the SPC_JAVA_SPC
         * placeholder setting, if the user has set one
         */
-        createServerRunFiles(packConfig, true)
+        createServerRunFiles(packConfig.scriptSettings, serverPack.absolutePath, false)
 
         // Inform user about location of newly generated server pack.
         log.info("Server pack available at: ${serverPack.absolutePath}")
@@ -418,19 +433,6 @@ class ServerPackHandler(
      * newly generated server pack is as clean as possible. This will completely empty the server pack
      * directory, so use with caution!
      *
-     * @param deleteZip          Whether to delete the server pack ZIP-archive.
-     * @param packConfig ConfigurationModel containing the modpack directory from which the
-     * destination of the server pack is acquired.
-     * @author Griefed
-     */
-    fun cleanupEnvironment(deleteZip: Boolean, packConfig: PackConfig) =
-        cleanupEnvironment(deleteZip, getServerPackDestination(packConfig))
-
-    /**
-     * Deletes all files, directories and ZIP-archives of previously generated server packs to ensure
-     * newly generated server pack is as clean as possible. This will completely empty the server pack
-     * directory, so use with caution!
-     *
      * @param deleteZip   Whether to delete the server pack ZIP-archive.
      * @param destination The destination at which to clean up in.
      * @author Griefed
@@ -451,32 +453,6 @@ class ServerPackHandler(
     private fun deleteExistingServerPackZip(destination: String) {
         File(destination + "_server_pack.zip").deleteQuietly()
     }
-
-    /**
-     * Copies all specified directories and mods, excluding clientside-only mods, from the modpack
-     * directory into the server pack directory. If a `source/file;destination/file`
-     * -combination is provided, the specified source-file is copied to the specified
-     * destination-file. One of the reasons as to why it is recommended to run a given
-     * ConfigurationModel through the ConfigurationHandler first, is because the ConfigurationHandler
-     * will resolve links to their files first before then correcting the given
-     * ConfigurationModel.
-     *
-     * @param packConfig ConfigurationModel containing the modpack directory, list of
-     * directories and files to copy, list of clientside-only mods to
-     * exclude, the Minecraft version used by the modpack and server pack,
-     * and the modloader used by the modpack and server pack.
-     * @author Griefed
-     */
-    fun copyFiles(packConfig: PackConfig, overwrite: Boolean = true) = copyFiles(
-        packConfig.modpackDir,
-        packConfig.inclusions,
-        packConfig.clientMods,
-        packConfig.modsWhitelist,
-        packConfig.minecraftVersion,
-        getServerPackDestination(packConfig),
-        packConfig.modloader,
-        overwrite
-    )
 
     /**
      * Copies all specified directories and mods, excluding clientside-only mods, from the modpack
@@ -561,72 +537,6 @@ class ServerPackHandler(
         }
         return copiedFiles
     }
-
-    /**
-     * Download and provide the improved Fabric Server Launcher, if it is available for the given
-     * Minecraft and Fabric version.
-     *
-     * @param packConfig ConfigurationModel containing the Minecraft and Fabric version for
-     * which to acquire the improved Fabric Server Launcher.
-     * @author Griefed
-     */
-    fun provideImprovedFabricServerLauncher(packConfig: PackConfig) = getImprovedFabricLauncher(
-        packConfig.minecraftVersion, packConfig.modloaderVersion, getServerPackDestination(packConfig)
-    )
-
-    /**
-     * Copies the server-icon.png into server pack. The sever-icon is automatically scaled to a
-     * resolution of 64x64 pixels.
-     *
-     * @param packConfig Containing the modpack directory to acquire the destination of the
-     * server pack and the path to the server icon to copy.
-     * @author Griefed
-     */
-    fun copyIcon(packConfig: PackConfig) = copyIcon(getServerPackDestination(packConfig), packConfig.serverIconPath)
-
-    /**
-     * Copies the server.properties into server pack.
-     *
-     * @param packConfig Containing the modpack directory to acquire the destination of the
-     * server pack and the path to the server properties to copy.
-     * @author Griefed
-     */
-    fun copyProperties(packConfig: PackConfig) =
-        copyProperties(getServerPackDestination(packConfig), packConfig.serverPropertiesPath)
-
-    /**
-     * Create start-scripts for the generated server pack using the templates the user has defined for
-     * their instance of ServerPackCreator.
-     *
-     * @param packConfig Configuration model containing modpack specific values. keys to be
-     * replaced with their respective values in the start scripts, as well
-     * as the modpack directory from which the destination of the server
-     * pack is acquired.
-     * @param isLocal            Whether the start scripts should be created for a locally usable
-     * server pack. Use `false` if the start scripts should be created
-     * for a server pack about to be zipped.
-     * @author Griefed
-     */
-    fun createServerRunFiles(packConfig: PackConfig, isLocal: Boolean) =
-        createServerRunFiles(packConfig.scriptSettings, getServerPackDestination(packConfig), isLocal)
-
-    /**
-     * Creates a ZIP-archive of the server pack previously generated. Depending on the property
-     * `de.griefed.serverpackcreator.serverpack.zip.exclude.enabled`, files will be excluded. To customize
-     * the files which will be excluded, see the property `de.griefed.serverpackcreator.serverpack.zip.exclude`
-     *
-     * @param packConfig Contains the Minecraft version used by the modpack and server pack,
-     * whether the modloader server was installed, the modpack directory to
-     * acquire the destination of the server pack, the modloader used by the
-     * modpack and server pack and the modloader version.
-     * @author Griefed
-     */
-    fun zipBuilder(packConfig: PackConfig) = zipBuilder(
-        packConfig.minecraftVersion,
-        getServerPackDestination(packConfig),
-        packConfig.modloader,
-        packConfig.modloaderVersion
-    )
 
     fun getServerFiles(
         inclusion: InclusionSpecification,
@@ -1392,17 +1302,6 @@ class ServerPackHandler(
             log.error("Couldn't gather all files from ${source.absolutePath} for filter \"$regex\".", ex)
         }
     }
-
-    /**
-     * Cleans up the server_pack directory by deleting left-over files from modloader installations
-     * and version checking.
-     *
-     * @param packConfig Containing the Minecraft version used by the modpack and server pack,
-     * the modloader version used by the modpack and server pack and the
-     * modpack directory to acquire the destination of the server pack.
-     * @author Griefed
-     */
-    fun cleanUpServerPack(packConfig: PackConfig) = postInstallCleanup(getServerPackDestination(packConfig))
 
     /**
      * Go through the mods in the modpack and exclude any of the user-specified clientside-only mods
