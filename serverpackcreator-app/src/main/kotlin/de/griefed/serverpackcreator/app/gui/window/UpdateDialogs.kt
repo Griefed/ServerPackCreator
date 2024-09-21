@@ -41,7 +41,6 @@ import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.StringSelection
 import java.awt.event.ActionListener
 import java.io.IOException
-import java.net.URISyntaxException
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.*
@@ -190,7 +189,7 @@ class UpdateDialogs(
         }
     }
 
-    private fun isUpdatable(): Boolean {
+    private fun isI4JUpdatable(): Boolean {
         try {
             val installationDirectory = Paths.get(Variables.getInstallerVariable("sys.installationDir").toString())
             i4JUpdatable = true
@@ -203,7 +202,7 @@ class UpdateDialogs(
 
     private fun checkForUpdateWithApi() {
         try {
-            if (isUpdatable()) {
+            if (isI4JUpdatable()) {
                 // Here we check for updates in the background with the API.
                 object : SwingWorker<UpdateDescriptorEntry, Any?>() {
                     @Throws(Exception::class)

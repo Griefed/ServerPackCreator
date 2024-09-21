@@ -53,6 +53,8 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
     } else {
         File(appInfo.jarFolder, "serverpackcreator.properties")
     }
+    var serverPackConfig : Optional<File> = Optional.empty()
+    var serverPackDestination : Optional<File> = Optional.empty()
 
     var homeDir: Optional<File> = Optional.empty()
 
@@ -110,6 +112,28 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             */
             if (argsList.any { entry -> entry.contains(Mode.CGEN.argument()) }) {
                 mode = Mode.CGEN
+                return@run
+            }
+
+            /*
+            * Check whether the user wants to generate a specific server pack config from the commandline.
+            */
+            if (argsList.any { entry -> entry.contains(Mode.CONFIG.argument()) }) {
+                val confPos = argsList.indexOf(Mode.CONFIG.argument()) + 1
+                val confArg = argsList[confPos]
+                val confFile = File(confArg)
+                if (argsList.size > 1 && confFile.isFile) {
+                    serverPackConfig = Optional.of(confFile)
+                }
+
+                if (argsList.any { entry -> entry.contains(Mode.DESTINATION.argument()) }) {
+                    val destPos = argsList.indexOf(Mode.DESTINATION.argument()) + 1
+                    val destArg = argsList[destPos]
+                    val destFile = File(destArg)
+                    serverPackDestination = Optional.of(destFile)
+                }
+
+                mode = Mode.CONFIG
                 return@run
             }
 
