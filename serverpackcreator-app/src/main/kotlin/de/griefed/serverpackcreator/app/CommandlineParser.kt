@@ -54,6 +54,7 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
         File(appInfo.jarFolder, "serverpackcreator.properties")
     }
     var serverPackConfig : Optional<File> = Optional.empty()
+    var serverPackDestination : Optional<File> = Optional.empty()
 
     var homeDir: Optional<File> = Optional.empty()
 
@@ -124,6 +125,14 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
                 if (argsList.size > 1 && confFile.isFile) {
                     serverPackConfig = Optional.of(confFile)
                 }
+
+                if (argsList.any { entry -> entry.contains(Mode.DESTINATION.argument()) }) {
+                    val destPos = argsList.indexOf(Mode.DESTINATION.argument()) + 1
+                    val destArg = argsList[destPos]
+                    val destFile = File(destArg)
+                    serverPackDestination = Optional.of(destFile)
+                }
+
                 mode = Mode.CONFIG
                 return@run
             }

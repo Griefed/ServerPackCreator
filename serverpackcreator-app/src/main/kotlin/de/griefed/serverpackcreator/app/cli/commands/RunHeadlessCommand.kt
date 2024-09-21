@@ -37,7 +37,7 @@ import javax.xml.parsers.ParserConfigurationException
         "Run a config check and server pack generation using the default server pack config.",
         "The default config file is expected at '</path/to/ServerPackCreator-home-directory/serverpackcreator.conf'.",
         "Windows Users: You can use / instead of \\ in your paths, too."
-                  ],
+    ],
     subcommands = [ClearScreen::class, CommandLine.HelpCommand::class]
 )
 class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) : Command {
@@ -54,21 +54,31 @@ class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) 
             "You will be asked to enter the path to the desired config after starting this command."
         ]
     )
-    fun withSpecificConfig(@CommandLine.Option(
-        names = ["-c", "--config"],
-        description = [
-            "The path to the config file.",
-            "Windows Users: You can use / instead of \\ in your paths, too."
-                      ],
-        usageHelp = true,
-        required = false
-    ) configFile: String?) {
+    fun withSpecificConfig(
+        @CommandLine.Option(
+            names = ["-c", "--config"],
+            description = [
+                "The path to the config file.",
+                "Windows Users: You can use / instead of \\ in your paths, too."
+            ],
+            usageHelp = true, required = false
+        ) configFile: String?,
+        @CommandLine.Option(
+            names = ["-d", "--destination"],
+            description = [
+                "A destination in which the server pack will be created in.",
+                "All folders, including parent folders, will be created in the process.",
+                "Windows Users: You can use / instead of \\ in your paths, too."
+            ],
+            usageHelp = true, required = false
+        ) destination: File?
+    ) {
         val config = if (configFile == null) {
             requestConfigFile()
         } else {
             File(configFile)
         }
-        runHeadless(config)
+        runHeadless(config, Optional.ofNullable(destination))
     }
 
     @CommandLine.Command(
@@ -101,11 +111,15 @@ class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) 
     }
 
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
-    fun runHeadless(config: File = apiWrapper.apiProperties.defaultConfig) {
+    fun runHeadless(
+        config: File = apiWrapper.apiProperties.defaultConfig,
+        destination: Optional<File> = Optional.empty()
+    ) {
         if (!config.isFile) {
             log.warn("${config.absolutePath} not found...")
         } else {
             val packConfig = PackConfig()
+            packConfig.customDestination = destination
             val check = apiWrapper.configurationHandler.checkConfiguration(config, packConfig)
             if (!check.allChecksPassed) {
                 println("Encountered the following errors/problems with the config:")

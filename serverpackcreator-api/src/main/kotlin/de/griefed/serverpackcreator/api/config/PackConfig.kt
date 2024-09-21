@@ -33,6 +33,9 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.io.FileNotFoundException
 import java.nio.charset.StandardCharsets
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 private const val modpackComment =
     "\n Path to your modpack. Can be either relative or absolute." +
@@ -229,6 +232,8 @@ open class PackConfig() {
     var isZipCreationDesired = true
     var modpackJson: JsonNode? = null
     var configVersion: String? = null
+
+    var customDestination: Optional<File> = Optional.empty()
 
     open var projectID: String? = null
     open var versionID: String? = null

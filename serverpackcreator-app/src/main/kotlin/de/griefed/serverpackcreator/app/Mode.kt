@@ -59,6 +59,15 @@ enum class Mode(private val argument: String) {
     CONFIG("-config"),
 
     /**
+     * **Priority 3.1**
+     *
+     *
+     * Generate the server pack from the config specified in [CONFIG] in a specific location.
+     * This argument requires [CONFIG] being present, too.
+     */
+    DESTINATION("--destination"),
+
+    /**
      * **Priority 4**
      *
      *

@@ -169,7 +169,10 @@ class ServerPackCreator(private val args: Array<String>) {
                 migrationManager.migrate()
                 apiWrapper.stageTwo()
                 apiWrapper.stageThree()
-                interactiveCommandLine.runHeadlessCommand.runHeadless(commandlineParser.serverPackConfig.get())
+                interactiveCommandLine.runHeadlessCommand.runHeadless(
+                    commandlineParser.serverPackConfig.get(),
+                    commandlineParser.serverPackDestination
+                )
             }
 
             Mode.CLI -> {
