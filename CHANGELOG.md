@@ -1,3 +1,10 @@
+## [7.0.0-alpha.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.11...7.0.0-alpha.1) (2024-09-21)
+
+
+### ✨ Milestone
+
+* **CLI rework:** Interactive command-based CLI along with some improvements and additions. ([4bd5dce](https://git.griefed.de/Griefed/ServerPackCreator/commit/4bd5dce2971b1f56f2fcb3e6b99d7405a830948a))
+
 ## [6.3.11](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.10...6.3.11) (2024-09-20)
 
 
