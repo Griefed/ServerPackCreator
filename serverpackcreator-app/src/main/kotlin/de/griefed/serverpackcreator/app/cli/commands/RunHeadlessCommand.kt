@@ -2,14 +2,17 @@ package de.griefed.serverpackcreator.app.cli.commands
 
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.config.PackConfig
-import de.griefed.serverpackcreator.app.Mode
+import de.griefed.serverpackcreator.api.utilities.common.SystemUtilities
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.xml.sax.SAXException
 import picocli.CommandLine
 import picocli.shell.jline3.PicocliCommands.ClearScreen
+import java.io.File
 import java.io.IOException
+import java.util.*
 import javax.xml.parsers.ParserConfigurationException
 
+@Suppress("DuplicatedCode")
 @CommandLine.Command(
     name = "run",
     description = [
@@ -25,28 +28,40 @@ class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) 
         runHeadless()
     }
 
-    /**
-     * Run ServerPackCreator in [Mode.CLI]. Requires a `serverpackcreator.conf`-file to be present.
-     *
-     * @throws IOException                  When the [de.griefed.serverpackcreator.api.versionmeta.VersionMeta] had to be instantiated, but
-     * an error occurred during the parsing of a manifest.
-     * @throws ParserConfigurationException When the [de.griefed.serverpackcreator.api.versionmeta.VersionMeta] had to be instantiated, but
-     * an error occurred during the parsing of a manifest.
-     * @throws SAXException                 When the [de.griefed.serverpackcreator.api.versionmeta.VersionMeta] had to be instantiated, but
-     * an error occurred during the parsing of a manifest.
-     * @author Griefed
-     */
+    @CommandLine.Command(
+        mixinStandardHelpOptions = true, subcommands = [CommandLine.HelpCommand::class],
+        description = [
+            "Run a config check and server pack generation using a specified server pack config.",
+            "You will be asked to enter the path to the desired config after starting this command."
+        ]
+    )
+    fun withSpecificConfig() {
+        val config = requestConfigFile()
+        runHeadless(config)
+    }
+
+    private fun requestConfigFile(): File {
+        val scanner = Scanner(System.`in`)
+        println("Enter the full path to the new ServerPackCreator home-directory.")
+
+        var path: String
+        do {
+            print("Path: ")
+            path = scanner.nextLine()
+            if (!File(path).isFile) {
+                println("File '$path' does not exist.")
+            }
+        } while (!File(path).isFile)
+        return File(path)
+    }
+
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
-    private fun runHeadless() {
-        if (!apiWrapper.apiProperties.defaultConfig.exists()) {
-            log.warn("No serverpackcreator.conf found...")
-            log.info("If you want to run ServerPackCreator in CLI-mode, a serverpackcreator.conf is required.")
-            log.info(
-                "Either copy an existing config, or run ServerPackCreator with the '-cgen'-argument to generate one via commandline."
-            )
+    fun runHeadless(config: File = apiWrapper.apiProperties.defaultConfig) {
+        if (!config.isFile) {
+            log.warn("${config.absolutePath} not found...")
         } else {
             val packConfig = PackConfig()
-            val check = apiWrapper.configurationHandler.checkConfiguration(apiWrapper.apiProperties.defaultConfig,packConfig)
+            val check = apiWrapper.configurationHandler.checkConfiguration(config, packConfig)
             if (!check.allChecksPassed) {
                 println("Encountered the following errors/problems with the config:")
                 for (error in check.encounteredErrors) {

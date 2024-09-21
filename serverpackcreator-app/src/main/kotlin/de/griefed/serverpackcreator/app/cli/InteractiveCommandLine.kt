@@ -44,7 +44,6 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
     val homeDirCommand = HomeDirCommand()
     val languageCommand = LanguageCommand(apiWrapper)
     val runHeadlessCommand = RunHeadlessCommand(apiWrapper)
-    val runHeadlessCustomConfigCommand = RunHeadlessCustomConfigCommand(apiWrapper)
     val setupCommand = SetupCommand(apiWrapper)
     val updateCommand = UpdateCommand(updateChecker)
 
@@ -63,7 +62,6 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
             HomeDirCommand::class,
             LanguageCommand::class,
             RunHeadlessCommand::class,
-            RunHeadlessCustomConfigCommand::class,
             SetupCommand::class,
             UpdateCommand::class,
             ClearScreen::class,

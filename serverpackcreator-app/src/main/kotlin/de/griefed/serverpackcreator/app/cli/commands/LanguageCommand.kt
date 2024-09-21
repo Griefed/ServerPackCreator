@@ -30,8 +30,16 @@ class LanguageCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) : C
 
     private fun chooseAndSwitchLanguage() {
         val scanner = Scanner(System.`in`)
-        println("Choose one of the available languages above:")
-        print("Language: ")
+        println("Choose one of the available languages above.")
+
+        var userLocale: String
+        do {
+            print("Language: ")
+            userLocale = scanner.next()
+            if (!Translations.locales.map { entry -> entry.language }.contains(userLocale)) {
+                println("Unsupported locale $userLocale.")
+            }
+        } while (!Translations.locales.map { entry -> entry.language }.contains(userLocale))
         val lang = scanner.nextLine()
         apiWrapper.apiProperties.changeLocale(Locale(lang))
     }

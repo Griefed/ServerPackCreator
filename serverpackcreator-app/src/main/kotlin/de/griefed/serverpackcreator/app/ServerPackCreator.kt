@@ -128,16 +128,16 @@ class ServerPackCreator(private val args: Array<String>) {
 
     fun run(mode: Mode = Mode.GUI) {
         log.info("Running with args: ${args.joinToString(" ")}")
-        log.info("Running in mode: $mode")
+        log.info("Running in mode:   $mode")
         log.info("App information:")
-        log.info("App Folder:      ${appInfo.jarFolder}")
-        log.info("Appy File:        ${appInfo.jarFile}")
-        log.info("App Path:        ${appInfo.jarPath}")
-        log.info("App Name:        ${appInfo.jarFileName}")
-        log.info("Java version:    ${apiWrapper.apiProperties.getJavaVersion()}")
-        log.info("OS architecture: ${apiWrapper.apiProperties.getOSArch()}")
-        log.info("OS name:         ${apiWrapper.apiProperties.getOSName()}")
-        log.info("OS version:      ${apiWrapper.apiProperties.getOSVersion()}")
+        log.info("App Folder:        ${appInfo.jarFolder}")
+        log.info("Appy File:         ${appInfo.jarFile}")
+        log.info("App Path:          ${appInfo.jarPath}")
+        log.info("App Name:          ${appInfo.jarFileName}")
+        log.info("Java version:      ${apiWrapper.apiProperties.getJavaVersion()}")
+        log.info("OS architecture:   ${apiWrapper.apiProperties.getOSArch()}")
+        log.info("OS name:           ${apiWrapper.apiProperties.getOSName()}")
+        log.info("OS version:        ${apiWrapper.apiProperties.getOSVersion()}")
 
         when (mode) {
             Mode.HELP -> {
@@ -199,100 +199,6 @@ class ServerPackCreator(private val args: Array<String>) {
 
             Mode.EXIT -> log.debug("Exiting...")
             else -> log.debug("Exiting...")
-        }
-    }
-
-    /**
-     * Print the text-menu so the user may decide what they would like to do next.
-     *
-     * @author Griefed
-     */
-    private fun printMenu() {
-        println()
-        println("What would you like to do next?")
-        println("(1) : Print help")
-        println("(2) : Check for updates")
-        println("(3) : Change locale")
-        println("(4) : Generate a new configuration")
-        println("(5) : Run ServerPackCreator in CLI-mode")
-        println("(6) : Run ServerPackCreator as a webservice")
-        println("(7) : Run ServerPackCreator with a GUI")
-        println("(0) : Exit")
-        println("-------------------------------------------")
-        print("Enter the number of your selection: ")
-    }
-
-    /**
-     * Offer the user to continue using ServerPackCreator when running in [Mode.HELP], [Mode.UPDATE] or [Mode.CGEN].
-     *
-     * @throws IOException                  When the [de.griefed.serverpackcreator.api.versionmeta.VersionMeta] had to
-     * be instantiated, but an error occurred during the parsing of a manifest.
-     * @throws ParserConfigurationException When the [de.griefed.serverpackcreator.api.versionmeta.VersionMeta] had to
-     * be instantiated, but an error occurred during the parsing of a manifest.
-     * @throws SAXException                 When the [de.griefed.serverpackcreator.api.versionmeta.VersionMeta] had to
-     * be instantiated, but an error occurred during the parsing of a manifest.
-     * @author Griefed
-     */
-    @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
-    private fun continuedRunOptions() {
-        printMenu()
-        val scanner = Scanner(System.`in`)
-        var selection: Int
-        do {
-            try {
-                selection = scanner.nextInt()
-                if (selection == 7 && GraphicsEnvironment.isHeadless()) {
-                    println("You environment does not support a GUI.")
-                    selection = 100
-                }
-                when (selection) {
-                    1 -> {
-                        interactiveCommandLine.helpCommand.run()
-                        printMenu()
-                        selection = 100
-                    }
-
-                    2 -> {
-                        interactiveCommandLine.updateCommand.run()
-                        printMenu()
-                        selection = 100
-                    }
-
-                    3 -> {
-                        interactiveCommandLine.languageCommand.run()
-                        printMenu()
-                        selection = 100
-                    }
-
-                    4 -> {
-                        interactiveCommandLine.configGenCommand.run()
-                        printMenu()
-                        selection = 100
-                    }
-
-                    else -> if (selection > 7) {
-                        println("Not a valid number. Please pick a number from 0 to 7.")
-                        printMenu()
-                    }
-                }
-            } catch (ex: InputMismatchException) {
-                println("Not a valid number. Please pick a number from 0 to 7.")
-                selection = 100
-            } catch (ex: ParserConfigurationException) {
-                println("Not a valid number. Please pick a number from 0 to 7.")
-                selection = 100
-            } catch (ex: SAXException) {
-                println("Not a valid number. Please pick a number from 0 to 7.")
-                selection = 100
-            }
-        } while (selection > 7)
-        scanner.close()
-        when (selection) {
-            5 -> run(Mode.CLI)
-            6 -> run(Mode.WEB)
-            7 -> run(Mode.GUI)
-            0 -> println("Exiting...")
-            else -> println("Exiting...")
         }
     }
 
@@ -415,41 +321,5 @@ class ServerPackCreator(private val args: Array<String>) {
             }
             log.debug("File-watcher started...")
         }
-    }
-
-    /**
-     * Allow the user to change the locale used in localization.
-     *
-     * @author Griefed
-     */
-    private fun changeLocale() {
-        println("What locale would you like to use?")
-        println("(Locale format is en_gb, de_de, uk_ua etc.)")
-        println("Note: Changing the locale only affects the GUI. CLI always uses en_US.")
-        val scanner = Scanner(System.`in`)
-        val regex = "^[a-zA-Z]+_[a-zA-Z]+$".toRegex()
-        var userLocale: String
-
-        // For a list of locales, see https://stackoverflow.com/a/3191729/12537638 or
-        // https://stackoverflow.com/a/28357857/12537638
-        do {
-            userLocale = scanner.next()
-            if (!userLocale.matches(regex)) {
-                println(
-                    "Incorrect format. ServerPackCreator currently only supports locales in the format of en_us (Language, Country)."
-                )
-            } else {
-                try {
-                    apiWrapper.apiProperties.i18n4kConfig.locale = Locale(userLocale)
-                } catch (e: RuntimeException) {
-                    println(
-                        "Incorrect format. ServerPackCreator currently only supports locales in the format of en_GB (Language, Country)."
-                    )
-                    userLocale = "en_GB"
-                }
-            }
-        } while (!userLocale.matches(regex))
-        scanner.close()
-        println("Using language: ${Translations.localeName}")
     }
 }

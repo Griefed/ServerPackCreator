@@ -7,6 +7,7 @@ import java.io.File
 import java.util.*
 import java.util.prefs.Preferences
 
+@Suppress("DuplicatedCode")
 @CommandLine.Command(
     name = "homeDir",
     description = [
