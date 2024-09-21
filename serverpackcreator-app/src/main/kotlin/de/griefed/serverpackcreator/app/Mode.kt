@@ -54,6 +54,23 @@ enum class Mode(private val argument: String) {
      * **Priority 3**
      *
      *
+     * Run ServerPackCreator from the commandline and generate a server pack from a specific server pack config.
+     */
+    CONFIG("-config"),
+
+    /**
+     * **Priority 3.1**
+     *
+     *
+     * Generate the server pack from the config specified in [CONFIG] in a specific location.
+     * This argument requires [CONFIG] being present, too.
+     */
+    DESTINATION("--destination"),
+
+    /**
+     * **Priority 4**
+     *
+     *
      * Run ServerPackCreator in commandline-mode. If no graphical environment is supported, this is
      * the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra
      * arguments at all.
@@ -61,7 +78,7 @@ enum class Mode(private val argument: String) {
     CLI("-cli"),
 
     /**
-     * **Priority 4**
+     * **Priority 5**
      *
      *
      * Run ServerPackCreator as a webservice.
@@ -69,7 +86,7 @@ enum class Mode(private val argument: String) {
     WEB("-web"),
 
     /**
-     * **Priority 5**
+     * **Priority 6**
      *
      *
      * Run ServerPackCreator with our GUI. If a graphical environment is supported, this is the
@@ -79,7 +96,7 @@ enum class Mode(private val argument: String) {
     GUI("-gui"),
 
     /**
-     * **Priority 6**
+     * **Priority 7**
      *
      *
      * Set up and prepare the environment for subsequent runs of ServerPackCreator. This will
@@ -102,7 +119,7 @@ enum class Mode(private val argument: String) {
     HOME("--home"),
 
     /**
-     * **Priority 7**
+     * **Priority 8**
      *
      *
      * Exit ServerPackCreator.
