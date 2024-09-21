@@ -61,7 +61,7 @@ class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) 
                 "The path to the config file.",
                 "Windows Users: You can use / instead of \\ in your paths, too."
             ],
-            usageHelp = true, required = false
+            required = false
         ) configFile: String?,
         @CommandLine.Option(
             names = ["-d", "--destination"],
@@ -70,7 +70,7 @@ class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) 
                 "All folders, including parent folders, will be created in the process.",
                 "Windows Users: You can use / instead of \\ in your paths, too."
             ],
-            usageHelp = true, required = false
+            required = false
         ) destination: File?
     ) {
         val config = if (configFile == null) {

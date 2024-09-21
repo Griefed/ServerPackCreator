@@ -401,7 +401,7 @@ class ServerPackHandler(
         * The difference to the previous call is that these scripts respect the SPC_JAVA_SPC
         * placeholder setting, if the user has set one
         */
-        createServerRunFiles(packConfig.scriptSettings, serverPack.absolutePath, false)
+        createServerRunFiles(packConfig.scriptSettings, serverPack.absolutePath, true)
 
         // Inform user about location of newly generated server pack.
         log.info("Server pack available at: ${serverPack.absolutePath}")
