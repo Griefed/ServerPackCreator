@@ -1054,20 +1054,8 @@ class ConfigEditor(
             if (modpack.isDirectory) {
                 try {
                     val updateMessage = StringBuilder()
-                    val packConfig = PackConfig()
-                    apiWrapper.configurationHandler.checkManifests(modpack.absolutePath, packConfig)
-                    val inclusions = getInclusions()
-                    val files = modpack.listFiles()
-                    if (files != null && files.isNotEmpty()) {
-                        for (file in files) {
-                            if (apiWrapper.apiProperties.directoriesToInclude.contains(file.name) &&
-                                !inclusions.any { inclusion -> inclusion.source == file.name }
-                            ) {
-                                inclusions.add(InclusionSpecification(file.name))
-                            }
-                        }
-                    }
-                    inclusions.removeIf { !File(modpack,it.source).exists() && !File(it.source).exists() }
+                    val packConfig = apiWrapper.configurationHandler.generateConfigFromModpack(modpack)
+
                     if (packConfig.minecraftVersion.isNotBlank()) {
                         setMinecraftVersion(packConfig.minecraftVersion)
                         updateMessage.append(Translations.createserverpack_gui_modpack_scan_minecraft(packConfig.minecraftVersion))
@@ -1088,12 +1076,12 @@ class ConfigEditor(
                         updateMessage.append(Translations.createserverpack_gui_modpack_scan_icon(packConfig.serverIconPath))
                             .append("\n")
                     }
-                    if (inclusions.isNotEmpty()) {
-                        setInclusions(ArrayList(inclusions))
+                    if (packConfig.inclusions.isNotEmpty()) {
+                        setInclusions(ArrayList(packConfig.inclusions))
                         delay(100)
                         updateMessage.append(
                             Translations.createserverpack_gui_modpack_scan_directories(
-                                inclusions.joinToString(", ") { inclusion -> inclusion.source }
+                                packConfig.inclusions.joinToString(", ") { inclusion -> inclusion.source }
                             )
                         ).append("\n")
                     }

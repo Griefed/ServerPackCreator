@@ -61,5 +61,8 @@ class LanguageCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) : C
         } while (!Translations.locales.map { entry -> entry.language }.contains(userLocale))
         val lang = scanner.nextLine()
         apiWrapper.apiProperties.changeLocale(Locale(lang))
+        try {
+            scanner.close()
+        } catch (_: Exception) {}
     }
 }

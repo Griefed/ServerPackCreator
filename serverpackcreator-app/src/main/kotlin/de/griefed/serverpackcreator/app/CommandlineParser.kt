@@ -55,7 +55,7 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
     }
     var serverPackConfig : Optional<File> = Optional.empty()
     var serverPackDestination : Optional<File> = Optional.empty()
-
+    var modpackDirectory: Optional<File> = Optional.empty()
     var homeDir: Optional<File> = Optional.empty()
 
     init {
@@ -111,6 +111,12 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             * Check whether the user wants to generate a new serverpackcreator.conf from the commandline.
             */
             if (argsList.any { entry -> entry.contains(Mode.CGEN.argument()) }) {
+                val modpackPos = argsList.indexOf(Mode.CGEN.argument()) + 1
+                val modpackArg = argsList[modpackPos]
+                val modpackDir = File(modpackArg)
+                if (argsList.size > 1 && modpackDir.isDirectory) {
+                    modpackDirectory = Optional.of(modpackDir)
+                }
                 mode = Mode.CGEN
                 return@run
             }
@@ -134,6 +140,28 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
                 }
 
                 mode = Mode.CONFIG
+                return@run
+            }
+
+            /*
+            * Check whether the user wants to generate a specific server pack config from the commandline.
+            */
+            if (argsList.any { entry -> entry.contains(Mode.FEELINGLUCKY.argument()) }) {
+                val modpackPos = argsList.indexOf(Mode.FEELINGLUCKY.argument()) + 1
+                val modpackArg = argsList[modpackPos]
+                val modpackDir = File(modpackArg)
+                if (argsList.size > 1 && modpackDir.isDirectory) {
+                    modpackDirectory = Optional.of(modpackDir)
+                }
+
+                if (argsList.any { entry -> entry.contains(Mode.DESTINATION.argument()) }) {
+                    val destPos = argsList.indexOf(Mode.DESTINATION.argument()) + 1
+                    val destArg = argsList[destPos]
+                    val destFile = File(destArg)
+                    serverPackDestination = Optional.of(destFile)
+                }
+
+                mode = Mode.FEELINGLUCKY
                 return@run
             }
 

@@ -62,5 +62,8 @@ class HomeDirCommand : Command {
         )
 
         println("You MUST restart ServerPackCreator for this change to take full effect.")
+        try {
+            scanner.close()
+        } catch (_: Exception) {}
     }
 }

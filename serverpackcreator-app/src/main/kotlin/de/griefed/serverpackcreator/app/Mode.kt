@@ -46,7 +46,7 @@ enum class Mode(private val argument: String) {
      * **Priority 2**
      *
      *
-     * Run ServerPackCreators configuration generation.
+     * Run the generation of a basic server pack config from a given modpack.
      */
     CGEN("-cgen"),
 
@@ -59,11 +59,11 @@ enum class Mode(private val argument: String) {
     CONFIG("-config"),
 
     /**
-     * **Priority 3.1**
+     * **Priority 3.1 / 9.1**
      *
      *
      * Generate the server pack from the config specified in [CONFIG] in a specific location.
-     * This argument requires [CONFIG] being present, too.
+     * This argument requires [CONFIG] or [FEELINGLUCKY] being present, too.
      */
     DESTINATION("--destination"),
 
@@ -125,6 +125,16 @@ enum class Mode(private val argument: String) {
      * Exit ServerPackCreator.
      */
     EXIT("exit"),
+
+    /**
+     * **Priority 9**
+     *
+     * Feeling lucky, Punk? This will generate a server pack config from a passed modpack-directory and generate a server
+     * pack in one go. No warranty. No guarantees.
+     *
+     * You may use [DESTINATION] to set the folder in which the server pack will be generated in.
+     */
+    FEELINGLUCKY("-feelinglucky"),
 
     /**
      * Used when the user wants to change the language of ServerPackCreator.

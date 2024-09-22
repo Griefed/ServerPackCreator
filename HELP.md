@@ -494,24 +494,27 @@ depending on how you plan on using it:
                  -lang uk_ua
                  -lang de_de
 
-          -cgen: Only available for the commandline interface. This will start the generation of
-                 a new configuration file. You will be asked to enter information about your modpack
-                 step-by-step. Each setting you enter will be checked for errors before it is saved.
-                 If everything you enter is valid and without errors, it will be written to a new
-                 serverpackcreator.conf and ServerPackCreator will immediately start a run with said
-                 configuration file, generating a server pack for you.
+          -cgen: Generates a basic server pack configuration from the specified modpack.
+                 Examples:
+                 -cgen "/path/to/modpack"
+                 -cgen "C:/users/<YOUR_USER>/CurseForge/instances/modpack"
 
         -update: Check whether a new version of ServerPackCreator is available for download.
                  If an update is available, the version and link to the release of said update are
                  written to the console so you can from work with it from there.
-                 Note: Automatic updates are currently not planned nor supported, and neither are
-                 downloads of any available updates to your system. You need to update manually.
+                 Note: When you installed ServerPackCreator using the official installers, this will try and attempt
+                 updating your current installation if an update is available.
 
            -cli: Run ServerPackCreator in an interactive commandline-mode.
 
         -config: Generate a server pack from a specific server pack configuration from the commandline.
+                 -config "/path/to/serverpack.conf"
+                 -config "C:/users/<YOUR_USER>/serverpack.conf"
   --destination: Only effective in combination with -config. Sets the destination in which the server pack
                  will be generated in.
+                 Examples:
+                 -config "/path/to/serverpack.conf" --destination "/path/to/desired/location"
+                 -config "C:/users/<YOUR_USER>/serverpack.conf" --destination "C:/users/<YOUR_USER>/serverpack"
 
            -web: Run ServerPackCreator as a webservice available at http://localhost:8080. The webservice
                  provides the same functionality as running ServerPackCreator in GUI mode (so no Commandline
@@ -1076,6 +1079,126 @@ Note: This path will not be present in the `variables.txt` in the ZIP-archive of
 3. Check the Advanced-section and notice the updated Java path:
 
 ![java-updated](img/Javas-Updated.png)
+
+## Fun Stuff 
+
+> This chapter contains some 'just for the heck of it'-things. Nothing in this chapter receives support and is merely
+> intended to spark ideas, play around, and explore possibilites.
+> 
+> Do not use the stuff in this chapter unless you know what you are doing.
+> 
+> If something in this chapter doesn't work, has unintended side effects, causes trouble on your end, do not contact me.
+> I can not and will not be held responsible for any damages caused by things in this chapter. The content of this chapter
+> is provided AS IS, with no warranty, or guarantee.
+>
+{style="warning"}
+
+### Self-extracting, self-contained script
+
+> The scripts were written using this guide: https://www.linuxjournal.com/node/1005818
+> 
+> For Linux/UNIX-systems only! Only tested in Ubuntu 22, in WSL.
+>
+{style="note"}
+
+> Scripts like the one this section produces make it harder for platforms like CurseForge or Modrinth to scan for
+> and detect malware. It is a security risk worth considering.
+>
+{style="warning"}
+
+It's possible to store the contents of your server pack in side a bash script which upon execution, will extract itself,
+and therefor the contents of the server pack, to a sub-directory in your users home-directory and then immediately
+start the server.
+
+So instead of shipping/sending a ZIP-file to CurseForge, Modrinth, your friends, you can send them a script and tell them
+to simply run it.
+
+#### build-script
+
+```bash
+#!/bin/bash
+cd $1
+tar cf ../$1.tar ./*
+cd ..
+
+if [ -e "$1.tar" ]; then
+    gzip $1.tar
+
+    if [ -e "$1.tar.gz" ]; then
+        cat decompress $1.tar.gz > $1.bsx
+    else
+        echo "$1.tar.gz does not exist"
+        exit 1
+    fi
+else
+    echo "$1.tar does not exist"
+    exit 1
+fi
+
+echo "$1.bsx created"
+exit 0
+```
+
+#### decompress-script
+
+```bash
+#!/bin/bash
+echo ""
+echo "Self Extracting Installer"
+echo ""
+
+export TMPDIR=`mktemp -d /tmp/selfextract.XXXXXX`
+script=$(basename "$0")
+me=${HOME}/mc-servers/$(echo $script | sed 's/.bsx//g')
+mkdir -p $me
+
+ARCHIVE=`awk '/^__ARCHIVE_BELOW__/ {print NR + 1; exit 0; }' $0`
+
+tail -n+$ARCHIVE $0 | tar xzv -C $TMPDIR
+
+echo "Copying server pack to $me"
+
+cp -r $TMPDIR/* $me
+rm -rf $TMPDIR
+
+cd $me
+./start.sh
+
+exit 0
+
+__ARCHIVE_BELOW__
+```
+
+#### How To
+
+Create both the `build` and the `decompress` scripts inside the `server-packs` directory of ServerPackCreator.
+
+Run the build-script with the server pack you want to create a self-extracting script of like so: `./build <ServerPackFolder>`,
+where `<ServerPackFolder>` is to be replaced with the name of the server pack folder, for example `All_the_Mods_9_-_ATM9`, so the call
+becomes `./build All_the_Mods_9_-_ATM9`.
+
+Depending on the size of your server pack, this may take a while.
+
+When the script finishes you should see `All_the_Mods_9_-_ATM9.bsx created` in your console and a file called `All_the_Mods_9_-_ATM9.bsx`
+in your server-packs folder. The script file should be roughly the same size as the folder of your server pack.
+
+Copy the script to some other directory and run it: `./All_the_Mods_9_-_ATM9.bsx`
+
+It will extract the contents to `/tmp/selfextract.XXXXXX` first, then create a new folder inside your users home-directory
+and copy the files there, so you then have `/home/<YOUR_USER>/mc-servers/All_the_Mods_9_-_ATM9`.
+
+When all files have been copied, the extract-script switches to the aforementioned directory and runs the `start.sh`-script,
+immediately starting the server.
+
+Done!
+
+Nice, quick and easy server pack provision.
+
+> Step 1. Create script
+> Step 2. Copy script
+> Step 3. Run script
+> Step 4. ???
+> Step 5. Server
 
 ##
 

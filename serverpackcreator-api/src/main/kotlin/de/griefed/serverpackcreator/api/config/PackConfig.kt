@@ -34,8 +34,6 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.nio.charset.StandardCharsets
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 private const val modpackComment =
     "\n Path to your modpack. Can be either relative or absolute." +
@@ -137,22 +135,6 @@ private const val scriptsKey = "scripts"
 private const val javaKey = "SPC_JAVA_SPC"
 
 private const val configVersionKey = "configVersion"
-
-private const val spcVersionKey = "SPC_SERVERPACKCREATOR_VERSION_SPC"
-
-private const val spcMinecraftVersionKey = "SPC_MINECRAFT_VERSION_SPC"
-
-private const val spcModloaderKey = "SPC_MODLOADER_SPC"
-
-private const val spcModloaderVersionKey = "SPC_MODLOADER_VERSION_SPC"
-
-private const val spcJavaArgsKey = "SPC_JAVA_ARGS_SPC"
-
-private const val spcFabricInstallerVersionKey = "SPC_FABRIC_INSTALLER_VERSION_SPC"
-
-private const val spcQuiltInstallerVersionKey = "SPC_QUILT_INSTALLER_VERSION_SPC"
-
-private const val spcLegacyFabricInstallerVersionKey = "SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC"
 
 private const val spcWaitForUserInputKey = "SPC_WAIT_FOR_USER_INPUT_SPC"
 
