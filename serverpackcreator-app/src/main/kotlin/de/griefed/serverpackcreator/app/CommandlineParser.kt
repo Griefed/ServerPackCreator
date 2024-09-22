@@ -55,7 +55,7 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
     }
     var serverPackConfig : Optional<File> = Optional.empty()
     var serverPackDestination : Optional<File> = Optional.empty()
-
+    var modpackDirectory: Optional<File> = Optional.empty()
     var homeDir: Optional<File> = Optional.empty()
 
     init {
@@ -111,6 +111,12 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             * Check whether the user wants to generate a new serverpackcreator.conf from the commandline.
             */
             if (argsList.any { entry -> entry.contains(Mode.CGEN.argument()) }) {
+                val modpackPos = argsList.indexOf(Mode.CGEN.argument()) + 1
+                val modpackArg = argsList[modpackPos]
+                val modpackDir = File(modpackArg)
+                if (argsList.size > 1 && modpackDir.isDirectory) {
+                    modpackDirectory = Optional.of(modpackDir)
+                }
                 mode = Mode.CGEN
                 return@run
             }

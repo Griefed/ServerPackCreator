@@ -46,7 +46,7 @@ enum class Mode(private val argument: String) {
      * **Priority 2**
      *
      *
-     * Run ServerPackCreators configuration generation.
+     * Run the generation of a basic server pack config from a given modpack.
      */
     CGEN("-cgen"),
 

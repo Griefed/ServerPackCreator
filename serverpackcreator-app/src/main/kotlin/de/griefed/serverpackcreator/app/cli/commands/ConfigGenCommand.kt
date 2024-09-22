@@ -20,65 +20,58 @@
 package de.griefed.serverpackcreator.app.cli.commands
 
 import de.griefed.serverpackcreator.api.ApiWrapper
-import de.griefed.serverpackcreator.api.utilities.common.JarUtilities
-import de.griefed.serverpackcreator.app.Mode
-import de.griefed.serverpackcreator.app.cli.ConfigurationEditor
-import org.xml.sax.SAXException
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import picocli.CommandLine
 import picocli.shell.jline3.PicocliCommands.ClearScreen
-import java.io.IOException
-import javax.xml.parsers.ParserConfigurationException
+import java.io.File
+import java.util.*
 
 @CommandLine.Command(
     name = "cgen", mixinStandardHelpOptions = true,
-    description = ["Interactively generate a new server pack configuration."],
+    description = [
+        "Generate a basic server pack config from a modpack-directory.",
+        "If you wish to change the config afterwards, open it in your favourite text-editor and change it to your liking."
+                  ],
     subcommands = [ClearScreen::class, CommandLine.HelpCommand::class]
 )
 class ConfigGenCommand(
-    private val apiWrapper: ApiWrapper = ApiWrapper.api(),
-    private val configurationEditor: ConfigurationEditor = ConfigurationEditor(
-        apiWrapper.configurationHandler,
-        apiWrapper.apiProperties,
-        apiWrapper.versionMeta)
+    private val apiWrapper: ApiWrapper = ApiWrapper.api()
 ) : Command {
 
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
+
     override fun run() {
-        createDefaultConfig()
-        runConfigurationEditor()
+        val modpackDirectory = requestModpackDir()
+        generateConfFromModpack(Optional.of(modpackDirectory))
     }
 
-    /**
-     * Run in [Mode.CGEN] and allow the user to load, edit and create a
-     * `serverpackcreator.conf`-file using the CLI.
-     *
-     * @throws IOException                  When the [de.griefed.serverpackcreator.api.versionmeta.VersionMeta] had to be instantiated, but
-     * an error occurred during the parsing of a manifest.
-     * @throws ParserConfigurationException When the [de.griefed.serverpackcreator.api.versionmeta.VersionMeta] had to be instantiated, but
-     * an error occurred during the parsing of a manifest.
-     * @throws SAXException                 When the [de.griefed.serverpackcreator.api.versionmeta.VersionMeta] had to be instantiated, but
-     * an error occurred during the parsing of a manifest.
-     * @author Griefed
-     */
-    @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
-    private fun runConfigurationEditor() {
-        configurationEditor.continuedRunOptions()
+    private fun requestModpackDir(): File {
+        val scanner = Scanner(System.`in`)
+        println("Enter the full path to the modpack-directory.")
+
+        var path: String
+        do {
+            print("Path: ")
+            path = scanner.nextLine()
+            if (!File(path).isDirectory) {
+                println("File '$path' does not exist.")
+            }
+        } while (!File(path).isDirectory)
+        try {
+            scanner.close()
+        } catch (_: Exception) {}
+        return File(path)
     }
 
-    /**
-     * Check whether a `serverpackcreator.conf`-file exists. If it doesn't exist, and we are not
-     * running in [Mode.CLI] or [Mode.CGEN], create an unconfigured default one which can
-     * then be loaded into the GUI.
-     *
-     * @return `true` if a `serverpackcreator.conf`-file was created.
-     * @author Griefed
-     */
-    private fun createDefaultConfig() {
-        if (!apiWrapper.apiProperties.defaultConfig.exists()) {
-            JarUtilities.copyFileFromJar(
-                "de/griefed/resources/${apiWrapper.apiProperties.defaultConfig.name}",
-                apiWrapper.apiProperties.defaultConfig, this.javaClass
-            )
+    fun generateConfFromModpack(modpackDirectory: Optional<File>) {
+        if (modpackDirectory.isPresent && modpackDirectory.get().isDirectory) {
+            val packConfig = apiWrapper.configurationHandler.generateConfigFromModpack(modpackDirectory.get())
+            val configFile = File(apiWrapper.apiProperties.configsDirectory, packConfig.name ?: modpackDirectory.get().name)
+            packConfig.save(configFile, apiWrapper.apiProperties)
+            apiWrapper.configurationHandler.printConfigurationModel(packConfig)
+            log.info("Config for ${modpackDirectory.get().absolutePath} available at ${configFile.absolutePath}")
+        } else {
+            log.error("Modpack-directory doesn't exist. Config not generated.")
         }
     }
-
 }

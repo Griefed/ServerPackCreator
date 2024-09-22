@@ -47,19 +47,8 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
 
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
-    @get:Synchronized
-    val configurationEditor: ConfigurationEditor by lazy {
-        ConfigurationEditor(
-            apiWrapper.configurationHandler,
-            apiWrapper.apiProperties,
-            apiWrapper.versionMeta
-        )
-    }
-
-    val configGenCommand = ConfigGenCommand(apiWrapper, configurationEditor)
+    val configGenCommand = ConfigGenCommand(apiWrapper)
     val helpCommand = HelpCommand()
-    val homeDirCommand = HomeDirCommand()
-    val languageCommand = LanguageCommand(apiWrapper)
     val runHeadlessCommand = RunHeadlessCommand(apiWrapper)
     val setupCommand = SetupCommand(apiWrapper)
     val updateCommand = UpdateCommand(updateChecker)
@@ -67,7 +56,7 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
 
     @CommandLine.Command(
         name = "",
-        description = ["Interactive shell with completion and autosuggestions."],
+        description = ["Interactive commandline with completion and autosuggestions."],
         subcommands = [
             ConfigGenCommand::class,
             HelpCommand::class,

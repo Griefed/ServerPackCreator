@@ -107,6 +107,9 @@ class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) 
                 println("File '$path' does not exist.")
             }
         } while (!File(path).isFile)
+        try {
+            scanner.close()
+        } catch (_: Exception) {}
         return File(path)
     }
 

@@ -15,24 +15,27 @@ How to use ServerPackCreator:
                  -lang uk_ua
                  -lang de_de
 
-          -cgen: Only available for the commandline interface. This will start the generation of
-                 a new configuration file. You will be asked to enter information about your modpack
-                 step-by-step. Each setting you enter will be checked for errors before it is saved.
-                 If everything you enter is valid and without errors, it will be written to a new
-                 serverpackcreator.conf and ServerPackCreator will immediately start a run with said
-                 configuration file, generating a server pack for you.
+          -cgen: Generates a basic server pack configuration from the specified modpack.
+                 Examples:
+                 -cgen "/path/to/modpack"
+                 -cgen "C:/users/<YOUR_USER>/CurseForge/instances/modpack"
 
         -update: Check whether a new version of ServerPackCreator is available for download.
                  If an update is available, the version and link to the release of said update are
                  written to the console so you can from work with it from there.
-                 Note: Automatic updates are currently not planned nor supported, and neither are
-                 downloads of any available updates to your system. You need to update manually.
+                 Note: When you installed ServerPackCreator using the official installers, this will try and attempt
+                 updating your current installation if an update is available.
 
            -cli: Run ServerPackCreator in an interactive commandline-mode.
 
         -config: Generate a server pack from a specific server pack configuration from the commandline.
+                 -config "/path/to/serverpack.conf"
+                 -config "C:/users/<YOUR_USER>/serverpack.conf"
   --destination: Only effective in combination with -config. Sets the destination in which the server pack
                  will be generated in.
+                 Examples:
+                 -config "/path/to/serverpack.conf" --destination "/path/to/desired/location"
+                 -config "C:/users/<YOUR_USER>/serverpack.conf" --destination "C:/users/<YOUR_USER>/serverpack"
 
            -web: Run ServerPackCreator as a webservice available at http://localhost:8080. The webservice
                  provides the same functionality as running ServerPackCreator in GUI mode (so no Commandline

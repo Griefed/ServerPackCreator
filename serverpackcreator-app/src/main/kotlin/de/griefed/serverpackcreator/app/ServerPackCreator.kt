@@ -19,11 +19,9 @@
  */
 package de.griefed.serverpackcreator.app
 
-import Translations
 import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.fonts.jetbrains_mono.FlatJetBrainsMonoFont
 import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMaterialDarkerIJTheme
-import de.comahe.i18n4k.Locale
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.utilities.common.JarInformation
 import de.griefed.serverpackcreator.api.utilities.common.JarUtilities
@@ -37,16 +35,13 @@ import org.apache.commons.io.monitor.FileAlterationListener
 import org.apache.commons.io.monitor.FileAlterationMonitor
 import org.apache.commons.io.monitor.FileAlterationObserver
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import org.xml.sax.SAXException
 import java.awt.GraphicsEnvironment
 import java.io.File
-import java.io.IOException
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.prefs.Preferences
 import javax.swing.JFileChooser
 import javax.swing.JOptionPane
-import javax.xml.parsers.ParserConfigurationException
 
 /**
  * Entry point for the app. Creates a new instance of [ServerPackCreator] and executes [ServerPackCreator.run] with the
@@ -161,7 +156,7 @@ class ServerPackCreator(private val args: Array<String>) {
                 apiWrapper.stageOne()
                 migrationManager.migrate()
                 apiWrapper.stageTwo()
-                interactiveCommandLine.configGenCommand.run()
+                interactiveCommandLine.configGenCommand.generateConfFromModpack(commandlineParser.modpackDirectory)
             }
 
             Mode.CONFIG -> {
