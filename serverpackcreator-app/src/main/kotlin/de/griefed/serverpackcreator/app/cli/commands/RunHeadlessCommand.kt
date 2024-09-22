@@ -71,14 +71,14 @@ class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) 
                 "Windows Users: You can use / instead of \\ in your paths, too."
             ],
             required = false
-        ) destination: File?
+        ) destination: String?
     ) {
         val config = if (configFile == null) {
             requestConfigFile()
         } else {
             File(configFile)
         }
-        runHeadless(config, Optional.ofNullable(destination))
+        runHeadless(config, Optional.ofNullable(destination?.let { File(it) }))
     }
 
     @CommandLine.Command(

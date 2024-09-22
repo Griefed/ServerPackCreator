@@ -19,33 +19,23 @@
  */
 package de.griefed.serverpackcreator.app.cli.commands
 
-import de.griefed.serverpackcreator.api.ApiWrapper
-import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import picocli.CommandLine
-import picocli.shell.jline3.PicocliCommands.ClearScreen
 import java.io.File
 import java.util.*
 
 @CommandLine.Command(
-    name = "cgen", mixinStandardHelpOptions = true,
+    name = "feelinglucky",
     description = [
-        "Generate a basic server pack config from a modpack-directory.",
-        "If you wish to change the config afterwards, open it in your favourite text-editor and change it to your liking."
-                  ],
-    subcommands = [ClearScreen::class, CommandLine.HelpCommand::class]
+        "Feeling lucky, Punk? This will generate a server pack config from a passed modpack-directory and generate a server pack in one go. No warranty. No guarantees.",
+        ""
+    ]
 )
-class ConfigGenCommand(
-    private val apiWrapper: ApiWrapper = ApiWrapper.api()
-) : Command {
-
-    private val log by lazy { cachedLoggerOf(this.javaClass) }
-
+class FeelingLuckyCommand : Command {
     override fun run() {
         val modpackDirectory = requestModpackDir()
-        generateConfFromModpack(Optional.of(modpackDirectory))
     }
 
-    fun requestModpackDir(): File {
+    private fun requestModpackDir(): File {
         val scanner = Scanner(System.`in`)
         println("Enter the full path to the modpack-directory.")
 
@@ -61,17 +51,5 @@ class ConfigGenCommand(
             scanner.close()
         } catch (_: Exception) {}
         return File(path)
-    }
-
-    fun generateConfFromModpack(modpackDirectory: Optional<File>) {
-        if (modpackDirectory.isPresent && modpackDirectory.get().isDirectory) {
-            val packConfig = apiWrapper.configurationHandler.generateConfigFromModpack(modpackDirectory.get())
-            val configFile = File(apiWrapper.apiProperties.configsDirectory, packConfig.name ?: modpackDirectory.get().name)
-            packConfig.save(configFile, apiWrapper.apiProperties)
-            apiWrapper.configurationHandler.printConfigurationModel(packConfig)
-            log.info("Config for ${modpackDirectory.get().absolutePath} available at ${configFile.absolutePath}")
-        } else {
-            log.error("Modpack-directory doesn't exist. Config not generated.")
-        }
     }
 }

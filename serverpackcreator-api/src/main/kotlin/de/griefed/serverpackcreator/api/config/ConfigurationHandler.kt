@@ -1536,6 +1536,7 @@ class ConfigurationHandler(
     fun generateConfigFromModpack(modpackDirectory: File): PackConfig {
         val packConfig = PackConfig()
         if (modpackDirectory.isDirectory) {
+            packConfig.modpackDir = modpackDirectory.absolutePath
             try {
                 val inclusions = emptyList<InclusionSpecification>().toMutableList()
                 val files = modpackDirectory.listFiles()

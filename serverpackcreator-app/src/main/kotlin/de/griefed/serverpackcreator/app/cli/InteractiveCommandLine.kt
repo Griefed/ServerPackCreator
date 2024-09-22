@@ -39,8 +39,10 @@ import picocli.CommandLine
 import picocli.shell.jline3.PicocliCommands
 import picocli.shell.jline3.PicocliCommands.ClearScreen
 import picocli.shell.jline3.PicocliCommands.PicocliCommandsFactory
+import java.io.File
 import java.io.PrintWriter
 import java.nio.file.Path
+import java.util.*
 import java.util.function.Supplier
 
 class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: UpdateChecker) {
@@ -52,7 +54,6 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
     val runHeadlessCommand = RunHeadlessCommand(apiWrapper)
     val setupCommand = SetupCommand(apiWrapper)
     val updateCommand = UpdateCommand(updateChecker)
-
 
     @CommandLine.Command(
         name = "",
@@ -83,7 +84,59 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
         }
     }
 
-    fun run(args: Array<String> = arrayOf("")) {
+    @CommandLine.Command(
+        mixinStandardHelpOptions = true, subcommands = [CommandLine.HelpCommand::class],
+        description = [
+            "Feeling lucky, Punk? This will generate a server pack config from a passed modpack-directory and generate a server pack in one go. No warranty. No guarantees."
+        ]
+    )
+    fun feelingLucky(
+        @CommandLine.Option(
+            names = ["-m", "--modpackDir"],
+            description = [
+                "The path to the modpack-directory.",
+                "Windows Users: You can use / instead of \\ in your paths, too."
+            ],
+            required = true
+        ) modpackDir: String?,
+        @CommandLine.Option(
+            names = ["-d", "--destination"],
+            description = [
+                "A destination in which the server pack will be created in.",
+                "All folders, including parent folders, will be created in the process.",
+                "Windows Users: You can use / instead of \\ in your paths, too."
+            ],
+            required = false
+        ) destination: String?
+    ) {
+        if (modpackDir != null && File(modpackDir).isDirectory) {
+            val modpack = File(modpackDir)
+            val packConfig = apiWrapper.configurationHandler.generateConfigFromModpack(modpack)
+            packConfig.customDestination = Optional.ofNullable(destination?.let { File(it) })
+            val check = apiWrapper.configurationHandler.checkConfiguration(packConfig)
+            packConfig.save(File(apiWrapper.apiProperties.configsDirectory, packConfig.name ?: modpack.name))
+            if (!check.allChecksPassed) {
+                println("Encountered the following errors/problems with the config:")
+                for (error in check.encounteredErrors) {
+                    println(error)
+                }
+            } else {
+                val generation = apiWrapper.serverPackHandler.run(packConfig)
+                if (!generation.success) {
+                    println("Error generating Server Pack:")
+                    for (error in generation.errors) {
+                        println(error)
+                    }
+                } else {
+                    println("Successfully generated Server Pack: ${generation.serverPack.absolutePath}")
+                }
+            }
+        } else {
+            log.error("Modpack-directory doesn't exist.")
+        }
+    }
+
+    fun cli(args: Array<String> = arrayOf("")) {
         try {
             val workDir: Supplier<Path> = Supplier<Path> { apiWrapper.apiProperties.homeDirectory.absoluteFile.toPath() }
             val builtins = Builtins(workDir, ConfigurationPath(workDir.get(), workDir.get()), null)

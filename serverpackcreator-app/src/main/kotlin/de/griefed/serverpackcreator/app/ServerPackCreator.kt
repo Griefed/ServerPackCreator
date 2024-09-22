@@ -42,6 +42,7 @@ import java.util.concurrent.Executors
 import java.util.prefs.Preferences
 import javax.swing.JFileChooser
 import javax.swing.JOptionPane
+import kotlin.jvm.optionals.getOrNull
 
 /**
  * Entry point for the app. Creates a new instance of [ServerPackCreator] and executes [ServerPackCreator.run] with the
@@ -170,12 +171,23 @@ class ServerPackCreator(private val args: Array<String>) {
                 )
             }
 
+            Mode.FEELINGLUCKY -> {
+                apiWrapper.stageOne()
+                migrationManager.migrate()
+                apiWrapper.stageTwo()
+                apiWrapper.stageThree()
+                interactiveCommandLine.feelingLucky(
+                    commandlineParser.modpackDirectory.get().absolutePath,
+                    commandlineParser.serverPackDestination.getOrNull()?.absolutePath ?: null,
+                )
+            }
+
             Mode.CLI -> {
                 apiWrapper.stageOne()
                 migrationManager.migrate()
                 apiWrapper.stageTwo()
                 apiWrapper.stageThree()
-                interactiveCommandLine.run(args)
+                interactiveCommandLine.cli(args)
             }
 
             Mode.GUI -> {

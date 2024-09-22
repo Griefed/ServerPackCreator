@@ -144,6 +144,28 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             }
 
             /*
+            * Check whether the user wants to generate a specific server pack config from the commandline.
+            */
+            if (argsList.any { entry -> entry.contains(Mode.FEELINGLUCKY.argument()) }) {
+                val modpackPos = argsList.indexOf(Mode.FEELINGLUCKY.argument()) + 1
+                val modpackArg = argsList[modpackPos]
+                val modpackDir = File(modpackArg)
+                if (argsList.size > 1 && modpackDir.isDirectory) {
+                    modpackDirectory = Optional.of(modpackDir)
+                }
+
+                if (argsList.any { entry -> entry.contains(Mode.DESTINATION.argument()) }) {
+                    val destPos = argsList.indexOf(Mode.DESTINATION.argument()) + 1
+                    val destArg = argsList[destPos]
+                    val destFile = File(destArg)
+                    serverPackDestination = Optional.of(destFile)
+                }
+
+                mode = Mode.FEELINGLUCKY
+                return@run
+            }
+
+            /*
             * Check whether the user wants to run in commandline-mode or whether a GUI would not be supported.
             */
             if (argsList.any { entry -> entry.contains(Mode.CLI.argument()) }) {
