@@ -1077,6 +1077,126 @@ Note: This path will not be present in the `variables.txt` in the ZIP-archive of
 
 ![java-updated](img/Javas-Updated.png)
 
+## Fun Stuff 
+
+> This chapter contains some 'just for the heck of it'-things. Nothing in this chapter receives support and is merely
+> intended to spark ideas, play around, and explore possibilites.
+> 
+> Do not use the stuff in this chapter unless you know what you are doing.
+> 
+> If something in this chapter doesn't work, has unintended side effects, causes trouble on your end, do not contact me.
+> I can not and will not be held responsible for any damages caused by things in this chapter. The content of this chapter
+> is provided AS IS, with no warranty, or guarantee.
+>
+{style="warning"}
+
+### Self-extracting, self-contained script
+
+> The scripts were written using this guide: https://www.linuxjournal.com/node/1005818
+> 
+> For Linux/UNIX-systems only! Only tested in Ubuntu 22, in WSL.
+>
+{style="note"}
+
+> Scripts like the one this section produces make it harder for platforms like CurseForge or Modrinth to scan for
+> and detect malware. It is a security risk worth considering.
+>
+{style="warning"}
+
+It's possible to store the contents of your server pack in side a bash script which upon execution, will extract itself,
+and therefor the contents of the server pack, to a sub-directory in your users home-directory and then immediately
+start the server.
+
+So instead of shipping/sending a ZIP-file to CurseForge, Modrinth, your friends, you can send them a script and tell them
+to simply run it.
+
+#### build-script
+
+```bash
+#!/bin/bash
+cd $1
+tar cf ../$1.tar ./*
+cd ..
+
+if [ -e "$1.tar" ]; then
+    gzip $1.tar
+
+    if [ -e "$1.tar.gz" ]; then
+        cat decompress $1.tar.gz > $1.bsx
+    else
+        echo "$1.tar.gz does not exist"
+        exit 1
+    fi
+else
+    echo "$1.tar does not exist"
+    exit 1
+fi
+
+echo "$1.bsx created"
+exit 0
+```
+
+#### decompress-script
+
+```bash
+#!/bin/bash
+echo ""
+echo "Self Extracting Installer"
+echo ""
+
+export TMPDIR=`mktemp -d /tmp/selfextract.XXXXXX`
+script=$(basename "$0")
+me=${HOME}/mc-servers/$(echo $script | sed 's/.bsx//g')
+mkdir -p $me
+
+ARCHIVE=`awk '/^__ARCHIVE_BELOW__/ {print NR + 1; exit 0; }' $0`
+
+tail -n+$ARCHIVE $0 | tar xzv -C $TMPDIR
+
+echo "Copying server pack to $me"
+
+cp -r $TMPDIR/* $me
+rm -rf $TMPDIR
+
+cd $me
+./start.sh
+
+exit 0
+
+__ARCHIVE_BELOW__
+```
+
+#### How To
+
+Create both the `build` and the `decompress` scripts inside the `server-packs` directory of ServerPackCreator.
+
+Run the build-script with the server pack you want to create a self-extracting script of like so: `./build <ServerPackFolder>`,
+where `<ServerPackFolder>` is to be replaced with the name of the server pack folder, for example `All_the_Mods_9_-_ATM9`, so the call
+becomes `./build All_the_Mods_9_-_ATM9`.
+
+Depending on the size of your server pack, this may take a while.
+
+When the script finishes you should see `All_the_Mods_9_-_ATM9.bsx created` in your console and a file called `All_the_Mods_9_-_ATM9.bsx`
+in your server-packs folder. The script file should be roughly the same size as the folder of your server pack.
+
+Copy the script to some other directory and run it: `./All_the_Mods_9_-_ATM9.bsx`
+
+It will extract the contents to `/tmp/selfextract.XXXXXX` first, then create a new folder inside your users home-directory
+and copy the files there, so you then have `/home/<YOUR_USER>/mc-servers/All_the_Mods_9_-_ATM9`.
+
+When all files have been copied, the extract-script switches to the aforementioned directory and runs the `start.sh`-script,
+immediately starting the server.
+
+Done!
+
+Nice, quick and easy server pack provision.
+
+> Step 1. Create script
+> Step 2. Copy script
+> Step 3. Run script
+> Step 4. ???
+> Step 5. Server
+
 ##
 
 </topic>
