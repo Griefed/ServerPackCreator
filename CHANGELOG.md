@@ -1,3 +1,25 @@
+## [7.0.0-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.0.0-alpha.1...7.0.0-alpha.2) (2024-09-22)
+
+
+### 📔 Docs
+
+* Fun Stuff chapter. Added chapter for self-contained, self-extracting scripts as wrappers for server packs for EZ distribution ([11b9b47](https://git.griefed.de/Griefed/ServerPackCreator/commit/11b9b47055a7f93aed758e14463a422a356a8150))
+
+
+### 🦊 CI/CD
+
+* Switch dependabot branch to develop ([daf4768](https://git.griefed.de/Griefed/ServerPackCreator/commit/daf4768187212debf8c7298519e82cfacb39dc8e))
+
+
+### 🧨 Breaking changes!
+
+* Remove ConfigurationEditor in favor of basic config generation from modpack directory. You may edit the generated config in your favourite text-editor afterwards. ([4295be9](https://git.griefed.de/Griefed/ServerPackCreator/commit/4295be971fff3c3c0ea57953f7a42869d032323d))
+
+
+### 🚀 Features
+
+* `-feelinglucky` argument and command to generate a server pack from a modpack without needing a config first. Supports `--destination`, too. ([8a98957](https://git.griefed.de/Griefed/ServerPackCreator/commit/8a98957fc703ea22c8f48f9b65798f1665478c14))
+
 ## [7.0.0-alpha.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.11...7.0.0-alpha.1) (2024-09-21)
 
 
