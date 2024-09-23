@@ -71,7 +71,7 @@ class ConfigGenCommand(
             apiWrapper.configurationHandler.printConfigurationModel(packConfig)
             log.info("Config for ${modpackDirectory.get().absolutePath} available at ${configFile.absolutePath}")
         } else {
-            log.error("Modpack-directory doesn't exist. Config not generated.")
+            log.error("Modpack-directory $modpackDirectory doesn't exist. Config not generated.")
         }
     }
 }
