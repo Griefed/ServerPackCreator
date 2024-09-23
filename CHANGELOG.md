@@ -1,3 +1,16 @@
+## [7.0.0-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.0.0-alpha.2...7.0.0-alpha.3) (2024-09-23)
+
+
+### :scissors: Refactor
+
+* Improve modpack logging incase it wasn't found ([776b233](https://git.griefed.de/Griefed/ServerPackCreator/commit/776b2331196a8246ab49b7484f2f995f97fa2749))
+
+
+### 🛠 Fixes
+
+* Make feelingLucky command usable in interactive cli ([2a05f20](https://git.griefed.de/Griefed/ServerPackCreator/commit/2a05f2091a901b1f940d8b8e83d438cfbab29229))
+* Make scripts writable during creation to prevent incorrect content ([15e41ba](https://git.griefed.de/Griefed/ServerPackCreator/commit/15e41ba2dfd845d27989a15e8878997cbd81e98e))
+
 ## [7.0.0-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.0.0-alpha.1...7.0.0-alpha.2) (2024-09-22)
 
 
