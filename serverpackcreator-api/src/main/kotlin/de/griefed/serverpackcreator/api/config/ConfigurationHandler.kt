@@ -1521,4 +1521,45 @@ class ConfigurationHandler(
         }
         return files
     }
+
+    /**
+     * Generate a [PackConfig] from a modpack-directory, resulting in a basic server pack configuration with default
+     * values, for an easy-to-use starting point of a server pack config.
+     *
+     * @param modpackDirectory The directory which contains the modpack for which a server pack config should be generated.
+     * @return A [PackConfig] for the specified modpack. If no manifests were available, then this PackConfig will only
+     * contain basic values, like a list of clientside-only mods, but no detected Minecraft version, modloader, or modloader
+     * version etc.
+     *
+     * @author Griefed
+     */
+    fun generateConfigFromModpack(modpackDirectory: File): PackConfig {
+        val packConfig = PackConfig()
+        if (modpackDirectory.isDirectory) {
+            packConfig.modpackDir = modpackDirectory.absolutePath
+            try {
+                val inclusions = emptyList<InclusionSpecification>().toMutableList()
+                val files = modpackDirectory.listFiles()
+
+                packConfig.name = checkManifests(modpackDirectory.absolutePath, packConfig)
+
+                if (files != null && files.isNotEmpty()) {
+                    for (file in files) {
+                        if (apiProperties.directoriesToInclude.contains(file.name) &&
+                            !inclusions.any { inclusion -> inclusion.source == file.name }
+                        ) {
+                            inclusions.add(InclusionSpecification(file.name))
+                        }
+                    }
+                }
+                inclusions.removeIf { !File(modpackDirectory,it.source).exists() && !File(it.source).exists() }
+
+                packConfig.setInclusions(ArrayList<InclusionSpecification>(inclusions))
+
+            } catch (ex: IOException) {
+                log.error("Couldn't create server pack config from modpack manifests.", ex)
+            }
+        }
+        return packConfig
+    }
 }

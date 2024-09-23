@@ -14,7 +14,7 @@ updates:
     labels:
      - "dependencies"
      - "github-actions"
-    target-branch: "dependabot"
+    target-branch: "develop"
     pull-request-branch-name:
       separator: "-"
 
@@ -30,7 +30,7 @@ updates:
     labels:
       - "dependencies"
       - "gradle"
-    target-branch: "dependabot"
+    target-branch: "develop"
     pull-request-branch-name:
       separator: "-"
 
@@ -43,7 +43,7 @@ updates:
     labels:
       - "dependencies"
       - "gradle"
-    target-branch: "dependabot"
+    target-branch: "develop"
     pull-request-branch-name:
       separator: "-"
 
@@ -56,7 +56,7 @@ updates:
     labels:
       - "dependencies"
       - "gradle"
-    target-branch: "dependabot"
+    target-branch: "develop"
     pull-request-branch-name:
       separator: "-"
 
@@ -72,7 +72,7 @@ updates:
     labels:
       - "dependencies"
       - "npm"
-    target-branch: "dependabot"
+    target-branch: "develop"
     pull-request-branch-name:
       separator: "-"
 
@@ -88,6 +88,6 @@ updates:
     labels:
       - "dependencies"
       - "docker"
-    target-branch: "dependabot"
+    target-branch: "develop"
     pull-request-branch-name:
       separator: "-"

@@ -32,6 +32,9 @@ configurations {
 dependencies {
     api(project(":serverpackcreator-api"))
 
+    //CLI
+    api("info.picocli:picocli-shell-jline3:4.7.6")
+
     //GUI
     api("commons-io:commons-io:2.16.1")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.0")

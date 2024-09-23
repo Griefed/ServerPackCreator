@@ -474,7 +474,7 @@ Used libraries / dependencies licenses:
 
 -------------------------------------------------------
 
-(1 of 38)
+(1 of 40)
 Group:   com.cronutils
 Name:    cron-utils
 Version: 9.2.1
@@ -497,7 +497,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(2 of 38)
+(2 of 40)
 Group:   com.electronwill.night-config
 Name:    toml
 Version: 3.7.2
@@ -515,176 +515,9 @@ License: GNU Lesser General Public License v3.0
 URL: https://www.gnu.org/licenses/lgpl-3.0.txt
 
 
-                   GNU LESSER GENERAL PUBLIC LICENSE
-                       Version 3, 29 June 2007
-
- Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
- Everyone is permitted to copy and distribute verbatim copies
- of this license document, but changing it is not allowed.
-
-
-  This version of the GNU Lesser General Public License incorporates
-the terms and conditions of version 3 of the GNU General Public
-License, supplemented by the additional permissions listed below.
-
-  0. Additional Definitions.
-
-  As used herein, "this License" refers to version 3 of the GNU Lesser
-General Public License, and the "GNU GPL" refers to version 3 of the GNU
-General Public License.
-
-  "The Library" refers to a covered work governed by this License,
-other than an Application or a Combined Work as defined below.
-
-  An "Application" is any work that makes use of an interface provided
-by the Library, but which is not otherwise based on the Library.
-Defining a subclass of a class defined by the Library is deemed a mode
-of using an interface provided by the Library.
-
-  A "Combined Work" is a work produced by combining or linking an
-Application with the Library.  The particular version of the Library
-with which the Combined Work was made is also called the "Linked
-Version".
-
-  The "Minimal Corresponding Source" for a Combined Work means the
-Corresponding Source for the Combined Work, excluding any source code
-for portions of the Combined Work that, considered in isolation, are
-based on the Application, and not on the Linked Version.
-
-  The "Corresponding Application Code" for a Combined Work means the
-object code and/or source code for the Application, including any data
-and utility programs needed for reproducing the Combined Work from the
-Application, but excluding the System Libraries of the Combined Work.
-
-  1. Exception to Section 3 of the GNU GPL.
-
-  You may convey a covered work under sections 3 and 4 of this License
-without being bound by section 3 of the GNU GPL.
-
-  2. Conveying Modified Versions.
-
-  If you modify a copy of the Library, and, in your modifications, a
-facility refers to a function or data to be supplied by an Application
-that uses the facility (other than as an argument passed when the
-facility is invoked), then you may convey a copy of the modified
-version:
-
-   a) under this License, provided that you make a good faith effort to
-   ensure that, in the event an Application does not supply the
-   function or data, the facility still operates, and performs
-   whatever part of its purpose remains meaningful, or
-
-   b) under the GNU GPL, with none of the additional permissions of
-   this License applicable to that copy.
-
-  3. Object Code Incorporating Material from Library Header Files.
-
-  The object code form of an Application may incorporate material from
-a header file that is part of the Library.  You may convey such object
-code under terms of your choice, provided that, if the incorporated
-material is not limited to numerical parameters, data structure
-layouts and accessors, or small macros, inline functions and templates
-(ten or fewer lines in length), you do both of the following:
-
-   a) Give prominent notice with each copy of the object code that the
-   Library is used in it and that the Library and its use are
-   covered by this License.
-
-   b) Accompany the object code with a copy of the GNU GPL and this license
-   document.
-
-  4. Combined Works.
-
-  You may convey a Combined Work under terms of your choice that,
-taken together, effectively do not restrict modification of the
-portions of the Library contained in the Combined Work and reverse
-engineering for debugging such modifications, if you also do each of
-the following:
-
-   a) Give prominent notice with each copy of the Combined Work that
-   the Library is used in it and that the Library and its use are
-   covered by this License.
-
-   b) Accompany the Combined Work with a copy of the GNU GPL and this license
-   document.
-
-   c) For a Combined Work that displays copyright notices during
-   execution, include the copyright notice for the Library among
-   these notices, as well as a reference directing the user to the
-   copies of the GNU GPL and this license document.
-
-   d) Do one of the following:
-
-       0) Convey the Minimal Corresponding Source under the terms of this
-       License, and the Corresponding Application Code in a form
-       suitable for, and under terms that permit, the user to
-       recombine or relink the Application with a modified version of
-       the Linked Version to produce a modified Combined Work, in the
-       manner specified by section 6 of the GNU GPL for conveying
-       Corresponding Source.
-
-       1) Use a suitable shared library mechanism for linking with the
-       Library.  A suitable mechanism is one that (a) uses at run time
-       a copy of the Library already present on the user's computer
-       system, and (b) will operate properly with a modified version
-       of the Library that is interface-compatible with the Linked
-       Version.
-
-   e) Provide Installation Information, but only if you would otherwise
-   be required to provide such information under section 6 of the
-   GNU GPL, and only to the extent that such information is
-   necessary to install and execute a modified version of the
-   Combined Work produced by recombining or relinking the
-   Application with a modified version of the Linked Version. (If
-   you use option 4d0, the Installation Information must accompany
-   the Minimal Corresponding Source and Corresponding Application
-   Code. If you use option 4d1, you must provide the Installation
-   Information in the manner specified by section 6 of the GNU GPL
-   for conveying Corresponding Source.)
-
-  5. Combined Libraries.
-
-  You may place library facilities that are a work based on the
-Library side by side in a single library together with other library
-facilities that are not Applications and are not covered by this
-License, and convey such a combined library under terms of your
-choice, if you do both of the following:
-
-   a) Accompany the combined library with a copy of the same work based
-   on the Library, uncombined with any other library facilities,
-   conveyed under the terms of this License.
-
-   b) Give prominent notice with the combined library that part of it
-   is a work based on the Library, and explaining where to find the
-   accompanying uncombined form of the same work.
-
-  6. Revised Versions of the GNU Lesser General Public License.
-
-  The Free Software Foundation may publish revised and/or new versions
-of the GNU Lesser General Public License from time to time. Such new
-versions will be similar in spirit to the present version, but may
-differ in detail to address new problems or concerns.
-
-  Each version is given a distinguishing version number. If the
-Library as you received it specifies that a certain numbered version
-of the GNU Lesser General Public License "or any later version"
-applies to it, you have the option of following the terms and
-conditions either of that published version or of any later version
-published by the Free Software Foundation. If the Library as you
-received it does not specify a version number of the GNU Lesser
-General Public License, you may choose any version of the GNU Lesser
-General Public License ever published by the Free Software Foundation.
-
-  If the Library as you received it specifies that a proxy can decide
-whether future versions of the GNU Lesser General Public License shall
-apply, that proxy's public statement of acceptance of any version is
-permanent authorization for you to choose that version for the
-Library.
-
-
 #######################################
 
-(3 of 38)
+(3 of 40)
 Group:   com.fasterxml.jackson.core
 Name:    jackson-databind
 Version: 2.17.0
@@ -927,7 +760,7 @@ from the source code management (SCM) system project uses.
 
 #######################################
 
-(4 of 38)
+(4 of 40)
 Group:   com.fasterxml.jackson.module
 Name:    jackson-module-kotlin
 Version: 2.17.1
@@ -979,10 +812,10 @@ from the source code management (SCM) system project uses.
 
 #######################################
 
-(5 of 38)
+(5 of 40)
 Group:   com.formdev
 Name:    flatlaf
-Version: 3.4
+Version: 3.5
 POM Project URL: https://github.com/JFormDesigner/FlatLaf
 
 
@@ -1197,7 +1030,7 @@ Embedded license:
 
 #######################################
 
-(6 of 38)
+(6 of 40)
 Group:   com.formdev
 Name:    flatlaf-extras
 Version: 3.4
@@ -1415,7 +1248,7 @@ Embedded license:
 
 #######################################
 
-(7 of 38)
+(7 of 40)
 Group:   com.formdev
 Name:    flatlaf-fonts-inter
 Version: 4.0
@@ -1731,7 +1564,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
 #######################################
 
-(8 of 38)
+(8 of 40)
 Group:   com.formdev
 Name:    flatlaf-fonts-jetbrains-mono
 Version: 2.304
@@ -1953,7 +1786,7 @@ Embedded license:
 
 #######################################
 
-(9 of 38)
+(9 of 40)
 Group:   com.formdev
 Name:    flatlaf-fonts-roboto
 Version: 2.137
@@ -2375,7 +2208,7 @@ Embedded license:
 
 #######################################
 
-(10 of 38)
+(10 of 40)
 Group:   com.formdev
 Name:    flatlaf-fonts-roboto-mono
 Version: 3.000
@@ -2797,10 +2630,10 @@ Embedded license:
 
 #######################################
 
-(11 of 38)
+(11 of 40)
 Group:   com.formdev
 Name:    flatlaf-intellij-themes
-Version: 3.4
+Version: 3.5
 POM Project URL: https://github.com/JFormDesigner/FlatLaf
 
 
@@ -3015,7 +2848,7 @@ Embedded license:
 
 #######################################
 
-(12 of 38)
+(12 of 40)
 Group:   com.formdev
 Name:    svgSalamander
 Version: 1.1.4
@@ -3043,7 +2876,33 @@ URL: https://opensource.org/licenses/BSD-2-Clause
 
 #######################################
 
-(13 of 38)
+(13 of 40)
+Group:   com.github.MCRcortex
+Name:    nekodetector
+Version: Version-1.1-pre
+POM Project URL: https://github.com/MCRcortex/nekodetector
+
+
+POM License: MIT License
+ - https://opensource.org/licenses/MIT
+
+
+POM license(s): 
+
+
+License: MIT License
+URL: https://opensource.org/licenses/MIT
+
+
+#######################################
+
+(14 of 40)
+Group:   com.install4j
+Name:    install4j-runtime
+Version: 10.0.9
+#######################################
+
+(15 of 40)
 Group:   com.miglayout
 Name:    miglayout-swing
 Version: 11.3
@@ -3063,7 +2922,7 @@ URL: https://opensource.org/licenses/0BSD
 
 #######################################
 
-(14 of 38)
+(16 of 40)
 Group:   commons-io
 Name:    commons-io
 Version: 2.16.1
@@ -3291,19 +3150,10 @@ The Apache Software Foundation (https://www.apache.org/).
 
 #######################################
 
-(15 of 38)
+(17 of 40)
 Group:   de.comahe.i18n4k
 Name:    i18n4k-core
-Version: 0.7.0
-No license information found
-
-
-#######################################
-
-(16 of 38)
-Group:   de.comahe.i18n4k
-Name:    i18n4k-core-jvm
-Version: 0.7.0
+Version: 0.9.0
 POM Project URL: https://comahe-de.github.io/i18n4k/
 
 
@@ -3320,25 +3170,87 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(17 of 38)
-Group:   de.jensklingenberg.ktorfit
-Name:    ktorfit-lib
-Version: 1.14.0
-No license information found
+(18 of 40)
+Group:   de.comahe.i18n4k
+Name:    i18n4k-core-jvm
+Version: 0.9.0
+POM Project URL: https://comahe-de.github.io/i18n4k/
+
+
+POM License: Apache License, Version 2.0
+ - https://www.apache.org/licenses/LICENSE-2.0
+
+
+POM license(s): 
+
+
+License: Apache License, Version 2.0
+URL: https://www.apache.org/licenses/LICENSE-2.0
 
 
 #######################################
 
-(18 of 38)
+(19 of 40)
+Group:   de.jensklingenberg.ktorfit
+Name:    ktorfit-lib
+Version: 2.0.1
+POM Project URL: https://github.com/Foso/Ktorfit
+
+
+POM License: Apache License, Version 2.0
+ - https://www.apache.org/licenses/LICENSE-2.0
+
+
+POM license(s): 
+
+
+License: Apache License, Version 2.0
+URL: https://www.apache.org/licenses/LICENSE-2.0
+
+
+#######################################
+
+(20 of 40)
+Group:   info.picocli
+Name:    picocli-shell-jline3
+Version: 4.7.6
+POM Project URL: https://picocli.info
+
+
+POM License: Apache License, Version 2.0
+ - https://www.apache.org/licenses/LICENSE-2.0
+
+
+POM license(s): 
+
+
+License: Apache License, Version 2.0
+URL: https://www.apache.org/licenses/LICENSE-2.0
+
+
+#######################################
+
+(21 of 40)
 Group:   io.github.microutils
 Name:    kotlin-logging
 Version: 3.0.5
-No license information found
+POM Project URL: https://github.com/oshai/kotlin-logging
+
+
+POM License: Apache License, Version 2.0
+ - https://www.apache.org/licenses/LICENSE-2.0
+
+
+POM license(s): 
+
+
+License: Apache License, Version 2.0
+URL: https://www.apache.org/licenses/LICENSE-2.0
 
 
 #######################################
 
-(19 of 38)
+(22 of 40)
 Group:   net.java.balloontip
 Name:    balloontip
 Version: 1.2.4.1
@@ -3358,7 +3270,7 @@ URL: https://opensource.org/licenses/BSD-3-Clause
 
 #######################################
 
-(20 of 38)
+(23 of 40)
 Group:   net.lingala.zip4j
 Name:    zip4j
 Version: 2.11.5
@@ -3381,7 +3293,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(21 of 38)
+(24 of 40)
 Group:   org.apache.logging.log4j
 Name:    log4j-api-kotlin
 Version: 1.4.0
@@ -3608,7 +3520,7 @@ The Apache Software Foundation (http://www.apache.org/).
 
 #######################################
 
-(22 of 38)
+(25 of 40)
 Group:   org.apache.logging.log4j
 Name:    log4j-core
 Version: 2.23.1
@@ -3836,7 +3748,7 @@ Copyright 2005-2006 Tim Fennell
 
 #######################################
 
-(23 of 38)
+(26 of 40)
 Group:   org.bouncycastle
 Name:    bcpkix-jdk18on
 Version: 1.78
@@ -3856,7 +3768,7 @@ URL: https://www.bouncycastle.org/licence.html
 
 #######################################
 
-(24 of 38)
+(27 of 40)
 Group:   org.javassist
 Name:    javassist
 Version: 3.30.2-GA
@@ -3895,16 +3807,27 @@ URL: https://www.mozilla.org/en-US/MPL/1.1
 
 #######################################
 
-(25 of 38)
+(28 of 40)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-bom
-Version: 1.9.23
-No license information found
+Version: 2.0.20
+POM Project URL: https://kotlinlang.org/
+
+
+POM License: Apache License, Version 2.0
+ - https://www.apache.org/licenses/LICENSE-2.0
+
+
+POM license(s): 
+
+
+License: Apache License, Version 2.0
+URL: https://www.apache.org/licenses/LICENSE-2.0
 
 
 #######################################
 
-(26 of 38)
+(29 of 40)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-reflect
 Version: 1.9.23
@@ -3924,10 +3847,10 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(27 of 38)
+(30 of 40)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-stdlib
-Version: 1.9.23
+Version: 2.0.20
 POM Project URL: https://kotlinlang.org/
 
 
@@ -3944,36 +3867,27 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(28 of 38)
-Group:   org.jetbrains.kotlin
-Name:    kotlin-stdlib
-Version: 2.0.0-RC1
-POM Project URL: https://kotlinlang.org/
-
-
-POM License: Apache License, Version 2.0
- - https://www.apache.org/licenses/LICENSE-2.0
-
-
-POM license(s): 
-
-
-License: Apache License, Version 2.0
-URL: https://www.apache.org/licenses/LICENSE-2.0
-
-
-#######################################
-
-(29 of 38)
+(31 of 40)
 Group:   org.jetbrains.kotlinx
 Name:    kotlinx-coroutines-core
-Version: 1.8.0
-No license information found
+Version: 1.8.1
+POM Project URL: https://github.com/Kotlin/kotlinx.coroutines
+
+
+POM License: Apache License, Version 2.0
+ - https://www.apache.org/licenses/LICENSE-2.0
+
+
+POM license(s): 
+
+
+License: Apache License, Version 2.0
+URL: https://www.apache.org/licenses/LICENSE-2.0
 
 
 #######################################
 
-(30 of 38)
+(32 of 40)
 Group:   org.jetbrains.kotlinx
 Name:    kotlinx-coroutines-swing
 Version: 1.8.0
@@ -3993,16 +3907,27 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(31 of 38)
+(33 of 40)
 Group:   org.jetbrains.kotlinx
 Name:    kotlinx-datetime
 Version: 0.5.0
-No license information found
+POM Project URL: https://github.com/Kotlin/kotlinx-datetime
+
+
+POM License: Apache License, Version 2.0
+ - https://www.apache.org/licenses/LICENSE-2.0
+
+
+POM license(s): 
+
+
+License: Apache License, Version 2.0
+URL: https://www.apache.org/licenses/LICENSE-2.0
 
 
 #######################################
 
-(32 of 38)
+(34 of 40)
 Group:   org.pf4j
 Name:    pf4j
 Version: 3.11.0
@@ -4019,7 +3944,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(33 of 38)
+(35 of 40)
 Group:   org.postgresql
 Name:    postgresql
 Version: 42.7.3
@@ -4171,10 +4096,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #######################################
 
-(34 of 38)
+(36 of 40)
 Group:   org.springframework.boot
 Name:    spring-boot-devtools
-Version: 3.3.0
+Version: 3.3.2
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -4387,7 +4312,7 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 3.3.0
+Spring Boot 3.3.2
 Copyright (c) 2012-2024 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
@@ -4396,10 +4321,10 @@ the License.
 
 #######################################
 
-(35 of 38)
+(37 of 40)
 Group:   org.springframework.boot
 Name:    spring-boot-starter-data-jpa
-Version: 3.3.0
+Version: 3.3.2
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -4612,7 +4537,7 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 3.3.0
+Spring Boot 3.3.2
 Copyright (c) 2012-2024 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
@@ -4621,10 +4546,10 @@ the License.
 
 #######################################
 
-(36 of 38)
+(38 of 40)
 Group:   org.springframework.boot
 Name:    spring-boot-starter-log4j2
-Version: 3.3.1
+Version: 3.3.2
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -4837,7 +4762,7 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 3.3.1
+Spring Boot 3.3.2
 Copyright (c) 2012-2024 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
@@ -4846,10 +4771,10 @@ the License.
 
 #######################################
 
-(37 of 38)
+(39 of 40)
 Group:   org.springframework.boot
 Name:    spring-boot-starter-web
-Version: 3.3.1
+Version: 3.3.2
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -5062,7 +4987,7 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 3.3.1
+Spring Boot 3.3.2
 Copyright (c) 2012-2024 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
@@ -5071,7 +4996,7 @@ the License.
 
 #######################################
 
-(38 of 38)
+(40 of 40)
 Group:   tokyo.northside
 Name:    tipoftheday
 Version: 0.4.2
