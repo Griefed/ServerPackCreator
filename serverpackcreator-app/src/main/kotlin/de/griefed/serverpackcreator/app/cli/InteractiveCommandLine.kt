@@ -49,6 +49,7 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
 
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
+    val cliCommands = CliCommands(apiWrapper)
     val configGenCommand = ConfigGenCommand(apiWrapper)
     val helpCommand = HelpCommand()
     val runHeadlessCommand = RunHeadlessCommand(apiWrapper)
@@ -70,7 +71,8 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
             CommandLine.HelpCommand::class
         ]
     )
-    class CliCommands : Runnable {
+    class CliCommands(private val apiWrapper: ApiWrapper = ApiWrapper.api()) : Runnable {
+        private val log by lazy { cachedLoggerOf(this.javaClass) }
         private var reader: LineReaderImpl? = null
         var out: PrintWriter? = null
 
@@ -82,57 +84,57 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
         override fun run() {
             out!!.println(CommandLine(this).usageMessage)
         }
-    }
 
-    @CommandLine.Command(
-        mixinStandardHelpOptions = true, subcommands = [CommandLine.HelpCommand::class],
-        description = [
-            "Feeling lucky, Punk? This will generate a server pack config from a passed modpack-directory and generate a server pack in one go. No warranty. No guarantees."
-        ]
-    )
-    fun feelingLucky(
-        @CommandLine.Option(
-            names = ["-m", "--modpackDir"],
+        @CommandLine.Command(
+            mixinStandardHelpOptions = true, subcommands = [CommandLine.HelpCommand::class],
             description = [
-                "The path to the modpack-directory.",
-                "Windows Users: You can use / instead of \\ in your paths, too."
-            ],
-            required = true
-        ) modpackDir: String?,
-        @CommandLine.Option(
-            names = ["-d", "--destination"],
-            description = [
-                "A destination in which the server pack will be created in.",
-                "All folders, including parent folders, will be created in the process.",
-                "Windows Users: You can use / instead of \\ in your paths, too."
-            ],
-            required = false
-        ) destination: String?
-    ) {
-        if (modpackDir != null && File(modpackDir).isDirectory) {
-            val modpack = File(modpackDir)
-            val packConfig = apiWrapper.configurationHandler.generateConfigFromModpack(modpack)
-            packConfig.customDestination = Optional.ofNullable(destination?.let { File(it) })
-            val check = apiWrapper.configurationHandler.checkConfiguration(packConfig)
-            packConfig.save(File(apiWrapper.apiProperties.configsDirectory, packConfig.name ?: modpack.name))
-            if (!check.allChecksPassed) {
-                println("Encountered the following errors/problems with the config:")
-                for (error in check.encounteredErrors) {
-                    println(error)
-                }
-            } else {
-                val generation = apiWrapper.serverPackHandler.run(packConfig)
-                if (!generation.success) {
-                    println("Error generating Server Pack:")
-                    for (error in generation.errors) {
+                "Feeling lucky, Punk? This will generate a server pack config from a passed modpack-directory and generate a server pack in one go. No warranty. No guarantees."
+            ]
+        )
+        fun feelingLucky(
+            @CommandLine.Option(
+                names = ["-m", "--modpackDir"],
+                description = [
+                    "The path to the modpack-directory.",
+                    "Windows Users: You can use / instead of \\ in your paths, too."
+                ],
+                required = true
+            ) modpackDir: String?,
+            @CommandLine.Option(
+                names = ["-d", "--destination"],
+                description = [
+                    "A destination in which the server pack will be created in.",
+                    "All folders, including parent folders, will be created in the process.",
+                    "Windows Users: You can use / instead of \\ in your paths, too."
+                ],
+                required = false
+            ) destination: String?
+        ) {
+            if (modpackDir != null && File(modpackDir).isDirectory) {
+                val modpack = File(modpackDir)
+                val packConfig = apiWrapper.configurationHandler.generateConfigFromModpack(modpack)
+                packConfig.customDestination = Optional.ofNullable(destination?.let { File(it) })
+                val check = apiWrapper.configurationHandler.checkConfiguration(packConfig)
+                packConfig.save(File(apiWrapper.apiProperties.configsDirectory, packConfig.name ?: modpack.name))
+                if (!check.allChecksPassed) {
+                    println("Encountered the following errors/problems with the config:")
+                    for (error in check.encounteredErrors) {
                         println(error)
                     }
                 } else {
-                    println("Successfully generated Server Pack: ${generation.serverPack.absolutePath}")
+                    val generation = apiWrapper.serverPackHandler.run(packConfig)
+                    if (!generation.success) {
+                        println("Error generating Server Pack:")
+                        for (error in generation.errors) {
+                            println(error)
+                        }
+                    } else {
+                        println("Successfully generated Server Pack: ${generation.serverPack.absolutePath}")
+                    }
                 }
+            } else {
+                log.error("Modpack-directory $modpackDir doesn't exist.")
             }
-        } else {
-            log.error("Modpack-directory doesn't exist.")
         }
     }
 
@@ -144,7 +146,7 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
             builtins.alias("zle", "widget")
             builtins.alias("bindkey", "keymap")
 
-            val commands = CliCommands()
+            val commands = cliCommands
             val factory = PicocliCommandsFactory()
             val cmd = CommandLine(commands, factory)
             val picocliCommands = PicocliCommands(cmd)

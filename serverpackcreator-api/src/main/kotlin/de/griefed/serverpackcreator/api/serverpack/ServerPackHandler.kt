@@ -797,14 +797,16 @@ class ServerPackHandler(
     fun createServerRunFiles(scriptSettings: HashMap<String, String>, destination: String, isLocal: Boolean) {
         var script: File
         var content: String
+        val scripts = mutableListOf<File>()
         for ((key, value) in apiProperties.startScriptTemplates) {
             try {
                 script = File(destination, "start.$key")
                 content = replacePlaceholders(isLocal, File(value).readText(), scriptSettings).replace("\r", "")
+                if (script.exists()) {
+                    script.setWritable(true)
+                }
                 script.writeText(content)
-                script.setExecutable(true)
-                script.setReadable(true)
-                script.setWritable(false)
+                scripts.add(script)
             } catch (ex: Exception) {
                 log.error("$key-File not accessible: $value.", ex)
             }
@@ -814,13 +816,19 @@ class ServerPackHandler(
             try {
                 script = File(destination, "install_java.$key")
                 content = replacePlaceholders(isLocal, File(value).readText(), scriptSettings).replace("\r", "")
+                if (script.exists()) {
+                    script.setWritable(true)
+                }
                 script.writeText(content)
-                script.setExecutable(true)
-                script.setReadable(true)
-                script.setWritable(false)
+                scripts.add(script)
             } catch (ex: Exception) {
                 log.error("$key-File not accessible: $value.", ex)
             }
+        }
+        for (scriptFile in scripts) {
+            scriptFile.setExecutable(true)
+            scriptFile.setReadable(true)
+            scriptFile.setWritable(false)
         }
 
         try {
@@ -843,6 +851,9 @@ class ServerPackHandler(
 
         try {
             val howToStartTheScriptReadme = File(destination, "HOW-TO-RUN.md")
+            if (howToStartTheScriptReadme.exists()) {
+                howToStartTheScriptReadme.setWritable(true)
+            }
             howToStartTheScriptReadme.writeText(howToStartTheServer.replace("\r", ""))
             howToStartTheScriptReadme.setExecutable(false)
             howToStartTheScriptReadme.setReadable(true)
