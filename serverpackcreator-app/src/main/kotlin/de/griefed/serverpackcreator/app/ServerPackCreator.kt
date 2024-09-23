@@ -176,7 +176,7 @@ class ServerPackCreator(private val args: Array<String>) {
                 migrationManager.migrate()
                 apiWrapper.stageTwo()
                 apiWrapper.stageThree()
-                interactiveCommandLine.feelingLucky(
+                interactiveCommandLine.cliCommands.feelingLucky(
                     commandlineParser.modpackDirectory.get().absolutePath,
                     commandlineParser.serverPackDestination.getOrNull()?.absolutePath ?: null,
                 )
