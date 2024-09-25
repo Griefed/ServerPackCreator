@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.ir.backend.js.compile
+import java.util.prefs.Preferences
 
 plugins {
     id("serverpackcreator.dokka-conventions")
@@ -110,6 +111,8 @@ tasks.test {
             File(tests,".gitkeep").writeText("Hi")
         }
     }
+    Preferences.userRoot().node("ServerPackCreator").clear()
+    Preferences.userRoot().node("ServerPackCreator").sync()
 }
 
 tasks.signMavenJavaPublication {
