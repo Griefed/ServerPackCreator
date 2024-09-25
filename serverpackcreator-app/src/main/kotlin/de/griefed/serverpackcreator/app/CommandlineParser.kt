@@ -108,6 +108,14 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             }
 
             /*
+            * Check whether the user wants to check for update availability.
+            */
+            if (argsList.any { entry -> entry.contains(Mode.WITHALLINCONFIGDIR.argument()) }) {
+                mode = Mode.WITHALLINCONFIGDIR
+                return@run
+            }
+
+            /*
             * Check whether the user wants to generate a new serverpackcreator.conf from the commandline.
             */
             if (argsList.any { entry -> entry.contains(Mode.CGEN.argument()) }) {

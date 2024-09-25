@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.ir.backend.js.compile
 import java.util.prefs.Preferences
 
 plugins {

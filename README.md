@@ -178,7 +178,7 @@ There are a couple of arguments which may or may not be helpful for you, dependi
 | `-update` | Check whether a newer version of ServerPackCreator is available.                                                                                                                                                        |
 | `-cgen`   | Run ServerPackCreators configuration generation.                                                                                                                                                                        |
 | `-cli`    | Run ServerPackCreator in commandline-mode. If **no** graphical environment is supported, this is the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.         |
-| `-web`    | Run ServerPackCreator as a webservice. The webservice will be reworked in version 6.                                                                                                                                    |
+| `-web`    | Run ServerPackCreator as a webservice.                                                                                                                                                                                  |
 | `-gui`    | Run ServerPackCreator with our GUI. If a graphical environment is supported, this is the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.                     |
 | `--setup` | Set up and prepare the environment for subsequent runs of ServerPackCreator. This will create/copy all files needed for ServerPackCreator to function properly from inside its JAR-file and setup everything else, too. |
 
