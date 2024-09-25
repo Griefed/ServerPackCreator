@@ -299,7 +299,7 @@ class ConfigurationHandler(
             && !modloader.lowercase().matches(legacyFabric)
         ) {
             configCheck.modloaderErrors.add(Translations.configuration_log_error_checkmodloader.toString())
-            log.error("Invalid modloader specified. Modloader must be either Forge, Fabric or Quilt.")
+            log.error("Invalid modloader specified. Modloader must be either Forge, NeoForge, Fabric or Quilt.")
         }
         return configCheck
     }
@@ -1156,10 +1156,10 @@ class ConfigurationHandler(
         packConfig.modpackJson = utilities.jsonUtilities.getJson(minecraftInstance)
         val json = packConfig.modpackJson!!
         val base = json.get("baseModLoader")
-        val modloaderInfo = base.get("name").asText().split("-")
-        val modloader = modloaderInfo[0]
+        val modloader = base.get("name").asText().split("-")[0]
         packConfig.modloader = getModLoaderCase(modloader)
-        packConfig.modloaderVersion = modloaderInfo[1]
+        //even Fabric, Quilt, and NeoForge have the modloader version under this JSON tag
+        packConfig.modloaderVersion = base.get("forgeVersion").asText()
         packConfig.minecraftVersion = base.get("minecraftVersion").asText()
         val urlPath = arrayOf("installedModpack", "thumbnailUrl")
         val namePath = arrayOf("name")
