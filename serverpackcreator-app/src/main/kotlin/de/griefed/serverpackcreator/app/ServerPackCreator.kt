@@ -136,6 +136,46 @@ class ServerPackCreator(private val args: Array<String>) {
         log.info("OS version:        ${apiWrapper.apiProperties.getOSVersion()}")
 
         when (mode) {
+            Mode.WEB, Mode.CONFIG, Mode.WITHALLINCONFIGDIR, Mode.FEELINGLUCKY, Mode.CLI -> {
+
+                apiWrapper.stageOne()
+                migrationManager.migrate()
+                apiWrapper.stageTwo()
+                apiWrapper.stageThree()
+
+                when (mode) {
+                    Mode.WEB -> {
+                        stageFour()
+                        WebService(apiWrapper).start(args)
+                    }
+
+                    Mode.CONFIG -> {
+                        interactiveCommandLine.runHeadlessCommand.runHeadless(
+                            commandlineParser.serverPackConfig.get(),
+                            commandlineParser.serverPackDestination
+                        )
+                    }
+
+                    Mode.WITHALLINCONFIGDIR -> {
+                        interactiveCommandLine.runHeadlessCommand.withAllInConfigDir()
+                    }
+
+                    Mode.FEELINGLUCKY -> {
+                        interactiveCommandLine.cliCommands.feelingLucky(
+                            commandlineParser.modpackDirectory.get().absolutePath,
+                            commandlineParser.serverPackDestination.getOrNull()?.absolutePath ?: null,
+                        )
+                    }
+
+                    Mode.CLI -> {
+                        interactiveCommandLine.cli(args)
+                    }
+
+                    else -> log.debug("Exiting...")
+                }
+
+            }
+
             Mode.HELP -> {
                 interactiveCommandLine.helpCommand.run()
             }
@@ -144,50 +184,11 @@ class ServerPackCreator(private val args: Array<String>) {
                 interactiveCommandLine.updateCommand.run()
             }
 
-            Mode.WEB -> {
-                apiWrapper.stageOne()
-                migrationManager.migrate()
-                apiWrapper.stageTwo()
-                apiWrapper.stageThree()
-                stageFour()
-                WebService(apiWrapper).start(args)
-            }
-
             Mode.CGEN -> {
                 apiWrapper.stageOne()
                 migrationManager.migrate()
                 apiWrapper.stageTwo()
                 interactiveCommandLine.configGenCommand.generateConfFromModpack(commandlineParser.modpackDirectory)
-            }
-
-            Mode.CONFIG -> {
-                apiWrapper.stageOne()
-                migrationManager.migrate()
-                apiWrapper.stageTwo()
-                apiWrapper.stageThree()
-                interactiveCommandLine.runHeadlessCommand.runHeadless(
-                    commandlineParser.serverPackConfig.get(),
-                    commandlineParser.serverPackDestination
-                )
-            }
-
-            Mode.FEELINGLUCKY -> {
-                apiWrapper.stageOne()
-                migrationManager.migrate()
-                apiWrapper.stageTwo()
-                apiWrapper.stageThree()
-                interactiveCommandLine.cliCommands.feelingLucky(
-                    commandlineParser.modpackDirectory.get().absolutePath,
-                    commandlineParser.serverPackDestination.getOrNull()?.absolutePath ?: null,
-                )
-            }
-
-            Mode.CLI -> {
-                apiWrapper.stageOne()
-                migrationManager.migrate()
-                apiWrapper.stageTwo()
-                apiWrapper.stageThree()
-                interactiveCommandLine.cli(args)
             }
 
             Mode.GUI -> {
