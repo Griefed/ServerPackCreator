@@ -1,3 +1,32 @@
+## [7.0.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.0.0-beta.1...7.0.0-beta.2) (2024-09-25)
+
+
+### :scissors: Refactor
+
+* Remove unnecessary import ([9c5cf0d](https://git.griefed.de/Griefed/ServerPackCreator/commit/9c5cf0d9556f1df79c9a6fa0f36d12f8e809ac4b))
+
+
+### 📦 Other
+
+* List NeoForge too ([df7870e](https://git.griefed.de/Griefed/ServerPackCreator/commit/df7870efd25862f8951df3d9cc8639969882c3b1))
+
+
+### 🦊 CI/CD
+
+* Include app tests in report ([b769839](https://git.griefed.de/Griefed/ServerPackCreator/commit/b769839dc01488278f726ae9c8416505d9086b5e))
+
+
+### 🧪 Tests
+
+* Tests for CLI commands to ensure functionality ([8c62e25](https://git.griefed.de/Griefed/ServerPackCreator/commit/8c62e25502bd664181eedfda5cdc056dad788a24))
+* Use call to defaultConf instead of explicit path ([d7a8fc8](https://git.griefed.de/Griefed/ServerPackCreator/commit/d7a8fc82f75bcc53c5539fe6c559643769392c63))
+
+
+### 🛠 Fixes
+
+* Append .conf to config files during saving if they don't end with it ([620c93f](https://git.griefed.de/Griefed/ServerPackCreator/commit/620c93f491fd8f659c439b87a5e546bbdc510aea))
+* Get correct value for modloader version from minecraftinstance.json ([5cfb9db](https://git.griefed.de/Griefed/ServerPackCreator/commit/5cfb9db55ff0f9a6b7283fabc1d139fa5c69623a))
+
 ## [7.0.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.11...7.0.0-beta.1) (2024-09-23)
 
 
