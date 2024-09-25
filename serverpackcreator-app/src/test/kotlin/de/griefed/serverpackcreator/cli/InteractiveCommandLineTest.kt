@@ -72,7 +72,7 @@ internal class InteractiveCommandLineTest {
     @Test
     fun runHeadlessTest() {
         File("src/test/resources/configs/serverpackcreator.conf").copyTo(
-            File("tests/serverpackcreator.conf"),
+            apiWrapper.apiProperties.defaultConfig,
             overwrite = true
         )
         interactiveCommandLine.runHeadlessCommand.runHeadless()
