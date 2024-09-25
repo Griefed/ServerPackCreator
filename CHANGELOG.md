@@ -1,3 +1,20 @@
+## [7.0.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.0.0-beta.2...7.0.0-beta.3) (2024-09-25)
+
+
+### :scissors: Refactor
+
+* Import optimizations ([820de32](https://git.griefed.de/Griefed/ServerPackCreator/commit/820de325061bf06189de17d9c77a07681bc6a3df))
+
+
+### 💎 Improvements
+
+* Add -withallinconfigsdir argument and rearrange app start code ([64584c6](https://git.griefed.de/Griefed/ServerPackCreator/commit/64584c623193853e79da5b2a5495ab2db168f25d))
+
+
+### 📦 Other
+
+* Cleanups and removal of outdated information ([3f85d28](https://git.griefed.de/Griefed/ServerPackCreator/commit/3f85d28780d2835e540e358dd04f65408bf31c5e))
+
 ## [7.0.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.0.0-beta.1...7.0.0-beta.2) (2024-09-25)
 
 
