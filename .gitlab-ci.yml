@@ -71,6 +71,7 @@ Build Test:
     reports:
       junit:
         - serverpackcreator-api/build/test-results/test/TEST-*.xml
+        - serverpackcreator-app/build/test-results/test/TEST-*.xml
 
 Docker Test:
   stage: Tests
