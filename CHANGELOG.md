@@ -1,3 +1,10 @@
+## [7.0.0-beta.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.0.0-beta.3...7.0.0-beta.4) (2024-09-26)
+
+
+### 🦊 CI/CD
+
+* Include source files as optional selection in installers ([e413afd](https://git.griefed.de/Griefed/ServerPackCreator/commit/e413afd7564eccdddec5177c4780f3ba0340402f))
+
 ## [7.0.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.0.0-beta.2...7.0.0-beta.3) (2024-09-25)
 
 
