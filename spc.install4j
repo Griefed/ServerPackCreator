@@ -52,33 +52,6 @@
       <fileEntry mountPoint="26" file="${compiler:projectDir}/SECURITY.md" overwriteMode="1" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
       <dirEntry mountPoint="26" file="${compiler:projectDir}/serverpackcreator-app/build/libs" overwriteMode="1" fileMode="755" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" subDirectory="libs" excludeSuffixes="plain.jar" />
     </entries>
-    <components>
-      <component name="ServerPackCreator Application" id="545" changeable="false" hidden="true">
-        <include>
-          <entry location="CHANGELOG.md" />
-          <entry location="log4j2.xml" />
-          <entry location="serverpackcreator.properties" />
-          <entry location="CODE_OF_CONDUCT.md" />
-          <entry location="CONTRIBUTING.md" />
-          <entry location="HELP.md" />
-          <entry location="LICENSE" />
-          <entry location="README.md" />
-          <entry location="SECURITY.md" />
-          <entry location="serverpackcreator-app-dev-javadoc.jar" />
-          <entry location="serverpackcreator-app-dev-sources.jar" />
-          <entry location="serverpackcreator-app-dev.jar" />
-          <entry location="ServerPackCreator-CLI" fileType="launcher" />
-          <entry location="ServerPackCreator-WebService" fileType="launcher" />
-          <entry location="ServerPackCreator" fileType="launcher" />
-          <entry location="updater" fileType="installerApplication" />
-        </include>
-      </component>
-      <component name="Source Files" id="546">
-        <include>
-          <entry location="source" />
-        </include>
-      </component>
-    </components>
   </files>
   <launchers>
     <launcher name="ServerPackCreator-CLI" id="232" excludeFromMenu="true" icnsFile="${compiler:projectDir}/img/app.icns">
@@ -366,24 +339,6 @@ return console.askOkCancel(message, true);
                   <propertyName>suggestAppDir</propertyName>
                   <propertyName>validateApplicationId</propertyName>
                   <propertyName>validationScript</propertyName>
-                </externalParametrizationPropertyNames>
-              </formComponent>
-            </formComponents>
-          </screen>
-          <screen id="547" beanClass="com.install4j.runtime.beans.screens.ComponentsScreen">
-            <formComponents>
-              <formComponent id="548" beanClass="com.install4j.runtime.beans.formcomponents.MultilineLabelComponent">
-                <serializedBean>
-                  <property name="labelText" type="string">${i18n:SelectComponentsLabel2}</property>
-                </serializedBean>
-                <visibilityScript>!context.isConsole()</visibilityScript>
-              </formComponent>
-              <formComponent id="549" beanClass="com.install4j.runtime.beans.formcomponents.ComponentSelectorComponent" useExternalParametrization="true" externalParametrizationName="Installation Components" externalParametrizationMode="include">
-                <serializedBean>
-                  <property name="fillVertical" type="boolean" value="true" />
-                </serializedBean>
-                <externalParametrizationPropertyNames>
-                  <propertyName>selectionChangedScript</propertyName>
                 </externalParametrizationPropertyNames>
               </formComponent>
             </formComponents>
