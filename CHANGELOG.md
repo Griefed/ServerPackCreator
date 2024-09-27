@@ -1,3 +1,10 @@
+## [7.0.0-beta.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.0.0-beta.4...7.0.0-beta.5) (2024-09-27)
+
+
+### 🦊 CI/CD
+
+* Make source files non-optional as it conflicts with the way we include the main jar ([12ac741](https://git.griefed.de/Griefed/ServerPackCreator/commit/12ac7416740a41ffc1f66b2f53955a2b3a2f8d19))
+
 ## [7.0.0-beta.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.0.0-beta.3...7.0.0-beta.4) (2024-09-26)
 
 
