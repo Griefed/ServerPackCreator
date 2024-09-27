@@ -1,3 +1,65 @@
+## [7.0.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.11...7.0.0) (2024-09-27)
+
+
+### :scissors: Refactor
+
+* Import optimizations ([820de32](https://git.griefed.de/Griefed/ServerPackCreator/commit/820de325061bf06189de17d9c77a07681bc6a3df))
+* Improve modpack logging incase it wasn't found ([776b233](https://git.griefed.de/Griefed/ServerPackCreator/commit/776b2331196a8246ab49b7484f2f995f97fa2749))
+* Remove unnecessary import ([9c5cf0d](https://git.griefed.de/Griefed/ServerPackCreator/commit/9c5cf0d9556f1df79c9a6fa0f36d12f8e809ac4b))
+
+
+### ✨ Milestone
+
+* **CLI rework:** Interactive command-based CLI along with some improvements and additions. ([4bd5dce](https://git.griefed.de/Griefed/ServerPackCreator/commit/4bd5dce2971b1f56f2fcb3e6b99d7405a830948a))
+
+
+### 💎 Improvements
+
+* Add -withallinconfigsdir argument and rearrange app start code ([64584c6](https://git.griefed.de/Griefed/ServerPackCreator/commit/64584c623193853e79da5b2a5495ab2db168f25d))
+
+
+### 📔 Docs
+
+* Fun Stuff chapter. Added chapter for self-contained, self-extracting scripts as wrappers for server packs for EZ distribution ([11b9b47](https://git.griefed.de/Griefed/ServerPackCreator/commit/11b9b47055a7f93aed758e14463a422a356a8150))
+
+
+### 📦 Other
+
+* Cleanups and removal of outdated information ([3f85d28](https://git.griefed.de/Griefed/ServerPackCreator/commit/3f85d28780d2835e540e358dd04f65408bf31c5e))
+* List NeoForge too ([df7870e](https://git.griefed.de/Griefed/ServerPackCreator/commit/df7870efd25862f8951df3d9cc8639969882c3b1))
+
+
+### 🦊 CI/CD
+
+* Include source files as optional selection in installers ([e413afd](https://git.griefed.de/Griefed/ServerPackCreator/commit/e413afd7564eccdddec5177c4780f3ba0340402f))
+* Make source files non-optional as it conflicts with the way we include the main jar ([12ac741](https://git.griefed.de/Griefed/ServerPackCreator/commit/12ac7416740a41ffc1f66b2f53955a2b3a2f8d19))
+* Include app tests in report ([b769839](https://git.griefed.de/Griefed/ServerPackCreator/commit/b769839dc01488278f726ae9c8416505d9086b5e))
+* Switch dependabot branch to develop ([daf4768](https://git.griefed.de/Griefed/ServerPackCreator/commit/daf4768187212debf8c7298519e82cfacb39dc8e))
+
+
+### 🧨 Breaking changes!
+
+* Remove ConfigurationEditor in favor of basic config generation from modpack directory. You may edit the generated config in your favourite text-editor afterwards. ([4295be9](https://git.griefed.de/Griefed/ServerPackCreator/commit/4295be971fff3c3c0ea57953f7a42869d032323d))
+
+
+### 🧪 Tests
+
+* Tests for CLI commands to ensure functionality ([8c62e25](https://git.griefed.de/Griefed/ServerPackCreator/commit/8c62e25502bd664181eedfda5cdc056dad788a24))
+* Use call to defaultConf instead of explicit path ([d7a8fc8](https://git.griefed.de/Griefed/ServerPackCreator/commit/d7a8fc82f75bcc53c5539fe6c559643769392c63))
+
+
+### 🚀 Features
+
+* `-feelinglucky` argument and command to generate a server pack from a modpack without needing a config first. Supports `--destination`, too. ([8a98957](https://git.griefed.de/Griefed/ServerPackCreator/commit/8a98957fc703ea22c8f48f9b65798f1665478c14))
+
+
+### 🛠 Fixes
+
+* Append .conf to config files during saving if they don't end with it ([620c93f](https://git.griefed.de/Griefed/ServerPackCreator/commit/620c93f491fd8f659c439b87a5e546bbdc510aea))
+* Get correct value for modloader version from minecraftinstance.json ([5cfb9db](https://git.griefed.de/Griefed/ServerPackCreator/commit/5cfb9db55ff0f9a6b7283fabc1d139fa5c69623a))
+* Make feelingLucky command usable in interactive cli ([2a05f20](https://git.griefed.de/Griefed/ServerPackCreator/commit/2a05f2091a901b1f940d8b8e83d438cfbab29229))
+* Make scripts writable during creation to prevent incorrect content ([15e41ba](https://git.griefed.de/Griefed/ServerPackCreator/commit/15e41ba2dfd845d27989a15e8878997cbd81e98e))
+
 ## [7.0.0-beta.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.0.0-beta.4...7.0.0-beta.5) (2024-09-27)
 
 
