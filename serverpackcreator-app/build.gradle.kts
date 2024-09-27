@@ -37,7 +37,7 @@ dependencies {
 
     //GUI
     api("commons-io:commons-io:2.16.1")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.0")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.9.0")
     api("org.jetbrains.kotlin:kotlin-reflect:2.0.0")
     api("com.formdev:flatlaf:3.5.1")
     api("com.formdev:flatlaf-extras:3.4")
