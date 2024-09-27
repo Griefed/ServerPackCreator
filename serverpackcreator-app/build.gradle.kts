@@ -54,7 +54,7 @@ dependencies {
     api("org.jetbrains.kotlin:kotlin-reflect:1.9.23")
     api("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.1")
     api("org.springframework.boot:spring-boot-starter-web:3.3.2")
-    api("org.springframework.boot:spring-boot-starter-log4j2:3.3.2")
+    api("org.springframework.boot:spring-boot-starter-log4j2:3.3.4")
     api("org.springframework.boot:spring-boot-starter-data-jpa:3.3.2")
     api("org.postgresql:postgresql:42.7.3")
     api("org.javassist:javassist:3.30.2-GA")
