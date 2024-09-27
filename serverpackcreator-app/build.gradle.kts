@@ -1,4 +1,4 @@
-import org.jetbrains.kotlin.ir.backend.js.compile
+import java.util.prefs.Preferences
 
 plugins {
     id("serverpackcreator.dokka-conventions")
@@ -31,6 +31,9 @@ configurations {
 
 dependencies {
     api(project(":serverpackcreator-api"))
+
+    //CLI
+    api("info.picocli:picocli-shell-jline3:4.7.6")
 
     //GUI
     api("commons-io:commons-io:2.16.1")
@@ -107,6 +110,8 @@ tasks.test {
             File(tests,".gitkeep").writeText("Hi")
         }
     }
+    Preferences.userRoot().node("ServerPackCreator").clear()
+    Preferences.userRoot().node("ServerPackCreator").sync()
 }
 
 tasks.signMavenJavaPublication {

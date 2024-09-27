@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.api.utilities.common
 
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
+import java.util.*
 
 /**
  * Utility-class revolving around the system we are running on.
@@ -35,6 +36,12 @@ class SystemUtilities {
         private val windowsDriveRegex = "^[a-zA-Z]:\\\\.*".toRegex()
         private val javaPathSuffix = "%s${File.separator}bin${File.separator}java"
         private val javaHome = System.getProperty("java.home")
+
+        private val OS: String = System.getProperty("os.name").lowercase(Locale.getDefault())
+        val IS_WINDOWS: Boolean = (OS.indexOf("win") >= 0)
+        val IS_MAC: Boolean = (OS.indexOf("mac") >= 0)
+        val IS_UNIX: Boolean = (OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0 || OS.indexOf("aix") > 0)
+        val IS_SOLARIS: Boolean = (OS.indexOf("sunos") >= 0)
 
         /**
          * Automatically acquire the path to the systems default Java installation.

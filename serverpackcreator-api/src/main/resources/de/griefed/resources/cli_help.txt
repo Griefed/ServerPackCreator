@@ -7,70 +7,99 @@ How to use ServerPackCreator:
    mode will automatically be used.
 
  Extra arguments to use ServerPackCreator with: #
-      -lang: Allows you to use one of the available languages for ServerPackCreator. I can not
-             guarantee that each of the following available languages is 100% translated.
-             You best choice is en_us, or not specifying any as that is the default, because
-             I write ServerPackCreator with english in mind. Available usages:
-             -lang en_us
-             -lang uk_ua
-             -lang de_de
+-lang:
+    Allows you to use one of the available languages for ServerPackCreator. I can not
+    guarantee that each of the following available languages is 100% translated.
+    You best choice is en_us, or not specifying any as that is the default, because
+    I write ServerPackCreator with english in mind.
 
-      -cgen: Only available for the commandline interface. This will start the generation of
-             a new configuration file. You will be asked to enter information about your modpack
-             step-by-step. Each setting you enter will be checked for errors before it is saved.
-             If everything you enter is valid and without errors, it will be written to a new
-             serverpackcreator.conf and ServerPackCreator will immediately start a run with said
-             configuration file, generating a server pack for you.
+-cgen:
+    Generates a basic server pack configuration from the specified modpack.
+    Examples:
+        -cgen "/path/to/modpack"
+        -cgen "C:/users/<YOUR_USER>/CurseForge/instances/modpack"
 
-    -update: Check whether a new version of ServerPackCreator is available for download.
-             If an update is available, the version and link to the release of said update are
-             written to the console so you can from work with it from there.
-             Note: Automatic updates are currently not planned nor supported, and neither are
-             downloads of any available updates to your system. You need to update manually.
+-update:
+    Check whether a new version of ServerPackCreator is available for download.
+    If an update is available, the version and link to the release of said update are
+    written to the console so you can from work with it from there.
+    Note: When you installed ServerPackCreator using the official installers, this will try and attempt
+    updating your current installation if an update is available.
 
-       -cli: Run ServerPackCreator in Command-line interface mode. Checks the serverpackcreator.conf
-             for errors and if none are found, starts the generation of a server pack with the configuration
-             provided by your serverpackcreator.conf.
+-cli:
+    Run ServerPackCreator in an interactive commandline-mode.
 
-       -web: Run ServerPackCreator as a webservice available at http://localhost:8080. The webservice
-             provides the same functionality as running ServerPackCreator in GUI mode (so no Commandline
-             arguments and a non-headless environment) as well as a REST API which can be used in different ways.
-             For more information about the REST API, please see the Java documentation:
-              - GitHub Pages: https://griefed.github.io/ServerPackCreator/
-              - GitLab Pages: https://griefed.pages.griefed.de/ServerPackCreator/
+-withallinconfigdir:
+    Runs generations for all configurations present in ServerPackCreator's configs-directory.
 
-       -gui: Run ServerPackCreator using the graphical user interface. If your environment supports
-             graphics, i.e. is not headless, then this is the default mode in which ServerPackCreator
-             started as when no arguments are used.
+-config:
+    Generate a server pack from a specific server pack configuration from the commandline.
+    Examples:
+        -config "/path/to/serverpack.conf"
+        -config "C:/users/<YOUR_USER>/serverpack.conf"
 
-    --setup: Set up and prepare the environment for subsequent runs of ServerPackCreator.
-             This will create/copy all files needed for ServerPackCreator to function
-             properly from inside its JAR-file and setup everything else, too. You can pass a properties-file, too
-             if you so desire.
-             Examples:
-             --setup "/path/to/custom.properties"
-             --setup "C:\path\to\custom.properties"
+-feelinglucky:
+    Feeling lucky, Punk? This will generate a server pack config from a passed modpack-directory and generate
+    a server pack in one go. No warranty. No guarantees.
+    Examples:
+        -feelinglucky "/path/to/modpack"
+        -feelinglucky "C:/users/<YOUR_USER>/CurseForge/instances/modpack"
 
-    --home:  Override the home-directory setting for your user.
-             Examples:
-             --home "/path/to/directory"
-             --home "C:\users\<YOUR_USER>\SPC"
+--destination:
+    Only effective in combination with -config or -feelinglucky. Sets the destination in which the server pack
+    will be generated in.
+    Examples:
+        -config "/path/to/serverpack.conf" --destination "/path/to/desired/location"
+        -config "C:/users/<YOUR_USER>/serverpack.conf" --destination "C:/users/<YOUR_USER>/serverpack"
+        -feelinglucky "/path/to/modpack" --destination "/path/to/desired/location"
+        -feelinglucky "C:/users/<YOUR_USER>/CurseForge/instances/modpack" --destination "C:/users/<YOUR_USER>/serverpack"
 
- Support:
+-web:
+    Run ServerPackCreator as a webservice available at http://localhost:8080. The webservice
+    provides the same functionality as running ServerPackCreator in GUI mode (so no Commandline
+    arguments and a non-headless environment) as well as a REST API which can be used in different ways.
+    For more information about the REST API, please see the Java documentation:
+        - GitHub Pages: https://griefed.github.io/ServerPackCreator/
+        - GitLab Pages: https://griefed.pages.griefed.de/ServerPackCreator/
 
-    Issues: Encountered a bug, or want some part of the documentation to be improved on? Got a suggestion?
-            Open an issue on GitHub at: https://github.com/Griefed/ServerPackCreator/issues
+-gui:
+    Run ServerPackCreator using the graphical user interface. If your environment supports
+    graphics, i.e. is not headless, then this is the default mode in which ServerPackCreator
+    started as when no arguments are used.
 
-   Discord: If you would like to chat with me, ask me questions, or see when there's something new
-            regarding ServerPackCreator coming up, you can join my Discord server to stay up-to-date.
-             - Discord link: https://discord.griefed.de
+--setup:
+    Set up and prepare the environment for subsequent runs of ServerPackCreator.
+    This will create/copy all files needed for ServerPackCreator to function
+    properly from inside its JAR-file and setup everything else, too. You can pass a properties-file, too
+    if you so desire.
+    Examples:
+        --setup "/path/to/custom.properties"
+        --setup "C:\path\to\custom.properties"
 
- Help/Wiki: If you want additional help on how to use ServerPackCreator, take a look at my wiki articles
-            regarding ServerPackCreator and some of the more advanced things it can do.
-             - Help:  https://help.serverpackcreator.de/help-topic.html
+--home:
+    Override the home-directory setting for your user. Can be used in combination with other arguments.
+    Examples:
+        --home "/path/to/directory"
+        --home "C:\users\<YOUR_USER>\SPC"
 
- Buy Me A Coffee:
-   You like ServerPackCreator and would like to support me? By all means, every bit is very much
-   appreciated and helps me pay for servers and food. Food is most important. And coffee. Food and Coffee.
-   Those two get converted into code. Thank you very much!
-    - Github Sponsors: https://github.com/sponsors/Griefed
+Support:
+
+Issues:
+    Encountered a bug, or want some part of the documentation to be improved on? Got a suggestion?
+    Open an issue on GitHub at: https://github.com/Griefed/ServerPackCreator/issues
+
+Discord:
+    If you would like to chat with me, ask me questions, or see when there's something new
+    regarding ServerPackCreator coming up, you can join my Discord server to stay up-to-date.
+        - Discord link: https://discord.griefed.de
+
+Help/Wiki:
+    If you want additional help on how to use ServerPackCreator, take a look at my wiki articles
+    regarding ServerPackCreator and some of the more advanced things it can do.
+        - Help:  https://help.serverpackcreator.de/help-topic.html
+
+Buy Me A Coffee:
+    You like ServerPackCreator and would like to support me? By all means, every bit is very much
+    appreciated and helps me pay for servers and food. Food is most important. And coffee. Food and coffee.
+    Those two get converted into code. Thank you very much!
+        - Github Sponsors: https://github.com/sponsors/Griefed

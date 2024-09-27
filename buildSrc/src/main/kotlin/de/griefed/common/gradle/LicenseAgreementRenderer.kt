@@ -19,13 +19,13 @@
  */
 package de.griefed.common.gradle
 
-import com.github.jk1.license.*
+import com.github.jk1.license.ModuleData
+import com.github.jk1.license.ProjectData
 import com.github.jk1.license.render.ReportRenderer
 import com.github.jk1.license.util.Files
 import org.gradle.api.Project
 import java.io.File
 import java.net.URI
-import java.net.URL
 
 /**
  * Custom made license renderer for https://github.com/jk1/Gradle-License-Report to generate a decent license

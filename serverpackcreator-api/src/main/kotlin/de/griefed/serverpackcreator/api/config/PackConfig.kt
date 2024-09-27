@@ -33,6 +33,7 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.io.FileNotFoundException
 import java.nio.charset.StandardCharsets
+import java.util.*
 
 private const val modpackComment =
     "\n Path to your modpack. Can be either relative or absolute." +
@@ -135,22 +136,6 @@ private const val javaKey = "SPC_JAVA_SPC"
 
 private const val configVersionKey = "configVersion"
 
-private const val spcVersionKey = "SPC_SERVERPACKCREATOR_VERSION_SPC"
-
-private const val spcMinecraftVersionKey = "SPC_MINECRAFT_VERSION_SPC"
-
-private const val spcModloaderKey = "SPC_MODLOADER_SPC"
-
-private const val spcModloaderVersionKey = "SPC_MODLOADER_VERSION_SPC"
-
-private const val spcJavaArgsKey = "SPC_JAVA_ARGS_SPC"
-
-private const val spcFabricInstallerVersionKey = "SPC_FABRIC_INSTALLER_VERSION_SPC"
-
-private const val spcQuiltInstallerVersionKey = "SPC_QUILT_INSTALLER_VERSION_SPC"
-
-private const val spcLegacyFabricInstallerVersionKey = "SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC"
-
 private const val spcWaitForUserInputKey = "SPC_WAIT_FOR_USER_INPUT_SPC"
 
 private const val spcRestartServerKey = "SPC_RESTART_SPC"
@@ -229,6 +214,8 @@ open class PackConfig() {
     var isZipCreationDesired = true
     var modpackJson: JsonNode? = null
     var configVersion: String? = null
+
+    var customDestination: Optional<File> = Optional.empty()
 
     open var projectID: String? = null
     open var versionID: String? = null
@@ -489,7 +476,12 @@ open class PackConfig() {
         conf.setComment(pluginsKey, pluginsComment)
         conf.set<Any>(pluginsKey, plugins)
 
-        TomlFormat.instance().createWriter().write(conf, destination, WritingMode.REPLACE, StandardCharsets.UTF_8)
+        val confFile = if (!destination.name.endsWith(".conf")) {
+            File( "${destination.absolutePath}.conf")
+        } else {
+            destination
+        }
+        TomlFormat.instance().createWriter().write(conf, confFile, WritingMode.REPLACE, StandardCharsets.UTF_8)
         log.debug("Saved config to ${destination.absolutePath}")
         return this
     }

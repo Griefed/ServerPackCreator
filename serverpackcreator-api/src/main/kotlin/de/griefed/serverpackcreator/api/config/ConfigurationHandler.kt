@@ -299,7 +299,7 @@ class ConfigurationHandler(
             && !modloader.lowercase().matches(legacyFabric)
         ) {
             configCheck.modloaderErrors.add(Translations.configuration_log_error_checkmodloader.toString())
-            log.error("Invalid modloader specified. Modloader must be either Forge, Fabric or Quilt.")
+            log.error("Invalid modloader specified. Modloader must be either Forge, NeoForge, Fabric or Quilt.")
         }
         return configCheck
     }
@@ -1156,10 +1156,10 @@ class ConfigurationHandler(
         packConfig.modpackJson = utilities.jsonUtilities.getJson(minecraftInstance)
         val json = packConfig.modpackJson!!
         val base = json.get("baseModLoader")
-        val modloaderInfo = base.get("name").asText().split("-")
-        val modloader = modloaderInfo[0]
+        val modloader = base.get("name").asText().split("-")[0]
         packConfig.modloader = getModLoaderCase(modloader)
-        packConfig.modloaderVersion = modloaderInfo[1]
+        //even Fabric, Quilt, and NeoForge have the modloader version under this JSON tag
+        packConfig.modloaderVersion = base.get("forgeVersion").asText()
         packConfig.minecraftVersion = base.get("minecraftVersion").asText()
         val urlPath = arrayOf("installedModpack", "thumbnailUrl")
         val namePath = arrayOf("name")
@@ -1520,5 +1520,46 @@ class ConfigurationHandler(
             }
         }
         return files
+    }
+
+    /**
+     * Generate a [PackConfig] from a modpack-directory, resulting in a basic server pack configuration with default
+     * values, for an easy-to-use starting point of a server pack config.
+     *
+     * @param modpackDirectory The directory which contains the modpack for which a server pack config should be generated.
+     * @return A [PackConfig] for the specified modpack. If no manifests were available, then this PackConfig will only
+     * contain basic values, like a list of clientside-only mods, but no detected Minecraft version, modloader, or modloader
+     * version etc.
+     *
+     * @author Griefed
+     */
+    fun generateConfigFromModpack(modpackDirectory: File): PackConfig {
+        val packConfig = PackConfig()
+        if (modpackDirectory.isDirectory) {
+            packConfig.modpackDir = modpackDirectory.absolutePath
+            try {
+                val inclusions = emptyList<InclusionSpecification>().toMutableList()
+                val files = modpackDirectory.listFiles()
+
+                packConfig.name = checkManifests(modpackDirectory.absolutePath, packConfig)
+
+                if (files != null && files.isNotEmpty()) {
+                    for (file in files) {
+                        if (apiProperties.directoriesToInclude.contains(file.name) &&
+                            !inclusions.any { inclusion -> inclusion.source == file.name }
+                        ) {
+                            inclusions.add(InclusionSpecification(file.name))
+                        }
+                    }
+                }
+                inclusions.removeIf { !File(modpackDirectory,it.source).exists() && !File(it.source).exists() }
+
+                packConfig.setInclusions(ArrayList<InclusionSpecification>(inclusions))
+
+            } catch (ex: IOException) {
+                log.error("Couldn't create server pack config from modpack manifests.", ex)
+            }
+        }
+        return packConfig
     }
 }

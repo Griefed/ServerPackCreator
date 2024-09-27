@@ -26,33 +26,47 @@ package de.griefed.serverpackcreator.app
  * @author Griefed
  */
 enum class Mode(private val argument: String) {
+
     /**
-     * **Priority 0**
-     *
-     *
      * Print ServerPackCreators help to commandline.
      */
     HELP("-help"),
 
     /**
-     * **Priority 1**
-     *
-     *
      * Check whether a newer version of ServerPackCreator is available.
      */
     UPDATE("-update"),
 
     /**
-     * **Priority 2**
-     *
-     *
-     * Run ServerPackCreators configuration generation.
+     * Run the generation of a basic server pack config from a given modpack.
      */
     CGEN("-cgen"),
 
     /**
-     * **Priority 3**
+     * Run ServerPackCreator from the commandline and generate a server pack from a specific server pack config.
+     */
+    CONFIG("-config"),
+
+    /**
+     * Generate the server pack from the config specified in [CONFIG] in a specific location.
+     * This argument requires [CONFIG] or [FEELINGLUCKY] being present, too.
+     */
+    DESTINATION("--destination"),
+
+    /**
+     * Feeling lucky, Punk? This will generate a server pack config from a passed modpack-directory and generate a server
+     * pack in one go. No warranty. No guarantees.
      *
+     * You may use [DESTINATION] to set the folder in which the server pack will be generated in.
+     */
+    FEELINGLUCKY("-feelinglucky"),
+
+    /**
+     * Runs generations for all configurations present in ServerPackCreator's configs-directory.
+     */
+    WITHALLINCONFIGDIR("-withallinconfigdir"),
+
+    /**
      *
      * Run ServerPackCreator in commandline-mode. If no graphical environment is supported, this is
      * the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra
@@ -61,16 +75,11 @@ enum class Mode(private val argument: String) {
     CLI("-cli"),
 
     /**
-     * **Priority 4**
-     *
-     *
      * Run ServerPackCreator as a webservice.
      */
     WEB("-web"),
 
     /**
-     * **Priority 5**
-     *
      *
      * Run ServerPackCreator with our GUI. If a graphical environment is supported, this is the
      * default ServerPackCreator will enter, even when starting ServerPackCreator with no extra
@@ -79,9 +88,6 @@ enum class Mode(private val argument: String) {
     GUI("-gui"),
 
     /**
-     * **Priority 6**
-     *
-     *
      * Set up and prepare the environment for subsequent runs of ServerPackCreator. This will
      * create/copy all files needed for ServerPackCreator to function properly from inside its
      * JAR-file and setup everything else, too.
@@ -102,9 +108,6 @@ enum class Mode(private val argument: String) {
     HOME("--home"),
 
     /**
-     * **Priority 7**
-     *
-     *
      * Exit ServerPackCreator.
      */
     EXIT("exit"),

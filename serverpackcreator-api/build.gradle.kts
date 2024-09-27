@@ -1,5 +1,4 @@
 
-import java.net.URI
 import java.util.prefs.Preferences
 
 plugins {
