@@ -1,3 +1,28 @@
+## [7.0.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.0.0...7.0.1) (2024-09-28)
+
+
+### 📔 Docs
+
+* New base license agreement ([f12baba](https://git.griefed.de/Griefed/ServerPackCreator/commit/f12babafcdbaa2dd5ef081f090414e6f9907ea9a))
+
+
+### 🦊 CI/CD
+
+* Update package-lock from dependabot updates ([4c286be](https://git.griefed.de/Griefed/ServerPackCreator/commit/4c286be28c4aede031c8687e1cbd0aa7c8fa76a9))
+* **deps-dev:** bump @typescript-eslint/parser ([9a7e0b3](https://git.griefed.de/Griefed/ServerPackCreator/commit/9a7e0b307dbd8dc2078ea18ecc567b9a28926159))
+* **deps-dev:** bump eslint in /serverpackcreator-web-frontend ([2479e13](https://git.griefed.de/Griefed/ServerPackCreator/commit/2479e1346e2e289bffd593e7787bed299606e7f4))
+* **deps-dev:** Bump express in /serverpackcreator-web-frontend ([3aac371](https://git.griefed.de/Griefed/ServerPackCreator/commit/3aac371815eb7d9f9cb10c265f8dd3d580da8d43))
+* **deps:** bump com.formdev:flatlaf in /serverpackcreator-app ([9d6600c](https://git.griefed.de/Griefed/ServerPackCreator/commit/9d6600c042f15dcd735f4da0cbadfb2efa3562f8))
+* **deps:** bump de.comahe.i18n4k in /serverpackcreator-plugin-example ([e2051a8](https://git.griefed.de/Griefed/ServerPackCreator/commit/e2051a89d7ba731d052e9ce88d64f6a4fddfa8e0))
+* **deps:** bump org.jetbrains.kotlinx:kotlinx-coroutines-swing ([4f2380f](https://git.griefed.de/Griefed/ServerPackCreator/commit/4f2380f38bf73710c1a24f04c793b4313d9fcdfb))
+* **deps:** bump org.junit.jupiter:junit-jupiter-api ([ca23c3b](https://git.griefed.de/Griefed/ServerPackCreator/commit/ca23c3bfc15d4c6cfd9267da7506566ac107608d))
+* **deps:** bump org.springframework.boot:spring-boot-devtools ([8412d0f](https://git.griefed.de/Griefed/ServerPackCreator/commit/8412d0f7286578a14c65bc3b851e151f7d4ec96a))
+* **deps:** bump pinia in /serverpackcreator-web-frontend ([08b0b84](https://git.griefed.de/Griefed/ServerPackCreator/commit/08b0b846c7d30e77e0171f5fa45f2848bfb424aa))
+* **deps:** bump vue in /serverpackcreator-web-frontend ([28f489d](https://git.griefed.de/Griefed/ServerPackCreator/commit/28f489d1e605c738d3c5430b439603240d597494))
+* **deps:** bump vue-router in /serverpackcreator-web-frontend ([74e70b3](https://git.griefed.de/Griefed/ServerPackCreator/commit/74e70b37b710962b01c0cd40dfff3e44e8cfefd7))
+* **Docker:** Use up to date casing in Dockerfile ([dde8552](https://git.griefed.de/Griefed/ServerPackCreator/commit/dde8552c45796cb7bca1d8ad03372d88cdf1017b))
+* **Installer:** Exclude install4j script from source ([cb939b2](https://git.griefed.de/Griefed/ServerPackCreator/commit/cb939b223061bce38541dbb80be98720dd698b0f))
+
 ## [7.0.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/6.3.11...7.0.0) (2024-09-27)
 
 
