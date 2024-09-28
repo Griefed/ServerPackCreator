@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<install4j version="10.0.9" transformSequenceNumber="10">
+<install4j version="11.0" transformSequenceNumber="11">
   <directoryPresets config="./img" />
   <application name="ServerPackCreator" applicationId="3565-3228-6904-0931" mediaDir="./media" mediaFilePattern="ServerPackCreator-${compiler:sys.version}-Installer-${compiler:sys.platform}" compression="9" lzmaCompression="true" createChecksums="false" shrinkRuntime="false" shortName="SPC" publisher="Griefed" publisherWeb="https://serverpackcreator.de" version="${compiler:projectVersion}" allPathsRelative="true" autoSave="true" macVolumeId="521d0a10ddf6d897" javaMinVersion="21">
     <variables>
@@ -7,7 +7,7 @@
       <variable name="projectVersion" value="dev" description="The version with which to build this installer." />
       <variable name="projectYear" value="2024" />
     </variables>
-    <jreBundles jdkProviderId="Adoptium" release="21/jdk-21.0.3+9">
+    <jreBundles jdkProviderId="Adoptium" release="21/jdk-21.0.4+7">
       <modules>
         <defaultModules set="all" />
       </modules>
