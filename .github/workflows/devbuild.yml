@@ -30,6 +30,10 @@ jobs:
           version: '11.0'
           license: ${{ secrets.INSTALL4J_LICENSE }}
 
+      - name: Remove install4j script
+        run: |
+          rm install4j_linux-x64_*.sh
+
       - name: Set Permissions
         run: |
           chmod +x gradlew
