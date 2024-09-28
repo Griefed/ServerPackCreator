@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk-jammy as builder
+FROM eclipse-temurin:21-jdk-jammy AS builder
 
 ARG VERSION=dev
 

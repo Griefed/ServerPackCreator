@@ -815,7 +815,7 @@ from the source code management (SCM) system project uses.
 (5 of 40)
 Group:   com.formdev
 Name:    flatlaf
-Version: 3.5
+Version: 3.5.1
 POM Project URL: https://github.com/JFormDesigner/FlatLaf
 
 
@@ -2633,7 +2633,7 @@ Embedded license:
 (11 of 40)
 Group:   com.formdev
 Name:    flatlaf-intellij-themes
-Version: 3.5
+Version: 3.5.1
 POM Project URL: https://github.com/JFormDesigner/FlatLaf
 
 
@@ -3890,7 +3890,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (32 of 40)
 Group:   org.jetbrains.kotlinx
 Name:    kotlinx-coroutines-swing
-Version: 1.8.0
+Version: 1.9.0
 POM Project URL: https://github.com/Kotlin/kotlinx.coroutines
 
 
@@ -4099,7 +4099,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (36 of 40)
 Group:   org.springframework.boot
 Name:    spring-boot-devtools
-Version: 3.3.2
+Version: 3.3.4
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -4312,7 +4312,7 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 3.3.2
+Spring Boot 3.3.4
 Copyright (c) 2012-2024 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
