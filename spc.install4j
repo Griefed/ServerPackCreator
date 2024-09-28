@@ -13,13 +13,13 @@
       </modules>
     </jreBundles>
   </application>
-  <files defaultOverwriteMode="1" defaultUninstallMode="2" launcherOverwriteMode="1" defaultFileMode="755">
+  <files globalExcludeSuffixes="install4j*.sh" defaultOverwriteMode="1" defaultUninstallMode="2" launcherOverwriteMode="1" defaultFileMode="755">
     <mountPoints>
       <mountPoint id="544" location="source" />
       <mountPoint id="26" />
     </mountPoints>
     <entries>
-      <dirEntry mountPoint="544" file="${compiler:projectDir}" overwriteMode="1" uninstallMode="2" overrideOverwriteMode="true" overrideUninstallMode="true" excludeSuffixes="install4j_linux-x64_*.sh">
+      <dirEntry mountPoint="544" file="${compiler:projectDir}" overwriteMode="1" uninstallMode="2" overrideOverwriteMode="true" overrideUninstallMode="true">
         <exclude>
           <entry location=".git" />
           <entry location=".gradle" />
