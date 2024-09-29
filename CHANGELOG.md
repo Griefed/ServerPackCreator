@@ -1,3 +1,26 @@
+## [7.0.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.0.1...7.0.2) (2024-09-29)
+
+
+### :scissors: Refactor
+
+* **Installer:** Move exclude pattern to global and shrink to install4j*.sh ([89604f7](https://git.griefed.de/Griefed/ServerPackCreator/commit/89604f7dfe4df5957a07176507981628093ba501))
+
+
+### 📔 Docs
+
+* Include Fun Stuff in writerside tree ([f49c0dc](https://git.griefed.de/Griefed/ServerPackCreator/commit/f49c0dcfc6aff1e728f70ff52787ecf15590b628))
+
+
+### 🦊 CI/CD
+
+* Update install4j version to 11.0.0.1, update other plugins, too. ([efb548a](https://git.griefed.de/Griefed/ServerPackCreator/commit/efb548aeebfefca7ede88d5280a2636f86be655f))
+* **Dependabot:** Update package lock from Dependabot PR ([da832bc](https://git.griefed.de/Griefed/ServerPackCreator/commit/da832bc23edecefa65e024bc74d4a6145e55647e))
+* **deps:** bump axios in /serverpackcreator-web-frontend ([338fe1c](https://git.griefed.de/Griefed/ServerPackCreator/commit/338fe1cb128a3d06ebb3ce9090905efae582c78b))
+* **deps:** bump linuxserver/nginx from 1.22.1 to 1.26.2 ([bf9c12b](https://git.griefed.de/Griefed/ServerPackCreator/commit/bf9c12b1b38bc79a14f99171ee8be71fdcd50592))
+* Remove install4j install script after installation ([0290ab9](https://git.griefed.de/Griefed/ServerPackCreator/commit/0290ab97ed3494676bc5f75da8ba5f89f6455bba))
+* See whether 11.0 works out, instead of 11.0.0.1 ([55f338c](https://git.griefed.de/Griefed/ServerPackCreator/commit/55f338cfcb8deea2302728a0aaa34a03dd0a1cda))
+* Try '11.0' for the version ([d54f630](https://git.griefed.de/Griefed/ServerPackCreator/commit/d54f63031da739263f3c6e3b8bd0fe049d9d8e15))
+
 ## [7.0.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.0.0...7.0.1) (2024-09-28)
 
 
