@@ -10,7 +10,7 @@ kotlinAllOpen = "2.0.20"
 kotlinJpa = "2.0.20"
 
 # https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-gradle-plugin
-springGradle = "3.3.3"
+springGradle = "3.3.4"
 
 # https://mvnrepository.com/artifact/io.spring.gradle/dependency-management-plugin
 springDependencyMan = "1.1.6"
@@ -25,7 +25,7 @@ licenseReport = "2.9"
 frontendPlugin = "8.1.0"
 
 # https://plugins.gradle.org/plugin/com.install4j.gradle
-install4j = "10.0.9"
+install4j = "11.0.0.1"
 
 [libraries]
 
@@ -39,4 +39,4 @@ springDependencyMan = { module = "io.spring.gradle:dependency-management-plugin"
 dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 licenseReport = { module = "com.github.jk1:gradle-license-report", version.ref = "licenseReport" }
 frontendPlugin = { module = "org.siouan:frontend-jdk21", version.ref = "frontendPlugin" }
-install4j = { module = "gradle.plugin.install4j.install4j.buildtools:gradle_publish", version.ref = "install4j" }
+install4j = { module = "com.install4j:install4j-gradle", version.ref = "install4j" }

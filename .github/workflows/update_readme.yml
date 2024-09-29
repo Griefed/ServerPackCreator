@@ -16,6 +16,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           active-only: false
+          file: 'README.md'
 
       - uses: actions-cool/contributor-helper@v1.2.1
         with:

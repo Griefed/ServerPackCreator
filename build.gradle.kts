@@ -1,4 +1,3 @@
-
 import com.install4j.gradle.Install4jTask
 import de.griefed.common.gradle.LicenseAgreementRenderer
 import de.griefed.common.gradle.SubprojectLicenseFilter
@@ -12,10 +11,10 @@ import java.time.LocalDate
 plugins {
     idea
     kotlin("jvm")
-    id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
+    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("com.github.jk1.dependency-license-report")
     id("com.install4j.gradle")
-    id("org.cyclonedx.bom") version "1.8.2"
+    id("org.cyclonedx.bom") version "1.10.0"
 }
 
 idea {
@@ -174,14 +173,15 @@ install4j {
     verbose = true
 }
 
-task("media", Install4jTask::class) {
+tasks.register<Install4jTask>("media") {
     dependsOn(tasks.build)
     verbose = true
     release = version.toString()
-    projectFile = "spc.install4j"
-    variables = hashMapOf<Any, Any>(
+    projectFile = file("spc.install4j")
+    variables.putAll(
+        mutableMapOf(
         "projectDir" to rootDir.absolutePath,
         "projectVersion" to version.toString(),
         "projectYear" to LocalDate.now().year.toString()
-    )
+    ))
 }
