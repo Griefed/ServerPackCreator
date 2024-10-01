@@ -19,7 +19,7 @@ dependencies {
     api("de.comahe.i18n4k:i18n4k-core:0.9.0")
     api("de.comahe.i18n4k:i18n4k-core-jvm:0.9.0")
     implementation("org.jetbrains.kotlin:kotlin-bom:1.9.25")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.0.0")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.0.20")
     implementation(files("${layout.buildDirectory.asFile.get()}/resources/main"))
     api("com.electronwill.night-config:toml:3.7.2")
     api("com.fasterxml.jackson.core:jackson-databind:2.18.0")
