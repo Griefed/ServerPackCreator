@@ -167,7 +167,7 @@ jobs:
           path: ${{ needs.preparations.outputs.version }}
 
       - name: Append Info
-        uses: DamianReeves/write-file-action@v1.2
+        uses: DamianReeves/write-file-action@v1.3
         with:
           path: description.txt
           write-mode: append
