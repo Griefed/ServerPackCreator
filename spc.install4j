@@ -1823,7 +1823,7 @@ file.getParent() != null || (file.getName().endsWith(".app") &amp;&amp; director
               <string>.</string>
             </object>
           </property>
-          <property name="executableName" type="string">updater</property>
+          <property name="executableName" type="string">updater-cli</property>
           <property name="executionMode" type="enum" class="com.install4j.runtime.beans.applications.ExecutionMode" value="CONSOLE" />
           <property name="useCustomIcon" type="boolean" value="true" />
           <property name="windowTitle" type="string">${i18n:updater.WindowTitle("${compiler:sys.fullName}")}</property>
@@ -2419,7 +2419,7 @@ return true;</property>
               </object>
             </add>
           </property>
-          <property name="executableName" type="string">bgupdater</property>
+          <property name="executableName" type="string">bgupdater-cli</property>
           <property name="useCustomIcon" type="boolean" value="true" />
           <property name="vmParameters" type="string">-Dapple.awt.UIElement=true</property>
           <property name="windowTitle" type="string">${compiler:sys.fullName}</property>
