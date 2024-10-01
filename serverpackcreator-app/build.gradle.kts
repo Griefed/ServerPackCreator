@@ -46,7 +46,7 @@ dependencies {
     api("com.formdev:flatlaf-fonts-inter:4.0")
     api("com.formdev:flatlaf-fonts-roboto:2.137")
     api("com.formdev:flatlaf-fonts-roboto-mono:3.000")
-    api("com.miglayout:miglayout-swing:11.3")
+    api("com.miglayout:miglayout-swing:11.4.2")
     api("com.formdev:svgSalamander:1.1.4")
     api("net.java.balloontip:balloontip:1.2.4.1")
     api("com.cronutils:cron-utils:9.2.1")
