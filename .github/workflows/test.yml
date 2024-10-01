@@ -5,8 +5,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  jar-and-media:
-    name: "JAR and media"
+  build:
+    name: "build"
     runs-on: ubuntu-latest
     steps:
 
