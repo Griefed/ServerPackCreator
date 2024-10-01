@@ -64,7 +64,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.3")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
     testRuntimeOnly("com.h2database:h2:2.2.224")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:3.3.1")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:3.3.4")
     developmentOnly("org.springframework.boot:spring-boot-devtools:3.3.4")
     //developmentOnly("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 }
