@@ -348,6 +348,23 @@ Function global:SetupForge
     }
     else
     {
+        if (${UseSSJ} -eq "false")
+        {
+            $ForgeJarLocation = "libraries/net/minecraftforge/forge/${MinecraftVersion}-${ModLoaderVersion}/forge-${MinecraftVersion}-${ModLoaderVersion}-server.jar"
+            $script:ServerRunCommand = "@user_jvm_args.txt @libraries/net/minecraftforge/forge/${MinecraftVersion}-${ModLoaderVersion}/win_args.txt nogui"
+            if ((DownloadIfNotExists "${ForgeJarLocation}" "forge-installer.jar" "${ForgeInstallerUrl}"))
+            {
+                "Forge Installer downloaded. Installing..."
+                RunJavaCommand "-jar forge-installer.jar --installServer"
+            }
+        }
+        else
+        {
+            $script:ServerRunCommand = "@user_jvm_args.txt -Djava.security.manager=allow -jar server.jar --installer-force --installer ${ForgeInstallerUrl} nogui"
+            # Download ServerStarterJar to server.jar
+            RefreshServerJar
+        }
+
         Write-Host "Generating user_jvm_args.txt from variables..."
         Write-Host "Edit JAVA_ARGS in your variables.txt. Do not edit user_jvm_args.txt directly!"
         Write-Host "Manually made changes to user_jvm_args.txt will be lost in the nether!"
@@ -362,10 +379,6 @@ Function global:SetupForge
                 "# -Xmx4G`n" +
                 "${script:JavaArgs}"
         WriteFileUTF8NoBom "user_jvm_args.txt" $Content
-
-        $script:ServerRunCommand = "@user_jvm_args.txt -Djava.security.manager=allow -jar server.jar --installer-force --installer ${ForgeInstallerUrl} nogui"
-
-        RefreshServerJar
     }
 
 <#
@@ -604,6 +617,7 @@ $SkipJavaCheck = $ExternalVariables['SKIP_JAVA_CHECK']
 $RecommendedJavaVersion = $ExternalVariables['RECOMMENDED_JAVA_VERSION']
 $ServerStarterJarForceFetch = $ExternalVariables['SERVERSTARTERJAR_FORCE_FETCH']
 $ServerStarterJarVersion = $ExternalVariables['SERVERSTARTERJAR_VERSION']
+$UseSSJ = $ExternalVariables['USE_SSJ']
 $LauncherJarLocation = "do_not_manually_edit"
 $ServerRunCommand = "do_not_manually_edit"
 $JavaVersion = "do_not_manually_edit"

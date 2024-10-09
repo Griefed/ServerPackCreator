@@ -133,6 +133,9 @@ class ServerPackHandler(
         #   e.g. 0.1.24 or 0.1.25. When setting a specific version, make sure the release you pick actually has a server.jar
         #   available for download. When the download fails with the "latest"-setting, then pick a specific one and/or
         #   contact the devs of the ServerStarterJar about the latest release not having a server.jar to download.
+        # USE_SSJ true/false allows you to enable/disable the usage of the ServerStarterJar by the NeoForge project when you are
+        #   using Forge. Some Forge versions may be incompatible with said ServerStarterJar. As of right now, people
+        #   ran into trouble when using Forge and Minecraft 1.20.2 and 1.20.3.
         #
         # DO NOT EDIT THE FOLLOWING VARIABLES MANUALLY
         #   - FABRIC_INSTALLER_VERSION
@@ -162,6 +165,7 @@ class ServerPackHandler(
         JABBA_INSTALL_VERSION=SPC_JABBA_INSTALL_VERSION_SPC
         SERVERSTARTERJAR_FORCE_FETCH=SPC_SERVERSTARTERJAR_FORCE_FETCH_SPC
         SERVERSTARTERJAR_VERSION=SPC_SERVERSTARTERJAR_VERSION_SPC
+        USE_SSJ=SPC_USE_SSJ_SPC
     """.trimIndent()
     private val howToStartTheServer = """
         # How To Start / Run The Server
