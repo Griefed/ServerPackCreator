@@ -25,6 +25,8 @@ import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.components.ScrollTextArea
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import java.awt.event.MouseAdapter
@@ -71,10 +73,13 @@ class SelectedInclusionDetails(
         val menu = JPopupMenu()
         val addToExclusions = JMenuItem(Translations.createserverpack_gui_inclusions_editor_tip_add_exclusion.toString())
         val addToWhitelist = JMenuItem(Translations.createserverpack_gui_inclusions_editor_tip_add_whitelist.toString())
+        val copyToClipboard = JMenuItem(Translations.createserverpack_gui_inclusions_editor_tip_clipboard.toString())
         addToExclusions.addActionListener { addExclusion(textPane.selectedText) }
         addToWhitelist.addActionListener { addWhitelisted(textPane.selectedText) }
+        copyToClipboard.addActionListener { copySelectionToClipboard() }
         menu.add(addToExclusions)
         menu.add(addToWhitelist)
+        menu.add(copyToClipboard)
         textPane.addMouseListener(object: MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 if (inclusionList.valueIsAdjusting) {
@@ -86,20 +91,28 @@ class SelectedInclusionDetails(
                 if (!SwingUtilities.isRightMouseButton(e)) {
                     return
                 }
+                if (textPane.selectedText.isNullOrEmpty()) {
+                    return
+                }
                 when (inclusionList.selectedValue.source) {
                     "mods" -> {
-                        if (textPane.selectedText.isNullOrEmpty()) {
-                            addToExclusions.isEnabled = false
-                            addToWhitelist.isEnabled = false
-                        } else {
-                            addToExclusions.isEnabled = true
-                            addToWhitelist.isEnabled = true
-                        }
-                        menu.show(e.component, e.x, e.y)
+                        addToExclusions.isEnabled = true
+                        addToWhitelist.isEnabled = true
+                    }
+                    else -> {
+                        addToExclusions.isEnabled = false
+                        addToWhitelist.isEnabled = false
                     }
                 }
+                menu.show(e.component, e.x, e.y)
             }
         })
+    }
+
+    private fun copySelectionToClipboard() {
+        Toolkit.getDefaultToolkit().systemClipboard.setContents(
+            StringSelection(textPane.selectedText), null
+        )
     }
 
     private fun addExclusion(text: String) {
