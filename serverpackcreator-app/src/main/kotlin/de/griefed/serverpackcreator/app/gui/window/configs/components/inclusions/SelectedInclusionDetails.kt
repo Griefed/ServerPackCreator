@@ -31,6 +31,7 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
 import javax.swing.text.DefaultHighlighter
+import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter
 
 /**
  * Tip to display files included via a selected inclusion-specification.
@@ -56,6 +57,12 @@ class SelectedInclusionDetails(
         searchFor
     )
 
+    private val toAdd = JTextField(100)
+    private val addition = arrayOf<Any>(
+        Translations.createserverpack_gui_inclusions_editor_tip_add_message.toString(),
+        toAdd
+    )
+
     init {
         setName(name)
         textPane.isEditable = false
@@ -64,8 +71,8 @@ class SelectedInclusionDetails(
         val menu = JPopupMenu()
         val addToExclusions = JMenuItem(Translations.createserverpack_gui_inclusions_editor_tip_add_exclusion.toString())
         val addToWhitelist = JMenuItem(Translations.createserverpack_gui_inclusions_editor_tip_add_whitelist.toString())
-        addToExclusions.addActionListener { exclusionSettings.append(", ${textPane.selectedText}") }
-        addToWhitelist.addActionListener { whitelistSettings.append(", ${textPane.selectedText}") }
+        addToExclusions.addActionListener { addExclusion(textPane.selectedText) }
+        addToWhitelist.addActionListener { addWhitelisted(textPane.selectedText) }
         menu.add(addToExclusions)
         menu.add(addToWhitelist)
         textPane.addMouseListener(object: MouseAdapter() {
@@ -93,6 +100,36 @@ class SelectedInclusionDetails(
                 }
             }
         })
+    }
+
+    private fun addExclusion(text: String) {
+        toAdd.text = text
+        if (JOptionPane.showConfirmDialog(
+                parent,
+                addition,
+                Translations.createserverpack_gui_inclusions_editor_tip_add_title_exclusion.toString(),
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE,
+                guiProps.inspectMediumIcon
+            ) == JOptionPane.OK_OPTION
+        ) {
+            exclusionSettings.append(", ${toAdd.text}")
+        }
+    }
+
+    private fun addWhitelisted(text: String) {
+        toAdd.text = text
+        if (JOptionPane.showConfirmDialog(
+                parent,
+                addition,
+                Translations.createserverpack_gui_inclusions_editor_tip_add_title_whitelist.toString(),
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE,
+                guiProps.inspectMediumIcon
+            ) == JOptionPane.OK_OPTION
+        ) {
+            whitelistSettings.append(", ${toAdd.text}")
+        }
     }
 
     var text: String = ""
