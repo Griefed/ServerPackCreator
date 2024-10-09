@@ -199,6 +199,19 @@ setupForge() {
 
       fi
   else
+    if [[ "${USE_SSJ}" == "false" ]]; then
+      FORGE_JAR_LOCATION="libraries/net/minecraftforge/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}-server.jar"
+      SERVER_RUN_COMMAND="@user_jvm_args.txt @libraries/net/minecraftforge/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/unix_args.txt nogui"
+      if [[ $(downloadIfNotExist "${FORGE_JAR_LOCATION}" "forge-installer.jar" "${FORGE_INSTALLER_URL}") == "true" ]]; then
+        echo "Forge Installer downloaded. Installing..."
+        runJavaCommand "-jar forge-installer.jar --installServer"
+      fi
+    else
+      SERVER_RUN_COMMAND="@user_jvm_args.txt -Djava.security.manager=allow -jar server.jar --installer-force --installer ${FORGE_INSTALLER_URL} nogui"
+      # Download ServerStarterJar to server.jar
+      refreshServerJar
+    fi
+
     echo "Generating user_jvm_args.txt from variables..."
     echo "Edit JAVA_ARGS in your variables.txt. Do not edit user_jvm_args.txt directly!"
     echo "Manually made changes to user_jvm_args.txt will be lost in the nether!"
@@ -214,10 +227,6 @@ setupForge() {
       echo "# -Xmx4G"
       echo "${JAVA_ARGS}"
     } >>user_jvm_args.txt
-
-    SERVER_RUN_COMMAND="@user_jvm_args.txt -Djava.security.manager=allow -jar server.jar --installer-force --installer ${FORGE_INSTALLER_URL} nogui"
-
-    refreshServerJar
   fi
 }
 

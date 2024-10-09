@@ -156,6 +156,8 @@ private const val spcServerStarterJarForceFetchKey = "SPC_SERVERSTARTERJAR_FORCE
 
 private const val spcServerStarterJarVersionKey = "SPC_SERVERSTARTERJAR_VERSION_SPC"
 
+private const val spcUseServerStarterJarKey = "SPC_USE_SSJ_SPC"
+
 /**
  * A PackConfig contains the settings required to create a server pack.
  * A configuration model usually consists of:
@@ -553,7 +555,8 @@ open class PackConfig() {
                 Pair(spcJabbaInstallVersionKey,"0.13.0"),
                 Pair(spcAdditionalArgsKey,"-Dlog4j2.formatMsgNoLookups=true"),
                 Pair(spcServerStarterJarForceFetchKey, "true"),
-                Pair(spcServerStarterJarVersionKey, "latest")
+                Pair(spcServerStarterJarVersionKey, "latest"),
+                Pair(spcUseServerStarterJarKey,"true")
             )
         }
     }

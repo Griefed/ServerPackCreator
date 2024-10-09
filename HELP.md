@@ -113,6 +113,7 @@ The following placeholders will be replaced by ServerPackCreator during the crea
 | SPC_JABBA_INSTALL_VERSION_SPC          | The version of Jabba to install.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | SPC_SERVERSTARTERJAR_FORCE_FETCH_SPC   | Whether the ServerStarterJar, when using Forge or NeoForge, should be refreshed at every start. Also affects updates to newer versions.                                                                                                                                                                                                                                                                                                                                                                         |
 | SPC_SERVERSTARTERJAR_VERSION_SPC       | The version of the ServerStarterJar to use. Set to 'latest' to always use the latest available version.                                                                                                                                                                                                                                                                                                                                                                                                         |
+| USE_SSJ                                | true/false allows you to enable/disable the usage of the ServerStarterJar by the NeoForge project when you are using Forge. Some Forge versions may be incompatible with said ServerStarterJar. As of right now, people   ran into trouble when using Forge and Minecraft 1.20.2 and 1.20.3.                                                                                                                                                                                                                    |
 
 Jabba is a piece of software which makes the installation and usage of a JDK according to the system you are on very easy.
 It is used by the `install_java.xxx`-scripts to supply the correct Java version for your modded server should the criteria
@@ -143,6 +144,7 @@ The contents of the variables are as follows. See `### Default values` above for
 | JABBA_INSTALL_VERSION          | SPC_JABBA_INSTALL_VERSION_SPC                                |
 | SERVERSTARTERJAR_FORCE_FETCH   | SPC_SERVERSTARTERJAR_FORCE_FETCH_SPC                         |
 | SERVERSTARTERJAR_VERSION       | SPC_SERVERSTARTERJAR_VERSION_SPC                             |
+| USE_SSJ                        | SPC_USE_SSJ_SPC                                              |
 
 Plus any additional custom key-value pair you added to your server pack config.
 
