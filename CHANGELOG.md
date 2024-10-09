@@ -1,3 +1,53 @@
+## [7.1.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.0.2...7.1.0) (2024-10-09)
+
+
+### 👀 Reverts
+
+* **Installer:** Remove self-updating from CLI as it doesn't work as expected ([66184c5](https://git.griefed.de/Griefed/ServerPackCreator/commit/66184c56ba2a419080afc9611b929d448a111bec))
+
+
+### 💎 Improvements
+
+* Add dialog to exclusion and whitelist addition from inclusion tip popup menu ([80bdbc3](https://git.griefed.de/Griefed/ServerPackCreator/commit/80bdbc3be415adc9a36e026a726e8adf455c59fd))
+
+
+### 🔩 Dependencies
+
+* **frontend-web:** Update package-lock after dependabot updates ([48429a1](https://git.griefed.de/Griefed/ServerPackCreator/commit/48429a1157847eb1115b4b8cda66a756368f3f78))
+* **frontend-web:** Update package-lock after dependabot updates ([5897566](https://git.griefed.de/Griefed/ServerPackCreator/commit/589756644926dccfa000c4786cdf322b24f0035b))
+
+
+### 🦊 CI/CD
+
+* **deps-dev:** bump @types/node in /serverpackcreator-web-frontend ([38fb5af](https://git.griefed.de/Griefed/ServerPackCreator/commit/38fb5af28d6948a894248702b49f0fbd8fdf9bf6))
+* **deps:** bump actions/setup-java from 3 to 4 ([20156f9](https://git.griefed.de/Griefed/ServerPackCreator/commit/20156f98b3a733640b36441507541df9426aa9ef))
+* **deps:** bump com.fasterxml.jackson.core:jackson-databind ([0d1cbf0](https://git.griefed.de/Griefed/ServerPackCreator/commit/0d1cbf0e1b0edef11139576e63b3c3008f3f9167))
+* **deps:** bump com.h2database:h2 in /serverpackcreator-app ([71bc854](https://git.griefed.de/Griefed/ServerPackCreator/commit/71bc8544790d348a0a84406207ee1dfe8eff5f2d))
+* **deps:** bump com.miglayout:miglayout-swing ([7389094](https://git.griefed.de/Griefed/ServerPackCreator/commit/73890947bd6756431fb8e883d57c6565e02aee56))
+* **deps:** bump DamianReeves/write-file-action from 1.2 to 1.3 ([d58cc99](https://git.griefed.de/Griefed/ServerPackCreator/commit/d58cc99f0285d556f314e4dfd8e4fa3cf5716303))
+* **deps:** bump de.jensklingenberg.ktorfit:ktorfit-lib ([a1d4125](https://git.griefed.de/Griefed/ServerPackCreator/commit/a1d4125f2fc5bf6edf27e83681899cbb71cb377d))
+* **deps:** bump JamesIves/github-pages-deploy-action ([8251a8d](https://git.griefed.de/Griefed/ServerPackCreator/commit/8251a8d5823f5eedf1cf70e9ee4d7422e6ed8907))
+* **deps:** bump org.apache.logging.log4j:log4j-core ([79faa2f](https://git.griefed.de/Griefed/ServerPackCreator/commit/79faa2f46dea2d9fb0bf38d88c1e99509a7fdfe8))
+* **deps:** bump org.jetbrains.kotlin:kotlin-stdlib ([fd1c2f1](https://git.griefed.de/Griefed/ServerPackCreator/commit/fd1c2f1df7173d03b033cd8f0ff0ca7656e60fde))
+* **deps:** bump org.jetbrains.kotlin:kotlin-test ([64a64fd](https://git.griefed.de/Griefed/ServerPackCreator/commit/64a64fdad6b17eea9073dc42d62b27cd3c90cadd))
+* **deps:** bump org.junit.jupiter:junit-jupiter-api ([b9b944a](https://git.griefed.de/Griefed/ServerPackCreator/commit/b9b944aafbfb743b0202b495a5e37c3169ab92e1))
+* **deps:** bump org.junit.jupiter:junit-jupiter-engine ([cda1d5d](https://git.griefed.de/Griefed/ServerPackCreator/commit/cda1d5d1b324100a2ccd88717a7be3b3eea05cb1))
+* **deps:** bump org.pf4j:pf4j in /serverpackcreator-plugin-example ([36d3ccf](https://git.griefed.de/Griefed/ServerPackCreator/commit/36d3ccf1c03a5bc650752be63977e4224a20ae3a))
+* **deps:** bump org.springframework.boot:spring-boot-starter-data-jpa ([c8d70b9](https://git.griefed.de/Griefed/ServerPackCreator/commit/c8d70b96df43d910efcc917dc262d82a78f47436))
+* **deps:** bump org.springframework.boot:spring-boot-starter-test ([a5ec35a](https://git.griefed.de/Griefed/ServerPackCreator/commit/a5ec35aa05df43a59c4bb62c13bbf775f1d49d42))
+* **deps:** bump quasar in /serverpackcreator-web-frontend ([f26aef3](https://git.griefed.de/Griefed/ServerPackCreator/commit/f26aef355e61a65bc837a970c9799fa861cc68ab))
+* **deps:** bump softprops/action-gh-release from 0.1.15 to 2.0.8 ([8a5603c](https://git.griefed.de/Griefed/ServerPackCreator/commit/8a5603c5c93888761174b70244a18cc29c3f39a2))
+* **deps:** bump tj-actions/branch-names from 7.0.7 to 8.0.1 ([e9e0f3c](https://git.griefed.de/Griefed/ServerPackCreator/commit/e9e0f3c73ebbc16cac334076eaec5effd725064e))
+* **Installer:** Rename CLI based updaters appropriately ([18934ce](https://git.griefed.de/Griefed/ServerPackCreator/commit/18934cebcd56163dc665bb24ea133893e84431bf))
+* Adjust test job name ([ec823d9](https://git.griefed.de/Griefed/ServerPackCreator/commit/ec823d9fb6fafe1e8f8957a9bffbe3eb45b1c087))
+* Sync fetchdepth with other workflows ([2a3ba91](https://git.griefed.de/Griefed/ServerPackCreator/commit/2a3ba91f93d2feee84643be68eb92f54086f70cb))
+
+
+### 🚀 Features
+
+* Add option to copy selected text in inclusion tooltip to clipboard ([cef39c3](https://git.griefed.de/Griefed/ServerPackCreator/commit/cef39c3dd3eb2e950f528475a9364c52bb3c5c8f))
+* Allow toggling usage of ServerStarterJar on/off when using Forge ([4709024](https://git.griefed.de/Griefed/ServerPackCreator/commit/4709024c8ad4b9ab2a6cb7a6515eabebfcdd5529))
+
 ## [7.0.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.0.1...7.0.2) (2024-09-29)
 
 
