@@ -2,6 +2,5 @@
 
 exec \
     s6-notifyoncheck -d -n 300 -w 1000 -c "nc -z localhost 8096" \
-    cd /app/serverpackcreator \
-    s6-setuidgid abc \
-    /app/serverpackcreator/java/bin/java -jar /app/serverpackcreator/serverpackcreator.jar -web
+    cd /app/serverpackcreator s6-setuidgid abc java \
+    -jar /app/serverpackcreator/serverpackcreator.jar -web

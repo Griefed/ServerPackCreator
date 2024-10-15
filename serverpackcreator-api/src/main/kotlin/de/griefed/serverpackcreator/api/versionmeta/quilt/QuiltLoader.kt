@@ -44,9 +44,9 @@ internal class QuiltLoader(
         private set
     var release: String? = null
         private set
-    private val latestElement = "latest"
-    private val releaseElement = "release"
-    private val version = "version"
+    private val latestElement = "latest" // TODO Move tagName to property
+    private val releaseElement = "release" // TODO Move tagName to property
+    private val version = "version" // TODO Move tagName to property
 
     /**
      * Update the Quilt loader versions by parsing the Fabric loader manifest.

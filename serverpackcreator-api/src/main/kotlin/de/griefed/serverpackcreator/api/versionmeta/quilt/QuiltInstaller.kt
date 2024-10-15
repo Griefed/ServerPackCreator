@@ -43,7 +43,7 @@ internal class QuiltInstaller(
 ) {
     @Suppress("MemberVisibilityCanBePrivate")
     val installerUrlTemplate =
-        "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/%s/quilt-installer-%s.jar"
+        "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/%s/quilt-installer-%s.jar" // TODO Move URL to property
     val installers: MutableList<String> = ArrayList(100)
     val installerUrlMeta = HashMap<String, URL>(100)
     var latestInstaller: String? = null
@@ -54,9 +54,9 @@ internal class QuiltInstaller(
         private set
     var releaseInstallerUrl: URL? = null
         private set
-    private val latest = "latest"
-    private val release = "release"
-    private val version = "version"
+    private val latest = "latest" // TODO Move tagName to property
+    private val release = "release" // TODO Move tagName to property
+    private val version = "version" // TODO Move tagName to property
 
     /**
      * Update the Quilt installer versions by parsing the Fabric loader manifest.

@@ -9,10 +9,10 @@ services:
       - POSTGRES_USER=<YOUR_USERNAME>
       - POSTGRES_PASSWORD=<YOUR_PASSWORD>
     volumes:
-      - ./database:/var/lib/postgresql/data
+      - database:/var/lib/postgresql/data
   serverpackcreator:
     container_name: serverpackcreator
-    image: serverpackcreator/serverpackcreator-dev
+    image: griefed/serverpackcreator:latest
     restart: unless-stopped
     depends_on:
       - serverpackcreatordb
@@ -43,3 +43,5 @@ services:
       - ./modpacks:/app/serverpackcreator/modpacks
       - ./server-packs:/app/serverpackcreator/server-packs
       - ./logs:/app/serverpackcreator/logs
+volumes:
+  database:

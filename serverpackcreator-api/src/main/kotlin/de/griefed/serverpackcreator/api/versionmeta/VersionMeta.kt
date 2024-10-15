@@ -86,51 +86,51 @@ class VersionMeta(
 
     @Suppress("MemberVisibilityCanBePrivate")
     val legacyFabricUrlGame: URL =
-        URI("$legacyFabricUrlBase/v2/versions/game").toURL()
+        URI("$legacyFabricUrlBase/v2/versions/game").toURL() // TODO Move URL to property
 
     @Suppress("MemberVisibilityCanBePrivate")
     val legacyFabricUrlLoader: URL =
-        URI("$legacyFabricUrlBase/v2/versions/loader").toURL()
+        URI("$legacyFabricUrlBase/v2/versions/loader").toURL() // TODO Move URL to property
 
     @Suppress("MemberVisibilityCanBePrivate")
     val legacyfabricUrlManifest: URL =
-        URI("https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/maven-metadata.xml").toURL()
+        URI("https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/maven-metadata.xml").toURL() // TODO Move URL to property
 
     @Suppress("MemberVisibilityCanBePrivate")
     val minecraftUrlManifest: URL =
-        URI("https://launchermeta.mojang.com/mc/game/version_manifest.json").toURL()
+        URI("https://launchermeta.mojang.com/mc/game/version_manifest.json").toURL() // TODO Move URL to property
 
     @Suppress("MemberVisibilityCanBePrivate")
     val forgeUrlManifest: URL =
-        URI("https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json").toURL()
+        URI("https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json").toURL() // TODO Move URL to property
 
     @Suppress("MemberVisibilityCanBePrivate")
     val oldNeoForgeUrlManifest: URL =
-        URI("https://maven.neoforged.net/releases/net/neoforged/forge/maven-metadata.xml").toURL()
+        URI("https://maven.neoforged.net/releases/net/neoforged/forge/maven-metadata.xml").toURL() // TODO Move URL to property
 
     @Suppress("MemberVisibilityCanBePrivate")
     val newNeoForgeUrlManifest: URL =
-        URI("https://maven.neoforged.net/releases/net/neoforged/neoforge/maven-metadata.xml").toURL()
+        URI("https://maven.neoforged.net/releases/net/neoforged/neoforge/maven-metadata.xml").toURL() // TODO Move URL to property
 
     @Suppress("MemberVisibilityCanBePrivate")
     val fabricUrlManifest: URL =
-        URI("https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml").toURL()
+        URI("https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml").toURL() // TODO Move URL to property
 
     @Suppress("MemberVisibilityCanBePrivate")
     val fabricUrlIntermediariesManifest: URL =
-        URI("https://meta.fabricmc.net/v2/versions/intermediary").toURL()
+        URI("https://meta.fabricmc.net/v2/versions/intermediary").toURL() // TODO Move URL to property
 
     @Suppress("MemberVisibilityCanBePrivate")
     val fabricUrlInstallerManifest: URL =
-        URI("https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml").toURL()
+        URI("https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml").toURL() // TODO Move URL to property
 
     @Suppress("MemberVisibilityCanBePrivate")
     val quiltUrlManifest: URL =
-        URI("https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-loader/maven-metadata.xml").toURL()
+        URI("https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-loader/maven-metadata.xml").toURL() // TODO Move URL to property
 
     @Suppress("MemberVisibilityCanBePrivate")
     val quiltUrlInstallerManifest: URL =
-        URI("https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/maven-metadata.xml").toURL()
+        URI("https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/maven-metadata.xml").toURL() // TODO Move URL to property
 
     /**
      * The MinecraftMeta instance for working with Minecraft versions and information about them.
@@ -312,8 +312,8 @@ class VersionMeta(
                         val newContent: String = newManifest.readText()
                         when (manifestType) {
                             Type.MINECRAFT -> {
-                                countOldFile = utilities.jsonUtilities.getJson(oldContent).get("versions").size()
-                                countNewFile = utilities.jsonUtilities.getJson(newContent).get("versions").size()
+                                countOldFile = utilities.jsonUtilities.getJson(oldContent).get("versions").size() // TODO Move tagName to property
+                                countNewFile = utilities.jsonUtilities.getJson(newContent).get("versions").size() // TODO Move tagName to property
                             }
 
                             Type.FORGE -> {
@@ -332,9 +332,9 @@ class VersionMeta(
 
                             Type.FABRIC, Type.FABRIC_INSTALLER, Type.QUILT, Type.QUILT_INSTALLER, Type.NEO_FORGE -> {
                                 countOldFile = utilities.xmlUtilities.getXml(oldContent)
-                                    .getElementsByTagName("version").length
+                                    .getElementsByTagName("version").length // TODO Move tagName to property
                                 countNewFile = utilities.xmlUtilities.getXml(newContent)
-                                    .getElementsByTagName("version").length
+                                    .getElementsByTagName("version").length // TODO Move tagName to property
                             }
 
                             Type.LEGACY_FABRIC -> if (manifestToCheck.name.endsWith(".json")) {
@@ -343,11 +343,11 @@ class VersionMeta(
                             } else {
                                 val oldXML: Document = utilities.xmlUtilities.getXml(oldContent)
                                 val newXML: Document = utilities.xmlUtilities.getXml(newContent)
-                                countOldFile = oldXML.getElementsByTagName("version").length
-                                countNewFile = newXML.getElementsByTagName("version").length
+                                countOldFile = oldXML.getElementsByTagName("version").length // TODO Move tagName to property
+                                countNewFile = newXML.getElementsByTagName("version").length // TODO Move tagName to property
                                 if (countOldFile == countNewFile) {
-                                    if (oldXML.getElementsByTagName("version").item(0).childNodes.item(0)
-                                            .nodeValue != newXML.getElementsByTagName("version").item(0).childNodes
+                                    if (oldXML.getElementsByTagName("version").item(0).childNodes.item(0) // TODO Move tagName to property
+                                            .nodeValue != newXML.getElementsByTagName("version").item(0).childNodes // TODO Move tagName to property
                                             .item(0)
                                             .nodeValue
                                     ) {

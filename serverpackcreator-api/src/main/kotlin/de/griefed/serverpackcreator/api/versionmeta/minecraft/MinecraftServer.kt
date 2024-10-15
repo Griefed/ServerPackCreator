@@ -49,11 +49,11 @@ class MinecraftServer internal constructor(
 ) {
     private val manifestFile: File = File(apiProperties.minecraftServerManifestsDirectory, "$minecraftVersion.json")
     private var serverJson: JsonNode? = null
-    private val downloads = "downloads"
-    private val server = "server"
-    private val url = "url"
-    private val javaVersion = "javaVersion"
-    private val majorVersion = "majorVersion"
+    private val downloads = "downloads" // TODO Move tagName to property
+    private val server = "server" // TODO Move tagName to property
+    private val url = "url" // TODO Move tagName to property
+    private val javaVersion = "javaVersion" // TODO Move tagName to property
+    private val majorVersion = "majorVersion" // TODO Move tagName to property
 
     /**
      * Get the [URL] to the download of this Minecraft-servers JAR-file.

@@ -32,8 +32,8 @@ import java.util.*
  * @author Griefed
  */
 internal class FabricLoaderDetails(private val objectMapper: ObjectMapper) {
-    private val urlPrefix = "https://meta.fabricmc.net/v2/versions/loader/"
-    private val json = "/server/json"
+    private val urlPrefix = "https://meta.fabricmc.net/v2/versions/loader/" // TODO Move URL to property
+    private val json = "/server/json" // TODO Move URL to property
 
     /**
      * Get the details for a given Minecraft and Fabric version combination.
