@@ -45,7 +45,7 @@ internal class NeoForgeLoader(
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     val minecraftVersions: MutableList<String> = ArrayList(100)
     val neoForgeVersions: MutableList<String> = ArrayList(100)
-    private val version = "version"
+    private val version = "version" // TODO Move tagName to property
 
     /**
      * 1-n Minecraft version to NeoForge versions.

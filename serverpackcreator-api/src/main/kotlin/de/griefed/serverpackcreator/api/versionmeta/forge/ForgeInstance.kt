@@ -42,7 +42,7 @@ class ForgeInstance(
     private val minecraftMeta: MinecraftMeta
 ) {
     val installerUrl: URL =
-        URI("https://files.minecraftforge.net/maven/net/minecraftforge/forge/$minecraftVersion-$forgeVersion/forge-$minecraftVersion-$forgeVersion-installer.jar").toURL()
+        URI("https://files.minecraftforge.net/maven/net/minecraftforge/forge/$minecraftVersion-$forgeVersion/forge-$minecraftVersion-$forgeVersion-installer.jar").toURL() // TODO Move URL to property
 
     /**
      * Get this Forge instances corresponding Minecraft client instance, wrapped in an

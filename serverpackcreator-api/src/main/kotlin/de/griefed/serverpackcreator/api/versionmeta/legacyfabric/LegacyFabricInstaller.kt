@@ -45,15 +45,14 @@ class LegacyFabricInstaller(
     val allVersions: MutableList<String> = ArrayList(100)
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val installerUrlTemplate =
-        "https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/%s/fabric-installer-%s.jar"
+    val installerUrlTemplate = "https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/%s/fabric-installer-%s.jar" // TODO Move URL to property
     var latest: String? = null
         private set
     var release: String? = null
         private set
-    private val latestElement = "latest"
-    private val releaseElement = "release"
-    private val version = "version"
+    private val latestElement = "latest" // TODO Move tagName to property
+    private val releaseElement = "release" // TODO Move tagName to property
+    private val version = "version" // TODO Move tagName to property
 
     /**
      * Update all lists of available versions with new information gathered from the manifest.

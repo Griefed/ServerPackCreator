@@ -52,8 +52,8 @@ internal abstract class LegacyFabricVersioning(
         snapshots.clear()
         allVersions.clear()
         for (node in utilities.jsonUtilities.getJson(manifest)) {
-            val version: String = node.get("version").asText()
-            val stable = node.get("stable").asBoolean()
+            val version: String = node.get("version").asText() // TODO Move tagName to property
+            val stable = node.get("stable").asBoolean() // TODO Move tagName to property
             allVersions.add(version)
             if (stable) {
                 releases.add(version)

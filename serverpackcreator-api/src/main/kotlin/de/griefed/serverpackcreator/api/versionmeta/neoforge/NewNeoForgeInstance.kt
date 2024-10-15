@@ -43,7 +43,7 @@ class NewNeoForgeInstance(
 ) : NeoForgeInstance {
 
     override val installerUrl: URL =
-        URI("https://maven.neoforged.net/releases/net/neoforged/neoforge/$neoForgeVersion/neoforge-$neoForgeVersion-installer.jar").toURL()
+        URI("https://maven.neoforged.net/releases/net/neoforged/neoforge/$neoForgeVersion/neoforge-$neoForgeVersion-installer.jar").toURL() // TODO Move URL to property
 
     /**
      * Get this Forge instances corresponding Minecraft client instance, wrapped in an

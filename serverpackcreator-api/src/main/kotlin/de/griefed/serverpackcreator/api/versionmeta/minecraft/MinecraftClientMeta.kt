@@ -54,13 +54,13 @@ internal class MinecraftClientMeta(
         private set
     var latestSnapshot: MinecraftClient? = null
         private set
-    private val versions = "versions"
-    private val latestType = "latest"
-    private val releaseType = "release"
-    private val snapshotType = "snapshot"
-    private val type = "type"
-    private val id = "id"
-    private val url = "url"
+    private val versions = "versions" // TODO Move tagName to property
+    private val latestType = "latest" // TODO Move tagName to property
+    private val releaseType = "release" // TODO Move tagName to property
+    private val snapshotType = "snapshot" // TODO Move tagName to property
+    private val type = "type" // TODO Move tagName to property
+    private val id = "id" // TODO Move tagName to property
+    private val url = "url" // TODO Move tagName to property
 
     /**
      * Update the meta information.

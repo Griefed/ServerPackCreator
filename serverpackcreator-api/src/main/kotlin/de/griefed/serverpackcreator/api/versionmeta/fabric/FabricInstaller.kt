@@ -43,13 +43,12 @@ internal class FabricInstaller(
     private val utilities: Utilities
 ) {
     @Suppress("MemberVisibilityCanBePrivate")
-    val installerUrlTemplate =
-        "https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar"
+    val installerUrlTemplate = "https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar" // TODO Move URL to property
     @Suppress("MemberVisibilityCanBePrivate")
-    val improvedLauncherUrlTemplate = "https://meta.fabricmc.net/v2/versions/loader/%s/%s/%s/server/jar"
-    private val latest = "latest"
-    private val release = "release"
-    private val version = "version"
+    val improvedLauncherUrlTemplate = "https://meta.fabricmc.net/v2/versions/loader/%s/%s/%s/server/jar" // TODO Move URL to property
+    private val latest = "latest" // TODO Move tagName to property
+    private val release = "release" // TODO Move tagName to property
+    private val version = "version" // TODO Move tagName to property
 
     /**
      * Available installer versions for Fabric.
