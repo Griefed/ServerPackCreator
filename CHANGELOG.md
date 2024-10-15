@@ -1,3 +1,11 @@
+## [7.1.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.1.0...7.1.1) (2024-10-15)
+
+
+### 🛠 Fixes
+
+* **Docker:** Ensure overrides is created and read correctly. Use apt openjdk 21 instead. Move database files to volume in compose. ([22af6b0](https://git.griefed.de/Griefed/ServerPackCreator/commit/22af6b0f7f0cd2e8a371046ea0b4bb12fb418cd5))
+* **Webservice:** Load overrides last to actually override. Add debug logging for start args. ([89b0cf0](https://git.griefed.de/Griefed/ServerPackCreator/commit/89b0cf0627fb321a527313589a53443289733a4e))
+
 ## [7.1.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.0.2...7.1.0) (2024-10-09)
 
 
