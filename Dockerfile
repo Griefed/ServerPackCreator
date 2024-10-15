@@ -11,11 +11,9 @@ RUN \
   dos2unix gradlew && chmod +x gradlew && \
   sh gradlew -Pversion="$VERSION" \
     build --info --full-stacktrace \
-    -x :serverpackcreator-api:test -x :serverpackcreator-app:test && \
-  wget -O zulu21.tar.gz https://cdn.azul.com/zulu/bin/zulu21.30.15-ca-jdk21.0.1-linux_x64.tar.gz && \
-  tar -xvf zulu21.tar.gz -C /tmp/serverpackcreator/java --strip-components=1
+    -x :serverpackcreator-api:test -x :serverpackcreator-app:test
 
-FROM ghcr.io/linuxserver/baseimage-ubuntu:jammy-version-d74de700
+FROM ghcr.io/linuxserver/baseimage-ubuntu:jammy-version-102276d2
 
 ARG VERSION=dev
 
@@ -35,7 +33,8 @@ RUN \
   echo "**** Bring system up to date ****" && \
   apt-get update && apt-get upgrade -y && \
   apt-get install -y \
-    libatomic1 && \
+    libatomic1 \
+    openjdk-21-jdk-headless && \
   echo "**** Creating our folder(s) ****" && \
   mkdir -p \
     /app/serverpackcreator/java && \
@@ -47,7 +46,6 @@ RUN \
       /tmp/*
 
 COPY --chmod=777 root/ /
-COPY --from=builder --chmod=777 /tmp/serverpackcreator/java/ /app/serverpackcreator/java
 COPY --from=builder --chmod=777 /tmp/serverpackcreator/serverpackcreator-app/build/libs/serverpackcreator-app-$VERSION.jar /app/serverpackcreator/serverpackcreator.jar
 
 EXPOSE 8080
