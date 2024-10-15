@@ -34,18 +34,17 @@ import java.io.File
 @EntityScan(value = ["de.griefed.serverpackcreator.app"])
 @EnableScheduling
 class WebService(private val api: ApiWrapper) {
-    private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     fun start(args: Array<String>): ConfigurableApplicationContext {
         val userHome = System.getProperty("user.home")
         val lastIndex = "--spring.config.location=classpath:/application.properties," +
                 "classpath:/serverpackcreator.properties," +
-                "optional:file:./serverpackcreator.properties," +
-                "optional:file:./overrides.properties," +
                 "optional:file:${api.apiProperties.serverPackCreatorPropertiesFile.absolutePath},"+
-                "optional:file:${api.apiProperties.overridesPropertiesFile.absolutePath}," +
                 "optional:file:${File(userHome,"serverpackcreator.properties").absolutePath}," +
-                "optional:file:${File(userHome,"overrides.properties").absolutePath}"
+                "optional:file:./serverpackcreator.properties," +
+                "optional:file:${api.apiProperties.overridesPropertiesFile.absolutePath}," +
+                "optional:file:${File(userHome,"overrides.properties").absolutePath}," +
+                "optional:file:./overrides.properties"
         val springArgs = if (args.isEmpty()) {
             arrayOf(lastIndex)
         } else {
@@ -71,6 +70,8 @@ class WebService(private val api: ApiWrapper) {
     }
 
     companion object {
+        private val log by lazy { cachedLoggerOf(this.javaClass) }
+
         @Volatile
         private var springBootApplicationContext: ConfigurableApplicationContext? = null
 
@@ -88,6 +89,7 @@ class WebService(private val api: ApiWrapper) {
             if (springBootApplicationContext == null) {
                 synchronized(this) {
                     if (springBootApplicationContext == null) {
+                        log.debug("Running webservice with ars: $args")
                         springBootApplicationContext = SpringApplication.run(WebService::class.java, *args)
                     }
                 }
