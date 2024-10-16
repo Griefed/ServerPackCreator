@@ -23,8 +23,8 @@ services:
       - SPC_SCHEDULE_DATABASE_CLEANUP=0 0 0 * * * #CRON expression
       - SPC_SCHEDULE_FILES_CLEANUP=0 0 0 * * * #CRON expression
       - SPC_SCHEDULE_VERSIONS_REFRESH=0 0 0 * * * #CRON expression
-      - SPC_DATABASE_PASSWORD=<YOUR_PASSWORD>
       - SPC_DATABASE_USERNAME=<YOUR_USERNAME>
+      - SPC_DATABASE_PASSWORD=<YOUR_PASSWORD>
       - SPC_DATABASE_HOST=serverpackcreatordb
       - SPC_DATABASE_PORT=5432
       - SPC_DATABASE_DB=serverpackcreator
