@@ -1,3 +1,10 @@
+## [7.1.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.1.2...7.1.3) (2024-10-16)
+
+
+### 🛠 Fixes
+
+* **Docker:** Force home-directory in container ([729eb22](https://git.griefed.de/Griefed/ServerPackCreator/commit/729eb224f424ae916eec1e504d6db68fe438597e))
+
 ## [7.1.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.1.1...7.1.2) (2024-10-16)
 
 
