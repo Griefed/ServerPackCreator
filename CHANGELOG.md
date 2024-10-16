@@ -1,3 +1,21 @@
+## [7.1.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.1.1...7.1.2) (2024-10-16)
+
+
+### :scissors: Refactor
+
+* **Docker:** Remove not needed port from compose ([db0b45e](https://git.griefed.de/Griefed/ServerPackCreator/commit/db0b45efb99ceb70f878b9d359f6c7fe8c230f53))
+* **Docker:** Swap user and password to reflect specs in DB compose ([d337c0c](https://git.griefed.de/Griefed/ServerPackCreator/commit/d337c0c1dad130736a16c299e6e45af7151f0270))
+
+
+### 📔 Docs
+
+* Fix typo in USE_SSJ for templates ([a386140](https://git.griefed.de/Griefed/ServerPackCreator/commit/a386140e830040306be0bd1c6853261f37252a10))
+
+
+### 🛠 Fixes
+
+* **Docker:** Wrap variables in braces ([0a77481](https://git.griefed.de/Griefed/ServerPackCreator/commit/0a774814443be296c1af368a87fcac17acb3ea60))
+
 ## [7.1.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.1.0...7.1.1) (2024-10-15)
 
 
