@@ -10,8 +10,6 @@ services:
       - POSTGRES_PASSWORD=1234567890
     volumes:
       - database:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
   serverpackcreator:
     container_name: serverpackcreator
     build:
