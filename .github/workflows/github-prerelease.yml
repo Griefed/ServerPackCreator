@@ -149,13 +149,13 @@ jobs:
 
       - name: General Pre-Info
         id: preinfo
-        uses: jaywcjlove/github-action-read-file@v1.2.2
+        uses: jaywcjlove/github-action-read-file@v2.0.0
         with:
           path: misc/PRE-INFO.md
 
       - name: General Info
         id: info
-        uses: jaywcjlove/github-action-read-file@v1.2.2
+        uses: jaywcjlove/github-action-read-file@v2.0.0
         with:
           path: misc/INFO.md
 
