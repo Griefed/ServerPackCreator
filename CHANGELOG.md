@@ -1,3 +1,37 @@
+## [7.1.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.1.3...7.1.4) (2024-11-06)
+
+
+### 🔩 Dependencies
+
+* Cookie 0.7.1 in package lock after Dependabot updates ([a6c062d](https://git.griefed.de/Griefed/ServerPackCreator/commit/a6c062dc427d618482658afae55715916eeccc33))
+
+
+### 🦊 CI/CD
+
+* **deps-dev:** bump @types/node in /serverpackcreator-web-frontend ([28d1d0d](https://git.griefed.de/Griefed/ServerPackCreator/commit/28d1d0d9826e7227f023618a475621b37aebd4a2))
+* **deps-dev:** bump eslint-plugin-vue ([aef6c1d](https://git.griefed.de/Griefed/ServerPackCreator/commit/aef6c1d1527b9910db48a41b36e5677fb7bac0fc))
+* **deps-dev:** bump typescript in /serverpackcreator-web-frontend ([fc5d1bb](https://git.griefed.de/Griefed/ServerPackCreator/commit/fc5d1bbf59a099c5ca09b0e85eac4b2bdabacbc7))
+* **deps:** bump actions/upload-artifact from 3 to 4 ([ab0d5f2](https://git.griefed.de/Griefed/ServerPackCreator/commit/ab0d5f2d396377aa370e481fb644ec135c15aff5))
+* **deps:** bump com.fasterxml.jackson.core:jackson-databind ([522a211](https://git.griefed.de/Griefed/ServerPackCreator/commit/522a2111db09c505f108b8e60702f466b7b007ee))
+* **deps:** bump com.formdev:flatlaf-extras in /serverpackcreator-app ([6151475](https://git.griefed.de/Griefed/ServerPackCreator/commit/615147573e5706b33b3a754c461c7580b263ee1d))
+* **deps:** bump com.install4j:install4j-runtime ([88fda94](https://git.griefed.de/Griefed/ServerPackCreator/commit/88fda9439bbf5f4b21a6a8f4171afa581a480335))
+* **deps:** bump cookie and express in /serverpackcreator-web-frontend ([5f1d8a9](https://git.griefed.de/Griefed/ServerPackCreator/commit/5f1d8a9bd96e794d72cff35b50a42d0631516d41))
+* **deps:** bump gradle/actions from 3 to 4 ([bd5e67b](https://git.griefed.de/Griefed/ServerPackCreator/commit/bd5e67bcbefdcfe06d9a675bd6a2db2b84650e3f))
+* **deps:** bump jaywcjlove/github-action-read-file from 1.2.2 to 2.0.0 ([c5c5f18](https://git.griefed.de/Griefed/ServerPackCreator/commit/c5c5f184402cad98aabb0f057c9c650c5f6fbcd6))
+* **deps:** bump org.apache.logging.log4j:log4j-api-kotlin ([32db254](https://git.griefed.de/Griefed/ServerPackCreator/commit/32db25452c84adfe01418e46d5f795d1c93fff43))
+* **deps:** bump org.bouncycastle:bcpkix-jdk18on ([072fa5e](https://git.griefed.de/Griefed/ServerPackCreator/commit/072fa5edb5474ce14e2f210c4ba2b97a66b5b046))
+* **deps:** bump org.jetbrains.kotlin:kotlin-bom ([d451345](https://git.griefed.de/Griefed/ServerPackCreator/commit/d451345ea0865ed86fafb1a9912ddc2beefdb451))
+* **deps:** bump org.jetbrains.kotlin:kotlin-stdlib ([1b6cba4](https://git.griefed.de/Griefed/ServerPackCreator/commit/1b6cba43e5bd9ba40d70cda2626aa32ceae7f1c4))
+* **deps:** bump org.junit.jupiter:junit-jupiter-api ([d9c0951](https://git.griefed.de/Griefed/ServerPackCreator/commit/d9c0951905f6e6b7ca57f3c49fd205cfc14276c3))
+* **deps:** bump org.junit.jupiter:junit-jupiter-api ([b8b7d2f](https://git.griefed.de/Griefed/ServerPackCreator/commit/b8b7d2f5dfa1f9dc3b09de65776e6dfb1a7ddc76))
+* **deps:** bump org.junit.jupiter:junit-jupiter-engine ([6cc3c6d](https://git.griefed.de/Griefed/ServerPackCreator/commit/6cc3c6d500912de7ea1da9767c56762c8034ada1))
+* **deps:** bump org.pf4j:pf4j in /serverpackcreator-plugin-example ([67c543a](https://git.griefed.de/Griefed/ServerPackCreator/commit/67c543af670a7f5f105debaa25f863c019a4d888))
+* **deps:** bump org.springframework.boot:spring-boot-starter-data-jpa ([adc1693](https://git.griefed.de/Griefed/ServerPackCreator/commit/adc1693479814d8eb6cd46f8466e26ccbd796ace))
+* **deps:** bump softprops/action-gh-release from 2.0.8 to 2.0.9 ([04b0b02](https://git.griefed.de/Griefed/ServerPackCreator/commit/04b0b02104d0fba238a48310f2ca21fccaa94f76))
+* **deps:** bump vue in /serverpackcreator-web-frontend ([e277c37](https://git.griefed.de/Griefed/ServerPackCreator/commit/e277c379f6520a2bbeca03ab0563e097c8520bf7))
+* **deps:** bump vue-i18n in /serverpackcreator-web-frontend ([de8b9bc](https://git.griefed.de/Griefed/ServerPackCreator/commit/de8b9bcc37b592ad679f16e53354a00613ebb209))
+* **Dev builds:** Don't remove drafts as the removal triggers full changelog gen ([2a79722](https://git.griefed.de/Griefed/ServerPackCreator/commit/2a797226a1aa4cb26403f1dc7cae7e80b77ce80c))
+
 ## [7.1.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.1.2...7.1.3) (2024-10-16)
 
 
