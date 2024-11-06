@@ -51,7 +51,7 @@ jobs:
         run: |
           chmod +x gradlew
 
-      - uses: gradle/actions/setup-gradle@v3
+      - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: wrapper
 
@@ -147,7 +147,7 @@ jobs:
 
       - name: General Info
         id: info
-        uses: jaywcjlove/github-action-read-file@v1.2.2
+        uses: jaywcjlove/github-action-read-file@v2.0.0
         with:
           path: misc/INFO.md
 
@@ -178,7 +178,7 @@ jobs:
       # GENERATE RELEASE
       - name: Create Release
         id: create_release
-        uses: softprops/action-gh-release@v2.0.8
+        uses: softprops/action-gh-release@v2.0.9
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{ needs.preparations.outputs.version }}
@@ -275,7 +275,7 @@ jobs:
       - name: Build documentation
         run: ./gradlew :serverpackcreator-api:dokkaHtml -Pversion="${{ needs.preparations.outputs.version }}" --full-stacktrace --info -x test
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: serverpackcreator-api/build/dokka/
