@@ -27,7 +27,7 @@ dependencies {
     api("org.apache.logging.log4j:log4j-api-kotlin:1.5.0")
     api("org.apache.logging.log4j:log4j-core:2.24.1")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
-    api("org.pf4j:pf4j:3.11.0")
+    api("org.pf4j:pf4j:3.13.0")
     api("org.bouncycastle:bcpkix-jdk18on:1.79")
 
     api("com.github.MCRcortex:nekodetector:Version-1.1-pre")
