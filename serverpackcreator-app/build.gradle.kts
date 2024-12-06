@@ -41,7 +41,7 @@ dependencies {
     api("org.jetbrains.kotlin:kotlin-reflect:2.0.0")
     api("com.formdev:flatlaf:3.5.1")
     api("com.formdev:flatlaf-extras:3.5.2")
-    api("com.formdev:flatlaf-intellij-themes:3.5.1")
+    api("com.formdev:flatlaf-intellij-themes:3.5.2")
     api("com.formdev:flatlaf-fonts-jetbrains-mono:2.304")
     api("com.formdev:flatlaf-fonts-inter:4.0")
     api("com.formdev:flatlaf-fonts-roboto:2.137")
@@ -55,9 +55,9 @@ dependencies {
 
     //WEB
     api("org.jetbrains.kotlin:kotlin-reflect:1.9.23")
-    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.1")
+    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.2")
     api("org.springframework.boot:spring-boot-starter-web:3.3.2")
-    api("org.springframework.boot:spring-boot-starter-log4j2:3.3.2")
+    api("org.springframework.boot:spring-boot-starter-log4j2:3.4.0")
     api("org.springframework.boot:spring-boot-starter-data-jpa:3.3.5")
     api("org.postgresql:postgresql:42.7.3")
     api("org.javassist:javassist:3.30.2-GA")
@@ -65,7 +65,7 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
     testRuntimeOnly("com.h2database:h2:2.3.232")
     testImplementation("org.springframework.boot:spring-boot-starter-test:3.3.4")
-    developmentOnly("org.springframework.boot:spring-boot-devtools:3.3.4")
+    developmentOnly("org.springframework.boot:spring-boot-devtools:3.4.0")
     //developmentOnly("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 }
 
