@@ -1,3 +1,28 @@
+## [7.1.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.1.4...7.1.5) (2024-12-06)
+
+
+### 🦊 CI/CD
+
+* **deps-dev:** bump @types/node in /serverpackcreator-web-frontend ([30f3f33](https://git.griefed.de/Griefed/ServerPackCreator/commit/30f3f33b3f40d9598d4580737efc41db26d54fdb))
+* **deps-dev:** bump eslint-plugin-vue ([d69ce4b](https://git.griefed.de/Griefed/ServerPackCreator/commit/d69ce4ba5adca40d22ba6348f90c5c2411434c26))
+* **deps-dev:** bump typescript in /serverpackcreator-web-frontend ([d730133](https://git.griefed.de/Griefed/ServerPackCreator/commit/d7301333c72e64b3a2499ddc4342222d3d8e8a66))
+* **deps:** bump @intlify/core-base and vue-i18n ([9cc86e1](https://git.griefed.de/Griefed/ServerPackCreator/commit/9cc86e136820d8f2ea7da5e246c71342c2096864))
+* **deps:** bump axios in /serverpackcreator-web-frontend ([9d2b9c9](https://git.griefed.de/Griefed/ServerPackCreator/commit/9d2b9c98ce095b6bbd27d58889b8e7309bc1e170))
+* **deps:** bump com.fasterxml.jackson.module:jackson-module-kotlin ([d7e453d](https://git.griefed.de/Griefed/ServerPackCreator/commit/d7e453d0047872656afeb6f3d81fc3eff3d9522a))
+* **deps:** bump com.formdev:flatlaf-intellij-themes ([85e554c](https://git.griefed.de/Griefed/ServerPackCreator/commit/85e554c82a0064df2a6aa1541655e1763e41926d))
+* **deps:** bump cross-spawn in /serverpackcreator-web-frontend ([a26a6c5](https://git.griefed.de/Griefed/ServerPackCreator/commit/a26a6c588d87eb82e45f9e79f2904f9b3b919152))
+* **deps:** bump JamesIves/github-pages-deploy-action ([ce09b01](https://git.griefed.de/Griefed/ServerPackCreator/commit/ce09b01e4852cf24e1ee5095003c0caf8bce5406))
+* **deps:** bump org.apache.logging.log4j:log4j-core ([d3d4d7e](https://git.griefed.de/Griefed/ServerPackCreator/commit/d3d4d7e0db7328b5c240f69650f2076299831000))
+* **deps:** bump org.jetbrains.kotlin:kotlin-bom ([0954b31](https://git.griefed.de/Griefed/ServerPackCreator/commit/0954b314a424a292441e853564c405b1e141607c))
+* **deps:** bump org.jetbrains.kotlin:kotlin-stdlib ([c589767](https://git.griefed.de/Griefed/ServerPackCreator/commit/c589767ef685d3b92edaae9249e6216055a0108b))
+* **deps:** bump org.jetbrains.kotlinx:kotlinx-datetime ([9a984b3](https://git.griefed.de/Griefed/ServerPackCreator/commit/9a984b30739d91704be9d154fe7703b6b92b4f7c))
+* **deps:** bump org.pf4j:pf4j in /serverpackcreator-api ([c9adac9](https://git.griefed.de/Griefed/ServerPackCreator/commit/c9adac904dc18b4820b5f072170d49240d1e0e2b))
+* **deps:** bump org.pf4j:pf4j in /serverpackcreator-plugin-example ([f4e6413](https://git.griefed.de/Griefed/ServerPackCreator/commit/f4e64137891543b0e24277a9c0b6094a9fe05da8))
+* **deps:** bump org.springframework.boot:spring-boot-devtools ([a4470e2](https://git.griefed.de/Griefed/ServerPackCreator/commit/a4470e2f5689629e848f234f9d931cb653cec7c1))
+* **deps:** bump org.springframework.boot:spring-boot-starter-log4j2 ([620d207](https://git.griefed.de/Griefed/ServerPackCreator/commit/620d207839e58d9d8e39645060809fe95f582bcf))
+* **deps:** bump pinia in /serverpackcreator-web-frontend ([1edad41](https://git.griefed.de/Griefed/ServerPackCreator/commit/1edad41a71ba0b9b86b220523f3e880dc6526f36))
+* **deps:** bump softprops/action-gh-release from 2.0.9 to 2.1.0 ([cfaa214](https://git.griefed.de/Griefed/ServerPackCreator/commit/cfaa2144908dbd85f8e484a6116652aca6d822be))
+
 ## [7.1.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.1.3...7.1.4) (2024-11-06)
 
 
