@@ -1,3 +1,15 @@
+## [7.1.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.1.5...7.1.6) (2024-12-14)
+
+
+### 📦 Other
+
+* **GUI:** Include version in window title ([58bbfff](https://git.griefed.de/Griefed/ServerPackCreator/commit/58bbfffb95dab231ce6c06c83b9a7c48406d30dc))
+
+
+### 🛠 Fixes
+
+* **GUI:** Open properties browser instead of icon browser ([15e9577](https://git.griefed.de/Griefed/ServerPackCreator/commit/15e957781d468e540d93bec7ec61daacabc91d1f))
+
 ## [7.1.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.1.4...7.1.5) (2024-12-06)
 
 
