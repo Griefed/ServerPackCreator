@@ -345,7 +345,7 @@ class ConfigEditor(
 
     private fun selectServerProperties() {
         val serverPropertiesChooser = if (guiProps.getPreference("lastserverpropertieschooserdir").isPresent) {
-            ServerIconChooser(File(guiProps.getPreference("lastserverpropertieschooserdir").get()), guiProps.defaultFileChooserDimension)
+            ServerPropertiesChooser(File(guiProps.getPreference("lastserverpropertieschooserdir").get()), guiProps.defaultFileChooserDimension)
         } else if (File(getServerPropertiesPath()).isFile) {
             ServerPropertiesChooser(File(getServerPropertiesPath()), guiProps.defaultFileChooserDimension)
         } else {
