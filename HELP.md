@@ -1006,13 +1006,13 @@ If you wish to run ServerPackCreator with your locale (if it is already supporte
    ServerPackCreator-X-X-X.jar and set your locale like this `lang=your_locale` for
    example `lang=en_GB`
 
-If you want to contribute translations to ServerPackCreator, check out the `serverpackcreator-api/src/commonMain/i18n`-directory containing already available
+If you want to contribute translations to ServerPackCreator, check out the `serverpackcreator-api/src/main/i18n`-directory containing already available
 translations to see how they are set up. Then, make your changes, test them, and open a pull request on GitHub according
 to the `CONTRIBUTING.md`.
 
 ### Adding a translation
 
-Say you want to translate ServerPackCreator to german. You would need to add the file `Gui_en_GB.properties`
+Say you want to translate ServerPackCreator to german. You would need to add the file `Translations_de_DE.properties`
 
 In the english properties, you will see entries like
 
@@ -1024,7 +1024,7 @@ menubar.gui.menu.about=About
 menubar.gui.menu.help=Help
 ```
 
-So, in order to translate them to german, in your `Gui_en_GB.properties`-file, you would add
+So, in order to translate them to german, in your `Translations_de_DE.properties`-file, you would add
 
 ```properties
 menubar.gui.menu.file=Datei
