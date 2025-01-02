@@ -36,7 +36,7 @@ dependencies {
     api("info.picocli:picocli-shell-jline3:4.7.6")
 
     //GUI
-    api("commons-io:commons-io:2.16.1")
+    api("commons-io:commons-io:2.18.0")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.9.0")
     api("org.jetbrains.kotlin:kotlin-reflect:2.0.0")
     api("com.formdev:flatlaf:3.5.1")
