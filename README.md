@@ -394,7 +394,7 @@ Huge shoutout and thank you!**
 
 ### Sponsors
 
-<!-- sponsors --><a href="https://github.com/kreezxil"><img src="https:&#x2F;&#x2F;avatars.githubusercontent.com&#x2F;u&#x2F;3880072?u&#x3D;f320cce8b9bf44541e86499cdf40fcb6b7ff8667&amp;v&#x3D;4" width="60px" alt="kreezxil" /></a><a href="https://github.com/kyber-6"><img src="https:&#x2F;&#x2F;avatars.githubusercontent.com&#x2F;u&#x2F;100732009?u&#x3D;e7ec2a7f8b94d40c20d863dcf45c171d5369dc51&amp;v&#x3D;4" width="60px" alt="Kyber" /></a><a href="https://github.com/Calmingstorm"><img src="https:&#x2F;&#x2F;avatars.githubusercontent.com&#x2F;u&#x2F;82822675?v&#x3D;4" width="60px" alt="" /></a><!-- sponsors -->
+<!-- sponsors --><a href="https://github.com/kreezxil"><img src="https:&#x2F;&#x2F;github.com&#x2F;kreezxil.png" width="60px" alt="User avatar: kreezxil" /></a><a href="https://github.com/thrasosc"><img src="https:&#x2F;&#x2F;github.com&#x2F;thrasosc.png" width="60px" alt="User avatar: Thrasos" /></a><a href="https://github.com/Calmingstorm"><img src="https:&#x2F;&#x2F;github.com&#x2F;Calmingstorm.png" width="60px" alt="User avatar: " /></a><!-- sponsors -->
 
 ### Contributors
 
@@ -453,10 +453,10 @@ Huge shoutout and thank you!**
       </a>
     </td>
     <td width="150" align="center">
-      <a href="https://github.com/kyber-6" title="kyber-6">
+      <a href="https://github.com/thrasosc" title="thrasosc">
         <img src="https://avatars.githubusercontent.com/u/100732009?v=4" width="70" />
         <br />
-        kyber-6
+        thrasosc
       </a>
     </td>
     <td width="150" align="center">
