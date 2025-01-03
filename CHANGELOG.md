@@ -1,3 +1,38 @@
+## [7.1.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.1.6...7.1.7) (2025-01-03)
+
+
+### 📔 Docs
+
+* Improve translation info ([bc5b5d8](https://git.griefed.de/Griefed/ServerPackCreator/commit/bc5b5d8f1208241ae67bc60df792197847e4f02f))
+* Trim down contributing to make it less convoluted and bloated ([f00075e](https://git.griefed.de/Griefed/ServerPackCreator/commit/f00075e5439c023227b224c76e6df5306bebf86b))
+
+
+### 📦 Other
+
+* Add sodiumoptionsapi- and sodiumoptionsmodcompat-. Thanks to @ModernGamingWorld for the report! ([7deb122](https://git.griefed.de/Griefed/ServerPackCreator/commit/7deb12213876414ea741762e2d75ff0add3dde31))
+
+
+### 🦊 CI/CD
+
+* **deps-dev:** bump @types/node in /serverpackcreator-web-frontend ([9babea3](https://git.griefed.de/Griefed/ServerPackCreator/commit/9babea3616219f7a08ddc03ad6bebe56ed4bcc40))
+* **deps-dev:** bump prettier in /serverpackcreator-web-frontend ([655454a](https://git.griefed.de/Griefed/ServerPackCreator/commit/655454af314a0252dd15d0ea7305d75eb0cc8591))
+* **deps:** bump @quasar/extras in /serverpackcreator-web-frontend ([82bd0d2](https://git.griefed.de/Griefed/ServerPackCreator/commit/82bd0d2cff429eee204996bd3a43f0c725296257))
+* **deps:** bump com.electronwill.night-config:toml ([d24e398](https://git.griefed.de/Griefed/ServerPackCreator/commit/d24e39806b2dd864d9ec5b847ca7eaefd2ae1514))
+* **deps:** bump com.formdev:flatlaf-intellij-themes ([3f9356a](https://git.griefed.de/Griefed/ServerPackCreator/commit/3f9356acc6e3fb39c52d50445e962589389b6cac))
+* **deps:** bump commons-io:commons-io in /serverpackcreator-app ([3e06a20](https://git.griefed.de/Griefed/ServerPackCreator/commit/3e06a205c315da373fde264574a6f0db32f90184))
+* **deps:** bump nanoid in /serverpackcreator-web-frontend ([9b3ab4b](https://git.griefed.de/Griefed/ServerPackCreator/commit/9b3ab4bf729658459eefe7427a4d6f27fa4a9405))
+* **deps:** bump org.apache.logging.log4j:log4j-core ([b8c29de](https://git.griefed.de/Griefed/ServerPackCreator/commit/b8c29de7107fc5d6c7e3656fdddbb0ad23e91bf1))
+* **deps:** bump org.jetbrains.kotlin:kotlin-test ([665301e](https://git.griefed.de/Griefed/ServerPackCreator/commit/665301eb16c8170b5d69c17d6245c2bec4e16c4f))
+* **deps:** bump org.jetbrains.kotlinx:kotlinx-coroutines-core ([42b203f](https://git.griefed.de/Griefed/ServerPackCreator/commit/42b203fe06f8bd3caa0e28e0a07951370b11b18b))
+* **deps:** bump org.junit.jupiter:junit-jupiter-api ([b2eda48](https://git.griefed.de/Griefed/ServerPackCreator/commit/b2eda48164dd909aafdab49b761176c75d94775f))
+* **deps:** bump org.junit.jupiter:junit-jupiter-api ([79e9565](https://git.griefed.de/Griefed/ServerPackCreator/commit/79e956507a3e7a282940b084196867180f66a610))
+* **deps:** bump org.junit.jupiter:junit-jupiter-api ([9712d4a](https://git.griefed.de/Griefed/ServerPackCreator/commit/9712d4a6ed689e5c1dd8a212322d6f63c58f2052))
+* **deps:** bump org.junit.jupiter:junit-jupiter-engine ([9c323bf](https://git.griefed.de/Griefed/ServerPackCreator/commit/9c323bf3e1cb56dddc258203ea4c66ce78d6bd88))
+* **deps:** bump org.springframework.boot:spring-boot-starter-data-jpa ([77ce2f5](https://git.griefed.de/Griefed/ServerPackCreator/commit/77ce2f5fc54f87e8038a6de20618f0afd310a84c))
+* **deps:** bump org.springframework.boot:spring-boot-starter-test ([84eae41](https://git.griefed.de/Griefed/ServerPackCreator/commit/84eae41d1725dd5ade63bd54f38196296fe05977))
+* **deps:** bump pinia in /serverpackcreator-web-frontend ([4929f80](https://git.griefed.de/Griefed/ServerPackCreator/commit/4929f80ebde23bea81bd4178e5f641da0664ea82))
+* **deps:** bump quasar in /serverpackcreator-web-frontend ([43d9ec8](https://git.griefed.de/Griefed/ServerPackCreator/commit/43d9ec8d0eaebe79fe8080d3ca712b4d6d29f2da))
+
 ## [7.1.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.1.5...7.1.6) (2024-12-14)
 
 
