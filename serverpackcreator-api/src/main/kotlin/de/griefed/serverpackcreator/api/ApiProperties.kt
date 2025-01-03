@@ -470,6 +470,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "smoothfocus-",                 //https://www.curseforge.com/minecraft/mc-mods/smoothfocus
             "sodium-fabric-",               //https://www.curseforge.com/minecraft/mc-mods/sodium
             "sodiumdynamiclights-",         //https://www.curseforge.com/minecraft/mc-mods/dynamiclights-reforged
+            "sodiumoptionsapi-",            //https://www.curseforge.com/minecraft/mc-mods/sodium-options-api
+            "sodiumoptionsmodcompat-",      //https://www.curseforge.com/minecraft/mc-mods/sodium-embeddium-options-mod-compat
             "sounddeviceoptions-",          //https://www.curseforge.com/minecraft/mc-mods/more-sound-config
             "soundreloader-",               //https://www.curseforge.com/minecraft/mc-mods/sound-reloader
             "spoticraft-",                  //https://www.curseforge.com/minecraft/mc-mods/spoticraft-inactive
