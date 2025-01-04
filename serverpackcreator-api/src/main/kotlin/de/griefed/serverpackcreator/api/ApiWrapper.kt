@@ -47,9 +47,9 @@ class ApiWrapper private constructor(
     val properties: File = File("serverpackcreator.properties"),
     runSetup: Boolean = true
 ) {
-    val versionsRegex = ".*(alpha|beta|dev).*".toRegex()
     val xmlJsonRegex = ".*\\.(xml|json)".toRegex()
     var setupWasRun: Boolean = false
+
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /**
@@ -63,6 +63,18 @@ class ApiWrapper private constructor(
     val apiProperties: ApiProperties by lazy {
         ApiProperties(properties)
     }
+
+    /**
+     * Will return true if this is the first time ServerPackCreator is being run
+     * on a given host.
+     */
+    @Volatile
+    var firstRun: Boolean = apiProperties.getPreference("de.griefed.serverpackcreator.firstrun","true").get().toBoolean()
+        get() {
+            apiProperties.storePreference("de.griefed.serverpackcreator.firstrun", "false")
+            return field
+        }
+        private set
 
     /**
      * This instances JSON-ObjectMapper used across ServerPackCreator with which this instance was
@@ -459,7 +471,7 @@ class ApiWrapper private constructor(
 
         // Print system information to console and logs.
         log.debug("Gathering system information to include in log to make debugging easier.")
-        if (apiProperties.apiVersion.matches(versionsRegex)) {
+        if (apiProperties.devBuild || apiProperties.preRelease) {
             log.debug("Warning user about possible data loss.")
             log.warn("################################################################")
             log.warn("#.............ALPHA | BETA | DEV VERSION DETECTED..............#")

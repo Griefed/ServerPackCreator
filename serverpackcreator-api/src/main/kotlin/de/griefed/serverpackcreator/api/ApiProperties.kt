@@ -630,8 +630,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     @Suppress("MemberVisibilityCanBePrivate")
     val trueFalseRegex = "^(true|false)$".toRegex()
 
-    @Suppress("MemberVisibilityCanBePrivate")
-    val alphaBetaRegex = "^(.*alpha.*|.*beta.*)$".toRegex()
+    val preReleaseRegex = ".*(alpha|beta|dev).*".toRegex()
 
     @Suppress("MemberVisibilityCanBePrivate")
     val serverPacksRegex = "^(?:\\./)?server-packs$".toRegex()
@@ -760,7 +759,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
 
     val preRelease: Boolean
         get() {
-            return apiVersion.matches(alphaBetaRegex)
+            return apiVersion.matches(preReleaseRegex)
         }
 
     val configVersion: String = if (preRelease || devBuild) {
@@ -768,14 +767,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     } else {
         "4"
     }
-
-    /**
-     * Only the first call to this property will return true if this is the first time ServerPackCreator is being run
-     * on a given host. Any subsequent call will return false. Handle with care!
-     *
-     * @author Griefed
-     */
-    val firstRun: Boolean
 
     var logLevel = "INFO"
         get() {
@@ -934,8 +925,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             }
         }
 
-    fun getPreference(pref: String) : Optional<String> {
-        return Optional.ofNullable(spcPreferences.get(pref, null))
+    fun getPreference(pref: String, def: String? = null) : Optional<String> {
+        return Optional.ofNullable(spcPreferences.get(pref, def))
     }
 
     fun storePreference(pref: String, value: String) {
@@ -2613,7 +2604,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             }
         }
         if (fallbackUpdated) {
-            saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
+            saveProperties(serverPackCreatorPropertiesFile)
         }
         return fallbackUpdated
     }
@@ -2770,8 +2761,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             setLoggingLevel(logLevel)
         }
 
-        firstRun = spcPreferences.getBoolean("de.griefed.serverpackcreator.firstrun",true)
-        spcPreferences.putBoolean("de.griefed.serverpackcreator.firstrun",false)
         logsDirectory.create(createFileOrDir = true, asDirectory = true)
         serverFilesDirectory.create(createFileOrDir = true, asDirectory = true)
         propertiesDirectory.create(createFileOrDir = true, asDirectory = true)
@@ -2787,7 +2776,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         minecraftServerManifestsDirectory.create(createFileOrDir = true, asDirectory = true)
         installerCacheDirectory.create(createFileOrDir = true, asDirectory = true)
         printSettings()
-        saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
+        saveProperties(serverPackCreatorPropertiesFile)
     }
 
     private fun setLoggingLevel(level: String) {
