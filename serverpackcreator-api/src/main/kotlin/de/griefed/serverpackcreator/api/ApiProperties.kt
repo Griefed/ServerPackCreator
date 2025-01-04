@@ -2770,8 +2770,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             setLoggingLevel(logLevel)
         }
 
-        firstRun = getBoolProperty("de.griefed.serverpackcreator.firstrun", true)
-        setBoolProperty("de.griefed.serverpackcreator.firstrun", false)
+        firstRun = spcPreferences.getBoolean("de.griefed.serverpackcreator.firstrun",true)
+        spcPreferences.putBoolean("de.griefed.serverpackcreator.firstrun",false)
         logsDirectory.create(createFileOrDir = true, asDirectory = true)
         serverFilesDirectory.create(createFileOrDir = true, asDirectory = true)
         propertiesDirectory.create(createFileOrDir = true, asDirectory = true)
