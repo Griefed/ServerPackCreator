@@ -296,7 +296,7 @@ class ServerPackHandler(
         } else {
             File(getServerPackDestination(packConfig))
         }
-        val existingManifest: File
+        val existingManifest: File = File(serverPack.absolutePath, "manifest.json")
         val oldManifest: ServerPackManifest
         var oldFile: File
         val generationStopWatch = SimpleStopWatch().start()
@@ -318,19 +318,15 @@ class ServerPackHandler(
         } catch (ignored: IOException) {
         }
 
-        if (apiProperties.isUpdatingServerPacksEnabled) {
-            existingManifest = File(serverPack.absolutePath, "manifest.json")
-            if (existingManifest.isFile) {
-                oldManifest = utilities.jsonUtilities.objectMapper.readValue(existingManifest, ServerPackManifest::class.java)
-                for (entry in oldManifest.files) {
-                    oldFile = File(serverPack.absolutePath, entry)
-                    if (oldFile.isFile && !oldFile.isDirectory) {
-                        log.debug("Deleting old file: ${oldFile.absolutePath}")
-                        oldFile.deleteQuietly()
-                    }
+        if (apiProperties.isUpdatingServerPacksEnabled && existingManifest.isFile) {
+            oldManifest = utilities.jsonUtilities.objectMapper.readValue(existingManifest, ServerPackManifest::class.java)
+            for (entry in oldManifest.files) {
+                oldFile = File(serverPack.absolutePath, entry)
+                //I know, .isFile is only true if it's really just a file...checking for !dir is still safer.
+                if (oldFile.isFile && !oldFile.isDirectory) {
+                    log.debug("Deleting old file: ${oldFile.absolutePath}")
+                    oldFile.deleteQuietly()
                 }
-            } else {
-                log.warn("Updating server packs enabled, but no manifest was found. Is this a new server pack?")
             }
         }
 
