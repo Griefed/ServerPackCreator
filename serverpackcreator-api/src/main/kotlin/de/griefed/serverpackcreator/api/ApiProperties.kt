@@ -338,6 +338,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "combat_music-",                //https://www.curseforge.com/minecraft/mc-mods/combat-music
             "connectedness-",               //https://www.curseforge.com/minecraft/mc-mods/connectedness
             "controllable-",                //https://www.curseforge.com/minecraft/mc-mods/controllable
+            "crash_assistant-",             //https://www.curseforge.com/minecraft/mc-mods/crash-assistant
             "cullleaves-",                  //https://www.curseforge.com/minecraft/mc-mods/cull-leaves
             "cullparticles-",               //https://www.curseforge.com/minecraft/mc-mods/cull-particles
             "custom-crosshair-mod-",        //https://www.curseforge.com/minecraft/mc-mods/custom-crosshair-mod
