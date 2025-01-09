@@ -89,7 +89,7 @@ class MainWindow(
             } else {
                 main.show()
             }
-            if (apiWrapper.apiProperties.firstRun && migrationManager.migrationMessages.isEmpty()) {
+            if (apiWrapper.firstRun) {
                 GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
                     if (JOptionPane.showConfirmDialog(
                             main.frame,
@@ -103,7 +103,7 @@ class MainWindow(
                     }
                 }
             } else {
-                if (apiWrapper.apiProperties.preRelease || migrationManager.migrationMessages.isNotEmpty()) {
+                if (migrationManager.migrationMessages.isNotEmpty()) {
                     main.displayMigrationMessages()
                 }
                 if (apiWrapper.apiProperties.fallbackUpdated) {
