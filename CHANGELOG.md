@@ -1,3 +1,23 @@
+## [7.1.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.1.7...7.1.8) (2025-01-09)
+
+
+### :scissors: Refactor
+
+* Improve readibility of manifest check ([4641d5c](https://git.griefed.de/Griefed/ServerPackCreator/commit/4641d5c12de718307dd76e5c148f41b4f6e3dd47))
+* Move firstRun to Java Prefs ([a8c31ef](https://git.griefed.de/Griefed/ServerPackCreator/commit/a8c31efcb5b4a6e78890deefa216b10576b95660))
+
+
+### 💎 Improvements
+
+* Move firstRun to wrapper and improve internal version-type checks ([25b8f10](https://git.griefed.de/Griefed/ServerPackCreator/commit/25b8f10db203d82b4909c377b6ee6fc666ca33ca))
+
+
+### 📦 Other
+
+* Added crash-assistant to clientside-only mods list. Thanks to [@chorbintime](https://git.griefed.de/chorbintime) for the report! ([9673eff](https://git.griefed.de/Griefed/ServerPackCreator/commit/9673eff9a783849016ad4170ad4e376726458dc8))
+* Update package-lock ([44f1313](https://git.griefed.de/Griefed/ServerPackCreator/commit/44f1313ebdd3d1098d41344701229e2641787765))
+* Updated package-lock ([4beac32](https://git.griefed.de/Griefed/ServerPackCreator/commit/4beac32abe079e11e8704e7a8b91c5884099d450))
+
 ## [7.1.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.1.6...7.1.7) (2025-01-03)
 
 
