@@ -1498,7 +1498,6 @@ $dokka.location:de.griefed.serverpackcreator.api/ApiProperties///PointingToDecla
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/ApiProperties/#java.io.File/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/-api-properties.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/acquireJavaPath/#kotlin.String?/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/acquire-java-path.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/aikarsFlags/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/aikars-flags.html
-$dokka.location:de.griefed.serverpackcreator.api/ApiProperties/alphaBetaRegex/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/alpha-beta-regex.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/apiVersion/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/api-version.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/changeLocale/#java.util.Locale/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/change-locale.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/clearPropertyFileList/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/clear-property-file-list.html
@@ -1551,7 +1550,6 @@ $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/fallbackUpdated/#
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/fallbackVersionSchedule/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/fallback-version-schedule.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/fallbackZipExclusions/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/fallback-zip-exclusions.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/fallbackZipFileExclusionEnabled/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/fallback-zip-file-exclusion-enabled.html
-$dokka.location:de.griefed.serverpackcreator.api/ApiProperties/firstRun/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/first-run.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/forgeVersionManifest/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/forge-version-manifest.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/getConfiguration/#org.apache.logging.log4j.core.LoggerContext#org.apache.logging.log4j.core.config.ConfigurationSource/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/get-configuration.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/getJarFile/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/get-jar-file.html
@@ -1561,7 +1559,7 @@ $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/getJavaVersion/#/
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/getOSArch/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/get-o-s-arch.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/getOSName/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/get-o-s-name.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/getOSVersion/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/get-o-s-version.html
-$dokka.location:de.griefed.serverpackcreator.api/ApiProperties/getPreference/#kotlin.String/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/get-preference.html
+$dokka.location:de.griefed.serverpackcreator.api/ApiProperties/getPreference/#kotlin.String#kotlin.String?/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/get-preference.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/getSupportedTypes/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/get-supported-types.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/hasteBinServerUrl/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/haste-bin-server-url.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/home/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/home.html
@@ -1613,6 +1611,7 @@ $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/pluginsDirectory/
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/postInstallCleanupFiles/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/post-install-cleanup-files.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/preInstallCleanupFiles/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/pre-install-cleanup-files.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/preRelease/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/pre-release.html
+$dokka.location:de.griefed.serverpackcreator.api/ApiProperties/preReleaseRegex/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/pre-release-regex.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/printSettings/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/print-settings.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/propertiesDirectory/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/properties-directory.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/quiltInstallerManifest/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/quilt-installer-manifest.html
@@ -1650,6 +1649,7 @@ $dokka.location:de.griefed.serverpackcreator.api/ApiWrapper/checkServerFilesFile
 $dokka.location:de.griefed.serverpackcreator.api/ApiWrapper/configurationHandler/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-wrapper/configuration-handler.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiWrapper/documentBuilderFactory/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-wrapper/document-builder-factory.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiWrapper/fabricScanner/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-wrapper/fabric-scanner.html
+$dokka.location:de.griefed.serverpackcreator.api/ApiWrapper/firstRun/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-wrapper/first-run.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiWrapper/forgeAnnotationScanner/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-wrapper/forge-annotation-scanner.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiWrapper/forgeTomlScanner/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-wrapper/forge-toml-scanner.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiWrapper/jsonUtilities/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-wrapper/json-utilities.html
@@ -1668,7 +1668,6 @@ $dokka.location:de.griefed.serverpackcreator.api/ApiWrapper/stageTwo/#/PointingT
 $dokka.location:de.griefed.serverpackcreator.api/ApiWrapper/tomlParser/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-wrapper/toml-parser.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiWrapper/utilities/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-wrapper/utilities.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiWrapper/versionMeta/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-wrapper/version-meta.html
-$dokka.location:de.griefed.serverpackcreator.api/ApiWrapper/versionsRegex/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-wrapper/versions-regex.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiWrapper/webUtilities/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-wrapper/web-utilities.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiWrapper/xmlJsonRegex/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-wrapper/xml-json-regex.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiWrapper/xmlUtilities/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-wrapper/xml-utilities.html
