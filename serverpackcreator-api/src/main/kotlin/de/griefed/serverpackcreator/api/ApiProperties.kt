@@ -336,6 +336,9 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "clickadv-",                    //https://www.curseforge.com/minecraft/mc-mods/clickable-advancements
             "clienttweaks-",                //https://www.curseforge.com/minecraft/mc-mods/client-tweaks
             "combat_music-",                //https://www.curseforge.com/minecraft/mc-mods/combat-music
+            "configured-neoforge-",         //https://www.curseforge.com/minecraft/mc-mods/configured
+            "configured-forge-",            //https://www.curseforge.com/minecraft/mc-mods/configured
+            "configured-fabric-",           //https://www.curseforge.com/minecraft/mc-mods/configured
             "connectedness-",               //https://www.curseforge.com/minecraft/mc-mods/connectedness
             "controllable-",                //https://www.curseforge.com/minecraft/mc-mods/controllable
             "crash_assistant-",             //https://www.curseforge.com/minecraft/mc-mods/crash-assistant
