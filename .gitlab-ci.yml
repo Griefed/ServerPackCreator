@@ -12,7 +12,7 @@ variables:
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
 
 services:
-  - name: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.9
+  - name: ghcr.io/griefed/gitlab-ci-cd:2.2.26
     alias: docker
 
 workflow:
@@ -27,7 +27,7 @@ workflow:
 
 Build Test:
   stage: Tests
-  image: docker.griefed.dev/eclipse-temurin:21-jdk
+  image: eclipse-temurin:21-jdk
   before_script:
     - echo "**** Running in $CI_JOB_ID ****"
     - echo "**** Java version ****"
@@ -75,7 +75,7 @@ Build Test:
 
 Docker Test:
   stage: Tests
-  image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.17
+  image: ghcr.io/griefed/gitlab-ci-cd:2.2.26
   before_script:
     - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
     - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
@@ -92,7 +92,7 @@ Docker Test:
 
 Generate Release:
   stage: Release
-  image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.9
+  image: ghcr.io/griefed/gitlab-ci-cd:2.2.26
   needs:
     - job: Build Test
       artifacts: false
@@ -107,7 +107,7 @@ Generate Release:
 
 Build Release:
   stage: Build Release
-  image: docker.griefed.dev/eclipse-temurin:21-jdk
+  image: eclipse-temurin:21-jdk
   needs:
     - job: Build Test
       artifacts: false
@@ -158,7 +158,7 @@ Build Release:
 
 Sign Java Publication:
   stage: Build Release
-  image: docker.griefed.dev/eclipse-temurin:21-jdk
+  image: eclipse-temurin:21-jdk
   needs:
     - job: Build Release
       artifacts: false
@@ -178,7 +178,7 @@ Sign Java Publication:
 
 Publish GitHub:
   stage: Build Release
-  image: docker.griefed.dev/eclipse-temurin:21-jdk
+  image: eclipse-temurin:21-jdk
   needs:
     - job: Sign Java Publication
       optional: false
@@ -192,7 +192,7 @@ Publish GitHub:
 
 Publish GitLab:
   stage: Build Release
-  image: docker.griefed.dev/eclipse-temurin:21-jdk
+  image: eclipse-temurin:21-jdk
   needs:
     - job: Sign Java Publication
       optional: false
@@ -206,7 +206,7 @@ Publish GitLab:
 
 Publish GitGriefed:
   stage: Build Release
-  image: docker.griefed.dev/eclipse-temurin:21-jdk
+  image: eclipse-temurin:21-jdk
   needs:
     - job: Sign Java Publication
       optional: false
@@ -220,7 +220,7 @@ Publish GitGriefed:
 
 Publish OSSRH:
   stage: Build Release
-  image: docker.griefed.dev/eclipse-temurin:21-jdk
+  image: eclipse-temurin:21-jdk
   needs:
     - job: Sign Java Publication
       optional: false
@@ -234,7 +234,7 @@ Publish OSSRH:
 
 Build Docker Release:
   stage: Build Release
-  image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.17
+  image: ghcr.io/griefed/gitlab-ci-cd:2.2.26
   needs:
     - job: Build Test
       artifacts: true
@@ -257,7 +257,7 @@ Build Docker Release:
 
 Build Docker PreRelease:
   stage: Build Release
-  image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.17
+  image: ghcr.io/griefed/gitlab-ci-cd:2.2.26
   needs:
     - job: Build Test
       artifacts: true
@@ -310,7 +310,7 @@ Writerside Build:
 
 Writerside Docker:
   stage: Documentation
-  image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.17
+  image: ghcr.io/griefed/gitlab-ci-cd:2.2.26
   needs:
     - job: Writerside Build
       artifacts: true
@@ -332,7 +332,7 @@ Writerside Docker:
 
 Writerside Docker Latest:
   stage: Documentation
-  image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.17
+  image: ghcr.io/griefed/gitlab-ci-cd:2.2.26
   needs:
     - job: Writerside Build
       artifacts: true
@@ -355,7 +355,7 @@ Writerside Docker Latest:
 
 Writerside Docker Prerelease:
   stage: Documentation
-  image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.17
+  image: ghcr.io/griefed/gitlab-ci-cd:2.2.26
   needs:
     - job: Writerside Build
       artifacts: true
@@ -376,7 +376,7 @@ Writerside Docker Prerelease:
 
 pages:
   stage: Documentation
-  image: docker.griefed.dev/eclipse-temurin:21-jdk
+  image: eclipse-temurin:21-jdk
   allow_failure: true
   before_script:
     - chmod +x gradlew
@@ -393,7 +393,7 @@ pages:
 
 Update README:on-schedule:
   stage: Documentation
-  image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.19
+  image: ghcr.io/griefed/gitlab-ci-cd:2.2.26
   only:
     - schedules
   before_script:
