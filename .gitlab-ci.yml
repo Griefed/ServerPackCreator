@@ -12,8 +12,10 @@ variables:
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
 
 services:
-  - name: ghcr.io/griefed/gitlab-ci-cd:2.2.26
+  - name: ghcr.io/griefed/gitlab-ci-cd:2.2.27
     alias: docker
+
+image: ghcr.io/griefed/gitlab-ci-cd:2.2.27
 
 workflow:
   rules:
@@ -75,7 +77,6 @@ Build Test:
 
 Docker Test:
   stage: Tests
-  image: ghcr.io/griefed/gitlab-ci-cd:2.2.26
   before_script:
     - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
     - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
@@ -92,7 +93,6 @@ Docker Test:
 
 Generate Release:
   stage: Release
-  image: ghcr.io/griefed/gitlab-ci-cd:2.2.26
   needs:
     - job: Build Test
       artifacts: false
@@ -234,7 +234,6 @@ Publish OSSRH:
 
 Build Docker Release:
   stage: Build Release
-  image: ghcr.io/griefed/gitlab-ci-cd:2.2.26
   needs:
     - job: Build Test
       artifacts: true
@@ -257,7 +256,6 @@ Build Docker Release:
 
 Build Docker PreRelease:
   stage: Build Release
-  image: ghcr.io/griefed/gitlab-ci-cd:2.2.26
   needs:
     - job: Build Test
       artifacts: true
@@ -310,7 +308,6 @@ Writerside Build:
 
 Writerside Docker:
   stage: Documentation
-  image: ghcr.io/griefed/gitlab-ci-cd:2.2.26
   needs:
     - job: Writerside Build
       artifacts: true
@@ -332,7 +329,6 @@ Writerside Docker:
 
 Writerside Docker Latest:
   stage: Documentation
-  image: ghcr.io/griefed/gitlab-ci-cd:2.2.26
   needs:
     - job: Writerside Build
       artifacts: true
@@ -355,7 +351,6 @@ Writerside Docker Latest:
 
 Writerside Docker Prerelease:
   stage: Documentation
-  image: ghcr.io/griefed/gitlab-ci-cd:2.2.26
   needs:
     - job: Writerside Build
       artifacts: true
@@ -393,7 +388,6 @@ pages:
 
 Update README:on-schedule:
   stage: Documentation
-  image: ghcr.io/griefed/gitlab-ci-cd:2.2.26
   only:
     - schedules
   before_script:
