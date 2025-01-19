@@ -288,6 +288,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "SimpleDiscordRichPresence-",   //https://www.curseforge.com/minecraft/mc-mods/simple-discord-rich-presence
             "SimpleWorldTimer-",            //https://www.curseforge.com/minecraft/mc-mods/simple-world-timer
             "SoundFilters-",                //https://www.curseforge.com/minecraft/mc-mods/sound-filters
+            "Sounds-",                      //https://www.curseforge.com/minecraft/mc-mods/sound
             "SpawnerFix-",                  //https://www.curseforge.com/minecraft/mc-mods/spawner-fix
             "StylishEffects-",              //https://www.curseforge.com/minecraft/mc-mods/stylish-effects
             "TextruesRubidiumOptions-",     //https://www.curseforge.com/minecraft/mc-mods/textrues-rubidium-options
