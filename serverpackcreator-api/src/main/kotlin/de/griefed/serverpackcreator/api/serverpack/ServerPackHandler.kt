@@ -601,7 +601,7 @@ class ServerPackHandler(
                 } catch (ignored: IOException) {
                 }
                 acquired = mutableListOf()
-                for (mod in getModsToInclude(clientDir.absolutePath, clientMods, whitelist, minecraftVersion, modloader)) {
+                for (mod in compileModList(clientDir.absolutePath, clientMods, whitelist, minecraftVersion, modloader)) {
                     acquired.add(ServerPackFile(mod, File(serverDir, mod.name)))
                 }
                 processed = runFilters(acquired, inclusion, modpackDir)
@@ -1028,7 +1028,7 @@ class ServerPackHandler(
      * @return A list of all mods to include in the server pack.
      * @author Griefed
      */
-    fun getModsToInclude(packConfig: PackConfig) = getModsToInclude(
+    fun compileModList(packConfig: PackConfig) = compileModList(
         "${packConfig.modpackDir}${File.separator}mods",
         packConfig.clientMods,
         packConfig.modsWhitelist,
@@ -1043,8 +1043,8 @@ class ServerPackHandler(
      *
      * @param modsDir                 The mods-directory of the modpack of which to generate a list of
      * all its contents.
-     * @param userSpecifiedClientMods A list of all clientside-only mods.
-     * @param userSpecifiedModsWhitelist  A list of mods to include regardless if a match was found in [userSpecifiedClientMods].
+     * @param exclusionStrings A list of all clientside-only mods.
+     * @param whitelistStrings  A list of mods to include regardless if a match was found in [exclusionStrings].
      * @param minecraftVersion        The Minecraft version the modpack uses. When the modloader is
      * Forge, this determines whether Annotations or Tomls are
      * scanned.
@@ -1052,10 +1052,10 @@ class ServerPackHandler(
      * @return A list of all mods to include in the server pack.
      * @author Griefed
      */
-    fun getModsToInclude(
+    fun compileModList(
         modsDir: String,
-        userSpecifiedClientMods: List<String>,
-        userSpecifiedModsWhitelist: List<String>,
+        exclusionStrings: List<String>,
+        whitelistStrings: List<String>,
         minecraftVersion: String,
         modloader: String
     ): List<File> {
@@ -1097,7 +1097,22 @@ class ServerPackHandler(
             }
 
             // Exclude scanned mods from copying if said functionality is enabled.
-            excludeMods(autodiscoveredClientMods, modsInModpack)
+            if (autodiscoveredClientMods.isNotEmpty()) {
+                log.info("Automatically detected mods: ${autodiscoveredClientMods.size}")
+                for (discoveredMod in autodiscoveredClientMods) {
+                    modsInModpack.removeIf {
+                        if (it.name.contains(discoveredMod.name)) {
+                            log.warn("Automatically excluding mod: ${discoveredMod.name}")
+                            return@removeIf true
+                        } else {
+                            return@removeIf false
+                        }
+                    }
+                }
+            } else {
+                log.info("No clientside-only mods detected.")
+            }
+
             log.debug(
                 "Scanning and excluding of ${filesInModsDir.size} mods took ${scanningStopWatch.stop().getTime()}"
             )
@@ -1106,7 +1121,32 @@ class ServerPackHandler(
         }
 
         // Exclude user-specified mods from copying.
-        excludeUserSpecifiedMod(userSpecifiedClientMods, userSpecifiedModsWhitelist, modsInModpack)
+        if (exclusionStrings.isNotEmpty()) {
+            log.info("Performing ${apiProperties.exclusionFilter}-type checks for user-specified clientside-only mod exclusion.")
+            for (userSpecifiedExclusion in exclusionStrings) {
+                modsInModpack.removeIf { modToCheck ->
+                    val excluded: Boolean
+                    val modName = modToCheck.name
+                    excluded = when (apiProperties.exclusionFilter) {
+                        ExclusionFilter.START -> modName.startsWith(userSpecifiedExclusion) && !whitelistStrings.any { whitelistedMod -> modName.startsWith(whitelistedMod) }
+                        ExclusionFilter.END -> modName.endsWith(userSpecifiedExclusion) && !whitelistStrings.any { whitelistedMod -> modName.endsWith(whitelistedMod) }
+                        ExclusionFilter.CONTAIN -> modName.contains(userSpecifiedExclusion) && !whitelistStrings.any { whitelistedMod -> modName.contains(whitelistedMod) }
+                        ExclusionFilter.REGEX -> modName.matches(userSpecifiedExclusion.toRegex()) && !whitelistStrings.any { whitelistedMod -> modName.matches(whitelistedMod.toRegex()) }
+                        ExclusionFilter.EITHER -> (
+                                (modName.startsWith(userSpecifiedExclusion) && !whitelistStrings.any { whitelistedMod -> modName.startsWith(whitelistedMod) }) ||
+                                        (modName.endsWith(userSpecifiedExclusion) && !whitelistStrings.any { whitelistedMod -> modName.endsWith(whitelistedMod) }) ||
+                                        (modName.contains(userSpecifiedExclusion) && !whitelistStrings.any { whitelistedMod -> modName.contains(whitelistedMod) }) ||
+                                        (modName.matches(userSpecifiedExclusion.toRegex()) && !whitelistStrings.any { whitelistedMod -> modName.matches(whitelistedMod.toRegex()) }))
+                    }
+                    if (excluded) {
+                        log.info("Excluding ${modToCheck.name}. It matched clientside-mod entry: $userSpecifiedExclusion")
+                    }
+                    excluded
+                }
+            }
+        } else {
+            log.warn("User specified no clientside-only mods.")
+        }
         return ArrayList(modsInModpack)
     }
 
@@ -1226,52 +1266,6 @@ class ServerPackHandler(
     }
 
     /**
-     * Exclude every automatically discovered clientside-only mod from the list of mods in the
-     * modpack.
-     *
-     * @param autodiscoveredClientMods Automatically discovered clientside-only mods in the modpack.
-     * @param modsInModpack            All mods in the modpack.
-     * @author Griefed
-     */
-    fun excludeMods(autodiscoveredClientMods: List<File>, modsInModpack: TreeSet<File>) {
-        if (autodiscoveredClientMods.isNotEmpty()) {
-            log.info("Automatically detected mods: ${autodiscoveredClientMods.size}")
-            for (discoveredMod in autodiscoveredClientMods) {
-                modsInModpack.removeIf {
-                    if (it.name.contains(discoveredMod.name)) {
-                        log.warn("Automatically excluding mod: ${discoveredMod.name}")
-                        return@removeIf true
-                    } else {
-                        return@removeIf false
-                    }
-                }
-            }
-        } else {
-            log.info("No clientside-only mods detected.")
-        }
-    }
-
-    /**
-     * Exclude user-specified mods from the server pack.
-     *
-     * @param userSpecifiedExclusions User-specified clientside-only mods to exclude from the server
-     * pack.
-     * @param modsInModpack           Every mod ending with `jar` or `disabled` in the
-     * modpack.
-     * @author Griefed
-     */
-    fun excludeUserSpecifiedMod(userSpecifiedExclusions: List<String>, userSpecifiedModsWhitelist: List<String>, modsInModpack: TreeSet<File>) {
-        if (userSpecifiedExclusions.isNotEmpty()) {
-            log.info("Performing ${apiProperties.exclusionFilter}-type checks for user-specified clientside-only mod exclusion.")
-            for (userSpecifiedExclusion in userSpecifiedExclusions) {
-                exclude(userSpecifiedExclusion, userSpecifiedModsWhitelist, modsInModpack)
-            }
-        } else {
-            log.warn("User specified no clientside-only mods.")
-        }
-    }
-
-    /**
      * Walk through the specified directory and add a [ServerPackFile] for every file/folder
      * which matches the given regex.
      *
@@ -1311,38 +1305,6 @@ class ServerPackHandler(
             }
         } catch (ex: IOException) {
             log.error("Couldn't gather all files from ${source.absolutePath} for filter \"$regex\".", ex)
-        }
-    }
-
-    /**
-     * Go through the mods in the modpack and exclude any of the user-specified clientside-only mods
-     * according to the filter method set in the serverpackcreator.properties. For available filters,
-     * see [ExclusionFilter].
-     *
-     * @param userSpecifiedExclusion The client mod to check whether it needs to be excluded.
-     * @param modsInModpack          All mods in the modpack.
-     *
-     * @author Griefed
-     */
-    fun exclude(userSpecifiedExclusion: String, userSpecifiedModsWhitelist: List<String>, modsInModpack: TreeSet<File>) {
-        modsInModpack.removeIf { modToCheck ->
-            val excluded: Boolean
-            val modName = modToCheck.name
-            excluded = when (apiProperties.exclusionFilter) {
-                ExclusionFilter.START -> modName.startsWith(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.startsWith(whitelistedMod) }
-                ExclusionFilter.END -> modName.endsWith(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.endsWith(whitelistedMod) }
-                ExclusionFilter.CONTAIN -> modName.contains(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.contains(whitelistedMod) }
-                ExclusionFilter.REGEX -> modName.matches(userSpecifiedExclusion.toRegex()) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.matches(whitelistedMod.toRegex()) }
-                ExclusionFilter.EITHER -> (
-                            (modName.startsWith(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.startsWith(whitelistedMod) }) ||
-                            (modName.endsWith(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.endsWith(whitelistedMod) }) ||
-                            (modName.contains(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.contains(whitelistedMod) }) ||
-                            (modName.matches(userSpecifiedExclusion.toRegex()) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.matches(whitelistedMod.toRegex()) }))
-            }
-            if (excluded) {
-                log.debug("Removed ${modToCheck.name} as per user-specified check: $userSpecifiedExclusion")
-            }
-            excluded
         }
     }
 
