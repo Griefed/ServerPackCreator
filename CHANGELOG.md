@@ -1,3 +1,20 @@
+## [7.1.9](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.1.8...7.1.9) (2025-01-23)
+
+### 💎 Improvements
+
+* Log exclusions and string which led to exclusion to INFO. Restructure exclusion-related methods ([0636f3f](https://git.griefed.de/Griefed/ServerPackCreator/commit/0636f3f800428c7847c9d9988351bfbeaaf78bab))
+
+### 📦 Other
+
+* Add Configured to clientside-only mods list. Thanks to [@chorbintime](https://git.griefed.de/chorbintime) for the report! ([5c45239](https://git.griefed.de/Griefed/ServerPackCreator/commit/5c45239e7b25da4331e4a828123151ae2baec298))
+* Add Sounds to list of clientside-only mods. Thanks to @Gensokian for the report! ([f384223](https://git.griefed.de/Griefed/ServerPackCreator/commit/f384223f8041effd7566d309328c508803c93090))
+
+### 🦊 CI/CD
+
+* Bump gitlab-ci-cd to 2.2.28 ([1773ef2](https://git.griefed.de/Griefed/ServerPackCreator/commit/1773ef297eb240d2d177839c8fe33197bd458eb6))
+* Bump griefed/gitlab-ci-cd to 2.2.27. Move to default image for jobs. ([7fd4bfc](https://git.griefed.de/Griefed/ServerPackCreator/commit/7fd4bfcb64b3a4ee18e8228e57490cfc9c6e0d4b))
+* Move to GHCR ([bb48664](https://git.griefed.de/Griefed/ServerPackCreator/commit/bb4866490a18dd9655291d31fcbdf944edcb3874))
+
 ## [7.1.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.1.7...7.1.8) (2025-01-09)
 
 
