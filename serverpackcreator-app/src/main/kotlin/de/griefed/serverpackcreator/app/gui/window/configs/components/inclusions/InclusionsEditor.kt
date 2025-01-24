@@ -282,7 +282,7 @@ class InclusionsEditor(
                     val prefix = if (!inclusionSelection.destination.isNullOrBlank()) {
                         inclusionSelection.destination + File.separator
                     } else {
-                        ""
+                        File(inclusionSelection.source).name + File.separator
                     }
                     if (File(configEditor.getModpackDirectory(), inclusionSelection.source).isFile) {
                         tipContent += File(configEditor.getModpackDirectory(), inclusionSelection.source).absolutePath.replace(
@@ -303,10 +303,7 @@ class InclusionsEditor(
                             configEditor.getModloader()
                         )
                         for (file in acquired) {
-                            tipContent += file.sourceFile.absolutePath.replace(
-                                configEditor.getModpackDirectory() + File.separator,
-                                prefix
-                            ) + "\n"
+                            tipContent += "${prefix}${file.destinationFile.name}\n"
                         }
 
                     }
