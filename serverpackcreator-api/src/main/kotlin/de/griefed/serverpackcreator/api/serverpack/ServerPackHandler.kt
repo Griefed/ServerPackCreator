@@ -601,8 +601,18 @@ class ServerPackHandler(
                 } catch (ignored: IOException) {
                 }
                 acquired = mutableListOf()
-                for (mod in compileModList(clientDir.absolutePath, clientMods, whitelist, minecraftVersion, modloader)) {
+                val mods = compileModList(clientDir.absolutePath, clientMods, whitelist, minecraftVersion, modloader)
+                for (mod in mods.first) {
                     acquired.add(ServerPackFile(mod, File(serverDir, mod.name)))
+                }
+                var destinationName: String
+                for (disabled in mods.second) {
+                    destinationName = if (disabled.name.endsWith("disabled")) {
+                        disabled.name
+                    } else {
+                        "${disabled.name}.disabled"
+                    }
+                    acquired.add(ServerPackFile(disabled, File(serverDir, destinationName)))
                 }
                 processed = runFilters(acquired, inclusion, modpackDir)
                 serverPackFiles.addAll(processed)
@@ -669,7 +679,7 @@ class ServerPackHandler(
             for (file in acquired) {
                 if (file.sourceFile.absolutePath.replace(modpackDir + File.separator, "").matches(inclusionFilter)) {
                     processed.add(file)
-                    log.debug("$file matched Inclusion-Filter $inclusionFilter.")
+                    log.info("Including ${file.sourceFile} due to inclusion-filter $inclusionFilter.")
                 }
             }
         } else {
@@ -679,7 +689,7 @@ class ServerPackHandler(
             processed.removeIf { file ->
                 val source = file.sourceFile.absolutePath.replace(modpackDir + File.separator, "")
                 return@removeIf if (source.matches(exclusionFilter)) {
-                    log.debug("${file.sourceFile} matched Inclusion-Filter $exclusionFilter.")
+                    log.info("Excluding ${file.sourceFile} due to exclusion-filter $exclusionFilter.")
                     true
                 } else {
                     false
@@ -1058,32 +1068,33 @@ class ServerPackHandler(
         whitelistStrings: List<String>,
         minecraftVersion: String,
         modloader: String
-    ): List<File> {
+    ): Pair<List<File>,List<File>> {
         log.info("Preparing a list of mods to include in server pack...")
         val filesInModsDir: Collection<File> = File(modsDir).filteredWalk(modFileEndings, FilterType.ENDS_WITH, FileWalkDirection.TOP_DOWN, recursive = false)
-        val modsInModpack = TreeSet(filesInModsDir)
-        val autodiscoveredClientMods: MutableList<File> = ArrayList(100)
+        val modsForServerPack = TreeSet(filesInModsDir)
+        val disabledMods = TreeSet<File>()
+        val autoDiscoveredClientMods: MutableList<File> = ArrayList(100)
 
         // Check whether scanning mods for sideness is activated.
         if (apiProperties.isAutoExcludingModsEnabled) {
             val scanningStopWatch = SimpleStopWatch().start()
             when (modloader) {
-                "LegacyFabric", "Fabric" -> autodiscoveredClientMods.addAll(modScanner.fabricScanner.scan(filesInModsDir))
+                "LegacyFabric", "Fabric" -> autoDiscoveredClientMods.addAll(modScanner.fabricScanner.scan(filesInModsDir))
 
                 "Forge" -> if (minecraftVersion.split(".").dropLastWhile { it.isEmpty() }
                         .toTypedArray()[1].toInt() > 12) {
-                    autodiscoveredClientMods.addAll(modScanner.forgeTomlScanner.scan(filesInModsDir))
+                    autoDiscoveredClientMods.addAll(modScanner.forgeTomlScanner.scan(filesInModsDir))
                 } else {
-                    autodiscoveredClientMods.addAll(modScanner.forgeAnnotationScanner.scan(filesInModsDir))
+                    autoDiscoveredClientMods.addAll(modScanner.forgeAnnotationScanner.scan(filesInModsDir))
                 }
 
                 "NeoForge" -> {
                     if (SemanticVersionComparator.compareSemantics("1.20.5", minecraftVersion, Comparison.EQUAL_OR_NEW)) {
                         log.debug("Scanning using NeoForge scanner.")
-                        autodiscoveredClientMods.addAll(modScanner.neoForgeTomlScanner.scan(filesInModsDir))
+                        autoDiscoveredClientMods.addAll(modScanner.neoForgeTomlScanner.scan(filesInModsDir))
                     } else {
                         log.debug("Scanning using Forge scanner.")
-                        autodiscoveredClientMods.addAll(modScanner.forgeTomlScanner.scan(filesInModsDir))
+                        autoDiscoveredClientMods.addAll(modScanner.forgeTomlScanner.scan(filesInModsDir))
                     }
                 }
 
@@ -1091,18 +1102,19 @@ class ServerPackHandler(
                     val discoMods = TreeSet<File>()
                     discoMods.addAll(modScanner.fabricScanner.scan(filesInModsDir))
                     discoMods.addAll(modScanner.quiltScanner.scan(filesInModsDir))
-                    autodiscoveredClientMods.addAll(discoMods)
+                    autoDiscoveredClientMods.addAll(discoMods)
                     discoMods.clear()
                 }
             }
 
             // Exclude scanned mods from copying if said functionality is enabled.
-            if (autodiscoveredClientMods.isNotEmpty()) {
-                log.info("Automatically detected mods: ${autodiscoveredClientMods.size}")
-                for (discoveredMod in autodiscoveredClientMods) {
-                    modsInModpack.removeIf {
+            if (autoDiscoveredClientMods.isNotEmpty()) {
+                log.info("Automatically detected mods: ${autoDiscoveredClientMods.size}")
+                for (discoveredMod in autoDiscoveredClientMods) {
+                    modsForServerPack.removeIf {
                         if (it.name.contains(discoveredMod.name)) {
                             log.warn("Automatically excluding mod: ${discoveredMod.name}")
+                            disabledMods.add(it)
                             return@removeIf true
                         } else {
                             return@removeIf false
@@ -1124,7 +1136,7 @@ class ServerPackHandler(
         if (exclusionStrings.isNotEmpty()) {
             log.info("Performing ${apiProperties.exclusionFilter}-type checks for user-specified clientside-only mod exclusion.")
             for (userSpecifiedExclusion in exclusionStrings) {
-                modsInModpack.removeIf { modToCheck ->
+                modsForServerPack.removeIf { modToCheck ->
                     val excluded: Boolean
                     val modName = modToCheck.name
                     excluded = when (apiProperties.exclusionFilter) {
@@ -1140,6 +1152,7 @@ class ServerPackHandler(
                     }
                     if (excluded) {
                         log.info("Excluding ${modToCheck.name}. It matched clientside-mod entry: $userSpecifiedExclusion")
+                        disabledMods.add(modToCheck)
                     }
                     excluded
                 }
@@ -1147,7 +1160,8 @@ class ServerPackHandler(
         } else {
             log.warn("User specified no clientside-only mods.")
         }
-        return ArrayList(modsInModpack)
+
+        return Pair(modsForServerPack.toList(), disabledMods.toList())
     }
 
     /**
