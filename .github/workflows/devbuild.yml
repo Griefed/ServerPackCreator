@@ -68,12 +68,11 @@ jobs:
           cp checksum.txt continuous/
 
       - name: Upload to GitHub Releases
-        uses: "marvinpinto/action-automatic-releases@latest"
+        uses: "slord399/action-automatic-releases@v1.0.1"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "continuous"
           prerelease: true
-          title: "Development Build"
           files: |
             continuous/*
             
