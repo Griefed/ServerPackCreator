@@ -333,6 +333,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "chat_heads-",                  //https://www.curseforge.com/minecraft/mc-mods/chat-heads
             "cherishedworlds-",             //https://www.curseforge.com/minecraft/mc-mods/cherished-worlds
             "cirback-1.0-",                 //Gone? Reduces to atoms?
+            "citresewn-",                   //https://www.curseforge.com/minecraft/mc-mods/forge-cit
             "classicbar-",                  //https://www.curseforge.com/minecraft/mc-mods/classic-bars
             "clickadv-",                    //https://www.curseforge.com/minecraft/mc-mods/clickable-advancements
             "clienttweaks-",                //https://www.curseforge.com/minecraft/mc-mods/client-tweaks
@@ -377,6 +378,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "fancymenu_video_extension",    //https://www.curseforge.com/minecraft/mc-mods/video-extension-for-fancymenu-forge
             "fast-ip-ping-",                //https://www.curseforge.com/minecraft/mc-mods/fast-ip-ping
             "firstperson-",                 //https://www.curseforge.com/minecraft/mc-mods/first-person-model
+            "flerovium-",                   //https://www.curseforge.com/minecraft/mc-mods/flerovium
             "flickerfix-",                  //https://www.curseforge.com/minecraft/mc-mods/flickerfix
             "fm_audio_extension_",          //https://www.curseforge.com/minecraft/mc-mods/audio-extension-for-fancymenu-forge
             "fabricmod_VoxelMap-",          //https://www.curseforge.com/minecraft/mc-mods/voxelmap
