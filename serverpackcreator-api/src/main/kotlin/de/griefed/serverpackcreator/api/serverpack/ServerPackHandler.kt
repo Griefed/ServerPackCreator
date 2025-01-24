@@ -669,7 +669,7 @@ class ServerPackHandler(
             for (file in acquired) {
                 if (file.sourceFile.absolutePath.replace(modpackDir + File.separator, "").matches(inclusionFilter)) {
                     processed.add(file)
-                    log.debug("$file matched Inclusion-Filter $inclusionFilter.")
+                    log.info("Including ${file.sourceFile} due to inclusion-filter $inclusionFilter.")
                 }
             }
         } else {
@@ -679,7 +679,7 @@ class ServerPackHandler(
             processed.removeIf { file ->
                 val source = file.sourceFile.absolutePath.replace(modpackDir + File.separator, "")
                 return@removeIf if (source.matches(exclusionFilter)) {
-                    log.debug("${file.sourceFile} matched Inclusion-Filter $exclusionFilter.")
+                    log.info("Excluding ${file.sourceFile} due to exclusion-filter $exclusionFilter.")
                     true
                 } else {
                     false
