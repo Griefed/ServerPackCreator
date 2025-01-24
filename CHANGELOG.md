@@ -1,3 +1,21 @@
+## [7.2.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.1.9...7.2.0) (2025-01-24)
+
+### 💎 Improvements
+
+* Log ex- and inclusion due to filter-specs ([f3cba5b](https://git.griefed.de/Griefed/ServerPackCreator/commit/f3cba5bd55af232ff08ae22d1fea7bb50673118e))
+
+### 📦 Other
+
+* Add citresewn and flerovium to clientside-mods list. Thanks to @ModernGamingWorld for the reports! ([e2c7015](https://git.griefed.de/Griefed/ServerPackCreator/commit/e2c7015eab03e08d75842a775167cda4cf7246ae))
+
+### 🦊 CI/CD
+
+* Switch devbuild action to updated one ([6e7b4fc](https://git.griefed.de/Griefed/ServerPackCreator/commit/6e7b4fcbd485e2e73c540caf1de7cb00ab7dda6c))
+
+### 🚀 Features
+
+* Include excluded mods as .jar.disabled-files to allow end-users to enable them in case they need to ([91031a6](https://git.griefed.de/Griefed/ServerPackCreator/commit/91031a63f6d3cfef6dd6aa8e93ce0dfa70c6cf78))
+
 ## [7.1.9](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.1.8...7.1.9) (2025-01-23)
 
 ### 💎 Improvements
