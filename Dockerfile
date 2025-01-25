@@ -13,7 +13,7 @@ RUN \
     build --info --full-stacktrace \
     -x :serverpackcreator-api:test -x :serverpackcreator-app:test
 
-FROM ghcr.io/linuxserver/baseimage-ubuntu:jammy-version-102276d2
+FROM ghcr.io/linuxserver/baseimage-ubuntu:jammy-version-f024f13b
 
 ARG VERSION=dev
 
