@@ -177,6 +177,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "BetterF3-",                    //https://www.curseforge.com/minecraft/mc-mods/betterf3
             "BetterFog-",                   //https://www.curseforge.com/minecraft/mc-mods/better-fog
             "BetterFoliage-",               //https://www.curseforge.com/minecraft/mc-mods/better-foliage
+            "BetterGrassify-",              //https://www.curseforge.com/minecraft/mc-mods/bettergrassify
             "BetterPingDisplay-",           //https://www.curseforge.com/minecraft/mc-mods/better-ping-display
             "BetterPlacement-",             //https://www.curseforge.com/minecraft/mc-mods/better-placement
             "BetterTaskbar-",               //https://www.curseforge.com/minecraft/mc-mods/better-taskbar
@@ -186,6 +187,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "BorderlessWindow-",            //https://www.curseforge.com/minecraft/mc-mods/borderless
             "CTM-",                         //https://www.curseforge.com/minecraft/mc-mods/ctm
             "Chat Ping ",                   //https://www.curseforge.com/minecraft/mc-mods/chatping
+            "CheatDetector-",               //https://www.curseforge.com/minecraft/mc-mods/cheatdetector
             "ChunkAnimator-",               //https://www.curseforge.com/minecraft/mc-mods/chunk-animator
             "Clear-Water-",                 //https://www.curseforge.com/minecraft/mc-mods/clear-water
             "ClientTweaks_",                //https://www.curseforge.com/minecraft/mc-mods/client-tweaks
@@ -245,6 +247,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "JustEnoughCalculation-",       //https://www.curseforge.com/minecraft/mc-mods/just-enough-calculation
             "JustEnoughEffects-",           //https://www.curseforge.com/minecraft/mc-mods/just-enough-effects
             "JustEnoughProfessions-",       //https://www.curseforge.com/minecraft/mc-mods/just-enough-professions-jep
+            "KeepTheResourcePack-",         //https://www.curseforge.com/minecraft/mc-mods/keep-the-resourcepack
             "LeaveMyBarsAlone-",            //https://www.curseforge.com/minecraft/mc-mods/leave-my-bars-alone
             "LLOverlayReloaded-",           //https://www.curseforge.com/minecraft/mc-mods/light-level-overlay-reloaded
             "LOTRDRP-",                     //https://www.curseforge.com/minecraft/mc-mods/lotr-drp
@@ -392,6 +395,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "helium-",                      //Gone? Reduces to atoms?
             "hiddenrecipebook_",            //https://www.curseforge.com/minecraft/mc-mods/hidden-recipe-book
             "hiddenrecipebook-",            //https://www.curseforge.com/minecraft/mc-mods/hidden-recipe-book
+            "ijmtweaks-",                   //https://www.curseforge.com/minecraft/mc-mods/ijm-tweaks
             "infinitemusic-",               //https://www.curseforge.com/minecraft/mc-mods/infinite-music
             "inventoryhud.",                //https://www.curseforge.com/minecraft/mc-mods/inventory-hud-forge
             "inventoryprofiles",            //https://www.curseforge.com/minecraft/mc-mods/inventory-profiles
