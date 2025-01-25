@@ -1,3 +1,14 @@
+## [7.2.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.2.0...7.2.1) (2025-01-25)
+
+### 📦 Other
+
+* Add BetterGrassify, CheatDetector, KeepTheResourcePack, ijmtweaks to list of clientside mods. Thanks to @ModernGamingWorld for the reports! ([607bf24](https://git.griefed.de/Griefed/ServerPackCreator/commit/607bf249fc695b180577bc84e249373ca31b2e2b))
+
+### 🦊 CI/CD
+
+* Bump required engine versions ([dac9d3e](https://git.griefed.de/Griefed/ServerPackCreator/commit/dac9d3e813b42fce8f5220c610fb70edd8133c79))
+* Update baseimage to jammy-version-f024f13b ([842bac3](https://git.griefed.de/Griefed/ServerPackCreator/commit/842bac31a8a6d2c1e198748a1b5c75996647f9cb))
+
 ## [7.2.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.1.9...7.2.0) (2025-01-24)
 
 ### 💎 Improvements
