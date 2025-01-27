@@ -322,11 +322,13 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "axolotl-item-fix-",            //Gone? Reduces to atoms?
             "backtools-",                   //https://www.curseforge.com/minecraft/mc-mods/backtools
             "bannerunlimited-",             //https://www.curseforge.com/minecraft/mc-mods/banner-unlimited
+            "beddium-",                     //https://www.curseforge.com/minecraft/mc-mods/beddium
             "beenfo-",                      //https://www.curseforge.com/minecraft/mc-mods/beenfo
             "better-clouds-",               //Gone? Reduces to atoms?
             "better-recipe-book-",          //Gone? Reduces to atoms?
             "betterbiomeblend-",            //https://www.curseforge.com/minecraft/mc-mods/better-biome-blend
             "bhmenu-",                      //https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-forge & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-fabric & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-neoforge
+            "blinkload-",                   //https://www.curseforge.com/minecraft/mc-mods/blinkload
             "blur-",                        //https://www.curseforge.com/minecraft/mc-mods/blur
             "borderless-mining-",           //https://www.curseforge.com/minecraft/mc-mods/borderless-mining
             "cat_jam-",                     //https://www.curseforge.com/minecraft/mc-mods/cat_jam
@@ -396,6 +398,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "hiddenrecipebook_",            //https://www.curseforge.com/minecraft/mc-mods/hidden-recipe-book
             "hiddenrecipebook-",            //https://www.curseforge.com/minecraft/mc-mods/hidden-recipe-book
             "ijmtweaks-",                   //https://www.curseforge.com/minecraft/mc-mods/ijm-tweaks
+            "immersivemessages-",           //https://www.curseforge.com/minecraft/mc-mods/immersive-messages-api
+            "immersivetips-",               //https://www.curseforge.com/minecraft/mc-mods/immersive-tips
             "infinitemusic-",               //https://www.curseforge.com/minecraft/mc-mods/infinite-music
             "inventoryhud.",                //https://www.curseforge.com/minecraft/mc-mods/inventory-hud-forge
             "inventoryprofiles",            //https://www.curseforge.com/minecraft/mc-mods/inventory-profiles
@@ -464,6 +468,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "rebindnarrator-",              //https://www.curseforge.com/minecraft/mc-mods/rebind-narrator
             "rebrand-",                     //https://www.curseforge.com/minecraft/mc-mods/rebrand
             "reforgium-",                   //https://www.curseforge.com/minecraft/mc-mods/reforgium
+            "relictium-",                   //https://www.curseforge.com/minecraft/mc-mods/relictium
             "replanter-",                   //https://www.curseforge.com/minecraft/mc-mods/replanter
             "rrls-",                        //https://www.curseforge.com/minecraft/mc-mods/rrls
             "rubidium-",                    //https://www.curseforge.com/minecraft/mc-mods/rubidium
@@ -481,6 +486,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "smoothfocus-",                 //https://www.curseforge.com/minecraft/mc-mods/smoothfocus
             "sodium-fabric-",               //https://www.curseforge.com/minecraft/mc-mods/sodium
             "sodiumdynamiclights-",         //https://www.curseforge.com/minecraft/mc-mods/dynamiclights-reforged
+            "sodiumleafculling-",           //https://www.curseforge.com/minecraft/mc-mods/sodium-leaf-culling
             "sodiumoptionsapi-",            //https://www.curseforge.com/minecraft/mc-mods/sodium-options-api
             "sodiumoptionsmodcompat-",      //https://www.curseforge.com/minecraft/mc-mods/sodium-embeddium-options-mod-compat
             "sounddeviceoptions-",          //https://www.curseforge.com/minecraft/mc-mods/more-sound-config
