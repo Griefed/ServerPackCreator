@@ -183,6 +183,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "BetterThirdPerson",            //https://www.curseforge.com/minecraft/mc-mods/better-third-person
             "BetterTitleScreen-",           //https://www.curseforge.com/minecraft/mc-mods/better-title-screen
             "Blur-",                        //https://www.curseforge.com/minecraft/mc-mods/blur
+            "BoccHUD-",                     //https://modrinth.com/mod/bocchud/
             "BorderlessWindow-",            //https://www.curseforge.com/minecraft/mc-mods/borderless
             "CTM-",                         //https://www.curseforge.com/minecraft/mc-mods/ctm
             "Chat Ping ",                   //https://www.curseforge.com/minecraft/mc-mods/chatping
@@ -251,6 +252,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "LegendaryTooltips",            //https://www.curseforge.com/minecraft/mc-mods/legendary-tooltips
             "LegendaryTooltips-",           //https://www.curseforge.com/minecraft/mc-mods/legendary-tooltips
             "LightOverlay-",                //https://www.curseforge.com/minecraft/mc-mods/light-level-overlay-display
+            "MaFgLib-",                     //https://modrinth.com/mod/mafglib
             "MinecraftCapes ",              //https://www.curseforge.com/minecraft/mc-mods/minecraftcapes-mod
             "MineMenu-",                    //https://www.curseforge.com/minecraft/mc-mods/minemenu
             "MoBends",                      //https://www.curseforge.com/minecraft/mc-mods/mo-bends
@@ -328,6 +330,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "cat_jam-",                     //https://www.curseforge.com/minecraft/mc-mods/cat_jam
             "catalogue-",                   //https://www.curseforge.com/minecraft/mc-mods/catalogue
             "cfwinfo-",                     //https://www.curseforge.com/minecraft/mc-mods/create-fuel-and-water-information
+            "citresewn-",                   //https://www.curseforge.com/minecraft/mc-mods/forge-cit
             "charmonium-",                  //https://www.curseforge.com/minecraft/mc-mods/charmonium
             "chat_heads-",                  //https://www.curseforge.com/minecraft/mc-mods/chat-heads
             "cherishedworlds-",             //https://www.curseforge.com/minecraft/mc-mods/cherished-worlds
