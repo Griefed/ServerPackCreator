@@ -148,7 +148,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
 
     private var fallbackModsWhitelist = TreeSet(
         listOf(
-            "Ping-Wheel-"
+            "Ping-Wheel-",
+            "appleskin-"
         )
     )
 
@@ -336,7 +337,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "cherishedworlds-",             //https://www.curseforge.com/minecraft/mc-mods/cherished-worlds
             "cirback-1.0-",                 //Gone? Reduces to atoms?
             "classicbar-",                  //https://www.curseforge.com/minecraft/mc-mods/classic-bars
-            "clickadv-",                    //https://www.curseforge.com/minecraft/mc-mods/clickable-advancements
             "clienttweaks-",                //https://www.curseforge.com/minecraft/mc-mods/client-tweaks
             "combat_music-",                //https://www.curseforge.com/minecraft/mc-mods/combat-music
             "connectedness-",               //https://www.curseforge.com/minecraft/mc-mods/connectedness
