@@ -228,6 +228,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "FirstPersonMod",               //https://www.curseforge.com/minecraft/mc-mods/first-person-model
             "FogTweaker-",                  //https://www.curseforge.com/minecraft/mc-mods/fog-tweaker
             "ForgeCustomCursorMod-",        //https://www.curseforge.com/minecraft/mc-mods/cursor-mod
+            "Forgematica-",                 //https://www.curseforge.com/minecraft/mc-mods/forgematica
             "FpsReducer-",                  //https://www.curseforge.com/minecraft/mc-mods/fps-reducer
             "FpsReducer2-",                 //https://www.curseforge.com/minecraft/mc-mods/fps-reducer
             "FullscreenWindowed-",          //https://www.curseforge.com/minecraft/mc-mods/fullscreen-windowed-borderless-for-minecraft
@@ -313,6 +314,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "YungsMenuTweaks-",             //https://www.curseforge.com/minecraft/mc-mods/yungs-menu-tweaks
             "[1.12.2]DamageIndicatorsMod-", //https://www.curseforge.com/minecraft/mc-mods/damage-indicators-mod
             "[1.12.2]bspkrscore-",          //https://www.curseforge.com/minecraft/mc-mods/bspkrscore
+            "ahznbstools-",                 //https://www.curseforge.com/minecraft/mc-mods/ahznbs-tools/
             "antighost-",                   //https://www.curseforge.com/minecraft/mc-mods/antighost
             "anviltooltipmod-",             //https://www.curseforge.com/minecraft/mc-mods/anvil-tooltip-mod
             "armorchroma-",                 //https://www.curseforge.com/minecraft/mc-mods/armor-chroma
@@ -338,6 +340,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "catalogue-",                   //https://www.curseforge.com/minecraft/mc-mods/catalogue
             "cave_dust-",                   //https://www.curseforge.com/minecraft/mc-mods/cave-dust
             "cfwinfo-",                     //https://www.curseforge.com/minecraft/mc-mods/create-fuel-and-water-information
+            "chestsearchbar-",              //https://www.curseforge.com/minecraft/mc-mods/chest-search-bar
             "citresewn-",                   //https://www.curseforge.com/minecraft/mc-mods/forge-cit
             "charmonium-",                  //https://www.curseforge.com/minecraft/mc-mods/charmonium
             "chat_heads-",                  //https://www.curseforge.com/minecraft/mc-mods/chat-heads
@@ -489,6 +492,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "smoothboot-",                  //https://www.curseforge.com/minecraft/mc-mods/smoothboot
             "smoothfocus-",                 //https://www.curseforge.com/minecraft/mc-mods/smoothfocus
             "sodium-fabric-",               //https://www.curseforge.com/minecraft/mc-mods/sodium
+            "sodium-shader-support-",       //https://modrinth.com/mod/sodium-shader-support/
+            "sodiumcoreshadersupport-",     //https://www.curseforge.com/minecraft/mc-mods/sodium-core-shader-support
             "sodiumdynamiclights-",         //https://www.curseforge.com/minecraft/mc-mods/dynamiclights-reforged
             "sodiumleafculling-",           //https://www.curseforge.com/minecraft/mc-mods/sodium-leaf-culling
             "sodiumoptionsapi-",            //https://www.curseforge.com/minecraft/mc-mods/sodium-options-api
