@@ -178,7 +178,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "BetterF3-",                    //https://www.curseforge.com/minecraft/mc-mods/betterf3
             "BetterFog-",                   //https://www.curseforge.com/minecraft/mc-mods/better-fog
             "BetterFoliage-",               //https://www.curseforge.com/minecraft/mc-mods/better-foliage
-            "BetterGrassify-",              //https://www.curseforge.com/minecraft/mc-mods/bettergrassify
             "BetterPingDisplay-",           //https://www.curseforge.com/minecraft/mc-mods/better-ping-display
             "BetterPlacement-",             //https://www.curseforge.com/minecraft/mc-mods/better-placement
             "BetterTaskbar-",               //https://www.curseforge.com/minecraft/mc-mods/better-taskbar
@@ -189,7 +188,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "BorderlessWindow-",            //https://www.curseforge.com/minecraft/mc-mods/borderless
             "CTM-",                         //https://www.curseforge.com/minecraft/mc-mods/ctm
             "Chat Ping ",                   //https://www.curseforge.com/minecraft/mc-mods/chatping
-            "CheatDetector-",               //https://www.curseforge.com/minecraft/mc-mods/cheatdetector
             "ChunkAnimator-",               //https://www.curseforge.com/minecraft/mc-mods/chunk-animator
             "Clear-Water-",                 //https://www.curseforge.com/minecraft/mc-mods/clear-water
             "ClientTweaks_",                //https://www.curseforge.com/minecraft/mc-mods/client-tweaks
@@ -341,7 +339,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "cave_dust-",                   //https://www.curseforge.com/minecraft/mc-mods/cave-dust
             "cfwinfo-",                     //https://www.curseforge.com/minecraft/mc-mods/create-fuel-and-water-information
             "chestsearchbar-",              //https://www.curseforge.com/minecraft/mc-mods/chest-search-bar
-            "citresewn-",                   //https://www.curseforge.com/minecraft/mc-mods/forge-cit
             "charmonium-",                  //https://www.curseforge.com/minecraft/mc-mods/charmonium
             "chat_heads-",                  //https://www.curseforge.com/minecraft/mc-mods/chat-heads
             "cherishedworlds-",             //https://www.curseforge.com/minecraft/mc-mods/cherished-worlds
@@ -656,7 +653,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     @Suppress("MemberVisibilityCanBePrivate")
     val trueFalseRegex = "^(true|false)$".toRegex()
 
-    val preReleaseRegex = ".*(alpha|beta|dev).*".toRegex()
+    @Suppress("MemberVisibilityCanBePrivate")
+    val alphaBetaRegex = "^(.*alpha.*|.*beta.*)$".toRegex()
 
     @Suppress("MemberVisibilityCanBePrivate")
     val serverPacksRegex = "^(?:\\./)?server-packs$".toRegex()
@@ -785,7 +783,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
 
     val preRelease: Boolean
         get() {
-            return apiVersion.matches(preReleaseRegex)
+            return apiVersion.matches(alphaBetaRegex)
         }
 
     val configVersion: String = if (preRelease || devBuild) {
@@ -793,6 +791,14 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     } else {
         "4"
     }
+
+    /**
+     * Only the first call to this property will return true if this is the first time ServerPackCreator is being run
+     * on a given host. Any subsequent call will return false. Handle with care!
+     *
+     * @author Griefed
+     */
+    val firstRun: Boolean
 
     var logLevel = "INFO"
         get() {
@@ -951,8 +957,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             }
         }
 
-    fun getPreference(pref: String, def: String? = null) : Optional<String> {
-        return Optional.ofNullable(spcPreferences.get(pref, def))
+    fun getPreference(pref: String) : Optional<String> {
+        return Optional.ofNullable(spcPreferences.get(pref, null))
     }
 
     fun storePreference(pref: String, value: String) {
@@ -2630,7 +2636,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             }
         }
         if (fallbackUpdated) {
-            saveProperties(serverPackCreatorPropertiesFile)
+            saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
         }
         return fallbackUpdated
     }
@@ -2787,6 +2793,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             setLoggingLevel(logLevel)
         }
 
+        firstRun = getBoolProperty("de.griefed.serverpackcreator.firstrun", true)
+        setBoolProperty("de.griefed.serverpackcreator.firstrun", false)
         logsDirectory.create(createFileOrDir = true, asDirectory = true)
         serverFilesDirectory.create(createFileOrDir = true, asDirectory = true)
         propertiesDirectory.create(createFileOrDir = true, asDirectory = true)
@@ -2802,7 +2810,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         minecraftServerManifestsDirectory.create(createFileOrDir = true, asDirectory = true)
         installerCacheDirectory.create(createFileOrDir = true, asDirectory = true)
         printSettings()
-        saveProperties(serverPackCreatorPropertiesFile)
+        saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
     }
 
     private fun setLoggingLevel(level: String) {
