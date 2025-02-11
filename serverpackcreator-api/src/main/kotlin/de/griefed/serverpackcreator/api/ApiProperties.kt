@@ -957,8 +957,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             }
         }
 
-    fun getPreference(pref: String) : Optional<String> {
-        return Optional.ofNullable(spcPreferences.get(pref, null))
+    fun getPreference(pref: String, def: String? = null) : Optional<String> {
+        return Optional.ofNullable(spcPreferences.get(pref, def))
     }
 
     fun storePreference(pref: String, value: String) {
