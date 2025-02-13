@@ -500,7 +500,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (2 of 42)
 Group:   com.electronwill.night-config
 Name:    toml
-Version: 3.7.2
+Version: 3.8.1
 POM Project URL: https://github.com/TheElectronWill/night-config
 
 
@@ -2633,7 +2633,7 @@ Embedded license:
 (11 of 42)
 Group:   com.formdev
 Name:    flatlaf-intellij-themes
-Version: 3.5.2
+Version: 3.5.4
 POM Project URL: https://github.com/JFormDesigner/FlatLaf
 
 
@@ -2925,7 +2925,7 @@ URL: https://opensource.org/licenses/0BSD
 (16 of 42)
 Group:   commons-io
 Name:    commons-io
-Version: 2.16.1
+Version: 2.18.0
 Project URL: https://commons.apache.org/proper/commons-io/\n\n
 Manifest license URL: https://www.apache.org/licenses/LICENSE-2.0
 
@@ -3523,7 +3523,7 @@ The Apache Software Foundation (http://www.apache.org/).
 (25 of 42)
 Group:   org.apache.logging.log4j
 Name:    log4j-core
-Version: 2.24.2
+Version: 2.24.3
 Manifest license URL: https://www.apache.org/licenses/LICENSE-2.0
 
 
@@ -3910,7 +3910,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (33 of 42)
 Group:   org.jetbrains.kotlinx
 Name:    kotlinx-coroutines-core
-Version: 1.8.1
+Version: 1.10.1
 POM Project URL: https://github.com/Kotlin/kotlinx.coroutines
 
 
@@ -4364,7 +4364,7 @@ the License.
 (39 of 42)
 Group:   org.springframework.boot
 Name:    spring-boot-starter-data-jpa
-Version: 3.3.5
+Version: 3.4.1
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -4577,7 +4577,7 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 3.3.5
+Spring Boot 3.4.1
 Copyright (c) 2012-2024 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0

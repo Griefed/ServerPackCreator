@@ -148,7 +148,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
 
     private var fallbackModsWhitelist = TreeSet(
         listOf(
-            "Ping-Wheel-"
+            "Ping-Wheel-",
+            "appleskin-"
         )
     )
 
@@ -177,17 +178,16 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "BetterF3-",                    //https://www.curseforge.com/minecraft/mc-mods/betterf3
             "BetterFog-",                   //https://www.curseforge.com/minecraft/mc-mods/better-fog
             "BetterFoliage-",               //https://www.curseforge.com/minecraft/mc-mods/better-foliage
-            "BetterGrassify-",              //https://www.curseforge.com/minecraft/mc-mods/bettergrassify
             "BetterPingDisplay-",           //https://www.curseforge.com/minecraft/mc-mods/better-ping-display
             "BetterPlacement-",             //https://www.curseforge.com/minecraft/mc-mods/better-placement
             "BetterTaskbar-",               //https://www.curseforge.com/minecraft/mc-mods/better-taskbar
             "BetterThirdPerson",            //https://www.curseforge.com/minecraft/mc-mods/better-third-person
             "BetterTitleScreen-",           //https://www.curseforge.com/minecraft/mc-mods/better-title-screen
             "Blur-",                        //https://www.curseforge.com/minecraft/mc-mods/blur
+            "BoccHUD-",                     //https://modrinth.com/mod/bocchud/
             "BorderlessWindow-",            //https://www.curseforge.com/minecraft/mc-mods/borderless
             "CTM-",                         //https://www.curseforge.com/minecraft/mc-mods/ctm
             "Chat Ping ",                   //https://www.curseforge.com/minecraft/mc-mods/chatping
-            "CheatDetector-",               //https://www.curseforge.com/minecraft/mc-mods/cheatdetector
             "ChunkAnimator-",               //https://www.curseforge.com/minecraft/mc-mods/chunk-animator
             "Clear-Water-",                 //https://www.curseforge.com/minecraft/mc-mods/clear-water
             "ClientTweaks_",                //https://www.curseforge.com/minecraft/mc-mods/client-tweaks
@@ -226,6 +226,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "FirstPersonMod",               //https://www.curseforge.com/minecraft/mc-mods/first-person-model
             "FogTweaker-",                  //https://www.curseforge.com/minecraft/mc-mods/fog-tweaker
             "ForgeCustomCursorMod-",        //https://www.curseforge.com/minecraft/mc-mods/cursor-mod
+            "Forgematica-",                 //https://www.curseforge.com/minecraft/mc-mods/forgematica
             "FpsReducer-",                  //https://www.curseforge.com/minecraft/mc-mods/fps-reducer
             "FpsReducer2-",                 //https://www.curseforge.com/minecraft/mc-mods/fps-reducer
             "FullscreenWindowed-",          //https://www.curseforge.com/minecraft/mc-mods/fullscreen-windowed-borderless-for-minecraft
@@ -254,6 +255,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "LegendaryTooltips",            //https://www.curseforge.com/minecraft/mc-mods/legendary-tooltips
             "LegendaryTooltips-",           //https://www.curseforge.com/minecraft/mc-mods/legendary-tooltips
             "LightOverlay-",                //https://www.curseforge.com/minecraft/mc-mods/light-level-overlay-display
+            "MaFgLib-",                     //https://modrinth.com/mod/mafglib
             "MinecraftCapes ",              //https://www.curseforge.com/minecraft/mc-mods/minecraftcapes-mod
             "MineMenu-",                    //https://www.curseforge.com/minecraft/mc-mods/minemenu
             "MoBends",                      //https://www.curseforge.com/minecraft/mc-mods/mo-bends
@@ -310,6 +312,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "YungsMenuTweaks-",             //https://www.curseforge.com/minecraft/mc-mods/yungs-menu-tweaks
             "[1.12.2]DamageIndicatorsMod-", //https://www.curseforge.com/minecraft/mc-mods/damage-indicators-mod
             "[1.12.2]bspkrscore-",          //https://www.curseforge.com/minecraft/mc-mods/bspkrscore
+            "ahznbstools-",                 //https://www.curseforge.com/minecraft/mc-mods/ahznbs-tools/
             "antighost-",                   //https://www.curseforge.com/minecraft/mc-mods/antighost
             "anviltooltipmod-",             //https://www.curseforge.com/minecraft/mc-mods/anvil-tooltip-mod
             "armorchroma-",                 //https://www.curseforge.com/minecraft/mc-mods/armor-chroma
@@ -335,13 +338,13 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "catalogue-",                   //https://www.curseforge.com/minecraft/mc-mods/catalogue
             "cave_dust-",                   //https://www.curseforge.com/minecraft/mc-mods/cave-dust
             "cfwinfo-",                     //https://www.curseforge.com/minecraft/mc-mods/create-fuel-and-water-information
+            "chestsearchbar-",              //https://www.curseforge.com/minecraft/mc-mods/chest-search-bar
             "charmonium-",                  //https://www.curseforge.com/minecraft/mc-mods/charmonium
             "chat_heads-",                  //https://www.curseforge.com/minecraft/mc-mods/chat-heads
             "cherishedworlds-",             //https://www.curseforge.com/minecraft/mc-mods/cherished-worlds
             "cirback-1.0-",                 //Gone? Reduces to atoms?
             "citresewn-",                   //https://www.curseforge.com/minecraft/mc-mods/forge-cit
             "classicbar-",                  //https://www.curseforge.com/minecraft/mc-mods/classic-bars
-            "clickadv-",                    //https://www.curseforge.com/minecraft/mc-mods/clickable-advancements
             "clienttweaks-",                //https://www.curseforge.com/minecraft/mc-mods/client-tweaks
             "combat_music-",                //https://www.curseforge.com/minecraft/mc-mods/combat-music
             "configured-neoforge-",         //https://www.curseforge.com/minecraft/mc-mods/configured
@@ -391,6 +394,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "forgemod_VoxelMap-",           //https://www.curseforge.com/minecraft/mc-mods/voxelmap
             "freecam-",                     //https://www.curseforge.com/minecraft/mc-mods/free-cam
             "freelook-",                    //https://www.curseforge.com/minecraft/mc-mods/freelook
+            "ftbpromoter-",                 //https://www.curseforge.com/minecraft/mc-mods/ftb-promoter/
             "galacticraft-rpc-",            //https://www.curseforge.com/minecraft/mc-mods/galacticraft-rpc
             "gamestagesviewer-",            //https://www.curseforge.com/minecraft/mc-mods/game-stages-viewer
             "gpumemleakfix-",               //https://www.curseforge.com/minecraft/mc-mods/fix-gpu-memory-leak
@@ -486,6 +490,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "smoothboot-",                  //https://www.curseforge.com/minecraft/mc-mods/smoothboot
             "smoothfocus-",                 //https://www.curseforge.com/minecraft/mc-mods/smoothfocus
             "sodium-fabric-",               //https://www.curseforge.com/minecraft/mc-mods/sodium
+            "sodium-shader-support-",       //https://modrinth.com/mod/sodium-shader-support/
+            "sodiumcoreshadersupport-",     //https://www.curseforge.com/minecraft/mc-mods/sodium-core-shader-support
             "sodiumdynamiclights-",         //https://www.curseforge.com/minecraft/mc-mods/dynamiclights-reforged
             "sodiumleafculling-",           //https://www.curseforge.com/minecraft/mc-mods/sodium-leaf-culling
             "sodiumoptionsapi-",            //https://www.curseforge.com/minecraft/mc-mods/sodium-options-api
@@ -648,7 +654,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     @Suppress("MemberVisibilityCanBePrivate")
     val trueFalseRegex = "^(true|false)$".toRegex()
 
-    val preReleaseRegex = ".*(alpha|beta|dev).*".toRegex()
+    @Suppress("MemberVisibilityCanBePrivate")
+    val alphaBetaRegex = "^(.*alpha.*|.*beta.*)$".toRegex()
 
     @Suppress("MemberVisibilityCanBePrivate")
     val serverPacksRegex = "^(?:\\./)?server-packs$".toRegex()
@@ -777,7 +784,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
 
     val preRelease: Boolean
         get() {
-            return apiVersion.matches(preReleaseRegex)
+            return apiVersion.matches(alphaBetaRegex)
         }
 
     val configVersion: String = if (preRelease || devBuild) {
@@ -785,6 +792,14 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     } else {
         "4"
     }
+
+    /**
+     * Only the first call to this property will return true if this is the first time ServerPackCreator is being run
+     * on a given host. Any subsequent call will return false. Handle with care!
+     *
+     * @author Griefed
+     */
+    val firstRun: Boolean
 
     var logLevel = "INFO"
         get() {
@@ -2622,7 +2637,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             }
         }
         if (fallbackUpdated) {
-            saveProperties(serverPackCreatorPropertiesFile)
+            saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
         }
         return fallbackUpdated
     }
@@ -2779,6 +2794,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             setLoggingLevel(logLevel)
         }
 
+        firstRun = getBoolProperty("de.griefed.serverpackcreator.firstrun", true)
+        setBoolProperty("de.griefed.serverpackcreator.firstrun", false)
         logsDirectory.create(createFileOrDir = true, asDirectory = true)
         serverFilesDirectory.create(createFileOrDir = true, asDirectory = true)
         propertiesDirectory.create(createFileOrDir = true, asDirectory = true)
@@ -2794,7 +2811,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         minecraftServerManifestsDirectory.create(createFileOrDir = true, asDirectory = true)
         installerCacheDirectory.create(createFileOrDir = true, asDirectory = true)
         printSettings()
-        saveProperties(serverPackCreatorPropertiesFile)
+        saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
     }
 
     private fun setLoggingLevel(level: String) {
