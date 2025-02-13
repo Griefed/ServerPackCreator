@@ -394,6 +394,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "forgemod_VoxelMap-",           //https://www.curseforge.com/minecraft/mc-mods/voxelmap
             "freecam-",                     //https://www.curseforge.com/minecraft/mc-mods/free-cam
             "freelook-",                    //https://www.curseforge.com/minecraft/mc-mods/freelook
+            "ftbpromoter-",                 //https://www.curseforge.com/minecraft/mc-mods/ftb-promoter/
             "galacticraft-rpc-",            //https://www.curseforge.com/minecraft/mc-mods/galacticraft-rpc
             "gamestagesviewer-",            //https://www.curseforge.com/minecraft/mc-mods/game-stages-viewer
             "gpumemleakfix-",               //https://www.curseforge.com/minecraft/mc-mods/fix-gpu-memory-leak
