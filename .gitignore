@@ -371,6 +371,7 @@ serverpackcreator-web-frontend/.quasar/
 serverpackcreator-web-frontend/dist/
 serverpackcreator-web-frontend/node_modules/
 serverpackcreator-web-frontend/node/
+serverpackcreator-web-frontend/.frontend-gradle-plugin
 serverpackcreator-app/serverpackcreator.db
 docker-compose-dev.yml
 

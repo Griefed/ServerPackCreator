@@ -22,7 +22,7 @@ dokka = "1.9.20"
 licenseReport = "2.9"
 
 # https://plugins.gradle.org/plugin/org.siouan.frontend-jdk11
-frontendPlugin = "8.1.0"
+frontendPlugin = "10.0.0"
 
 # https://plugins.gradle.org/plugin/com.install4j.gradle
 install4j = "11.0.0.1"
