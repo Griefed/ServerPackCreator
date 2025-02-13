@@ -1,3 +1,28 @@
+## [7.2.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.2.1...7.2.2) (2025-02-13)
+
+### 📦 Other
+
+* Add .DS_Store to gitignore ([92ab0c8](https://git.griefed.de/Griefed/ServerPackCreator/commit/92ab0c8117c5c181e83ca8a9a2e38658f2e48616))
+* Add .DS_Store to gitignore ([d142543](https://git.griefed.de/Griefed/ServerPackCreator/commit/d142543a6c12276ac38410bd37d1f6bab1a53008))
+* Add appleskin to whitelist to prevent automatic exclusion. Remove clickadv from clientside-mods list. Thanks to @Devilswarchild for the report! ([be246c4](https://git.griefed.de/Griefed/ServerPackCreator/commit/be246c47fa286d3c5beab4e82c568a6bcd206549))
+* Add appleskin to whitelist to prevent automatic exclusion. Remove clickadv from clientside-mods list. Thanks to @Devilswarchild for the report! ([9023a0a](https://git.griefed.de/Griefed/ServerPackCreator/commit/9023a0a0659e073b00542c13800b24b47d1a4e9c))
+* Add bocchud, mafglib, citresewn to list of clientside-mods. Thanks to @ModernGamingWorld @SNWCreations for the reports! ([ecb80ab](https://git.griefed.de/Griefed/ServerPackCreator/commit/ecb80abc016d1a08ea39a95273fb2da47f467c35))
+* Add bocchud, mafglib, citresewn to list of clientside-mods. Thanks to @ModernGamingWorld @SNWCreations for the reports! ([9d8e39d](https://git.griefed.de/Griefed/ServerPackCreator/commit/9d8e39d58c66aa219f920b48398b872aab6a02b6))
+* Add Cavedust to list of clientside-only mods. ([adcd5c4](https://git.griefed.de/Griefed/ServerPackCreator/commit/adcd5c4267054cd86cb110783a54d5133bbe0596))
+* Add chestsearchbar, sodium-shader-support, sodiumcoreshadersupport, ahznbstools, Forgematica. Thanks to @ModernGamingWorld ([2fa65f3](https://git.griefed.de/Griefed/ServerPackCreator/commit/2fa65f361e72b359d269e9a43467435215774320))
+* Add ftbpromoter to list of clientside-mods. Thanks to @ModernGamingWorld for the report! ([3fda087](https://git.griefed.de/Griefed/ServerPackCreator/commit/3fda087f23a845b29b48493d2cc841e5e70558ae))
+* Add immersivemessages, immersivetips, beddium, sodiumleafculling, blinkload, relictium to list of clientside-only mods. Thanks to @ModernGamingWorld for the reports! ([601f8cc](https://git.griefed.de/Griefed/ServerPackCreator/commit/601f8ccefad26c012bd3ae0b60c1319e77c2aa7c))
+* Clientside-mod stuff ([2162d55](https://git.griefed.de/Griefed/ServerPackCreator/commit/2162d5526d9c2f81d215899f62cb79bad9cf61a8))
+* Dep updates in license agreement ([69aa702](https://git.griefed.de/Griefed/ServerPackCreator/commit/69aa702c7c7eed05a43a111a65e731f53b9d0ee3))
+
+### 🦊 CI/CD
+
+* Update siouan-frontend-gradle-plugin and NodeJS version, fix building on macOS ([dddde83](https://git.griefed.de/Griefed/ServerPackCreator/commit/dddde83862530a0e3a58702aad1c5f5663b3a45a))
+
+### 🛠 Fixes
+
+* Allow default value in pref-store get ([bcd5cdb](https://git.griefed.de/Griefed/ServerPackCreator/commit/bcd5cdb176d3dd0773ba932e7cbdc0a7dc483725))
+
 ## [7.2.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.2.0...7.2.1) (2025-01-25)
 
 ### 📦 Other
