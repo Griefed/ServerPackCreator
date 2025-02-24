@@ -408,7 +408,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "infinitemusic-",               //https://www.curseforge.com/minecraft/mc-mods/infinite-music
             "inventoryhud.",                //https://www.curseforge.com/minecraft/mc-mods/inventory-hud-forge
             "inventoryprofiles",            //https://www.curseforge.com/minecraft/mc-mods/inventory-profiles
-            "invtweaks-",                   //https://www.curseforge.com/minecraft/bukkit-plugins/invtweaks
             "itemzoom",                     //https://www.curseforge.com/minecraft/mc-mods/itemzoom
             "itlt-",                        //https://www.curseforge.com/minecraft/mc-mods/its-the-little-things
             "jeed-",                        //https://www.curseforge.com/minecraft/mc-mods/just-enough-effect-descriptions-jeed
