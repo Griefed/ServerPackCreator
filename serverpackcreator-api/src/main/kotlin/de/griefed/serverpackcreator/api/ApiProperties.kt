@@ -277,6 +277,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "OverflowingBars-",             //https://www.curseforge.com/minecraft/mc-mods/overflowing-bars
             "PackMenu-",                    //https://www.curseforge.com/minecraft/mc-mods/packmenu
             "PackModeMenu-",                //https://www.curseforge.com/minecraft/mc-mods/packmodemenu
+            "Particle Effects-",            //https://www.curseforge.com/minecraft/mc-mods/particle-effects
             "PickUpNotifier-",              //https://www.curseforge.com/minecraft/mc-mods/pick-up-notifier
             "Ping-",                        //https://www.curseforge.com/minecraft/mc-mods/ping
             "PingHUD-",                     //https://www.curseforge.com/minecraft/mc-mods/pinghud
