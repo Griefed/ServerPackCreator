@@ -362,6 +362,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "defaultoptions-",              //https://www.curseforge.com/minecraft/mc-mods/default-options
             "desiredservers-",              //https://www.curseforge.com/minecraft/mc-mods/desired-servers
             "discordrpc-",                  //https://www.curseforge.com/minecraft/mc-mods/discordrpc
+            "distraction_free_recipes-",    //https://www.curseforge.com/minecraft/mc-mods/distraction-free-recipes
             "drippyloadingscreen-",         //https://www.curseforge.com/minecraft/mc-mods/drippy-loading-screen
             "drippyloadingscreen_",         //https://www.curseforge.com/minecraft/mc-mods/drippy-loading-screen
             "durabilitytooltip-",           //https://www.curseforge.com/minecraft/mc-mods/durability-tooltip
@@ -492,11 +493,13 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "sodium-shader-support-",       //https://modrinth.com/mod/sodium-shader-support/
             "sodiumcoreshadersupport-",     //https://www.curseforge.com/minecraft/mc-mods/sodium-core-shader-support
             "sodiumdynamiclights-",         //https://www.curseforge.com/minecraft/mc-mods/dynamiclights-reforged
+            "sodiumextras-",                //https://www.curseforge.com/minecraft/mc-mods/magnesium-extras
             "sodiumleafculling-",           //https://www.curseforge.com/minecraft/mc-mods/sodium-leaf-culling
             "sodiumoptionsapi-",            //https://www.curseforge.com/minecraft/mc-mods/sodium-options-api
             "sodiumoptionsmodcompat-",      //https://www.curseforge.com/minecraft/mc-mods/sodium-embeddium-options-mod-compat
             "sounddeviceoptions-",          //https://www.curseforge.com/minecraft/mc-mods/more-sound-config
             "soundreloader-",               //https://www.curseforge.com/minecraft/mc-mods/sound-reloader
+            "sounds-",                      //https://www.curseforge.com/minecraft/mc-mods/sound
             "spoticraft-",                  //https://www.curseforge.com/minecraft/mc-mods/spoticraft-inactive
             "skinlayers3d-forge",           //https://www.curseforge.com/minecraft/mc-mods/skin-layers-3d
             "tconplanner-",                 //https://www.curseforge.com/minecraft/mc-mods/tinkers-planner
