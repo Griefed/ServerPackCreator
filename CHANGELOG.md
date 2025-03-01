@@ -1,3 +1,34 @@
+## [7.2.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.2.2...7.2.3) (2025-03-01)
+
+### 📔 Docs
+
+* Improve filter docs and add tips to help ([72a1c61](https://git.griefed.de/Griefed/ServerPackCreator/commit/72a1c6198b90d36a8a5fd4484a3dc419269b1f55))
+
+### 📦 Other
+
+* Add Particle Effects- to list of clientside-only mods. Thanks to @ChorbInTime for the report! ([1696aaf](https://git.griefed.de/Griefed/ServerPackCreator/commit/1696aaff84505b45ba66ab158910caa0d2ca536f))
+* Add sound, distraction_free_recipes, sodiumextras- to list of clientside-only mods. Thanks to @ModifiedMC for the report! ([95cfe31](https://git.griefed.de/Griefed/ServerPackCreator/commit/95cfe31015223e808c43cc8a48dd41fe8b15a9de))
+* Remove invtweaks from clientside-only list. Thanks to @ModifiedMC for the report. ([111de94](https://git.griefed.de/Griefed/ServerPackCreator/commit/111de941ce9e5ad320be51ed983f5e2ecaa0c65c))
+
+### 🦊 CI/CD
+
+* **deps:** bump com.fasterxml.jackson.module:jackson-module-kotlin ([0ceedf9](https://git.griefed.de/Griefed/ServerPackCreator/commit/0ceedf91fa5e6b6b02c8466854769de99fa6ccac))
+* **deps:** bump com.install4j:install4j-runtime ([0119a91](https://git.griefed.de/Griefed/ServerPackCreator/commit/0119a9125a3972811be0a9e6f2166c88278843be))
+* **deps:** bump de.comahe.i18n4k from 0.9.0 to 0.10.0 in /serverpackcreator-api ([a7fcd86](https://git.griefed.de/Griefed/ServerPackCreator/commit/a7fcd86569d900eb9e83bb5e70e525a125186dbc))
+* **deps:** bump de.comahe.i18n4k in /serverpackcreator-plugin-example ([a9daaa2](https://git.griefed.de/Griefed/ServerPackCreator/commit/a9daaa22d1f3c37110cf716a47f4a658ffd767d1))
+* **deps:** bump de.comahe.i18n4k:i18n4k-core in /serverpackcreator-api ([31de7e3](https://git.griefed.de/Griefed/ServerPackCreator/commit/31de7e377416f3e10bc656483917bba47c13d3cb))
+* **deps:** bump JamesIves/github-pages-deploy-action ([70db3d2](https://git.griefed.de/Griefed/ServerPackCreator/commit/70db3d2caa4cda45ee2a9408b3cd3f095df8fd3f))
+* **deps:** bump org.jetbrains.kotlin:kotlin-bom ([df7cf85](https://git.griefed.de/Griefed/ServerPackCreator/commit/df7cf857a2e64b6cd698b8bfbca68243b35ac195))
+* **deps:** bump org.junit.jupiter:junit-jupiter-api ([e186d93](https://git.griefed.de/Griefed/ServerPackCreator/commit/e186d934c36515f6815df5c1a9ed86ac5267c768))
+* **deps:** bump org.junit.jupiter:junit-jupiter-engine ([55945fe](https://git.griefed.de/Griefed/ServerPackCreator/commit/55945fe5ba1a209872de954c67e0634b46984dea))
+* **deps:** bump org.springframework.boot:spring-boot-devtools ([85f76a9](https://git.griefed.de/Griefed/ServerPackCreator/commit/85f76a97b527a5de8d280612dba33f6956b2bf22))
+* **deps:** bump org.springframework.boot:spring-boot-starter-web ([115b8f2](https://git.griefed.de/Griefed/ServerPackCreator/commit/115b8f22edfe0cc3474357173e0ee8009a826561))
+* **deps:** bump softprops/action-gh-release from 2.1.0 to 2.2.1 ([a4e325f](https://git.griefed.de/Griefed/ServerPackCreator/commit/a4e325f0532cc2c83c5a35bdbb43e293672d7912))
+
+### 🛠 Fixes
+
+* Correctly list files to be included in tip-section in the GUI ([1f19cab](https://git.griefed.de/Griefed/ServerPackCreator/commit/1f19cab18405a4a32deefa937016357611837e43))
+
 ## [7.2.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.2.1...7.2.2) (2025-02-13)
 
 ### 📦 Other
