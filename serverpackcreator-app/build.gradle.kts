@@ -51,12 +51,12 @@ dependencies {
     api("net.java.balloontip:balloontip:1.2.4.1")
     api("com.cronutils:cron-utils:9.2.1")
     api("tokyo.northside:tipoftheday:0.4.2")
-    compileOnly("com.install4j:install4j-runtime:11.0.1")
+    compileOnly("com.install4j:install4j-runtime:11.0.2")
 
     //WEB
     api("org.jetbrains.kotlin:kotlin-reflect:1.9.23")
-    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.2")
-    api("org.springframework.boot:spring-boot-starter-web:3.3.2")
+    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.3")
+    api("org.springframework.boot:spring-boot-starter-web:3.4.3")
     api("org.springframework.boot:spring-boot-starter-log4j2:3.4.0")
     api("org.springframework.boot:spring-boot-starter-data-jpa:3.4.1")
     api("org.postgresql:postgresql:42.7.3")
@@ -65,7 +65,7 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
     testRuntimeOnly("com.h2database:h2:2.3.232")
     testImplementation("org.springframework.boot:spring-boot-starter-test:3.4.1")
-    developmentOnly("org.springframework.boot:spring-boot-devtools:3.4.0")
+    developmentOnly("org.springframework.boot:spring-boot-devtools:3.4.3")
     //developmentOnly("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 }
 
