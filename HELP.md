@@ -309,11 +309,14 @@ This will disable the automatic updating of the `SPC_JAVA_SPC`-placeholder in yo
 ### Updating
 
 If you wish to use the latest and greatest hits of clientside-only mods ServerPackCreator has to
-offer, you need to update it via **Menu Bar -> File -> Update Fallback Clientside Modslist** and
+offer, you need to update it via **Menu Bar -> Edit -> Update Fallback Clientside Modslist** and
 then either
 
-- Clear your clientside-only mods list in your config, save it, then load it again (either via the
-  menu or by restarting SPC)
+- In the GUI, head to the **Advanced Section** of your server pack config, to the clientside- and whitelist, and click the reset-button (cog with two red arrows) 
+
+**OR**
+
+- Clear your clientside-only mods list in your config, save it, then load it again (either via the menu or by restarting SPC)
 
 **OR**
 
@@ -325,8 +328,7 @@ then either
 
 **OR**
 
-- Empty the clientside-mods field, save the configuration, load the configuration. This will fill it
-  with the default clientside-mods list
+- Empty the clientside-mods field, save the configuration, load the configuration. This will fill it with the default clientside-mods list
 
 If you added custom mods to this list, you must make sure you migrate them over to the new setting
 yourself.
@@ -438,7 +440,29 @@ change `de.griefed.serverpackcreator.configuration.aikar` to your liking.
 using the appropriate button in the GUI will result in the same setting for all server pack
 configurations.
 
-## Excluding files from ZIP-archives
+## Excluding files
+
+### Using exclusion-filters
+
+You can specify exclusion-filters for every inclusion-specification of your server pack config.
+There are two ways of telling SPC to exclude files.
+
+1. Inclusion-specific exclusion
+
+This will exclude files only for the inclusion at hand. So if you specify an exclusion for, say, *config*, then only
+files from *config* will be excluded.
+
+Setting `config.brandon3055.servers.1234-5678-91011-121314.dat` as the exclusion-filter for *config* will
+exclude said file from the config-directory during server pack generation.
+
+2. Global exclusion
+
+If you specify an exclusion-filter for an inclusion-spec *without setting a source*, then it will be treated as a global
+exclusion-filter, which can and will affect every single inclusion-spec in your server pack.
+
+Setting `.*.png`, for example, will exclude every *.png*-file from your server pack.
+
+### From ZIP-archives
 
 You can globally configure files which should be excluded from ZIP-archives.
 To do so, you need to edit your `serverpackcreator.properties`-file and change
@@ -1102,6 +1126,32 @@ Note: This path will not be present in the `variables.txt` in the ZIP-archive of
 3. Check the Advanced-section and notice the updated Java path:
 
 ![java-updated](img/Javas-Updated.png)
+
+## Tips
+
+1. You can save the currently selected server pack configuration by pressing CTRL + S.
+2. You can open a new server pack configuration tab by pressing CTRL + T.
+3. Identified a mod which crashes servers, and therefore only required on the clientside, but not on the server side i.e. in your server pack? Submit an Improvement Request on GitHub, with the name of the mod and the link to CurseForge / Modrinth!
+4. ![tip4](img/tip4.png)<br>You can create server packs from zipped modpacks. Make sure all modpack contents are at the root of the ZIP-archive, and not bundled in a sub-folder inside the archive. Point the <i>Modpack Directory</i> setting of your server pack configuration at your ZIP-archive and set everything else according to your modpack. You still need to tell ServerPackCreator which directories or files to include, which Minecraft version, modloader and modloader version your modpack uses, though!
+5. Want to tickle some more performance out of your server? Try out Aikars Flags! Check out <i>Advanced Settings -> Use Aikars Flags</i> which will add said Aikars Flags to your server packs <i>Run Arguments</i>. Generate your server pack and run your server to see whether it improved your servers performance!
+6. Want to keep different versions of a server pack, generated from the same modpack? Take a look at <i>Server Pack Suffix</i> which will add said suffix to the generated server pack, allowing you to try out different settings for your server pack, without loosing previous generation. Suffixes like <i>Aikars_Flags</i>, <i>With_Blueprints</i>, <i>With_BlueMap</i> to give you an idea.
+7. You can add server icons for quick selection by copying them to the server icon directory. In the menu at the top, click <i>View -> Open server-icon directory</i>. Any PNG-, JPG-, JPEG- and BMP-image added to said directory will be available in your server pack configs <i>Server Icon Quick select</i> dropdown. Select an image from said dropdown to quickly use it as your servers icon!
+8. You can add server properties for quick selection by copying them to the server properties directory. In the menu at the top, click <i>View -> Open server-properties directory</i>. Any PROPERTIES-file added to said directory will be available in your server pack configs <i>Server Properties Quick select</i> dropdown. Select an entry from said dropdown to quickly use it as your servers properties-file!
+9. ![tip4](img/tip9.png)<br>You can let ServerPackCreator scan your modpack-directory and try to automatically set the Minecraft version, modloader and modloader version, as well as some commonly used directories in servers. Hit the magnifying-glass-button on the right to your <i>Modpack Directory</i>-setting.
+10. ![tip4](img/tip10.png)<br>You can let ServerPackCreator copy a file or directory to a customized destination in your server pack. Say you've got a folder <i>MyAwesomeStuff</i> in your modpack configured as the Source, filling <i>Destination</i> with, say, <i>AwesomeStuff</i> will copy the aforementioned <i>Source</i> to your specified Destination inside your server pack.<br>Inclusions which specify an explicit <i>Destination</i> are marked with a <i>D</i>.
+11. You can filter files and directories from any <i>Source</i>-specification by providing a <i>Inclusion-Filter</i>. Any file or directory matching the Regex-expression you provided will be included in your server pack. To include everything from your specified <i>Source</i>, leave <i>Inclusion-Filter</i> empty.
+12. You can filter files and directories from any <i>Source</i>-specification by providing an <i>Exclusion-Filter</i>. Any file or directory matching the Regex-expression you provided will be excluded from your server pack. If you leave Exclusion-Filter empty, no files or directories will be excluded from the specified Source.
+13. Global exclusion-filters allow you to globally exclude files and directories from any source during the creation of your server pack. To specify a global exclusion-filter, add a new entry in your <i>Server-files</i>, leave <i>Source</i> empty, but fill <i>Exclusion-Filter</i> with a Regex-expression based on which files or directories should be excluded during the creation of your server pack. A global exclusion-filter will be marked with (E) in your Server-files list.
+14. If ServerPackCreators default font size is too small for you, or the theme not to your liking, you can change these settings in <i>Settings -> Gui</i> to better fit your personal preferences.
+15. Not sure if a clientside-only mod is included in the list of clientside-only mods in your server pack config? Click the aforementioned list and hit CTRL+F and search for it! Try searching for "advan" to highlight all entries which contain that text! You can perform text-searches like that in every textarea of ServerPackCreator. Searching textfields is not possible, though, so keep that in mind.
+16. Need to replace some text in a textarea? Say, for example, you've got some JVM flags / run arguments you want to replace with something else? Click <i>Advanced Settings -> Run Arguments</i> and hit CTRL+R, then type in the text you want to replace as well as the text you want to place it with and hit <i>OK</i>. You can perform replace-actions like that in every textarea of ServerPackCreator. Replacing in textfields is not possible, though, so keep that in mind.
+17. No longer need the currently selected server pack configuration? Close it by pressing CTRL+W!
+18. You can save all currently opened server pack configurations, or in other words, all currently opened tabs with your server pack configurations, by pressing CTRL+SHIFT+S!
+19. You can open the dialog to load a server pack configuration by pressing CTRL+L.
+20. You can start a server pack generation for the currently selected config-tab by pressing CTRL+G.
+21. Does your server crash, with a message like "Error: could not find or load main class @user_jvm_args.txt"? This is most likely because you are trying to run the server with an incompatible Java version. Java 8 is required to run Minecraft versions 1.12 through 1.17. Java 17 is required to run Minecraft version 1.18 and up.
+22. ![tip4](img/tip22.png)<br>You can set a path to a Java executable or binary for every Java version from 8 upward.<br>If, for example, you've got modpacks which run Minecraft 1.12.2 and 1.19.2, you'll need Java 8 and Java 17.<br>Add an entry for version 8, then enter the path to the binary / executable.<br>The next time you load a server pack config, ServerPackCreator will automatically adjust the "SPC_JAVA_SPC" script placeholder accordingly.<br>Now, when you generate a server pack, the unzipped one will have the "JAVA" variable, inside variables.txt, point towards the Java installation the server pack requires to run.<br>The variables.txt inside the ZIP-archive, if you let ServerPackCreator create one, will still point to "java".<br>The benefit? You can immediately test your server pack, using the Java installation it requires. If everything works, you can distribute your server pack!
+23. ![tip4](img/tip23.png)<br>Identified a clientside-only mod and want to exclude it from your server, or have you run into a false-positive with the clientside-mod exclusion and want to whitelist a mod to prevent exclusion? Select the part of the filename by which the mod can be identified, even when the version of the mod changes. Right-click and select either option which suits your need!<br>Usually it is enough to select the part of the mods filename which contains the name of the mod, without any version information. For example <b>connectedglass-</b> as demonstrated in the screenshot on the side. Not selecting the version has the benefit of ensuring future versions of the mod get excluded/whitelisted, too.
 
 ## Fun Stuff 
 

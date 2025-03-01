@@ -27,6 +27,7 @@
         <toc-element topic="Special-Mods.md"/>
         <toc-element topic="Translations.md"/>
         <toc-element topic="Working-With-Plugins.md"/>
+        <toc-element topic="Tips.md"/>
         <toc-element topic="Fun-Stuff.md"/>
     </toc-element>
     <toc-element topic="Documents.md">
