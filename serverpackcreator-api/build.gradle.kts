@@ -4,7 +4,7 @@ import java.util.prefs.Preferences
 plugins {
     id("serverpackcreator.kotlin-conventions")
     id("serverpackcreator.dokka-conventions")
-    id("de.comahe.i18n4k") version "0.9.0"
+    id("de.comahe.i18n4k") version "0.10.0"
 }
 
 repositories {
