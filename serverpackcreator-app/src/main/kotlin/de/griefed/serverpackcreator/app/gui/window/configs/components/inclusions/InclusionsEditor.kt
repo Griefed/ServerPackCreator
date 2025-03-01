@@ -279,11 +279,13 @@ class InclusionsEditor(
                     }
                 } else {
                     tipContent = Translations.createserverpack_gui_inclusions_editor_tip_prefix.toString()
-                    val prefix = if (!inclusionSelection.destination.isNullOrBlank()) {
+
+                    /*val prefix = if (!inclusionSelection.destination.isNullOrBlank()) {
                         inclusionSelection.destination + File.separator
                     } else {
                         File(inclusionSelection.source).name + File.separator
-                    }
+                    }*/
+
                     if (File(configEditor.getModpackDirectory(), inclusionSelection.source).isFile) {
                         tipContent += File(configEditor.getModpackDirectory(), inclusionSelection.source).absolutePath.replace(
                             configEditor.getModpackDirectory() + File.separator,
@@ -303,7 +305,8 @@ class InclusionsEditor(
                             configEditor.getModloader()
                         )
                         for (file in acquired) {
-                            tipContent += "${prefix}${file.destinationFile.name}\n"
+                                    /*${prefix}*/
+                            tipContent += "${file.sourcePath.toString().replace(configEditor.getModpackDirectory(),"")}\n"
                         }
 
                     }
