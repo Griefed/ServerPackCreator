@@ -20,7 +20,7 @@
 package de.griefed.serverpackcreator.app.gui.window.configs.components
 
 import Translations
-import de.griefed.serverpackcreator.api.config.ConfigurationHandler
+import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.window.configs.ConfigEditor
 import de.griefed.serverpackcreator.app.gui.window.configs.TabbedConfigsTab
@@ -35,7 +35,7 @@ import javax.swing.Timer
  * @author Griefed
  */
 @OptIn(DelicateCoroutinesApi::class)
-class ConfigCheckTimer(delay: Int, guiProps: GuiProps, configHandler: ConfigurationHandler, tabbedConfigsTab: TabbedConfigsTab) : Timer(delay,
+class ConfigCheckTimer(delay: Int, guiProps: GuiProps, apiWrapper: ApiWrapper, tabbedConfigsTab: TabbedConfigsTab) : Timer(delay,
     ActionListener {
         GlobalScope.launch(guiProps.configDispatcher, CoroutineStart.UNDISPATCHED) {
             var errorsEncountered = false
@@ -47,7 +47,7 @@ class ConfigCheckTimer(delay: Int, guiProps: GuiProps, configHandler: Configurat
                 runBlocking {
                     launch {
                         errors.addAll(editor.validateModpackDir())
-                        val name = configHandler.checkManifests(editor.getModpackDirectory(), pack)
+                        val name = apiWrapper.configurationHandler.checkManifests(editor.getModpackDirectory(), pack)
                         @Suppress("IfThenToElvis")
                         editor.title.title = if (pack.name != null) {
                             pack.name!!

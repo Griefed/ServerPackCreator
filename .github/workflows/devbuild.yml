@@ -67,14 +67,33 @@ jobs:
         run: |
           cp checksum.txt continuous/
 
-      - name: Upload to GitHub Releases
-        uses: "slord399/action-automatic-releases@v1.0.1"
+#      - name: Upload to GitHub Releases
+#        uses: "slord399/action-automatic-releases@v1.0.1"
+#        with:
+#          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+#          automatic_release_tag: "continuous"
+#          prerelease: true
+#          files: |
+#            continuous/*
+
+      - name: Update develop
+        uses: richardsimko/update-tag@v1
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "continuous"
-          prerelease: true
-          files: |
-            continuous/*
+          tag_name: continuous
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: 'true'
+          artifacts: "continuous/*"
+          body: "Continuous dev-build release.<br>Updated every time changes are pushed to develop.<br>Do not use unless you have been told to, or are curious about the contents of the dev build.<br>Do not link to this release."
+          commit: "${{ github.sha }}"
+          name: "continuous"
+          prerelease: 'true'
+          removeArtifacts: 'true'
+          replacesArtifacts: 'true'
+          tag: 'continuous'
             
 #      - name: Delete drafts
 #        uses: hugo19941994/delete-draft-releases@v1.0.1
