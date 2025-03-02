@@ -33,6 +33,7 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.datatransfer.DataFlavor
+import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
@@ -110,8 +111,7 @@ class InclusionsEditor(
     private val inclusionsReset = BalloonTipButton(null, guiProps.resetIcon, Translations.createserverpack_gui_buttoncopydirs_reset_tip.toString(), guiProps) { setInclusionsFromStringList(apiWrapper.apiProperties.directoriesToInclude.toMutableList()) }
 
     private var selectedInclusion: InclusionSpecification? = null
-    private val delay = 250
-    private val tipUpdateTimer: Timer = Timer(delay) { updateTip() }
+    private val tipUpdateTimer: TipUpdateTimer = TipUpdateTimer(500)
 
     private val sourceListener = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
@@ -154,7 +154,7 @@ class InclusionsEditor(
             val index = inclusionList.locationToIndex(e.point)
             val bounds = inclusionList.getCellBounds(index, index)
             if (bounds == null || !bounds.contains(e.point) || inclusionList.model.size <= 0) {
-                emtpySelection()
+                emptySelection()
             } else {
                 enableInputs()
             }
@@ -177,16 +177,13 @@ class InclusionsEditor(
 
         fun checkSize() {
             if (inclusionList.model.size <= 0 || inclusionList.isSelectionEmpty) {
-                emtpySelection()
+                emptySelection()
             }
         }
     }
 
     init {
         source.isEditable = guiProps.allowManualEditing
-        tipUpdateTimer.stop()
-        tipUpdateTimer.delay = delay
-        tipUpdateTimer.isRepeats = false
         dividerLocation = 150
         setLeftComponent(leftPanel)
         setRightComponent(rightPanel)
@@ -234,11 +231,11 @@ class InclusionsEditor(
         inclusionList.addMouseListener(listMouseAdapter)
         inclusionList.model.addListDataListener(listModelDataAdapter)
         if (inclusionList.model.size <= 0) {
-            emtpySelection()
+            emptySelection()
         }
     }
 
-    private fun emtpySelection() {
+    private fun emptySelection() {
         if (inclusionList.model.size > 0 || inclusionList.valueIsAdjusting) {
             return
         }
@@ -324,7 +321,7 @@ class InclusionsEditor(
                 selectedInclusionDetailsScrollPanel.isEnabled = true
                 inclusionList.isEnabled = true
             } else {
-                updateTip()
+                tipUpdateTimer.restart()
             }
         }
     }
@@ -438,7 +435,7 @@ class InclusionsEditor(
             inclusionList.valueIsAdjusting -> return
             event.valueIsAdjusting -> return
             inclusionList.selectedIndex == -1 || inclusionList.model.size <= 0 -> {
-                emtpySelection()
+                emptySelection()
                 return
             }
         }
@@ -535,7 +532,7 @@ class InclusionsEditor(
             inclusionList.selectedIndex = 0
         }
         if (inclusionList.model.size <= 0) {
-            emtpySelection()
+            emptySelection()
         }
         validate()
         return removed
@@ -680,6 +677,21 @@ class InclusionsEditor(
             }
 
             return true
+        }
+    }
+
+    /**
+     * Timer responsible for updating the tip in the inclusions-editor.
+     *
+     * @author Griefed
+     */
+    inner class TipUpdateTimer(delay: Int) :
+        Timer(delay, ActionListener {
+            updateTip()
+        }) {
+        init {
+            stop()
+            isRepeats = false
         }
     }
 }
