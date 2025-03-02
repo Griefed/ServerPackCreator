@@ -81,7 +81,7 @@ jobs:
           allowUpdates: 'true'
           artifacts: "continuous/*"
           body: "Continuous dev-build release.<br>Updated every time changes are pushed to develop.<br>Do not use unless you have been told to, or are curious about the contents of the dev build.<br>Do not link to this release."
-          commit: 'develop'
+          commit: "${{ github.sha }}"
           name: "continuous"
           prerelease: 'true'
           removeArtifacts: 'true'
