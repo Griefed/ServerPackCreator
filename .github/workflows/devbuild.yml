@@ -79,7 +79,7 @@ jobs:
       - name: Update develop
         uses: richardsimko/update-tag@v1
         with:
-          tag_name: develop
+          tag_name: continuous
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
