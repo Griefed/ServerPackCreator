@@ -1,3 +1,20 @@
+## [7.2.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.2.3...7.2.4) (2025-03-02)
+
+### :scissors: Refactor
+
+* Don't use deprecated FAO constructor. Use more general call to configHandler. ([0e06cda](https://git.griefed.de/Griefed/ServerPackCreator/commit/0e06cdacb5ae2d4943092d1b299ba2f45b1b8eec))
+
+### 🦊 CI/CD
+
+* Doh. Tag name wasn't develop, but continuous. Duh. ([715c01f](https://git.griefed.de/Griefed/ServerPackCreator/commit/715c01ff139c1fc7cffcb235438002c8cf4ec0f0))
+* Switch to ncipollo/release-action for continuous dev-release ([01edad1](https://git.griefed.de/Griefed/ServerPackCreator/commit/01edad17de3d56a358bea95a56ae4981b557a0d2))
+* Update develop tag before updating develop release ([fdb5cd9](https://git.griefed.de/Griefed/ServerPackCreator/commit/fdb5cd98ea80afa575441412452c9d6e8fa3da2e))
+* Use GITHUB_SHA instead of 'develop' ([902bc5d](https://git.griefed.de/Griefed/ServerPackCreator/commit/902bc5db503e593a971888e27a8d7d8645301ccd))
+
+### 🛠 Fixes
+
+* Ensure tip-box updates after editing the inclusion or exclusion filters ([09381d8](https://git.griefed.de/Griefed/ServerPackCreator/commit/09381d8a5107c577ad172b9bb84e7d5afb369fd9))
+
 ## [7.2.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.2.2...7.2.3) (2025-03-01)
 
 ### 📔 Docs
