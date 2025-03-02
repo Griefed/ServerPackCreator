@@ -37,6 +37,7 @@ import kotlinx.coroutines.swing.Swing
 import org.apache.commons.io.monitor.FileAlterationListener
 import org.apache.commons.io.monitor.FileAlterationMonitor
 import org.apache.commons.io.monitor.FileAlterationObserver
+import org.apache.commons.io.monitor.FileEntry
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.datatransfer.DataFlavor
 import java.awt.dnd.DnDConstants
@@ -63,7 +64,7 @@ class TabbedConfigsTab(
     private val choose = arrayOf(Translations.createserverpack_gui_quickselect_choose.toString())
     private val noVersions = DefaultComboBoxModel(arrayOf(Translations.createserverpack_gui_createserverpack_forge_none.toString()))
     private val componentResizer = ComponentResizer()
-    private val timer = ConfigCheckTimer(500, guiProps, apiWrapper.configurationHandler,this)
+    private val timer = ConfigCheckTimer(500, guiProps, apiWrapper,this)
     val selectedEditor: ConfigEditor?
         get() {
             return if (activeTab != null) {
@@ -277,7 +278,9 @@ class TabbedConfigsTab(
     @Suppress("DuplicatedCode")
     private fun iconsDirectoryWatcher() {
         Executors.newSingleThreadExecutor().execute {
-            val observer = FileAlterationObserver(apiWrapper.apiProperties.iconsDirectory)
+            val observer = FileAlterationObserver.builder()
+                .setRootEntry(FileEntry(apiWrapper.apiProperties.iconsDirectory))
+                .get()
             val alterations = object : FileAlterationListener {
                 override fun onStart(observer: FileAlterationObserver?) {}
                 override fun onDirectoryCreate(directory: File?) {}
@@ -309,6 +312,7 @@ class TabbedConfigsTab(
                     }
                 }
             }
+
             observer.addListener(alterations)
             val monitor = FileAlterationMonitor(2000)
             monitor.addObserver(observer)
@@ -323,7 +327,9 @@ class TabbedConfigsTab(
     @Suppress("DuplicatedCode")
     private fun propertiesDirectoryWatcher() {
         Executors.newSingleThreadExecutor().execute {
-            val observer = FileAlterationObserver(apiWrapper.apiProperties.propertiesDirectory)
+            val observer = FileAlterationObserver.builder()
+                .setRootEntry(FileEntry(apiWrapper.apiProperties.propertiesDirectory))
+                .get()
             val alterations = object : FileAlterationListener {
                 override fun onStart(observer: FileAlterationObserver?) {}
                 override fun onDirectoryCreate(directory: File?) {}
