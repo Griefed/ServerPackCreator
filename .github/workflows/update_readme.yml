@@ -10,6 +10,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Add GitHub Sponsors to Readme
         uses: JamesIves/github-sponsors-readme-action@v1
@@ -22,7 +24,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           update-files: 'README.md'
-          update-places: '<!-- contributors -->/<!-- contributors end-->'
+          update-places: '<!-- contributors --><!-- contributors end-->'
           repo: 'Griefed/ServerPackCreator'
           show-total: false
           style: 'base'
@@ -33,10 +35,10 @@ jobs:
           apt-get update && apt-get install git -y && \
           git config user.name ${{ secrets.GIT_USER }} && \
           git config user.email ${{ secrets.GIT_MAIL }} && \
-          git checkout main && \
+          git checkout -b main && \
           pwd && ls -ahl && \
-          git add . && \
+          git add README.md && \
           wait && \
           git status && \
-          git commit -m 'Update sponsors and contribution graph' && \
+          git commit -m 'chore: Update sponsors and contributors' && \
           git push "https://${{ secrets.GIT_USER }}:${{ secrets.GITLAB_TOKEN }}@${{ secrets.CI_SERVER_HOST }}/${{ secrets.GIT_USER }}/${{ secrets.CI_PROJECT_TITLE }}.git"
