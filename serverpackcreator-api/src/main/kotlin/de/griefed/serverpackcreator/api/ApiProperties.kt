@@ -203,7 +203,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "DeleteWorldsToTrash-",         //https://www.curseforge.com/minecraft/mc-mods/delete-worlds-to-trash-forge
             "DetailArmorBar-",              //https://www.curseforge.com/minecraft/mc-mods/detail-armor-bar-forge
             "Ding-",                        //https://www.curseforge.com/minecraft/mc-mods/ding
-            "DistantHorizons-",             //https://www.curseforge.com/minecraft/mc-mods/distant-horizons
             "DripSounds-",                  //https://www.curseforge.com/minecraft/mc-mods/waterdripsound
             "Durability101-",               //https://www.curseforge.com/minecraft/mc-mods/durability101
             "DurabilityNotifier-",          //https://www.curseforge.com/minecraft/mc-mods/durability-notifier
@@ -393,6 +392,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "flickerfix-",                  //https://www.curseforge.com/minecraft/mc-mods/flickerfix
             "fm_audio_extension_",          //https://www.curseforge.com/minecraft/mc-mods/audio-extension-for-fancymenu-forge
             "fabricmod_VoxelMap-",          //https://www.curseforge.com/minecraft/mc-mods/voxelmap
+            "forestryworktabledisplay-",    //https://www.curseforge.com/minecraft/mc-mods/forestry-worktable-display
             "forgemod_VoxelMap-",           //https://www.curseforge.com/minecraft/mc-mods/voxelmap
             "freecam-",                     //https://www.curseforge.com/minecraft/mc-mods/free-cam
             "freelook-",                    //https://www.curseforge.com/minecraft/mc-mods/freelook
