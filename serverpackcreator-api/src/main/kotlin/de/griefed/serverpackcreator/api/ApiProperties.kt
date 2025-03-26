@@ -353,6 +353,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "connectedness-",               //https://www.curseforge.com/minecraft/mc-mods/connectedness
             "controllable-",                //https://www.curseforge.com/minecraft/mc-mods/controllable
             "crash_assistant-",             //https://www.curseforge.com/minecraft/mc-mods/crash-assistant
+            "cubium-",                      //https://www.curseforge.com/minecraft/mc-mods/cubium
             "cullleaves-",                  //https://www.curseforge.com/minecraft/mc-mods/cull-leaves
             "cullparticles-",               //https://www.curseforge.com/minecraft/mc-mods/cull-particles
             "custom-crosshair-mod-",        //https://www.curseforge.com/minecraft/mc-mods/custom-crosshair-mod
@@ -410,6 +411,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "infinitemusic-",               //https://www.curseforge.com/minecraft/mc-mods/infinite-music
             "inventoryhud.",                //https://www.curseforge.com/minecraft/mc-mods/inventory-hud-forge
             "inventoryprofiles",            //https://www.curseforge.com/minecraft/mc-mods/inventory-profiles
+            "irisblockcompat-",             //https://www.curseforge.com/minecraft/mc-mods/iris-block-compat
             "itemzoom",                     //https://www.curseforge.com/minecraft/mc-mods/itemzoom
             "itlt-",                        //https://www.curseforge.com/minecraft/mc-mods/its-the-little-things
             "jeed-",                        //https://www.curseforge.com/minecraft/mc-mods/just-enough-effect-descriptions-jeed
