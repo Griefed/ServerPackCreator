@@ -258,6 +258,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "MinecraftCapes ",              //https://www.curseforge.com/minecraft/mc-mods/minecraftcapes-mod
             "MineMenu-",                    //https://www.curseforge.com/minecraft/mc-mods/minemenu
             "MoBends",                      //https://www.curseforge.com/minecraft/mc-mods/mo-bends
+            "Mocap-",                       //https://www.curseforge.com/minecraft/mc-mods/motion-capture-mod-mocap
             "ModernUI-",                    //Gone? Reduces to atoms?
             "MouseTweaks-",                 //https://www.curseforge.com/minecraft/mc-mods/mouse-tweaks
             "MyServerIsCompatible-",        //https://www.curseforge.com/minecraft/mc-mods/my-server-is-compatible
@@ -283,6 +284,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "PresenceFootsteps-",           //https://www.curseforge.com/minecraft/mc-mods/presence-footsteps
             "RPG-HUD-",                     //https://www.curseforge.com/minecraft/mc-mods/rpg-hud
             "ReAuth-",                      //https://www.curseforge.com/minecraft/mc-mods/reauth
+            "Redstone Sound Slider-",       //https://www.curseforge.com/minecraft/mc-mods/redstone-sound-slider
             "Reforgium-",                   //https://www.curseforge.com/minecraft/mc-mods/reforgium
             "ResourceLoader-",              //https://www.curseforge.com/minecraft/mc-mods/resource-reloader
             "ResourcePackOrganizer",        //https://www.curseforge.com/minecraft/mc-mods/resource-pack-organizer
@@ -406,6 +408,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "hiddenrecipebook_",            //https://www.curseforge.com/minecraft/mc-mods/hidden-recipe-book
             "hiddenrecipebook-",            //https://www.curseforge.com/minecraft/mc-mods/hidden-recipe-book
             "ijmtweaks-",                   //https://www.curseforge.com/minecraft/mc-mods/ijm-tweaks
+            "immersivearmorhud-",           //https://www.curseforge.com/minecraft/mc-mods/immersive-armor-hud
             "immersivemessages-",           //https://www.curseforge.com/minecraft/mc-mods/immersive-messages-api
             "immersivetips-",               //https://www.curseforge.com/minecraft/mc-mods/immersive-tips
             "infinitemusic-",               //https://www.curseforge.com/minecraft/mc-mods/infinite-music
@@ -459,6 +462,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "multihotbar-",                 //https://www.curseforge.com/minecraft/mc-mods/multi-hotbar
             "music-duration-reducer-",      //https://www.curseforge.com/minecraft/mc-mods/music-duration-reducer
             "musicdr-",                     //Gone? Reduces to atoms?
+            "nbt_glint-",                   //https://www.curseforge.com/minecraft/mc-mods/nbt-glint
             "neiRecipeHandlers-",           //Gone? Reduces to atoms?
             "ngrok-lan-expose-mod-",        //Gone? Reduces to atoms?
             "no_nv_flash-",                 //https://www.curseforge.com/minecraft/mc-mods/no-nv-flash
@@ -482,6 +486,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "reforgium-",                   //https://www.curseforge.com/minecraft/mc-mods/reforgium
             "relictium-",                   //https://www.curseforge.com/minecraft/mc-mods/relictium
             "replanter-",                   //https://www.curseforge.com/minecraft/mc-mods/replanter
+            "resource_gamma_util-",         //https://www.curseforge.com/minecraft/mc-mods/resource-gamma-utils
             "rrls-",                        //https://www.curseforge.com/minecraft/mc-mods/rrls
             "rubidium-",                    //https://www.curseforge.com/minecraft/mc-mods/rubidium
             "rubidium_extras-",             //https://www.curseforge.com/minecraft/mc-mods/rubidium-extra
