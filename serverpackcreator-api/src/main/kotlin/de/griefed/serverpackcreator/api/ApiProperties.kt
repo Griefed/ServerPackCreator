@@ -360,6 +360,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "cullparticles-",               //https://www.curseforge.com/minecraft/mc-mods/cull-particles
             "custom-crosshair-mod-",        //https://www.curseforge.com/minecraft/mc-mods/custom-crosshair-mod
             "customdiscordrpc-",            //https://www.curseforge.com/minecraft/mc-mods/custom-discordrpc
+            "cwb-",                         //https://www.curseforge.com/minecraft/mc-mods/cubes-without-borders
             "darkness-",                    //Gone? Reduces to atoms?
             "dashloader-",                  //https://www.curseforge.com/minecraft/mc-mods/dashloader
             "defaultoptions-",              //https://www.curseforge.com/minecraft/mc-mods/default-options
@@ -497,6 +498,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "signtools-",                   //https://www.curseforge.com/minecraft/bukkit-plugins/signtools
             "simple-rpc-",                  //https://www.curseforge.com/minecraft/mc-mods/simple-discord-rpc
             "simpleautorun-",               //Gone? Reduces to atoms?
+            "simplefog-",                   //https://www.curseforge.com/minecraft/mc-mods/simplefog
             "smartcursor-",                 //https://www.curseforge.com/minecraft/mc-mods/smartcursor
             "smarthud-",                    //https://www.curseforge.com/minecraft/mc-mods/smart-hud
             "smoothboot-",                  //https://www.curseforge.com/minecraft/mc-mods/smoothboot
@@ -512,7 +514,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "sounddeviceoptions-",          //https://www.curseforge.com/minecraft/mc-mods/more-sound-config
             "soundreloader-",               //https://www.curseforge.com/minecraft/mc-mods/sound-reloader
             "sounds-",                      //https://www.curseforge.com/minecraft/mc-mods/sound
-            "spoticraft-",                  //https://www.curseforge.com/minecraft/mc-mods/spoticraft-inactive
+            "spoticraft-",                  //https://www.curseforge.com/minecraft/mc-mods/spoticraft-inactive and https://www.curseforge.com/minecraft/mc-mods/spoticraft-2
             "skinlayers3d-forge",           //https://www.curseforge.com/minecraft/mc-mods/skin-layers-3d
             "tconplanner-",                 //https://www.curseforge.com/minecraft/mc-mods/tinkers-planner
             "textrues_embeddium_options-",  //https://www.curseforge.com/minecraft/mc-mods/textrues-embeddium-options
@@ -523,10 +525,13 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "totaldarkness",                //https://www.curseforge.com/minecraft/mc-mods/total-darkness
             "toughnessbar-",                //https://www.curseforge.com/minecraft/mc-mods/armor-toughness-bar
             "tweakeroo-",                   //https://www.curseforge.com/minecraft/mc-mods/tweakeroo-update-port
+            "viaforge-",                    //https://www.curseforge.com/minecraft/mc-mods/viaforge
             "watermedia-",                  //https://www.curseforge.com/minecraft/mc-mods/watermedia
             "whats-that-slot-forge-",       //https://www.curseforge.com/minecraft/mc-mods/whats-that-slot
+            "wheredididie-",                //https://www.curseforge.com/minecraft/mc-mods/where-did-i-die
             "wisla-",                       //https://www.curseforge.com/minecraft/mc-mods/wisla
             "xenon-",                       //https://www.curseforge.com/minecraft/mc-mods/xenon
+            "xanders-sodium-options-",      //https://www.curseforge.com/minecraft/mc-mods/xanders-sodium-options
             "xlifeheartcolors-",            //https://www.curseforge.com/minecraft/mc-mods/x-life-heart-colors
             "yisthereautojump-"             //https://www.curseforge.com/minecraft/mc-mods/y-is-there-autojump-forge
         )
