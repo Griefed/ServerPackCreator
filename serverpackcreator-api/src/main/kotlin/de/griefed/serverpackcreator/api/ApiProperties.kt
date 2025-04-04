@@ -281,6 +281,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "PickUpNotifier-",              //https://www.curseforge.com/minecraft/mc-mods/pick-up-notifier
             "Ping-",                        //https://www.curseforge.com/minecraft/mc-mods/ping
             "PingHUD-",                     //https://www.curseforge.com/minecraft/mc-mods/pinghud
+            "PlayerListHeads-",             //https://www.curseforge.com/minecraft/mc-mods/player-list-heads
             "PresenceFootsteps-",           //https://www.curseforge.com/minecraft/mc-mods/presence-footsteps
             "RPG-HUD-",                     //https://www.curseforge.com/minecraft/mc-mods/rpg-hud
             "ReAuth-",                      //https://www.curseforge.com/minecraft/mc-mods/reauth
@@ -342,6 +343,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "cfwinfo-",                     //https://www.curseforge.com/minecraft/mc-mods/create-fuel-and-water-information
             "chestsearchbar-",              //https://www.curseforge.com/minecraft/mc-mods/chest-search-bar
             "charmonium-",                  //https://www.curseforge.com/minecraft/mc-mods/charmonium
+            "chatnotify-",                  //https://www.curseforge.com/minecraft/mc-mods/chatnotify
             "chat_heads-",                  //https://www.curseforge.com/minecraft/mc-mods/chat-heads
             "cherishedworlds-",             //https://www.curseforge.com/minecraft/mc-mods/cherished-worlds
             "cirback-1.0-",                 //Gone? Reduces to atoms?
@@ -470,11 +472,13 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "nopotionshift_",               //https://www.curseforge.com/minecraft/mc-mods/no-potion-shift
             "notenoughanimations-",         //https://www.curseforge.com/minecraft/mc-mods/not-enough-animations
             "oculus-",                      //https://www.curseforge.com/minecraft/mc-mods/oculus
+            "omegamute-",                   //https://www.curseforge.com/minecraft/mc-mods/omega-mute
             "ornaments-",                   //https://www.curseforge.com/minecraft/mc-mods/ornaments
             "overlaytweaks-",               //https://www.curseforge.com/minecraft/mc-mods/overlay-tweaks
             "overloadedarmorbar-",          //https://www.curseforge.com/minecraft/mc-mods/overloaded-armor-bar
             "panorama-",                    //https://www.curseforge.com/minecraft/mc-mods/panorama
             "paperdoll-",                   //https://www.curseforge.com/minecraft/mc-mods/paperdoll
+            "persistentinventorysearch-",   //https://www.curseforge.com/minecraft/mc-mods/persistent-inventory-search
             "physics-mod-",                 //https://www.curseforge.com/minecraft/mc-mods/physics-mod
             "phosphor-",                    //https://www.curseforge.com/minecraft/mc-mods/phosphor
             "preciseblockplacing-",         //Gone? Reduces to atoms?
@@ -525,6 +529,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "totaldarkness",                //https://www.curseforge.com/minecraft/mc-mods/total-darkness
             "toughnessbar-",                //https://www.curseforge.com/minecraft/mc-mods/armor-toughness-bar
             "tweakeroo-",                   //https://www.curseforge.com/minecraft/mc-mods/tweakeroo-update-port
+            "vanillazoom-",                 //https://www.curseforge.com/minecraft/mc-mods/vanilla-zoom
             "viaforge-",                    //https://www.curseforge.com/minecraft/mc-mods/viaforge
             "watermedia-",                  //https://www.curseforge.com/minecraft/mc-mods/watermedia
             "whats-that-slot-forge-",       //https://www.curseforge.com/minecraft/mc-mods/whats-that-slot
