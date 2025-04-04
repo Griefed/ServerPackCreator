@@ -422,6 +422,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "justenoughbeacons-",           //https://www.curseforge.com/minecraft/mc-mods/just-enough-beacons
             "justenoughdrags-",             //https://www.curseforge.com/minecraft/mc-mods/just-enough-drags
             "justzoom_",                    //https://www.curseforge.com/minecraft/mc-mods/just-zoom
+            "keybindspurger-",              //https://www.curseforge.com/minecraft/mc-mods/keybindspurger
             "keymap-",                      //https://www.curseforge.com/minecraft/mc-mods/keymap
             "keywizard-",                   //https://www.curseforge.com/minecraft/mc-mods/keyboard-wizard
             "lazurite-",                    //https://www.curseforge.com/minecraft/mc-mods/lazurite
@@ -430,6 +431,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "light-overlay-",               //https://www.curseforge.com/minecraft/mc-mods/light-overlay
             "lightfallclient-",             //https://www.curseforge.com/minecraft/mc-mods/lightfallclient-updated
             "lightspeed-",                  //https://www.curseforge.com/minecraft/mc-mods/lightspeedmod
+            "litematica-",                  //https://www.curseforge.com/minecraft/mc-mods/litematica-update-port
             "loadmyresources_",             //https://www.curseforge.com/minecraft/mc-mods/load-my-resources-forge
             "lock_minecart_view-",          //Gone? Reduces to atoms?
             "lootbeams-",                   //https://www.curseforge.com/minecraft/mc-mods/lootbeams
@@ -445,6 +447,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "mightyarchitect-",             //https://www.curseforge.com/minecraft/mc-mods/the-mighty-architect
             "mindful-eating-",              //https://www.curseforge.com/minecraft/mc-mods/mindful-eating
             "minetogether-",                //https://www.curseforge.com/minecraft/mc-mods/creeperhost-minetogether
+            "minihud-",                     //https://www.curseforge.com/minecraft/mc-mods/minihud-update-port
             "mobplusplus-",                 //Gone? Reduces to atoms?
             "modcredits-",                  //https://www.curseforge.com/minecraft/mc-mods/mod-credits
             "modernworldcreation_",         //https://www.curseforge.com/minecraft/mc-mods/modernworldcreation
@@ -463,6 +466,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "notenoughanimations-",         //https://www.curseforge.com/minecraft/mc-mods/not-enough-animations
             "oculus-",                      //https://www.curseforge.com/minecraft/mc-mods/oculus
             "ornaments-",                   //https://www.curseforge.com/minecraft/mc-mods/ornaments
+            "overlaytweaks-",               //https://www.curseforge.com/minecraft/mc-mods/overlay-tweaks
             "overloadedarmorbar-",          //https://www.curseforge.com/minecraft/mc-mods/overloaded-armor-bar
             "panorama-",                    //https://www.curseforge.com/minecraft/mc-mods/panorama
             "paperdoll-",                   //https://www.curseforge.com/minecraft/mc-mods/paperdoll
@@ -513,6 +517,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "torohealth-",                  //https://www.curseforge.com/minecraft/mc-mods/torohealth-damage-indicators
             "totaldarkness",                //https://www.curseforge.com/minecraft/mc-mods/total-darkness
             "toughnessbar-",                //https://www.curseforge.com/minecraft/mc-mods/armor-toughness-bar
+            "tweakeroo-",                   //https://www.curseforge.com/minecraft/mc-mods/tweakeroo-update-port
             "watermedia-",                  //https://www.curseforge.com/minecraft/mc-mods/watermedia
             "whats-that-slot-forge-",       //https://www.curseforge.com/minecraft/mc-mods/whats-that-slot
             "wisla-",                       //https://www.curseforge.com/minecraft/mc-mods/wisla
