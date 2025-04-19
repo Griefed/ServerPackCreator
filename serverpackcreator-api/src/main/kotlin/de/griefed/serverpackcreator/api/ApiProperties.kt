@@ -315,6 +315,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "YungsMenuTweaks-",             //https://www.curseforge.com/minecraft/mc-mods/yungs-menu-tweaks
             "[1.12.2]DamageIndicatorsMod-", //https://www.curseforge.com/minecraft/mc-mods/damage-indicators-mod
             "[1.12.2]bspkrscore-",          //https://www.curseforge.com/minecraft/mc-mods/bspkrscore
+            "advancementscreenshot-",       //https://www.curseforge.com/minecraft/mc-mods/advancement-screenshot
             "ahznbstools-",                 //https://www.curseforge.com/minecraft/mc-mods/ahznbs-tools/
             "antighost-",                   //https://www.curseforge.com/minecraft/mc-mods/antighost
             "anviltooltipmod-",             //https://www.curseforge.com/minecraft/mc-mods/anvil-tooltip-mod
@@ -360,6 +361,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "cubium-",                      //https://www.curseforge.com/minecraft/mc-mods/cubium
             "cullleaves-",                  //https://www.curseforge.com/minecraft/mc-mods/cull-leaves
             "cullparticles-",               //https://www.curseforge.com/minecraft/mc-mods/cull-particles
+            "currentgamemusictrack-",       //https://www.curseforge.com/minecraft/mc-mods/current-game-music-track
             "custom-crosshair-mod-",        //https://www.curseforge.com/minecraft/mc-mods/custom-crosshair-mod
             "customdiscordrpc-",            //https://www.curseforge.com/minecraft/mc-mods/custom-discordrpc
             "cwb-",                         //https://www.curseforge.com/minecraft/mc-mods/cubes-without-borders
@@ -403,11 +405,15 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "freecam-",                     //https://www.curseforge.com/minecraft/mc-mods/free-cam
             "freelook-",                    //https://www.curseforge.com/minecraft/mc-mods/freelook
             "ftbpromoter-",                 //https://www.curseforge.com/minecraft/mc-mods/ftb-promoter/
+            "fullbrightnesstoggle-",        //https://www.curseforge.com/minecraft/mc-mods/full-brightness-toggle
             "galacticraft-rpc-",            //https://www.curseforge.com/minecraft/mc-mods/galacticraft-rpc
             "gamestagesviewer-",            //https://www.curseforge.com/minecraft/mc-mods/game-stages-viewer
             "gpumemleakfix-",               //https://www.curseforge.com/minecraft/mc-mods/fix-gpu-memory-leak
             "grid-",                        //https://www.curseforge.com/minecraft/mc-mods/grid
+            "guiclock-",                    //https://www.curseforge.com/minecraft/mc-mods/gui-clock
+            "guifollowers-",                //https://www.curseforge.com/minecraft/mc-mods/gui-followers
             "helium-",                      //Gone? Reduces to atoms?
+            "hennyfullbright-",             //https://www.curseforge.com/minecraft/mc-mods/henny-fullbright
             "hiddenrecipebook_",            //https://www.curseforge.com/minecraft/mc-mods/hidden-recipe-book
             "hiddenrecipebook-",            //https://www.curseforge.com/minecraft/mc-mods/hidden-recipe-book
             "ijmtweaks-",                   //https://www.curseforge.com/minecraft/mc-mods/ijm-tweaks
