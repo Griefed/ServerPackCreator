@@ -18,7 +18,7 @@ dependencies {
     api("de.jensklingenberg.ktorfit:ktorfit-lib:2.1.0")
     api("de.comahe.i18n4k:i18n4k-core:0.10.0")
     api("de.comahe.i18n4k:i18n4k-core-jvm:0.10.0")
-    implementation("org.jetbrains.kotlin:kotlin-bom:2.1.10")
+    implementation("org.jetbrains.kotlin:kotlin-bom:2.1.20")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.1.0")
     implementation(files("${layout.buildDirectory.asFile.get()}/resources/main"))
     api("com.electronwill.night-config:toml:3.8.1")
