@@ -158,6 +158,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         listOf(
             "3dskinlayers-",                //https://www.curseforge.com/minecraft/mc-mods/skin-layers-3d
             "Absolutely-Not-A-Zoom-Mod-",   //https://www.curseforge.com/minecraft/mc-mods/absolutely-not-a-zoom-mod
+            "AdaptiveTooltips-",            //https://www.curseforge.com/minecraft/mc-mods/adaptive-tooltips
             "AdvancedChat-",                //https://www.curseforge.com/minecraft/mc-mods/advancedchat
             "AdvancedChatCore-",            //https://www.curseforge.com/minecraft/mc-mods/advancedchatcore
             "AdvancedChatHUD-",             //https://www.curseforge.com/minecraft/mc-mods/advancedchathud
@@ -342,6 +343,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "betterbiomeblend-",            //https://www.curseforge.com/minecraft/mc-mods/better-biome-blend
             "bhmenu-",                      //https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-forge & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-fabric & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-neoforge
             "blinkload-",                   //https://www.curseforge.com/minecraft/mc-mods/blinkload
+            "block-counter-",               //https://www.curseforge.com/minecraft/mc-mods/block-counter
             "blur-",                        //https://www.curseforge.com/minecraft/mc-mods/blur
             "borderless-mining-",           //https://www.curseforge.com/minecraft/mc-mods/borderless-mining
             "cat_jam-",                     //https://www.curseforge.com/minecraft/mc-mods/cat_jam
@@ -356,6 +358,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "cirback-1.0-",                 //Gone? Reduces to atoms?
             "citresewn-",                   //https://www.curseforge.com/minecraft/mc-mods/forge-cit
             "classicbar-",                  //https://www.curseforge.com/minecraft/mc-mods/classic-bars
+            "cleanview",                    //https://www.curseforge.com/minecraft/mc-mods/clean-view
             "clienttweaks-",                //https://www.curseforge.com/minecraft/mc-mods/client-tweaks
             "combat_music-",                //https://www.curseforge.com/minecraft/mc-mods/combat-music
             "configured-neoforge-",         //https://www.curseforge.com/minecraft/mc-mods/configured
@@ -419,6 +422,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "gpumemleakfix-",               //https://www.curseforge.com/minecraft/mc-mods/fix-gpu-memory-leak
             "grid-",                        //https://www.curseforge.com/minecraft/mc-mods/grid
             "guiclock-",                    //https://www.curseforge.com/minecraft/mc-mods/gui-clock
+            "guideme-",                     //https://www.curseforge.com/minecraft/mc-mods/guideme
             "guifollowers-",                //https://www.curseforge.com/minecraft/mc-mods/gui-followers
             "helium-",                      //Gone? Reduces to atoms?
             "hennyfullbright-",             //https://www.curseforge.com/minecraft/mc-mods/henny-fullbright
@@ -488,12 +492,14 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "notenoughanimations-",         //https://www.curseforge.com/minecraft/mc-mods/not-enough-animations
             "oculus-",                      //https://www.curseforge.com/minecraft/mc-mods/oculus
             "omegamute-",                   //https://www.curseforge.com/minecraft/mc-mods/omega-mute
+            "optigui-",                     //https://www.curseforge.com/minecraft/mc-mods/optigui
             "ornaments-",                   //https://www.curseforge.com/minecraft/mc-mods/ornaments
             "overlaytweaks-",               //https://www.curseforge.com/minecraft/mc-mods/overlay-tweaks
             "overloadedarmorbar-",          //https://www.curseforge.com/minecraft/mc-mods/overloaded-armor-bar
             "panorama-",                    //https://www.curseforge.com/minecraft/mc-mods/panorama
             "paperdoll-",                   //https://www.curseforge.com/minecraft/mc-mods/paperdoll
             "particle-rain-",               //https://www.curseforge.com/minecraft/mc-mods/particle-rain
+            "perdimensionbrightness-",      //https://www.curseforge.com/minecraft/mc-mods/per-dimension-brightness
             "persistentinventorysearch-",   //https://www.curseforge.com/minecraft/mc-mods/persistent-inventory-search
             "physics-mod-",                 //https://www.curseforge.com/minecraft/mc-mods/physics-mod
             "phosphor-",                    //https://www.curseforge.com/minecraft/mc-mods/phosphor
@@ -541,6 +547,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "talkingheads-",                //https://www.curseforge.com/minecraft/mc-mods/talkingheads
             "tconplanner-",                 //https://www.curseforge.com/minecraft/mc-mods/tinkers-planner
             "textrues_embeddium_options-",  //https://www.curseforge.com/minecraft/mc-mods/textrues-embeddium-options
+            "timestamp-chat-",              //https://www.curseforge.com/minecraft/mc-mods/timestamp-chat
             "timestamps-",                  //https://www.curseforge.com/minecraft/mc-mods/timestamps
             "tooltipscroller-",             //https://www.curseforge.com/minecraft/mc-mods/tooltip-scroller
             "torchoptimizer-",              //https://www.curseforge.com/minecraft/mc-mods/torch-optimizer
