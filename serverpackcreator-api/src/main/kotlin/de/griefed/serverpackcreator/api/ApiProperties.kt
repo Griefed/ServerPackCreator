@@ -284,6 +284,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "PlayerListHeads-",             //https://www.curseforge.com/minecraft/mc-mods/player-list-heads
             "PresenceFootsteps-",           //https://www.curseforge.com/minecraft/mc-mods/presence-footsteps
             "RPG-HUD-",                     //https://www.curseforge.com/minecraft/mc-mods/rpg-hud
+            "RPRenames-",                   //https://modrinth.com/mod/rp-renames
             "ReAuth-",                      //https://www.curseforge.com/minecraft/mc-mods/reauth
             "Redstone Sound Slider-",       //https://www.curseforge.com/minecraft/mc-mods/redstone-sound-slider
             "Reforgium-",                   //https://www.curseforge.com/minecraft/mc-mods/reforgium
@@ -357,6 +358,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "configured-fabric-",           //https://www.curseforge.com/minecraft/mc-mods/configured
             "connectedness-",               //https://www.curseforge.com/minecraft/mc-mods/connectedness
             "controllable-",                //https://www.curseforge.com/minecraft/mc-mods/controllable
+            "coolrain-",                    //https://www.curseforge.com/minecraft/mc-mods/cool-rain
             "crash_assistant-",             //https://www.curseforge.com/minecraft/mc-mods/crash-assistant
             "cubium-",                      //https://www.curseforge.com/minecraft/mc-mods/cubium
             "cullleaves-",                  //https://www.curseforge.com/minecraft/mc-mods/cull-leaves
@@ -402,6 +404,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "fabricmod_VoxelMap-",          //https://www.curseforge.com/minecraft/mc-mods/voxelmap
             "forestryworktabledisplay-",    //https://www.curseforge.com/minecraft/mc-mods/forestry-worktable-display
             "forgemod_VoxelMap-",           //https://www.curseforge.com/minecraft/mc-mods/voxelmap
+            "forgeshot-",                   //https://www.curseforge.com/minecraft/mc-mods/forgeshot
             "freecam-",                     //https://www.curseforge.com/minecraft/mc-mods/free-cam
             "freelook-",                    //https://www.curseforge.com/minecraft/mc-mods/freelook
             "ftbpromoter-",                 //https://www.curseforge.com/minecraft/mc-mods/ftb-promoter/
@@ -484,6 +487,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "overloadedarmorbar-",          //https://www.curseforge.com/minecraft/mc-mods/overloaded-armor-bar
             "panorama-",                    //https://www.curseforge.com/minecraft/mc-mods/panorama
             "paperdoll-",                   //https://www.curseforge.com/minecraft/mc-mods/paperdoll
+            "particle-rain-",               //https://www.curseforge.com/minecraft/mc-mods/particle-rain
             "persistentinventorysearch-",   //https://www.curseforge.com/minecraft/mc-mods/persistent-inventory-search
             "physics-mod-",                 //https://www.curseforge.com/minecraft/mc-mods/physics-mod
             "phosphor-",                    //https://www.curseforge.com/minecraft/mc-mods/phosphor
@@ -525,7 +529,9 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "soundreloader-",               //https://www.curseforge.com/minecraft/mc-mods/sound-reloader
             "sounds-",                      //https://www.curseforge.com/minecraft/mc-mods/sound
             "spoticraft-",                  //https://www.curseforge.com/minecraft/mc-mods/spoticraft-inactive and https://www.curseforge.com/minecraft/mc-mods/spoticraft-2
+            "status-effect-bars-",          //https://www.curseforge.com/minecraft/mc-mods/status-effect-bars
             "skinlayers3d-forge",           //https://www.curseforge.com/minecraft/mc-mods/skin-layers-3d
+            "talkingheads-",                //https://www.curseforge.com/minecraft/mc-mods/talkingheads
             "tconplanner-",                 //https://www.curseforge.com/minecraft/mc-mods/tinkers-planner
             "textrues_embeddium_options-",  //https://www.curseforge.com/minecraft/mc-mods/textrues-embeddium-options
             "timestamps-",                  //https://www.curseforge.com/minecraft/mc-mods/timestamps
@@ -534,6 +540,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "torohealth-",                  //https://www.curseforge.com/minecraft/mc-mods/torohealth-damage-indicators
             "totaldarkness",                //https://www.curseforge.com/minecraft/mc-mods/total-darkness
             "toughnessbar-",                //https://www.curseforge.com/minecraft/mc-mods/armor-toughness-bar
+            "translucent-window-",          //https://www.curseforge.com/minecraft/mc-mods/translucent-window
             "tweakeroo-",                   //https://www.curseforge.com/minecraft/mc-mods/tweakeroo-update-port
             "vanillazoom-",                 //https://www.curseforge.com/minecraft/mc-mods/vanilla-zoom
             "viaforge-",                    //https://www.curseforge.com/minecraft/mc-mods/viaforge
