@@ -278,6 +278,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "PackMenu-",                    //https://www.curseforge.com/minecraft/mc-mods/packmenu
             "PackModeMenu-",                //https://www.curseforge.com/minecraft/mc-mods/packmodemenu
             "Particle Effects-",            //https://www.curseforge.com/minecraft/mc-mods/particle-effects
+            "Perception-",                  //https://www.curseforge.com/minecraft/mc-mods/perception
             "PickUpNotifier-",              //https://www.curseforge.com/minecraft/mc-mods/pick-up-notifier
             "Ping-",                        //https://www.curseforge.com/minecraft/mc-mods/ping
             "PingHUD-",                     //https://www.curseforge.com/minecraft/mc-mods/pinghud
@@ -290,6 +291,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "Reforgium-",                   //https://www.curseforge.com/minecraft/mc-mods/reforgium
             "ResourceLoader-",              //https://www.curseforge.com/minecraft/mc-mods/resource-reloader
             "ResourcePackOrganizer",        //https://www.curseforge.com/minecraft/mc-mods/resource-pack-organizer
+            "RocknRoller-",                 //https://www.curseforge.com/minecraft/mc-mods/rockn-roller
             "Ryoamiclights-",               //https://www.curseforge.com/minecraft/mc-mods/ryoamiclights
             "RyoamicLights-",               //https://www.curseforge.com/minecraft/mc-mods/ryoamiclights
             "ShoulderSurfing-",             //https://www.curseforge.com/minecraft/mc-mods/shoulder-surfing-reloaded
@@ -298,6 +300,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "SimpleWorldTimer-",            //https://www.curseforge.com/minecraft/mc-mods/simple-world-timer
             "SoundFilters-",                //https://www.curseforge.com/minecraft/mc-mods/sound-filters
             "Sounds-",                      //https://www.curseforge.com/minecraft/mc-mods/sound
+            "SourceHop-",                   //https://www.curseforge.com/minecraft/mc-mods/sourcehop
             "SpawnerFix-",                  //https://www.curseforge.com/minecraft/mc-mods/spawner-fix
             "StylishEffects-",              //https://www.curseforge.com/minecraft/mc-mods/stylish-effects
             "TextruesRubidiumOptions-",     //https://www.curseforge.com/minecraft/mc-mods/textrues-rubidium-options
@@ -330,8 +333,10 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "axolotl-item-fix-",            //Gone? Reduces to atoms?
             "backtools-",                   //https://www.curseforge.com/minecraft/mc-mods/backtools
             "bannerunlimited-",             //https://www.curseforge.com/minecraft/mc-mods/banner-unlimited
+            "bbs-",                         //https://www.curseforge.com/minecraft/mc-mods/bbs-mod
             "beddium-",                     //https://www.curseforge.com/minecraft/mc-mods/beddium
             "beenfo-",                      //https://www.curseforge.com/minecraft/mc-mods/beenfo
+            "better_tooltips-",             //https://www.curseforge.com/minecraft/mc-mods/better-tooltips-neoforge
             "better-clouds-",               //Gone? Reduces to atoms?
             "better-recipe-book-",          //Gone? Reduces to atoms?
             "betterbiomeblend-",            //https://www.curseforge.com/minecraft/mc-mods/better-biome-blend
@@ -474,6 +479,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "multihotbar-",                 //https://www.curseforge.com/minecraft/mc-mods/multi-hotbar
             "music-duration-reducer-",      //https://www.curseforge.com/minecraft/mc-mods/music-duration-reducer
             "musicdr-",                     //Gone? Reduces to atoms?
+            "neoculus-",                    //https://www.curseforge.com/minecraft/mc-mods/neoculus
             "nbt_glint-",                   //https://www.curseforge.com/minecraft/mc-mods/nbt-glint
             "neiRecipeHandlers-",           //Gone? Reduces to atoms?
             "ngrok-lan-expose-mod-",        //Gone? Reduces to atoms?
@@ -515,6 +521,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "simplefog-",                   //https://www.curseforge.com/minecraft/mc-mods/simplefog
             "smartcursor-",                 //https://www.curseforge.com/minecraft/mc-mods/smartcursor
             "smarthud-",                    //https://www.curseforge.com/minecraft/mc-mods/smart-hud
+            "smoke-suppression-",           //https://www.curseforge.com/minecraft/mc-mods/smoke-suppression
             "smoothboot-",                  //https://www.curseforge.com/minecraft/mc-mods/smoothboot
             "smoothfocus-",                 //https://www.curseforge.com/minecraft/mc-mods/smoothfocus
             "sodium-fabric-",               //https://www.curseforge.com/minecraft/mc-mods/sodium
