@@ -1,3 +1,39 @@
+## [7.2.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.2.4...7.2.5) (2025-04-25)
+
+### 📦 Other
+
+* Add AdaptiveTooltips, cleanview, block-counter, optigui, perdimensionbrightness, guideme, timestamp-chat ([c9dfc9b](https://git.griefed.de/Griefed/ServerPackCreator/commit/c9dfc9bcb43a54060fcecd692f8b431aeb46ac3d))
+* Add bbs, RocknRoller-, SourceHop, better_tooltips, neoculus, smoke-suppression, Perception ([8868192](https://git.griefed.de/Griefed/ServerPackCreator/commit/88681922d445067c9c0ae1ae16815bb515e2cb63))
+* Add cubium, irisblockcompat to list of clientside-only mods. Thanks to @ModernGamingWorld for the report! ([d686747](https://git.griefed.de/Griefed/ServerPackCreator/commit/d686747d27e51a9d9692d6fe5d12a317393dd4db))
+* Add cwb, xanders-sodium-options, viaforge, simplefog, wheredididie. Thanks to @ModernGamingWorld ([95baa9d](https://git.griefed.de/Griefed/ServerPackCreator/commit/95baa9db0d3cb9afe2afb4a7f26e70a01569ede3))
+* Add forestryworktabledisplay, remove Distant Horzions from clientside-only list. Thanks to @ModernGamingWorld and @Gensokian for the reports! ([8eb70be](https://git.griefed.de/Griefed/ServerPackCreator/commit/8eb70beba837f91d1ba8b9851c739a6c8488e616))
+* Add Forgematica to list of clientside-only mods. Thanks to @ModernGamingWorld for the report ([615a1e5](https://git.griefed.de/Griefed/ServerPackCreator/commit/615a1e5df4579fac09f36e5ce4350b555e11cdbb))
+* Add gui-clock, fullbrightnesstoggle, guifollowers, currentgamemusictrack, advancementscreenshot, hennyfullbright, ([97835df](https://git.griefed.de/Griefed/ServerPackCreator/commit/97835df8e2b040dbb1427ae22ee49de775322d24))
+* add overlaytweaks, keybindspurger, tweakeroo, litematica, minihud. Thanks to @ModernGamingWorld ([759033b](https://git.griefed.de/Griefed/ServerPackCreator/commit/759033b074e0f01317ad72bab270e0fb56fda776))
+* Add PlayerListHeads, omegamute, vanillazoom, persistentinventorysearch, chatnotify ([23029ac](https://git.griefed.de/Griefed/ServerPackCreator/commit/23029ac7f34f42f20dea5b236503d70d93a21c34))
+* add Redstone Sound Slider, Mocap, resource_gamma_util, immersivearmorhud, nbt_glint. Thanks to @ModernGamingWorld ([6825ad5](https://git.griefed.de/Griefed/ServerPackCreator/commit/6825ad531f9bcb3a97b8133b988b3d181a00d758))
+
+### 🦊 CI/CD
+
+* **deps:** bump linuxserver/nginx from 1.26.2 to 1.26.3 ([fc9ada7](https://git.griefed.de/Griefed/ServerPackCreator/commit/fc9ada7f54f3bdf7f77fcb19398d3545b894249c))
+* **deps:** bump org.bouncycastle:bcpkix-jdk18on ([88ee8f1](https://git.griefed.de/Griefed/ServerPackCreator/commit/88ee8f1fdca1a6ef658c5a07fdb6de87b84cb5d0))
+* **deps:** bump org.jetbrains.kotlin:kotlin-bom ([2e004e4](https://git.griefed.de/Griefed/ServerPackCreator/commit/2e004e43d434096a402b73311952e7f55d47a806))
+* **deps:** bump org.jetbrains.kotlin:kotlin-test ([5787c34](https://git.griefed.de/Griefed/ServerPackCreator/commit/5787c34f9a6d85b7a74317d584540f85ddbab4bf))
+* **deps:** bump org.junit.jupiter:junit-jupiter-api ([100fca0](https://git.griefed.de/Griefed/ServerPackCreator/commit/100fca0bdb37ea627fd73d44d4d8a1aff98aa67f))
+* **deps:** bump org.junit.jupiter:junit-jupiter-engine ([76f145e](https://git.griefed.de/Griefed/ServerPackCreator/commit/76f145ea9858d2349af63bededabd763fe2ee2a4))
+* **deps:** bump org.postgresql:postgresql in /serverpackcreator-app ([729424d](https://git.griefed.de/Griefed/ServerPackCreator/commit/729424d796df92901e83a4dd1dda04d60146bef0))
+* **deps:** bump org.springframework.boot:spring-boot-devtools ([4f39067](https://git.griefed.de/Griefed/ServerPackCreator/commit/4f390678b09913b1f1e7d8427a1fb7812e90053f))
+* **deps:** bump org.springframework.boot:spring-boot-starter-data-jpa ([36dfc5e](https://git.griefed.de/Griefed/ServerPackCreator/commit/36dfc5e8da99cef52ad29a0778167390992034de))
+* **deps:** bump org.springframework.boot:spring-boot-starter-log4j2 ([1c4f0c7](https://git.griefed.de/Griefed/ServerPackCreator/commit/1c4f0c7e4cb7a1335db4baadb357094327037473))
+* **deps:** bump tj-actions/branch-names from 8.0.1 to 8.1.0 ([db4dc7e](https://git.griefed.de/Griefed/ServerPackCreator/commit/db4dc7e6059580480d101459e80cb96bc0fed0ba))
+* Explicity checkout main, explicitly add README ([3960e9e](https://git.griefed.de/Griefed/ServerPackCreator/commit/3960e9e22940554332d6daf75224b94450341132))
+* Remove no longer needed action-blocks. Switch commit back to branch ([d4e09a6](https://git.griefed.de/Griefed/ServerPackCreator/commit/d4e09a6fa8494d8b440932af7962f78243981c4a))
+
+### 🛠 Fixes
+
+* Allow chinese i18n added by [@w51637382](https://git.griefed.de/w51637382), fix utf-8 encoding in pt_BR ( Closes https://github.com/Griefed/ServerPackCreator/issues/521 ) ([cccfd49](https://git.griefed.de/Griefed/ServerPackCreator/commit/cccfd4967c7123f4265c014ca615e58e2d7d0eb6))
+* source using ./ to prevent 'file not found' on Oracle Linux ([31b4ad5](https://git.griefed.de/Griefed/ServerPackCreator/commit/31b4ad51b4895d6bbdeedcec480aa17f9bfc1824))
+
 ## [7.2.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.2.3...7.2.4) (2025-03-02)
 
 ### :scissors: Refactor
