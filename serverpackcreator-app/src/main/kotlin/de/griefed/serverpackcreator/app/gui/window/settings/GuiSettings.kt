@@ -89,7 +89,7 @@ class GuiSettings(
         }
     }
 
-    private val fontIcon = StatusIcon(guiProps,Translations.settings_gui_font_family_tooltip.toString())
+/*    private val fontIcon = StatusIcon(guiProps,Translations.settings_gui_font_family_tooltip.toString())
     private val fontLabel = ElementLabel(Translations.settings_gui_font_family_label.toString())
     private val fontSetting = ActionComboBox(DefaultComboBoxModel(GraphicsEnvironment.getLocalGraphicsEnvironment().availableFontFamilyNames),actionListener)
     private val fontRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) {
@@ -101,7 +101,7 @@ class GuiSettings(
                 fontSetting.selectedItem = font
             }
         }
-    }
+    }*/
 
     private val manualEditIcon = StatusIcon(guiProps, Translations.settings_gui_manualedit_tooltip.toString())
     private val manualEditLabel = ElementLabel(Translations.settings_gui_manualedit_label.toString())
@@ -125,12 +125,12 @@ class GuiSettings(
                 themeSetting.selectedItem = theme.name
             }
         }
-        val currentFont = guiProps.font
+/*        val currentFont = guiProps.font
         for (font in GraphicsEnvironment.getLocalGraphicsEnvironment().availableFontFamilyNames) {
             if (font == currentFont.family) {
                 fontSetting.selectedItem = font
             }
-        }
+        }*/
 
         var y = 0
         panel.add(fontSizeIcon, "cell 0 0")
@@ -160,12 +160,12 @@ class GuiSettings(
         panel.add(themeRevert, "cell 3 $y")
         panel.add(themeReset, "cell 4 $y")
 
-        y++
+/*        y++
         panel.add(fontIcon, "cell 0 $y")
         panel.add(fontLabel, "cell 1 $y")
         panel.add(fontSetting, "cell 2 $y, grow")
         panel.add(fontRevert, "cell 3 $y")
-        panel.add(fontReset, "cell 4 $y")
+        panel.add(fontReset, "cell 4 $y")*/
 
         y++
         panel.add(manualEditIcon, "cell 0 $y")
@@ -180,7 +180,7 @@ class GuiSettings(
         startFocusSetting.isSelected = guiProps.startFocusEnabled
         generationFocusSetting.isSelected = guiProps.generationFocusEnabled
         loadThemeFromProperties()
-        loadFontProperties()
+        /*loadFontProperties()*/
         manualEditSetting.isSelected = guiProps.allowManualEditing
     }
 
@@ -190,10 +190,10 @@ class GuiSettings(
         guiProps.generationFocusEnabled = generationFocusSetting.isSelected
         themeManager.setTheme(themeManager.getThemeInfo(themeSetting.selectedItem.toString())!!)
         guiProps.theme = themeSetting.selectedItem.toString()
-        guiProps.font = FontUIResource(fontSetting.selectedItem.toString(),font.size,font.style)
+        /*guiProps.font = FontUIResource(fontSetting.selectedItem.toString(),font.size,font.style)
         if (guiProps.allowManualEditing != manualEditSetting.isSelected) {
             controlPanel.updateStatus(Translations.settings_gui_restart_manualedit(manualEditSetting.isSelected.toString()))
-        }
+        }*/
         guiProps.allowManualEditing = manualEditSetting.isSelected
     }
 
@@ -218,7 +218,7 @@ class GuiSettings(
                 startFocusSetting.isSelected != guiProps.startFocusEnabled ||
                 generationFocusSetting.isSelected != guiProps.generationFocusEnabled ||
                 fontSizeSetting.value != guiProps.fontSize ||
-                fontSetting.selectedItem.toString() != guiProps.font.family ||
+                /*fontSetting.selectedItem.toString() != guiProps.font.family ||*/
                 themeSetting.selectedItem != guiProps.theme ||
                 manualEditSetting.isSelected != guiProps.allowManualEditing
         if (changes) {
@@ -244,12 +244,12 @@ class GuiSettings(
     /**
      * @author Griefed
      */
-    private fun loadFontProperties() {
+    /*private fun loadFontProperties() {
         val current = guiProps.font
         for (font in GraphicsEnvironment.getLocalGraphicsEnvironment().availableFontFamilyNames) {
             if (font == current.family) {
                 fontSetting.selectedItem = font
             }
         }
-    }
+    }*/
 }

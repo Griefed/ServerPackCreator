@@ -49,6 +49,7 @@ private const val fontSizeProp = "font.size"
 private const val defaultFontProp = "defaultFont"
 private const val fontFamilyProp = "font.family"
 private const val jetBrainsMono = "JetBrains Mono"
+private const val defaultFont = "Arial Unicode MS"
 private const val tipsViewedProp = "tips.viewed"
 private const val tipsShowOnStartupProp = "tips.show"
 private const val falseAsStr = "false"
@@ -454,9 +455,10 @@ class GuiProps(private val apiProperties: ApiProperties) {
             UIManager.put(defaultFontProp,FontUIResource(currentFont.fontName, currentFont.style, value))
             FlatLaf.updateUI()
         }
-    var font: FontUIResource = FontUIResource(getGuiProperty(fontFamilyProp, jetBrainsMono),Font.PLAIN,fontSize)
+    // Font("Arial Unicode MS", Font.BOLD, size)
+    var font: FontUIResource = FontUIResource("Arial Unicode MS",Font.PLAIN,fontSize)
         get() {
-            val prop = FontUIResource(getGuiProperty(fontFamilyProp, jetBrainsMono),Font.PLAIN,fontSize)
+            val prop = FontUIResource("Arial Unicode MS",Font.PLAIN,fontSize)
             field = prop
             return field
         }
