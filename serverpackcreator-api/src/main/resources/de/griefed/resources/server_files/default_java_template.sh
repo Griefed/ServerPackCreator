@@ -87,7 +87,7 @@ if [[ ! -s "variables.txt" ]]; then
   exit 1
 fi
 
-source "variables.txt"
+source "./variables.txt"
 
 export JABBA_VERSION=${JABBA_INSTALL_VERSION}
 

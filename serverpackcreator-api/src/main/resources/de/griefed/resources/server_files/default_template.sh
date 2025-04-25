@@ -427,7 +427,7 @@ if [[ ! -s "variables.txt" ]]; then
   crashServer "ERROR! variables.txt not present. Without it the server can not be installed, configured or started."
 fi
 
-source "variables.txt"
+source "./variables.txt"
 
 LAUNCHER_JAR_LOCATION="do_not_manually_edit"
 SERVER_RUN_COMMAND="do_not_manually_edit"
