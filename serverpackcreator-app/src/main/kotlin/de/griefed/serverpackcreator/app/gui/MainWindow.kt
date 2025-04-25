@@ -71,7 +71,7 @@ class MainWindow(
             FlatJetBrainsMonoFont.install()
             FlatRobotoFont.install()
             FlatRobotoMonoFont.install()
-            FlatLaf.setPreferredFontFamily(FlatJetBrainsMonoFont.FAMILY)
+            FlatLaf.setPreferredFontFamily("Arial Unicode MS")
 
             themeManager.updateLookAndFeel(guiProps.theme)
 
