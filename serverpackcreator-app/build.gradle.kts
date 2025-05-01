@@ -50,7 +50,7 @@ dependencies {
     api("com.formdev:svgSalamander:1.1.4")
     api("net.java.balloontip:balloontip:1.2.4.1")
     api("com.cronutils:cron-utils:9.2.1")
-    api("tokyo.northside:tipoftheday:0.4.2")
+    api("tokyo.northside:tipoftheday:0.5.0")
     compileOnly("com.install4j:install4j-runtime:11.0.2")
 
     //WEB
