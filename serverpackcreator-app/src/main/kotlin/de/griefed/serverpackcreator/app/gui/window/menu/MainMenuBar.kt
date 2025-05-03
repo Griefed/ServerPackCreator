@@ -59,8 +59,6 @@ class MainMenuBar(
     )
 
     init {
-
-
         menuBar.add(file)
         menuBar.add(edit)
         menuBar.add(view)

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<install4j version="11.0" transformSequenceNumber="11">
+<install4j version="11.0.3" transformSequenceNumber="11">
   <directoryPresets config="./img" />
   <application name="ServerPackCreator" applicationId="3565-3228-6904-0931" mediaDir="./media" mediaFilePattern="ServerPackCreator-${compiler:sys.version}-Installer-${compiler:sys.platform}" compression="9" lzmaCompression="true" createChecksums="false" shrinkRuntime="false" shortName="SPC" publisher="Griefed" publisherWeb="https://serverpackcreator.de" version="${compiler:projectVersion}" allPathsRelative="true" autoSave="true" macVolumeId="521d0a10ddf6d897" javaMinVersion="21">
     <variables>
@@ -105,7 +105,7 @@
       </iconImageFiles>
     </launcher>
   </launchers>
-  <installerGui autoUpdateDescriptorUrl="https://downloads.serverpackcreator.de/spc/latest/updates.xml">
+  <installerGui autoUpdateDescriptorUrl="https://downloads.serverpackcreator.de/spc/latest/updates.xml" autoUpdateBaseUrl="https://downloads.serverpackcreator.de/spc/latest/">
     <applications>
       <application id="installer" beanClass="com.install4j.runtime.beans.applications.InstallerApplication">
         <serializedBean>
@@ -912,7 +912,7 @@ return console.askYesNo(message, true);
           </screen>
         </screens>
       </application>
-      <application name="Standalone update downloader GUI" id="380" beanClass="com.install4j.runtime.beans.applications.CustomApplication" launchInNewProcess="false">
+      <application name="Standalone update downloader GUI" id="380" beanClass="com.install4j.runtime.beans.applications.CustomApplication" enabled="false" launchInNewProcess="false">
         <serializedBean>
           <property name="customIconImageFiles">
             <add>
@@ -988,6 +988,7 @@ context.goForward(1, true, true);
               </action>
               <action id="386" beanClass="com.install4j.runtime.beans.actions.update.CheckForUpdateAction" actionElevationType="none" failureStrategy="quit">
                 <serializedBean>
+                  <property name="acceptAllCertificates" type="boolean" value="true" />
                   <property name="url" type="string">${installer:updatesUrl?:${compiler:sys.updatesUrl}}</property>
                   <property name="variable" type="string">updateDescriptor</property>
                 </serializedBean>
@@ -1512,7 +1513,7 @@ return true;</property>
           </group>
         </screens>
       </application>
-      <application name="Background update downloader GUI" id="442" beanClass="com.install4j.runtime.beans.applications.CustomApplication">
+      <application name="Background update downloader GUI" id="442" beanClass="com.install4j.runtime.beans.applications.CustomApplication" enabled="false">
         <serializedBean>
           <property name="customIconImageFiles">
             <add>

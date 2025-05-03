@@ -20,13 +20,13 @@
 package de.griefed.serverpackcreator.app.gui.window
 
 import Translations
-import com.install4j.api.Util
+/*import com.install4j.api.Util
 import com.install4j.api.context.UserCanceledException
 import com.install4j.api.launcher.ApplicationLauncher
 import com.install4j.api.launcher.Variables
 import com.install4j.api.update.ApplicationDisplayMode
 import com.install4j.api.update.UpdateDescriptor
-import com.install4j.api.update.UpdateDescriptorEntry
+import com.install4j.api.update.UpdateDescriptorEntry*/
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
 import de.griefed.serverpackcreator.app.gui.GuiProps
@@ -62,9 +62,9 @@ class UpdateDialogs(
     private val mainFrame: JFrame
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
-    private var i4JUpdatable = false
+    /*private var i4JUpdatable = false
     private var i4JDownload = false
-    private var i4JExecute = false
+    private var i4JExecute = false*/
     val updateButton = BalloonTipButton(null, guiProps.updateAnimation, Translations.update_dialog_available.toString(), guiProps)
     val updateCheckListener = ActionListener { checkForUpdate() }
     var update: Optional<Update> = updateChecker.checkForUpdate(
@@ -79,7 +79,7 @@ class UpdateDialogs(
         updateButton.isContentAreaFilled = false
         updateButton.isVisible = update.isPresent
         updateButton.addActionListener(updateCheckListener)
-        checkForUpdateWithApi()
+        //checkForUpdateWithApi()
     }
 
     /**
@@ -106,11 +106,12 @@ class UpdateDialogs(
             )
             jTextPane.isOpaque = false
             jTextPane.isEditable = false
-            if (i4JUpdatable && (i4JDownload || i4JExecute)) {
+            /*if (i4JUpdatable && (i4JDownload || i4JExecute)) {
                 options[0] = Translations.update_dialog_update.toString()
             } else {
                 options[0] = Translations.update_dialog_yes.toString()
-            }
+            }*/
+            options[0] = Translations.update_dialog_yes.toString()
             options[1] = Translations.update_dialog_no.toString()
             options[2] = Translations.update_dialog_clipboard.toString()
             try {
@@ -129,7 +130,7 @@ class UpdateDialogs(
                 options[0]
             )) {
                 0 -> try {
-                    if (i4JUpdatable) {
+                    /*if (i4JUpdatable) {
                         if (i4JDownload) {
                             downloadAndUpdate()
                         } else if (i4JExecute) {
@@ -139,7 +140,8 @@ class UpdateDialogs(
                         }
                     } else {
                         webUtilities.openLinkInBrowser(update.get().url().toURI())
-                    }
+                    }*/
+                    webUtilities.openLinkInBrowser(update.get().url().toURI())
                 } catch (ex: Exception) {
                     log.error("Error performing action.", ex)
                 }
@@ -159,9 +161,9 @@ class UpdateDialogs(
     fun checkForUpdate() {
         update = updateChecker.checkForUpdate(apiProperties.apiVersion, apiProperties.isCheckingForPreReleasesEnabled)
         updateButton.isVisible = update.isPresent
-        if (i4JUpdatable && !i4JDownload && !i4JExecute) {
+        /*if (i4JUpdatable && !i4JDownload && !i4JExecute) {
             checkForUpdateI4J()
-        }
+        }*/
         if (!displayUpdateDialog()) {
             DialogUtilities.createDialog(
                 Translations.menubar_gui_menuitem_updates_none.toString() + "   ",
@@ -174,7 +176,7 @@ class UpdateDialogs(
         }
     }
 
-    private fun checkForUpdateI4J() {
+    /*private fun checkForUpdateI4J() {
         // Here, the "Standalone update downloader" application is launched in a new process.
         // The ID of the installer application is shown in the install4j IDE on the Installer->Screens & Actions step
         // when the "Show IDs" toggle button is selected.
@@ -187,9 +189,9 @@ class UpdateDialogs(
             log.error("Error launching updater.", e)
             JOptionPane.showMessageDialog(mainFrame, "Could not launch updater.", "Error", JOptionPane.ERROR_MESSAGE)
         }
-    }
+    }*/
 
-    private fun isI4JUpdatable(): Boolean {
+    /*private fun isI4JUpdatable(): Boolean {
         try {
             val installationDirectory = Paths.get(Variables.getInstallerVariable("sys.installationDir").toString())
             i4JUpdatable = true
@@ -198,9 +200,9 @@ class UpdateDialogs(
             log.error("Error checking for install4j updatability.", ex)
         }
         return false
-    }
+    }*/
 
-    private fun checkForUpdateWithApi() {
+    /*private fun checkForUpdateWithApi() {
         try {
             if (isI4JUpdatable()) {
                 // Here we check for updates in the background with the API.
@@ -250,9 +252,9 @@ class UpdateDialogs(
             i4JUpdatable = false
             log.debug("Not an install4j installation.")
         }
-    }
+    }*/
 
-    private fun downloadAndUpdate() {
+    /*private fun downloadAndUpdate() {
         // Here the background update downloader is launched in the background
         // See checkForUpdate(), where the interactive updater is launched for comments on launching an update downloader.
         object : SwingWorker<Any?, Any?>() {
@@ -328,9 +330,9 @@ class UpdateDialogs(
                 }
             }
         }.execute()
-    }
+    }*/
 
-    private fun setProgressText(percent: Int?) {
+    /*private fun setProgressText(percent: Int?) {
         EventQueue.invokeLater {
             if (percent == null) {
                 updateButton.text = null
@@ -340,9 +342,9 @@ class UpdateDialogs(
                 updateButton.text = "Download in progress ($percent% complete)"
             }
         }
-    }
+    }*/
 
-    private fun executeUpdate() {
+    /*private fun executeUpdate() {
         // The arguments that are passed to the installer switch the default GUI mode to an unattended
         // mode with a progress bar. "-q" activates unattended mode, and "-splash Updating hello world ..."
         // shows a progress bar with the specified title.
@@ -356,5 +358,5 @@ class UpdateDialogs(
                 ), true, null
             )
         }.start()
-    }
+    }*/
 }
