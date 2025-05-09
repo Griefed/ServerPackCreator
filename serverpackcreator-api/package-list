@@ -929,7 +929,7 @@ $dokka.location:de.griefed.serverpackcreator.api.plugins.swinggui/ServerPackConf
 $dokka.location:de.griefed.serverpackcreator.api.plugins.swinggui/ServerPackConfigTab/setModloaderVersion/#kotlin.String/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api.plugins.swinggui/-server-pack-config-tab/set-modloader-version.html
 $dokka.location:de.griefed.serverpackcreator.api.plugins.swinggui/ServerPackConfigTab/setModpackDirectory/#kotlin.String/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api.plugins.swinggui/-server-pack-config-tab/set-modpack-directory.html
 $dokka.location:de.griefed.serverpackcreator.api.plugins.swinggui/ServerPackConfigTab/setPropertiesInclusionTicked/#kotlin.Boolean/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api.plugins.swinggui/-server-pack-config-tab/set-properties-inclusion-ticked.html
-$dokka.location:de.griefed.serverpackcreator.api.plugins.swinggui/ServerPackConfigTab/setScriptVariables/#[Error type: Unresolved type for HashMap<String, String>][kotlin.String,kotlin.String]/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api.plugins.swinggui/-server-pack-config-tab/set-script-variables.html
+$dokka.location:de.griefed.serverpackcreator.api.plugins.swinggui/ServerPackConfigTab/setScriptVariables/#java.util.HashMap[kotlin.String,kotlin.String]/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api.plugins.swinggui/-server-pack-config-tab/set-script-variables.html
 $dokka.location:de.griefed.serverpackcreator.api.plugins.swinggui/ServerPackConfigTab/setServerIconPath/#kotlin.String/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api.plugins.swinggui/-server-pack-config-tab/set-server-icon-path.html
 $dokka.location:de.griefed.serverpackcreator.api.plugins.swinggui/ServerPackConfigTab/setServerPackSuffix/#kotlin.String/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api.plugins.swinggui/-server-pack-config-tab/set-server-pack-suffix.html
 $dokka.location:de.griefed.serverpackcreator.api.plugins.swinggui/ServerPackConfigTab/setServerPropertiesPath/#kotlin.String/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api.plugins.swinggui/-server-pack-config-tab/set-server-properties-path.html
@@ -2391,4 +2391,3 @@ io
 mslinks
 mslinks.data
 mslinks.extra
-

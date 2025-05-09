@@ -26,39 +26,82 @@
 <link href="../../../../styles/prism.css" rel="Stylesheet">
 <link href="../../../../styles/logo-styles.css" rel="Stylesheet">
 <link href="../../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
 <script type="text/javascript" src="../../../../scripts/clipboard.js" async="async"></script>
 <script type="text/javascript" src="../../../../scripts/navigation-loader.js" async="async"></script>
 <script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async="async"></script>
 <script type="text/javascript" src="../../../../scripts/main.js" defer="defer"></script>
 <script type="text/javascript" src="../../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../../ui-kit/ui-kit.min.js" defer="defer"></script>
 <script type="text/javascript" src="../../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
 </head>
 <body>
     <div class="root">
-<nav class="navigation" id="navigation-wrapper">
-    <div class="navigation--inner">
-        <div class="navigation-title">
-            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
-            <div class="library-name">
-                    <a class="library-name--link" href="../../../../index.html">
-                            serverpackcreator-api
-                    </a>
-            </div>
-            <div class="library-version">
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+            <a class="library-name--link" href="../../../../index.html">
+                    serverpackcreator-api
+            </a>
+        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle"
+                type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active=""
+                        data-filter=":serverpackcreator-api:dokkaHtml/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
+                        data-role="dropdown-toggle"
+                        aria-controls="platform-tags-listbox"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Toggle source sets"
+                ></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":serverpackcreator-api:dokkaHtml/main"
+                                       data-filter=":serverpackcreator-api:dokkaHtml/main"/>
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
             </div>
         </div>
-        <div class="filter-section" id="filter-section">
-                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":serverpackcreator-api:dokkaHtml/main">jvm</button>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button"
+                    type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
         </div>
-    </div>
-    <div class="navigation-controls">
-        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
-        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
-    </div>
-</nav>
+    </nav>
         <div id="container">
             <div class="sidebar" id="leftColumn">
-                <div class="sidebar--inner" id="sideMenu"></div>
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list"
+                        data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    serverpackcreator-api
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
             </div>
             <div id="main">
 <div class="main-content" data-page-type="classlike" id="content" pageIds="serverpackcreator-api::mslinks.data/ItemIDFS.Companion///PointingToDeclaration//146430706">
@@ -76,13 +119,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-a-r-c-h-i-v-e.html"><span><span>FILE_ATTRIBUTE_ARCHIVE</span></span></a></div>
+                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-a-r-c-h-i-v-e.html"><span>FILE_</span><wbr></wbr><span>ATTRIBUTE_</span><wbr></wbr><span>ARCHIVE</span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1922643883%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-a-r-c-h-i-v-e.html">FILE_ATTRIBUTE_ARCHIVE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">32</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-a-r-c-h-i-v-e.html">FILE_ATTRIBUTE_ARCHIVE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">32</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -91,13 +134,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-c-o-m-p-r-e-s-s-e-d.html"><span><span>FILE_ATTRIBUTE_COMPRESSED</span></span></a></div>
+                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-c-o-m-p-r-e-s-s-e-d.html"><span>FILE_</span><wbr></wbr><span>ATTRIBUTE_</span><wbr></wbr><span>COMPRESSED</span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1573141982%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-c-o-m-p-r-e-s-s-e-d.html">FILE_ATTRIBUTE_COMPRESSED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">2048</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-c-o-m-p-r-e-s-s-e-d.html">FILE_ATTRIBUTE_COMPRESSED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">2048</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -106,13 +149,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-d-e-v-i-c-e.html"><span><span>FILE_ATTRIBUTE_DEVICE</span></span></a></div>
+                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-d-e-v-i-c-e.html"><span>FILE_</span><wbr></wbr><span>ATTRIBUTE_</span><wbr></wbr><span>DEVICE</span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1688174611%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-d-e-v-i-c-e.html">FILE_ATTRIBUTE_DEVICE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">64</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-d-e-v-i-c-e.html">FILE_ATTRIBUTE_DEVICE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">64</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -121,13 +164,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-d-i-r-e-c-t-o-r-y.html"><span><span>FILE_ATTRIBUTE_DIRECTORY</span></span></a></div>
+                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-d-i-r-e-c-t-o-r-y.html"><span>FILE_</span><wbr></wbr><span>ATTRIBUTE_</span><wbr></wbr><span>DIRECTORY</span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-15280502%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-d-i-r-e-c-t-o-r-y.html">FILE_ATTRIBUTE_DIRECTORY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">16</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-d-i-r-e-c-t-o-r-y.html">FILE_ATTRIBUTE_DIRECTORY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">16</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -136,13 +179,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-e-n-c-r-y-p-t-e-d.html"><span><span>FILE_ATTRIBUTE_ENCRYPTED</span></span></a></div>
+                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-e-n-c-r-y-p-t-e-d.html"><span>FILE_</span><wbr></wbr><span>ATTRIBUTE_</span><wbr></wbr><span>ENCRYPTED</span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-735683821%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-e-n-c-r-y-p-t-e-d.html">FILE_ATTRIBUTE_ENCRYPTED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">16384</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-e-n-c-r-y-p-t-e-d.html">FILE_ATTRIBUTE_ENCRYPTED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">16384</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -151,13 +194,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-h-i-d-d-e-n.html"><span><span>FILE_ATTRIBUTE_HIDDEN</span></span></a></div>
+                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-h-i-d-d-e-n.html"><span>FILE_</span><wbr></wbr><span>ATTRIBUTE_</span><wbr></wbr><span>HIDDEN</span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-649517287%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-h-i-d-d-e-n.html">FILE_ATTRIBUTE_HIDDEN</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">2</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-h-i-d-d-e-n.html">FILE_ATTRIBUTE_HIDDEN</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">2</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -166,13 +209,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-n-o-r-m-a-l.html"><span><span>FILE_ATTRIBUTE_NORMAL</span></span></a></div>
+                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-n-o-r-m-a-l.html"><span>FILE_</span><wbr></wbr><span>ATTRIBUTE_</span><wbr></wbr><span>NORMAL</span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="730510972%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-n-o-r-m-a-l.html">FILE_ATTRIBUTE_NORMAL</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">128</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-n-o-r-m-a-l.html">FILE_ATTRIBUTE_NORMAL</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">128</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -181,13 +224,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-n-o-t_-c-o-n-t-e-n-t_-i-n-d-e-x-e-d.html"><span><span>FILE_ATTRIBUTE_NOT_CONTENT_INDEXED</span></span></a></div>
+                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-n-o-t_-c-o-n-t-e-n-t_-i-n-d-e-x-e-d.html"><span>FILE_</span><wbr></wbr><span>ATTRIBUTE_</span><wbr></wbr><span>NOT_</span><wbr></wbr><span>CONTENT_</span><wbr></wbr><span>INDEXED</span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="256367416%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-n-o-t_-c-o-n-t-e-n-t_-i-n-d-e-x-e-d.html">FILE_ATTRIBUTE_NOT_CONTENT_INDEXED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">8192</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-n-o-t_-c-o-n-t-e-n-t_-i-n-d-e-x-e-d.html">FILE_ATTRIBUTE_NOT_CONTENT_INDEXED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">8192</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -196,13 +239,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-o-f-f-l-i-n-e.html"><span><span>FILE_ATTRIBUTE_OFFLINE</span></span></a></div>
+                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-o-f-f-l-i-n-e.html"><span>FILE_</span><wbr></wbr><span>ATTRIBUTE_</span><wbr></wbr><span>OFFLINE</span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-505548204%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-o-f-f-l-i-n-e.html">FILE_ATTRIBUTE_OFFLINE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">4096</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-o-f-f-l-i-n-e.html">FILE_ATTRIBUTE_OFFLINE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">4096</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -211,13 +254,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-r-e-a-d-o-n-l-y.html"><span><span>FILE_ATTRIBUTE_READONLY</span></span></a></div>
+                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-r-e-a-d-o-n-l-y.html"><span>FILE_</span><wbr></wbr><span>ATTRIBUTE_</span><wbr></wbr><span>READONLY</span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1817867263%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-r-e-a-d-o-n-l-y.html">FILE_ATTRIBUTE_READONLY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">1</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-r-e-a-d-o-n-l-y.html">FILE_ATTRIBUTE_READONLY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">1</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -226,13 +269,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-r-e-p-a-r-s-e_-p-o-i-n-t.html"><span><span>FILE_ATTRIBUTE_REPARSE_POINT</span></span></a></div>
+                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-r-e-p-a-r-s-e_-p-o-i-n-t.html"><span>FILE_</span><wbr></wbr><span>ATTRIBUTE_</span><wbr></wbr><span>REPARSE_</span><wbr></wbr><span>POINT</span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-543039578%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-r-e-p-a-r-s-e_-p-o-i-n-t.html">FILE_ATTRIBUTE_REPARSE_POINT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">1024</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-r-e-p-a-r-s-e_-p-o-i-n-t.html">FILE_ATTRIBUTE_REPARSE_POINT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">1024</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -241,13 +284,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-s-p-a-r-s-e_-f-i-l-e.html"><span><span>FILE_ATTRIBUTE_SPARSE_FILE</span></span></a></div>
+                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-s-p-a-r-s-e_-f-i-l-e.html"><span>FILE_</span><wbr></wbr><span>ATTRIBUTE_</span><wbr></wbr><span>SPARSE_</span><wbr></wbr><span>FILE</span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2073008604%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-s-p-a-r-s-e_-f-i-l-e.html">FILE_ATTRIBUTE_SPARSE_FILE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">512</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-s-p-a-r-s-e_-f-i-l-e.html">FILE_ATTRIBUTE_SPARSE_FILE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">512</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -256,13 +299,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-s-y-s-t-e-m.html"><span><span>FILE_ATTRIBUTE_SYSTEM</span></span></a></div>
+                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-s-y-s-t-e-m.html"><span>FILE_</span><wbr></wbr><span>ATTRIBUTE_</span><wbr></wbr><span>SYSTEM</span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1090126388%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-s-y-s-t-e-m.html">FILE_ATTRIBUTE_SYSTEM</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">4</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-s-y-s-t-e-m.html">FILE_ATTRIBUTE_SYSTEM</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">4</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -271,13 +314,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-t-e-m-p-o-r-a-r-y.html"><span><span>FILE_ATTRIBUTE_TEMPORARY</span></span></a></div>
+                  <div><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-t-e-m-p-o-r-a-r-y.html"><span>FILE_</span><wbr></wbr><span>ATTRIBUTE_</span><wbr></wbr><span>TEMPORARY</span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1597153498%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-t-e-m-p-o-r-a-r-y.html">FILE_ATTRIBUTE_TEMPORARY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">256</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-f-i-l-e_-a-t-t-r-i-b-u-t-e_-t-e-m-p-o-r-a-r-y.html">FILE_ATTRIBUTE_TEMPORARY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">256</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -286,13 +329,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-h-i-d-d-e-n_-i-d_-d-o-c-f-i-n-d-d-a-t-a.html"><span><span>HIDDEN_ID_DOCFINDDATA</span></span></a></div>
+                  <div><a href="-h-i-d-d-e-n_-i-d_-d-o-c-f-i-n-d-d-a-t-a.html"><span>HIDDEN_</span><wbr></wbr><span>ID_</span><wbr></wbr><span><span>DOCFINDDATA</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1374541757%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-d-o-c-f-i-n-d-d-a-t-a.html">HIDDEN_ID_DOCFINDDATA</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">5</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-d-o-c-f-i-n-d-d-a-t-a.html">HIDDEN_ID_DOCFINDDATA</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">5</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -301,13 +344,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-h-i-d-d-e-n_-i-d_-e-m-p-t-y.html"><span><span>HIDDEN_ID_EMPTY</span></span></a></div>
+                  <div><a href="-h-i-d-d-e-n_-i-d_-e-m-p-t-y.html"><span>HIDDEN_</span><wbr></wbr><span>ID_</span><wbr></wbr><span>EMPTY</span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-37177077%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-e-m-p-t-y.html">HIDDEN_ID_EMPTY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">0</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-e-m-p-t-y.html">HIDDEN_ID_EMPTY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">0</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -316,13 +359,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-h-i-d-d-e-n_-i-d_-i-d-f-o-l-d-e-r-e-x.html"><span><span>HIDDEN_ID_IDFOLDEREX</span></span></a></div>
+                  <div><a href="-h-i-d-d-e-n_-i-d_-i-d-f-o-l-d-e-r-e-x.html"><span>HIDDEN_</span><wbr></wbr><span>ID_</span><wbr></wbr><span>IDFOLDEREX</span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1247979142%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-i-d-f-o-l-d-e-r-e-x.html">HIDDEN_ID_IDFOLDEREX</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">4</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-i-d-f-o-l-d-e-r-e-x.html">HIDDEN_ID_IDFOLDEREX</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">4</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -331,13 +374,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-h-i-d-d-e-n_-i-d_-j-u-n-c-t-i-o-n.html"><span><span>HIDDEN_ID_JUNCTION</span></span></a></div>
+                  <div><a href="-h-i-d-d-e-n_-i-d_-j-u-n-c-t-i-o-n.html"><span>HIDDEN_</span><wbr></wbr><span>ID_</span><wbr></wbr><span>JUNCTION</span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="481082158%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-j-u-n-c-t-i-o-n.html">HIDDEN_ID_JUNCTION</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">3</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-j-u-n-c-t-i-o-n.html">HIDDEN_ID_JUNCTION</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">3</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -346,13 +389,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-h-i-d-d-e-n_-i-d_-n-a-v-i-g-a-t-e-m-a-r-k-e-r.html"><span><span>HIDDEN_ID_NAVIGATEMARKER</span></span></a></div>
+                  <div><a href="-h-i-d-d-e-n_-i-d_-n-a-v-i-g-a-t-e-m-a-r-k-e-r.html"><span>HIDDEN_</span><wbr></wbr><span>ID_</span><wbr></wbr><span><span>NAVIGATEMARKER</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1529606729%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-n-a-v-i-g-a-t-e-m-a-r-k-e-r.html">HIDDEN_ID_NAVIGATEMARKER</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">12</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-n-a-v-i-g-a-t-e-m-a-r-k-e-r.html">HIDDEN_ID_NAVIGATEMARKER</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">12</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -361,13 +404,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-h-i-d-d-e-n_-i-d_-p-a-r-e-n-t-f-o-l-d-e-r.html"><span><span>HIDDEN_ID_PARENTFOLDER</span></span></a></div>
+                  <div><a href="-h-i-d-d-e-n_-i-d_-p-a-r-e-n-t-f-o-l-d-e-r.html"><span>HIDDEN_</span><wbr></wbr><span>ID_</span><wbr></wbr><span><span>PARENTFOLDER</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-598173974%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-p-a-r-e-n-t-f-o-l-d-e-r.html">HIDDEN_ID_PARENTFOLDER</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">10</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-p-a-r-e-n-t-f-o-l-d-e-r.html">HIDDEN_ID_PARENTFOLDER</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">10</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -376,13 +419,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-h-i-d-d-e-n_-i-d_-p-e-r-s-o-n-a-l-i-z-e-d.html"><span><span>HIDDEN_ID_PERSONALIZED</span></span></a></div>
+                  <div><a href="-h-i-d-d-e-n_-i-d_-p-e-r-s-o-n-a-l-i-z-e-d.html"><span>HIDDEN_</span><wbr></wbr><span>ID_</span><wbr></wbr><span><span>PERSONALIZED</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="56290226%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-p-e-r-s-o-n-a-l-i-z-e-d.html">HIDDEN_ID_PERSONALIZED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">6</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-p-e-r-s-o-n-a-l-i-z-e-d.html">HIDDEN_ID_PERSONALIZED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">6</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -391,13 +434,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-h-i-d-d-e-n_-i-d_-r-e-c-y-c-l-e2.html"><span><span>HIDDEN_ID_RECYCLE2</span></span></a></div>
+                  <div><a href="-h-i-d-d-e-n_-i-d_-r-e-c-y-c-l-e2.html"><span>HIDDEN_</span><wbr></wbr><span>ID_</span><wbr></wbr><span>RECYCLE2</span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1416752323%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-r-e-c-y-c-l-e2.html">HIDDEN_ID_RECYCLE2</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">7</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-r-e-c-y-c-l-e2.html">HIDDEN_ID_RECYCLE2</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">7</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -406,13 +449,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-h-i-d-d-e-n_-i-d_-r-e-c-y-c-l-e-b-i-n-d-a-t-a.html"><span><span>HIDDEN_ID_RECYCLEBINDATA</span></span></a></div>
+                  <div><a href="-h-i-d-d-e-n_-i-d_-r-e-c-y-c-l-e-b-i-n-d-a-t-a.html"><span>HIDDEN_</span><wbr></wbr><span>ID_</span><wbr></wbr><span><span>RECYCLEBINDATA</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1884364484%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-r-e-c-y-c-l-e-b-i-n-d-a-t-a.html">HIDDEN_ID_RECYCLEBINDATA</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">8</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-r-e-c-y-c-l-e-b-i-n-d-a-t-a.html">HIDDEN_ID_RECYCLEBINDATA</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">8</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -421,13 +464,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-h-i-d-d-e-n_-i-d_-r-e-c-y-c-l-e-b-i-n-o-r-i-g-i-n-a-l.html"><span><span>HIDDEN_ID_RECYCLEBINORIGINAL</span></span></a></div>
+                  <div><a href="-h-i-d-d-e-n_-i-d_-r-e-c-y-c-l-e-b-i-n-o-r-i-g-i-n-a-l.html"><span>HIDDEN_</span><wbr></wbr><span>ID_</span><wbr></wbr><span><span>RECYCLEBINORIGINAL</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="613766653%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-r-e-c-y-c-l-e-b-i-n-o-r-i-g-i-n-a-l.html">HIDDEN_ID_RECYCLEBINORIGINAL</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">9</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-r-e-c-y-c-l-e-b-i-n-o-r-i-g-i-n-a-l.html">HIDDEN_ID_RECYCLEBINORIGINAL</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">9</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -436,13 +479,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-h-i-d-d-e-n_-i-d_-s-t-a-r-t-p-a-n-e-d-a-t-a.html"><span><span>HIDDEN_ID_STARTPANEDATA</span></span></a></div>
+                  <div><a href="-h-i-d-d-e-n_-i-d_-s-t-a-r-t-p-a-n-e-d-a-t-a.html"><span>HIDDEN_</span><wbr></wbr><span>ID_</span><wbr></wbr><span><span>STARTPANEDATA</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="772385732%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-s-t-a-r-t-p-a-n-e-d-a-t-a.html">HIDDEN_ID_STARTPANEDATA</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">11</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-s-t-a-r-t-p-a-n-e-d-a-t-a.html">HIDDEN_ID_STARTPANEDATA</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">11</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -451,13 +494,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-h-i-d-d-e-n_-i-d_-u-r-l-f-r-a-g-m-e-n-t.html"><span><span>HIDDEN_ID_URLFRAGMENT</span></span></a></div>
+                  <div><a href="-h-i-d-d-e-n_-i-d_-u-r-l-f-r-a-g-m-e-n-t.html"><span>HIDDEN_</span><wbr></wbr><span>ID_</span><wbr></wbr><span><span>URLFRAGMENT</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="586988953%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-u-r-l-f-r-a-g-m-e-n-t.html">HIDDEN_ID_URLFRAGMENT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">1</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-u-r-l-f-r-a-g-m-e-n-t.html">HIDDEN_ID_URLFRAGMENT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">1</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -466,13 +509,13 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/main" data-filterable-set=":serverpackcreator-api:dokkaHtml/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-h-i-d-d-e-n_-i-d_-u-r-l-q-u-e-r-y.html"><span><span>HIDDEN_ID_URLQUERY</span></span></a></div>
+                  <div><a href="-h-i-d-d-e-n_-i-d_-u-r-l-q-u-e-r-y.html"><span>HIDDEN_</span><wbr></wbr><span>ID_</span><wbr></wbr><span>URLQUERY</span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-229216919%2FProperties%2F146430706"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-u-r-l-q-u-e-r-y.html">HIDDEN_ID_URLQUERY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">2</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">const </span><span class="token keyword">val </span><a href="-h-i-d-d-e-n_-i-d_-u-r-l-q-u-e-r-y.html">HIDDEN_ID_URLQUERY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">2</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -482,11 +525,16 @@
     </div>
   </div>
 </div>
-      <div class="footer">
-        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2025 Copyright</span><span
-                class="pull-right"><span>Generated by </span><a
-                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
-      </div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>© 2025 Copyright</span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
+    </div>
             </div>
         </div>
     </div>
