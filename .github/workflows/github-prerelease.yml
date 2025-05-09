@@ -25,7 +25,7 @@ jobs:
       # EXTRACT TAG FROM PUSH
       - name: Get tag
         id: tag
-        uses: tj-actions/branch-names@v8.1.0
+        uses: tj-actions/branch-names@v8.2.1
       - name: Use tag
         run: echo ${{steps.tag.outputs.tag}}
 
@@ -59,7 +59,7 @@ jobs:
 
       - uses: luangong/setup-install4j@v1
         with:
-          version: '11.0'
+          version: '11.0.3'
           license: ${{ secrets.INSTALL4J_LICENSE }}
 
       - name: Remove install4j script
@@ -186,7 +186,7 @@ jobs:
       # GENERATE RELEASE
       - name: Create Release
         id: create_release
-        uses: softprops/action-gh-release@v2.2.1
+        uses: softprops/action-gh-release@v2.2.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{ needs.preparations.outputs.version }}
