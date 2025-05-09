@@ -1,3 +1,25 @@
+## [7.2.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.2.5...7.2.6) (2025-05-09)
+
+### 👀 Reverts
+
+* Disable auto-update / update functionality for the time being. ([f982053](https://git.griefed.de/Griefed/ServerPackCreator/commit/f9820536d96aeadd7921a7d1f968ec63793cf1b4))
+
+### 🔩 Dependencies
+
+* Bump library versions ([943fbf6](https://git.griefed.de/Griefed/ServerPackCreator/commit/943fbf6b252136180d8059525b188045e466a8f6))
+
+### 🦊 CI/CD
+
+* **deps:** bump com.formdev:flatlaf-extras in /serverpackcreator-app ([37564d7](https://git.griefed.de/Griefed/ServerPackCreator/commit/37564d760680f38d29d2a436f9b7e31759ea4c8f))
+* **deps:** bump de.jensklingenberg.ktorfit:ktorfit-lib ([d805bcf](https://git.griefed.de/Griefed/ServerPackCreator/commit/d805bcf15b9673fe10274bd11fffe299c3c154f8))
+* **deps:** bump org.jetbrains.kotlin:kotlin-stdlib ([e5e8923](https://git.griefed.de/Griefed/ServerPackCreator/commit/e5e89231a4ac031dcff4069a0b6e1c2be61e327a))
+* **deps:** bump org.jetbrains.kotlinx:kotlinx-coroutines-swing ([39ec412](https://git.griefed.de/Griefed/ServerPackCreator/commit/39ec4125e5bba956c9a50ee12d952933fbbab9f9))
+* **deps:** bump org.jetbrains.kotlinx:kotlinx-datetime ([9be073d](https://git.griefed.de/Griefed/ServerPackCreator/commit/9be073d49f4fe565ebb6e41dec6064fdbb88b334))
+* **deps:** bump org.junit.jupiter:junit-jupiter-api ([4e48cea](https://git.griefed.de/Griefed/ServerPackCreator/commit/4e48ceaf94ff172af880ae17753552b8582d9496))
+* **deps:** bump org.springframework.boot:spring-boot-devtools ([1a9b06e](https://git.griefed.de/Griefed/ServerPackCreator/commit/1a9b06e42835b035d535bae1484e22e42cba5f4e))
+* **deps:** bump softprops/action-gh-release from 2.2.1 to 2.2.2 ([c799865](https://git.griefed.de/Griefed/ServerPackCreator/commit/c799865612335a4dc97f791ead5c8bb90187fb9a))
+* **deps:** bump tj-actions/branch-names from 8.1.0 to 8.2.1 ([c664b37](https://git.griefed.de/Griefed/ServerPackCreator/commit/c664b379f0b7e49b420e85ab66adc2df3ada4be8))
+
 ## [7.2.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.2.4...7.2.5) (2025-04-25)
 
 ### 📦 Other
