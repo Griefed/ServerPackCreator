@@ -34,7 +34,7 @@ dependencies {
     //api("dev.kosmx.needle:jneedle:1.0.1")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test:2.1.20")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.4")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.12.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
 }
 
