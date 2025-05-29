@@ -163,7 +163,7 @@ refreshServerJar() {
     SERVERSTARTERJAR_DOWNLOAD_URL="https://github.com/neoforged/ServerStarterJar/releases/download/${SERVERSTARTERJAR_VERSION}/server.jar"
   fi
 
-  downloadIfNotExist "server.jar" "server.jar" "${SERVERSTARTERJAR_DOWNLOAD_URL}"
+  downloadIfNotExist "server.jar" "server.jar" "${SERVERSTARTERJAR_DOWNLOAD_URL}" >/dev/null
 }
 
 # setupForge
