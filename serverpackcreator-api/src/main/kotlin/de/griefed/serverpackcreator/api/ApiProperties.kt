@@ -156,6 +156,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     @Suppress("SpellCheckingInspection")
     private var fallbackMods = TreeSet(
         listOf(
+            "[1.8.9] Lunar Block Overlay v1",//https://www.curseforge.com/minecraft/mc-mods/lunar-block-overlay
+            "[1.8.9] Lunar Block Overlay-2.0.0",//https://www.curseforge.com/minecraft/mc-mods/lunar-block-overlay
             "3dskinlayers-",                //https://www.curseforge.com/minecraft/mc-mods/skin-layers-3d
             "Absolutely-Not-A-Zoom-Mod-",   //https://www.curseforge.com/minecraft/mc-mods/absolutely-not-a-zoom-mod
             "AdaptiveTooltips-",            //https://www.curseforge.com/minecraft/mc-mods/adaptive-tooltips
@@ -345,7 +347,9 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "blinkload-",                   //https://www.curseforge.com/minecraft/mc-mods/blinkload
             "block-counter-",               //https://www.curseforge.com/minecraft/mc-mods/block-counter
             "blur-",                        //https://www.curseforge.com/minecraft/mc-mods/blur
+            "borderless-forge-",            //https://www.curseforge.com/minecraft/mc-mods/borderless
             "borderless-mining-",           //https://www.curseforge.com/minecraft/mc-mods/borderless-mining
+            "borderless-neoforge-",         //https://www.curseforge.com/minecraft/mc-mods/borderless
             "cat_jam-",                     //https://www.curseforge.com/minecraft/mc-mods/cat_jam
             "catalogue-",                   //https://www.curseforge.com/minecraft/mc-mods/catalogue
             "cave_dust-",                   //https://www.curseforge.com/minecraft/mc-mods/cave-dust
@@ -422,16 +426,19 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "gpumemleakfix-",               //https://www.curseforge.com/minecraft/mc-mods/fix-gpu-memory-leak
             "grid-",                        //https://www.curseforge.com/minecraft/mc-mods/grid
             "guiclock-",                    //https://www.curseforge.com/minecraft/mc-mods/gui-clock
+            "guicompass-",                  //https://www.curseforge.com/minecraft/mc-mods/gui-compass
             "guideme-",                     //https://www.curseforge.com/minecraft/mc-mods/guideme
             "guifollowers-",                //https://www.curseforge.com/minecraft/mc-mods/gui-followers
             "helium-",                      //Gone? Reduces to atoms?
             "hennyfullbright-",             //https://www.curseforge.com/minecraft/mc-mods/henny-fullbright
             "hiddenrecipebook_",            //https://www.curseforge.com/minecraft/mc-mods/hidden-recipe-book
             "hiddenrecipebook-",            //https://www.curseforge.com/minecraft/mc-mods/hidden-recipe-book
+            "hidehands-",                   //https://www.curseforge.com/minecraft/mc-mods/hide-hands
             "ijmtweaks-",                   //https://www.curseforge.com/minecraft/mc-mods/ijm-tweaks
             "immersivearmorhud-",           //https://www.curseforge.com/minecraft/mc-mods/immersive-armor-hud
             "immersivemessages-",           //https://www.curseforge.com/minecraft/mc-mods/immersive-messages-api
             "immersivetips-",               //https://www.curseforge.com/minecraft/mc-mods/immersive-tips
+            "improvedsignediting-",         //https://www.curseforge.com/minecraft/mc-mods/improved-sign-editing
             "infinitemusic-",               //https://www.curseforge.com/minecraft/mc-mods/infinite-music
             "inventoryhud.",                //https://www.curseforge.com/minecraft/mc-mods/inventory-hud-forge
             "inventoryprofiles",            //https://www.curseforge.com/minecraft/mc-mods/inventory-profiles
@@ -472,6 +479,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "mindful-eating-",              //https://www.curseforge.com/minecraft/mc-mods/mindful-eating
             "minetogether-",                //https://www.curseforge.com/minecraft/mc-mods/creeperhost-minetogether
             "minihud-",                     //https://www.curseforge.com/minecraft/mc-mods/minihud-update-port
+            "moremmog'scheats",             //https://www.curseforge.com/minecraft/mc-mods/mmogs-cheat-menu
+            "mmog'scheats3.6kdownloadsplusmorecheats",//https://www.curseforge.com/minecraft/mc-mods/mmogs-cheat-menu
             "mobplusplus-",                 //Gone? Reduces to atoms?
             "modcredits-",                  //https://www.curseforge.com/minecraft/mc-mods/mod-credits
             "modernworldcreation_",         //https://www.curseforge.com/minecraft/mc-mods/modernworldcreation
