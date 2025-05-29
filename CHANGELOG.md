@@ -1,3 +1,13 @@
+## [7.2.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.2.6...7.2.7) (2025-05-29)
+
+### 📦 Other
+
+* Add borderless-(neo)forge, improvedsignediting, guicompass, mmogscheatsmenu, hidehands, lunarblockoverlay - Thanks to @Tralty @ModernGamingWorld for the reports! ([02e9b38](https://git.griefed.de/Griefed/ServerPackCreator/commit/02e9b38bed1e29a528176d82009286b7c3d0db40))
+
+### 🛠 Fixes
+
+* update default_template.sh ([5f8b203](https://git.griefed.de/Griefed/ServerPackCreator/commit/5f8b2039b229b355019ee76727594f17c86c178f))
+
 ## [7.2.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.2.5...7.2.6) (2025-05-09)
 
 ### 👀 Reverts
