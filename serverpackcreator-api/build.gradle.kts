@@ -26,7 +26,7 @@ dependencies {
     api("net.lingala.zip4j:zip4j:2.11.5")
     api("org.apache.logging.log4j:log4j-api-kotlin:1.5.0")
     api("org.apache.logging.log4j:log4j-core:2.24.3")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     api("org.pf4j:pf4j:3.13.0")
     api("org.bouncycastle:bcpkix-jdk18on:1.80")
 
