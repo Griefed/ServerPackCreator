@@ -35,7 +35,7 @@ dependencies {
 
     testImplementation("org.jetbrains.kotlin:kotlin-test:2.1.21")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.4")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.13.0")
 }
 
 tasks.sourcesJar {
