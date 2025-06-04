@@ -1081,11 +1081,13 @@ class ServerPackHandler(
             when (modloader) {
                 "LegacyFabric", "Fabric" -> autoDiscoveredClientMods.addAll(modScanner.fabricScanner.scan(filesInModsDir))
 
-                "Forge" -> if (minecraftVersion.split(".").dropLastWhile { it.isEmpty() }
-                        .toTypedArray()[1].toInt() > 12) {
-                    autoDiscoveredClientMods.addAll(modScanner.forgeTomlScanner.scan(filesInModsDir))
-                } else {
-                    autoDiscoveredClientMods.addAll(modScanner.forgeAnnotationScanner.scan(filesInModsDir))
+                "Forge" -> {
+                    val mcVersions = minecraftVersion.split(".").dropLastWhile { it.isEmpty() }.toTypedArray()
+                    if (mcVersions[1].toInt() > 12) {
+                        autoDiscoveredClientMods.addAll(modScanner.forgeTomlScanner.scan(filesInModsDir))
+                    } else {
+                        autoDiscoveredClientMods.addAll(modScanner.forgeAnnotationScanner.scan(filesInModsDir))
+                    }
                 }
 
                 "NeoForge" -> {
@@ -1107,7 +1109,7 @@ class ServerPackHandler(
                 }
             }
 
-            // Exclude scanned mods from copying if said functionality is enabled.
+            // Exclude scanned mods from copying
             if (autoDiscoveredClientMods.isNotEmpty()) {
                 log.info("Automatically detected mods: ${autoDiscoveredClientMods.size}")
                 for (discoveredMod in autoDiscoveredClientMods) {
