@@ -35,18 +35,21 @@ import java.util.jar.JarFile
  * @Griefed
  */
 open class ForgeTomlScanner(private val tomlParser: TomlParser) :
-    Scanner<TreeSet<File>, Collection<File>> {
+    Scanner<Pair<Collection<File>, Collection<Pair<String,String>>>, Collection<File>> {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val mods = "mods"
     private val modId = "modId"
     private val dependencies = "dependencies"
     private val side = "side"
     private val both = "BOTH"
+    private val type = "type"
+    private val mandatory = "mandatory"
+    private val requiredAsDep = "REQUIRED"
 
     open val modsToml = "META-INF/mods.toml"
 
-    val forgeMinecraft: Regex
-        get() = "^(forge|minecraft)$".toRegex()
+    val neoForgeMinecraft: Regex
+        get() = "^(neoforge|forge|minecraft)$".toRegex()
     val bothServer: Regex
         get() = "^(BOTH|SERVER)$".toRegex()
 
@@ -64,19 +67,19 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
      * @return Mods not to include in server pack based on mods.toml-configuration.
      * @author Griefed
      */
-    override fun scan(jarFiles: Collection<File>): TreeSet<File> {
+    override fun scan(jarFiles: Collection<File>): Pair<Collection<File>, Collection<Pair<String,String>>> {
         val serverMods = TreeSet<File>()
-        val idsRequiredOnServer = TreeSet<String>()
-        var config: CommentedConfig
+        val dependencies = ArrayList<Pair<String,String>>()
+        var modConfig: CommentedConfig
         for (modJar in jarFiles) {
             try {
-                config = getConfig(modJar)
+                modConfig = getConfig(modJar)
 
                 // get all [[dependencies.n]] which are minecraft|forge, to determine sideness of the mod itself
-                idsRequiredOnServer.addAll(getModDependencyIdsRequiredOnServer(config))
+                dependencies.addAll(getModDependencyIdsRequiredOnServer(modConfig, modJar.name))
 
                 // get all mods required on the server
-                idsRequiredOnServer.addAll(getModIdsRequiredOnServer(config))
+                dependencies.addAll(getModIdsRequiredOnServer(modConfig, modJar.name))
             } catch (e: Exception) {
                 log.error("Could not scan ${modJar.name}. Consider reporting this: ${e.cause}: ${e.message}")
                 serverMods.add(modJar)
@@ -84,10 +87,10 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
         }
         for (modJar in jarFiles) {
             try {
-                config = getConfig(modJar)
-                val idsInMod = getModIdsInJar(config)
+                modConfig = getConfig(modJar)
+                val idsInMod = getModIdsInJar(modConfig)
                 for (id in idsInMod) {
-                    if (idsRequiredOnServer.contains(id)) {
+                    if (dependencies.map{ it.first }.contains(id)) {
                         serverMods.add(modJar)
                     }
                 }
@@ -98,66 +101,66 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
         }
         val excluded = TreeSet(jarFiles)
         excluded.removeAll(serverMods)
-        return excluded
+        return Pair(excluded,dependencies)
     }
 
     /**
      * Get all ids of mods required for running the server.
      *
-     * @param config Base-config of the toml of the mod which contains all information.
+     * @param modConfig Base-config of the toml of the mod which contains all information.
      * @return Set of ids of mods required.
      * @throws ScanningException if the mod specifies no mods.
      */
     @Throws(ScanningException::class)
-    private fun getModIdsRequiredOnServer(config: CommentedConfig): TreeSet<String> {
-        val configs = ArrayList<Map<String, Any>>(100)
-        val ids = TreeSet<String>()
-        if (config.valueMap()[mods] == null) {
+    private fun getModIdsRequiredOnServer(modConfig: CommentedConfig, fileName: String): ArrayList<Pair<String,String>> {
+        val modConfigs = ArrayList<Map<String, Any>>(100)
+        val entries = ArrayList<Pair<String, String>>()
+        if (modConfig.valueMap()[mods] == null) {
             throw ScanningException("No mods specified.")
         } else {
-            val commentedConfigs = config.valueMap()[mods] as ArrayList<*>
-            for (entry in commentedConfigs) {
-                val commentedConfig = entry as CommentedConfig
-                val extracted = commentedConfig.valueMap()
-                configs.add(extracted)
+            val mods = modConfig.valueMap()[mods] as ArrayList<*>
+            for (mod in mods) {
+                val config = mod as CommentedConfig
+                val extracted = config.valueMap()
+                modConfigs.add(extracted)
             }
         }
-        val dependencies: Map<String, ArrayList<CommentedConfig>> = getMapOfDependencyLists(config)
+        val dependencies: Map<String, ArrayList<CommentedConfig>> = getMapOfDependencyLists(modConfig)
         var containedForgeOrMinecraft = false
-        for (mod in configs) {
-            val id = mod[modId].toString()
-            if (dependencies.containsKey(id)) {
-                val modIdDependencies = dependencies[id]!!
-                for (dependency in modIdDependencies) {
+        for (config in modConfigs) {
+            val modId = config[modId].toString()
+            if (dependencies.containsKey(modId)) {
+                val modDependencies = dependencies[modId]!!
+                for (dependency in modDependencies) {
                     try {
                         val dependencyModId = getModId(dependency)
-                        if (dependencyModId.matches(forgeMinecraft)) {
+                        if (dependencyModId.matches(neoForgeMinecraft)) {
                             containedForgeOrMinecraft = true
                             try {
                                 val side = getSide(dependency)
                                 if (side.matches(bothServer)) {
-                                    ids.add(id)
+                                    entries.add(Pair(modId, fileName))
                                 }
                             } catch (ex: NullPointerException) {
                                 // no side specified....assuming both|server
-                                ids.add(id)
+                                entries.add(Pair(modId, fileName))
                             }
                         }
                     } catch (e: NullPointerException) {
                         // no modId specified in dependency...assuming forge|minecraft and both|server
                         containedForgeOrMinecraft = true
-                        ids.add(id)
+                        entries.add(Pair(modId,"$fileName ($modId)"))
                     }
                 }
             } else {
                 // contains no self referencing dependency...
-                ids.add(id)
+                entries.add(Pair(modId, fileName))
             }
             if (!containedForgeOrMinecraft) {
-                ids.add(id)
+                entries.add(Pair(modId, fileName))
             }
         }
-        return ids
+        return entries
     }
 
     /**
@@ -167,64 +170,76 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
      * all modIds mentioned in the dependencies of this mod, which are neither `forge` nor
      * `minecraft` get added to the list.
      *
-     * @param config Base-config of the toml of the mod which contains all information.
+     * @param modConfig Base-config of the toml of the mod which contains all information.
      * @return Set of ids of mods required as dependencies.
      * @throws ScanningException if the mod has invalid dependency declarations or specifies no mods.
      */
     @Throws(ScanningException::class)
-    private fun getModDependencyIdsRequiredOnServer(config: CommentedConfig): TreeSet<String> {
-        val ids = TreeSet<String>()
-        val dependencies: Map<String, ArrayList<CommentedConfig>> = getMapOfDependencyLists(config)
-        val idsInMod = getModIdsInJar(config)
+    private fun getModDependencyIdsRequiredOnServer(modConfig: CommentedConfig, fileName: String): ArrayList<Pair<String,String>> {
+        val dependencies: Map<String, ArrayList<CommentedConfig>> = getMapOfDependencyLists(modConfig)
+        val idsInMod = getModIdsInJar(modConfig)
+        val entries = ArrayList<Pair<String, String>>()
         try {
             var confidentOnClientSide = true
             for (modId in idsInMod) {
                 if (dependencies.containsKey(modId)) {
                     val modIdDependencies = dependencies[modId]!!
+                    //check all dependencies in mod
                     for (dependency in modIdDependencies) {
                         val dependencyModId = getModId(dependency)
                         val side = getSide(dependency)
-                        if (dependencyModId.matches(forgeMinecraft) && side.matches(bothServer)) {
+                        val required = getRequired(dependency)
+                        if (dependencyModId.matches(neoForgeMinecraft) && side.matches(bothServer)) { // && required.equals(requiredAsDep,true)
                             confidentOnClientSide = false
                         }
                     }
                 } else {
+                    //no dependencies specified, assume required
                     confidentOnClientSide = false
                     break
                 }
             }
+            //if not a single id said server/both, stop and return list of ids
             if (confidentOnClientSide) {
-                return ids
+                return entries
             }
         } catch (ignored: NullPointerException) {
         }
         for ((key, value) in dependencies) {
             for (commentedConfig in value) {
                 try {
-                    val modId = getModId(commentedConfig)
+                    val dependencyID = getModId(commentedConfig)
                     // dependency forge|minecraft?
-                    if (!modId.matches(forgeMinecraft)) {
+                    if (!dependencyID.matches(neoForgeMinecraft)) {
                         try {
                             // dependency required on the server?
                             val side = getSide(commentedConfig)
-                            if (side.matches(bothServer)) {
-                                ids.add(modId)
+                            // Mandatory dependency?
+                            val required = getRequired(commentedConfig)
+                            if (side.matches(bothServer) && required.equals(requiredAsDep,true)) {
+                                for (modID in idsInMod) {
+                                    entries.add(Pair(dependencyID,"$fileName ($modID)"))
+                                }
                             }
                         } catch (ex: NullPointerException) {
                             // dependency specifies no side
-                            ids.add(modId)
+                            for (modID in idsInMod) {
+                                entries.add(Pair(dependencyID,"$fileName ($modID)"))
+                            }
                         }
                     }
                 } catch (e: NullPointerException) {
                     // dependency specifies no modId, so use parent.
                     val lowerKey = key.lowercase()
-                    if (!lowerKey.matches(forgeMinecraft)) {
-                        ids.add(key)
+                    if (!lowerKey.matches(neoForgeMinecraft)) {
+                        for (modID in idsInMod) {
+                            entries.add(Pair(key,"$fileName ($modID)"))
+                        }
                     }
                 }
             }
         }
-        return ids
+        return entries
     }
 
     /**
@@ -320,6 +335,26 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
             config.valueMap()[side].toString().uppercase()
         } else {
             both
+        }
+    }
+
+    /**
+     * Acquire the side of the config of the passed dependency.
+     *
+     * @param config Mod- or dependency-config which contains the modId.
+     * @return `side` from the passed config, in upper-case letters.
+     */
+    private fun getRequired(config: CommentedConfig): String {
+        return if (config.valueMap()[type] != null) {
+            config.valueMap()[type].toString().uppercase()
+        } else if (config.valueMap()[mandatory] != null) {
+            if (config.valueMap()[mandatory].toString() == "true") {
+                requiredAsDep
+            } else {
+                config.valueMap()[mandatory].toString().uppercase()
+            }
+        } else {
+            requiredAsDep
         }
     }
 }

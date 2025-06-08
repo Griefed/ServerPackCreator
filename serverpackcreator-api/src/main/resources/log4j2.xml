@@ -19,7 +19,7 @@
       </PatternLayout>
     </Console>
 
-    <RollingFile name="ApplicationLogger" fileName="${log-path}/serverpackcreator.log" filePattern="${archive}/serverpackcreator.log.%i">
+    <RollingFile name="ApplicationLogger" fileName="${log-path}/serverpackcreator.log" filePattern="${archive}/serverpackcreator.%d{MM-dd-yyyy-HH-mm}.log">
       <PatternLayout>
         <Charset>
           ${charset}
@@ -30,12 +30,11 @@
       </PatternLayout>
       <Policies>
         <OnStartupTriggeringPolicy />
-        <SizeBasedTriggeringPolicy size="10 MB" />
       </Policies>
       <DefaultRolloverStrategy max="5" />
     </RollingFile>
 
-    <RollingFile name="PluginsLogger" fileName="${log-path}/plugins.log" filePattern="${archive}/plugins.log.%i">
+    <RollingFile name="PluginsLogger" fileName="${log-path}/plugins.log" filePattern="${archive}/plugins.%d{MM-dd-yyyy-HH-mm}.log">
       <PatternLayout>
         <Charset>
           ${charset}
@@ -46,7 +45,6 @@
       </PatternLayout>
       <Policies>
         <OnStartupTriggeringPolicy />
-        <SizeBasedTriggeringPolicy size="10 MB" />
       </Policies>
       <DefaultRolloverStrategy max="5" />
     </RollingFile>

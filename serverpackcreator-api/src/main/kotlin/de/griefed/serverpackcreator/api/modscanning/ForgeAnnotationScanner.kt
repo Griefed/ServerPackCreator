@@ -39,7 +39,7 @@ import java.util.*
 class ForgeAnnotationScanner(
     private val objectMapper: ObjectMapper,
     private val utilities: Utilities
-) : JsonBasedScanner(), Scanner<TreeSet<File>, Collection<File>> {
+) : JsonBasedScanner(), Scanner<Pair<Collection<File>, Collection<Pair<String,String>>>, Collection<File>> {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val additionalDependencyRegex = "(@.*|\\[.*)".toRegex()
     private val caches = "META-INF/fml_cache_annotation.json"
@@ -66,7 +66,7 @@ class ForgeAnnotationScanner(
      * @return List of mods not to include in server pack based on fml-cache-annotation.json-content.
      * @author Griefed
      */
-    override fun scan(jarFiles: Collection<File>): TreeSet<File> {
+    override fun scan(jarFiles: Collection<File>):  Pair<Collection<File>, Collection<Pair<String,String>>> {
         log.info("Scanning Minecraft 1.12.x and older mods for sideness...")
         val modDependencies = ArrayList<Pair<String, Pair<String, String>>>()
         val clientMods = TreeSet<String>()
@@ -85,7 +85,14 @@ class ForgeAnnotationScanner(
          * any of the remaining clientmods is available in our list of files. The resulting set is the
          * set of mods we can safely exclude from our server pack.
          */
-        return getModsDelta(jarFiles, clientMods)
+        return Pair(
+            getModsDelta(jarFiles, clientMods),
+            modDependencies.map { entry ->
+                Pair(
+                    entry.first,
+                    "${entry.second.first} (${entry.second.second})"
+                )
+            })
     }
 
     override fun checkForClientModsAndDeps(
