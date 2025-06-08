@@ -95,9 +95,9 @@ class ServerPackFile {
     fun copy(overwrite: Boolean = true) : File {
         try {
             sourceFile.copyTo(destinationFile, overwrite)
-            log.debug("Successfully copied ServerPackFile")
-            log.debug("    Source: $sourcePath")
-            log.debug("    Destination: $destinationPath")
+            log.trace("Successfully copied ServerPackFile")
+            log.trace("    Source: $sourcePath")
+            log.trace("    Destination: $destinationPath")
         } catch (ignored: DirectoryNotEmptyException) {
             // If the directory to be copied already exists we're good.
         } catch (skip: FileAlreadyExistsException) {
