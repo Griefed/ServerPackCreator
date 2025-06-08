@@ -277,8 +277,8 @@ class WebUtilities(private val apiProperties: ApiProperties) {
         var connection: HttpURLConnection? = null
         try {
             val host = url.host
-            log.debug("URL:  $url")
-            log.debug("Host: $host")
+            log.trace("URL:  $url")
+            log.trace("Host: $host")
             connection = url.openConnection() as HttpURLConnection
             available = connection.responseCode == 200
         } catch (e: IOException) {
