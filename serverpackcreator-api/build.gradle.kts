@@ -121,6 +121,10 @@ tasks.dokkaHtml {
     dependsOn(tasks.generateI18n4kFiles, tasks.getByName("fixMissingResources"))
 }
 
+tasks.dokkaJavadoc {
+    dependsOn(tasks.getByName("fixMissingResources"))
+}
+
 tasks.jar {
     dependsOn(tasks.getByName("fixMissingResources"))
 }
@@ -141,6 +145,7 @@ tasks.build {
     doLast {
         tasks.dokkaJavadocJar
     }
+    finalizedBy(tasks.dokkaJavadocJar)
 }
 
 tasks.signMavenJavaPublication {

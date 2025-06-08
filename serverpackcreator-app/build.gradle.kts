@@ -97,6 +97,10 @@ tasks.bootJar {
 
 tasks.build {
     dependsOn(":generateLicenseReport")
+    doLast {
+        tasks.dokkaJavadocJar
+    }
+    finalizedBy(tasks.dokkaJavadocJar)
 }
 
 tasks.test {

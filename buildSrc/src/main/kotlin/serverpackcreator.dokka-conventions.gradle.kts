@@ -35,7 +35,8 @@ tasks.withType<DokkaTask>().configureEach {
 val dokkaHtml by tasks.getting(DokkaTask::class)
 
 tasks.register<Jar>("dokkaJavadocJar") {
-    dependsOn(tasks.dokkaHtml)
+    dependsOn(tasks.dokkaHtml, tasks.dokkaJavadoc)
     archiveClassifier.set("javadoc")
+    from(tasks.dokkaJavadoc.flatMap { it.outputDirectory })
     from(dokkaHtml.outputDirectory)
 }
