@@ -1,3 +1,23 @@
+## [7.2.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.2.7...7.2.8) (2025-06-08)
+
+### :scissors: Refactor
+
+* Change log-level to trace ([e02245b](https://git.griefed.de/Griefed/ServerPackCreator/commit/e02245b93812462b4776ca3749940fefbe09095a))
+* Change log-level to trace ([cba50fe](https://git.griefed.de/Griefed/ServerPackCreator/commit/cba50fe169de7a0d258a67e3f2d83cf8604a535e))
+* Improve readability ([a3b5949](https://git.griefed.de/Griefed/ServerPackCreator/commit/a3b594903896b548694540868fcd7c207d5e20f9))
+
+### 💎 Improvements
+
+* Prevent dependencies from being excluded ([23fe74f](https://git.griefed.de/Griefed/ServerPackCreator/commit/23fe74fe3bb5c7e465968867beeaed29b5255429))
+
+### 📦 Other
+
+* Remove size-based trigger, add timestamp to archived logs ([9871721](https://git.griefed.de/Griefed/ServerPackCreator/commit/9871721c3edde2af67b42d41c8fe661da2c1e4b9))
+
+### 🧪 Tests
+
+* Fix ModScanner tests ([52deea2](https://git.griefed.de/Griefed/ServerPackCreator/commit/52deea27901a26017639b630e081a53488029757))
+
 ## [7.2.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.2.6...7.2.7) (2025-05-29)
 
 ### 📦 Other
