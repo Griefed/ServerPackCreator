@@ -37,7 +37,7 @@ import java.util.*
 class QuiltScanner(
     private val objectMapper: ObjectMapper,
     private val utilities: Utilities
-) : JsonBasedScanner(), Scanner<TreeSet<File>, Collection<File>> {
+) : JsonBasedScanner(), Scanner<Pair<Collection<File>, Collection<Pair<String,String>>>, Collection<File>> {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val quiltModJson = "quilt.mod.json"
     private val quiltLoader = "quilt_loader"
@@ -61,7 +61,7 @@ class QuiltScanner(
      * @return List of mods not to include in server pack based on fabric.mod.json-content.
      * @author Griefed
      */
-    override fun scan(jarFiles: Collection<File>): TreeSet<File> {
+    override fun scan(jarFiles: Collection<File>): Pair<Collection<File>, Collection<Pair<String,String>>> {
         log.info("Scanning Quilt mods for sideness...")
         val modDependencies = ArrayList<Pair<String, Pair<String, String>>>()
         val clientMods = TreeSet<String>()
@@ -72,7 +72,7 @@ class QuiltScanner(
         */
         checkForClientModsAndDeps(jarFiles, clientMods, modDependencies)
 
-        //Remove any dependency from out list of clientside-only mods, so we do not exclude any dependency.
+        //Remove any dependency from our list of clientside-only mods, so we do not exclude any dependency.
         cleanupClientMods(modDependencies, clientMods)
 
         /*
@@ -80,7 +80,14 @@ class QuiltScanner(
         * any of the remaining clientmods is available in our list of files. The resulting set is the
         * set of mods we can safely exclude from our server pack.
         */
-        return getModsDelta(jarFiles, clientMods)
+        return Pair(
+            getModsDelta(jarFiles, clientMods),
+            modDependencies.map { entry ->
+                Pair(
+                    entry.first,
+                    "${entry.second.first} (${entry.second.second})"
+                )
+            })
     }
 
     override fun checkForClientModsAndDeps(

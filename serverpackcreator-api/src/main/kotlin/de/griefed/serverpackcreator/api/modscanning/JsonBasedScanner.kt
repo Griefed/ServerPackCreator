@@ -75,9 +75,9 @@ abstract class JsonBasedScanner {
             clientMods.removeIf { clientMod: String ->
                 if (clientMod == dependency.first && !clientMods.contains(dependency.second.second)) {
                     log.info("$clientMod is a dependency for ${dependency.second.first} (${dependency.second.second}), therefor it was not automatically removed.")
-                    return@removeIf true
+                    true
                 } else {
-                    return@removeIf false
+                    false
                 }
             }
         }
