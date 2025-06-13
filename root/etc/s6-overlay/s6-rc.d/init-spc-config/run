@@ -114,6 +114,13 @@ else
   echo "de.griefed.serverpackcreator.serverpack.zip.exclude.enabled={$SPC_SERVERPACK_ZIP_EXCLUDE_ENABLED}" >> ${OVERRIDES}
 fi
 
+if [[ -z ${SPC_LOG_LEVEL} ]];then
+  echo "de.griefed.serverpackcreator.loglevel=INFO" >> ${OVERRIDES}
+else
+  echo "Overriding de.griefed.serverpackcreator.loglevel..."
+  echo "de.griefed.serverpackcreator.loglevel={SPC_LOG_LEVEL}" >> ${OVERRIDES}
+fi
+
 echo "server.tomcat.basedir=/app/serverpackcreator" >> ${OVERRIDES}
 echo "de.griefed.serverpackcreator.home=/app/serverpackcreator" >> ${OVERRIDES}
 
@@ -128,8 +135,12 @@ fi
 
 echo "**** chowning ${OVERRIDES} & ${APP_DIR}/serverpackcreator.properties ****"
 
+mkdir -p \
+     ${APP_DIR}/temp
+
 lsiown abc:abc \
     ${APP_DIR}/serverpackcreator.properties \
+    ${APP_DIR}/temp                         \
     ${OVERRIDES}
 
 echo "**** Checking permissions ****"
