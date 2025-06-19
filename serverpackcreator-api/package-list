@@ -1495,7 +1495,6 @@ $dokka.location:de.griefed.serverpackcreator.api/ApiProperties///PointingToDecla
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/ApiProperties/#java.io.File/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/-api-properties.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/acquireJavaPath/#kotlin.String?/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/acquire-java-path.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/aikarsFlags/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/aikars-flags.html
-$dokka.location:de.griefed.serverpackcreator.api/ApiProperties/alphaBetaRegex/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/alpha-beta-regex.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/apiVersion/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/api-version.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/changeLocale/#java.util.Locale/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/change-locale.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/clearPropertyFileList/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/clear-property-file-list.html
@@ -1610,7 +1609,6 @@ $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/pluginsDirectory/
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/postInstallCleanupFiles/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/post-install-cleanup-files.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/preInstallCleanupFiles/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/pre-install-cleanup-files.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/preRelease/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/pre-release.html
-$dokka.location:de.griefed.serverpackcreator.api/ApiProperties/printSettings/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/print-settings.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/propertiesDirectory/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/properties-directory.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/quiltInstallerManifest/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/quilt-installer-manifest.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/quiltVersionManifest/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/quilt-version-manifest.html
@@ -1620,7 +1618,6 @@ $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/scriptTemplates/#
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/serverFilesDirectory/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/server-files-directory.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/serverPackCreatorPropertiesFile/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/server-pack-creator-properties-file.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/serverPacksDirectory/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/server-packs-directory.html
-$dokka.location:de.griefed.serverpackcreator.api/ApiProperties/serverPacksRegex/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/server-packs-regex.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/setOldVersion/#kotlin.String/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/set-old-version.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/startScriptTemplates/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/start-script-templates.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/storeCustomProperty/#kotlin.String#kotlin.String/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/store-custom-property.html
@@ -1629,7 +1626,6 @@ $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/supportedModloade
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/tempDirectory/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/temp-directory.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/tomcatBaseDirectory/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/tomcat-base-directory.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/tomcatLogsDirectory/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/tomcat-logs-directory.html
-$dokka.location:de.griefed.serverpackcreator.api/ApiProperties/trueFalseRegex/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/true-false-regex.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/updateFallback/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/update-fallback.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/updateUrl/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/update-url.html
 $dokka.location:de.griefed.serverpackcreator.api/ApiProperties/webserviceCleanupSchedule/#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api/-api-properties/webservice-cleanup-schedule.html
