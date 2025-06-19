@@ -47,7 +47,7 @@ import java.net.URI
  *
  * @author Griefed
  */
-@Suppress("unused")
+@Suppress("unused","MemberVisibilityCanBePrivate")
 abstract class ServerPackCreatorPlugin(val context: PluginContext) : Plugin(), BaseInformation {
     private val logger by lazy { cachedLoggerOf(this.javaClass) }
     final override val name: String
@@ -56,7 +56,6 @@ abstract class ServerPackCreatorPlugin(val context: PluginContext) : Plugin(), B
     final override val version: String
     val id: String
 
-    @Suppress("MemberVisibilityCanBePrivate")
     protected val pluginsLog = logger("PluginsLogger")
 
     init {

@@ -578,7 +578,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         )
     )
 
-    @Suppress("MemberVisibilityCanBePrivate")
     val fallbackDirectoriesInclusion = TreeSet(
         listOf(
             "addonpacks",
@@ -631,7 +630,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         )
     )
 
-    @Suppress("MemberVisibilityCanBePrivate")
     val fallbackZipExclusions = TreeSet(
         listOf(
             "minecraft_server.MINECRAFT_VERSION.jar",
@@ -672,7 +670,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         )
     )
 
-    @Suppress("MemberVisibilityCanBePrivate")
     val fallbackAikarsFlags = "-Xms4G" +
             " -Xmx4G" +
             " -XX:+UseG1GC" +
@@ -711,15 +708,9 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     val fallbackDatabaseCleanupSchedule = "0 0 0 * * *"
     val fallbackUpdateServerPack = false
     private val checkedJavas = hashMapOf<String, Boolean>()
-
-    @Suppress("MemberVisibilityCanBePrivate")
-    val trueFalseRegex = "^(true|false)$".toRegex()
-
-    @Suppress("MemberVisibilityCanBePrivate")
-    val alphaBetaRegex = "^(.*alpha.*|.*beta.*)$".toRegex()
-
-    @Suppress("MemberVisibilityCanBePrivate")
-    val serverPacksRegex = "^(?:\\./)?server-packs$".toRegex()
+    private val trueFalseRegex = "^(true|false)$".toRegex()
+    private val alphaBetaRegex = "^(.*alpha.*|.*beta.*)$".toRegex()
+    private val serverPacksRegex = "^(?:\\./)?server-packs$".toRegex()
     val i18n4kConfig = I18n4kConfigDefault()
 
     /**
@@ -977,7 +968,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * * key: `de.griefed.serverpackcreator.script.java` followed by the number representing the Java version
      * * value: Valid path to a Java installation corresponding to the number used in the key
      */
-    @Suppress("MemberVisibilityCanBePrivate")
     var javaPaths = HashMap<String, String>(256)
         get() {
             val paths = HashMap<String, String>(256)
@@ -1406,7 +1396,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      *
      * When setting this to a different URL, you may leave out the `jdbc:postgresql://`-part, it will be prefixed automatically.
      */
-    @Suppress("MemberVisibilityCanBePrivate")
     var jdbcDatabaseUrl: String = "jdbc:postgresql://localhost:5432/serverpackcreator"
         get() {
             var dbPath =
@@ -1636,7 +1625,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Base-directory for Tomcat, used by the webservice-side of ServerPackCreator.
      */
-    @Suppress("MemberVisibilityCanBePrivate")
     var tomcatBaseDirectory: File = homeDirectory
         get() {
             val prop = internalProps.getProperty(pTomcatBaseDirectory, homeDirectory.absolutePath)
@@ -1705,7 +1693,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Logs-directory for Tomcat, used by the webservice-side of ServerPackCreator.
      */
-    @Suppress("MemberVisibilityCanBePrivate")
     var tomcatLogsDirectory: File = logsDirectory
         get() {
             val default = logsDirectory.absolutePath
@@ -2192,7 +2179,11 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         for ((key, value) in tempProps) {
             log.warn("Overriding:")
             log.warn("  $key")
-            log.warn("  $value")
+            if (key.toString().contains("(username|password)")) {
+                log.warn("  ************************************")
+            } else {
+                log.warn("  $value")
+            }
         }
         internalProps.putAll(tempProps)
     }
@@ -2487,7 +2478,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @param propertiesFile The file to store the properties to.
      * @author Griefed
      */
-    @Suppress("MemberVisibilityCanBePrivate")
     fun saveProperties(propertiesFile: File) {
         cleanupInternalProps()
         val toSave = TreeSet<File>()
@@ -2662,7 +2652,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @return `true` if the fallback-property was updated.
      * @author Griefed
      */
-    @Suppress("MemberVisibilityCanBePrivate")
     fun updateFallback(): Boolean {
         var properties: Properties? = null
         try {
@@ -2787,8 +2776,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         propertyFiles.clear()
     }
 
-    @Suppress("MemberVisibilityCanBePrivate")
-    fun printSettings() {
+    private fun printSettings() {
         log.info("============================== PROPERTIES ==============================")
         log.info("Set Aikars flags to:   $aikarsFlags")
         log.info("Set database path to:  $jdbcDatabaseUrl")

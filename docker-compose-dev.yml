@@ -39,6 +39,7 @@ services:
       - SPC_SERVERPACK_AUTODISCOVERY_FILTER=START
       - SPC_SERVERPACK_ZIP_EXCLUDE=minecraft_server.MINECRAFT_VERSION.jar,server.jar,libraries/net/minecraft/server/MINECRAFT_VERSION/server-MINECRAFT_VERSION.jar
       - SPC_SERVERPACK_ZIP_EXCLUDE_ENABLED=true
+      - SPC_LOG_LEVEL=DEBUG
     ports:
       - "8080:8080"
     volumes:

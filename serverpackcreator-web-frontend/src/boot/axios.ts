@@ -17,37 +17,30 @@ const baseUrl = '/api/v2/';
 
 const versions = axios.create({
   baseURL: baseUrl + 'versions',
-  method: 'get',
-  timeout: 5000
+  method: 'get'
 });
 const settings = axios.create({
   baseURL: baseUrl + 'settings/',
-  method: 'get',
-  timeout: 5000
+  method: 'get'
 });
 const events = axios.create({
   baseURL: baseUrl + 'events/',
-  method: 'get',
-  timeout: 5000
+  method: 'get'
 });
 const serverpacks = axios.create({
   baseURL: baseUrl + 'serverpacks/',
-  method: 'get',
-  timeout: 5000
+  method: 'get'
 });
 const modpacks = axios.create({
-  baseURL: baseUrl + 'modpacks/',
-  timeout: 5000
+  baseURL: baseUrl + 'modpacks/'
 });
 const runConfigs = axios.create({
   baseURL: baseUrl + 'runconfigs/',
-  method: 'get',
-  timeout: 5000
+  method: 'get'
 })
 const stats = axios.create({
   baseURL: baseUrl + '/stats',
-  method: 'get',
-  timeout: 5000
+  method: 'get'
 })
 
 export default boot(({ app }) => {

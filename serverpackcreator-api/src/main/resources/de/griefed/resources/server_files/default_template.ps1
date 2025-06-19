@@ -313,6 +313,40 @@ Function global:RefreshServerJar
 #>
 }
 
+Function global:CleanServerFiles
+{
+    $FilesToRemove = @(
+        "libraries"
+        "run.sh"
+        "run.bat"
+        "*installer.jar"
+        "*installer.jar.log"
+        "server.jar"
+        ".mixin.out"
+        "ldlib"
+        "local"
+        "fabric-server-launcher.jar"
+        "fabric-server-launch.jar"
+        ".fabric-installer"
+        "fabric-installer.jar"
+        "legacyfabric-installer.jar"
+        ".fabric"
+        "versions"
+    )
+    $ErrorActionPreference = "SilentlyContinue";
+    ForEach ($FileToRemove in $FilesToRemove) {
+        Remove-Item "${FileToRemove}" -Recurse -Verbose -ErrorAction SilentlyContinue
+    }
+    $ErrorActionPreference = "Continue";
+
+<#
+    .SYNOPSIS
+
+    Clean up files created by installers or modloader servers, but leave server pack files untouched.
+    Allows changing and re-installing the modloader, Minecraft and modloader versions.
+#>
+}
+
 Function global:SetupForge
 {
     ""
@@ -689,6 +723,33 @@ if (( ${Bit} | Select-String "32-Bit").Length -gt 0)
 {
     Write-Host "WARNING! 32-Bit Java detected! It is highly recommended to use a 64-Bit version of Java!"
 }
+
+$ReInstall = $args
+$PreviousRunFile = -join ("${BaseDir}", "\.previousrun");
+
+if ($ReInstall -eq '--cleanup')
+{
+    Write-Host "Running cleanup..."
+    CleanServerFiles
+}
+elseif (Test-Path -Path $PreviousRunFile -PathType Leaf)
+{
+    $PreviousRunValues = Get-Content -raw -LiteralPath $PreviousRunFile | ConvertFrom-StringData
+    $PreviousMinecraftVersion = $PreviousRunValues['$PREVIOUS_MINECRAFT_VERSION']
+    $PreviousModLoader = $PreviousRunValues['$PREVIOUS_MODLOADER']
+    $PreviousModLoaderVersion = $PreviousRunValues['$PREVIOUS_MODLOADER_VERSION']
+    if (!("${PreviousMinecraftVersion}" -eq "${MinecraftVersion}") -or
+        !("${PreviousModLoader}" -eq "${ModLoader}") -or
+        !("${PreviousModLoaderVersion}" -eq "${ModLoaderVersion}"))
+    {
+        Write-Host "Minecraft version, modloader or modloader version have changed. Cleaning up..."
+        CleanServerFiles
+    }
+}
+
+"PREVIOUS_MINECRAFT_VERSION=${MinecraftVersion}`n" +
+"PREVIOUS_MODLOADER=${ModLoader}`n" +
+"PREVIOUS_MODLOADER_VERSION=${ModLoaderVersion}" | Out-File $PreviousRunFile -encoding utf8
 
 switch (${ModLoader})
 {

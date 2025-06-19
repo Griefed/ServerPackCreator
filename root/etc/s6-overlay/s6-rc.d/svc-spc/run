@@ -1,6 +1,8 @@
 #!/usr/bin/with-contenv bash
 
 exec \
-    s6-notifyoncheck -d -n 300 -w 1000 -c "nc -z localhost 8096" \
-    cd /app/serverpackcreator s6-setuidgid abc java \
-    -jar /app/serverpackcreator/serverpackcreator.jar -web --home "/app/serverpackcreator"
+    s6-notifyoncheck -d -n 300 -w 1000 -c "nc -z localhost 8080"    \
+    cd /app/serverpackcreator s6-setuidgid abc java -jar            \
+        -Djava.io.tmpdir="/app/serverpackcreator/temp"              \
+        /app/serverpackcreator/serverpackcreator.jar                \
+            -web --home "/app/serverpackcreator"

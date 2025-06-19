@@ -166,6 +166,37 @@ refreshServerJar() {
   downloadIfNotExist "server.jar" "server.jar" "${SERVERSTARTERJAR_DOWNLOAD_URL}" >/dev/null
 }
 
+# cleanServerFiles
+# Clean up files created by installers or modloader servers, but leave server pack files untouched.
+# Allows changing and re-installing the modloader, Minecraft and modloader versions.
+cleanServerFiles() {
+  FILES_TO_REMOVE=(
+    "libraries"
+    "run.sh"
+    "run.bat"
+    "*installer.jar"
+    "*installer.jar.log"
+    "server.jar"
+    ".mixin.out"
+    "ldlib"
+    "local"
+    "fabric-server-launcher.jar"
+    "fabric-server-launch.jar"
+    ".fabric-installer"
+    "fabric-installer.jar"
+    "legacyfabric-installer.jar"
+    ".fabric"
+    "versions"
+  )
+
+  for FILE_TO_REMOVE in "${FILES_TO_REMOVE[@]}"
+  do
+    rm -r -v \
+      "$FILE_TO_REMOVE" 2> /dev/null \
+      && echo "Deleted $FILE_TO_REMOVE"
+  done
+}
+
 # setupForge
 # Download and install a Forge server for $MODLOADER_VERSION. For Minecraft 1.17 and newer the ServerStarterJar from the
 # NeoForge-group is used. This has the benefit of making this server pack compatible with most hosting-companies.
@@ -465,6 +496,23 @@ fi
 # Check and warn the user if a 32bit Java-installation is used. Realistically, this should happen less and less, but
 # it does happen from time to time. Best to warn people about it.
 "$JAVA" "-version" 2>&1 | grep -i "32-Bit" && echo "WARNING! 32-Bit Java detected! It is highly recommended to use a 64-Bit version of Java!"
+
+if [[ "$1" == "--cleanup" ]]; then
+  echo "Running cleanup..."
+  cleanServerFiles
+elif [[ -f "./.previousrun" ]]; then
+  source "./.previousrun"
+  if [[ "$PREVIOUS_MINECRAFT_VERSION" != "$MINECRAFT_VERSION" || \
+        "$PREVIOUS_MODLOADER" != "$MODLOADER" || \
+        "$PREVIOUS_MODLOADER_VERSION" != "$MODLOADER_VERSION" ]]; then
+    echo "Minecraft version, modloader or modloader version have changed. Cleaning up..."
+    cleanServerFiles
+  fi
+fi
+
+echo "PREVIOUS_MINECRAFT_VERSION=${MINECRAFT_VERSION}" >"./.previousrun"
+echo "PREVIOUS_MODLOADER=${MODLOADER}" >>"./.previousrun"
+echo "PREVIOUS_MODLOADER_VERSION=${MODLOADER_VERSION}" >>"./.previousrun"
 
 case ${MODLOADER} in
   "Forge")

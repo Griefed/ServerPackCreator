@@ -67,6 +67,13 @@ installJabba() {
   [ -s "$JABBA_HOME/jabba.sh" ] && source "$JABBA_HOME/jabba.sh"
 }
 
+if [[ ! -s "variables.txt" ]]; then
+  echo "ERROR! variables.txt not present. Without it the server can not be installed, configured or started."
+  exit 1
+fi
+
+source "./variables.txt"
+
 # if ldd is not available, we may be on MacOS
 if commandAvailable ldd ; then
   GBLIC_VERSION=$(ldd --version | awk '/ldd/{print $NF}')
@@ -78,16 +85,13 @@ if commandAvailable ldd ; then
     echo "Jabba only supports systems with glibc 2.32 & 2.34 onward. You have $GBLIC_VERSION. Automated Java installation can not proceed."
     echo "DO NOT ATTEMPT TO UPDATE OR UPGRADE YOUR INSTALLED VERSION OF GLIBC! DOING SO MAY CORRUPT YOUR ENTIRE SYSTEM!"
     echo "Instead, consider upgrading to a newer version of your OS. Example: In case of Ubuntu 20 LTS, consider upgrading to 22 LTS or 24 LTS."
+    echo ""
+    echo "If that is not an option, you will have to install the required Java version on your system manually, the old fashioned way."
+    echo "Your variables.txt says you require: ${JDK_VENDOR}@${RECOMMENDED_JAVA_VERSION}"
+    echo "When you installed said Java version, 'SKIP_JAVA_CHECK=true' in the variables.txt and run the start-script again."
     exit 1
   fi
 fi
-
-if [[ ! -s "variables.txt" ]]; then
-  echo "ERROR! variables.txt not present. Without it the server can not be installed, configured or started."
-  exit 1
-fi
-
-source "./variables.txt"
 
 export JABBA_VERSION=${JABBA_INSTALL_VERSION}
 

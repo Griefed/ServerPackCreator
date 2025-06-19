@@ -46,30 +46,22 @@ import javax.swing.JPanel
  * which extension specific configurations are provided to this panel, and how they are stored in a given serverpackcreator.conf.
  * @author Griefed
  */
-@Suppress("unused")
+@Suppress("unused", "MemberVisibilityCanBePrivate")
 abstract class ExtensionConfigPanel protected constructor(
     protected val versionMeta: VersionMeta,
     protected val apiProperties: ApiProperties,
     protected val utilities: Utilities,
-    @Suppress("MemberVisibilityCanBePrivate")
     protected val serverPackConfigTab: ServerPackConfigTab,
-    @Suppress("MemberVisibilityCanBePrivate")
     protected var pluginConfig: Optional<CommentedConfig>,
-    @Suppress("MemberVisibilityCanBePrivate")
     val extensionName: String,
     val pluginID: String
 ) : JPanel() {
-    @Suppress("MemberVisibilityCanBePrivate")
     protected val log by lazy { cachedLoggerOf(this.javaClass) }
-
-    @Suppress("MemberVisibilityCanBePrivate")
     protected val pluginsLog: Logger = LogManager.getLogger("AddonsLogger")
-
-    @Suppress("MemberVisibilityCanBePrivate")
     val serverPackExtensionConfig: ArrayList<CommentedConfig> = ArrayList<CommentedConfig>(100)
 
     /**
-     * Retrieve this extensions server pack specific configuration. When no configuration with configs
+     * Retrieve this extensions' server pack specific configuration. When no configuration with configs
      * for this extension has been loaded yet, the returned list is empty. Fill it with life!
      *
      * @return Config list to be used in subsequent server pack generation runs, by various other
