@@ -1,3 +1,31 @@
+## [7.3.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.2.8...7.3.0) (2025-06-19)
+
+### :scissors: Refactor
+
+* Clear up suppressions, obfuscate sensitive data ([1f7c9e1](https://git.griefed.de/Griefed/ServerPackCreator/commit/1f7c9e10c0b696c6bbe35831156272cbe3451a2a))
+* Set java io tmp dir ([cd3ec44](https://git.griefed.de/Griefed/ServerPackCreator/commit/cd3ec44d8ff594b9f81adbf5323c65046f3eda9e))
+
+### 💎 Improvements
+
+* Allow configuring of log-level in container ([fb44181](https://git.griefed.de/Griefed/ServerPackCreator/commit/fb441816d17e9e822001609120b04ad93cf88e3a))
+
+### 📔 Docs
+
+* Add bit about manually installing Java if Jabba is not supported ([79d1309](https://git.griefed.de/Griefed/ServerPackCreator/commit/79d13095c7c2b26d9c637d75bc74950a949fc6ae))
+* fix doc jars contents ([0a5c926](https://git.griefed.de/Griefed/ServerPackCreator/commit/0a5c9262a4aa28da787e617d3d74638793055472))
+
+### 🔩 Dependencies
+
+* Update baseimage ([4d51f3d](https://git.griefed.de/Griefed/ServerPackCreator/commit/4d51f3d533a3829365c38d3dec5e7925edc51f69))
+
+### 🚀 Features
+
+* **Start Scripts:** ReInstall server when Minecraft version, Modloader or Modloader Version change. Force using `--cleanup`-argument ([478a21b](https://git.griefed.de/Griefed/ServerPackCreator/commit/478a21ba7230091a9a0585ca08a947eed36be29e))
+
+### 🛠 Fixes
+
+* Allow uploading bigger files by removing the fixed timeout at 5000ms ([10ec545](https://git.griefed.de/Griefed/ServerPackCreator/commit/10ec54592ea00adead819fc2a58d7b64ddc4d6f2))
+
 ## [7.2.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.2.7...7.2.8) (2025-06-08)
 
 ### :scissors: Refactor
