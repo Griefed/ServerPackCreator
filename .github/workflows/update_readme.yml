@@ -25,7 +25,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           update-files: 'README.md'
-          update-places: '<!-- contributors --><!-- contributors end-->'
+          update-places: '<!-- contributors -->/<!-- contributors end -->'
           repo: 'Griefed/ServerPackCreator'
           show-total: false
           style: 'base'
