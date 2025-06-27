@@ -36,7 +36,6 @@ jobs:
           apt-get update && apt-get install git -y && \
           git config user.name ${{ secrets.GIT_USER }} && \
           git config user.email ${{ secrets.GIT_MAIL }} && \
-          git checkout -b main && \
           pwd && ls -ahl && \
           git add README.md && \
           wait && \
