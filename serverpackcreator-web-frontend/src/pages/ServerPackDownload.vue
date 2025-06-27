@@ -108,7 +108,7 @@
   </q-page>
 </template>
 
-<script lang="ts">
+<script >
 import { defineComponent, ref } from 'vue';
 import { modpacks, serverpacks } from 'boot/axios';
 import { date } from 'quasar';
@@ -152,11 +152,11 @@ export default defineComponent({
     };
   },
   methods: {
-    current(): string {
+    current() {
       const route = this.$router.resolve({});
       return new URL(route.href, window.location.origin).href;
     },
-    copyToClipboard(text: string) {
+    copyToClipboard(text) {
       navigator.clipboard.writeText(text);
       this.$q.notify({
         timeout: 5000,
@@ -177,7 +177,7 @@ export default defineComponent({
         this.downloadWithAxios(this.$route.params.id)
       }
     },
-    downloadWithAxios(id: string) {
+    downloadWithAxios(id) {
       this.loading = true
       serverpacks.get('download/' + id, {
         responseType: 'arraybuffer'

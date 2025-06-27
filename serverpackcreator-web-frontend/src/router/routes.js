@@ -1,8 +1,7 @@
-import { RouteRecordRaw } from 'vue-router';
 import ModPackDownload from 'pages/ModPackDownload.vue';
 import ServerPackDownload from 'pages/ServerPackDownload.vue';
 
-const routes: RouteRecordRaw[] = [
+const routes = [
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
@@ -23,6 +22,6 @@ const routes: RouteRecordRaw[] = [
     path: '/:catchAll(.*)*',
     component: () => import('pages/ErrorPage.vue'),
   },
-];
+]
 
-export default routes;
+export default routes

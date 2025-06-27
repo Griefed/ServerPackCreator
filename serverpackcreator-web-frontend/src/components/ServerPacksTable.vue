@@ -114,7 +114,7 @@
   </q-table>
 </template>
 
-<script lang="ts">
+<script >
 import {defineComponent, ref} from 'vue';
 import {modpacks, serverpacks} from 'boot/axios';
 import {date} from 'quasar';
@@ -134,7 +134,7 @@ const columns = [
     field: 'runConfiguration',
     sortable: true,
     align: 'left',
-    format: (val: { id: number; }) => val.id
+    format: (val) => val.id
   },
   {
     name: 'dateCreated',
@@ -142,7 +142,7 @@ const columns = [
     field: 'dateCreated',
     sortable: true,
     align: 'left',
-    format: (val: number) => date.formatDate(val, 'YYYY-MM-DD : HH:mm')
+    format: (val) => date.formatDate(val, 'YYYY-MM-DD : HH:mm')
   }
 ];
 
@@ -184,7 +184,7 @@ export default defineComponent({
     };
   },
   methods: {
-    voteServerPack(id: number, decision: string) {
+    voteServerPack(id, decision) {
       serverpacks.get('vote/' + id + '&' + decision).then(() => {
         this.$q.notify({
           timeout: 5000,

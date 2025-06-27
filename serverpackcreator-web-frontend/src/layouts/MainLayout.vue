@@ -36,7 +36,7 @@
   </q-layout>
 </template>
 
-<script lang="ts">
+<script >
 import { defineComponent, ref } from 'vue';
 import DrawerLink from 'components/DrawerLink.vue';
 
@@ -87,7 +87,7 @@ export default defineComponent({
       linksList: linksList,
       drawer,
       miniState,
-      drawerClick(e: Event) {
+      drawerClick(e) {
         miniState.value = !miniState.value;
         e.stopPropagation();
       }
