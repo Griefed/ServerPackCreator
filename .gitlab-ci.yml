@@ -3,7 +3,7 @@ stages:
   - Documentation
   - Release
   - Build Release
-#  - Other
+  - Other
 
 variables:
   project_name: "$CI_PROJECT_NAME"
@@ -387,6 +387,7 @@ pages:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
 Update README:on-schedule:
+  stage: Other
   only:
     - schedules
   before_script:
@@ -407,8 +408,6 @@ Update README:on-schedule:
         -s CI_SERVER_HOST=$CI_SERVER_HOST \
         -s CI_PROJECT_TITLE=$CI_PROJECT_TITLE \
         -W '.github/workflows/update_readme.yml'
-  rules:
-    - if: '$CI_SERVER_HOST == "git.griefed.de"'
 
 release_job:
   stage: Release
