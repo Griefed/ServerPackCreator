@@ -14,7 +14,7 @@ services:
     container_name: serverpackcreator
     build:
       context: ..
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
     restart: unless-stopped
     depends_on:
       - serverpackcreatordb
