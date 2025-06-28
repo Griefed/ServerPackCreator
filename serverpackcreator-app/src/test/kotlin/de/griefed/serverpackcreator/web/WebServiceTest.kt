@@ -1,6 +1,7 @@
-package de.griefed.serverpackcreator.app.web
+package de.griefed.serverpackcreator.web
 
 import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.app.web.WebService
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 import java.io.File

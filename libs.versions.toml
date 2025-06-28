@@ -10,7 +10,7 @@ kotlinAllOpen = "2.1.20"
 kotlinJpa = "2.1.20"
 
 # https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-gradle-plugin
-springGradle = "3.3.4"
+springGradle = "3.5.3"
 
 # https://mvnrepository.com/artifact/io.spring.gradle/dependency-management-plugin
 springDependencyMan = "1.1.7"
