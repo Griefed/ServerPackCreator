@@ -86,7 +86,7 @@ Docker Test:
     - docker buildx build --push --no-cache --platform linux/amd64
       --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_SHORT_SHA"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_SHORT_SHA"
-      --file Dockerfile .
+      --file docker/Dockerfile .
   retry: 1
   rules:
     - if: '$CI_SERVER_HOST == "git.griefed.de"' # Remove once GitLab no longer throws javax.net.ssl.SSLHandshakeException: Remote host terminated the handshake
@@ -250,7 +250,7 @@ Build Docker Release:
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:latest"
       --build-arg VERSION=$CI_COMMIT_TAG
-      --file Dockerfile .
+      --file docker/Dockerfile .
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
@@ -270,7 +270,7 @@ Build Docker PreRelease:
       --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
       --build-arg VERSION=$CI_COMMIT_TAG
-      --file Dockerfile .
+      --file docker/Dockerfile .
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
@@ -322,7 +322,7 @@ Writerside Docker:
       --tag "ghcr.io/$DOCKERHUB_USER/serverpackcreator-help:$CI_COMMIT_SHORT_SHA"
       --tag "index.docker.io/$DOCKERHUB_USER/serverpackcreator-help:$CI_COMMIT_SHORT_SHA"
       --build-arg VERSION=$CI_COMMIT_SHORT_SHA
-      --file Dockerfile.help .
+      --file docker/Dockerfile.help .
   rules:
     - if: '$CI_COMMIT_TAG !~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG !~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
@@ -345,7 +345,7 @@ Writerside Docker Latest:
       --tag "index.docker.io/$DOCKERHUB_USER/serverpackcreator-help:$CI_COMMIT_TAG"
       --tag "index.docker.io/$DOCKERHUB_USER/serverpackcreator-help:latest"
       --build-arg VERSION=$CI_COMMIT_TAG
-      --file Dockerfile.help .
+      --file docker/Dockerfile.help .
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
@@ -365,9 +365,28 @@ Writerside Docker Prerelease:
       --tag "ghcr.io/$DOCKERHUB_USER/serverpackcreator-help:$CI_COMMIT_TAG"
       --tag "index.docker.io/$DOCKERHUB_USER/serverpackcreator-help:$CI_COMMIT_TAG"
       --build-arg VERSION=$CI_COMMIT_TAG
-      --file Dockerfile.help .
+      --file docker/Dockerfile.help .
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+
+Qodana:
+  stage: Tests
+  image:
+    name: jetbrains/qodana-jvm-community:2025.1
+    entrypoint: [""]
+  cache:
+    - key: qodana-2025.1-$CI_DEFAULT_BRANCH-$CI_COMMIT_REF_SLUG
+      fallback_keys:
+        - qodana-2025.1-$CI_DEFAULT_BRANCH-
+        - qodana-2025.1-
+      paths:
+        - .qodana/cache
+  script:
+    - qodana --save-report --results-dir=$CI_PROJECT_DIR/.qodana/results --cache-dir=$CI_PROJECT_DIR/.qodana/cache
+  artifacts:
+    paths:
+      - .qodana/results/
+    expose_as: 'Qodana report'
 
 pages:
   stage: Documentation
