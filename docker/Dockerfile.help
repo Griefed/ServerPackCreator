@@ -1,0 +1,22 @@
+FROM ghcr.io/linuxserver/nginx:1.26.3
+
+ARG VERSION=dev
+ENV ARTIFACT=webHelpSPCH2-all.zip
+
+LABEL maintainer="Griefed <griefed@griefed.de>"
+
+COPY public/$ARTIFACT /tmp/$ARTIFACT
+
+RUN \
+  apk --update add unzip && \
+  rm -rf \
+    /config/www/* && \
+  unzip -d /config/www/ /tmp/$ARTIFACT && \
+  echo "**** Cleanup ****" && \
+  apk del unzip && \
+  rm -rf \
+    /var/cache/apk/* \
+    /root/.cache \
+    /tmp/*
+
+EXPOSE 80 443

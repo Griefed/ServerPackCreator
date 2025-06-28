@@ -1,0 +1,48 @@
+version: '3'
+services:
+  serverpackcreatordb:
+    container_name: serverpackcreatordb
+    image: postgres:16.1
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=serverpackcreator
+      - POSTGRES_USER=<YOUR_USERNAME>
+      - POSTGRES_PASSWORD=<YOUR_PASSWORD>
+    volumes:
+      - database:/var/lib/postgresql/data
+  serverpackcreator:
+    container_name: serverpackcreator
+    image: griefed/serverpackcreator:latest
+    restart: unless-stopped
+    depends_on:
+      - serverpackcreatordb
+    environment:
+      - TZ=Europe/Berlin # Your timezone
+      - PUID=1000 # Your user ID
+      - PGID=1000 # Your group ID
+      - SPC_SCHEDULE_DATABASE_CLEANUP=0 0 0 * * * #CRON expression
+      - SPC_SCHEDULE_FILES_CLEANUP=0 0 0 * * * #CRON expression
+      - SPC_SCHEDULE_VERSIONS_REFRESH=0 0 0 * * * #CRON expression
+      - SPC_DATABASE_USERNAME=<YOUR_USERNAME>
+      - SPC_DATABASE_PASSWORD=<YOUR_PASSWORD>
+      - SPC_DATABASE_HOST=serverpackcreatordb
+      - SPC_DATABASE_PORT=5432
+      - SPC_DATABASE_DB=serverpackcreator
+      - SPC_MAX_UPLOAD_SIZE=1000 #In MB
+      - SPC_CONFIGURATION_AIKAR=-Xms4G -Xmx4G -XX\:+UseG1GC -XX\:+ParallelRefProcEnabled -XX\:MaxGCPauseMillis\=200 -XX\:+UnlockExperimentalVMOptions -XX\:+DisableExplicitGC -XX\:+AlwaysPreTouch -XX\:G1NewSizePercent\=30 -XX\:G1MaxNewSizePercent\=40 -XX\:G1HeapRegionSize\=8M -XX\:G1ReservePercent\=20 -XX\:G1HeapWastePercent\=5 -XX\:G1MixedGCCountTarget\=4 -XX\:InitiatingHeapOccupancyPercent\=15 -XX\:G1MixedGCLiveThresholdPercent\=90 -XX\:G1RSetUpdatingPauseTimePercent\=5 -XX\:SurvivorRatio\=32 -XX\:+PerfDisableSharedMem -XX\:MaxTenuringThreshold\=1 -Dusing.aikars.flags\=https\://mcflags.emc.gs -Daikars.new.flags\=true #Keep an eye out for proper escaping!
+      - SPC_CONFIGURATION_DIRECTORIES_MUSTINCLUDE=addonpacks,blueprints,config,configs,customnpcs,defaultconfigs,global_data_packs,global_packs,kubejs,maps,mods,openloader,scripts,shrines-saves,structures,structurize,worldshape,Zoestria
+      - SPC_CONFIGURATION_DIRECTORIES_SHOULDEXCLUDE=animation,asm,cache,changelogs,craftpresence,crash-reports,downloads,icons,libraries,local,logs,overrides,packmenu,profileImage,profileImage,resourcepacks,screenshots,server_pack,shaderpacks,simple-rpc,tv-cache
+      - SPC_CONFIGURATION_FALLBACK_UPDATEURL=https\://raw.githubusercontent.com/Griefed/ServerPackCreator/main/serverpackcreator-api/src/main/resources/serverpackcreator.properties
+      - SPC_SERVERPACK_AUTODISCOVERY_ENABLED=true
+      - SPC_SERVERPACK_AUTODISCOVERY_FILTER=START
+      - SPC_SERVERPACK_ZIP_EXCLUDE=minecraft_server.MINECRAFT_VERSION.jar,server.jar,libraries/net/minecraft/server/MINECRAFT_VERSION/server-MINECRAFT_VERSION.jar
+      - SPC_SERVERPACK_ZIP_EXCLUDE_ENABLED=true
+      - SPC_LOG_LEVEL=INFO
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./modpacks:/app/serverpackcreator/modpacks
+      - ./server-packs:/app/serverpackcreator/server-packs
+      - ./logs:/app/serverpackcreator/logs
+volumes:
+  database:
