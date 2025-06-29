@@ -95,6 +95,7 @@ Qodana:
         - .qodana/cache
   script:
     - qodana --save-report --results-dir=$CI_PROJECT_DIR/.qodana --report-dir=$CI_PROJECT_DIR/.qodana/report --cache-dir=$CI_PROJECT_DIR/.qodana/cache
+    - echo ${CI_JOB_ID} > ./qodana/report/.qodana_id
   artifacts:
     paths:
       - .qodana/report
@@ -106,7 +107,7 @@ Qodana Post:
   stage: Other
   needs:
     - job: Qodana
-      artifacts: false
+      artifacts: true
       optional: false
   before_script:
     - curl -L --output ./discord.sh https://raw.githubusercontent.com/ChaoticWeg/discord.sh/master/discord.sh
@@ -116,12 +117,11 @@ Qodana Post:
       --webhook-url="$WEBHOOK_URL"
       --username "$CI_PROJECT_TITLE"
       --title "New Qodana Report Pipeline ${CI_PIPELINE_ID}"
-      --description "A new Qodana report is available at https://griefed.pages.griefed.de/-/ServerPackCreator/-/jobs/${CI_JOB_ID}/artifacts/.qodana/report/index.html"
+      --description "A new Qodana report is available at https://griefed.pages.griefed.de/-/ServerPackCreator/-/jobs/$(<qodana/report/.qodana_id)/artifacts/.qodana/report/index.html"
       --author "GitGriefed CI/CD"
       --color "0xC0FFEE"
-      --url "https://griefed.pages.griefed.de/-/ServerPackCreator/-/jobs/${CI_JOB_ID}/artifacts/.qodana/report/index.html"
-      --field "Platform;[${CI_SERVER_HOST}](https://${CI_SERVER_HOST})"
-      --footer "Pipeline [${CI_PIPELINE_ID}](${CI_PIPELINE_URL})"
+      --url "https://griefed.pages.griefed.de/-/ServerPackCreator/-/jobs/$(<qodana/report/.qodana_id)/artifacts/.qodana/report/index.html"
+      --field "Pipeline;[${CI_PIPELINE_ID}](${CI_PIPELINE_URL})"
   rules:
     - if: '$CI_SERVER_HOST == "git.griefed.de"'
 
