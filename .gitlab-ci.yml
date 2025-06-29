@@ -102,6 +102,29 @@ Qodana:
   rules:
     - if: '$CI_SERVER_HOST == "git.griefed.de"'
 
+Qodana Post:
+  stage: Other
+  needs:
+    - job: Qodana
+      artifacts: false
+      optional: false
+  before_script:
+    - curl -L --output ./discord.sh https://raw.githubusercontent.com/ChaoticWeg/discord.sh/master/discord.sh
+    - chmod a+x ./discord.sh
+  script:
+    - ./discord.sh
+      --webhook-url="$WEBHOOK_URL"
+      --username "$CI_PROJECT_TITLE"
+      --title "New Qodana Report Pipeline ${CI_PIPELINE_ID}"
+      --description "A new Qodana report is available at https://griefed.pages.griefed.de/-/ServerPackCreator/-/jobs/${CI_JOB_ID}/artifacts/.qodana/report/index.html"
+      --author "GitGriefed CI/CD"
+      --color "0xC0FFEE"
+      --url "https://griefed.pages.griefed.de/-/ServerPackCreator/-/jobs/${CI_JOB_ID}/artifacts/.qodana/report/index.html"
+      --field "Platform;[${CI_SERVER_HOST}](https://${CI_SERVER_HOST})"
+      --footer "Pipeline [${CI_PIPELINE_ID}](${CI_PIPELINE_URL})"
+  rules:
+    - if: '$CI_SERVER_HOST == "git.griefed.de"'
+
 Docker Test:
   stage: Tests
   before_script:
