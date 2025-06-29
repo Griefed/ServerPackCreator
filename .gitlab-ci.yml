@@ -65,15 +65,39 @@ Build Test:
     name: "$CI_COMMIT_BRANCH-$CI_COMMIT_SHORT_SHA-$CI_JOB_NAME"
     expose_as: "Gradle-Test-Artifacts"
     paths:
-      - serverpackcreator-api/build
-      - serverpackcreator-app/build
-      - serverpackcreator-web-frontend/dist
-      - serverpackcreator-plugin-example/build
+      - "**/build"
+      - "**/dist"
+      - build
     expire_in: 1 week
     reports:
       junit:
         - serverpackcreator-api/build/test-results/test/TEST-*.xml
         - serverpackcreator-app/build/test-results/test/TEST-*.xml
+
+Qodana:
+  stage: Tests
+  needs:
+    - job: Build Test
+      artifacts: true
+      optional: false
+  image:
+    name: jetbrains/qodana-jvm-community:2025.1
+    entrypoint: [""]
+  cache:
+    - key: qodana-2025.1-$CI_DEFAULT_BRANCH-$CI_COMMIT_REF_SLUG
+      fallback_keys:
+        - qodana-2025.1-$CI_DEFAULT_BRANCH-
+        - qodana-2025.1-
+      paths:
+        - .qodana/cache
+  script:
+    - qodana --save-report --results-dir=$CI_PROJECT_DIR/.qodana --report-dir=$CI_PROJECT_DIR/.qodana/report --cache-dir=$CI_PROJECT_DIR/.qodana/cache
+  artifacts:
+    paths:
+      - .qodana/report
+    expose_as: 'Qodana report'
+  rules:
+    - if: '$CI_SERVER_HOST == "git.griefed.de"'
 
 Docker Test:
   stage: Tests
@@ -368,25 +392,6 @@ Writerside Docker Prerelease:
       --file docker/Dockerfile.help .
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-
-Qodana:
-  stage: Tests
-  image:
-    name: jetbrains/qodana-jvm-community:2025.1
-    entrypoint: [""]
-  cache:
-    - key: qodana-2025.1-$CI_DEFAULT_BRANCH-$CI_COMMIT_REF_SLUG
-      fallback_keys:
-        - qodana-2025.1-$CI_DEFAULT_BRANCH-
-        - qodana-2025.1-
-      paths:
-        - .qodana/cache
-  script:
-    - qodana --save-report --results-dir=$CI_PROJECT_DIR/.qodana --report-dir=$CI_PROJECT_DIR/.qodana/report --cache-dir=$CI_PROJECT_DIR/.qodana/cache
-  artifacts:
-    paths:
-      - .qodana/report
-    expose_as: 'Qodana report'
 
 pages:
   stage: Documentation
