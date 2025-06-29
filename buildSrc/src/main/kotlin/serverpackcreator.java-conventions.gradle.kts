@@ -43,11 +43,6 @@ tasks.test {
     }
 }
 
-dependencies {
-    testImplementation("org.junit.jupiter:junit-jupiter-api")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-}
-
 tasks.compileJava {
     // See: https://docs.oracle.com/en/java/javase/12/tools/javac.html
     @Suppress("SpellCheckingInspection")
