@@ -65,9 +65,12 @@ Build Test:
     name: "$CI_COMMIT_BRANCH-$CI_COMMIT_SHORT_SHA-$CI_JOB_NAME"
     expose_as: "Gradle-Test-Artifacts"
     paths:
-      - "**/build"
-      - "**/dist"
       - build
+      - buildSrc/build
+      - serverpackcreator-api/build
+      - serverpackcreator-app/build
+      - serverpackcreator-plugin-example/build
+      - serverpackcreator-web-frontend/dist
     expire_in: 1 week
     reports:
       junit:
