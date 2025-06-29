@@ -382,10 +382,10 @@ Qodana:
       paths:
         - .qodana/cache
   script:
-    - qodana --save-report --results-dir=$CI_PROJECT_DIR/.qodana/results --cache-dir=$CI_PROJECT_DIR/.qodana/cache
+    - qodana --save-report --results-dir=$CI_PROJECT_DIR/.qodana --report-dir=$CI_PROJECT_DIR/.qodana/report --cache-dir=$CI_PROJECT_DIR/.qodana/cache
   artifacts:
     paths:
-      - .qodana/results/
+      - .qodana/report
     expose_as: 'Qodana report'
 
 pages:
