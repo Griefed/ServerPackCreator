@@ -43,7 +43,7 @@ dependencies {
     api("com.formdev:flatlaf-extras:3.6")
     api("com.formdev:flatlaf-intellij-themes:3.5.4")
     api("com.formdev:flatlaf-fonts-jetbrains-mono:2.304")
-    api("com.formdev:flatlaf-fonts-inter:4.0")
+    api("com.formdev:flatlaf-fonts-inter:4.1")
     api("com.formdev:flatlaf-fonts-roboto:2.137")
     api("com.formdev:flatlaf-fonts-roboto-mono:3.000")
     api("com.miglayout:miglayout-swing:11.4.2")
