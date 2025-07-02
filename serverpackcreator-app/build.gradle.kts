@@ -39,7 +39,7 @@ dependencies {
     api("commons-io:commons-io:2.18.0")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.10.2")
     api("org.jetbrains.kotlin:kotlin-reflect:2.0.0")
-    api("com.formdev:flatlaf:3.5.1")
+    api("com.formdev:flatlaf:3.6")
     api("com.formdev:flatlaf-extras:3.6")
     api("com.formdev:flatlaf-intellij-themes:3.5.4")
     api("com.formdev:flatlaf-fonts-jetbrains-mono:2.304")
