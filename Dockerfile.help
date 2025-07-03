@@ -1,4 +1,4 @@
-FROM ghcr.io/linuxserver/nginx:1.26.3
+FROM ghcr.io/linuxserver/nginx:1.28.0
 
 ARG VERSION=dev
 ENV ARTIFACT=webHelpSPCH2-all.zip
