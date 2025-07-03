@@ -19,32 +19,29 @@
  */
 package de.griefed.serverpackcreator.app.web.serverpack.customizing
 
-import jakarta.persistence.*
+import org.springframework.data.annotation.PersistenceCreator
+import org.springframework.data.mongodb.core.mapping.DBRef
+import org.springframework.data.mongodb.core.mapping.Document
+import org.springframework.data.mongodb.core.mapping.FieldType
+import org.springframework.data.mongodb.core.mapping.MongoId
 
-@Entity
+@Document
 class RunConfiguration() {
 
-    @Id
-    @GeneratedValue
-    @Column(updatable = false, nullable = false)
-    var id: Int = 0
-
-    @Column
+    @MongoId(FieldType.STRING)
+    var id: String? = null
+        private set
     var minecraftVersion: String = ""
-
-    @Column
     var modloader: String = ""
-
-    @Column
     var modloaderVersion: String = ""
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @DBRef
     var startArgs: MutableList<StartArgument> = mutableListOf()
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @DBRef
     var clientMods: MutableList<ClientMod> = mutableListOf()
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @DBRef
     var whitelistedMods: MutableList<WhitelistedMod> = mutableListOf()
 
     constructor(
@@ -61,6 +58,19 @@ class RunConfiguration() {
         this.startArgs = startArgs
         this.clientMods = clientMods
         this.whitelistedMods = whitelistedMods
+    }
+
+    @PersistenceCreator
+    private constructor(
+        id: String,
+        minecraftVersion: String,
+        modloader: String,
+        modloaderVersion: String,
+        startArgs: MutableList<StartArgument>,
+        clientMods: MutableList<ClientMod>,
+        whitelistedMods: MutableList<WhitelistedMod>
+    ) : this(minecraftVersion,modloader,modloaderVersion,startArgs,clientMods,whitelistedMods) {
+        this.id = id
     }
 
     override fun equals(other: Any?): Boolean {

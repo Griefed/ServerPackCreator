@@ -19,18 +19,21 @@
  */
 package de.griefed.serverpackcreator.app.web.task
 
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.Id
+import org.springframework.data.annotation.PersistenceCreator
+import org.springframework.data.mongodb.core.mapping.Document
+import org.springframework.data.mongodb.core.mapping.FieldType
+import org.springframework.data.mongodb.core.mapping.MongoId
 
-@Entity
-class ErrorEntry(@Column var error: String) {
+@Document
+class ErrorEntry {
 
-    @Id
-    @GeneratedValue
-    @Column(updatable = false, nullable = false)
-    var id: Int = 0
+    @MongoId(FieldType.STRING)
+    var error: String
+
+    @PersistenceCreator
+    constructor(error: String) {
+        this.error = error
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -46,6 +49,6 @@ class ErrorEntry(@Column var error: String) {
     }
 
     override fun toString(): String {
-        return "ErrorEntry(id=$id, error='$error')"
+        return "ErrorEntry(error='$error')"
     }
 }

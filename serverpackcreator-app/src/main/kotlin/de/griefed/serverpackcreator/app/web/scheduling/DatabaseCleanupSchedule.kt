@@ -48,10 +48,10 @@ class DatabaseCleanupSchedule @Autowired constructor(
         val modpackFiles = modPackRoot.listDirectoryEntries().map { it.toFile() }
         for (modpack in modpackRepository.findAll()) {
             if (modpack.status == ModPackStatus.ERROR) {
-                modpackService.deleteModpack(modpack.id)
+                modpackService.deleteModpack(modpack.id!!)
                 log.info("Deleted Modpack: ${modpack.id}-${modpack.name}")
             } else if (modpackFiles.find { modpackFile -> modpackFile.name.contains(modpack.fileID!!.toString(), ignoreCase = true) } == null) {
-                modpackService.deleteModpack(modpack.id)
+                modpackService.deleteModpack(modpack.id!!)
                 log.info("Deleted Modpack: ${modpack.id}-${modpack.name}")
             }
         }

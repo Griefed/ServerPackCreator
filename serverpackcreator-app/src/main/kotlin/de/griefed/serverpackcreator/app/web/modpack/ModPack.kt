@@ -21,57 +21,64 @@ package de.griefed.serverpackcreator.app.web.modpack
 
 import de.griefed.serverpackcreator.api.config.ModpackSource
 import de.griefed.serverpackcreator.app.web.serverpack.ServerPack
-import jakarta.persistence.*
-import org.hibernate.annotations.Cascade
-import org.hibernate.annotations.CascadeType
-import org.hibernate.annotations.CreationTimestamp
-import java.sql.Timestamp
+import org.springframework.data.annotation.PersistenceCreator
+import org.springframework.data.mongodb.core.mapping.DBRef
+import org.springframework.data.mongodb.core.mapping.Document
+import org.springframework.data.mongodb.core.mapping.FieldType
+import org.springframework.data.mongodb.core.mapping.MongoId
+import java.util.Date
 
-@Entity
-class ModPack {
+@Document
+class ModPack() {
 
-    @Id
-    @GeneratedValue
-    @Column(updatable = false, nullable = false)
-    var id : Int = 0
-
-    @Column
+    @MongoId(FieldType.STRING)
+    var id: String? = null
+        private set
     var projectID: String = ""
-
-    @Column
     var versionID: String = ""
-
-    @CreationTimestamp
-    @Column
-    var dateCreated: Timestamp? = null
-
-    @Column
+    var dateCreated: Date = Date(System.currentTimeMillis())
     var name: String = ""
-
-    @Column
     var size: Int = 0
-
-    @Column
     var downloads: Int? = 0
         get() {
             return field ?: 0
         }
-
-    @Column
     var status: ModPackStatus = ModPackStatus.QUEUED
-
-    @Column
     var source: ModpackSource = ModpackSource.ZIP
-
-    @Column
     var fileID: Long? = null
-
-    @Column
     var sha256: String? = null
 
-    @OneToMany(fetch = FetchType.EAGER)
-    @Cascade(value = [CascadeType.ALL])
+    @DBRef
     var serverPacks: MutableList<ServerPack> = mutableListOf()
+
+    @PersistenceCreator
+    private constructor(
+        id: String,
+        projectID: String,
+        versionID: String,
+        dateCreated: Date,
+        name: String,
+        size: Int,
+        downloads: Int?,
+        status: ModPackStatus,
+        source: ModpackSource,
+        fileID: Long?,
+        sha256: String?,
+        serverPacks: MutableList<ServerPack>
+    ) : this() {
+        this.id = id
+        this.projectID = projectID
+        this.versionID = versionID
+        this.dateCreated = dateCreated
+        this.name = name
+        this.size = size
+        this.downloads = downloads
+        this.status = status
+        this.source = source
+        this.fileID = fileID
+        this.sha256 = sha256
+        this.serverPacks = serverPacks
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

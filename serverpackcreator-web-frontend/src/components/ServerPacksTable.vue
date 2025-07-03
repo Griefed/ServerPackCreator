@@ -151,7 +151,7 @@ export default defineComponent({
   components: {RunConfigurationCard},
   props: {
     id: {
-      type: Number,
+      type: String,
       required: true
     }
   },
@@ -205,7 +205,7 @@ export default defineComponent({
       })
     },
     loadData() {
-      modpacks.get(this.$props.id.toString()).then(response => {
+      modpacks.get(this.$props.id).then(response => {
         this.rows = [];
         this.rows = response.data.serverPacks;
         this.visible = false;

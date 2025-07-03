@@ -220,7 +220,7 @@ export default defineComponent({
   },
   mounted() {
     this.showTextLoading();
-    modpacks.get(this.$route.params.id.toString()).then(response => {
+    modpacks.get(this.$route.params.id).then(response => {
       this.dateCreated = response.data.dateCreated;
       this.name = response.data.name.replaceAll(' ', '_');
       this.projectID = response.data.projectID;

@@ -107,7 +107,7 @@ class ModPackService @Autowired constructor(
         return modpackRepository.save(modpack)
     }
 
-    fun getModpack(id: Int): Optional<ModPack> {
+    fun getModpack(id: String): Optional<ModPack> {
         return modpackRepository.findById(id)
     }
 
@@ -119,7 +119,7 @@ class ModPackService @Autowired constructor(
         return modpackRepository.findAll(sizedPage.withSort(sort))
     }
 
-    fun getByServerPack(id: Int) : Optional<ModPack> {
+    fun getByServerPack(id: String) : Optional<ModPack> {
         val serverPack = serverPackRepository.findById(id)
         return if (serverPack.isPresent) {
             getByServerPack(serverPack.get())
@@ -148,7 +148,7 @@ class ModPackService @Autowired constructor(
         return packConfig
     }
 
-    fun deleteModpack(id: Int) {
+    fun deleteModpack(id: String) {
         val modpack = modpackRepository.findById(id)
         if (modpack.isPresent) {
             modpackRepository.deleteById(id)

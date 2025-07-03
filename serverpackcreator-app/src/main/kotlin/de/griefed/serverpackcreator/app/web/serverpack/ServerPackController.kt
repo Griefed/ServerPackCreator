@@ -51,9 +51,9 @@ class ServerPackController @Autowired constructor(
      * @return Gives the requester the requested file as a download, if it was found.
      * @author Griefed
      */
-    @GetMapping(value = ["/download/{id:[0-9]+}"], produces = ["application/zip"])
+    @GetMapping(value = ["/download/{id:[0-9a-zA-Z]+}"], produces = ["application/zip"])
     @ResponseBody
-    fun downloadServerPack(@PathVariable id: Int): ResponseEntity<Resource> {
+    fun downloadServerPack(@PathVariable id: String): ResponseEntity<Resource> {
         val serverPack = serverPackService.getServerPack(id)
         return if (serverPack.isPresent) {
             val archive = serverPackService.getServerPackArchive(serverPack.get().fileID!!)
@@ -87,8 +87,8 @@ class ServerPackController @Autowired constructor(
     @GetMapping(value = ["/download/{modPackId:[0-9]+}&{runConfigurationId:[0-9]+}"], produces = ["application/zip"])
     @ResponseBody
     fun downloadServerPack(
-        @PathVariable modPackId: Int,
-        @PathVariable runConfigurationId: Int
+        @PathVariable modPackId: String,
+        @PathVariable runConfigurationId: String
     ): ResponseEntity<Resource> {
         val modpack = modpackService.getModpack(modPackId)
         if (modpack.isEmpty) {
@@ -103,7 +103,7 @@ class ServerPackController @Autowired constructor(
         if (serverpack == null) {
             return ResponseEntity.notFound().build()
         }
-        return downloadServerPack(serverpack.id)
+        return downloadServerPack(serverpack.id!!)
     }
 
     /**
@@ -134,9 +134,9 @@ class ServerPackController @Autowired constructor(
         )
     }
 
-    @GetMapping("/{id:[0-9]+}", produces = ["application/json"])
+    @GetMapping("/{id:[0-9a-zA-Z]+}", produces = ["application/json"])
     @ResponseBody
-    fun getServerPack(@PathVariable id: Int): ResponseEntity<ServerPack> {
+    fun getServerPack(@PathVariable id: String): ResponseEntity<ServerPack> {
         return if (serverPackService.getServerPack(id).isPresent) {
             ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).body(
                 serverPackService.getServerPack(id).get()
@@ -155,9 +155,9 @@ class ServerPackController @Autowired constructor(
      * @return ResponseEntity OK/BadRequest/NotFound
      * @author Griefed
      */
-    @GetMapping("/vote/{id:[0-9]+}&{vote}")
+    @GetMapping("/vote/{id:[0-9a-zA-Z]+}&{vote}")
     @ResponseBody
-    fun voteForServerPack(@PathVariable("id") id: Int, @PathVariable("vote") vote: String): ResponseEntity<Any> {
+    fun voteForServerPack(@PathVariable("id") id: String, @PathVariable("vote") vote: String): ResponseEntity<Any> {
         return serverPackService.voteForServerPack(id, vote)
     }
 }

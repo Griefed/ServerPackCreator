@@ -20,12 +20,12 @@
 package de.griefed.serverpackcreator.app.web.modpack
 
 import de.griefed.serverpackcreator.app.web.serverpack.ServerPack
-import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
 
 import java.util.*
 
 @Repository
-interface ModPackRepository : JpaRepository<ModPack, Int> {
+interface ModPackRepository : MongoRepository<ModPack, String> {
     fun findByServerPacksContains(serverPack: ServerPack): Optional<ModPack>
 }

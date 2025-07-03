@@ -48,7 +48,7 @@ class ServerPackService @Autowired constructor(
     private val rootLocation: Path = apiProperties.serverPacksDirectory.toPath()
     private val storage: StorageSystem = StorageSystem(rootLocation, messageDigestInstance)
 
-    fun getServerPack(id: Int): Optional<ServerPack> {
+    fun getServerPack(id: String): Optional<ServerPack> {
         return serverPackRepository.findById(id)
     }
 
@@ -59,7 +59,7 @@ class ServerPackService @Autowired constructor(
      * @param id The database id of the server pack.
      * @author Griefed
      */
-    fun updateDownloadStats(id: Int): Optional<ServerPack> {
+    fun updateDownloadStats(id: String): Optional<ServerPack> {
         val request = serverPackRepository.findById(id)
         if (request.isPresent) {
             val pack = request.get()
@@ -92,7 +92,7 @@ class ServerPackService @Autowired constructor(
      * not found if the server pack could not be found.
      * @author Griefed
      */
-    fun voteForServerPack(id: Int, vote: String): ResponseEntity<Any> {
+    fun voteForServerPack(id: String, vote: String): ResponseEntity<Any> {
         val pack = serverPackRepository.findById(id)
         return if (pack.isPresent) {
             if (vote.equals("up", ignoreCase = true)) {
@@ -153,7 +153,7 @@ class ServerPackService @Autowired constructor(
         serverPackRepository.deleteById(serverPack.id)
     }
 
-    fun deleteServerPack(id: Int) {
+    fun deleteServerPack(id: String) {
         val serverpack = serverPackRepository.findById(id)
         if (serverpack.isPresent) {
             serverPackRepository.deleteById(id)
@@ -176,7 +176,7 @@ class ServerPackService @Autowired constructor(
         return storage.load(id)
     }
 
-    fun getServerPackView(id: Int): Optional<ServerPack> {
+    fun getServerPackView(id: String): Optional<ServerPack> {
         return serverPackRepository.findById(id)
     }
 }

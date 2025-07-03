@@ -20,45 +20,34 @@
 package de.griefed.serverpackcreator.app.web.serverpack
 
 import de.griefed.serverpackcreator.app.web.serverpack.customizing.RunConfiguration
-import jakarta.persistence.*
-import org.hibernate.annotations.CreationTimestamp
-import java.sql.Timestamp
+import org.springframework.data.annotation.PersistenceCreator
+import org.springframework.data.mongodb.core.mapping.DBRef
+import org.springframework.data.mongodb.core.mapping.Document
+import org.springframework.data.mongodb.core.mapping.FieldType
+import org.springframework.data.mongodb.core.mapping.MongoId
+import java.util.Date
 
-@Entity
+@Document
 class ServerPack() {
 
-    @Id
-    @GeneratedValue
-    @Column(updatable = false, nullable = false)
-    var id: Int = 0
-
-    @Column
+    @MongoId(FieldType.STRING)
+    var id: String? = null
+        private set
     var size: Int = 0
-
-    @Column
     var downloads: Int = 0
-
-    @Column
     var confirmedWorking: Int = 0
-
-    @CreationTimestamp
-    @Column
-    var dateCreated: Timestamp? = null
-
-    @Column
+    var dateCreated: Date = Date(System.currentTimeMillis())
     var fileID: Long? = null
-
-    @Column
     var sha256: String? = null
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @DBRef
     var runConfiguration: RunConfiguration? = null
 
     constructor(
         size: Double,
         downloads: Int,
         confirmedWorking: Int,
-        dateCreated: Timestamp?,
+        dateCreated: Date,
         runConfiguration: RunConfiguration?,
         fileID: Long?,
         sha256: String?
@@ -70,6 +59,20 @@ class ServerPack() {
         this.runConfiguration = runConfiguration
         this.fileID = fileID
         this.sha256 = sha256
+    }
+
+    @PersistenceCreator
+    private constructor(
+        id: String,
+        size: Double,
+        downloads: Int,
+        confirmedWorking: Int,
+        dateCreated: Date,
+        runConfiguration: RunConfiguration?,
+        fileID: Long?,
+        sha256: String?
+    ) : this(size,downloads,confirmedWorking,dateCreated,runConfiguration,fileID,sha256) {
+        this.id = id
     }
 
     override fun equals(other: Any?): Boolean {

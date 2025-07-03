@@ -170,7 +170,9 @@ class ConfigurationHandler(
         val modpack = File(packConfig.modpackDir)
         log.info("Performing security scans")
         log.info("Performing Nekodetector scan")
-        configCheck.otherErrors.addAll(SecurityScans.scanUsingNekodetector(modpack.toPath()))
+        if (modpack.isDirectory) {
+            configCheck.otherErrors.addAll(SecurityScans.scanUsingNekodetector(modpack.toPath()))
+        }
         /*log.info("Performing jNeedle scan")
         configCheck.otherErrors.addAll(SecurityScans.scanUsingJNeedle(modpack.toPath()))*/
 
@@ -1076,7 +1078,7 @@ class ConfigurationHandler(
             for (header in headers) {
                 try {
                     headerBeginning = header.fileName.substring(0,header.fileName.indexOfFirst { char -> char == '/' } + 1)
-                    log.debug("Header beginning $headerBeginning")
+                    log.trace("Header beginning $headerBeginning")
                     if (headerBeginning.matches(zipCheck)) {
                         baseDirectories.add(headerBeginning)
                     }

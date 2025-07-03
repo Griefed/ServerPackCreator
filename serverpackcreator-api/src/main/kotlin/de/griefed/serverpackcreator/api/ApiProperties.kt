@@ -1392,25 +1392,26 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         }
 
     /**
-     * Path to the PostgreSQL database used by the webservice-side of ServerPackCreator.
-     *
-     * When setting this to a different URL, you may leave out the `jdbc:postgresql://`-part, it will be prefixed automatically.
+     * Path to the database used by the webservice-side of ServerPackCreator.
      */
-    var jdbcDatabaseUrl: String = "jdbc:postgresql://localhost:5432/serverpackcreator"
+    var jdbcDatabaseUrl: String = "mongodb://localhost:27017/serverpackcreatordb"
         get() {
             var dbPath =
-                internalProps.getProperty(pSpringDatasourceUrl, "jdbc:postgresql://localhost:5432/serverpackcreator")
-            if (dbPath.isEmpty() || dbPath.contains("jdbc:sqlite") || !dbPath.startsWith("jdbc:postgresql://")) {
-                log.warn("Your spring.datasource.url-property didn't match a PostgreSQL JDBC URL: $dbPath. It has been migrated to jdbc:postgresql://localhost:5432/serverpackcreator.")
-                dbPath = "jdbc:postgresql://localhost:5432/serverpackcreator"
+                internalProps.getProperty(pSpringDatasourceUrl, "mongodb://localhost:27017/serverpackcreatordb")
+            if (dbPath.isEmpty() ||
+                dbPath.contains("sqlite") ||
+                dbPath.contains("postgresql") ||
+                !dbPath.startsWith("mongodb://") ) {
+                log.warn("Your spring.datasource.url-property didn't match a MongoDB-URL: $dbPath. It has been migrated to mongodb://localhost:27017/serverpackcreatordb.")
+                dbPath = "mongodb://localhost:27017/serverpackcreatordb"
             }
             internalProps.setProperty(pSpringDatasourceUrl, dbPath)
             field = dbPath
             return field
         }
         set(value) {
-            if (!value.startsWith("jdbc:postgresql://")) {
-                internalProps.setProperty(pSpringDatasourceUrl, "jdbc:postgresql://$value")
+            if (!value.startsWith("mongodb://")) {
+                internalProps.setProperty(pSpringDatasourceUrl, "mongodb://$value")
             } else {
                 internalProps.setProperty(pSpringDatasourceUrl, value)
             }

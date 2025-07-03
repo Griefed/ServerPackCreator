@@ -19,11 +19,11 @@
  */
 package de.griefed.serverpackcreator.app.web.task
 
-import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-interface ErrorRepository : JpaRepository<ErrorEntry, Int>{
+interface ErrorRepository : MongoRepository<ErrorEntry, String>{
     fun findByError(error: String) : Optional<ErrorEntry>
 }

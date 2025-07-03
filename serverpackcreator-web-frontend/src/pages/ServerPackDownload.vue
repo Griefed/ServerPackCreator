@@ -203,7 +203,7 @@ export default defineComponent({
   },
   mounted() {
     this.showTextLoading();
-    serverpacks.get(this.$route.params.id.toString()).then(response => {
+    serverpacks.get(this.$route.params.id).then(response => {
       this.size = response.data.size;
       this.downloads = response.data.downloads;
       this.confirmedWorking = response.data.confirmedWorking;
@@ -225,7 +225,7 @@ export default defineComponent({
         message: 'Could not retrieve server pack: ' + error
       });
     });
-    modpacks.get('byserverpack/' + this.$route.params.id.toString()).then(response => {
+    modpacks.get('byserverpack/' + this.$route.params.id).then(response => {
       this.name = response.data.name.replaceAll(' ', '_').replace('.zip', '_server_pack.zip')
     }).catch(error => {
       this.$q.notify({

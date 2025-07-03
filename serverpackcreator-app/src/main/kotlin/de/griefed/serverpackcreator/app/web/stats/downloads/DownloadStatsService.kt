@@ -33,7 +33,8 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
-import java.time.LocalDateTime
+import java.text.DateFormat
+import java.util.Date
 
 @Service
 class DownloadStatsService @Autowired constructor(
@@ -44,38 +45,38 @@ class DownloadStatsService @Autowired constructor(
 ) {
 
     fun modPackDownloads(sort: Sort = Sort.by(Sort.Direction.DESC, "date")): List<AmountPerDate> {
-        val dates = mutableListOf<LocalDateTime>()
+        val dates = mutableListOf<Date>()
         for (download in modPackDownloadRepository.findAll(sort).filter { it.downloadedAt != null }) {
-            dates.add(download.downloadedAt!!.toLocalDateTime())
+            dates.add(download.downloadedAt!!)
         }
         return count(dates)
     }
 
     fun modPackDownloads(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "date")): List<AmountPerDate> {
-        val dates = mutableListOf<LocalDateTime>()
+        val dates = mutableListOf<Date>()
         for (download in modPackDownloadRepository.findAll(sizedPage.withSort(sort)).filter { it.downloadedAt != null }) {
-            dates.add(download.downloadedAt!!.toLocalDateTime())
+            dates.add(download.downloadedAt!!)
         }
         return count(dates)
     }
 
     fun serverPackDownloads(sort: Sort = Sort.by(Sort.Direction.DESC, "date")): List<AmountPerDate> {
-        val dates = mutableListOf<LocalDateTime>()
-        for (download in serverPackDownloadRepository.findAll(sort).filter { it.downloadedAt != null }) {
-            dates.add(download.downloadedAt!!.toLocalDateTime())
+        val dates = mutableListOf<Date>()
+        for (download in serverPackDownloadRepository.findAll(sort)) {
+            dates.add(download.downloadedAt)
         }
         return count(dates)
     }
 
     fun serverPackDownloads(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "date")): List<AmountPerDate> {
-        val dates = mutableListOf<LocalDateTime>()
-        for (download in serverPackDownloadRepository.findAll(sizedPage.withSort(sort)).filter { it.downloadedAt != null }) {
-            dates.add(download.downloadedAt!!.toLocalDateTime())
+        val dates = mutableListOf<Date>()
+        for (download in serverPackDownloadRepository.findAll(sizedPage.withSort(sort))) {
+            dates.add(download.downloadedAt)
         }
         return count(dates)
     }
 
-    private fun count(dates: List<LocalDateTime>): List<AmountPerDate> {
+    private fun count(dates: List<Date>): List<AmountPerDate> {
         val creations = mutableListOf<AmountPerDate>()
         for (date in dates) {
             //skip if the date was already checked
@@ -91,8 +92,8 @@ class DownloadStatsService @Autowired constructor(
         return creations
     }
 
-    private fun dateToString(date: LocalDateTime): String {
-        return "${date.year}-${date.monthValue}-${date.dayOfMonth}"
+    private fun dateToString(date: Date): String {
+        return "${DateFormat.getInstance().format(date)}" //"${date.toLocaleString()}-${date.toLocalDate().monthValue}-${date.toLocalDate().dayOfMonth}"
     }
 
     fun allModPackDownloadsHistory(sort: Sort = Sort.by(Sort.Direction.DESC, "downloadedAt")): List<ModPackDownload> {
@@ -111,7 +112,7 @@ class DownloadStatsService @Autowired constructor(
         return serverPackDownloadRepository.findAll(sizedPage.withSort(sort))
     }
 
-    fun downloadHistoryForModPack(modPackID: Int): List<ModPackDownload> {
+    fun downloadHistoryForModPack(modPackID: String): List<ModPackDownload> {
         val pack = modpackRepository.findById(modPackID)
         return if (pack.isPresent) {
             downloadHistoryForModPack(pack.get())
@@ -124,7 +125,7 @@ class DownloadStatsService @Autowired constructor(
         return modPackDownloadRepository.findAllByModPack(modPack)
     }
 
-    fun downloadHistoryForServerPack(serverPackID: Int): List<ServerPackDownload> {
+    fun downloadHistoryForServerPack(serverPackID: String): List<ServerPackDownload> {
         val pack = serverPackRepository.findById(serverPackID)
         return if (pack.isPresent) {
             downloadHistoryForServerPack(pack.get())

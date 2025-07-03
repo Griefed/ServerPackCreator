@@ -1,15 +1,5 @@
 version: '3'
 services:
-  serverpackcreatordb:
-    container_name: serverpackcreatordb
-    image: postgres:16.1
-    restart: unless-stopped
-    environment:
-      - POSTGRES_DB=serverpackcreator
-      - POSTGRES_USER=serverpackcreator
-      - POSTGRES_PASSWORD=1234567890
-    volumes:
-      - database:/var/lib/postgresql/data
   serverpackcreator:
     container_name: serverpackcreator
     build:
@@ -46,8 +36,40 @@ services:
       - modpacks:/app/serverpackcreator/modpacks
       - server-packs:/app/serverpackcreator/server-packs
       - logs:/app/serverpackcreator/logs
+  serverpackcreatordb:
+    image: mongodb/mongodb-community-server:8.0.5-ubuntu2204
+    container_name: serverpackcreatordb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 1234567890
+      MONGODB_USER: serverpackcreator
+      MONGODB_PASSWORD: 1234567890
+      MONGODB_DB: serverpackcreator
+      MONGODB_COLLECTION: serverpackcreator
+    volumes:
+      - serverpackcreatordbdata:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
+    ports:
+      - 27017:27017
+  # Database Manager
+  serverpackcreator-mongo-express:
+    container_name: mongo-express
+    restart: unless-stopped
+    image: mongo-express
+    ports:
+      - 8081:8081
+    depends_on:
+      - mongodb
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=serverpackcreatordb
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=1234567890
+      - ME_CONFIG_BASICAUTH_USERNAME=mexpress
+      - ME_CONFIG_BASICAUTH_PASSWORD=mexpress
 volumes:
-  database:
+  serverpackcreatordb:
   modpacks:
   server-packs:
   logs:

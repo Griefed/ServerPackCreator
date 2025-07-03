@@ -19,10 +19,10 @@
  */
 package de.griefed.serverpackcreator.app.web.modpack
 
-import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface ModPackDownloadRepository : JpaRepository<ModPackDownload, Int> {
+interface ModPackDownloadRepository : MongoRepository<ModPackDownload, String> {
     fun findAllByModPack(modPack: ModPack): List<ModPackDownload>
 }

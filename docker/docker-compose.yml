@@ -1,15 +1,5 @@
 version: '3'
 services:
-  serverpackcreatordb:
-    container_name: serverpackcreatordb
-    image: postgres:16.1
-    restart: unless-stopped
-    environment:
-      - POSTGRES_DB=serverpackcreator
-      - POSTGRES_USER=<YOUR_USERNAME>
-      - POSTGRES_PASSWORD=<YOUR_PASSWORD>
-    volumes:
-      - database:/var/lib/postgresql/data
   serverpackcreator:
     container_name: serverpackcreator
     image: griefed/serverpackcreator:latest
@@ -23,8 +13,8 @@ services:
       - SPC_SCHEDULE_DATABASE_CLEANUP=0 0 0 * * * #CRON expression
       - SPC_SCHEDULE_FILES_CLEANUP=0 0 0 * * * #CRON expression
       - SPC_SCHEDULE_VERSIONS_REFRESH=0 0 0 * * * #CRON expression
-      - SPC_DATABASE_USERNAME=<YOUR_USERNAME>
-      - SPC_DATABASE_PASSWORD=<YOUR_PASSWORD>
+      - SPC_DATABASE_USERNAME=<DB_USERNAME>
+      - SPC_DATABASE_PASSWORD=<DB_PASSWORD>
       - SPC_DATABASE_HOST=serverpackcreatordb
       - SPC_DATABASE_PORT=5432
       - SPC_DATABASE_DB=serverpackcreator
@@ -44,5 +34,18 @@ services:
       - ./modpacks:/app/serverpackcreator/modpacks
       - ./server-packs:/app/serverpackcreator/server-packs
       - ./logs:/app/serverpackcreator/logs
+  serverpackcreatordb:
+    image: mongodb/mongodb-community-server:8.0.5-ubuntu2204
+    container_name: serverpackcreator-ds
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: <DB_ROOT_USERNAME>
+      MONGO_INITDB_ROOT_PASSWORD: <DB_ROOT_PASSWORD>
+      MONGO_INITDB_DATABASE: initdb
+      MONGODB_DB: serverpackcreatordb
+      MONGODB_USER: <DB_USERNAME>
+      MONGODB_PASSWORD: <DB_PASSWORD>
+    volumes:
+      - ./init-mongo.sh:/docker-entrypoint-initdb.d/init.sh:ro
 volumes:
   database:
