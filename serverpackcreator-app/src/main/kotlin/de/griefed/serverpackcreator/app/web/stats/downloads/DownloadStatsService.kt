@@ -34,7 +34,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import java.text.DateFormat
-import java.util.Date
+import java.util.*
 
 @Service
 class DownloadStatsService @Autowired constructor(

@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.app.web.modpack
 
-import de.griefed.serverpackcreator.api.*
+import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.config.ConfigurationHandler
 import de.griefed.serverpackcreator.api.config.ModpackSource
 import de.griefed.serverpackcreator.api.config.PackConfig
