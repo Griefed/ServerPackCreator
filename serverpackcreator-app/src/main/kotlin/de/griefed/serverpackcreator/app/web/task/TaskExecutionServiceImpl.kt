@@ -187,13 +187,19 @@ class TaskExecutionServiceImpl @Autowired constructor(
         if (generation.success) {
             val serverPackZipOld = generation.serverPackZip.get().absoluteFile
             val serverPackFile = serverPackService.moveServerPack(serverPackZipOld)
-            val serverPack = ServerPack()
-            serverPack.size = serverPackFile.size().div(1048576.0).toInt()
-            serverPack.runConfiguration = taskDetail.runConfiguration
-            serverPack.fileID = serverPackFile.name
-                .replace(".zip","", ignoreCase = true)
-                .replace("_server_pack.zip","", ignoreCase = true).toLong()
-            serverPack.sha256 = String(Hex.encode(messageDigestInstance.digest(serverPackFile.readBytes())))
+            val serverPack = ServerPack(
+                serverPackFile.size().div(1048576.0).toInt(),
+                taskDetail.runConfiguration,
+                serverPackFile.name
+                    .replace(".zip","", ignoreCase = true)
+                    .replace("_server_pack.zip","", ignoreCase = true).toLong(),
+                String(
+                    Hex.encode(
+                        messageDigestInstance.digest(serverPackFile.readBytes())
+                    )),
+                taskDetail.modpack.id!!
+            )
+
             serverPackService.saveServerPack(serverPack)
             taskDetail.modpack.serverPacks.addLast(serverPack)
             taskDetail.modpack.status = ModPackStatus.GENERATED

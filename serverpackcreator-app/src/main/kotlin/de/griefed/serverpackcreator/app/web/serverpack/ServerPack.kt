@@ -28,11 +28,12 @@ import org.springframework.data.mongodb.core.mapping.MongoId
 import java.util.*
 
 @Document
-class ServerPack() {
+class ServerPack {
 
     @MongoId(FieldType.STRING)
     var id: String? = null
         private set
+    var modpackId: String = ""
     var size: Int = 0
     var downloads: Int = 0
     var confirmedWorking: Int = 0
@@ -44,35 +45,35 @@ class ServerPack() {
     var runConfiguration: RunConfiguration? = null
 
     constructor(
-        size: Double,
-        downloads: Int,
-        confirmedWorking: Int,
-        dateCreated: Date,
+        size: Int,
         runConfiguration: RunConfiguration?,
         fileID: Long?,
-        sha256: String?
-    ) : this() {
-        this.size = size.toInt()
-        this.downloads = downloads
-        this.confirmedWorking = confirmedWorking
-        this.dateCreated = dateCreated
+        sha256: String?,
+        modpackId: String
+    ) {
+        this.size = size
         this.runConfiguration = runConfiguration
         this.fileID = fileID
         this.sha256 = sha256
+        this.modpackId = modpackId
     }
 
     @PersistenceCreator
     private constructor(
         id: String,
-        size: Double,
+        size: Int,
         downloads: Int,
         confirmedWorking: Int,
         dateCreated: Date,
         runConfiguration: RunConfiguration?,
         fileID: Long?,
-        sha256: String?
-    ) : this(size,downloads,confirmedWorking,dateCreated,runConfiguration,fileID,sha256) {
+        sha256: String?,
+        modpackId: String
+    ) : this(size, runConfiguration, fileID, sha256, modpackId) {
         this.id = id
+        this.downloads = downloads
+        this.confirmedWorking = confirmedWorking
+        this.dateCreated = dateCreated
     }
 
     override fun equals(other: Any?): Boolean {
