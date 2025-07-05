@@ -22,7 +22,6 @@ package de.griefed.serverpackcreator.app.web.task
 import de.griefed.serverpackcreator.api.config.ConfigurationHandler
 import de.griefed.serverpackcreator.api.serverpack.ServerPackHandler
 import de.griefed.serverpackcreator.api.utilities.common.deleteQuietly
-import de.griefed.serverpackcreator.api.utilities.common.size
 import de.griefed.serverpackcreator.app.web.modpack.ModPack
 import de.griefed.serverpackcreator.app.web.modpack.ModPackService
 import de.griefed.serverpackcreator.app.web.modpack.ModPackStatus
@@ -30,7 +29,6 @@ import de.griefed.serverpackcreator.app.web.serverpack.ServerPack
 import de.griefed.serverpackcreator.app.web.serverpack.ServerPackService
 import de.griefed.serverpackcreator.app.web.storage.StorageException
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import org.bouncycastle.util.encoders.Hex
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.io.File
