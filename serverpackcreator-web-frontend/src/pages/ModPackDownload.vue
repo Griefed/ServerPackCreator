@@ -17,12 +17,12 @@
       <q-card-section horizontal>
         <q-card-section class="q-pt-xs">
           <div class="row">
-            <div class="col text-overline">ModPack {{ $route.params.id }}</div>
+            <div class="col text-overline">ModPack {{ name }}</div>
             <div class="col text-overline">Source {{ source }}</div>
-            <div v-if="projectID.length > 0" class="col text-overline">Project ID {{ projectID }}</div>
-            <div v-if="versionID.length > 0" class="col text-overline">Version ID {{ versionID }}</div>
+            <div v-if="projectID.length > 0" class="col text-overline">Project ID<br>{{ projectID }}</div>
+            <div v-if="versionID.length > 0" class="col text-overline">Version ID<br>{{ versionID }}</div>
           </div>
-          <div class="text-h5 q-mt-sm q-mb-xs">{{ name }}</div>
+          <div class="text-h5 q-mt-sm q-mb-xs">ID {{ $route.params.id }}</div>
         </q-card-section>
       </q-card-section>
       <q-card-section horizontal>

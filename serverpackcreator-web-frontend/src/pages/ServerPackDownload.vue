@@ -17,9 +17,9 @@
       <q-card-section horizontal>
         <q-card-section class="q-pt-xs">
           <div class="row">
-            <div class="col text-overline">Server Pack {{ $route.params.id }}</div>
+            <div class="col text-overline">Server Pack ID: {{ $route.params.id }}</div>
           </div>
-          <div class="text-h5 q-mt-sm q-mb-xs">{{ name }}</div>
+          <div class="text-h5 q-mt-sm q-mb-xs">File Name: {{ name }}</div>
         </q-card-section>
       </q-card-section>
       <q-card-section horizontal>
