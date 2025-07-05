@@ -32,6 +32,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
+import org.springframework.data.mongodb.gridfs.GridFsOperations
+import org.springframework.data.mongodb.gridfs.GridFsTemplate
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
@@ -45,10 +47,16 @@ class ModPackService @Autowired constructor(
     private val configurationHandler: ConfigurationHandler,
     private val modPackDownloadRepository: ModPackDownloadRepository,
     private val serverPackRepository: ServerPackRepository,
+    gridFsTemplate: GridFsTemplate,
+    gridFsOperations: GridFsOperations,
     apiProperties: ApiProperties,
 ) {
     private val rootLocation: Path = apiProperties.modpacksDirectory.toPath()
-    private val storage: StorageSystem = StorageSystem(rootLocation)
+    private val storage: StorageSystem = StorageSystem(
+        rootLocation,
+        gridFsTemplate,
+        gridFsOperations
+    )
 
     /**
      * Increment the download counter for a given modpack entry in the database identified by the
@@ -58,7 +66,7 @@ class ModPackService @Autowired constructor(
      * @author Griefed
      */
     fun updateDownloadStats(modPack: ModPack): Optional<ModPack> {
-        val request = modpackRepository.findById(modPack.id)
+        val request = modpackRepository.findById(modPack.id!!)
         if (request.isPresent) {
             val pack = request.get()
             pack.downloads = pack.downloads!! + 1
@@ -76,14 +84,20 @@ class ModPackService @Autowired constructor(
      * @author Griefed
      */
     @Throws(StorageException::class)
-    fun saveZipModpack(file: MultipartFile): ModPack {
+    fun saveUploadedFile(file: MultipartFile): ModPack {
         val modpack = ModPack()
         modpack.status = ModPackStatus.QUEUED
         modpack.source = ModpackSource.ZIP
         val savedFile = storage.store(file).get()
         val check = configurationHandler.checkZipArchive(savedFile.file.toString())
         if (!check.allChecksPassed) {
-            throw StorageException("The modpack you uploaded did not pass validation: ${check.encounteredErrors.joinToString(",")}")
+            throw StorageException(
+                "The modpack you uploaded did not pass validation: ${
+                    check.encounteredErrors.joinToString(
+                        ","
+                    )
+                }"
+            )
         }
         modpack.fileID = savedFile.id
         modpack.sha256 = savedFile.sha256
@@ -92,7 +106,10 @@ class ModPackService @Autowired constructor(
         val availableModpacks = modpackRepository.findAll()
         for (available in availableModpacks) {
             if (available.sha256 == modpack.sha256) {
-                throw StorageException("Modpack already exists. Not storing. Match found with hash ${modpack.sha256} in ${available.name} (${available.id})", available.id)
+                throw StorageException(
+                    "Modpack already exists. Not storing. Match found with hash ${modpack.sha256} in ${available.name} (${available.id})",
+                    available.id
+                )
             }
         }
         return modpackRepository.save(modpack)
@@ -115,11 +132,11 @@ class ModPackService @Autowired constructor(
         return modpackRepository.findAll(sort)
     }
 
-    fun getModpacks(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "dateCreated")) : Page<ModPack> {
+    fun getModpacks(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "dateCreated")): Page<ModPack> {
         return modpackRepository.findAll(sizedPage.withSort(sort))
     }
 
-    fun getByServerPack(id: String) : Optional<ModPack> {
+    fun getByServerPack(id: String): Optional<ModPack> {
         val serverPack = serverPackRepository.findById(id)
         return if (serverPack.isPresent) {
             getByServerPack(serverPack.get())
@@ -128,7 +145,7 @@ class ModPackService @Autowired constructor(
         }
     }
 
-    fun getByServerPack(serverPack: ServerPack) : Optional<ModPack> {
+    fun getByServerPack(serverPack: ServerPack): Optional<ModPack> {
         return modpackRepository.findByServerPacksContains(serverPack)
     }
 
@@ -170,9 +187,5 @@ class ModPackService @Autowired constructor(
     @Throws(IOException::class, IllegalArgumentException::class)
     fun getModPackArchive(modPack: ModPack): Optional<File> {
         return storage.load(modPack.fileID!!)
-    }
-
-    fun getModPackArchive(fileID: Long): Optional<File> {
-        return storage.load(fileID)
     }
 }

@@ -38,7 +38,8 @@ class ServerPack {
     var downloads: Int = 0
     var confirmedWorking: Int = 0
     var dateCreated: Date = Date(System.currentTimeMillis())
-    var fileID: Long? = null
+    var fileID: String? = null
+    var fileName: String? = null
     var sha256: String? = null
 
     @DBRef
@@ -47,13 +48,15 @@ class ServerPack {
     constructor(
         size: Int,
         runConfiguration: RunConfiguration?,
-        fileID: Long?,
+        fileID: String?,
+        fileName: String?,
         sha256: String?,
         modpackId: String
     ) {
         this.size = size
         this.runConfiguration = runConfiguration
         this.fileID = fileID
+        this.fileName = fileName
         this.sha256 = sha256
         this.modpackId = modpackId
     }
@@ -66,10 +69,11 @@ class ServerPack {
         confirmedWorking: Int,
         dateCreated: Date,
         runConfiguration: RunConfiguration?,
-        fileID: Long?,
+        fileID: String?,
+        fileName: String?,
         sha256: String?,
         modpackId: String
-    ) : this(size, runConfiguration, fileID, sha256, modpackId) {
+    ) : this(size, runConfiguration, fileID, fileName, sha256, modpackId) {
         this.id = id
         this.downloads = downloads
         this.confirmedWorking = confirmedWorking

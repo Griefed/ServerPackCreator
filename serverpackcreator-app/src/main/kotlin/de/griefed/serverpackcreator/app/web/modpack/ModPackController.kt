@@ -99,7 +99,7 @@ class ModPackController @Autowired constructor(
             minecraftVersion, modloader, modloaderVersion, startArgs, clientMods, whiteListMods
         )
         try {
-            val modpack = modpackService.saveZipModpack(file)
+            val modpack = modpackService.saveUploadedFile(file)
             val taskDetail = TaskDetail(modpack)
             taskDetail.runConfiguration = runConfig
             taskExecutionServiceImpl.submitTaskInQueue(taskDetail)
@@ -145,7 +145,7 @@ class ModPackController @Autowired constructor(
                     ZipResponse(
                         message = "Modpack not found.",
                         success = false,
-                        modPackId = modPackID.toString(),
+                        modPackId = modPackID,
                         runConfigId = null,
                         serverPackId = null,
                         status = ModPackStatus.ERROR
@@ -169,7 +169,7 @@ class ModPackController @Autowired constructor(
                     ZipResponse(
                         message = "Server Pack already exists for the requested ModPack and RunConfiguration.",
                         success = false,
-                        modPackId = modPackID.toString(),
+                        modPackId = modPackID,
                         runConfigId = taskDetail.runConfiguration!!.id,
                         serverPackId = serverpack.id,
                         status = ModPackStatus.GENERATED
@@ -182,7 +182,7 @@ class ModPackController @Autowired constructor(
                 ZipResponse(
                     message = "Generation of ServerPack, from existing ModPack, with different config, queued.",
                     success = true,
-                    modPackId = modPackID.toString(),
+                    modPackId = modPackID,
                     runConfigId = taskDetail.runConfiguration?.id,
                     serverPackId = null,
                     status = ModPackStatus.QUEUED

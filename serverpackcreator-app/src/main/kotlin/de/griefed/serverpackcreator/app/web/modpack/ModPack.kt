@@ -45,7 +45,7 @@ class ModPack() {
         }
     var status: ModPackStatus = ModPackStatus.QUEUED
     var source: ModpackSource = ModpackSource.ZIP
-    var fileID: Long? = null
+    var fileID: String? = null
     var sha256: String? = null
 
     @DBRef
@@ -62,7 +62,7 @@ class ModPack() {
         downloads: Int?,
         status: ModPackStatus,
         source: ModpackSource,
-        fileID: Long?,
+        fileID: String?,
         sha256: String?,
         serverPacks: MutableList<ServerPack>
     ) : this() {

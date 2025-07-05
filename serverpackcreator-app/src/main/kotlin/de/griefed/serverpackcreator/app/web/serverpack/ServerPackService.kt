@@ -20,18 +20,20 @@
 package de.griefed.serverpackcreator.app.web.serverpack
 
 import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.app.web.storage.SavedFile
 import de.griefed.serverpackcreator.app.web.storage.StorageSystem
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
+import org.springframework.data.mongodb.gridfs.GridFsOperations
+import org.springframework.data.mongodb.gridfs.GridFsTemplate
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import java.io.File
 import java.nio.file.Path
 import java.security.MessageDigest
 import java.util.*
-import kotlin.io.path.moveTo
 
 /**
  * Class revolving around with server packs, like downloading, retrieving, deleting, voting etc.
@@ -42,11 +44,18 @@ import kotlin.io.path.moveTo
 class ServerPackService @Autowired constructor(
     private val serverPackRepository: ServerPackRepository,
     private val serverPackDownloadRepository: ServerPackDownloadRepository,
+    gridFsTemplate: GridFsTemplate,
+    gridFsOperations: GridFsOperations,
     messageDigestInstance: MessageDigest,
     apiProperties: ApiProperties
 ) {
     private val rootLocation: Path = apiProperties.serverPacksDirectory.toPath()
-    private val storage: StorageSystem = StorageSystem(rootLocation, messageDigestInstance)
+    private val storage: StorageSystem = StorageSystem(
+        rootLocation,
+        messageDigestInstance,
+        gridFsTemplate,
+        gridFsOperations
+    )
 
     fun getServerPack(id: String): Optional<ServerPack> {
         return serverPackRepository.findById(id)
@@ -115,7 +124,10 @@ class ServerPackService @Autowired constructor(
         return serverPackRepository.findAll(sort)
     }
 
-    fun getServerPacks(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "dateCreated")) : Page<ServerPack> {
+    fun getServerPacks(
+        sizedPage: PageRequest,
+        sort: Sort = Sort.by(Sort.Direction.DESC, "dateCreated")
+    ): Page<ServerPack> {
         return serverPackRepository.findAll(sizedPage.withSort(sort))
     }
 
@@ -135,29 +147,25 @@ class ServerPackService @Autowired constructor(
      *
      * @author Griefed
      */
-    fun moveServerPack(serverPackFile: File) : File {
-        val id = System.currentTimeMillis()
-        val newLocation = File(rootLocation.toFile(),"${id}.zip").absoluteFile.toPath()
-        return serverPackFile.absoluteFile.toPath().moveTo(
-            newLocation
-        ).toFile()
+    fun storeServerPackFile(file: File): SavedFile {
+        return storage.store(file).get()
     }
 
     /**
      * Deletes a server pack with the given id.
      *
-     * @param serverPack The server pack to delete.
+     * @param serverPack The serverpack to delete.
      * @author Griefed
      */
     fun deleteServerPack(serverPack: ServerPack) {
-        serverPackRepository.deleteById(serverPack.id)
+        serverPackRepository.deleteById(serverPack.id!!)
     }
 
     fun deleteServerPack(id: String) {
-        val serverpack = serverPackRepository.findById(id)
-        if (serverpack.isPresent) {
+        val serverPack = serverPackRepository.findById(id)
+        if (serverPack.isPresent) {
             serverPackRepository.deleteById(id)
-            storage.delete(serverpack.get().fileID!!)
+            storage.delete(serverPack.get().fileID!!)
         }
     }
 
@@ -170,10 +178,6 @@ class ServerPackService @Autowired constructor(
      */
     fun getServerPackArchive(serverPack: ServerPack): Optional<File> {
         return storage.load(serverPack.fileID!!)
-    }
-
-    fun getServerPackArchive(id: Long): Optional<File> {
-        return storage.load(id)
     }
 
     fun getServerPackView(id: String): Optional<ServerPack> {

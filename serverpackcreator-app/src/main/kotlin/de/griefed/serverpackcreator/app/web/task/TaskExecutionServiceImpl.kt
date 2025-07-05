@@ -186,17 +186,13 @@ class TaskExecutionServiceImpl @Autowired constructor(
         val generation = serverPackHandler.run(taskDetail.packConfig!!)
         if (generation.success) {
             val serverPackZipOld = generation.serverPackZip.get().absoluteFile
-            val serverPackFile = serverPackService.moveServerPack(serverPackZipOld)
+            val savedFile = serverPackService.storeServerPackFile(serverPackZipOld)
             val serverPack = ServerPack(
-                serverPackFile.size().div(1048576.0).toInt(),
+                savedFile.size,
                 taskDetail.runConfiguration,
-                serverPackFile.name
-                    .replace(".zip","", ignoreCase = true)
-                    .replace("_server_pack.zip","", ignoreCase = true).toLong(),
-                String(
-                    Hex.encode(
-                        messageDigestInstance.digest(serverPackFile.readBytes())
-                    )),
+                savedFile.id,
+                serverPackZipOld.absolutePath,
+                savedFile.sha256,
                 taskDetail.modpack.id!!
             )
 
@@ -210,7 +206,7 @@ class TaskExecutionServiceImpl @Autowired constructor(
                 "Generated ServerPack."
             )
             taskDetail.serverPack = serverPack
-            taskDetail.serverPackFile = serverPackFile
+            taskDetail.serverPackFile = savedFile.file.toFile()
             generation.serverPack.deleteQuietly()
             File(taskDetail.packConfig!!.modpackDir).deleteQuietly()
         } else {
