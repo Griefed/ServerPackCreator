@@ -3,9 +3,9 @@ version: "1.0"
 profile:
   name: qodana.recommended
 
-projectJDK: azul-21
+projectJDK: "21"
 
-linter: jetbrains/qodana-jvm-community
+linter: jetbrains/qodana-jvm-community:2025.1
 
 exclude:
   - name: All
@@ -17,7 +17,3 @@ exclude:
       - media
       - misc
       - root
-  - name: MemberVisibilityCanBePrivate
-  - name: UnusedSymbol
-  - name: LeakingThis
-  - name: JoinDeclarationAndAssignment

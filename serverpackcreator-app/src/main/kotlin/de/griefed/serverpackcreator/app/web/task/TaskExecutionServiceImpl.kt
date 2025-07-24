@@ -22,7 +22,6 @@ package de.griefed.serverpackcreator.app.web.task
 import de.griefed.serverpackcreator.api.config.ConfigurationHandler
 import de.griefed.serverpackcreator.api.serverpack.ServerPackHandler
 import de.griefed.serverpackcreator.api.utilities.common.deleteQuietly
-import de.griefed.serverpackcreator.api.utilities.common.size
 import de.griefed.serverpackcreator.app.web.modpack.ModPack
 import de.griefed.serverpackcreator.app.web.modpack.ModPackService
 import de.griefed.serverpackcreator.app.web.modpack.ModPackStatus
@@ -30,7 +29,6 @@ import de.griefed.serverpackcreator.app.web.serverpack.ServerPack
 import de.griefed.serverpackcreator.app.web.serverpack.ServerPackService
 import de.griefed.serverpackcreator.app.web.storage.StorageException
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import org.bouncycastle.util.encoders.Hex
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.io.File
@@ -186,14 +184,16 @@ class TaskExecutionServiceImpl @Autowired constructor(
         val generation = serverPackHandler.run(taskDetail.packConfig!!)
         if (generation.success) {
             val serverPackZipOld = generation.serverPackZip.get().absoluteFile
-            val serverPackFile = serverPackService.moveServerPack(serverPackZipOld)
-            val serverPack = ServerPack()
-            serverPack.size = serverPackFile.size().div(1048576.0).toInt()
-            serverPack.runConfiguration = taskDetail.runConfiguration
-            serverPack.fileID = serverPackFile.name
-                .replace(".zip","", ignoreCase = true)
-                .replace("_server_pack.zip","", ignoreCase = true).toLong()
-            serverPack.sha256 = String(Hex.encode(messageDigestInstance.digest(serverPackFile.readBytes())))
+            val savedFile = serverPackService.storeServerPackFile(serverPackZipOld)
+            val serverPack = ServerPack(
+                savedFile.size,
+                taskDetail.runConfiguration,
+                savedFile.id,
+                serverPackZipOld.absolutePath,
+                savedFile.sha256,
+                taskDetail.modpack.id!!
+            )
+
             serverPackService.saveServerPack(serverPack)
             taskDetail.modpack.serverPacks.addLast(serverPack)
             taskDetail.modpack.status = ModPackStatus.GENERATED
@@ -204,7 +204,7 @@ class TaskExecutionServiceImpl @Autowired constructor(
                 "Generated ServerPack."
             )
             taskDetail.serverPack = serverPack
-            taskDetail.serverPackFile = serverPackFile
+            taskDetail.serverPackFile = savedFile.file.toFile()
             generation.serverPack.deleteQuietly()
             File(taskDetail.packConfig!!.modpackDir).deleteQuietly()
         } else {

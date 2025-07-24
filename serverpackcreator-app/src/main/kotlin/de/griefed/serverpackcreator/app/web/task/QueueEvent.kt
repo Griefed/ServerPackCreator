@@ -20,45 +20,39 @@
 package de.griefed.serverpackcreator.app.web.task
 
 import de.griefed.serverpackcreator.app.web.modpack.ModPackStatus
-import jakarta.persistence.*
-import org.hibernate.annotations.CreationTimestamp
-import java.sql.Timestamp
+import org.springframework.data.annotation.PersistenceCreator
+import org.springframework.data.mongodb.core.mapping.DBRef
+import org.springframework.data.mongodb.core.mapping.Document
+import org.springframework.data.mongodb.core.mapping.FieldType
+import org.springframework.data.mongodb.core.mapping.MongoId
+import java.util.*
 
-@Entity
+@Document
 class QueueEvent() {
 
-    @Id
-    @GeneratedValue
-    @Column(updatable = false, nullable = false)
-    var id: Int = 0
-
-    @Column
-    var modPackId: Int? = 0
-
-    @Column
-    var serverPackId: Int? = null
-
-    @Column
+    @MongoId(FieldType.STRING)
+    var id: String? = null
+        private set
+    var modPackId: String? = null
+    var serverPackId: String? = null
     var status: ModPackStatus? = null
-
-    @Column
     var message: String = ""
+    var timestamp: Date = Date(System.currentTimeMillis())
 
-    @CreationTimestamp
-    @Column
-    var timestamp: Timestamp? = null
-
-    @ManyToMany(fetch = FetchType.EAGER)
+    @DBRef
     var errors: MutableList<ErrorEntry> = mutableListOf()
 
-    constructor(
-        modPackId: Int,
-        serverPackId: Int?,
+    @PersistenceCreator
+    private constructor(
+        id: String,
+        modPackId: String,
+        serverPackId: String?,
         status: ModPackStatus?,
         message: String,
-        timestamp: Timestamp?,
+        timestamp: Date,
         errors: MutableList<ErrorEntry>
     ) : this() {
+        this.id = id
         this.modPackId = modPackId
         this.serverPackId = serverPackId
         this.status = status
@@ -88,7 +82,7 @@ class QueueEvent() {
         result = 31 * result + (serverPackId?.hashCode() ?: 0)
         result = 31 * result + (status?.hashCode() ?: 0)
         result = 31 * result + message.hashCode()
-        result = 31 * result + (timestamp?.hashCode() ?: 0)
+        result = 31 * result + timestamp.hashCode()
         result = 31 * result + errors.hashCode()
         return result
     }

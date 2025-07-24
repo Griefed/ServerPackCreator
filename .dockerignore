@@ -3,8 +3,8 @@
 .gradle/
 .idea/
 .runConfigurations/
-docker-compose-dev.yml
-docker-compose.yml
+docker/docker-compose-dev.yml
+docker/docker-compose.yml
 */build
 */out
 */.quasar

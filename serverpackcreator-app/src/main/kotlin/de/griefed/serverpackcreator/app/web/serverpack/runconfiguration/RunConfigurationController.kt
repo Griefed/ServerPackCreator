@@ -41,9 +41,9 @@ class RunConfigurationController @Autowired constructor(
         )
     }
 
-    @GetMapping("/{id:[0-9]+}", produces = ["application/json"])
+    @GetMapping("/{id:[0-9a-zA-Z]+}", produces = ["application/json"])
     @ResponseBody
-    fun getModpack(@PathVariable id: Int): ResponseEntity<RunConfiguration> {
+    fun getModpack(@PathVariable id: String): ResponseEntity<RunConfiguration> {
         return if (runConfigurationService.load(id).isPresent) {
             ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).body(
                 runConfigurationService.load(id).get()

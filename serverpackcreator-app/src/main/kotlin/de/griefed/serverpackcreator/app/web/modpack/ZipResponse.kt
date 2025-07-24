@@ -22,9 +22,9 @@ package de.griefed.serverpackcreator.app.web.modpack
 class ZipResponse(
     val message: String,
     val success: Boolean,
-    val modPackId: Int?,
-    val runConfigId: Int?,
-    val serverPackId: Int?,
+    val modPackId: String?,
+    val runConfigId: String?,
+    val serverPackId: String?,
     val status: ModPackStatus?
 ) {
     override fun equals(other: Any?): Boolean {

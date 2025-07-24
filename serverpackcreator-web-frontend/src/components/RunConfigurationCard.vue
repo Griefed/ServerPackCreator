@@ -10,7 +10,7 @@
   <q-card flat bordered v-else>
     <q-scroll-area :thumb-style="thumbStyle" :bar-style="barStyle" style="height: 400px;">
       <q-list dense>
-        <q-item clickable @click="copyToClipboard(id.toString())">
+        <q-item clickable @click="copyToClipboard(id)">
           <q-item-section side>
             <q-icon color="accent" name="token"/>
           </q-item-section>
@@ -86,8 +86,8 @@
 
 <script >
 import {defineComponent, ref} from 'vue';
-import {serverpacks} from 'boot/axios';
 import {date} from 'quasar';
+import { runConfigs } from '../boot/axios.js';
 
 export default defineComponent({
   name: 'RunConfigurationCard',
@@ -98,7 +98,7 @@ export default defineComponent({
   },
   props: {
     id: {
-      type: Number,
+      type: String,
       required: true
     }
   },
@@ -154,8 +154,8 @@ export default defineComponent({
   },
   mounted() {
     this.showTextLoading();
-    serverpacks.get(this.id.toString()).then(response => {
-      let runConfig = response.data.runConfiguration
+    runConfigs.get(this.id).then(response => {
+      let runConfig = response.data
       this.minecraftVersion = runConfig.minecraftVersion
       this.modloader = runConfig.modloader
       this.modloaderVersion = runConfig.modloaderVersion

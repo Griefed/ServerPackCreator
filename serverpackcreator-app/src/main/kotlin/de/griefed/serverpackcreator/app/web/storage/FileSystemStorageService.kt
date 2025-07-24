@@ -19,11 +19,13 @@
  */
 package de.griefed.serverpackcreator.app.web.storage
 
+import com.mongodb.client.gridfs.model.GridFSFile
 import de.griefed.serverpackcreator.api.utilities.common.size
+import org.apache.commons.io.FileUtils
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.bouncycastle.util.encoders.Hex
+import org.springframework.data.mongodb.gridfs.GridFsResource
 import org.springframework.util.FileSystemUtils
-import org.springframework.web.multipart.MultipartFile
 import java.io.File
 import java.io.IOException
 import java.nio.file.Path
@@ -31,43 +33,82 @@ import java.security.MessageDigest
 import java.util.*
 import kotlin.io.path.listDirectoryEntries
 
-class FileSystemStorageService(private val rootLocation: Path, private val messageDigestInstance: MessageDigest) {
+class FileSystemStorageService(val rootLocation: Path, private val messageDigestInstance: MessageDigest) {
 
     constructor(rootLocation: Path) : this(rootLocation, MessageDigest.getInstance("SHA-256"))
 
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
+    private fun determineFilename(filename: String): String {
+        return if (
+            filename.contains("-orig-") &&
+            filename.split("-orig-").size >= 2 &&
+            filename.split("-orig-")[1].isNotEmpty()
+        ) {
+            filename.split("-orig-")[1]
+        } else {
+            filename
+        }
+    }
+
     @Throws(StorageException::class)
-    fun store(file: MultipartFile): Optional<SavedFile> {
+    fun store(file: File, objectId: String): Optional<SavedFile> {
         try {
-            if (file.isEmpty) {
-                throw StorageException("Failed to store empty file.")
-            }
-            val id = System.currentTimeMillis()
-            val destinationFile: Path = rootLocation.resolve("${id}.zip").normalize().toAbsolutePath()
-            if (!destinationFile.parent.equals(rootLocation.toAbsolutePath())) {
+            val id = objectId
+            val originalName = determineFilename(file.name)
+            val destinationFilePath: Path = rootLocation.resolve("${id}.zip").normalize().toAbsolutePath()
+            if (!destinationFilePath.parent.equals(rootLocation.toAbsolutePath())) {
                 // This is a security check
                 throw StorageException("Cannot store file outside current directory.")
             }
-            file.transferTo(destinationFile)
-            log.debug("Stored file to $destinationFile.")
-            val sha256 = String(Hex.encode(messageDigestInstance.digest(destinationFile.toFile().readBytes())))
+            FileUtils.copyFile(file, destinationFilePath.toFile())
+            log.debug("Stored file to $destinationFilePath.")
+            val sha256 = String(Hex.encode(messageDigestInstance.digest(destinationFilePath.toFile().readBytes())))
             return Optional.of(
                 SavedFile(
-                    id,
-                    sha256,
-                    destinationFile,
-                    file.originalFilename ?: file.name, destinationFile.toFile().size().div(1048576.0).toInt()
+                    id = id,
+                    sha256 = sha256,
+                    file = destinationFilePath,
+                    originalName = originalName,
+                    size = destinationFilePath.toFile().size().div(1048576.0).toInt()
                 )
             )
         } catch (e: IOException) {
+            log.error("Error storing file: ", e)
             return Optional.empty()
         }
     }
 
-    fun load(id: Long): Optional<File> {
+    @Throws(StorageException::class)
+    fun store(file: GridFSFile, resource: GridFsResource): Optional<SavedFile> {
+        try {
+            val id = file.objectId.toString()
+            val destinationFilePath: Path = rootLocation.resolve("${id}.zip").normalize().toAbsolutePath()
+            if (!destinationFilePath.parent.equals(rootLocation.toAbsolutePath())) {
+                // This is a security check
+                throw StorageException("Cannot store file outside current directory.")
+            }
+            FileUtils.copyToFile(resource.inputStream, destinationFilePath.toFile())
+            log.debug("Stored file to $destinationFilePath.")
+            val sha256 = String(Hex.encode(messageDigestInstance.digest(destinationFilePath.toFile().readBytes())))
+            return Optional.of(
+                SavedFile(
+                    id,
+                    sha256,
+                    destinationFilePath,
+                    file.filename,
+                    destinationFilePath.toFile().size().div(1048576.0).toInt()
+                )
+            )
+        } catch (e: IOException) {
+            log.error("Error storing file: ", e)
+            return Optional.empty()
+        }
+    }
+
+    fun load(id: String): Optional<File> {
         val file =
-            rootLocation.listDirectoryEntries().find { path -> path.toString().contains("$id") }?.normalize()?.toFile()
+            rootLocation.listDirectoryEntries().find { path -> path.toString().contains(id) }?.normalize()?.toFile()
         return if (file != null && file.exists()) {
             Optional.of(file)
         } else {
@@ -76,9 +117,9 @@ class FileSystemStorageService(private val rootLocation: Path, private val messa
         }
     }
 
-    fun delete(id: Long) {
+    fun delete(id: String) {
         FileSystemUtils.deleteRecursively(rootLocation.resolve("${id}.zip").normalize())
-        FileSystemUtils.deleteRecursively(rootLocation.resolve("$id").normalize())
+        FileSystemUtils.deleteRecursively(rootLocation.resolve(id).normalize())
     }
 
     fun deleteAll() {
