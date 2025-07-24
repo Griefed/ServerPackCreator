@@ -59,13 +59,15 @@ dependencies {
     api("org.springframework.boot:spring-boot-starter-web:3.5.3")
     api("org.springframework.boot:spring-boot-starter-log4j2:3.5.3")
     api("org.springframework.boot:spring-boot-starter-data-mongodb:3.5.3")
-    //api("org.mongodb:mongodb-driver-sync:5.5.1")
-    //api("org.javassist:javassist:3.30.2-GA")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.4")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.4")
     testRuntimeOnly("com.h2database:h2:2.3.232")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:3.4.1")
-    developmentOnly("org.springframework.boot:spring-boot-devtools:3.4.5")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:3.5.3") {
+        exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
+        exclude(group = "org.mockito", module = "mockito-core")
+    }
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.12.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.12.2")
+    testImplementation("com.ninja-squad:springmockk:4.0.2")
+    developmentOnly("org.springframework.boot:spring-boot-devtools:3.5.3")
     //developmentOnly("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 }
 
