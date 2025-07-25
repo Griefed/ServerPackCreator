@@ -180,7 +180,7 @@ class GitHubChecker : VersionChecker {
         log.debug("All versions: $versions")
 
         // In case the given repository does not have any releases
-        return if (versions.size == 0) {
+        return if (versions.isEmpty()) {
             null
         } else versions
     }

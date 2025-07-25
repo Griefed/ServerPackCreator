@@ -95,6 +95,7 @@ class StorageSystem(
         fsStorageService.delete(id)
     }
 
+    @Suppress("unused")
     fun deleteAll() {
         fsStorageService.deleteAll()
     }

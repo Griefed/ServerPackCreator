@@ -60,6 +60,7 @@ class RunConfiguration() {
         this.whitelistedMods = whitelistedMods
     }
 
+    @Suppress("unused")
     @PersistenceCreator
     private constructor(
         id: String,

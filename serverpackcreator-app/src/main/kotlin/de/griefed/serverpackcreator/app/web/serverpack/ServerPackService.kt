@@ -87,6 +87,7 @@ class ServerPackService @Autowired constructor(
      * @param serverPack The server pack for which to update the download counter.
      * @author Griefed
      */
+    @Suppress("unused")
     fun updateDownloadStats(serverPack: ServerPack) {
         serverPack.downloads++
         serverPackRepository.save(serverPack)
@@ -157,10 +158,12 @@ class ServerPackService @Autowired constructor(
      * @param serverPack The serverpack to delete.
      * @author Griefed
      */
+    @Suppress("unused")
     fun deleteServerPack(serverPack: ServerPack) {
         serverPackRepository.deleteById(serverPack.id!!)
     }
 
+    @Suppress("unused")
     fun deleteServerPack(id: String) {
         val serverPack = serverPackRepository.findById(id)
         if (serverPack.isPresent) {
@@ -180,6 +183,7 @@ class ServerPackService @Autowired constructor(
         return storage.load(serverPack.fileID!!)
     }
 
+    @Suppress("unused")
     fun getServerPackView(id: String): Optional<ServerPack> {
         return serverPackRepository.findById(id)
     }

@@ -48,7 +48,6 @@ private const val focusGenerationProp = "focus.generation"
 private const val fontSizeProp = "font.size"
 private const val defaultFontProp = "defaultFont"
 private const val fontFamilyProp = "font.family"
-private const val jetBrainsMono = "JetBrains Mono"
 private const val defaultFont = "Arial Unicode MS"
 private const val tipsViewedProp = "tips.viewed"
 private const val tipsShowOnStartupProp = "tips.show"
@@ -456,9 +455,9 @@ class GuiProps(private val apiProperties: ApiProperties) {
             FlatLaf.updateUI()
         }
     // Font("Arial Unicode MS", Font.BOLD, size)
-    var font: FontUIResource = FontUIResource("Arial Unicode MS",Font.PLAIN,fontSize)
+    var font: FontUIResource = FontUIResource(defaultFont,Font.PLAIN,fontSize)
         get() {
-            val prop = FontUIResource("Arial Unicode MS",Font.PLAIN,fontSize)
+            val prop = FontUIResource(defaultFont,Font.PLAIN,fontSize)
             field = prop
             return field
         }

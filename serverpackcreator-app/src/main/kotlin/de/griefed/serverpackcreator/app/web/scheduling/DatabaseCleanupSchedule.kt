@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service
 import java.nio.file.Path
 import kotlin.io.path.listDirectoryEntries
 
+@Suppress("unused")
 @Service
 class DatabaseCleanupSchedule @Autowired constructor(
     private val modpackRepository: ModPackRepository,

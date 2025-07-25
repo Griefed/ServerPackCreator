@@ -40,6 +40,7 @@ class ModPackDownload {
         this.modPack = modPack
     }
 
+    @Suppress("unused")
     @PersistenceCreator
     private constructor(downloadedAt: Date, modPack: ModPack) {
         this.downloadedAt = downloadedAt

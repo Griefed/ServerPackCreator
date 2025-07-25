@@ -209,7 +209,7 @@ abstract class VersionChecker {
                 }
             }
         }
-        return if (betaVersions.size == 0) {
+        return if (betaVersions.isEmpty()) {
             null
         } else {
             betaVersions
@@ -233,7 +233,7 @@ abstract class VersionChecker {
                 }
             }
         }
-        return if (alphaVersions.size == 0) {
+        return if (alphaVersions.isEmpty()) {
             null
         } else {
             alphaVersions

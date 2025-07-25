@@ -26,6 +26,7 @@ class JavaScriptTemplates(guiProps: GuiProps, tableModelListener: TableModelList
         super.loadData(data, clearDataBeforeLoad)
     }
 
+    @Suppress("unused")
     fun getTemplatePath(type: String): Optional<String> {
         return Optional.ofNullable(getData()[type])
     }

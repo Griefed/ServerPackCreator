@@ -19,6 +19,4 @@
  */
 package de.griefed.serverpackcreator.app.cli.commands
 
-interface Command : Runnable {
-
-}
+interface Command : Runnable

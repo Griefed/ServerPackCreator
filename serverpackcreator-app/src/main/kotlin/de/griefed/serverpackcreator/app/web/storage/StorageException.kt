@@ -25,5 +25,4 @@ open class StorageException : RuntimeException {
     constructor(message: String, id: String?) : super(message) {
         this.id = id
     }
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
 }

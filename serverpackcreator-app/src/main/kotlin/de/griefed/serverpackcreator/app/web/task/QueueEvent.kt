@@ -42,6 +42,7 @@ class QueueEvent() {
     @DBRef
     var errors: MutableList<ErrorEntry> = mutableListOf()
 
+    @Suppress("unused")
     @PersistenceCreator
     private constructor(
         id: String,

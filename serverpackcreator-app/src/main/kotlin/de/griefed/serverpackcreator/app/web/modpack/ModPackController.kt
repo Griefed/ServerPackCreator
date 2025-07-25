@@ -39,6 +39,7 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @CrossOrigin(origins = ["*"])
 @RequestMapping("/api/v2/modpacks")
+@Suppress("unused")
 class ModPackController @Autowired constructor(
     private val modpackService: ModPackService,
     private val runConfigurationService: RunConfigurationService,

@@ -26,6 +26,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.util.MimeTypeUtils
 import org.springframework.web.bind.annotation.*
 
+@Suppress("unused")
 @RestController
 @CrossOrigin(origins = ["*"])
 @RequestMapping("/api/v2/runconfigs")

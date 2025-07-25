@@ -32,7 +32,6 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.io.File
-import java.security.MessageDigest
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingDeque
 
@@ -42,7 +41,6 @@ class TaskExecutionServiceImpl @Autowired constructor(
     private val serverPackService: ServerPackService,
     private val configurationHandler: ConfigurationHandler,
     private val serverPackHandler: ServerPackHandler,
-    private val messageDigestInstance: MessageDigest,
     private val eventService: EventService
 ) :
     TaskExecutionService {

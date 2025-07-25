@@ -27,6 +27,7 @@ import de.griefed.serverpackcreator.app.gui.components.BaseFileChooser
  *
  * @author Griefed
  */
+@Suppress("unused")
 class ScriptTemplatesChooser(apiProperties: ApiProperties, title: String) : BaseFileChooser() {
     init {
         currentDirectory = apiProperties.serverFilesDirectory

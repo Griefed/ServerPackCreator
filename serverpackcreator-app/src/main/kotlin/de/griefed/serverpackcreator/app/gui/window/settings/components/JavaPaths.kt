@@ -26,6 +26,7 @@ class JavaPaths(guiProps: GuiProps, tableModelListener: TableModelListener) : Co
         super.loadData(data, clearDataBeforeLoad)
     }
 
+    @Suppress("unused")
     fun getJavaPath(javaVersion: Int): Optional<String> {
         return Optional.ofNullable(getData()[javaVersion.toString()])
     }

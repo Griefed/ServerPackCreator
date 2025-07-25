@@ -27,6 +27,7 @@ import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
 import java.util.*
 
+@Suppress("unused")
 @Repository
 interface RunConfigurationRepository : MongoRepository<RunConfiguration, String> {
     // lol, dat method name

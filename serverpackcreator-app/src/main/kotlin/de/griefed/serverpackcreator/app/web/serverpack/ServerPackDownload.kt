@@ -40,6 +40,7 @@ class ServerPackDownload {
         this.serverPack = serverPack
     }
 
+    @Suppress("unused")
     @PersistenceCreator
     private constructor(downloadedAt: Date, serverPack: ServerPack) {
         this.downloadedAt = downloadedAt
