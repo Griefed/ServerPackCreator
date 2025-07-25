@@ -372,11 +372,14 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "controllable-",                //https://www.curseforge.com/minecraft/mc-mods/controllable
             "coolrain-",                    //https://www.curseforge.com/minecraft/mc-mods/cool-rain
             "crash_assistant-",             //https://www.curseforge.com/minecraft/mc-mods/crash-assistant
+            "colorwheel-",                  //https://www.curseforge.com/minecraft/mc-mods/colorwheel
+            "colorwheel_patcher-",          //https://www.curseforge.com/minecraft/mc-mods/colorwheel-patcher
             "cubium-",                      //https://www.curseforge.com/minecraft/mc-mods/cubium
             "cullleaves-",                  //https://www.curseforge.com/minecraft/mc-mods/cull-leaves
             "cullparticles-",               //https://www.curseforge.com/minecraft/mc-mods/cull-particles
             "currentgamemusictrack-",       //https://www.curseforge.com/minecraft/mc-mods/current-game-music-track
             "custom-crosshair-mod-",        //https://www.curseforge.com/minecraft/mc-mods/custom-crosshair-mod
+            "customcursor-",                //https://www.curseforge.com/minecraft/mc-mods/custom-cursor
             "customdiscordrpc-",            //https://www.curseforge.com/minecraft/mc-mods/custom-discordrpc
             "cwb-",                         //https://www.curseforge.com/minecraft/mc-mods/cubes-without-borders
             "darkness-",                    //Gone? Reduces to atoms?
@@ -400,6 +403,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "eiramoticons-",                //Gone? Reduces to atoms?
             "embeddium-",                   //https://www.curseforge.com/minecraft/mc-mods/embeddium
             "enchantment-lore-",            //https://www.curseforge.com/minecraft/mc-mods/enchantment-lore
+            "enhanced_boss_bars-",          //https://www.curseforge.com/minecraft/mc-mods/enhanced-boss-bars
             "entity-texture-features-",     //https://www.curseforge.com/minecraft/mc-mods/entity-texture-features-fabric
             "entityculling-",               //https://www.curseforge.com/minecraft/mc-mods/entity-culling
             "essential_",                   //Gone? Reduces to atoms?
@@ -409,6 +413,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "fancymenu_",                   //https://www.curseforge.com/minecraft/mc-mods/fancymenu
             "fancymenu_video_extension",    //https://www.curseforge.com/minecraft/mc-mods/video-extension-for-fancymenu-forge
             "fast-ip-ping-",                //https://www.curseforge.com/minecraft/mc-mods/fast-ip-ping
+            "fastquit-",                    //https://www.curseforge.com/minecraft/mc-mods/fastquit-forge
             "firstperson-",                 //https://www.curseforge.com/minecraft/mc-mods/first-person-model
             "flerovium-",                   //https://www.curseforge.com/minecraft/mc-mods/flerovium
             "flickerfix-",                  //https://www.curseforge.com/minecraft/mc-mods/flickerfix
