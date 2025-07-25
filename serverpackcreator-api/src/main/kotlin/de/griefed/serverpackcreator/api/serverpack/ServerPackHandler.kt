@@ -93,7 +93,6 @@ class ServerPackHandler(
 
     val log by lazy { cachedLoggerOf(this.javaClass) }
     val modFileEndings = listOf("jar", "disabled")
-    val ending = "^\\.[0-9a-zA-Z]+$".toRegex()
 
     val variables = """
         ###
@@ -290,14 +289,14 @@ class ServerPackHandler(
     fun run(packConfig: PackConfig): ServerPackGeneration {
         val files : ArrayList<File> = ArrayList(10000)
         val relativeFiles : ArrayList<String> = ArrayList(10000)
-        val serverPackManifest: ServerPackManifest
+        @Suppress("JoinDeclarationAndAssignment") val serverPackManifest: ServerPackManifest
         var serverPackZip: Optional<File> = Optional.empty()
         val serverPack = if (packConfig.customDestination.isPresent) {
             packConfig.customDestination.get()
         } else {
             File(getServerPackDestination(packConfig))
         }
-        val existingManifest: File = File(serverPack.absolutePath, "manifest.json")
+        val existingManifest = File(serverPack.absolutePath, "manifest.json")
         val oldManifest: ServerPackManifest
         var oldFile: File
         val generationStopWatch = SimpleStopWatch().start()
@@ -316,7 +315,7 @@ class ServerPackHandler(
 
         try {
             serverPack.create(createFileOrDir = true, asDirectory = true)
-        } catch (ignored: IOException) {
+        } catch (_: IOException) {
         }
 
         if (apiProperties.isUpdatingServerPacksEnabled && existingManifest.isFile) {
@@ -935,6 +934,7 @@ class ServerPackHandler(
      *
      * @author Griefed
      */
+    @Suppress("unused")
     fun preInstallationCleanup(destination: String) {
         log.info("Pre server installation cleanup.")
         var fileToDelete: File
@@ -1003,6 +1003,7 @@ class ServerPackHandler(
      * @return List of [ServerPackFile] which will be included in the server pack.
      * @author Griefed
      */
+    @Suppress("unused")
     fun getSaveFiles(clientDir: String, directory: String, destination: String): List<ServerPackFile> {
         val serverPackFiles: MutableList<ServerPackFile> = ArrayList(2000)
         try {
@@ -1039,6 +1040,7 @@ class ServerPackHandler(
      * @return A list of all mods to include in the server pack.
      * @author Griefed
      */
+    @Suppress("unused")
     fun compileModList(packConfig: PackConfig) = compileModList(
         "${packConfig.modpackDir}${File.separator}mods",
         packConfig.clientMods,
@@ -1052,14 +1054,12 @@ class ServerPackHandler(
      * clientside-mods to exclude, and/or if the automatic exclusion of clientside-only mods is
      * active, they will be excluded, too.
      *
-     * @param modsDir                 The mods-directory of the modpack of which to generate a list of
-     * all its contents.
+     * @param modsDir The mods-directory of the modpack of which to generate a list of all its contents.
      * @param exclusionStrings A list of all clientside-only mods.
-     * @param whitelistStrings  A list of mods to include regardless if a match was found in [exclusionStrings].
-     * @param minecraftVersion        The Minecraft version the modpack uses. When the modloader is
-     * Forge, this determines whether Annotations or Tomls are
-     * scanned.
-     * @param modloader               The modloader the modpack uses.
+     * @param whitelistStrings A list of mods to include regardless if a match was found in [exclusionStrings].
+     * @param minecraftVersion The Minecraft version the modpack uses. When the modloader is Forge, this determines
+     * whether Annotations or Tomls are scanned.
+     * @param modloader The modloader the modpack uses.
      * @return A list of all mods to include in the server pack.
      * @author Griefed
      */
@@ -1292,7 +1292,7 @@ class ServerPackHandler(
         "LegacyFabric" -> {
             try {
                 utilities.webUtilities.isReachable(versionMeta.legacyFabric.releaseInstallerUrl())
-            } catch (e: MalformedURLException) {
+            } catch (_: MalformedURLException) {
                 false
             }
         }
@@ -1312,6 +1312,7 @@ class ServerPackHandler(
      * @param destination      The destination where we should clean up in.
      * @author Griefed
      */
+    @Suppress("unused")
     fun postInstallCleanup(destination: String) {
         log.info("Cleanup after modloader server installation.")
         var fileToDelete: File
@@ -1336,6 +1337,7 @@ class ServerPackHandler(
      * be added to.
      * @author Griefed
      */
+    @Suppress("unused")
     fun regexWalk(
         source: File, destination: String, regex: Regex, serverPackFiles: MutableList<ServerPackFile>
     ) {

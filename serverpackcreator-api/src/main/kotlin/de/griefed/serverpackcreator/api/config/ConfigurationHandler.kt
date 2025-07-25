@@ -939,39 +939,6 @@ class ConfigurationHandler(
     }
 
     /**
-     * Check whether a server pack for the given destination already exists and get an incrementor
-     * based on whether one exists, how many, or none exist. Think if this as the incrementation
-     * Windows does when a file of the same name is copied. `foo.bar` becomes
-     * `foo (1).bar` etc.
-     *
-     * @param source          The name of the modpack.
-     * @param destination The name of the server pack about to be generated.
-     * @return An incremented number, based on whether a server pack of the same name already exists.
-     * @author Griefed
-     */
-    fun checkServerPacksForIncrement(source: String, destination: String): String {
-        // Check whether a server pack for the new destination already exists.
-        // If it does, we need to change it to avoid overwriting any existing files.
-        val modPack = if (File(source).path.matches(previous)) {
-            val path = File(source).absolutePath
-            path.substring(0, path.length - 1)
-        } else {
-            "${source}_"
-        }
-        val serverPack = if (File(destination).path.matches(previous)) {
-            val path = File(destination).absolutePath
-            path.substring(0, path.length - 1)
-        } else {
-            "${destination}_"
-        }
-        var incrementation = 0
-        while (File(modPack + incrementation).isDirectory || File(serverPack + incrementation).isDirectory) {
-            incrementation++
-        }
-        return serverPack + incrementation
-    }
-
-    /**
      * Prints all passed fields to the console and serverpackcreator.log. Used to show the user the
      * configuration before ServerPackCreator starts the generation of the server pack or, if checks
      * failed, to show the user their last configuration, so they can more easily identify problems

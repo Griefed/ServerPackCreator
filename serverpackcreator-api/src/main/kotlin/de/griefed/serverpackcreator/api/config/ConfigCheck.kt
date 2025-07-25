@@ -140,6 +140,7 @@ class ConfigCheck {
     /**
      * Whether all plugin-provided checks passed. Only true if all passed.
      */
+    @Suppress("unused")
     val pluginsChecksPassed: Boolean
         get() {
             return pluginsErrors.isEmpty()

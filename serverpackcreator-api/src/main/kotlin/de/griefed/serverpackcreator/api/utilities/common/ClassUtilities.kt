@@ -25,7 +25,6 @@ import java.net.JarURLConnection
 import java.net.URI
 import java.net.URL
 import java.nio.file.Paths
-import java.util.*
 
 private val nested = ".*[.]jar!.*[.]jar".toRegex()
 private val tmpDir = System.getProperty("java.io.tmpdir")
