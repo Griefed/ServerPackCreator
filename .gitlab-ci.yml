@@ -92,13 +92,13 @@ Qodana:
         - qodana-2025.1-$CI_DEFAULT_BRANCH-
         - qodana-2025.1-
       paths:
-        - qodana-cache
+        - .qodana-cache
   script:
-    - qodana --save-report --results-dir=$CI_PROJECT_DIR/qodana --report-dir=$CI_PROJECT_DIR/qodana/report --cache-dir=$CI_PROJECT_DIR/qodana-cache
+    - qodana --save-report --results-dir=$CI_PROJECT_DIR/qodana --report-dir=$CI_PROJECT_DIR/qodana/report --cache-dir=$CI_PROJECT_DIR/.qodana-cache
     - touch qodana/report/qodana_id && echo "${CI_JOB_ID}" > qodana/report/qodana_id
   artifacts:
     paths:
-      - qodana
+      - qodana/
     expose_as: 'Qodana report'
   rules:
     - if: '$CI_SERVER_HOST == "git.griefed.de"'
