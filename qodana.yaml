@@ -19,3 +19,5 @@ exclude:
       - root
       - qodana
       - .qodana
+      - qodana-cache
+      - .qodana-cache
