@@ -17,3 +17,5 @@ exclude:
       - media
       - misc
       - root
+      - qodana
+      - .qodana
