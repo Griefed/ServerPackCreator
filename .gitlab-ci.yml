@@ -39,18 +39,18 @@ Build Test:
   script:
     - echo "**** Building ServerPackCreator ****"
     - "./gradlew build --info --full-stacktrace"
-    - "./gradlew cyclonedxBom --info --full-stacktrace"
-    - echo "**** Uploading BOM ****"
-    - |
-      curl -X "POST" "$DEPENDENCYTRACK_URL" \
-        -H 'Content-Type: multipart/form-data' \
-        -H "X-Api-Key: $DEPENDENCYTRACK_TOKEN" \
-        -F "autoCreate=true" \
-        -F "projectName=ServerPackCreator" \
-        -F "projectVersion=$CI_COMMIT_BRANCH" \
-        -F "parentName=ServerPackCreator" \
-        -F "parentVersion=branches" \
-        -F "bom=@build/reports/bom.xml"
+#    - "./gradlew cyclonedxBom --info --full-stacktrace"
+#    - echo "**** Uploading BOM ****"
+#    - |
+#      curl -X "POST" "$DEPENDENCYTRACK_URL" \
+#        -H 'Content-Type: multipart/form-data' \
+#        -H "X-Api-Key: $DEPENDENCYTRACK_TOKEN" \
+#        -F "autoCreate=true" \
+#        -F "projectName=ServerPackCreator" \
+#        -F "projectVersion=$CI_COMMIT_BRANCH" \
+#        -F "parentName=ServerPackCreator" \
+#        -F "parentVersion=branches" \
+#        -F "bom=@build/reports/bom.xml"
   retry: 1
   rules:
     - if: '$CI_SERVER_HOST == "git.griefed.de"'
@@ -65,15 +65,68 @@ Build Test:
     name: "$CI_COMMIT_BRANCH-$CI_COMMIT_SHORT_SHA-$CI_JOB_NAME"
     expose_as: "Gradle-Test-Artifacts"
     paths:
+      - build
+      - buildSrc/build
       - serverpackcreator-api/build
       - serverpackcreator-app/build
-      - serverpackcreator-web-frontend/dist
       - serverpackcreator-plugin-example/build
+      - serverpackcreator-web-frontend/dist
     expire_in: 1 week
     reports:
       junit:
         - serverpackcreator-api/build/test-results/test/TEST-*.xml
         - serverpackcreator-app/build/test-results/test/TEST-*.xml
+
+Qodana:
+  stage: Tests
+  needs:
+    - job: Build Test
+      artifacts: true
+      optional: false
+  image:
+    name: jetbrains/qodana-jvm-community:2025.1
+    entrypoint: [""]
+  cache:
+    - key: qodana-2025.1-$CI_DEFAULT_BRANCH-$CI_COMMIT_REF_SLUG
+      fallback_keys:
+        - qodana-2025.1-$CI_DEFAULT_BRANCH-
+        - qodana-2025.1-
+      paths:
+        - qodana/cache
+  script:
+    - qodana --save-report --results-dir=$CI_PROJECT_DIR/qodana --report-dir=$CI_PROJECT_DIR/qodana/report --cache-dir=$CI_PROJECT_DIR/qodana/cache
+    - touch qodana/report/qodana_id && echo "${CI_JOB_ID}" > qodana/report/qodana_id
+  artifacts:
+    paths:
+      - qodana/
+    exclude:
+      - qodana/cache
+      - qodana/cache/**/*
+    expose_as: 'Qodana report'
+  rules:
+    - if: '$CI_SERVER_HOST == "git.griefed.de"'
+
+Qodana Post:
+  stage: Other
+  needs:
+    - job: Qodana
+      artifacts: true
+      optional: false
+  before_script:
+    - curl -L --output ./discord.sh https://raw.githubusercontent.com/ChaoticWeg/discord.sh/master/discord.sh
+    - chmod a+x ./discord.sh
+  script:
+    - ./discord.sh
+      --webhook-url="$WEBHOOK_URL"
+      --username "$CI_PROJECT_TITLE"
+      --title "New Qodana Report Pipeline ${CI_PIPELINE_ID}"
+      --description "A new Qodana report is available at https://griefed.pages.griefed.de/-/ServerPackCreator/-/jobs/$(<qodana/report/qodana_id)/artifacts/qodana/report/index.html"
+      --author "GitGriefed CI/CD"
+      --color "0xC0FFEE"
+      --url "https://griefed.pages.griefed.de/-/ServerPackCreator/-/jobs/$(<qodana/report/qodana_id)/artifacts/qodana/report/index.html"
+      --field "Pipeline;[${CI_PIPELINE_ID}](${CI_PIPELINE_URL})"
+  rules:
+    - if: '$CI_SERVER_HOST == "git.griefed.de"'
 
 Docker Test:
   stage: Tests
@@ -86,7 +139,7 @@ Docker Test:
     - docker buildx build --push --no-cache --platform linux/amd64
       --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_SHORT_SHA"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_SHORT_SHA"
-      --file Dockerfile .
+      --file docker/Dockerfile .
   retry: 1
   rules:
     - if: '$CI_SERVER_HOST == "git.griefed.de"' # Remove once GitLab no longer throws javax.net.ssl.SSLHandshakeException: Remote host terminated the handshake
@@ -133,25 +186,25 @@ Build Release:
     - 'curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file serverpackcreator-app/build/libs/serverpackcreator-app-${CI_COMMIT_TAG}.jar "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar"'
     - echo "**** Create asset links ****"
     - 'curl --request POST --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" --data tag_name="${CI_COMMIT_TAG}" --data name="${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar" --data url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar" --data link_type="package" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases/${CI_COMMIT_TAG}/assets/links"'
-    - echo "**** Uploading BOM ****"
-    - |
-      curl -X "POST" "$DEPENDENCYTRACK_URL" \
-        -H 'Content-Type: multipart/form-data' \
-        -H "X-Api-Key: $DEPENDENCYTRACK_TOKEN" \
-        -F "autoCreate=true" \
-        -F "projectName=ServerPackCreator" \
-        -F "projectVersion=${CI_COMMIT_TAG%%.*}" \
-        -F "bom=@build/reports/bom.xml"
-    - |
-      curl -X "POST" "$DEPENDENCYTRACK_URL" \
-        -H 'Content-Type: multipart/form-data' \
-        -H "X-Api-Key: $DEPENDENCYTRACK_TOKEN" \
-        -F "autoCreate=true" \
-        -F "projectName=ServerPackCreator" \
-        -F "projectVersion=${CI_COMMIT_TAG}" \
-        -F "parentName=ServerPackCreator" \
-        -F "parentVersion=${CI_COMMIT_TAG%%.*}" \
-        -F "bom=@build/reports/bom.xml"
+#    - echo "**** Uploading BOM ****"
+#    - |
+#      curl -X "POST" "$DEPENDENCYTRACK_URL" \
+#        -H 'Content-Type: multipart/form-data' \
+#        -H "X-Api-Key: $DEPENDENCYTRACK_TOKEN" \
+#        -F "autoCreate=true" \
+#        -F "projectName=ServerPackCreator" \
+#        -F "projectVersion=${CI_COMMIT_TAG%%.*}" \
+#        -F "bom=@build/reports/bom.xml"
+#    - |
+#      curl -X "POST" "$DEPENDENCYTRACK_URL" \
+#        -H 'Content-Type: multipart/form-data' \
+#        -H "X-Api-Key: $DEPENDENCYTRACK_TOKEN" \
+#        -F "autoCreate=true" \
+#        -F "projectName=ServerPackCreator" \
+#        -F "projectVersion=${CI_COMMIT_TAG}" \
+#        -F "parentName=ServerPackCreator" \
+#        -F "parentVersion=${CI_COMMIT_TAG%%.*}" \
+#        -F "bom=@build/reports/bom.xml"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
@@ -250,7 +303,7 @@ Build Docker Release:
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:latest"
       --build-arg VERSION=$CI_COMMIT_TAG
-      --file Dockerfile .
+      --file docker/Dockerfile .
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
@@ -270,7 +323,7 @@ Build Docker PreRelease:
       --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
       --build-arg VERSION=$CI_COMMIT_TAG
-      --file Dockerfile .
+      --file docker/Dockerfile .
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
@@ -322,7 +375,7 @@ Writerside Docker:
       --tag "ghcr.io/$DOCKERHUB_USER/serverpackcreator-help:$CI_COMMIT_SHORT_SHA"
       --tag "index.docker.io/$DOCKERHUB_USER/serverpackcreator-help:$CI_COMMIT_SHORT_SHA"
       --build-arg VERSION=$CI_COMMIT_SHORT_SHA
-      --file Dockerfile.help .
+      --file docker/Dockerfile.help .
   rules:
     - if: '$CI_COMMIT_TAG !~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG !~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
@@ -345,7 +398,7 @@ Writerside Docker Latest:
       --tag "index.docker.io/$DOCKERHUB_USER/serverpackcreator-help:$CI_COMMIT_TAG"
       --tag "index.docker.io/$DOCKERHUB_USER/serverpackcreator-help:latest"
       --build-arg VERSION=$CI_COMMIT_TAG
-      --file Dockerfile.help .
+      --file docker/Dockerfile.help .
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
@@ -365,7 +418,7 @@ Writerside Docker Prerelease:
       --tag "ghcr.io/$DOCKERHUB_USER/serverpackcreator-help:$CI_COMMIT_TAG"
       --tag "index.docker.io/$DOCKERHUB_USER/serverpackcreator-help:$CI_COMMIT_TAG"
       --build-arg VERSION=$CI_COMMIT_TAG
-      --file Dockerfile.help .
+      --file docker/Dockerfile.help .
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 

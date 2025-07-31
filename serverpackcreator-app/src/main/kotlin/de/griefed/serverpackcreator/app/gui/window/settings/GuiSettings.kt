@@ -25,14 +25,10 @@ import com.formdev.flatlaf.intellijthemes.FlatDarkPurpleIJTheme
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.components.*
 import de.griefed.serverpackcreator.app.gui.themes.ThemeManager
-import de.griefed.serverpackcreator.app.gui.window.control.ControlPanel
 import de.griefed.serverpackcreator.app.gui.window.settings.components.Editor
-import java.awt.GraphicsEnvironment
 import java.awt.event.ActionListener
 import javax.swing.DefaultComboBoxModel
 import javax.swing.event.ChangeListener
-import javax.swing.plaf.FontUIResource
-
 
 /**
  * @author Griefed
@@ -41,8 +37,7 @@ class GuiSettings(
     private val guiProps: GuiProps,
     actionListener: ActionListener,
     changeListener: ChangeListener,
-    private val themeManager: ThemeManager,
-    private val controlPanel: ControlPanel
+    private val themeManager: ThemeManager
 ) : Editor(Translations.settings_gui.toString(), guiProps) {
 
     private val fontSizeIcon = StatusIcon(guiProps,Translations.settings_gui_font_tooltip.toString())

@@ -19,11 +19,11 @@
  */
 package de.griefed.serverpackcreator.app.web.serverpack.customizing
 
-import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-interface StartArgumentRepository : JpaRepository<StartArgument, Int> {
+interface StartArgumentRepository : MongoRepository<StartArgument, String> {
     fun findByArgument(argument: String): Optional<StartArgument>
 }

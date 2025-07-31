@@ -223,7 +223,7 @@ inline fun <A, B> List<A>.parallelMap(
     context: CoroutineContext = newSingleThreadContext("parallelMap"),
     crossinline function: suspend (A) -> B
 ): List<B> = runBlocking(context) {
-    map { return@map this.async<B> { function(it) } }.awaitAll()
+    map { return@map this.async { function(it) } }.awaitAll()
 }
 
 /**

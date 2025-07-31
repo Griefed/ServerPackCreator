@@ -54,6 +54,7 @@ class RunHeadlessCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) 
             "You will be asked to enter the path to the desired config after starting this command."
         ]
     )
+    @Suppress("unused")
     fun withSpecificConfig(
         @CommandLine.Option(
             names = ["-c", "--config"],

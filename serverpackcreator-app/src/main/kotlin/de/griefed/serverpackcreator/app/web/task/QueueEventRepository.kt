@@ -20,12 +20,12 @@
 package de.griefed.serverpackcreator.app.web.task
 
 import de.griefed.serverpackcreator.app.web.modpack.ModPackStatus
-import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface QueueEventRepository : JpaRepository<QueueEvent, Int> {
-    fun findAllByModPackId(modPackId: Int): MutableList<QueueEvent>
-    fun findAllByServerPackId(serverPackId: Int): MutableList<QueueEvent>
+interface QueueEventRepository : MongoRepository<QueueEvent, String> {
+    fun findAllByModPackId(modPackId: String): MutableList<QueueEvent>
+    fun findAllByServerPackId(serverPactId: String): MutableList<QueueEvent>
     fun findAllByStatus(status: ModPackStatus): MutableList<QueueEvent>
 }

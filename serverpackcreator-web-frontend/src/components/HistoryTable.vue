@@ -93,7 +93,7 @@
 </template>
 
 
-<script lang="ts">
+<script >
 import {defineComponent, ref} from 'vue';
 import {events} from 'boot/axios';
 import {date} from 'quasar';
@@ -113,7 +113,7 @@ const columns = [
     field: 'timestamp',
     sortable: true,
     align: 'left',
-    format: (val: number) => date.formatDate(val, 'YYYY-MM-DD : HH:mm')
+    format: (val) => date.formatDate(val, 'YYYY-MM-DD : HH:mm')
   },
   {
     name: 'errors',
@@ -121,7 +121,7 @@ const columns = [
     field: 'errors',
     sortable: false,
     align: 'left',
-    format: (val: string[]) => val.length
+    format: (val) => val.length
   }
 ];
 

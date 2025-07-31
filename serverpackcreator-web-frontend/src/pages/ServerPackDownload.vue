@@ -17,9 +17,9 @@
       <q-card-section horizontal>
         <q-card-section class="q-pt-xs">
           <div class="row">
-            <div class="col text-overline">Server Pack {{ $route.params.id }}</div>
+            <div class="col text-overline">Server Pack ID: {{ $route.params.id }}</div>
           </div>
-          <div class="text-h5 q-mt-sm q-mb-xs">{{ name }}</div>
+          <div class="text-h5 q-mt-sm q-mb-xs">File Name: {{ name }}</div>
         </q-card-section>
       </q-card-section>
       <q-card-section horizontal>
@@ -108,7 +108,7 @@
   </q-page>
 </template>
 
-<script lang="ts">
+<script >
 import { defineComponent, ref } from 'vue';
 import { modpacks, serverpacks } from 'boot/axios';
 import { date } from 'quasar';
@@ -152,11 +152,11 @@ export default defineComponent({
     };
   },
   methods: {
-    current(): string {
+    current() {
       const route = this.$router.resolve({});
       return new URL(route.href, window.location.origin).href;
     },
-    copyToClipboard(text: string) {
+    copyToClipboard(text) {
       navigator.clipboard.writeText(text);
       this.$q.notify({
         timeout: 5000,
@@ -177,7 +177,7 @@ export default defineComponent({
         this.downloadWithAxios(this.$route.params.id)
       }
     },
-    downloadWithAxios(id: string) {
+    downloadWithAxios(id) {
       this.loading = true
       serverpacks.get('download/' + id, {
         responseType: 'arraybuffer'
@@ -203,7 +203,7 @@ export default defineComponent({
   },
   mounted() {
     this.showTextLoading();
-    serverpacks.get(this.$route.params.id.toString()).then(response => {
+    serverpacks.get(this.$route.params.id).then(response => {
       this.size = response.data.size;
       this.downloads = response.data.downloads;
       this.confirmedWorking = response.data.confirmedWorking;
@@ -225,7 +225,7 @@ export default defineComponent({
         message: 'Could not retrieve server pack: ' + error
       });
     });
-    modpacks.get('byserverpack/' + this.$route.params.id.toString()).then(response => {
+    modpacks.get('byserverpack/' + this.$route.params.id).then(response => {
       this.name = response.data.name.replaceAll(' ', '_').replace('.zip', '_server_pack.zip')
     }).catch(error => {
       this.$q.notify({

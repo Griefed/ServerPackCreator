@@ -1,11 +1,5 @@
-import { boot } from 'quasar/wrappers';
-import axios, { AxiosInstance } from 'axios';
-
-declare module '@vue/runtime-core' {
-  interface ComponentCustomProperties {
-    $axios: AxiosInstance;
-  }
-}
+import { defineBoot } from '#q-app/wrappers'
+import axios from 'axios'
 
 // Be careful when using SSR for cross-request state pollution
 // due to creating a Singleton instance here;
@@ -43,7 +37,7 @@ const stats = axios.create({
   method: 'get'
 })
 
-export default boot(({ app }) => {
+export default defineBoot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api
 
   app.config.globalProperties.$axios = axios;
@@ -57,6 +51,6 @@ export default boot(({ app }) => {
   app.config.globalProperties.$modpacks = modpacks;
   app.config.globalProperties.$runConfigs = runConfigs;
   app.config.globalProperties.$stats = stats;
-});
+})
 
 export { versions, settings, events, serverpacks, modpacks, runConfigs, stats };

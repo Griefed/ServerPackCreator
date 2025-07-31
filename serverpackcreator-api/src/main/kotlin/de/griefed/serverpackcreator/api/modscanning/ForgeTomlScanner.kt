@@ -75,7 +75,7 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
             try {
                 modConfig = getConfig(modJar)
 
-                // get all [[dependencies.n]] which are minecraft|forge, to determine sideness of the mod itself
+                // get all [[dependencies.n]] which are minecraft|forge, to determine the sideness of the mod itself
                 dependencies.addAll(getModDependencyIdsRequiredOnServer(modConfig, modJar.name))
 
                 // get all mods required on the server
@@ -107,7 +107,7 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
     /**
      * Get all ids of mods required for running the server.
      *
-     * @param modConfig Base-config of the toml of the mod which contains all information.
+     * @param modConfig Base-config toml of the mod which contains all information.
      * @return Set of ids of mods required.
      * @throws ScanningException if the mod specifies no mods.
      */
@@ -141,12 +141,12 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
                                 if (side.matches(bothServer)) {
                                     entries.add(Pair(modId, fileName))
                                 }
-                            } catch (ex: NullPointerException) {
+                            } catch (_: NullPointerException) {
                                 // no side specified....assuming both|server
                                 entries.add(Pair(modId, fileName))
                             }
                         }
-                    } catch (e: NullPointerException) {
+                    } catch (_: NullPointerException) {
                         // no modId specified in dependency...assuming forge|minecraft and both|server
                         containedForgeOrMinecraft = true
                         entries.add(Pair(modId,"$fileName ($modId)"))
@@ -164,13 +164,13 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
     }
 
     /**
-     * Acquire a list of ids of dependencies required by the passed mod in order to run on a modded
+     * Acquire an id-list of dependencies required by the passed mod to run on a modded
      * server. Only if all dependencies in this mod specify `CLIENT` for either `forge `
      * or `minecraft` is a dependency not added to the list of required dependencies. Otherwise,
      * all modIds mentioned in the dependencies of this mod, which are neither `forge` nor
      * `minecraft` get added to the list.
      *
-     * @param modConfig Base-config of the toml of the mod which contains all information.
+     * @param modConfig Base-config toml of the mod which contains all information.
      * @return Set of ids of mods required as dependencies.
      * @throws ScanningException if the mod has invalid dependency declarations or specifies no mods.
      */
@@ -188,7 +188,7 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
                     for (dependency in modIdDependencies) {
                         val dependencyModId = getModId(dependency)
                         val side = getSide(dependency)
-                        val required = getRequired(dependency)
+                        //val required = getRequired(dependency)
                         if (dependencyModId.matches(neoForgeMinecraft) && side.matches(bothServer)) { // && required.equals(requiredAsDep,true)
                             confidentOnClientSide = false
                         }
@@ -203,7 +203,7 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
             if (confidentOnClientSide) {
                 return entries
             }
-        } catch (ignored: NullPointerException) {
+        } catch (_: NullPointerException) {
         }
         for ((key, value) in dependencies) {
             for (commentedConfig in value) {
@@ -221,14 +221,14 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
                                     entries.add(Pair(dependencyID,"$fileName ($modID)"))
                                 }
                             }
-                        } catch (ex: NullPointerException) {
+                        } catch (_: NullPointerException) {
                             // dependency specifies no side
                             for (modID in idsInMod) {
                                 entries.add(Pair(dependencyID,"$fileName ($modID)"))
                             }
                         }
                     }
-                } catch (e: NullPointerException) {
+                } catch (_: NullPointerException) {
                     // dependency specifies no modId, so use parent.
                     val lowerKey = key.lowercase()
                     if (!lowerKey.matches(neoForgeMinecraft)) {
@@ -245,7 +245,7 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
     /**
      * Acquire a set of ids of mods required for running the server.
      *
-     * @param config Base-config of the toml of the mod which contains all information.
+     * @param config Base-config toml of the mod which contains all information.
      * @return Set of ids of mods required.
      * @throws ScanningException if the mod specifies no...well...mods.
      */
@@ -286,7 +286,7 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
     /**
      * Acquire a map of all dependencies specified by a mod.
      *
-     * @param config Base-config of the toml of the mod which contains all * information.
+     * @param config Base-config toml of the mod which contains all * information.
      * @return Map of dependencies for the passed mod config, String keys are mapped to ArrayLists of
      * CommentedConfigs.
      * @throws ScanningException if the mod declares no dependencies.
@@ -325,7 +325,7 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
     private fun getModId(config: CommentedConfig) = config.valueMap()[modId].toString().lowercase()
 
     /**
-     * Acquire the side of the config of the passed dependency.
+     * Acquire the side of the passed dependency.
      *
      * @param config Mod- or dependency-config which contains the modId.
      * @return `side` from the passed config, in upper-case letters.
@@ -339,7 +339,7 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
     }
 
     /**
-     * Acquire the side of the config of the passed dependency.
+     * Acquire the side of the passed dependency.
      *
      * @param config Mod- or dependency-config which contains the modId.
      * @return `side` from the passed config, in upper-case letters.

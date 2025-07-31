@@ -102,10 +102,12 @@ open class ScrollTextField(
         textField.dropTarget = dropTarget
     }
 
+    @Suppress("unused")
     fun setDropMode(mode: DropMode) {
         textField.dropMode = mode
     }
 
+    @Suppress("unused")
     fun getDropMode(): DropMode {
         return textField.dropMode
     }
