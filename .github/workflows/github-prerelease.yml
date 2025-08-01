@@ -25,7 +25,7 @@ jobs:
       # EXTRACT TAG FROM PUSH
       - name: Get tag
         id: tag
-        uses: tj-actions/branch-names@v9.0.0
+        uses: tj-actions/branch-names@v9.0.2
       - name: Use tag
         run: echo ${{steps.tag.outputs.tag}}
 
@@ -186,7 +186,7 @@ jobs:
       # GENERATE RELEASE
       - name: Create Release
         id: create_release
-        uses: softprops/action-gh-release@v2.2.2
+        uses: softprops/action-gh-release@v2.3.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{ needs.preparations.outputs.version }}
