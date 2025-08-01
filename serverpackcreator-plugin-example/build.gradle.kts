@@ -3,7 +3,7 @@ import java.util.*
 
 plugins {
     id("serverpackcreator.kotlin-conventions")
-    id("de.comahe.i18n4k") version "0.10.0"
+    id("de.comahe.i18n4k") version "0.11.0"
     kotlin("kapt")
 }
 
