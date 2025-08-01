@@ -56,18 +56,18 @@ dependencies {
     //WEB
     api("org.jetbrains.kotlin:kotlin-reflect:2.1.21")
     api("com.fasterxml.jackson.module:jackson-module-kotlin:2.19.0")
-    api("org.springframework.boot:spring-boot-starter-web:3.5.3")
-    api("org.springframework.boot:spring-boot-starter-log4j2:3.5.3")
-    api("org.springframework.boot:spring-boot-starter-data-mongodb:3.5.3")
+    api("org.springframework.boot:spring-boot-starter-web:3.5.4")
+    api("org.springframework.boot:spring-boot-starter-log4j2:3.5.4")
+    api("org.springframework.boot:spring-boot-starter-data-mongodb:3.5.4")
     testRuntimeOnly("com.h2database:h2:2.3.232")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:3.5.3") {
+    testImplementation("org.springframework.boot:spring-boot-starter-test:3.5.4") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
         exclude(group = "org.mockito", module = "mockito-core")
     }
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.12.2")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.12.2")
     testImplementation("com.ninja-squad:springmockk:4.0.2")
-    developmentOnly("org.springframework.boot:spring-boot-devtools:3.5.3")
+    developmentOnly("org.springframework.boot:spring-boot-devtools:3.5.4")
     //developmentOnly("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 }
 
