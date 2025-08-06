@@ -48,7 +48,7 @@ jobs:
         run: echo ${{ steps.get-new-hash.outputs.hash }}
 
       - name: Push
-        if: "${{ steps.get-current-hash.outputs.hash }}" != "${{ steps.get-new-hash.outputs.hash }}"
+        if: ${{ steps.get-current-hash.outputs.hash != steps.get-new-hash.outputs.hash }}
         run: |
           apt-get update && apt-get install git -y && \
           git config user.name ${{ secrets.GIT_USER }} && \
