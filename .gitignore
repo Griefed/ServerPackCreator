@@ -373,6 +373,7 @@ serverpackcreator-web-frontend/node_modules/
 serverpackcreator-web-frontend/node/
 serverpackcreator-web-frontend/.frontend-gradle-plugin
 serverpackcreator-app/serverpackcreator.db
+serverpackcreator-web-frontend/.frontend-gradle-plugin/resolvePackageManager/package-manager-executable-path.txt
 
 .thumbs.db
 node_modules

@@ -323,6 +323,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "[1.12.2]DamageIndicatorsMod-", //https://www.curseforge.com/minecraft/mc-mods/damage-indicators-mod
             "[1.12.2]bspkrscore-",          //https://www.curseforge.com/minecraft/mc-mods/bspkrscore
             "advancementscreenshot-",       //https://www.curseforge.com/minecraft/mc-mods/advancement-screenshot
+            "ae_pattern_improve-",          //https://www.curseforge.com/minecraft/mc-mods/ae2-pattern-qol-improving
             "ahznbstools-",                 //https://www.curseforge.com/minecraft/mc-mods/ahznbs-tools/
             "antighost-",                   //https://www.curseforge.com/minecraft/mc-mods/antighost
             "anviltooltipmod-",             //https://www.curseforge.com/minecraft/mc-mods/anvil-tooltip-mod
@@ -364,6 +365,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "classicbar-",                  //https://www.curseforge.com/minecraft/mc-mods/classic-bars
             "cleanview",                    //https://www.curseforge.com/minecraft/mc-mods/clean-view
             "clienttweaks-",                //https://www.curseforge.com/minecraft/mc-mods/client-tweaks
+            "cobblemon-ui-tweaks-",         //https://modrinth.com/mod/cobblemon-ui-tweaks
             "combat_music-",                //https://www.curseforge.com/minecraft/mc-mods/combat-music
             "configured-neoforge-",         //https://www.curseforge.com/minecraft/mc-mods/configured
             "configured-forge-",            //https://www.curseforge.com/minecraft/mc-mods/configured
