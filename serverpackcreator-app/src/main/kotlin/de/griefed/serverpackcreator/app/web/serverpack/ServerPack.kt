@@ -20,56 +20,64 @@
 package de.griefed.serverpackcreator.app.web.serverpack
 
 import de.griefed.serverpackcreator.app.web.serverpack.customizing.RunConfiguration
-import jakarta.persistence.*
-import org.hibernate.annotations.CreationTimestamp
-import java.sql.Timestamp
+import org.springframework.data.annotation.PersistenceCreator
+import org.springframework.data.mongodb.core.mapping.DBRef
+import org.springframework.data.mongodb.core.mapping.Document
+import org.springframework.data.mongodb.core.mapping.FieldType
+import org.springframework.data.mongodb.core.mapping.MongoId
+import java.util.*
 
-@Entity
-class ServerPack() {
+@Document
+class ServerPack {
 
-    @Id
-    @GeneratedValue
-    @Column(updatable = false, nullable = false)
-    var id: Int = 0
-
-    @Column
+    @MongoId(FieldType.STRING)
+    var id: String? = null
+        private set
+    var modpackId: String = ""
     var size: Int = 0
-
-    @Column
     var downloads: Int = 0
-
-    @Column
     var confirmedWorking: Int = 0
-
-    @CreationTimestamp
-    @Column
-    var dateCreated: Timestamp? = null
-
-    @Column
-    var fileID: Long? = null
-
-    @Column
+    var dateCreated: Date = Date(System.currentTimeMillis())
+    var fileID: String? = null
+    var fileName: String? = null
     var sha256: String? = null
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @DBRef
     var runConfiguration: RunConfiguration? = null
 
     constructor(
-        size: Double,
+        size: Int,
+        runConfiguration: RunConfiguration?,
+        fileID: String?,
+        fileName: String?,
+        sha256: String?,
+        modpackId: String
+    ) {
+        this.size = size
+        this.runConfiguration = runConfiguration
+        this.fileID = fileID
+        this.fileName = fileName
+        this.sha256 = sha256
+        this.modpackId = modpackId
+    }
+
+    @PersistenceCreator
+    private constructor(
+        id: String,
+        size: Int,
         downloads: Int,
         confirmedWorking: Int,
-        dateCreated: Timestamp?,
+        dateCreated: Date,
         runConfiguration: RunConfiguration?,
-        fileID: Long?,
-        sha256: String?
-    ) : this() {
-        this.size = size.toInt()
+        fileID: String?,
+        fileName: String?,
+        sha256: String?,
+        modpackId: String
+    ) : this(size, runConfiguration, fileID, fileName, sha256, modpackId) {
+        this.id = id
         this.downloads = downloads
         this.confirmedWorking = confirmedWorking
         this.dateCreated = dateCreated
-        this.runConfiguration = runConfiguration
-        this.fileID = fileID
-        this.sha256 = sha256
     }
 
     override fun equals(other: Any?): Boolean {

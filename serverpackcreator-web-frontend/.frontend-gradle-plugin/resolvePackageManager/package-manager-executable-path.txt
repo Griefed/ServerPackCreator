@@ -1,1 +1,0 @@
-F:\GitLab\ServerPackCreator\serverpackcreator-web-frontend\node\npm.cmd

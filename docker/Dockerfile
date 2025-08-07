@@ -45,7 +45,7 @@ RUN \
       /root/.cache \
       /tmp/*
 
-COPY --chmod=777 root/ /
+COPY --chmod=777 docker/root /
 COPY --from=builder --chmod=777 /tmp/serverpackcreator/serverpackcreator-app/build/libs/serverpackcreator-app-$VERSION.jar /app/serverpackcreator/serverpackcreator.jar
 
 EXPOSE 8080

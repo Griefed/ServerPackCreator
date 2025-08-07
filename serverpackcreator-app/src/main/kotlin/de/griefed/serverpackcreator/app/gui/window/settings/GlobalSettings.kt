@@ -541,14 +541,14 @@ class GlobalSettings(
             inclusionsIcon.info()
         }
 
-        if (scriptSetting.getData().entries.any { (key, value) -> !File(value).isFile }) {
+        if (scriptSetting.getData().entries.any { (_, value) -> !File(value).isFile }) {
             scriptIcon.error(Translations.settings_global_scripts_missing.toString())
             errors.add(Translations.settings_global_scripts_missing.toString())
         } else {
             scriptIcon.info()
         }
 
-        if (javaScriptSetting.getData().entries.any { (key, value) -> !File(value).isFile }) {
+        if (javaScriptSetting.getData().entries.any { (_, value) -> !File(value).isFile }) {
             javaScriptIcon.error(Translations.settings_global_javascripts_missing.toString())
             errors.add(Translations.settings_global_javascripts_missing.toString())
         } else {

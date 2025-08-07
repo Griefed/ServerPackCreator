@@ -33,7 +33,7 @@ import javax.swing.border.TitledBorder
 class CollapsiblePanel(
     private var title: String = "Collapsible Panel",
     panel: JPanel,
-    private var border: TitledBorder = BorderFactory.createTitledBorder(title)
+    private var titledBorder: TitledBorder = BorderFactory.createTitledBorder(title)
 ) : JPanel() {
 
     /**
@@ -159,7 +159,7 @@ class CollapsiblePanel(
         if (componentCount > 0) {
             arrow = if (hasInvisibleComponent()) "▽" else "△"
         }
-        border.title = "$title $arrow"
+        titledBorder.title = "$title $arrow"
         repaint()
     }
 
@@ -176,8 +176,8 @@ class CollapsiblePanel(
     }
 
     init {
-        border.titleFont = border.titleFont.deriveFont(Font.BOLD).deriveFont(13F)
-        setBorder(border)
+        titledBorder.titleFont = titledBorder.titleFont.deriveFont(Font.BOLD).deriveFont(13F)
+        border = titledBorder
         layout = BorderLayout()
         addMouseListener(titleListener)
         add(panel)

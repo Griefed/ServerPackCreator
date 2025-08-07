@@ -17,12 +17,12 @@
       <q-card-section horizontal>
         <q-card-section class="q-pt-xs">
           <div class="row">
-            <div class="col text-overline">ModPack {{ $route.params.id }}</div>
+            <div class="col text-overline">ModPack {{ name }}</div>
             <div class="col text-overline">Source {{ source }}</div>
-            <div v-if="projectID.length > 0" class="col text-overline">Project ID {{ projectID }}</div>
-            <div v-if="versionID.length > 0" class="col text-overline">Version ID {{ versionID }}</div>
+            <div v-if="projectID.length > 0" class="col text-overline">Project ID<br>{{ projectID }}</div>
+            <div v-if="versionID.length > 0" class="col text-overline">Version ID<br>{{ versionID }}</div>
           </div>
-          <div class="text-h5 q-mt-sm q-mb-xs">{{ name }}</div>
+          <div class="text-h5 q-mt-sm q-mb-xs">ID {{ $route.params.id }}</div>
         </q-card-section>
       </q-card-section>
       <q-card-section horizontal>
@@ -121,7 +121,7 @@
   </q-page>
 </template>
 
-<script lang="ts">
+<script >
 import { defineComponent, ref } from 'vue';
 import { modpacks } from 'boot/axios';
 import { date } from 'quasar';
@@ -168,12 +168,12 @@ export default defineComponent({
     };
   },
   methods: {
-    current(): string {
+    current() {
       const route = this.$router.resolve({});
       console.log(this.$route);
       return new URL(route.href, window.location.origin).href;
     },
-    copyToClipboard(text: string) {
+    copyToClipboard(text) {
       navigator.clipboard.writeText(text);
       this.$q.notify({
         timeout: 5000,
@@ -194,7 +194,7 @@ export default defineComponent({
         this.downloadWithAxios(this.$route.params.id)
       }
     },
-    downloadWithAxios(id: string) {
+    downloadWithAxios(id) {
       this.loading = true
       modpacks.get('download/' + id, {
         responseType: 'arraybuffer'
@@ -220,7 +220,7 @@ export default defineComponent({
   },
   mounted() {
     this.showTextLoading();
-    modpacks.get(this.$route.params.id.toString()).then(response => {
+    modpacks.get(this.$route.params.id).then(response => {
       this.dateCreated = response.data.dateCreated;
       this.name = response.data.name.replaceAll(' ', '_');
       this.projectID = response.data.projectID;

@@ -58,8 +58,8 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
     override fun installComponents(defaults: UIDefaults) {
         super.installComponents()
         val tipIcon = JLabel(Translations.tips_know.toString())
-        tipIcon.setIcon(guiProps.fancyInfoIcon)
-        tipIcon.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2))
+        tipIcon.icon = guiProps.fancyInfoIcon
+        tipIcon.border = BorderFactory.createEmptyBorder(2, 2, 2, 2)
         tipIcon.font = guiProps.font.deriveFont(Font.BOLD, (guiProps.fontSize + 5).toFloat())
         tipPane.add("North", tipIcon)
     }
@@ -97,9 +97,9 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
             JDialog(window as Dialog, title, true)
         }
 
-        dialog.contentPane.setLayout(BorderLayout(10, 10))
+        dialog.contentPane.layout = BorderLayout(10, 10)
         dialog.contentPane.add(tipPane, BorderLayout.CENTER)
-        (dialog.contentPane as JComponent).setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10))
+        (dialog.contentPane as JComponent).border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
 
         // tip control
         val controls = JPanel(BorderLayout())
@@ -171,7 +171,7 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
         val currentTip = tipPane.currentTip
         if (currentTip == -1) {
             val label = JLabel()
-            label.setOpaque(true)
+            label.isOpaque = true
             label.setBackground(UIManager.getColor("TextArea.background"))
             currentTipComponent = label
             tipArea.add("Center", currentTipComponent)
@@ -186,20 +186,20 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
             val tip = tipPane.model.getTipAt(currentTip)
             val tipObject = tip.tip
             val tipScroll = JScrollPane()
-            tipScroll.setBorder(null)
-            tipScroll.setOpaque(false)
-            tipScroll.viewport.setOpaque(false)
-            tipScroll.setBorder(null)
+            tipScroll.border = null
+            tipScroll.isOpaque = false
+            tipScroll.viewport.isOpaque = false
+            tipScroll.border = null
             val text = tipObject?.toString() ?: ""
             val editor = JEditorPane("text/html", text)
             editor.setFont(tipPane.font)
             BasicHTML.updateRenderer(editor, text)
             editor.isEditable = false
-            editor.setBorder(null)
-            editor.setMargin(null)
-            editor.setOpaque(false)
+            editor.border = null
+            editor.margin = null
+            editor.isOpaque = false
             editor.setFont(tipFont)
-            tipScroll.viewport.setView(editor)
+            tipScroll.viewport.view = editor
 
             currentTipComponent = tipScroll
         }

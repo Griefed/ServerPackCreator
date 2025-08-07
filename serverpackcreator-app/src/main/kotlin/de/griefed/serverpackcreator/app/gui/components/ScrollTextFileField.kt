@@ -57,7 +57,7 @@ class ScrollTextFileField(
         textField.isEditable = guiProps.allowManualEditing
         file = File(text).absoluteFile
 
-        textField.setDropMode(DropMode.INSERT)
+        textField.dropMode = DropMode.INSERT
         textField.dropTarget = object : DropTarget() {
             override fun drop(event: DropTargetDropEvent?) {
                 val transferable = event?.transferable ?: return

@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.*
  *
  * @author Griefed
  */
+@Suppress("unused")
 @RestController
 @CrossOrigin(origins = ["*"])
 @RequestMapping("/api/v2/versions")

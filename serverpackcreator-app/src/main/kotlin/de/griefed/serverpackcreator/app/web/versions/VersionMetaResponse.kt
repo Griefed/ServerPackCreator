@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.app.web.versions
 
+@Suppress("unused")
 class VersionMetaResponse(
     val minecraft: List<String>,
     val fabric: List<String>,

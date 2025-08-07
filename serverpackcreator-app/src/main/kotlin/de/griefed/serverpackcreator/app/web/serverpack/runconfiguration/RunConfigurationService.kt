@@ -137,7 +137,7 @@ class RunConfigurationService @Autowired constructor(
         )
     }
 
-    fun load(id: Int): Optional<RunConfiguration> {
+    fun load(id: String): Optional<RunConfiguration> {
         return runConfigurationRepository.findById(id)
     }
 

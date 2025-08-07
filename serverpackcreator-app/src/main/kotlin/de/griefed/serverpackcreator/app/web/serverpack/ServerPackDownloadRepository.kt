@@ -19,10 +19,10 @@
  */
 package de.griefed.serverpackcreator.app.web.serverpack
 
-import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface ServerPackDownloadRepository : JpaRepository<ServerPackDownload, Int> {
+interface ServerPackDownloadRepository : MongoRepository<ServerPackDownload, String> {
     fun findAllByServerPack(serverPack: ServerPack): List<ServerPackDownload>
 }

@@ -67,7 +67,7 @@ abstract class LogTailer : JScrollPane() {
             }
         }
         val builder = Tailer.builder()
-        builder.setFile(logFile)
+        builder.file = logFile
         builder.setTailerListener(listener)
         builder.setDelayDuration(Duration.ofMillis(250L))
         builder.setStartThread(true)
