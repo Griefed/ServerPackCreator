@@ -178,7 +178,7 @@ Build Release:
     - echo "**** Building ServerPackCreator ****"
     - "./gradlew generateLicenseReport -Pversion=${CI_COMMIT_TAG} --info --full-stacktrace"
     - "./gradlew build -Pversion=${CI_COMMIT_TAG} --info --full-stacktrace -x :serverpackcreator-api:test -x :serverpackcreator-app:test"
-    - #"./gradlew cyclonedxBom -Pversion=${CI_COMMIT_TAG} --info --full-stacktrace"
+#    - "./gradlew cyclonedxBom -Pversion=${CI_COMMIT_TAG} --info --full-stacktrace"
     - echo "**** Listing build directory ****"
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto */build
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto */build/*
