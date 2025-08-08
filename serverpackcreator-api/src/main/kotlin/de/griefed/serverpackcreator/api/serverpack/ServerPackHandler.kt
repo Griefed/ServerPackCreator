@@ -43,7 +43,6 @@ import java.nio.file.Paths
 import java.util.*
 import java.util.regex.PatternSyntaxException
 import javax.imageio.ImageIO
-import kotlin.collections.ArrayList
 import kotlin.io.path.absolute
 
 /**

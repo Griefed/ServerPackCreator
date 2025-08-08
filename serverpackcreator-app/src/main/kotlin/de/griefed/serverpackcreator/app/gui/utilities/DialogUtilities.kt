@@ -126,11 +126,7 @@ class DialogUtilities {
             dialog.dispose()
             val selected: Any = pane.value ?: return JOptionPane.CLOSED_OPTION
             if (options == null) {
-                return if (selected is Int) {
-                    selected
-                } else {
-                    JOptionPane.CLOSED_OPTION
-                }
+                return selected as? Int ?: JOptionPane.CLOSED_OPTION
             } else {
                 for (i in options.indices) {
                     if (options[i] == selected) {

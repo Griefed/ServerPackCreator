@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.app.gui.tips
 
 import Translations
 import de.griefed.serverpackcreator.app.gui.GuiProps
-import de.griefed.serverpackcreator.app.gui.utilities.getAspectRatioScaledInstsance
+import de.griefed.serverpackcreator.app.gui.utilities.getAspectRatioScaledInstance
 import io.ktor.util.reflect.*
 import tokyo.northside.swing.TipOfTheDay
 import tokyo.northside.swing.plaf.DefaultTipOfTheDayUI
@@ -85,9 +85,7 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
 
         val dialog: JDialog
 
-        val window: Window = if (parentComponent is Window) {
-            parentComponent
-        } else SwingUtilities.getWindowAncestor(
+        val window: Window = parentComponent as? Window ?: SwingUtilities.getWindowAncestor(
             parentComponent
         )
 
@@ -213,7 +211,7 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
 
     private fun updateImage(currentTip: Int) {
         if ((tipPane.model.getTipAt(currentTip) as CustomTip).getImage() != null) {
-            tipImage.icon = (tipPane.model.getTipAt(currentTip) as CustomTip).getImage()!!.getAspectRatioScaledInstsance(800)
+            tipImage.icon = (tipPane.model.getTipAt(currentTip) as CustomTip).getImage()!!.getAspectRatioScaledInstance(800)
             tipArea.add("East",tipImage)
         } else {
             tipImage.icon = null

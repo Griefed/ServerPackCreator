@@ -33,7 +33,9 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.io.IOException
 import java.net.URI
-import java.nio.file.*
+import java.nio.file.FileSystemAlreadyExistsException
+import java.nio.file.Paths
+import java.nio.file.ProviderNotFoundException
 import java.util.*
 import java.util.regex.PatternSyntaxException
 
@@ -790,6 +792,7 @@ class ConfigurationHandler(
      * @return The destination where the ZIP-archive will be extracted to.
      * @author Griefed
      */
+    @Suppress("unused")
     fun unzipDestination(destination: String): String {
         var dest = destination
         if (File(dest).isDirectory || File("${dest}_0").isDirectory) {
