@@ -47,5 +47,6 @@ services:
       MONGODB_PASSWORD: <DB_PASSWORD>
     volumes:
       - ./init-mongo.sh:/docker-entrypoint-initdb.d/init.sh:ro
+      - spcdb:/data/db
 volumes:
-  database:
+  spcdb:
