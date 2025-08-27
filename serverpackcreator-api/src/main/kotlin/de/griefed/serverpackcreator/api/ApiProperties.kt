@@ -172,6 +172,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "AreYouBlind-",                 //https://www.curseforge.com/minecraft/mc-mods/are-you-blind
             "Armor Status HUD-",            //https://www.curseforge.com/minecraft/mc-mods/armorstatushud
             "ArmorSoundTweak-",             //https://www.curseforge.com/minecraft/mc-mods/armor-sound-tweak
+            "Audio Improvements ",          //https://www.curseforge.com/minecraft/mc-mods/audio-improvements
             "BH-Menu-",                     //https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-forge & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-fabric & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-neoforge
             "Batty's Coordinates PLUS Mod", //https://www.curseforge.com/minecraft/mc-mods/batty-ui & https://www.curseforge.com/minecraft/mc-mods/battys-ui-mod-forge
             "BetterAdvancements-",          //https://www.curseforge.com/minecraft/mc-mods/better-advancements
