@@ -42,7 +42,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: <DB_ROOT_USERNAME>
       MONGO_INITDB_ROOT_PASSWORD: <DB_ROOT_PASSWORD>
       MONGO_INITDB_DATABASE: initdb
-      MONGODB_DB: serverpackcreatordb
+      MONGODB_DB: serverpackcreator
       MONGODB_USER: <DB_USERNAME>
       MONGODB_PASSWORD: <DB_PASSWORD>
     volumes:
