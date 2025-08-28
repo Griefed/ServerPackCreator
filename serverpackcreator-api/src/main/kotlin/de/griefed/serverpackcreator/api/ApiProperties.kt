@@ -1409,7 +1409,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             if (dbPath.isEmpty() ||
                 dbPath.contains("sqlite") ||
                 dbPath.contains("postgresql") ||
-                !dbPath.startsWith("mongodb://") ) {
+                !dbPath.startsWith("mongodb") ) {
                 log.warn("Your spring.datasource.url-property didn't match a MongoDB-URL: $dbPath. It has been migrated to mongodb://localhost:27017/serverpackcreatordb.")
                 dbPath = "mongodb://localhost:27017/serverpackcreatordb"
             }

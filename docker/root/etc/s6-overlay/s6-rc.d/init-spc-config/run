@@ -43,10 +43,10 @@ else
 fi
 
 if [[ -z ${SPC_DATABASE_HOST} ]] || [[ -z ${SPC_DATABASE_PORT} ]] || [[ -z ${SPC_DATABASE_DB} ]];then
-  echo "spring.datasource.url=jdbc\:postgresql\:" >> ${OVERRIDES}
+  echo "spring.datasource.url=mongodb\:" >> ${OVERRIDES}
 else
   echo "Overriding spring.datasource.url..."
-  echo "spring.datasource.url=jdbc\:postgresql\://${SPC_DATABASE_HOST}\:${SPC_DATABASE_PORT}/${SPC_DATABASE_DB}" >> ${OVERRIDES}
+  echo "spring.datasource.url=mongodb\://${SPC_DATABASE_HOST}\:${SPC_DATABASE_PORT}/${SPC_DATABASE_DB}" >> ${OVERRIDES}
 fi
 
 if [[ -z ${SPC_MAX_UPLOAD_SIZE} ]];then
