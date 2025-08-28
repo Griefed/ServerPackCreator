@@ -1,3 +1,24 @@
+## [8.0.0-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.0-alpha.1...8.0.0-alpha.2) (2025-08-28)
+
+### :scissors: Refactor
+
+* Qodana recommendations and import optimizations ([8460be7](https://git.griefed.de/Griefed/ServerPackCreator/commit/8460be7ed5350d5cb2ec9be80249b9853dd0b142))
+
+### 📦 Other
+
+* Add Audio Improvements to clientside-list ([99817d2](https://git.griefed.de/Griefed/ServerPackCreator/commit/99817d2fcaf89375c37d95dfbbe5979f48c61504))
+* Persist data for db ([b292e34](https://git.griefed.de/Griefed/ServerPackCreator/commit/b292e3449aa613fedcaefa9426252cf80bcde31c))
+* Set db name same as in spc-container ([b5f9535](https://git.griefed.de/Griefed/ServerPackCreator/commit/b5f9535957ff9b70c6b1345a8ef9cf2adf691456))
+
+### 🦊 CI/CD
+
+* Comment out cycloneDx call ([c2970be](https://git.griefed.de/Griefed/ServerPackCreator/commit/c2970bec3ad22fc41c0117d4536ca6035854a8cb))
+* whoops. Brainfart. Need more coffee. ([e5ca7c3](https://git.griefed.de/Griefed/ServerPackCreator/commit/e5ca7c32befe9860a3ac0f56ba7777b5fbdf8b93))
+
+### 🛠 Fixes
+
+* Correctly assemble mongodb-url in container ([53c432a](https://git.griefed.de/Griefed/ServerPackCreator/commit/53c432a23cb0094a70f75f15b66a7eb3628dd77a))
+
 ## [8.0.0-alpha.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.3.0...8.0.0-alpha.1) (2025-08-07)
 
 ### :scissors: Refactor
