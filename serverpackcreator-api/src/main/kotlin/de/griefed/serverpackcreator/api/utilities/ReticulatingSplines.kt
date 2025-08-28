@@ -19,6 +19,10 @@
  */
 package de.griefed.serverpackcreator.api.utilities
 
+import de.griefed.serverpackcreator.api.utilities.ReticulatingSplines.Companion.reticulatingSplines
+import de.griefed.serverpackcreator.api.utilities.ReticulatingSplines.Companion.splines
+
+
 /**
  * Just something fun to brighten the mood. This class provides a list of messages which some of you
  * may know from the SimCity games. Thanks go out to MAXIS and Sim City, for the ridiculous messages

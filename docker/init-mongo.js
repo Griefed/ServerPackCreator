@@ -1,0 +1,1 @@
+db.getSiblingDB(process.env.MONGO_INITDB_DATABASE).createCollection(process.env.MONGO_INITDB_DATABASE);

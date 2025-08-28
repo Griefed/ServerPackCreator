@@ -33,7 +33,9 @@ import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.StringSelection
 import java.awt.event.ActionListener
 import java.util.*
-import javax.swing.*
+import javax.swing.JFrame
+import javax.swing.JOptionPane
+import javax.swing.JTextPane
 import javax.swing.text.*
 
 /**
