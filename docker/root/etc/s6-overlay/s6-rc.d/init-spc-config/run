@@ -28,25 +28,11 @@ else
   echo "de.griefed.serverpackcreator.spring.schedules.versions.refresh=${SPC_SCHEDULE_VERSIONS_REFRESH}" >> ${OVERRIDES}
 fi
 
-if [[ -z ${SPC_DATABASE_PASSWORD} ]];then
-  echo "spring.datasource.password=" >> ${OVERRIDES}
+if [[ -z ${SPC_DATABASE_HOST} ]] || [[ -z ${SPC_DATABASE_PORT} ]] || [[ -z ${SPC_DATABASE_DB} ]] || [[ -z ${SPC_DATABASE_USERNAME} ]] || [[ -z ${SPC_DATABASE_PASSWORD} ]];then
+  echo "spring.data.mongodb.uri=mongodb\:" >> ${OVERRIDES}
 else
-  echo "Overriding spring.datasource.password..."
-  echo "spring.datasource.password=${SPC_DATABASE_PASSWORD}" >> ${OVERRIDES}
-fi
-
-if [[ -z ${SPC_DATABASE_USERNAME} ]];then
-  echo "spring.datasource.username=" >> ${OVERRIDES}
-else
-  echo "Overriding spring.datasource.username..."
-  echo "spring.datasource.username=${SPC_DATABASE_USERNAME}" >> ${OVERRIDES}
-fi
-
-if [[ -z ${SPC_DATABASE_HOST} ]] || [[ -z ${SPC_DATABASE_PORT} ]] || [[ -z ${SPC_DATABASE_DB} ]];then
-  echo "spring.datasource.url=mongodb\:" >> ${OVERRIDES}
-else
-  echo "Overriding spring.datasource.url..."
-  echo "spring.datasource.url=mongodb\://${SPC_DATABASE_HOST}\:${SPC_DATABASE_PORT}/${SPC_DATABASE_DB}" >> ${OVERRIDES}
+  echo "Overriding spring.data.mongodb.uri..."
+  echo "spring.data.mongodb.uri=mongodb\://${SPC_DATABASE_USERNAME}${SPC_DATABASE_PASSWORD}:@${SPC_DATABASE_HOST}\:${SPC_DATABASE_PORT}/${SPC_DATABASE_DB}" >> ${OVERRIDES}
 fi
 
 if [[ -z ${SPC_MAX_UPLOAD_SIZE} ]];then

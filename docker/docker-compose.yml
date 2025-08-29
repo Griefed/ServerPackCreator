@@ -13,8 +13,8 @@ services:
       - SPC_SCHEDULE_DATABASE_CLEANUP=0 0 0 * * * #CRON expression
       - SPC_SCHEDULE_FILES_CLEANUP=0 0 0 * * * #CRON expression
       - SPC_SCHEDULE_VERSIONS_REFRESH=0 0 0 * * * #CRON expression
-      - SPC_DATABASE_USERNAME=<DB_USERNAME>
-      - SPC_DATABASE_PASSWORD=<DB_PASSWORD>
+      - SPC_DATABASE_USERNAME=<DB_USERNAME> # $ : / ? # [ ] @ those characters must be converted using https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
+      - SPC_DATABASE_PASSWORD=<DB_PASSWORD> # $ : / ? # [ ] @ those characters must be converted using https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
       - SPC_DATABASE_HOST=serverpackcreatordb
       - SPC_DATABASE_PORT=27017
       - SPC_DATABASE_DB=serverpackcreator
