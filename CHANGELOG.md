@@ -1,3 +1,10 @@
+## [8.0.0-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.0-alpha.2...8.0.0-alpha.3) (2025-08-29)
+
+### 🛠 Fixes
+
+* Replace mentions of postgres with mongo. Remove JDBC mentions. ([b27d89c](https://git.griefed.de/Griefed/ServerPackCreator/commit/b27d89cc829c00f666a9f3537f525ab0cf0796e4))
+* Switch to correct DB URI ([d6ec3cd](https://git.griefed.de/Griefed/ServerPackCreator/commit/d6ec3cd6f1a3492478748cac41d3b16f84b30d04))
+
 ## [8.0.0-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.0-alpha.1...8.0.0-alpha.2) (2025-08-28)
 
 ### :scissors: Refactor
