@@ -15,8 +15,8 @@ services:
       - SPC_SCHEDULE_DATABASE_CLEANUP=0 0 0 * * *
       - SPC_SCHEDULE_FILES_CLEANUP=0 0 0 * * *
       - SPC_SCHEDULE_VERSIONS_REFRESH=0 0 0 * * *
-      - SPC_DATABASE_PASSWORD=1234567890
-      - SPC_DATABASE_USERNAME=serverpackcreator
+      - SPC_DATABASE_PASSWORD=1234567890 # $ : / ? # [ ] @ those characters must be converted using https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
+      - SPC_DATABASE_USERNAME=serverpackcreator # $ : / ? # [ ] @ those characters must be converted using https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
       - SPC_DATABASE_HOST=serverpackcreatordb
       - SPC_DATABASE_PORT=27017
       - SPC_DATABASE_DB=serverpackcreator

@@ -282,6 +282,33 @@ class StringUtilities {
                     || !text.contains("`")
                     || !text.contains("´")
                     || !text.contains("="))
+
+        /**
+         * Replace '$', ':', '/', '?', '#', '[', ']', '@' with percent-encoded characters, according to RFC3986.
+         *
+         * @author Griefed
+         */
+        fun percentEncode(input: String): String {
+            val encoded = StringBuilder()
+            for (char in input) {
+                when (char) {
+                    '$', ':', '/', '?', '#', '[', ']', '@' -> {
+                        encoded.append("%${String.format("%02x", char.code)}")
+                    }
+                    else -> {
+                        encoded.append(char)
+                    }
+                }
+            }
+            return encoded.toString()
+        }
+
+        fun createMongoUri(user: String, password: String, host: String, port: Int, database: String) =
+            "mongodb://${percentEncode(user)}" +
+                    ":${percentEncode(password)}" +
+                    "@${host}" +
+                    ":${port}" +
+                    "/${database}"
     }
 }
 

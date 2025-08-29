@@ -24,18 +24,17 @@ import com.cronutils.model.CronType
 import com.cronutils.model.definition.CronDefinitionBuilder
 import com.cronutils.parser.CronParser
 import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.api.utilities.common.StringUtilities
 import de.griefed.serverpackcreator.api.utilities.common.testFileWrite
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.components.*
 import de.griefed.serverpackcreator.app.gui.window.MainFrame
-import de.griefed.serverpackcreator.app.gui.window.control.ControlPanel
 import de.griefed.serverpackcreator.app.gui.window.settings.components.Editor
 import de.griefed.serverpackcreator.app.gui.window.settings.components.TomcatBaseDirChooser
 import de.griefed.serverpackcreator.app.gui.window.settings.components.TomcatLogDirChooser
 import java.net.URI
 import javax.swing.JFileChooser
 import javax.swing.JOptionPane
-import javax.swing.event.ChangeListener
 
 /**
  * @author Griefed
@@ -44,9 +43,7 @@ class WebserviceSettings(
     guiProps: GuiProps,
     private val apiProperties: ApiProperties,
     mainFrame: MainFrame,
-    documentChangeListener: DocumentChangeListener,
-    changeListener: ChangeListener,
-    controlPanel: ControlPanel
+    documentChangeListener: DocumentChangeListener
 ) : Editor(Translations.settings_webservice.toString(), guiProps) {
 
     private val cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(CronType.SPRING)
@@ -76,14 +73,14 @@ class WebserviceSettings(
 
     private val databaseUsernameIcon = StatusIcon(guiProps,Translations.settings_webservice_database_username_tooltip.toString())
     private val databaseUsernameLabel = ElementLabel(Translations.settings_webservice_database_username_label.toString())
-    private val databaseUsernameSetting = ScrollTextField(guiProps, apiProperties.databaseUsername, Translations.settings_webservice_database_username_label.toString(), documentChangeListener)
-    private val databaseUsernameRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) { databaseUsernameSetting.text = apiProperties.databaseUsername }
+    private val databaseUsernameSetting = ScrollTextField(guiProps, getUsername(apiProperties.databaseUrl), Translations.settings_webservice_database_username_label.toString(), documentChangeListener)
+    private val databaseUsernameRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) { databaseUsernameSetting.text = getUsername(apiProperties.databaseUrl) }
     private val databaseUsernameReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { databaseUsernameSetting.text = "" }
 
     private val databasePasswordIcon = StatusIcon(guiProps,Translations.settings_webservice_database_password_tooltip.toString())
     private val databasePasswordLabel = ElementLabel(Translations.settings_webservice_database_password_label.toString())
-    private val databasePasswordSetting = ScrollTextField(guiProps, apiProperties.databasePassword, Translations.settings_webservice_database_password_label.toString(), documentChangeListener)
-    private val databasePasswordRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) { databasePasswordSetting.text = apiProperties.databasePassword }
+    private val databasePasswordSetting = ScrollTextField(guiProps, getPassword(apiProperties.databaseUrl), Translations.settings_webservice_database_password_label.toString(), documentChangeListener)
+    private val databasePasswordRevert = BalloonTipButton(null, guiProps.revertIcon,Translations.settings_revert.toString(), guiProps) { databasePasswordSetting.text = getPassword(apiProperties.databaseUrl) }
     private val databasePasswordReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { databasePasswordSetting.text = "" }
 
     private val cleanupScheduleIcon = StatusIcon(guiProps,Translations.settings_webservice_schedule_cleanup_tooltip.toString())
@@ -234,12 +231,26 @@ class WebserviceSettings(
         return uri.path.substring(1)
     }
 
+    private fun getUsername(url: String): String {
+        //mongodb\://user:password@localhost\:27017/serverpackcreatordb
+        var user = url.replace("mongodb://","")
+        user = user.substring(0,user.indexOf(":"))
+        return user
+    }
+
+    private fun getPassword(url: String): String {
+        ////mongodb\://user:password@localhost\:27017/serverpackcreatordb
+        var password = url.replace("mongodb://","")
+        password = password.substring(password.indexOf(":") + 1,password.indexOf("@"))
+        return password
+    }
+
     override fun loadSettings() {
         databaseHostSetting.text = getHost(apiProperties.databaseUrl)
         databasePortSetting.text = getPort(apiProperties.databaseUrl)
         databaseDatabaseSetting.text = getDatabase(apiProperties.databaseUrl)
-        databaseUsernameSetting.text = apiProperties.databaseUsername
-        databasePasswordSetting.text = apiProperties.databasePassword
+        databaseUsernameSetting.text = getUsername(apiProperties.databaseUrl)
+        databasePasswordSetting.text = getPassword(apiProperties.databaseUrl)
         cleanupScheduleSetting.text = apiProperties.webserviceCleanupSchedule
         logDirectorySetting.file = apiProperties.tomcatLogsDirectory.absoluteFile
         baseDirSetting.file = apiProperties.tomcatBaseDirectory.absoluteFile
@@ -248,9 +259,12 @@ class WebserviceSettings(
     }
 
     override fun saveSettings() {
-        apiProperties.databaseUrl = "mongodb://${databaseHostSetting.text}:${databasePortSetting.text}/${databaseDatabaseSetting.text}"
-        apiProperties.databaseUsername = databaseUsernameSetting.text
-        apiProperties.databasePassword = databasePasswordSetting.text
+        apiProperties.databaseUrl = StringUtilities.createMongoUri(
+            databaseUsernameSetting.text,
+            databasePasswordSetting.text,
+            databaseHostSetting.text,
+            databasePortSetting.text.toInt(),
+            databaseDatabaseSetting.text)
         apiProperties.webserviceCleanupSchedule = cleanupScheduleSetting.text
         apiProperties.tomcatLogsDirectory = logDirectorySetting.file.absoluteFile
         apiProperties.tomcatBaseDirectory = baseDirSetting.file.absoluteFile
@@ -310,9 +324,12 @@ class WebserviceSettings(
 
     override fun hasUnsavedChanges(): Boolean {
         val changes =
-            "mongodb://${databaseHostSetting.text}:${databasePortSetting.text}/${databaseDatabaseSetting.text}" != apiProperties.databaseUrl ||
-                    databaseUsernameSetting.text != apiProperties.databaseUsername ||
-                    databasePasswordSetting.text != apiProperties.databasePassword ||
+            StringUtilities.createMongoUri(
+                databaseUsernameSetting.text,
+                databasePasswordSetting.text,
+                databaseHostSetting.text,
+                databasePortSetting.text.toInt(),
+                databaseDatabaseSetting.text) != apiProperties.databaseUrl ||
                     cleanupScheduleSetting.text != apiProperties.webserviceCleanupSchedule ||
                     logDirectorySetting.file.absolutePath != apiProperties.tomcatLogsDirectory.absolutePath ||
                     baseDirSetting.file.absolutePath != apiProperties.tomcatBaseDirectory.absolutePath ||

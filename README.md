@@ -201,10 +201,10 @@ If you want to open your webservice-instance to the public, make sure to properl
     1. Unsure where said home-directory is? Check the logs for `Home directory set to:`! 
 4. Install / setup / provide a MongoDB-database for ServerPackCreator. See [MongoDB Installation Tutorial](https://www.mongodb.com/docs/manual/installation/)
 5. Set the database-properties in the `serverpackcreator.properties` according to your database
-   1. `spring.datasource.password=`
-   2. `spring.datasource.url=`
-       1. Example:`mongodb\://localhost\:27017/serverpackcreatordb`
-   3. `spring.datasource.username=`
+   1. `spring.data.mongodb.uri=`
+       - Example:`mongodb\://<USER>:<PASSWORD>@localhost\:27017/serverpackcreatordb`
+       - If the username or password includes the following characters `$ : / ? # [ ] @`, those characters must be converted using percent encoding (https://datatracker.ietf.org/doc/html/rfc3986#section-2.1) : `$ : / ? # [ ] @`
+
 6. Run ServerPackCreator, using the `-web`-argument, again
 7. Browse to `http://localhost:8080`
 
@@ -266,8 +266,8 @@ services:
             - TZ=Europe/Berlin # Your timezone
             - PUID=1000 # Your user ID
             - PGID=1000 # Your group ID
-            - SPC_DATABASE_PASSWORD=<DB_ROOT_USERNAME>
-            - SPC_DATABASE_USERNAME=<DB_ROOT_PASSWORD>
+            - SPC_DATABASE_PASSWORD=<DB_ROOT_USERNAME> # $ : / ? # [ ] @ those characters must be converted using https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
+            - SPC_DATABASE_USERNAME=<DB_ROOT_PASSWORD> # $ : / ? # [ ] @ those characters must be converted using https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
             - SPC_DATABASE_HOST=serverpackcreatordb  # Do not change this unless you absolutely know what you are doing.
             - SPC_DATABASE_PORT=27017  # Do not change this unless you absolutely know what you are doing.
             - SPC_DATABASE_DB=serverpackcreator # Do not change this unless you absolutely know what you are doing.

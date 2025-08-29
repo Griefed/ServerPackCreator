@@ -122,11 +122,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     private val pTomcatLogsDirectory =
         "server.tomcat.accesslog.directory"
     private val pSpringDatasourceUrl =
-        "spring.datasource.url"
-    private val pSpringDatasourceUsername =
-        "spring.datasource.username"
-    private val pSpringDatasourcePassword =
-        "spring.datasource.password"
+        "spring.data.mongodb.uri"
     private val pUpdateServerPack = "de.griefed.serverpackcreator.serverpack.update"
     private val pLogLevel = "de.griefed.serverpackcreator.loglevel"
 
@@ -1402,16 +1398,16 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Path to the database used by the webservice-side of ServerPackCreator.
      */
-    var databaseUrl: String = "mongodb://localhost:27017/serverpackcreatordb"
+    var databaseUrl: String = "mongodb\\://user:password@localhost\\:27017/serverpackcreatordb"
         get() {
             var dbPath =
-                internalProps.getProperty(pSpringDatasourceUrl, "mongodb://localhost:27017/serverpackcreatordb")
+                internalProps.getProperty(pSpringDatasourceUrl, "mongodb\\://user:password@localhost\\:27017/serverpackcreatordb")
             if (dbPath.isEmpty() ||
                 dbPath.contains("sqlite") ||
                 dbPath.contains("postgresql") ||
                 !dbPath.startsWith("mongodb") ) {
-                log.warn("Your spring.datasource.url-property didn't match a MongoDB-URL: $dbPath. It has been migrated to mongodb://localhost:27017/serverpackcreatordb.")
-                dbPath = "mongodb://localhost:27017/serverpackcreatordb"
+                log.warn("Your spring.data.mongodb.uri-property didn't match a MongoDB-URL: $dbPath. It has been migrated to mongodb\\://user:password@localhost\\:27017/serverpackcreatordb.")
+                dbPath = "mongodb\\://user:password@localhost\\:27017/serverpackcreatordb"
             }
             internalProps.setProperty(pSpringDatasourceUrl, dbPath)
             field = dbPath
@@ -1425,30 +1421,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             }
             field = internalProps.getProperty(pSpringDatasourceUrl)
             log.info("Set database url to: $field.")
-            log.warn("Restart ServerPackCreator for this change to take effect.")
-        }
-
-    var databaseUsername: String = ""
-        get() {
-            field = internalProps.getProperty(pSpringDatasourceUsername, "")
-            return field
-        }
-        set(value) {
-            field = value
-            internalProps.setProperty(pSpringDatasourceUsername, field)
-            log.info("Set username url to: $field.")
-            log.warn("Restart ServerPackCreator for this change to take effect.")
-        }
-
-    var databasePassword: String = ""
-        get() {
-            field = internalProps.getProperty(pSpringDatasourcePassword, "")
-            return field
-        }
-        set(value) {
-            field = value
-            internalProps.setProperty(pSpringDatasourcePassword, field)
-            log.info("Set password url to: $field.")
             log.warn("Restart ServerPackCreator for this change to take effect.")
         }
 
@@ -1543,7 +1515,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         }
 
     fun defaultWebserviceDatabase(): String {
-        return "mongodb://localhost:27017/serverpackcreatordb"
+        return "mongodb\\://user:password@localhost\\:27017/serverpackcreatordb"
     }
 
     /**
