@@ -1402,7 +1402,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Path to the database used by the webservice-side of ServerPackCreator.
      */
-    var jdbcDatabaseUrl: String = "mongodb://localhost:27017/serverpackcreatordb"
+    var databaseUrl: String = "mongodb://localhost:27017/serverpackcreatordb"
         get() {
             var dbPath =
                 internalProps.getProperty(pSpringDatasourceUrl, "mongodb://localhost:27017/serverpackcreatordb")
@@ -1428,7 +1428,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             log.warn("Restart ServerPackCreator for this change to take effect.")
         }
 
-    var jdbcDatabaseUsername: String = ""
+    var databaseUsername: String = ""
         get() {
             field = internalProps.getProperty(pSpringDatasourceUsername, "")
             return field
@@ -1440,7 +1440,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             log.warn("Restart ServerPackCreator for this change to take effect.")
         }
 
-    var jdbcDatabasePassword: String = ""
+    var databasePassword: String = ""
         get() {
             field = internalProps.getProperty(pSpringDatasourcePassword, "")
             return field
@@ -1543,7 +1543,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         }
 
     fun defaultWebserviceDatabase(): String {
-        return "jdbc:postgresql://localhost:5432/serverpackcreator"
+        return "mongodb://localhost:27017/serverpackcreatordb"
     }
 
     /**
@@ -2788,7 +2788,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     private fun printSettings() {
         log.info("============================== PROPERTIES ==============================")
         log.info("Set Aikars flags to:   $aikarsFlags")
-        log.info("Set database path to:  $jdbcDatabaseUrl")
+        log.info("Set database path to:  $databaseUrl")
         log.info("Home directory set to: $homeDirectory")
         log.info("Language set to:       ${language.displayLanguage} (${language.toTag()})")
         log.info("Java path set to:      $javaPath")

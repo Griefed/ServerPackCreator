@@ -199,11 +199,11 @@ If you want to open your webservice-instance to the public, make sure to properl
 2. Run it once, using the `-web` argument. ServerPackCreator will crash, complaining about JDBC-related things. This is expected, don't worry.
 3. Browser to the now generated ServerPackCreator home-directory
     1. Unsure where said home-directory is? Check the logs for `Home directory set to:`! 
-4. Install / setup / provide a PostgreSQL-database for ServerPackCreator. See [PostgreSQL Installation Tutorial](https://www.postgresql.org/docs/current/tutorial-install.html)
+4. Install / setup / provide a MongoDB-database for ServerPackCreator. See [MongoDB Installation Tutorial](https://www.mongodb.com/docs/manual/installation/)
 5. Set the database-properties in the `serverpackcreator.properties` according to your database
    1. `spring.datasource.password=`
    2. `spring.datasource.url=`
-       1. Example:`jdbc\:postgresql\://localhost\:5432/serverpackcreator`
+       1. Example:`mongodb\://localhost\:27017/serverpackcreatordb`
    3. `spring.datasource.username=`
 6. Run ServerPackCreator, using the `-web`-argument, again
 7. Browse to `http://localhost:8080`
@@ -238,42 +238,49 @@ Available images can be viewed at https://hub.docker.com/r/griefed/serverpackcre
 The example below makes use of the `latest`-tag. However, using said tag is not recommended, as there may be breaking changes between versions.
 When setting up ServerPackCreator as a webservice for production, make sure to *not* use `latest` and instead use the tag corresponding to the, at this point, latest available release version available.
 
-You must replace `<YOUR_DB_USERNAME>` and `<YOUR_DB_PASSWORD>` accordingly.
+You must replace `<DB_ROOT_USERNAME>` and `<DB_ROOT_PASSWORD>` accordingly.
 
 ```yaml
 version: '3'
 services:
-  serverpackcreatordb:
-    container_name: serverpackcreatordb
-    image: postgres:16.1
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: serverpackcreator
-      POSTGRES_USER: <YOUR_DB_USERNAME>
-      POSTGRES_PASSWORD: <YOUR_DB_PASSWORD>
-    volumes:
-      - ./database:/var/lib/postgresql/data
-  serverpackcreator:
-    container_name: serverpackcreator
-    image: griefed/serverpackcreator:latest # For a list of available tags, see https://hub.docker.com/r/griefed/serverpackcreator/tags
-    restart: unless-stopped
-    depends_on:
-      - serverpackcreatordb
-    environment:
-      - TZ=Europe/Berlin # Your timezone
-      - PUID=1000 # Your user ID
-      - PGID=1000 # Your group ID
-      - SPC_DATABASE_PASSWORD=<YOUR_DB_PASSWORD>
-      - SPC_DATABASE_USERNAME=<YOUR_DB_USERNAME>
-      - SPC_DATABASE_HOST=serverpackcreatordb  # Do not change this unless you absolutely know what you are doing.
-      - SPC_DATABASE_PORT=5432  # Do not change this unless you absolutely know what you are doing.
-      - SPC_DATABASE_DB=serverpackcreator # Do not change this unless you absolutely know what you are doing.
-    ports:
-      - "8080:8080" # Port at which SPC will be available at on your host : Port of the webservice inside the container. Only change the left value, it at all.
-    volumes:
-      - ./modpacks:/app/serverpackcreator/modpacks # Path at which modpacks from the container will be stored at on your host : Path to the modpacks in the container. Only change the left value, if at all.
-      - ./server-packs:/app/serverpackcreator/server-packs # Path at which server packs from the container will be stored at on your host : Path to the server packs in the container. Only change the left value, if at all.
-      - ./logs:/app/serverpackcreator/logs # Path at which logs from the container will be stored at on your host : Path to the logs in the container. Only change the left value, if at all.
+    serverpackcreatordb:
+        image: mongodb/mongodb-community-server:8.0.5-ubuntu2204
+        container_name: serverpackcreatordb
+        restart: unless-stopped
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: <DB_ROOT_USERNAME>
+            MONGO_INITDB_ROOT_PASSWORD: <DB_ROOT_PASSWORD>
+            MONGO_INITDB_DATABASE: serverpackcreatordb
+        volumes:
+            - ./init-mongo.js:/docker-entrypoint-initdb.d/init.js:ro
+            - spcdb-data:/data/db
+            - spcdb-conf:/data/configdb
+
+    serverpackcreator:
+        container_name: serverpackcreator
+        image: griefed/serverpackcreator:latest # For a list of available tags, see https://hub.docker.com/r/griefed/serverpackcreator/tags
+        restart: unless-stopped
+        depends_on:
+            - serverpackcreatordb
+        environment:
+            - TZ=Europe/Berlin # Your timezone
+            - PUID=1000 # Your user ID
+            - PGID=1000 # Your group ID
+            - SPC_DATABASE_PASSWORD=<DB_ROOT_USERNAME>
+            - SPC_DATABASE_USERNAME=<DB_ROOT_PASSWORD>
+            - SPC_DATABASE_HOST=serverpackcreatordb  # Do not change this unless you absolutely know what you are doing.
+            - SPC_DATABASE_PORT=27017  # Do not change this unless you absolutely know what you are doing.
+            - SPC_DATABASE_DB=serverpackcreator # Do not change this unless you absolutely know what you are doing.
+        ports:
+            - "8080:8080" # Port at which SPC will be available at on your host : Port of the webservice inside the container. Only change the left value, it at all.
+        volumes:
+            - ./modpacks:/app/serverpackcreator/modpacks # Path at which modpacks from the container will be stored at on your host : Path to the modpacks in the container. Only change the left value, if at all.
+            - ./server-packs:/app/serverpackcreator/server-packs # Path at which server packs from the container will be stored at on your host : Path to the server packs in the container. Only change the left value, if at all.
+            - ./logs:/app/serverpackcreator/logs # Path at which logs from the container will be stored at on your host : Path to the logs in the container. Only change the left value, if at all.
+
+volumes:
+    spcdb-data:
+    spcdb-conf:
 ```
 
 ##### 5.1.2.1 Tweaking the docker deployment

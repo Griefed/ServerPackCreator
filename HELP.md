@@ -942,15 +942,13 @@ server.tomcat.accesslog.prefix=tomcat_access
 server.tomcat.accesslog.suffix=.log
 server.tomcat.basedir=
 spring.application.name=ServerPackCreator
-spring.datasource.driverClassName=org.postgresql.Driver
 spring.datasource.tomcat.max-active=50
 spring.datasource.tomcat.max-idle=15
 spring.datasource.tomcat.min-idle=8
 spring.datasource.password=
 spring.datasource.username=
-spring.datasource.url=jdbc\:postgresql\://localhost\:5432/serverpackcreator
+spring.datasource.url=mongodb\://localhost\:27017/serverpackcreatordb
 spring.jdbc.template.query-timeout=3600
-spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
 spring.jpa.generate-ddl=true
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.open-in-view=false
@@ -1010,7 +1008,7 @@ comment.
 | Property                                  | Description                                                               |
 |-------------------------------------------|---------------------------------------------------------------------------|
 | server.port                               | The port at which ServerPackCreator as a webservice will be available at. |
-| spring.datasource.url                     | JDBC URL to your PostgreSQL host, port and database                       |
+| spring.datasource.url                     | URL to your MongoDB host, port and database                               |
 | spring.servlet.multipart.max-file-size    | Maximum filesize for uploads.                                             |
 | spring.servlet.multipart.max-request-size | Maximum request size for file uploads.                                    |
 | spring.config.import                      | Additional properties-file to import properties from.                     |
