@@ -1398,16 +1398,16 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Path to the database used by the webservice-side of ServerPackCreator.
      */
-    var databaseUrl: String = "mongodb\\://user:password@localhost\\:27017/serverpackcreatordb"
+    var databaseUrl: String = "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb"
         get() {
             var dbPath =
-                internalProps.getProperty(pSpringDatasourceUrl, "mongodb\\://user:password@localhost\\:27017/serverpackcreatordb")
+                internalProps.getProperty(pSpringDatasourceUrl, "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb")
             if (dbPath.isEmpty() ||
                 dbPath.contains("sqlite") ||
                 dbPath.contains("postgresql") ||
                 !dbPath.startsWith("mongodb") ) {
-                log.warn("Your spring.data.mongodb.uri-property didn't match a MongoDB-URL: $dbPath. It has been migrated to mongodb\\://user:password@localhost\\:27017/serverpackcreatordb.")
-                dbPath = "mongodb\\://user:password@localhost\\:27017/serverpackcreatordb"
+                log.warn("Your spring.data.mongodb.uri-property didn't match a MongoDB-URL: $dbPath. It has been migrated to mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb.")
+                dbPath = "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb"
             }
             internalProps.setProperty(pSpringDatasourceUrl, dbPath)
             field = dbPath
@@ -1515,7 +1515,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         }
 
     fun defaultWebserviceDatabase(): String {
-        return "mongodb\\://user:password@localhost\\:27017/serverpackcreatordb"
+        return "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb"
     }
 
     /**

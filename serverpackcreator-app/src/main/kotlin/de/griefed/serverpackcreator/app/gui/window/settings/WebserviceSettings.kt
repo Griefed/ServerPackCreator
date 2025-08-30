@@ -232,14 +232,14 @@ class WebserviceSettings(
     }
 
     private fun getUsername(url: String): String {
-        //mongodb\://user:password@localhost\:27017/serverpackcreatordb
+        //mongodb://user:password@localhost:27017/serverpackcreatordb
         var user = url.replace("mongodb://","")
         user = user.substring(0,user.indexOf(":"))
         return user
     }
 
     private fun getPassword(url: String): String {
-        ////mongodb\://user:password@localhost\:27017/serverpackcreatordb
+        //mongodb://user:password@localhost:27017/serverpackcreatordb
         var password = url.replace("mongodb://","")
         password = password.substring(password.indexOf(":") + 1,password.indexOf("@"))
         return password
