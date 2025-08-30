@@ -7,23 +7,17 @@ touch ${OVERRIDES}
 
 echo "**** Creating overrides.properties ****"
 
-if [[ -z ${SPC_SCHEDULE_DATABASE_CLEANUP} ]];then
-  echo "de.griefed.serverpackcreator.spring.schedules.database.cleanup=0 0 0 * * *" >> ${OVERRIDES}
-else
+if [[ -n ${SPC_SCHEDULE_DATABASE_CLEANUP} ]];then
   echo "Overriding de.griefed.serverpackcreator.spring.schedules.database.cleanup..."
   echo "de.griefed.serverpackcreator.spring.schedules.database.cleanup=${SPC_SCHEDULE_DATABASE_CLEANUP}" >> ${OVERRIDES}
 fi
 
-if [[ -z ${SPC_SCHEDULE_FILES_CLEANUP} ]];then
-  echo "de.griefed.serverpackcreator.spring.schedules.files.cleanup=0 30 0 * * *" >> ${OVERRIDES}
-else
+if [[ -n ${SPC_SCHEDULE_FILES_CLEANUP} ]];then
   echo "Overriding de.griefed.serverpackcreator.spring.schedules.files.cleanup..."
   echo "de.griefed.serverpackcreator.spring.schedules.files.cleanup=${SPC_SCHEDULE_FILES_CLEANUP}" >> ${OVERRIDES}
 fi
 
-if [[ -z ${SPC_SCHEDULE_VERSIONS_REFRESH} ]];then
-  echo "de.griefed.serverpackcreator.spring.schedules.versions.refresh=0 0 0 * * *" >> ${OVERRIDES}
-else
+if [[ -n ${SPC_SCHEDULE_VERSIONS_REFRESH} ]];then
   echo "Overriding de.griefed.serverpackcreator.spring.schedules.versions.refresh..."
   echo "de.griefed.serverpackcreator.spring.schedules.versions.refresh=${SPC_SCHEDULE_VERSIONS_REFRESH}" >> ${OVERRIDES}
 fi
@@ -32,77 +26,56 @@ if [[ -z ${SPC_DATABASE_HOST} ]] || [[ -z ${SPC_DATABASE_PORT} ]] || [[ -z ${SPC
   echo "spring.data.mongodb.uri=mongodb\:" >> ${OVERRIDES}
 else
   echo "Overriding spring.data.mongodb.uri..."
-  echo "spring.data.mongodb.uri=mongodb\://${SPC_DATABASE_USERNAME}${SPC_DATABASE_PASSWORD}:@${SPC_DATABASE_HOST}\:${SPC_DATABASE_PORT}/${SPC_DATABASE_DB}" >> ${OVERRIDES}
+  echo "spring.data.mongodb.uri=mongodb\://${SPC_DATABASE_USERNAME}\:${SPC_DATABASE_PASSWORD}@${SPC_DATABASE_HOST}\:${SPC_DATABASE_PORT}/${SPC_DATABASE_DB}" >> ${OVERRIDES}
 fi
 
-if [[ -z ${SPC_MAX_UPLOAD_SIZE} ]];then
-  echo "spring.servlet.multipart.max-file-size=1000MB" >> ${OVERRIDES}
-  echo "spring.servlet.multipart.max-request-size=1000MB" >> ${OVERRIDES}
-else
+if [[ -n ${SPC_MAX_UPLOAD_SIZE} ]];then
   echo "Overriding spring.servlet.multipart.max-file-size and spring.servlet.multipart.max-request-size..."
   echo "spring.servlet.multipart.max-file-size=${SPC_MAX_UPLOAD_SIZE}MB" >> ${OVERRIDES}
   echo "spring.servlet.multipart.max-request-size=${SPC_MAX_UPLOAD_SIZE}MB" >> ${OVERRIDES}
 fi
 
-if [[ -z ${SPC_CONFIGURATION_AIKAR} ]];then
-  echo "de.griefed.serverpackcreator.configuration.aikar=-Xms4G -Xmx4G -XX\:+UseG1GC -XX\:+ParallelRefProcEnabled -XX\:MaxGCPauseMillis\=200 -XX\:+UnlockExperimentalVMOptions -XX\:+DisableExplicitGC -XX\:+AlwaysPreTouch -XX\:G1NewSizePercent\=30 -XX\:G1MaxNewSizePercent\=40 -XX\:G1HeapRegionSize\=8M -XX\:G1ReservePercent\=20 -XX\:G1HeapWastePercent\=5 -XX\:G1MixedGCCountTarget\=4 -XX\:InitiatingHeapOccupancyPercent\=15 -XX\:G1MixedGCLiveThresholdPercent\=90 -XX\:G1RSetUpdatingPauseTimePercent\=5 -XX\:SurvivorRatio\=32 -XX\:+PerfDisableSharedMem -XX\:MaxTenuringThreshold\=1 -Dusing.aikars.flags\=https\://mcflags.emc.gs -Daikars.new.flags\=true" >> ${OVERRIDES}
-else
+if [[ -n ${SPC_CONFIGURATION_AIKAR} ]];then
   echo "Overriding de.griefed.serverpackcreator.configuration.aikar..."
   echo "de.griefed.serverpackcreator.configuration.aikar=${SPC_CONFIGURATION_AIKAR}" >> ${OVERRIDES}
 fi
 
-if [[ -z ${SPC_CONFIGURATION_DIRECTORIES_MUSTINCLUDE} ]];then
-  echo "de.griefed.serverpackcreator.configuration.directories.mustinclude=addonpacks,blueprints,config,configs,customnpcs,defaultconfigs,global_data_packs,global_packs,kubejs,maps,mods,openloader,scripts,shrines-saves,structures,structurize,worldshape,Zoestria" >> ${OVERRIDES}
-else
+if [[ -n ${SPC_CONFIGURATION_DIRECTORIES_MUSTINCLUDE} ]];then
   echo "Overriding de.griefed.serverpackcreator.configuration.directories.mustinclude..."
   echo "de.griefed.serverpackcreator.configuration.directories.mustinclude=${SPC_CONFIGURATION_DIRECTORIES_MUSTINCLUDE}" >> ${OVERRIDES}
 fi
 
-if [[ -z ${SPC_CONFIGURATION_DIRECTORIES_SHOULDEXCLUDE} ]];then
-  echo "de.griefed.serverpackcreator.configuration.directories.shouldexclude=animation,asm,cache,changelogs,craftpresence,crash-reports,downloads,icons,libraries,local,logs,overrides,packmenu,profileImage,profileImage,resourcepacks,screenshots,server_pack,shaderpacks,simple-rpc,tv-cache" >> ${OVERRIDES}
-else
+if [[ -n ${SPC_CONFIGURATION_DIRECTORIES_SHOULDEXCLUDE} ]];then
   echo "Overriding de.griefed.serverpackcreator.configuration.directories.shouldexclude..."
   echo "de.griefed.serverpackcreator.configuration.directories.shouldexclude=${SPC_CONFIGURATION_DIRECTORIES_SHOULDEXCLUDE}" >> ${OVERRIDES}
 fi
 
-if [[ -z ${SPC_CONFIGURATION_FALLBACK_UPDATEURL} ]];then
-  echo "de.griefed.serverpackcreator.configuration.fallback.updateurl=https\://raw.githubusercontent.com/Griefed/ServerPackCreator/main/serverpackcreator-api/src/main/resources/serverpackcreator.properties" >> ${OVERRIDES}
-else
+if [[ -n ${SPC_CONFIGURATION_FALLBACK_UPDATEURL} ]];then
   echo "Overriding de.griefed.serverpackcreator.configuration.fallback.updateurl..."
   echo "de.griefed.serverpackcreator.configuration.fallback.updateurl=${SPC_CONFIGURATION_FALLBACK_UPDATEURL}" >> ${OVERRIDES}
 fi
 
-if [[ -z ${SPC_SERVERPACK_AUTODISCOVERY_ENABLED} ]];then
-  echo "de.griefed.serverpackcreator.serverpack.autodiscovery.enabled=true" >> ${OVERRIDES}
-else
+if [[ -n ${SPC_SERVERPACK_AUTODISCOVERY_ENABLED} ]];then
   echo "Overriding de.griefed.serverpackcreator.serverpack.autodiscovery.enabled..."
   echo "de.griefed.serverpackcreator.serverpack.autodiscovery.enabled=${SPC_SERVERPACK_AUTODISCOVERY_ENABLED}" >> ${OVERRIDES}
 fi
 
-if [[ -z ${SPC_SERVERPACK_AUTODISCOVERY_FILTER} ]];then
-  echo "de.griefed.serverpackcreator.serverpack.autodiscovery.filter=START" >> ${OVERRIDES}
-else
+if [[ -n ${SPC_SERVERPACK_AUTODISCOVERY_FILTER} ]];then
   echo "Overriding de.griefed.serverpackcreator.serverpack.autodiscovery.filter..."
   echo "de.griefed.serverpackcreator.serverpack.autodiscovery.filter=${SPC_SERVERPACK_AUTODISCOVERY_FILTER}" >> ${OVERRIDES}
 fi
 
-if [[ -z ${SPC_SERVERPACK_ZIP_EXCLUDE} ]];then
-  echo "de.griefed.serverpackcreator.serverpack.zip.exclude=minecraft_server.MINECRAFT_VERSION.jar,server.jar,libraries/net/minecraft/server/MINECRAFT_VERSION/server-MINECRAFT_VERSION.jar" >> ${OVERRIDES}
-else
+if [[ -n ${SPC_SERVERPACK_ZIP_EXCLUDE} ]];then
   echo "Overriding de.griefed.serverpackcreator.serverpack.zip.exclude..."
   echo "de.griefed.serverpackcreator.serverpack.zip.exclude={$SPC_SERVERPACK_ZIP_EXCLUDE}" >> ${OVERRIDES}
 fi
 
-if [[ -z ${SPC_SERVERPACK_ZIP_EXCLUDE_ENABLED} ]];then
-  echo "de.griefed.serverpackcreator.serverpack.zip.exclude.enabled=true" >> ${OVERRIDES}
-else
+if [[ -n ${SPC_SERVERPACK_ZIP_EXCLUDE_ENABLED} ]];then
   echo "Overriding de.griefed.serverpackcreator.serverpack.zip.exclude.enabled..."
   echo "de.griefed.serverpackcreator.serverpack.zip.exclude.enabled={$SPC_SERVERPACK_ZIP_EXCLUDE_ENABLED}" >> ${OVERRIDES}
 fi
 
-if [[ -z ${SPC_LOG_LEVEL} ]];then
-  echo "de.griefed.serverpackcreator.loglevel=INFO" >> ${OVERRIDES}
-else
+if [[ -n ${SPC_LOG_LEVEL} ]];then
   echo "Overriding de.griefed.serverpackcreator.loglevel..."
   echo "de.griefed.serverpackcreator.loglevel={SPC_LOG_LEVEL}" >> ${OVERRIDES}
 fi
