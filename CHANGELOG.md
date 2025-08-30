@@ -1,3 +1,9 @@
+## [8.0.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.0-alpha.3...8.0.0-alpha.4) (2025-08-30)
+
+### 🛠 Fixes
+
+* Escape : and fix mongo url building in docker ([78eb0d1](https://git.griefed.de/Griefed/ServerPackCreator/commit/78eb0d17a711eb00eb720411b3874afc41c75390))
+
 ## [8.0.0-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.0-alpha.2...8.0.0-alpha.3) (2025-08-29)
 
 ### 🛠 Fixes
