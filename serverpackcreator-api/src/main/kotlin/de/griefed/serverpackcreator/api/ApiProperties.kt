@@ -1398,7 +1398,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Path to the database used by the webservice-side of ServerPackCreator.
      */
-    var databaseUrl: String = "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb"
+    var databaseUri: String = "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb"
         get() {
             var dbPath =
                 internalProps.getProperty(pSpringDatasourceUrl, "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb")
@@ -2760,7 +2760,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     private fun printSettings() {
         log.info("============================== PROPERTIES ==============================")
         log.info("Set Aikars flags to:   $aikarsFlags")
-        log.info("Set database path to:  $databaseUrl")
+        log.info("Set database path to:  $databaseUri")
         log.info("Home directory set to: $homeDirectory")
         log.info("Language set to:       ${language.displayLanguage} (${language.toTag()})")
         log.info("Java path set to:      $javaPath")
