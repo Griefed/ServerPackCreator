@@ -1,3 +1,10 @@
+## [8.0.0-alpha.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.0-alpha.4...8.0.0-alpha.5) (2025-09-04)
+
+### 🛠 Fixes
+
+* Merge DB configs in GUI ([0fbb356](https://git.griefed.de/Griefed/ServerPackCreator/commit/0fbb35603c91813e9418082a28c71c30ac1f2ee4))
+* Provide working init-mongo.js ([0491438](https://git.griefed.de/Griefed/ServerPackCreator/commit/04914386b37240fc491c7119cef092cfe1f953d5))
+
 ## [8.0.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.0-alpha.3...8.0.0-alpha.4) (2025-08-30)
 
 ### 🛠 Fixes
