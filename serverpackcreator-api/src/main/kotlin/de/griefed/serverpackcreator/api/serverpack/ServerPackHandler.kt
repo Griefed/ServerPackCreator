@@ -95,7 +95,7 @@ class ServerPackHandler(
 
     val variables = """
         ###
-        # Remember:
+        # REMEMBER:
         #   Escape \ and : in your Java path on Windows with another \
         #   Example:
         #     From: C:\Program Files\Eclipse Adoptium\jdk-17.0.9.9-hotspot\bin\java.exe
@@ -106,6 +106,10 @@ class ServerPackHandler(
         #   graceful script ending.
         # RESTART true/false allows you to enable/disable automatically restarting the server
         #   should it crash.
+        # JAVA points towards the Java executable/binary the server should use for running. Default is `java`, so it
+        #   points towards the system-default, if you have one. Set this to an absolute path, as per the example above
+        #   in the "REMEMBER"-part, if you want to force the server to use a different Java installation/version.
+        #   When setting a custom path, set SKIP_JAVA_CHECK to false. 
         # SKIP_JAVA_CHECK true/false allows you to disable/enable the compatibility check
         #   of your Minecraft version and the provided Java version, as well as the automatic
         #   installation of a compatible Java version, should JAVA be set to 'java'.
