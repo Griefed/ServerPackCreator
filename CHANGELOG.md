@@ -1,3 +1,13 @@
+## [8.0.0-alpha.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.0-alpha.5...8.0.0-alpha.6) (2025-09-14)
+
+### 💎 Improvements
+
+* Add JAVA explanation to variables ([e9aec7f](https://git.griefed.de/Griefed/ServerPackCreator/commit/e9aec7fcf0a30648b268282b4a6f2d2ac40508cc))
+
+### 📦 Other
+
+* Add idle-boost, nostartupmessages, shut_up_gl_error, appliedsorting ([04cddf5](https://git.griefed.de/Griefed/ServerPackCreator/commit/04cddf558b5c6a4b9a7c473c42c5daa50eb2e78b))
+
 ## [8.0.0-alpha.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.0-alpha.4...8.0.0-alpha.5) (2025-09-04)
 
 ### 🛠 Fixes
