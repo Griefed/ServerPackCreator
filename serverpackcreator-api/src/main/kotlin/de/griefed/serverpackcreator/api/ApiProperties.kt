@@ -324,6 +324,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "ahznbstools-",                 //https://www.curseforge.com/minecraft/mc-mods/ahznbs-tools/
             "antighost-",                   //https://www.curseforge.com/minecraft/mc-mods/antighost
             "anviltooltipmod-",             //https://www.curseforge.com/minecraft/mc-mods/anvil-tooltip-mod
+            "appliedsorting-",              //https://www.curseforge.com/minecraft/mc-mods/applied-sorting
             "armorchroma-",                 //https://www.curseforge.com/minecraft/mc-mods/armor-chroma
             "armorpointspp-",               //https://www.curseforge.com/minecraft/mc-mods/armorpoints
             "auditory-",                    //https://www.curseforge.com/minecraft/mc-mods/auditory
@@ -438,6 +439,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "hiddenrecipebook_",            //https://www.curseforge.com/minecraft/mc-mods/hidden-recipe-book
             "hiddenrecipebook-",            //https://www.curseforge.com/minecraft/mc-mods/hidden-recipe-book
             "hidehands-",                   //https://www.curseforge.com/minecraft/mc-mods/hide-hands
+            "idle_boost-",                  //https://www.curseforge.com/minecraft/mc-mods/idle-boost
             "ijmtweaks-",                   //https://www.curseforge.com/minecraft/mc-mods/ijm-tweaks
             "immersivearmorhud-",           //https://www.curseforge.com/minecraft/mc-mods/immersive-armor-hud
             "immersivemessages-",           //https://www.curseforge.com/minecraft/mc-mods/immersive-messages-api
@@ -502,6 +504,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "ngrok-lan-expose-mod-",        //Gone? Reduces to atoms?
             "no_nv_flash-",                 //https://www.curseforge.com/minecraft/mc-mods/no-nv-flash
             "nopotionshift_",               //https://www.curseforge.com/minecraft/mc-mods/no-potion-shift
+            "nostartupmessages-",           //https://www.curseforge.com/minecraft/mc-mods/no-startup-messages-please
             "notenoughanimations-",         //https://www.curseforge.com/minecraft/mc-mods/not-enough-animations
             "oculus-",                      //https://www.curseforge.com/minecraft/mc-mods/oculus
             "omegamute-",                   //https://www.curseforge.com/minecraft/mc-mods/omega-mute
@@ -532,6 +535,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "rubidium_extras-",             //https://www.curseforge.com/minecraft/mc-mods/rubidium-extra
             "screenshot-to-clipboard-",     //https://www.curseforge.com/minecraft/mc-mods/screenshot-to-clipboard
             "servercountryflags-",          //https://www.curseforge.com/minecraft/mc-mods/server-country-flags
+            "shut_up_gl_error-",            //https://www.curseforge.com/minecraft/mc-mods/shut-up-gl-error
             "shutupexperimentalsettings-",  //https://www.curseforge.com/minecraft/mc-mods/shutup-experimental-settings
             "shutupmodelloader-",           //https://www.curseforge.com/minecraft/mc-mods/shut-up-model-loader
             "signtools-",                   //https://www.curseforge.com/minecraft/bukkit-plugins/signtools
