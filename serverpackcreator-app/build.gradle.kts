@@ -33,7 +33,7 @@ dependencies {
     api(project(":serverpackcreator-api"))
 
     //CLI
-    api("info.picocli:picocli-shell-jline3:4.7.6")
+    api("info.picocli:picocli-shell-jline3:4.7.7")
 
     //GUI
     api("commons-io:commons-io:2.20.0")
