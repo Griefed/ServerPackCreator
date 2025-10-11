@@ -24,7 +24,7 @@ jobs:
           check-latest: true
           cache: 'gradle'
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
         with:
           gradle-version: wrapper
 
