@@ -161,7 +161,7 @@ jobs:
             printf "\n\n............\n\nRelease notes truncated. For more details, see the [CHANGELOG](https://github.com/Griefed/ServerPackCreator/blob/${{ needs.preparations.outputs.version }}/CHANGELOG.md).\n\n" >> description.txt
           fi
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: jar-media-release
           path: ${{ needs.preparations.outputs.version }}
