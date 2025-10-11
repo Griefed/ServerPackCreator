@@ -22,7 +22,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.2.0")
     implementation(files("${layout.buildDirectory.asFile.get()}/resources/main"))
     api("com.electronwill.night-config:toml:3.8.2")
-    api("com.fasterxml.jackson.core:jackson-databind:2.18.1")
+    api("com.fasterxml.jackson.core:jackson-databind:2.20.0")
     api("net.lingala.zip4j:zip4j:2.11.5")
     api("org.apache.logging.log4j:log4j-api-kotlin:1.5.0")
     api("org.apache.logging.log4j:log4j-core:2.25.1")
