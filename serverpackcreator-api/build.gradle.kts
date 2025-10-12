@@ -148,6 +148,12 @@ tasks.build {
     finalizedBy(tasks.dokkaJavadocJar)
 }
 
+tasks.generatePomFileForMavenJavaPublication {
+    dependsOn(
+        tasks.getByName("fixMissingResources"),
+        tasks.processResources)
+}
+
 tasks.signMavenJavaPublication {
     dependsOn(tasks.dokkaJavadocJar)
 }
