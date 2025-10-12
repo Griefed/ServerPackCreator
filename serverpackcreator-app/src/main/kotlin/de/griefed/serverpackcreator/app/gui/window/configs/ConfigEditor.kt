@@ -1241,6 +1241,7 @@ class ConfigEditor(
      *
      * @author Griefed
      */
+    @Suppress("unused")
     private fun checkJava(): Boolean {
         return if (!apiWrapper.apiProperties.javaAvailable()) {
             when (JOptionPane.showConfirmDialog(

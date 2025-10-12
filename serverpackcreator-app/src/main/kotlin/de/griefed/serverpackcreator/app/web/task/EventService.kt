@@ -33,8 +33,8 @@ class EventService @Autowired constructor(
 ) {
 
     fun submit(
-        modPackId: Int?,
-        serverPackId: Int?,
+        modPackId: String?,
+        serverPackId: String?,
         status: ModPackStatus?,
         message: String,
         errors: List<String>? = null
@@ -67,11 +67,11 @@ class EventService @Autowired constructor(
         return queueEventRepository.findAll(sizedPage.withSort(sort))
     }
 
-    fun loadAllByModPackId(modPackId: Int): MutableList<QueueEvent> {
+    fun loadAllByModPackId(modPackId: String): MutableList<QueueEvent> {
         return queueEventRepository.findAllByModPackId(modPackId)
     }
 
-    fun loadAllByServerPackId(serverPackId: Int): MutableList<QueueEvent> {
+    fun loadAllByServerPackId(serverPackId: String): MutableList<QueueEvent> {
         return queueEventRepository.findAllByServerPackId(serverPackId)
     }
 

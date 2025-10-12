@@ -22,7 +22,7 @@ package de.griefed.serverpackcreator.app.web.storage
 import java.nio.file.Path
 
 class SavedFile(
-    val id: Long,
+    val id: String,
     val sha256: String,
     val file: Path,
     val originalName: String,

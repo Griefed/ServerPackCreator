@@ -20,13 +20,6 @@
 package de.griefed.serverpackcreator.app.gui.window
 
 import Translations
-/*import com.install4j.api.Util
-import com.install4j.api.context.UserCanceledException
-import com.install4j.api.launcher.ApplicationLauncher
-import com.install4j.api.launcher.Variables
-import com.install4j.api.update.ApplicationDisplayMode
-import com.install4j.api.update.UpdateDescriptor
-import com.install4j.api.update.UpdateDescriptorEntry*/
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
 import de.griefed.serverpackcreator.app.gui.GuiProps
@@ -35,17 +28,14 @@ import de.griefed.serverpackcreator.app.gui.utilities.DialogUtilities
 import de.griefed.serverpackcreator.app.updater.UpdateChecker
 import de.griefed.serverpackcreator.app.updater.versionchecker.Update
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import java.awt.EventQueue
 import java.awt.Toolkit
 import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.StringSelection
 import java.awt.event.ActionListener
-import java.io.IOException
-import java.nio.file.Files
-import java.nio.file.Paths
 import java.util.*
-import java.util.concurrent.ExecutionException
-import javax.swing.*
+import javax.swing.JFrame
+import javax.swing.JOptionPane
+import javax.swing.JTextPane
 import javax.swing.text.*
 
 /**

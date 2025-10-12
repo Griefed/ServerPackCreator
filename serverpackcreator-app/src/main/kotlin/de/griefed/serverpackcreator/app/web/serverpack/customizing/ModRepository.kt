@@ -19,11 +19,11 @@
  */
 package de.griefed.serverpackcreator.app.web.serverpack.customizing
 
-import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.data.repository.NoRepositoryBean
 import java.util.*
 
 @NoRepositoryBean
-interface ModRepository<T, ID> : JpaRepository<T, ID> {
+interface ModRepository<T, ID> : MongoRepository<T, ID> {
     fun findByMod(mod: String) : Optional<T>
 }

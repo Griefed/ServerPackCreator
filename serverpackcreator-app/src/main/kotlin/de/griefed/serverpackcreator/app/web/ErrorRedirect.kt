@@ -29,6 +29,7 @@ import org.springframework.web.servlet.ModelAndView
  *
  * @author Griefed
  */
+@Suppress("unused")
 @RestController
 class ErrorRedirect : ErrorController {
     /**

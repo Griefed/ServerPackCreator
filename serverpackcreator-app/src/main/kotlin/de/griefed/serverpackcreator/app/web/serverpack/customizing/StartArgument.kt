@@ -19,18 +19,21 @@
  */
 package de.griefed.serverpackcreator.app.web.serverpack.customizing
 
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.Id
+import org.springframework.data.annotation.PersistenceCreator
+import org.springframework.data.mongodb.core.mapping.Document
+import org.springframework.data.mongodb.core.mapping.FieldType
+import org.springframework.data.mongodb.core.mapping.MongoId
 
-@Entity
-class StartArgument(@Column var argument: String) {
+@Document
+class StartArgument {
 
-    @Id
-    @GeneratedValue
-    @Column(updatable = false, nullable = false)
-    var id: Int = 0
+    @MongoId(FieldType.STRING)
+    var argument: String
+
+    @PersistenceCreator
+    constructor(argument: String) {
+        this.argument = argument
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -46,6 +49,6 @@ class StartArgument(@Column var argument: String) {
     }
 
     override fun toString(): String {
-        return "StartArgument(id=$id, argument='$argument')"
+        return "StartArgument(argument='$argument')"
     }
 }

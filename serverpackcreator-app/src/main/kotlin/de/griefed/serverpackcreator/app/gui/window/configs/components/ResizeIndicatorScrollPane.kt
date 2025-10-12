@@ -64,6 +64,7 @@ open class ResizeIndicatorScrollPane(
     /**
      * @author Griefed
      */
+    @Suppress("unused")
     fun highlight() {
         view.requestFocusInWindow()
     }

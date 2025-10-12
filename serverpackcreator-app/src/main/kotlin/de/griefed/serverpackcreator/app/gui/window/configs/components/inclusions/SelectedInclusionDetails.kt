@@ -32,7 +32,6 @@ import java.awt.event.KeyListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
-import javax.swing.text.DefaultHighlighter
 import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter
 
 /**
@@ -159,9 +158,9 @@ class SelectedInclusionDetails(
 
     override fun keyPressed(e: KeyEvent) {
         textPane.highlighter.removeAllHighlights()
-        when {
-            e.keyCode == KeyEvent.VK_F && e.isControlDown && !e.isShiftDown -> searchDialog()
-            e.keyCode == KeyEvent.VK_F && e.isControlDown && e.isShiftDown -> searchRegexDialog()
+        when (e.keyCode) {
+            e.keyCode if e.isControlDown && !e.isShiftDown -> searchDialog()
+            e.keyCode if e.isControlDown && e.isShiftDown -> searchRegexDialog()
         }
     }
 
@@ -203,7 +202,7 @@ class SelectedInclusionDetails(
                         textPane.highlighter.addHighlight(
                             i,
                             end,
-                            DefaultHighlighter.DefaultHighlightPainter(UIManager.getColor("textHighlight"))
+                            DefaultHighlightPainter(UIManager.getColor("textHighlight"))
                         )
                         i = end
                     } else {
@@ -240,7 +239,7 @@ class SelectedInclusionDetails(
                             textPane.highlighter.addHighlight(
                                 i,
                                 n,
-                                DefaultHighlighter.DefaultHighlightPainter(UIManager.getColor("textHighlight"))
+                                DefaultHighlightPainter(UIManager.getColor("textHighlight"))
                             )
                             i = n
                             break

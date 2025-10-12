@@ -23,12 +23,13 @@ import de.griefed.serverpackcreator.app.web.serverpack.customizing.ClientMod
 import de.griefed.serverpackcreator.app.web.serverpack.customizing.RunConfiguration
 import de.griefed.serverpackcreator.app.web.serverpack.customizing.StartArgument
 import de.griefed.serverpackcreator.app.web.serverpack.customizing.WhitelistedMod
-import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
 import java.util.*
 
+@Suppress("unused")
 @Repository
-interface RunConfigurationRepository : JpaRepository<RunConfiguration, Int> {
+interface RunConfigurationRepository : MongoRepository<RunConfiguration, String> {
     // lol, dat method name
     @Suppress("SpringDataRepositoryMethodParametersInspection")
     fun findByMinecraftVersionAndModloaderAndModloaderVersionAndStartArgsInAndClientModsInAndWhitelistedModsIn(

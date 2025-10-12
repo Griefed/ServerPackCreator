@@ -32,7 +32,9 @@ import de.griefed.serverpackcreator.api.versionmeta.legacyfabric.LegacyFabricMet
 import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftMeta
 import de.griefed.serverpackcreator.api.versionmeta.neoforge.NeoForgeMeta
 import de.griefed.serverpackcreator.api.versionmeta.quilt.QuiltMeta
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.w3c.dom.Document
 import org.xml.sax.SAXException

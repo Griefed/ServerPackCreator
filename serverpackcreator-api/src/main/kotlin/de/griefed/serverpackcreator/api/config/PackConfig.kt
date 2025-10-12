@@ -223,7 +223,6 @@ open class PackConfig() {
     open var versionID: String? = null
     open var source: ModpackSource = ModpackSource.DIRECTORY
     open var name: String? = null
-    open var diskName: String? = null
 
     /**
      * Construct a new configuration model with custom values.
@@ -495,7 +494,7 @@ open class PackConfig() {
 
     fun getPluginConfigs(pluginId: String): ArrayList<CommentedConfig> {
         if (!pluginsConfigs.containsKey(pluginId)) {
-            pluginsConfigs[pluginId] = java.util.ArrayList(100)
+            pluginsConfigs[pluginId] = ArrayList(100)
         }
         return pluginsConfigs[pluginId]!!
     }

@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service
 import java.nio.file.Path
 import kotlin.io.path.listDirectoryEntries
 
+@Suppress("unused")
 @Service
 class FileCleanupSchedule @Autowired constructor(
     private val modpackRepository: ModPackRepository,
@@ -44,7 +45,7 @@ class FileCleanupSchedule @Autowired constructor(
     private fun cleanFiles() {
         log.info("Cleaning files...")
         val modpackFiles = modPackRoot.listDirectoryEntries().map { it.toFile() }
-        val modpackFileIDs = modpackRepository.findAll().map { it.fileID!!.toString() }
+        val modpackFileIDs = modpackRepository.findAll().map { it.fileID!! }
         for (file in modpackFiles) {
             if (!modpackFileIDs.any { fileId -> file.name.contains(fileId, ignoreCase = true) }) {
                 file.deleteQuietly()
@@ -53,7 +54,7 @@ class FileCleanupSchedule @Autowired constructor(
         }
 
         val serverPackFiles = serverPackRoot.listDirectoryEntries().map { it.toFile() }
-        val serverPackFileIDs = serverPackRepository.findAll().filter { it.fileID != null }.map { it.fileID!!.toString() }
+        val serverPackFileIDs = serverPackRepository.findAll().filter { it.fileID != null }.map { it.fileID!! }
         for (file in serverPackFiles) {
             if (!serverPackFileIDs.any { fileId -> file.name.contains(fileId, ignoreCase = true) }) {
                 file.deleteQuietly()

@@ -33,6 +33,7 @@ import javax.xml.parsers.ParserConfigurationException
  *
  * @author Griefed
  */
+@Suppress("unused")
 @Service
 class VersionRefreshSchedule @Autowired constructor(private val versionMeta: VersionMeta) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }

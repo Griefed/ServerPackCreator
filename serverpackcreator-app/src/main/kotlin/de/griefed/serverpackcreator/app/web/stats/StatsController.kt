@@ -35,6 +35,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.util.MimeTypeUtils
 import org.springframework.web.bind.annotation.*
 
+@Suppress("unused")
 @RestController
 @CrossOrigin(origins = ["*"])
 @RequestMapping("/api/v2/stats")
@@ -131,7 +132,7 @@ class StatsController @Autowired constructor(
 
     @GetMapping("/downloads/modpacks/{modPackID}")
     @ResponseBody
-    fun allDownloadsForModPack(@PathVariable modPackID: Int): ResponseEntity<List<ModPackDownload>> {
+    fun allDownloadsForModPack(@PathVariable modPackID: String): ResponseEntity<List<ModPackDownload>> {
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).body(
             downloadStatsService.downloadHistoryForModPack(modPackID)
         )
@@ -139,7 +140,7 @@ class StatsController @Autowired constructor(
 
     @GetMapping("/downloads/modpacks/{serverPackID}")
     @ResponseBody
-    fun allDownloadsForServerPack(@PathVariable serverPackID: Int): ResponseEntity<List<ServerPackDownload>> {
+    fun allDownloadsForServerPack(@PathVariable serverPackID: String): ResponseEntity<List<ServerPackDownload>> {
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).body(
             downloadStatsService.downloadHistoryForServerPack(serverPackID)
         )

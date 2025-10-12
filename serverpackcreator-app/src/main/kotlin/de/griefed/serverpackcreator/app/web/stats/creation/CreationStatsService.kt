@@ -23,7 +23,8 @@ import de.griefed.serverpackcreator.app.web.modpack.ModPackService
 import de.griefed.serverpackcreator.app.web.serverpack.ServerPackService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import java.time.LocalDateTime
+import java.text.DateFormat
+import java.util.*
 
 @Service
 class CreationStatsService @Autowired constructor(
@@ -32,22 +33,22 @@ class CreationStatsService @Autowired constructor(
 ) {
 
     fun getModpackTimeStamps(): List<AmountPerDate> {
-        val dates = mutableListOf<LocalDateTime>()
+        val dates = mutableListOf<Date>()
         for (pack in modpackService.getModpacks()) {
-            dates.add(pack.dateCreated!!.toLocalDateTime())
+            dates.add(pack.dateCreated)
         }
         return count(dates)
     }
 
     fun getServerPackTimeStamps(): List<AmountPerDate> {
-        val dates = mutableListOf<LocalDateTime>()
+        val dates = mutableListOf<Date>()
         for (pack in serverPackService.getServerPacks()) {
-            dates.add(pack.dateCreated!!.toLocalDateTime())
+            dates.add(pack.dateCreated)
         }
         return count(dates)
     }
 
-    private fun count(dates: List<LocalDateTime>): List<AmountPerDate> {
+    private fun count(dates: List<Date>): List<AmountPerDate> {
         val creations = mutableListOf<AmountPerDate>()
         for (date in dates) {
             //skip if the date was already checked
@@ -63,7 +64,7 @@ class CreationStatsService @Autowired constructor(
         return creations
     }
 
-    private fun dateToString(date: LocalDateTime): String {
-        return "${date.year}-${date.monthValue}-${date.dayOfMonth}"
+    private fun dateToString(date: Date): String {
+        return "${DateFormat.getInstance().format(date)}" //"${date.toLocaleString()}-${date.toLocalDate().monthValue}-${date.toLocalDate().dayOfMonth}"
     }
 }

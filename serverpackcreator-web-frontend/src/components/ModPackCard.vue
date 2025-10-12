@@ -9,7 +9,7 @@
   </q-card>
   <q-card flat bordered style="height: 400px;" v-else>
     <q-list dense>
-      <q-item clickable @click="copyToClipboard(id.toString())">
+      <q-item clickable @click="copyToClipboard(id)">
         <q-item-section side>
           <q-icon color="accent" name="token"/>
         </q-item-section>
@@ -112,7 +112,7 @@
   </q-card>
 </template>
 
-<script lang="ts">
+<script >
 import {defineComponent, ref} from 'vue';
 import {modpacks} from 'boot/axios';
 import {date} from 'quasar';
@@ -126,7 +126,7 @@ export default defineComponent({
   },
   props: {
     id: {
-      type: Number,
+      type: String,
       required: true
     }
   },
@@ -157,7 +157,7 @@ export default defineComponent({
     };
   },
   methods: {
-    copyToClipboard(text: string) {
+    copyToClipboard(text) {
       navigator.clipboard.writeText(text);
       this.$q.notify({
         timeout: 5000,
@@ -170,7 +170,7 @@ export default defineComponent({
   },
   mounted() {
     this.showTextLoading();
-    modpacks.get(this.id.toString()).then(response => {
+    modpacks.get(this.id).then(response => {
       this.dateCreated = response.data.dateCreated;
       this.name = response.data.name;
       this.projectID = response.data.projectID;
