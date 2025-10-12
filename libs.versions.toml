@@ -1,16 +1,16 @@
 [versions]
 
 # https://kotlinlang.org/docs/releases.html#release-dbbbetails
-kotlin = "2.1.20"
+kotlin = "2.2.0"
 
 # https://kotlinlang.org/docs/all-open-plugin.html#gradle
-kotlinAllOpen = "2.1.20"
+kotlinAllOpen = "2.2.0"
 
 # https://mvnrepository.com/artifact/org.jetbrains.kotlin.plugin.jpa/org.jetbrains.kotlin.plugin.jpa.gradle.plugin
-kotlinJpa = "2.1.20"
+kotlinJpa = "2.2.0"
 
 # https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-gradle-plugin
-springGradle = "3.3.4"
+springGradle = "3.5.3"
 
 # https://mvnrepository.com/artifact/io.spring.gradle/dependency-management-plugin
 springDependencyMan = "1.1.7"

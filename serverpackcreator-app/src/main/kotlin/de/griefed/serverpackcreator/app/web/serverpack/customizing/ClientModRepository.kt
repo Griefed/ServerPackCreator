@@ -22,4 +22,4 @@ package de.griefed.serverpackcreator.app.web.serverpack.customizing
 import org.springframework.stereotype.Repository
 
 @Repository
-interface ClientModRepository : ModRepository<ClientMod, Int>
+interface ClientModRepository : ModRepository<ClientMod, String>

@@ -76,14 +76,13 @@ class ConfigurationPanel(
     versionMeta, apiProperties, utilities, serverPackConfigTab, addonConfig!!,
     extensionName, pluginID
 ) {
-    private val panelName: String
+    private val panelName: String = "$extensionName ($pluginID)"
     private val pregen = JTextField()
     private val prezip = JTextField()
     private val postgen = JTextField()
     private val confcheck = JTextField()
 
     init {
-        panelName = "$extensionName ($pluginID)"
         val extensionHeader = Font("Noto Sans Display Regular", Font.BOLD, 18)
         layout = GridBagLayout()
         val gridBagConstraints = GridBagConstraints()

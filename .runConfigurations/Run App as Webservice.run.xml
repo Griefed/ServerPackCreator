@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run App as Webservice" type="JetRunConfigurationType">
+    <option name="MAIN_CLASS_NAME" value="de.griefed.serverpackcreator.app.ServerPackCreatorKt" />
+    <module name="serverpackcreator.serverpackcreator-app.main" />
+    <option name="PROGRAM_PARAMETERS" value="-web --home &quot;$ProjectFileDir$/serverpackcreator-app/tests&quot;" />
+    <shortenClasspath name="NONE" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/serverpackcreator-app/tests" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

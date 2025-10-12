@@ -24,6 +24,9 @@
  */
 package de.griefed.serverpackcreator.app.gui.window.control.components
 
+import de.griefed.serverpackcreator.app.gui.window.control.components.LarsonScanner.ScannerConfig.Companion.HIGH
+import de.griefed.serverpackcreator.app.gui.window.control.components.LarsonScanner.ScannerConfig.Companion.LOW
+import de.griefed.serverpackcreator.app.gui.window.control.components.LarsonScanner.ScannerConfig.Companion.MEDIUM
 import java.awt.*
 import javax.swing.JComponent
 import javax.swing.JPanel

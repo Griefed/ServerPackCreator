@@ -35,7 +35,7 @@ analyzeCommits:
       - type: milestone # A milestone release marking a huge step forward in development
         release: major
       - type: breaking  # Changes that break something makes something incompatible to earlier version
-        release: minor
+        release: major
       - type: build     # Changes that affect the build system or external dependencies
         release: patch
       - type: chore     # Other changes that don't modify src or test files

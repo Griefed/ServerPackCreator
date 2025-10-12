@@ -24,7 +24,7 @@
   </q-card>
 </template>
 
-<script lang="ts">
+<script >
 import {defineComponent} from 'vue';
 
 export default defineComponent({
@@ -55,7 +55,7 @@ export default defineComponent({
     };
   },
   methods: {
-    copyToClipboard(text: string) {
+    copyToClipboard(text) {
       navigator.clipboard.writeText(text);
       this.$q.notify({
         timeout: 5000,

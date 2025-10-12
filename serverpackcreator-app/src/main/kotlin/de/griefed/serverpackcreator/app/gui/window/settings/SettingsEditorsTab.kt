@@ -69,8 +69,8 @@ class SettingsEditorsTab(
         actionListener,
         tableModelListener
     )
-    val webservice = WebserviceSettings(guiProps, apiProperties, mainFrame, documentChangeListener, changeListener, controlPanel)
-    val gui = GuiSettings(guiProps, actionListener, changeListener, themeManager, controlPanel)
+    val webservice = WebserviceSettings(guiProps, apiProperties, mainFrame, documentChangeListener)
+    val gui = GuiSettings(guiProps, actionListener, changeListener, themeManager)
 
     init {
         tabs.add(global)

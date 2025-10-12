@@ -18,7 +18,7 @@ import io.ByteReader
 import io.ByteWriter
 import mslinks.Serializable
 import mslinks.ShellLinkException
-import mslinks.data.*
+import mslinks.data.GUID
 import java.io.IOException
 
 @Suppress("MemberVisibilityCanBePrivate", "unused")

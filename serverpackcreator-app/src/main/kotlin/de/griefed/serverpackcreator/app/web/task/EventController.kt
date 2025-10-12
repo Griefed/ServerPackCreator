@@ -27,6 +27,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.util.MimeTypeUtils
 import org.springframework.web.bind.annotation.*
 
+@Suppress("unused")
 @RestController
 @CrossOrigin(origins = ["*"])
 @RequestMapping("/api/v2/events")
@@ -54,16 +55,16 @@ class EventController @Autowired constructor(private val eventService: EventServ
         )
     }
 
-    @GetMapping("/modpack/{id:[0-9]+}", produces = ["application/json"])
+    @GetMapping("/modpack/{id:[0-9a-zA-Z]+}", produces = ["application/json"])
     @ResponseBody
-    fun getModPackEvents(@PathVariable id: Int): ResponseEntity<List<QueueEvent>> {
+    fun getModPackEvents(@PathVariable id: String): ResponseEntity<List<QueueEvent>> {
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
             .body(eventService.loadAllByModPackId(id))
     }
 
-    @GetMapping("/serverpack/{id:[0-9]+}", produces = ["application/json"])
+    @GetMapping("/serverpack/{id:[0-9a-zA-Z]+}", produces = ["application/json"])
     @ResponseBody
-    fun getServerPackEvents(@PathVariable id: Int): ResponseEntity<List<QueueEvent>> {
+    fun getServerPackEvents(@PathVariable id: String): ResponseEntity<List<QueueEvent>> {
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
             .body(eventService.loadAllByServerPackId(id))
     }

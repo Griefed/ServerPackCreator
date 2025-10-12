@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia';
-import { settings } from 'boot/axios';
+import { defineStore, acceptHMRUpdate } from 'pinia'
+import {settings} from "../boot/axios.js";
 
 export const settingsStore = defineStore('settings', {
   state: () => ({
@@ -18,6 +18,11 @@ export const settingsStore = defineStore('settings', {
     aikarsFlags: '',
     language: ''
   }),
+
+  getters: {
+    doubleCount: (state) => state.counter * 2
+  },
+
   actions: {
     async refresh() {
       settings.get('current').then(response => {
@@ -47,3 +52,7 @@ export const settingsStore = defineStore('settings', {
     }
   }
 })
+
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(settingsStore, import.meta.hot))
+}

@@ -19,19 +19,31 @@
  */
 package de.griefed.serverpackcreator.app.web.serverpack
 
-import jakarta.persistence.*
-import org.hibernate.annotations.CreationTimestamp
-import java.sql.Timestamp
+import org.springframework.data.annotation.PersistenceCreator
+import org.springframework.data.mongodb.core.mapping.DBRef
+import org.springframework.data.mongodb.core.mapping.Document
+import org.springframework.data.mongodb.core.mapping.FieldType
+import org.springframework.data.mongodb.core.mapping.MongoId
+import java.util.*
 
-@Entity
-class ServerPackDownload(@ManyToOne var serverPack: ServerPack) {
+@Document
+class ServerPackDownload {
 
-    @Id
-    @GeneratedValue
-    @Column(updatable = false, nullable = false)
-    var id: Int = 0
+    @MongoId(FieldType.STRING)
+    var downloadedAt: Date = Date(System.currentTimeMillis())
+        private set
 
-    @CreationTimestamp
-    @Column
-    var downloadedAt: Timestamp? = null
+    @DBRef
+    var serverPack: ServerPack
+
+    constructor(serverPack: ServerPack) {
+        this.serverPack = serverPack
+    }
+
+    @Suppress("unused")
+    @PersistenceCreator
+    private constructor(downloadedAt: Date, serverPack: ServerPack) {
+        this.downloadedAt = downloadedAt
+        this.serverPack = serverPack
+    }
 }

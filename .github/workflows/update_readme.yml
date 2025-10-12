@@ -9,10 +9,18 @@ jobs:
     name: "Fetch and Generate Blog Posts"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: Griefed/ServerPackCreator
           ref: main
+
+      - uses: release-kit/hash-files@v1
+        id: get-current-hash
+        with:
+          patterns: |
+            README.md
+      - name: Current README hash
+        run: echo ${{ steps.get-current-hash.outputs.hash }}
 
       - name: Add GitHub Sponsors to Readme
         uses: JamesIves/github-sponsors-readme-action@v1
@@ -31,7 +39,16 @@ jobs:
           style: 'base'
           avatar-width: '70'
 
+      - uses: release-kit/hash-files@v1
+        id: get-new-hash
+        with:
+          patterns: |
+            README.md
+      - name: New README hash
+        run: echo ${{ steps.get-new-hash.outputs.hash }}
+
       - name: Push
+        if: ${{ steps.get-current-hash.outputs.hash != steps.get-new-hash.outputs.hash }}
         run: |
           apt-get update && apt-get install git -y && \
           git config user.name ${{ secrets.GIT_USER }} && \

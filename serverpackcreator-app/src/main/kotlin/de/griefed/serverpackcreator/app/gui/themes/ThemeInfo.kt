@@ -29,7 +29,6 @@ import java.io.File
  */
 class ThemeInfo(
     val name: String,
-    val dark: Boolean,
     val license: String?,
     val themeFile: File?,
     val lafClassName: String?

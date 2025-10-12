@@ -23,7 +23,9 @@ import com.electronwill.nightconfig.core.CommentedConfig
 import com.electronwill.nightconfig.toml.TomlFormat
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.apache.logging.log4j.kotlin.logger
-import org.pf4j.*
+import org.pf4j.Plugin
+import org.pf4j.PluginManager
+import org.pf4j.PluginRuntimeException
 import java.net.URI
 
 /**

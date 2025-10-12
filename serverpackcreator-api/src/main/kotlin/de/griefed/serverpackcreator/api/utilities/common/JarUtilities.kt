@@ -20,7 +20,8 @@
 package de.griefed.serverpackcreator.api.utilities.common
 
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import java.io.*
+import java.io.File
+import java.io.IOException
 import java.net.URISyntaxException
 import java.nio.file.Files
 import java.util.*
