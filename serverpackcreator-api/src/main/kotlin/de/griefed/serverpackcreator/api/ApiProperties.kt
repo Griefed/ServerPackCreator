@@ -250,6 +250,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "KeepTheResourcePack-",         //https://www.curseforge.com/minecraft/mc-mods/keep-the-resourcepack
             "LeaveMyBarsAlone-",            //https://www.curseforge.com/minecraft/mc-mods/leave-my-bars-alone
             "LLOverlayReloaded-",           //https://www.curseforge.com/minecraft/mc-mods/light-level-overlay-reloaded
+            "LongerChatHistory-",           //https://www.curseforge.com/minecraft/mc-mods/longer-chat-history
             "LOTRDRP-",                     //https://www.curseforge.com/minecraft/mc-mods/lotr-drp
             "LegendaryTooltips",            //https://www.curseforge.com/minecraft/mc-mods/legendary-tooltips
             "LegendaryTooltips-",           //https://www.curseforge.com/minecraft/mc-mods/legendary-tooltips
