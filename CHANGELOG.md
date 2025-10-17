@@ -1,3 +1,13 @@
+## [8.0.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.0-beta.1...8.0.0-beta.2) (2025-10-17)
+
+### 📦 Other
+
+* Add LongerChatHistory to clientside mods ([32b670f](https://git.griefed.de/Griefed/ServerPackCreator/commit/32b670ffc63f3219c37d0bce7eebbd2225da7c96))
+
+### 🦊 CI/CD
+
+* Add dependency to satisfy Gradle ([169892a](https://git.griefed.de/Griefed/ServerPackCreator/commit/169892a6de8ead72535391b2e69da77c8092573c))
+
 ## [8.0.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.3.0...8.0.0-beta.1) (2025-10-12)
 
 ### :scissors: Refactor
