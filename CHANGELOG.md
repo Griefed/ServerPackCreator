@@ -1,3 +1,9 @@
+## [8.0.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.0-beta.2...8.0.0-beta.3) (2025-10-17)
+
+### 🦊 CI/CD
+
+* OSSRH sunset URL replacements ([d2dd900](https://git.griefed.de/Griefed/ServerPackCreator/commit/d2dd900b9641e16223eff3fa47003cdeba5cc50c))
+
 ## [8.0.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.0-beta.1...8.0.0-beta.2) (2025-10-17)
 
 ### 📦 Other
