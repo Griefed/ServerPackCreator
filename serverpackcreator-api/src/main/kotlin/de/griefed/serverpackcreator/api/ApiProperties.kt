@@ -516,6 +516,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "panorama-",                    //https://www.curseforge.com/minecraft/mc-mods/panorama
             "paperdoll-",                   //https://www.curseforge.com/minecraft/mc-mods/paperdoll
             "particle-rain-",               //https://www.curseforge.com/minecraft/mc-mods/particle-rain
+            "particular-",                  //https://www.curseforge.com/minecraft/mc-mods/particular-reforged
             "perdimensionbrightness-",      //https://www.curseforge.com/minecraft/mc-mods/per-dimension-brightness
             "persistentinventorysearch-",   //https://www.curseforge.com/minecraft/mc-mods/persistent-inventory-search
             "physics-mod-",                 //https://www.curseforge.com/minecraft/mc-mods/physics-mod
