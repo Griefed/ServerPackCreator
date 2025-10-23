@@ -277,7 +277,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "OptiForge-",                   //https://www.curseforge.com/minecraft/mc-mods/optiforge
             "OverflowingBars-",             //https://www.curseforge.com/minecraft/mc-mods/overflowing-bars
             "PackMenu-",                    //https://www.curseforge.com/minecraft/mc-mods/packmenu
-            "PackModeMenu-",                //https://www.curseforge.com/minecraft/mc-mods/packmodemenu
+            "PackModeMenu-",                //https://www.curseforge.com/minecraft/mc-mods/packmodemenu,
+            "ParticleEffects-",             //https://www.curseforge.com/minecraft/mc-mods/particle-effects
             "Particle Effects-",            //https://www.curseforge.com/minecraft/mc-mods/particle-effects
             "Perception-",                  //https://www.curseforge.com/minecraft/mc-mods/perception
             "PickUpNotifier-",              //https://www.curseforge.com/minecraft/mc-mods/pick-up-notifier
@@ -339,6 +340,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "bbs-",                         //https://www.curseforge.com/minecraft/mc-mods/bbs-mod
             "beddium-",                     //https://www.curseforge.com/minecraft/mc-mods/beddium
             "beenfo-",                      //https://www.curseforge.com/minecraft/mc-mods/beenfo
+            "better_client",                //https://www.curseforge.com/minecraft/mc-mods/better-client
             "better_tooltips-",             //https://www.curseforge.com/minecraft/mc-mods/better-tooltips-neoforge
             "better-clouds-",               //Gone? Reduces to atoms?
             "better-recipe-book-",          //Gone? Reduces to atoms?
@@ -486,6 +488,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "mindful-eating-",              //https://www.curseforge.com/minecraft/mc-mods/mindful-eating
             "minetogether-",                //https://www.curseforge.com/minecraft/mc-mods/creeperhost-minetogether
             "minihud-",                     //https://www.curseforge.com/minecraft/mc-mods/minihud-update-port
+            "miningspeedtooltips-",         //https://www.curseforge.com/minecraft/mc-mods/mining-speed-tooltips
             "moremmog'scheats",             //https://www.curseforge.com/minecraft/mc-mods/mmogs-cheat-menu
             "mmog'scheats3.6kdownloadsplusmorecheats",//https://www.curseforge.com/minecraft/mc-mods/mmogs-cheat-menu
             "mobplusplus-",                 //Gone? Reduces to atoms?
@@ -577,6 +580,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "tweakeroo-",                   //https://www.curseforge.com/minecraft/mc-mods/tweakeroo-update-port
             "vanillazoom-",                 //https://www.curseforge.com/minecraft/mc-mods/vanilla-zoom
             "viaforge-",                    //https://www.curseforge.com/minecraft/mc-mods/viaforge
+            "wakes-",                       //https://www.curseforge.com/minecraft/mc-mods/wakes
             "watermedia-",                  //https://www.curseforge.com/minecraft/mc-mods/watermedia
             "whats-that-slot-forge-",       //https://www.curseforge.com/minecraft/mc-mods/whats-that-slot
             "wheredididie-",                //https://www.curseforge.com/minecraft/mc-mods/where-did-i-die
