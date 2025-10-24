@@ -42,17 +42,14 @@ class TipOfTheDayManager(private val mainFrame: JFrame, private val guiProps: Gu
     private val tipOfTheDayModel = DefaultTipOfTheDayModel()
 
     init {
-        val memberProperties = Translations::class.memberProperties.filter { it.name.matches("tip_\\d+_name".toRegex()) }
-        for (memberProp in memberProperties) {
-            val number = memberProp.name
+        val tipEntries = Translations::class.memberProperties.filter { it.name.matches("tip_\\d+_name".toRegex()) }
+        for (tipEntry in tipEntries) {
+            val tipNumber = tipEntry.name
                 .replace("tip_", "")
                 .replace("_name", "")
-            val name = memberProp.get(Translations).toString()
-            val value = Translations::class.memberProperties
-                .find { it.name == "tip_${number}_content" }
-                ?.get(Translations)?.toString()
-                ?: "Could not retrieve tip for ${memberProp.name}."
-            tipOfTheDayModel.add(CustomTip(name, value,"/de/griefed/resources/gui/tip$number.png"))
+            val tipName = Translations.getEntryByKey("tip.${tipNumber}.name").toString()
+            val tipContent = Translations.getEntryByKey("tip.${tipNumber}.content").toString()
+            tipOfTheDayModel.add(CustomTip(tipName, tipContent,"/de/griefed/resources/gui/tip$tipNumber.png"))
         }
     }
 

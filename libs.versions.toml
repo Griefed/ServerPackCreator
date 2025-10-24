@@ -16,7 +16,7 @@ springGradle = "3.5.3"
 springDependencyMan = "1.1.7"
 
 # https://kotlinlang.org/docs/dokka-get-started.html
-dokka = "2.0.0"
+dokka = "2.1.0"
 
 # https://github.com/jk1/Gradle-License-Report
 licenseReport = "2.9"
@@ -37,6 +37,7 @@ springGradlePlugin = { module = "org.springframework.boot:spring-boot-gradle-plu
 springDependencyMan = { module = "io.spring.gradle:dependency-management-plugin", version.ref = "springDependencyMan" }
 
 dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
+dokkaJavaDoc = { module = "org.jetbrains.dokka:javadoc-plugin", version.ref = "dokka" }
 licenseReport = { module = "com.github.jk1:gradle-license-report", version.ref = "licenseReport" }
 frontendPlugin = { module = "org.siouan:frontend-jdk21", version.ref = "frontendPlugin" }
 install4j = { module = "com.install4j:install4j-gradle", version.ref = "install4j" }

@@ -273,7 +273,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build documentation
-        run: ./gradlew :serverpackcreator-api:dokkaHtml -Pversion="${{ needs.preparations.outputs.version }}" --full-stacktrace --info -x test
+        run: ./gradlew :serverpackcreator-api:dokkaGenerateHtml -Pversion="${{ needs.preparations.outputs.version }}" --full-stacktrace --info -x test
 
       - uses: actions/upload-artifact@v4
         with:
