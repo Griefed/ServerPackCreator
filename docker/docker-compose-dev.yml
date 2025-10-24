@@ -1,20 +1,10 @@
 version: '3'
 services:
-  serverpackcreatordb:
-    container_name: serverpackcreatordb
-    image: postgres:16.1
-    restart: unless-stopped
-    environment:
-      - POSTGRES_DB=serverpackcreator
-      - POSTGRES_USER=serverpackcreator
-      - POSTGRES_PASSWORD=1234567890
-    volumes:
-      - database:/var/lib/postgresql/data
   serverpackcreator:
     container_name: serverpackcreator
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile
     restart: unless-stopped
     depends_on:
       - serverpackcreatordb
@@ -25,10 +15,10 @@ services:
       - SPC_SCHEDULE_DATABASE_CLEANUP=0 0 0 * * *
       - SPC_SCHEDULE_FILES_CLEANUP=0 0 0 * * *
       - SPC_SCHEDULE_VERSIONS_REFRESH=0 0 0 * * *
-      - SPC_DATABASE_PASSWORD=1234567890
-      - SPC_DATABASE_USERNAME=serverpackcreator
+      - SPC_DATABASE_PASSWORD=1234567890 # $ : / ? # [ ] @ those characters must be converted using https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
+      - SPC_DATABASE_USERNAME=serverpackcreator # $ : / ? # [ ] @ those characters must be converted using https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
       - SPC_DATABASE_HOST=serverpackcreatordb
-      - SPC_DATABASE_PORT=5432
+      - SPC_DATABASE_PORT=27017
       - SPC_DATABASE_DB=serverpackcreator
       - SPC_MAX_UPLOAD_SIZE=1000
       - SPC_CONFIGURATION_AIKAR=-Xms4G -Xmx4G -XX\:+UseG1GC -XX\:+ParallelRefProcEnabled -XX\:MaxGCPauseMillis\=200 -XX\:+UnlockExperimentalVMOptions -XX\:+DisableExplicitGC -XX\:+AlwaysPreTouch -XX\:G1NewSizePercent\=30 -XX\:G1MaxNewSizePercent\=40 -XX\:G1HeapRegionSize\=8M -XX\:G1ReservePercent\=20 -XX\:G1HeapWastePercent\=5 -XX\:G1MixedGCCountTarget\=4 -XX\:InitiatingHeapOccupancyPercent\=15 -XX\:G1MixedGCLiveThresholdPercent\=90 -XX\:G1RSetUpdatingPauseTimePercent\=5 -XX\:SurvivorRatio\=32 -XX\:+PerfDisableSharedMem -XX\:MaxTenuringThreshold\=1 -Dusing.aikars.flags\=https\://mcflags.emc.gs -Daikars.new.flags\=true
@@ -46,8 +36,37 @@ services:
       - modpacks:/app/serverpackcreator/modpacks
       - server-packs:/app/serverpackcreator/server-packs
       - logs:/app/serverpackcreator/logs
+  serverpackcreatordb:
+    image: mongodb/mongodb-community-server:8.0.5-ubuntu2204
+    container_name: serverpackcreatordb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 1234567890
+      MONGO_INITDB_DATABASE: serverpackcreatordb
+    volumes:
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init.js:ro
+#      - spcdb-data:/data/db
+#      - spcdb-conf:/data/configdb
+  # Database Manager
+  serverpackcreator-mongo-express:
+    container_name: mongo-express
+    restart: unless-stopped
+    image: mongo-express
+    ports:
+      - 8081:8081
+    depends_on:
+      - mongodb
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=serverpackcreatordb
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=1234567890
+      - ME_CONFIG_BASICAUTH_USERNAME=mexpress
+      - ME_CONFIG_BASICAUTH_PASSWORD=mexpress
 volumes:
-  database:
+#  spcdb-data:
+#  spcdb-conf:
   modpacks:
   server-packs:
   logs:

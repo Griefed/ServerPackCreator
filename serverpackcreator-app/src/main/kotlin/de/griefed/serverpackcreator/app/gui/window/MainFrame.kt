@@ -45,7 +45,7 @@ class MainFrame(
     migrationManager: MigrationManager,
     themeManager: ThemeManager
 ) {
-    val frame: JFrame = JFrame("${Translations.createserverpack_gui_createandshowgui.toString()} ${apiWrapper.apiProperties.apiVersion}")
+    val frame: JFrame = JFrame("${Translations.createserverpack_gui_createandshowgui} ${apiWrapper.apiProperties.apiVersion}")
     val mainPanel = MainPanel(guiProps, apiWrapper, guiProps.larsonScanner, this, themeManager)
     private val updateDialogs: UpdateDialogs = UpdateDialogs(
         guiProps, apiWrapper.utilities.webUtilities,

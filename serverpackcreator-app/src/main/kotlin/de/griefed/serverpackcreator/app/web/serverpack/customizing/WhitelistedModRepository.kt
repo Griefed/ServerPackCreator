@@ -22,4 +22,4 @@ package de.griefed.serverpackcreator.app.web.serverpack.customizing
 import org.springframework.stereotype.Repository
 
 @Repository
-interface WhitelistedModRepository : ModRepository<WhitelistedMod, Int>
+interface WhitelistedModRepository : ModRepository<WhitelistedMod, String>

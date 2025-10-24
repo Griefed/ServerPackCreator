@@ -36,6 +36,7 @@ class SemanticVersionComparator {
          * @throws NumberFormatException If any of the versions in the list can not be parsed correctly, possibly due to
          * not being in the expected semantic-format, or because they contain letters.
          */
+        @Suppress("unused")
         fun findNewestVersion(versions: List<String>): String {
             var newest = versions[0]
             for (version in versions) {
@@ -54,9 +55,9 @@ class SemanticVersionComparator {
          * @throws NumberFormatException If any of the versions in the list can not be parsed correctly, possibly due to
          * not being in the expected semantic-format, or because they contain letters.
          */
+        @Suppress("unused")
         fun findOldestVersion(versions: List<String>): String {
             var oldest = versions[0]
-            var i = 0
             for (version in versions) {
                 if (versions.all { compareSemantics(oldest, version, Comparison.EQUAL_OR_NEW) }) {
                     oldest = version

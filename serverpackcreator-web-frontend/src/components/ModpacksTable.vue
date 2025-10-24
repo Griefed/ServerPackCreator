@@ -85,7 +85,7 @@
   </q-table>
 </template>
 
-<script lang="ts">
+<script >
 import {defineComponent, ref} from 'vue';
 import {modpacks} from 'boot/axios';
 import {date} from 'quasar';
@@ -108,7 +108,7 @@ const columns = [
     field: 'serverPacks',
     sortable: false,
     align: 'left',
-    format: (val: Array<never>) => val.length
+    format: (val) => val.length
   },
   {name: 'sha256', label: 'SHA256 Hash', field: 'sha256', sortable: false, align: 'left'},
   {
@@ -117,7 +117,7 @@ const columns = [
     field: 'dateCreated',
     sortable: true,
     align: 'left',
-    format: (val: number) => date.formatDate(val, 'YYYY-MM-DD : HH:mm')
+    format: (val) => date.formatDate(val, 'YYYY-MM-DD : HH:mm')
   }
 ];
 

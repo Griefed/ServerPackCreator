@@ -39,6 +39,7 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @CrossOrigin(origins = ["*"])
 @RequestMapping("/api/v2/modpacks")
+@Suppress("unused")
 class ModPackController @Autowired constructor(
     private val modpackService: ModPackService,
     private val runConfigurationService: RunConfigurationService,
@@ -46,9 +47,9 @@ class ModPackController @Autowired constructor(
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
-    @GetMapping("/download/{id:[0-9]+}", produces = ["application/zip"])
+    @GetMapping("/download/{id:[0-9a-zA-Z]+}", produces = ["application/zip"])
     @ResponseBody
-    fun downloadModpack(@PathVariable id: Int): ResponseEntity<Resource> {
+    fun downloadModpack(@PathVariable id: String): ResponseEntity<Resource> {
         val modpack = modpackService.getModpack(id)
         if (modpack.isEmpty) {
             log.warn("Modpack with ID $id not found")
@@ -99,7 +100,7 @@ class ModPackController @Autowired constructor(
             minecraftVersion, modloader, modloaderVersion, startArgs, clientMods, whiteListMods
         )
         try {
-            val modpack = modpackService.saveZipModpack(file)
+            val modpack = modpackService.saveUploadedFile(file)
             val taskDetail = TaskDetail(modpack)
             taskDetail.runConfiguration = runConfig
             taskExecutionServiceImpl.submitTaskInQueue(taskDetail)
@@ -117,7 +118,7 @@ class ModPackController @Autowired constructor(
             zipResponse = ZipResponse(
                 message = ex.message!!,
                 success = false,
-                modPackId = ex.id,
+                modPackId = ex.id.toString(),
                 runConfigId = runConfig.id,
                 serverPackId = null,
                 status = ModPackStatus.ERROR
@@ -130,7 +131,7 @@ class ModPackController @Autowired constructor(
     @PostMapping("/generate", produces = ["application/json"])
     @ResponseBody
     fun requestGeneration(
-        @RequestParam("modPackID") modPackID: Int,
+        @RequestParam("modPackID") modPackID: String,
         @RequestParam("minecraftVersion") minecraftVersion: String,
         @RequestParam("modloader") modloader: String,
         @RequestParam("modloaderVersion") modloaderVersion: String,
@@ -213,9 +214,9 @@ class ModPackController @Autowired constructor(
         )
     }
 
-    @GetMapping("/{id:[0-9]+}", produces = ["application/json"])
+    @GetMapping("/{id:[0-9a-zA-Z]+}", produces = ["application/json"])
     @ResponseBody
-    fun getModpack(@PathVariable id: Int): ResponseEntity<ModPack> {
+    fun getModpack(@PathVariable id: String): ResponseEntity<ModPack> {
         val pack = modpackService.getModpack(id)
         return if (pack.isPresent) {
             ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).body(
@@ -226,9 +227,9 @@ class ModPackController @Autowired constructor(
         }
     }
 
-    @GetMapping("byserverpack/{id:[0-9]+}", produces = ["application/json"])
+    @GetMapping("byserverpack/{id:[0-9a-zA-Z]+}", produces = ["application/json"])
     @ResponseBody
-    fun getModPackByServerPack(@PathVariable id: Int): ResponseEntity<ModPack> {
+    fun getModPackByServerPack(@PathVariable id: String): ResponseEntity<ModPack> {
         val pack = modpackService.getByServerPack(id)
         return if (pack.isPresent) {
             ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).body(

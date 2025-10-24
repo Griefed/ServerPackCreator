@@ -756,7 +756,7 @@ internal class Game @JvmOverloads constructor(width: Int = 10, height: Int = 20)
     /**
      * The main square board. This board is used for the game itself.
      */
-    private val board: SquareBoard
+    private val board: SquareBoard = SquareBoard(width, height)
 
     /**
      * The preview square board. This board is used to display a preview of the figures.
@@ -847,7 +847,6 @@ internal class Game @JvmOverloads constructor(width: Int = 10, height: Int = 20)
      * Creates a new Tetris game. The square board will be given the default size of 10x20.
      */
     init {
-        board = SquareBoard(width, height)
         thread = GameThread()
         handleGetReady()
         board.getComponent()!!.isFocusable = true

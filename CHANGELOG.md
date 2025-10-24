@@ -1,3 +1,311 @@
+## [8.0.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.0-beta.2...8.0.0-beta.3) (2025-10-17)
+
+### 🦊 CI/CD
+
+* OSSRH sunset URL replacements ([d2dd900](https://git.griefed.de/Griefed/ServerPackCreator/commit/d2dd900b9641e16223eff3fa47003cdeba5cc50c))
+
+## [8.0.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.0-beta.1...8.0.0-beta.2) (2025-10-17)
+
+### 📦 Other
+
+* Add LongerChatHistory to clientside mods ([32b670f](https://git.griefed.de/Griefed/ServerPackCreator/commit/32b670ffc63f3219c37d0bce7eebbd2225da7c96))
+
+### 🦊 CI/CD
+
+* Add dependency to satisfy Gradle ([169892a](https://git.griefed.de/Griefed/ServerPackCreator/commit/169892a6de8ead72535391b2e69da77c8092573c))
+
+## [8.0.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.3.0...8.0.0-beta.1) (2025-10-12)
+
+### :scissors: Refactor
+
+* Make properties a bit more readable and easier to edit ([b838d77](https://git.griefed.de/Griefed/ServerPackCreator/commit/b838d772b730885238c68d9cde5393c287246930))
+* Move docker-related files into dir ([dcd9309](https://git.griefed.de/Griefed/ServerPackCreator/commit/dcd930981dbbecb37e859e20a075eabf5ea763d1))
+* Optimize imports ([6b95a00](https://git.griefed.de/Griefed/ServerPackCreator/commit/6b95a00a804bb8c20d45011f79e9d743e1063b20))
+* Plain old JS ([f29e4a5](https://git.griefed.de/Griefed/ServerPackCreator/commit/f29e4a5dd9b9daae37807be4336c51a1e9ceb2a3))
+* Qodana recommendations ([9ccda66](https://git.griefed.de/Griefed/ServerPackCreator/commit/9ccda66a40d10d0b571e3384d6e47b9c5320c921))
+* Qodana recommendations ([3e8bd37](https://git.griefed.de/Griefed/ServerPackCreator/commit/3e8bd3791808a6f02901249071284a5a82b1ba80))
+* Qodana recommendations ([ab3eb5e](https://git.griefed.de/Griefed/ServerPackCreator/commit/ab3eb5e204f3ef16377ad3e08511b29884a491a6))
+* Qodana recommendations and import optimizations ([8460be7](https://git.griefed.de/Griefed/ServerPackCreator/commit/8460be7ed5350d5cb2ec9be80249b9853dd0b142))
+* Remove redundant call. Optimize imports ([fe970de](https://git.griefed.de/Griefed/ServerPackCreator/commit/fe970de657b4961f69c962ddbe0a1e5b119679e6))
+* Sanitize server pack construction ([c712bc1](https://git.griefed.de/Griefed/ServerPackCreator/commit/c712bc1b8c3e7800c8fc1a1427c59245c51ab03e))
+* Switch to desired string spec ([48a66bd](https://git.griefed.de/Griefed/ServerPackCreator/commit/48a66bda8e2068f78c3d55f2c6c5a5b55f9bf2c6))
+* Update docker paths ([5fef6b0](https://git.griefed.de/Griefed/ServerPackCreator/commit/5fef6b09d098fa8ca4d19354a6c0e3a568b66c8d))
+* Update docker-related files into dir ([56ac374](https://git.griefed.de/Griefed/ServerPackCreator/commit/56ac37479a96d40e6e548448cab10c171342efb2))
+
+### ✨ Milestone
+
+* **Webservice:** Store mod- and serverpacks in database. Cache on disk, retrieve from database otherwise ([5c86d88](https://git.griefed.de/Griefed/ServerPackCreator/commit/5c86d88745cf172a513bbcde7a370c6661675552))
+
+### 💎 Improvements
+
+* Add JAVA explanation to variables ([e9aec7f](https://git.griefed.de/Griefed/ServerPackCreator/commit/e9aec7fcf0a30648b268282b4a6f2d2ac40508cc))
+* **Webservice:** Improve data display in download cards ([679442e](https://git.griefed.de/Griefed/ServerPackCreator/commit/679442e7c88606226ff5be7ae70a27872656f2c7))
+
+### 📔 Docs
+
+* Deprecate Dependencytrack post. ([3c1a2cc](https://git.griefed.de/Griefed/ServerPackCreator/commit/3c1a2ccf1b861ad17508894e35f749c57eb757f4))
+
+### 📦 Other
+
+* Add ae_pattern_improve, cobblemon-ui-tweaks- ([ef486d2](https://git.griefed.de/Griefed/ServerPackCreator/commit/ef486d28176dffad57cd430c07d4912bf9de6505))
+* Add Audio Improvements to clientside-list ([99817d2](https://git.griefed.de/Griefed/ServerPackCreator/commit/99817d2fcaf89375c37d95dfbbe5979f48c61504))
+* Add customcursor-, colorwheel_patcher-, colorwheel-,fastquit-,enhanced_boss_bars- ([1dbd670](https://git.griefed.de/Griefed/ServerPackCreator/commit/1dbd67071bfcb1eafa796a40852476679c6032aa))
+* Add idle-boost, nostartupmessages, shut_up_gl_error, appliedsorting ([04cddf5](https://git.griefed.de/Griefed/ServerPackCreator/commit/04cddf558b5c6a4b9a7c473c42c5daa50eb2e78b))
+* Fix readme after workflow mishap ([52e8e25](https://git.griefed.de/Griefed/ServerPackCreator/commit/52e8e254773ec018b5f3c51e16458226da497eba))
+* Move appimage script out of the way. ([2c049da](https://git.griefed.de/Griefed/ServerPackCreator/commit/2c049da6d0e526df3e206855efedad2f96de12b2))
+* Move appimage script out of the way. ([677b9b2](https://git.griefed.de/Griefed/ServerPackCreator/commit/677b9b2e104eb9c9132d269b5925185b84fffc2f))
+* Persist data for db ([b292e34](https://git.griefed.de/Griefed/ServerPackCreator/commit/b292e3449aa613fedcaefa9426252cf80bcde31c))
+* Set db name same as in spc-container ([b5f9535](https://git.griefed.de/Griefed/ServerPackCreator/commit/b5f9535957ff9b70c6b1345a8ef9cf2adf691456))
+* Update sponsors and contributors ([3a2173d](https://git.griefed.de/Griefed/ServerPackCreator/commit/3a2173d558ba0df68511bdf93ad0beb030a18a44))
+* Webservice run config ([fdaa99f](https://git.griefed.de/Griefed/ServerPackCreator/commit/fdaa99f912c9bcdaf5beb7da64f126fc59164b39))
+
+### 🔩 Dependencies
+
+* Correctly define engines ([20d7812](https://git.griefed.de/Griefed/ServerPackCreator/commit/20d7812c4f19a75b4ef83da572b3fd468e2e1570))
+* Correctly define engines ([a2dd609](https://git.griefed.de/Griefed/ServerPackCreator/commit/a2dd609fc2986e66fb30c3eb23f47f930b3c6550))
+* Update a couple of web-deps ([6d5a5b7](https://git.griefed.de/Griefed/ServerPackCreator/commit/6d5a5b760591114d03eabc412a1246f880fff2df))
+* Update web dependencies ([0f85ec4](https://git.griefed.de/Griefed/ServerPackCreator/commit/0f85ec4b0c4537232348bd586d10c73cc8d56bdf))
+* Update web-dependencies ([9acdd8b](https://git.griefed.de/Griefed/ServerPackCreator/commit/9acdd8b4d40f704c7082c71fb6a87529627cc7b6))
+* Upgrade some test, build and web dependencies ([f2b873b](https://git.griefed.de/Griefed/ServerPackCreator/commit/f2b873bf5d5b47b84ac3c6df9430c5c1b862c0c4))
+
+### 🦊 CI/CD
+
+* Fix package json, finally ([206f182](https://git.griefed.de/Griefed/ServerPackCreator/commit/206f182d0394e9a94d1f1a5de8662d114675042d))
+* **deps-dev:** bump @eslint/js in /serverpackcreator-web-frontend ([45426c7](https://git.griefed.de/Griefed/ServerPackCreator/commit/45426c726f63e9ef1f932cd2e5c6f5f755a63e2c))
+* **deps-dev:** bump @eslint/js in /serverpackcreator-web-frontend ([a946fd8](https://git.griefed.de/Griefed/ServerPackCreator/commit/a946fd8b1cfb73a5dc96264ea99169f09592e7af))
+* **deps-dev:** bump @intlify/unplugin-vue-i18n ([9276401](https://git.griefed.de/Griefed/ServerPackCreator/commit/927640182888b1ac4d3bd3171a5dd5aca3e68935))
+* **deps-dev:** bump eslint-plugin-vue ([da1083f](https://git.griefed.de/Griefed/ServerPackCreator/commit/da1083f4a7daea923eaf35f9ded9fc13e7477157))
+* **deps-dev:** bump globals in /serverpackcreator-web-frontend ([ccbc553](https://git.griefed.de/Griefed/ServerPackCreator/commit/ccbc55385b7baa2250fb219794eb1a17998d67f8))
+* **deps-dev:** bump globals in /serverpackcreator-web-frontend ([5f7bcea](https://git.griefed.de/Griefed/ServerPackCreator/commit/5f7bcea3b11dd146589610b4bd06ac5014861272))
+* **deps-dev:** bump vite-plugin-checker ([d13159b](https://git.griefed.de/Griefed/ServerPackCreator/commit/d13159bc1c8dafcb199086adc55d01fa6f18fe96))
+* **deps-dev:** bump vite-plugin-checker ([2a9b953](https://git.griefed.de/Griefed/ServerPackCreator/commit/2a9b95348985930159ca31797a8bfedcdfc5800b))
+* **deps:** bump actions/checkout from 4 to 5 ([5f7ac5e](https://git.griefed.de/Griefed/ServerPackCreator/commit/5f7ac5e885d777e63205b51dafe130ca5f724caa))
+* **deps:** bump actions/download-artifact from 4 to 5 ([0e438f8](https://git.griefed.de/Griefed/ServerPackCreator/commit/0e438f86c7f52d0d8a80d5fd8c455de3e9bc8ea3))
+* **deps:** bump actions/setup-java from 4 to 5 ([9f6a84a](https://git.griefed.de/Griefed/ServerPackCreator/commit/9f6a84ad43c75fcbd52cdbbfc7719a725c0a2184))
+* **deps:** bump axios in /serverpackcreator-web-frontend ([f6264d0](https://git.griefed.de/Griefed/ServerPackCreator/commit/f6264d0687df9cb862794f2ccee9042d7b42288c))
+* **deps:** bump com.electronwill.night-config:toml ([888786b](https://git.griefed.de/Griefed/ServerPackCreator/commit/888786b3733ddc39aa36409516865258a3432b02))
+* **deps:** bump com.fasterxml.jackson.core:jackson-databind ([4055684](https://git.griefed.de/Griefed/ServerPackCreator/commit/4055684282b61237deaa06dcb3b2c51d0b0e77da))
+* **deps:** bump com.fasterxml.jackson.module:jackson-module-kotlin ([ad9e7f8](https://git.griefed.de/Griefed/ServerPackCreator/commit/ad9e7f8dfffc9762b3624aa7a4a30f0e00266be7))
+* **deps:** bump com.formdev:flatlaf in /serverpackcreator-app ([595059a](https://git.griefed.de/Griefed/ServerPackCreator/commit/595059a118b85102da819df771464fb766cb39f5))
+* **deps:** bump com.formdev:flatlaf-fonts-inter ([70d9efe](https://git.griefed.de/Griefed/ServerPackCreator/commit/70d9efea37457aa8bacde4f8b17c63d08344aa37))
+* **deps:** bump com.install4j:install4j-runtime ([95e65f9](https://git.griefed.de/Griefed/ServerPackCreator/commit/95e65f9da2c6bc35ce9d61cb748529539cce2bd6))
+* **deps:** bump commons-io:commons-io in /serverpackcreator-app ([c84446f](https://git.griefed.de/Griefed/ServerPackCreator/commit/c84446fb9dec9eb826b21fb4626ff77f6fc788a5))
+* **deps:** bump de.comahe.i18n4k in /serverpackcreator-api ([fd44f1a](https://git.griefed.de/Griefed/ServerPackCreator/commit/fd44f1a93dc902d6ba50308bb8c7f033de14064a))
+* **deps:** bump de.comahe.i18n4k in /serverpackcreator-plugin-example ([64f446b](https://git.griefed.de/Griefed/ServerPackCreator/commit/64f446b59059d92241f1e838e3100e6f52220f5d))
+* **deps:** bump de.comahe.i18n4k:i18n4k-core in /serverpackcreator-api ([19aa1cb](https://git.griefed.de/Griefed/ServerPackCreator/commit/19aa1cb0d519a6ffbf616c4b9e5adfd28280ef93))
+* **deps:** bump gradle/actions from 4 to 5 ([6f617fd](https://git.griefed.de/Griefed/ServerPackCreator/commit/6f617fd4ca30d4eac262e91610bc16714959fdf8))
+* **deps:** bump info.picocli:picocli-shell-jline3 ([2d1b3c9](https://git.griefed.de/Griefed/ServerPackCreator/commit/2d1b3c93c3802a087ce8d753b4e182bc09d30ba8))
+* **deps:** bump org.apache.logging.log4j:log4j-core ([c949597](https://git.griefed.de/Griefed/ServerPackCreator/commit/c949597fa87393f9ac484c35df8872e753696f02))
+* **deps:** bump org.bouncycastle:bcpkix-jdk18on ([0273a2a](https://git.griefed.de/Griefed/ServerPackCreator/commit/0273a2a7177ce3187fb64aa89e4a1d4c17fb6931))
+* **deps:** bump org.jetbrains.kotlin:kotlin-stdlib ([ee3c7f6](https://git.griefed.de/Griefed/ServerPackCreator/commit/ee3c7f67004488e19b4f095d148f8ccdb8b15e7f))
+* **deps:** bump org.jetbrains.kotlin:kotlin-stdlib ([d0843d1](https://git.griefed.de/Griefed/ServerPackCreator/commit/d0843d1ed03f93848335813f70f473acdbac2090))
+* **deps:** bump org.jetbrains.kotlinx:kotlinx-coroutines-core ([fe0e0f6](https://git.griefed.de/Griefed/ServerPackCreator/commit/fe0e0f66f0248cd43a01173ea161de1bf8df44bd))
+* **deps:** bump org.junit.jupiter:junit-jupiter-api ([97ff269](https://git.griefed.de/Griefed/ServerPackCreator/commit/97ff269a8faa3787bf2a5bffd4c15bf857ebb817))
+* **deps:** bump org.junit.jupiter:junit-jupiter-engine ([af2be6a](https://git.griefed.de/Griefed/ServerPackCreator/commit/af2be6a536fc5781ee82782a223ffff452751d55))
+* **deps:** bump org.springframework.boot:spring-boot-devtools ([9a941fa](https://git.griefed.de/Griefed/ServerPackCreator/commit/9a941fa64ad387396c1f1cb7a01a3c67ab8d391a))
+* **deps:** bump org.springframework.boot:spring-boot-starter-log4j2 ([1fbd959](https://git.griefed.de/Griefed/ServerPackCreator/commit/1fbd9590c0301fe80354d5ae4c49e8d258a574b4))
+* **deps:** bump quasar in /serverpackcreator-web-frontend ([e506d59](https://git.griefed.de/Griefed/ServerPackCreator/commit/e506d5996aa066f3a079dd92486873edbd025c96))
+* **deps:** bump quasar in /serverpackcreator-web-frontend ([61561a9](https://git.griefed.de/Griefed/ServerPackCreator/commit/61561a9ad5b6944fb0401da3e3a3d7beaee7ac58))
+* **deps:** bump softprops/action-gh-release from 2.2.2 to 2.3.2 ([3135fcd](https://git.griefed.de/Griefed/ServerPackCreator/commit/3135fcd48d516a1775642861ea4d4e3ab316dea6))
+* **deps:** bump softprops/action-gh-release from 2.3.2 to 2.3.3 ([946dd25](https://git.griefed.de/Griefed/ServerPackCreator/commit/946dd2519654b3c87894af972d642dee61bf540c))
+* **deps:** bump tj-actions/branch-names from 8.2.1 to 9.0.2 ([4e3ff08](https://git.griefed.de/Griefed/ServerPackCreator/commit/4e3ff083ea68372e6e100cfc870ba28c6de71973))
+* **deps:** bump tj-actions/branch-names in /.github/workflows ([9379dd3](https://git.griefed.de/Griefed/ServerPackCreator/commit/9379dd38afeced0886437ccc7cf0bfb821e37e12))
+* **deps:** bump tj-actions/branch-names in /.github/workflows ([e85cd52](https://git.griefed.de/Griefed/ServerPackCreator/commit/e85cd5263e983b3e150245efbd42999f6ab5c5e2))
+* **deps:** bump tmp and inquirer in /serverpackcreator-web-frontend ([6c18eb2](https://git.griefed.de/Griefed/ServerPackCreator/commit/6c18eb245ff907401c5e171cf420dd60cac859d1))
+* Add VirusTotal workflow for automated checks ([eb33170](https://git.griefed.de/Griefed/ServerPackCreator/commit/eb33170edbebaefcd03b72b9db6914cd2c929765))
+* Comment out cycloneDx call ([c2970be](https://git.griefed.de/Griefed/ServerPackCreator/commit/c2970bec3ad22fc41c0117d4536ca6035854a8cb))
+* Exclude cache from Qodana check and artifacts ([a06897f](https://git.griefed.de/Griefed/ServerPackCreator/commit/a06897f5aa1ca0dcba676e61f693154e93fa27be))
+* Exclude qodana cache from scan ([81a3597](https://git.griefed.de/Griefed/ServerPackCreator/commit/81a3597ee005d5e55455ef924bea13af96ead08b))
+* expose_as can't be used with globs in paths ([a3076f8](https://git.griefed.de/Griefed/ServerPackCreator/commit/a3076f8d2c04e863d9ea9d654c3a0455570e4af4))
+* Fix contributor block places ([68e80f4](https://git.griefed.de/Griefed/ServerPackCreator/commit/68e80f4457dfd207a37f96d6e0913f86c71f2b14))
+* Fix README workflow ([c13a8de](https://git.griefed.de/Griefed/ServerPackCreator/commit/c13a8de4c4f2fac01cc0b8f2a3f56ec9ed4a9f5b))
+* More qodana exclusions ([faa581d](https://git.griefed.de/Griefed/ServerPackCreator/commit/faa581d995c5ae359a0a6a0d5dacf11deaef4de1))
+* Move qodana_id to report-dir to fix report exposal ([1100046](https://git.griefed.de/Griefed/ServerPackCreator/commit/110004621f051845948262a3b3a36496a3a1e9dc))
+* Move qodana-cache out of artifact-dir ([f5b085f](https://git.griefed.de/Griefed/ServerPackCreator/commit/f5b085f972b3f86db2eaaee3bc15deadddc7aec0))
+* Only push if README was actually changed ([454404c](https://git.griefed.de/Griefed/ServerPackCreator/commit/454404c5482ac417384e522b0c22640bd41eb3eb))
+* Only run README update on my own GitLab. Remove stage spec ([8ffc482](https://git.griefed.de/Griefed/ServerPackCreator/commit/8ffc48202dfa09f637640a293bd4b69e49979b67))
+* Patterns for artifacts in test job. Group Qodana to other tests jobs ([b03c747](https://git.griefed.de/Griefed/ServerPackCreator/commit/b03c747071b0848479df2d3c3015fad02aceb604))
+* Post Qodana link to webhook after job's done ([f589fbf](https://git.griefed.de/Griefed/ServerPackCreator/commit/f589fbfc7256e0366e8615c96db5f4969014276a))
+* Remove branch-spec from checkout ([a2596a9](https://git.griefed.de/Griefed/ServerPackCreator/commit/a2596a984f19d162ac3770953958247992a50232))
+* Remove main checkout. We're already on main ([ccbd693](https://git.griefed.de/Griefed/ServerPackCreator/commit/ccbd693d364c753d026638e5a0edf0d7f084e181))
+* Specify report-dir and change paths accordingly ([765818f](https://git.griefed.de/Griefed/ServerPackCreator/commit/765818f9cd7e6b3191860611174bb028c38de698))
+* Switch back to base-pathing from ye olden days ([a52647f](https://git.griefed.de/Griefed/ServerPackCreator/commit/a52647f62512bc68af32af9156c0b7ae124e5f01))
+* Touch .qodana_id so it exists before echo ([ca7ab85](https://git.griefed.de/Griefed/ServerPackCreator/commit/ca7ab857d9974589a2cb6c718ae364d7de0f2433))
+* Try different path ([d23b070](https://git.griefed.de/Griefed/ServerPackCreator/commit/d23b070b7e834264f14f12cc2790e79fc7d4068e))
+* Try specifying repo and ref ([0c34d06](https://git.griefed.de/Griefed/ServerPackCreator/commit/0c34d06c4ad6c9c745e1027e884be47448696020))
+* Update qodana conf ([bb69437](https://git.griefed.de/Griefed/ServerPackCreator/commit/bb69437c4389287c6bf8d6108ba6a60f118c6d8f))
+* Use artifacts for job ID retrieval ([9cbefb3](https://git.griefed.de/Griefed/ServerPackCreator/commit/9cbefb3d5bd754f242703ff12e24faec0ccab090))
+* Well, that was a mistake :D ([b079707](https://git.griefed.de/Griefed/ServerPackCreator/commit/b079707f5d36bf3b95c7344c25961645815c1878))
+* whoops. Brainfart. Need more coffee. ([e5ca7c3](https://git.griefed.de/Griefed/ServerPackCreator/commit/e5ca7c32befe9860a3ac0f56ba7777b5fbdf8b93))
+
+### 🧨 Breaking changes!
+
+* Switch database-engine to MongoDB ([6914494](https://git.griefed.de/Griefed/ServerPackCreator/commit/69144949edbb9d8a8788d0dc75cc98df829952d2))
+
+### 🧪 Tests
+
+* Update test dependencies ([3f5aa6a](https://git.griefed.de/Griefed/ServerPackCreator/commit/3f5aa6a2eaeae025d2b89fb2308c0638fc2fe5fd))
+
+### 🛠 Fixes
+
+* Correctly assemble mongodb-url in container ([53c432a](https://git.griefed.de/Griefed/ServerPackCreator/commit/53c432a23cb0094a70f75f15b66a7eb3628dd77a))
+* Escape : and fix mongo url building in docker ([78eb0d1](https://git.griefed.de/Griefed/ServerPackCreator/commit/78eb0d17a711eb00eb720411b3874afc41c75390))
+* Merge DB configs in GUI ([0fbb356](https://git.griefed.de/Griefed/ServerPackCreator/commit/0fbb35603c91813e9418082a28c71c30ac1f2ee4))
+* Provide working init-mongo.js ([0491438](https://git.griefed.de/Griefed/ServerPackCreator/commit/04914386b37240fc491c7119cef092cfe1f953d5))
+* Replace mentions of postgres with mongo. Remove JDBC mentions. ([b27d89c](https://git.griefed.de/Griefed/ServerPackCreator/commit/b27d89cc829c00f666a9f3537f525ab0cf0796e4))
+* Switch to correct DB URI ([d6ec3cd](https://git.griefed.de/Griefed/ServerPackCreator/commit/d6ec3cd6f1a3492478748cac41d3b16f84b30d04))
+
+## [8.0.0-alpha.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.0-alpha.5...8.0.0-alpha.6) (2025-09-14)
+
+### 💎 Improvements
+
+* Add JAVA explanation to variables ([e9aec7f](https://git.griefed.de/Griefed/ServerPackCreator/commit/e9aec7fcf0a30648b268282b4a6f2d2ac40508cc))
+
+### 📦 Other
+
+* Add idle-boost, nostartupmessages, shut_up_gl_error, appliedsorting ([04cddf5](https://git.griefed.de/Griefed/ServerPackCreator/commit/04cddf558b5c6a4b9a7c473c42c5daa50eb2e78b))
+
+## [8.0.0-alpha.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.0-alpha.4...8.0.0-alpha.5) (2025-09-04)
+
+### 🛠 Fixes
+
+* Merge DB configs in GUI ([0fbb356](https://git.griefed.de/Griefed/ServerPackCreator/commit/0fbb35603c91813e9418082a28c71c30ac1f2ee4))
+* Provide working init-mongo.js ([0491438](https://git.griefed.de/Griefed/ServerPackCreator/commit/04914386b37240fc491c7119cef092cfe1f953d5))
+
+## [8.0.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.0-alpha.3...8.0.0-alpha.4) (2025-08-30)
+
+### 🛠 Fixes
+
+* Escape : and fix mongo url building in docker ([78eb0d1](https://git.griefed.de/Griefed/ServerPackCreator/commit/78eb0d17a711eb00eb720411b3874afc41c75390))
+
+## [8.0.0-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.0-alpha.2...8.0.0-alpha.3) (2025-08-29)
+
+### 🛠 Fixes
+
+* Replace mentions of postgres with mongo. Remove JDBC mentions. ([b27d89c](https://git.griefed.de/Griefed/ServerPackCreator/commit/b27d89cc829c00f666a9f3537f525ab0cf0796e4))
+* Switch to correct DB URI ([d6ec3cd](https://git.griefed.de/Griefed/ServerPackCreator/commit/d6ec3cd6f1a3492478748cac41d3b16f84b30d04))
+
+## [8.0.0-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.0-alpha.1...8.0.0-alpha.2) (2025-08-28)
+
+### :scissors: Refactor
+
+* Qodana recommendations and import optimizations ([8460be7](https://git.griefed.de/Griefed/ServerPackCreator/commit/8460be7ed5350d5cb2ec9be80249b9853dd0b142))
+
+### 📦 Other
+
+* Add Audio Improvements to clientside-list ([99817d2](https://git.griefed.de/Griefed/ServerPackCreator/commit/99817d2fcaf89375c37d95dfbbe5979f48c61504))
+* Persist data for db ([b292e34](https://git.griefed.de/Griefed/ServerPackCreator/commit/b292e3449aa613fedcaefa9426252cf80bcde31c))
+* Set db name same as in spc-container ([b5f9535](https://git.griefed.de/Griefed/ServerPackCreator/commit/b5f9535957ff9b70c6b1345a8ef9cf2adf691456))
+
+### 🦊 CI/CD
+
+* Comment out cycloneDx call ([c2970be](https://git.griefed.de/Griefed/ServerPackCreator/commit/c2970bec3ad22fc41c0117d4536ca6035854a8cb))
+* whoops. Brainfart. Need more coffee. ([e5ca7c3](https://git.griefed.de/Griefed/ServerPackCreator/commit/e5ca7c32befe9860a3ac0f56ba7777b5fbdf8b93))
+
+### 🛠 Fixes
+
+* Correctly assemble mongodb-url in container ([53c432a](https://git.griefed.de/Griefed/ServerPackCreator/commit/53c432a23cb0094a70f75f15b66a7eb3628dd77a))
+
+## [8.0.0-alpha.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.3.0...8.0.0-alpha.1) (2025-08-07)
+
+### :scissors: Refactor
+
+* Make properties a bit more readable and easier to edit ([b838d77](https://git.griefed.de/Griefed/ServerPackCreator/commit/b838d772b730885238c68d9cde5393c287246930))
+* Move docker-related files into dir ([dcd9309](https://git.griefed.de/Griefed/ServerPackCreator/commit/dcd930981dbbecb37e859e20a075eabf5ea763d1))
+* Optimize imports ([6b95a00](https://git.griefed.de/Griefed/ServerPackCreator/commit/6b95a00a804bb8c20d45011f79e9d743e1063b20))
+* Plain old JS ([f29e4a5](https://git.griefed.de/Griefed/ServerPackCreator/commit/f29e4a5dd9b9daae37807be4336c51a1e9ceb2a3))
+* Qodana recommendations ([9ccda66](https://git.griefed.de/Griefed/ServerPackCreator/commit/9ccda66a40d10d0b571e3384d6e47b9c5320c921))
+* Qodana recommendations ([3e8bd37](https://git.griefed.de/Griefed/ServerPackCreator/commit/3e8bd3791808a6f02901249071284a5a82b1ba80))
+* Qodana recommendations ([ab3eb5e](https://git.griefed.de/Griefed/ServerPackCreator/commit/ab3eb5e204f3ef16377ad3e08511b29884a491a6))
+* Remove redundant call. Optimize imports ([fe970de](https://git.griefed.de/Griefed/ServerPackCreator/commit/fe970de657b4961f69c962ddbe0a1e5b119679e6))
+* Sanitize server pack construction ([c712bc1](https://git.griefed.de/Griefed/ServerPackCreator/commit/c712bc1b8c3e7800c8fc1a1427c59245c51ab03e))
+* Switch to desired string spec ([48a66bd](https://git.griefed.de/Griefed/ServerPackCreator/commit/48a66bda8e2068f78c3d55f2c6c5a5b55f9bf2c6))
+* Update docker paths ([5fef6b0](https://git.griefed.de/Griefed/ServerPackCreator/commit/5fef6b09d098fa8ca4d19354a6c0e3a568b66c8d))
+* Update docker-related files into dir ([56ac374](https://git.griefed.de/Griefed/ServerPackCreator/commit/56ac37479a96d40e6e548448cab10c171342efb2))
+
+### ✨ Milestone
+
+* **Webservice:** Store mod- and serverpacks in database. Cache on disk, retrieve from database otherwise ([5c86d88](https://git.griefed.de/Griefed/ServerPackCreator/commit/5c86d88745cf172a513bbcde7a370c6661675552))
+
+### 💎 Improvements
+
+* **Webservice:** Improve data display in download cards ([679442e](https://git.griefed.de/Griefed/ServerPackCreator/commit/679442e7c88606226ff5be7ae70a27872656f2c7))
+
+### 📔 Docs
+
+* Deprecate Dependencytrack post. ([3c1a2cc](https://git.griefed.de/Griefed/ServerPackCreator/commit/3c1a2ccf1b861ad17508894e35f749c57eb757f4))
+
+### 📦 Other
+
+* Add ae_pattern_improve, cobblemon-ui-tweaks- ([ef486d2](https://git.griefed.de/Griefed/ServerPackCreator/commit/ef486d28176dffad57cd430c07d4912bf9de6505))
+* Add customcursor-, colorwheel_patcher-, colorwheel-,fastquit-,enhanced_boss_bars- ([1dbd670](https://git.griefed.de/Griefed/ServerPackCreator/commit/1dbd67071bfcb1eafa796a40852476679c6032aa))
+* Fix readme after workflow mishap ([52e8e25](https://git.griefed.de/Griefed/ServerPackCreator/commit/52e8e254773ec018b5f3c51e16458226da497eba))
+* Move appimage script out of the way. ([2c049da](https://git.griefed.de/Griefed/ServerPackCreator/commit/2c049da6d0e526df3e206855efedad2f96de12b2))
+* Move appimage script out of the way. ([677b9b2](https://git.griefed.de/Griefed/ServerPackCreator/commit/677b9b2e104eb9c9132d269b5925185b84fffc2f))
+* Update sponsors and contributors ([3a2173d](https://git.griefed.de/Griefed/ServerPackCreator/commit/3a2173d558ba0df68511bdf93ad0beb030a18a44))
+* Webservice run config ([fdaa99f](https://git.griefed.de/Griefed/ServerPackCreator/commit/fdaa99f912c9bcdaf5beb7da64f126fc59164b39))
+
+### 🔩 Dependencies
+
+* Correctly define engines ([20d7812](https://git.griefed.de/Griefed/ServerPackCreator/commit/20d7812c4f19a75b4ef83da572b3fd468e2e1570))
+* Correctly define engines ([a2dd609](https://git.griefed.de/Griefed/ServerPackCreator/commit/a2dd609fc2986e66fb30c3eb23f47f930b3c6550))
+* Update a couple of web-deps ([6d5a5b7](https://git.griefed.de/Griefed/ServerPackCreator/commit/6d5a5b760591114d03eabc412a1246f880fff2df))
+* Update web dependencies ([0f85ec4](https://git.griefed.de/Griefed/ServerPackCreator/commit/0f85ec4b0c4537232348bd586d10c73cc8d56bdf))
+* Update web-dependencies ([9acdd8b](https://git.griefed.de/Griefed/ServerPackCreator/commit/9acdd8b4d40f704c7082c71fb6a87529627cc7b6))
+* Upgrade some test, build and web dependencies ([f2b873b](https://git.griefed.de/Griefed/ServerPackCreator/commit/f2b873bf5d5b47b84ac3c6df9430c5c1b862c0c4))
+
+### 🦊 CI/CD
+
+* Fix package json, finally ([206f182](https://git.griefed.de/Griefed/ServerPackCreator/commit/206f182d0394e9a94d1f1a5de8662d114675042d))
+* **deps-dev:** bump @eslint/js in /serverpackcreator-web-frontend ([a946fd8](https://git.griefed.de/Griefed/ServerPackCreator/commit/a946fd8b1cfb73a5dc96264ea99169f09592e7af))
+* **deps-dev:** bump eslint-plugin-vue ([da1083f](https://git.griefed.de/Griefed/ServerPackCreator/commit/da1083f4a7daea923eaf35f9ded9fc13e7477157))
+* **deps-dev:** bump globals in /serverpackcreator-web-frontend ([5f7bcea](https://git.griefed.de/Griefed/ServerPackCreator/commit/5f7bcea3b11dd146589610b4bd06ac5014861272))
+* **deps-dev:** bump vite-plugin-checker ([2a9b953](https://git.griefed.de/Griefed/ServerPackCreator/commit/2a9b95348985930159ca31797a8bfedcdfc5800b))
+* **deps:** bump com.electronwill.night-config:toml ([888786b](https://git.griefed.de/Griefed/ServerPackCreator/commit/888786b3733ddc39aa36409516865258a3432b02))
+* **deps:** bump com.fasterxml.jackson.module:jackson-module-kotlin ([ad9e7f8](https://git.griefed.de/Griefed/ServerPackCreator/commit/ad9e7f8dfffc9762b3624aa7a4a30f0e00266be7))
+* **deps:** bump com.install4j:install4j-runtime ([95e65f9](https://git.griefed.de/Griefed/ServerPackCreator/commit/95e65f9da2c6bc35ce9d61cb748529539cce2bd6))
+* **deps:** bump commons-io:commons-io in /serverpackcreator-app ([c84446f](https://git.griefed.de/Griefed/ServerPackCreator/commit/c84446fb9dec9eb826b21fb4626ff77f6fc788a5))
+* **deps:** bump de.comahe.i18n4k in /serverpackcreator-plugin-example ([64f446b](https://git.griefed.de/Griefed/ServerPackCreator/commit/64f446b59059d92241f1e838e3100e6f52220f5d))
+* **deps:** bump org.apache.logging.log4j:log4j-core ([c949597](https://git.griefed.de/Griefed/ServerPackCreator/commit/c949597fa87393f9ac484c35df8872e753696f02))
+* **deps:** bump org.bouncycastle:bcpkix-jdk18on ([0273a2a](https://git.griefed.de/Griefed/ServerPackCreator/commit/0273a2a7177ce3187fb64aa89e4a1d4c17fb6931))
+* **deps:** bump org.jetbrains.kotlin:kotlin-stdlib ([d0843d1](https://git.griefed.de/Griefed/ServerPackCreator/commit/d0843d1ed03f93848335813f70f473acdbac2090))
+* **deps:** bump org.springframework.boot:spring-boot-devtools ([9a941fa](https://git.griefed.de/Griefed/ServerPackCreator/commit/9a941fa64ad387396c1f1cb7a01a3c67ab8d391a))
+* **deps:** bump quasar in /serverpackcreator-web-frontend ([61561a9](https://git.griefed.de/Griefed/ServerPackCreator/commit/61561a9ad5b6944fb0401da3e3a3d7beaee7ac58))
+* **deps:** bump softprops/action-gh-release from 2.2.2 to 2.3.2 ([3135fcd](https://git.griefed.de/Griefed/ServerPackCreator/commit/3135fcd48d516a1775642861ea4d4e3ab316dea6))
+* **deps:** bump tj-actions/branch-names from 8.2.1 to 9.0.2 ([4e3ff08](https://git.griefed.de/Griefed/ServerPackCreator/commit/4e3ff083ea68372e6e100cfc870ba28c6de71973))
+* **deps:** bump tj-actions/branch-names in /.github/workflows ([e85cd52](https://git.griefed.de/Griefed/ServerPackCreator/commit/e85cd5263e983b3e150245efbd42999f6ab5c5e2))
+* Add VirusTotal workflow for automated checks ([eb33170](https://git.griefed.de/Griefed/ServerPackCreator/commit/eb33170edbebaefcd03b72b9db6914cd2c929765))
+* Exclude cache from Qodana check and artifacts ([a06897f](https://git.griefed.de/Griefed/ServerPackCreator/commit/a06897f5aa1ca0dcba676e61f693154e93fa27be))
+* Exclude qodana cache from scan ([81a3597](https://git.griefed.de/Griefed/ServerPackCreator/commit/81a3597ee005d5e55455ef924bea13af96ead08b))
+* expose_as can't be used with globs in paths ([a3076f8](https://git.griefed.de/Griefed/ServerPackCreator/commit/a3076f8d2c04e863d9ea9d654c3a0455570e4af4))
+* Fix contributor block places ([68e80f4](https://git.griefed.de/Griefed/ServerPackCreator/commit/68e80f4457dfd207a37f96d6e0913f86c71f2b14))
+* Fix README workflow ([c13a8de](https://git.griefed.de/Griefed/ServerPackCreator/commit/c13a8de4c4f2fac01cc0b8f2a3f56ec9ed4a9f5b))
+* More qodana exclusions ([faa581d](https://git.griefed.de/Griefed/ServerPackCreator/commit/faa581d995c5ae359a0a6a0d5dacf11deaef4de1))
+* Move qodana_id to report-dir to fix report exposal ([1100046](https://git.griefed.de/Griefed/ServerPackCreator/commit/110004621f051845948262a3b3a36496a3a1e9dc))
+* Move qodana-cache out of artifact-dir ([f5b085f](https://git.griefed.de/Griefed/ServerPackCreator/commit/f5b085f972b3f86db2eaaee3bc15deadddc7aec0))
+* Only push if README was actually changed ([454404c](https://git.griefed.de/Griefed/ServerPackCreator/commit/454404c5482ac417384e522b0c22640bd41eb3eb))
+* Only run README update on my own GitLab. Remove stage spec ([8ffc482](https://git.griefed.de/Griefed/ServerPackCreator/commit/8ffc48202dfa09f637640a293bd4b69e49979b67))
+* Patterns for artifacts in test job. Group Qodana to other tests jobs ([b03c747](https://git.griefed.de/Griefed/ServerPackCreator/commit/b03c747071b0848479df2d3c3015fad02aceb604))
+* Post Qodana link to webhook after job's done ([f589fbf](https://git.griefed.de/Griefed/ServerPackCreator/commit/f589fbfc7256e0366e8615c96db5f4969014276a))
+* Remove branch-spec from checkout ([a2596a9](https://git.griefed.de/Griefed/ServerPackCreator/commit/a2596a984f19d162ac3770953958247992a50232))
+* Remove main checkout. We're already on main ([ccbd693](https://git.griefed.de/Griefed/ServerPackCreator/commit/ccbd693d364c753d026638e5a0edf0d7f084e181))
+* Specify report-dir and change paths accordingly ([765818f](https://git.griefed.de/Griefed/ServerPackCreator/commit/765818f9cd7e6b3191860611174bb028c38de698))
+* Switch back to base-pathing from ye olden days ([a52647f](https://git.griefed.de/Griefed/ServerPackCreator/commit/a52647f62512bc68af32af9156c0b7ae124e5f01))
+* Touch .qodana_id so it exists before echo ([ca7ab85](https://git.griefed.de/Griefed/ServerPackCreator/commit/ca7ab857d9974589a2cb6c718ae364d7de0f2433))
+* Try different path ([d23b070](https://git.griefed.de/Griefed/ServerPackCreator/commit/d23b070b7e834264f14f12cc2790e79fc7d4068e))
+* Try specifying repo and ref ([0c34d06](https://git.griefed.de/Griefed/ServerPackCreator/commit/0c34d06c4ad6c9c745e1027e884be47448696020))
+* Update qodana conf ([bb69437](https://git.griefed.de/Griefed/ServerPackCreator/commit/bb69437c4389287c6bf8d6108ba6a60f118c6d8f))
+* Use artifacts for job ID retrieval ([9cbefb3](https://git.griefed.de/Griefed/ServerPackCreator/commit/9cbefb3d5bd754f242703ff12e24faec0ccab090))
+* Well, that was a mistake :D ([b079707](https://git.griefed.de/Griefed/ServerPackCreator/commit/b079707f5d36bf3b95c7344c25961645815c1878))
+
+### 🧨 Breaking changes!
+
+* Switch database-engine to MongoDB ([6914494](https://git.griefed.de/Griefed/ServerPackCreator/commit/69144949edbb9d8a8788d0dc75cc98df829952d2))
+
+### 🧪 Tests
+
+* Update test dependencies ([3f5aa6a](https://git.griefed.de/Griefed/ServerPackCreator/commit/3f5aa6a2eaeae025d2b89fb2308c0638fc2fe5fd))
+
 ## [7.3.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.2.8...7.3.0) (2025-06-19)
 
 ### :scissors: Refactor

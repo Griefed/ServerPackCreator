@@ -223,7 +223,7 @@ class MinecraftMeta(
 
     /**
      * Depending on whether *de.griefed.serverpackcreator.minecraft.snapshots*-property is set to *true|false* this will return
-     * either [allVersionsArrayDescending] or [releaseVersionsArrayDescending].
+     * either [allVersions] or [clientReleases].
      */
     fun settingsDependantVersions(): Array<String> {
         return if (apiProperties.isMinecraftPreReleasesAvailabilityEnabled) {

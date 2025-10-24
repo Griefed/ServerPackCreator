@@ -544,10 +544,10 @@
   </q-dialog>
 </template>
 
-<script lang="ts">
+<script >
 import {defineComponent, ref} from 'vue';
 import {modpacks, runConfigs, versions} from 'boot/axios';
-import {settingsStore} from 'stores/stores';
+import {settingsStore} from 'stores/setting-store';
 import {date} from 'quasar';
 
 export default defineComponent({
@@ -572,25 +572,25 @@ export default defineComponent({
     const fabricVersions = ref([]);
     const legacyFabricVersions = ref([]);
     const quiltVersions = ref([]);
-    const forgeVersions = ref(new Map<string, Array<string>>);
-    const neoForgeVersions = ref(new Map<string, Array<string>>);
+    const forgeVersions = ref(new Map);
+    const neoForgeVersions = ref(new Map);
     const modloaderVersions = ref([]);
-    const submitted = ref(false)
-    const submitEmpty = ref(false)
-    const submitResult = ref([])
-    const progress = ref(0)
-    const uploading = ref(false)
-    const modPackID = ref(0)
-    const runConfigID = ref(0)
-    const tab = ref('upload')
-    const modPackIDs = ref([])
-    const runConfigurationIDs = ref([])
-    const modPacks = ref(new Map<number, Array<never>>)
-    const runConfigurations = ref(new Map<number, Array<never>>)
-    const zipInfo = ref(false)
-    const zipSlide = ref(1)
-    const zipAutoplay = ref(true)
-    const zipSlideInfo = ['Not accepted: Only minecraft', 'Not accepted: Only overrides', 'Accepted.', 'Accepted.']
+    const submitted = ref(false);
+    const submitEmpty = ref(false);
+    const submitResult = ref([]);
+    const progress = ref(0);
+    const uploading = ref(false);
+    const modPackID = ref(0);
+    const runConfigID = ref(0);
+    const tab = ref('upload');
+    const modPackIDs = ref([]);
+    const runConfigurationIDs = ref([]);
+    const modPacks = ref(new Map);
+    const runConfigurations = ref(new Map);
+    const zipInfo = ref(false);
+    const zipSlide = ref(1);
+    const zipAutoplay = ref(true);
+    const zipSlideInfo = ['Not accepted: Only minecraft', 'Not accepted: Only overrides', 'Accepted.', 'Accepted.'];
     return {
       store,
       file,
@@ -629,8 +629,8 @@ export default defineComponent({
   methods: {
     refreshModPackIDs() {
       modpacks.get('all').then(response => {
-        this.modPackIDs = response.data.map((modpack: { id: number; }) => modpack.id)
-        response.data.forEach((modpack: { id: number; }) => this.modPacks[modpack.id] = modpack)
+        this.modPackIDs = response.data.map((modpack) => modpack.id);
+        response.data.forEach(modpack => this.modPacks[modpack.id] = modpack);
       }).catch(error => {
         this.$q.notify({
           timeout: 5000,
@@ -641,13 +641,13 @@ export default defineComponent({
         });
       })
     },
-    selectedModPack(id: number) {
-      this.modPackID = id
+    selectedModPack(id) {
+      this.modPackID = id;
     },
     refreshRunConfigurationIDs() {
       runConfigs.get('all').then(response => {
-        this.runConfigurationIDs = response.data.map((runconfig: { id: number; }) => runconfig.id)
-        response.data.forEach((runConfig: { id: number; }) => this.runConfigurations[runConfig.id] = runConfig)
+        this.runConfigurationIDs = response.data.map(runconfig => runconfig.id);
+        response.data.forEach(runConfig => this.runConfigurations[runConfig.id] = runConfig);
       }).catch(error => {
         this.$q.notify({
           timeout: 5000,
@@ -658,19 +658,19 @@ export default defineComponent({
         });
       })
     },
-    selectedRunConfiguration(id: number) {
-      this.runConfigID = id
-      let config = this.runConfigurations[id]
-      this.minecraftVersion = config.minecraftVersion
-      this.modloader = config.modloader
-      this.modloaderVersion = config.modloaderVersion
-      this.startArgs = config.startArgs.map((arg: { argument: string; }) => arg.argument).join(', ')
-      this.whiteListMods = config.whitelistedMods.map((mod: { mod: string; }) => mod.mod).join(', ')
-      this.clientMods = config.clientMods.map((mod: { mod: string; }) => mod.mod).join(', ')
+    selectedRunConfiguration(id) {
+      this.runConfigID = id;
+      let config = this.runConfigurations[id];
+      this.minecraftVersion = config.minecraftVersion;
+      this.modloader = config.modloader;
+      this.modloaderVersion = config.modloaderVersion;
+      this.startArgs = config.startArgs.map(arg => arg.argument).join(', ');
+      this.whiteListMods = config.whitelistedMods.map(mod => mod.mod).join(', ');
+      this.clientMods = config.clientMods.map(mod => mod.mod).join(', ');
     },
-    onSubmitRegeneration(evt: { target: HTMLFormElement | undefined; }) {
-      const formData = new FormData(evt.target)
-      this.uploading = true
+    onSubmitRegeneration(evt) {
+      const formData = new FormData(evt.target);
+      this.uploading = true;
 
       modpacks.postForm('generate', formData)
         .then(response => {
@@ -682,9 +682,9 @@ export default defineComponent({
             color: 'positive',
             message: 'Generation queued for ModPack ID: ' + response.data.modPackId + '. RunConfiguration ID: ' + response.data.runConfigId
           });
-          this.modPackID = response.data.modPackID
-          this.runConfigID = response.data.runConfigID
-          this.resetForm()
+          this.modPackID = response.data.modPackID;
+          this.runConfigID = response.data.runConfigID;
+          this.resetForm();
         }).catch(error => {
         this.$q.notify({
           timeout: 5000,
@@ -694,14 +694,14 @@ export default defineComponent({
           color: 'negative',
           message: 'Request failed: ' + error
         });
-        this.modPackID = error.data.modPackID
-        this.runConfigID = error.data.runConfigID
-        this.resetForm()
+        this.modPackID = error.data.modPackID;
+        this.runConfigID = error.data.runConfigID;
+        this.resetForm();
       })
     },
-    onSubmit(evt: { target: HTMLFormElement | undefined; }) {
-      const formData = new FormData(evt.target)
-      this.uploading = true
+    onSubmit(evt) {
+      const formData = new FormData(evt.target);
+      this.uploading = true;
 
       modpacks.postForm('upload', formData, {
         onUploadProgress: progressEvent => {
@@ -716,12 +716,14 @@ export default defineComponent({
           color: 'positive',
           message: response.data.message + '  ModPack ID: ' + response.data.modPackId + '. RunConfiguration ID: ' + response.data.runConfigId
         });
-        this.progress = 0
-        this.resetForm()
-        this.delayedRegenPrep(response.data.modPackId, response.data.runConfigId)
+        this.progress = 0;
+        this.resetForm();
+        this.delayedRegenPrep(response.data.modPackId, response.data.runConfigId);
       }).catch(error => {
-        let message = (error.response.data.message === undefined || error.response.data.message === null) ? error.message : error.response.data.message
-        let suffix = (error.response.data.modPackId === undefined || error.response.data.modPackId === null) ? '' : ' See Modpack ID: ' + error.response.data.modPackId
+        let message = (error.response.data.message === undefined ||
+            error.response.data.message === null) ? error.message : error.response.data.message;
+        let suffix = (error.response.data.modPackId === undefined ||
+            error.response.data.modPackId === null) ? '' : ' See Modpack ID: ' + error.response.data.modPackId;
         this.$q.notify({
           timeout: 10000,
           progress: true,
@@ -730,38 +732,40 @@ export default defineComponent({
           color: 'negative',
           message: 'Upload failed: ' + message + suffix
         });
-        this.progress = 0
-        this.resetForm()
-        if (error.response.data.modPackId !== undefined && error.response.data.runConfigId !== undefined &&
-          error.response.data.modPackId !== null && error.response.data.runConfigId !== null) {
-          this.delayedRegenPrep(error.response.data.modPackId, error.response.data.runConfigId)
-          this.tab = 'regeneration'
+        this.progress = 0;
+        this.resetForm();
+        if (error.response.data.modPackId !== undefined &&
+            error.response.data.runConfigId !== undefined &&
+            error.response.data.modPackId !== null &&
+            error.response.data.runConfigId !== null) {
+          this.delayedRegenPrep(error.response.data.modPackId, error.response.data.runConfigId);
+          this.tab = 'regeneration';
         }
       })
     },
-    delayedRegenPrep(modPackId: number, runConfigId: number) {
-      this.refreshModPackIDs()
-      this.refreshRunConfigurationIDs()
+    delayedRegenPrep(modPackId, runConfigId) {
+      this.refreshModPackIDs();
+      this.refreshRunConfigurationIDs();
       this.sleep(2000).then(() => {
-        this.selectedModPack(modPackId)
-        this.selectedRunConfiguration(runConfigId)
+        this.selectedModPack(modPackId);
+        this.selectedRunConfiguration(runConfigId);
       })
     },
     resetForm() {
-      this.file = null
-      this.uploading = false
+      this.file = null;
+      this.uploading = false;
     },
-    onRejected(rejectedEntry: File) {
+    onRejected(rejectedEntry) {
       this.$q.notify({
         type: 'negative',
         position: 'center',
         message: `${rejectedEntry.name} is not a ZIP-file`
       });
     },
-    setModloaderVersion(version: string) {
+    setModloaderVersion(version) {
       this.modloaderVersion = version;
     },
-    selectedMinecraft(version: string) {
+    selectedMinecraft(version) {
       this.minecraftVersion = version;
       this.updateForgeVersions();
       this.updateNeoForgeVersions();
@@ -788,7 +792,7 @@ export default defineComponent({
         }
       }
     },
-    modloaderSelected(loader: string) {
+    modloaderSelected(loader) {
       this.modloader = loader;
       switch (this.modloader) {
         case 'Forge':
@@ -815,7 +819,7 @@ export default defineComponent({
           break;
       }
     },
-    sleep(ms: number) {
+    sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
     }
   },

@@ -19,18 +19,21 @@
  */
 package de.griefed.serverpackcreator.app.web.serverpack.customizing
 
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.Id
+import org.springframework.data.annotation.PersistenceCreator
+import org.springframework.data.mongodb.core.mapping.Document
+import org.springframework.data.mongodb.core.mapping.FieldType
+import org.springframework.data.mongodb.core.mapping.MongoId
 
-@Entity
-class WhitelistedMod(@Column var mod: String) {
+@Document
+class WhitelistedMod {
 
-    @Id
-    @GeneratedValue
-    @Column(updatable = false, nullable = false)
-    var id: Int = 0
+    @MongoId(FieldType.STRING)
+    var mod: String
+
+    @PersistenceCreator
+    constructor(mod: String) {
+        this.mod = mod
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -46,6 +49,6 @@ class WhitelistedMod(@Column var mod: String) {
     }
 
     override fun toString(): String {
-        return "ClientMod(id=$id, mod='$mod')"
+        return "ClientMod(mod='$mod')"
     }
 }

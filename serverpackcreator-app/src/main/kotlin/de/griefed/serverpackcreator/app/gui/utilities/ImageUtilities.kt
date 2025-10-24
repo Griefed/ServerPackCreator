@@ -89,12 +89,12 @@ fun ImageIcon.getScaledInstance(width: Int, height: Int, scaling: Int = Image.SC
  *
  * @author Griefed
  */
-fun ImageIcon.getAspectRatioScaledInstsance(size: Int, scaleBy: ScaleBy = ScaleBy.WIDTH, scaling: Int = Image.SCALE_SMOOTH): ImageIcon {
+fun ImageIcon.getAspectRatioScaledInstance(size: Int, scaleBy: ScaleBy = ScaleBy.WIDTH, scaling: Int = Image.SCALE_SMOOTH): ImageIcon {
     val imgSize = Dimension(iconWidth, iconHeight)
     val widthRatio: Double
     val heightRatio: Double
-    var newHeight = iconHeight
-    var newWidth = iconWidth
+    var newHeight: Int
+    var newWidth: Int
     when (scaleBy) {
         ScaleBy.WIDTH -> {
             newWidth = size

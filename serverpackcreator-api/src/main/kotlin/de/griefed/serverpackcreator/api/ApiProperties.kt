@@ -122,11 +122,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     private val pTomcatLogsDirectory =
         "server.tomcat.accesslog.directory"
     private val pSpringDatasourceUrl =
-        "spring.datasource.url"
-    private val pSpringDatasourceUsername =
-        "spring.datasource.username"
-    private val pSpringDatasourcePassword =
-        "spring.datasource.password"
+        "spring.data.mongodb.uri"
     private val pUpdateServerPack = "de.griefed.serverpackcreator.serverpack.update"
     private val pLogLevel = "de.griefed.serverpackcreator.loglevel"
 
@@ -172,6 +168,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "AreYouBlind-",                 //https://www.curseforge.com/minecraft/mc-mods/are-you-blind
             "Armor Status HUD-",            //https://www.curseforge.com/minecraft/mc-mods/armorstatushud
             "ArmorSoundTweak-",             //https://www.curseforge.com/minecraft/mc-mods/armor-sound-tweak
+            "Audio Improvements ",          //https://www.curseforge.com/minecraft/mc-mods/audio-improvements
             "BH-Menu-",                     //https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-forge & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-fabric & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-neoforge
             "Batty's Coordinates PLUS Mod", //https://www.curseforge.com/minecraft/mc-mods/batty-ui & https://www.curseforge.com/minecraft/mc-mods/battys-ui-mod-forge
             "BetterAdvancements-",          //https://www.curseforge.com/minecraft/mc-mods/better-advancements
@@ -253,6 +250,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "KeepTheResourcePack-",         //https://www.curseforge.com/minecraft/mc-mods/keep-the-resourcepack
             "LeaveMyBarsAlone-",            //https://www.curseforge.com/minecraft/mc-mods/leave-my-bars-alone
             "LLOverlayReloaded-",           //https://www.curseforge.com/minecraft/mc-mods/light-level-overlay-reloaded
+            "LongerChatHistory-",           //https://www.curseforge.com/minecraft/mc-mods/longer-chat-history
             "LOTRDRP-",                     //https://www.curseforge.com/minecraft/mc-mods/lotr-drp
             "LegendaryTooltips",            //https://www.curseforge.com/minecraft/mc-mods/legendary-tooltips
             "LegendaryTooltips-",           //https://www.curseforge.com/minecraft/mc-mods/legendary-tooltips
@@ -279,7 +277,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "OptiForge-",                   //https://www.curseforge.com/minecraft/mc-mods/optiforge
             "OverflowingBars-",             //https://www.curseforge.com/minecraft/mc-mods/overflowing-bars
             "PackMenu-",                    //https://www.curseforge.com/minecraft/mc-mods/packmenu
-            "PackModeMenu-",                //https://www.curseforge.com/minecraft/mc-mods/packmodemenu
+            "PackModeMenu-",                //https://www.curseforge.com/minecraft/mc-mods/packmodemenu,
+            "ParticleEffects-",             //https://www.curseforge.com/minecraft/mc-mods/particle-effects
             "Particle Effects-",            //https://www.curseforge.com/minecraft/mc-mods/particle-effects
             "Perception-",                  //https://www.curseforge.com/minecraft/mc-mods/perception
             "PickUpNotifier-",              //https://www.curseforge.com/minecraft/mc-mods/pick-up-notifier
@@ -323,9 +322,11 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "[1.12.2]DamageIndicatorsMod-", //https://www.curseforge.com/minecraft/mc-mods/damage-indicators-mod
             "[1.12.2]bspkrscore-",          //https://www.curseforge.com/minecraft/mc-mods/bspkrscore
             "advancementscreenshot-",       //https://www.curseforge.com/minecraft/mc-mods/advancement-screenshot
+            "ae_pattern_improve-",          //https://www.curseforge.com/minecraft/mc-mods/ae2-pattern-qol-improving
             "ahznbstools-",                 //https://www.curseforge.com/minecraft/mc-mods/ahznbs-tools/
             "antighost-",                   //https://www.curseforge.com/minecraft/mc-mods/antighost
             "anviltooltipmod-",             //https://www.curseforge.com/minecraft/mc-mods/anvil-tooltip-mod
+            "appliedsorting-",              //https://www.curseforge.com/minecraft/mc-mods/applied-sorting
             "armorchroma-",                 //https://www.curseforge.com/minecraft/mc-mods/armor-chroma
             "armorpointspp-",               //https://www.curseforge.com/minecraft/mc-mods/armorpoints
             "auditory-",                    //https://www.curseforge.com/minecraft/mc-mods/auditory
@@ -339,6 +340,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "bbs-",                         //https://www.curseforge.com/minecraft/mc-mods/bbs-mod
             "beddium-",                     //https://www.curseforge.com/minecraft/mc-mods/beddium
             "beenfo-",                      //https://www.curseforge.com/minecraft/mc-mods/beenfo
+            "better_client",                //https://www.curseforge.com/minecraft/mc-mods/better-client
             "better_tooltips-",             //https://www.curseforge.com/minecraft/mc-mods/better-tooltips-neoforge
             "better-clouds-",               //Gone? Reduces to atoms?
             "better-recipe-book-",          //Gone? Reduces to atoms?
@@ -364,6 +366,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "classicbar-",                  //https://www.curseforge.com/minecraft/mc-mods/classic-bars
             "cleanview",                    //https://www.curseforge.com/minecraft/mc-mods/clean-view
             "clienttweaks-",                //https://www.curseforge.com/minecraft/mc-mods/client-tweaks
+            "cobblemon-ui-tweaks-",         //https://modrinth.com/mod/cobblemon-ui-tweaks
             "combat_music-",                //https://www.curseforge.com/minecraft/mc-mods/combat-music
             "configured-neoforge-",         //https://www.curseforge.com/minecraft/mc-mods/configured
             "configured-forge-",            //https://www.curseforge.com/minecraft/mc-mods/configured
@@ -372,11 +375,14 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "controllable-",                //https://www.curseforge.com/minecraft/mc-mods/controllable
             "coolrain-",                    //https://www.curseforge.com/minecraft/mc-mods/cool-rain
             "crash_assistant-",             //https://www.curseforge.com/minecraft/mc-mods/crash-assistant
+            "colorwheel-",                  //https://www.curseforge.com/minecraft/mc-mods/colorwheel
+            "colorwheel_patcher-",          //https://www.curseforge.com/minecraft/mc-mods/colorwheel-patcher
             "cubium-",                      //https://www.curseforge.com/minecraft/mc-mods/cubium
             "cullleaves-",                  //https://www.curseforge.com/minecraft/mc-mods/cull-leaves
             "cullparticles-",               //https://www.curseforge.com/minecraft/mc-mods/cull-particles
             "currentgamemusictrack-",       //https://www.curseforge.com/minecraft/mc-mods/current-game-music-track
             "custom-crosshair-mod-",        //https://www.curseforge.com/minecraft/mc-mods/custom-crosshair-mod
+            "customcursor-",                //https://www.curseforge.com/minecraft/mc-mods/custom-cursor
             "customdiscordrpc-",            //https://www.curseforge.com/minecraft/mc-mods/custom-discordrpc
             "cwb-",                         //https://www.curseforge.com/minecraft/mc-mods/cubes-without-borders
             "darkness-",                    //Gone? Reduces to atoms?
@@ -400,6 +406,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "eiramoticons-",                //Gone? Reduces to atoms?
             "embeddium-",                   //https://www.curseforge.com/minecraft/mc-mods/embeddium
             "enchantment-lore-",            //https://www.curseforge.com/minecraft/mc-mods/enchantment-lore
+            "enhanced_boss_bars-",          //https://www.curseforge.com/minecraft/mc-mods/enhanced-boss-bars
             "entity-texture-features-",     //https://www.curseforge.com/minecraft/mc-mods/entity-texture-features-fabric
             "entityculling-",               //https://www.curseforge.com/minecraft/mc-mods/entity-culling
             "essential_",                   //Gone? Reduces to atoms?
@@ -409,6 +416,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "fancymenu_",                   //https://www.curseforge.com/minecraft/mc-mods/fancymenu
             "fancymenu_video_extension",    //https://www.curseforge.com/minecraft/mc-mods/video-extension-for-fancymenu-forge
             "fast-ip-ping-",                //https://www.curseforge.com/minecraft/mc-mods/fast-ip-ping
+            "fastquit-",                    //https://www.curseforge.com/minecraft/mc-mods/fastquit-forge
             "firstperson-",                 //https://www.curseforge.com/minecraft/mc-mods/first-person-model
             "flerovium-",                   //https://www.curseforge.com/minecraft/mc-mods/flerovium
             "flickerfix-",                  //https://www.curseforge.com/minecraft/mc-mods/flickerfix
@@ -434,6 +442,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "hiddenrecipebook_",            //https://www.curseforge.com/minecraft/mc-mods/hidden-recipe-book
             "hiddenrecipebook-",            //https://www.curseforge.com/minecraft/mc-mods/hidden-recipe-book
             "hidehands-",                   //https://www.curseforge.com/minecraft/mc-mods/hide-hands
+            "idle_boost-",                  //https://www.curseforge.com/minecraft/mc-mods/idle-boost
             "ijmtweaks-",                   //https://www.curseforge.com/minecraft/mc-mods/ijm-tweaks
             "immersivearmorhud-",           //https://www.curseforge.com/minecraft/mc-mods/immersive-armor-hud
             "immersivemessages-",           //https://www.curseforge.com/minecraft/mc-mods/immersive-messages-api
@@ -479,6 +488,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "mindful-eating-",              //https://www.curseforge.com/minecraft/mc-mods/mindful-eating
             "minetogether-",                //https://www.curseforge.com/minecraft/mc-mods/creeperhost-minetogether
             "minihud-",                     //https://www.curseforge.com/minecraft/mc-mods/minihud-update-port
+            "miningspeedtooltips-",         //https://www.curseforge.com/minecraft/mc-mods/mining-speed-tooltips
             "moremmog'scheats",             //https://www.curseforge.com/minecraft/mc-mods/mmogs-cheat-menu
             "mmog'scheats3.6kdownloadsplusmorecheats",//https://www.curseforge.com/minecraft/mc-mods/mmogs-cheat-menu
             "mobplusplus-",                 //Gone? Reduces to atoms?
@@ -498,6 +508,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "ngrok-lan-expose-mod-",        //Gone? Reduces to atoms?
             "no_nv_flash-",                 //https://www.curseforge.com/minecraft/mc-mods/no-nv-flash
             "nopotionshift_",               //https://www.curseforge.com/minecraft/mc-mods/no-potion-shift
+            "nostartupmessages-",           //https://www.curseforge.com/minecraft/mc-mods/no-startup-messages-please
             "notenoughanimations-",         //https://www.curseforge.com/minecraft/mc-mods/not-enough-animations
             "oculus-",                      //https://www.curseforge.com/minecraft/mc-mods/oculus
             "omegamute-",                   //https://www.curseforge.com/minecraft/mc-mods/omega-mute
@@ -508,6 +519,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "panorama-",                    //https://www.curseforge.com/minecraft/mc-mods/panorama
             "paperdoll-",                   //https://www.curseforge.com/minecraft/mc-mods/paperdoll
             "particle-rain-",               //https://www.curseforge.com/minecraft/mc-mods/particle-rain
+            "particular-",                  //https://www.curseforge.com/minecraft/mc-mods/particular-reforged
             "perdimensionbrightness-",      //https://www.curseforge.com/minecraft/mc-mods/per-dimension-brightness
             "persistentinventorysearch-",   //https://www.curseforge.com/minecraft/mc-mods/persistent-inventory-search
             "physics-mod-",                 //https://www.curseforge.com/minecraft/mc-mods/physics-mod
@@ -528,6 +540,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "rubidium_extras-",             //https://www.curseforge.com/minecraft/mc-mods/rubidium-extra
             "screenshot-to-clipboard-",     //https://www.curseforge.com/minecraft/mc-mods/screenshot-to-clipboard
             "servercountryflags-",          //https://www.curseforge.com/minecraft/mc-mods/server-country-flags
+            "shut_up_gl_error-",            //https://www.curseforge.com/minecraft/mc-mods/shut-up-gl-error
             "shutupexperimentalsettings-",  //https://www.curseforge.com/minecraft/mc-mods/shutup-experimental-settings
             "shutupmodelloader-",           //https://www.curseforge.com/minecraft/mc-mods/shut-up-model-loader
             "signtools-",                   //https://www.curseforge.com/minecraft/bukkit-plugins/signtools
@@ -567,6 +580,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "tweakeroo-",                   //https://www.curseforge.com/minecraft/mc-mods/tweakeroo-update-port
             "vanillazoom-",                 //https://www.curseforge.com/minecraft/mc-mods/vanilla-zoom
             "viaforge-",                    //https://www.curseforge.com/minecraft/mc-mods/viaforge
+            "wakes-",                       //https://www.curseforge.com/minecraft/mc-mods/wakes
             "watermedia-",                  //https://www.curseforge.com/minecraft/mc-mods/watermedia
             "whats-that-slot-forge-",       //https://www.curseforge.com/minecraft/mc-mods/whats-that-slot
             "wheredididie-",                //https://www.curseforge.com/minecraft/mc-mods/where-did-i-die
@@ -1392,54 +1406,31 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         }
 
     /**
-     * Path to the PostgreSQL database used by the webservice-side of ServerPackCreator.
-     *
-     * When setting this to a different URL, you may leave out the `jdbc:postgresql://`-part, it will be prefixed automatically.
+     * Path to the database used by the webservice-side of ServerPackCreator.
      */
-    var jdbcDatabaseUrl: String = "jdbc:postgresql://localhost:5432/serverpackcreator"
+    var databaseUri: String = "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb"
         get() {
             var dbPath =
-                internalProps.getProperty(pSpringDatasourceUrl, "jdbc:postgresql://localhost:5432/serverpackcreator")
-            if (dbPath.isEmpty() || dbPath.contains("jdbc:sqlite") || !dbPath.startsWith("jdbc:postgresql://")) {
-                log.warn("Your spring.datasource.url-property didn't match a PostgreSQL JDBC URL: $dbPath. It has been migrated to jdbc:postgresql://localhost:5432/serverpackcreator.")
-                dbPath = "jdbc:postgresql://localhost:5432/serverpackcreator"
+                internalProps.getProperty(pSpringDatasourceUrl, "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb")
+            if (dbPath.isEmpty() ||
+                dbPath.contains("sqlite") ||
+                dbPath.contains("postgresql") ||
+                !dbPath.startsWith("mongodb") ) {
+                log.warn("Your spring.data.mongodb.uri-property didn't match a MongoDB-URL: $dbPath. It has been migrated to mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb.")
+                dbPath = "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb"
             }
             internalProps.setProperty(pSpringDatasourceUrl, dbPath)
             field = dbPath
             return field
         }
         set(value) {
-            if (!value.startsWith("jdbc:postgresql://")) {
-                internalProps.setProperty(pSpringDatasourceUrl, "jdbc:postgresql://$value")
+            if (!value.startsWith("mongodb://")) {
+                internalProps.setProperty(pSpringDatasourceUrl, "mongodb://$value")
             } else {
                 internalProps.setProperty(pSpringDatasourceUrl, value)
             }
             field = internalProps.getProperty(pSpringDatasourceUrl)
             log.info("Set database url to: $field.")
-            log.warn("Restart ServerPackCreator for this change to take effect.")
-        }
-
-    var jdbcDatabaseUsername: String = ""
-        get() {
-            field = internalProps.getProperty(pSpringDatasourceUsername, "")
-            return field
-        }
-        set(value) {
-            field = value
-            internalProps.setProperty(pSpringDatasourceUsername, field)
-            log.info("Set username url to: $field.")
-            log.warn("Restart ServerPackCreator for this change to take effect.")
-        }
-
-    var jdbcDatabasePassword: String = ""
-        get() {
-            field = internalProps.getProperty(pSpringDatasourcePassword, "")
-            return field
-        }
-        set(value) {
-            field = value
-            internalProps.setProperty(pSpringDatasourcePassword, field)
-            log.info("Set password url to: $field.")
             log.warn("Restart ServerPackCreator for this change to take effect.")
         }
 
@@ -1534,7 +1525,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         }
 
     fun defaultWebserviceDatabase(): String {
-        return "jdbc:postgresql://localhost:5432/serverpackcreator"
+        return "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb"
     }
 
     /**
@@ -2779,7 +2770,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     private fun printSettings() {
         log.info("============================== PROPERTIES ==============================")
         log.info("Set Aikars flags to:   $aikarsFlags")
-        log.info("Set database path to:  $jdbcDatabaseUrl")
+        log.info("Set database path to:  $databaseUri")
         log.info("Home directory set to: $homeDirectory")
         log.info("Language set to:       ${language.displayLanguage} (${language.toTag()})")
         log.info("Java path set to:      $javaPath")

@@ -98,6 +98,7 @@ open class StatusIcon(private val guiProps: GuiProps, private val infoToolTip: S
      *
      * @author Griefed
      */
+    @Suppress("unused")
     fun warning(tooltip: String) {
         icon = guiProps.warningIcon
         tooltTipLabel.text = tooltip

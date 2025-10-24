@@ -4,7 +4,7 @@ import java.util.prefs.Preferences
 plugins {
     id("serverpackcreator.kotlin-conventions")
     id("serverpackcreator.dokka-conventions")
-    id("de.comahe.i18n4k") version "0.10.0"
+    id("de.comahe.i18n4k") version "0.11.1"
 }
 
 repositories {
@@ -16,26 +16,26 @@ dependencies {
     api("io.github.microutils:kotlin-logging:3.0.5")
     api("org.jetbrains.kotlinx:kotlinx-datetime:0.6.2")
     api("de.jensklingenberg.ktorfit:ktorfit-lib:2.5.1")
-    api("de.comahe.i18n4k:i18n4k-core:0.10.0")
-    api("de.comahe.i18n4k:i18n4k-core-jvm:0.10.0")
-    implementation("org.jetbrains.kotlin:kotlin-bom:2.1.20")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.1.20")
+    api("de.comahe.i18n4k:i18n4k-core:0.11.0")
+    api("de.comahe.i18n4k:i18n4k-core-jvm:0.11.0")
+    implementation("org.jetbrains.kotlin:kotlin-bom:2.2.20")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.2.20")
     implementation(files("${layout.buildDirectory.asFile.get()}/resources/main"))
-    api("com.electronwill.night-config:toml:3.8.1")
-    api("com.fasterxml.jackson.core:jackson-databind:2.18.1")
+    api("com.electronwill.night-config:toml:3.8.2")
+    api("com.fasterxml.jackson.core:jackson-databind:2.20.0")
     api("net.lingala.zip4j:zip4j:2.11.5")
     api("org.apache.logging.log4j:log4j-api-kotlin:1.5.0")
-    api("org.apache.logging.log4j:log4j-core:2.24.3")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
+    api("org.apache.logging.log4j:log4j-core:2.25.1")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     api("org.pf4j:pf4j:3.13.0")
-    api("org.bouncycastle:bcpkix-jdk18on:1.80")
+    api("org.bouncycastle:bcpkix-jdk18on:1.81")
 
     api("com.github.MCRcortex:nekodetector:Version-1.1-pre")
     //api("dev.kosmx.needle:jneedle:1.0.1")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test:2.1.20")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:2.2.20")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.4")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.4")
 }
 
 tasks.sourcesJar {
@@ -146,6 +146,12 @@ tasks.build {
         tasks.dokkaJavadocJar
     }
     finalizedBy(tasks.dokkaJavadocJar)
+}
+
+tasks.generatePomFileForMavenJavaPublication {
+    dependsOn(
+        tasks.getByName("fixMissingResources"),
+        tasks.processResources)
 }
 
 tasks.signMavenJavaPublication {

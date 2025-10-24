@@ -101,46 +101,43 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
         themes.add(
             ThemeInfo(
                 "FlatLaf Light",
-                false,
                 null,
                 null,
-                FlatLightLaf::class.java.getName()
+                FlatLightLaf::class.java.name
             )
         )
 
         themes.add(
             ThemeInfo(
                 "FlatLaf Dark",
-                true,
                 null,
                 null,
-                FlatDarkLaf::class.java.getName()
+                FlatDarkLaf::class.java.name
             )
         )
 
         themes.add(
             ThemeInfo(
-                "FlatLaf IntelliJ", false, null, null, FlatIntelliJLaf::class.java.getName()
+                "FlatLaf IntelliJ", null, null, FlatIntelliJLaf::class.java.name
             )
         )
         themes.add(
             ThemeInfo(
                 "FlatLaf Darcula",
-                true,
                 null,
                 null,
-                FlatDarculaLaf::class.java.getName()
+                FlatDarculaLaf::class.java.name
             )
         )
 
         themes.add(
             ThemeInfo(
-                "FlatLaf macOS Light", false, null, null, FlatMacLightLaf::class.java.getName()
+                "FlatLaf macOS Light", null, null, FlatMacLightLaf::class.java.name
             )
         )
         themes.add(
             ThemeInfo(
-                "FlatLaf macOS Dark", true, null, null, FlatMacDarkLaf::class.java.getName()
+                "FlatLaf macOS Dark", null, null, FlatMacDarkLaf::class.java.name
             )
         )
     }
@@ -153,7 +150,6 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
             themes.add(
                 ThemeInfo(
                     theme.name,
-                    theme.isDark,
                     null,
                     null,
                     theme.className
@@ -176,13 +172,13 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
         lastModifiedMap.clear()
         lastModifiedMap[themesDir] = themesDir.lastModified()
         for (f in themeFiles) {
-            val fname = f.getName()
+            val fname = f.name
             val name: String = if (fname.endsWith(".properties")) {
                 StringUtils.removeTrailing(fname, ".properties")
             } else {
                 StringUtils.removeTrailing(fname, ".theme.json")
             }
-            themes.add(ThemeInfo(name, false, null, f, null))
+            themes.add(ThemeInfo(name, null, f, null))
             lastModifiedMap[f] = f.lastModified()
         }
     }
@@ -202,7 +198,7 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
             getThemeInfo(catch)!!
         }
         if (themeInfo.lafClassName != null) {
-            if (themeInfo.lafClassName == UIManager.getLookAndFeel().javaClass.getName()) {
+            if (themeInfo.lafClassName == UIManager.getLookAndFeel().javaClass.name) {
                 log.info("Theme ${themeInfo.lafClassName} already active.")
                 return
             }
@@ -213,7 +209,7 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
             }
         } else if (themeInfo.themeFile != null) {
             try {
-                if (themeInfo.themeFile.getName().endsWith(".properties")) {
+                if (themeInfo.themeFile.name.endsWith(".properties")) {
                     FlatLaf.setup(FlatPropertiesLaf(themeInfo.name, themeInfo.themeFile))
                 } else {
                     FlatLaf.setup(IntelliJTheme.createLaf(FileInputStream(themeInfo.themeFile)))

@@ -1,9 +1,9 @@
 import com.install4j.gradle.Install4jTask
 import de.griefed.common.gradle.LicenseAgreementRenderer
 import de.griefed.common.gradle.SubprojectLicenseFilter
-import org.cyclonedx.model.AttachmentText
-import org.cyclonedx.model.License
-import org.cyclonedx.model.OrganizationalContact
+//import org.cyclonedx.model.AttachmentText
+//import org.cyclonedx.model.License
+//import org.cyclonedx.model.OrganizationalContact
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
 import java.time.LocalDate
@@ -14,7 +14,7 @@ plugins {
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("com.github.jk1.dependency-license-report")
     id("com.install4j.gradle")
-    id("org.cyclonedx.bom") version "1.10.0"
+    //id("org.cyclonedx.bom") version "1.10.0"
 }
 
 idea {
@@ -50,14 +50,15 @@ project("serverpackcreator-app").tasks.build.get().mustRunAfter(
 nexusPublishing {
     repositories {
         sonatype {
-            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+            nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
             username.set(System.getenv("OSSRH_USERNAME"))
             password.set(System.getenv("OSSRH_PASSWORD"))
         }
     }
 }
 
+/*
 tasks.cyclonedxBom {
     setIncludeConfigs(listOf("runtimeClasspath"))
     setSkipConfigs(listOf("compileClasspath", "testCompileClasspath"))
@@ -87,6 +88,7 @@ tasks.cyclonedxBom {
         lc.addLicense(license)
     }
 }
+*/
 
 licenseReport {
     outputDir = "$projectDir/licenses"
