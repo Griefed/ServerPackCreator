@@ -1,3 +1,14 @@
+## [8.0.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.0...8.0.1) (2025-10-24)
+
+### 📦 Other
+
+* Add Enhanced Tooltips to clientside-list ([0c9bf91](https://git.griefed.de/Griefed/ServerPackCreator/commit/0c9bf91252f8ff103f0afa592bee4da95ce20746))
+
+### 🛠 Fixes
+
+* Acquire name and content of tips from Translations directly ([049792f](https://git.griefed.de/Griefed/ServerPackCreator/commit/049792fedf97bfb36aba5f962e5505198a370c4e))
+* Migrate to dokka V2 ([2ec33b4](https://git.griefed.de/Griefed/ServerPackCreator/commit/2ec33b4e16acc70bb5d4fcdea8290db0fe7a900a))
+
 ## [8.0.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.3.0...8.0.0) (2025-10-24)
 
 ### :scissors: Refactor
