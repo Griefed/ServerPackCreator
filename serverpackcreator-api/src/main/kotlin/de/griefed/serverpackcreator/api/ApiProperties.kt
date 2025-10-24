@@ -212,6 +212,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "EffectsLeft-",                 //https://www.curseforge.com/minecraft/mc-mods/effectsleft
             "EiraMoticons_",                //no longer available, legacy entry
             "EnchantmentDescriptions-",     //https://www.curseforge.com/minecraft/mc-mods/enchantment-descriptions
+            "EnhancedTooltips-",            //https://www.curseforge.com/minecraft/mc-mods/enhancedtooltips
             "EnhancedVisuals_",             //https://www.curseforge.com/minecraft/mc-mods/enhancedvisuals
             "EquipmentCompare-",            //https://www.curseforge.com/minecraft/mc-mods/equipment-compare
             "EuphoriaPatcher-",             //https://www.curseforge.com/minecraft/mc-mods/euphoria-patches
