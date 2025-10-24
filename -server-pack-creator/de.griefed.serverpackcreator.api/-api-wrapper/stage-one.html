@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>stageOne</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+        <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer="defer"></script>
+</head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+            <a class="library-name--link" href="../../../index.html" tabindex="1">
+                    ServerPackCreator
+            </a>
+        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle"
+                type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true"
+                        data-filter=":serverpackcreator-api/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
+                        data-role="dropdown-toggle"
+                        aria-controls="platform-tags-listbox"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Toggle source sets"
+                ></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":serverpackcreator-api/main"
+                                       data-filter=":serverpackcreator-api/main"/>
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button"
+                    type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config='{"defaultSize": 280, "minSize": 200, "maxSize": 400}'>
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list"
+                    data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    ServerPackCreator
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="member" id="content" pageIds="ServerPackCreator::de.griefed.serverpackcreator.api/ApiWrapper/stageOne/#/PointingToDeclaration//-2093568117">
+  <div class="breadcrumbs"><a href="../../../index.html">ServerPackCreator</a><span class="delimiter">/</span><a href="../index.html">de.griefed.serverpackcreator.api</a><span class="delimiter">/</span><a href="index.html">ApiWrapper</a><span class="delimiter">/</span><span class="current">stageOne</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>stage</span><wbr></wbr><span><span>One</span></span></h1>
+  </div>
+  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="stage-one.html"><span class="token function">stageOne</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="source-link-wrapper"><span class="source-link" data-element-type="source-link">(<a href="https://git.griefed.de/Griefed/ServerPackCreator/de/griefed/serverpackcreator/api/ApiWrapper.kt#L405">source</a>)</span></span></div><p class="paragraph">Stage one of starting ServerPackCreator.</p><p class="paragraph">Creates and prepares the environment for ServerPackCreator to run by creating required directories and copying required files from the JAR-file to the filesystem. Some of these files can and should be edited by a given user, others however, not.</p><ul><li><p class="paragraph">Checks the read- and write-permissions of ServerPackCreators base-directory.</p></li><li><p class="paragraph">Copies the <code class="lang-kotlin">README.md</code> from the JAR to the home-directory.</p></li><li><p class="paragraph">Copies the <code class="lang-kotlin">HELP.md</code> from the JAR to the home-directory.</p></li><li><p class="paragraph">Copies the <code class="lang-kotlin">CHANGELOG.md</code> from the JAR to the home-directory.</p></li><li><p class="paragraph">Copies the <code class="lang-kotlin">LICENSE</code> from the JAR to the home-directory.</p></li><li><p class="paragraph">Copies the fallback version-manifests to the manifests.</p></li><li><p class="paragraph">Creates default directories:</p></li><li><p class="paragraph">server_files</p></li><li><p class="paragraph">work</p></li><li><p class="paragraph">temp</p></li><li><p class="paragraph">work/modpacks</p></li><li><p class="paragraph">server-packs (depending on the users settings, this may be anywhere on the users system)</p></li><li><p class="paragraph">plugins</p></li><li><p class="paragraph">plugins/config</p></li><li><p class="paragraph">Example <code class="lang-kotlin">disabled.txt</code>-file in plugins/disabled.txt.</p></li><li><p class="paragraph">Creates the default <code class="lang-kotlin">server.properties</code> if it doesn't exist.</p></li><li><p class="paragraph">Creates the default <code class="lang-kotlin">server-icon.png</code> if it doesn't exist.</p></li><li><p class="paragraph">Creates the default PowerShell and Shell script templates or overwrites them if they already exist.</p></li><li><p class="paragraph">Determines whether this instance of ServerPackCreator was updated from a previous version.</p></li></ul><p class="paragraph">If an update was detected, and migrations are available for any of the steps of the update, they are executed, thus ensuring users are safe to update their instances. Writes ServerPackCreator and system information to the console and logs, important for error reporting and debugging.</p><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">Griefed</p></span></div></div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2025 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

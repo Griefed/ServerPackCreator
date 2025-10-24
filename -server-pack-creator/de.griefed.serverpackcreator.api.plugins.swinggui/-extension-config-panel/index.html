@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>ExtensionConfigPanel</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+        <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer="defer"></script>
+</head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+            <a class="library-name--link" href="../../../index.html" tabindex="1">
+                    ServerPackCreator
+            </a>
+        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle"
+                type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true"
+                        data-filter=":serverpackcreator-api/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
+                        data-role="dropdown-toggle"
+                        aria-controls="platform-tags-listbox"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Toggle source sets"
+                ></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":serverpackcreator-api/main"
+                                       data-filter=":serverpackcreator-api/main"/>
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button"
+                    type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config='{"defaultSize": 280, "minSize": 200, "maxSize": 400}'>
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list"
+                    data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    ServerPackCreator
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="ServerPackCreator::de.griefed.serverpackcreator.api.plugins.swinggui/ExtensionConfigPanel///PointingToDeclaration//-2093568117">
+  <div class="breadcrumbs"><a href="../../../index.html">ServerPackCreator</a><span class="delimiter">/</span><a href="../index.html">de.griefed.serverpackcreator.api.plugins.swinggui</a><span class="delimiter">/</span><span class="current">ExtensionConfigPanel</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Extension</span><wbr></wbr><span>Config</span><wbr></wbr><span><span>Panel</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">class </span><a href="index.html">ExtensionConfigPanel</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>versionMeta<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.versionmeta/-version-meta/index.html">VersionMeta</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>apiProperties<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api/-api-properties/index.html">ApiProperties</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>utilities<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities.common/-utilities/index.html">Utilities</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>serverPackConfigTab<span class="token operator">: </span><a href="../-server-pack-config-tab/index.html">ServerPackConfigTab</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">var </span>pluginConfig<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html">Optional</a><span class="token operator">&lt;</span><span data-unresolved-link="com.electronwill.nightconfig.core/CommentedConfig///PointingToDeclaration/">CommentedConfig</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>extensionName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>pluginID<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span> : <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/javax/swing/JPanel.html">JPanel</a><span class="source-link-wrapper"><span class="source-link" data-element-type="source-link">(<a href="https://git.griefed.de/Griefed/ServerPackCreator/de/griefed/serverpackcreator/api/plugins/swinggui/ExtensionConfigPanel.kt#L50">source</a>)</span></span></div><p class="paragraph">Template ConfigPanel for use in {@link ConfigPanelExtension} extensions.</p><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">Griefed</p></span><h4 class="tableheader">Parameters</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>version</span><wbr></wbr><span><span>Meta</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Instance of <a href="../../de.griefed.serverpackcreator.api.versionmeta/-version-meta/index.html">VersionMeta</a> so you can work with available Minecraft, Forge, Fabric, LegacyFabric and Quilt versions.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>api</span><wbr></wbr><span><span>Properties</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Instance of <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Properties.html">Properties</a> The current configuration of ServerPackCreator, like the default list of clientside-only mods, the server pack directory etc.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>utilities</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Instance of <a href="../../de.griefed.serverpackcreator.api.utilities.common/-utilities/index.html">Utilities</a> commonly used across ServerPackCreator.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>server</span><wbr></wbr><span>Pack</span><wbr></wbr><span>Config</span><wbr></wbr><span><span>Tab</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Instance of <a href="../-server-pack-config-tab/index.html">ServerPackConfigTab</a> to give you access to the various fields inside it, like the modpack directory, selected Minecraft, modloader and modloader versions, etc.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>plugin</span><wbr></wbr><span><span>Config</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Plugin specific configuration conveniently provided by ServerPackCreator. This is the global configuration of the plugin which provides the ConfigPanelExtension to ServerPackCreator.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>extension</span><wbr></wbr><span><span>Name</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The name the titled border of this ConfigPanel will get.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>plugin</span><wbr></wbr><span><span>ID</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The ID of the plugin providing this extension implementation. The pluginID determines which extension specific configurations are provided to this panel, and how they are stored in a given serverpackcreator.conf.</p></div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="tableheader">Constructors</h2>
+        <div class="table"><a data-name="872179467%2FConstructors%2F-2093568117" anchor-label="ExtensionConfigPanel" id="872179467%2FConstructors%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-extension-config-panel.html"><span>Extension</span><wbr></wbr><span>Config</span><wbr></wbr><span><span>Panel</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="872179467%2FConstructors%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">versionMeta<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.versionmeta/-version-meta/index.html">VersionMeta</a><span class="token punctuation">, </span></span><span class="parameter ">apiProperties<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api/-api-properties/index.html">ApiProperties</a><span class="token punctuation">, </span></span><span class="parameter ">utilities<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities.common/-utilities/index.html">Utilities</a><span class="token punctuation">, </span></span><span class="parameter ">serverPackConfigTab<span class="token operator">: </span><a href="../-server-pack-config-tab/index.html">ServerPackConfigTab</a><span class="token punctuation">, </span></span><span class="parameter ">pluginConfig<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html">Optional</a><span class="token operator">&lt;</span><span data-unresolved-link="com.electronwill.nightconfig.core/CommentedConfig///PointingToDeclaration/">CommentedConfig</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">extensionName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">pluginID<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-1616688121%2FProperties%2F-2093568117" anchor-label="apiProperties" id="-1616688121%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="api-properties.html"><span>api</span><wbr></wbr><span><span>Properties</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1616688121%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">val </span><a href="api-properties.html">apiProperties</a><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api/-api-properties/index.html">ApiProperties</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1356896810%2FProperties%2F-2093568117" anchor-label="extensionName" id="1356896810%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="extension-name.html"><span>extension</span><wbr></wbr><span><span>Name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1356896810%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="extension-name.html">extensionName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-55806896%2FProperties%2F-2093568117" anchor-label="log" id="-55806896%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="log.html"><span><span>log</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-55806896%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">val </span><a href="log.html">log</a><span class="token operator">: </span><span data-unresolved-link="org.apache.logging.log4j.kotlin/KotlinLogger///PointingToDeclaration/">KotlinLogger</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1418943599%2FProperties%2F-2093568117" anchor-label="pluginConfig" id="-1418943599%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="plugin-config.html"><span>plugin</span><wbr></wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1418943599%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">var </span><a href="plugin-config.html">pluginConfig</a><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html">Optional</a><span class="token operator">&lt;</span><span data-unresolved-link="com.electronwill.nightconfig.core/CommentedConfig///PointingToDeclaration/">CommentedConfig</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1624057592%2FProperties%2F-2093568117" anchor-label="pluginID" id="1624057592%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="plugin-i-d.html"><span>plugin</span><wbr></wbr><span><span>ID</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1624057592%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="plugin-i-d.html">pluginID</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1605611906%2FProperties%2F-2093568117" anchor-label="pluginsLog" id="1605611906%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="plugins-log.html"><span>plugins</span><wbr></wbr><span><span>Log</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1605611906%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">val </span><a href="plugins-log.html">pluginsLog</a><span class="token operator">: </span><span data-unresolved-link="org.apache.logging.log4j/Logger///PointingToDeclaration/">Logger</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="489341085%2FProperties%2F-2093568117" anchor-label="serverPackConfigTab" id="489341085%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="server-pack-config-tab.html"><span>server</span><wbr></wbr><span>Pack</span><wbr></wbr><span>Config</span><wbr></wbr><span><span>Tab</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="489341085%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">val </span><a href="server-pack-config-tab.html">serverPackConfigTab</a><span class="token operator">: </span><a href="../-server-pack-config-tab/index.html">ServerPackConfigTab</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1785873745%2FProperties%2F-2093568117" anchor-label="serverPackExtensionConfig" id="-1785873745%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="server-pack-extension-config.html"><span>server</span><wbr></wbr><span>Pack</span><wbr></wbr><span>Extension</span><wbr></wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1785873745%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="server-pack-extension-config.html">serverPackExtensionConfig</a><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/ArrayList.html">ArrayList</a><span class="token operator">&lt;</span><span data-unresolved-link="com.electronwill.nightconfig.core/CommentedConfig///PointingToDeclaration/">CommentedConfig</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1303646710%2FProperties%2F-2093568117" anchor-label="utilities" id="-1303646710%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="utilities.html"><span><span>utilities</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1303646710%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">val </span><a href="utilities.html">utilities</a><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities.common/-utilities/index.html">Utilities</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1494333513%2FProperties%2F-2093568117" anchor-label="versionMeta" id="-1494333513%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="version-meta.html"><span>version</span><wbr></wbr><span><span>Meta</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1494333513%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">val </span><a href="version-meta.html">versionMeta</a><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.versionmeta/-version-meta/index.html">VersionMeta</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="-1047186521%2FFunctions%2F-2093568117" anchor-label="clear" id="-1047186521%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="clear.html"><span><span>clear</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1047186521%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="clear.html"><span class="token function">clear</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Clear the interface, or in other words, reset this extensions config panel UI. If your Config Panel Extensions has no elements you wish to reset, then simply overwrite this method with an empty method body.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1785873745%2FFunctions%2F-2093568117" anchor-label="serverPackExtensionConfig" id="-1785873745%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="server-pack-extension-config.html"><span>server</span><wbr></wbr><span>Pack</span><wbr></wbr><span>Extension</span><wbr></wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1785873745%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="server-pack-extension-config.html"><span class="token function">serverPackExtensionConfig</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/ArrayList.html">ArrayList</a><span class="token operator">&lt;</span><span data-unresolved-link="com.electronwill.nightconfig.core/CommentedConfig///PointingToDeclaration/">CommentedConfig</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieve this extensions' server pack specific configuration. When no configuration with configs for this extension has been loaded yet, the returned list is empty. Fill it with life!</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1995812052%2FFunctions%2F-2093568117" anchor-label="setServerPackExtensionConfig" id="1995812052%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-server-pack-extension-config.html"><span>set</span><wbr></wbr><span>Server</span><wbr></wbr><span>Pack</span><wbr></wbr><span>Extension</span><wbr></wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1995812052%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="set-server-pack-extension-config.html"><span class="token function">setServerPackExtensionConfig</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">serverPackExtensionConfig<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/ArrayList.html">ArrayList</a><span class="token operator">&lt;</span><span data-unresolved-link="com.electronwill.nightconfig.core/CommentedConfig///PointingToDeclaration/">CommentedConfig</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Pass the extension configuration to the configuration panel, so it can then, in turn, load the available configurations and make them editable, if so desired.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2025 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>ApiWrapper</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+        <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer="defer"></script>
+</head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+            <a class="library-name--link" href="../../../index.html" tabindex="1">
+                    ServerPackCreator
+            </a>
+        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle"
+                type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true"
+                        data-filter=":serverpackcreator-api/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
+                        data-role="dropdown-toggle"
+                        aria-controls="platform-tags-listbox"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Toggle source sets"
+                ></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":serverpackcreator-api/main"
+                                       data-filter=":serverpackcreator-api/main"/>
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button"
+                    type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config='{"defaultSize": 280, "minSize": 200, "maxSize": 400}'>
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list"
+                    data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    ServerPackCreator
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="ServerPackCreator::de.griefed.serverpackcreator.api/ApiWrapper///PointingToDeclaration//-2093568117">
+  <div class="breadcrumbs"><a href="../../../index.html">ServerPackCreator</a><span class="delimiter">/</span><a href="../index.html">de.griefed.serverpackcreator.api</a><span class="delimiter">/</span><span class="current">ApiWrapper</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Api</span><wbr></wbr><span><span>Wrapper</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">ApiWrapper</a><span class="source-link-wrapper"><span class="source-link" data-element-type="source-link">(<a href="https://git.griefed.de/Griefed/ServerPackCreator/de/griefed/serverpackcreator/api/ApiWrapper.kt#L46">source</a>)</span></span></div><p class="paragraph">API wrapper, allowing you to conveniently initialize, setup and use the different aspects of ServerPackCreator.</p><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">Griefed</p></span><h4 class="tableheader">Parameters</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>properties</span></span></u></div></span></div><div><div class="title"><p class="paragraph">serverpackcreator.properties-file containing settings and configurations to load the API with.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>run</span><wbr></wbr><span><span>Setup</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Whether to run the file-setup during API inizialization.</p></div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="1089554378%2FClasslikes%2F-2093568117" anchor-label="Companion" id="1089554378%2FClasslikes%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1089554378%2FClasslikes%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-1126097839%2FProperties%2F-2093568117" anchor-label="apiPlugins" id="-1126097839%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="api-plugins.html"><span>api</span><wbr></wbr><span><span>Plugins</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1126097839%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@get:</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-synchronized/index.html"><span class="token annotation builtin">Synchronized</span></a></div></div><span class="token keyword">val </span><a href="api-plugins.html">apiPlugins</a><span class="token operator">: </span><a href="../-api-plugins/index.html">ApiPlugins</a></div><div class="brief "><p class="paragraph">This instances plugin manager for ServerPackCreator-plugins, if any are installed. This gives you access to the available extensions, should any be available in your instance of ServerPackCreator.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-904377034%2FProperties%2F-2093568117" anchor-label="apiProperties" id="-904377034%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="api-properties.html"><span>api</span><wbr></wbr><span><span>Properties</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-904377034%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@get:</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-synchronized/index.html"><span class="token annotation builtin">Synchronized</span></a></div></div><span class="token keyword">val </span><a href="api-properties.html">apiProperties</a><span class="token operator">: </span><a href="../-api-properties/index.html">ApiProperties</a></div><div class="brief "><p class="paragraph">This instances settings used across ServerPackCreator, such as the working-directories, files and other settings.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="60435011%2FProperties%2F-2093568117" anchor-label="configurationHandler" id="60435011%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="configuration-handler.html"><span>configuration</span><wbr></wbr><span><span>Handler</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="60435011%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@get:</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-synchronized/index.html"><span class="token annotation builtin">Synchronized</span></a></div></div><span class="token keyword">val </span><a href="configuration-handler.html">configurationHandler</a><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.config/-configuration-handler/index.html">ConfigurationHandler</a></div><div class="brief "><p class="paragraph">This instances ConfigurationHandler for checking a given <a href="../../de.griefed.serverpackcreator.api.config/-pack-config/index.html">de.griefed.serverpackcreator.api.config.PackConfig</a> for validity, so a server pack can safely be created from it.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1724414195%2FProperties%2F-2093568117" anchor-label="documentBuilderFactory" id="-1724414195%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="document-builder-factory.html"><span>document</span><wbr></wbr><span>Builder</span><wbr></wbr><span><span>Factory</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1724414195%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@get:</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-synchronized/index.html"><span class="token annotation builtin">Synchronized</span></a></div></div><span class="token keyword">val </span><a href="document-builder-factory.html">documentBuilderFactory</a><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.xml/javax/xml/parsers/DocumentBuilderFactory.html">DocumentBuilderFactory</a></div><div class="brief "><p class="paragraph">This instances DocumentBuilder for working with XML-data.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="273708042%2FProperties%2F-2093568117" anchor-label="fabricScanner" id="273708042%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fabric-scanner.html"><span>fabric</span><wbr></wbr><span><span>Scanner</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="273708042%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@get:</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-synchronized/index.html"><span class="token annotation builtin">Synchronized</span></a></div></div><span class="token keyword">val </span><a href="fabric-scanner.html">fabricScanner</a><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.modscanning/-fabric-scanner/index.html">FabricScanner</a></div><div class="brief "><p class="paragraph">This instances scanner to determine the sideness of Fabric mods.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1742600484%2FProperties%2F-2093568117" anchor-label="firstRun" id="-1742600484%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="first-run.html"><span>first</span><wbr></wbr><span><span>Run</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1742600484%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-volatile/index.html"><span class="token annotation builtin">Volatile</span></a></div></div><span class="token keyword">var </span><a href="first-run.html">firstRun</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Will return true if this is the first time ServerPackCreator is being run on a given host.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1183404175%2FProperties%2F-2093568117" anchor-label="forgeAnnotationScanner" id="1183404175%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="forge-annotation-scanner.html"><span>forge</span><wbr></wbr><span>Annotation</span><wbr></wbr><span><span>Scanner</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1183404175%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@get:</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-synchronized/index.html"><span class="token annotation builtin">Synchronized</span></a></div></div><span class="token keyword">val </span><a href="forge-annotation-scanner.html">forgeAnnotationScanner</a><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.modscanning/-forge-annotation-scanner/index.html">ForgeAnnotationScanner</a></div><div class="brief "><p class="paragraph">This instances annotation scanner used to determine the sideness of Forge mods for Minecraft 1.12.2 and older.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-274462854%2FProperties%2F-2093568117" anchor-label="forgeTomlScanner" id="-274462854%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="forge-toml-scanner.html"><span>forge</span><wbr></wbr><span>Toml</span><wbr></wbr><span><span>Scanner</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-274462854%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="forge-toml-scanner.html">forgeTomlScanner</a><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.modscanning/-forge-toml-scanner/index.html">ForgeTomlScanner</a></div><div class="brief "><p class="paragraph">This instances toml scanner to determine the sideness of Forge mods for Minecraft 1.13.x and newer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1821361471%2FProperties%2F-2093568117" anchor-label="jsonUtilities" id="-1821361471%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="json-utilities.html"><span>json</span><wbr></wbr><span><span>Utilities</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1821361471%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@get:</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-synchronized/index.html"><span class="token annotation builtin">Synchronized</span></a></div></div><span class="token keyword">val </span><a href="json-utilities.html">jsonUtilities</a><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities.common/-json-utilities/index.html">JsonUtilities</a></div><div class="brief "><p class="paragraph">This instances common JSON utilities used across ServerPackCreator.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2066313371%2FProperties%2F-2093568117" anchor-label="modScanner" id="2066313371%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="mod-scanner.html"><span>mod</span><wbr></wbr><span><span>Scanner</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2066313371%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@get:</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-synchronized/index.html"><span class="token annotation builtin">Synchronized</span></a></div></div><span class="token keyword">val </span><a href="mod-scanner.html">modScanner</a><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.modscanning/-mod-scanner/index.html">ModScanner</a></div><div class="brief "><p class="paragraph">This instances modscanner to determine the sideness of a given Forge, Fabric, LegacyFabric or Quilt mod.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-81028722%2FProperties%2F-2093568117" anchor-label="neoForgeTomlScanner" id="-81028722%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="neo-forge-toml-scanner.html"><span>neo</span><wbr></wbr><span>Forge</span><wbr></wbr><span>Toml</span><wbr></wbr><span><span>Scanner</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-81028722%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@get:</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-synchronized/index.html"><span class="token annotation builtin">Synchronized</span></a></div></div><span class="token keyword">val </span><a href="neo-forge-toml-scanner.html">neoForgeTomlScanner</a><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.modscanning/-neo-forge-toml-scanner/index.html">NeoForgeTomlScanner</a></div><div class="brief "><p class="paragraph">This instances toml scanner to determine the sideness of NeoForge mods for Minecraft 1.20.5 and newer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="414276823%2FProperties%2F-2093568117" anchor-label="objectMapper" id="414276823%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="object-mapper.html"><span>object</span><wbr></wbr><span><span>Mapper</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="414276823%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@get:</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-synchronized/index.html"><span class="token annotation builtin">Synchronized</span></a></div></div><span class="token keyword">val </span><a href="object-mapper.html">objectMapper</a><span class="token operator">: </span><span data-unresolved-link="com.fasterxml.jackson.databind/ObjectMapper///PointingToDeclaration/">ObjectMapper</span></div><div class="brief "><p class="paragraph">This instances JSON-ObjectMapper used across ServerPackCreator with which this instance was initialized. By default, the ObjectMapper used across ServerPackCreator has the following features set:</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1212429340%2FProperties%2F-2093568117" anchor-label="properties" id="-1212429340%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="properties.html"><span><span>properties</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1212429340%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="properties.html">properties</a><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html">File</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1970115034%2FProperties%2F-2093568117" anchor-label="quiltScanner" id="-1970115034%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="quilt-scanner.html"><span>quilt</span><wbr></wbr><span><span>Scanner</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1970115034%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@get:</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-synchronized/index.html"><span class="token annotation builtin">Synchronized</span></a></div></div><span class="token keyword">val </span><a href="quilt-scanner.html">quiltScanner</a><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.modscanning/-quilt-scanner/index.html">QuiltScanner</a></div><div class="brief "><p class="paragraph">This instances scanner to determine the sideness of Quilt mods.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-911695723%2FProperties%2F-2093568117" anchor-label="serverPackHandler" id="-911695723%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="server-pack-handler.html"><span>server</span><wbr></wbr><span>Pack</span><wbr></wbr><span><span>Handler</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-911695723%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@get:</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-synchronized/index.html"><span class="token annotation builtin">Synchronized</span></a></div></div><span class="token keyword">val </span><a href="server-pack-handler.html">serverPackHandler</a><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.serverpack/-server-pack-handler/index.html">ServerPackHandler</a></div><div class="brief "><p class="paragraph">This instances ServerPackHandler used to turn a <a href="../../de.griefed.serverpackcreator.api.config/-pack-config/index.html">de.griefed.serverpackcreator.api.config.PackConfig</a> into a server pack.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="660474404%2FProperties%2F-2093568117" anchor-label="setupWasRun" id="660474404%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="setup-was-run.html"><span>setup</span><wbr></wbr><span>Was</span><wbr></wbr><span><span>Run</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="660474404%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">var </span><a href="setup-was-run.html">setupWasRun</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-797941314%2FProperties%2F-2093568117" anchor-label="tomlParser" id="-797941314%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="toml-parser.html"><span>toml</span><wbr></wbr><span><span>Parser</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-797941314%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@get:</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-synchronized/index.html"><span class="token annotation builtin">Synchronized</span></a></div></div><span class="token keyword">val </span><a href="toml-parser.html">tomlParser</a><span class="token operator">: </span><span data-unresolved-link="com.electronwill.nightconfig.toml/TomlParser///PointingToDeclaration/">TomlParser</span></div><div class="brief "><p class="paragraph">This instances toml parser to read and parse various <code class="lang-kotlin">.toml</code>-files during mod-scanning, plugin- and extension config loading and provisioning, serverpackcreator.conf reading and more.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1843994951%2FProperties%2F-2093568117" anchor-label="utilities" id="-1843994951%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="utilities.html"><span><span>utilities</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1843994951%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@get:</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-synchronized/index.html"><span class="token annotation builtin">Synchronized</span></a></div></div><span class="token keyword">val </span><a href="utilities.html">utilities</a><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities.common/-utilities/index.html">Utilities</a></div><div class="brief "><p class="paragraph">This instances collection of common utilities used across ServerPackCreator.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1077950298%2FProperties%2F-2093568117" anchor-label="versionMeta" id="-1077950298%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="version-meta.html"><span>version</span><wbr></wbr><span><span>Meta</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1077950298%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@get:</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-synchronized/index.html"><span class="token annotation builtin">Synchronized</span></a></div></div><span class="token keyword">val </span><a href="version-meta.html">versionMeta</a><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.versionmeta/-version-meta/index.html">VersionMeta</a></div><div class="brief "><p class="paragraph">This instances version meta used for checking version-correctness of Minecraft and supported modloaders, as well as gathering information about Minecraft servers and modloader installers.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="706964961%2FProperties%2F-2093568117" anchor-label="webUtilities" id="706964961%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="web-utilities.html"><span>web</span><wbr></wbr><span><span>Utilities</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="706964961%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@get:</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-synchronized/index.html"><span class="token annotation builtin">Synchronized</span></a></div></div><span class="token keyword">val </span><a href="web-utilities.html">webUtilities</a><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities.common/-web-utilities/index.html">WebUtilities</a></div><div class="brief "><p class="paragraph">This instances common web utilities used across ServerPackCreator.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-849008049%2FProperties%2F-2093568117" anchor-label="xmlJsonRegex" id="-849008049%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="xml-json-regex.html"><span>xml</span><wbr></wbr><span>Json</span><wbr></wbr><span><span>Regex</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-849008049%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="xml-json-regex.html">xmlJsonRegex</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.text/-regex/index.html">Regex</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-465796636%2FProperties%2F-2093568117" anchor-label="xmlUtilities" id="-465796636%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="xml-utilities.html"><span>xml</span><wbr></wbr><span><span>Utilities</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-465796636%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@get:</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-synchronized/index.html"><span class="token annotation builtin">Synchronized</span></a></div></div><span class="token keyword">val </span><a href="xml-utilities.html">xmlUtilities</a><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities.common/-xml-utilities/index.html">XmlUtilities</a></div><div class="brief "><p class="paragraph">This instances common XML utilities used across ServerPackCreator.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="-2045799881%2FFunctions%2F-2093568117" anchor-label="checkServerFilesFile" id="-2045799881%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="check-server-files-file.html"><span>check</span><wbr></wbr><span>Server</span><wbr></wbr><span>Files</span><wbr></wbr><span><span>File</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2045799881%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="check-server-files-file.html"><span class="token function">checkServerFilesFile</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fileToCheckFor<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html">File</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Check whether the specified server-files file exists and create it if it doesn't.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2099071942%2FFunctions%2F-2093568117" anchor-label="overwriteServerFilesFile" id="-2099071942%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="overwrite-server-files-file.html"><span>overwrite</span><wbr></wbr><span>Server</span><wbr></wbr><span>Files</span><wbr></wbr><span><span>File</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2099071942%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="overwrite-server-files-file.html"><span class="token function">overwriteServerFilesFile</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fileToOverwrite<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html">File</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Overwrite the specified server-files file, even when it exists. Used to ensure files like the default script templates are always up-to-date.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-747277717%2FFunctions%2F-2093568117" anchor-label="setup" id="-747277717%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="setup.html"><span><span>setup</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-747277717%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-synchronized/index.html"><span class="token annotation builtin">Synchronized</span></a></div></div><span class="token keyword">fun </span><a href="setup.html"><span class="token function">setup</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">force<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">ApiWrapper</a></div><div class="brief "><p class="paragraph">Convenience method to set up ServerPackCreator.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1969283409%2FFunctions%2F-2093568117" anchor-label="stageOne" id="-1969283409%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="stage-one.html"><span>stage</span><wbr></wbr><span><span>One</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1969283409%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="stage-one.html"><span class="token function">stageOne</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Stage one of starting ServerPackCreator.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="344125559%2FFunctions%2F-2093568117" anchor-label="stageThree" id="344125559%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="stage-three.html"><span>stage</span><wbr></wbr><span><span>Three</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="344125559%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="stage-three.html"><span class="token function">stageThree</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Initialize <a href="../-api-plugins/index.html">ApiPlugins</a>, <a href="../../de.griefed.serverpackcreator.api.modscanning/-mod-scanner/index.html">de.griefed.serverpackcreator.api.modscanning.ModScanner</a> (consisting of <span data-unresolved-link="com.electronwill.nightconfig.toml/TomlParser///PointingToDeclaration/">TomlParser</span>, <a href="../../de.griefed.serverpackcreator.api.modscanning/-forge-annotation-scanner/index.html">de.griefed.serverpackcreator.api.modscanning.ForgeAnnotationScanner</a>, <a href="../../de.griefed.serverpackcreator.api.modscanning/-fabric-scanner/index.html">de.griefed.serverpackcreator.api.modscanning.FabricScanner</a>, <a href="../../de.griefed.serverpackcreator.api.modscanning/-forge-toml-scanner/index.html">de.griefed.serverpackcreator.api.modscanning.ForgeTomlScanner</a>, <a href="../../de.griefed.serverpackcreator.api.modscanning/-quilt-scanner/index.html">de.griefed.serverpackcreator.api.modscanning.QuiltScanner</a>), <a href="../../de.griefed.serverpackcreator.api.serverpack/-server-pack-handler/index.html">ServerPackHandler</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1426790793%2FFunctions%2F-2093568117" anchor-label="stageTwo" id="1426790793%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="stage-two.html"><span>stage</span><wbr></wbr><span><span>Two</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1426790793%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="stage-two.html"><span class="token function">stageTwo</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Initialize <a href="../../de.griefed.serverpackcreator.api.versionmeta/-version-meta/index.html">de.griefed.serverpackcreator.api.versionmeta.VersionMeta</a>, <a href="../../de.griefed.serverpackcreator.api.config/-configuration-handler/index.html">ConfigurationHandler</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2025 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

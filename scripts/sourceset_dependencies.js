@@ -1,1 +1,1 @@
-sourceset_dependencies='{":serverpackcreator-api:dokkaHtml/main":[]}'
+sourceset_dependencies='{":serverpackcreator-api/main":[]}'

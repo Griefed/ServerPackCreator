@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>Companion</title>
+    <link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg">
+        <script>var pathToRoot = "../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../../ui-kit/ui-kit.min.js" defer="defer"></script>
+</head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+            <a class="library-name--link" href="../../../../index.html" tabindex="1">
+                    ServerPackCreator
+            </a>
+        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle"
+                type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true"
+                        data-filter=":serverpackcreator-api/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
+                        data-role="dropdown-toggle"
+                        aria-controls="platform-tags-listbox"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Toggle source sets"
+                ></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":serverpackcreator-api/main"
+                                       data-filter=":serverpackcreator-api/main"/>
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button"
+                    type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config='{"defaultSize": 280, "minSize": 200, "maxSize": 400}'>
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list"
+                    data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    ServerPackCreator
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="ServerPackCreator::mslinks.data/ItemID.Companion///PointingToDeclaration//-2093568117">
+  <div class="breadcrumbs"><a href="../../../../index.html">ServerPackCreator</a><span class="delimiter">/</span><a href="../../index.html">mslinks.data</a><span class="delimiter">/</span><a href="../index.html">ItemID</a><span class="delimiter">/</span><span class="current">Companion</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Companion</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="index.html">Companion</a><span class="source-link-wrapper"><span class="source-link" data-element-type="source-link">(<a href="https://git.griefed.de/Griefed/ServerPackCreator/mslinks/data/ItemID.kt#L204">source</a>)</span></span></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-1647717239%2FProperties%2F-2093568117" anchor-label="GROUP_COMPUTER" id="-1647717239%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-g-r-o-u-p_-c-o-m-p-u-t-e-r.html"><span>GROUP_</span><wbr></wbr><span>COMPUTER</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1647717239%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-g-r-o-u-p_-c-o-m-p-u-t-e-r.html">GROUP_COMPUTER</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">32</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1431862563%2FProperties%2F-2093568117" anchor-label="GROUP_CONTROLPANEL" id="-1431862563%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-g-r-o-u-p_-c-o-n-t-r-o-l-p-a-n-e-l.html"><span>GROUP_</span><wbr></wbr><span><span>CONTROLPANEL</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1431862563%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-g-r-o-u-p_-c-o-n-t-r-o-l-p-a-n-e-l.html">GROUP_CONTROLPANEL</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">112</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="455874647%2FProperties%2F-2093568117" anchor-label="GROUP_FS" id="455874647%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-g-r-o-u-p_-f-s.html"><span>GROUP_</span><wbr></wbr><span>FS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="455874647%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-g-r-o-u-p_-f-s.html">GROUP_FS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">48</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="244608182%2FProperties%2F-2093568117" anchor-label="GROUP_LOC" id="244608182%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-g-r-o-u-p_-l-o-c.html"><span>GROUP_</span><wbr></wbr><span>LOC</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="244608182%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-g-r-o-u-p_-l-o-c.html">GROUP_LOC</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">80</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-763733767%2FProperties%2F-2093568117" anchor-label="GROUP_NET" id="-763733767%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-g-r-o-u-p_-n-e-t.html"><span>GROUP_</span><wbr></wbr><span>NET</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-763733767%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-g-r-o-u-p_-n-e-t.html">GROUP_NET</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">64</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1884330974%2FProperties%2F-2093568117" anchor-label="GROUP_ROOT" id="-1884330974%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-g-r-o-u-p_-r-o-o-t.html"><span>GROUP_</span><wbr></wbr><span>ROOT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1884330974%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-g-r-o-u-p_-r-o-o-t.html">GROUP_ROOT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">16</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-277767796%2FProperties%2F-2093568117" anchor-label="ID_TYPE_GROUPMASK" id="-277767796%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-d_-t-y-p-e_-g-r-o-u-p-m-a-s-k.html"><span>ID_</span><wbr></wbr><span>TYPE_</span><wbr></wbr><span>GROUPMASK</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-277767796%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-i-d_-t-y-p-e_-g-r-o-u-p-m-a-s-k.html">ID_TYPE_GROUPMASK</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">112</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-998264079%2FProperties%2F-2093568117" anchor-label="ID_TYPE_INGROUPMASK" id="-998264079%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-d_-t-y-p-e_-i-n-g-r-o-u-p-m-a-s-k.html"><span>ID_</span><wbr></wbr><span>TYPE_</span><wbr></wbr><span><span>INGROUPMASK</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-998264079%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-i-d_-t-y-p-e_-i-n-g-r-o-u-p-m-a-s-k.html">ID_TYPE_INGROUPMASK</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">15</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="895517295%2FProperties%2F-2093568117" anchor-label="ID_TYPE_JUNCTION" id="895517295%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-d_-t-y-p-e_-j-u-n-c-t-i-o-n.html"><span>ID_</span><wbr></wbr><span>TYPE_</span><wbr></wbr><span>JUNCTION</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="895517295%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-i-d_-t-y-p-e_-j-u-n-c-t-i-o-n.html">ID_TYPE_JUNCTION</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">128</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-334668220%2FProperties%2F-2093568117" anchor-label="TYPE_CLSID" id="-334668220%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-c-l-s-i-d.html"><span>TYPE_</span><wbr></wbr><span>CLSID</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-334668220%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="-t-y-p-e_-c-l-s-i-d.html"><strike>TYPE_CLSID</strike></a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1721471388%2FProperties%2F-2093568117" anchor-label="TYPE_CONTROL_REGITEM" id="-1721471388%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-c-o-n-t-r-o-l_-r-e-g-i-t-e-m.html"><span>TYPE_</span><wbr></wbr><span>CONTROL_</span><wbr></wbr><span>REGITEM</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1721471388%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-c-o-n-t-r-o-l_-r-e-g-i-t-e-m.html">TYPE_CONTROL_REGITEM</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">0</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1040864932%2FProperties%2F-2093568117" anchor-label="TYPE_CONTROL_REGITEM_EX" id="1040864932%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-c-o-n-t-r-o-l_-r-e-g-i-t-e-m_-e-x.html"><span>TYPE_</span><wbr></wbr><span>CONTROL_</span><wbr></wbr><span>REGITEM_</span><wbr></wbr><span>EX</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1040864932%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-c-o-n-t-r-o-l_-r-e-g-i-t-e-m_-e-x.html">TYPE_CONTROL_REGITEM_EX</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">1</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-731592036%2FProperties%2F-2093568117" anchor-label="TYPE_DIRECTORY" id="-731592036%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-d-i-r-e-c-t-o-r-y.html"><span>TYPE_</span><wbr></wbr><span>DIRECTORY</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-731592036%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="-t-y-p-e_-d-i-r-e-c-t-o-r-y.html"><strike>TYPE_DIRECTORY</strike></a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="278553300%2FProperties%2F-2093568117" anchor-label="TYPE_DIRECTORY_OLD" id="278553300%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-d-i-r-e-c-t-o-r-y_-o-l-d.html"><span>TYPE_</span><wbr></wbr><span>DIRECTORY_</span><wbr></wbr><span>OLD</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="278553300%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="-t-y-p-e_-d-i-r-e-c-t-o-r-y_-o-l-d.html"><strike>TYPE_DIRECTORY_OLD</strike></a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1734756383%2FProperties%2F-2093568117" anchor-label="TYPE_DRIVE" id="1734756383%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-d-r-i-v-e.html"><span>TYPE_</span><wbr></wbr><span>DRIVE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1734756383%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="-t-y-p-e_-d-r-i-v-e.html"><strike>TYPE_DRIVE</strike></a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1927255057%2FProperties%2F-2093568117" anchor-label="TYPE_DRIVE_CDROM" id="-1927255057%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-d-r-i-v-e_-c-d-r-o-m.html"><span>TYPE_</span><wbr></wbr><span>DRIVE_</span><wbr></wbr><span>CDROM</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1927255057%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-d-r-i-v-e_-c-d-r-o-m.html">TYPE_DRIVE_CDROM</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">5</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-323755342%2FProperties%2F-2093568117" anchor-label="TYPE_DRIVE_DRIVE35" id="-323755342%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-d-r-i-v-e_-d-r-i-v-e35.html"><span>TYPE_</span><wbr></wbr><span>DRIVE_</span><wbr></wbr><span>DRIVE35</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-323755342%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-d-r-i-v-e_-d-r-i-v-e35.html">TYPE_DRIVE_DRIVE35</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">9</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-902802098%2FProperties%2F-2093568117" anchor-label="TYPE_DRIVE_DRIVE525" id="-902802098%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-d-r-i-v-e_-d-r-i-v-e525.html"><span>TYPE_</span><wbr></wbr><span>DRIVE_</span><wbr></wbr><span>DRIVE525</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-902802098%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-d-r-i-v-e_-d-r-i-v-e525.html">TYPE_DRIVE_DRIVE525</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">8</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1261601302%2FProperties%2F-2093568117" anchor-label="TYPE_DRIVE_FIXED" id="-1261601302%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-d-r-i-v-e_-f-i-x-e-d.html"><span>TYPE_</span><wbr></wbr><span>DRIVE_</span><wbr></wbr><span>FIXED</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1261601302%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-d-r-i-v-e_-f-i-x-e-d.html">TYPE_DRIVE_FIXED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">3</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1863704272%2FProperties%2F-2093568117" anchor-label="TYPE_DRIVE_MISC" id="-1863704272%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-d-r-i-v-e_-m-i-s-c.html"><span>TYPE_</span><wbr></wbr><span>DRIVE_</span><wbr></wbr><span>MISC</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1863704272%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-d-r-i-v-e_-m-i-s-c.html">TYPE_DRIVE_MISC</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">15</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1167739985%2FProperties%2F-2093568117" anchor-label="TYPE_DRIVE_NETDRIVE" id="-1167739985%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-d-r-i-v-e_-n-e-t-d-r-i-v-e.html"><span>TYPE_</span><wbr></wbr><span>DRIVE_</span><wbr></wbr><span>NETDRIVE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1167739985%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-d-r-i-v-e_-n-e-t-d-r-i-v-e.html">TYPE_DRIVE_NETDRIVE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">10</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1565813309%2FProperties%2F-2093568117" anchor-label="TYPE_DRIVE_NETUNAVAIL" id="-1565813309%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-d-r-i-v-e_-n-e-t-u-n-a-v-a-i-l.html"><span>TYPE_</span><wbr></wbr><span>DRIVE_</span><wbr></wbr><span>NETUNAVAIL</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1565813309%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-d-r-i-v-e_-n-e-t-u-n-a-v-a-i-l.html">TYPE_DRIVE_NETUNAVAIL</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">11</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="600532695%2FProperties%2F-2093568117" anchor-label="TYPE_DRIVE_OLD" id="600532695%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-d-r-i-v-e_-o-l-d.html"><span>TYPE_</span><wbr></wbr><span>DRIVE_</span><wbr></wbr><span>OLD</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="600532695%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="-t-y-p-e_-d-r-i-v-e_-o-l-d.html"><strike>TYPE_DRIVE_OLD</strike></a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="755633219%2FProperties%2F-2093568117" anchor-label="TYPE_DRIVE_RAMDISK" id="755633219%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-d-r-i-v-e_-r-a-m-d-i-s-k.html"><span>TYPE_</span><wbr></wbr><span>DRIVE_</span><wbr></wbr><span>RAMDISK</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="755633219%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-d-r-i-v-e_-r-a-m-d-i-s-k.html">TYPE_DRIVE_RAMDISK</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">6</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2056279337%2FProperties%2F-2093568117" anchor-label="TYPE_DRIVE_REGITEM" id="-2056279337%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-d-r-i-v-e_-r-e-g-i-t-e-m.html"><span>TYPE_</span><wbr></wbr><span>DRIVE_</span><wbr></wbr><span>REGITEM</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2056279337%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-d-r-i-v-e_-r-e-g-i-t-e-m.html">TYPE_DRIVE_REGITEM</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">14</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="473149270%2FProperties%2F-2093568117" anchor-label="TYPE_DRIVE_REMOTE" id="473149270%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-d-r-i-v-e_-r-e-m-o-t-e.html"><span>TYPE_</span><wbr></wbr><span>DRIVE_</span><wbr></wbr><span>REMOTE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="473149270%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-d-r-i-v-e_-r-e-m-o-t-e.html">TYPE_DRIVE_REMOTE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">4</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="887312867%2FProperties%2F-2093568117" anchor-label="TYPE_DRIVE_REMOVABLE" id="887312867%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-d-r-i-v-e_-r-e-m-o-v-a-b-l-e.html"><span>TYPE_</span><wbr></wbr><span>DRIVE_</span><wbr></wbr><span>REMOVABLE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="887312867%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-d-r-i-v-e_-r-e-m-o-v-a-b-l-e.html">TYPE_DRIVE_REMOVABLE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">2</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1848681922%2FProperties%2F-2093568117" anchor-label="TYPE_DRIVE_RESERVED_1" id="1848681922%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-d-r-i-v-e_-r-e-s-e-r-v-e-d_1.html"><span>TYPE_</span><wbr></wbr><span>DRIVE_</span><wbr></wbr><span>RESERVED_</span><wbr></wbr><span>1</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1848681922%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-d-r-i-v-e_-r-e-s-e-r-v-e-d_1.html">TYPE_DRIVE_RESERVED_1</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">1</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2034800764%2FProperties%2F-2093568117" anchor-label="TYPE_DRIVE_RESERVED_7" id="2034800764%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-d-r-i-v-e_-r-e-s-e-r-v-e-d_7.html"><span>TYPE_</span><wbr></wbr><span>DRIVE_</span><wbr></wbr><span>RESERVED_</span><wbr></wbr><span>7</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2034800764%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-d-r-i-v-e_-r-e-s-e-r-v-e-d_7.html">TYPE_DRIVE_RESERVED_7</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">7</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1887928848%2FProperties%2F-2093568117" anchor-label="TYPE_DRIVE_RESERVED_C" id="-1887928848%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-d-r-i-v-e_-r-e-s-e-r-v-e-d_-c.html"><span>TYPE_</span><wbr></wbr><span>DRIVE_</span><wbr></wbr><span>RESERVED_</span><wbr></wbr><span>C</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1887928848%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-d-r-i-v-e_-r-e-s-e-r-v-e-d_-c.html">TYPE_DRIVE_RESERVED_C</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">12</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1856909041%2FProperties%2F-2093568117" anchor-label="TYPE_DRIVE_RESERVED_D" id="-1856909041%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-d-r-i-v-e_-r-e-s-e-r-v-e-d_-d.html"><span>TYPE_</span><wbr></wbr><span>DRIVE_</span><wbr></wbr><span>RESERVED_</span><wbr></wbr><span>D</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1856909041%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-d-r-i-v-e_-r-e-s-e-r-v-e-d_-d.html">TYPE_DRIVE_RESERVED_D</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">13</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1515740597%2FProperties%2F-2093568117" anchor-label="TYPE_FILE" id="1515740597%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-f-i-l-e.html"><span>TYPE_</span><wbr></wbr><span>FILE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1515740597%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="-t-y-p-e_-f-i-l-e.html"><strike>TYPE_FILE</strike></a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2112668013%2FProperties%2F-2093568117" anchor-label="TYPE_FILE_OLD" id="2112668013%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-f-i-l-e_-o-l-d.html"><span>TYPE_</span><wbr></wbr><span>FILE_</span><wbr></wbr><span>OLD</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2112668013%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="-t-y-p-e_-f-i-l-e_-o-l-d.html"><strike>TYPE_FILE_OLD</strike></a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1051742540%2FProperties%2F-2093568117" anchor-label="TYPE_FS_COMMON" id="1051742540%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-f-s_-c-o-m-m-o-n.html"><span>TYPE_</span><wbr></wbr><span>FS_</span><wbr></wbr><span>COMMON</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1051742540%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-f-s_-c-o-m-m-o-n.html">TYPE_FS_COMMON</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">8</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="292489910%2FProperties%2F-2093568117" anchor-label="TYPE_FS_DIRECTORY" id="292489910%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-f-s_-d-i-r-e-c-t-o-r-y.html"><span>TYPE_</span><wbr></wbr><span>FS_</span><wbr></wbr><span>DIRECTORY</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="292489910%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-f-s_-d-i-r-e-c-t-o-r-y.html">TYPE_FS_DIRECTORY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">1</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="609809755%2FProperties%2F-2093568117" anchor-label="TYPE_FS_FILE" id="609809755%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-f-s_-f-i-l-e.html"><span>TYPE_</span><wbr></wbr><span>FS_</span><wbr></wbr><span>FILE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="609809755%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-f-s_-f-i-l-e.html">TYPE_FS_FILE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">2</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1093108166%2FProperties%2F-2093568117" anchor-label="TYPE_FS_UNICODE" id="1093108166%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-f-s_-u-n-i-c-o-d-e.html"><span>TYPE_</span><wbr></wbr><span>FS_</span><wbr></wbr><span>UNICODE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1093108166%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-f-s_-u-n-i-c-o-d-e.html">TYPE_FS_UNICODE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">4</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-255523170%2FProperties%2F-2093568117" anchor-label="TYPE_NET_DIRECTORY" id="-255523170%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-n-e-t_-d-i-r-e-c-t-o-r-y.html"><span>TYPE_</span><wbr></wbr><span>NET_</span><wbr></wbr><span>DIRECTORY</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-255523170%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-n-e-t_-d-i-r-e-c-t-o-r-y.html">TYPE_NET_DIRECTORY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">9</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-575919701%2FProperties%2F-2093568117" anchor-label="TYPE_NET_DOMAIN" id="-575919701%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-n-e-t_-d-o-m-a-i-n.html"><span>TYPE_</span><wbr></wbr><span>NET_</span><wbr></wbr><span>DOMAIN</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-575919701%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-n-e-t_-d-o-m-a-i-n.html">TYPE_NET_DOMAIN</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">1</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1491019891%2FProperties%2F-2093568117" anchor-label="TYPE_NET_FILE" id="1491019891%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-n-e-t_-f-i-l-e.html"><span>TYPE_</span><wbr></wbr><span>NET_</span><wbr></wbr><span>FILE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1491019891%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-n-e-t_-f-i-l-e.html">TYPE_NET_FILE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">4</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1146452532%2FProperties%2F-2093568117" anchor-label="TYPE_NET_GROUP" id="-1146452532%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-n-e-t_-g-r-o-u-p.html"><span>TYPE_</span><wbr></wbr><span>NET_</span><wbr></wbr><span>GROUP</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1146452532%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-n-e-t_-g-r-o-u-p.html">TYPE_NET_GROUP</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">5</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1340119371%2FProperties%2F-2093568117" anchor-label="TYPE_NET_NDSCONTAINER" id="1340119371%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-n-e-t_-n-d-s-c-o-n-t-a-i-n-e-r.html"><span>TYPE_</span><wbr></wbr><span>NET_</span><wbr></wbr><span><span>NDSCONTAINER</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1340119371%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-n-e-t_-n-d-s-c-o-n-t-a-i-n-e-r.html">TYPE_NET_NDSCONTAINER</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">11</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2016762499%2FProperties%2F-2093568117" anchor-label="TYPE_NET_NETWORK" id="-2016762499%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-n-e-t_-n-e-t-w-o-r-k.html"><span>TYPE_</span><wbr></wbr><span>NET_</span><wbr></wbr><span>NETWORK</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2016762499%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-n-e-t_-n-e-t-w-o-r-k.html">TYPE_NET_NETWORK</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">6</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="78346513%2FProperties%2F-2093568117" anchor-label="TYPE_NET_PRINTER" id="78346513%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-n-e-t_-p-r-i-n-t-e-r.html"><span>TYPE_</span><wbr></wbr><span>NET_</span><wbr></wbr><span>PRINTER</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="78346513%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-n-e-t_-p-r-i-n-t-e-r.html">TYPE_NET_PRINTER</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">15</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="739401764%2FProperties%2F-2093568117" anchor-label="TYPE_NET_REGITEM" id="739401764%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-n-e-t_-r-e-g-i-t-e-m.html"><span>TYPE_</span><wbr></wbr><span>NET_</span><wbr></wbr><span>REGITEM</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="739401764%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-n-e-t_-r-e-g-i-t-e-m.html">TYPE_NET_REGITEM</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">13</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-529534486%2FProperties%2F-2093568117" anchor-label="TYPE_NET_REMOTEREGITEM" id="-529534486%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-n-e-t_-r-e-m-o-t-e-r-e-g-i-t-e-m.html"><span>TYPE_</span><wbr></wbr><span>NET_</span><wbr></wbr><span><span>REMOTEREGITEM</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-529534486%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-n-e-t_-r-e-m-o-t-e-r-e-g-i-t-e-m.html">TYPE_NET_REMOTEREGITEM</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">14</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-175974503%2FProperties%2F-2093568117" anchor-label="TYPE_NET_RESTOFNET" id="-175974503%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-n-e-t_-r-e-s-t-o-f-n-e-t.html"><span>TYPE_</span><wbr></wbr><span>NET_</span><wbr></wbr><span>RESTOFNET</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-175974503%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-n-e-t_-r-e-s-t-o-f-n-e-t.html">TYPE_NET_RESTOFNET</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">7</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1033417716%2FProperties%2F-2093568117" anchor-label="TYPE_NET_SERVER" id="-1033417716%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-n-e-t_-s-e-r-v-e-r.html"><span>TYPE_</span><wbr></wbr><span>NET_</span><wbr></wbr><span>SERVER</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1033417716%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-n-e-t_-s-e-r-v-e-r.html">TYPE_NET_SERVER</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">2</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="988510316%2FProperties%2F-2093568117" anchor-label="TYPE_NET_SHARE" id="988510316%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-n-e-t_-s-h-a-r-e.html"><span>TYPE_</span><wbr></wbr><span>NET_</span><wbr></wbr><span>SHARE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="988510316%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-n-e-t_-s-h-a-r-e.html">TYPE_NET_SHARE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">3</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1494418401%2FProperties%2F-2093568117" anchor-label="TYPE_NET_SHAREADMIN" id="-1494418401%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-n-e-t_-s-h-a-r-e-a-d-m-i-n.html"><span>TYPE_</span><wbr></wbr><span>NET_</span><wbr></wbr><span>SHAREADMIN</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1494418401%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-n-e-t_-s-h-a-r-e-a-d-m-i-n.html">TYPE_NET_SHAREADMIN</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">8</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2124450671%2FProperties%2F-2093568117" anchor-label="TYPE_NET_TREE" id="-2124450671%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-n-e-t_-t-r-e-e.html"><span>TYPE_</span><wbr></wbr><span>NET_</span><wbr></wbr><span>TREE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2124450671%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-n-e-t_-t-r-e-e.html">TYPE_NET_TREE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">10</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1381352391%2FProperties%2F-2093568117" anchor-label="TYPE_ROOT_REGITEM" id="1381352391%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-r-o-o-t_-r-e-g-i-t-e-m.html"><span>TYPE_</span><wbr></wbr><span>ROOT_</span><wbr></wbr><span>REGITEM</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1381352391%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-y-p-e_-r-o-o-t_-r-e-g-i-t-e-m.html">TYPE_ROOT_REGITEM</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">15</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="531125855%2FProperties%2F-2093568117" anchor-label="TYPE_UNKNOWN" id="531125855%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-y-p-e_-u-n-k-n-o-w-n.html"><span>TYPE_</span><wbr></wbr><span>UNKNOWN</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="531125855%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="-t-y-p-e_-u-n-k-n-o-w-n.html"><strike>TYPE_UNKNOWN</strike></a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">0</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="193126579%2FFunctions%2F-2093568117" anchor-label="createItem" id="193126579%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-item.html"><span>create</span><wbr></wbr><span><span>Item</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="193126579%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="create-item.html"><span class="token function">createItem</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">typeFlags<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../index.html">ItemID</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2116795008%2FFunctions%2F-2093568117" anchor-label="generateShortName" id="-2116795008%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="generate-short-name.html"><span>generate</span><wbr></wbr><span>Short</span><wbr></wbr><span><span>Name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2116795008%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div></div><span class="token keyword">protected </span><span class="token keyword">fun </span><a href="generate-short-name.html"><span class="token function">generateShortName</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">longname<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-44469363%2FFunctions%2F-2093568117" anchor-label="isLongFilename" id="-44469363%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-long-filename.html"><span>is</span><wbr></wbr><span>Long</span><wbr></wbr><span><span>Filename</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-44469363%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div></div><span class="token keyword">protected </span><span class="token keyword">fun </span><a href="is-long-filename.html"><span class="token function">isLongFilename</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">filename<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2025 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

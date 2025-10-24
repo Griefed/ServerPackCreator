@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>ServerPackHandler</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+        <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer="defer"></script>
+</head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+            <a class="library-name--link" href="../../../index.html" tabindex="1">
+                    ServerPackCreator
+            </a>
+        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle"
+                type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true"
+                        data-filter=":serverpackcreator-api/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
+                        data-role="dropdown-toggle"
+                        aria-controls="platform-tags-listbox"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Toggle source sets"
+                ></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":serverpackcreator-api/main"
+                                       data-filter=":serverpackcreator-api/main"/>
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button"
+                    type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config='{"defaultSize": 280, "minSize": 200, "maxSize": 400}'>
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list"
+                    data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    ServerPackCreator
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="ServerPackCreator::de.griefed.serverpackcreator.api.serverpack/ServerPackHandler///PointingToDeclaration//-2093568117">
+  <div class="breadcrumbs"><a href="../../../index.html">ServerPackCreator</a><span class="delimiter">/</span><a href="../index.html">de.griefed.serverpackcreator.api.serverpack</a><span class="delimiter">/</span><span class="current">ServerPackHandler</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Server</span><wbr></wbr><span>Pack</span><wbr></wbr><span><span>Handler</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">ServerPackHandler</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">apiProperties<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api/-api-properties/index.html">ApiProperties</a><span class="token punctuation">, </span></span><span class="parameter ">versionMeta<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.versionmeta/-version-meta/index.html">VersionMeta</a><span class="token punctuation">, </span></span><span class="parameter ">utilities<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities.common/-utilities/index.html">Utilities</a><span class="token punctuation">, </span></span><span class="parameter ">apiPlugins<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api/-api-plugins/index.html">ApiPlugins</a><span class="token punctuation">, </span></span><span class="parameter ">modScanner<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.modscanning/-mod-scanner/index.html">ModScanner</a></span></span><span class="token punctuation">)</span><span class="source-link-wrapper"><span class="source-link" data-element-type="source-link">(<a href="https://git.griefed.de/Griefed/ServerPackCreator/de/griefed/serverpackcreator/api/serverpack/ServerPackHandler.kt#L85">source</a>)</span></span></div><p class="paragraph">Everything revolving around creating a server pack. The intended workflow is to create a <a href="../../de.griefed.serverpackcreator.api.config/-pack-config/index.html">PackConfig</a> and run it through any of the available <a href="../../de.griefed.serverpackcreator.api.config/-configuration-handler/check-configuration.html">de.griefed.serverpackcreator.api.config.ConfigurationHandler.checkConfiguration</a>-variants, and then call <a href="run.html">run</a> with the previously checked configuration model. You may run with an unchecked configuration model, but no guarantees or promises, yes not even support, is given for running a model without checking it first.</p><p class="paragraph">This class also gives you access to the methods which are responsible for creating the server pack, in case you want to do things manually.</p><p class="paragraph">The methods in question are:</p><ul><li><p class="paragraph"><a href="cleanup-environment.html">cleanupEnvironment</a></p></li><li><p class="paragraph"><a href="../../de.griefed.serverpackcreator.api/-api-plugins/run-pre-zip-extensions.html">ApiPlugins.runPreZipExtensions</a></p></li><li><p class="paragraph"><a href="copy-files.html">copyFiles</a></p></li><li><p class="paragraph"><a href="get-improved-fabric-launcher.html">getImprovedFabricLauncher</a> if Fabric is the chosen Modloader</p></li><li><p class="paragraph"><a href="copy-icon.html">copyIcon</a></p></li><li><p class="paragraph"><a href="copy-properties.html">copyProperties</a></p></li><li><p class="paragraph"><a href="../../de.griefed.serverpackcreator.api/-api-plugins/run-pre-zip-extensions.html">ApiPlugins.runPreZipExtensions</a></p></li><li><p class="paragraph"><a href="zip-builder.html">zipBuilder</a></p></li><li><p class="paragraph"><a href="create-server-run-files.html">createServerRunFiles</a></p></li><li><p class="paragraph"><a href="../../de.griefed.serverpackcreator.api/-api-plugins/run-post-gen-extensions.html">ApiPlugins.runPostGenExtensions</a></p></li></ul><p class="paragraph">If you want to execute extensions, see</p><ul><li><p class="paragraph"><a href="../../de.griefed.serverpackcreator.api/-api-plugins/run-pre-gen-extensions.html">ApiPlugins.runPreGenExtensions</a>},</p></li><li><p class="paragraph"><a href="../../de.griefed.serverpackcreator.api/-api-plugins/run-pre-zip-extensions.html">ApiPlugins.runPreZipExtensions</a>} and</p></li><li><p class="paragraph"><a href="../../de.griefed.serverpackcreator.api/-api-plugins/run-post-gen-extensions.html">ApiPlugins.runPostGenExtensions</a>.</p></li></ul><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">Griefed</p></span><h4 class="tableheader">Parameters</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>api</span><wbr></wbr><span><span>Properties</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Base settings of ServerPackCreator needed for server pack generation, such as access to the directories, script templates and so on.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>version</span><wbr></wbr><span><span>Meta</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Meta for modloader and version specific checks and information gathering, such as modloader installer downloads.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>utilities</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Common utilities used across ServerPackCreator.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>api</span><wbr></wbr><span><span>Plugins</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Any addons which a user may want to execute during the generation of a server pack.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>mod</span><wbr></wbr><span><span>Scanner</span></span></u></div></span></div><div><div class="title"><p class="paragraph">In case a user enabled automatic sideness detection, this will exclude clientside-only mods from a server pack.</p></div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="tableheader">Constructors</h2>
+        <div class="table"><a data-name="512795744%2FConstructors%2F-2093568117" anchor-label="ServerPackHandler" id="512795744%2FConstructors%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-server-pack-handler.html"><span>Server</span><wbr></wbr><span>Pack</span><wbr></wbr><span><span>Handler</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="512795744%2FConstructors%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">apiProperties<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api/-api-properties/index.html">ApiProperties</a><span class="token punctuation">, </span></span><span class="parameter ">versionMeta<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.versionmeta/-version-meta/index.html">VersionMeta</a><span class="token punctuation">, </span></span><span class="parameter ">utilities<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities.common/-utilities/index.html">Utilities</a><span class="token punctuation">, </span></span><span class="parameter ">apiPlugins<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api/-api-plugins/index.html">ApiPlugins</a><span class="token punctuation">, </span></span><span class="parameter ">modScanner<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.modscanning/-mod-scanner/index.html">ModScanner</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="1626920318%2FProperties%2F-2093568117" anchor-label="log" id="1626920318%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="log.html"><span><span>log</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1626920318%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="log.html">log</a><span class="token operator">: </span><span data-unresolved-link="org.apache.logging.log4j.kotlin/KotlinLogger///PointingToDeclaration/">KotlinLogger</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1538734890%2FProperties%2F-2093568117" anchor-label="modFileEndings" id="1538734890%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="mod-file-endings.html"><span>mod</span><wbr></wbr><span>File</span><wbr></wbr><span><span>Endings</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1538734890%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="mod-file-endings.html">modFileEndings</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1041329429%2FProperties%2F-2093568117" anchor-label="variables" id="-1041329429%2FProperties%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="variables.html"><span><span>variables</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1041329429%2FProperties%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="variables.html">variables</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="564288034%2FFunctions%2F-2093568117" anchor-label="addEventListener" id="564288034%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="add-event-listener.html"><span>add</span><wbr></wbr><span>Event</span><wbr></wbr><span><span>Listener</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="564288034%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="add-event-listener.html"><span class="token function">addEventListener</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">genericEventListener<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities/-s-p-c-generic-listener/index.html">SPCGenericListener</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="add-event-listener.html"><span class="token function">addEventListener</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">postGenListener<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities/-s-p-c-post-gen-listener/index.html">SPCPostGenListener</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="add-event-listener.html"><span class="token function">addEventListener</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">preServerPackGenerationListener<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities/-s-p-c-pre-server-pack-generation-listener/index.html">SPCPreServerPackGenerationListener</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="add-event-listener.html"><span class="token function">addEventListener</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">preServerPackZipListener<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities/-s-p-c-pre-server-pack-zip-listener/index.html">SPCPreServerPackZipListener</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="199167635%2FFunctions%2F-2093568117" anchor-label="cleanupEnvironment" id="199167635%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="cleanup-environment.html"><span>cleanup</span><wbr></wbr><span><span>Environment</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="199167635%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="cleanup-environment.html"><span class="token function">cleanupEnvironment</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">deleteZip<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">destination<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Deletes all files, directories and ZIP-archives of previously generated server packs to ensure newly generated server pack is as clean as possible. This will completely empty the server pack directory, so use with caution!</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-112973270%2FFunctions%2F-2093568117" anchor-label="compileModList" id="-112973270%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="compile-mod-list.html"><span>compile</span><wbr></wbr><span>Mod</span><wbr></wbr><span><span>List</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-112973270%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="compile-mod-list.html"><span class="token function">compileModList</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packConfig<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.config/-pack-config/index.html">PackConfig</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-pair/index.html">Pair</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html">File</a><span class="token operator">&gt;</span><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html">File</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="compile-mod-list.html"><span class="token function">compileModList</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">modsDir<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">exclusionStrings<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">whitelistStrings<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">minecraftVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">modloader<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-pair/index.html">Pair</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html">File</a><span class="token operator">&gt;</span><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html">File</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Generates a list of all mods to include in the server pack. If the user specified clientside-mods to exclude, and/or if the automatic exclusion of clientside-only mods is active, they will be excluded, too.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1933387421%2FFunctions%2F-2093568117" anchor-label="copyFiles" id="-1933387421%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="copy-files.html"><span>copy</span><wbr></wbr><span><span>Files</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1933387421%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="copy-files.html"><span class="token function">copyFiles</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">modpackDir<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">inclusions<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/ArrayList.html">ArrayList</a><span class="token operator">&lt;</span><a href="../../de.griefed.serverpackcreator.api.config/-inclusion-specification/index.html">InclusionSpecification</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">clientMods<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">whitelist<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">minecraftVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">destination<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">modloader<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">overwrite<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html">File</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Copies all specified directories and mods, excluding clientside-only mods, from the modpack directory into the server pack directory. If a <code class="lang-kotlin">source/file;destination/file</code> -combination is provided, the specified source-file is copied to the specified destination-file. One of the reasons as to why it is recommended to run a given ConfigurationModel through the ConfigurationHandler first, is because the ConfigurationHandler will resolve links to their files first before then correcting the given ConfigurationModel.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-832116705%2FFunctions%2F-2093568117" anchor-label="copyIcon" id="-832116705%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="copy-icon.html"><span>copy</span><wbr></wbr><span><span>Icon</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-832116705%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="copy-icon.html"><span class="token function">copyIcon</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">destination<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">pathToServerIcon<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Copies the server-icon.png into server pack. The sever-icon is automatically scaled to a resolution of 64x64 pixels.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1724877735%2FFunctions%2F-2093568117" anchor-label="copyProperties" id="-1724877735%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="copy-properties.html"><span>copy</span><wbr></wbr><span><span>Properties</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1724877735%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="copy-properties.html"><span class="token function">copyProperties</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">destination<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">pathToServerProperties<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Copies the server.properties into server pack.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-350099700%2FFunctions%2F-2093568117" anchor-label="createServerRunFiles" id="-350099700%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-server-run-files.html"><span>create</span><wbr></wbr><span>Server</span><wbr></wbr><span>Run</span><wbr></wbr><span><span>Files</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-350099700%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="create-server-run-files.html"><span class="token function">createServerRunFiles</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">scriptSettings<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/HashMap.html">HashMap</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">destination<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">isLocal<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Create start-scripts for the generated server pack using the templates the user has defined for their instance of ServerPackCreator.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1498455017%2FFunctions%2F-2093568117" anchor-label="excludeFileOrDirectory" id="-1498455017%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="exclude-file-or-directory.html"><span>exclude</span><wbr></wbr><span>File</span><wbr></wbr><span>Or</span><wbr></wbr><span><span>Directory</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1498455017%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="exclude-file-or-directory.html"><span class="token function">excludeFileOrDirectory</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">modpackDir<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">fileToCheckFor<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html">File</a><span class="token punctuation">, </span></span><span class="parameter ">exclusions<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.text/-regex/index.html">Regex</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Check whether the given file or directory should be excluded from the server pack.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2034595623%2FFunctions%2F-2093568117" anchor-label="getDirectoryFiles" id="2034595623%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-directory-files.html"><span>get</span><wbr></wbr><span>Directory</span><wbr></wbr><span><span>Files</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2034595623%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="get-directory-files.html"><span class="token function">getDirectoryFiles</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">source<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">destination<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-server-pack-file/index.html">ServerPackFile</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Recursively acquire all files and directories inside the given directory as a list of <a href="../-server-pack-file/index.html">ServerPackFile</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1824307464%2FFunctions%2F-2093568117" anchor-label="getExplicitFiles" id="1824307464%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-explicit-files.html"><span>get</span><wbr></wbr><span>Explicit</span><wbr></wbr><span><span>Files</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1824307464%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="get-explicit-files.html"><span class="token function">getExplicitFiles</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">source<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">destination<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">modpackDir<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">serverPackDestination<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><a href="../-server-pack-file/index.html">ServerPackFile</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Gather a list of all files from an explicit source;destination-combination. If the source is a file, a singular <a href="../-server-pack-file/index.html">ServerPackFile</a> is returned. If the source is a directory, then all files in said directory are returned.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="876519283%2FFunctions%2F-2093568117" anchor-label="getImprovedFabricLauncher" id="876519283%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-improved-fabric-launcher.html"><span>get</span><wbr></wbr><span>Improved</span><wbr></wbr><span>Fabric</span><wbr></wbr><span><span>Launcher</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="876519283%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="get-improved-fabric-launcher.html"><span class="token function">getImprovedFabricLauncher</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">minecraftVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">fabricVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">destination<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Download and provide the improved Fabric Server Launcher, if it is available for the given Minecraft and Fabric version.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1851950726%2FFunctions%2F-2093568117" anchor-label="getSaveFiles" id="-1851950726%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-save-files.html"><span>get</span><wbr></wbr><span>Save</span><wbr></wbr><span><span>Files</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1851950726%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="get-save-files.html"><span class="token function">getSaveFiles</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clientDir<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">directory<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">destination<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-server-pack-file/index.html">ServerPackFile</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Recursively acquire all files and directories inside the given save-directory as a list of <a href="../-server-pack-file/index.html">ServerPackFile</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1823147834%2FFunctions%2F-2093568117" anchor-label="getServerFiles" id="-1823147834%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-server-files.html"><span>get</span><wbr></wbr><span>Server</span><wbr></wbr><span><span>Files</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1823147834%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="get-server-files.html"><span class="token function">getServerFiles</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">inclusion<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.config/-inclusion-specification/index.html">InclusionSpecification</a><span class="token punctuation">, </span></span><span class="parameter ">modpackDir<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">destination<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">exclusions<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.text/-regex/index.html">Regex</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">clientMods<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">whitelist<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">minecraftVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">modloader<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../-server-pack-file/index.html">ServerPackFile</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1961359940%2FFunctions%2F-2093568117" anchor-label="getServerPackDestination" id="1961359940%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-server-pack-destination.html"><span>get</span><wbr></wbr><span>Server</span><wbr></wbr><span>Pack</span><wbr></wbr><span><span>Destination</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1961359940%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="get-server-pack-destination.html"><span class="token function">getServerPackDestination</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packConfig<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.config/-pack-config/index.html">PackConfig</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Acquire the destination directory in which the server pack will be generated. The directory in which the server pack will be created has all its spaces replaces with underscores, so <code class="lang-kotlin">Survive Create Prosper 4 - 5.0.1</code> would become <code class="lang-kotlin">Survive_Create_Prosper_4_-_5.0.1 </code> Even though it is the year 2022, spaces in paths can and do still cause trouble. Such as for Powershell scripts. Powershell throws a complete fit if the path contains spaces....so, we remove them. Better safe than sorry.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="181936629%2FFunctions%2F-2093568117" anchor-label="postInstallCleanup" id="181936629%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="post-install-cleanup.html"><span>post</span><wbr></wbr><span>Install</span><wbr></wbr><span><span>Cleanup</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="181936629%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="post-install-cleanup.html"><span class="token function">postInstallCleanup</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">destination<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Cleans up the server_pack directory by deleting left-over files from modloader installations and version checking.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2029338861%2FFunctions%2F-2093568117" anchor-label="preInstallationCleanup" id="-2029338861%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="pre-installation-cleanup.html"><span>pre</span><wbr></wbr><span>Installation</span><wbr></wbr><span><span>Cleanup</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2029338861%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="pre-installation-cleanup.html"><span class="token function">preInstallationCleanup</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">destination<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Delete files and folders from previous installations to prevent errors during server installation due to already existing files.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1373807253%2FFunctions%2F-2093568117" anchor-label="regexWalk" id="-1373807253%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="regex-walk.html"><span>regex</span><wbr></wbr><span><span>Walk</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1373807253%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="regex-walk.html"><span class="token function">regexWalk</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">source<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html">File</a><span class="token punctuation">, </span></span><span class="parameter ">destination<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">regex<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.text/-regex/index.html">Regex</a><span class="token punctuation">, </span></span><span class="parameter ">serverPackFiles<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><a href="../-server-pack-file/index.html">ServerPackFile</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Walk through the specified directory and add a <a href="../-server-pack-file/index.html">ServerPackFile</a> for every file/folder which matches the given regex.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="997999565%2FFunctions%2F-2093568117" anchor-label="replacePlaceholders" id="997999565%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="replace-placeholders.html"><span>replace</span><wbr></wbr><span><span>Placeholders</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="997999565%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="replace-placeholders.html"><span class="token function">replacePlaceholders</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">isLocal<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">content<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">scriptSettings<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/HashMap.html">HashMap</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Replace placeholders for script settings in the given <a href="replace-placeholders.html">content</a> with their respective values, both provided via the HashMap <a href="replace-placeholders.html">scriptSettings</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1129187967%2FFunctions%2F-2093568117" anchor-label="run" id="1129187967%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="run.html"><span><span>run</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1129187967%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="run.html"><span class="token function">run</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packConfig<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.config/-pack-config/index.html">PackConfig</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-server-pack-generation/index.html">ServerPackGeneration</a></div><div class="brief "><p class="paragraph">Create a server pack from a given instance of <a href="../../de.griefed.serverpackcreator.api.config/-pack-config/index.html">PackConfig</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="338935291%2FFunctions%2F-2093568117" anchor-label="serverDownloadable" id="338935291%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="server-downloadable.html"><span>server</span><wbr></wbr><span><span>Downloadable</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="338935291%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="server-downloadable.html"><span class="token function">serverDownloadable</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">mcVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">modloader<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">modloaderVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Check whether the installer for the given combination of Minecraft version, modloader and modloader version is available/reachable.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="568489749%2FFunctions%2F-2093568117" anchor-label="zipBuilder" id="568489749%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="zip-builder.html"><span>zip</span><wbr></wbr><span><span>Builder</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="568489749%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="zip-builder.html"><span class="token function">zipBuilder</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">minecraftVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">destination<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">modloader<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">modloaderVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html">Optional</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html">File</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Creates a ZIP-archive of specified directory. Depending on the property <code class="lang-kotlin">de.griefed.serverpackcreator.serverpack.zip.exclude.enabled</code>, files will be excluded. To customize the files which will be excluded, the property <code class="lang-kotlin">de.griefed.serverpackcreator.serverpack.zip.exclude</code> must be configured accordingly. The created ZIP-archive will be stored alongside the specified destination, with <code class="lang-kotlin">_server_pack.zip</code> appended to its name.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2025 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

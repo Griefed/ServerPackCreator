@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>de.griefed.serverpackcreator.api.utilities</title>
+    <link href="../../images/logo-icon.svg" rel="icon" type="image/svg">
+        <script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../ui-kit/ui-kit.min.js" defer="defer"></script>
+</head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+            <a class="library-name--link" href="../../index.html" tabindex="1">
+                    ServerPackCreator
+            </a>
+        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle"
+                type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true"
+                        data-filter=":serverpackcreator-api/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
+                        data-role="dropdown-toggle"
+                        aria-controls="platform-tags-listbox"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Toggle source sets"
+                ></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":serverpackcreator-api/main"
+                                       data-filter=":serverpackcreator-api/main"/>
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button"
+                    type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config='{"defaultSize": 280, "minSize": 200, "maxSize": 400}'>
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list"
+                    data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    ServerPackCreator
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="package" id="content" pageIds="ServerPackCreator::de.griefed.serverpackcreator.api.utilities////PointingToDeclaration//-2093568117">
+  <div class="breadcrumbs"><a href="../../index.html">ServerPackCreator</a><span class="delimiter">/</span><span class="current">de.griefed.serverpackcreator.api.utilities</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+    <div class="platform-hinted UnderCoverText" data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><p class="paragraph">The utilities package holds classes and methods for various useful bits and pieces used all throughout ServerPackCreator. If any given method is helpful in multiple steps throughout the ServerPackCreator architecture, it usually belongs to one of the utility classes.</p><p class="paragraph">Such utilities include, but are not limited to converting Strings to booleans, encapsulating each entry in a String list with quotation-marks, downloading files, copying files and folders from a JAR-file and so on and so forth.</p><p class="paragraph">Basically, whenever a method in any SeverPackCreator class becomes useful to multiple classes, it is usually moved into any already existing utility-class or a new one is added if no already-fitting one exists.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="-2036985824%2FClasslikes%2F-2093568117" anchor-label="ReticulatingSplines" id="-2036985824%2FClasslikes%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-reticulating-splines/index.html"><span>Reticulating</span><wbr></wbr><span><span>Splines</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2036985824%2FClasslikes%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-reticulating-splines/index.html">ReticulatingSplines</a></div><div class="brief "><p class="paragraph">Just something fun to brighten the mood. This class provides a list of messages which some of you may know from the SimCity games. Thanks go out to MAXIS and Sim City, for the ridiculous messages these games contained. Additional thanks to Larsz for providing a list of all these messages <a href="https://gamefaqs.gamespot.com/pc/561176-simcity-4/faqs/22135">on GameFAQs</a></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1979978063%2FClasslikes%2F-2093568117" anchor-label="SecurityScans" id="1979978063%2FClasslikes%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-security-scans/index.html"><span>Security</span><wbr></wbr><span><span>Scans</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1979978063%2FClasslikes%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-security-scans/index.html">SecurityScans</a></div><div class="brief "><p class="paragraph">Various methods to perform security-related scans, such as Nekodetector.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1795913162%2FClasslikes%2F-2093568117" anchor-label="SimpleStopWatch" id="1795913162%2FClasslikes%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-simple-stop-watch/index.html"><span>Simple</span><wbr></wbr><span>Stop</span><wbr></wbr><span><span>Watch</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1795913162%2FClasslikes%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-simple-stop-watch/index.html">SimpleStopWatch</a></div><div class="brief "><p class="paragraph">Minimalistic stopwatch to measure the elapsed time between operations.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1304017815%2FClasslikes%2F-2093568117" anchor-label="SPCConfigCheckListener" id="-1304017815%2FClasslikes%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-p-c-config-check-listener/index.html"><span>SPCConfig</span><wbr></wbr><span>Check</span><wbr></wbr><span><span>Listener</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1304017815%2FClasslikes%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-s-p-c-config-check-listener/index.html">SPCConfigCheckListener</a></div><div class="brief "><p class="paragraph">Config check-listener executed during the checking of a given server pack configuration.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-931204968%2FClasslikes%2F-2093568117" anchor-label="SPCGenericListener" id="-931204968%2FClasslikes%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-p-c-generic-listener/index.html"><span>SPCGeneric</span><wbr></wbr><span><span>Listener</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-931204968%2FClasslikes%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-s-p-c-generic-listener/index.html">SPCGenericListener</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1046772479%2FClasslikes%2F-2093568117" anchor-label="SPCPostGenListener" id="1046772479%2FClasslikes%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-p-c-post-gen-listener/index.html"><span>SPCPost</span><wbr></wbr><span>Gen</span><wbr></wbr><span><span>Listener</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1046772479%2FClasslikes%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-s-p-c-post-gen-listener/index.html">SPCPostGenListener</a></div><div class="brief "><p class="paragraph">Post Generation listener executed after the server pack was generated.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="953658616%2FClasslikes%2F-2093568117" anchor-label="SPCPreServerPackGenerationListener" id="953658616%2FClasslikes%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-p-c-pre-server-pack-generation-listener/index.html"><span>SPCPre</span><wbr></wbr><span>Server</span><wbr></wbr><span>Pack</span><wbr></wbr><span>Generation</span><wbr></wbr><span><span>Listener</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="953658616%2FClasslikes%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-s-p-c-pre-server-pack-generation-listener/index.html">SPCPreServerPackGenerationListener</a></div><div class="brief "><p class="paragraph">Pre-Server Pack listener executed before a server pack is generated.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="401139977%2FClasslikes%2F-2093568117" anchor-label="SPCPreServerPackZipListener" id="401139977%2FClasslikes%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-p-c-pre-server-pack-zip-listener/index.html"><span>SPCPre</span><wbr></wbr><span>Server</span><wbr></wbr><span>Pack</span><wbr></wbr><span>Zip</span><wbr></wbr><span><span>Listener</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="401139977%2FClasslikes%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-s-p-c-pre-server-pack-zip-listener/index.html">SPCPreServerPackZipListener</a></div><div class="brief "><p class="paragraph">Pre ZIP-archive listener executed before a server pack ZIP-archive is created. Whether a ZIP-archive for a server pack is actually generated has no effect on whether this listener gets fired.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2025 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

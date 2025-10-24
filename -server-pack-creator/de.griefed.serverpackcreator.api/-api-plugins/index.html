@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>ApiPlugins</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+        <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer="defer"></script>
+</head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+            <a class="library-name--link" href="../../../index.html" tabindex="1">
+                    ServerPackCreator
+            </a>
+        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle"
+                type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true"
+                        data-filter=":serverpackcreator-api/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
+                        data-role="dropdown-toggle"
+                        aria-controls="platform-tags-listbox"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Toggle source sets"
+                ></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":serverpackcreator-api/main"
+                                       data-filter=":serverpackcreator-api/main"/>
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button"
+                    type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config='{"defaultSize": 280, "minSize": 200, "maxSize": 400}'>
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list"
+                    data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    ServerPackCreator
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="ServerPackCreator::de.griefed.serverpackcreator.api/ApiPlugins///PointingToDeclaration//-2093568117">
+  <div class="breadcrumbs"><a href="../../../index.html">ServerPackCreator</a><span class="delimiter">/</span><a href="../index.html">de.griefed.serverpackcreator.api</a><span class="delimiter">/</span><span class="current">ApiPlugins</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Api</span><wbr></wbr><span><span>Plugins</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">ApiPlugins</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">tomlParser<span class="token operator">: </span><span data-unresolved-link="com.electronwill.nightconfig.toml/TomlParser///PointingToDeclaration/">TomlParser</span><span class="token punctuation">, </span></span><span class="parameter ">apiProperties<span class="token operator">: </span><a href="../-api-properties/index.html">ApiProperties</a><span class="token punctuation">, </span></span><span class="parameter ">versionMeta<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.versionmeta/-version-meta/index.html">VersionMeta</a><span class="token punctuation">, </span></span><span class="parameter ">utilities<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities.common/-utilities/index.html">Utilities</a></span></span><span class="token punctuation">)</span> : <span data-unresolved-link="org.pf4j/JarPluginManager///PointingToDeclaration/">JarPluginManager</span><span class="source-link-wrapper"><span class="source-link" data-element-type="source-link">(<a href="https://git.griefed.de/Griefed/ServerPackCreator/de/griefed/serverpackcreator/api/ApiPlugins.kt#L63">source</a>)</span></span></div><p class="paragraph">Manager for ServerPackCreator plugins. In itself it doesn't do much. It gathers lists of all available extensions for <a href="../../de.griefed.serverpackcreator.api.plugins.swinggui/-tab-extension/index.html">TabExtension</a>,<a href="../../de.griefed.serverpackcreator.api.plugins.serverpackhandler/-pre-gen-extension/index.html">PreGenExtension</a>,<a href="../../de.griefed.serverpackcreator.api.plugins.serverpackhandler/-pre-zip-extension/index.html">PreZipExtension</a> and <a href="../../de.griefed.serverpackcreator.api.plugins.serverpackhandler/-post-gen-extension/index.html">PostGenExtension</a> so they can then be run during server pack generation and during initialization of the GUI.</p><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">Griefed</p></span><h4 class="tableheader">Parameters</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>toml</span><wbr></wbr><span><span>Parser</span></span></u></div></span></div><div><div class="title"><p class="paragraph">To read plugin-configurations, so they can be provided to extensions.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>api</span><wbr></wbr><span><span>Properties</span></span></u></div></span></div><div><div class="title"><p class="paragraph">ServerPackCreator settings to be provided to extensions.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>version</span><wbr></wbr><span><span>Meta</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Version meta to be provided to extensions.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>utilities</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Utilities to be provided to extensions.</p></div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="tableheader">Constructors</h2>
+        <div class="table"><a data-name="1077486076%2FConstructors%2F-2093568117" anchor-label="ApiPlugins" id="1077486076%2FConstructors%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-api-plugins.html"><span>Api</span><wbr></wbr><span><span>Plugins</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1077486076%2FConstructors%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">tomlParser<span class="token operator">: </span><span data-unresolved-link="com.electronwill.nightconfig.toml/TomlParser///PointingToDeclaration/">TomlParser</span><span class="token punctuation">, </span></span><span class="parameter ">apiProperties<span class="token operator">: </span><a href="../-api-properties/index.html">ApiProperties</a><span class="token punctuation">, </span></span><span class="parameter ">versionMeta<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.versionmeta/-version-meta/index.html">VersionMeta</a><span class="token punctuation">, </span></span><span class="parameter ">utilities<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities.common/-utilities/index.html">Utilities</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="-1027715521%2FFunctions%2F-2093568117" anchor-label="addTabExtensionTabs" id="-1027715521%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="add-tab-extension-tabs.html"><span>add</span><wbr></wbr><span>Tab</span><wbr></wbr><span>Extension</span><wbr></wbr><span><span>Tabs</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1027715521%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="add-tab-extension-tabs.html"><span class="token function">addTabExtensionTabs</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">tabbedPane<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/javax/swing/JTabbedPane.html">JTabbedPane</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Add any and all additional tabs to the ServerPackCreator tabbed pane (main GUI). You may use this to add tabs to your own <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/javax/swing/JTabbedPane.html">JTabbedPane</a>, if you so desire. Could be pretty awesome to have your plugins extra tabs in a separate window!</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-446520131%2FFunctions%2F-2093568117" anchor-label="createExtensionFactory" id="-446520131%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-extension-factory.html"><span>create</span><wbr></wbr><span>Extension</span><wbr></wbr><span><span>Factory</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-446520131%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="create-extension-factory.html"><span class="token function">createExtensionFactory</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.pf4j/ExtensionFactory///PointingToDeclaration/">ExtensionFactory</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="30595771%2FFunctions%2F-2093568117" anchor-label="createPluginFactory" id="30595771%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-plugin-factory.html"><span>create</span><wbr></wbr><span>Plugin</span><wbr></wbr><span><span>Factory</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="30595771%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="create-plugin-factory.html"><span class="token function">createPluginFactory</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.pf4j/PluginFactory///PointingToDeclaration/">PluginFactory</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1554063972%2FFunctions%2F-2093568117" anchor-label="getAllExtensionsOfPlugin" id="-1554063972%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-all-extensions-of-plugin.html"><span>get</span><wbr></wbr><span>All</span><wbr></wbr><span>Extensions</span><wbr></wbr><span>Of</span><wbr></wbr><span><span>Plugin</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1554063972%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="get-all-extensions-of-plugin.html">T</a><span class="token operator">&gt; </span><a href="get-all-extensions-of-plugin.html"><span class="token function">getAllExtensionsOfPlugin</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">plugin<span class="token operator">: </span><span data-unresolved-link="org.pf4j/PluginWrapper///PointingToDeclaration/">PluginWrapper</span><span class="token punctuation">, </span></span><span class="parameter ">type<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><a href="get-all-extensions-of-plugin.html">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="get-all-extensions-of-plugin.html">T</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get all extension of the specified <a href="get-all-extensions-of-plugin.html">type</a> for the specified <a href="get-all-extensions-of-plugin.html">plugin</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-600509136%2FFunctions%2F-2093568117" anchor-label="getConfigPanels" id="-600509136%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-config-panels.html"><span>get</span><wbr></wbr><span>Config</span><wbr></wbr><span><span>Panels</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-600509136%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="get-config-panels.html"><span class="token function">getConfigPanels</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">serverPackConfigTab<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.plugins.swinggui/-server-pack-config-tab/index.html">ServerPackConfigTab</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../de.griefed.serverpackcreator.api.plugins.swinggui/-extension-config-panel/index.html">ExtensionConfigPanel</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Create config panels for the passed server pack configuration tab. Note that this method does <strong>NOT</strong> add the panels to the tab, it only creates them and passes the server pack config tab object-reference to each config panel, so they, in turn, may use any available fields and methods for their own operations. A given server pack config tab needs to add the panels which are returned by this method, so a user may make their configurations accordingly.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="615545273%2FFunctions%2F-2093568117" anchor-label="getPluginConfig" id="615545273%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-plugin-config.html"><span>get</span><wbr></wbr><span>Plugin</span><wbr></wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="615545273%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="get-plugin-config.html"><span class="token function">getPluginConfig</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">pluginId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html">Optional</a><span class="token operator">&lt;</span><span data-unresolved-link="com.electronwill.nightconfig.core/CommentedConfig///PointingToDeclaration/">CommentedConfig</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the global plugin configuration for an plugin of the passed ID. The configuration is wrapped in an <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html">Optional</a>, because an plugin may not provide a global configuration. If you intend on using a global configuration for your plugin, make sure to check whether it is present before trying to use it!</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1585130155%2FFunctions%2F-2093568117" anchor-label="getPluginConfigFile" id="-1585130155%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-plugin-config-file.html"><span>get</span><wbr></wbr><span>Plugin</span><wbr></wbr><span>Config</span><wbr></wbr><span><span>File</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1585130155%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="get-plugin-config-file.html"><span class="token function">getPluginConfigFile</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">pluginId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html">Optional</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html">File</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the configuration-file for a plugin, if it exists. This is wrapped in an <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html">Optional</a>, because not every plugin may provide a configuration-file to use globally for the relevant plugins settings. If you intend on using a global configuration, make sure to check whether the file is present, before moving on!</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1776563689%2FFunctions%2F-2093568117" anchor-label="runConfigCheckExtensions" id="-1776563689%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="run-config-check-extensions.html"><span>run</span><wbr></wbr><span>Config</span><wbr></wbr><span>Check</span><wbr></wbr><span><span>Extensions</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1776563689%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="run-config-check-extensions.html"><span class="token function">runConfigCheckExtensions</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packConfig<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.config/-pack-config/index.html">PackConfig</a><span class="token punctuation">, </span></span><span class="parameter ">configCheck<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.config/-config-check/index.html">ConfigCheck</a><span class="token operator"> = </span>ConfigCheck()</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.config/-config-check/index.html">ConfigCheck</a></div><div class="brief "><p class="paragraph">Run any and all configuration-check extensions, using the passed configuration model and the destination at which the server pack is to be generated and stored at.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1286995656%2FFunctions%2F-2093568117" anchor-label="runPostGenExtensions" id="-1286995656%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="run-post-gen-extensions.html"><span>run</span><wbr></wbr><span>Post</span><wbr></wbr><span>Gen</span><wbr></wbr><span><span>Extensions</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1286995656%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="run-post-gen-extensions.html"><span class="token function">runPostGenExtensions</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packConfig<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.config/-pack-config/index.html">PackConfig</a><span class="token punctuation">, </span></span><span class="parameter ">destination<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Run any and all Post-server pack-generation extensions, using the passed configuration model and the destination at which the server pack is to be generated and stored at.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1092254377%2FFunctions%2F-2093568117" anchor-label="runPreGenExtensions" id="-1092254377%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="run-pre-gen-extensions.html"><span>run</span><wbr></wbr><span>Pre</span><wbr></wbr><span>Gen</span><wbr></wbr><span><span>Extensions</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1092254377%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="run-pre-gen-extensions.html"><span class="token function">runPreGenExtensions</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packConfig<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.config/-pack-config/index.html">PackConfig</a><span class="token punctuation">, </span></span><span class="parameter ">destination<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Run any and all Pre-Server Pack-Generation extensions, using the passed configuration model and the destination at which the server pack is to be generated and stored at.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1932061670%2FFunctions%2F-2093568117" anchor-label="runPreZipExtensions" id="1932061670%2FFunctions%2F-2093568117" data-filterable-set=":serverpackcreator-api/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":serverpackcreator-api/main" data-filterable-set=":serverpackcreator-api/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="run-pre-zip-extensions.html"><span>run</span><wbr></wbr><span>Pre</span><wbr></wbr><span>Zip</span><wbr></wbr><span><span>Extensions</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1932061670%2FFunctions%2F-2093568117"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="run-pre-zip-extensions.html"><span class="token function">runPreZipExtensions</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packConfig<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.config/-pack-config/index.html">PackConfig</a><span class="token punctuation">, </span></span><span class="parameter ">destination<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Run any and all Pre-ZIP-archive creation extensions, using the passed configuration model and the destination at which the server pack is to be generated and stored at.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2025 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
