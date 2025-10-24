@@ -21,6 +21,7 @@ dependencies {
     implementation(libs.springDependencyMan)
     implementation(libs.kotlinJpa)
     implementation(libs.dokka)
+    implementation(libs.dokkaJavaDoc)
     implementation(libs.licenseReport)
     implementation(libs.frontendPlugin)
     implementation(libs.install4j)

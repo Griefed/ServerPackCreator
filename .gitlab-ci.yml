@@ -429,7 +429,7 @@ pages:
   before_script:
     - chmod +x gradlew
   script:
-    - "./gradlew :serverpackcreator-api:dokkaHtml -Pversion='' --full-stacktrace --info -x test"
+    - "./gradlew :serverpackcreator-api:dokkaGenerateHtml -Pversion='' --full-stacktrace --info -x test"
     - cp -Rf serverpackcreator-api/build/dokka public
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto public
   artifacts:

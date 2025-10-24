@@ -1,4 +1,3 @@
-
 import java.util.prefs.Preferences
 
 plugins {
@@ -117,12 +116,12 @@ tasks.register<Copy>("fixMissingResources") {
     into("${layout.buildDirectory.asFile.get()}/resources/")
 }
 
-tasks.dokkaHtml {
+tasks.dokkaGeneratePublicationHtml {
     dependsOn(tasks.generateI18n4kFiles, tasks.getByName("fixMissingResources"))
 }
 
-tasks.dokkaJavadoc {
-    dependsOn(tasks.getByName("fixMissingResources"))
+tasks.dokkaGeneratePublicationJavadoc {
+    dependsOn(tasks.generateI18n4kFiles, tasks.getByName("fixMissingResources"), tasks.processResources)
 }
 
 tasks.jar {
@@ -143,9 +142,9 @@ tasks.test {
 
 tasks.build {
     doLast {
-        tasks.dokkaJavadocJar
+        tasks.dokkaGeneratePublicationJavadoc
     }
-    finalizedBy(tasks.dokkaJavadocJar)
+    finalizedBy(tasks.dokkaGeneratePublicationJavadoc)
 }
 
 tasks.generatePomFileForMavenJavaPublication {
