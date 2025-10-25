@@ -180,6 +180,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "BetterFoliage-",               //https://www.curseforge.com/minecraft/mc-mods/better-foliage
             "BetterPingDisplay-",           //https://www.curseforge.com/minecraft/mc-mods/better-ping-display
             "BetterPlacement-",             //https://www.curseforge.com/minecraft/mc-mods/better-placement
+            "BetterThanBunnies-",           //https://www.curseforge.com/minecraft/mc-mods/better-than-bunnies
             "BetterTaskbar-",               //https://www.curseforge.com/minecraft/mc-mods/better-taskbar
             "BetterThirdPerson",            //https://www.curseforge.com/minecraft/mc-mods/better-third-person
             "BetterTitleScreen-",           //https://www.curseforge.com/minecraft/mc-mods/better-title-screen
@@ -329,6 +330,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "anviltooltipmod-",             //https://www.curseforge.com/minecraft/mc-mods/anvil-tooltip-mod
             "appliedsorting-",              //https://www.curseforge.com/minecraft/mc-mods/applied-sorting
             "armorchroma-",                 //https://www.curseforge.com/minecraft/mc-mods/armor-chroma
+            "armorhud",                     //https://www.curseforge.com/minecraft/mc-mods/armor-durability-hud
             "armorpointspp-",               //https://www.curseforge.com/minecraft/mc-mods/armorpoints
             "auditory-",                    //https://www.curseforge.com/minecraft/mc-mods/auditory
             "authme-",                      //Gone? Reduces to atoms?
@@ -397,6 +399,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "durabilitytooltip-",           //https://www.curseforge.com/minecraft/mc-mods/durability-tooltip
             "dynamic-fps-",                 //https://www.curseforge.com/minecraft/mc-mods/dynamic-fps
             "dynamic-music-",               //https://www.curseforge.com/minecraft/mc-mods/dynamic-music
+            "dynamiccrosshair-",            //https://www.curseforge.com/minecraft/mc-mods/dynamic-crosshair
             "dynamiclights-",               //https://www.curseforge.com/minecraft/mc-mods/dynamic-lights
             "dynamiclightsreforged-",       //https://www.curseforge.com/minecraft/mc-mods/dynamiclights-reforged
             "dynmus-",                      //Gone? Reduces to atoms?
@@ -501,6 +504,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "mousewheelie-",                //https://www.curseforge.com/minecraft/mc-mods/mouse-wheelie
             "movement-vision-",             //https://www.curseforge.com/minecraft/mc-mods/movement-vision
             "multihotbar-",                 //https://www.curseforge.com/minecraft/mc-mods/multi-hotbar
+            "music_delay_reducer-",         //https://www.curseforge.com/minecraft/mc-mods/music-delay-reducer/
             "music-duration-reducer-",      //https://www.curseforge.com/minecraft/mc-mods/music-duration-reducer
             "musicdr-",                     //Gone? Reduces to atoms?
             "neoculus-",                    //https://www.curseforge.com/minecraft/mc-mods/neoculus
