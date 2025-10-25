@@ -1,3 +1,14 @@
+## [8.0.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.1...8.0.2) (2025-10-25)
+
+### 📦 Other
+
+* Add more clientside mods ([5f5683d](https://git.griefed.de/Griefed/ServerPackCreator/commit/5f5683d62e959295c1d41f1741d76eabffddd6e1))
+
+### 🦊 CI/CD
+
+* **deps:** bump @intlify/core-base and vue-i18n ([abf9a7f](https://git.griefed.de/Griefed/ServerPackCreator/commit/abf9a7fe9dd57b611f573e1e6ac3dc9742ccf133))
+* **deps:** bump vite in /serverpackcreator-web-frontend ([8adb0e7](https://git.griefed.de/Griefed/ServerPackCreator/commit/8adb0e7897451c6e3c25381e7845e6a361ce78a5))
+
 ## [8.0.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.0...8.0.1) (2025-10-24)
 
 ### 📦 Other
