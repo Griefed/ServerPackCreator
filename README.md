@@ -149,6 +149,10 @@ Said guide will show you the most important parts in configuring your server pac
 
 Should you at any point want to revisit said guide, simply hit *About -> Step-By-Step Guide* in the menu at the top. 
 
+**[kreezxil](https://github.com/kreezxil) has made a video showing a step-by-step video-tutorial for ServerPackCreator:**
+
+[![Server Pack Creator Guide](http://img.youtube.com/vi/0Rh2q0fr8xA/0.jpg)](https://www.youtube.com/watch?v=0Rh2q0fr8xA "Server Pack Creator Guide: Turn Your CurseForge Modpack into a Bisect Hosting Server!")
+
 ## 4. Java
 
 ### Required:
