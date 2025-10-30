@@ -232,6 +232,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "FpsReducer2-",                 //https://www.curseforge.com/minecraft/mc-mods/fps-reducer
             "FullscreenWindowed-",          //https://www.curseforge.com/minecraft/mc-mods/fullscreen-windowed-borderless-for-minecraft
             "GameMenuModOption-",           //https://www.curseforge.com/minecraft/mc-mods/gamemenumodoption
+            "GpuTape-",                     //https://www.curseforge.com/minecraft/mc-mods/gputape
             "HealthOverlay-",               //https://www.curseforge.com/minecraft/mc-mods/health-overlay
             "HeldItemTooltips-",            //https://www.curseforge.com/minecraft/mc-mods/held-item-tooltips
             "HorseStatsMod-",               //https://www.curseforge.com/minecraft/bukkit-plugins/horsestats
@@ -368,6 +369,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "citresewn-",                   //https://www.curseforge.com/minecraft/mc-mods/forge-cit
             "classicbar-",                  //https://www.curseforge.com/minecraft/mc-mods/classic-bars
             "cleanview",                    //https://www.curseforge.com/minecraft/mc-mods/clean-view
+            "clientcrafting-",              //https://www.curseforge.com/minecraft/mc-mods/client-crafting
             "clienttweaks-",                //https://www.curseforge.com/minecraft/mc-mods/client-tweaks
             "cobblemon-ui-tweaks-",         //https://modrinth.com/mod/cobblemon-ui-tweaks
             "combat_music-",                //https://www.curseforge.com/minecraft/mc-mods/combat-music
@@ -487,6 +489,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "mcbindtype-",                  //https://www.curseforge.com/minecraft/mc-mods/mcbindtype
             "mcwifipnp-",                   //https://www.curseforge.com/minecraft/mc-mods/mcwifipnp
             "medievalmusic-",               //https://www.curseforge.com/minecraft/mc-mods/medieval-music
+            "mekalus-",                     //https://www.curseforge.com/minecraft/mc-mods/mekalus-oculus-fork-with-fixed-mekanism-mekasuit
             "memoryusagescreen-",           //https://www.curseforge.com/minecraft/mc-mods/memory-usage-screen
             "mightyarchitect-",             //https://www.curseforge.com/minecraft/mc-mods/the-mighty-architect
             "mindful-eating-",              //https://www.curseforge.com/minecraft/mc-mods/mindful-eating
@@ -544,6 +547,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "rubidium-",                    //https://www.curseforge.com/minecraft/mc-mods/rubidium
             "rubidium_extras-",             //https://www.curseforge.com/minecraft/mc-mods/rubidium-extra
             "screenshot-to-clipboard-",     //https://www.curseforge.com/minecraft/mc-mods/screenshot-to-clipboard
+            "seasonhud-",                   //https://www.curseforge.com/minecraft/mc-mods/seasonhud
             "servercountryflags-",          //https://www.curseforge.com/minecraft/mc-mods/server-country-flags
             "shut_up_gl_error-",            //https://www.curseforge.com/minecraft/mc-mods/shut-up-gl-error
             "shutupexperimentalsettings-",  //https://www.curseforge.com/minecraft/mc-mods/shutup-experimental-settings
