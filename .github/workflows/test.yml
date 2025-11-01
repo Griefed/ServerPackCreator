@@ -36,7 +36,7 @@ jobs:
         run: |
           ./gradlew -Pversion="${{ steps.branch-name.outputs.current_branch }}" build --info --full-stacktrace
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: ${{ always() }}
         with:
           name: jar-and-media
