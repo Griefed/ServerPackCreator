@@ -17,8 +17,8 @@ dependencies {
     api("de.jensklingenberg.ktorfit:ktorfit-lib:2.5.1")
     api("de.comahe.i18n4k:i18n4k-core:0.11.0")
     api("de.comahe.i18n4k:i18n4k-core-jvm:0.11.0")
-    implementation("org.jetbrains.kotlin:kotlin-bom:2.2.20")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.2.20")
+    implementation("org.jetbrains.kotlin:kotlin-bom:2.2.21")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.2.21")
     implementation(files("${layout.buildDirectory.asFile.get()}/resources/main"))
     api("com.electronwill.night-config:toml:3.8.2")
     api("com.fasterxml.jackson.core:jackson-databind:2.20.0")
@@ -32,7 +32,7 @@ dependencies {
     api("com.github.MCRcortex:nekodetector:Version-1.1-pre")
     //api("dev.kosmx.needle:jneedle:1.0.1")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test:2.2.20")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:2.2.21")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.4")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.4")
 }
