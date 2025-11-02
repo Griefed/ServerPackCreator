@@ -735,9 +735,9 @@ if ($ReInstall -eq '--cleanup')
 elseif (Test-Path -Path $PreviousRunFile -PathType Leaf)
 {
     $PreviousRunValues = Get-Content -raw -LiteralPath $PreviousRunFile | ConvertFrom-StringData
-    $PreviousMinecraftVersion = $PreviousRunValues['$PREVIOUS_MINECRAFT_VERSION']
-    $PreviousModLoader = $PreviousRunValues['$PREVIOUS_MODLOADER']
-    $PreviousModLoaderVersion = $PreviousRunValues['$PREVIOUS_MODLOADER_VERSION']
+    $PreviousMinecraftVersion = $PreviousRunValues['PREVIOUS_MINECRAFT_VERSION']
+    $PreviousModLoader = $PreviousRunValues['PREVIOUS_MODLOADER']
+    $PreviousModLoaderVersion = $PreviousRunValues['PREVIOUS_MODLOADER_VERSION']
     if (!("${PreviousMinecraftVersion}" -eq "${MinecraftVersion}") -or
         !("${PreviousModLoader}" -eq "${ModLoader}") -or
         !("${PreviousModLoaderVersion}" -eq "${ModLoaderVersion}"))
