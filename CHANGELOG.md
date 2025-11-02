@@ -1,3 +1,17 @@
+## [8.0.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.2...8.0.3) (2025-11-02)
+
+### 📔 Docs
+
+* Add link to a video guide made by [@kreezxil](https://git.griefed.de/kreezxil) ([b256fa5](https://git.griefed.de/Griefed/ServerPackCreator/commit/b256fa50685410764ad0d8b4057eeed44438c4cc))
+
+### 📦 Other
+
+* Add seasonhud, gputape, clientcrafting, mekalus ([23ed21c](https://git.griefed.de/Griefed/ServerPackCreator/commit/23ed21cfcbdd885ca8feda73f1cf0d8d02dce309))
+
+### 🛠 Fixes
+
+* default ps script correctlly reads the .previousrun file ([e553cae](https://git.griefed.de/Griefed/ServerPackCreator/commit/e553cae47df44f61d9a4aeb297f148225003ea67))
+
 ## [8.0.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.1...8.0.2) (2025-10-25)
 
 ### 📦 Other
