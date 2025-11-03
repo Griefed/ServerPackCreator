@@ -233,6 +233,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "FullscreenWindowed-",          //https://www.curseforge.com/minecraft/mc-mods/fullscreen-windowed-borderless-for-minecraft
             "GameMenuModOption-",           //https://www.curseforge.com/minecraft/mc-mods/gamemenumodoption
             "GpuTape-",                     //https://www.curseforge.com/minecraft/mc-mods/gputape
+            "GPUTape-",                     //https://www.curseforge.com/minecraft/mc-mods/gputape
             "HealthOverlay-",               //https://www.curseforge.com/minecraft/mc-mods/health-overlay
             "HeldItemTooltips-",            //https://www.curseforge.com/minecraft/mc-mods/held-item-tooltips
             "HorseStatsMod-",               //https://www.curseforge.com/minecraft/bukkit-plugins/horsestats
