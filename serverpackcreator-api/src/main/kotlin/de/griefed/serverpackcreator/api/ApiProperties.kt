@@ -222,6 +222,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "FadingNightVision-",           //https://www.curseforge.com/minecraft/mc-mods/fading-night-vision
             "Fallingleaves-",               //https://www.curseforge.com/minecraft/mc-mods/falling-leaves-forge
             "FancySpawnEggs",               //https://www.curseforge.com/minecraft/mc-mods/fancy-spawn-eggs
+            "FancyBlockParticles-",         //https://www.curseforge.com/minecraft/mc-mods/fbp-renewed
             "FancyVideo-API-",              //https://www.curseforge.com/minecraft/mc-mods/fancyvideo-api
             "farsight-",                    //https://www.curseforge.com/minecraft/modpacks/farsight
             "FirstPersonMod",               //https://www.curseforge.com/minecraft/mc-mods/first-person-model
@@ -233,6 +234,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "FullscreenWindowed-",          //https://www.curseforge.com/minecraft/mc-mods/fullscreen-windowed-borderless-for-minecraft
             "GameMenuModOption-",           //https://www.curseforge.com/minecraft/mc-mods/gamemenumodoption
             "GpuTape-",                     //https://www.curseforge.com/minecraft/mc-mods/gputape
+            "GPUTape-",                     //https://www.curseforge.com/minecraft/mc-mods/gputape
             "HealthOverlay-",               //https://www.curseforge.com/minecraft/mc-mods/health-overlay
             "HeldItemTooltips-",            //https://www.curseforge.com/minecraft/mc-mods/held-item-tooltips
             "HorseStatsMod-",               //https://www.curseforge.com/minecraft/bukkit-plugins/horsestats
@@ -327,6 +329,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "advancementscreenshot-",       //https://www.curseforge.com/minecraft/mc-mods/advancement-screenshot
             "ae_pattern_improve-",          //https://www.curseforge.com/minecraft/mc-mods/ae2-pattern-qol-improving
             "ahznbstools-",                 //https://www.curseforge.com/minecraft/mc-mods/ahznbs-tools/
+            "aiftbtranslator-",             //https://www.curseforge.com/minecraft/mc-mods/ai-ftb-translator
             "antighost-",                   //https://www.curseforge.com/minecraft/mc-mods/antighost
             "anviltooltipmod-",             //https://www.curseforge.com/minecraft/mc-mods/anvil-tooltip-mod
             "appliedsorting-",              //https://www.curseforge.com/minecraft/mc-mods/applied-sorting
@@ -347,6 +350,9 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "better_client",                //https://www.curseforge.com/minecraft/mc-mods/better-client
             "better_tooltips-",             //https://www.curseforge.com/minecraft/mc-mods/better-tooltips-neoforge
             "better-clouds-",               //Gone? Reduces to atoms?
+            "better_hp-",                   //https://www.curseforge.com/minecraft/mc-mods/better-hp
+            "better-hp-",                   //https://www.curseforge.com/minecraft/mc-mods/better-hp
+            "betterHP_",                    //https://www.curseforge.com/minecraft/mc-mods/better-hp
             "better-recipe-book-",          //Gone? Reduces to atoms?
             "betterbiomeblend-",            //https://www.curseforge.com/minecraft/mc-mods/better-biome-blend
             "bhmenu-",                      //https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-forge & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-fabric & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-neoforge
@@ -455,6 +461,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "immersivetips-",               //https://www.curseforge.com/minecraft/mc-mods/immersive-tips
             "improvedsignediting-",         //https://www.curseforge.com/minecraft/mc-mods/improved-sign-editing
             "infinitemusic-",               //https://www.curseforge.com/minecraft/mc-mods/infinite-music
+            "inline_tooltips-",             //https://www.curseforge.com/minecraft/mc-mods/inline-tooltips
             "inventoryhud.",                //https://www.curseforge.com/minecraft/mc-mods/inventory-hud-forge
             "inventoryprofiles",            //https://www.curseforge.com/minecraft/mc-mods/inventory-profiles
             "irisblockcompat-",             //https://www.curseforge.com/minecraft/mc-mods/iris-block-compat
@@ -487,6 +494,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "maptooltip-",                  //https://www.curseforge.com/minecraft/mc-mods/map-tooltip
             "massunbind",                   //https://www.curseforge.com/minecraft/mc-mods/mass-key-unbinder
             "mcbindtype-",                  //https://www.curseforge.com/minecraft/mc-mods/mcbindtype
+            "mcqoy-",                       //https://modrinth.com/mod/mcqoy
             "mcwifipnp-",                   //https://www.curseforge.com/minecraft/mc-mods/mcwifipnp
             "medievalmusic-",               //https://www.curseforge.com/minecraft/mc-mods/medieval-music
             "mekalus-",                     //https://www.curseforge.com/minecraft/mc-mods/mekalus-oculus-fork-with-fixed-mekanism-mekasuit
