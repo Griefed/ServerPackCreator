@@ -1,3 +1,25 @@
+## [8.0.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.1...8.0.2) (2025-10-25)
+
+### 📦 Other
+
+* Add more clientside mods ([5f5683d](https://git.griefed.de/Griefed/ServerPackCreator/commit/5f5683d62e959295c1d41f1741d76eabffddd6e1))
+
+### 🦊 CI/CD
+
+* **deps:** bump @intlify/core-base and vue-i18n ([abf9a7f](https://git.griefed.de/Griefed/ServerPackCreator/commit/abf9a7fe9dd57b611f573e1e6ac3dc9742ccf133))
+* **deps:** bump vite in /serverpackcreator-web-frontend ([8adb0e7](https://git.griefed.de/Griefed/ServerPackCreator/commit/8adb0e7897451c6e3c25381e7845e6a361ce78a5))
+
+## [8.0.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.0...8.0.1) (2025-10-24)
+
+### 📦 Other
+
+* Add Enhanced Tooltips to clientside-list ([0c9bf91](https://git.griefed.de/Griefed/ServerPackCreator/commit/0c9bf91252f8ff103f0afa592bee4da95ce20746))
+
+### 🛠 Fixes
+
+* Acquire name and content of tips from Translations directly ([049792f](https://git.griefed.de/Griefed/ServerPackCreator/commit/049792fedf97bfb36aba5f962e5505198a370c4e))
+* Migrate to dokka V2 ([2ec33b4](https://git.griefed.de/Griefed/ServerPackCreator/commit/2ec33b4e16acc70bb5d4fcdea8290db0fe7a900a))
+
 ## [8.0.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/7.3.0...8.0.0) (2025-10-24)
 
 ### :scissors: Refactor
