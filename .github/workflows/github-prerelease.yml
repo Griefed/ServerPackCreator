@@ -98,7 +98,7 @@ jobs:
           cp checksum.txt ${{ needs.preparations.outputs.version }}/
 
       # UPLOAD ARTIFACTS
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: ${{ always() }}
         with:
           name: jar-media-build-artifacts
@@ -111,7 +111,7 @@ jobs:
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
       # UPLOAD ARTIFACTS
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: ${{ always() }}
         with:
           name: jar-media-release
