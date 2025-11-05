@@ -420,6 +420,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "enchantment-lore-",            //https://www.curseforge.com/minecraft/mc-mods/enchantment-lore
             "enhanced_boss_bars-",          //https://www.curseforge.com/minecraft/mc-mods/enhanced-boss-bars
             "entity-texture-features-",     //https://www.curseforge.com/minecraft/mc-mods/entity-texture-features-fabric
+            "entity_texture_features-",     //https://www.curseforge.com/minecraft/mc-mods/entity-texture-features-fabric
+            "entity_model_features_",       //https://www.curseforge.com/minecraft/mc-mods/entity-model-features
             "entityculling-",               //https://www.curseforge.com/minecraft/mc-mods/entity-culling
             "essential_",                   //Gone? Reduces to atoms?
             "exhaustedstamina-",            //https://www.curseforge.com/minecraft/mc-mods/exhausted-stamina
