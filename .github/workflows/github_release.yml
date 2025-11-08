@@ -96,7 +96,7 @@ jobs:
           cp checksum.txt ${{ needs.preparations.outputs.version }}/
 
       # UPLOAD ARTIFACTS
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: ${{ always() }}
         with:
           name: jar-media-build-artifacts
@@ -109,7 +109,7 @@ jobs:
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
       # UPLOAD ARTIFACTS
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: ${{ always() }}
         with:
           name: jar-media-release
@@ -161,7 +161,7 @@ jobs:
             printf "\n\n............\n\nRelease notes truncated. For more details, see the [CHANGELOG](https://github.com/Griefed/ServerPackCreator/blob/${{ needs.preparations.outputs.version }}/CHANGELOG.md).\n\n" >> description.txt
           fi
 
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           name: jar-media-release
           path: ${{ needs.preparations.outputs.version }}
@@ -178,7 +178,7 @@ jobs:
       # GENERATE RELEASE
       - name: Create Release
         id: create_release
-        uses: softprops/action-gh-release@v2.3.3
+        uses: softprops/action-gh-release@v2.4.1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{ needs.preparations.outputs.version }}
@@ -275,7 +275,7 @@ jobs:
       - name: Build documentation
         run: ./gradlew :serverpackcreator-api:dokkaGenerateHtml -Pversion="${{ needs.preparations.outputs.version }}" --full-stacktrace --info -x test
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: build-artifacts
           path: serverpackcreator-api/build/dokka/

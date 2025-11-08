@@ -3,7 +3,7 @@ import java.util.*
 
 plugins {
     id("serverpackcreator.kotlin-conventions")
-    id("de.comahe.i18n4k") version "0.11.0"
+    id("de.comahe.i18n4k") version "0.11.1"
     kotlin("kapt")
 }
 
@@ -40,8 +40,8 @@ dependencies {
 
 
     // Testing
-    testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.0.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.0.1")
 }
 
 tasks.processResources {
