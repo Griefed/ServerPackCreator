@@ -152,6 +152,8 @@ private const val spcJabbaInstallVersionKey = "SPC_JABBA_INSTALL_VERSION_SPC"
 
 private const val spcAdditionalArgsKey = "SPC_ADDITIONAL_ARGS_SPC"
 
+private const val spcSSJArgsKey = "SPC_SSJ_ARGS_SPC"
+
 private const val spcServerStarterJarForceFetchKey = "SPC_SERVERSTARTERJAR_FORCE_FETCH_SPC"
 
 private const val spcServerStarterJarVersionKey = "SPC_SERVERSTARTERJAR_VERSION_SPC"
@@ -553,6 +555,7 @@ open class PackConfig() {
                 Pair(spcJabbaInstallURLPSKey,"https://github.com/Jabba-Team/jabba/raw/main/install.ps1"),
                 Pair(spcJabbaInstallVersionKey,"0.13.0"),
                 Pair(spcAdditionalArgsKey,"-Dlog4j2.formatMsgNoLookups=true"),
+                Pair(spcSSJArgsKey,"-Djava.security.manager=allow"),
                 Pair(spcServerStarterJarForceFetchKey, "true"),
                 Pair(spcServerStarterJarVersionKey, "latest"),
                 Pair(spcUseServerStarterJarKey,"true")

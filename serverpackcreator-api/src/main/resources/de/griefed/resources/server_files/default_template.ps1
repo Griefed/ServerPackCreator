@@ -394,7 +394,7 @@ Function global:SetupForge
         }
         else
         {
-            $script:ServerRunCommand = "@user_jvm_args.txt -Djava.security.manager=allow -jar server.jar --installer-force --installer ${ForgeInstallerUrl} nogui"
+            $script:ServerRunCommand = "@user_jvm_args.txt ${SSJArgs} -jar server.jar --installer-force --installer ${ForgeInstallerUrl} nogui"
             # Download ServerStarterJar to server.jar
             RefreshServerJar
         }
@@ -642,10 +642,11 @@ $ModLoaderVersion = $ExternalVariables['MODLOADER_VERSION']
 $LegacyFabricInstallerVersion = $ExternalVariables['LEGACYFABRIC_INSTALLER_VERSION']
 $FabricInstallerVersion = $ExternalVariables['FABRIC_INSTALLER_VERSION']
 $QuiltInstallerVersion = $ExternalVariables['QUILT_INSTALLER_VERSION']
-$JavaArgs = $ExternalVariables['JAVA_ARGS']
 $Java = $ExternalVariables['JAVA']
 $WaitForUserInput = $ExternalVariables['WAIT_FOR_USER_INPUT']
+$JavaArgs = $ExternalVariables['JAVA_ARGS']
 $AdditionalArgs = $ExternalVariables['ADDITIONAL_ARGS']
+$SSJArgs = $ExternalVariables['SSJ_ARGS']
 $Restart = $ExternalVariables['RESTART']
 $SkipJavaCheck = $ExternalVariables['SKIP_JAVA_CHECK']
 $RecommendedJavaVersion = $ExternalVariables['RECOMMENDED_JAVA_VERSION']
@@ -657,6 +658,7 @@ $ServerRunCommand = "do_not_manually_edit"
 $JavaVersion = "do_not_manually_edit"
 $Semantics = ${MinecraftVersion}.Split(".")
 
+# Clears the "" from the beginning and end of the Java, JavaArgs, AdditionalArgs, SSJArgs vars
 if ($Java[0] -eq '"')
 {
     $Java = $Java.Substring(1, $Java.Length - 1)
@@ -672,6 +674,22 @@ if ($JavaArgs[0] -eq '"')
 if ($JavaArgs[$JavaArgs.Length - 1] -eq '"')
 {
     $JavaArgs = $JavaArgs.Substring(0, $JavaArgs.Length - 1)
+}
+if ($AdditionalArgs[0] -eq '"')
+{
+    $AdditionalArgs = $AdditionalArgs.Substring(1, $AdditionalArgs.Length - 1)
+}
+if ($AdditionalArgs[$AdditionalArgs.Length - 1] -eq '"')
+{
+    $AdditionalArgs = $AdditionalArgs.Substring(0, $AdditionalArgs.Length - 1)
+}
+if ($SSJArgs[0] -eq '"')
+{
+    $SSJArgs = $SSJArgs.Substring(1, $SSJArgs.Length - 1)
+}
+if ($SSJArgs[$SSJArgs.Length - 1] -eq '"')
+{
+    $SSJArgs = $SSJArgs.Substring(0, $SSJArgs.Length - 1)
 }
 
 # If Java checks are desired, then the available Java version is compared to the one required by the Minecraft server.
@@ -807,6 +825,7 @@ if (!(Test-Path -Path 'eula.txt' -PathType Leaf))
 "Quilt Installer Version:        ${QuiltInstallerVersion}"
 "Java Args:                      ${JavaArgs}"
 "Additional Args:                ${AdditionalArgs}"
+"SSJ Args:                       ${SSJArgs}"
 "Java Path:                      ${Java}"
 "Wait For User Input:            ${WaitForUserInput}"
 if (!("${LauncherJarLocation}" -eq "do_not_manually_edit"))
