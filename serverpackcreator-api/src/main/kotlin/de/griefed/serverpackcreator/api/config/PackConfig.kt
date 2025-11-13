@@ -553,7 +553,7 @@ open class PackConfig() {
                 Pair(spcJDKVendorKey,"temurin"),
                 Pair(spcJabbaInstallURLShKey,"https://github.com/Jabba-Team/jabba/raw/main/install.sh"),
                 Pair(spcJabbaInstallURLPSKey,"https://github.com/Jabba-Team/jabba/raw/main/install.ps1"),
-                Pair(spcJabbaInstallVersionKey,"0.13.0"),
+                Pair(spcJabbaInstallVersionKey,"0.14.0"),
                 Pair(spcAdditionalArgsKey,"-Dlog4j2.formatMsgNoLookups=true"),
                 Pair(spcSSJArgsKey,"-Djava.security.manager=allow"),
                 Pair(spcServerStarterJarForceFetchKey, "true"),
