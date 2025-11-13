@@ -152,13 +152,15 @@ private const val spcJabbaInstallVersionKey = "SPC_JABBA_INSTALL_VERSION_SPC"
 
 private const val spcAdditionalArgsKey = "SPC_ADDITIONAL_ARGS_SPC"
 
-private const val spcSSJArgsKey = "SPC_SSJ_ARGS_SPC"
+private const val spcSSJArgsKey = "SPC_SSJ_FORGE_ARGS_SPC"
 
 private const val spcServerStarterJarForceFetchKey = "SPC_SERVERSTARTERJAR_FORCE_FETCH_SPC"
 
 private const val spcServerStarterJarVersionKey = "SPC_SERVERSTARTERJAR_VERSION_SPC"
 
 private const val spcUseServerStarterJarKey = "SPC_USE_SSJ_SPC"
+
+private const val spcCleanupKey = "SPC_CLEANUP_SPC"
 
 /**
  * A PackConfig contains the settings required to create a server pack.
@@ -558,7 +560,8 @@ open class PackConfig() {
                 Pair(spcSSJArgsKey,"-Djava.security.manager=allow"),
                 Pair(spcServerStarterJarForceFetchKey, "true"),
                 Pair(spcServerStarterJarVersionKey, "latest"),
-                Pair(spcUseServerStarterJarKey,"true")
+                Pair(spcUseServerStarterJarKey,"true"),
+                Pair(spcCleanupKey, "libraries,run.sh,run.bat,*installer.jar,*installer.jar.log,server.jar,.mixin.out ldlib,local,fabric-server-launcher.jar,fabric-server-launch.jar,.fabric-installer,fabric-nstaller.jar,legacyfabric-installer.jar,.fabric versions"),
             )
         }
     }

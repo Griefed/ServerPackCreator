@@ -315,24 +315,7 @@ Function global:RefreshServerJar
 
 Function global:CleanServerFiles
 {
-    $FilesToRemove = @(
-        "libraries"
-        "run.sh"
-        "run.bat"
-        "*installer.jar"
-        "*installer.jar.log"
-        "server.jar"
-        ".mixin.out"
-        "ldlib"
-        "local"
-        "fabric-server-launcher.jar"
-        "fabric-server-launch.jar"
-        ".fabric-installer"
-        "fabric-installer.jar"
-        "legacyfabric-installer.jar"
-        ".fabric"
-        "versions"
-    )
+    $FilesToRemove = ${Cleanup}
     $ErrorActionPreference = "SilentlyContinue";
     ForEach ($FileToRemove in $FilesToRemove) {
         Remove-Item "${FileToRemove}" -Recurse -Verbose -ErrorAction SilentlyContinue
@@ -394,7 +377,7 @@ Function global:SetupForge
         }
         else
         {
-            $script:ServerRunCommand = "@user_jvm_args.txt ${SSJArgs} -jar server.jar --installer-force --installer ${ForgeInstallerUrl} nogui"
+            $script:ServerRunCommand = "@user_jvm_args.txt ${SSJForgeArgs} -jar server.jar --installer-force --installer ${ForgeInstallerUrl} nogui"
             # Download ServerStarterJar to server.jar
             RefreshServerJar
         }
@@ -646,17 +629,19 @@ $Java = $ExternalVariables['JAVA']
 $WaitForUserInput = $ExternalVariables['WAIT_FOR_USER_INPUT']
 $JavaArgs = $ExternalVariables['JAVA_ARGS']
 $AdditionalArgs = $ExternalVariables['ADDITIONAL_ARGS']
-$SSJArgs = $ExternalVariables['SSJ_ARGS']
+$SSJForgeArgs = $ExternalVariables['SSJ_FORGE_ARGS']
 $Restart = $ExternalVariables['RESTART']
 $SkipJavaCheck = $ExternalVariables['SKIP_JAVA_CHECK']
 $RecommendedJavaVersion = $ExternalVariables['RECOMMENDED_JAVA_VERSION']
 $ServerStarterJarForceFetch = $ExternalVariables['SERVERSTARTERJAR_FORCE_FETCH']
 $ServerStarterJarVersion = $ExternalVariables['SERVERSTARTERJAR_VERSION']
 $UseSSJ = $ExternalVariables['USE_SSJ']
+$Cleanup = $ExternalVariables['CLEANUP'].Split(",")
 $LauncherJarLocation = "do_not_manually_edit"
 $ServerRunCommand = "do_not_manually_edit"
 $JavaVersion = "do_not_manually_edit"
 $Semantics = ${MinecraftVersion}.Split(".")
+
 
 # Clears the "" from the beginning and end of the Java, JavaArgs, AdditionalArgs, SSJArgs vars
 if ($Java[0] -eq '"')
@@ -683,13 +668,13 @@ if ($AdditionalArgs[$AdditionalArgs.Length - 1] -eq '"')
 {
     $AdditionalArgs = $AdditionalArgs.Substring(0, $AdditionalArgs.Length - 1)
 }
-if ($SSJArgs[0] -eq '"')
+if ($SSJForgeArgs[0] -eq '"')
 {
-    $SSJArgs = $SSJArgs.Substring(1, $SSJArgs.Length - 1)
+    $SSJForgeArgs = $SSJForgeArgs.Substring(1, $SSJForgeArgs.Length - 1)
 }
-if ($SSJArgs[$SSJArgs.Length - 1] -eq '"')
+if ($SSJForgeArgs[$SSJForgeArgs.Length - 1] -eq '"')
 {
-    $SSJArgs = $SSJArgs.Substring(0, $SSJArgs.Length - 1)
+    $SSJForgeArgs = $SSJForgeArgs.Substring(0, $SSJForgeArgs.Length - 1)
 }
 
 # If Java checks are desired, then the available Java version is compared to the one required by the Minecraft server.
@@ -825,7 +810,7 @@ if (!(Test-Path -Path 'eula.txt' -PathType Leaf))
 "Quilt Installer Version:        ${QuiltInstallerVersion}"
 "Java Args:                      ${JavaArgs}"
 "Additional Args:                ${AdditionalArgs}"
-"SSJ Args:                       ${SSJArgs}"
+"SSJ Forge Args:                 ${SSJForgeArgs}"
 "Java Path:                      ${Java}"
 "Wait For User Input:            ${WaitForUserInput}"
 if (!("${LauncherJarLocation}" -eq "do_not_manually_edit"))

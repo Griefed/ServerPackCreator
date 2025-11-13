@@ -139,6 +139,14 @@ class ServerPackHandler(
         # USE_SSJ true/false allows you to enable/disable the usage of the ServerStarterJar by the NeoForge project when you are
         #   using Forge. Some Forge versions may be incompatible with said ServerStarterJar. As of right now, people
         #   ran into trouble when using Forge and Minecraft 1.20.2 and 1.20.3.
+        # SSJ_FORGE_ARGS are additional arguments to use when using the Server Starter Jar from the NeoForge project in
+        #   combination with the Forge-modloader. Some java versions require explicit allowing of the security manager,
+        #   for example.
+        # CLEANUP is a list of comma-separated files which get deleted permanently upon calling the start-script with either
+        #   the --cleanup argument, or when the script detected a previous run with differing versions/modloaders.
+        #   Edit with care!
+        #   Edit at your own risk!
+        #   Editing might lead to unwanted data corruption or deletion!
         #
         # DO NOT EDIT THE FOLLOWING VARIABLES MANUALLY
         #   - FABRIC_INSTALLER_VERSION
@@ -160,7 +168,7 @@ class ServerPackHandler(
         JAVA="SPC_JAVA_SPC"
         JAVA_ARGS="SPC_JAVA_ARGS_SPC"
         ADDITIONAL_ARGS="SPC_ADDITIONAL_ARGS_SPC"
-        SSJ_ARGS="SPC_SSJ_ARGS_SPC"
+        SSJ_FORGE_ARGS="SPC_SSJ_FORGE_ARGS_SPC"
         RESTART=SPC_RESTART_SPC
         SKIP_JAVA_CHECK=SPC_SKIP_JAVA_CHECK_SPC
         JDK_VENDOR=SPC_JDK_VENDOR_SPC
@@ -170,6 +178,7 @@ class ServerPackHandler(
         SERVERSTARTERJAR_FORCE_FETCH=SPC_SERVERSTARTERJAR_FORCE_FETCH_SPC
         SERVERSTARTERJAR_VERSION=SPC_SERVERSTARTERJAR_VERSION_SPC
         USE_SSJ=SPC_USE_SSJ_SPC
+        CLEANUP="SPC_CLEANUP_SPC"
     """.trimIndent()
     private val howToStartTheServer = """
         # How To Start / Run The Server

@@ -170,24 +170,7 @@ refreshServerJar() {
 # Clean up files created by installers or modloader servers, but leave server pack files untouched.
 # Allows changing and re-installing the modloader, Minecraft and modloader versions.
 cleanServerFiles() {
-  FILES_TO_REMOVE=(
-    "libraries"
-    "run.sh"
-    "run.bat"
-    "*installer.jar"
-    "*installer.jar.log"
-    "server.jar"
-    ".mixin.out"
-    "ldlib"
-    "local"
-    "fabric-server-launcher.jar"
-    "fabric-server-launch.jar"
-    ".fabric-installer"
-    "fabric-installer.jar"
-    "legacyfabric-installer.jar"
-    ".fabric"
-    "versions"
-  )
+  IFS="," read -ra FILES_TO_REMOVE <<<"${CLEANUP}"
 
   for FILE_TO_REMOVE in "${FILES_TO_REMOVE[@]}"
   do
@@ -238,7 +221,7 @@ setupForge() {
         runJavaCommand "-jar forge-installer.jar --installServer"
       fi
     else
-      SERVER_RUN_COMMAND="@user_jvm_args.txt ${SSJ_ARGS} -jar server.jar --installer-force --installer ${FORGE_INSTALLER_URL} nogui"
+      SERVER_RUN_COMMAND="@user_jvm_args.txt ${SSJ_FORGE_ARGS} -jar server.jar --installer-force --installer ${FORGE_INSTALLER_URL} nogui"
       # Download ServerStarterJar to server.jar
       refreshServerJar
     fi
@@ -563,7 +546,7 @@ echo "Fabric Installer Version:       ${FABRIC_INSTALLER_VERSION}"
 echo "Quilt Installer Version:        ${QUILT_INSTALLER_VERSION}"
 echo "Java Args:                      ${JAVA_ARGS}"
 echo "Additional Args:                ${ADDITIONAL_ARGS}"
-echo "SSJ Args:                       ${SSJ_ARGS}"
+echo "SSJ Forge Args:                 ${SSJ_FORGE_ARGS}"
 echo "Java Path:                      ${JAVA}"
 echo "Wait For User Input:            ${WAIT_FOR_USER_INPUT}"
 if [[ "${LAUNCHER_JAR_LOCATION}" != "do_not_manually_edit" ]];then
