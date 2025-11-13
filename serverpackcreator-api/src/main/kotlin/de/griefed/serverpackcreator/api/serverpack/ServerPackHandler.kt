@@ -109,7 +109,7 @@ class ServerPackHandler(
         # JAVA points towards the Java executable/binary the server should use for running. Default is `java`, so it
         #   points towards the system-default, if you have one. Set this to an absolute path, as per the example above
         #   in the "REMEMBER"-part, if you want to force the server to use a different Java installation/version.
-        #   When setting a custom path, set SKIP_JAVA_CHECK to false. 
+        #   When setting a custom path, set SKIP_JAVA_CHECK to true. 
         # SKIP_JAVA_CHECK true/false allows you to disable/enable the compatibility check
         #   of your Minecraft version and the provided Java version, as well as the automatic
         #   installation of a compatible Java version, should JAVA be set to 'java'.
