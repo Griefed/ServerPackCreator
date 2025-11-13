@@ -756,13 +756,13 @@ elseif (Test-Path -Path $PreviousRunFile -PathType Leaf)
 
 switch (${ModLoader})
 {
-    Forge
-    {
-        SetupForge
-    }
     NeoForge
     {
         SetupNeoForge
+    }
+    Forge
+    {
+        SetupForge
     }
     Fabric
     {

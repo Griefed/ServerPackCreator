@@ -498,11 +498,11 @@ echo "PREVIOUS_MODLOADER=${MODLOADER}" >>"./.previousrun"
 echo "PREVIOUS_MODLOADER_VERSION=${MODLOADER_VERSION}" >>"./.previousrun"
 
 case ${MODLOADER} in
-  "Forge")
-    setupForge
-    ;;
   "NeoForge")
     setupNeoForge
+    ;;
+  "Forge")
+    setupForge
     ;;
   "Fabric")
     setupFabric
