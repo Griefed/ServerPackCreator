@@ -1,3 +1,26 @@
+## [8.0.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.4...8.0.5) (2025-11-15)
+
+### 💎 Improvements
+
+* Add info blocks about arguments for server admins ([d3a0453](https://git.griefed.de/Griefed/ServerPackCreator/commit/d3a045320acc8efa01b365f00cdb198cb563d707))
+* Make cleanup files configurable. Also rename SSJ Args to SSJ Forge Args to prevent possible confusion ([bd3896f](https://git.griefed.de/Griefed/ServerPackCreator/commit/bd3896f58e6678ba58528dac27b6b81601dbf22c))
+* Move SSJ arg for security manager to separate variable, SSJ_ARGS, in variables ([879f8d1](https://git.griefed.de/Griefed/ServerPackCreator/commit/879f8d16f611ae6c6942d338d5ff186f8ee9d1c1))
+* NeoForge before Forge to rule out [secure] positive ([4711096](https://git.griefed.de/Griefed/ServerPackCreator/commit/4711096ac60f0ba2163979a0b983d60a103f8a58))
+
+### 📦 Other
+
+* Bump jabba to 0.14.0. See https://github.com/Jabba-Team/jabba/discussions/45 for details ([a0d3d02](https://git.griefed.de/Griefed/ServerPackCreator/commit/a0d3d02b61fddd2e7dd8b24ab975082a61bf555c))
+* Remove modloader suffix from entries, improving chances of being excluded ([be93b0b](https://git.griefed.de/Griefed/ServerPackCreator/commit/be93b0bd1a44c39db0b8dc51adef6c71d495b0db))
+* Update version of the agreement'n'stuff ([f45e1e6](https://git.griefed.de/Griefed/ServerPackCreator/commit/f45e1e6f9d32a75827f7d05221f892d5c84b0f61))
+
+### 🦊 CI/CD
+
+* Bump dockerfile versions ([214c1e8](https://git.griefed.de/Griefed/ServerPackCreator/commit/214c1e81b6d9107552b086dfd4df306c2cdd0ccb))
+
+### 🛠 Fixes
+
+* Fix explanation-mistake in the JAVA-description in variables, causing confusion for server-admins ([31e0763](https://git.griefed.de/Griefed/ServerPackCreator/commit/31e076343fb7cf2db274c96fa846c35eb92e4f7a))
+
 ## [8.0.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.3...8.0.4) (2025-11-08)
 
 ### 📦 Other
