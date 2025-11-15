@@ -109,7 +109,13 @@ class ServerPackHandler(
         # JAVA points towards the Java executable/binary the server should use for running. Default is `java`, so it
         #   points towards the system-default, if you have one. Set this to an absolute path, as per the example above
         #   in the "REMEMBER"-part, if you want to force the server to use a different Java installation/version.
-        #   When setting a custom path, set SKIP_JAVA_CHECK to true. 
+        #   When setting a custom path, set SKIP_JAVA_CHECK to true.
+        # JAVA_ARGS are arguments to pass to the JVM / your server. Typical args are 'Xmx4G Xms4g'. Arguments in this
+        #   variable are also written to the 'user_jvm_args.txt' when using modloaders such as Forge.
+        #   More information at https://minecraft.fandom.com/wiki/Tutorials/Setting_up_a_server
+        #   I recommend you read this page at least once.
+        # ADDITIONAL_ARGS are, as the name implies, additional arguments to pass to the server. These arguments are not
+        #   written to any file, they are directly used in the command to run the server.
         # SKIP_JAVA_CHECK true/false allows you to disable/enable the compatibility check
         #   of your Minecraft version and the provided Java version, as well as the automatic
         #   installation of a compatible Java version, should JAVA be set to 'java'.
