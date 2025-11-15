@@ -109,7 +109,13 @@ class ServerPackHandler(
         # JAVA points towards the Java executable/binary the server should use for running. Default is `java`, so it
         #   points towards the system-default, if you have one. Set this to an absolute path, as per the example above
         #   in the "REMEMBER"-part, if you want to force the server to use a different Java installation/version.
-        #   When setting a custom path, set SKIP_JAVA_CHECK to false. 
+        #   When setting a custom path, set SKIP_JAVA_CHECK to true.
+        # JAVA_ARGS are arguments to pass to the JVM / your server. Typical args are 'Xmx4G Xms4g'. Arguments in this
+        #   variable are also written to the 'user_jvm_args.txt' when using modloaders such as Forge.
+        #   More information at https://minecraft.fandom.com/wiki/Tutorials/Setting_up_a_server
+        #   I recommend you read this page at least once.
+        # ADDITIONAL_ARGS are, as the name implies, additional arguments to pass to the server. These arguments are not
+        #   written to any file, they are directly used in the command to run the server.
         # SKIP_JAVA_CHECK true/false allows you to disable/enable the compatibility check
         #   of your Minecraft version and the provided Java version, as well as the automatic
         #   installation of a compatible Java version, should JAVA be set to 'java'.
@@ -139,6 +145,14 @@ class ServerPackHandler(
         # USE_SSJ true/false allows you to enable/disable the usage of the ServerStarterJar by the NeoForge project when you are
         #   using Forge. Some Forge versions may be incompatible with said ServerStarterJar. As of right now, people
         #   ran into trouble when using Forge and Minecraft 1.20.2 and 1.20.3.
+        # SSJ_FORGE_ARGS are additional arguments to use when using the Server Starter Jar from the NeoForge project in
+        #   combination with the Forge-modloader. Some java versions require explicit allowing of the security manager,
+        #   for example.
+        # CLEANUP is a list of comma-separated files which get deleted permanently upon calling the start-script with either
+        #   the --cleanup argument, or when the script detected a previous run with differing versions/modloaders.
+        #   Edit with care!
+        #   Edit at your own risk!
+        #   Editing might lead to unwanted data corruption or deletion!
         #
         # DO NOT EDIT THE FOLLOWING VARIABLES MANUALLY
         #   - FABRIC_INSTALLER_VERSION
@@ -156,10 +170,11 @@ class ServerPackHandler(
         FABRIC_INSTALLER_VERSION=SPC_FABRIC_INSTALLER_VERSION_SPC
         QUILT_INSTALLER_VERSION=SPC_QUILT_INSTALLER_VERSION_SPC
         RECOMMENDED_JAVA_VERSION=SPC_RECOMMENDED_JAVA_VERSION_SPC
-        JAVA_ARGS="SPC_JAVA_ARGS_SPC"
-        JAVA="SPC_JAVA_SPC"
         WAIT_FOR_USER_INPUT=SPC_WAIT_FOR_USER_INPUT_SPC
-        ADDITIONAL_ARGS=SPC_ADDITIONAL_ARGS_SPC
+        JAVA="SPC_JAVA_SPC"
+        JAVA_ARGS="SPC_JAVA_ARGS_SPC"
+        ADDITIONAL_ARGS="SPC_ADDITIONAL_ARGS_SPC"
+        SSJ_FORGE_ARGS="SPC_SSJ_FORGE_ARGS_SPC"
         RESTART=SPC_RESTART_SPC
         SKIP_JAVA_CHECK=SPC_SKIP_JAVA_CHECK_SPC
         JDK_VENDOR=SPC_JDK_VENDOR_SPC
@@ -169,6 +184,7 @@ class ServerPackHandler(
         SERVERSTARTERJAR_FORCE_FETCH=SPC_SERVERSTARTERJAR_FORCE_FETCH_SPC
         SERVERSTARTERJAR_VERSION=SPC_SERVERSTARTERJAR_VERSION_SPC
         USE_SSJ=SPC_USE_SSJ_SPC
+        CLEANUP="SPC_CLEANUP_SPC"
     """.trimIndent()
     private val howToStartTheServer = """
         # How To Start / Run The Server
