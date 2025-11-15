@@ -13,7 +13,7 @@ RUN \
     build --info --full-stacktrace \
     -x :serverpackcreator-api:test -x :serverpackcreator-app:test
 
-FROM ghcr.io/linuxserver/baseimage-ubuntu:noble-version-77608682
+FROM ghcr.io/linuxserver/baseimage-ubuntu:noble
 
 ARG VERSION=dev
 
