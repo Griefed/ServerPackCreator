@@ -1,3 +1,15 @@
+## [8.0.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.5...8.0.6) (2025-11-16)
+
+### 📦 Other
+
+* Add JEI Hover Search to clientside mods ([ac3490f](https://git.griefed.de/Griefed/ServerPackCreator/commit/ac3490fe1692373627f1b9711560126c33652dd7))
+* Copyright year and all that jazz ([8949230](https://git.griefed.de/Griefed/ServerPackCreator/commit/894923024511c936e913f4932af868da7228ea73))
+
+### 🛠 Fixes
+
+* Correctly clean up files from previous run when using PowerShell script ([72ee27f](https://git.griefed.de/Griefed/ServerPackCreator/commit/72ee27f0106c90bdbd74a4d3612576331db9a6e2))
+* Spelling mistake in cleanup values, leading to [secure] entry not being deleted upon cleanup of server pack ([b5af951](https://git.griefed.de/Griefed/ServerPackCreator/commit/b5af95163e213fcb0e333556444a469fdb79bd7d))
+
 ## [8.0.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.4...8.0.5) (2025-11-15)
 
 ### 💎 Improvements
