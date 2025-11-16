@@ -162,6 +162,35 @@ private const val spcUseServerStarterJarKey = "SPC_USE_SSJ_SPC"
 
 private const val spcCleanupKey = "SPC_CLEANUP_SPC"
 
+const val javaKeyDefaultValue = "java"
+const val spcWaitForUserInputKeyDefaultValue = "true"
+const val spcRestartServerKeyDefaultValue = "false"
+const val spcSkipJavaCheckKeyDefaultValue = "false"
+const val spcJDKVendorKeyDefaultValue = "temurin"
+const val spcJabbaInstallURLShKeyDefaultValue = "https://github.com/Jabba-Team/jabba/raw/main/install.sh"
+const val spcJabbaInstallURLPSKeyDefaultValue = "https://github.com/Jabba-Team/jabba/raw/main/install.ps1"
+const val spcJabbaInstallVersionKeyDefaultValue = "0.14.0"
+const val spcAdditionalArgsKeyDefaultValue = "-Dlog4j2.formatMsgNoLookups=true"
+const val spcSSJArgsKeyDefaultValue = "-Djava.security.manager=allow"
+const val spcServerStarterJarForceFetchKeyDefaultValue = "true"
+const val spcServerStarterJarVersionKeyDefaultValue = "latest"
+const val spcUseServerStarterJarKeyDefaultValue = "true"
+const val spcCleanupKeyDefaultValue =
+    "libraries," +
+    "run.sh," +
+    "run.bat," +
+    "*installer.jar," +
+    "*installer.jar.log,server.jar," +
+    ".mixin.out," +
+    "ldlib," +
+    "local," +
+    "fabric-server-launcher.jar," +
+    "fabric-server-launch.jar," +
+    ".fabric-installer," +
+    "fabric-installer.jar," +
+    "legacyfabric-installer.jar," +
+    ".fabric versions"
+
 /**
  * A PackConfig contains the settings required to create a server pack.
  * A configuration model usually consists of:
@@ -353,7 +382,7 @@ open class PackConfig() {
         } catch (ignored: Exception) {
         }
 
-        for ((key,value) in defaultScriptSettings()) {
+        for ((key,value) in defaultScriptValues) {
             if (!scriptSettings.containsKey(key)) {
                 scriptSettings[key] = value
             }
@@ -546,23 +575,21 @@ open class PackConfig() {
     }
 
     companion object {
-        fun defaultScriptSettings(): HashMap<String, String> {
-            return hashMapOf(
-                Pair(javaKey,"java"),
-                Pair(spcWaitForUserInputKey,"true"),
-                Pair(spcRestartServerKey,"false"),
-                Pair(spcSkipJavaCheckKey,"false"),
-                Pair(spcJDKVendorKey,"temurin"),
-                Pair(spcJabbaInstallURLShKey,"https://github.com/Jabba-Team/jabba/raw/main/install.sh"),
-                Pair(spcJabbaInstallURLPSKey,"https://github.com/Jabba-Team/jabba/raw/main/install.ps1"),
-                Pair(spcJabbaInstallVersionKey,"0.14.0"),
-                Pair(spcAdditionalArgsKey,"-Dlog4j2.formatMsgNoLookups=true"),
-                Pair(spcSSJArgsKey,"-Djava.security.manager=allow"),
-                Pair(spcServerStarterJarForceFetchKey, "true"),
-                Pair(spcServerStarterJarVersionKey, "latest"),
-                Pair(spcUseServerStarterJarKey,"true"),
-                Pair(spcCleanupKey, "libraries,run.sh,run.bat,*installer.jar,*installer.jar.log,server.jar,.mixin.out ldlib,local,fabric-server-launcher.jar,fabric-server-launch.jar,.fabric-installer,fabric-nstaller.jar,legacyfabric-installer.jar,.fabric versions"),
-            )
-        }
+        val defaultScriptValues = hashMapOf(
+            Pair(javaKey,javaKeyDefaultValue),
+            Pair(spcWaitForUserInputKey,spcWaitForUserInputKeyDefaultValue),
+            Pair(spcRestartServerKey,spcRestartServerKeyDefaultValue),
+            Pair(spcSkipJavaCheckKey,spcSkipJavaCheckKeyDefaultValue),
+            Pair(spcJDKVendorKey,spcJDKVendorKeyDefaultValue),
+            Pair(spcJabbaInstallURLShKey,spcJabbaInstallURLShKeyDefaultValue),
+            Pair(spcJabbaInstallURLPSKey,spcJabbaInstallURLPSKeyDefaultValue),
+            Pair(spcJabbaInstallVersionKey,spcJabbaInstallVersionKeyDefaultValue),
+            Pair(spcAdditionalArgsKey,spcAdditionalArgsKeyDefaultValue),
+            Pair(spcSSJArgsKey,spcSSJArgsKeyDefaultValue),
+            Pair(spcServerStarterJarForceFetchKey, spcServerStarterJarForceFetchKeyDefaultValue),
+            Pair(spcServerStarterJarVersionKey, spcServerStarterJarVersionKeyDefaultValue),
+            Pair(spcUseServerStarterJarKey,spcUseServerStarterJarKeyDefaultValue),
+            Pair(spcCleanupKey, spcCleanupKeyDefaultValue),
+        )
     }
 }

@@ -630,7 +630,7 @@ class ConfigurationHandler(
         }
 
         // Make sure default values are present
-        for ((key,value) in PackConfig.defaultScriptSettings()) {
+        for ((key,value) in PackConfig.defaultScriptValues) {
             if (!packConfig.scriptSettings.containsKey(key)) {
                 packConfig.scriptSettings[key] = value
             }

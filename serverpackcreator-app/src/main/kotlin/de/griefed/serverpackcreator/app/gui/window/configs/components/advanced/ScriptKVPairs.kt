@@ -50,7 +50,7 @@ class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : Convenient
      * @author Griefed
      */
     override fun loadData(data: HashMap<String, String>, clearDataBeforeLoad: Boolean) {
-        for ((key,value) in PackConfig.defaultScriptSettings()) {
+        for ((key,value) in PackConfig.defaultScriptValues) {
             if (!data.containsKey(key)) {
                 data[key] = value
             }
