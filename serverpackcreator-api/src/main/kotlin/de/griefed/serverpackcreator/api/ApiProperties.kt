@@ -1,4 +1,4 @@
-/* Copyright (C) 2024  Griefed
+/* Copyright (C) 2025 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -467,6 +467,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "itlt-",                        //https://www.curseforge.com/minecraft/mc-mods/its-the-little-things
             "jeed-",                        //https://www.curseforge.com/minecraft/mc-mods/just-enough-effect-descriptions-jeed
             "jehc-",                        //https://www.curseforge.com/minecraft/mc-mods/just-enough-harvestcraft
+            "jei_hover_search-",            //https://www.curseforge.com/minecraft/mc-mods/jei-hover-search
             "jeiintegration_",              //https://www.curseforge.com/minecraft/mc-mods/jei-integration
             "jumpoverfences-",              //https://www.curseforge.com/minecraft/mc-mods/jumpoverfences
             "just-enough-harvestcraft-",    //https://www.curseforge.com/minecraft/mc-mods/just-enough-harvestcraft

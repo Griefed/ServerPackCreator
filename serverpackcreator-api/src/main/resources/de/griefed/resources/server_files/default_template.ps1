@@ -1,5 +1,5 @@
 ###############################################################################################
-# Copyright (C) 2024  Griefed
+# Copyright (C) 2025 Griefed
 #
 # This script is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -98,7 +98,7 @@ Function PauseScript
     Write-Host "Press any key to continue" -ForegroundColor Yellow
     $host.ui.RawUI.ReadKey("NoEcho,IncludeKeyDown") > $null
 
-<#
+    <#
     .SYNOPSIS
 
     Pause script execution. User input in the form of any keyboard key-press is required to continue execution.
@@ -112,14 +112,14 @@ Function CrashServer
     PauseScript
     exit 1
 
-<#
+    <#
     .SYNOPSIS
 
     Crash script execution with exit code 1. Print $1 to the console.
 
     .PARAMETER Message
     The message to print to console before force-stopping script execution.
-#>
+    #>
 }
 
 Function CommandAvailable
@@ -127,14 +127,14 @@ Function CommandAvailable
     param ($CmdName)
     return [bool](Get-Command -Name $CmdName -ErrorAction SilentlyContinue)
 
-<#
+    <#
     .SYNOPSIS
 
     Check whether the command is available for execution. Can be used in if-statements.
 
     .PARAMETER CmdName
     The command to check for availability.
-#>
+    #>
 }
 
 Function GetJavaVersion()
@@ -148,11 +148,11 @@ Function GetJavaVersion()
         $script:JavaVersion = $JavaFullversion[1]
     }
 
-<#
+    <#
     .SYNOPSIS
 
     Set $script:JavaVersion by checking $Java using -fullversion. Only the major version is stored, e.g. 8, 11, 17, 21.
-#>
+    #>
 }
 
 Function InstallJava()
@@ -165,12 +165,12 @@ Function InstallJava()
         CrashServer "Java installation failed. Couldn't find ${Java}."
     }
 
-<#
+    <#
     .SYNOPSIS
 
     Sources the companion-script "install_java.ps1" and runs the contained function "Global:RunJavaInstallation" to install
     the required Java version for this modded Minecraft server.
-#>
+    #>
 }
 
 Function DeleteFileSilently
@@ -187,7 +187,7 @@ Function DeleteFileSilently
     }
     $ErrorActionPreference = "Continue";
 
-<#
+    <#
     .SYNOPSIS
 
     Quietly / silently delete the specified file from the filesystem. If a folder is specified, then the entire
@@ -195,7 +195,7 @@ Function DeleteFileSilently
 
     .PARAMETER FileToDelete
     The file or folder to delete silently, without printing messages or errors to console.
-#>
+    #>
 }
 
 Function WriteFileUTF8NoBom
@@ -206,7 +206,7 @@ Function WriteFileUTF8NoBom
     $Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
     [IO.File]::WriteAllLines(($FilePath | Resolve-Path), $Content, $Utf8NoBomEncoding)
 
-<#
+    <#
     .SYNOPSIS
 
     Write a text-file using UTF-8, but without a BOM. No-BOM UTF-8 files are required by the ServerStarterJar
@@ -219,7 +219,7 @@ Function WriteFileUTF8NoBom
 
     .PARAMETER Content
     The content to print to the file.
-#>
+    #>
 }
 
 Function global:RunJavaCommand
@@ -227,14 +227,14 @@ Function global:RunJavaCommand
     param ($CommandToRun)
     CMD /C "`"${Java}`" ${CommandToRun}"
 
-<#
+    <#
     .SYNOPSIS
 
     Runs the passed string as a Java command with the Java installation set in $Java.
 
     .PARAMETER CommandToRun
     The command to run as a Java command.
-#>
+    #>
 }
 
 Function DownloadIfNotExists
@@ -262,7 +262,7 @@ Function DownloadIfNotExists
         return $false
     }
 
-<#
+    <#
     .SYNOPSIS
 
     Checks whether $FileToCheck exists. If not, then it is downloaded from $DownloadURL and stored as $FileToDownload.
@@ -280,7 +280,7 @@ Function DownloadIfNotExists
     .OUTPUTS
 
     Boolean. $true if the file was downloaded and exists, $false otherwise.
-#>
+    #>
 }
 
 Function global:RefreshServerJar
@@ -302,7 +302,7 @@ Function global:RefreshServerJar
 
     DownloadIfNotExists "server.jar" "server.jar" "${ServerStarterJarDownloadURL}"
 
-<#
+    <#
     .SYNOPSIS
 
     Refresh the ServerStarterJar used for running Forge and NeoForge servers.
@@ -310,24 +310,25 @@ Function global:RefreshServerJar
     Meaning: If true, the server.jar will be deleted and then downloaded again.
     Depending on the value of SERVERSTARTERJAR_VERSION in the variables.txt a different version is fetched. More on
     this value in the variables.txt
-#>
+    #>
 }
 
 Function global:CleanServerFiles
 {
-    $FilesToRemove = ${Cleanup}
     $ErrorActionPreference = "SilentlyContinue";
-    ForEach ($FileToRemove in $FilesToRemove) {
-        Remove-Item "${FileToRemove}" -Recurse -Verbose -ErrorAction SilentlyContinue
+    ForEach ($FileToRemove in $Cleanup)
+    {
+        $ToRemove = -join ($BaseDir.Trim('"'), "\" , ${FileToRemove}.Trim('"'));
+        Remove-Item -Path "${ToRemove}" -Recurse -Force -Verbose -ErrorAction SilentlyContinue
     }
     $ErrorActionPreference = "Continue";
 
-<#
+    <#
     .SYNOPSIS
 
     Clean up files created by installers or modloader servers, but leave server pack files untouched.
     Allows changing and re-installing the modloader, Minecraft and modloader versions.
-#>
+    #>
 }
 
 Function global:SetupForge
@@ -398,12 +399,12 @@ Function global:SetupForge
         WriteFileUTF8NoBom "user_jvm_args.txt" $Content
     }
 
-<#
+    <#
     .SYNOPSIS
 
     Download and install a Forge server for $ModLoaderVersion. For Minecraft 1.17 and newer the ServerStarterJar
     from the NeoForge-group is used. This has the benefit of making this server pack compatible with most hosting-companies.
-#>
+    #>
 }
 
 # If modloader = NeoForge, run NeoForge-specific checks
@@ -437,12 +438,12 @@ Function global:SetupNeoForge
 
     RefreshServerJar
 
-<#
+    <#
     .SYNOPSIS
 
     Download and install a NeoForge server for $ModLoaderVersion. The ServerStarterJar from the NeoForge-group is used.
     This has the benefit of making this server pack compatible with most hosting-companies.
-#>
+    #>
 }
 
 Function global:SetupFabric
@@ -502,13 +503,13 @@ Function global:SetupFabric
     }
     $script:ServerRunCommand = "${script:JavaArgs} -jar ${script:LauncherJarLocation} nogui"
 
-<#
+    <#
     .SYNOPSIS
 
     Download and install a Fabric server for $ModLoaderVersion. If the Fabric Launcher is available for $MinecraftVersion
     and $ModLoaderVersion, it is downloaded and used, otherwise the regular Fabric-installer is downloaded and used.
     Checks are also performed to determine whether Fabric is available for $MinecraftVersion and $ModLoaderVersion.
-#>
+    #>
 }
 
 Function global:SetupQuilt
@@ -538,12 +539,12 @@ Function global:SetupQuilt
     $script:LauncherJarLocation = "quilt-server-launch.jar"
     $script:ServerRunCommand = "${JavaArgs} -jar ${LauncherJarLocation} nogui"
 
-<#
+    <#
     .SYNOPSIS
 
     Download and install a Quilt server for $ModLoaderVersion.
     Checks are also performed to determine whether Quilt is available for $MinecraftVersion.
-#>
+    #>
 }
 
 Function global:SetupLegacyFabric
@@ -573,12 +574,12 @@ Function global:SetupLegacyFabric
     $script:LauncherJarLocation = "fabric-server-launch.jar"
     $script:ServerRunCommand = "${JavaArgs} -jar ${LauncherJarLocation} nogui"
 
-<#
+    <#
     .SYNOPSIS
 
     Download and install a LegacyFabric server for $ModLoaderVersion.
     Checks are also performed to determine whether LegacyFabric is available for $MinecraftVersion.
-#>
+    #>
 }
 
 Write-Host "Start script generated by ServerPackCreator SPC_SERVERPACKCREATOR_VERSION_SPC."
@@ -642,40 +643,11 @@ $ServerRunCommand = "do_not_manually_edit"
 $JavaVersion = "do_not_manually_edit"
 $Semantics = ${MinecraftVersion}.Split(".")
 
-
 # Clears the "" from the beginning and end of the Java, JavaArgs, AdditionalArgs, SSJArgs vars
-if ($Java[0] -eq '"')
-{
-    $Java = $Java.Substring(1, $Java.Length - 1)
-}
-if ($Java[$Java.Length - 1] -eq '"')
-{
-    $Java = $Java.Substring(0, $Java.Length - 1)
-}
-if ($JavaArgs[0] -eq '"')
-{
-    $JavaArgs = $JavaArgs.Substring(1, $JavaArgs.Length - 1)
-}
-if ($JavaArgs[$JavaArgs.Length - 1] -eq '"')
-{
-    $JavaArgs = $JavaArgs.Substring(0, $JavaArgs.Length - 1)
-}
-if ($AdditionalArgs[0] -eq '"')
-{
-    $AdditionalArgs = $AdditionalArgs.Substring(1, $AdditionalArgs.Length - 1)
-}
-if ($AdditionalArgs[$AdditionalArgs.Length - 1] -eq '"')
-{
-    $AdditionalArgs = $AdditionalArgs.Substring(0, $AdditionalArgs.Length - 1)
-}
-if ($SSJForgeArgs[0] -eq '"')
-{
-    $SSJForgeArgs = $SSJForgeArgs.Substring(1, $SSJForgeArgs.Length - 1)
-}
-if ($SSJForgeArgs[$SSJForgeArgs.Length - 1] -eq '"')
-{
-    $SSJForgeArgs = $SSJForgeArgs.Substring(0, $SSJForgeArgs.Length - 1)
-}
+$Java = $Java.Trim('"')
+$JavaArgs = $JavaArgs.Trim('"')
+$AdditionalArgs = $AdditionalArgs.Trim('"')
+$SSJForgeArgs = $SSJForgeArgs.Trim('"')
 
 # If Java checks are desired, then the available Java version is compared to the one required by the Minecraft server.
 # Should no Java be found, or an incorrect version be available, the required one is installed by running installJava.

@@ -1,4 +1,4 @@
-/* Copyright (C) 2024  Griefed
+/* Copyright (C) 2025 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -50,7 +50,7 @@ class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : Convenient
      * @author Griefed
      */
     override fun loadData(data: HashMap<String, String>, clearDataBeforeLoad: Boolean) {
-        for ((key,value) in PackConfig.defaultScriptSettings()) {
+        for ((key,value) in PackConfig.defaultScriptValues) {
             if (!data.containsKey(key)) {
                 data[key] = value
             }

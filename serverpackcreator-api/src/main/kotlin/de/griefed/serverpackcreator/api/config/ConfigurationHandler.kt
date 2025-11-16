@@ -1,4 +1,4 @@
-/* Copyright (C) 2024  Griefed
+/* Copyright (C) 2025 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -630,7 +630,7 @@ class ConfigurationHandler(
         }
 
         // Make sure default values are present
-        for ((key,value) in PackConfig.defaultScriptSettings()) {
+        for ((key,value) in PackConfig.defaultScriptValues) {
             if (!packConfig.scriptSettings.containsKey(key)) {
                 packConfig.scriptSettings[key] = value
             }
