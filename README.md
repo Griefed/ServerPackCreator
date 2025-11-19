@@ -243,48 +243,51 @@ The example below makes use of the `latest`-tag. However, using said tag is not 
 When setting up ServerPackCreator as a webservice for production, make sure to *not* use `latest` and instead use the tag corresponding to the, at this point, latest available release version available.
 
 You must replace `<DB_ROOT_USERNAME>` and `<DB_ROOT_PASSWORD>` accordingly.
+Do note the `- ./init-mongo.js:/docker-entrypoint-initdb.d/init.js:ro` in the **serverpackcreatorb**-service.
+An example for this file is available at [docker/docker/init-mongo.js](docker/init-mongo.js). This init-script initializes
+the MongoDB with the required user, database and collection.
 
 ```yaml
 version: '3'
 services:
-    serverpackcreatordb:
-        image: mongodb/mongodb-community-server:8.0.5-ubuntu2204
-        container_name: serverpackcreatordb
-        restart: unless-stopped
-        environment:
-            MONGO_INITDB_ROOT_USERNAME: <DB_ROOT_USERNAME>
-            MONGO_INITDB_ROOT_PASSWORD: <DB_ROOT_PASSWORD>
-            MONGO_INITDB_DATABASE: serverpackcreatordb
-        volumes:
-            - ./init-mongo.js:/docker-entrypoint-initdb.d/init.js:ro
-            - spcdb-data:/data/db
-            - spcdb-conf:/data/configdb
+  serverpackcreatordb:
+    image: mongodb/mongodb-community-server:8.0.5-ubuntu2204
+    container_name: serverpackcreatordb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: <DB_ROOT_USERNAME>
+      MONGO_INITDB_ROOT_PASSWORD: <DB_ROOT_PASSWORD>
+      MONGO_INITDB_DATABASE: serverpackcreatordb
+    volumes:
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init.js:ro
+      - spcdb-data:/data/db
+      - spcdb-conf:/data/configdb
 
-    serverpackcreator:
-        container_name: serverpackcreator
-        image: griefed/serverpackcreator:latest # For a list of available tags, see https://hub.docker.com/r/griefed/serverpackcreator/tags
-        restart: unless-stopped
-        depends_on:
-            - serverpackcreatordb
-        environment:
-            - TZ=Europe/Berlin # Your timezone
-            - PUID=1000 # Your user ID
-            - PGID=1000 # Your group ID
-            - SPC_DATABASE_PASSWORD=<DB_ROOT_USERNAME> # $ : / ? # [ ] @ those characters must be converted using https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
-            - SPC_DATABASE_USERNAME=<DB_ROOT_PASSWORD> # $ : / ? # [ ] @ those characters must be converted using https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
-            - SPC_DATABASE_HOST=serverpackcreatordb  # Do not change this unless you absolutely know what you are doing.
-            - SPC_DATABASE_PORT=27017  # Do not change this unless you absolutely know what you are doing.
-            - SPC_DATABASE_DB=serverpackcreator # Do not change this unless you absolutely know what you are doing.
-        ports:
-            - "8080:8080" # Port at which SPC will be available at on your host : Port of the webservice inside the container. Only change the left value, it at all.
-        volumes:
-            - ./modpacks:/app/serverpackcreator/modpacks # Path at which modpacks from the container will be stored at on your host : Path to the modpacks in the container. Only change the left value, if at all.
-            - ./server-packs:/app/serverpackcreator/server-packs # Path at which server packs from the container will be stored at on your host : Path to the server packs in the container. Only change the left value, if at all.
-            - ./logs:/app/serverpackcreator/logs # Path at which logs from the container will be stored at on your host : Path to the logs in the container. Only change the left value, if at all.
+  serverpackcreator:
+    container_name: serverpackcreator
+    image: griefed/serverpackcreator:latest # For a list of available tags, see https://hub.docker.com/r/griefed/serverpackcreator/tags
+    restart: unless-stopped
+    depends_on:
+      - serverpackcreatordb
+    environment:
+      - TZ=Europe/Berlin # Your timezone
+      - PUID=1000 # Your user ID
+      - PGID=1000 # Your group ID
+      - SPC_DATABASE_PASSWORD=<DB_ROOT_USERNAME> # $ : / ? # [ ] @ those characters must be converted using https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
+      - SPC_DATABASE_USERNAME=<DB_ROOT_PASSWORD> # $ : / ? # [ ] @ those characters must be converted using https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
+      - SPC_DATABASE_HOST=serverpackcreatordb  # Do not change this unless you absolutely know what you are doing.
+      - SPC_DATABASE_PORT=27017  # Do not change this unless you absolutely know what you are doing.
+      - SPC_DATABASE_DB=serverpackcreator # Do not change this unless you absolutely know what you are doing.
+    ports:
+      - "8080:8080" # Port at which SPC will be available at on your host : Port of the webservice inside the container. Only change the left value, it at all.
+    volumes:
+      - ./modpacks:/app/serverpackcreator/modpacks # Path at which modpacks from the container will be stored at on your host : Path to the modpacks in the container. Only change the left value, if at all.
+      - ./server-packs:/app/serverpackcreator/server-packs # Path at which server packs from the container will be stored at on your host : Path to the server packs in the container. Only change the left value, if at all.
+      - ./logs:/app/serverpackcreator/logs # Path at which logs from the container will be stored at on your host : Path to the logs in the container. Only change the left value, if at all.
 
 volumes:
-    spcdb-data:
-    spcdb-conf:
+  spcdb-data:
+  spcdb-conf:
 ```
 
 ##### 5.1.2.1 Tweaking the docker deployment
