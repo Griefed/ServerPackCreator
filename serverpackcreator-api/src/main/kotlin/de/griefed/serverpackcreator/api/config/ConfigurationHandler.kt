@@ -134,7 +134,7 @@ class ConfigurationHandler(
                 "Couldn't parse config file. Consider checking your config file and fixing empty values. If the value needs to be an empty string, leave its value to \"\"."
             )
 
-            // This log is meant to be read by the user, therefore we allow translation.
+            
             configCheck.configErrors.add(Translations.configuration_log_error_checkconfig_start.toString())
             return configCheck
         }
@@ -181,7 +181,7 @@ class ConfigurationHandler(
         if (!checkIconAndProperties(packConfig.serverIconPath)) {
             configCheck.serverIconErrors.add(Translations.configuration_log_error_servericon(packConfig.serverIconPath))
             log.error("The specified server-icon does not exist: ${packConfig.serverIconPath}")
-            // This log is meant to be read by the user, therefore we allow translation.
+            
         } else if (packConfig.serverIconPath.isNotEmpty()
             && File(packConfig.serverIconPath).exists()
             && !FileUtilities.isReadPermissionSet(packConfig.serverIconPath)
@@ -559,6 +559,7 @@ class ConfigurationHandler(
     fun printConfigurationModel(packConfig: PackConfig) = printConfigurationModel(
         packConfig.modpackDir,
         packConfig.clientMods,
+        packConfig.modsWhitelist,
         packConfig.inclusions,
         packConfig.minecraftVersion,
         packConfig.modloader,
@@ -760,7 +761,7 @@ class ConfigurationHandler(
                             + "ZIP-files for ServerPackCreator must be full modpacks, with all their contents being in the root of the ZIP-file."
                 )
 
-                // This log is meant to be read by the user, therefore we allow translation.
+                
                 configCheck.modpackErrors.add(Translations.configuration_log_error_zip_overrides(foldersInModpackZip[0]))
                 return configCheck
 
@@ -770,14 +771,14 @@ class ConfigurationHandler(
                     "The ZIP-file you specified does not contain the mods or config directories. What use is a modded server without mods and their configurations?"
                 )
 
-                // This log is meant to be read by the user, therefore we allow translation.
+                
                 configCheck.modpackErrors.add(Translations.configuration_log_error_zip_modsorconfig.toString())
                 return configCheck
             }
         } catch (ex: IOException) {
             log.error("Couldn't acquire directories in ZIP-file.", ex)
 
-            // This log is meant to be read by the user, therefore we allow translation.
+            
             configCheck.modpackErrors.add(Translations.configuration_log_error_zip_directories.toString())
             return configCheck
         }
@@ -819,7 +820,7 @@ class ConfigurationHandler(
      * @author Griefed
      */
     fun suggestInclusions(modpackDir: String): ArrayList<InclusionSpecification> {
-        // This log is meant to be read by the user, therefore we allow translation.
+        
         log.info("Preparing a list of directories to include in server pack...")
         var doNotInclude: String
         val listDirectoriesInModpack = File(modpackDir).listFiles()
@@ -976,6 +977,7 @@ class ConfigurationHandler(
     fun printConfigurationModel(
         modpackDirectory: String,
         clientsideMods: List<String>,
+        modsWhitelist: List<String>,
         inclusions: List<InclusionSpecification>,
         minecraftVer: String,
         modloader: String,
@@ -991,15 +993,21 @@ class ConfigurationHandler(
     ) {
         log.info("Your configuration is:")
         log.info("Modpack directory: $modpackDirectory")
+        
         if (clientsideMods.isEmpty()) {
-            // This log is meant to be read by the user, therefore we allow translation.
             log.warn("No client mods specified.")
         } else {
-            // This log is meant to be read by the user, therefore we allow translation.
             log.info("Client mods specified. Client mods are:")
             ListUtilities.printListToLogChunked(clientsideMods, 5, "    ", true)
         }
-        // This log is meant to be read by the user, therefore we allow translation.
+
+        if (modsWhitelist.isEmpty()) {
+            log.info("No whitelisted mods specified.")
+        } else {
+            log.info("Whitelisted mods specified. Whitelisted mods are:")
+            ListUtilities.printListToLogChunked(modsWhitelist, 5, "    ", true)
+        }
+
         log.info("Inclusions:")
         for (i in inclusions.indices) {
             log.info("Inclusion $i:")
@@ -1008,7 +1016,7 @@ class ConfigurationHandler(
             log.info("    %s".format(inclusions[i].inclusionFilter))
             log.info("    %s".format(inclusions[i].exclusionFilter))
         }
-        // This log is meant to be read by the user, therefore we allow translation.
+
         log.info("Minecraft version:                 $minecraftVer")
         log.info("Modloader:                         $modloader")
         log.info("Modloader Version:                 $modloaderVersion")
