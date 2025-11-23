@@ -1,3 +1,13 @@
+## [8.0.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.6...8.0.7) (2025-11-23)
+
+### 📔 Docs
+
+* Add small info-block regarding init-mongo.js ([328408b](https://git.griefed.de/Griefed/ServerPackCreator/commit/328408b07bb76c29bd2daeb1877e118094eceb91))
+
+### 🛠 Fixes
+
+* Apply whitelist on automated exclusions ([df0c2aa](https://git.griefed.de/Griefed/ServerPackCreator/commit/df0c2aa7ebf021b95060381cec31956373ea1368))
+
 ## [8.0.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.5...8.0.6) (2025-11-16)
 
 ### 📦 Other
