@@ -563,7 +563,7 @@ class ServerPackHandler(
         destination: String,
         exclusions: MutableList<Regex>,
         clientMods: List<String>,
-        whitelist: List<String>,
+        modWhitelist: List<String>,
         minecraftVersion: String,
         modloader: String
     ): List<ServerPackFile> {
@@ -620,7 +620,7 @@ class ServerPackHandler(
                 } catch (ignored: IOException) {
                 }
                 acquired = mutableListOf()
-                val mods = compileModList(clientDir.absolutePath, clientMods, whitelist, minecraftVersion, modloader)
+                val mods = compileModList(clientDir.absolutePath, clientMods, modWhitelist, minecraftVersion, modloader)
                 for (mod in mods.first) {
                     acquired.add(ServerPackFile(mod, File(serverDir, mod.name)))
                 }
@@ -668,6 +668,11 @@ class ServerPackHandler(
         return serverPackFiles
     }
 
+    /**
+     * Check all files in [acquired] for matches with [inclusionSpec]. Every match found is returned as a compiled list.
+     *
+     * @author Griefed
+     */
     private fun runFilters(
         acquired: List<ServerPackFile>,
         inclusionSpec: InclusionSpecification,
@@ -1074,8 +1079,8 @@ class ServerPackHandler(
      * active, they will be excluded, too.
      *
      * @param modsDir The mods-directory of the modpack of which to generate a list of all its contents.
-     * @param exclusionStrings A list of all clientside-only mods.
-     * @param whitelistStrings A list of mods to include regardless if a match was found in [exclusionStrings].
+     * @param clientsideModsList A list of all clientside-only mods.
+     * @param modWhitelist A list of mods to include regardless if a match was found in [clientsideModsList].
      * @param minecraftVersion The Minecraft version the modpack uses. When the modloader is Forge, this determines
      * whether Annotations or Tomls are scanned.
      * @param modloader The modloader the modpack uses.
@@ -1084,8 +1089,8 @@ class ServerPackHandler(
      */
     fun compileModList(
         modsDir: String,
-        exclusionStrings: List<String>,
-        whitelistStrings: List<String>,
+        clientsideModsList: List<String>,
+        modWhitelist: List<String>,
         minecraftVersion: String,
         modloader: String
     ): Pair<List<File>,List<File>> {
@@ -1153,9 +1158,31 @@ class ServerPackHandler(
             if (autoDiscoveredClientMods.isNotEmpty()) {
                 log.info("Automatically detected mods: ${autoDiscoveredClientMods.size}")
                 for (discoveredMod in autoDiscoveredClientMods) {
+                    var whitelistMatch = "N/A"
+                    val modName = discoveredMod.name
+                    val isWhitelistedMod = modWhitelist.any { whitelistEntry ->
+                        if (when (apiProperties.exclusionFilter) {
+                                ExclusionFilter.START -> modName.startsWith(whitelistEntry)
+                                ExclusionFilter.END -> modName.endsWith(whitelistEntry)
+                                ExclusionFilter.CONTAIN -> modName.contains(whitelistEntry)
+                                ExclusionFilter.REGEX -> modName.matches(whitelistEntry.toRegex())
+                                ExclusionFilter.EITHER -> (
+                                        modName.startsWith(whitelistEntry) ||
+                                                modName.endsWith(whitelistEntry) ||
+                                                modName.contains(whitelistEntry) ||
+                                                modName.matches(whitelistEntry.toRegex()))
+                            }) {
+                            whitelistMatch = whitelistEntry
+                            log.warn("Prevented automated exclusion of $modName. It's whitelisted with entry: $whitelistMatch")
+                            true
+                        } else {
+                            false
+                        }
+                    }
+
                     modsForServerPack.removeIf {
-                        if (it.name.contains(discoveredMod.name)) {
-                            log.warn("Automatically excluding mod: ${discoveredMod.name}")
+                        if (it.name.contains(modName) && !isWhitelistedMod) {
+                            log.warn("Automatically excluding mod: $modName")
                             disabledMods.add(it)
                             return@removeIf true
                         } else {
@@ -1175,34 +1202,36 @@ class ServerPackHandler(
         }
 
         // Exclude user-specified mods from copying.
-        if (exclusionStrings.isNotEmpty()) {
+        if (clientsideModsList.isNotEmpty()) {
             log.info("Performing ${apiProperties.exclusionFilter}-type checks for user-specified clientside-only mod exclusion.")
 
             modsForServerPack.removeIf { modToCheck ->
                 var excludeMod = false
-                val preventExclusion: Boolean
-                var match = "N/A"
+                val isDependencyMod: Boolean
+                var isWhitelistedMod: Boolean
+                var exclusionMatch = "N/A"
+                var whitelistMatch = "N/A"
                 var dependant = "N/A"
                 val modName = modToCheck.name
-                for (userSpecifiedExclusion in exclusionStrings) {
+                for (userSpecifiedExclusion in clientsideModsList) {
                     excludeMod = when (apiProperties.exclusionFilter) {
-                        ExclusionFilter.START -> modName.startsWith(userSpecifiedExclusion) && !whitelistStrings.any { whitelistedMod -> modName.startsWith(whitelistedMod) }
-                        ExclusionFilter.END -> modName.endsWith(userSpecifiedExclusion) && !whitelistStrings.any { whitelistedMod -> modName.endsWith(whitelistedMod) }
-                        ExclusionFilter.CONTAIN -> modName.contains(userSpecifiedExclusion) && !whitelistStrings.any { whitelistedMod -> modName.contains(whitelistedMod) }
-                        ExclusionFilter.REGEX -> modName.matches(userSpecifiedExclusion.toRegex()) && !whitelistStrings.any { whitelistedMod -> modName.matches(whitelistedMod.toRegex()) }
+                        ExclusionFilter.START -> modName.startsWith(userSpecifiedExclusion)
+                        ExclusionFilter.END -> modName.endsWith(userSpecifiedExclusion)
+                        ExclusionFilter.CONTAIN -> modName.contains(userSpecifiedExclusion)
+                        ExclusionFilter.REGEX -> modName.matches(userSpecifiedExclusion.toRegex())
                         ExclusionFilter.EITHER -> (
-                                (modName.startsWith(userSpecifiedExclusion) && !whitelistStrings.any { whitelistedMod -> modName.startsWith(whitelistedMod) }) ||
-                                        (modName.endsWith(userSpecifiedExclusion) && !whitelistStrings.any { whitelistedMod -> modName.endsWith(whitelistedMod) }) ||
-                                        (modName.contains(userSpecifiedExclusion) && !whitelistStrings.any { whitelistedMod -> modName.contains(whitelistedMod) }) ||
-                                        (modName.matches(userSpecifiedExclusion.toRegex()) && !whitelistStrings.any { whitelistedMod -> modName.matches(whitelistedMod.toRegex()) }))
+                                (modName.startsWith(userSpecifiedExclusion)) ||
+                                        (modName.endsWith(userSpecifiedExclusion)) ||
+                                        (modName.contains(userSpecifiedExclusion)) ||
+                                        (modName.matches(userSpecifiedExclusion.toRegex())))
                     }
                     if (excludeMod) {
-                        match = userSpecifiedExclusion
+                        exclusionMatch = userSpecifiedExclusion
                         break
                     }
                 }
                 if (excludeMod) {
-                    preventExclusion = modDependencies.any { dependency ->
+                    isDependencyMod = modDependencies.any { dependency ->
                         if (modName.startsWith(dependency.first, ignoreCase = true)) {
                             dependant = dependency.second
                             true
@@ -1210,11 +1239,33 @@ class ServerPackHandler(
                             false
                         }
                     }
-                    if (preventExclusion && disabledMods.none { entry -> dependant.contains(entry.name,ignoreCase = true) } && !dependant.contains(modToCheck.name,ignoreCase = true) ) {
-                        log.info("Not excluding $match. It's a dependency for $dependant.")
+
+                    isWhitelistedMod = modWhitelist.any { whitelistEntry ->
+                        if (when (apiProperties.exclusionFilter) {
+                                ExclusionFilter.START -> modName.startsWith(whitelistEntry)
+                                ExclusionFilter.END -> modName.endsWith(whitelistEntry)
+                                ExclusionFilter.CONTAIN -> modName.contains(whitelistEntry)
+                                ExclusionFilter.REGEX -> modName.matches(whitelistEntry.toRegex())
+                                ExclusionFilter.EITHER -> (
+                                        modName.startsWith(whitelistEntry) ||
+                                                modName.endsWith(whitelistEntry) ||
+                                                modName.contains(whitelistEntry) ||
+                                                modName.matches(whitelistEntry.toRegex()))
+                            }) {
+                            whitelistMatch = whitelistEntry
+                            true
+                        } else {
+                            false
+                        }
+                    }
+                    if (isDependencyMod && disabledMods.none { entry -> dependant.contains(entry.name,ignoreCase = true) } && !dependant.contains(modToCheck.name,ignoreCase = true) ) {
+                        log.info("Not excluding $exclusionMatch. It's a dependency for $dependant.")
+                        excludeMod = false
+                    } else if (isWhitelistedMod) {
+                        log.info("Not excluding $modToCheck. It's whitelisted with entry: $whitelistMatch")
                         excludeMod = false
                     } else {
-                        log.info("Excluding ${modToCheck.name}. It matched clientside-mod entry: $match")
+                        log.info("Excluding ${modToCheck.name}. It matched clientside-mod entry: $exclusionMatch")
                         disabledMods.add(modToCheck)
                     }
                 }
