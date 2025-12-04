@@ -273,11 +273,11 @@ services:
       - TZ=Europe/Berlin # Your timezone
       - PUID=1000 # Your user ID
       - PGID=1000 # Your group ID
-      - SPC_DATABASE_PASSWORD=<DB_ROOT_USERNAME> # $ : / ? # [ ] @ those characters must be converted using https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
-      - SPC_DATABASE_USERNAME=<DB_ROOT_PASSWORD> # $ : / ? # [ ] @ those characters must be converted using https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
+      - SPC_DATABASE_PASSWORD=<DB_ROOT_PASSWORD> # $ : / ? # [ ] @ those characters must be converted using https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
+      - SPC_DATABASE_USERNAME=<DB_ROOT_USERNAME> # $ : / ? # [ ] @ those characters must be converted using https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
       - SPC_DATABASE_HOST=serverpackcreatordb  # Do not change this unless you absolutely know what you are doing.
       - SPC_DATABASE_PORT=27017  # Do not change this unless you absolutely know what you are doing.
-      - SPC_DATABASE_DB=serverpackcreator # Do not change this unless you absolutely know what you are doing.
+      - SPC_DATABASE_DB=serverpackcreatordb # Do not change this unless you absolutely know what you are doing.
     ports:
       - "8080:8080" # Port at which SPC will be available at on your host : Port of the webservice inside the container. Only change the left value, it at all.
     volumes:
