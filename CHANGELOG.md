@@ -1,3 +1,77 @@
+## [8.0.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.6...8.0.7) (2025-11-23)
+
+### 📔 Docs
+
+* Add small info-block regarding init-mongo.js ([328408b](https://git.griefed.de/Griefed/ServerPackCreator/commit/328408b07bb76c29bd2daeb1877e118094eceb91))
+
+### 🛠 Fixes
+
+* Apply whitelist on automated exclusions ([df0c2aa](https://git.griefed.de/Griefed/ServerPackCreator/commit/df0c2aa7ebf021b95060381cec31956373ea1368))
+
+## [8.0.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.5...8.0.6) (2025-11-16)
+
+### 📦 Other
+
+* Add JEI Hover Search to clientside mods ([ac3490f](https://git.griefed.de/Griefed/ServerPackCreator/commit/ac3490fe1692373627f1b9711560126c33652dd7))
+* Copyright year and all that jazz ([8949230](https://git.griefed.de/Griefed/ServerPackCreator/commit/894923024511c936e913f4932af868da7228ea73))
+
+### 🛠 Fixes
+
+* Correctly clean up files from previous run when using PowerShell script ([72ee27f](https://git.griefed.de/Griefed/ServerPackCreator/commit/72ee27f0106c90bdbd74a4d3612576331db9a6e2))
+* Spelling mistake in cleanup values, leading to [secure] entry not being deleted upon cleanup of server pack ([b5af951](https://git.griefed.de/Griefed/ServerPackCreator/commit/b5af95163e213fcb0e333556444a469fdb79bd7d))
+
+## [8.0.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.4...8.0.5) (2025-11-15)
+
+### 💎 Improvements
+
+* Add info blocks about arguments for server admins ([d3a0453](https://git.griefed.de/Griefed/ServerPackCreator/commit/d3a045320acc8efa01b365f00cdb198cb563d707))
+* Make cleanup files configurable. Also rename SSJ Args to SSJ Forge Args to prevent possible confusion ([bd3896f](https://git.griefed.de/Griefed/ServerPackCreator/commit/bd3896f58e6678ba58528dac27b6b81601dbf22c))
+* Move SSJ arg for security manager to separate variable, SSJ_ARGS, in variables ([879f8d1](https://git.griefed.de/Griefed/ServerPackCreator/commit/879f8d16f611ae6c6942d338d5ff186f8ee9d1c1))
+* NeoForge before Forge to rule out [secure] positive ([4711096](https://git.griefed.de/Griefed/ServerPackCreator/commit/4711096ac60f0ba2163979a0b983d60a103f8a58))
+
+### 📦 Other
+
+* Bump jabba to 0.14.0. See https://github.com/Jabba-Team/jabba/discussions/45 for details ([a0d3d02](https://git.griefed.de/Griefed/ServerPackCreator/commit/a0d3d02b61fddd2e7dd8b24ab975082a61bf555c))
+* Remove modloader suffix from entries, improving chances of being excluded ([be93b0b](https://git.griefed.de/Griefed/ServerPackCreator/commit/be93b0bd1a44c39db0b8dc51adef6c71d495b0db))
+* Update version of the agreement'n'stuff ([f45e1e6](https://git.griefed.de/Griefed/ServerPackCreator/commit/f45e1e6f9d32a75827f7d05221f892d5c84b0f61))
+
+### 🦊 CI/CD
+
+* Bump dockerfile versions ([214c1e8](https://git.griefed.de/Griefed/ServerPackCreator/commit/214c1e81b6d9107552b086dfd4df306c2cdd0ccb))
+
+### 🛠 Fixes
+
+* Fix explanation-mistake in the JAVA-description in variables, causing confusion for server-admins ([31e0763](https://git.griefed.de/Griefed/ServerPackCreator/commit/31e076343fb7cf2db274c96fa846c35eb92e4f7a))
+
+## [8.0.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.3...8.0.4) (2025-11-08)
+
+### 📦 Other
+
+* Add alternative capitalization of GPUTape ([c466121](https://git.griefed.de/Griefed/ServerPackCreator/commit/c4661219e620dab1e8cb730f1449e1f56d89d2f8))
+* Add EMF and ETF to clientside mods list ([f5080b6](https://git.griefed.de/Griefed/ServerPackCreator/commit/f5080b69725c199734f86b9e1fe44e2334b28f4b))
+* Add FancyBlockParticles, Inline Tooltips, Better HP, AI FTB Translator, McQoy ([9dffde3](https://git.griefed.de/Griefed/ServerPackCreator/commit/9dffde39202bec1cb3139b8e5aced076d0377a8f))
+
+### 🦊 CI/CD
+
+* **deps-dev:** bump @eslint/js in /serverpackcreator-web-frontend ([dc5da85](https://git.griefed.de/Griefed/ServerPackCreator/commit/dc5da85bf7cd97f220445bab395de5f5ebf61fb3))
+* **deps-dev:** bump @quasar/app-vite ([5fab607](https://git.griefed.de/Griefed/ServerPackCreator/commit/5fab6076831c204c7d812f0ab8c73a95b8bf108e))
+* **deps-dev:** bump eslint in /serverpackcreator-web-frontend ([c90dafa](https://git.griefed.de/Griefed/ServerPackCreator/commit/c90dafa5760a2199297c8179da32c8785041c7e8))
+* **deps-dev:** bump globals in /serverpackcreator-web-frontend ([1374711](https://git.griefed.de/Griefed/ServerPackCreator/commit/1374711a274588f18623bc89f23375ae1e3e16a6))
+* **deps:** bump actions/download-artifact from 5 to 6 ([9486d57](https://git.griefed.de/Griefed/ServerPackCreator/commit/9486d57c89407582a9b9752766e71f42b15c153c))
+* **deps:** bump actions/upload-artifact from 4 to 5 ([896647a](https://git.griefed.de/Griefed/ServerPackCreator/commit/896647af00e8be0bb084b32453de4f904ff4bdf5))
+* **deps:** bump com.electronwill.night-config:toml ([3162897](https://git.griefed.de/Griefed/ServerPackCreator/commit/31628970a8d9d3822a90627b15e0a136f16261d3))
+* **deps:** bump com.fasterxml.jackson.module:jackson-module-kotlin ([e8e4e64](https://git.griefed.de/Griefed/ServerPackCreator/commit/e8e4e648acfb1a637f5d68f5d3252ae3a169c2b6))
+* **deps:** bump de.comahe.i18n4k in /serverpackcreator-plugin-example ([08621bd](https://git.griefed.de/Griefed/ServerPackCreator/commit/08621bdf9e652e5c9486c8eb566eec1b51be96fe))
+* **deps:** bump de.comahe.i18n4k:i18n4k-core in /serverpackcreator-api ([938ee37](https://git.griefed.de/Griefed/ServerPackCreator/commit/938ee3789f10e66eec98e9e62c39f5075edc3551))
+* **deps:** bump org.apache.logging.log4j:log4j-core ([04db68d](https://git.griefed.de/Griefed/ServerPackCreator/commit/04db68db72bb2d7e1107e7f45d1ef342e75fd47c))
+* **deps:** bump org.jetbrains.kotlin:kotlin-test ([01f2108](https://git.griefed.de/Griefed/ServerPackCreator/commit/01f2108b3342ba9ddf2a6bce46186afc06239769))
+* **deps:** bump org.jetbrains.kotlinx:kotlinx-datetime ([3583c33](https://git.griefed.de/Griefed/ServerPackCreator/commit/3583c33e4dfae8e71a812ddf9c98973f9866d6ac))
+* **deps:** bump org.junit.jupiter:junit-jupiter-engine ([c6f59eb](https://git.griefed.de/Griefed/ServerPackCreator/commit/c6f59eb770ca84411d87457197a2578e4bea3e2f))
+* **deps:** bump org.springframework.boot:spring-boot-starter-data-mongodb ([58f42b1](https://git.griefed.de/Griefed/ServerPackCreator/commit/58f42b10f0014b677c594922dac03534f14e5fa4))
+* **deps:** bump org.springframework.boot:spring-boot-starter-log4j2 ([56da973](https://git.griefed.de/Griefed/ServerPackCreator/commit/56da97323cc3ba0754fddee2d5f4157000e25820))
+* **deps:** bump softprops/action-gh-release from 2.3.3 to 2.4.1 ([7c3df8b](https://git.griefed.de/Griefed/ServerPackCreator/commit/7c3df8b4593d2566a4bb663aa4b5ac032f5bc4b1))
+* **deps:** bump vue-router in /serverpackcreator-web-frontend ([e573891](https://git.griefed.de/Griefed/ServerPackCreator/commit/e5738912ae91741f93bca0a70598c6b6561f7723))
+
 ## [8.0.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.2...8.0.3) (2025-11-02)
 
 ### 📔 Docs
