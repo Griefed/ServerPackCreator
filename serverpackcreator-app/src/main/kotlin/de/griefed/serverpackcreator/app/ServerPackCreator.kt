@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.app
 
 import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.fonts.jetbrains_mono.FlatJetBrainsMonoFont
-import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMaterialDarkerIJTheme
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMTMaterialDarkerIJTheme
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.utilities.common.JarInformation
 import de.griefed.serverpackcreator.api.utilities.common.JarUtilities
@@ -72,7 +72,7 @@ class ServerPackCreator(private val args: Array<String>) {
 
             FlatJetBrainsMonoFont.install()
             FlatLaf.setPreferredFontFamily(FlatJetBrainsMonoFont.FAMILY)
-            FlatMaterialDarkerIJTheme.setup()
+            FlatMTMaterialDarkerIJTheme.setup()
 
             val decision = JOptionPane.showConfirmDialog(
                 null,
