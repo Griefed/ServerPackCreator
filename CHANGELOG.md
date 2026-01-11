@@ -1,3 +1,22 @@
+## [8.0.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.7...8.0.8) (2026-01-11)
+
+### 💈 Style
+
+* fix indentation ([5c272a1](https://git.griefed.de/Griefed/ServerPackCreator/commit/5c272a14bd189f1c94f30368f0a8edaf67bd46e5))
+
+### 💎 Improvements
+
+* Add datapacks to default list of included directories ([f2a6c6c](https://git.griefed.de/Griefed/ServerPackCreator/commit/f2a6c6c0d25e743c21120e9993b4f08dd70e348c))
+
+### 📔 Docs
+
+* Fix db-name in compose example ([13d416d](https://git.griefed.de/Griefed/ServerPackCreator/commit/13d416d3caa6e9e447407a0014b9d4a898b95cd8))
+* Fix db-name in compose example ([74c95ce](https://git.griefed.de/Griefed/ServerPackCreator/commit/74c95ce626c10b74abd3a1a0043ad395da136050))
+
+### 📦 Other
+
+* Add Vramo to list of clientside mods. ([29da7d0](https://git.griefed.de/Griefed/ServerPackCreator/commit/29da7d069ede8cabec70c8db7c860c01b593be22))
+
 ## [8.0.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.6...8.0.7) (2025-11-23)
 
 ### 📔 Docs
