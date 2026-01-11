@@ -362,7 +362,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "blinkload-",                   //https://www.curseforge.com/minecraft/mc-mods/blinkload
             "block-counter-",               //https://www.curseforge.com/minecraft/mc-mods/block-counter
             "blur-",                        //https://www.curseforge.com/minecraft/mc-mods/blur
-            "borderless-",            //https://www.curseforge.com/minecraft/mc-mods/borderless
+            "borderless-",                  //https://www.curseforge.com/minecraft/mc-mods/borderless
             "cat_jam-",                     //https://www.curseforge.com/minecraft/mc-mods/cat_jam
             "catalogue-",                   //https://www.curseforge.com/minecraft/mc-mods/catalogue
             "cave_dust-",                   //https://www.curseforge.com/minecraft/mc-mods/cave-dust
@@ -584,7 +584,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "sounds-",                      //https://www.curseforge.com/minecraft/mc-mods/sound
             "spoticraft-",                  //https://www.curseforge.com/minecraft/mc-mods/spoticraft-inactive and https://www.curseforge.com/minecraft/mc-mods/spoticraft-2
             "status-effect-bars-",          //https://www.curseforge.com/minecraft/mc-mods/status-effect-bars
-            "skinlayers3d-",           //https://www.curseforge.com/minecraft/mc-mods/skin-layers-3d
+            "skinlayers3d-",                //https://www.curseforge.com/minecraft/mc-mods/skin-layers-3d
             "talkingheads-",                //https://www.curseforge.com/minecraft/mc-mods/talkingheads
             "tconplanner-",                 //https://www.curseforge.com/minecraft/mc-mods/tinkers-planner
             "textrues_embeddium_options-",  //https://www.curseforge.com/minecraft/mc-mods/textrues-embeddium-options
@@ -601,7 +601,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "viaforge-",                    //https://www.curseforge.com/minecraft/mc-mods/viaforge
             "wakes-",                       //https://www.curseforge.com/minecraft/mc-mods/wakes
             "watermedia-",                  //https://www.curseforge.com/minecraft/mc-mods/watermedia
-            "whats-that-slot-",       //https://www.curseforge.com/minecraft/mc-mods/whats-that-slot
+            "whats-that-slot-",             //https://www.curseforge.com/minecraft/mc-mods/whats-that-slot
             "wheredididie-",                //https://www.curseforge.com/minecraft/mc-mods/where-did-i-die
             "wisla-",                       //https://www.curseforge.com/minecraft/mc-mods/wisla
             "xenon-",                       //https://www.curseforge.com/minecraft/mc-mods/xenon
