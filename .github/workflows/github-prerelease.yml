@@ -18,7 +18,7 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -37,7 +37,7 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -98,7 +98,7 @@ jobs:
           cp checksum.txt ${{ needs.preparations.outputs.version }}/
 
       # UPLOAD ARTIFACTS
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         if: ${{ always() }}
         with:
           name: jar-media-build-artifacts
@@ -111,7 +111,7 @@ jobs:
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
       # UPLOAD ARTIFACTS
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         if: ${{ always() }}
         with:
           name: jar-media-release
@@ -128,7 +128,7 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -169,7 +169,7 @@ jobs:
             printf "\n\n............\n\nRelease notes truncated. For more details, see the [CHANGELOG](https://github.com/Griefed/ServerPackCreator/blob/${{ needs.preparations.outputs.version }}/CHANGELOG.md).\n\n" >> description.txt
           fi
 
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: jar-media-release
           path: ${{ needs.preparations.outputs.version }}
@@ -186,7 +186,7 @@ jobs:
       # GENERATE RELEASE
       - name: Create Release
         id: create_release
-        uses: softprops/action-gh-release@v2.4.1
+        uses: softprops/action-gh-release@v2.5.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{ needs.preparations.outputs.version }}
