@@ -15,8 +15,8 @@ dependencies {
     api("io.github.microutils:kotlin-logging:3.0.5")
     api("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1-0.6.x-compat")
     api("de.jensklingenberg.ktorfit:ktorfit-lib:2.7.1")
-    implementation("org.jetbrains.kotlin:kotlin-bom:2.2.21")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.2.21")
+    implementation("org.jetbrains.kotlin:kotlin-bom:2.3.0")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.0")
     api("de.comahe.i18n4k:i18n4k-core:0.11.1")
     api("de.comahe.i18n4k:i18n4k-core-jvm:0.11.1")
     implementation(files("${layout.buildDirectory.asFile.get()}/resources/main"))
@@ -32,7 +32,7 @@ dependencies {
     api("com.github.MCRcortex:nekodetector:Version-1.1-pre")
     //api("dev.kosmx.needle:jneedle:1.0.1")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test:2.2.21")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:2.3.0")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.4")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.4")
 }
