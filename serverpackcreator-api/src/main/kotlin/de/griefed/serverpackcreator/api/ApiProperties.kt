@@ -320,6 +320,9 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "TravelersTitles-",             //https://www.curseforge.com/minecraft/mc-mods/travelers-titles
             "VoidFog-",                     //https://www.curseforge.com/minecraft/mc-mods/void-fog
             "VR-Combat_",                   //https://www.curseforge.com/minecraft/mc-mods/vr-combat
+            "Vramo21-",                     //https://www.curseforge.com/minecraft/mc-mods/vramo
+            "Vramo-",                       //https://www.curseforge.com/minecraft/mc-mods/vramo
+            "vramo-",                       //https://www.curseforge.com/minecraft/mc-mods/vramo
             "WindowedFullscreen-",          //https://www.curseforge.com/minecraft/mc-mods/windowed-fullscreen
             "WorldNameRandomizer-",         //https://www.curseforge.com/minecraft/mc-mods/world-name-randomizer
             "YeetusExperimentus-",          //https://www.curseforge.com/minecraft/mc-mods/yeetusexperimentus
