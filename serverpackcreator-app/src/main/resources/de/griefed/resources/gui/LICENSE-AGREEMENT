@@ -520,7 +520,7 @@ URL: https://www.gnu.org/licenses/lgpl-3.0.txt
 (3 of 41)
 Group:   com.fasterxml.jackson.core
 Name:    jackson-databind
-Version: 2.20.0
+Version: 2.20.1
 Project URL: https://github.com/FasterXML/jackson\n\n
 Manifest license URL: https://www.apache.org/licenses/LICENSE-2.0
 
@@ -3207,7 +3207,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (19 of 41)
 Group:   de.jensklingenberg.ktorfit
 Name:    ktorfit-lib
-Version: 2.5.1
+Version: 2.7.1
 POM Project URL: https://github.com/Foso/Ktorfit
 
 
@@ -3808,7 +3808,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (28 of 41)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-bom
-Version: 2.2.21
+Version: 2.3.0
 POM Project URL: https://kotlinlang.org/
 
 
@@ -3868,7 +3868,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (31 of 41)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-stdlib
-Version: 2.2.20
+Version: 2.2.21
 POM Project URL: https://kotlinlang.org/
 
 
@@ -3888,7 +3888,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (32 of 41)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-stdlib
-Version: 2.2.21
+Version: 2.3.0
 POM Project URL: https://kotlinlang.org/
 
 
@@ -3985,7 +3985,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (37 of 41)
 Group:   org.springframework.boot
 Name:    spring-boot-devtools
-Version: 3.5.7
+Version: 4.0.1
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -4198,7 +4198,7 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 3.5.7
+Spring Boot 4.0.1
 Copyright (c) 2012-2025 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
@@ -4210,7 +4210,7 @@ the License.
 (38 of 41)
 Group:   org.springframework.boot
 Name:    spring-boot-starter-data-mongodb
-Version: 3.5.7
+Version: 4.0.1
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -4423,7 +4423,7 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 3.5.7
+Spring Boot 4.0.1
 Copyright (c) 2012-2025 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
@@ -4435,7 +4435,7 @@ the License.
 (39 of 41)
 Group:   org.springframework.boot
 Name:    spring-boot-starter-log4j2
-Version: 3.5.7
+Version: 4.0.1
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -4648,7 +4648,7 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 3.5.7
+Spring Boot 4.0.1
 Copyright (c) 2012-2025 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
@@ -4660,7 +4660,7 @@ the License.
 (40 of 41)
 Group:   org.springframework.boot
 Name:    spring-boot-starter-web
-Version: 3.5.7
+Version: 4.0.1
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -4873,7 +4873,7 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 3.5.7
+Spring Boot 4.0.1
 Copyright (c) 2012-2025 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
