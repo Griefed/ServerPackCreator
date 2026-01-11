@@ -618,6 +618,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "config",
             "configs",
             "customnpcs",
+            "datapacks",
             "defaultconfigs",
             "global_data_packs",
             "global_packs",
