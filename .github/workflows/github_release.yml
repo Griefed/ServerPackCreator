@@ -96,7 +96,7 @@ jobs:
           cp checksum.txt ${{ needs.preparations.outputs.version }}/
 
       # UPLOAD ARTIFACTS
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         if: ${{ always() }}
         with:
           name: jar-media-build-artifacts
@@ -109,7 +109,7 @@ jobs:
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
       # UPLOAD ARTIFACTS
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         if: ${{ always() }}
         with:
           name: jar-media-release
@@ -275,7 +275,7 @@ jobs:
       - name: Build documentation
         run: ./gradlew :serverpackcreator-api:dokkaGenerateHtml -Pversion="${{ needs.preparations.outputs.version }}" --full-stacktrace --info -x test
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: build-artifacts
           path: serverpackcreator-api/build/dokka/
