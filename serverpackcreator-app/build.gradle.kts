@@ -38,7 +38,7 @@ dependencies {
     //GUI
     api("commons-io:commons-io:2.20.0")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.10.2")
-    api("org.jetbrains.kotlin:kotlin-reflect:2.0.0")
+    api("org.jetbrains.kotlin:kotlin-reflect:2.3.0")
     api("com.formdev:flatlaf:3.6.2")
     api("com.formdev:flatlaf-extras:3.6")
     api("com.formdev:flatlaf-intellij-themes:3.5.4")
@@ -54,7 +54,7 @@ dependencies {
     compileOnly("com.install4j:install4j-runtime:11.0.4")
 
     //WEB
-    api("org.jetbrains.kotlin:kotlin-reflect:2.1.21")
+    api("org.jetbrains.kotlin:kotlin-reflect:2.3.0")
     api("com.fasterxml.jackson.module:jackson-module-kotlin:2.20.1")
     api("org.springframework.boot:spring-boot-starter-web:3.5.7")
     api("org.springframework.boot:spring-boot-starter-log4j2:3.5.7")
