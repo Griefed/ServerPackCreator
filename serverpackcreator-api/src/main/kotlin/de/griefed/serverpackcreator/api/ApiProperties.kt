@@ -528,6 +528,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "nopotionshift_",               //https://www.curseforge.com/minecraft/mc-mods/no-potion-shift
             "nostartupmessages-",           //https://www.curseforge.com/minecraft/mc-mods/no-startup-messages-please
             "notenoughanimations-",         //https://www.curseforge.com/minecraft/mc-mods/not-enough-animations
+            "obscure_tooltips_fix-",        //https://www.curseforge.com/minecraft/mc-mods/obscure-tooltips-fix
             "oculus-",                      //https://www.curseforge.com/minecraft/mc-mods/oculus
             "omegamute-",                   //https://www.curseforge.com/minecraft/mc-mods/omega-mute
             "optigui-",                     //https://www.curseforge.com/minecraft/mc-mods/optigui
