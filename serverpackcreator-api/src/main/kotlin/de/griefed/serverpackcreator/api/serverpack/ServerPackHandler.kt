@@ -93,7 +93,8 @@ class ServerPackHandler(
     val log by lazy { cachedLoggerOf(this.javaClass) }
     val modFileEndings = listOf("jar", "disabled")
 
-    val variables = """
+    //TODO move to template file, just like the scripts.
+    val variables = """ 
         ###
         # REMEMBER:
         #   Escape \ and : in your Java path on Windows with another \
