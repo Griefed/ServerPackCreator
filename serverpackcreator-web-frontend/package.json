@@ -21,12 +21,12 @@
     "pinia": "^3.0.3",
     "@quasar/extras": "^1.17.0",
     "quasar": "^2.18.5",
-    "vue": "^3.5.17",
+    "vue": "^3.5.27",
     "vue-router": "^4.6.3"
   },
   "devDependencies": {
     "@intlify/unplugin-vue-i18n": "^11.0.1",
-    "@eslint/js": "^9.39.0",
+    "@eslint/js": "^9.39.2",
     "eslint": "^9.39.1",
     "eslint-plugin-vue": "^10.4.0",
     "globals": "^16.5.0",
