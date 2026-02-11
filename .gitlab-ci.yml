@@ -131,8 +131,8 @@ Qodana Post:
 Docker Test:
   stage: Tests
   before_script:
-    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - echo "$DOCKERHUB_TOKEN" | docker login docker.io -u "$DOCKERHUB_USER" --password-stdin
+    - echo "$GITHUB_TOKEN"    | docker login ghcr.io   -u "$DOCKERHUB_USER" --password-stdin
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - docker buildx create --use --name grfdbuilder
   script:
@@ -292,8 +292,8 @@ Build Docker Release:
       artifacts: true
       optional: false
   before_script:
-    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - echo "$DOCKERHUB_TOKEN" | docker login docker.io -u "$DOCKERHUB_USER" --password-stdin
+    - echo "$GITHUB_TOKEN"    | docker login ghcr.io   -u "$DOCKERHUB_USER" --password-stdin
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - docker buildx create --use --name grfdbuilder
   script:
@@ -314,8 +314,8 @@ Build Docker PreRelease:
       artifacts: true
       optional: false
   before_script:
-    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - echo "$DOCKERHUB_TOKEN" | docker login docker.io -u "$DOCKERHUB_USER" --password-stdin
+    - echo "$GITHUB_TOKEN"    | docker login ghcr.io   -u "$DOCKERHUB_USER" --password-stdin
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - docker buildx create --use --name grfdbuilder
   script:
@@ -366,8 +366,8 @@ Writerside Docker:
       artifacts: true
       optional: false
   before_script:
-    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - echo "$DOCKERHUB_TOKEN" | docker login docker.io -u "$DOCKERHUB_USER" --password-stdin
+    - echo "$GITHUB_TOKEN"    | docker login ghcr.io   -u "$DOCKERHUB_USER" --password-stdin
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - docker buildx create --use --name grfdbuilder
   script:
@@ -387,8 +387,8 @@ Writerside Docker Latest:
       artifacts: true
       optional: false
   before_script:
-    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - echo "$DOCKERHUB_TOKEN" | docker login docker.io -u "$DOCKERHUB_USER" --password-stdin
+    - echo "$GITHUB_TOKEN"    | docker login ghcr.io   -u "$DOCKERHUB_USER" --password-stdin
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - docker buildx create --use --name grfdbuilder
   script:
@@ -409,8 +409,8 @@ Writerside Docker Prerelease:
       artifacts: true
       optional: false
   before_script:
-    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - echo "$DOCKERHUB_TOKEN" | docker login docker.io -u "$DOCKERHUB_USER" --password-stdin
+    - echo "$GITHUB_TOKEN"    | docker login ghcr.io   -u "$DOCKERHUB_USER" --password-stdin
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - docker buildx create --use --name grfdbuilder
   script:
