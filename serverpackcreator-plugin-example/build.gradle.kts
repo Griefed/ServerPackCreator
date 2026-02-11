@@ -30,8 +30,8 @@ val pluginDescription = "An example plugin for ServerPackCreator, written in Kot
 val pluginAuthor = "Griefed"
 
 dependencies {
-    annotationProcessor("org.pf4j:pf4j:3.13.0")
-    kapt("org.pf4j:pf4j:3.13.0")
+    annotationProcessor("org.pf4j:pf4j:3.15.0")
+    kapt("org.pf4j:pf4j:3.15.0")
     /*
      * CAUTION: When copying the code of the example plugin, make sure to change the dependency on
      * the API to implementation("de.griefed:serverpackcreator:serverpackcreator-api:$VERSION")
@@ -40,8 +40,8 @@ dependencies {
 
 
     // Testing
-    testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.1")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.0.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.0.2")
 }
 
 tasks.processResources {
