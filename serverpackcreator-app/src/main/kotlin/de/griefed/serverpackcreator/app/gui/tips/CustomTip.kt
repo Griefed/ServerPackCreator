@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.app.gui.tips
 
-import tokyo.northside.swing.tips.DefaultTip
+import tokyo.northside.tipoftheday.tips.DefaultTip
 import javax.swing.ImageIcon
 
 /**
