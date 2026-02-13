@@ -24,7 +24,7 @@ dependencies {
     api("com.fasterxml.jackson.core:jackson-databind:2.20.0")
     api("net.lingala.zip4j:zip4j:2.11.5")
     api("org.apache.logging.log4j:log4j-api-kotlin:1.5.0")
-    api("org.apache.logging.log4j:log4j-core:2.25.2")
+    api("org.apache.logging.log4j:log4j-core:2.25.3")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     api("org.pf4j:pf4j:3.13.0")
     api("org.bouncycastle:bcpkix-jdk18on:1.81")
@@ -32,9 +32,8 @@ dependencies {
     api("com.github.MCRcortex:nekodetector:Version-1.1-pre")
     //api("dev.kosmx.needle:jneedle:1.0.1")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test:2.3.10")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.4")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.4")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.10")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.2")
 }
 
 tasks.sourcesJar {

@@ -38,10 +38,9 @@ dependencies {
      */
     implementation(project(":serverpackcreator-api"))
 
-
     // Testing
-    testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.0.2")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.10")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.2")
 }
 
 tasks.processResources {
