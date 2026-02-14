@@ -21,7 +21,6 @@ package de.griefed.serverpackcreator.app.gui.window.settings.components
 
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.app.gui.components.BaseFileChooser
-import javax.swing.filechooser.FileNameExtensionFilter
 
 /**
  * Customized filechooser for picking the Java executable with which server installations will be performed.

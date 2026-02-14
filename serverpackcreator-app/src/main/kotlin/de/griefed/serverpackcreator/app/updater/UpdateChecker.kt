@@ -86,7 +86,7 @@ class UpdateChecker(private val apiProperties: ApiProperties) {
     fun checkForUpdate(version: String, preReleaseCheck: Boolean): Optional<Update> {
         if (version.equals("dev", ignoreCase = true) || gitHub == null) {
             log.warn("Not checking for updates. Either using a dev-version, or GitHub Checking is not initialized.")
-            return Optional.empty<Update>()
+            return Optional.empty()
         }
         log.debug("Checking GitHub for updates...")
         return gitHub!!.check(version, preReleaseCheck)

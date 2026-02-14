@@ -12,7 +12,7 @@ jobs:
     steps:
 
       - name: Checkout latest code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -30,7 +30,7 @@ jobs:
 
       - uses: luangong/setup-install4j@v1
         with:
-          version: '11.0'
+          version: '12.0.2'
           license: ${{ secrets.INSTALL4J_LICENSE }}
 
       - name: Remove install4j script

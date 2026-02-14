@@ -21,6 +21,8 @@ package de.griefed.serverpackcreator.app.gui.window.configs
 
 import Translations
 import com.electronwill.nightconfig.core.CommentedConfig
+import com.formdev.flatlaf.util.SystemFileChooser
+import com.formdev.flatlaf.util.SystemFileChooser.FILES_ONLY
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.config.ConfigCheck
 import de.griefed.serverpackcreator.api.config.InclusionSpecification
@@ -39,7 +41,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import java.awt.Dimension
 import java.awt.event.ActionListener
 import java.io.File
 import java.io.IOException
@@ -1281,7 +1282,7 @@ class ConfigEditor(
      * @author Griefed
      */
     private fun chooseJava() {
-        val javaChooser = JFileChooser()
+        val javaChooser = SystemFileChooser()
         if (File("%s/bin/".format(System.getProperty("java.home"))).isDirectory) {
             javaChooser.currentDirectory = File("%s/bin/".format(System.getProperty("java.home")))
         } else {
@@ -1289,10 +1290,10 @@ class ConfigEditor(
         }
         javaChooser.isFileHidingEnabled = false
         javaChooser.dialogTitle = Translations.createserverpack_gui_buttonjavapath_tile.toString()
-        javaChooser.fileSelectionMode = JFileChooser.FILES_ONLY
+        javaChooser.fileSelectionMode = FILES_ONLY
         javaChooser.isAcceptAllFileFilterUsed = true
         javaChooser.isMultiSelectionEnabled = false
-        javaChooser.preferredSize = Dimension(750, 450)
+        //javaChooser.preferredSize = Dimension(750, 450)
         if (javaChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             apiWrapper.apiProperties.javaPath = javaChooser.selectedFile.path
             log.debug("Set path to Java executable to: ${javaChooser.selectedFile.path}")

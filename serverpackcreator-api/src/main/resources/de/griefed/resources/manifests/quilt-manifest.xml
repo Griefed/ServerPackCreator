@@ -3,8 +3,8 @@
   <groupId>org.quiltmc</groupId>
   <artifactId>quilt-loader</artifactId>
   <versioning>
-    <latest>0.26.1-beta.1</latest>
-    <release>0.26.1-beta.1</release>
+    <latest>0.30.0-beta.0</latest>
+    <release>0.30.0-beta.0</release>
     <versions>
       <version>0.16.0-beta.1</version>
       <version>0.16.0-beta.2</version>
@@ -46,8 +46,6 @@
       <version>0.17.5-beta.1</version>
       <version>0.17.5-beta.2</version>
       <version>0.17.5-beta.3</version>
-      <version>0.17.5-beta.4</version>
-      <version>0.17.5-beta.5</version>
       <version>0.17.5-beta.6</version>
       <version>0.17.5-beta.7</version>
       <version>0.17.5-beta.8</version>
@@ -252,7 +250,52 @@
       <version>0.26.0-beta.5</version>
       <version>0.26.0</version>
       <version>0.26.1-beta.1</version>
+      <version>0.26.1</version>
+      <version>0.26.2</version>
+      <version>0.26.3</version>
+      <version>0.26.4-beta.1</version>
+      <version>0.26.4-beta.2</version>
+      <version>0.26.4-beta.3</version>
+      <version>0.26.4-beta.4</version>
+      <version>0.26.4-beta.5</version>
+      <version>0.26.4-beta.6</version>
+      <version>0.26.4-beta.7</version>
+      <version>0.26.4</version>
+      <version>0.27.0-beta.1</version>
+      <version>0.27.0</version>
+      <version>0.27.1-beta.1</version>
+      <version>0.27.1</version>
+      <version>0.28.0-beta.1</version>
+      <version>0.28.0-beta.2</version>
+      <version>0.28.0-beta.3</version>
+      <version>0.28.0-beta.4</version>
+      <version>0.28.0-beta.5</version>
+      <version>0.28.0-beta.6</version>
+      <version>0.28.0-beta.7</version>
+      <version>0.28.0-beta.8</version>
+      <version>0.28.0</version>
+      <version>0.28.1-beta.1</version>
+      <version>0.28.1-beta.2</version>
+      <version>0.28.1</version>
+      <version>0.29.0-beta.1</version>
+      <version>0.29.0-beta.2</version>
+      <version>0.29.0-beta.3</version>
+      <version>0.29.0-beta.4</version>
+      <version>0.29.0-beta.5</version>
+      <version>0.29.0-beta.6</version>
+      <version>0.29.0-beta.7</version>
+      <version>0.29.0-beta.8</version>
+      <version>0.29.0</version>
+      <version>0.29.1-beta.1</version>
+      <version>0.29.1</version>
+      <version>0.29.2-beta.1</version>
+      <version>0.29.2-beta.2</version>
+      <version>0.29.2-beta.4</version>
+      <version>0.29.2-beta.5</version>
+      <version>0.29.2</version>
+      <version>0.29.3-beta.1</version>
+      <version>0.30.0-beta.0</version>
     </versions>
-    <lastUpdated>20240618181422</lastUpdated>
+    <lastUpdated>20251212034122</lastUpdated>
   </versioning>
 </metadata>

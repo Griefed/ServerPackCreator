@@ -131,8 +131,8 @@ Qodana Post:
 Docker Test:
   stage: Tests
   before_script:
-    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - echo "$DOCKERHUB_TOKEN" | docker login docker.io -u "$DOCKERHUB_USER" --password-stdin
+    - echo "$GITHUB_TOKEN"    | docker login ghcr.io   -u "$DOCKERHUB_USER" --password-stdin
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - docker buildx create --use --name grfdbuilder
   script:
@@ -292,8 +292,8 @@ Build Docker Release:
       artifacts: true
       optional: false
   before_script:
-    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - echo "$DOCKERHUB_TOKEN" | docker login docker.io -u "$DOCKERHUB_USER" --password-stdin
+    - echo "$GITHUB_TOKEN"    | docker login ghcr.io   -u "$DOCKERHUB_USER" --password-stdin
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - docker buildx create --use --name grfdbuilder
   script:
@@ -314,8 +314,8 @@ Build Docker PreRelease:
       artifacts: true
       optional: false
   before_script:
-    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - echo "$DOCKERHUB_TOKEN" | docker login docker.io -u "$DOCKERHUB_USER" --password-stdin
+    - echo "$GITHUB_TOKEN"    | docker login ghcr.io   -u "$DOCKERHUB_USER" --password-stdin
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - docker buildx create --use --name grfdbuilder
   script:
@@ -329,7 +329,7 @@ Build Docker PreRelease:
 
 Writerside Build:
   stage: Documentation
-  image: registry.jetbrains.team/p/writerside/builder/writerside-builder:241.15989
+  image: jetbrains/writerside-builder:2026.02.8644
   variables:
     ARTIFACT: webHelpSPCH2-all.zip
     INSTANCE: Writerside/spch
@@ -348,7 +348,7 @@ Writerside Build:
     - set -e
     - export DISPLAY=:99
     - Xvfb :99 &
-    - /opt/builder/bin/idea.sh helpbuilderinspect -source-dir serverpackcreator-help -product $INSTANCE --runner gitlab -output-dir public/ || true
+    - /opt/builder/bin/idea.sh helpbuilderinspect -source-dir $CI_PROJECT_DIR/serverpackcreator-help -product $INSTANCE --runner gitlab -output-dir public/ || true
     - echo "Test existing of $ARTIFACT artifact"
     - test -e public/$ARTIFACT
   artifacts:
@@ -366,8 +366,8 @@ Writerside Docker:
       artifacts: true
       optional: false
   before_script:
-    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - echo "$DOCKERHUB_TOKEN" | docker login docker.io -u "$DOCKERHUB_USER" --password-stdin
+    - echo "$GITHUB_TOKEN"    | docker login ghcr.io   -u "$DOCKERHUB_USER" --password-stdin
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - docker buildx create --use --name grfdbuilder
   script:
@@ -387,8 +387,8 @@ Writerside Docker Latest:
       artifacts: true
       optional: false
   before_script:
-    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - echo "$DOCKERHUB_TOKEN" | docker login docker.io -u "$DOCKERHUB_USER" --password-stdin
+    - echo "$GITHUB_TOKEN"    | docker login ghcr.io   -u "$DOCKERHUB_USER" --password-stdin
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - docker buildx create --use --name grfdbuilder
   script:
@@ -409,8 +409,8 @@ Writerside Docker Prerelease:
       artifacts: true
       optional: false
   before_script:
-    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
-    - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
+    - echo "$DOCKERHUB_TOKEN" | docker login docker.io -u "$DOCKERHUB_USER" --password-stdin
+    - echo "$GITHUB_TOKEN"    | docker login ghcr.io   -u "$DOCKERHUB_USER" --password-stdin
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - docker buildx create --use --name grfdbuilder
   script:
