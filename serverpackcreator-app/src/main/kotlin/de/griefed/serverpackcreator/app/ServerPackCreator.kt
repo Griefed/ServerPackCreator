@@ -22,6 +22,8 @@ package de.griefed.serverpackcreator.app
 import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.fonts.jetbrains_mono.FlatJetBrainsMonoFont
 import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMaterialDarkerIJTheme
+import com.formdev.flatlaf.util.SystemFileChooser
+import com.formdev.flatlaf.util.SystemFileChooser.DIRECTORIES_ONLY
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.utilities.common.JarInformation
 import de.griefed.serverpackcreator.api.utilities.common.JarUtilities
@@ -34,6 +36,7 @@ import de.griefed.serverpackcreator.app.web.WebService
 import org.apache.commons.io.monitor.FileAlterationListener
 import org.apache.commons.io.monitor.FileAlterationMonitor
 import org.apache.commons.io.monitor.FileAlterationObserver
+import org.apache.commons.io.monitor.FileEntry
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.GraphicsEnvironment
 import java.io.File
@@ -86,9 +89,9 @@ class ServerPackCreator(private val args: Array<String>) {
                 JOptionPane.QUESTION_MESSAGE
             )
             if (decision == 0) {
-                val chooser = JFileChooser()
+                val chooser = SystemFileChooser()
                 chooser.currentDirectory = File(System.getProperty("user.home"))
-                chooser.fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
+                chooser.fileSelectionMode = DIRECTORIES_ONLY
                 chooser.isMultiSelectionEnabled = false
                 chooser.dialogTitle = "Pick a home-directory for ServerPackCreator"
                 val result = chooser.showOpenDialog(null)
@@ -262,9 +265,11 @@ class ServerPackCreator(private val args: Array<String>) {
     private fun stageFour() {
         Executors.newSingleThreadExecutor().execute {
             log.debug("Setting up FileWatcher...")
-            val fileAlterationObserver = FileAlterationObserver(
-                apiWrapper.apiProperties.homeDirectory
-            )
+
+            val fileAlterationObserver = FileAlterationObserver.builder()
+                .setRootEntry(FileEntry(apiWrapper.apiProperties.homeDirectory))
+                .get()
+
             val fileAlterationListener: FileAlterationListener = object : FileAlterationListener {
                 override fun onStart(observer: FileAlterationObserver) {
                 }

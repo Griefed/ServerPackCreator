@@ -23,6 +23,7 @@ import Translations
 import de.griefed.serverpackcreator.app.gui.components.BaseFileChooser
 import java.awt.Dimension
 import java.io.File
+import javax.swing.JFileChooser.FILES_AND_DIRECTORIES
 
 /**
  * File-chooser allowing a user to select files to add to the inclusions. Every file selected ends up as a separate
@@ -36,9 +37,9 @@ class InclusionSourceChooser(current: File?, dimension: Dimension) : BaseFileCho
     init {
         currentDirectory = current
         dialogTitle = Translations.createserverpack_gui_buttoncopydirs_title.toString()
-        fileSelectionMode = FILES_AND_DIRECTORIES
+        //fileSelectionMode = FILES_AND_DIRECTORIES
         isAcceptAllFileFilterUsed = true
         isMultiSelectionEnabled = true
-        preferredSize = dimension
+        //preferredSize = dimension
     }
 }

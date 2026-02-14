@@ -19,15 +19,16 @@
  */
 package de.griefed.serverpackcreator.app.gui.components
 
+import com.formdev.flatlaf.util.SystemFileChooser
 import java.awt.Dimension
 import javax.swing.JFileChooser
 
 /**
  * @author Griefed
  */
-abstract class BaseFileChooser: JFileChooser() {
+abstract class BaseFileChooser: SystemFileChooser() {
     init {
         isFileHidingEnabled = false
-        preferredSize = Dimension(750, 450)
+        //preferredSize = Dimension(750, 450)
     }
 }

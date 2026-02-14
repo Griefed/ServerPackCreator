@@ -43,6 +43,6 @@ class WhitelistChooser(current: File?, dimension: Dimension) : BaseFileChooser()
         )
         isAcceptAllFileFilterUsed = false
         isMultiSelectionEnabled = true
-        preferredSize = dimension
+        //preferredSize = dimension
     }
 }
