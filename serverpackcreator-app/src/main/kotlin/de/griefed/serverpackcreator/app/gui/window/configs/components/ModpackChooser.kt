@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.app.gui.window.configs.components
 
 import Translations
+import com.install4j.runtime.filechooser.FileSystemChooserType
 import de.griefed.serverpackcreator.app.gui.components.BaseFileChooser
 import java.awt.Dimension
 import java.io.File
@@ -38,10 +39,10 @@ class ModpackChooser(current: File?, dimension: Dimension) : BaseFileChooser() {
         currentDirectory = current
         isFileHidingEnabled = false
         dialogTitle = Translations.createserverpack_gui_buttonmodpackdir_title.toString()
-        //fileSelectionMode = FILES_AND_DIRECTORIES
-        fileFilter = FileNameExtensionFilter(
+        fileSelectionMode = DIRECTORIES_ONLY
+        /*fileFilter = FileNameExtensionFilter(
             Translations.createserverpack_gui_createserverpack_chooser_modpack_filter.toString(), "zip"
-        )
+        )*/
         isAcceptAllFileFilterUsed = false
         isMultiSelectionEnabled = false
         //preferredSize = dimension

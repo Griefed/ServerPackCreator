@@ -37,7 +37,7 @@ class InclusionSourceChooser(current: File?, dimension: Dimension) : BaseFileCho
     init {
         currentDirectory = current
         dialogTitle = Translations.createserverpack_gui_buttoncopydirs_title.toString()
-        //fileSelectionMode = FILES_AND_DIRECTORIES
+        fileSelectionMode = DIRECTORIES_ONLY
         isAcceptAllFileFilterUsed = true
         isMultiSelectionEnabled = true
         //preferredSize = dimension
