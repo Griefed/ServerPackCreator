@@ -1,3 +1,58 @@
+## [8.1.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.8...8.1.0-beta.1) (2026-02-14)
+
+### :scissors: Refactor
+
+* Qodana recommendations ([3033294](https://git.griefed.de/Griefed/ServerPackCreator/commit/30332941fbaefaad4a668d3f1cc82cb0e785465e))
+
+### 📦 Other
+
+* Add clientside mod obscure-tooltips-fix ([7df08b5](https://git.griefed.de/Griefed/ServerPackCreator/commit/7df08b55b7044cafadfbc1606121218a3fab2cab))
+* Show all warnings when using Build All ([f7948ee](https://git.griefed.de/Griefed/ServerPackCreator/commit/f7948eef0bbfe6cd789ea3b8dc7b1df222d80660))
+* Update modloader and Minecraft manifests ([2697014](https://git.griefed.de/Griefed/ServerPackCreator/commit/26970140b2630a6a57dc0a6ad5d855b72547a4d7))
+
+### 🔩 Dependencies
+
+* Bump some more dependencies ([d834b04](https://git.griefed.de/Griefed/ServerPackCreator/commit/d834b0492b24b7a5eb258848a1ecf59118a740a9))
+* Update JUnit, Spring versions, and other test and dev deps ([716c722](https://git.griefed.de/Griefed/ServerPackCreator/commit/716c722f3f3d8af16bd956833594ca00050e2f5a))
+* Update Tip Of The Day ([a8eb211](https://git.griefed.de/Griefed/ServerPackCreator/commit/a8eb2119ece3e4f5231aee673f047ee85e799cd9))
+
+### 🦊 CI/CD
+
+* Bump gradle to 8.14 ([14d3e63](https://git.griefed.de/Griefed/ServerPackCreator/commit/14d3e6309beb95f5e42cea4ff69ada5a4d78355a))
+* Update install4j to v12 ([8af2d2c](https://git.griefed.de/Griefed/ServerPackCreator/commit/8af2d2c2ddb48f5e296a9fcd87e06261d2d91aba))
+* **deps-dev:** bump @eslint/js in /serverpackcreator-web-frontend ([6a4a6ef](https://git.griefed.de/Griefed/ServerPackCreator/commit/6a4a6ef3a4f4e1fc4d15d7794f4cc3f34c525481))
+* **deps-dev:** bump lodash in /serverpackcreator-web-frontend ([c296e28](https://git.griefed.de/Griefed/ServerPackCreator/commit/c296e286c58f7dec1b752c3843f676831f2a6869))
+* **deps:** bump actions/checkout from 5 to 6 ([1d72bba](https://git.griefed.de/Griefed/ServerPackCreator/commit/1d72bba388d673376791df90a8f26f096fe9bc85))
+* **deps:** bump actions/download-artifact from 6 to 7 ([92ddb71](https://git.griefed.de/Griefed/ServerPackCreator/commit/92ddb71c992d82e5e9b6da3c3cd455c8ad585d3f))
+* **deps:** bump actions/upload-artifact from 5 to 6 ([2079a7e](https://git.griefed.de/Griefed/ServerPackCreator/commit/2079a7e03c93d46ef47bc418520035c68a5a0617))
+* **deps:** bump axios in /serverpackcreator-web-frontend ([0628f18](https://git.griefed.de/Griefed/ServerPackCreator/commit/0628f182dba321a0408a122e180b124858f53157))
+* **deps:** bump commons-io:commons-io in /serverpackcreator-app ([aa9e952](https://git.griefed.de/Griefed/ServerPackCreator/commit/aa9e952cd577cb23b47f70c1ca6eeddf762cfd0b))
+* **deps:** bump JamesIves/github-pages-deploy-action ([bbd34e4](https://git.griefed.de/Griefed/ServerPackCreator/commit/bbd34e4dd4c2732ff40a97c2c7f7163515e646a3))
+* **deps:** bump org.jetbrains.kotlin:kotlin-bom ([fa029f4](https://git.griefed.de/Griefed/ServerPackCreator/commit/fa029f425aa4c38769f8f873edecd8cbefb0d085))
+* **deps:** bump org.jetbrains.kotlin:kotlin-reflect ([a76aeb7](https://git.griefed.de/Griefed/ServerPackCreator/commit/a76aeb7ac003e1178a49a83163c6106b9084f05b))
+* **deps:** bump org.jetbrains.kotlin:kotlin-stdlib ([50ac0d6](https://git.griefed.de/Griefed/ServerPackCreator/commit/50ac0d64f1c378903171f77ebe01ed15a22c355a))
+* **deps:** bump org.jetbrains.kotlin:kotlin-test ([d152848](https://git.griefed.de/Griefed/ServerPackCreator/commit/d152848db8dcee675e432147fcab8a76ad1bcbbe))
+* **deps:** bump org.junit.jupiter:junit-jupiter-api ([3d3d0dc](https://git.griefed.de/Griefed/ServerPackCreator/commit/3d3d0dc6b10442cd0e5b767e3f4adebd1608949e))
+* **deps:** bump org.junit.jupiter:junit-jupiter-engine ([a1c5d53](https://git.griefed.de/Griefed/ServerPackCreator/commit/a1c5d53032f3d98595db2138f2414d223c3867d2))
+* **deps:** bump org.pf4j:pf4j in /serverpackcreator-plugin-example ([57a771a](https://git.griefed.de/Griefed/ServerPackCreator/commit/57a771a3ed1a58086d412d99d8fa8e49566aa06e))
+* **deps:** bump org.springframework.boot:spring-boot-devtools ([7c3e5c7](https://git.griefed.de/Griefed/ServerPackCreator/commit/7c3e5c7c337ffb0b069a686eb36d3ad77de367a8))
+* **deps:** bump org.springframework.boot:spring-boot-starter-web ([dd615e1](https://git.griefed.de/Griefed/ServerPackCreator/commit/dd615e1906229471f96adc391ae4efead80beba9))
+* **deps:** bump softprops/action-gh-release from 2.4.1 to 2.5.0 ([ccc4485](https://git.griefed.de/Griefed/ServerPackCreator/commit/ccc448544a109a20d5f120147a714ad280ce9de9))
+* **deps:** bump vue in /serverpackcreator-web-frontend ([52a2fce](https://git.griefed.de/Griefed/ServerPackCreator/commit/52a2fce591337edab976019d67cb8538e9b09ccd))
+* Bump install4j version ([8bd5482](https://git.griefed.de/Griefed/ServerPackCreator/commit/8bd5482e9a1e4a9e3011942d0a8e8d6b80ddbaa6))
+* Bump writerside version ([815ea80](https://git.griefed.de/Griefed/ServerPackCreator/commit/815ea80a21c1db459ad3fdb72eeb3b4f5fdd3d66))
+* Move to more secure login method ([86db05d](https://git.griefed.de/Griefed/ServerPackCreator/commit/86db05db75617cfc825013117af1f4523ab8e261))
+* Try absolute path in Writerside build ([980c99d](https://git.griefed.de/Griefed/ServerPackCreator/commit/980c99ddb827795df3c3444d28d9f1873695d8c3))
+
+### 🚀 Features
+
+* Implement SystemFileChooser instead of JFileChooser ([6826f7a](https://git.griefed.de/Griefed/ServerPackCreator/commit/6826f7a2344366b89a7b8423dbd8c0192340f8c9))
+
+### 🛠 Fixes
+
+* Bump flatlaf themes version to fix errors loading init theme ([e461dd7](https://git.griefed.de/Griefed/ServerPackCreator/commit/e461dd71af758b03b331c66d806d5c2497cae71b))
+* Correctly set selection modes for SystemFileChooser ([f34fdce](https://git.griefed.de/Griefed/ServerPackCreator/commit/f34fdcea5c07001f593d7afe817a74f6a8b3a6ee))
+
 ## [8.0.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.7...8.0.8) (2026-01-11)
 
 ### 💈 Style
