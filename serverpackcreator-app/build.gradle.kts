@@ -38,10 +38,10 @@ dependencies {
     //GUI
     api("commons-io:commons-io:2.21.0")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.10.2")
-    api("org.jetbrains.kotlin:kotlin-reflect:2.3.0")
+    api("org.jetbrains.kotlin:kotlin-reflect:2.3.10")
     api("com.formdev:flatlaf:3.7")
     api("com.formdev:flatlaf-extras:3.7")
-    api("com.formdev:flatlaf-intellij-themes:3.5.4")
+    api("com.formdev:flatlaf-intellij-themes:3.7")
     api("com.formdev:flatlaf-fonts-jetbrains-mono:2.304")
     api("com.formdev:flatlaf-fonts-inter:4.1")
     api("com.formdev:flatlaf-fonts-roboto:2.137")
@@ -55,11 +55,11 @@ dependencies {
 
     //WEB
     api("org.jetbrains.kotlin:kotlin-reflect:2.3.0")
-    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.20.1")
+    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.21.0")
     api("org.springframework.boot:spring-boot-starter-web:4.0.2")
     api("org.springframework.boot:spring-boot-starter-log4j2:4.0.2")
     api("org.springframework.boot:spring-boot-starter-data-mongodb:4.0.2")
-    testRuntimeOnly("com.h2database:h2:2.3.232")
+    testRuntimeOnly("com.h2database:h2:2.4.240")
     testImplementation("org.springframework.boot:spring-boot-starter-test:4.0.2") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
         exclude(group = "org.mockito", module = "mockito-core")
@@ -68,7 +68,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.10")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.2")
 
-    testImplementation("com.ninja-squad:springmockk:4.0.2")
+    testImplementation("com.ninja-squad:springmockk:5.0.1")
     developmentOnly("org.springframework.boot:spring-boot-devtools:4.0.2")
     //developmentOnly("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 }
