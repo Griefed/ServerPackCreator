@@ -348,7 +348,7 @@ Writerside Build:
     - set -e
     - export DISPLAY=:99
     - Xvfb :99 &
-    - /opt/builder/bin/idea.sh helpbuilderinspect -source-dir serverpackcreator-help -product $INSTANCE --runner gitlab -output-dir public/ || true
+    - /opt/builder/bin/idea.sh helpbuilderinspect -source-dir $CI_PROJECT_DIR/serverpackcreator-help -product $INSTANCE --runner gitlab -output-dir public/ || true
     - echo "Test existing of $ARTIFACT artifact"
     - test -e public/$ARTIFACT
   artifacts:
