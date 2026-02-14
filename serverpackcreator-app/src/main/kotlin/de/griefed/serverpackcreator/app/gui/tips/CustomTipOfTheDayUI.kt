@@ -76,7 +76,7 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
     }
 
     /**
-     * Customized dialog based on [tokyo.northside.swing.plaf.BasicTipOfTheDayUI.createDialog]
+     * Customized dialog based on [tokyo.northside.tipoftheday.plaf.BasicTipOfTheDayUI.createDialog]
      *
      * @author Griefed
      */
@@ -157,7 +157,7 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
     }
 
     /**
-     * Customized tip-update based on [tokyo.northside.swing.plaf.BasicTipOfTheDayUI.showCurrentTip]
+     * Customized tip-update based on [tokyo.northside.tipoftheday.plaf.BasicTipOfTheDayUI.showCurrentTip]
      *
      * @author Griefed
      */
@@ -248,7 +248,7 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
     }
 
     /**
-     * See [tokyo.northside.swing.plaf.BasicTipOfTheDayUI.PreviousTipAction]
+     * See [tokyo.northside.tipoftheday.plaf.BasicTipOfTheDayUI.PreviousTipAction]
      * @author Frederic Lavigne
      * @author Hiroshi Miura
      */
@@ -265,7 +265,7 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
     }
 
     /**
-     * See [tokyo.northside.swing.plaf.BasicTipOfTheDayUI.NextTipAction]
+     * See [tokyo.northside.tipoftheday.plaf.BasicTipOfTheDayUI.NextTipAction]
      * @author Frederic Lavigne
      * @author Hiroshi Miura
      */

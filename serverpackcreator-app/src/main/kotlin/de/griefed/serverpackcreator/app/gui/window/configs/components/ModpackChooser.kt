@@ -20,12 +20,9 @@
 package de.griefed.serverpackcreator.app.gui.window.configs.components
 
 import Translations
-import com.install4j.runtime.filechooser.FileSystemChooserType
 import de.griefed.serverpackcreator.app.gui.components.BaseFileChooser
 import java.awt.Dimension
 import java.io.File
-import javax.swing.JFileChooser.FILES_AND_DIRECTORIES
-import javax.swing.filechooser.FileNameExtensionFilter
 
 /**
  * File-chooser to allow a user to select the modpack directory from which the server pack should be generated.

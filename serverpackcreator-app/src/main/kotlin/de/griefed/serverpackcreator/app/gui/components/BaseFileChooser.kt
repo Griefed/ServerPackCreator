@@ -20,8 +20,6 @@
 package de.griefed.serverpackcreator.app.gui.components
 
 import com.formdev.flatlaf.util.SystemFileChooser
-import java.awt.Dimension
-import javax.swing.JFileChooser
 
 /**
  * @author Griefed

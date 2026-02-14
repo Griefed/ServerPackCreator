@@ -23,7 +23,6 @@ import Translations
 import de.griefed.serverpackcreator.app.gui.components.BaseFileChooser
 import java.awt.Dimension
 import java.io.File
-import javax.swing.filechooser.FileNameExtensionFilter
 
 /**
  * File-chooser to select mod-JARs to add to the clientside-mods list of a server pack config.

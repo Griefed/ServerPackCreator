@@ -23,7 +23,6 @@ import Translations
 import de.griefed.serverpackcreator.app.gui.components.BaseFileChooser
 import java.awt.Dimension
 import java.io.File
-import javax.swing.filechooser.FileNameExtensionFilter
 
 /**
  * File-chooser allowing a user to select the server-icon from their filesystem.

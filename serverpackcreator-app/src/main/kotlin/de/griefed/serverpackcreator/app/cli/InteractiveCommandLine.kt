@@ -140,7 +140,7 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
 
     fun cli(args: Array<String> = arrayOf("")) {
         try {
-            val workDir: Supplier<Path> = Supplier<Path> { apiWrapper.apiProperties.homeDirectory.absoluteFile.toPath() }
+            val workDir: Supplier<Path> = Supplier { apiWrapper.apiProperties.homeDirectory.absoluteFile.toPath() }
             val builtins = Builtins(workDir, ConfigurationPath(workDir.get(), workDir.get()), null)
             builtins.rename(Builtins.Command.TTOP, "top")
             builtins.alias("zle", "widget")

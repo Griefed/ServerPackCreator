@@ -68,7 +68,7 @@ class ApiPlugins(
 ) : JarPluginManager(apiProperties.pluginsDirectory.toPath()) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val pluginsLog = logger("PluginsLogger")
-    private val pluginConfigs: HashMap<String, CommentedConfig> = HashMap<String, CommentedConfig>(100)
+    private val pluginConfigs: HashMap<String, CommentedConfig> = HashMap(100)
     private val pluginConfigFiles = HashMap<String, File>(100)
     private val toml = ".toml"
     private val configToml = "config$toml"
@@ -229,7 +229,7 @@ class ApiPlugins(
      * @return The global plugin configuration, wrapped in an Optional.
      * @author Griefed
      */
-    fun getPluginConfig(pluginId: String) = Optional.ofNullable<CommentedConfig>(pluginConfigs[pluginId])
+    fun getPluginConfig(pluginId: String) = Optional.ofNullable(pluginConfigs[pluginId])
 
     /**
      * Get and return any configuration for the extension about to be run. If none is available, the
@@ -252,7 +252,7 @@ class ApiPlugins(
         packConfig: PackConfig,
         extensionId: String
     ): ArrayList<CommentedConfig> {
-        val extConf: ArrayList<CommentedConfig> = ArrayList<CommentedConfig>(10)
+        val extConf: ArrayList<CommentedConfig> = ArrayList(10)
         val pluginConfigs = packConfig.getPluginConfigs(plugin.pluginId)
         if (pluginConfigs.isNotEmpty()) {
             val extensionConfigs = getExtensionConfigs(plugin, packConfig)
@@ -279,7 +279,7 @@ class ApiPlugins(
         plugin: PluginWrapper,
         packConfig: PackConfig
     ): ArrayList<CommentedConfig> {
-        val configs: ArrayList<CommentedConfig> = ArrayList<CommentedConfig>(10)
+        val configs: ArrayList<CommentedConfig> = ArrayList(10)
         val pluginConfigs = packConfig.getPluginConfigs(plugin.pluginId)
         if (pluginConfigs.isNotEmpty()) {
             configs.addAll(pluginConfigs)
@@ -449,7 +449,7 @@ class ApiPlugins(
      * @author Griefed
      */
     fun getConfigPanels(serverPackConfigTab: ServerPackConfigTab): List<ExtensionConfigPanel> {
-        val panels: MutableList<ExtensionConfigPanel> = ArrayList<ExtensionConfigPanel>(10)
+        val panels: MutableList<ExtensionConfigPanel> = ArrayList(10)
         for (plugin in getPlugins()) {
             log.info("Getting ConfigPanelExtension from ${plugin.pluginId}.")
             pluginsLog.info("Getting ConfigPanelExtension from ${plugin.pluginId}.")

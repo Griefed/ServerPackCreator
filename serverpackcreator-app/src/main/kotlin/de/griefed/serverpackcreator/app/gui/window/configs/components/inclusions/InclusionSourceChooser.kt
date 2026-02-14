@@ -23,7 +23,6 @@ import Translations
 import de.griefed.serverpackcreator.app.gui.components.BaseFileChooser
 import java.awt.Dimension
 import java.io.File
-import javax.swing.JFileChooser.FILES_AND_DIRECTORIES
 
 /**
  * File-chooser allowing a user to select files to add to the inclusions. Every file selected ends up as a separate

@@ -1111,7 +1111,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     }
 
     @Deprecated("Deprecated as of 6.0.0", ReplaceWith("startScriptTemplates"))
-    var scriptTemplates: TreeSet<File> = TreeSet<File>()
+    var scriptTemplates: TreeSet<File> = TreeSet()
         get() {
             val scriptSetting = internalProps.getProperty(pServerPackScriptTemplates)
             val entries =

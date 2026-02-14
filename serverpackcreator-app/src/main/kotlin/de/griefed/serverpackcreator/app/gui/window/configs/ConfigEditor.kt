@@ -41,7 +41,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import java.awt.Dimension
 import java.awt.event.ActionListener
 import java.io.File
 import java.io.IOException

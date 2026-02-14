@@ -3,7 +3,6 @@ package de.griefed.serverpackcreator.app.gui.window.settings.components
 import Translations
 import com.formdev.flatlaf.util.SystemFileChooser
 import java.io.File
-import javax.swing.filechooser.FileFilter
 
 class WritableDirectoryFilter  : SystemFileChooser.FileFilter() {
     fun accept(file: File): Boolean {

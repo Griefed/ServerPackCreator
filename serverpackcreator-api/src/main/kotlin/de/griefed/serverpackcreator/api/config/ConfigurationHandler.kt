@@ -1534,7 +1534,7 @@ class ConfigurationHandler(
                 }
                 inclusions.removeIf { !File(modpackDirectory,it.source).exists() && !File(it.source).exists() }
 
-                packConfig.setInclusions(ArrayList<InclusionSpecification>(inclusions))
+                packConfig.setInclusions(ArrayList(inclusions))
 
             } catch (ex: IOException) {
                 log.error("Couldn't create server pack config from modpack manifests.", ex)
