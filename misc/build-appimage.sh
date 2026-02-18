@@ -397,16 +397,6 @@ chmod +x "$APP_DIR/AppRun"
 echo -e "${YELLOW}Creating AppImage for ${APPIMAGE_ARCH} (this can take a while)...${NC}"
 rm -f ${APP_NAME}-${APP_VERSION}-${APPIMAGE_ARCH}.AppImage
 
-# Prüfe ob Docker verfügbar ist
-if ! command -v docker &> /dev/null; then
-    echo -e "${RED}Docker not found!${NC}"
-    echo -e "${YELLOW}Docker is required to build AppImages.${NC}"
-    echo -e "${YELLOW}Please install Docker: https://docs.docker.com/get-docker/${NC}"
-    exit 1
-fi
-
-echo -e "${YELLOW}Using Docker for AppImage-Build...${NC}"
-
 if [ "$BUILD_ARCH" = "aarch64" ]; then
     DOCKER_PLATFORM="linux/arm64"
     APPIMAGETOOL_ARCH="aarch64"
