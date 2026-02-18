@@ -397,64 +397,73 @@ chmod +x "$APP_DIR/AppRun"
 echo -e "${YELLOW}Creating AppImage for ${APPIMAGE_ARCH} (this can take a while)...${NC}"
 rm -f ${APP_NAME}-${APP_VERSION}-${APPIMAGE_ARCH}.AppImage
 
-if [ "$MACHINE" = "Linux" ]; then
-    ARCH=$APPIMAGE_ARCH $APPIMAGETOOL "$APP_DIR" "${APP_NAME}-${APP_VERSION}-${APPIMAGE_ARCH}.AppImage"
-elif [ "$MACHINE" = "Mac" ]; then
-    echo -e "${YELLOW}Using Docker for AppImage-Build...${NC}"
+# Prüfe ob Docker verfügbar ist
+if ! command -v docker &> /dev/null; then
+    echo -e "${RED}Docker not found!${NC}"
+    echo -e "${YELLOW}Docker is required to build AppImages.${NC}"
+    echo -e "${YELLOW}Please install Docker: https://docs.docker.com/get-docker/${NC}"
+    exit 1
+fi
 
-    if [ "$BUILD_ARCH" = "aarch64" ]; then
-        DOCKER_PLATFORM="linux/arm64"
-        APPIMAGETOOL_ARCH="aarch64"
-    else
-        DOCKER_PLATFORM="linux/amd64"
-        APPIMAGETOOL_ARCH="x86_64"
-    fi
+echo -e "${YELLOW}Using Docker for AppImage-Build...${NC}"
 
-    cat > Dockerfile.appimage << DOCKERFILE_EOF
+if [ "$BUILD_ARCH" = "aarch64" ]; then
+    DOCKER_PLATFORM="linux/arm64"
+    APPIMAGETOOL_ARCH="aarch64"
+    echo -e "${YELLOW}Building for aarch64 (ARM64)...${NC}"
+else
+    DOCKER_PLATFORM="linux/amd64"
+    APPIMAGETOOL_ARCH="x86_64"
+    echo -e "${YELLOW}Building for x86_64 (AMD64)...${NC}"
+fi
+
+cat > Dockerfile.appimage << DOCKERFILE_EOF
 FROM --platform=${DOCKER_PLATFORM} ubuntu:22.04
 RUN apt-get update && apt-get install -y \
-    wget file libglib2.0-0 libfuse2 libcairo2 \
-    libpango-1.0-0 libgdk-pixbuf2.0-0 desktop-file-utils \
-    && rm -rf /var/lib/apt/lists/*
+  wget file libglib2.0-0 libfuse2 libcairo2 \
+  libpango-1.0-0 libgdk-pixbuf2.0-0 desktop-file-utils \
+  && rm -rf /var/lib/apt/lists/*
 RUN wget -O /usr/local/bin/appimagetool https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${APPIMAGETOOL_ARCH}.AppImage && \
-    chmod +x /usr/local/bin/appimagetool && \
-    cd /usr/local/bin && \
-    ./appimagetool --appimage-extract && \
-    mv squashfs-root appimagetool-dir && \
-    rm appimagetool && \
-    ln -s /usr/local/bin/appimagetool-dir/AppRun /usr/local/bin/appimagetool
+  chmod +x /usr/local/bin/appimagetool && \
+  cd /usr/local/bin && \
+  ./appimagetool --appimage-extract && \
+  mv squashfs-root appimagetool-dir && \
+  rm appimagetool && \
+  ln -s /usr/local/bin/appimagetool-dir/AppRun /usr/local/bin/appimagetool
 WORKDIR /work
 DOCKERFILE_EOF
 
-    DOCKER_IMAGE_NAME="appimage-builder-${BUILD_ARCH}"
-    if ! docker images | grep -q "$DOCKER_IMAGE_NAME"; then
-        echo -e "${YELLOW}Building Docker-Image for AppImage-creation (${BUILD_ARCH})...${NC}"
-        docker build --platform=${DOCKER_PLATFORM} -t $DOCKER_IMAGE_NAME -f Dockerfile.appimage .
-    fi
-
-    echo -e "${YELLOW}Packing APP_DIR for Docker-Transfer...${NC}"
-    echo -e "${YELLOW}APP_DIR contents before packaging:${NC}"
-    ls -lh "$APP_DIR/usr/lib/" | head -5
-
-    tar -czf "${APP_DIR}.tar.gz" "$APP_DIR"
-    echo -e "${GREEN}Archive created: $(du -sh "${APP_DIR}.tar.gz" | cut -f1)${NC}"
-
-    echo -e "${YELLOW}Checking if JDK is present in archive...${NC}"
-    if tar -tzf "${APP_DIR}.tar.gz" | grep -q "jdk/bin/java"; then
-        echo -e "${GREEN}✓ JDK is present in tar-archive${NC}"
-    else
-        echo -e "${RED}✗ ERROR: JDK is NOT present in tar-archive!${NC}"
-        exit 1
-    fi
-
-    docker run --rm --platform=${DOCKER_PLATFORM} \
-        -v "$(pwd)/${APP_DIR}.tar.gz:/work/appdir.tar.gz" \
-        -v "$(pwd):/output" \
-        $DOCKER_IMAGE_NAME \
-        sh -c "cd /work && tar -xzf appdir.tar.gz && cd /output && ARCH=${APPIMAGE_ARCH} appimagetool /work/${APP_DIR} ${APP_NAME}-${APP_VERSION}-${APPIMAGE_ARCH}.AppImage"
-
-    rm -f "${APP_DIR}.tar.gz"
+DOCKER_IMAGE_NAME="appimage-builder-${BUILD_ARCH}"
+if ! docker images | grep -q "$DOCKER_IMAGE_NAME"; then
+    echo -e "${YELLOW}Building Docker image for AppImage creation (${BUILD_ARCH})...${NC}"
+    docker build --platform=${DOCKER_PLATFORM} -t $DOCKER_IMAGE_NAME -f Dockerfile.appimage .
+else
+    echo -e "${GREEN}Using cached Docker image: $DOCKER_IMAGE_NAME${NC}"
 fi
+
+echo -e "${YELLOW}Packing APP_DIR for Docker-Transfer...${NC}"
+echo -e "${YELLOW}APP_DIR contents before packaging:${NC}"
+ls -lh "$APP_DIR/usr/lib/" | head -5
+
+tar -czf "${APP_DIR}.tar.gz" "$APP_DIR"
+echo -e "${GREEN}Archive created: $(du -sh "${APP_DIR}.tar.gz" | cut -f1)${NC}"
+
+echo -e "${YELLOW}Checking if JDK is present in archive...${NC}"
+if tar -tzf "${APP_DIR}.tar.gz" | grep -q "jdk/bin/java"; then
+    echo -e "${GREEN}✓ JDK is present in tar-archive${NC}"
+else
+    echo -e "${RED}✗ ERROR: JDK is NOT present in tar-archive!${NC}"
+    exit 1
+fi
+
+echo -e "${YELLOW}Running appimagetool in Docker container...${NC}"
+docker run --rm --platform=${DOCKER_PLATFORM} \
+    -v "$(pwd)/${APP_DIR}.tar.gz:/work/appdir.tar.gz" \
+    -v "$(pwd):/output" \
+    $DOCKER_IMAGE_NAME \
+    sh -c "cd /work && tar -xzf appdir.tar.gz && cd /output && ARCH=${APPIMAGE_ARCH} appimagetool /work/${APP_DIR} ${APP_NAME}-${APP_VERSION}-${APPIMAGE_ARCH}.AppImage"
+
+rm -f "${APP_DIR}.tar.gz"
 
 echo -e "${YELLOW}Verifying AppImage-Contents...${NC}"
 if [ -f "${APP_NAME}-${APP_VERSION}-${APPIMAGE_ARCH}.AppImage" ]; then
