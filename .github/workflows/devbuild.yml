@@ -92,7 +92,7 @@ jobs:
           platforms: linux/arm64
 
       - name: Set up QEMU (for ARM64)
-        if: matrix.arch == 'aarch64'
+        if: matrix.arch == 'x86_64'
         uses: docker/setup-qemu-action@v3
         with:
           platforms: linux/amd64
@@ -143,7 +143,6 @@ jobs:
               cd /workspace && \
               misc/build-appimage.sh ${{ needs.build-jar.outputs.version }}
             "
-
 
       - name: Verify AppImage
         run: |
