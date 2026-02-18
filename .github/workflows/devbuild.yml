@@ -85,15 +85,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up QEMU (für ARM64)
+      - name: Set up QEMU (for ARM64)
         if: matrix.arch == 'aarch64'
         uses: docker/setup-qemu-action@v3
         with:
           platforms: linux/arm64
 
-      - name: Set up Docker Buildx (für ARM64)
+      - name: Set up QEMU (for ARM64)
         if: matrix.arch == 'aarch64'
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64
 
       - name: Cache JDK download
         uses: actions/cache@v4
@@ -110,9 +112,21 @@ jobs:
       - name: Make build script executable
         run: chmod +x misc/build-appimage.sh
 
-      - name: Build AppImage (x86_64 - native)
+      - name: Build AppImage (aarch64 - QEMU via Docker)
         if: matrix.arch == 'x86_64'
-        run: misc/build-appimage.sh ${{ needs.build-jar.outputs.version }}
+        run: |
+          docker run --rm --platform linux/amd64 \
+            -v "$(pwd):/workspace" \
+            -w /workspace \
+            ubuntu:22.04 \
+            bash -c "
+              apt-get update && \
+              apt-get install -y wget curl file tar gzip \
+                libfuse2 libglib2.0-0 libcairo2 libpango-1.0-0 \
+                libgdk-pixbuf2.0-0 desktop-file-utils && \
+              cd /workspace && \
+              misc/build-appimage.sh ${{ needs.build-jar.outputs.version }}
+            "
 
       - name: Build AppImage (aarch64 - QEMU via Docker)
         if: matrix.arch == 'aarch64'
@@ -129,6 +143,7 @@ jobs:
               cd /workspace && \
               misc/build-appimage.sh ${{ needs.build-jar.outputs.version }}
             "
+
 
       - name: Verify AppImage
         run: |
