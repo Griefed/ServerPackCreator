@@ -123,7 +123,7 @@ jobs:
         run: chmod +x misc/build-appimage.sh
 
       - name: Build AppImage
-        run: misc/build-appimage.sh ${{ needs.build-jar.outputs.version }}
+        run: BUILD_ARCH=${{ matrix.arch }} misc/build-appimage.sh ${{ needs.build-jar.outputs.version }}
 
       - name: Verify AppImage
         run: |

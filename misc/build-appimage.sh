@@ -40,16 +40,18 @@ case "${OS}" in
     *)          MACHINE="UNKNOWN:${OS}"
 esac
 
-ARCH="$(uname -m)"
-case "${ARCH}" in
-    x86_64)     BUILD_ARCH=x86_64;;
-    aarch64)    BUILD_ARCH=aarch64;;  # Linux ARM64
-    arm64)      BUILD_ARCH=aarch64;;  # macOS ARM64
-    *)
-        echo -e "${RED}Unknown architecture: ${ARCH}${NC}"
-        exit 1
-        ;;
-esac
+if [[ -z "$BUILD_ARCH" ]]; then
+  ARCH="$(uname -m)"
+  case "${ARCH}" in
+      x86_64)     BUILD_ARCH=x86_64;;
+      aarch64)    BUILD_ARCH=aarch64;;  # Linux ARM64
+      arm64)      BUILD_ARCH=aarch64;;  # macOS ARM64
+      *)
+          echo -e "${RED}Unknown architecture: ${ARCH}${NC}"
+          exit 1
+          ;;
+  esac
+fi
 
 echo -e "${GREEN}Detected OS: $MACHINE${NC}"
 echo -e "${GREEN}Detected arch: $BUILD_ARCH${NC}"
@@ -397,7 +399,7 @@ chmod +x "$APP_DIR/AppRun"
 echo -e "${YELLOW}Creating AppImage for ${APPIMAGE_ARCH} (this can take a while)...${NC}"
 rm -f ${APP_NAME}-${APP_VERSION}-${APPIMAGE_ARCH}.AppImage
 
-if [ "$BUILD_ARCH" = "aarch64" ]; then
+if [[ "$BUILD_ARCH" = "aarch64" || "$BUILD_ARCH" = "arm64" ]]; then
     DOCKER_PLATFORM="linux/arm64"
     APPIMAGETOOL_ARCH="aarch64"
     echo -e "${YELLOW}Building for aarch64 (ARM64)...${NC}"
