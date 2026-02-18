@@ -85,20 +85,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up QEMU (for ARM64)
-        if: matrix.arch == 'aarch64'
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: linux/arm64
-
-      - name: Set up QEMU (for ARM64)
+      - name: Set up QEMU
         if: matrix.arch == 'x86_64'
         uses: docker/setup-qemu-action@v3
         with:
-          platforms: linux/amd64
+          platforms: amd64,arm64
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64
 
       - name: Cache JDK download
         uses: actions/cache@v4
