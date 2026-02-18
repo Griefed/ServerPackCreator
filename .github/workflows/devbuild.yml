@@ -112,40 +112,18 @@ jobs:
           name: gradle-jars
           path: .
 
+      - name: Verify Docker availability
+        run: |
+          echo "Checking Docker..."
+          which docker || echo "Docker not in PATH"
+          docker --version || echo "Docker command failed"
+          docker info || echo "Docker daemon not running"
+
       - name: Make build script executable
         run: chmod +x misc/build-appimage.sh
 
-      - name: Build AppImage (aarch64 - QEMU via Docker)
-        if: matrix.arch == 'x86_64'
-        run: |
-          docker run --rm --platform linux/amd64 \
-            -v "$(pwd):/workspace" \
-            -w /workspace \
-            ubuntu:22.04 \
-            bash -c "
-              apt-get update && \
-              apt-get install -y wget curl file tar gzip \
-                libfuse2 libglib2.0-0 libcairo2 libpango-1.0-0 \
-                libgdk-pixbuf2.0-0 desktop-file-utils && \
-              cd /workspace && \
-              misc/build-appimage.sh ${{ needs.build-jar.outputs.version }}
-            "
-
-      - name: Build AppImage (aarch64 - QEMU via Docker)
-        if: matrix.arch == 'aarch64'
-        run: |
-          docker run --rm --platform linux/arm64 \
-            -v "$(pwd):/workspace" \
-            -w /workspace \
-            ubuntu:22.04 \
-            bash -c "
-              apt-get update && \
-              apt-get install -y wget curl file tar gzip \
-                libfuse2 libglib2.0-0 libcairo2 libpango-1.0-0 \
-                libgdk-pixbuf2.0-0 desktop-file-utils && \
-              cd /workspace && \
-              misc/build-appimage.sh ${{ needs.build-jar.outputs.version }}
-            "
+      - name: Build AppImage
+        run: misc/build-appimage.sh ${{ needs.build-jar.outputs.version }}
 
       - name: Verify AppImage
         run: |
