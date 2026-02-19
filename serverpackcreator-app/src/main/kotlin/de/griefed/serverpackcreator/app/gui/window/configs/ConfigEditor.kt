@@ -332,7 +332,21 @@ class ConfigEditor(
                         guiProps.infoIcon
                     ) == 0
                 ) {
-                    setModpackDirectory(File(chooser.selectedFile,"instance").path)
+                    setModpackDirectory(File(chooser.selectedFile, "instance").path)
+                } else {
+                    setModpackDirectory(chooser.selectedFile.path)
+                }
+            } else if (fileNames.contains("minecraft") && fileNames.contains("mmc-pack.json")) {
+                if (JOptionPane.showConfirmDialog(
+                        panel.parent,
+                        Translations.createserverpack_gui_modpack_select_prismlauncher_message.toString(),
+                        Translations.createserverpack_gui_modpack_select_prismlauncher_title.toString(),
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.INFORMATION_MESSAGE,
+                        guiProps.infoIcon
+                    ) == 0
+                ) {
+                    setModpackDirectory(File(chooser.selectedFile, "minecraft").path)
                 } else {
                     setModpackDirectory(chooser.selectedFile.path)
                 }
