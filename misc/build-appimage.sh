@@ -412,9 +412,9 @@ fi
 cat > Dockerfile.appimage << DOCKERFILE_EOF
 FROM --platform=${DOCKER_PLATFORM} ubuntu:22.04
 RUN apt-get update && apt-get install -y \
-  wget file libglib2.0-0 libfuse2 libcairo2 \
-  libpango-1.0-0 libgdk-pixbuf2.0-0 desktop-file-utils \
-  && rm -rf /var/lib/apt/lists/*
+    wget file libglib2.0-0 libfuse2 libcairo2 \
+    libpango-1.0-0 libgdk-pixbuf2.0-0 desktop-file-utils \
+    && rm -rf /var/lib/apt/lists/*
 RUN wget -O /usr/local/bin/appimagetool https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${APPIMAGETOOL_ARCH}.AppImage && \
   chmod +x /usr/local/bin/appimagetool && \
   cd /usr/local/bin && \
@@ -427,8 +427,14 @@ DOCKERFILE_EOF
 
 DOCKER_IMAGE_NAME="appimage-builder-${BUILD_ARCH}"
 if ! docker images | grep -q "$DOCKER_IMAGE_NAME"; then
-    echo -e "${YELLOW}Building Docker image for AppImage creation (${BUILD_ARCH})...${NC}"
-    docker build --platform=${DOCKER_PLATFORM} -t $DOCKER_IMAGE_NAME -f Dockerfile.appimage .
+    echo -e "${GREEN}Building Docker image for AppImage creation (${BUILD_ARCH})...${NC}"
+    docker buildx build \
+        --platform=${DOCKER_PLATFORM} \
+        --load \
+        -t $DOCKER_IMAGE_NAME \
+        -f Dockerfile.appimage \
+        .
+    docker buildx build --platform=${DOCKER_PLATFORM} -t $DOCKER_IMAGE_NAME -f Dockerfile.appimage .
 else
     echo -e "${GREEN}Using cached Docker image: $DOCKER_IMAGE_NAME${NC}"
 fi
