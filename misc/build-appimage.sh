@@ -101,42 +101,13 @@ fi
 
 chmod +x ./gradlew
 
-if [ "$MACHINE" = "Linux" ]; then
-    if ! command -v appimagetool &> /dev/null; then
-        echo -e "${YELLOW}appimagetool not found. Downloading...${NC}"
-
-        if [ "$BUILD_ARCH" = "x86_64" ]; then
-            APPIMAGETOOL_URL="https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
-        elif [ "$BUILD_ARCH" = "aarch64" ]; then
-            APPIMAGETOOL_URL="https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-aarch64.AppImage"
-        fi
-
-        if command -v wget &> /dev/null; then
-            wget -O appimagetool "$APPIMAGETOOL_URL"
-        elif command -v curl &> /dev/null; then
-            curl -L -o appimagetool "$APPIMAGETOOL_URL"
-        else
-            echo -e "${RED}Neither wget nor curl was found. Please supply either one.${NC}"
-            exit 1
-        fi
-
-        chmod +x appimagetool
-        APPIMAGETOOL="./appimagetool"
-    else
-        APPIMAGETOOL="appimagetool"
-    fi
-elif [ "$MACHINE" = "Mac" ]; then
-    if ! command -v docker &> /dev/null; then
-        echo -e "${RED}Docker not found!${NC}"
-        echo -e "${YELLOW}Docker is needed on MacOS in order to build the AppImage.${NC}"
-        exit 1
-    fi
-    echo -e "${GREEN}Docker found - Will be used for AppImage-build.${NC}"
-
-    if [ "$BUILD_ARCH" = "aarch64" ]; then
-        echo -e "${YELLOW}Building for aarch64(arm64).${NC}"
-    fi
+# Check Docker (needed for all builds)
+if ! command -v docker &> /dev/null; then
+    echo -e "${RED}Docker not found!${NC}"
+    echo -e "${YELLOW}Docker is required to build AppImages.${NC}"
+    exit 1
 fi
+echo -e "${GREEN}Docker found - Will be used for AppImage-build.${NC}"
 
 echo -e "${YELLOW}Checking Java 21 JDK...${NC}"
 if [ ! -d "$JDK_DIR" ]; then
@@ -396,9 +367,13 @@ EOF
 
 chmod +x "$APP_DIR/AppRun"
 
+# ====================
+# Docker-based AppImage Build
+# ====================
 echo -e "${YELLOW}Creating AppImage for ${APPIMAGE_ARCH} (this can take a while)...${NC}"
 rm -f ${APP_NAME}-${APP_VERSION}-${APPIMAGE_ARCH}.AppImage
 
+# Set platform
 if [[ "$BUILD_ARCH" = "aarch64" || "$BUILD_ARCH" = "arm64" ]]; then
     DOCKER_PLATFORM="linux/arm64"
     APPIMAGETOOL_ARCH="aarch64"
@@ -409,22 +384,21 @@ else
     echo -e "${YELLOW}Building for x86_64 (AMD64)...${NC}"
 fi
 
+# Create simplified Dockerfile (appimagetool downloaded only, NOT extracted)
 cat > Dockerfile.appimage << DOCKERFILE_EOF
 FROM --platform=${DOCKER_PLATFORM} ubuntu:22.04
 RUN apt-get update && apt-get install -y \
     wget file libglib2.0-0 libfuse2 libcairo2 \
     libpango-1.0-0 libgdk-pixbuf2.0-0 desktop-file-utils \
     && rm -rf /var/lib/apt/lists/*
-RUN wget -O /usr/local/bin/appimagetool https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${APPIMAGETOOL_ARCH}.AppImage && \
-  chmod +x /usr/local/bin/appimagetool && \
-  cd /usr/local/bin && \
-  ./appimagetool --appimage-extract && \
-  mv squashfs-root appimagetool-dir && \
-  rm appimagetool && \
-  ln -s /usr/local/bin/appimagetool-dir/AppRun /usr/local/bin/appimagetool
+# Download appimagetool (will be extracted at RUNTIME, not during build)
+RUN wget -O /usr/local/bin/appimagetool.AppImage \
+  https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${APPIMAGETOOL_ARCH}.AppImage && \
+  chmod +x /usr/local/bin/appimagetool.AppImage
 WORKDIR /work
 DOCKERFILE_EOF
 
+# Build Docker image
 DOCKER_IMAGE_NAME="appimage-builder-${BUILD_ARCH}"
 if ! docker images | grep -q "$DOCKER_IMAGE_NAME"; then
     echo -e "${GREEN}Building Docker image for AppImage creation (${BUILD_ARCH})...${NC}"
@@ -434,55 +408,73 @@ if ! docker images | grep -q "$DOCKER_IMAGE_NAME"; then
         -t $DOCKER_IMAGE_NAME \
         -f Dockerfile.appimage \
         .
-    docker buildx build --platform=${DOCKER_PLATFORM} -t $DOCKER_IMAGE_NAME -f Dockerfile.appimage .
 else
     echo -e "${GREEN}Using cached Docker image: $DOCKER_IMAGE_NAME${NC}"
 fi
 
-echo -e "${YELLOW}Packing APP_DIR for Docker-Transfer...${NC}"
-echo -e "${YELLOW}APP_DIR contents before packaging:${NC}"
-ls -lh "$APP_DIR/usr/lib/" | head -5
-
+# Pack APP_DIR
+echo -e "${YELLOW}Packing APP_DIR for Docker transfer...${NC}"
 tar -czf "${APP_DIR}.tar.gz" "$APP_DIR"
 echo -e "${GREEN}Archive created: $(du -sh "${APP_DIR}.tar.gz" | cut -f1)${NC}"
 
-echo -e "${YELLOW}Checking if JDK is present in archive...${NC}"
-if tar -tzf "${APP_DIR}.tar.gz" | grep -q "jdk/bin/java"; then
-    echo -e "${GREEN}✓ JDK is present in tar-archive${NC}"
+# Verify JDK in archive
+echo -e "${YELLOW}Verifying JDK in archive...${NC}"
+if tar -tzf "${APP_DIR}.tar.gz" 2>/dev/null | grep -q "jdk/bin/java"; then
+    echo -e "${GREEN}✓ JDK is present in tar archive${NC}"
 else
-    echo -e "${RED}✗ ERROR: JDK is NOT present in tar-archive!${NC}"
+    echo -e "${RED}✗ ERROR: JDK is NOT present in tar archive!${NC}"
     exit 1
 fi
 
+# Run AppImage build in Docker (extract appimagetool at RUNTIME)
 echo -e "${YELLOW}Running appimagetool in Docker container...${NC}"
 docker run --rm --platform=${DOCKER_PLATFORM} \
     -v "$(pwd)/${APP_DIR}.tar.gz:/work/appdir.tar.gz" \
     -v "$(pwd):/output" \
     $DOCKER_IMAGE_NAME \
-    sh -c "cd /work && tar -xzf appdir.tar.gz && cd /output && ARCH=${APPIMAGE_ARCH} appimagetool /work/${APP_DIR} ${APP_NAME}-${APP_VERSION}-${APPIMAGE_ARCH}.AppImage"
+    sh -c '
+        set -e
+
+        echo "Extracting appimagetool (runtime)..."
+        cd /usr/local/bin
+        ./appimagetool.AppImage --appimage-extract >/dev/null 2>&1
+        ln -sf /usr/local/bin/squashfs-root/AppRun /usr/local/bin/appimagetool
+
+        echo "Extracting APP_DIR..."
+        cd /work
+        tar -xzf appdir.tar.gz
+
+        echo "Building AppImage..."
+        cd /output
+        ARCH='"${APPIMAGE_ARCH}"' appimagetool /work/'"${APP_DIR}"' '"${APP_NAME}"'-'"${APP_VERSION}"'-'"${APPIMAGE_ARCH}"'.AppImage
+
+        echo "AppImage build complete"
+    '
 
 rm -f "${APP_DIR}.tar.gz"
 
-echo -e "${YELLOW}Verifying AppImage-Contents...${NC}"
+# Verify AppImage was created
+echo -e "${YELLOW}Verifying AppImage...${NC}"
 if [ -f "${APP_NAME}-${APP_VERSION}-${APPIMAGE_ARCH}.AppImage" ]; then
+    echo -e "${GREEN}✓ AppImage created successfully${NC}"
+
+    # Optional: Extract and verify JDK is present
     ./${APP_NAME}-${APP_VERSION}-${APPIMAGE_ARCH}.AppImage --appimage-extract >/dev/null 2>&1
     if [ -f "squashfs-root/usr/lib/jdk/bin/java" ]; then
-        echo -e "${GREEN}✓ JDK is present in tar-archive${NC}"
+        echo -e "${GREEN}✓ JDK is present in AppImage${NC}"
     else
-        echo -e "${RED}✗ ERROR: JDK is NOT present in tar-archive!${NC}"
-        echo -e "${YELLOW}Checking squashfs-root/usr/lib/${NC}"
-        ls -la squashfs-root/usr/lib/ 2>&1 || true
+        echo -e "${YELLOW}⚠ Warning: Could not verify JDK in AppImage${NC}"
     fi
     rm -rf squashfs-root
 else
-    echo -e "${RED}✗ AppImage was not created!${NC}"
+    echo -e "${RED}✗ ERROR: AppImage was not created!${NC}"
     exit 1
 fi
 
 echo -e "${GREEN}=== Done! ===${NC}"
 echo -e "${GREEN}AppImage created: ${APP_NAME}-${APP_VERSION}-${APPIMAGE_ARCH}.AppImage${NC}"
 APPIMAGE_SIZE=$(du -h "${APP_NAME}-${APP_VERSION}-${APPIMAGE_ARCH}.AppImage" | cut -f1)
-echo -e "${GREEN}Site: ${APPIMAGE_SIZE}${NC}"
+echo -e "${GREEN}Size: ${APPIMAGE_SIZE}${NC}"
 echo -e "${GREEN}Architecture: ${APPIMAGE_ARCH}${NC}"
 echo -e "${YELLOW}Test with: ./${APP_NAME}-${APP_VERSION}-${APPIMAGE_ARCH}.AppImage${NC}"
 echo -e "${YELLOW}FYI: This AppImage contains Java 21 and does not need a separate Java installation!${NC}"
