@@ -437,7 +437,7 @@ docker run --rm --platform=${DOCKER_PLATFORM} \
 
         echo "Extracting appimagetool (runtime)..."
         cd /usr/local/bin
-        ./appimagetool.AppImage --appimage-extract >/dev/null 2>&1
+        ./appimagetool.AppImage --appimage-extract
         ln -sf /usr/local/bin/squashfs-root/AppRun /usr/local/bin/appimagetool
 
         echo "Extracting APP_DIR..."
