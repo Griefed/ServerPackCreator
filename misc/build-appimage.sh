@@ -80,6 +80,7 @@ else
         x86_64)     BUILD_ARCH=x86_64;;
         aarch64)    BUILD_ARCH=aarch64;;
         arm64)      BUILD_ARCH=aarch64;;
+        amd64)      BUILD_ARCH=x86_64;;
         *)
             echo -e "${RED}Unknown host architecture: ${HOST_ARCH}${NC}"
             echo -e "${YELLOW}Please specify target architecture with --arch${NC}"

@@ -76,8 +76,8 @@ jobs:
       fail-fast: false
       matrix:
         arch:
-          - x86_64
-          - aarch64
+          - docker: amd64
+          - docker: arm64
 
     steps:
       - name: Checkout code
