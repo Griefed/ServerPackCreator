@@ -412,6 +412,7 @@ if docker images | grep -q "$DOCKER_IMAGE_NAME"; then
     echo -e "${GREEN}Using cached Docker image: $DOCKER_IMAGE_NAME${NC}"
 else
     echo -e "${YELLOW}Building Docker image (${BUILD_ARCH})...${NC}"
+    docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     docker buildx build \
         --platform=${DOCKER_PLATFORM} \
         --load \
