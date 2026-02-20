@@ -85,7 +85,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Set up QEMU for cross-platform builds
+      # Set up QEMU for cross-platform builds (enables ARM64 emulation on x86_64)
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         with:
@@ -99,13 +99,13 @@ jobs:
 
       - name: Verify Docker setup
         run: |
-          echo "Docker version:"
+          echo "=== Docker Information ==="
           docker --version
           echo ""
-          echo "Docker Buildx version:"
+          echo "=== Docker Buildx ==="
           docker buildx version
           echo ""
-          echo "Available platforms:"
+          echo "=== Available Platforms ==="
           docker buildx inspect --bootstrap | grep Platforms || true
 
       - name: Cache JDK download
@@ -120,28 +120,24 @@ jobs:
           name: gradle-jars
           path: .
 
-      - name: Verify Docker availability
-        run: |
-          echo "Checking Docker..."
-          which docker || echo "Docker not in PATH"
-          docker --version || echo "Docker command failed"
-          docker info || echo "Docker daemon not running"
-
       - name: Make build script executable
         run: chmod +x misc/build-appimage.sh
 
-      - name: Build AppImage
-        env:
-          BUILD_ARCH: ${{ matrix.arch }}
-        run: misc/build-appimage.sh ${{ needs.build-jar.outputs.version }}
+      - name: Build AppImage for ${{ matrix.arch }}
+        run: |
+          # Use --arch argument to explicitly specify target architecture
+          # This allows building aarch64 AppImages on x86_64 runners via QEMU!
+          misc/build-appimage.sh --arch ${{ matrix.arch }} ${{ needs.build-jar.outputs.version }}
 
       - name: Verify AppImage
         run: |
           APPIMAGE="ServerPackCreator-${{ needs.build-jar.outputs.version }}-${{ matrix.arch }}.AppImage"
           if [ ! -f "$APPIMAGE" ]; then
-            echo "Error: AppImage not found: $APPIMAGE"
+            echo "❌ Error: AppImage not found: $APPIMAGE"
+            ls -la *.AppImage 2>/dev/null || echo "No AppImages found"
             exit 1
           fi
+          echo "✅ AppImage created successfully:"
           ls -lh "$APPIMAGE"
 
       - name: Upload AppImage artifact
@@ -156,6 +152,8 @@ jobs:
         run: |
           APPIMAGE="ServerPackCreator-${{ needs.build-jar.outputs.version }}-${{ matrix.arch }}.AppImage"
           sha256sum "$APPIMAGE" > "$APPIMAGE.sha256"
+          echo "Checksum generated:"
+          cat "$APPIMAGE.sha256"
 
       - name: Upload checksums
         uses: actions/upload-artifact@v4
@@ -234,21 +232,26 @@ jobs:
         run: |
           mkdir continuous
           
-          # AppImages
-          find artifacts/appimage-x86_64 -name "*.AppImage" -exec cp {} continuous/ \;
-          find artifacts/appimage-aarch64 -name "*.AppImage" -exec cp {} continuous/ \;
+          echo "=== Collecting AppImages ==="
+          find artifacts/appimage-x86_64 -name "*.AppImage" -exec cp -v {} continuous/ \; 2>/dev/null || echo "No x86_64 AppImages"
+          find artifacts/appimage-aarch64 -name "*.AppImage" -exec cp -v {} continuous/ \; 2>/dev/null || echo "No aarch64 AppImages"
           
-          # Checksums
-          find artifacts -name "*.sha256" -exec cp {} continuous/ \;
+          echo ""
+          echo "=== Collecting Checksums ==="
+          find artifacts -name "*.sha256" -exec cp -v {} continuous/ \; 2>/dev/null || echo "No checksums"
           
-          # JARs
-          find artifacts/gradle-jars -name "*.jar" ! -name "*-plain.jar" -exec cp {} continuous/ \;
+          echo ""
+          echo "=== Collecting JARs ==="
+          find artifacts/gradle-jars -name "*.jar" ! -name "*-plain.jar" -exec cp -v {} continuous/ \; 2>/dev/null || echo "No JARs"
           
-          # Install4J Media
-          cp artifacts/install4j-media/*.dmg continuous/ 2>/dev/null || true
-          cp artifacts/install4j-media/*.sh  continuous/ 2>/dev/null || true
-          cp artifacts/install4j-media/*.exe continuous/ 2>/dev/null || true
+          echo ""
+          echo "=== Collecting Install4J Media ==="
+          cp artifacts/install4j-media/*.dmg continuous/ 2>/dev/null || echo "No DMG files"
+          cp artifacts/install4j-media/*.sh  continuous/ 2>/dev/null || echo "No SH files"
+          cp artifacts/install4j-media/*.exe continuous/ 2>/dev/null || echo "No EXE files"
           
+          echo ""
+          echo "=== Final Contents ==="
           ls -lh continuous/
 
       - name: Generate checksum
@@ -279,7 +282,7 @@ jobs:
           body: |
             ## 🔄 Continuous Dev-Build
             
-            **Built:** ${{ steps.timestamp.outputs.date }} at ${{ steps.timestamp.outputs.time }}
+            **Built:** ${{ steps.build_time.outputs.timestamp }}
             **Commit:** `${{ github.sha }}`
             
             ---
