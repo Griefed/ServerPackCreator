@@ -125,10 +125,7 @@ jobs:
         run: chmod +x misc/build-appimage.sh
 
       - name: Build AppImage for ${{ matrix.arch }}
-        env:
-          QEMU: "${{ runner.temp }}/qemu-static"
         run: |
-          chmod +x ${{ runner.temp }}/qemu-static
           misc/build-appimage.sh --arch ${{ matrix.arch }} ${{ needs.build-jar.outputs.version }}
 
       - name: Verify AppImage
