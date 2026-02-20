@@ -361,7 +361,7 @@ cp img/app.png          "$APP_DIR/usr/share/icons/hicolor/512x512/apps/${APP_NAM
 cp img/app.svg          "$APP_DIR/usr/share/icons/hicolor/scalable/apps/${APP_NAME}.svg"
 cp "$APP_DIR/usr/share/icons/hicolor/256x256/apps/${APP_NAME}.png" "$APP_DIR/${APP_NAME}.png" 2>/dev/null || true
 cp "$APP_DIR/usr/share/applications/${APP_NAME}.desktop" "$APP_DIR/${APP_NAME}.desktop"
-cp misc/appdata.xml "$APP_DIR/usr/share/metainfo/de.griefed.ServerPackCreator.appdata.xml"
+cp misc/appdata.xml "$APP_DIR/usr/share/metainfo/${APP_NAME}.appdata.xml"
 
 # Create AppRun
 cat > "$APP_DIR/AppRun" << EOF
@@ -401,7 +401,7 @@ RUN apt-get update && apt-get install -y \
     libpango-1.0-0 libgdk-pixbuf2.0-0 desktop-file-utils \
     && rm -rf /var/lib/apt/lists/*
 RUN wget -O /usr/local/bin/appimagetool.AppImage \
-  https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${APPIMAGETOOL_ARCH}.AppImage && \
+  https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-${APPIMAGETOOL_ARCH}.AppImage && \
   chmod +x /usr/local/bin/appimagetool.AppImage
 WORKDIR /work
 DOCKERFILE_EOF
