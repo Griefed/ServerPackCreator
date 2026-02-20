@@ -18,6 +18,7 @@ NC='\033[0m' # No Color
 # Default values
 TARGET_ARCH=""
 APP_VERSION="dev"
+QEMU_STATIC="${QEMU:-/usr/bin/qemu-static}"
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -437,13 +438,14 @@ fi
 echo -e "${YELLOW}Building AppImage in Docker container...${NC}"
 docker run --rm --platform=${DOCKER_PLATFORM} \
     -v "$(pwd)/${APP_DIR}.tar.gz:/work/appdir.tar.gz" \
+    -v "${QEMU_STATIC}:/usr/bin/qemu-static" \
     -v "$(pwd):/output" \
     $DOCKER_IMAGE_NAME \
     sh -c '
         set -e
         echo "Extracting appimagetool..."
         cd /usr/local/bin
-        ./appimagetool.AppImage --appimage-extract >/dev/null 2>&1
+        qemu-static appimagetool.AppImage --appimage-extract
         ln -sf /usr/local/bin/squashfs-root/AppRun /usr/local/bin/appimagetool
 
         echo "Extracting APP_DIR..."
