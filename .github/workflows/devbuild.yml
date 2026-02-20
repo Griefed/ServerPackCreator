@@ -125,7 +125,7 @@ jobs:
 
       - name: Build AppImage for ${{ matrix.arch }}
         env:
-          QEMU=${{ runner.temp }}/qemu-static
+          QEMU: "${{ runner.temp }}/qemu-static"
         run: |
           misc/build-appimage.sh --arch ${{ matrix.arch }} ${{ needs.build-jar.outputs.version }}
 
