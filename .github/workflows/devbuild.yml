@@ -96,6 +96,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
         with:
           install: true
+          platforms: linux/amd64,linux/arm64
 
       - name: Verify Docker setup
         run: |
@@ -127,6 +128,7 @@ jobs:
         env:
           QEMU: "${{ runner.temp }}/qemu-static"
         run: |
+          chmod +x ${{ runner.temp }}/qemu-static
           misc/build-appimage.sh --arch ${{ matrix.arch }} ${{ needs.build-jar.outputs.version }}
 
       - name: Verify AppImage

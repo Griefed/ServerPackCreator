@@ -436,7 +436,9 @@ fi
 
 # Run AppImage build in Docker (extract appimagetool at RUNTIME)
 echo -e "${YELLOW}Building AppImage in Docker container...${NC}"
+chmod +x "${QEMU_STATIC}"
 docker run --rm --platform=${DOCKER_PLATFORM} \
+    --privileged \
     -v "$(pwd)/${APP_DIR}.tar.gz:/work/appdir.tar.gz" \
     -v "${QEMU_STATIC}:/usr/bin/qemu-static" \
     -v "$(pwd):/output" \
