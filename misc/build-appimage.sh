@@ -329,7 +329,7 @@ cp img/app.png          "$APP_DIR/usr/share/icons/hicolor/512x512/apps/${APP_NAM
 cp img/app.svg          "$APP_DIR/usr/share/icons/hicolor/scalable/apps/${APP_NAME}.svg"
 cp "$APP_DIR/usr/share/icons/hicolor/256x256/apps/${APP_NAME}.png" "$APP_DIR/${APP_NAME}.png" 2>/dev/null || true
 cp "$APP_DIR/usr/share/applications/${APP_NAME}.desktop" "$APP_DIR/${APP_NAME}.desktop"
-cp misc/appdata.xml "$APP_DIR/usr/share/metainfo/de.griefed.ServerPackCreator.appdata.xml"
+cp misc/appdata.xml "$APP_DIR/usr/share/metainfo/${APP_NAME}.appdata.xml"
 
 cat > "$APP_DIR/AppRun" << EOF
 #!/bin/bash
