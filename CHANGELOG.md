@@ -1,3 +1,9 @@
+## [8.1.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.1.0-beta.1...8.1.0-beta.2) (2026-02-21)
+
+### 💎 Improvements
+
+* Catch Prism Launcher files and detect info accordingly ([c296cc7](https://git.griefed.de/Griefed/ServerPackCreator/commit/c296cc7abb72c3d22f5cb38f890f70c957bdc344))
+
 ## [8.1.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.8...8.1.0-beta.1) (2026-02-14)
 
 ### :scissors: Refactor
