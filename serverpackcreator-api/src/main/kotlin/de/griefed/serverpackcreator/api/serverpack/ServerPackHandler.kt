@@ -1159,6 +1159,7 @@ class ServerPackHandler(
             if (autoDiscoveredClientMods.isNotEmpty()) {
                 log.info("Automatically detected mods: ${autoDiscoveredClientMods.size}")
                 for (discoveredMod in autoDiscoveredClientMods) {
+                    @Suppress("VariableInitializerIsRedundant")
                     var whitelistMatch = "N/A"
                     val modName = discoveredMod.name
                     val isWhitelistedMod = modWhitelist.any { whitelistEntry ->

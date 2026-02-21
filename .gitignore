@@ -434,4 +434,7 @@ serverpackcreator-help/Writerside/topics/SECURITY.md
 # ServerPackCreator
 media
 appimage
+jdk-21-*
+ServerPackCreator-*.AppImage
+appimagetool
 /serverpackcreator-web-frontend/.frontend-gradle-plugin/
