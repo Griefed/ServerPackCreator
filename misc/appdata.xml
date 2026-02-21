@@ -4,7 +4,7 @@
     <metadata_license>MIT</metadata_license>
     <project_license>LGPL-2.1</project_license>
     <name>ServerPackCreator</name>
-    <summary>Create server packs from Minecraft Forge, NeoForge, Fabric, Quilt or LegacyFabric modpacks.</summary>
+    <summary>Create server packs from Minecraft (Neo)Forge, (Legacy)Fabric or Quilt modpacks</summary>
     <description>
         <p>ServerPackCreator creates a server pack from any given Forge, Fabric, Quilt, LegacyFabric and NeoForge modpack.</p>
         <p>Whenever you are working on an update to your modpack, you simply run ServerPackCreator and BAM! You've got yourself a server pack for your new modpack version.</p>
@@ -20,7 +20,7 @@
     </description>
     <launchable type="desktop-id">ServerPackCreator.desktop</launchable>
     <url type="homepage">https://serverpackcreator.de</url>
-    <url type="bugtracker">https://github.com/Griefed/ServerPackCreator/issuess/</url>
+    <url type="bugtracker">https://github.com/Griefed/ServerPackCreator/issues</url>
     <url type="donation">https://github.com/sponsors/Griefed</url>
     <url type="help">https://help.serverpackcreator.de/help-topic.html</url>
     <update_contact>github_AT_griefed.de</update_contact>
