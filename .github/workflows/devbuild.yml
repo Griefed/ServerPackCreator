@@ -244,7 +244,7 @@ jobs:
     name: "Continuous Pre-Release"
     needs: [
       build-jar,
-      build-appimage-aarch64,
+      build-appimage-x86_64,
       build-appimage-aarch64,
       build-media
     ]
