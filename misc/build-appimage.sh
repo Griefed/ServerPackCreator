@@ -157,7 +157,6 @@ fi
 
 # Extract appimagetool (AppImages can't run directly without FUSE; extract and use directly)
 echo -e "${YELLOW}Extracting appimagetool...${NC}"
-rm -rf squashfs-root
 "$APPIMAGETOOL_BIN" --appimage-extract > /dev/null
 APPIMAGETOOL="$(pwd)/squashfs-root/AppRun"
 echo -e "${GREEN}appimagetool ready.${NC}"
