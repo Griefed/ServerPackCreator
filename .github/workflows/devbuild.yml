@@ -97,12 +97,18 @@ jobs:
           path: jdk-21-${{ matrix.arch }}
           key: jdk-21-${{ matrix.arch }}
 
-      - name: Build AppImage for ${{ matrix.arch }}
+      - name: Build AppImage for x86_64 (native)
+        if: matrix.arch == 'x86_64'
+        run: |
+          chmod +x misc/build-appimage.sh
+          misc/build-appimage.sh "${{ needs.build-jar.outputs.version }}"
+
+      - name: Build AppImage for aarch64 (emulated)
+        if: matrix.arch == 'aarch64'
         uses: uraimo/run-on-arch-action@v2
         with:
-          arch: ${{ matrix.arch }}
+          arch: aarch64
           distro: ubuntu22.04
-          # Share the workspace and cache into the container
           githubToken: ${{ github.token }}
           dockerRunArgs: |
             --volume "${{ github.workspace }}:/work"
@@ -110,9 +116,9 @@ jobs:
             APP_VERSION: ${{ needs.build-jar.outputs.version }}
           install: |
             apt-get update -q
-            apt-get install -y --no-install-recommends \
-              wget file libglib2.0-0 libfuse2 \
-              desktop-file-utils tar
+            apt-get install -y \
+              wget file libglib2.0-0 libfuse2 libcairo2 tar \
+              libpango-1.0-0 libgdk-pixbuf2.0-0 desktop-file-utils
           run: |
             cd /work
             chmod +x misc/build-appimage.sh
