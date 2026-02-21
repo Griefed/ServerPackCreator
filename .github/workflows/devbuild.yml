@@ -68,7 +68,7 @@ jobs:
           retention-days: 1
 
   build-appimage:
-    name: Build AppImage (${{ matrix.arch }})
+    name: Build AppImage (${{ matrix.arch.docker }})
     needs: build-jar
     runs-on: ubuntu-latest
 
@@ -89,14 +89,14 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         with:
-          platforms: linux/amd64,linux/arm64
+          platforms: ${{ matrix.arch }}
 
       # Set up Docker Buildx (required for multi-platform builds)
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
           install: true
-          platforms: linux/amd64,linux/arm64
+          platforms: ${{ matrix.arch }}
 
       - name: Verify Docker setup
         run: |
