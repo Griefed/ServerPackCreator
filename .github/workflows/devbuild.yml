@@ -68,7 +68,7 @@ jobs:
           retention-days: 1
 
   build-appimage:
-    name: Build AppImage (${{ matrix.arch.docker }})
+    name: Build AppImage (${{ matrix.arch }})
     needs: build-jar
     runs-on: ubuntu-latest
 
@@ -76,8 +76,8 @@ jobs:
       fail-fast: false
       matrix:
         arch:
-          - docker: amd64
-          - docker: arm64
+          - x86_64
+          - aarch64
 
     steps:
       - name: Checkout code
@@ -85,53 +85,42 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Set up QEMU for cross-platform builds (enables ARM64 emulation on x86_64)
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: linux/${{ matrix.arch.docker }},${{ matrix.arch.docker }}
-
-      # Set up Docker Buildx (required for multi-platform builds)
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          version: latest
-          platforms: linux/${{ matrix.arch.docker }},${{ matrix.arch.docker }}
-
-      - name: Verify Docker setup
-        run: |
-          echo "=== Docker Information ==="
-          docker --version
-          echo ""
-          echo "=== Docker Buildx ==="
-          docker buildx version
-          echo ""
-          echo "=== Available Platforms ==="
-          docker buildx inspect --bootstrap | grep Platforms || true
-
-      - name: Cache JDK download
-        uses: actions/cache@v4
-        with:
-          path: jdk-21-${{ matrix.arch.docker }}
-          key: jdk-21-${{ matrix.arch.docker }}
-
       - name: Download JARs
         uses: actions/download-artifact@v4
         with:
           name: gradle-jars
           path: .
 
-      - name: Make build script executable
-        run: chmod +x misc/build-appimage.sh
+      - name: Cache JDK download
+        uses: actions/cache@v4
+        with:
+          path: jdk-21-${{ matrix.arch }}
+          key: jdk-21-${{ matrix.arch }}
 
-      - name: Build AppImage for ${{ matrix.arch.docker }}
-        run: |
-          docker run --privileged --rm tonistiigi/binfmt --install arm64,arm
-          misc/build-appimage.sh --arch ${{ matrix.arch.docker }} ${{ needs.build-jar.outputs.version }}
+      - name: Build AppImage for ${{ matrix.arch }}
+        uses: uraimo/run-on-arch-action@v2
+        with:
+          arch: ${{ matrix.arch }}
+          distro: ubuntu22.04
+          # Share the workspace and cache into the container
+          githubToken: ${{ github.token }}
+          dockerRunArgs: |
+            --volume "${{ github.workspace }}:/work"
+          env: |
+            APP_VERSION: ${{ needs.build-jar.outputs.version }}
+          install: |
+            apt-get update -q
+            apt-get install -y --no-install-recommends \
+              wget file libglib2.0-0 libfuse2 \
+              desktop-file-utils tar
+          run: |
+            cd /work
+            chmod +x misc/build-appimage.sh
+            misc/build-appimage.sh "${APP_VERSION}"
 
       - name: Verify AppImage
         run: |
-          APPIMAGE="ServerPackCreator-${{ needs.build-jar.outputs.version }}-${{ matrix.arch.docker }}.AppImage"
+          APPIMAGE="ServerPackCreator-${{ needs.build-jar.outputs.version }}-${{ matrix.arch }}.AppImage"
           if [ ! -f "$APPIMAGE" ]; then
             echo "❌ Error: AppImage not found: $APPIMAGE"
             ls -la *.AppImage 2>/dev/null || echo "No AppImages found"
@@ -140,25 +129,25 @@ jobs:
           echo "✅ AppImage created successfully:"
           ls -lh "$APPIMAGE"
 
-      - name: Upload AppImage artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: appimage-${{ matrix.arch.docker }}
-          path: ServerPackCreator-${{ needs.build-jar.outputs.version }}-${{ matrix.arch.docker }}.AppImage
-          if-no-files-found: error
-          retention-days: 1
-
       - name: Generate checksums
         run: |
-          APPIMAGE="ServerPackCreator-${{ needs.build-jar.outputs.version }}-${{ matrix.arch.docker }}.AppImage"
+          APPIMAGE="ServerPackCreator-${{ needs.build-jar.outputs.version }}-${{ matrix.arch }}.AppImage"
           sha256sum "$APPIMAGE" > "$APPIMAGE.sha256"
           echo "Checksum generated:"
           cat "$APPIMAGE.sha256"
 
+      - name: Upload AppImage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: appimage-${{ matrix.arch }}
+          path: ServerPackCreator-${{ needs.build-jar.outputs.version }}-${{ matrix.arch }}.AppImage
+          if-no-files-found: error
+          retention-days: 1
+
       - name: Upload checksums
         uses: actions/upload-artifact@v4
         with:
-          name: appimage-${{ matrix.arch.docker}}-checksum
+          name: appimage-${{ matrix.arch }}-checksum
           path: "*.sha256"
           retention-days: 1
 
@@ -231,25 +220,25 @@ jobs:
       - name: Collect files
         run: |
           mkdir continuous
-          
+
           echo "=== Collecting AppImages ==="
-          find artifacts/appimage-x86_64 -name "*.AppImage" -exec cp -v {} continuous/ \; 2>/dev/null || echo "No x86_64 AppImages"
+          find artifacts/appimage-x86_64  -name "*.AppImage" -exec cp -v {} continuous/ \; 2>/dev/null || echo "No x86_64 AppImages"
           find artifacts/appimage-aarch64 -name "*.AppImage" -exec cp -v {} continuous/ \; 2>/dev/null || echo "No aarch64 AppImages"
-          
+
           echo ""
           echo "=== Collecting Checksums ==="
           find artifacts -name "*.sha256" -exec cp -v {} continuous/ \; 2>/dev/null || echo "No checksums"
-          
+
           echo ""
           echo "=== Collecting JARs ==="
           find artifacts/gradle-jars -name "*.jar" ! -name "*-plain.jar" -exec cp -v {} continuous/ \; 2>/dev/null || echo "No JARs"
-          
+
           echo ""
           echo "=== Collecting Install4J Media ==="
           cp artifacts/install4j-media/*.dmg continuous/ 2>/dev/null || echo "No DMG files"
           cp artifacts/install4j-media/*.sh  continuous/ 2>/dev/null || echo "No SH files"
           cp artifacts/install4j-media/*.exe continuous/ 2>/dev/null || echo "No EXE files"
-          
+
           echo ""
           echo "=== Final Contents ==="
           ls -lh continuous/
@@ -281,16 +270,16 @@ jobs:
           artifacts: "continuous/*"
           body: |
             ## 🔄 Continuous Dev-Build
-            
+
             **Built:** ${{ steps.build_time.outputs.timestamp }}
             **Commit:** `${{ github.sha }}`
-            
+
             ---
-            
+
             This is an automated development build, updated every time changes are pushed to `develop`.
-            
+
             ⚠️ **Warning:** Do not use unless you have been told to, or are curious about the contents of the dev build.
-            
+
             🚫 **Do not link to this release.**
           commit: "develop"
           name: "continuous"

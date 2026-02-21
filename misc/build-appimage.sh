@@ -2,7 +2,7 @@
 
 # Build-Script for Java 21 apps as AppImages
 # Builds a gradle-based application into an AppImage and includes a Java 21 JDK in it
-# Supports cross-platform builds via Docker (x86_64 and aarch64)
+# Builds natively for the host architecture (no Docker, no cross-compilation)
 
 set -e
 
@@ -16,7 +16,6 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Default values
-TARGET_ARCH=""
 APP_VERSION="dev"
 
 # Parse arguments
@@ -25,30 +24,19 @@ while [[ $# -gt 0 ]]; do
         -h|--help)
             echo "Usage: $0 [OPTIONS] [VERSION]"
             echo ""
-            echo "Builds an AppImage for the specified target architecture using Docker."
+            echo "Builds an AppImage natively for the host architecture."
             echo ""
             echo "Options:"
-            echo "  -a, --arch ARCH    Target architecture (x86_64 or aarch64)"
-            echo "                     If not specified, uses BUILD_ARCH env var or host arch"
             echo "  -h, --help         Show this help message"
             echo ""
             echo "Arguments:"
             echo "  VERSION            Version string (default: 'dev')"
             echo ""
             echo "Examples:"
-            echo "  $0                           # Build for host architecture, version 'dev'"
-            echo "  $0 1.0.0                     # Build for host architecture, version '1.0.0'"
-            echo "  $0 --arch aarch64 1.0.0      # Build for ARM64, version '1.0.0'"
-            echo "  $0 -a x86_64 2.1.3           # Build for x86_64, version '2.1.3'"
-            echo ""
-            echo "Environment Variables:"
-            echo "  BUILD_ARCH         Alternative way to specify target architecture"
+            echo "  $0                 # Build for host architecture, version 'dev'"
+            echo "  $0 1.0.0           # Build for host architecture, version '1.0.0'"
             echo ""
             exit 0
-            ;;
-        -a|--arch)
-            TARGET_ARCH="$2"
-            shift 2
             ;;
         -*)
             echo -e "${RED}Unknown option: $1${NC}"
@@ -66,58 +54,44 @@ echo -e "${GREEN}Script-Dir: $SCRIPT_DIR"
 echo -e "${GREEN}Project-Root: $PROJECT_ROOT"
 echo ""
 
-# Determine target architecture
-if [ -n "$TARGET_ARCH" ]; then
-    # CLI argument takes precedence
-    BUILD_ARCH="$TARGET_ARCH"
-elif [ -n "$BUILD_ARCH" ]; then
-    # Use environment variable if set
-    BUILD_ARCH="$BUILD_ARCH"
-else
-    # Fall back to host architecture
-    HOST_ARCH="$(uname -m)"
-    case "${HOST_ARCH}" in
-        x86_64)     BUILD_ARCH=x86_64;;
-        aarch64)    BUILD_ARCH=aarch64;;
-        arm64)      BUILD_ARCH=aarch64;;
-        amd64)      BUILD_ARCH=x86_64;;
-        *)
-            echo -e "${RED}Unknown host architecture: ${HOST_ARCH}${NC}"
-            echo -e "${YELLOW}Please specify target architecture with --arch${NC}"
-            exit 1
-            ;;
-    esac
-    echo -e "${YELLOW}No target architecture specified, using host architecture${NC}"
-fi
-
-# Validate and normalize architecture
-case "${BUILD_ARCH}" in
+# Determine host architecture and map to AppImage arch names
+HOST_ARCH="$(uname -m)"
+case "${HOST_ARCH}" in
     x86_64|amd64)
         BUILD_ARCH=x86_64
+        JDK_ARCH=x64
+        APPIMAGETOOL_ARCH=x86_64
         ;;
     aarch64|arm64)
         BUILD_ARCH=aarch64
+        JDK_ARCH=aarch64
+        APPIMAGETOOL_ARCH=aarch64
         ;;
     *)
-        echo -e "${RED}Invalid architecture: ${BUILD_ARCH}${NC}"
+        echo -e "${RED}Unsupported host architecture: ${HOST_ARCH}${NC}"
         echo -e "${YELLOW}Supported architectures: x86_64, aarch64${NC}"
         exit 1
         ;;
 esac
 
-# Detect OS (for informational purposes only)
+# Detect OS
 OS="$(uname -s)"
 case "${OS}" in
-    Linux*)     MACHINE=Linux;;
-    Darwin*)    MACHINE=Mac;;
-    *)          MACHINE="UNKNOWN:${OS}"
+    Linux*)  MACHINE=Linux;;
+    Darwin*) MACHINE=Mac;;
+    *)       MACHINE="UNKNOWN:${OS}"
 esac
 
-HOST_ARCH="$(uname -m)"
 echo -e "${GREEN}Host OS: $MACHINE ($HOST_ARCH)${NC}"
-echo -e "${GREEN}Target Architecture: $BUILD_ARCH${NC}"
+echo -e "${GREEN}Build Architecture: $BUILD_ARCH${NC}"
 echo -e "${GREEN}Build Version: ${APP_VERSION}${NC}"
 echo ""
+
+if [ "$MACHINE" != "Linux" ]; then
+    echo -e "${RED}AppImages can only be built on Linux!${NC}"
+    echo -e "${YELLOW}Please run this script on a Linux system (e.g. a GitHub Actions runner).${NC}"
+    exit 1
+fi
 
 # Configuration
 APP_NAME="ServerPackCreator"
@@ -130,28 +104,17 @@ GRADLE_TASK="build"
 GRADLE_ARGS="--info --full-stacktrace --warning-mode all -x :serverpackcreator-api:test -x :serverpackcreator-app:test"
 BUILD_DIR="serverpackcreator-app/build/libs"
 JDK_VERSION="21"
-
-# Set JDK URL and Docker platform based on target architecture
-if [ "$BUILD_ARCH" = "x86_64" ]; then
-    JDK_URL="https://api.adoptium.net/v3/binary/latest/21/ga/linux/x64/jdk/hotspot/normal/eclipse"
-    JDK_DIR="jdk-${JDK_VERSION}-${BUILD_ARCH}"
-    APPIMAGE_ARCH=${BUILD_ARCH}
-    DOCKER_PLATFORM="linux/amd64"
-    APPIMAGETOOL_ARCH="x86_64"
-elif [ "$BUILD_ARCH" = "aarch64" ]; then
-    JDK_URL="https://api.adoptium.net/v3/binary/latest/21/ga/linux/aarch64/jdk/hotspot/normal/eclipse"
-    JDK_DIR="jdk-${JDK_VERSION}-${BUILD_ARCH}"
-    APPIMAGE_ARCH=${BUILD_ARCH}
-    DOCKER_PLATFORM="linux/arm64"
-    APPIMAGETOOL_ARCH="aarch64"
-fi
+JDK_URL="https://api.adoptium.net/v3/binary/latest/${JDK_VERSION}/ga/linux/${JDK_ARCH}/jdk/hotspot/normal/eclipse"
+JDK_DIR="jdk-${JDK_VERSION}-${BUILD_ARCH}"
+APPIMAGETOOL_URL="https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-${APPIMAGETOOL_ARCH}.AppImage"
+APPIMAGETOOL_BIN="./appimagetool-${BUILD_ARCH}.AppImage"
 
 # Cleanup function
 cleanup() {
-  echo -e "${YELLOW}Cleaning up temporary files...${NC}"
-  rm -rf "$APP_DIR"
-  rm -f Dockerfile.appimage "${APP_DIR}.tar.gz"
-  echo -e "${GREEN}Cleanup done.${NC}"
+    echo -e "${YELLOW}Cleaning up temporary files...${NC}"
+    rm -rf "$APP_DIR"
+    rm -f squashfs-root
+    echo -e "${GREEN}Cleanup done.${NC}"
 }
 
 trap cleanup EXIT
@@ -166,50 +129,51 @@ if [ ! -f "./gradlew" ]; then
     echo -e "${YELLOW}Ensure it's present in the root directory of the project.${NC}"
     exit 1
 fi
-
 chmod +x ./gradlew
 
-# Docker is always required now (for consistent cross-platform builds)
-if ! command -v docker &> /dev/null; then
-    echo -e "${RED}Docker not found!${NC}"
-    echo -e "${YELLOW}Docker is required to build AppImages.${NC}"
-    if [ "$MACHINE" = "Mac" ]; then
-        echo -e "${YELLOW}Install Docker Desktop: https://www.docker.com/products/docker-desktop${NC}"
-    else
-        echo -e "${YELLOW}Install Docker: https://docs.docker.com/engine/install/${NC}"
+for cmd in wget curl tar file; do
+    if ! command -v "$cmd" &> /dev/null; then
+        echo -e "${YELLOW}Warning: '$cmd' not found.${NC}"
     fi
-    exit 1
+done
+
+# Download appimagetool if not present
+echo -e "${YELLOW}Checking appimagetool for ${BUILD_ARCH}...${NC}"
+if [ ! -f "$APPIMAGETOOL_BIN" ]; then
+    echo -e "${YELLOW}Downloading appimagetool...${NC}"
+    if command -v wget &> /dev/null; then
+        wget -O "$APPIMAGETOOL_BIN" "$APPIMAGETOOL_URL"
+    elif command -v curl &> /dev/null; then
+        curl -L -o "$APPIMAGETOOL_BIN" "$APPIMAGETOOL_URL"
+    else
+        echo -e "${RED}Neither wget nor curl found. Please install one of them.${NC}"
+        exit 1
+    fi
+    chmod +x "$APPIMAGETOOL_BIN"
+    echo -e "${GREEN}appimagetool downloaded.${NC}"
+else
+    echo -e "${GREEN}appimagetool already present.${NC}"
 fi
 
-echo -e "${GREEN}Docker found - Version: $(docker --version)${NC}"
-
-# Check if docker daemon is running
-if ! docker info &> /dev/null; then
-    echo -e "${RED}Docker daemon is not running!${NC}"
-    echo -e "${YELLOW}Please start Docker and try again.${NC}"
-    exit 1
-fi
-
-# Notify about cross-compilation if applicable
-if [ "$HOST_ARCH" != "$BUILD_ARCH" ]; then
-    echo -e "${YELLOW}Cross-compilation detected: Building $BUILD_ARCH on $HOST_ARCH${NC}"
-    echo -e "${YELLOW}This may take longer due to QEMU emulation...${NC}"
-fi
+# Extract appimagetool (AppImages can't run directly without FUSE; extract and use directly)
+echo -e "${YELLOW}Extracting appimagetool...${NC}"
+rm -rf squashfs-root
+"$APPIMAGETOOL_BIN" --appimage-extract > /dev/null
+APPIMAGETOOL="$(pwd)/squashfs-root/AppRun"
+echo -e "${GREEN}appimagetool ready.${NC}"
 
 # Download JDK
-echo -e "${YELLOW}Checking Java 21 JDK for ${BUILD_ARCH}...${NC}"
+echo -e "${YELLOW}Checking Java ${JDK_VERSION} JDK for ${BUILD_ARCH}...${NC}"
 if [ ! -d "$JDK_DIR" ]; then
-    echo -e "${YELLOW}Downloading Java 21 JDK for ${BUILD_ARCH}...${NC}"
-
+    echo -e "${YELLOW}Downloading Java ${JDK_VERSION} JDK for ${BUILD_ARCH}...${NC}"
     if command -v wget &> /dev/null; then
         wget -O jdk.tar.gz "$JDK_URL"
     elif command -v curl &> /dev/null; then
         curl -L -o jdk.tar.gz "$JDK_URL"
     else
-        echo -e "${RED}Neither wget nor curl was found. Please install one of them.${NC}"
+        echo -e "${RED}Neither wget nor curl found. Please install one of them.${NC}"
         exit 1
     fi
-
     echo -e "${YELLOW}Extracting JDK...${NC}"
     mkdir -p "$JDK_DIR"
     tar -xzf jdk.tar.gz -C "$JDK_DIR" --strip-components=1
@@ -238,7 +202,6 @@ else
         echo -e "${RED}No JAR file found in $BUILD_DIR${NC}"
         exit 1
     fi
-
     echo -e "${GREEN}JAR created: $JAR_FILE${NC}"
 fi
 
@@ -387,89 +350,21 @@ EOF
 
 chmod +x "$APP_DIR/AppRun"
 
-# ==================
-# Docker-based Build
-# ==================
-echo -e "${YELLOW}Creating AppImage for ${APPIMAGE_ARCH} using Docker...${NC}"
-echo -e "${YELLOW}Platform: ${DOCKER_PLATFORM}${NC}"
-rm -f ${APP_NAME}-${APP_VERSION}-${APPIMAGE_ARCH}.AppImage
+# Build AppImage natively
+echo -e "${YELLOW}Building AppImage natively for ${BUILD_ARCH}...${NC}"
+OUTPUT_APPIMAGE="${APP_NAME}-${APP_VERSION}-${BUILD_ARCH}.AppImage"
+rm -f "$OUTPUT_APPIMAGE"
 
-# Create Dockerfile (downloads appimagetool, does NOT extract during build)
-cat > Dockerfile.appimage << DOCKERFILE_EOF
-FROM --platform=${DOCKER_PLATFORM} ubuntu:22.04
-RUN apt-get update && apt-get install -y \
-    wget file libglib2.0-0 libfuse2 libcairo2 \
-    libpango-1.0-0 libgdk-pixbuf2.0-0 desktop-file-utils \
-    && rm -rf /var/lib/apt/lists/*
-RUN wget -O /usr/local/bin/appimagetool.AppImage \
-  https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-${APPIMAGETOOL_ARCH}.AppImage && \
-  chmod +x /usr/local/bin/appimagetool.AppImage
-WORKDIR /work
-DOCKERFILE_EOF
-
-# Build Docker image
-DOCKER_IMAGE_NAME="appimage-builder-${BUILD_ARCH}"
-if docker images | grep -q "$DOCKER_IMAGE_NAME"; then
-    echo -e "${GREEN}Using cached Docker image: $DOCKER_IMAGE_NAME${NC}"
-else
-    echo -e "${YELLOW}Building Docker image (${BUILD_ARCH})...${NC}"
-    docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-    docker buildx build \
-        --platform=${DOCKER_PLATFORM} \
-        --load \
-        -t $DOCKER_IMAGE_NAME \
-        -f Dockerfile.appimage \
-        .
-fi
-
-# Pack APP_DIR
-echo -e "${YELLOW}Packing APP_DIR for Docker transfer...${NC}"
-tar -czf "${APP_DIR}.tar.gz" "$APP_DIR"
-echo -e "${GREEN}Archive created: $(du -sh "${APP_DIR}.tar.gz" | cut -f1)${NC}"
-
-# Verify JDK in archive
-if tar -tzf "${APP_DIR}.tar.gz" 2>/dev/null | grep -q "jdk/bin/java"; then
-    echo -e "${GREEN}✓ JDK is present in archive${NC}"
-else
-    echo -e "${RED}✗ ERROR: JDK is NOT present in archive!${NC}"
-    exit 1
-fi
-
-# Run AppImage build in Docker (extract appimagetool at RUNTIME)
-echo -e "${YELLOW}Building AppImage in Docker container...${NC}"
-docker run --rm --platform=${DOCKER_PLATFORM} \
-    --privileged \
-    -v "$(pwd)/${APP_DIR}.tar.gz:/work/appdir.tar.gz" \
-    -v "$(pwd):/output" \
-    $DOCKER_IMAGE_NAME \
-    sh -c '
-        set -e
-        echo "Extracting appimagetool..."
-        cd /usr/local/bin
-        ./appimagetool.AppImage --appimage-extract
-        ln -sf /usr/local/bin/squashfs-root/AppRun /usr/local/bin/appimagetool
-
-        echo "Extracting APP_DIR..."
-        cd /work
-        tar -xzf appdir.tar.gz
-
-        echo "Building AppImage..."
-        cd /output
-        ARCH='"${APPIMAGE_ARCH}"' appimagetool /work/'"${APP_DIR}"' '"${APP_NAME}"'-'"${APP_VERSION}"'-'"${APPIMAGE_ARCH}"'.AppImage
-    '
-
-rm -f "${APP_DIR}.tar.gz"
+ARCH=${BUILD_ARCH} "$APPIMAGETOOL" "$APP_DIR" "$OUTPUT_APPIMAGE"
 
 # Verify AppImage
-if [ -f "${APP_NAME}-${APP_VERSION}-${APPIMAGE_ARCH}.AppImage" ]; then
-    echo -e "${GREEN}✓ AppImage created successfully${NC}"
-    APPIMAGE_SIZE=$(du -h "${APP_NAME}-${APP_VERSION}-${APPIMAGE_ARCH}.AppImage" | cut -f1)
-
+if [ -f "$OUTPUT_APPIMAGE" ]; then
+    APPIMAGE_SIZE=$(du -h "$OUTPUT_APPIMAGE" | cut -f1)
     echo -e "${GREEN}=== Success! ===${NC}"
-    echo -e "${GREEN}AppImage: ${APP_NAME}-${APP_VERSION}-${APPIMAGE_ARCH}.AppImage${NC}"
+    echo -e "${GREEN}AppImage: ${OUTPUT_APPIMAGE}${NC}"
     echo -e "${GREEN}Size: ${APPIMAGE_SIZE}${NC}"
-    echo -e "${GREEN}Target Architecture: ${APPIMAGE_ARCH}${NC}"
-    echo -e "${YELLOW}Test with: ./${APP_NAME}-${APP_VERSION}-${APPIMAGE_ARCH}.AppImage${NC}"
+    echo -e "${GREEN}Architecture: ${BUILD_ARCH}${NC}"
+    echo -e "${YELLOW}Test with: ./${OUTPUT_APPIMAGE}${NC}"
 else
     echo -e "${RED}✗ ERROR: AppImage was not created!${NC}"
     exit 1
