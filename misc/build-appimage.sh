@@ -113,7 +113,7 @@ APPIMAGETOOL_BIN="./appimagetool-${BUILD_ARCH}.AppImage"
 cleanup() {
     echo -e "${YELLOW}Cleaning up temporary files...${NC}"
     rm -rf "$APP_DIR"
-    rm -f squashfs-root
+    rm -rf squashfs-root
     echo -e "${GREEN}Cleanup done.${NC}"
 }
 
