@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-    <id>ServerPackCreator</id>
+    <id>de.griefed.ServerPackCreator</id>
     <metadata_license>MIT</metadata_license>
     <project_license>LGPL-2.1</project_license>
     <name>ServerPackCreator</name>
