@@ -4,14 +4,199 @@ on:
   push:
     branches:
       - develop
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build (optional, defaults to branch/tag)'
+        required: false
+        type: string
 
 jobs:
-  continuous:
-    name: "Continuous Pre-Release"
+  build-jar:
+    name: Build JAR
     runs-on: ubuntu-latest
-    steps:
 
-      - name: Checkout latest code
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+          check-latest: true
+          cache: 'gradle'
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.version }}" ]; then
+            VERSION="${{ inputs.version }}"
+          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          elif [ "${{ github.ref_name }}" = "main" ]; then
+            VERSION="$(git describe --tags --always)"
+          else
+            VERSION="${{ github.ref_name }}-$(git rev-parse --short HEAD)"
+          fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Building version: ${VERSION}"
+
+      - name: Set Permissions
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: |
+          ./gradlew clean build -Pversion=${{ steps.version.outputs.version }} \
+            --info --full-stacktrace --warning-mode all \
+            -x :serverpackcreator-api:test -x :serverpackcreator-app:test
+
+      - name: Upload JARs
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-jars
+          path: |
+            serverpackcreator-api/build/libs/*.jar
+            serverpackcreator-app/build/libs/*.jar
+            serverpackcreator-plugin-example/build/libs/*.jar
+          retention-days: 1
+
+  build-appimage-x86_64:
+    name: Build AppImage (x86_64)
+    needs: build-jar
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download JARs
+        uses: actions/download-artifact@v4
+        with:
+          name: gradle-jars
+          path: .
+
+      - name: Cache JDK download
+        uses: actions/cache@v4
+        with:
+          path: jdk-21-x86_64
+          key: jdk-21-x86_64
+
+      - name: Build AppImage for x86_64 (native)
+        run: |
+          chmod +x misc/build-appimage.sh
+          misc/build-appimage.sh "${{ needs.build-jar.outputs.version }}"
+
+      - name: Verify AppImage
+        run: |
+          APPIMAGE="ServerPackCreator-${{ needs.build-jar.outputs.version }}-x86_64.AppImage"
+          if [ ! -f "$APPIMAGE" ]; then
+            echo "❌ Error: AppImage not found: $APPIMAGE"
+            ls -la *.AppImage 2>/dev/null || echo "No AppImages found"
+            exit 1
+          fi
+          echo "✅ AppImage created successfully:"
+          ls -lh "$APPIMAGE"
+
+      - name: Generate checksums
+        run: |
+          APPIMAGE="ServerPackCreator-${{ needs.build-jar.outputs.version }}-x86_64.AppImage"
+          sha256sum "$APPIMAGE" > "$APPIMAGE.sha256"
+          echo "Checksum generated:"
+          cat "$APPIMAGE.sha256"
+
+      - name: Upload AppImage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: appimage-x86_64
+          path: ServerPackCreator-${{ needs.build-jar.outputs.version }}-x86_64.AppImage
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload checksums
+        uses: actions/upload-artifact@v4
+        with:
+          name: appimage-x86_64-checksum
+          path: "*.sha256"
+          retention-days: 1
+
+
+  build-appimage-aarch64:
+    name: Build AppImage (aarch64)
+    needs: build-jar
+    runs-on: ubuntu-24.04-arm
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download JARs
+        uses: actions/download-artifact@v4
+        with:
+          name: gradle-jars
+          path: .
+
+      - name: Cache JDK download
+        uses: actions/cache@v4
+        with:
+          path: jdk-21-aarch64
+          key: jdk-21-aarch64
+
+      - name: Build AppImage for aarch64
+        run: |
+          chmod +x misc/build-appimage.sh
+          misc/build-appimage.sh "${{ needs.build-jar.outputs.version }}"
+
+      - name: Verify AppImage
+        run: |
+          APPIMAGE="ServerPackCreator-${{ needs.build-jar.outputs.version }}-aarch64.AppImage"
+          if [ ! -f "$APPIMAGE" ]; then
+            echo "❌ Error: AppImage not found: $APPIMAGE"
+            ls -la *.AppImage 2>/dev/null || echo "No AppImages found"
+            exit 1
+          fi
+          echo "✅ AppImage created successfully:"
+          ls -lh "$APPIMAGE"
+
+      - name: Generate checksums
+        run: |
+          APPIMAGE="ServerPackCreator-${{ needs.build-jar.outputs.version }}-aarch64.AppImage"
+          sha256sum "$APPIMAGE" > "$APPIMAGE.sha256"
+          echo "Checksum generated:"
+          cat "$APPIMAGE.sha256"
+
+      - name: Upload AppImage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: appimage-aarch64
+          path: ServerPackCreator-${{ needs.build-jar.outputs.version }}-aarch64.AppImage
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload checksums
+        uses: actions/upload-artifact@v4
+        with:
+          name: appimage-aarch64-checksum
+          path: "*.sha256"
+          retention-days: 1
+
+  build-media:
+    name: Build Install4J Media
+    needs: build-jar
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
@@ -34,28 +219,73 @@ jobs:
           license: ${{ secrets.INSTALL4J_LICENSE }}
 
       - name: Remove install4j script
-        run: |
-          rm install4j_linux-x64_*.sh
+        run: rm install4j_linux-x64_*.sh
+
+      - name: Download JARs
+        uses: actions/download-artifact@v4
+        with:
+          name: gradle-jars
+          path: .
 
       - name: Set Permissions
-        run: |
-          chmod +x gradlew
+        run: chmod +x gradlew
 
-      - name: Build with Gradle
-        run: |
-          ./gradlew build --info --full-stacktrace
-          ./gradlew media --info --full-stacktrace
+      - name: Build Install4J Media
+        run: ./gradlew media --info --full-stacktrace
+
+      - name: Upload Media
+        uses: actions/upload-artifact@v4
+        with:
+          name: install4j-media
+          path: media/*
+          retention-days: 1
+
+  continuous:
+    name: "Continuous Pre-Release"
+    needs: [
+      build-jar,
+      build-appimage-x86_64,
+      build-appimage-aarch64,
+      build-media
+    ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout latest code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
 
       - name: Collect files
         run: |
           mkdir continuous
-          cp serverpackcreator-api/build/libs/*.jar continuous/
-          cp serverpackcreator-app/build/libs/*.jar continuous/
-          cp serverpackcreator-plugin-example/build/libs/*.jar continuous/
-          cp media/*.dmg continuous/
-          cp media/*.sh continuous/
-          cp media/*.exe continuous/
-          rm -f continuous/output.txt continuous/*plain.jar 
+
+          echo "=== Collecting AppImages ==="
+          find artifacts/appimage-x86_64  -name "*.AppImage" -exec cp -v {} continuous/ \; 2>/dev/null || echo "No x86_64 AppImages"
+          find artifacts/appimage-aarch64 -name "*.AppImage" -exec cp -v {} continuous/ \; 2>/dev/null || echo "No aarch64 AppImages"
+
+          echo ""
+          echo "=== Collecting Checksums ==="
+          find artifacts -name "*.sha256" -exec cp -v {} continuous/ \; 2>/dev/null || echo "No checksums"
+
+          echo ""
+          echo "=== Collecting JARs ==="
+          find artifacts/gradle-jars -name "*.jar" ! -name "*-plain.jar" -exec cp -v {} continuous/ \; 2>/dev/null || echo "No JARs"
+
+          echo ""
+          echo "=== Collecting Install4J Media ==="
+          cp artifacts/install4j-media/*.dmg continuous/ 2>/dev/null || echo "No DMG files"
+          cp artifacts/install4j-media/*.sh  continuous/ 2>/dev/null || echo "No SH files"
+          cp artifacts/install4j-media/*.exe continuous/ 2>/dev/null || echo "No EXE files"
+
+          echo ""
+          echo "=== Final Contents ==="
+          ls -lh continuous/
 
       - name: Generate checksum
         uses: jmgilman/actions-generate-checksum@v1
@@ -64,21 +294,37 @@ jobs:
             continuous/*
 
       - name: Collect checksum
-        run: |
-          cp checksum.txt continuous/
+        run: cp checksum.txt continuous/
 
-      - name: Update develop
+      - name: Update develop tag
         uses: richardsimko/update-tag@v1
         with:
           tag_name: continuous
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: ncipollo/release-action@v1
+      - name: Get build timestamp
+        id: build_time
+        run: echo "timestamp=$(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
+
+      - name: Create/Update Release
+        uses: ncipollo/release-action@v1
         with:
           allowUpdates: 'true'
           artifacts: "continuous/*"
-          body: "Continuous dev-build release.<br>Updated every time changes are pushed to develop.<br>Do not use unless you have been told to, or are curious about the contents of the dev build.<br>Do not link to this release."
+          body: |
+            ## 🔄 Continuous Dev-Build
+
+            **Built:** ${{ steps.build_time.outputs.timestamp }}
+            **Commit:** `${{ github.sha }}`
+
+            ---
+
+            This is an automated development build, updated every time changes are pushed to `develop`.
+
+            ⚠️ **Warning:** Do not use unless you have been told to, or are curious about the contents of the dev build.
+
+            🚫 **Do not link to this release.**
           commit: "develop"
           name: "continuous"
           prerelease: 'true'
@@ -91,8 +337,7 @@ jobs:
           wget -O continuous/source.zip https://github.com/Griefed/ServerPackCreator/archive/refs/tags/continuous.zip
           wget -O continuous/source.tar.gz https://github.com/Griefed/ServerPackCreator/archive/refs/tags/continuous.tar.gz
 
-      - name: Cleanup continuous
-        id: action-ssh
+      - name: Cleanup continuous on server
         uses: tiyee/action-ssh@v1.0.1
         with:
           host: ${{ secrets.SPCUPLOAD_HOST }}
@@ -100,7 +345,7 @@ jobs:
           privateKey: ${{ secrets.SPCUPLOAD_KEY }}
           command: 'rm -rf ~/spc/continuous'
 
-      - name: Copy folder content recursively to remote
+      - name: Upload to server
         uses: nogsantos/scp-deploy@master
         with:
           src: ./continuous

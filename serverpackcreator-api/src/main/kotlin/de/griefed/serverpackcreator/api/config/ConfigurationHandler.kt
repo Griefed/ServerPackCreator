@@ -866,8 +866,8 @@ class ConfigurationHandler(
         val curseMinecraftInstance = File(destination, "minecraftinstance.json")
         val atLauncherInstance = File(destination, "instance.json")
         val gdLauncherInstance = File(File(destination).parentFile,"instance.json")
-        val mmcPack = File(destination, "mmc-pack.json")
-        val mmcInstance = File(destination, "instance.cfg")
+        val mmcPrismPack = File(File(destination).parentFile, "mmc-pack.json")
+        val mmcPrismInstance = File(File(destination).parentFile, "instance.cfg")
         when {
             curseMinecraftInstance.exists() -> {
                 // Check minecraftinstance.json usually created by Overwolf's CurseForge launcher.
@@ -921,17 +921,35 @@ class ConfigurationHandler(
                 }
             }
 
-            mmcPack.exists() -> {
-                // Check mmc-pack.json usually created by MultiMC.
+            mmcPrismPack.exists() -> {
+                // Check mmc-pack.json usually created by MultiMC or Prism Launcher
                 try {
-                    updateConfigModelFromMMCPack(packConfig, mmcPack)
+                    updateConfigModelFromMMCPack(packConfig, mmcPrismPack)
                 } catch (ex: IOException) {
                     log.error("Error parsing mmc-pack.json from ZIP-file.", ex)
                     configCheck.modpackErrors.add(Translations.configuration_log_error_zip_mmcpack.toString())
                 }
                 try {
-                    if (mmcInstance.exists()) {
-                        packName = updateDestinationFromInstanceCfg(mmcInstance)
+                    if (mmcPrismInstance.exists()) {
+                        packName = updateDestinationFromInstanceCfg(mmcPrismInstance)
+                        packConfig.name = packName
+                    }
+                } catch (ex: IOException) {
+                    log.error("Couldn't read instance.cfg.", ex)
+                }
+            }
+
+            mmcPrismPack.exists() -> {
+                // Check mmc-pack.json usually created by MultiMC or Prism Launcher
+                try {
+                    updateConfigModelFromMMCPack(packConfig, mmcPrismPack)
+                } catch (ex: IOException) {
+                    log.error("Error parsing mmc-pack.json from ZIP-file.", ex)
+                    configCheck.modpackErrors.add(Translations.configuration_log_error_zip_mmcpack.toString())
+                }
+                try {
+                    if (mmcPrismInstance.exists()) {
+                        packName = updateDestinationFromInstanceCfg(mmcPrismInstance)
                         packConfig.name = packName
                     }
                 } catch (ex: IOException) {
