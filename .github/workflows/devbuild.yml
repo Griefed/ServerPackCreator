@@ -79,7 +79,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download JARs
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: gradle-jars
           path: .
@@ -141,7 +141,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download JARs
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: gradle-jars
           path: .
@@ -222,7 +222,7 @@ jobs:
         run: rm install4j_linux-x64_*.sh
 
       - name: Download JARs
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: gradle-jars
           path: .
@@ -257,7 +257,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
 
