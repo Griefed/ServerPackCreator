@@ -55,7 +55,7 @@ dependencies {
 
     //WEB
     api("org.jetbrains.kotlin:kotlin-reflect:2.3.0")
-    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.21.0")
+    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.21.1")
     api("org.springframework.boot:spring-boot-starter-web:4.0.2")
     api("org.springframework.boot:spring-boot-starter-log4j2:4.0.2")
     api("org.springframework.boot:spring-boot-starter-data-mongodb:4.0.2")
