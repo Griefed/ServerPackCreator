@@ -585,6 +585,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "sounds-",                      //https://www.curseforge.com/minecraft/mc-mods/sound
             "spoticraft-",                  //https://www.curseforge.com/minecraft/mc-mods/spoticraft-inactive and https://www.curseforge.com/minecraft/mc-mods/spoticraft-2
             "status-effect-bars-",          //https://www.curseforge.com/minecraft/mc-mods/status-effect-bars
+            "stop_rendering-",              //https://www.curseforge.com/minecraft/mc-mods/stoprendering
             "skinlayers3d-",                //https://www.curseforge.com/minecraft/mc-mods/skin-layers-3d
             "talkingheads-",                //https://www.curseforge.com/minecraft/mc-mods/talkingheads
             "tconplanner-",                 //https://www.curseforge.com/minecraft/mc-mods/tinkers-planner
