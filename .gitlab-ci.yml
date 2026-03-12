@@ -12,10 +12,10 @@ variables:
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
 
 services:
-  - name: ghcr.io/griefed/gitlab-ci-cd:2.2.28
+  - name: ghcr.io/griefed/gitlab-ci-cd:2.8.0
     alias: docker
 
-image: ghcr.io/griefed/gitlab-ci-cd:2.2.28
+image: ghcr.io/griefed/gitlab-ci-cd:2.8.0
 
 workflow:
   rules:
