@@ -21,7 +21,7 @@ dependencies {
     api("de.comahe.i18n4k:i18n4k-core-jvm:0.11.1")
     implementation(files("${layout.buildDirectory.asFile.get()}/resources/main"))
     api("com.electronwill.night-config:toml:3.8.3")
-    api("com.fasterxml.jackson.core:jackson-databind:2.21.0")
+    api("com.fasterxml.jackson.core:jackson-databind:2.21.1")
     api("net.lingala.zip4j:zip4j:2.11.6")
     api("org.apache.logging.log4j:log4j-api-kotlin:1.5.0")
     api("org.apache.logging.log4j:log4j-core:2.25.3")
@@ -33,7 +33,7 @@ dependencies {
     //api("dev.kosmx.needle:jneedle:1.0.1")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.10")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.3")
 }
 
 tasks.sourcesJar {
