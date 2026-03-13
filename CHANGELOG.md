@@ -1,3 +1,68 @@
+## [8.1.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.1.0-beta.2...8.1.0-beta.3) (2026-03-13)
+
+### 💎 Improvements
+
+* Catch Prism Launcher files and detect info accordingly ([8fc8aa3](https://git.griefed.de/Griefed/ServerPackCreator/commit/8fc8aa3bba72e5459f762831ad3d79999df5cfb9))
+
+### 📦 Other
+
+* Add ko-fi links. ([10b2e3c](https://git.griefed.de/Griefed/ServerPackCreator/commit/10b2e3c13279f3128d93b5afed73c490b16c2eaa))
+* Add stop_rendering to clientside-list ([d736958](https://git.griefed.de/Griefed/ServerPackCreator/commit/d736958a0b76eb123bc64bcda4c759a4dcd04e60))
+
+### 🦊 CI/CD
+
+* Fix AppImage metadata ([5e09feb](https://git.griefed.de/Griefed/ServerPackCreator/commit/5e09feb71e07d278afeb186bc44159d9c3b9ff24))
+* Fix cid-desktopapp-is-not-rdns in metadata ([33b74e3](https://git.griefed.de/Griefed/ServerPackCreator/commit/33b74e375068d542b32f7afcbff62e8bbc8b0a59))
+* Fix metainfo-filename-cid-mismatch ([1f67c59](https://git.griefed.de/Griefed/ServerPackCreator/commit/1f67c591c0fcf452d3057c084382aa80e4dd0843))
+* **deps-dev:** bump @intlify/unplugin-vue-i18n ([e398a17](https://git.griefed.de/Griefed/ServerPackCreator/commit/e398a173b01357263bfa6deef794f96fe51a1e9a))
+* **deps-dev:** bump eslint-plugin-vue from 10.4.0 to 10.8.0 in /serverpackcreator-web-frontend ([a4d8b55](https://git.griefed.de/Griefed/ServerPackCreator/commit/a4d8b55685ed78417ff49c67ded550abcac52b98))
+* **deps-dev:** bump minimatch in /serverpackcreator-web-frontend ([7c4bbd3](https://git.griefed.de/Griefed/ServerPackCreator/commit/7c4bbd3328ee714b1d6681996979f868a06c7c0a))
+* **deps-dev:** bump prettier in /serverpackcreator-web-frontend ([b681eb3](https://git.griefed.de/Griefed/ServerPackCreator/commit/b681eb39ca47bf5ea2f2cd2ba11b97831ea14890))
+* **deps:** bump actions/cache from 4 to 5 ([b64ccad](https://git.griefed.de/Griefed/ServerPackCreator/commit/b64ccad6996ece655680fbcb740a93a4bee15718))
+* **deps:** bump actions/download-artifact from 4 to 8 ([f20a96a](https://git.griefed.de/Griefed/ServerPackCreator/commit/f20a96af003a84ee2b896d981f8c1d1c038a8b94))
+* **deps:** bump actions/upload-artifact from 4 to 7 ([a07b6ed](https://git.griefed.de/Griefed/ServerPackCreator/commit/a07b6eda3df5ddae43687d99c61ea612e0ed3e53))
+* **deps:** bump axios in /serverpackcreator-web-frontend ([15fcdd6](https://git.griefed.de/Griefed/ServerPackCreator/commit/15fcdd65ec64f375e343586d244cb18d9bc491e6))
+* **deps:** bump axios in /serverpackcreator-web-frontend ([8923390](https://git.griefed.de/Griefed/ServerPackCreator/commit/8923390d678c813e2ddf1ab4044ae969cd3e1a85))
+* **deps:** bump com.fasterxml.jackson.core:jackson-databind ([4c7f6b8](https://git.griefed.de/Griefed/ServerPackCreator/commit/4c7f6b8213630c109eaafbc31f6d9ea0311820ea))
+* **deps:** bump com.fasterxml.jackson.module:jackson-module-kotlin ([2171bdf](https://git.griefed.de/Griefed/ServerPackCreator/commit/2171bdfd23c57a297712b05f3ce1e6ee4e76312d))
+* **deps:** bump com.install4j:install4j-runtime ([0487144](https://git.griefed.de/Griefed/ServerPackCreator/commit/0487144a138b06002e973f500cab635b036a8f50))
+* **deps:** bump com.miglayout:miglayout-swing ([7071dc6](https://git.griefed.de/Griefed/ServerPackCreator/commit/7071dc613244316147a62b48e79136d9bef95fc8))
+* **deps:** bump immutable in /serverpackcreator-web-frontend ([62c23f0](https://git.griefed.de/Griefed/ServerPackCreator/commit/62c23f0c2d6335266c7435a3d1c00c630452ad48))
+* **deps:** bump org.jetbrains.kotlin:kotlin-reflect from 2.3.0 to 2.3.10 in /serverpackcreator-app ([c304593](https://git.griefed.de/Griefed/ServerPackCreator/commit/c3045932d5b41f80d6af6dfd0100bb81deea21a0))
+* **deps:** bump org.junit.platform:junit-platform-launcher ([705fe22](https://git.griefed.de/Griefed/ServerPackCreator/commit/705fe220a1362ec96bd018b4b20529ce299ad7f0))
+* **deps:** bump org.junit.platform:junit-platform-launcher ([eb88b33](https://git.griefed.de/Griefed/ServerPackCreator/commit/eb88b33786f885028997dcc27ada53d5427530db))
+* **deps:** bump org.springframework.boot:spring-boot-starter-log4j2 from 4.0.2 to 4.0.3 in /serverpackcreator-app ([a47f057](https://git.griefed.de/Griefed/ServerPackCreator/commit/a47f0579ef5f48ac4a6bb6517195fe4e503cb1ae))
+* **deps:** bump qs and express in /serverpackcreator-web-frontend ([1ecec87](https://git.griefed.de/Griefed/ServerPackCreator/commit/1ecec8755527cde048b29bf1a78a233107ccde11))
+* **deps:** bump rollup in /serverpackcreator-web-frontend ([9e16c90](https://git.griefed.de/Griefed/ServerPackCreator/commit/9e16c90a9dd8d3ff037c9d3b2aaccbea1bfc80d2))
+* Allow overwrite of BUILD_ARCH ([c3fe4f6](https://git.griefed.de/Griefed/ServerPackCreator/commit/c3fe4f634cdc0d81ea53ec0db6ac9aeb56733919))
+* Always build AppImage in docker container ([01acd3e](https://git.griefed.de/Griefed/ServerPackCreator/commit/01acd3ed5de43b5db8afb6a2def8af4f8cef4ada))
+* build-appimage-script takes care of docker, no need to double down ([bbbe7f4](https://git.griefed.de/Griefed/ServerPackCreator/commit/bbbe7f4d17d9280d2bdbae538f47b501144b4cd2))
+* Bumb gitlab-cicd ([3f5dd7c](https://git.griefed.de/Griefed/ServerPackCreator/commit/3f5dd7ce19274e422432703beb497bf88c8c32af))
+* Copy appdata xml correctly ([a0bcc8d](https://git.griefed.de/Griefed/ServerPackCreator/commit/a0bcc8d55724f4132fe4574de3dfd8bbe2da0182))
+* Correct arch-determination ([be7532a](https://git.griefed.de/Griefed/ServerPackCreator/commit/be7532ad9ba4075e70e78099c5b36ad08865c983))
+* create AppImage for devbuild ([dd34bd8](https://git.griefed.de/Griefed/ServerPackCreator/commit/dd34bd8bbd88f7d4efe9c916064d3e9b77c0cd00))
+* Don't setup QEMU for both archs. Setup for matrix arch ([11bc8ff](https://git.griefed.de/Griefed/ServerPackCreator/commit/11bc8ff95727cbc8132f43f0d3d5f48f7703e00d))
+* Fix env declaration ([ed92bdf](https://git.griefed.de/Griefed/ServerPackCreator/commit/ed92bdf9c267914b543143005994024bdf1c8ed4))
+* Fix mapping ([38353ac](https://git.griefed.de/Griefed/ServerPackCreator/commit/38353ac153c102f84105b268460e907089427cc0))
+* Fix missing step dependency ([c42ff72](https://git.griefed.de/Griefed/ServerPackCreator/commit/c42ff723cebc63eabed6af6dcc5736ff41a9cb87))
+* Install required packages and split for x8664 and aarch64 ([53ce89f](https://git.griefed.de/Griefed/ServerPackCreator/commit/53ce89face73893ddcd20e6e084684087f7da422))
+* Rebuild script to build for arch via arg, independant of sys arch ([7b0ed9f](https://git.griefed.de/Griefed/ServerPackCreator/commit/7b0ed9f1cb48bbffe8a5439fbeba52e7b10707f8))
+* Remove docker check in script ([b7aedee](https://git.griefed.de/Griefed/ServerPackCreator/commit/b7aedee7a985b28c09623cd08eefede88c039e83))
+* Revert script to arch dependance. Use arch action in workflow ([64a4a5b](https://git.griefed.de/Griefed/ServerPackCreator/commit/64a4a5be1b8cf1f1435f2a34fcc7282a647647bd))
+* Run all AppImage build via Docker ([edeee32](https://git.griefed.de/Griefed/ServerPackCreator/commit/edeee321a32064d91751381a10a0f3647a545709))
+* Run both amd64 and aarch64 AppImage builds in Docker ([7d919dc](https://git.griefed.de/Griefed/ServerPackCreator/commit/7d919dc0ec789bdf810520cb24ac09a93029d42c))
+* Setup docker buildx ([1017508](https://git.griefed.de/Griefed/ServerPackCreator/commit/101750877713b259ffcf7e371cb55bd668c28faf))
+* Switch to AppImage/appimagetool ([49ba0fd](https://git.griefed.de/Griefed/ServerPackCreator/commit/49ba0fd482d1fb293ea3f5c2095918019dcd83de))
+* Try with buildx-platforms spec ([0c9bee0](https://git.griefed.de/Griefed/ServerPackCreator/commit/0c9bee0d2f591c928a4c06c3ab949a6b2d18afb8))
+* Try with dedicated binfmt install ([d6934e5](https://git.griefed.de/Griefed/ServerPackCreator/commit/d6934e52d148c2a23142515f88f4978ee05363f8))
+* Try with GitHubs new arm-runners ([2a818cb](https://git.griefed.de/Griefed/ServerPackCreator/commit/2a818cb439ad3a06e442e63647b99fc96ad6d074))
+* Try with other matrix specs ([5a22871](https://git.griefed.de/Griefed/ServerPackCreator/commit/5a22871929484ab6f93e810ea6329eceffeafe77))
+* Try with privileged and chmod ([4abe49f](https://git.griefed.de/Griefed/ServerPackCreator/commit/4abe49f468ff86898cce0088fb4acb064f4a2733))
+* Try with qemu user static reset ([e3d6123](https://git.griefed.de/Griefed/ServerPackCreator/commit/e3d6123c0c57c0ee53cdec76bd16781ad55eae83))
+* Use -r for dir-delete. Remove domain-prefix from metadata ([6ba4894](https://git.griefed.de/Griefed/ServerPackCreator/commit/6ba4894215ba9d11419876cc83b1a4b9ff9c7fb1))
+* Use buildx in build-appimage-script ([592443a](https://git.griefed.de/Griefed/ServerPackCreator/commit/592443a019522d986216a392ec748749b3814987))
+* Using qemu directly didnt work ([f4c745c](https://git.griefed.de/Griefed/ServerPackCreator/commit/f4c745c8a3b0e269b06c988b731e161d4ba62fc7))
+
 ## [8.1.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.1.0-beta.1...8.1.0-beta.2) (2026-02-21)
 
 ### 💎 Improvements
