@@ -54,7 +54,7 @@ dependencies {
     compileOnly("com.install4j:install4j-runtime:12.0.3")
 
     //WEB
-    api("org.jetbrains.kotlin:kotlin-reflect:2.3.0")
+    api("org.jetbrains.kotlin:kotlin-reflect:2.3.10")
     api("com.fasterxml.jackson.module:jackson-module-kotlin:2.21.1")
     api("org.springframework.boot:spring-boot-starter-web:4.0.2")
     api("org.springframework.boot:spring-boot-starter-log4j2:4.0.2")
