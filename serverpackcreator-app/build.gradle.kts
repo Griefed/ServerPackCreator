@@ -51,7 +51,7 @@ dependencies {
     api("net.java.balloontip:balloontip:1.2.4.1")
     api("com.cronutils:cron-utils:9.2.1")
     api("tokyo.northside:tipoftheday:0.6.0")
-    compileOnly("com.install4j:install4j-runtime:12.0.2")
+    compileOnly("com.install4j:install4j-runtime:12.0.3")
 
     //WEB
     api("org.jetbrains.kotlin:kotlin-reflect:2.3.0")
