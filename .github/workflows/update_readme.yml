@@ -9,7 +9,7 @@ jobs:
     name: "Fetch and Generate Blog Posts"
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: Griefed/ServerPackCreator
           ref: main

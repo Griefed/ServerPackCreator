@@ -22,7 +22,6 @@ package de.griefed.serverpackcreator.app.gui.window.menu.file
 import Translations
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.app.gui.components.BaseFileChooser
-import javax.swing.filechooser.FileNameExtensionFilter
 
 /**
  * Customized filechooser for picking ServerPackCreator config-files.

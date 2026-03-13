@@ -23,7 +23,6 @@ import Translations
 import de.griefed.serverpackcreator.app.gui.components.BaseFileChooser
 import java.awt.Dimension
 import java.io.File
-import javax.swing.filechooser.FileNameExtensionFilter
 
 /**
  * File-chooser to allow a user to select the modpack directory from which the server pack should be generated.
@@ -37,12 +36,12 @@ class ModpackChooser(current: File?, dimension: Dimension) : BaseFileChooser() {
         currentDirectory = current
         isFileHidingEnabled = false
         dialogTitle = Translations.createserverpack_gui_buttonmodpackdir_title.toString()
-        fileSelectionMode = FILES_AND_DIRECTORIES
-        fileFilter = FileNameExtensionFilter(
+        fileSelectionMode = DIRECTORIES_ONLY
+        /*fileFilter = FileNameExtensionFilter(
             Translations.createserverpack_gui_createserverpack_chooser_modpack_filter.toString(), "zip"
-        )
+        )*/
         isAcceptAllFileFilterUsed = false
         isMultiSelectionEnabled = false
-        preferredSize = dimension
+        //preferredSize = dimension
     }
 }

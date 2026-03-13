@@ -1,16 +1,16 @@
 [versions]
 
 # https://kotlinlang.org/docs/releases.html#release-dbbbetails
-kotlin = "2.2.0"
+kotlin = "2.3.10"
 
 # https://kotlinlang.org/docs/all-open-plugin.html#gradle
-kotlinAllOpen = "2.2.0"
+kotlinAllOpen = "2.3.10"
 
 # https://mvnrepository.com/artifact/org.jetbrains.kotlin.plugin.jpa/org.jetbrains.kotlin.plugin.jpa.gradle.plugin
-kotlinJpa = "2.2.0"
+kotlinJpa = "2.3.10"
 
 # https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-gradle-plugin
-springGradle = "3.5.3"
+springGradle = "4.0.2"
 
 # https://mvnrepository.com/artifact/io.spring.gradle/dependency-management-plugin
 springDependencyMan = "1.1.7"
@@ -19,13 +19,13 @@ springDependencyMan = "1.1.7"
 dokka = "2.1.0"
 
 # https://github.com/jk1/Gradle-License-Report
-licenseReport = "2.9"
+licenseReport = "3.0.1"
 
 # https://plugins.gradle.org/plugin/org.siouan.frontend-jdk11
 frontendPlugin = "10.0.0"
 
 # https://plugins.gradle.org/plugin/com.install4j.gradle
-install4j = "11.0.3"
+install4j = "12.0.2"
 
 [libraries]
 

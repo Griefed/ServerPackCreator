@@ -58,7 +58,7 @@ abstract class ExtensionConfigPanel protected constructor(
 ) : JPanel() {
     protected val log by lazy { cachedLoggerOf(this.javaClass) }
     protected val pluginsLog: Logger = LogManager.getLogger("AddonsLogger")
-    val serverPackExtensionConfig: ArrayList<CommentedConfig> = ArrayList<CommentedConfig>(100)
+    val serverPackExtensionConfig: ArrayList<CommentedConfig> = ArrayList(100)
 
     /**
      * Retrieve this extensions' server pack specific configuration. When no configuration with configs

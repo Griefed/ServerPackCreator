@@ -528,6 +528,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "nopotionshift_",               //https://www.curseforge.com/minecraft/mc-mods/no-potion-shift
             "nostartupmessages-",           //https://www.curseforge.com/minecraft/mc-mods/no-startup-messages-please
             "notenoughanimations-",         //https://www.curseforge.com/minecraft/mc-mods/not-enough-animations
+            "obscure_tooltips_fix-",        //https://www.curseforge.com/minecraft/mc-mods/obscure-tooltips-fix
             "oculus-",                      //https://www.curseforge.com/minecraft/mc-mods/oculus
             "omegamute-",                   //https://www.curseforge.com/minecraft/mc-mods/omega-mute
             "optigui-",                     //https://www.curseforge.com/minecraft/mc-mods/optigui
@@ -584,6 +585,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "sounds-",                      //https://www.curseforge.com/minecraft/mc-mods/sound
             "spoticraft-",                  //https://www.curseforge.com/minecraft/mc-mods/spoticraft-inactive and https://www.curseforge.com/minecraft/mc-mods/spoticraft-2
             "status-effect-bars-",          //https://www.curseforge.com/minecraft/mc-mods/status-effect-bars
+            "stop_rendering-",              //https://www.curseforge.com/minecraft/mc-mods/stoprendering
             "skinlayers3d-",                //https://www.curseforge.com/minecraft/mc-mods/skin-layers-3d
             "talkingheads-",                //https://www.curseforge.com/minecraft/mc-mods/talkingheads
             "tconplanner-",                 //https://www.curseforge.com/minecraft/mc-mods/tinkers-planner
@@ -1110,7 +1112,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     }
 
     @Deprecated("Deprecated as of 6.0.0", ReplaceWith("startScriptTemplates"))
-    var scriptTemplates: TreeSet<File> = TreeSet<File>()
+    var scriptTemplates: TreeSet<File> = TreeSet()
         get() {
             val scriptSetting = internalProps.getProperty(pServerPackScriptTemplates)
             val entries =
