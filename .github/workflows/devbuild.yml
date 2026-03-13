@@ -58,7 +58,7 @@ jobs:
             -x :serverpackcreator-api:test -x :serverpackcreator-app:test
 
       - name: Upload JARs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gradle-jars
           path: |
@@ -114,7 +114,7 @@ jobs:
           cat "$APPIMAGE.sha256"
 
       - name: Upload AppImage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: appimage-x86_64
           path: ServerPackCreator-${{ needs.build-jar.outputs.version }}-x86_64.AppImage
@@ -122,7 +122,7 @@ jobs:
           retention-days: 1
 
       - name: Upload checksums
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: appimage-x86_64-checksum
           path: "*.sha256"
@@ -176,7 +176,7 @@ jobs:
           cat "$APPIMAGE.sha256"
 
       - name: Upload AppImage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: appimage-aarch64
           path: ServerPackCreator-${{ needs.build-jar.outputs.version }}-aarch64.AppImage
@@ -184,7 +184,7 @@ jobs:
           retention-days: 1
 
       - name: Upload checksums
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: appimage-aarch64-checksum
           path: "*.sha256"
@@ -234,7 +234,7 @@ jobs:
         run: ./gradlew media --info --full-stacktrace
 
       - name: Upload Media
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: install4j-media
           path: media/*
