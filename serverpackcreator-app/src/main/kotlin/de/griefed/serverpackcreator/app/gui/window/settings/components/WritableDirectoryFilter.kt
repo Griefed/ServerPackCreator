@@ -1,10 +1,11 @@
 package de.griefed.serverpackcreator.app.gui.window.settings.components
 
 import Translations
+import com.formdev.flatlaf.util.SystemFileChooser
 import java.io.File
 
-class WritableDirectoryFilter  : javax.swing.filechooser.FileFilter() {
-    override fun accept(file: File): Boolean {
+class WritableDirectoryFilter  : SystemFileChooser.FileFilter() {
+    fun accept(file: File): Boolean {
         val files = file.walk().filter { it.isDirectory }
         return file.isDirectory && (file.canWrite() || files.any { it.canWrite() })
     }

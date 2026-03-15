@@ -173,7 +173,7 @@ class WebUtilities(private val apiProperties: ApiProperties) {
         } catch (ex: IOException) {
             log.error("Error during opening of connection to URL.", ex)
         }
-        Objects.requireNonNull<HttpsURLConnection?>(conn).doOutput = true
+        Objects.requireNonNull(conn)?.doOutput = true
         conn?.instanceFollowRedirects = false
         try {
             conn?.requestMethod = "POST"

@@ -24,8 +24,8 @@ import de.griefed.serverpackcreator.app.gui.GuiProps
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import tokyo.northside.swing.TipOfTheDay
-import tokyo.northside.swing.tips.DefaultTipOfTheDayModel
+import tokyo.northside.tipoftheday.TipOfTheDay
+import tokyo.northside.tipoftheday.tips.DefaultTipOfTheDayModel
 import java.util.*
 import javax.swing.JFrame
 import kotlin.reflect.full.memberProperties

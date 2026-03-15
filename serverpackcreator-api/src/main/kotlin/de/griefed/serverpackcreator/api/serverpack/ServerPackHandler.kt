@@ -93,7 +93,8 @@ class ServerPackHandler(
     val log by lazy { cachedLoggerOf(this.javaClass) }
     val modFileEndings = listOf("jar", "disabled")
 
-    val variables = """
+    //TODO move to template file, just like the scripts.
+    val variables = """ 
         ###
         # REMEMBER:
         #   Escape \ and : in your Java path on Windows with another \
@@ -1158,6 +1159,7 @@ class ServerPackHandler(
             if (autoDiscoveredClientMods.isNotEmpty()) {
                 log.info("Automatically detected mods: ${autoDiscoveredClientMods.size}")
                 for (discoveredMod in autoDiscoveredClientMods) {
+                    @Suppress("VariableInitializerIsRedundant")
                     var whitelistMatch = "N/A"
                     val modName = discoveredMod.name
                     val isWhitelistedMod = modWhitelist.any { whitelistEntry ->

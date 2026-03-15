@@ -465,7 +465,7 @@ class MigrationManager(
         }
 
         private fun FourPointZeroPointZero() {
-            val changes: MutableList<String> = ArrayList<String>(10)
+            val changes: MutableList<String> = ArrayList(10)
             if (File(apiProperties.homeDirectory, "plugins").isDirectory && File(
                     apiProperties.homeDirectory, "addons"
                 ).renameTo(apiProperties.pluginsDirectory)
@@ -502,7 +502,7 @@ class MigrationManager(
         }
 
         private fun FivePointZeroPointZero() {
-            val changes: MutableList<String> = ArrayList<String>(10)
+            val changes: MutableList<String> = ArrayList(10)
             val previousSetting = apiProperties.scriptTemplates.joinToString(",")
             val currentFiles = apiProperties.serverFilesDirectory.walk().maxDepth(1).filter {
                 it.name.endsWith("sh",ignoreCase = true) ||
@@ -532,7 +532,7 @@ class MigrationManager(
         }
 
         private fun SixPointZeroPointZero() {
-            val changes: MutableList<String> = ArrayList<String>(10)
+            val changes: MutableList<String> = ArrayList(10)
             val previousSetting = apiProperties.scriptTemplates
             val newSetting = hashMapOf<String, String>()
 

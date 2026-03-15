@@ -23,7 +23,6 @@ import Translations
 import de.griefed.serverpackcreator.app.gui.components.BaseFileChooser
 import java.awt.Dimension
 import java.io.File
-import javax.swing.filechooser.FileNameExtensionFilter
 
 /**
  * @author Griefed
@@ -41,6 +40,6 @@ class ServerPropertiesChooser(current: File?, dimension: Dimension) : BaseFileCh
         )
         isAcceptAllFileFilterUsed = false
         isMultiSelectionEnabled = false
-        preferredSize = dimension
+        //preferredSize = dimension
     }
 }

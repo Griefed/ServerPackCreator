@@ -30,6 +30,8 @@ test something, or just release a new server pack for the new modpack version.
 The thought "*There must be a way to automate this, or at least make it less tedious...*" was the spark which sent me off
 into the world of programming. And here we are.
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/X7X31GM8DG)
+
 **Disclaimer:**
 
 * ServerPackCreator is not a guarantee for working server packs. It helps you create them, but you **must still test them**!
