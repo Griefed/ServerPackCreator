@@ -24,7 +24,7 @@ dependencies {
     api("com.fasterxml.jackson.core:jackson-databind:2.21.1")
     api("net.lingala.zip4j:zip4j:2.11.6")
     api("org.apache.logging.log4j:log4j-api-kotlin:1.5.0")
-    api("org.apache.logging.log4j:log4j-core:2.25.3")
+    api("org.apache.logging.log4j:log4j-core:2.25.4")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     api("org.pf4j:pf4j:3.15.0")
     api("org.bouncycastle:bcpkix-jdk18on:1.83")
