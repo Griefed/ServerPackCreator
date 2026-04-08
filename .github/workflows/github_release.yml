@@ -147,7 +147,7 @@ jobs:
 
       - name: General Info
         id: info
-        uses: jaywcjlove/github-action-read-file@v2.0.0
+        uses: jaywcjlove/github-action-read-file@v2.1.0
         with:
           path: misc/INFO.md
 
