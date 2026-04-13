@@ -1,3 +1,15 @@
+## [8.1.1-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.1.1-beta.1...8.1.1-beta.2) (2026-04-13)
+
+### 📦 Other
+
+* Add Smooth Swapping to clientside list ([40cc91a](https://git.griefed.de/Griefed/ServerPackCreator/commit/40cc91a14a0ebd8cd72c0e8d1e3820ba179a9934))
+* Update package lock after dependabot changes ([14f17ab](https://git.griefed.de/Griefed/ServerPackCreator/commit/14f17aba7ba036855b6afd1edbdabb872731417d))
+
+### 🦊 CI/CD
+
+* **deps:** bump axios in /serverpackcreator-web-frontend ([d3c29d7](https://git.griefed.de/Griefed/ServerPackCreator/commit/d3c29d7b608469002b5dfdf9d710efb354526f1a))
+* **deps:** bump axios in /serverpackcreator-web-frontend ([c187fb9](https://git.griefed.de/Griefed/ServerPackCreator/commit/c187fb9bb3636418fa90dd37eb548889c2b23a6b))
+
 ## [8.1.1-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.1.0...8.1.1-beta.1) (2026-04-09)
 
 ### 🦊 CI/CD
