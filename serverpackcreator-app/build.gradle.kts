@@ -31,14 +31,18 @@ configurations {
 
 dependencies {
     api(project(":serverpackcreator-api"))
+    api("org.jetbrains.kotlin:kotlin-reflect:2.3.20")
+    api("commons-io:commons-io:2.21.0")
+    api("com.cronutils:cron-utils:9.2.1")
+    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.21.1")
+    compileOnly("com.install4j:install4j-runtime:12.0.3")
+
 
     //CLI
     api("info.picocli:picocli-shell-jline3:4.7.7")
 
     //GUI
-    api("commons-io:commons-io:2.21.0")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.10.2")
-    api("org.jetbrains.kotlin:kotlin-reflect:2.3.10")
     api("com.formdev:flatlaf:3.7")
     api("com.formdev:flatlaf-extras:3.7")
     api("com.formdev:flatlaf-intellij-themes:3.7")
@@ -49,13 +53,9 @@ dependencies {
     api("com.miglayout:miglayout-swing:11.4.3")
     api("com.formdev:svgSalamander:1.1.4")
     api("net.java.balloontip:balloontip:1.2.4.1")
-    api("com.cronutils:cron-utils:9.2.1")
     api("tokyo.northside:tipoftheday:0.6.0")
-    compileOnly("com.install4j:install4j-runtime:12.0.3")
 
     //WEB
-    api("org.jetbrains.kotlin:kotlin-reflect:2.3.10")
-    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.21.1")
     api("org.springframework.boot:spring-boot-starter-web:4.0.3")
     api("org.springframework.boot:spring-boot-starter-log4j2:4.0.3")
     api("org.springframework.boot:spring-boot-starter-data-mongodb:4.0.3")
@@ -65,7 +65,7 @@ dependencies {
         exclude(group = "org.mockito", module = "mockito-core")
     }
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.10")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.20")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.2")
 
     testImplementation("com.ninja-squad:springmockk:5.0.1")

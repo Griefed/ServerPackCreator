@@ -572,6 +572,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "smoke-suppression-",           //https://www.curseforge.com/minecraft/mc-mods/smoke-suppression
             "smoothboot-",                  //https://www.curseforge.com/minecraft/mc-mods/smoothboot
             "smoothfocus-",                 //https://www.curseforge.com/minecraft/mc-mods/smoothfocus
+            "smoothswapping-",              //https://www.curseforge.com/minecraft/mc-mods/smooth-swapping
             "sodium-fabric-",               //https://www.curseforge.com/minecraft/mc-mods/sodium
             "sodium-shader-support-",       //https://modrinth.com/mod/sodium-shader-support/
             "sodiumcoreshadersupport-",     //https://www.curseforge.com/minecraft/mc-mods/sodium-core-shader-support

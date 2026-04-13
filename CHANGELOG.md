@@ -1,3 +1,36 @@
+## [8.1.1-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.1.1-beta.1...8.1.1-beta.2) (2026-04-13)
+
+### 📦 Other
+
+* Add Smooth Swapping to clientside list ([40cc91a](https://git.griefed.de/Griefed/ServerPackCreator/commit/40cc91a14a0ebd8cd72c0e8d1e3820ba179a9934))
+* Update package lock after dependabot changes ([14f17ab](https://git.griefed.de/Griefed/ServerPackCreator/commit/14f17aba7ba036855b6afd1edbdabb872731417d))
+
+### 🦊 CI/CD
+
+* **deps:** bump axios in /serverpackcreator-web-frontend ([d3c29d7](https://git.griefed.de/Griefed/ServerPackCreator/commit/d3c29d7b608469002b5dfdf9d710efb354526f1a))
+* **deps:** bump axios in /serverpackcreator-web-frontend ([c187fb9](https://git.griefed.de/Griefed/ServerPackCreator/commit/c187fb9bb3636418fa90dd37eb548889c2b23a6b))
+
+## [8.1.1-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.1.0...8.1.1-beta.1) (2026-04-09)
+
+### 🦊 CI/CD
+
+* Bump Gradle version ([6f0286f](https://git.griefed.de/Griefed/ServerPackCreator/commit/6f0286fa246630a8bbe0deac2027207698206db9))
+* Bump Kotlin to 2.3.20 ([2e56ec5](https://git.griefed.de/Griefed/ServerPackCreator/commit/2e56ec5e0acf95852bba4d107a6e687f565333de))
+* **deps-dev:** bump flatted in /serverpackcreator-web-frontend ([e2b1460](https://git.griefed.de/Griefed/ServerPackCreator/commit/e2b1460e677e5a619d155e8bc1033402cc1efd4f))
+* **deps-dev:** bump node-forge in /serverpackcreator-web-frontend ([5565114](https://git.griefed.de/Griefed/ServerPackCreator/commit/5565114b0b53b0041c608b4244f3e68591f2143e))
+* **deps:** bump com.electronwill.night-config:toml ([62b0912](https://git.griefed.de/Griefed/ServerPackCreator/commit/62b0912e7760e484d1f963abb3460914ae334434))
+* **deps:** bump crazy-max/ghaction-virustotal from 4 to 5 ([18fc574](https://git.griefed.de/Griefed/ServerPackCreator/commit/18fc574e445186786ac714d90402c4a4e140ff87))
+* **deps:** bump jaywcjlove/github-action-read-file from 2.0.0 to 2.1.0 ([a2986b5](https://git.griefed.de/Griefed/ServerPackCreator/commit/a2986b51a297b02104042ca00e5c021376c0beed))
+* **deps:** bump on-headers and compression ([3d64afd](https://git.griefed.de/Griefed/ServerPackCreator/commit/3d64afd70d9e521c3709572bab0308ec3ef25d93))
+* **deps:** bump picomatch in /serverpackcreator-web-frontend ([defb060](https://git.griefed.de/Griefed/ServerPackCreator/commit/defb060d9a7f96f232c595ff7c472d520f516e23))
+* **deps:** bump qs and body-parser in /serverpackcreator-web-frontend ([a0e0902](https://git.griefed.de/Griefed/ServerPackCreator/commit/a0e0902a4820546419d8fd315b4597c37f651522))
+* **deps:** bump softprops/action-gh-release from 2.5.0 to 2.6.1 ([4ca6aaa](https://git.griefed.de/Griefed/ServerPackCreator/commit/4ca6aaa1e33de0b2043d53d2cfc86f928ec13b03))
+* **deps:** bump tmp and inquirer in /serverpackcreator-web-frontend ([ed46b6a](https://git.griefed.de/Griefed/ServerPackCreator/commit/ed46b6a57541d6f430b1c6a51729299cdc12ecad))
+
+### 🛠 Fixes
+
+* Correctly parse Minecrafts new 26.x versions ([4e911b0](https://git.griefed.de/Griefed/ServerPackCreator/commit/4e911b0bb80a073a4cc7fdf08258bc71e3b617fa))
+
 ## [8.1.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.0.8...8.1.0) (2026-03-15)
 
 ### :scissors: Refactor
