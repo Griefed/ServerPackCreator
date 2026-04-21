@@ -199,6 +199,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "CullLessLeaves-",              //https://www.curseforge.com/minecraft/mc-mods/cull-less-leaves & https://www.curseforge.com/minecraft/mc-mods/culllessleaves-reforged
             "CustomCursorMod-",             //https://www.curseforge.com/minecraft/mc-mods/custom-cursor
             "CustomMainMenu-",              //https://www.curseforge.com/minecraft/mc-mods/custom-main-menu
+            "CutThrough-",                  //https://www.curseforge.com/minecraft/mc-mods/cut-through
             "DefaultOptions_",              //https://www.curseforge.com/minecraft/mc-mods/default-options
             "DefaultSettings-",             //https://www.curseforge.com/minecraft/mc-mods/defaultsettings
             "DeleteWorldsToTrash-",         //https://www.curseforge.com/minecraft/mc-mods/delete-worlds-to-trash-forge
@@ -210,6 +211,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "DynamicSurroundings-",         //https://www.curseforge.com/minecraft/mc-mods/dynamic-surroundings
             "DynamicSurroundingsHuds-",     //https://www.curseforge.com/minecraft/mc-mods/dynamic-surroundings-huds
             "EasyLAN-",                     //https://www.curseforge.com/minecraft/mc-mods/easylan
+            "EffectInsights-",              //https://www.curseforge.com/minecraft/mc-mods/effect-insights
             "EffectsLeft-",                 //https://www.curseforge.com/minecraft/mc-mods/effectsleft
             "EiraMoticons_",                //no longer available, legacy entry
             "EnchantmentDescriptions-",     //https://www.curseforge.com/minecraft/mc-mods/enchantment-descriptions
@@ -298,6 +300,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "Reforgium-",                   //https://www.curseforge.com/minecraft/mc-mods/reforgium
             "ResourceLoader-",              //https://www.curseforge.com/minecraft/mc-mods/resource-reloader
             "ResourcePackOrganizer",        //https://www.curseforge.com/minecraft/mc-mods/resource-pack-organizer
+            "ResourcePackOverrides-",       //https://www.curseforge.com/minecraft/mc-mods/resource-pack-overrides
             "RocknRoller-",                 //https://www.curseforge.com/minecraft/mc-mods/rockn-roller
             "Ryoamiclights-",               //https://www.curseforge.com/minecraft/mc-mods/ryoamiclights
             "RyoamicLights-",               //https://www.curseforge.com/minecraft/mc-mods/ryoamiclights
@@ -359,6 +362,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "better-recipe-book-",          //Gone? Reduces to atoms?
             "betterbiomeblend-",            //https://www.curseforge.com/minecraft/mc-mods/better-biome-blend
             "bhmenu-",                      //https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-forge & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-fabric & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-neoforge
+            "biomemusic-",                  //https://www.curseforge.com/minecraft/mc-mods/biome-music
             "blinkload-",                   //https://www.curseforge.com/minecraft/mc-mods/blinkload
             "block-counter-",               //https://www.curseforge.com/minecraft/mc-mods/block-counter
             "blur-",                        //https://www.curseforge.com/minecraft/mc-mods/blur
@@ -471,7 +475,10 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "jeed-",                        //https://www.curseforge.com/minecraft/mc-mods/just-enough-effect-descriptions-jeed
             "jehc-",                        //https://www.curseforge.com/minecraft/mc-mods/just-enough-harvestcraft
             "jei_hover_search-",            //https://www.curseforge.com/minecraft/mc-mods/jei-hover-search
+            "jei_trim_hider-",              //https://www.curseforge.com/minecraft/mc-mods/jei-trim-hider
             "jeiintegration_",              //https://www.curseforge.com/minecraft/mc-mods/jei-integration
+            "jerintegration-",              //https://www.curseforge.com/minecraft/mc-mods/jer-integration
+            "jmi-",                         //https://www.curseforge.com/minecraft/mc-mods/journeymap-integration
             "jumpoverfences-",              //https://www.curseforge.com/minecraft/mc-mods/jumpoverfences
             "just-enough-harvestcraft-",    //https://www.curseforge.com/minecraft/mc-mods/just-enough-harvestcraft
             "justenoughbeacons-",           //https://www.curseforge.com/minecraft/mc-mods/just-enough-beacons
@@ -589,6 +596,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "stop_rendering-",              //https://www.curseforge.com/minecraft/mc-mods/stoprendering
             "skinlayers3d-",                //https://www.curseforge.com/minecraft/mc-mods/skin-layers-3d
             "talkingheads-",                //https://www.curseforge.com/minecraft/mc-mods/talkingheads
+            "tconjei-",                     //https://www.curseforge.com/minecraft/mc-mods/tconjei
             "tconplanner-",                 //https://www.curseforge.com/minecraft/mc-mods/tinkers-planner
             "textrues_embeddium_options-",  //https://www.curseforge.com/minecraft/mc-mods/textrues-embeddium-options
             "timestamp-chat-",              //https://www.curseforge.com/minecraft/mc-mods/timestamp-chat
