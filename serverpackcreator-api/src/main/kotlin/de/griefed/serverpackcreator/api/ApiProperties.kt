@@ -370,6 +370,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "cat_jam-",                     //https://www.curseforge.com/minecraft/mc-mods/cat_jam
             "catalogue-",                   //https://www.curseforge.com/minecraft/mc-mods/catalogue
             "cave_dust-",                   //https://www.curseforge.com/minecraft/mc-mods/cave-dust
+            "certain_questing_additions-",  //https://modrinth.com/mod/certain-questing-additions
             "cfwinfo-",                     //https://www.curseforge.com/minecraft/mc-mods/create-fuel-and-water-information
             "chestsearchbar-",              //https://www.curseforge.com/minecraft/mc-mods/chest-search-bar
             "charmonium-",                  //https://www.curseforge.com/minecraft/mc-mods/charmonium
