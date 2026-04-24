@@ -410,7 +410,7 @@ Huge shoutout and thank you!**
 
 ### Sponsors
 
-<!-- sponsors --><a href="https://github.com/kreezxil"><img src="https:&#x2F;&#x2F;github.com&#x2F;kreezxil.png" width="60px" alt="User avatar: kreezxil" /></a><a href="https://github.com/thrasosc"><img src="https:&#x2F;&#x2F;github.com&#x2F;thrasosc.png" width="60px" alt="User avatar: Thrasos" /></a><a href="https://github.com/Calmingstorm"><img src="https:&#x2F;&#x2F;github.com&#x2F;Calmingstorm.png" width="60px" alt="User avatar: " /></a><!-- sponsors -->
+<!-- sponsors --><a href="https://github.com/kreezxil"><img src="https:&#x2F;&#x2F;github.com&#x2F;kreezxil.png" width="60px" alt="User avatar: kreezxil" /></a><a href="https://github.com/thrasos-dev"><img src="https:&#x2F;&#x2F;github.com&#x2F;thrasos-dev.png" width="60px" alt="User avatar: Thrasos" /></a><a href="https://github.com/Calmingstorm"><img src="https:&#x2F;&#x2F;github.com&#x2F;Calmingstorm.png" width="60px" alt="User avatar: Aaron Charpentier" /></a><a href="https://github.com/kiinbi"><img src="https:&#x2F;&#x2F;github.com&#x2F;kiinbi.png" width="60px" alt="User avatar: kiinbi" /></a><!-- sponsors -->
 
 ### Contributors
 
@@ -440,10 +440,10 @@ Huge shoutout and thank you!**
       </a>
     </td>
     <td width="150" align="center">
-      <a href="https://github.com/MoonstruckDev" title="MoonstruckDev">
+      <a href="https://github.com/LunarDev-git" title="LunarDev-git">
         <img src="https://avatars.githubusercontent.com/u/105180230?v=4" width="70" />
         <br />
-        MoonstruckDev
+        LunarDev-git
       </a>
     </td>
     <td width="150" align="center">
@@ -469,6 +469,13 @@ Huge shoutout and thank you!**
       </a>
     </td>
     <td width="150" align="center">
+      <a href="https://github.com/Antoniofo" title="Antoniofo">
+        <img src="https://avatars.githubusercontent.com/u/89939643?v=4" width="70" />
+        <br />
+        Antoniofo
+      </a>
+    </td>
+    <td width="150" align="center">
       <a href="https://github.com/trimclain" title="trimclain">
         <img src="https://avatars.githubusercontent.com/u/84108846?v=4" width="70" />
         <br />
@@ -476,12 +483,13 @@ Huge shoutout and thank you!**
       </a>
     </td>
     <td width="150" align="center">
-      <a href="https://github.com/thrasosc" title="thrasosc">
+      <a href="https://github.com/thrasos-dev" title="thrasos-dev">
         <img src="https://avatars.githubusercontent.com/u/100732009?v=4" width="70" />
         <br />
-        thrasosc
+        thrasos-dev
       </a>
     </td>
+  </tr><tr>
     <td width="150" align="center">
       <a href="https://github.com/apps/github-actions" title="github-actions[bot]">
         <img src="https://avatars.githubusercontent.com/in/15368?v=4" width="70" />
@@ -489,17 +497,19 @@ Huge shoutout and thank you!**
         github-actions[bot]
       </a>
     </td>
-  </tr><tr>
     <td width="150" align="center">
-      <a href="https://github.com/w51637382" title="w51637382">
-        <img src="https://avatars.githubusercontent.com/u/109474779?v=4" width="70" />
+      <a href="https://github.com/myxxmikeyxx" title="myxxmikeyxx">
+        <img src="https://avatars.githubusercontent.com/u/1766849?v=4" width="70" />
         <br />
-        w51637382
+        myxxmikeyxx
       </a>
     </td>
     <td width="150" align="center">
-    </td>
-    <td width="150" align="center">
+      <a href="https://github.com/xkmxz2503" title="xkmxz2503">
+        <img src="https://avatars.githubusercontent.com/u/109474779?v=4" width="70" />
+        <br />
+        xkmxz2503
+      </a>
     </td>
     <td width="150" align="center">
     </td>
