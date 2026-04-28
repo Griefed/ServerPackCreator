@@ -192,6 +192,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "ChunkAnimator-",               //https://www.curseforge.com/minecraft/mc-mods/chunk-animator
             "Clear-Water-",                 //https://www.curseforge.com/minecraft/mc-mods/clear-water
             "ClientTweaks_",                //https://www.curseforge.com/minecraft/mc-mods/client-tweaks
+            "Cobbleit-",                    //https://www.curseforge.com/minecraft/mc-mods/cobblemon-cobble-it
+            "CobblemonMoveInspector-",      //https://www.curseforge.com/minecraft/mc-mods/cobblemon-move-inspector
             "CompletionistsIndex-",         //https://www.curseforge.com/minecraft/mc-mods/completionists-index
             "Controller Support-",          //https://www.curseforge.com/minecraft/mc-mods/controller-mod
             "Controlling-",                 //https://www.curseforge.com/minecraft/mc-mods/controlling
@@ -220,6 +222,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "EquipmentCompare-",            //https://www.curseforge.com/minecraft/mc-mods/equipment-compare
             "EuphoriaPatcher-",             //https://www.curseforge.com/minecraft/mc-mods/euphoria-patches
             "FPS-Monitor-",                 //https://www.curseforge.com/minecraft/mc-mods/fps-monitor
+            "Fabric-cobblemon_vocalized-",  //https://www.curseforge.com/minecraft/mc-mods/cobblemon-vocalized
             "FabricCustomCursorMod-",       //https://www.curseforge.com/minecraft/mc-mods/cursor-mod
             "FadingNightVision-",           //https://www.curseforge.com/minecraft/mc-mods/fading-night-vision
             "Fallingleaves-",               //https://www.curseforge.com/minecraft/mc-mods/falling-leaves-forge
@@ -254,6 +257,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "JustEnoughCalculation-",       //https://www.curseforge.com/minecraft/mc-mods/just-enough-calculation
             "JustEnoughEffects-",           //https://www.curseforge.com/minecraft/mc-mods/just-enough-effects
             "JustEnoughProfessions-",       //https://www.curseforge.com/minecraft/mc-mods/just-enough-professions-jep
+            "KeybindsPurger-",              //https://www.curseforge.com/minecraft/mc-mods/keybindspurger
             "KeepTheResourcePack-",         //https://www.curseforge.com/minecraft/mc-mods/keep-the-resourcepack
             "LeaveMyBarsAlone-",            //https://www.curseforge.com/minecraft/mc-mods/leave-my-bars-alone
             "LLOverlayReloaded-",           //https://www.curseforge.com/minecraft/mc-mods/light-level-overlay-reloaded
@@ -268,11 +272,13 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "MoBends",                      //https://www.curseforge.com/minecraft/mc-mods/mo-bends
             "Mocap-",                       //https://www.curseforge.com/minecraft/mc-mods/motion-capture-mod-mocap
             "ModernUI-",                    //Gone? Reduces to atoms?
+            "MoreCobblemonTweaks-",         //https://www.curseforge.com/minecraft/mc-mods/morecobblemontweaks
             "MouseTweaks-",                 //https://www.curseforge.com/minecraft/mc-mods/mouse-tweaks
             "MyServerIsCompatible-",        //https://www.curseforge.com/minecraft/mc-mods/my-server-is-compatible
             "Neat ",                        //https://www.curseforge.com/minecraft/mc-mods/neat
             "Neat-",                        //https://www.curseforge.com/minecraft/mc-mods/neat
             "NekosEnchantedBooks-",         //https://www.curseforge.com/minecraft/mc-mods/nekos-enchanted-books
+            "NeoForge-cobblemon_vocalized-",//https://www.curseforge.com/minecraft/mc-mods/cobblemon-vocalized
             "NoAutoJump-",                  //https://www.curseforge.com/minecraft/mc-mods/no-autojump
             "NoFog-",                       //https://www.curseforge.com/minecraft/mc-mods/nofog
             "Notes-",                       //https://www.curseforge.com/minecraft/mc-mods/notes
@@ -369,6 +375,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "borderless-",                  //https://www.curseforge.com/minecraft/mc-mods/borderless
             "cat_jam-",                     //https://www.curseforge.com/minecraft/mc-mods/cat_jam
             "catalogue-",                   //https://www.curseforge.com/minecraft/mc-mods/catalogue
+            "catchindicator-",              //https://www.curseforge.com/minecraft/mc-mods/catch-indicator
+            "catchrate-display-",           //https://www.curseforge.com/minecraft/mc-mods/cobblemon-catch-rate-display
             "cave_dust-",                   //https://www.curseforge.com/minecraft/mc-mods/cave-dust
             "certain_questing_additions-",  //https://modrinth.com/mod/certain-questing-additions
             "cfwinfo-",                     //https://www.curseforge.com/minecraft/mc-mods/create-fuel-and-water-information
@@ -383,6 +391,13 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             "cleanview",                    //https://www.curseforge.com/minecraft/mc-mods/clean-view
             "clientcrafting-",              //https://www.curseforge.com/minecraft/mc-mods/client-crafting
             "clienttweaks-",                //https://www.curseforge.com/minecraft/mc-mods/client-tweaks
+            "cobeffectiveness-",            //https://www.curseforge.com/minecraft/mc-mods/cobblemon-effectiveness
+            "cobbledex-rei-emi-jei-",       //https://www.curseforge.com/minecraft/mc-mods/cobbledex-rei-emi-jei
+            "cobbleit-",                    //https://www.curseforge.com/minecraft/mc-mods/cobblemon-cobble-it
+            "cobblemonbattletypes-",        //https://www.curseforge.com/minecraft/mc-mods/cobblemon-in-battle-type-icons
+            "cobblemontypechart-",          //https://www.curseforge.com/minecraft/mc-mods/pokemon-type-table-cobblemon-pixelmon
+            "cobblemon_emi_compat-",        //https://www.curseforge.com/minecraft/mc-mods/cobblemon-emi-compat
+            "cobblemon_iwa-",               //https://www.curseforge.com/minecraft/mc-mods/cobblemon-iwa
             "cobblemon-ui-tweaks-",         //https://modrinth.com/mod/cobblemon-ui-tweaks
             "combat_music-",                //https://www.curseforge.com/minecraft/mc-mods/combat-music
             "configured-",                  //https://www.curseforge.com/minecraft/mc-mods/configured
