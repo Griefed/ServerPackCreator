@@ -66,7 +66,7 @@ dependencies {
     }
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.20")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.3")
 
     testImplementation("com.ninja-squad:springmockk:5.0.1")
     developmentOnly("org.springframework.boot:spring-boot-devtools:4.0.3")
