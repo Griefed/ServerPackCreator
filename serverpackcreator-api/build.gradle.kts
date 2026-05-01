@@ -3,7 +3,7 @@ import java.util.prefs.Preferences
 plugins {
     id("serverpackcreator.kotlin-conventions")
     id("serverpackcreator.dokka-conventions")
-    id("de.comahe.i18n4k") version "0.11.1"
+    id("de.comahe.i18n4k") version "0.11.2"
 }
 
 repositories {
@@ -17,8 +17,8 @@ dependencies {
     api("de.jensklingenberg.ktorfit:ktorfit-lib:2.7.2")
     implementation("org.jetbrains.kotlin:kotlin-bom:2.3.20")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.20")
-    api("de.comahe.i18n4k:i18n4k-core:0.11.1")
-    api("de.comahe.i18n4k:i18n4k-core-jvm:0.11.1")
+    api("de.comahe.i18n4k:i18n4k-core:0.11.2")
+    api("de.comahe.i18n4k:i18n4k-core-jvm:0.11.2")
     implementation(files("${layout.buildDirectory.asFile.get()}/resources/main"))
     api("com.electronwill.night-config:toml:3.8.4")
     api("com.fasterxml.jackson.core:jackson-databind:2.21.1")
