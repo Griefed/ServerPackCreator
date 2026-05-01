@@ -31,7 +31,7 @@ configurations {
 
 dependencies {
     api(project(":serverpackcreator-api"))
-    api("org.jetbrains.kotlin:kotlin-reflect:2.3.20")
+    api("org.jetbrains.kotlin:kotlin-reflect:2.3.21")
     api("commons-io:commons-io:2.21.0")
     api("com.cronutils:cron-utils:9.2.1")
     api("com.fasterxml.jackson.module:jackson-module-kotlin:2.21.1")
@@ -65,7 +65,7 @@ dependencies {
         exclude(group = "org.mockito", module = "mockito-core")
     }
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.20")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.21")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.2")
 
     testImplementation("com.ninja-squad:springmockk:5.0.1")
