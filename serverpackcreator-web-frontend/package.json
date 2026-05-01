@@ -19,7 +19,7 @@
     "axios": "^1.15.0",
     "vue-i18n": "^11.1.12",
     "pinia": "^3.0.3",
-    "@quasar/extras": "^1.17.0",
+    "@quasar/extras": "^1.18.0",
     "quasar": "^2.18.5",
     "vue": "^3.5.27",
     "vue-router": "^4.6.3"
