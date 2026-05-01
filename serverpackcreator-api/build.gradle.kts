@@ -33,7 +33,7 @@ dependencies {
     api("com.github.MCRcortex:nekodetector:Version-1.1-pre")
     //api("dev.kosmx.needle:jneedle:1.0.1")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.10")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.21")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.3")
 }
 
