@@ -11,8 +11,6 @@ exclude:
   - name: All
     paths:
       - serverpackcreator-web-frontend
-      - serverpackcreator-api/src/main/kotlin/io
-      - serverpackcreator-api/src/main/kotlin/mslinks
       - licenses
       - media
       - misc
