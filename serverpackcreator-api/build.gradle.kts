@@ -29,7 +29,7 @@ dependencies {
     api("org.pf4j:pf4j:3.15.0")
     api("org.bouncycastle:bcpkix-jdk18on:1.84")
 
-    //api("com.github.DmitriiShamrikov:mslinks:1.2.0")
+    api("org.jabref:mslinks:1.2")
     api("com.github.MCRcortex:nekodetector:Version-1.1-pre")
     //api("dev.kosmx.needle:jneedle:1.0.1")
 
