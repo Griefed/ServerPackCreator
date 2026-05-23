@@ -159,7 +159,7 @@ As of 3.14.x you can add and edit placeholders.
 Make sure to map your desired value to the appropriate placeholder key.
 The GUI provides a table where you can configure these, or any other values, to your liking.
 
-The way this system works is that ServerPackCreator scans the given template for any occurance of a
+The way this system works is that ServerPackCreator scans the given template for any occurrence of a
 given placeholder, say `SPC_JAVA_SPC`, and replaces that occurrence in the template with the assigned
 value, `java` by default unless you changed it. (Also `java` for the ZIP-archive, if any is created.)
 After every configured placeholder has been replaced with the configured value, the resulting text
