@@ -24,6 +24,6 @@ import org.springframework.data.repository.NoRepositoryBean
 import java.util.*
 
 @NoRepositoryBean
-interface ModRepository<T, ID> : MongoRepository<Any, Any> {
+interface ModRepository<T : Any, ID : Any> : MongoRepository<T, ID> {
     fun findByMod(mod: String) : Optional<T>
 }
