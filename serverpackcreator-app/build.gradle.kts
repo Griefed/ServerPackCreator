@@ -56,11 +56,11 @@ dependencies {
     api("tokyo.northside:tipoftheday:0.6.0")
 
     //WEB
-    api("org.springframework.boot:spring-boot-starter-web:4.0.3")
-    api("org.springframework.boot:spring-boot-starter-log4j2:4.0.3")
-    api("org.springframework.boot:spring-boot-starter-data-mongodb:4.0.3")
+    api("org.springframework.boot:spring-boot-starter-web:4.0.6")
+    api("org.springframework.boot:spring-boot-starter-log4j2:4.0.6")
+    api("org.springframework.boot:spring-boot-starter-data-mongodb:4.0.6")
     testRuntimeOnly("com.h2database:h2:2.4.240")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:4.0.3") {
+    testImplementation("org.springframework.boot:spring-boot-starter-test:4.0.6") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
         exclude(group = "org.mockito", module = "mockito-core")
     }
@@ -69,7 +69,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.2")
 
     testImplementation("com.ninja-squad:springmockk:5.0.1")
-    developmentOnly("org.springframework.boot:spring-boot-devtools:4.0.3")
+    developmentOnly("org.springframework.boot:spring-boot-devtools:4.0.6")
     //developmentOnly("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 }
 
