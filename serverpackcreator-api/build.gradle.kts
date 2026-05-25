@@ -3,7 +3,7 @@ import java.util.prefs.Preferences
 plugins {
     id("serverpackcreator.kotlin-conventions")
     id("serverpackcreator.dokka-conventions")
-    id("de.comahe.i18n4k") version "0.11.1"
+    id("de.comahe.i18n4k") version "0.11.2"
 }
 
 repositories {
@@ -14,25 +14,26 @@ repositories {
 dependencies {
     api("io.github.microutils:kotlin-logging:3.0.5")
     api("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1-0.6.x-compat")
-    api("de.jensklingenberg.ktorfit:ktorfit-lib:2.7.2")
-    implementation("org.jetbrains.kotlin:kotlin-bom:2.3.20")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.20")
-    api("de.comahe.i18n4k:i18n4k-core:0.11.1")
-    api("de.comahe.i18n4k:i18n4k-core-jvm:0.11.1")
+    implementation("org.jetbrains.kotlin:kotlin-bom:2.3.21")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.21")
+    api("de.jensklingenberg.ktorfit:ktorfit-lib:2.7.3")
+    api("de.comahe.i18n4k:i18n4k-core:0.11.2")
+    api("de.comahe.i18n4k:i18n4k-core-jvm:0.11.2")
     implementation(files("${layout.buildDirectory.asFile.get()}/resources/main"))
     api("com.electronwill.night-config:toml:3.8.4")
     api("com.fasterxml.jackson.core:jackson-databind:2.21.1")
     api("net.lingala.zip4j:zip4j:2.11.6")
     api("org.apache.logging.log4j:log4j-api-kotlin:1.5.0")
-    api("org.apache.logging.log4j:log4j-core:2.25.3")
+    api("org.apache.logging.log4j:log4j-core:2.25.4")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     api("org.pf4j:pf4j:3.15.0")
-    api("org.bouncycastle:bcpkix-jdk18on:1.83")
+    api("org.bouncycastle:bcpkix-jdk18on:1.84")
 
+    api("org.jabref:mslinks:1.2")
     api("com.github.MCRcortex:nekodetector:Version-1.1-pre")
     //api("dev.kosmx.needle:jneedle:1.0.1")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.10")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.21")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.3")
 }
 
