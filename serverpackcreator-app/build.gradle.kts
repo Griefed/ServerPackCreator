@@ -43,9 +43,9 @@ dependencies {
 
     //GUI
     api("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.10.2")
-    api("com.formdev:flatlaf:3.7")
-    api("com.formdev:flatlaf-extras:3.7")
-    api("com.formdev:flatlaf-intellij-themes:3.7")
+    api("com.formdev:flatlaf:3.7.1")
+    api("com.formdev:flatlaf-extras:3.7.1")
+    api("com.formdev:flatlaf-intellij-themes:3.7.1")
     api("com.formdev:flatlaf-fonts-jetbrains-mono:2.304")
     api("com.formdev:flatlaf-fonts-inter:4.1")
     api("com.formdev:flatlaf-fonts-roboto:2.137")
