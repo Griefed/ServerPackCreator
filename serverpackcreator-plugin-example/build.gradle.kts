@@ -40,7 +40,7 @@ dependencies {
 
     // Testing
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.21")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.3")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.0")
 }
 
 tasks.processResources {
