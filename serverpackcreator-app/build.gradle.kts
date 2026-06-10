@@ -35,7 +35,7 @@ dependencies {
     api("commons-io:commons-io:2.22.0")
     api("com.cronutils:cron-utils:9.2.1")
     api("com.fasterxml.jackson.module:jackson-module-kotlin:2.21.1")
-    compileOnly("com.install4j:install4j-runtime:12.0.3")
+    compileOnly("com.install4j:install4j-runtime:12.0.4")
 
 
     //CLI
