@@ -13,7 +13,7 @@ repositories {
 
 dependencies {
     api("io.github.microutils:kotlin-logging:3.0.5")
-    api("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1-0.6.x-compat")
+    api("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0-0.6.x-compat")
     implementation("org.jetbrains.kotlin:kotlin-bom:2.3.21")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.21")
     api("de.jensklingenberg.ktorfit:ktorfit-lib:2.7.3")
