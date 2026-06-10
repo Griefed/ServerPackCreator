@@ -3,7 +3,7 @@ import java.util.*
 
 plugins {
     id("serverpackcreator.kotlin-conventions")
-    id("de.comahe.i18n4k") version "0.11.1"
+    id("de.comahe.i18n4k") version "0.11.2"
     kotlin("kapt")
 }
 
@@ -39,8 +39,8 @@ dependencies {
     implementation(project(":serverpackcreator-api"))
 
     // Testing
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.10")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.3")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.21")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.0")
 }
 
 tasks.processResources {

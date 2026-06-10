@@ -209,7 +209,7 @@ jobs:
           check-latest: true
           cache: 'gradle'
 
-      - uses: gradle/actions/setup-gradle@v5
+      - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: wrapper
 
@@ -297,7 +297,7 @@ jobs:
         run: cp checksum.txt continuous/
 
       - name: Update develop tag
-        uses: richardsimko/update-tag@v1
+        uses: richardsimko/update-tag@v2
         with:
           tag_name: continuous
         env:
