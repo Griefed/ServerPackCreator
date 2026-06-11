@@ -128,9 +128,16 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   for mocking Mongo repositories in the remaining controllers. `VersionsControllerTest`
   (6 tests) is the template. The pre-existing `WebServiceTest` boots an empty context and
   asserts nothing — replace it during Phase 2.
-- **Next:** controller tests for serverpack/modpack/stats/runconfiguration/events/settings
-  (mock Mongo repositories via springmockk), CommandlineParser and MigrationManager tests —
-  before the API splits land, so they double as integration tests.
+- **Phase 1a, app side complete (2026-06-11):** standalone-MockMvc tests for all seven web
+  controllers (versions, settings, modpack, serverpack, runconfiguration, events, stats) —
+  app suite 5 → 39 tests. Web-entity IDs are `private set` (Spring Data PersistenceCreator);
+  tests assign them via the `assignEntityId` reflection-helper. Two bugs found and fixed:
+  (1) StatsController mapped server pack download-history to `/downloads/modpacks/{id}`,
+  colliding with the modpack-history route — now `/downloads/serverpacks/{id}`;
+  (2) SettingsController's Boolean settings-fields lost their "is"-prefix through Jackson,
+  so the frontend (setting-store.js) read `undefined` — fixed with `@get:JsonProperty`.
+- **Next:** Phase 1b — split ApiProperties. Then CommandlineParser/MigrationManager tests
+  during Phase 2.
 
 ---
 

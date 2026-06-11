@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.app.web
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.config.ExclusionFilter
 import org.springframework.beans.factory.annotation.Autowired
@@ -73,8 +74,13 @@ class SettingsController @Autowired constructor(
         val directoriesToExclude: List<String>,
         val zipArchiveExclusions: List<String>,
         val exclusionFilter: ExclusionFilter,
+        // The JsonProperty-annotations keep the "is"-prefix in the JSON: Jackson would otherwise
+        // strip it from Boolean-getters, breaking the frontend which reads the prefixed names.
+        @get:JsonProperty("isZipFileExclusionEnabled")
         val isZipFileExclusionEnabled: Boolean,
+        @get:JsonProperty("isAutoExcludingModsEnabled")
         val isAutoExcludingModsEnabled: Boolean,
+        @get:JsonProperty("isMinecraftPreReleasesAvailabilityEnabled")
         val isMinecraftPreReleasesAvailabilityEnabled: Boolean,
         val aikarsFlags: String,
         val language: String
