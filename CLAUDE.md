@@ -136,8 +136,23 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   colliding with the modpack-history route — now `/downloads/serverpacks/{id}`;
   (2) SettingsController's Boolean settings-fields lost their "is"-prefix through Jackson,
   so the frontend (setting-store.js) read `undefined` — fixed with `@get:JsonProperty`.
-- **Next:** Phase 1b — split ApiProperties. Then CommandlineParser/MigrationManager tests
-  during Phase 2.
+- **Phase 1b in progress (2026-06-11):** `PropertyStore` extracted as the property-storage
+  core (loading with blank-filtering and file-tracking, typed accessors with
+  define-if-absent, custom-property prefix, override-loading, saving to tracked files; 10
+  unit tests). ApiProperties delegates — `internalProps` is a reference to
+  `store.properties`, so internal call sites stayed unchanged. First settings-group
+  extracted: `api.settings.WebserviceConfig` (database-URI migration/normalization + three
+  webservice-schedules; 4 tests), with ApiProperties keeping facade-properties.
+  **Established extraction pattern:** (1) write group-tests first against PropertyStore,
+  (2) move get/set-logic verbatim into the group-class with keys as companion-constants,
+  (3) ApiProperties keeps thin facade-properties delegating to the group, (4) run API+app
+  suites. Remaining groups, roughly in order: paths/directories (large, homeDirectory uses
+  Preferences + overrides — careful), generation-settings (clientsideMods, inclusions/
+  exclusions, script templates, flags), Java-settings (javaPath(s) + detection), update/
+  release-info, i18n/log-level. The log4j2-XML companion in ApiProperties is its own beast —
+  consider moving to a dedicated LoggingConfig last.
+- **Next:** continue Phase 1b group-extractions. Then CommandlineParser/MigrationManager
+  tests during Phase 2.
 
 ---
 

@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.api
 import de.comahe.i18n4k.Locale
 import de.comahe.i18n4k.config.I18n4kConfigDefault
 import de.comahe.i18n4k.i18n4k
+import de.griefed.serverpackcreator.api.settings.WebserviceConfig
 import de.comahe.i18n4k.toTag
 import de.griefed.serverpackcreator.api.config.ExclusionFilter
 import de.griefed.serverpackcreator.api.utilities.common.*
@@ -125,8 +126,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         "server.tomcat.basedir"
     private val pTomcatLogsDirectory =
         "server.tomcat.accesslog.directory"
-    private val pSpringDatasourceUrl =
-        "spring.data.mongodb.uri"
     private val pUpdateServerPack = "de.griefed.serverpackcreator.serverpack.update"
     private val pLogLevel = "de.griefed.serverpackcreator.loglevel"
 
@@ -1471,32 +1470,18 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         }
 
     /**
+     * Web-service settings-group: database-URI and webservice-schedules. Prefer accessing these
+     * through this group; the individual properties on ApiProperties remain as facade.
+     */
+    val webserviceConfig = WebserviceConfig(store)
+
+    /**
      * Path to the database used by the webservice-side of ServerPackCreator.
      */
-    var databaseUri: String = "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb"
-        get() {
-            var dbPath =
-                internalProps.getProperty(pSpringDatasourceUrl, "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb")
-            if (dbPath.isEmpty() ||
-                dbPath.contains("sqlite") ||
-                dbPath.contains("postgresql") ||
-                !dbPath.startsWith("mongodb") ) {
-                log.warn("Your spring.data.mongodb.uri-property didn't match a MongoDB-URL: $dbPath. It has been migrated to mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb.")
-                dbPath = "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb"
-            }
-            internalProps.setProperty(pSpringDatasourceUrl, dbPath)
-            field = dbPath
-            return field
-        }
+    var databaseUri: String
+        get() = webserviceConfig.databaseUri
         set(value) {
-            if (!value.startsWith("mongodb://")) {
-                internalProps.setProperty(pSpringDatasourceUrl, "mongodb://$value")
-            } else {
-                internalProps.setProperty(pSpringDatasourceUrl, value)
-            }
-            field = internalProps.getProperty(pSpringDatasourceUrl)
-            log.info("Set database url to: $field.")
-            log.warn("Restart ServerPackCreator for this change to take effect.")
+            webserviceConfig.databaseUri = value
         }
 
     /**
@@ -1565,33 +1550,39 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             }
         }
 
+    /**
+     * Cron-schedule of the webservice's cleanup-job. Facade for [WebserviceConfig.cleanupSchedule].
+     */
     var webserviceCleanupSchedule: String
-        get() {
-            return internalProps.getProperty("de.griefed.serverpackcreator.spring.schedules.database.cleanup")
-        }
+        get() = webserviceConfig.cleanupSchedule
         set(value) {
-            internalProps.setProperty("de.griefed.serverpackcreator.spring.schedules.database.cleanup", value)
+            webserviceConfig.cleanupSchedule = value
         }
 
+    /**
+     * Cron-schedule of the webservice's version-refresh-job. Facade for
+     * [WebserviceConfig.versionSchedule].
+     */
     var webserviceVersionSchedule: String
-        get() {
-            return internalProps.getProperty("de.griefed.serverpackcreator.spring.schedules.versions.refresh")
-        }
+        get() = webserviceConfig.versionSchedule
         set(value) {
-            internalProps.setProperty("de.griefed.serverpackcreator.spring.schedules.versions.refresh", value)
+            webserviceConfig.versionSchedule = value
         }
 
+    /**
+     * Cron-schedule of the webservice's file-cleanup-job. Facade for
+     * [WebserviceConfig.databaseCleanupSchedule].
+     */
     var webserviceDatabaseCleanupSchedule: String
-        get() {
-            return internalProps.getProperty("de.griefed.serverpackcreator.spring.schedules.files.cleanup")
-        }
+        get() = webserviceConfig.databaseCleanupSchedule
         set(value) {
-            internalProps.setProperty("de.griefed.serverpackcreator.spring.schedules.files.cleanup", value)
+            webserviceConfig.databaseCleanupSchedule = value
         }
 
-    fun defaultWebserviceDatabase(): String {
-        return "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb"
-    }
+    /**
+     * The default webservice database-URI, for resetting the configuration to factory-state.
+     */
+    fun defaultWebserviceDatabase(): String = webserviceConfig.defaultDatabase()
 
     /**
      * ServerPackCreators home directory, in which all important files and folders are stored in.
