@@ -146,11 +146,18 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   **Established extraction pattern:** (1) write group-tests first against PropertyStore,
   (2) move get/set-logic verbatim into the group-class with keys as companion-constants,
   (3) ApiProperties keeps thin facade-properties delegating to the group, (4) run API+app
-  suites. Remaining groups, roughly in order: paths/directories (large, homeDirectory uses
-  Preferences + overrides — careful), generation-settings (clientsideMods, inclusions/
-  exclusions, script templates, flags), Java-settings (javaPath(s) + detection), update/
-  release-info, i18n/log-level. The log4j2-XML companion in ApiProperties is its own beast —
-  consider moving to a dedicated LoggingConfig last.
+  suites. Large data-blocks (e.g. the fallback mod-lists) are moved by python-script, not
+  retyped. Second group extracted: `api.settings.GenerationConfig` (mod-lists + whitelist
+  + regex-variants, directory in-/exclusions with include-wins-rule, pre/post-install
+  cleanup-files, ZIP-exclusions, exclusion-filter, six generation-flags incl. legacy
+  auto-discovery migration, Aikar's flags; 11 tests). ApiProperties: 3,007 → 2,126 lines.
+  Dead code removed: `addDirectoryToExclude` had zero callers. `updateFallback()` stayed in
+  ApiProperties (network + save orchestration), as did the script-templates (they depend on
+  `serverFilesDirectory` from the not-yet-extracted paths-group). Remaining groups, roughly
+  in order: script-templates + paths/directories (large, homeDirectory uses Preferences +
+  overrides — careful), Java-settings (javaPath(s) + detection), update/release-info,
+  i18n/log-level. The log4j2-XML companion in ApiProperties is its own beast — consider
+  moving to a dedicated LoggingConfig last.
 - **Next:** continue Phase 1b group-extractions. Then CommandlineParser/MigrationManager
   tests during Phase 2.
 
