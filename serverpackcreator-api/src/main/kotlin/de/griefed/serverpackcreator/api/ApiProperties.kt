@@ -53,7 +53,13 @@ import java.util.prefs.Preferences
 @Order(50)
 class ApiProperties(propertiesFile: File = File("serverpackcreator.properties")) : ConfigurationFactory() {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
-    private val internalProps = Properties()
+
+    /**
+     * Property-storage core handling file-loading, typed accessors and saving. ApiProperties
+     * orchestrates load-ordering and domain-semantics on top of it (refactor Phase 1b).
+     */
+    private val store = PropertyStore()
+    private val internalProps = store.properties
     private val spcPreferences = Preferences.userRoot().node("ServerPackCreator")
     private val serverPackCreatorProperties = "serverpackcreator.properties"
     private val jarInformation: JarInformation = JarInformation(this.javaClass)
@@ -115,8 +121,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         "de.griefed.serverpackcreator.home"
     private val pOldVersion =
         "de.griefed.serverpackcreator.version.old"
-    private val customPropertyPrefix =
-        "custom.property."
     private val pTomcatBaseDirectory =
         "server.tomcat.basedir"
     private val pTomcatLogsDirectory =
@@ -131,8 +135,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         "de.griefed.serverpackcreator.serverpack.script.template"
 
     private val suffixes = arrayOf(".xml")
-
-    private val propertyFiles: MutableList<File> = mutableListOf()
 
     /**
      * Default home-directory for ServerPackCreator. The directory containing the
@@ -2195,51 +2197,19 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      *
      * @author Griefed
      */
+    /**
+     * Loads the given properties-file into [props] via the [store], dropping blank values and
+     * tracking the file for later saving.
+     */
     private fun loadFile(propertiesFile: File, props: Properties) {
-        if (!propertiesFile.isFile) {
-            log.warn("Properties-file does not exist: ${propertiesFile.absolutePath}.")
-            return
-        }
-
-        try {
-            //Temp props to load the ones from the specified file into
-            val tempProps = Properties()
-            propertiesFile.inputStream().use {
-                tempProps.load(it)
-            }
-
-            tempProps.entries.removeIf { entry -> entry.value.toString().isBlank() }
-
-            //Write temp props into passed props
-            for ((key, value) in tempProps.entries) {
-                props[key] = value
-            }
-
-            props.entries.removeIf { entry -> entry.value.toString().isBlank() }
-            propertyFiles.add(propertiesFile)
-            log.info("Loaded properties from ${propertiesFile.absolutePath}.")
-        } catch (ex: Exception) {
-            log.error("Couldn't read properties from ${propertiesFile.absolutePath}.", ex)
-        }
+        store.loadInto(propertiesFile, props)
     }
 
+    /**
+     * Loads the overrides-properties directly into the store, replacing already-loaded values.
+     */
     fun loadOverrides(properties: File = overridesPropertiesFile) {
-        val tempProps = Properties()
-        if (properties.isFile) {
-            properties.inputStream().use {
-                tempProps.load(it)
-            }
-        }
-        for ((key, value) in tempProps) {
-            log.warn("Overriding:")
-            log.warn("  $key")
-            if (key.toString().contains("(username|password)")) {
-                log.warn("  ************************************")
-            } else {
-                log.warn("  $value")
-            }
-        }
-        internalProps.putAll(tempProps)
+        store.loadOverrides(properties)
     }
 
     /**
@@ -2363,11 +2333,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @author Griefed
      */
     private fun acquireProperty(key: String, defaultValue: String) =
-        if (internalProps.getProperty(key).isNullOrBlank()) {
-            defineProperty(key, defaultValue)
-        } else {
-            internalProps.getProperty(key, defaultValue)
-        }
+        store.acquire(key, defaultValue)
 
     /**
      * Set a property in our ApplicationProperties.
@@ -2377,10 +2343,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @return The [value] to which the [key] was set to.
      * @author Griefed
      */
-    private fun defineProperty(key: String, value: String): String {
-        internalProps.setProperty(key, value)
-        return value
-    }
+    private fun defineProperty(key: String, value: String): String =
+        store.define(key, value)
 
     /**
      * Get a list from our properties.
@@ -2393,13 +2357,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     private fun getListProperty(
         key: String,
         defaultValue: String
-    ) = if (acquireProperty(key, defaultValue).contains(",")) {
-        acquireProperty(key, defaultValue)
-            .split(",")
-            .dropLastWhile { it.isEmpty() }
-    } else {
-        listOf(acquireProperty(key, defaultValue))
-    }
+    ) = store.getList(key, defaultValue)
 
     /**
      * Join the [value] via usage of the [separator] and overwrite the [key].
@@ -2407,7 +2365,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      */
     @Suppress("SameParameterValue")
     private fun setListProperty(key: String, value: List<String>, separator: String) {
-        internalProps.setProperty(key, value.joinToString(separator))
+        store.setList(key, value, separator)
     }
 
     /**
@@ -2420,12 +2378,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      */
     @Suppress("SameParameterValue")
     private fun getIntProperty(key: String, defaultValue: Int) =
-        try {
-            acquireProperty(key, defaultValue.toString()).toInt()
-        } catch (ex: NumberFormatException) {
-            defineProperty(key, defaultValue.toString())
-            defaultValue
-        }
+        store.getInt(key, defaultValue)
 
     /**
      * Set the integer property with the given [key] to the given [value].
@@ -2433,7 +2386,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @author Griefed
      */
     @Suppress("SameParameterValue")
-    private fun setIntProperty(key: String, value: Int) = defineProperty(key, value.toString())
+    private fun setIntProperty(key: String, value: Int) = store.setInt(key, value)
 
     /**
      * Get a list of files from our properties, with each file having a specific prefix.
@@ -2445,14 +2398,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @author Griefed
      */
     @Suppress("SameParameterValue")
-    private fun getFileListProperty(key: String, defaultValue: String, filePrefix: String): List<File> {
-        val files: MutableList<File> = ArrayList(4)
-        val entries = getListProperty(key, defaultValue)
-        for (entry in entries) {
-            files.add(File(filePrefix + entry))
-        }
-        return files
-    }
+    private fun getFileListProperty(key: String, defaultValue: String, filePrefix: String): List<File> =
+        store.getFileList(key, defaultValue, filePrefix)
 
     /**
      * Get a boolean from our properties.
@@ -2463,14 +2410,14 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @author Griefed
      */
     private fun getBoolProperty(key: String, defaultValue: Boolean) =
-        acquireProperty(key, defaultValue.toString()).toBoolean()
+        store.getBool(key, defaultValue)
 
     /**
      * Set the integer property with the given [key] to the given [value].
      *
      * @author Griefed
      */
-    private fun setBoolProperty(key: String, value: Boolean) = defineProperty(key, value.toString())
+    private fun setBoolProperty(key: String, value: Boolean) = store.setBool(key, value)
 
     /**
      * Adder for the list of directories to exclude from server packs.
@@ -2533,39 +2480,11 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @author Griefed
      */
     fun saveProperties(propertiesFile: File) {
-        cleanupInternalProps()
-        val toSave = TreeSet<File>()
-        toSave.addAll(propertyFiles)
-        toSave.add(propertiesFile)
-
-        for (props in toSave) {
-            if (!props.isFile && props != serverPackCreatorPropertiesFile) {
-                //Skip if the file no longer exists
-                continue
-            }
-            try {
-                props.outputStream().use {
-                    internalProps.store(
-                        it,
-                        "For details about each property, see https://help.serverpackcreator.de/settings-and-configs.html"
-                    )
-                }
-                log.info("Saved properties to: $propertiesFile")
-            } catch (ex: FileNotFoundException) {
-                log.error("Couldn't write properties-file ${props.absolutePath}. File either doesn't exist or we don't have write-permission.")
-            } catch (ex: IOException) {
-                log.error("Couldn't write properties-file ${props.absolutePath}.", ex)
-            }
-        }
-    }
-
-    /**
-     * Removes unwanted properties. Called during the save-operation, to ensure that legacy-properties are removed.
-     *
-     * @author Griefed
-     */
-    private fun cleanupInternalProps() {
-        internalProps.remove(pConfigurationFallbackModsListRegex)
+        store.save(
+            propertiesFile,
+            alwaysWrite = serverPackCreatorPropertiesFile,
+            removeKeys = listOf(pConfigurationFallbackModsListRegex)
+        )
     }
 
     /**
@@ -2758,10 +2677,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      *
      * @author Griefed
      */
-    fun storeCustomProperty(property: String, value: String): String {
-        val customProp = "$customPropertyPrefix$property"
-        return defineProperty(customProp, value)
-    }
+    fun storeCustomProperty(property: String, value: String): String =
+        store.storeCustomProperty(property, value)
 
     /**
      * Retrieve a custom property in the serverpackcreator.properties-file. Beware that every property you retrieve this
@@ -2774,10 +2691,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      *
      * @author Griefed
      */
-    fun retrieveCustomProperty(property: String): String? {
-        val customProp = "$customPropertyPrefix$property"
-        return internalProps.getProperty(customProp)
-    }
+    fun retrieveCustomProperty(property: String): String? =
+        store.retrieveCustomProperty(property)
 
     /**
      * Get the path to the specified Java executable/binary, wrapped in an [Optional] for your
@@ -2827,7 +2742,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     fun oldVersion(): String = internalProps.getProperty(pOldVersion, "")
 
     fun clearPropertyFileList() {
-        propertyFiles.clear()
+        store.clearTrackedFiles()
     }
 
     private fun printSettings() {
