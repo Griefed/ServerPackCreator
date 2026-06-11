@@ -113,6 +113,16 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
 - Known hotspots: `ApiProperties.kt` 3,007 lines; `ConfigurationHandler.kt` 1,562;
   `ServerPackHandler.kt` 1,466; app `ConfigEditor.kt` 1,369; `LarsonScanner.kt` 2,217
   (self-contained widget, low priority). App web backend is effectively untested.
+- **Phase 1a, API side (2026-06-11):** characterization tests added for ConfigurationHandler
+  (manifest parsing for CurseForge/GDLauncher/ATLauncher/MultiMC, zip checks, inclusion
+  suggestions) and ServerPackHandler (file gathering, cleanup, icon/properties, placeholder
+  replacement). API now 105 tests. Fixed bug: `getModLoaderCase` detected "legacyfabric" as
+  Fabric (branch order) and had a dead `contains("NeoForge")`-on-lowercase check — most
+  specific loader names are now checked first. Documented quirks: `PackConfig.modloader`
+  setter silently ignores unrecognized values; unknown loaders default to Forge;
+  `ReticulatingSplines` is GUI-only (splash texts) and should move to the app module in 1e.
+- **Next:** app-side characterization tests (web controllers via MockMvc, CommandlineParser,
+  MigrationManager) before the API splits land, so they double as integration tests.
 
 ---
 
