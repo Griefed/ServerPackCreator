@@ -22,6 +22,8 @@ package de.griefed.serverpackcreator.api
 import de.comahe.i18n4k.Locale
 import de.comahe.i18n4k.config.I18n4kConfigDefault
 import de.comahe.i18n4k.i18n4k
+import de.griefed.serverpackcreator.api.settings.GenerationConfig
+import de.griefed.serverpackcreator.api.settings.WebserviceConfig
 import de.comahe.i18n4k.toTag
 import de.griefed.serverpackcreator.api.config.ExclusionFilter
 import de.griefed.serverpackcreator.api.utilities.common.*
@@ -53,7 +55,13 @@ import java.util.prefs.Preferences
 @Order(50)
 class ApiProperties(propertiesFile: File = File("serverpackcreator.properties")) : ConfigurationFactory() {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
-    private val internalProps = Properties()
+
+    /**
+     * Property-storage core handling file-loading, typed accessors and saving. ApiProperties
+     * orchestrates load-ordering and domain-semantics on top of it (refactor Phase 1b).
+     */
+    private val store = PropertyStore()
+    private val internalProps = store.properties
     private val spcPreferences = Preferences.userRoot().node("ServerPackCreator")
     private val serverPackCreatorProperties = "serverpackcreator.properties"
     private val jarInformation: JarInformation = JarInformation(this.javaClass)
@@ -73,38 +81,12 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         "de.griefed.serverpackcreator.configuration.modswhitelist"
     private val pConfigurationHasteBinServerUrl =
         "de.griefed.serverpackcreator.configuration.hastebinserver"
-    private val pConfigurationAikarsFlags =
-        "de.griefed.serverpackcreator.configuration.aikar"
-    private val pServerPackAutoDiscoveryEnabled =
-        "de.griefed.serverpackcreator.serverpack.autodiscovery.enabled"
-    private val pServerPackAutoDiscoveryEnabledLegacy =
-        "de.griefed.serverpackcreator.serverpack.autodiscoverenabled"
     private val pConfigurationDirectoriesServerPacks =
         "de.griefed.serverpackcreator.configuration.directories.serverpacks"
-    private val pServerPackCleanupEnabled =
-        "de.griefed.serverpackcreator.serverpack.cleanup.enabled"
-    private val pServerPackOverwriteEnabled =
-        "de.griefed.serverpackcreator.serverpack.overwrite.enabled"
-    private val pConfigurationDirectoriesShouldExclude =
-        "de.griefed.serverpackcreator.configuration.directories.shouldexclude"
-    private val pConfigurationDirectoriesMustInclude =
-        "de.griefed.serverpackcreator.configuration.directories.mustinclude"
-    private val pServerPackZipExclusions =
-        "de.griefed.serverpackcreator.serverpack.zip.exclude"
-    private val pServerPackZipExclusionEnabled =
-        "de.griefed.serverpackcreator.serverpack.zip.exclude.enabled"
     private val pServerPackStartScriptTemplatesPrefix =
         "de.griefed.serverpackcreator.serverpack.script.template."
     private val pServerPackJavaScriptTemplatesPrefix =
         "de.griefed.serverpackcreator.serverpack.java.template."
-    private val pPostInstallCleanupFiles =
-        "de.griefed.serverpackcreator.install.post.files"
-    private val pPreInstallCleanupFiles =
-        "de.griefed.serverpackcreator.install.pre.files"
-    private val pAllowUseMinecraftSnapshots =
-        "de.griefed.serverpackcreator.minecraft.snapshots"
-    private val pServerPackAutoDiscoveryFilterMethod =
-        "de.griefed.serverpackcreator.serverpack.autodiscovery.filter"
     private val pJavaForServerInstall =
         "de.griefed.serverpackcreator.java"
     private val pScriptVariablesJavaPaths =
@@ -115,15 +97,10 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         "de.griefed.serverpackcreator.home"
     private val pOldVersion =
         "de.griefed.serverpackcreator.version.old"
-    private val customPropertyPrefix =
-        "custom.property."
     private val pTomcatBaseDirectory =
         "server.tomcat.basedir"
     private val pTomcatLogsDirectory =
         "server.tomcat.accesslog.directory"
-    private val pSpringDatasourceUrl =
-        "spring.data.mongodb.uri"
-    private val pUpdateServerPack = "de.griefed.serverpackcreator.serverpack.update"
     private val pLogLevel = "de.griefed.serverpackcreator.loglevel"
 
     @Deprecated("Deprecated as of 6.0.0")
@@ -131,8 +108,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         "de.griefed.serverpackcreator.serverpack.script.template"
 
     private val suffixes = arrayOf(".xml")
-
-    private val propertyFiles: MutableList<File> = mutableListOf()
 
     /**
      * Default home-directory for ServerPackCreator. The directory containing the
@@ -142,648 +117,59 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      */
     val home: File = jarInformation.jarFolder.absoluteFile
 
-    private var fallbackModsWhitelist = TreeSet(
-        listOf(
-            "Ping-Wheel-",
-            "appleskin-",
-            "thulium-"
-        )
-    )
+    /**
+     * Settings-group for server pack generation: mod-lists, directory in-/exclusions,
+     * cleanup-files, ZIP-exclusions, exclusion-filter, generation-flags and Aikar's flags.
+     * Prefer accessing these values through this group; the individual properties on
+     * ApiProperties remain as facade.
+     */
+    val generationConfig = GenerationConfig(store)
 
-    @Suppress("SpellCheckingInspection")
-    private var fallbackMods = TreeSet(
-        listOf(
-            "[1.8.9] Lunar Block Overlay v1",//https://www.curseforge.com/minecraft/mc-mods/lunar-block-overlay
-            "[1.8.9] Lunar Block Overlay-2.0.0",//https://www.curseforge.com/minecraft/mc-mods/lunar-block-overlay
-            "3dskinlayers-",                //https://www.curseforge.com/minecraft/mc-mods/skin-layers-3d
-            "Absolutely-Not-A-Zoom-Mod-",   //https://www.curseforge.com/minecraft/mc-mods/absolutely-not-a-zoom-mod
-            "AdaptiveTooltips-",            //https://www.curseforge.com/minecraft/mc-mods/adaptive-tooltips
-            "AdvancedChat-",                //https://www.curseforge.com/minecraft/mc-mods/advancedchat
-            "AdvancedChatCore-",            //https://www.curseforge.com/minecraft/mc-mods/advancedchatcore
-            "AdvancedChatHUD-",             //https://www.curseforge.com/minecraft/mc-mods/advancedchathud
-            "AdvancedCompas-",              //https://www.curseforge.com/minecraft/mc-mods/advanced-compass
-            "Ambience",                     //https://www.curseforge.com/minecraft/mc-mods/ambience-music-mod
-            "AmbientEnvironment-",          //https://www.curseforge.com/minecraft/mc-mods/ambient-environment
-            "AmbientSounds_",               //https://www.curseforge.com/minecraft/mc-mods/ambientsounds
-            "AnimaticaReforged-",           //https://www.curseforge.com/minecraft/mc-mods/animaticareforged
-            "AreYouBlind-",                 //https://www.curseforge.com/minecraft/mc-mods/are-you-blind
-            "Armor Status HUD-",            //https://www.curseforge.com/minecraft/mc-mods/armorstatushud
-            "ArmorSoundTweak-",             //https://www.curseforge.com/minecraft/mc-mods/armor-sound-tweak
-            "Audio Improvements ",          //https://www.curseforge.com/minecraft/mc-mods/audio-improvements
-            "BH-Menu-",                     //https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-forge & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-fabric & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-neoforge
-            "Batty's Coordinates PLUS Mod", //https://www.curseforge.com/minecraft/mc-mods/batty-ui & https://www.curseforge.com/minecraft/mc-mods/battys-ui-mod-forge
-            "BetterAdvancements-",          //https://www.curseforge.com/minecraft/mc-mods/better-advancements
-            "BetterAnimationsCollection-",  //https://www.curseforge.com/minecraft/mc-mods/better-animations-collection
-            "BetterModsButton-",            //https://www.curseforge.com/minecraft/mc-mods/better-mods-button
-            "BetterDarkMode-",              //https://www.curseforge.com/minecraft/mc-mods/betterdarkmode
-            "BetterF3-",                    //https://www.curseforge.com/minecraft/mc-mods/betterf3
-            "BetterFog-",                   //https://www.curseforge.com/minecraft/mc-mods/better-fog
-            "BetterFoliage-",               //https://www.curseforge.com/minecraft/mc-mods/better-foliage
-            "BetterPingDisplay-",           //https://www.curseforge.com/minecraft/mc-mods/better-ping-display
-            "BetterPlacement-",             //https://www.curseforge.com/minecraft/mc-mods/better-placement
-            "BetterThanBunnies-",           //https://www.curseforge.com/minecraft/mc-mods/better-than-bunnies
-            "BetterTaskbar-",               //https://www.curseforge.com/minecraft/mc-mods/better-taskbar
-            "BetterThirdPerson",            //https://www.curseforge.com/minecraft/mc-mods/better-third-person
-            "BetterTitleScreen-",           //https://www.curseforge.com/minecraft/mc-mods/better-title-screen
-            "Blur-",                        //https://www.curseforge.com/minecraft/mc-mods/blur
-            "BoccHUD-",                     //https://modrinth.com/mod/bocchud/
-            "BorderlessWindow-",            //https://www.curseforge.com/minecraft/mc-mods/borderless
-            "CTM-",                         //https://www.curseforge.com/minecraft/mc-mods/ctm
-            "Chat Ping ",                   //https://www.curseforge.com/minecraft/mc-mods/chatping
-            "ChunkAnimator-",               //https://www.curseforge.com/minecraft/mc-mods/chunk-animator
-            "Clear-Water-",                 //https://www.curseforge.com/minecraft/mc-mods/clear-water
-            "ClientTweaks_",                //https://www.curseforge.com/minecraft/mc-mods/client-tweaks
-            "Cobbleit-",                    //https://www.curseforge.com/minecraft/mc-mods/cobblemon-cobble-it
-            "CobblemonMoveInspector-",      //https://www.curseforge.com/minecraft/mc-mods/cobblemon-move-inspector
-            "CompletionistsIndex-",         //https://www.curseforge.com/minecraft/mc-mods/completionists-index
-            "Controller Support-",          //https://www.curseforge.com/minecraft/mc-mods/controller-mod
-            "Controlling-",                 //https://www.curseforge.com/minecraft/mc-mods/controlling
-            "CraftPresence-",               //https://www.curseforge.com/minecraft/mc-mods/craftpresence
-            "CullLessLeaves-",              //https://www.curseforge.com/minecraft/mc-mods/cull-less-leaves & https://www.curseforge.com/minecraft/mc-mods/culllessleaves-reforged
-            "CustomCursorMod-",             //https://www.curseforge.com/minecraft/mc-mods/custom-cursor
-            "CustomMainMenu-",              //https://www.curseforge.com/minecraft/mc-mods/custom-main-menu
-            "CutThrough-",                  //https://www.curseforge.com/minecraft/mc-mods/cut-through
-            "DefaultOptions_",              //https://www.curseforge.com/minecraft/mc-mods/default-options
-            "DefaultSettings-",             //https://www.curseforge.com/minecraft/mc-mods/defaultsettings
-            "DeleteWorldsToTrash-",         //https://www.curseforge.com/minecraft/mc-mods/delete-worlds-to-trash-forge
-            "DetailArmorBar-",              //https://www.curseforge.com/minecraft/mc-mods/detail-armor-bar-forge
-            "Ding-",                        //https://www.curseforge.com/minecraft/mc-mods/ding
-            "DripSounds-",                  //https://www.curseforge.com/minecraft/mc-mods/waterdripsound
-            "Durability101-",               //https://www.curseforge.com/minecraft/mc-mods/durability101
-            "DurabilityNotifier-",          //https://www.curseforge.com/minecraft/mc-mods/durability-notifier
-            "DynamicSurroundings-",         //https://www.curseforge.com/minecraft/mc-mods/dynamic-surroundings
-            "DynamicSurroundingsHuds-",     //https://www.curseforge.com/minecraft/mc-mods/dynamic-surroundings-huds
-            "EasyLAN-",                     //https://www.curseforge.com/minecraft/mc-mods/easylan
-            "EffectInsights-",              //https://www.curseforge.com/minecraft/mc-mods/effect-insights
-            "EffectsLeft-",                 //https://www.curseforge.com/minecraft/mc-mods/effectsleft
-            "EiraMoticons_",                //no longer available, legacy entry
-            "EnchantmentDescriptions-",     //https://www.curseforge.com/minecraft/mc-mods/enchantment-descriptions
-            "EnhancedTooltips-",            //https://www.curseforge.com/minecraft/mc-mods/enhancedtooltips
-            "EnhancedVisuals_",             //https://www.curseforge.com/minecraft/mc-mods/enhancedvisuals
-            "EquipmentCompare-",            //https://www.curseforge.com/minecraft/mc-mods/equipment-compare
-            "EuphoriaPatcher-",             //https://www.curseforge.com/minecraft/mc-mods/euphoria-patches
-            "FPS-Monitor-",                 //https://www.curseforge.com/minecraft/mc-mods/fps-monitor
-            "Fabric-cobblemon_vocalized-",  //https://www.curseforge.com/minecraft/mc-mods/cobblemon-vocalized
-            "FabricCustomCursorMod-",       //https://www.curseforge.com/minecraft/mc-mods/cursor-mod
-            "FadingNightVision-",           //https://www.curseforge.com/minecraft/mc-mods/fading-night-vision
-            "Fallingleaves-",               //https://www.curseforge.com/minecraft/mc-mods/falling-leaves-forge
-            "FancySpawnEggs",               //https://www.curseforge.com/minecraft/mc-mods/fancy-spawn-eggs
-            "FancyBlockParticles-",         //https://www.curseforge.com/minecraft/mc-mods/fbp-renewed
-            "FancyVideo-API-",              //https://www.curseforge.com/minecraft/mc-mods/fancyvideo-api
-            "farsight-",                    //https://www.curseforge.com/minecraft/modpacks/farsight
-            "FirstPersonMod",               //https://www.curseforge.com/minecraft/mc-mods/first-person-model
-            "FogTweaker-",                  //https://www.curseforge.com/minecraft/mc-mods/fog-tweaker
-            "ForgeCustomCursorMod-",        //https://www.curseforge.com/minecraft/mc-mods/cursor-mod
-            "Forgematica-",                 //https://www.curseforge.com/minecraft/mc-mods/forgematica
-            "FpsReducer-",                  //https://www.curseforge.com/minecraft/mc-mods/fps-reducer
-            "FpsReducer2-",                 //https://www.curseforge.com/minecraft/mc-mods/fps-reducer
-            "FullscreenWindowed-",          //https://www.curseforge.com/minecraft/mc-mods/fullscreen-windowed-borderless-for-minecraft
-            "GameMenuModOption-",           //https://www.curseforge.com/minecraft/mc-mods/gamemenumodoption
-            "GpuTape-",                     //https://www.curseforge.com/minecraft/mc-mods/gputape
-            "GPUTape-",                     //https://www.curseforge.com/minecraft/mc-mods/gputape
-            "HealthOverlay-",               //https://www.curseforge.com/minecraft/mc-mods/health-overlay
-            "HeldItemTooltips-",            //https://www.curseforge.com/minecraft/mc-mods/held-item-tooltips
-            "HorseStatsMod-",               //https://www.curseforge.com/minecraft/bukkit-plugins/horsestats
-            "ImmediatelyFast-",             //https://www.curseforge.com/minecraft/mc-mods/immediatelyfast
-            "ImmediatelyFastReforged-",     //https://www.curseforge.com/minecraft/mc-mods/immediatelyfast-reforged
-            "InventoryEssentials_",         //https://www.curseforge.com/minecraft/mc-mods/inventory-essentials
-            "InventoryHud_",                //https://www.curseforge.com/minecraft/mc-mods/inventory-hud-forge
-            "InventorySpam-",               //https://www.curseforge.com/minecraft/mc-mods/inventory-spam
-            "InventoryTweaks-",             //https://www.curseforge.com/minecraft/mc-mods/inventorytweak
-            "ItemBorders-",                 //https://www.curseforge.com/minecraft/mc-mods/item-borders
-            "ItemLocks-",                   //https://www.curseforge.com/minecraft/mc-mods/itemlocks
-            "ItemPhysicLite_",              //https://www.curseforge.com/minecraft/mc-mods/itemphysic-lite
-            "ItemStitchingFix-",            //https://www.curseforge.com/minecraft/mc-mods/item-stitching-fix
-            "JBRA-Client-",                 //https://www.curseforge.com/minecraft/mc-mods/jingames-jbra-client
-            "JustEnoughCalculation-",       //https://www.curseforge.com/minecraft/mc-mods/just-enough-calculation
-            "JustEnoughEffects-",           //https://www.curseforge.com/minecraft/mc-mods/just-enough-effects
-            "JustEnoughProfessions-",       //https://www.curseforge.com/minecraft/mc-mods/just-enough-professions-jep
-            "KeybindsPurger-",              //https://www.curseforge.com/minecraft/mc-mods/keybindspurger
-            "KeepTheResourcePack-",         //https://www.curseforge.com/minecraft/mc-mods/keep-the-resourcepack
-            "KeybindsPurger-",              //https://www.curseforge.com/minecraft/mc-mods/keybindspurger/
-            "LeaveMyBarsAlone-",            //https://www.curseforge.com/minecraft/mc-mods/leave-my-bars-alone
-            "LLOverlayReloaded-",           //https://www.curseforge.com/minecraft/mc-mods/light-level-overlay-reloaded
-            "LongerChatHistory-",           //https://www.curseforge.com/minecraft/mc-mods/longer-chat-history
-            "LOTRDRP-",                     //https://www.curseforge.com/minecraft/mc-mods/lotr-drp
-            "LegendaryTooltips",            //https://www.curseforge.com/minecraft/mc-mods/legendary-tooltips
-            "LegendaryTooltips-",           //https://www.curseforge.com/minecraft/mc-mods/legendary-tooltips
-            "LightOverlay-",                //https://www.curseforge.com/minecraft/mc-mods/light-level-overlay-display
-            "MaFgLib-",                     //https://modrinth.com/mod/mafglib
-            "MinecraftCapes ",              //https://www.curseforge.com/minecraft/mc-mods/minecraftcapes-mod
-            "MineMenu-",                    //https://www.curseforge.com/minecraft/mc-mods/minemenu
-            "MoBends",                      //https://www.curseforge.com/minecraft/mc-mods/mo-bends
-            "Mocap-",                       //https://www.curseforge.com/minecraft/mc-mods/motion-capture-mod-mocap
-            "ModernUI-",                    //Gone? Reduces to atoms?
-            "MoreCobblemonTweaks-",         //https://www.curseforge.com/minecraft/mc-mods/morecobblemontweaks
-            "MouseTweaks-",                 //https://www.curseforge.com/minecraft/mc-mods/mouse-tweaks
-            "MovingSlots-",                 //https://www.curseforge.com/minecraft/mc-mods/moving-slots
-            "MyServerIsCompatible-",        //https://www.curseforge.com/minecraft/mc-mods/my-server-is-compatible
-            "Neat ",                        //https://www.curseforge.com/minecraft/mc-mods/neat
-            "Neat-",                        //https://www.curseforge.com/minecraft/mc-mods/neat
-            "NekosEnchantedBooks-",         //https://www.curseforge.com/minecraft/mc-mods/nekos-enchanted-books
-            "NeoForge-cobblemon_vocalized-",//https://www.curseforge.com/minecraft/mc-mods/cobblemon-vocalized
-            "NoAutoJump-",                  //https://www.curseforge.com/minecraft/mc-mods/no-autojump
-            "NoFog-",                       //https://www.curseforge.com/minecraft/mc-mods/nofog
-            "Notes-",                       //https://www.curseforge.com/minecraft/mc-mods/notes
-            "NotifMod-",                    //https://www.curseforge.com/minecraft/mc-mods/notifmod
-            "OldJavaWarning-",              //https://www.curseforge.com/minecraft/mc-mods/oldjavawarning
-            "OptiFine",                     //https://optifine.net/home
-            "OptiFine_",                    //https://optifine.net/home
-            "OptiForge",                    //https://www.curseforge.com/minecraft/mc-mods/optiforge
-            "OptiForge-",                   //https://www.curseforge.com/minecraft/mc-mods/optiforge
-            "OverflowingBars-",             //https://www.curseforge.com/minecraft/mc-mods/overflowing-bars
-            "PackMenu-",                    //https://www.curseforge.com/minecraft/mc-mods/packmenu
-            "PackModeMenu-",                //https://www.curseforge.com/minecraft/mc-mods/packmodemenu,
-            "ParticleEffects-",             //https://www.curseforge.com/minecraft/mc-mods/particle-effects
-            "Particle Effects-",            //https://www.curseforge.com/minecraft/mc-mods/particle-effects
-            "Perception-",                  //https://www.curseforge.com/minecraft/mc-mods/perception
-            "PickUpNotifier-",              //https://www.curseforge.com/minecraft/mc-mods/pick-up-notifier
-            "Ping-",                        //https://www.curseforge.com/minecraft/mc-mods/ping
-            "PingHUD-",                     //https://www.curseforge.com/minecraft/mc-mods/pinghud
-            "PlayerListHeads-",             //https://www.curseforge.com/minecraft/mc-mods/player-list-heads
-            "PresenceFootsteps-",           //https://www.curseforge.com/minecraft/mc-mods/presence-footsteps
-            "RPG-HUD-",                     //https://www.curseforge.com/minecraft/mc-mods/rpg-hud
-            "RPRenames-",                   //https://modrinth.com/mod/rp-renames
-            "ReAuth-",                      //https://www.curseforge.com/minecraft/mc-mods/reauth
-            "Redstone Sound Slider-",       //https://www.curseforge.com/minecraft/mc-mods/redstone-sound-slider
-            "Reforgium-",                   //https://www.curseforge.com/minecraft/mc-mods/reforgium
-            "ResourceLoader-",              //https://www.curseforge.com/minecraft/mc-mods/resource-reloader
-            "ResourcePackOrganizer",        //https://www.curseforge.com/minecraft/mc-mods/resource-pack-organizer
-            "ResourcePackOverrides-",       //https://www.curseforge.com/minecraft/mc-mods/resource-pack-overrides
-            "RocknRoller-",                 //https://www.curseforge.com/minecraft/mc-mods/rockn-roller
-            "Ryoamiclights-",               //https://www.curseforge.com/minecraft/mc-mods/ryoamiclights
-            "RyoamicLights-",               //https://www.curseforge.com/minecraft/mc-mods/ryoamiclights
-            "ShoulderSurfing-",             //https://www.curseforge.com/minecraft/mc-mods/shoulder-surfing-reloaded
-            "ShulkerTooltip-",              //https://www.curseforge.com/minecraft/mc-mods/shulkerboxtooltip
-            "SimpleDiscordRichPresence-",   //https://www.curseforge.com/minecraft/mc-mods/simple-discord-rich-presence
-            "SimpleWorldTimer-",            //https://www.curseforge.com/minecraft/mc-mods/simple-world-timer
-            "SoundFilters-",                //https://www.curseforge.com/minecraft/mc-mods/sound-filters
-            "Sounds-",                      //https://www.curseforge.com/minecraft/mc-mods/sound
-            "SourceHop-",                   //https://www.curseforge.com/minecraft/mc-mods/sourcehop
-            "SpawnerFix-",                  //https://www.curseforge.com/minecraft/mc-mods/spawner-fix
-            "StylishEffects-",              //https://www.curseforge.com/minecraft/mc-mods/stylish-effects
-            "TextruesRubidiumOptions-",     //https://www.curseforge.com/minecraft/mc-mods/textrues-rubidium-options
-            "TRansliterationLib-",          //https://www.curseforge.com/minecraft/mc-mods/transliterationlib
-            "TipTheScales-",                //https://www.curseforge.com/minecraft/mc-mods/tipthescales
-            "Tips-",                        //https://www.curseforge.com/minecraft/mc-mods/tips
-            "Toast Control-",               //https://www.curseforge.com/minecraft/mc-mods/toast-control
-            "Toast-Control-",               //https://www.curseforge.com/minecraft/mc-mods/toast-control
-            "ToastControl-",                //https://www.curseforge.com/minecraft/mc-mods/toast-control
-            "TravelersTitles-",             //https://www.curseforge.com/minecraft/mc-mods/travelers-titles
-            "VoidFog-",                     //https://www.curseforge.com/minecraft/mc-mods/void-fog
-            "VR-Combat_",                   //https://www.curseforge.com/minecraft/mc-mods/vr-combat
-            "Vramo21-",                     //https://www.curseforge.com/minecraft/mc-mods/vramo
-            "Vramo-",                       //https://www.curseforge.com/minecraft/mc-mods/vramo
-            "vramo-",                       //https://www.curseforge.com/minecraft/mc-mods/vramo
-            "WindowedFullscreen-",          //https://www.curseforge.com/minecraft/mc-mods/windowed-fullscreen
-            "WorldNameRandomizer-",         //https://www.curseforge.com/minecraft/mc-mods/world-name-randomizer
-            "YeetusExperimentus-",          //https://www.curseforge.com/minecraft/mc-mods/yeetusexperimentus
-            "YungsMenuTweaks-",             //https://www.curseforge.com/minecraft/mc-mods/yungs-menu-tweaks
-            "[1.12.2]DamageIndicatorsMod-", //https://www.curseforge.com/minecraft/mc-mods/damage-indicators-mod
-            "[1.12.2]bspkrscore-",          //https://www.curseforge.com/minecraft/mc-mods/bspkrscore
-            "advancementscreenshot-",       //https://www.curseforge.com/minecraft/mc-mods/advancement-screenshot
-            "ae_pattern_improve-",          //https://www.curseforge.com/minecraft/mc-mods/ae2-pattern-qol-improving
-            "ahznbstools-",                 //https://www.curseforge.com/minecraft/mc-mods/ahznbs-tools/
-            "aiftbtranslator-",             //https://www.curseforge.com/minecraft/mc-mods/ai-ftb-translator
-            "antighost-",                   //https://www.curseforge.com/minecraft/mc-mods/antighost
-            "anviltooltipmod-",             //https://www.curseforge.com/minecraft/mc-mods/anvil-tooltip-mod
-            "appliedsorting-",              //https://www.curseforge.com/minecraft/mc-mods/applied-sorting
-            "armorchroma-",                 //https://www.curseforge.com/minecraft/mc-mods/armor-chroma
-            "armorhud",                     //https://www.curseforge.com/minecraft/mc-mods/armor-durability-hud
-            "armorpointspp-",               //https://www.curseforge.com/minecraft/mc-mods/armorpoints
-            "auditory-",                    //https://www.curseforge.com/minecraft/mc-mods/auditory
-            "authme-",                      //Gone? Reduces to atoms?
-            "auto-reconnect-",              //https://www.curseforge.com/minecraft/mc-mods/auto-reconnect
-            "autojoin-",                    //https://www.curseforge.com/minecraft/mc-mods/autojoin
-            "autoreconnect-",               //https://www.curseforge.com/minecraft/mc-mods/autoreconnect
-            "autoswap-",                    //https://www.curseforge.com/minecraft/mc-mods/auto-swap
-            "axolotl-item-fix-",            //Gone? Reduces to atoms?
-            "backtools-",                   //https://www.curseforge.com/minecraft/mc-mods/backtools
-            "bannerunlimited-",             //https://www.curseforge.com/minecraft/mc-mods/banner-unlimited
-            "bbs-",                         //https://www.curseforge.com/minecraft/mc-mods/bbs-mod
-            "beddium-",                     //https://www.curseforge.com/minecraft/mc-mods/beddium
-            "beenfo-",                      //https://www.curseforge.com/minecraft/mc-mods/beenfo
-            "better_client",                //https://www.curseforge.com/minecraft/mc-mods/better-client
-            "better_tooltips-",             //https://www.curseforge.com/minecraft/mc-mods/better-tooltips-neoforge
-            "better-clouds-",               //Gone? Reduces to atoms?
-            "better_hp-",                   //https://www.curseforge.com/minecraft/mc-mods/better-hp
-            "better-hp-",                   //https://www.curseforge.com/minecraft/mc-mods/better-hp
-            "betterHP_",                    //https://www.curseforge.com/minecraft/mc-mods/better-hp
-            "better-recipe-book-",          //Gone? Reduces to atoms?
-            "betterbiomeblend-",            //https://www.curseforge.com/minecraft/mc-mods/better-biome-blend
-            "bhmenu-",                      //https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-forge & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-fabric & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-neoforge
-            "biomemusic-",                  //https://www.curseforge.com/minecraft/mc-mods/biome-music
-            "blinkload-",                   //https://www.curseforge.com/minecraft/mc-mods/blinkload
-            "block-counter-",               //https://www.curseforge.com/minecraft/mc-mods/block-counter
-            "blur-",                        //https://www.curseforge.com/minecraft/mc-mods/blur
-            "borderless-",                  //https://www.curseforge.com/minecraft/mc-mods/borderless
-            "cat_jam-",                     //https://www.curseforge.com/minecraft/mc-mods/cat_jam
-            "catalogue-",                   //https://www.curseforge.com/minecraft/mc-mods/catalogue
-            "catchindicator-",              //https://www.curseforge.com/minecraft/mc-mods/catch-indicator
-            "catchrate-display-",           //https://www.curseforge.com/minecraft/mc-mods/cobblemon-catch-rate-display
-            "cave_dust-",                   //https://www.curseforge.com/minecraft/mc-mods/cave-dust
-            "certain_questing_additions-",  //https://www.curseforge.com/minecraft/mc-mods/certain-questing-additions
-            "cfwinfo-",                     //https://www.curseforge.com/minecraft/mc-mods/create-fuel-and-water-information
-            "chestsearchbar-",              //https://www.curseforge.com/minecraft/mc-mods/chest-search-bar
-            "charmonium-",                  //https://www.curseforge.com/minecraft/mc-mods/charmonium
-            "chatnotify-",                  //https://www.curseforge.com/minecraft/mc-mods/chatnotify
-            "chat_heads-",                  //https://www.curseforge.com/minecraft/mc-mods/chat-heads
-            "cherishedworlds-",             //https://www.curseforge.com/minecraft/mc-mods/cherished-worlds
-            "cirback-1.0-",                 //Gone? Reduces to atoms?
-            "citresewn-",                   //https://www.curseforge.com/minecraft/mc-mods/forge-cit
-            "classicbar-",                  //https://www.curseforge.com/minecraft/mc-mods/classic-bars
-            "cleanview",                    //https://www.curseforge.com/minecraft/mc-mods/clean-view
-            "clientcrafting-",              //https://www.curseforge.com/minecraft/mc-mods/client-crafting
-            "clienttweaks-",                //https://www.curseforge.com/minecraft/mc-mods/client-tweaks
-            "cobeffectiveness-",            //https://www.curseforge.com/minecraft/mc-mods/cobblemon-effectiveness
-            "cobbledex-rei-emi-jei-",       //https://www.curseforge.com/minecraft/mc-mods/cobbledex-rei-emi-jei
-            "cobbleit-",                    //https://www.curseforge.com/minecraft/mc-mods/cobblemon-cobble-it
-            "cobblemonbattletypes-",        //https://www.curseforge.com/minecraft/mc-mods/cobblemon-in-battle-type-icons
-            "cobblemontypechart-",          //https://www.curseforge.com/minecraft/mc-mods/pokemon-type-table-cobblemon-pixelmon
-            "cobblemon_emi_compat-",        //https://www.curseforge.com/minecraft/mc-mods/cobblemon-emi-compat
-            "cobblemon_iwa-",               //https://www.curseforge.com/minecraft/mc-mods/cobblemon-iwa
-            "cobblemon-ui-tweaks-",         //https://modrinth.com/mod/cobblemon-ui-tweaks
-            "combat_music-",                //https://www.curseforge.com/minecraft/mc-mods/combat-music
-            "configured-",                  //https://www.curseforge.com/minecraft/mc-mods/configured
-            "connectedness-",               //https://www.curseforge.com/minecraft/mc-mods/connectedness
-            "controllable-",                //https://www.curseforge.com/minecraft/mc-mods/controllable
-            "coolrain-",                    //https://www.curseforge.com/minecraft/mc-mods/cool-rain
-            "crash_assistant-",             //https://www.curseforge.com/minecraft/mc-mods/crash-assistant
-            "colorwheel-",                  //https://www.curseforge.com/minecraft/mc-mods/colorwheel
-            "colorwheel_patcher-",          //https://www.curseforge.com/minecraft/mc-mods/colorwheel-patcher
-            "cubium-",                      //https://www.curseforge.com/minecraft/mc-mods/cubium
-            "cullleaves-",                  //https://www.curseforge.com/minecraft/mc-mods/cull-leaves
-            "cullparticles-",               //https://www.curseforge.com/minecraft/mc-mods/cull-particles
-            "currentgamemusictrack-",       //https://www.curseforge.com/minecraft/mc-mods/current-game-music-track
-            "custom-crosshair-mod-",        //https://www.curseforge.com/minecraft/mc-mods/custom-crosshair-mod
-            "customcursor-",                //https://www.curseforge.com/minecraft/mc-mods/custom-cursor
-            "customdiscordrpc-",            //https://www.curseforge.com/minecraft/mc-mods/custom-discordrpc
-            "cwb-",                         //https://www.curseforge.com/minecraft/mc-mods/cubes-without-borders
-            "darkness-",                    //Gone? Reduces to atoms?
-            "dashloader-",                  //https://www.curseforge.com/minecraft/mc-mods/dashloader
-            "defaultoptions-",              //https://www.curseforge.com/minecraft/mc-mods/default-options
-            "desiredservers-",              //https://www.curseforge.com/minecraft/mc-mods/desired-servers
-            "discordrpc-",                  //https://www.curseforge.com/minecraft/mc-mods/discordrpc
-            "distraction_free_recipes-",    //https://www.curseforge.com/minecraft/mc-mods/distraction-free-recipes
-            "drippyloadingscreen-",         //https://www.curseforge.com/minecraft/mc-mods/drippy-loading-screen
-            "drippyloadingscreen_",         //https://www.curseforge.com/minecraft/mc-mods/drippy-loading-screen
-            "drop-confirm-",                //
-            "durabilitytooltip-",           //https://www.curseforge.com/minecraft/mc-mods/durability-tooltip
-            "dynamic-fps-",                 //https://www.curseforge.com/minecraft/mc-mods/dynamic-fps
-            "dynamic-music-",               //https://www.curseforge.com/minecraft/mc-mods/dynamic-music
-            "dynamiccrosshair-",            //https://www.curseforge.com/minecraft/mc-mods/dynamic-crosshair
-            "dynamiclights-",               //https://www.curseforge.com/minecraft/mc-mods/dynamic-lights
-            "dynamiclightsreforged-",       //https://www.curseforge.com/minecraft/mc-mods/dynamiclights-reforged
-            "dynmus-",                      //Gone? Reduces to atoms?
-            "e4mc-",                        //https://www.curseforge.com/minecraft/mc-mods/e4mc
-            "easymt-",                      //https://www.curseforge.com/minecraft/mc-mods/easy-melee-tempo
-            "effective-",                   //https://www.curseforge.com/minecraft/mc-mods/effective
-            "eggtab-",                      //https://www.curseforge.com/minecraft/mc-mods/eggtab-fabric
-            "eguilib-",                     //https://www.curseforge.com/minecraft/mc-mods/eguilib
-            "eiramoticons-",                //Gone? Reduces to atoms?
-            "embeddium-",                   //https://www.curseforge.com/minecraft/mc-mods/embeddium
-            "enchantment-lore-",            //https://www.curseforge.com/minecraft/mc-mods/enchantment-lore
-            "enhanced_boss_bars-",          //https://www.curseforge.com/minecraft/mc-mods/enhanced-boss-bars
-            "entity-texture-features-",     //https://www.curseforge.com/minecraft/mc-mods/entity-texture-features-fabric
-            "entity_texture_features-",     //https://www.curseforge.com/minecraft/mc-mods/entity-texture-features-fabric
-            "entity_model_features_",       //https://www.curseforge.com/minecraft/mc-mods/entity-model-features
-            "entityculling-",               //https://www.curseforge.com/minecraft/mc-mods/entity-culling
-            "essential_",                   //Gone? Reduces to atoms?
-            "evonotify-",                   //https://www.curseforge.com/minecraft/mc-mods/cobblemon-evonotify
-            "exhaustedstamina-",            //https://www.curseforge.com/minecraft/mc-mods/exhausted-stamina
-            "extendedhitbox-",              //https://www.curseforge.com/minecraft/mc-mods/extended-hitbox
-            "extremesoundmuffler-",         //https://www.curseforge.com/minecraft/mc-mods/extreme-sound-muffler
-            "fabricemotes-",                //https://www.curseforge.com/minecraft/mc-mods/fabric-emotes
-            "fall_damage_preview-",         //https://www.curseforge.com/minecraft/mc-mods/fall-damage-preview
-            "fancymenu_",                   //https://www.curseforge.com/minecraft/mc-mods/fancymenu
-            "fancymenu_video_extension",    //https://www.curseforge.com/minecraft/mc-mods/video-extension-for-fancymenu-forge
-            "fast-ip-ping-",                //https://www.curseforge.com/minecraft/mc-mods/fast-ip-ping
-            "fastquit-",                    //https://www.curseforge.com/minecraft/mc-mods/fastquit-forge
-            "firstperson-",                 //https://www.curseforge.com/minecraft/mc-mods/first-person-model
-            "flerovium-",                   //https://www.curseforge.com/minecraft/mc-mods/flerovium
-            "flickerfix-",                  //https://www.curseforge.com/minecraft/mc-mods/flickerfix
-            "fm_audio_extension_",          //https://www.curseforge.com/minecraft/mc-mods/audio-extension-for-fancymenu-forge
-            "fabricmod_VoxelMap-",          //https://www.curseforge.com/minecraft/mc-mods/voxelmap
-            "floppyhud-",                   //https://www.curseforge.com/minecraft/mc-mods/floppy-hud
-            "forestryworktabledisplay-",    //https://www.curseforge.com/minecraft/mc-mods/forestry-worktable-display
-            "forgemod_VoxelMap-",           //https://www.curseforge.com/minecraft/mc-mods/voxelmap
-            "forgeshot-",                   //https://www.curseforge.com/minecraft/mc-mods/forgeshot
-            "freecam-",                     //https://www.curseforge.com/minecraft/mc-mods/free-cam
-            "freelook-",                    //https://www.curseforge.com/minecraft/mc-mods/freelook
-            "ftbpromoter-",                 //https://www.curseforge.com/minecraft/mc-mods/ftb-promoter/
-            "fullbrightnesstoggle-",        //https://www.curseforge.com/minecraft/mc-mods/full-brightness-toggle
-            "fwa+",                         //https://www.curseforge.com/minecraft/mc-mods/fwa
-            "galacticraft-rpc-",            //https://www.curseforge.com/minecraft/mc-mods/galacticraft-rpc
-            "gamestagesviewer-",            //https://www.curseforge.com/minecraft/mc-mods/game-stages-viewer
-            "gpushift-",                    //https://www.curseforge.com/minecraft/mc-mods/gpushift
-            "gpumemleakfix-",               //https://www.curseforge.com/minecraft/mc-mods/fix-gpu-memory-leak
-            "grid-",                        //https://www.curseforge.com/minecraft/mc-mods/grid
-            "guiclock-",                    //https://www.curseforge.com/minecraft/mc-mods/gui-clock
-            "guicompass-",                  //https://www.curseforge.com/minecraft/mc-mods/gui-compass
-            "guideme-",                     //https://www.curseforge.com/minecraft/mc-mods/guideme
-            "guifollowers-",                //https://www.curseforge.com/minecraft/mc-mods/gui-followers
-            "helium-",                      //Gone? Reduces to atoms?
-            "hennyfullbright-",             //https://www.curseforge.com/minecraft/mc-mods/henny-fullbright
-            "hiddenrecipebook_",            //https://www.curseforge.com/minecraft/mc-mods/hidden-recipe-book
-            "hiddenrecipebook-",            //https://www.curseforge.com/minecraft/mc-mods/hidden-recipe-book
-            "hidehands-",                   //https://www.curseforge.com/minecraft/mc-mods/hide-hands
-            "idle_boost-",                  //https://www.curseforge.com/minecraft/mc-mods/idle-boost
-            "ijmtweaks-",                   //https://www.curseforge.com/minecraft/mc-mods/ijm-tweaks
-            "immersivearmorhud-",           //https://www.curseforge.com/minecraft/mc-mods/immersive-armor-hud
-            "immersivelanterns-",           //https://www.curseforge.com/minecraft/mc-mods/immersive-lanterns
-            "immersivemessages-",           //https://www.curseforge.com/minecraft/mc-mods/immersive-messages-api
-            "immersivetips-",               //https://www.curseforge.com/minecraft/mc-mods/immersive-tips
-            "improvedsignediting-",         //https://www.curseforge.com/minecraft/mc-mods/improved-sign-editing
-            "infinitemusic-",               //https://www.curseforge.com/minecraft/mc-mods/infinite-music
-            "inline_tooltips-",             //https://www.curseforge.com/minecraft/mc-mods/inline-tooltips
-            "inventoryhud.",                //https://www.curseforge.com/minecraft/mc-mods/inventory-hud-forge
-            "inventoryprofiles",            //https://www.curseforge.com/minecraft/mc-mods/inventory-profiles
-            "irisblockcompat-",             //https://www.curseforge.com/minecraft/mc-mods/iris-block-compat
-            "itemzoom",                     //https://www.curseforge.com/minecraft/mc-mods/itemzoom
-            "itlt-",                        //https://www.curseforge.com/minecraft/mc-mods/its-the-little-things
-            "jeed-",                        //https://www.curseforge.com/minecraft/mc-mods/just-enough-effect-descriptions-jeed
-            "jehc-",                        //https://www.curseforge.com/minecraft/mc-mods/just-enough-harvestcraft
-            "jei_hover_search-",            //https://www.curseforge.com/minecraft/mc-mods/jei-hover-search
-            "jei_trim_hider-",              //https://www.curseforge.com/minecraft/mc-mods/jei-trim-hider
-            "jeiintegration_",              //https://www.curseforge.com/minecraft/mc-mods/jei-integration
-            "jerintegration-",              //https://www.curseforge.com/minecraft/mc-mods/jer-integration
-            "jmi-",                         //https://www.curseforge.com/minecraft/mc-mods/journeymap-integration
-            "jumpoverfences-",              //https://www.curseforge.com/minecraft/mc-mods/jumpoverfences
-            "just-enough-harvestcraft-",    //https://www.curseforge.com/minecraft/mc-mods/just-enough-harvestcraft
-            "justenoughbeacons-",           //https://www.curseforge.com/minecraft/mc-mods/just-enough-beacons
-            "justenoughdrags-",             //https://www.curseforge.com/minecraft/mc-mods/just-enough-drags
-            "justzoom_",                    //https://www.curseforge.com/minecraft/mc-mods/just-zoom
-            "keybindspurger-",              //https://www.curseforge.com/minecraft/mc-mods/keybindspurger
-            "keymap-",                      //https://www.curseforge.com/minecraft/mc-mods/keymap
-            "keywizard-",                   //https://www.curseforge.com/minecraft/mc-mods/keyboard-wizard
-            "lazurite-",                    //https://www.curseforge.com/minecraft/mc-mods/lazurite
-            "lazydfu-",                     //https://www.curseforge.com/minecraft/mc-mods/lazydfu
-            "lib39-",                       //https://www.curseforge.com/minecraft/mc-mods/lib39
-            "light-overlay-",               //https://www.curseforge.com/minecraft/mc-mods/light-overlay
-            "lightfallclient-",             //https://www.curseforge.com/minecraft/mc-mods/lightfallclient-updated
-            "lightspeed-",                  //https://www.curseforge.com/minecraft/mc-mods/lightspeedmod
-            "litematica-",                  //https://www.curseforge.com/minecraft/mc-mods/litematica-update-port
-            "loadmyresources_",             //https://www.curseforge.com/minecraft/mc-mods/load-my-resources-forge
-            "lock_minecart_view-",          //Gone? Reduces to atoms?
-            "lootbeams-",                   //https://www.curseforge.com/minecraft/mc-mods/lootbeams
-            "lwl-",                         //Gone? Reduces to atoms?
-            "macos-input-fixes-",           //https://www.curseforge.com/minecraft/mc-mods/macos-input-fixes
-            "magnesium_extras-",            //Gone? Reduces to atoms?
-            "maptooltip-",                  //https://www.curseforge.com/minecraft/mc-mods/map-tooltip
-            "massunbind",                   //https://www.curseforge.com/minecraft/mc-mods/mass-key-unbinder
-            "mcbindtype-",                  //https://www.curseforge.com/minecraft/mc-mods/mcbindtype
-            "mcqoy-",                       //https://modrinth.com/mod/mcqoy
-            "mcwifipnp-",                   //https://www.curseforge.com/minecraft/mc-mods/mcwifipnp
-            "medievalmusic-",               //https://www.curseforge.com/minecraft/mc-mods/medieval-music
-            "mekalus-",                     //https://www.curseforge.com/minecraft/mc-mods/mekalus-oculus-fork-with-fixed-mekanism-mekasuit
-            "memoryusagescreen-",           //https://www.curseforge.com/minecraft/mc-mods/memory-usage-screen
-            "mightyarchitect-",             //https://www.curseforge.com/minecraft/mc-mods/the-mighty-architect
-            "mindful-eating-",              //https://www.curseforge.com/minecraft/mc-mods/mindful-eating
-            "minetogether-",                //https://www.curseforge.com/minecraft/mc-mods/creeperhost-minetogether
-            "minihud-",                     //https://www.curseforge.com/minecraft/mc-mods/minihud-update-port
-            "miningspeedtooltips-",         //https://www.curseforge.com/minecraft/mc-mods/mining-speed-tooltips
-            "moremmog'scheats",             //https://www.curseforge.com/minecraft/mc-mods/mmogs-cheat-menu
-            "mmog'scheats3.6kdownloadsplusmorecheats",//https://www.curseforge.com/minecraft/mc-mods/mmogs-cheat-menu
-            "mobplusplus-",                 //Gone? Reduces to atoms?
-            "modcredits-",                  //https://www.curseforge.com/minecraft/mc-mods/mod-credits
-            "modernworldcreation_",         //https://www.curseforge.com/minecraft/mc-mods/modernworldcreation
-            "modnametooltip-",              //https://www.curseforge.com/minecraft/mc-mods/mod-name-tooltip
-            "modnametooltip_",              //https://www.curseforge.com/minecraft/mc-mods/mod-name-tooltip
-            "modtabs-",                     //https://www.curseforge.com/minecraft/mc-mods/mod-tabs
-            "moreoverlays-",                //https://www.curseforge.com/minecraft/mc-mods/more-overlays
-            "mousewheelie-",                //https://www.curseforge.com/minecraft/mc-mods/mouse-wheelie
-            "movement-vision-",             //https://www.curseforge.com/minecraft/mc-mods/movement-vision
-            "multihotbar-",                 //https://www.curseforge.com/minecraft/mc-mods/multi-hotbar
-            "music_delay_reducer-",         //https://www.curseforge.com/minecraft/mc-mods/music-delay-reducer/
-            "music-duration-reducer-",      //https://www.curseforge.com/minecraft/mc-mods/music-duration-reducer
-            "musicdr-",                     //Gone? Reduces to atoms?
-            "neoculus-",                    //https://www.curseforge.com/minecraft/mc-mods/neoculus
-            "nbt_glint-",                   //https://www.curseforge.com/minecraft/mc-mods/nbt-glint
-            "neiRecipeHandlers-",           //Gone? Reduces to atoms?
-            "ngrok-lan-expose-mod-",        //Gone? Reduces to atoms?
-            "no_nv_flash-",                 //https://www.curseforge.com/minecraft/mc-mods/no-nv-flash
-            "nopotionshift_",               //https://www.curseforge.com/minecraft/mc-mods/no-potion-shift
-            "nostartupmessages-",           //https://www.curseforge.com/minecraft/mc-mods/no-startup-messages-please
-            "notenoughanimations-",         //https://www.curseforge.com/minecraft/mc-mods/not-enough-animations
-            "obscure_tooltips_fix-",        //https://www.curseforge.com/minecraft/mc-mods/obscure-tooltips-fix
-            "oculus-",                      //https://www.curseforge.com/minecraft/mc-mods/oculus
-            "omegamute-",                   //https://www.curseforge.com/minecraft/mc-mods/omega-mute
-            "optigui-",                     //https://www.curseforge.com/minecraft/mc-mods/optigui
-            "ornaments-",                   //https://www.curseforge.com/minecraft/mc-mods/ornaments
-            "overlaytweaks-",               //https://www.curseforge.com/minecraft/mc-mods/overlay-tweaks
-            "overloadedarmorbar-",          //https://www.curseforge.com/minecraft/mc-mods/overloaded-armor-bar
-            "panorama-",                    //https://www.curseforge.com/minecraft/mc-mods/panorama
-            "paperdoll-",                   //https://www.curseforge.com/minecraft/mc-mods/paperdoll
-            "particle-rain-",               //https://www.curseforge.com/minecraft/mc-mods/particle-rain
-            "perdimensionbrightness-",      //https://www.curseforge.com/minecraft/mc-mods/per-dimension-brightness
-            "persistentinventorysearch-",   //https://www.curseforge.com/minecraft/mc-mods/persistent-inventory-search
-            "physics-mod-",                 //https://www.curseforge.com/minecraft/mc-mods/physics-mod
-            "phosphor-",                    //https://www.curseforge.com/minecraft/mc-mods/phosphor
-            "portraitcraft-",               //https://www.curseforge.com/minecraft/mc-mods/portraitcraft
-            "preciseblockplacing-",         //Gone? Reduces to atoms?
-            "radon-",                       //https://www.curseforge.com/minecraft/mc-mods/radon
-            "rcgameshark-client-",          //https://www.curseforge.com/minecraft/mc-mods/rc-gameshark
-            "realm-of-lost-souls-",         //https://www.curseforge.com/minecraft/mc-mods/bobs-realm-of-lost-souls
-            "rebind_narrator-",             //https://www.curseforge.com/minecraft/mc-mods/rebind-narrator
-            "rebind-narrator-",             //https://www.curseforge.com/minecraft/mc-mods/rebind-narrator
-            "rebindnarrator-",              //https://www.curseforge.com/minecraft/mc-mods/rebind-narrator
-            "rebrand-",                     //https://www.curseforge.com/minecraft/mc-mods/rebrand
-            "reforgium-",                   //https://www.curseforge.com/minecraft/mc-mods/reforgium
-            "relictium-",                   //https://www.curseforge.com/minecraft/mc-mods/relictium
-            "replanter-",                   //https://www.curseforge.com/minecraft/mc-mods/replanter
-            "resource_gamma_util-",         //https://www.curseforge.com/minecraft/mc-mods/resource-gamma-utils
-            "rrls-",                        //https://www.curseforge.com/minecraft/mc-mods/rrls
-            "rubidium-",                    //https://www.curseforge.com/minecraft/mc-mods/rubidium
-            "rubidium_extras-",             //https://www.curseforge.com/minecraft/mc-mods/rubidium-extra
-            "screenshot-to-clipboard-",     //https://www.curseforge.com/minecraft/mc-mods/screenshot-to-clipboard
-            "seasonhud-",                   //https://www.curseforge.com/minecraft/mc-mods/seasonhud
-            "servercountryflags-",          //https://www.curseforge.com/minecraft/mc-mods/server-country-flags
-            "shut_up_gl_error-",            //https://www.curseforge.com/minecraft/mc-mods/shut-up-gl-error
-            "shutupexperimentalsettings-",  //https://www.curseforge.com/minecraft/mc-mods/shutup-experimental-settings
-            "shutupmodelloader-",           //https://www.curseforge.com/minecraft/mc-mods/shut-up-model-loader
-            "signtools-",                   //https://www.curseforge.com/minecraft/bukkit-plugins/signtools
-            "simple-rpc-",                  //https://www.curseforge.com/minecraft/mc-mods/simple-discord-rpc
-            "simpleautorun-",               //Gone? Reduces to atoms?
-            "simplefog-",                   //https://www.curseforge.com/minecraft/mc-mods/simplefog
-            "smartcursor-",                 //https://www.curseforge.com/minecraft/mc-mods/smartcursor
-            "smarthud-",                    //https://www.curseforge.com/minecraft/mc-mods/smart-hud
-            "smoke-suppression-",           //https://www.curseforge.com/minecraft/mc-mods/smoke-suppression
-            "smoothboot-",                  //https://www.curseforge.com/minecraft/mc-mods/smoothboot
-            "smoothfocus-",                 //https://www.curseforge.com/minecraft/mc-mods/smoothfocus
-            "smoothswapping-",              //https://www.curseforge.com/minecraft/mc-mods/smooth-swapping
-            "sodium-fabric-",               //https://www.curseforge.com/minecraft/mc-mods/sodium
-            "sodium-shader-support-",       //https://modrinth.com/mod/sodium-shader-support/
-            "sodiumcoreshadersupport-",     //https://www.curseforge.com/minecraft/mc-mods/sodium-core-shader-support
-            "sodiumdynamiclights-",         //https://www.curseforge.com/minecraft/mc-mods/dynamiclights-reforged
-            "sodiumextras-",                //https://www.curseforge.com/minecraft/mc-mods/magnesium-extras
-            "sodiumleafculling-",           //https://www.curseforge.com/minecraft/mc-mods/sodium-leaf-culling
-            "sodiumoptionsapi-",            //https://www.curseforge.com/minecraft/mc-mods/sodium-options-api
-            "sodiumoptionsmodcompat-",      //https://www.curseforge.com/minecraft/mc-mods/sodium-embeddium-options-mod-compat
-            "sounddeviceoptions-",          //https://www.curseforge.com/minecraft/mc-mods/more-sound-config
-            "soundreloader-",               //https://www.curseforge.com/minecraft/mc-mods/sound-reloader
-            "sounds-",                      //https://www.curseforge.com/minecraft/mc-mods/sound
-            "spoticraft-",                  //https://www.curseforge.com/minecraft/mc-mods/spoticraft-inactive and https://www.curseforge.com/minecraft/mc-mods/spoticraft-2
-            "status-effect-bars-",          //https://www.curseforge.com/minecraft/mc-mods/status-effect-bars
-            "stop_rendering-",              //https://www.curseforge.com/minecraft/mc-mods/stoprendering
-            "skinlayers3d-",                //https://www.curseforge.com/minecraft/mc-mods/skin-layers-3d
-            "talkingheads-",                //https://www.curseforge.com/minecraft/mc-mods/talkingheads
-            "tconjei-",                     //https://www.curseforge.com/minecraft/mc-mods/tconjei
-            "tconplanner-",                 //https://www.curseforge.com/minecraft/mc-mods/tinkers-planner
-            "textrues_embeddium_options-",  //https://www.curseforge.com/minecraft/mc-mods/textrues-embeddium-options
-            "timestamp-chat-",              //https://www.curseforge.com/minecraft/mc-mods/timestamp-chat
-            "timestamps-",                  //https://www.curseforge.com/minecraft/mc-mods/timestamps
-            "tooltipscroller-",             //https://www.curseforge.com/minecraft/mc-mods/tooltip-scroller
-            "torchoptimizer-",              //https://www.curseforge.com/minecraft/mc-mods/torch-optimizer
-            "torohealth-",                  //https://www.curseforge.com/minecraft/mc-mods/torohealth-damage-indicators
-            "totaldarkness",                //https://www.curseforge.com/minecraft/mc-mods/total-darkness
-            "toughnessbar-",                //https://www.curseforge.com/minecraft/mc-mods/armor-toughness-bar
-            "translucent-window-",          //https://www.curseforge.com/minecraft/mc-mods/translucent-window
-            "tweakeroo-",                   //https://www.curseforge.com/minecraft/mc-mods/tweakeroo-update-port
-            "twitchchat-",                  //https://www.curseforge.com/minecraft/mc-mods/twitch-chat-for-streamer
-            "vanillazoom-",                 //https://www.curseforge.com/minecraft/mc-mods/vanilla-zoom
-            "viaforge-",                    //https://www.curseforge.com/minecraft/mc-mods/viaforge
-            "wakes-",                       //https://www.curseforge.com/minecraft/mc-mods/wakes
-            "watermedia-",                  //https://www.curseforge.com/minecraft/mc-mods/watermedia
-            "whats-that-slot-",             //https://www.curseforge.com/minecraft/mc-mods/whats-that-slot
-            "wheredididie-",                //https://www.curseforge.com/minecraft/mc-mods/where-did-i-die
-            "wisla-",                       //https://www.curseforge.com/minecraft/mc-mods/wisla
-            "xenon-",                       //https://www.curseforge.com/minecraft/mc-mods/xenon
-            "xanders-sodium-options-",      //https://www.curseforge.com/minecraft/mc-mods/xanders-sodium-options
-            "xlifeheartcolors-",            //https://www.curseforge.com/minecraft/mc-mods/x-life-heart-colors
-            "yisthereautojump-"             //https://www.curseforge.com/minecraft/mc-mods/y-is-there-autojump-forge
-        )
-    )
+    /**
+     * Fallback-list of directories to include in a server pack.
+     */
+    val fallbackDirectoriesInclusion: TreeSet<String> get() = generationConfig.fallbackDirectoriesInclusion
 
-    val fallbackDirectoriesInclusion = TreeSet(
-        listOf(
-            "addonpacks",
-            "blueprints",
-            "config",
-            "configs",
-            "customnpcs",
-            "datapacks",
-            "defaultconfigs",
-            "global_data_packs",
-            "global_packs",
-            "kubejs",
-            "maps",
-            "modernfix",
-            "mods",
-            "openloader",
-            "scripts",
-            "schematics",
-            "shrines-saves",
-            "structures",
-            "structurize",
-            "worldshape",
-            "Zoestria"
-        )
-    )
+    /**
+     * Fallback-list of directories to exclude from a server pack.
+     */
+    val fallbackDirectoriesExclusion: TreeSet<String> get() = generationConfig.fallbackDirectoriesExclusion
 
-    @Suppress("MemberVisibilityCanBePrivate")
-    val fallbackDirectoriesExclusion = TreeSet(
-        listOf(
-            "animation",
-            "asm",
-            "cache",
-            "changelogs",
-            "craftpresence",
-            "crash-reports",
-            "downloads",
-            "icons",
-            "libraries",
-            "local",
-            "logs",
-            "overrides",
-            "packmenu",
-            "profileImage",
-            "profileImage",
-            "resourcepacks",
-            "screenshots",
-            "server_pack",
-            "shaderpacks",
-            "simple-rpc",
-            "tv-cache"
-        )
-    )
+    /**
+     * Fallback-list of files to exclude from the server pack ZIP-archive.
+     */
+    val fallbackZipExclusions: TreeSet<String> get() = generationConfig.fallbackZipExclusions
 
-    val fallbackZipExclusions = TreeSet(
-        listOf(
-            "minecraft_server.MINECRAFT_VERSION.jar",
-            "server.jar",
-            "libraries/net/minecraft/server/MINECRAFT_VERSION/server-MINECRAFT_VERSION.jar"
-        )
-    )
+    /**
+     * Fallback-list of files to delete after a modloader-server installation.
+     */
+    val fallbackPostInstallCleanupFiles: TreeSet<String> get() = generationConfig.fallbackPostInstallCleanupFiles
 
-    val fallbackPostInstallCleanupFiles = TreeSet(
-        listOf(
-            "fabric-installer.jar",
-            "forge-installer.jar",
-            "quilt-installer.jar",
-            "installer.log",
-            "forge-installer.jar.log",
-            "legacyfabric-installer.jar",
-            "run.bat",
-            "run.sh",
-            "user_jvm_args.txt"
-        )
-    )
+    /**
+     * Fallback-list of files to delete before a modloader-server installation.
+     */
+    val fallbackPreInstallCleanupFiles: TreeSet<String> get() = generationConfig.fallbackPreInstallCleanupFiles
 
-    val fallbackPreInstallCleanupFiles = TreeSet(
-        listOf(
-            "libraries",
-            "server.jar",
-            "forge-installer.jar",
-            "quilt-installer.jar",
-            "installer.log",
-            "forge-installer.jar.log",
-            "legacyfabric-installer.jar",
-            "run.bat",
-            "run.sh",
-            "user_jvm_args.txt",
-            "quilt-server-launch.jar",
-            "minecraft_server.1.16.5.jar",
-            "forge.jar"
-        )
-    )
+    /**
+     * Fallback Aikar's flags for the generated start-scripts.
+     */
+    val fallbackAikarsFlags: String get() = generationConfig.fallbackAikarsFlags
 
-    val fallbackAikarsFlags = "-Xms4G" +
-            " -Xmx4G" +
-            " -XX:+UseG1GC" +
-            " -XX:+ParallelRefProcEnabled" +
-            " -XX:MaxGCPauseMillis=200" +
-            " -XX:+UnlockExperimentalVMOptions" +
-            " -XX:+DisableExplicitGC" +
-            " -XX:+AlwaysPreTouch" +
-            " -XX:G1NewSizePercent=30" +
-            " -XX:G1MaxNewSizePercent=40" +
-            " -XX:G1HeapRegionSize=8M" +
-            " -XX:G1ReservePercent=20" +
-            " -XX:G1HeapWastePercent=5" +
-            " -XX:G1MixedGCCountTarget=4" +
-            " -XX:InitiatingHeapOccupancyPercent=15" +
-            " -XX:G1MixedGCLiveThresholdPercent=90" +
-            " -XX:G1RSetUpdatingPauseTimePercent=5" +
-            " -XX:SurvivorRatio=32" +
-            " -XX:+PerfDisableSharedMem" +
-            " -XX:MaxTenuringThreshold=1" +
-            " -Dusing.aikars.flags=https://mcflags.emc.gs" +
-            " -Daikars.new.flags=true"
     val fallbackUpdateURL =
         "https://raw.githubusercontent.com/Griefed/ServerPackCreator/main/serverpackcreator-api/src/main/resources/serverpackcreator.properties"
-    val fallbackExclusionFilter = ExclusionFilter.START
-    val fallbackOverwriteEnabled = true
+    val fallbackExclusionFilter: ExclusionFilter get() = generationConfig.fallbackExclusionFilter
+    val fallbackOverwriteEnabled: Boolean get() = generationConfig.fallbackOverwriteEnabled
     val fallbackJavaScriptAutoupdateEnabled = true
     val fallbackCheckingForPreReleasesEnabled = false
-    val fallbackZipFileExclusionEnabled = true
-    val fallbackServerPackCleanupEnabled = true
-    val fallbackMinecraftPreReleasesAvailabilityEnabled = false
-    val fallbackAutoExcludingModsEnabled = true
+    val fallbackZipFileExclusionEnabled: Boolean get() = generationConfig.fallbackZipFileExclusionEnabled
+    val fallbackServerPackCleanupEnabled: Boolean get() = generationConfig.fallbackServerPackCleanupEnabled
+    val fallbackMinecraftPreReleasesAvailabilityEnabled: Boolean get() = generationConfig.fallbackMinecraftPreReleasesAvailabilityEnabled
+    val fallbackAutoExcludingModsEnabled: Boolean get() = generationConfig.fallbackAutoExcludingModsEnabled
     val fallbackArtemisQueueMaxDiskUsage = 90
     val fallbackCleanupSchedule = "0 0 0 * * *"
     val fallbackVersionSchedule = "0 0 0 * * *"
     val fallbackDatabaseCleanupSchedule = "0 0 0 * * *"
-    val fallbackUpdateServerPack = false
+    val fallbackUpdateServerPack: Boolean get() = generationConfig.fallbackUpdateServerPack
     private val checkedJavas = hashMapOf<String, Boolean>()
     private val trueFalseRegex = "^(true|false)$".toRegex()
     private val alphaBetaRegex = "^(.*alpha.*|.*beta.*)$".toRegex()
@@ -794,43 +180,25 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * String-list of clientside-only mods to exclude from server packs.
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    var clientsideMods = fallbackMods
-        private set
+    val clientsideMods: TreeSet<String> get() = generationConfig.clientsideMods
 
     /**
      * String-list of mods to include if present, regardless whether a match was found through [clientsideMods].
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    var modsWhitelist = fallbackModsWhitelist
-        private set
+    val modsWhitelist: TreeSet<String> get() = generationConfig.modsWhitelist
 
     /**
      * Regex-list of clientside-only mods to exclude from server packs.
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    var clientsideModsRegex: TreeSet<String> = TreeSet()
-        get() {
-            field.clear()
-            for (mod in clientsideMods) {
-                field.add("^$mod.*$")
-            }
-            return field
-        }
-        private set
+    val clientsideModsRegex: TreeSet<String> get() = generationConfig.clientsideModsRegex
 
     /**
      * Regex-list of mods to include if present, regardless whether a match was found throug [clientsideModsRegex].
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    var modsWhitelistRegex: TreeSet<String> = TreeSet()
-        get() {
-            field.clear()
-            for (mod in modsWhitelist) {
-                field.add("^$mod.*$")
-            }
-            return field
-        }
-        private set
+    val modsWhitelistRegex: TreeSet<String> get() = generationConfig.modsWhitelistRegex
 
     /**
      * Modloaders supported by ServerPackCreator.
@@ -944,73 +312,37 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Directories to include in a server pack.
      */
-    var directoriesToInclude = fallbackDirectoriesInclusion
-        get() {
-            val entries =
-                getListProperty(pConfigurationDirectoriesMustInclude, fallbackDirectoriesInclusion.joinToString(","))
-            field.addAll(entries)
-            return field
-        }
+    var directoriesToInclude: TreeSet<String>
+        get() = generationConfig.directoriesToInclude
         set(value) {
-            setListProperty(pConfigurationDirectoriesMustInclude, value.toList(), ",")
-            field.clear()
-            field.addAll(value)
-            log.info("Directories which must always be included set to: $value")
+            generationConfig.directoriesToInclude = value
         }
 
     /**
      * Directories to exclude from a server pack.
      */
-    var directoriesToExclude = fallbackDirectoriesExclusion
-        get() {
-            val prop =
-                getListProperty(pConfigurationDirectoriesShouldExclude, fallbackDirectoriesExclusion.joinToString(","))
-            val use = TreeSet(prop)
-            use.removeIf { n -> directoriesToInclude.contains(n) }
-            field.clear()
-            field.addAll(use)
-            return field
-        }
+    var directoriesToExclude: TreeSet<String>
+        get() = generationConfig.directoriesToExclude
         set(value) {
-            val use = TreeSet<String>()
-            use.addAll(value)
-            use.removeIf { n -> directoriesToInclude.contains(n) }
-            setListProperty(pConfigurationDirectoriesShouldExclude, use.toList(), ",")
-            field.clear()
-            field.addAll(use)
-            log.info("Directories which must always be excluded set to: $field")
+            generationConfig.directoriesToExclude = value
         }
 
     /**
      * List of files to delete after a server pack server installation.
      */
-    var postInstallCleanupFiles = fallbackPostInstallCleanupFiles
-        get() {
-            val entries = getListProperty(pPostInstallCleanupFiles, fallbackPostInstallCleanupFiles.joinToString(","))
-            field.addAll(entries)
-            return field
-        }
+    var postInstallCleanupFiles: TreeSet<String>
+        get() = generationConfig.postInstallCleanupFiles
         set(value) {
-            setListProperty(pPostInstallCleanupFiles, value.toList(), ",")
-            field.clear()
-            field.addAll(value)
-            log.info("Files to cleanup after server installation set to: $value")
+            generationConfig.postInstallCleanupFiles = value
         }
 
     /**
      * List of files to delete before a server pack server installation.
      */
-    var preInstallCleanupFiles = fallbackPreInstallCleanupFiles
-        get() {
-            val entries = getListProperty(pPreInstallCleanupFiles, fallbackPreInstallCleanupFiles.joinToString(","))
-            field.addAll(entries)
-            return field
-        }
+    var preInstallCleanupFiles: TreeSet<String>
+        get() = generationConfig.preInstallCleanupFiles
         set(value) {
-            setListProperty(pPreInstallCleanupFiles, value.toList(), ",")
-            field.clear()
-            field.addAll(value)
-            log.info("Files to cleanup before server installation set to: $value")
+            generationConfig.preInstallCleanupFiles = value
         }
 
     /**
@@ -1022,17 +354,10 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      *
      * Should you want these filters to be expanded, open an issue on [GitHub](https://github.com/Griefed/ServerPackCreator/issues)
      */
-    var zipArchiveExclusions = fallbackZipExclusions
-        get() {
-            val entries = getListProperty(pServerPackZipExclusions, fallbackZipExclusions.joinToString(","))
-            field.addAll(entries)
-            return field
-        }
+    var zipArchiveExclusions: TreeSet<String>
+        get() = generationConfig.zipArchiveExclusions
         set(value) {
-            setListProperty(pServerPackZipExclusions, value.toList(), ",")
-            field.clear()
-            field.addAll(value)
-            log.info("Files which must be excluded from ZIP-archives set to: $value")
+            generationConfig.zipArchiveExclusions = value
         }
 
     /**
@@ -1298,31 +623,10 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      *  * [ExclusionFilter.REGEX]
      *  * [ExclusionFilter.EITHER]
      */
-    var exclusionFilter = fallbackExclusionFilter
-        get() {
-            val prop = acquireProperty(pServerPackAutoDiscoveryFilterMethod, "START")
-            field = try {
-                when (prop) {
-                    "END" -> ExclusionFilter.END
-                    "CONTAIN" -> ExclusionFilter.CONTAIN
-                    "REGEX" -> ExclusionFilter.REGEX
-                    "EITHER" -> ExclusionFilter.EITHER
-                    "START" -> ExclusionFilter.START
-                    else -> {
-                        log.error("Invalid filter specified. Defaulting to START.")
-                        fallbackExclusionFilter
-                    }
-                }
-            } catch (ex: NullPointerException) {
-                log.error("No filter specified. Defaulting to START.")
-                fallbackExclusionFilter
-            }
-            return field
-        }
+    var exclusionFilter: ExclusionFilter
+        get() = generationConfig.exclusionFilter
         set(value) {
-            internalProps.setProperty(pServerPackAutoDiscoveryFilterMethod, value.toString())
-            field = value
-            log.info("User specified clientside-only mod exclusion filter set to: $field")
+            generationConfig.exclusionFilter = value
         }
 
     /**
@@ -1344,99 +648,55 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Whether the exclusion of files from the ZIP-archive of the server pack is enabled.
      */
-    var isZipFileExclusionEnabled = fallbackZipFileExclusionEnabled
-        get() {
-            field = getBoolProperty(pServerPackZipExclusionEnabled, fallbackZipFileExclusionEnabled)
-            return field
-        }
+    var isZipFileExclusionEnabled: Boolean
+        get() = generationConfig.isZipFileExclusionEnabled
         set(value) {
-            setBoolProperty(pServerPackZipExclusionEnabled, value)
-            field = value
-            log.info("Zip-file exclusion enabled set to: $field")
+            generationConfig.isZipFileExclusionEnabled = value
         }
 
     /**
      * Is auto excluding of clientside-only mods enabled.
      */
-    var isAutoExcludingModsEnabled = fallbackAutoExcludingModsEnabled
-        get() {
-            var value = getBoolProperty(pServerPackAutoDiscoveryEnabled, fallbackAutoExcludingModsEnabled)
-            try {
-                val legacyProp = internalProps.getProperty(pServerPackAutoDiscoveryEnabledLegacy)
-                if (legacyProp.matches(trueFalseRegex)) {
-                    value = java.lang.Boolean.parseBoolean(legacyProp)
-                    internalProps.setProperty(pServerPackAutoDiscoveryEnabled, value.toString())
-                    internalProps.remove(pServerPackAutoDiscoveryEnabledLegacy)
-                    log.info(
-                        "Migrated '$pServerPackAutoDiscoveryEnabledLegacy' to '$pServerPackAutoDiscoveryEnabled'."
-                    )
-                }
-            } catch (ignored: Exception) {
-                // No legacy declaration present, so we can safely ignore any exception.
-            }
-            field = value
-            return field
-        }
+    var isAutoExcludingModsEnabled: Boolean
+        get() = generationConfig.isAutoExcludingModsEnabled
         set(value) {
-            setBoolProperty(pServerPackAutoDiscoveryEnabled, value)
-            field = value
-            log.info("Auto-discovery of clientside-only mods set to: $field")
+            generationConfig.isAutoExcludingModsEnabled = value
         }
 
     /**
      * Whether overwriting of already existing server packs is enabled.
      */
-    var isServerPacksOverwriteEnabled = fallbackOverwriteEnabled
-        get() {
-            field = getBoolProperty(pServerPackOverwriteEnabled, fallbackOverwriteEnabled)
-            return field
-        }
+    var isServerPacksOverwriteEnabled: Boolean
+        get() = generationConfig.isServerPacksOverwriteEnabled
         set(value) {
-            setBoolProperty(pServerPackOverwriteEnabled, value)
-            field = value
-            log.info("Overwriting of already existing server packs set to: $field")
+            generationConfig.isServerPacksOverwriteEnabled = value
         }
 
     /**
      * Whether cleanup procedures after server pack generation are enabled.
      */
-    var isServerPackCleanupEnabled = fallbackServerPackCleanupEnabled
-        get() {
-            field = getBoolProperty(pServerPackCleanupEnabled, fallbackServerPackCleanupEnabled)
-            return field
-        }
+    var isServerPackCleanupEnabled: Boolean
+        get() = generationConfig.isServerPackCleanupEnabled
         set(value) {
-            setBoolProperty(pServerPackCleanupEnabled, value)
-            field = value
-            log.info("Cleanup of already existing server packs set to: $field")
+            generationConfig.isServerPackCleanupEnabled = value
         }
 
     /**
      * Whether Minecraft pre-releases and snapshots are available to the user in, for example, the GUI.
      */
-    var isMinecraftPreReleasesAvailabilityEnabled = fallbackMinecraftPreReleasesAvailabilityEnabled
-        get() {
-            field = getBoolProperty(pAllowUseMinecraftSnapshots, fallbackMinecraftPreReleasesAvailabilityEnabled)
-            return field
-        }
+    var isMinecraftPreReleasesAvailabilityEnabled: Boolean
+        get() = generationConfig.isMinecraftPreReleasesAvailabilityEnabled
         set(value) {
-            setBoolProperty(pAllowUseMinecraftSnapshots, value)
-            field = value
-            log.info("Minecraft pre-releases and snapshots available set to: $field")
+            generationConfig.isMinecraftPreReleasesAvailabilityEnabled = value
         }
 
     /**
      * Whether a server pack should be updated instead of cleanly generated.
      */
-    var isUpdatingServerPacksEnabled = false
-        get() {
-            field = getBoolProperty(pUpdateServerPack, fallbackUpdateServerPack)
-            return field
-        }
+    var isUpdatingServerPacksEnabled: Boolean
+        get() = generationConfig.isUpdatingServerPacksEnabled
         set(value) {
-            setBoolProperty(pUpdateServerPack, value)
-            field = value
-            log.info("Server pack updating set to: $field")
+            generationConfig.isUpdatingServerPacksEnabled = value
         }
 
     /**
@@ -1457,44 +717,25 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Aikars Flags commonly used for Minecraft servers to improve performance in various places.
      */
-    var aikarsFlags: String = fallbackAikarsFlags
-        get() {
-            field = acquireProperty(pConfigurationAikarsFlags, fallbackAikarsFlags)
-            return field
-        }
+    var aikarsFlags: String
+        get() = generationConfig.aikarsFlags
         set(value) {
-            defineProperty(pConfigurationAikarsFlags, value)
-            field = value
-            log.info("Set Aikars flags to: $field.")
+            generationConfig.aikarsFlags = value
         }
+
+    /**
+     * Web-service settings-group: database-URI and webservice-schedules. Prefer accessing these
+     * through this group; the individual properties on ApiProperties remain as facade.
+     */
+    val webserviceConfig = WebserviceConfig(store)
 
     /**
      * Path to the database used by the webservice-side of ServerPackCreator.
      */
-    var databaseUri: String = "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb"
-        get() {
-            var dbPath =
-                internalProps.getProperty(pSpringDatasourceUrl, "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb")
-            if (dbPath.isEmpty() ||
-                dbPath.contains("sqlite") ||
-                dbPath.contains("postgresql") ||
-                !dbPath.startsWith("mongodb") ) {
-                log.warn("Your spring.data.mongodb.uri-property didn't match a MongoDB-URL: $dbPath. It has been migrated to mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb.")
-                dbPath = "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb"
-            }
-            internalProps.setProperty(pSpringDatasourceUrl, dbPath)
-            field = dbPath
-            return field
-        }
+    var databaseUri: String
+        get() = webserviceConfig.databaseUri
         set(value) {
-            if (!value.startsWith("mongodb://")) {
-                internalProps.setProperty(pSpringDatasourceUrl, "mongodb://$value")
-            } else {
-                internalProps.setProperty(pSpringDatasourceUrl, value)
-            }
-            field = internalProps.getProperty(pSpringDatasourceUrl)
-            log.info("Set database url to: $field.")
-            log.warn("Restart ServerPackCreator for this change to take effect.")
+            webserviceConfig.databaseUri = value
         }
 
     /**
@@ -1563,33 +804,39 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             }
         }
 
+    /**
+     * Cron-schedule of the webservice's cleanup-job. Facade for [WebserviceConfig.cleanupSchedule].
+     */
     var webserviceCleanupSchedule: String
-        get() {
-            return internalProps.getProperty("de.griefed.serverpackcreator.spring.schedules.database.cleanup")
-        }
+        get() = webserviceConfig.cleanupSchedule
         set(value) {
-            internalProps.setProperty("de.griefed.serverpackcreator.spring.schedules.database.cleanup", value)
+            webserviceConfig.cleanupSchedule = value
         }
 
+    /**
+     * Cron-schedule of the webservice's version-refresh-job. Facade for
+     * [WebserviceConfig.versionSchedule].
+     */
     var webserviceVersionSchedule: String
-        get() {
-            return internalProps.getProperty("de.griefed.serverpackcreator.spring.schedules.versions.refresh")
-        }
+        get() = webserviceConfig.versionSchedule
         set(value) {
-            internalProps.setProperty("de.griefed.serverpackcreator.spring.schedules.versions.refresh", value)
+            webserviceConfig.versionSchedule = value
         }
 
+    /**
+     * Cron-schedule of the webservice's file-cleanup-job. Facade for
+     * [WebserviceConfig.databaseCleanupSchedule].
+     */
     var webserviceDatabaseCleanupSchedule: String
-        get() {
-            return internalProps.getProperty("de.griefed.serverpackcreator.spring.schedules.files.cleanup")
-        }
+        get() = webserviceConfig.databaseCleanupSchedule
         set(value) {
-            internalProps.setProperty("de.griefed.serverpackcreator.spring.schedules.files.cleanup", value)
+            webserviceConfig.databaseCleanupSchedule = value
         }
 
-    fun defaultWebserviceDatabase(): String {
-        return "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb"
-    }
+    /**
+     * The default webservice database-URI, for resetting the configuration to factory-state.
+     */
+    fun defaultWebserviceDatabase(): String = webserviceConfig.defaultDatabase()
 
     /**
      * ServerPackCreators home directory, in which all important files and folders are stored in.
@@ -2195,51 +1442,19 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      *
      * @author Griefed
      */
+    /**
+     * Loads the given properties-file into [props] via the [store], dropping blank values and
+     * tracking the file for later saving.
+     */
     private fun loadFile(propertiesFile: File, props: Properties) {
-        if (!propertiesFile.isFile) {
-            log.warn("Properties-file does not exist: ${propertiesFile.absolutePath}.")
-            return
-        }
-
-        try {
-            //Temp props to load the ones from the specified file into
-            val tempProps = Properties()
-            propertiesFile.inputStream().use {
-                tempProps.load(it)
-            }
-
-            tempProps.entries.removeIf { entry -> entry.value.toString().isBlank() }
-
-            //Write temp props into passed props
-            for ((key, value) in tempProps.entries) {
-                props[key] = value
-            }
-
-            props.entries.removeIf { entry -> entry.value.toString().isBlank() }
-            propertyFiles.add(propertiesFile)
-            log.info("Loaded properties from ${propertiesFile.absolutePath}.")
-        } catch (ex: Exception) {
-            log.error("Couldn't read properties from ${propertiesFile.absolutePath}.", ex)
-        }
+        store.loadInto(propertiesFile, props)
     }
 
+    /**
+     * Loads the overrides-properties directly into the store, replacing already-loaded values.
+     */
     fun loadOverrides(properties: File = overridesPropertiesFile) {
-        val tempProps = Properties()
-        if (properties.isFile) {
-            properties.inputStream().use {
-                tempProps.load(it)
-            }
-        }
-        for ((key, value) in tempProps) {
-            log.warn("Overriding:")
-            log.warn("  $key")
-            if (key.toString().contains("(username|password)")) {
-                log.warn("  ************************************")
-            } else {
-                log.warn("  $value")
-            }
-        }
-        internalProps.putAll(tempProps)
+        store.loadOverrides(properties)
     }
 
     /**
@@ -2320,17 +1535,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @author Griefed
      */
     private fun setFallbackModsList() {
-        // Regular list
-        clientsideMods.addAll(
-            getListProperty(
-                pConfigurationFallbackModsList,
-                fallbackMods.joinToString(",")
-            )
-        )
-        internalProps.setProperty(
-            pConfigurationFallbackModsList,
-            clientsideMods.joinToString(",")
-        )
+        generationConfig.loadFallbackModsList()
     }
 
     /**
@@ -2339,17 +1544,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @author Griefed
      */
     private fun setFallbackWhitelist() {
-        // Regular list
-        modsWhitelist.addAll(
-            getListProperty(
-                pConfigurationFallbackModsWhiteList,
-                fallbackModsWhitelist.joinToString(",")
-            )
-        )
-        internalProps.setProperty(
-            pConfigurationFallbackModsWhiteList,
-            fallbackModsWhitelist.joinToString(",")
-        )
+        generationConfig.loadFallbackWhitelist()
     }
 
     /**
@@ -2363,11 +1558,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @author Griefed
      */
     private fun acquireProperty(key: String, defaultValue: String) =
-        if (internalProps.getProperty(key).isNullOrBlank()) {
-            defineProperty(key, defaultValue)
-        } else {
-            internalProps.getProperty(key, defaultValue)
-        }
+        store.acquire(key, defaultValue)
 
     /**
      * Set a property in our ApplicationProperties.
@@ -2377,10 +1568,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @return The [value] to which the [key] was set to.
      * @author Griefed
      */
-    private fun defineProperty(key: String, value: String): String {
-        internalProps.setProperty(key, value)
-        return value
-    }
+    private fun defineProperty(key: String, value: String): String =
+        store.define(key, value)
 
     /**
      * Get a list from our properties.
@@ -2393,13 +1582,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     private fun getListProperty(
         key: String,
         defaultValue: String
-    ) = if (acquireProperty(key, defaultValue).contains(",")) {
-        acquireProperty(key, defaultValue)
-            .split(",")
-            .dropLastWhile { it.isEmpty() }
-    } else {
-        listOf(acquireProperty(key, defaultValue))
-    }
+    ) = store.getList(key, defaultValue)
 
     /**
      * Join the [value] via usage of the [separator] and overwrite the [key].
@@ -2407,7 +1590,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      */
     @Suppress("SameParameterValue")
     private fun setListProperty(key: String, value: List<String>, separator: String) {
-        internalProps.setProperty(key, value.joinToString(separator))
+        store.setList(key, value, separator)
     }
 
     /**
@@ -2420,12 +1603,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      */
     @Suppress("SameParameterValue")
     private fun getIntProperty(key: String, defaultValue: Int) =
-        try {
-            acquireProperty(key, defaultValue.toString()).toInt()
-        } catch (ex: NumberFormatException) {
-            defineProperty(key, defaultValue.toString())
-            defaultValue
-        }
+        store.getInt(key, defaultValue)
 
     /**
      * Set the integer property with the given [key] to the given [value].
@@ -2433,7 +1611,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @author Griefed
      */
     @Suppress("SameParameterValue")
-    private fun setIntProperty(key: String, value: Int) = defineProperty(key, value.toString())
+    private fun setIntProperty(key: String, value: Int) = store.setInt(key, value)
 
     /**
      * Get a list of files from our properties, with each file having a specific prefix.
@@ -2445,14 +1623,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @author Griefed
      */
     @Suppress("SameParameterValue")
-    private fun getFileListProperty(key: String, defaultValue: String, filePrefix: String): List<File> {
-        val files: MutableList<File> = ArrayList(4)
-        val entries = getListProperty(key, defaultValue)
-        for (entry in entries) {
-            files.add(File(filePrefix + entry))
-        }
-        return files
-    }
+    private fun getFileListProperty(key: String, defaultValue: String, filePrefix: String): List<File> =
+        store.getFileList(key, defaultValue, filePrefix)
 
     /**
      * Get a boolean from our properties.
@@ -2463,26 +1635,15 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @author Griefed
      */
     private fun getBoolProperty(key: String, defaultValue: Boolean) =
-        acquireProperty(key, defaultValue.toString()).toBoolean()
+        store.getBool(key, defaultValue)
 
     /**
      * Set the integer property with the given [key] to the given [value].
      *
      * @author Griefed
      */
-    private fun setBoolProperty(key: String, value: Boolean) = defineProperty(key, value.toString())
+    private fun setBoolProperty(key: String, value: Boolean) = store.setBool(key, value)
 
-    /**
-     * Adder for the list of directories to exclude from server packs.
-     *
-     * @param entry The directory to add to the list of directories to exclude from server packs.
-     * @author Griefed
-     */
-    private fun addDirectoryToExclude(entry: String) {
-        if (!directoriesToInclude.contains(entry) && directoriesToExclude.add(entry)) {
-            log.debug("Adding $entry to list of files or directories to exclude.")
-        }
-    }
 
     /**
      * Check the given path to a Java installation for validity and return it, if it is valid. If the
@@ -2533,39 +1694,11 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @author Griefed
      */
     fun saveProperties(propertiesFile: File) {
-        cleanupInternalProps()
-        val toSave = TreeSet<File>()
-        toSave.addAll(propertyFiles)
-        toSave.add(propertiesFile)
-
-        for (props in toSave) {
-            if (!props.isFile && props != serverPackCreatorPropertiesFile) {
-                //Skip if the file no longer exists
-                continue
-            }
-            try {
-                props.outputStream().use {
-                    internalProps.store(
-                        it,
-                        "For details about each property, see https://help.serverpackcreator.de/settings-and-configs.html"
-                    )
-                }
-                log.info("Saved properties to: $propertiesFile")
-            } catch (ex: FileNotFoundException) {
-                log.error("Couldn't write properties-file ${props.absolutePath}. File either doesn't exist or we don't have write-permission.")
-            } catch (ex: IOException) {
-                log.error("Couldn't write properties-file ${props.absolutePath}.", ex)
-            }
-        }
-    }
-
-    /**
-     * Removes unwanted properties. Called during the save-operation, to ensure that legacy-properties are removed.
-     *
-     * @author Griefed
-     */
-    private fun cleanupInternalProps() {
-        internalProps.remove(pConfigurationFallbackModsListRegex)
+        store.save(
+            propertiesFile,
+            alwaysWrite = serverPackCreatorPropertiesFile,
+            removeKeys = listOf(pConfigurationFallbackModsListRegex)
+        )
     }
 
     /**
@@ -2669,12 +1802,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @return The fallback list of clientside-only mods.
      * @author Griefed
      */
-    fun clientSideMods() =
-        if (exclusionFilter == ExclusionFilter.REGEX) {
-            clientsideModsRegex.toList()
-        } else {
-            clientsideMods.toList()
-        }
+    fun clientSideMods() = generationConfig.clientSideMods()
 
     /**
      * Acquire the default fallback list of whitelisted mods. If
@@ -2684,12 +1812,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @return The fallback list of whitelisted mods.
      * @author Griefed
      */
-    fun whitelistedMods() =
-        if (exclusionFilter == ExclusionFilter.REGEX) {
-            modsWhitelistRegex.toList()
-        } else {
-            modsWhitelist.toList()
-        }
+    fun whitelistedMods() = generationConfig.whitelistedMods()
 
     /**
      * Whether the fallback lists for clientside-mods and whitelisted mods have been updated.
@@ -2758,10 +1881,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      *
      * @author Griefed
      */
-    fun storeCustomProperty(property: String, value: String): String {
-        val customProp = "$customPropertyPrefix$property"
-        return defineProperty(customProp, value)
-    }
+    fun storeCustomProperty(property: String, value: String): String =
+        store.storeCustomProperty(property, value)
 
     /**
      * Retrieve a custom property in the serverpackcreator.properties-file. Beware that every property you retrieve this
@@ -2774,10 +1895,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      *
      * @author Griefed
      */
-    fun retrieveCustomProperty(property: String): String? {
-        val customProp = "$customPropertyPrefix$property"
-        return internalProps.getProperty(customProp)
-    }
+    fun retrieveCustomProperty(property: String): String? =
+        store.retrieveCustomProperty(property)
 
     /**
      * Get the path to the specified Java executable/binary, wrapped in an [Optional] for your
@@ -2827,7 +1946,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     fun oldVersion(): String = internalProps.getProperty(pOldVersion, "")
 
     fun clearPropertyFileList() {
-        propertyFiles.clear()
+        store.clearTrackedFiles()
     }
 
     private fun printSettings() {

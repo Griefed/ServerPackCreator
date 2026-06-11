@@ -1383,21 +1383,23 @@ class ConfigurationHandler(
      * @author Griefed
      */
     fun getModLoaderCase(modloader: String) = when {
-        modloader.lowercase().matches(forge) || modloader.lowercase().contains("forge") &&
-                !(modloader.lowercase().matches(neoForge) || modloader.lowercase().contains("NeoForge"))-> {
+        // Most specific names first: "neoforge" contains "forge" and "legacyfabric" contains
+        // "fabric", so checking NeoForge before Forge and LegacyFabric before Fabric prevents
+        // misdetection of the more specific loader as the generic one.
+        modloader.lowercase().matches(neoForge) || modloader.lowercase().contains("neoforge") -> {
+            "NeoForge"
+        }
+        modloader.lowercase().matches(forge) || modloader.lowercase().contains("forge") -> {
             "Forge"
+        }
+        modloader.lowercase().matches(legacyFabric) || modloader.lowercase().contains("legacyfabric") -> {
+            "LegacyFabric"
         }
         modloader.lowercase().matches(fabric) || modloader.lowercase().contains("fabric") -> {
             "Fabric"
         }
         modloader.lowercase().matches(quilt) || modloader.lowercase().contains("quilt") -> {
             "Quilt"
-        }
-        modloader.lowercase().matches(legacyFabric) || modloader.lowercase().contains("legacyfabric") -> {
-            "LegacyFabric"
-        }
-        modloader.lowercase().matches(neoForge) || modloader.lowercase().contains("NeoForge") -> {
-            "NeoForge"
         }
         else -> {
             log.warn { "No suitable modloader found. Defaulting to Forge." }
