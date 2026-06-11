@@ -152,12 +152,17 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   cleanup-files, ZIP-exclusions, exclusion-filter, six generation-flags incl. legacy
   auto-discovery migration, Aikar's flags; 11 tests). ApiProperties: 3,007 → 2,126 lines.
   Dead code removed: `addDirectoryToExclude` had zero callers. `updateFallback()` stayed in
-  ApiProperties (network + save orchestration), as did the script-templates (they depend on
-  `serverFilesDirectory` from the not-yet-extracted paths-group). Remaining groups, roughly
-  in order: script-templates + paths/directories (large, homeDirectory uses Preferences +
-  overrides — careful), Java-settings (javaPath(s) + detection), update/release-info,
-  i18n/log-level. The log4j2-XML companion in ApiProperties is its own beast — consider
-  moving to a dedicated LoggingConfig last.
+  ApiProperties (network + save orchestration). Third group extracted:
+  `api.settings.PathsConfig` (homeDirectory with Preferences-resolution — the Preferences-node
+  is constructor-injected so tests use a scratch-node — all derived directories/files, 12
+  version-manifests, default script-templates, server-packs override, Tomcat-directories;
+  8 tests). Pinned quirk: a deviating Tomcat base-directory is reset to the home-directory on
+  read. ApiProperties: 2,126 → 1,754 lines; `getPreference`/`storePreference` stay on
+  ApiProperties (GUI uses them for general preferences). Remaining groups, roughly in order:
+  script-templates (now unblocked — depend on PathsConfig.serverFilesDirectory),
+  Java-settings (javaPath(s) + detection), update/release-info, i18n/log-level. The
+  log4j2-XML companion in ApiProperties is its own beast — consider moving to a dedicated
+  LoggingConfig last.
 - **Next:** continue Phase 1b group-extractions. Then CommandlineParser/MigrationManager
   tests during Phase 2.
 
