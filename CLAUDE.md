@@ -121,8 +121,16 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   specific loader names are now checked first. Documented quirks: `PackConfig.modloader`
   setter silently ignores unrecognized values; unknown loaders default to Forge;
   `ReticulatingSplines` is GUI-only (splash texts) and should move to the app module in 1e.
-- **Next:** app-side characterization tests (web controllers via MockMvc, CommandlineParser,
-  MigrationManager) before the API splits land, so they double as integration tests.
+- **Phase 1a, app side (2026-06-11, started):** the web backend uses **MongoDB**
+  (spring-boot-starter-data-mongodb), not JPA — full-context tests would need a Mongo
+  instance. Established pattern instead: **standalone MockMvc per controller** with real API
+  beans (cached version manifests make VersionMeta work offline); springmockk is available
+  for mocking Mongo repositories in the remaining controllers. `VersionsControllerTest`
+  (6 tests) is the template. The pre-existing `WebServiceTest` boots an empty context and
+  asserts nothing — replace it during Phase 2.
+- **Next:** controller tests for serverpack/modpack/stats/runconfiguration/events/settings
+  (mock Mongo repositories via springmockk), CommandlineParser and MigrationManager tests —
+  before the API splits land, so they double as integration tests.
 
 ---
 
