@@ -191,8 +191,21 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   server.properties to serverIconPath instead of serverPropertiesPath (copy-paste).
   Note: the loader-regexes now exist in PackConfig, ConfigurationHandler (public vals) and
   the new classes — consolidate during Phase 1e.
-- **Next:** Phase 1d — split ServerPackHandler into explicit generation-pipeline steps. Then
-  CommandlineParser/MigrationManager tests during Phase 2.
+- **Phase 1d (2026-06-12):** ServerPackHandler split, 1,466 → 490 lines. Extracted into
+  `api.serverpack`: `ModListCompiler` (mods-walk, clientside-exclusion via scanner +
+  user-lists, whitelist), `ServerPackFileGatherer(modListCompiler)` (inclusion-resolution,
+  filters, explicit/save/directory/regex-gathering, the copy itself),
+  `ServerPackProvisioner` (icon, properties, start-scripts + variables.txt + HOW-TO-RUN.md,
+  ZIP-archive, improved Fabric-launcher, installer-availability, pre-/post-install cleanup).
+  ServerPackHandler is now the generation-orchestrator: run() composes
+  gather → icon/properties → manifest → scripts → zip → security-scan, plus plugin-hooks,
+  event-listeners, destination-handling and facades. Verified by the five end-to-end
+  generation tests plus the Phase 1a characterization tests — all running through the new
+  pipeline-classes via the facades.
+- **Next:** Phase 1e — constructor-injection throughout the API, ApiWrapper as thin
+  composition-root, consolidate the tripled loader-regexes, sort the utilities grab-bag
+  (move ReticulatingSplines to the app-module). Then CommandlineParser/MigrationManager
+  tests during Phase 2.
 
 ---
 

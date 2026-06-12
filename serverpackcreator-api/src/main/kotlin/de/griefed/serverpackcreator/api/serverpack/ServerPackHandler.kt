@@ -93,140 +93,25 @@ class ServerPackHandler(
     val log by lazy { cachedLoggerOf(this.javaClass) }
     val modFileEndings = listOf("jar", "disabled")
 
-    //TODO move to template file, just like the scripts.
-    val variables = """ 
-        ###
-        # REMEMBER:
-        #   Escape \ and : in your Java path on Windows with another \
-        #   Example:
-        #     From: C:\Program Files\Eclipse Adoptium\jdk-17.0.9.9-hotspot\bin\java.exe
-        #     To:   C\:\\Program Files\\Eclipse Adoptium\\jdk-17.0.9.9-hotspot\\bin\\java.exe
-        #   More on escape characters at https://en.wikipedia.org/wiki/Escape_character
-        #
-        # WAIT_FOR_USER_INPUT true/false allows you to enable/disable user confirmation upon
-        #   graceful script ending.
-        # RESTART true/false allows you to enable/disable automatically restarting the server
-        #   should it crash.
-        # JAVA points towards the Java executable/binary the server should use for running. Default is `java`, so it
-        #   points towards the system-default, if you have one. Set this to an absolute path, as per the example above
-        #   in the "REMEMBER"-part, if you want to force the server to use a different Java installation/version.
-        #   When setting a custom path, set SKIP_JAVA_CHECK to true.
-        # JAVA_ARGS are arguments to pass to the JVM / your server. Typical args are 'Xmx4G Xms4g'. Arguments in this
-        #   variable are also written to the 'user_jvm_args.txt' when using modloaders such as Forge.
-        #   More information at https://minecraft.fandom.com/wiki/Tutorials/Setting_up_a_server
-        #   I recommend you read this page at least once.
-        # ADDITIONAL_ARGS are, as the name implies, additional arguments to pass to the server. These arguments are not
-        #   written to any file, they are directly used in the command to run the server.
-        # SKIP_JAVA_CHECK true/false allows you to disable/enable the compatibility check
-        #   of your Minecraft version and the provided Java version, as well as the automatic
-        #   installation of a compatible Java version, should JAVA be set to 'java'.
-        # JDK_VENDOR is for the automatic installation of a JDK compatible with the Minecraft
-        #   version of your server pack. For an extensive list of available vendors, check out
-        #   https://github.com/Jabba-Team/index/blob/main/index.json
-        #   Note - For the installation to take place:
-        #   - SKIP_JAVA_CHECK must be set to 'false'
-        #   - JAVA be set to 'java'
-        #   - No 'java' command be available OR
-        #   - The available Java version behind 'java' be incompatible with your Minecraft version.
-        # JABBA_INSTALL_VERSION has no effect on the installation of Jabba when using PowerShell.
-        # MINECRAFT_VERSION is tightly coupled with the modloader version. Be careful when changing this, as the new
-        #   new version you set may not be compatible with the modloader and modloader version combination.
-        # MODLOADER and MODLOADER_VERSION same thing as with MINECRAFT_VERSION. Changing any of these three values may
-        #   have unforseen consequences. Well, I say unforseen, it mostly causes the server to straight up not start,
-        #   because of incompatibilities. Be very careful when changing these!
-        # SERVERSTARTERJAR_FORCE_FETCH true/false allows you to enable/disable the force-refreshing of the server.jar
-        #   when using Forge or NeoForge as your modloader. Force-refreshing means the file is replaced with a freshly
-        #   downloaded one every time you run the start scripts.
-        # SERVERSTARTERJAR_VERSION allows you to manually set the version of the server.jar downloaded by the scripts.
-        #   If you want to always use the latest version, set this to exactly "latest". For a specific version, see
-        #   https://github.com/neoforged/ServerStarterJar/releases and use the tags on the left as the version,
-        #   e.g. 0.1.24 or 0.1.25. When setting a specific version, make sure the release you pick actually has a server.jar
-        #   available for download. When the download fails with the "latest"-setting, then pick a specific one and/or
-        #   contact the devs of the ServerStarterJar about the latest release not having a server.jar to download.
-        # USE_SSJ true/false allows you to enable/disable the usage of the ServerStarterJar by the NeoForge project when you are
-        #   using Forge. Some Forge versions may be incompatible with said ServerStarterJar. As of right now, people
-        #   ran into trouble when using Forge and Minecraft 1.20.2 and 1.20.3.
-        # SSJ_FORGE_ARGS are additional arguments to use when using the Server Starter Jar from the NeoForge project in
-        #   combination with the Forge-modloader. Some java versions require explicit allowing of the security manager,
-        #   for example.
-        # CLEANUP is a list of comma-separated files which get deleted permanently upon calling the start-script with either
-        #   the --cleanup argument, or when the script detected a previous run with differing versions/modloaders.
-        #   Edit with care!
-        #   Edit at your own risk!
-        #   Editing might lead to unwanted data corruption or deletion!
-        #
-        # DO NOT EDIT THE FOLLOWING VARIABLES MANUALLY
-        #   - FABRIC_INSTALLER_VERSION
-        #   - QUILT_INSTALLER_VERSION
-        #   - LEGACYFABRIC_INSTALLER_VERSION
-        #
-        # Variables are not reloaded between automatic restarts. If you've made changes to your
-        #   variables and you want them to take effect, stop the server and script, then
-        #   re-run it.
-        ###
-        MINECRAFT_VERSION=SPC_MINECRAFT_VERSION_SPC
-        MODLOADER=SPC_MODLOADER_SPC
-        MODLOADER_VERSION=SPC_MODLOADER_VERSION_SPC
-        LEGACYFABRIC_INSTALLER_VERSION=SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC
-        FABRIC_INSTALLER_VERSION=SPC_FABRIC_INSTALLER_VERSION_SPC
-        QUILT_INSTALLER_VERSION=SPC_QUILT_INSTALLER_VERSION_SPC
-        RECOMMENDED_JAVA_VERSION=SPC_RECOMMENDED_JAVA_VERSION_SPC
-        WAIT_FOR_USER_INPUT=SPC_WAIT_FOR_USER_INPUT_SPC
-        JAVA="SPC_JAVA_SPC"
-        JAVA_ARGS="SPC_JAVA_ARGS_SPC"
-        ADDITIONAL_ARGS="SPC_ADDITIONAL_ARGS_SPC"
-        SSJ_FORGE_ARGS="SPC_SSJ_FORGE_ARGS_SPC"
-        RESTART=SPC_RESTART_SPC
-        SKIP_JAVA_CHECK=SPC_SKIP_JAVA_CHECK_SPC
-        JDK_VENDOR=SPC_JDK_VENDOR_SPC
-        JABBA_INSTALL_URL_SH=SPC_JABBA_INSTALL_URL_SH_SPC
-        JABBA_INSTALL_URL_PS=SPC_JABBA_INSTALL_URL_PS_SPC
-        JABBA_INSTALL_VERSION=SPC_JABBA_INSTALL_VERSION_SPC
-        SERVERSTARTERJAR_FORCE_FETCH=SPC_SERVERSTARTERJAR_FORCE_FETCH_SPC
-        SERVERSTARTERJAR_VERSION=SPC_SERVERSTARTERJAR_VERSION_SPC
-        USE_SSJ=SPC_USE_SSJ_SPC
-        CLEANUP="SPC_CLEANUP_SPC"
-    """.trimIndent()
-    private val howToStartTheServer = """
-        # How To Start / Run The Server
-        
-        If your `variables.txt` has `JAVA=java` set, then a suitable Java version for your Minecraft server will
-        be installed automatically.
-        
-        Forge and NeoForge 1.17 and up will create run.xx-scripts due to the ServerStarterJar being used to install
-        and run the server. It is safe to ignore these and continue using the start.xx-scripts.
-        Deleting the run.xx-scripts will result in the server being installed again by the ServerStarterJar. More about
-        the ServerStarterJar at https://github.com/neoforged/ServerStarterJar
-        
-        ## Linux
-        
-        Run `.\start.sh` or `bash start.sh` to start the server.
-        
-        ## Windows
-        
-        Run `start.bat`.
-        Do **not** delete the PowerShell (ps1) files!
-        
-        ### Convenience
-        
-        You may run `start.ps1` from a console-window manually, but using the Batch-script is recommended.
-        Running PowerShell-scripts requires changing the ExecutionPolicy of your Windows-system. The Batch-script
-        can bypass this for the start-script.
-        
-        TL;DR: start.bat better than start.ps1
-        
-        ## MacOS
-        
-        Run `.\start.sh` or `bash start.sh` to start the server.
-        
-        # Issues with this server pack
-        
-        If you downloaded this server pack from the internet and you run into issues with this server pack, then please
-        contact the creators of the server pack about your issue(s).
-        
-        If you've created this server pack yourself and you run into issues, feel free to contact the developers of
-        ServerPackCreator for support.
-    """.trimIndent()
+    /**
+     * Compiler of the mod-list, excluding clientside-only mods and honoring the whitelist.
+     */
+    val modListCompiler = ModListCompiler(apiProperties, modScanner)
+
+    /**
+     * Gatherer of all files which make up the server pack.
+     */
+    val fileGatherer = ServerPackFileGatherer(modListCompiler)
+
+    /**
+     * Provisioner for icon, properties, start-scripts, ZIP-archive and installer-extras.
+     */
+    val provisioner = ServerPackProvisioner(apiProperties, versionMeta, utilities)
+
+    /**
+     * Content of the variables.txt-file written to every server pack.
+     */
+    val variables: String get() = provisioner.variables
 
     private val spcGenericEventListeners: ArrayList<SPCGenericListener> = ArrayList(0)
     private val spcPreServerPackGenerationListener: ArrayList<SPCPreServerPackGenerationListener> = ArrayList(0)
@@ -475,22 +360,8 @@ class ServerPackHandler(
     }
 
     /**
-     * Copies all specified directories and mods, excluding clientside-only mods, from the modpack
-     * directory into the server pack directory. If a `source/file;destination/file`
-     * -combination is provided, the specified source-file is copied to the specified
-     * destination-file. One of the reasons as to why it is recommended to run a given
-     * ConfigurationModel through the ConfigurationHandler first, is because the ConfigurationHandler
-     * will resolve links to their files first before then correcting the given
-     * ConfigurationModel.
-     *
-     * @param modpackDir        Files and directories are copied into the server_pack directory inside
-     * the modpack directory.
-     * @param inclusions All directories and files therein to copy to the server pack.
-     * @param clientMods        List of clientside-only mods to exclude from the server pack.
-     * @param minecraftVersion  The Minecraft version the modpack uses.
-     * @param destination       The destination where the files should be copied to.
-     * @param modloader         The modloader used for mod sideness detection.
-     * @author Griefed
+     * Recursively copy all specified directories and files, excluding clientside-only mods, to
+     * the server pack.
      */
     fun copyFiles(
         modpackDir: String,
@@ -501,63 +372,12 @@ class ServerPackHandler(
         destination: String,
         modloader: String,
         overwrite: Boolean
-    ) : List<File> {
-        val exclusions = mutableListOf<Regex>()
-        var acquired: List<ServerPackFile>
-        val serverPackFiles: MutableList<ServerPackFile> = ArrayList(100000)
-        val copiedFiles: MutableList<File> = ArrayList(10000)
-        try {
-            File(destination).create()
-        } catch (ex: IOException) {
-            log.error("Failed to create directory $destination")
-        }
-
-        if (inclusions.size == 1 && inclusions[0].source == "lazy_mode") {
-            log.warn("!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!")
-            log.warn("Lazy mode specified. This will copy the WHOLE modpack to the server pack. No exceptions.")
-            log.warn("You will not receive any support for a server pack generated this way.")
-            log.warn("Do not open an issue on GitHub if this configuration errors or results in a broken server pack.")
-            log.warn("!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!")
-            try {
-                File(modpackDir).copyRecursively(File(destination), true)
-            } catch (ex: IOException) {
-                log.error("An error occurred copying the modpack to the server pack in lazy mode.", ex)
-            }
-            return copiedFiles
-        }
-
-        for (inclusion in inclusions) {
-            acquired = getServerFiles(
-                inclusion,
-                modpackDir,
-                destination,
-                exclusions,
-                clientMods,
-                whitelist,
-                minecraftVersion,
-                modloader
-            )
-            serverPackFiles.addAll(acquired)
-        }
-
-        log.info("Ensuring files and/or directories are properly excluded.")
-        serverPackFiles.removeIf { it: ServerPackFile ->
-            excludeFileOrDirectory(modpackDir, it.sourceFile, exclusions)
-        }
-        log.info("Copying files to the server pack. This may take a while...")
-        for (file in serverPackFiles) {
-            try {
-                copiedFiles.add(file.copy(overwrite))
-            } catch (ex: IOException) {
-                log.error(
-                    "An error occurred trying to copy " + file.sourceFile + " to " + file.destinationFile + ".",
-                    ex
-                )
-            }
-        }
-        return copiedFiles
-    }
-
+    ): List<File> = fileGatherer.copyFiles(
+        modpackDir, inclusions, clientMods, whitelist, minecraftVersion, destination, modloader, overwrite
+    )
+    /**
+     * Gather the server pack-files for a single inclusion-specification.
+     */
     fun getServerFiles(
         inclusion: InclusionSpecification,
         modpackDir: String,
@@ -567,526 +387,67 @@ class ServerPackHandler(
         modWhitelist: List<String>,
         minecraftVersion: String,
         modloader: String
-    ): List<ServerPackFile> {
-        val serverPackFiles = mutableListOf<ServerPackFile>()
-        val clientDir = File(modpackDir, inclusion.source)
-        val serverDir = File(destination, inclusion.source)
-        val acquired: List<ServerPackFile>
-        val processed: List<ServerPackFile>
-        val serverPackFile: ServerPackFile
-        val inclusionSourceFile = File(inclusion.source).absoluteFile
-        val inclusionDestinationFile = File(destination, inclusionSourceFile.name).absoluteFile
-        when {
-            inclusion.isGlobalFilter() -> {
-                if (inclusion.hasExclusionFilter()) {
-                    try {
-                        exclusions.add(inclusion.exclusionFilter!!.toRegex())
-                    } catch (ex: PatternSyntaxException) {
-                        log.error("Invalid exclusion-regex specified: ${inclusion.exclusionFilter}.",ex)
-                    }
-                }
-            }
-
-            inclusion.hasDestination() -> {
-                val destinationFile = File(destination,inclusion.destination ?: inclusionSourceFile.name)
-                when {
-                    clientDir.isDirectory -> {
-                        acquired = getExplicitFiles(clientDir.absolutePath, inclusion.destination!!, modpackDir, destination)
-                        processed = runFilters(acquired, inclusion, modpackDir)
-                        serverPackFiles.addAll(processed)
-                    }
-                    clientDir.absoluteFile.isFile -> {
-                        serverPackFile = ServerPackFile(clientDir, destinationFile)
-                        serverPackFiles.add(serverPackFile)
-                    }
-                    inclusionSourceFile.isDirectory -> {
-                        acquired = getExplicitFiles(inclusion.source, inclusion.destination!!, modpackDir, destination)
-                        processed = runFilters(acquired, inclusion, modpackDir)
-                        serverPackFiles.addAll(processed)
-                    }
-                    inclusionSourceFile.isFile -> {
-                        serverPackFile = ServerPackFile(inclusionSourceFile, destinationFile)
-                        serverPackFiles.add(serverPackFile)
-                    }
-                    else -> {
-                        serverPackFile = ServerPackFile(inclusionSourceFile, destinationFile)
-                        serverPackFiles.add(serverPackFile)
-                    }
-                }
-            }
-
-            inclusion.source == "mods" -> {
-                try {
-                    serverDir.create()
-                } catch (ignored: IOException) {
-                }
-                acquired = mutableListOf()
-                val mods = compileModList(clientDir.absolutePath, clientMods, modWhitelist, minecraftVersion, modloader)
-                for (mod in mods.first) {
-                    acquired.add(ServerPackFile(mod, File(serverDir, mod.name)))
-                }
-                var destinationName: String
-                for (disabled in mods.second) {
-                    destinationName = if (disabled.name.endsWith("disabled")) {
-                        disabled.name
-                    } else {
-                        "${disabled.name}.disabled"
-                    }
-                    acquired.add(ServerPackFile(disabled, File(serverDir, destinationName)))
-                }
-                processed = runFilters(acquired, inclusion, modpackDir)
-                serverPackFiles.addAll(processed)
-            }
-
-            clientDir.absoluteFile.isDirectory -> {
-                acquired = getDirectoryFiles(clientDir.absolutePath, serverDir.absolutePath)
-                processed = runFilters(acquired, inclusion, modpackDir)
-                serverPackFiles.addAll(processed)
-            }
-
-            clientDir.absoluteFile.isFile -> {
-                serverPackFile = ServerPackFile(clientDir, serverDir)
-                serverPackFiles.add(serverPackFile)
-            }
-
-            inclusionSourceFile.isFile -> {
-                serverPackFile = ServerPackFile(inclusionSourceFile, inclusionDestinationFile)
-                serverPackFiles.add(serverPackFile)
-            }
-
-            inclusionSourceFile.isDirectory -> {
-                acquired = getDirectoryFiles(inclusionSourceFile.absolutePath, inclusionDestinationFile.absolutePath)
-                processed = runFilters(acquired, inclusion, modpackDir)
-                serverPackFiles.addAll(processed)
-            }
-
-            else -> {
-                acquired = getDirectoryFiles(clientDir.absolutePath, serverDir.absolutePath)
-                processed = runFilters(acquired, inclusion, modpackDir)
-                serverPackFiles.addAll(processed)
-            }
-        }
-        return serverPackFiles
-    }
-
+    ): List<ServerPackFile> = fileGatherer.getServerFiles(
+        inclusion, modpackDir, destination, exclusions, clientMods, modWhitelist, minecraftVersion, modloader
+    )
     /**
-     * Check all files in [acquired] for matches with [inclusionSpec]. Every match found is returned as a compiled list.
-     *
-     * @author Griefed
+     * Download and provide the improved Fabric Server Launcher, if available for the given
+     * versions.
      */
-    private fun runFilters(
-        acquired: List<ServerPackFile>,
-        inclusionSpec: InclusionSpecification,
-        modpackDir: String
-    ): List<ServerPackFile> {
-        val processed = mutableListOf<ServerPackFile>()
-        val inclusionFilter = if (inclusionSpec.inclusionFilter.isNullOrBlank()) {
-            null
-        } else {
-            try {
-                inclusionSpec.inclusionFilter!!.toRegex()
-            } catch (ex: PatternSyntaxException) {
-                log.error("Invalid inclusion-regex specified: ${inclusionSpec.inclusionFilter}.",ex)
-                null
-            }
-        }
-        val exclusionFilter = if (inclusionSpec.exclusionFilter.isNullOrBlank()) {
-            null
-        } else {
-            try {
-                inclusionSpec.exclusionFilter!!.toRegex()
-            } catch (ex: PatternSyntaxException) {
-                log.error("Invalid exclusion-regex specified: ${inclusionSpec.exclusionFilter}.",ex)
-                null
-            }
-        }
-        if (inclusionFilter != null) {
-            for (file in acquired) {
-                if (file.sourceFile.absolutePath.replace(modpackDir + File.separator, "").matches(inclusionFilter)) {
-                    processed.add(file)
-                    log.info("Including ${file.sourceFile} due to inclusion-filter $inclusionFilter.")
-                }
-            }
-        } else {
-            processed.addAll(acquired)
-        }
-        if (exclusionFilter != null) {
-            processed.removeIf { file ->
-                val source = file.sourceFile.absolutePath.replace(modpackDir + File.separator, "")
-                return@removeIf if (source.matches(exclusionFilter)) {
-                    log.info("Excluding ${file.sourceFile} due to exclusion-filter $exclusionFilter.")
-                    true
-                } else {
-                    false
-                }
-            }
-        }
-        return processed
-    }
-
+    fun getImprovedFabricLauncher(minecraftVersion: String, fabricVersion: String, destination: String) =
+        provisioner.getImprovedFabricLauncher(minecraftVersion, fabricVersion, destination)
     /**
-     * Download and provide the improved Fabric Server Launcher, if it is available for the given
-     * Minecraft and Fabric version.
-     *
-     * @param minecraftVersion The Minecraft version the modpack uses and the Fabric Server Launcher
-     * should be downloaded for.
-     * @param fabricVersion    The modloader version the modpack uses and the Fabric Server Launcher
-     * should be downloaded for.
-     * @param destination      The destination of the server pack.
-     * @author Griefed
+     * Copy the server-icon.png into the server pack, scaled to 64x64.
      */
-    fun getImprovedFabricLauncher(minecraftVersion: String, fabricVersion: String, destination: String) {
-        val fileDestination = File(destination, "fabric-server-launcher.jar")
-        if (versionMeta.fabric.launcherFor(minecraftVersion, fabricVersion).isPresent) {
-            versionMeta.fabric.launcherFor(minecraftVersion, fabricVersion).get().copyTo(fileDestination)
-            log.info("Successfully provided improved Fabric Server Launcher.")
-            val text = """
-                |If you are using this server pack on a managed server, meaning you can not execute scripts, please use the fabric-server-launcher.jar instead of the fabric-server-launch.jar. Note the extra "er" at the end of "launcher".
-                |This is the improved Fabric Server Launcher, which will take care of downloading and installing the Minecraft server and any and all libraries needed for running the Fabric server.
-                |
-                |The downside of this method is the occasional incompatibility of mods with the Fabric version, as the new Fabric Server Launcher always uses the latest available Fabric version.
-                |If a mod is incompatible with said latest Fabric version, contact the mod-author and ask them to remedy the situation.
-                |The official Fabric Discord had the following to add to this:
-                |    Fabric loader however is cross version, so unless there is a mod incompatibility (which usually involves the mod being broken / using non-api internals)
-                |    there is no good reason to use anything but the latest. I.e. the latest loader on any Minecraft version works with the new server launcher.
-            """.trimMargin()
-            File(destination, "SERVER_PACK_INFO.txt").writeText(text)
-        }
-    }
-
+    fun copyIcon(destination: String, pathToServerIcon: String) =
+        provisioner.copyIcon(destination, pathToServerIcon)
     /**
-     * Copies the server-icon.png into server pack. The sever-icon is automatically scaled to a
-     * resolution of 64x64 pixels.
-     *
-     * @param destination      The destination where the icon should be copied to.
-     * @param pathToServerIcon The path to the custom server-icon.
-     * @author Griefed
+     * Copy the server.properties into the server pack.
      */
-    fun copyIcon(destination: String, pathToServerIcon: String) {
-        log.info("Copying server-icon.png...")
-        val customIcon = File(destination, apiProperties.defaultServerIcon.name)
-        if (File(pathToServerIcon).exists()) {
-            try {
-                val originalImage: BufferedImage = ImageIO.read(File(pathToServerIcon))
-                if (originalImage.height == 64 && originalImage.width == 64) {
-                    try {
-                        File(pathToServerIcon).copyTo(customIcon, true)
-                    } catch (e: IOException) {
-                        log.error("An error occurred trying to copy the server-icon.", e)
-                    }
-                } else {
-                    val scaledImage: Image = originalImage.getScaledInstance(64, 64, Image.SCALE_SMOOTH)
-                    val outputImage = BufferedImage(
-                        scaledImage.getWidth(null), scaledImage.getHeight(null), BufferedImage.TYPE_INT_ARGB
-                    )
-                    outputImage.graphics.drawImage(scaledImage, 0, 0, null)
-                    try {
-                        ImageIO.write(outputImage, "png", customIcon)
-                    } catch (ex: IOException) {
-                        log.error("Error scaling image.", ex)
-                    }
-                }
-            } catch (ex: Exception) {
-                log.error("Error reading server-icon image.", ex)
-            }
-        } else if (pathToServerIcon.isEmpty()) {
-            log.info("No custom icon specified or the file doesn't exist.")
-            apiProperties.defaultServerIcon.copyTo(customIcon, true)
-        } else {
-            log.error("The specified server-icon does not exist: $pathToServerIcon")
-        }
-    }
-
+    fun copyProperties(destination: String, pathToServerProperties: String) =
+        provisioner.copyProperties(destination, pathToServerProperties)
     /**
-     * Copies the server.properties into server pack.
-     *
-     * @param destination            The destination where the properties should be copied to.
-     * @param pathToServerProperties The path to the custom server.properties.
-     * @author Griefed
+     * Create start-scripts, variables.txt and HOW-TO-RUN.md for the generated server pack.
      */
-    fun copyProperties(destination: String, pathToServerProperties: String) {
-        log.info("Copying server.properties...")
-        val customProperties = File(destination, apiProperties.defaultServerProperties.name)
-        if (File(pathToServerProperties).exists()) {
-            File(pathToServerProperties).copyTo(customProperties, true)
-        } else if (pathToServerProperties.isEmpty()) {
-            log.info("No custom properties specified or the file doesn't exist.")
-            apiProperties.defaultServerProperties.copyTo(customProperties, true)
-        } else {
-            log.error("The specified server.properties does not exist: $pathToServerProperties")
-        }
-    }
-
+    fun createServerRunFiles(scriptSettings: HashMap<String, String>, destination: String, isLocal: Boolean) =
+        provisioner.createServerRunFiles(scriptSettings, destination, isLocal)
     /**
-     * Create start-scripts for the generated server pack using the templates the user has defined for
-     * their instance of ServerPackCreator.
-     *
-     * @param scriptSettings Key-value pairs to replace in the script. A given key in the script is
-     * replaced with its value.
-     * @param destination    The destination where the scripts should be created in.
-     * @param isLocal        Whether the start scripts should be created for a locally usable server
-     * pack. Use `false` if the start scripts should be created for a
-     * server pack about to be zipped.
-     * @author Griefed
-     */
-    fun createServerRunFiles(scriptSettings: HashMap<String, String>, destination: String, isLocal: Boolean) {
-        var script: File
-        var content: String
-        val scripts = mutableListOf<File>()
-        for ((key, value) in apiProperties.startScriptTemplates) {
-            try {
-                script = File(destination, "start.$key")
-                content = replacePlaceholders(isLocal, File(value).readText(), scriptSettings).replace("\r", "")
-                if (script.exists()) {
-                    script.setWritable(true)
-                }
-                script.writeText(content)
-                scripts.add(script)
-            } catch (ex: Exception) {
-                log.error("$key-File not accessible: $value.", ex)
-            }
-        }
-
-        for ((key, value) in apiProperties.javaScriptTemplates) {
-            try {
-                script = File(destination, "install_java.$key")
-                content = replacePlaceholders(isLocal, File(value).readText(), scriptSettings).replace("\r", "")
-                if (script.exists()) {
-                    script.setWritable(true)
-                }
-                script.writeText(content)
-                scripts.add(script)
-            } catch (ex: Exception) {
-                log.error("$key-File not accessible: $value.", ex)
-            }
-        }
-        for (scriptFile in scripts) {
-            scriptFile.setExecutable(true)
-            scriptFile.setReadable(true)
-            scriptFile.setWritable(false)
-        }
-
-        try {
-            val destinationVariables = File(destination, "variables.txt")
-            var variablesContent = variables
-            variablesContent = replacePlaceholders(isLocal, variablesContent, scriptSettings)
-            for ((key, value) in scriptSettings) {
-                if (key.startsWith("CUSTOM_") && key.endsWith("_CUSTOM")) {
-                    val varKey = key.replace("CUSTOM_","").replace("_CUSTOM","")
-                    variablesContent += "\n$varKey=$value"
-                }
-            }
-            destinationVariables.writeText(variablesContent.replace("\r", ""))
-            destinationVariables.setReadable(true)
-            destinationVariables.setWritable(true)
-            destinationVariables.setExecutable(false)
-        } catch (ex: Exception) {
-            log.error("File not accessible: ${File(destination, "variables.txt")}.", ex)
-        }
-
-        try {
-            val howToStartTheScriptReadme = File(destination, "HOW-TO-RUN.md")
-            if (howToStartTheScriptReadme.exists()) {
-                howToStartTheScriptReadme.setWritable(true)
-            }
-            howToStartTheScriptReadme.writeText(howToStartTheServer.replace("\r", ""))
-            howToStartTheScriptReadme.setExecutable(false)
-            howToStartTheScriptReadme.setReadable(true)
-            howToStartTheScriptReadme.setWritable(false)
-        } catch (ex: Exception) {
-            log.error("File not accessible: ${File(destination, "HOW-TO-RUN.md")}.", ex)
-        }
-    }
-
-    /**
-     * Creates a ZIP-archive of specified directory. Depending on the property `de.griefed.serverpackcreator.serverpack.zip.exclude.enabled`,
-     * files will be excluded. To customize the files which will be excluded, the property `de.griefed.serverpackcreator.serverpack.zip.exclude`
-     * must be configured accordingly. The created ZIP-archive will be stored alongside the specified
-     * destination, with `_server_pack.zip` appended to its name.
-     *
-     * @param minecraftVersion          Determines the name of the Minecraft server JAR to exclude
-     * from the ZIP-archive if the modloader is Forge.
-     * @param destination               The destination where the ZIP-archive should be created in.
-     * @param modloader                 The modloader the modpack and server pack use.
-     * @param modloaderVersion          The modloader version the modpack and server pack use.
-     * @author Griefed
+     * Create the ZIP-archive of the server pack, honoring the configured ZIP-exclusions.
      */
     fun zipBuilder(
         minecraftVersion: String,
         destination: String,
         modloader: String,
         modloaderVersion: String
-    ) : Optional<File> {
-        log.info("Creating zip archive of serverpack...")
-        val zipParameters = ZipParameters()
-        var zip: ZipFile? = null
-        val filesToExclude: MutableList<File> = ArrayList(100)
-        if (apiProperties.isZipFileExclusionEnabled) {
-            for (entry in apiProperties.zipArchiveExclusions) {
-                filesToExclude.add(
-                    File(
-                        destination,
-                        entry.replace("MINECRAFT_VERSION", minecraftVersion).replace("MODLOADER", modloader)
-                            .replace("MODLOADER_VERSION", modloaderVersion)
-                    )
-                )
-            }
-            val excludeFileFilter = ExcludeFileFilter { o: File -> filesToExclude.contains(o) }
-            zipParameters.excludeFileFilter = excludeFileFilter
-        } else {
-            log.info("File exclusion from ZIP-archives deactivated.")
-        }
-        val comment = ("Server pack made with ServerPackCreator ${apiProperties.apiVersion} by Griefed.")
-        zipParameters.isIncludeRootFolder = false
-        zipParameters.fileComment = comment
-        try {
-            zip = ZipFile("${destination}_server_pack.zip")
-            zip.use {
-                it.addFolder(File(destination), zipParameters)
-                it.comment = comment
-            }
-        } catch (ex: IOException) {
-            log.error("There was an error during zip creation.", ex)
-        }
-        log.info("Finished creation of zip archive.")
-        return Optional.ofNullable(zip?.file)
-    }
-
+    ): Optional<File> = provisioner.zipBuilder(minecraftVersion, destination, modloader, modloaderVersion)
     /**
-     * Delete files and folders from previous installations to prevent errors during server installation due to already
-     * existing files.
-     * @param destination The folder in which to perform the cleanup operations.
-     *
-     * @author Griefed
+     * Delete configured leftover-files before a modloader-server installation.
      */
     @Suppress("unused")
-    fun preInstallationCleanup(destination: String) {
-        log.info("Pre server installation cleanup.")
-        var fileToDelete: File
-        for (file in apiProperties.preInstallCleanupFiles) {
-            fileToDelete = File(destination,file)
-            if (fileToDelete.deleteQuietly()) {
-                log.info("Deleted $fileToDelete")
-            }
-        }
-    }
-
+    fun preInstallationCleanup(destination: String) = provisioner.preInstallationCleanup(destination)
     /**
-     * Gather a list of all files from an explicit source;destination-combination. If the source is a
-     * file, a singular [ServerPackFile] is returned. If the source is a directory, then all
-     * files in said directory are returned.
-     *
-     * @param source source-file/directory
-     * @param destination destination-file/directory
-     * @param modpackDir  The modpack-directory.
-     * @param serverPackDestination The destination, normally the server pack-directory.
-     * @return List of [ServerPackFile].
-     * @author Griefed
+     * Gather all files for an explicit source-destination-combination.
      */
     fun getExplicitFiles(
         source: String,
         destination: String,
         modpackDir: String,
         serverPackDestination: String
-    ): MutableList<ServerPackFile> {
-        val serverPackFiles: MutableList<ServerPackFile> = ArrayList(100)
-        if (File(modpackDir, source).isFile) {
-            serverPackFiles.add(
-                ServerPackFile(
-                    File(modpackDir, source), File(serverPackDestination, destination)
-                )
-            )
-        } else if (File(modpackDir, source).isDirectory) {
-            serverPackFiles.addAll(
-                getDirectoryFiles(
-                    modpackDir + File.separator + source, serverPackDestination + File.separator + destination
-                )
-            )
-        } else if (File(source).isFile) {
-            serverPackFiles.add(
-                ServerPackFile(
-                    File(source), File(serverPackDestination, destination)
-                )
-            )
-        } else if (File(source).isDirectory) {
-            serverPackFiles.addAll(
-                getDirectoryFiles(
-                    source, serverPackDestination + File.separator + destination
-                )
-            )
-        }
-        return serverPackFiles
-    }
-
+    ): MutableList<ServerPackFile> = fileGatherer.getExplicitFiles(source, destination, modpackDir, serverPackDestination)
     /**
-     * Recursively acquire all files and directories inside the given save-directory as a list of
-     * [ServerPackFile].
-     *
-     * @param clientDir   Target directory in the server pack. Usually the name of the world.
-     * @param directory   The save-directory.
-     * @param destination The destination of the server pack.
-     * @return List of [ServerPackFile] which will be included in the server pack.
-     * @author Griefed
+     * Recursively gather all files of the given save-directory.
      */
     @Suppress("unused")
-    fun getSaveFiles(clientDir: String, directory: String, destination: String): List<ServerPackFile> {
-        val serverPackFiles: MutableList<ServerPackFile> = ArrayList(2000)
-        try {
-            Files.walk(Paths.get(clientDir)).use {
-                for (path in it) {
-                    try {
-                        serverPackFiles.add(
-                            ServerPackFile(
-                                path,
-                                Paths.get(destination + File.separator + directory.substring(6))
-                                    .resolve(Paths.get(clientDir).relativize(path))
-                            )
-                        )
-                    } catch (ex: UnsupportedOperationException) {
-                        log.error("Couldn't gather file $path from directory $clientDir.", ex)
-                    }
-                }
-            }
-        } catch (ex: IOException) {
-            log.error("An error occurred during the copy-procedure to the server pack.", ex)
-        }
-        return serverPackFiles
-    }
-
+    fun getSaveFiles(clientDir: String, directory: String, destination: String): List<ServerPackFile> =
+        fileGatherer.getSaveFiles(clientDir, directory, destination)
     /**
-     * Generates a list of all mods to include in the server pack. If the user specified
-     * clientside-mods to exclude, and/or if the automatic exclusion of clientside-only mods is
-     * active, they will be excluded, too.
-     *
-     * @param packConfig The configurationModel containing the modpack directory, list of
-     * clientside-only mods to exclude, Minecraft version used by the
-     * modpack and server pack and the modloader used by the modpack and
-     * server pack.
-     * @return A list of all mods to include in the server pack.
-     * @author Griefed
+     * Generate the list of mods to include in the server pack from the given configuration.
      */
     @Suppress("unused")
-    fun compileModList(packConfig: PackConfig) = compileModList(
-        "${packConfig.modpackDir}${File.separator}mods",
-        packConfig.clientMods,
-        packConfig.modsWhitelist,
-        packConfig.minecraftVersion,
-        packConfig.modloader
-    )
+    fun compileModList(packConfig: PackConfig) = modListCompiler.compileModList(packConfig)
 
     /**
-     * Generates a list of all mods to include in the server pack. If the user specified
-     * clientside-mods to exclude, and/or if the automatic exclusion of clientside-only mods is
-     * active, they will be excluded, too.
-     *
-     * @param modsDir The mods-directory of the modpack of which to generate a list of all its contents.
-     * @param clientsideModsList A list of all clientside-only mods.
-     * @param modWhitelist A list of mods to include regardless if a match was found in [clientsideModsList].
-     * @param minecraftVersion The Minecraft version the modpack uses. When the modloader is Forge, this determines
-     * whether Annotations or Tomls are scanned.
-     * @param modloader The modloader the modpack uses.
-     * @return A list of all mods to include in the server pack.
-     * @author Griefed
+     * Generate the list of mods to include in the server pack, excluding clientside-only mods.
      */
     fun compileModList(
         modsDir: String,
@@ -1094,374 +455,37 @@ class ServerPackHandler(
         modWhitelist: List<String>,
         minecraftVersion: String,
         modloader: String
-    ): Pair<List<File>,List<File>> {
-        log.info("Preparing a list of mods to include in server pack...")
-        val filesInModsDir: Collection<File> = File(modsDir).filteredWalk(modFileEndings, FilterType.ENDS_WITH, FileWalkDirection.TOP_DOWN, recursive = false)
-        val modsForServerPack = TreeSet(filesInModsDir)
-        val disabledMods = TreeSet<File>()
-        val autoDiscoveredClientMods: MutableList<File> = ArrayList(100)
-        val modDependencies: MutableList<Pair<String,String>> = ArrayList(100)
-        var scanResults: Pair<Collection<File>, Collection<Pair<String,String>>>
-
-        // Check whether scanning mods for sideness is activated.
-        if (apiProperties.isAutoExcludingModsEnabled) {
-            val scanningStopWatch = SimpleStopWatch().start()
-            when (modloader) {
-                "LegacyFabric", "Fabric" -> {
-                    scanResults = modScanner.fabricScanner.scan(filesInModsDir)
-                    autoDiscoveredClientMods.addAll(scanResults.first)
-                    modDependencies.addAll(scanResults.second)
-                }
-
-                "Forge" -> {
-                    val mcVersions = minecraftVersion.split(".").dropLastWhile { it.isEmpty() }.toTypedArray()
-                    if (mcVersions[1].toInt() > 12) {
-                        scanResults = modScanner.forgeTomlScanner.scan(filesInModsDir)
-                        autoDiscoveredClientMods.addAll(scanResults.first)
-                        modDependencies.addAll(scanResults.second)
-                    } else {
-                        scanResults = modScanner.forgeAnnotationScanner.scan(filesInModsDir)
-                        autoDiscoveredClientMods.addAll(scanResults.first)
-                        modDependencies.addAll(scanResults.second)
-                    }
-                }
-
-                "NeoForge" -> {
-                    if (SemanticVersionComparator.compareSemantics("1.20.5", minecraftVersion, Comparison.EQUAL_OR_NEW)) {
-                        log.debug("Scanning using NeoForge scanner.")
-                        scanResults = modScanner.neoForgeTomlScanner.scan(filesInModsDir)
-                        autoDiscoveredClientMods.addAll(scanResults.first)
-                        modDependencies.addAll(scanResults.second)
-                    } else {
-                        log.debug("Scanning using Forge scanner.")
-                        scanResults = modScanner.forgeTomlScanner.scan(filesInModsDir)
-                        autoDiscoveredClientMods.addAll(scanResults.first)
-                        modDependencies.addAll(scanResults.second)
-                    }
-                }
-
-                "Quilt" -> {
-                    val discoMods = TreeSet<File>()
-                    scanResults = modScanner.fabricScanner.scan(filesInModsDir)
-                    discoMods.addAll(scanResults.first)
-                    modDependencies.addAll(scanResults.second)
-
-                    scanResults = modScanner.quiltScanner.scan(filesInModsDir)
-                    discoMods.addAll(scanResults.first)
-                    modDependencies.addAll(scanResults.second)
-
-                    autoDiscoveredClientMods.addAll(discoMods)
-                    discoMods.clear()
-                }
-            }
-
-            // Exclude scanned mods from copying
-            if (autoDiscoveredClientMods.isNotEmpty()) {
-                log.info("Automatically detected mods: ${autoDiscoveredClientMods.size}")
-                for (discoveredMod in autoDiscoveredClientMods) {
-                    @Suppress("VariableInitializerIsRedundant")
-                    var whitelistMatch = "N/A"
-                    val modName = discoveredMod.name
-                    val isWhitelistedMod = modWhitelist.any { whitelistEntry ->
-                        if (when (apiProperties.exclusionFilter) {
-                                ExclusionFilter.START -> modName.startsWith(whitelistEntry)
-                                ExclusionFilter.END -> modName.endsWith(whitelistEntry)
-                                ExclusionFilter.CONTAIN -> modName.contains(whitelistEntry)
-                                ExclusionFilter.REGEX -> modName.matches(whitelistEntry.toRegex())
-                                ExclusionFilter.EITHER -> (
-                                        modName.startsWith(whitelistEntry) ||
-                                                modName.endsWith(whitelistEntry) ||
-                                                modName.contains(whitelistEntry) ||
-                                                modName.matches(whitelistEntry.toRegex()))
-                            }) {
-                            whitelistMatch = whitelistEntry
-                            log.warn("Prevented automated exclusion of $modName. It's whitelisted with entry: $whitelistMatch")
-                            true
-                        } else {
-                            false
-                        }
-                    }
-
-                    modsForServerPack.removeIf {
-                        if (it.name.contains(modName) && !isWhitelistedMod) {
-                            log.warn("Automatically excluding mod: $modName")
-                            disabledMods.add(it)
-                            return@removeIf true
-                        } else {
-                            return@removeIf false
-                        }
-                    }
-                }
-            } else {
-                log.info("No clientside-only mods detected.")
-            }
-
-            log.debug(
-                "Scanning and excluding of ${filesInModsDir.size} mods took ${scanningStopWatch.stop().getTime()}"
-            )
-        } else {
-            log.info("Automatic clientside-only mod detection disabled.")
-        }
-
-        // Exclude user-specified mods from copying.
-        if (clientsideModsList.isNotEmpty()) {
-            log.info("Performing ${apiProperties.exclusionFilter}-type checks for user-specified clientside-only mod exclusion.")
-
-            modsForServerPack.removeIf { modToCheck ->
-                var excludeMod = false
-                val isDependencyMod: Boolean
-                var isWhitelistedMod: Boolean
-                var exclusionMatch = "N/A"
-                var whitelistMatch = "N/A"
-                var dependant = "N/A"
-                val modName = modToCheck.name
-                for (userSpecifiedExclusion in clientsideModsList) {
-                    excludeMod = when (apiProperties.exclusionFilter) {
-                        ExclusionFilter.START -> modName.startsWith(userSpecifiedExclusion)
-                        ExclusionFilter.END -> modName.endsWith(userSpecifiedExclusion)
-                        ExclusionFilter.CONTAIN -> modName.contains(userSpecifiedExclusion)
-                        ExclusionFilter.REGEX -> modName.matches(userSpecifiedExclusion.toRegex())
-                        ExclusionFilter.EITHER -> (
-                                (modName.startsWith(userSpecifiedExclusion)) ||
-                                        (modName.endsWith(userSpecifiedExclusion)) ||
-                                        (modName.contains(userSpecifiedExclusion)) ||
-                                        (modName.matches(userSpecifiedExclusion.toRegex())))
-                    }
-                    if (excludeMod) {
-                        exclusionMatch = userSpecifiedExclusion
-                        break
-                    }
-                }
-                if (excludeMod) {
-                    isDependencyMod = modDependencies.any { dependency ->
-                        if (modName.startsWith(dependency.first, ignoreCase = true)) {
-                            dependant = dependency.second
-                            true
-                        } else {
-                            false
-                        }
-                    }
-
-                    isWhitelistedMod = modWhitelist.any { whitelistEntry ->
-                        if (when (apiProperties.exclusionFilter) {
-                                ExclusionFilter.START -> modName.startsWith(whitelistEntry)
-                                ExclusionFilter.END -> modName.endsWith(whitelistEntry)
-                                ExclusionFilter.CONTAIN -> modName.contains(whitelistEntry)
-                                ExclusionFilter.REGEX -> modName.matches(whitelistEntry.toRegex())
-                                ExclusionFilter.EITHER -> (
-                                        modName.startsWith(whitelistEntry) ||
-                                                modName.endsWith(whitelistEntry) ||
-                                                modName.contains(whitelistEntry) ||
-                                                modName.matches(whitelistEntry.toRegex()))
-                            }) {
-                            whitelistMatch = whitelistEntry
-                            true
-                        } else {
-                            false
-                        }
-                    }
-                    if (isDependencyMod && disabledMods.none { entry -> dependant.contains(entry.name,ignoreCase = true) } && !dependant.contains(modToCheck.name,ignoreCase = true) ) {
-                        log.info("Not excluding $exclusionMatch. It's a dependency for $dependant.")
-                        excludeMod = false
-                    } else if (isWhitelistedMod) {
-                        log.info("Not excluding $modToCheck. It's whitelisted with entry: $whitelistMatch")
-                        excludeMod = false
-                    } else {
-                        log.info("Excluding ${modToCheck.name}. It matched clientside-mod entry: $exclusionMatch")
-                        disabledMods.add(modToCheck)
-                    }
-                }
-                excludeMod
-            }
-
-        } else {
-            log.warn("User specified no clientside-only mods.")
-        }
-        return Pair(modsForServerPack.toList(), disabledMods.toList())
-    }
-
+    ): Pair<List<File>, List<File>> =
+        modListCompiler.compileModList(modsDir, clientsideModsList, modWhitelist, minecraftVersion, modloader)
     /**
-     * Recursively acquire all files and directories inside the given directory as a list of
-     * [ServerPackFile].
-     *
-     * @param source      The source-directory.
-     * @param destination The server pack-directory.
-     * @return List of files and folders of the server pack.
-     * @author Griefed
+     * Recursively gather all files of the given directory as source-destination-pairs.
      */
-    fun getDirectoryFiles(source: String, destination: String): List<ServerPackFile> {
-        val serverPackFiles: MutableList<ServerPackFile> = ArrayList(100)
-        try {
-            Files.walk(Paths.get(source).absolute()).use {
-                for (path in it) {
-                    try {
-                        val pathFile = path.toFile().absolutePath
-                        val sourceFile = File(source).absolutePath
-                        val destFile = File(destination, pathFile.replace(sourceFile, ""))
-                        serverPackFiles.add(
-                            ServerPackFile(
-                                path.toFile(),
-                                destFile
-                            )
-                        )
-                    } catch (ex: UnsupportedOperationException) {
-                        log.error("Couldn't gather file $path from directory $source.", ex)
-                    }
-                }
-            }
-        } catch (ex: IOException) {
-            log.error("An error occurred gathering files to copy to the server pack for directory $source.", ex)
-        }
-
-        return serverPackFiles
-    }
-
+    fun getDirectoryFiles(source: String, destination: String): List<ServerPackFile> =
+        fileGatherer.getDirectoryFiles(source, destination)
     /**
-     * Check whether the given file or directory should be excluded from the server pack.
-     *
-     * @param modpackDir     The directory where the modpack resides in. Used to filter out any
-     * unwanted directories using the property `de.griefed.serverpackcreator.configuration.directories.shouldexclude`.
-     * @param fileToCheckFor The file or directory to check whether it should be excluded from the
-     * server pack.
-     * @param exclusions     Files or directories determined by ServerPackCreator to be excluded from
-     * the server pack
-     * @return `true` if the file or directory was determined to be excluded from the server
-     * pack.
-     * @author Griefed
+     * Whether the given file or directory matches any of the given exclusion-regexes.
      */
-    fun excludeFileOrDirectory(modpackDir: String, fileToCheckFor: File, exclusions: List<Regex>): Boolean {
-        val cleaned = fileToCheckFor.absolutePath.replace(File(modpackDir).absolutePath + File.separator, "")
-        return exclusions.any { regex ->
-            if (cleaned.matches(regex)) {
-                log.info("Excluding '$cleaned' as per global exclusion filter '$regex'.")
-                return@any true
-            } else {
-                return@any false
-            }
-        }
-    }
-
+    fun excludeFileOrDirectory(modpackDir: String, fileToCheckFor: File, exclusions: List<Regex>): Boolean =
+        fileGatherer.excludeFileOrDirectory(modpackDir, fileToCheckFor, exclusions)
     /**
-     * Check whether the installer for the given combination of Minecraft version, modloader and
-     * modloader version is available/reachable.
-     *
-     * @param mcVersion        The Minecraft version.
-     * @param modloader        The modloader.
-     * @param modloaderVersion The modloader version.
-     * @return `true` if the installer can be downloaded.
-     * @author Griefed
+     * Whether the installer for the given modloader-combination is available/reachable.
      */
-    fun serverDownloadable(mcVersion: String, modloader: String, modloaderVersion: String) = when (modloader) {
-        "Fabric" -> utilities.webUtilities.isReachable(versionMeta.fabric.releaseInstallerUrl())
-
-        "Forge" -> {
-            val instance = versionMeta.forge.getForgeInstance(mcVersion, modloaderVersion)
-            instance.isPresent && utilities.webUtilities.isReachable(instance.get().installerUrl)
-        }
-
-        "Quilt" -> utilities.webUtilities.isReachable(versionMeta.quilt.releaseInstallerUrl())
-
-        "LegacyFabric" -> {
-            try {
-                utilities.webUtilities.isReachable(versionMeta.legacyFabric.releaseInstallerUrl())
-            } catch (_: MalformedURLException) {
-                false
-            }
-        }
-
-        "NeoForge" -> {
-            val instance = versionMeta.neoForge.getNeoForgeInstance(mcVersion,modloaderVersion)
-            instance.isPresent && utilities.webUtilities.isReachable(instance.get().installerUrl)
-        }
-
-        else -> false
-    }
-
+    fun serverDownloadable(mcVersion: String, modloader: String, modloaderVersion: String): Boolean =
+        provisioner.serverDownloadable(mcVersion, modloader, modloaderVersion)
     /**
-     * Cleans up the server_pack directory by deleting left-over files from modloader installations
-     * and version checking.
-     *
-     * @param destination      The destination where we should clean up in.
-     * @author Griefed
+     * Delete configured installer-leftovers after a modloader-server installation.
      */
     @Suppress("unused")
-    fun postInstallCleanup(destination: String) {
-        log.info("Cleanup after modloader server installation.")
-        var fileToDelete: File
-        for (file in apiProperties.postInstallCleanupFiles) {
-            fileToDelete = File(destination, file)
-            if (fileToDelete.deleteQuietly()) {
-                log.info("  Deleted $fileToDelete")
-            }
-        }
-    }
-
+    fun postInstallCleanup(destination: String) = provisioner.postInstallCleanup(destination)
     /**
-     * Walk through the specified directory and add a [ServerPackFile] for every file/folder
-     * which matches the given regex.
-     *
-     * @param source          The source-directory to walk through and perform regex-matches in.
-     * @param destination     The destination-directory where a matched file should be copied to,
-     * usually the server pack directory.
-     * @param regex           Regex with which to perform matches against files in the
-     * source-directory.
-     * @param serverPackFiles List of files to copy to the server pack to which any matched file will
-     * be added to.
-     * @author Griefed
+     * Gather every file matching the given regex from the source-directory.
      */
     @Suppress("unused")
-    fun regexWalk(
-        source: File, destination: String, regex: Regex, serverPackFiles: MutableList<ServerPackFile>
-    ) {
-        var toMatch: String
-        try {
-            Files.walk(source.toPath()).use {
-                for (path in it) {
-                    toMatch = path.toFile().absolutePath.replace(source.absolutePath, "")
-                    if (toMatch.startsWith(File.separator)) {
-                        toMatch = toMatch.substring(1)
-                    }
-                    if (toMatch.matches(regex)) {
-                        val add = Paths.get(destination + File.separator + source.name)
-                            .resolve(source.toPath().relativize(path))
-                        serverPackFiles.add(
-                            ServerPackFile(
-                                path, add
-                            )
-                        )
-                        log.debug("Including through regex-match:")
-                        log.debug("    SOURCE: $path")
-                        log.debug("    DESTINATION: $add")
-                    }
-                }
-            }
-        } catch (ex: IOException) {
-            log.error("Couldn't gather all files from ${source.absolutePath} for filter \"$regex\".", ex)
-        }
-    }
-
+    fun regexWalk(source: File, destination: String, regex: Regex, serverPackFiles: MutableList<ServerPackFile>) =
+        fileGatherer.regexWalk(source, destination, regex, serverPackFiles)
     /**
-     * Replace placeholders for script settings in the given [content] with their respective values, both provided via the
-     * HashMap [scriptSettings].
-     *
-     * @param isLocal Whether the start scripts should be created for a locally usable server pack. Use false if the
-     * start scripts should be created for a server pack about to be zipped
-     *
-     * @author Griefed
+     * Replace script-placeholders in the given content with their configured values.
      */
-    fun replacePlaceholders(isLocal: Boolean, content: String, scriptSettings: HashMap<String, String>): String {
-        var result = content
-        for ((key, value) in scriptSettings) {
-            result = if (isLocal && key == "SPC_JAVA_SPC") {
-                result.replace(key, value.escapePath())
-            } else if (!isLocal && key == "SPC_JAVA_SPC") {
-                result.replace(key, "java")
-            } else if (!isLocal && key == "SPC_RESTART_SPC") {
-                result.replace(key, "true")
-            } else {
-                result.replace(key, value)
-            }
-        }
-        return result
-    }
+    fun replacePlaceholders(isLocal: Boolean, content: String, scriptSettings: HashMap<String, String>): String =
+        provisioner.replacePlaceholders(isLocal, content, scriptSettings)
 }
