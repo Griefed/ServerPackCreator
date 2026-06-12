@@ -23,6 +23,7 @@ import de.comahe.i18n4k.Locale
 import de.comahe.i18n4k.config.I18n4kConfigDefault
 import de.comahe.i18n4k.i18n4k
 import de.griefed.serverpackcreator.api.settings.GenerationConfig
+import de.griefed.serverpackcreator.api.settings.JavaConfig
 import de.griefed.serverpackcreator.api.settings.PathsConfig
 import de.griefed.serverpackcreator.api.settings.ScriptTemplatesConfig
 import de.griefed.serverpackcreator.api.settings.WebserviceConfig
@@ -85,12 +86,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         "de.griefed.serverpackcreator.configuration.hastebinserver"
     private val pConfigurationDirectoriesServerPacks =
         "de.griefed.serverpackcreator.configuration.directories.serverpacks"
-    private val pJavaForServerInstall =
-        "de.griefed.serverpackcreator.java"
-    private val pScriptVariablesJavaPaths =
-        "de.griefed.serverpackcreator.script.java"
-    private val pScriptVariablesAutoUpdateJavaPathsEnabled =
-        "de.griefed.serverpackcreator.script.java.autoupdate"
     private val pOldVersion =
         "de.griefed.serverpackcreator.version.old"
     private val pLogLevel = "de.griefed.serverpackcreator.loglevel"
@@ -148,7 +143,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         "https://raw.githubusercontent.com/Griefed/ServerPackCreator/main/serverpackcreator-api/src/main/resources/serverpackcreator.properties"
     val fallbackExclusionFilter: ExclusionFilter get() = generationConfig.fallbackExclusionFilter
     val fallbackOverwriteEnabled: Boolean get() = generationConfig.fallbackOverwriteEnabled
-    val fallbackJavaScriptAutoupdateEnabled = true
+    val fallbackJavaScriptAutoupdateEnabled: Boolean get() = javaConfig.fallbackJavaScriptAutoupdateEnabled
     val fallbackCheckingForPreReleasesEnabled = false
     val fallbackZipFileExclusionEnabled: Boolean get() = generationConfig.fallbackZipFileExclusionEnabled
     val fallbackServerPackCleanupEnabled: Boolean get() = generationConfig.fallbackServerPackCleanupEnabled
@@ -159,7 +154,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     val fallbackVersionSchedule = "0 0 0 * * *"
     val fallbackDatabaseCleanupSchedule = "0 0 0 * * *"
     val fallbackUpdateServerPack: Boolean get() = generationConfig.fallbackUpdateServerPack
-    private val checkedJavas = hashMapOf<String, Boolean>()
     private val trueFalseRegex = "^(true|false)$".toRegex()
     private val alphaBetaRegex = "^(.*alpha.*|.*beta.*)$".toRegex()
     val i18n4kConfig = I18n4kConfigDefault()
@@ -349,54 +343,21 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         }
 
     /**
-     * Paths to Java installations available to SPC for automatically updating the script variables of a given server pack
-     * configuration.
-     * * key: Java version
-     * * value: Path to the Java .exe or binary
-     *
-     * If you plan on overwriting this property, make sure to format they key-value-pairs as follows:
-     * * key: `de.griefed.serverpackcreator.script.java` followed by the number representing the Java version
-     * * value: Valid path to a Java installation corresponding to the number used in the key
+     * Settings-group for Java-installations: the Java used for modloader-server installs, the
+     * per-version java-paths for script-variables, path-validation and the script-autoupdate
+     * flag. Prefer accessing these values through this group; the individual properties on
+     * ApiProperties remain as facade.
      */
-    var javaPaths = HashMap<String, String>(256)
-        get() {
-            val paths = HashMap<String, String>(256)
-            var path: String
-            var position: String
-            for (i in 8..255) {
-                position = pScriptVariablesJavaPaths + i
-                path = internalProps.getProperty(position, "")
-                if (checkJavaPath(path)) {
-                    paths[i.toString()] = path
-                    internalProps.setProperty(position, path)
-                }
-            }
-            field = paths
-            return paths
-        }
-        set(values) {
-            var position: Int?
-            var newKey: String
-            val paths = HashMap<String, String>(256)
-            for (i in 8..255) {
-                internalProps.remove(pScriptVariablesJavaPaths + i)
-            }
-            for ((key, value) in values) {
-                if (!checkJavaPath(value)) {
-                    continue
-                }
-                position = key.replace(pScriptVariablesJavaPaths, "").toIntOrNull()
-                newKey = pScriptVariablesJavaPaths + position
-                if (position != null && 8 <= position!! && position!! < 256) {
-                    internalProps.setProperty(newKey, value)
-                    paths[newKey] = value
-                }
-            }
-            field = paths
-            log.info("Available Java paths for scripts:")
-            for ((key, value) in field) {
-                log.info("Java $key path: $value")
-            }
+    val javaConfig = JavaConfig(store)
+
+    /**
+     * Paths to Java installations available to SPC for automatically updating the script
+     * variables of a given server pack configuration. Key: Java version, value: path.
+     */
+    var javaPaths: HashMap<String, String>
+        get() = javaConfig.javaPaths
+        set(value) {
+            javaConfig.javaPaths = value
         }
 
     fun getPreference(pref: String, def: String? = null) : Optional<String> {
@@ -558,18 +519,13 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         }
 
     /**
-     * Whether to automatically update the `SPC_JAVA_SPC`-placeholder in the script variables
+     * Whether to automatically update the SPC_JAVA_SPC-placeholder in the script variables
      * table with a Java path matching the required Java version for the Minecraft server.
      */
-    var isJavaScriptAutoupdateEnabled = fallbackJavaScriptAutoupdateEnabled
-        get() {
-            field = getBoolProperty(pScriptVariablesAutoUpdateJavaPathsEnabled, fallbackJavaScriptAutoupdateEnabled)
-            return field
-        }
+    var isJavaScriptAutoupdateEnabled: Boolean
+        get() = javaConfig.isJavaScriptAutoupdateEnabled
         set(value) {
-            setBoolProperty(pScriptVariablesAutoUpdateJavaPathsEnabled, value)
-            field = value
-            log.info("Automatically update SPC_JAVA_SPC-placeholder in script variables table set to: $field")
+            javaConfig.isJavaScriptAutoupdateEnabled = value
         }
 
     /**
@@ -640,26 +596,10 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Java installation used for installing the modloader server during server pack creation.
      */
-    var javaPath = "java"
-        get() {
-            val prop = internalProps.getProperty(pJavaForServerInstall, null)
-            field = if (checkJavaPath(prop)) {
-                prop
-            } else {
-                val acquired = acquireJavaPath()
-                internalProps.setProperty(pJavaForServerInstall, acquired)
-                acquired
-            }
-            return field
-        }
+    var javaPath: String
+        get() = javaConfig.javaPath
         set(value) {
-            if (checkJavaPath(value)) {
-                internalProps.setProperty(pJavaForServerInstall, value)
-                field = value
-                log.info("Java path set to: $field")
-            } else {
-                log.error("Invalid Java path specified: $value")
-            }
+            javaConfig.javaPath = value
         }
 
     /**
@@ -1144,46 +1084,10 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
 
 
     /**
-     * Check the given path to a Java installation for validity and return it, if it is valid. If the
-     * passed path is a UNIX symlink or Windows lnk, it is resolved, then returned. If the passed path
-     * is considered invalid, the system default is acquired and returned.
-     *
-     * @param pathToJava The path to check for whether it is a valid Java installation.
-     * @return Returns the path to the Java installation. If user input was incorrect, SPC will try to
-     * acquire the path automatically.
-     * @author Griefed
+     * Check the given path to a Java installation for validity and return it, if it is valid.
+     * Invalid paths yield the automatically acquired system-Java.
      */
-    fun acquireJavaPath(pathToJava: String? = null): String {
-        var checkedJavaPath: String
-        try {
-            if (!pathToJava.isNullOrBlank()) {
-                if (checkJavaPath(pathToJava)) {
-                    return pathToJava
-                }
-                if (checkJavaPath("$pathToJava.exe")) {
-                    return "$pathToJava.exe"
-                }
-                if (checkJavaPath("$pathToJava.lnk")) {
-                    return FileUtilities.resolveLink(File("$pathToJava.lnk"))
-                }
-            }
-            checkedJavaPath = SystemUtilities.acquireJavaPathFromSystem()
-            log.debug("Acquired path to Java installation: $checkedJavaPath")
-        } catch (ex: NullPointerException) {
-            log.info("Java setting invalid or otherwise not usable. Using system default.")
-            checkedJavaPath = SystemUtilities.acquireJavaPathFromSystem()
-            log.debug("Automatically acquired path to Java installation: $checkedJavaPath", ex)
-        } catch (ex: InvalidFileTypeException) {
-            log.info("Java setting invalid or otherwise not usable. Using system default.")
-            checkedJavaPath = SystemUtilities.acquireJavaPathFromSystem()
-            log.debug("Automatically acquired path to Java installation: $checkedJavaPath", ex)
-        } catch (ex: IOException) {
-            log.info("Java setting invalid or otherwise not usable. Using system default.")
-            checkedJavaPath = SystemUtilities.acquireJavaPathFromSystem()
-            log.debug("Automatically acquired path to Java installation: $checkedJavaPath", ex)
-        }
-        return checkedJavaPath
-    }
+    fun acquireJavaPath(pathToJava: String? = null): String = javaConfig.acquireJavaPath(pathToJava)
 
     /**
      * Store the ApplicationProperties to disk, overwriting the existing one.
@@ -1200,83 +1104,10 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     }
 
     /**
-     * Check whether the given path is a valid Java specification.
-     *
-     * @param pathToJava Path to the Java executable
-     * @return `true` if the path is valid.
-     * @author Griefed
-     */
-    private fun checkJavaPath(pathToJava: String?): Boolean {
-        if (pathToJava.isNullOrBlank()) {
-            return false
-        }
-        if (checkedJavas.containsKey(pathToJava)) {
-            return checkedJavas[pathToJava]!!
-        }
-        val result: Boolean
-        when (FileUtilities.checkFileType(pathToJava)) {
-            FileType.FILE -> {
-                result = testJava(pathToJava)
-            }
-
-            FileType.LINK, FileType.SYMLINK -> {
-                result = try {
-                    testJava(FileUtilities.resolveLink(File(pathToJava)))
-                } catch (ex: InvalidFileTypeException) {
-                    log.error("Could not read Java link/symlink.", ex)
-                    false
-                } catch (ex: IOException) {
-                    log.error("Could not read Java link/symlink.", ex)
-                    false
-                }
-            }
-
-            FileType.DIRECTORY -> {
-                log.error("Directory specified. Path to Java must lead to a lnk, symlink or file.")
-                result = false
-            }
-
-            FileType.INVALID -> result = false
-        }
-        checkedJavas[pathToJava] = result
-        return result
-    }
-
-    /**
-     * Test for a valid Java specification by trying to run `java -version`. If the command goes
-     * through without errors, it is considered a correct specification.
-     *
-     * @param pathToJava Path to the java executable/binary.
-     * @return `true` if the specified file is a valid Java executable/binary.
-     * @author Griefed
-     */
-    private fun testJava(pathToJava: String): Boolean {
-        val testSuccessful: Boolean = try {
-            val processBuilder = ProcessBuilder(listOf(pathToJava, "-version"))
-            processBuilder.redirectErrorStream(true)
-            val process = processBuilder.start()
-            val bufferedReader = BufferedReader(InputStreamReader(process.inputStream))
-            while (bufferedReader.readLine() != null && bufferedReader.readLine() != "null") {
-                println(bufferedReader.readLine())
-            }
-            bufferedReader.close()
-            process.destroyForcibly()
-            true
-        } catch (e: IOException) {
-            log.error("Invalid Java specified.")
-            false
-        }
-        return testSuccessful
-    }
-
-    /**
      * Whether a viable path to a Java executable or binary has been configured for
      * ServerPackCreator.
-     *
-     * @return `true` if a viable path has been set.
-     * @author Griefed
      */
-    fun javaAvailable() = checkJavaPath(javaPath)
+    fun javaAvailable() = javaConfig.javaAvailable()
 
     /**
      * Writes the specified locale from -lang your_locale to a lang.properties file to ensure every
@@ -1399,29 +1230,14 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Get the path to the specified Java executable/binary, wrapped in an [Optional] for your
      * convenience.
-     *
-     * @param javaVersion The Java version to acquire the path for.
-     * @return The path to the Java executable/binary, if available.
-     * @author Griefed
      */
-    fun javaPath(javaVersion: Int) =
-        if (javaPaths.containsKey(javaVersion.toString())
-            && javaPaths[javaVersion.toString()]?.let { File(it).isFile } == true
-        ) {
-            Optional.ofNullable(javaPaths[javaVersion.toString()])
-        } else {
-            Optional.empty()
-        }
+    fun javaPath(javaVersion: Int): Optional<String> = javaConfig.javaPath(javaVersion)
 
     /**
      * Get the path to the specified Java executable/binary, wrapped in an [Optional] for your
      * convenience.
-     *
-     * @param javaVersion The Java version to acquire the path for.
-     * @return The path to the Java executable/binary, if available.
-     * @author Griefed
      */
-    fun javaPath(javaVersion: String) = javaPath(javaVersion.toInt())
+    fun javaPath(javaVersion: String): Optional<String> = javaConfig.javaPath(javaVersion)
 
     /**
      * Set the old version of ServerPackCreator used to perform necessary migrations between the old

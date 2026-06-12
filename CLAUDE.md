@@ -158,11 +158,16 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   version-manifests, default script-templates, server-packs override, Tomcat-directories;
   8 tests). Pinned quirk: a deviating Tomcat base-directory is reset to the home-directory on
   read. ApiProperties: 2,126 → 1,754 lines; `getPreference`/`storePreference` stay on
-  ApiProperties (GUI uses them for general preferences). Remaining groups, roughly in order:
-  script-templates (now unblocked — depend on PathsConfig.serverFilesDirectory),
-  Java-settings (javaPath(s) + detection), update/release-info, i18n/log-level. The
-  log4j2-XML companion in ApiProperties is its own beast — consider moving to a dedicated
-  LoggingConfig last.
+  ApiProperties (GUI uses them for general preferences).
+- **Phase 1b, groups 4+5 (2026-06-12):** `api.settings.ScriptTemplatesConfig` (start-/java-
+  template maps under prefixed keys, defaults via PathsConfig, deprecated list-handling;
+  4 tests — note: group-declarations in ApiProperties must come AFTER the groups they depend
+  on, Kotlin initializes properties in declaration order) and `api.settings.JavaConfig`
+  (javaPath with validation + system-fallback, per-version javaPaths map, java-version
+  Optionals, autoupdate-flag; 5 tests using the running JVM's binary as known-valid Java).
+  ApiProperties: 1,624 → 1,440 lines. Remaining groups: update/release-info, i18n/log-level.
+  The log4j2-XML companion in ApiProperties is its own beast — consider moving to a
+  dedicated LoggingConfig last.
 - **Next:** continue Phase 1b group-extractions. Then CommandlineParser/MigrationManager
   tests during Phase 2.
 
