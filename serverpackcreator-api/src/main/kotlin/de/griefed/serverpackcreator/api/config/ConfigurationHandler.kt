@@ -72,6 +72,31 @@ class ConfigurationHandler(
     val previous = ".*_\\d".toRegex()
     val zipCheck = "^\\w+[/\\\\]$".toRegex()
 
+    /**
+     * Validator for modloader-names and modloader-versions.
+     */
+    val modloaderValidator = ModloaderValidator(versionMeta)
+
+    /**
+     * Validator for inclusion-specifications.
+     */
+    val inclusionsValidator = InclusionsValidator()
+
+    /**
+     * Validator for the modpack-directory.
+     */
+    val modpackDirectoryValidator = ModpackDirectoryValidator()
+
+    /**
+     * Inspector for modpack ZIP-archives: content-listing and validity-checks.
+     */
+    val zipInspector = ModpackZipInspector()
+
+    /**
+     * Parser deriving PackConfig-values from the manifests of various launchers.
+     */
+    val manifestParser = ModpackManifestParser(apiProperties, utilities)
+
     private val spcGenericEventListeners: ArrayList<SPCGenericListener> = ArrayList(0)
     private val spcConfigEventListeners: ArrayList<SPCConfigCheckListener> = ArrayList(0)
 
@@ -289,24 +314,10 @@ class ConfigurationHandler(
     }
 
     /**
-     * Checks whether either Forge or Fabric were specified as the modloader.
-     *
-     * @param modloader Check as case-insensitive for Forge or Fabric.
-     * @return `true` if the specified modloader is either Forge or Fabric. False if neither.
-     * @author Griefed
+     * Checks whether a supported modloader was specified.
      */
-    fun checkModloader(modloader: String, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck {
-        if (!modloader.lowercase().matches(forge)
-            && !modloader.lowercase().matches(neoForge)
-            && !modloader.lowercase().matches(fabric)
-            && !modloader.lowercase().matches(quilt)
-            && !modloader.lowercase().matches(legacyFabric)
-        ) {
-            configCheck.modloaderErrors.add(Translations.configuration_log_error_checkmodloader.toString())
-            log.error("Invalid modloader specified. Modloader must be either Forge, NeoForge, Fabric or Quilt.")
-        }
-        return configCheck
-    }
+    fun checkModloader(modloader: String, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck =
+        modloaderValidator.checkModloader(modloader, configCheck)
 
     /**
      * Sanitize any and all links in a given instance of [PackConfig] modpack-directory,
@@ -476,77 +487,17 @@ class ConfigurationHandler(
         }
         file = File(packName, "server.properties")
         if (file.exists()) {
-            packConfig.serverIconPath = file.absolutePath
+            packConfig.serverPropertiesPath = file.absolutePath
         }
         return configCheck
     }
 
     /**
-     * Check the given Minecraft and modloader versions for the specified modloader.
-     *
-     * @param modloader        The passed modloader which determines whether the check for Forge or
-     * Fabric is called.
-     * @param modloaderVersion The version of the modloader which is checked against the corresponding
-     * modloader's manifest.
-     * @param minecraftVersion The version of Minecraft used for checking the Forge version.
-     * @return `true` if the specified modloader version was found in the corresponding
-     * manifest.
-     * @author Griefed
+     * Check the given Minecraft- and modloader-versions for the specified modloader.
      */
     fun checkModloaderVersion(
         modloader: String, modloaderVersion: String, minecraftVersion: String, configCheck: ConfigCheck = ConfigCheck()
-    ): ConfigCheck {
-        when (modloader) {
-            "Forge" -> if (!versionMeta.forge.isForgeAndMinecraftCombinationValid(minecraftVersion, modloaderVersion)) {
-                configCheck.modloaderVersionErrors.add(
-                    Translations.configuration_log_error_checkmodloaderandversion(
-                        minecraftVersion, modloader, modloaderVersion
-                    )
-                )
-            }
-
-            "NeoForge" -> if (!versionMeta.neoForge.isNeoForgeAndMinecraftCombinationValid(minecraftVersion,modloaderVersion)) {
-                configCheck.modloaderVersionErrors.add(
-                    Translations.configuration_log_error_checkmodloaderandversion(
-                        minecraftVersion, modloader, modloaderVersion
-                    )
-                )
-            }
-
-            "Fabric" -> if (!versionMeta.fabric.isVersionValid(modloaderVersion)
-                || !versionMeta.fabric.getLoaderDetails(minecraftVersion,modloaderVersion).isPresent) {
-                configCheck.modloaderVersionErrors.add(
-                    Translations.configuration_log_error_checkmodloaderandversion(
-                        minecraftVersion, modloader, modloaderVersion
-                    )
-                )
-            }
-
-            "Quilt" -> if (!versionMeta.quilt.isVersionValid(modloaderVersion)
-                || !versionMeta.fabric.isMinecraftSupported(minecraftVersion)) {
-                configCheck.modloaderVersionErrors.add(
-                    Translations.configuration_log_error_checkmodloaderandversion(
-                        minecraftVersion, modloader, modloaderVersion
-                    )
-                )
-            }
-
-            "LegacyFabric" -> if (!versionMeta.legacyFabric.isVersionValid(modloaderVersion)
-                || !versionMeta.legacyFabric.isMinecraftSupported(minecraftVersion)) {
-                configCheck.modloaderVersionErrors.add(
-                    Translations.configuration_log_error_checkmodloaderandversion(
-                        minecraftVersion, modloader, modloaderVersion
-                    )
-                )
-            }
-
-            else -> {
-                log.error("Specified incorrect modloader version. Please check your modpack for the correct version and enter again.")
-                configCheck.modloaderVersionErrors.add("Specified incorrect modloader version. Please check your modpack for the correct version and enter again.")
-            }
-        }
-        return configCheck
-    }
+    ): ConfigCheck = modloaderValidator.checkModloaderVersion(modloader, modloaderVersion, minecraftVersion, configCheck)
 
     /**
      * Convenience method which passes the important fields from an instance of
@@ -639,174 +590,28 @@ class ConfigurationHandler(
     }
 
     /**
-     * Checks whether the passed list of directories which are supposed to be in the modpack directory
-     * is empty, or whether all directories in the list exist in the modpack directory. If the user
-     * specified a `source/file;destination/file`-combination, it is checked whether the
-     * specified source-file exists on the host.
-     *
-     * @param inclusions Directories, or `source/file;destination/file`-combinations, to
-     * check for existence.
-     * `source/file;destination/file`-combinations must be absolute
-     * paths to the source-file.
-     * @param modpackDir        Path to the modpack directory in which to check for existence of the
-     * passed list of directories.
-     * @return `true` if every directory was found in the modpack directory. If any single one
-     * was not found, false is returned.
-     * @author Griefed
+     * Check the inclusion-specifications for existing sources, valid destinations and valid
+     * in-/exclusion-filter regexes.
      */
     fun checkInclusions(
         inclusions: MutableList<InclusionSpecification>,
         modpackDir: String,
         configCheck: ConfigCheck = ConfigCheck(),
         printLog: Boolean = true
-    ): ConfigCheck {
-        val hasLazy = inclusions.any { entry -> entry.source == "lazy_mode" }
-        if (inclusions.isEmpty()) {
-            if (printLog) {
-                log.error("No directories or files specified for copying. This would result in an empty server pack.")
-            }
-            configCheck.inclusionErrors.add(Translations.configuration_log_error_checkcopydirs_empty.toString())
-        } else if (inclusions.size == 1 && hasLazy) {
-            if (printLog) {
-                log.warn(
-                    "!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!"
-                )
-                log.warn(
-                    "Lazy mode specified. This will copy the WHOLE modpack to the server pack. No exceptions."
-                )
-                log.warn(
-                    "You will not receive support from me for a server pack generated this way."
-                )
-                log.warn(
-                    "Do not open an issue on GitHub if this configuration errors or results in a broken server pack."
-                )
-                log.warn(
-                    "!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!"
-                )
-            }
-        } else {
-            if (inclusions.size > 1 && hasLazy && printLog) {
-                log.warn(
-                    "You specified lazy mode in your configuration, but your copyDirs configuration contains other"
-                            + " entries. To use the lazy mode, only specify \"lazy_mode\" and nothing else. Ignoring lazy mode."
-                )
-            }
-            inclusions.removeIf { entry -> entry.source == "lazy_mode" }
-            for (inclusion in inclusions) {
-                if (inclusion.isGlobalFilter()) {
-                    continue
-                }
-                val modpackSource = File(modpackDir, inclusion.source).absoluteFile
-                if (!File(inclusion.source).absoluteFile.exists() && !modpackSource.exists()) {
-                    if (printLog) {
-                        log.error("Source ${inclusion.source} does not exist. Please specify existing files.")
-                    }
-                    configCheck.inclusionErrors.add(Translations.configuration_log_error_checkcopydirs_filenotfound(inclusion.source))
-                }
-                if (inclusion.hasDestination()
-                    && !StringUtilities.checkForInvalidPathCharacters(inclusion.destination!!)) {
-                    log.warn("Invalid destination specified: ${inclusion.destination}.")
-                    inclusion.destination = null
-                    configCheck.inclusionErrors.add(Translations.configuration_log_error_checkcopydirs_destination(inclusion.source))
-                }
-                if (inclusion.hasInclusionFilter()) {
-                    try {
-                        inclusion.inclusionFilter!!.toRegex()
-                    } catch (ex: PatternSyntaxException) {
-                        log.error("Invalid inclusion-regex specified: ${inclusion.inclusionFilter}.", ex)
-                        configCheck.inclusionErrors.add(Translations.configuration_log_error_checkcopydirs_inclusion(inclusion.inclusionFilter ?: ""))
-                    }
-                }
-                if (inclusion.hasExclusionFilter()) {
-                    try {
-                        inclusion.exclusionFilter!!.toRegex()
-                    } catch (ex: PatternSyntaxException) {
-                        log.error("Invalid exclusion-regex specified: ${inclusion.exclusionFilter}.", ex)
-                        configCheck.inclusionErrors.add(Translations.configuration_log_error_checkcopydirs_inclusion(inclusion.exclusionFilter ?: ""))
-                    }
-                }
-            }
-        }
-        return configCheck
-    }
+    ): ConfigCheck = inclusionsValidator.checkInclusions(inclusions, modpackDir, configCheck, printLog)
 
     /**
-     * Check a given ZIP-archives contents. If the ZIP-archive only contains one directory, or if it
-     * contains neither the mods nor the config directories, consider it invalid.
-     *
-     * @param pathToZip         Path to the ZIP-file to check.
-     * @author Griefed
+     * Check a given ZIP-archives contents for validity as a modpack.
      */
-    fun checkZipArchive(pathToZip: String, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck {
-        try {
-            ZipFile(Paths.get(pathToZip).toFile()).use {
-                if (it.isNotValidZipFile()) {
-                    configCheck.modpackErrors.add("$pathToZip is not a valid ZIP-file.")
-                    return configCheck
-                }
-            }
-        } catch (ex: IOException) {
-            log.error("Could not validate ZIP-file $pathToZip.", ex)
-            configCheck.modpackErrors.add("Could not validate ZIP-file $pathToZip.")
-            return configCheck
-        }
-        try {
-            val foldersInModpackZip = getDirectoriesInModpackZipBaseDirectory(Paths.get(pathToZip).toFile())
-
-            // If the ZIP-file only contains one directory, assume it is overrides and return true to
-            // indicate invalid configuration.
-            if (foldersInModpackZip.size == 1) {
-                log.error(
-                    "The ZIP-file you specified only contains one directory: ${foldersInModpackZip[0]}. "
-                            + "ZIP-files for ServerPackCreator must be full modpacks, with all their contents being in the root of the ZIP-file."
-                )
-
-                
-                configCheck.modpackErrors.add(Translations.configuration_log_error_zip_overrides(foldersInModpackZip[0]))
-                return configCheck
-
-                // If the ZIP-file does not contain the mods or config directories, consider it invalid.
-            } else if (!foldersInModpackZip.contains("mods/") || !foldersInModpackZip.contains("config/")) {
-                log.error(
-                    "The ZIP-file you specified does not contain the mods or config directories. What use is a modded server without mods and their configurations?"
-                )
-
-                
-                configCheck.modpackErrors.add(Translations.configuration_log_error_zip_modsorconfig.toString())
-                return configCheck
-            }
-        } catch (ex: IOException) {
-            log.error("Couldn't acquire directories in ZIP-file.", ex)
-
-            
-            configCheck.modpackErrors.add(Translations.configuration_log_error_zip_directories.toString())
-            return configCheck
-        }
-        return configCheck
-    }
+    fun checkZipArchive(pathToZip: String, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck =
+        zipInspector.checkZipArchive(pathToZip, configCheck)
 
     /**
-     * Update the destination to which the ZIP-archive will the extracted to, based on whether a
+     * Update the destination to which the ZIP-archive will be extracted, based on whether a
      * directory of the same name already exists.
-     *
-     * @param destination The destination to where the ZIP-archive was about to be extracted to.
-     * @return The destination where the ZIP-archive will be extracted to.
-     * @author Griefed
      */
     @Suppress("unused")
-    fun unzipDestination(destination: String): String {
-        var dest = destination
-        if (File(dest).isDirectory || File("${dest}_0").isDirectory) {
-            var incrementation = 0
-            while (File("${dest}_$incrementation").isDirectory) {
-                incrementation++
-            }
-            dest = "${dest}_$incrementation"
-        } else {
-            dest += "_0"
-        }
-        return File(dest).path
-    }
+    fun unzipDestination(destination: String): String = zipInspector.unzipDestination(destination)
 
     /**
      * Creates a list of suggested directories to include in server pack which is later on written to
@@ -850,115 +655,11 @@ class ConfigurationHandler(
     }
 
     /**
-     * Check whether various manifests from various launchers exist and use them to update our
-     * ConfigurationModel and pack name.
-     *
-     * @param destination The destination in which the manifests are.
-     * @param packConfig The ConfigurationModel to update.
-     * @param configCheck Collection of encountered errors, if any, for convenient result-checks.
-     * @return The name of the modpack currently being checked. `null` if the name could not be
-     * acquired.
-     * @author Griefed
+     * Check whether various manifests from various launchers exist and use them to update the
+     * PackConfig and pack-name.
      */
-    fun checkManifests(destination: String, packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck()): String? {
-        var packName: String? = null
-        val curseManifest = File(destination, "manifest.json")
-        val curseMinecraftInstance = File(destination, "minecraftinstance.json")
-        val atLauncherInstance = File(destination, "instance.json")
-        val gdLauncherInstance = File(File(destination).parentFile,"instance.json")
-        val mmcPrismPack = File(File(destination).parentFile, "mmc-pack.json")
-        val mmcPrismInstance = File(File(destination).parentFile, "instance.cfg")
-        when {
-            curseMinecraftInstance.exists() -> {
-                // Check minecraftinstance.json usually created by Overwolf's CurseForge launcher.
-                // Check misc/curseforge/minecraftinstance.json in the repo
-                try {
-                    updateConfigModelFromMinecraftInstance(packConfig, curseMinecraftInstance)
-                    packName = if (packConfig.name != null) {
-                        packConfig.name!!
-                    } else {
-                        updatePackName(packConfig, "name")
-                    }
-                } catch (ex: IOException) {
-                    log.error("Error parsing minecraftinstance.json from ZIP-file.", ex)
-                    configCheck.modpackErrors.add(Translations.configuration_log_error_zip_instance.toString())
-                }
-            }
-
-            curseManifest.exists() -> {
-                // Check manifest.json usually created by Overwolf's CurseForge launcher.
-                // Check misc/curseforge/manifest.json in the repo
-                try {
-                    updateConfigModelFromCurseManifest(packConfig, curseManifest)
-                    packName = updatePackName(packConfig, "name")
-                } catch (ex: IOException) {
-                    log.error("Error parsing CurseForge manifest.json from ZIP-file.", ex)
-                    configCheck.modpackErrors.add(Translations.configuration_log_error_zip_manifest.toString())
-                }
-            }
-
-            atLauncherInstance.exists() -> {
-                // Check instance.json usually created by ATLauncher
-                // Check misc/atlauncher/instance.json in the repo
-                try {
-                    updateConfigModelFromATLauncherInstance(packConfig, File(destination, "instance.json"))
-                    packName = updatePackName(packConfig, "launcher", "name")
-                } catch (ex: IOException) {
-                    log.error("Error parsing config.json from ZIP-file.", ex)
-                    configCheck.modpackErrors.add(Translations.configuration_log_error_zip_config.toString())
-                }
-            }
-
-
-            gdLauncherInstance.exists() -> {
-                // Check the instance.json usually created by new versions of GDLauncher, in the parent folder.
-                try {
-                    updateConfigModelFromGDInstanceJson(packConfig, gdLauncherInstance)
-                    packName = updatePackName(packConfig, "loader", "sourceName")
-                } catch (ex: IOException) {
-                    log.error("Error parsing config.json from ZIP-file.", ex)
-                    configCheck.modpackErrors.add(Translations.configuration_log_error_zip_config.toString())
-                }
-            }
-
-            mmcPrismPack.exists() -> {
-                // Check mmc-pack.json usually created by MultiMC or Prism Launcher
-                try {
-                    updateConfigModelFromMMCPack(packConfig, mmcPrismPack)
-                } catch (ex: IOException) {
-                    log.error("Error parsing mmc-pack.json from ZIP-file.", ex)
-                    configCheck.modpackErrors.add(Translations.configuration_log_error_zip_mmcpack.toString())
-                }
-                try {
-                    if (mmcPrismInstance.exists()) {
-                        packName = updateDestinationFromInstanceCfg(mmcPrismInstance)
-                        packConfig.name = packName
-                    }
-                } catch (ex: IOException) {
-                    log.error("Couldn't read instance.cfg.", ex)
-                }
-            }
-
-            mmcPrismPack.exists() -> {
-                // Check mmc-pack.json usually created by MultiMC or Prism Launcher
-                try {
-                    updateConfigModelFromMMCPack(packConfig, mmcPrismPack)
-                } catch (ex: IOException) {
-                    log.error("Error parsing mmc-pack.json from ZIP-file.", ex)
-                    configCheck.modpackErrors.add(Translations.configuration_log_error_zip_mmcpack.toString())
-                }
-                try {
-                    if (mmcPrismInstance.exists()) {
-                        packName = updateDestinationFromInstanceCfg(mmcPrismInstance)
-                        packConfig.name = packName
-                    }
-                } catch (ex: IOException) {
-                    log.error("Couldn't read instance.cfg.", ex)
-                }
-            }
-        }
-        return packName
-    }
+    fun checkManifests(destination: String, packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck()): String? =
+        manifestParser.checkManifests(destination, packConfig, configCheck)
 
     /**
      * Prints all passed fields to the console and serverpackcreator.log. Used to show the user the
@@ -1053,474 +754,106 @@ class ConfigurationHandler(
     }
 
     /**
-     * Acquire a list of directories in the base-directory of a ZIP-file.
-     *
-     * @param zipFile The ZIP-archive to get the list of files from.
-     * @return All directories in the base-directory of the ZIP-file.
-     * @author Griefed
+     * Acquire a list of all directories in the base-directory of a ZIP-file.
      */
-    @Throws(
-        IllegalArgumentException::class,
-        FileSystemAlreadyExistsException::class,
-        ProviderNotFoundException::class,
-        IOException::class,
-        SecurityException::class
-    )
-    fun getDirectoriesInModpackZipBaseDirectory(zipFile: File): List<String> {
-        val baseDirectories: TreeSet<String> = TreeSet()
-        var headerBeginning: String
-        ZipFile(zipFile).use {
-            val headers = it.fileHeaders
-            for (header in headers) {
-                try {
-                    headerBeginning = header.fileName.substring(0,header.fileName.indexOfFirst { char -> char == '/' } + 1)
-                    log.trace("Header beginning $headerBeginning")
-                    if (headerBeginning.matches(zipCheck)) {
-                        baseDirectories.add(headerBeginning)
-                    }
-                } catch (ex: StringIndexOutOfBoundsException) {
-                    log.debug("Could not parse ${header.fileName}")
-                }
-            }
-        }
-        return baseDirectories.toList()
-    }
+    fun getDirectoriesInModpackZipBaseDirectory(zipFile: File): List<String> =
+        zipInspector.getDirectoriesInModpackZipBaseDirectory(zipFile)
 
     /**
-     * **`manifest.json`**
-     *
-     * Update the given ConfigurationModel with values gathered from the downloaded CurseForge
-     * modpack. A manifest.json-file is usually created when a modpack is exported through launchers
-     * like Overwolf's CurseForge or GDLauncher.
-     *
-     * @param packConfig An instance containing a configuration for a modpack from which to
-     * create a server pack.
-     * @param manifest           The CurseForge manifest.json-file of the modpack to read.
-     * @author Griefed
+     * Update the given PackConfig with values from a CurseForge manifest.json.
      */
     @Throws(IOException::class)
-    fun updateConfigModelFromCurseManifest(packConfig: PackConfig, manifest: File) {
-        packConfig.modpackJson = utilities.jsonUtilities.getJson(manifest)
-        val minecraft = packConfig.modpackJson!!.get("minecraft")
-        val modloaders = minecraft.get("modLoaders").get(0)
-        val id = modloaders.get("id").asText()
-        val modloaderAndVersion: List<String> = id.split("-")
-        packConfig.minecraftVersion = minecraft.get("version").asText()
-        packConfig.modloader = modloaderAndVersion[0]
-        packConfig.modloaderVersion = modloaderAndVersion[1]
-        packConfig.name = packConfig.modpackJson!!.get("name").asText()
-    }
+    fun updateConfigModelFromCurseManifest(packConfig: PackConfig, manifest: File) =
+        manifestParser.updateConfigModelFromCurseManifest(packConfig, manifest)
 
     /**
-     * Acquire the modpacks name from the JSON previously acquired and stored in the
-     * ConfigurationModel.
-     *
-     * @param packConfig The ConfigurationModel containing the JsonNode from which to acquire
-     * the modpacks name.
-     * @param childNodes         The child nodes, in order, which contain the requested packname.
-     * @return The new name of the modpack.
-     * @author Griefed
+     * Acquire the modpacks name from the modpack-JSON stored in the PackConfig.
      */
-    fun updatePackName(packConfig: PackConfig, vararg childNodes: String) = try {
-        val modpackDir = apiProperties.modpacksDirectory.toString()
-        val packName = packConfig.modpackJson?.let {
-            utilities.jsonUtilities.getNestedText(
-                it, *childNodes
-            )
-        }
-        @Suppress("IfThenToElvis")
-        if (packName != null) {
-            packName
-        } else {
-            File(modpackDir).name
-        }
-    } catch (npe: NullPointerException) {
-        null
-    }
+    fun updatePackName(packConfig: PackConfig, vararg childNodes: String): String? =
+        manifestParser.updatePackName(packConfig, *childNodes)
 
     /**
-     * **`minecraftinstance.json`**
-     *
-     * Update the given ConfigurationModel with values gathered from the minecraftinstance.json of
-     * the modpack. A minecraftinstance.json is usually created by Overwolf's CurseForge launcher.
-     *
-     * @param packConfig An instance containing a configuration for a modpack from which to
-     * create a server pack.
-     * @param minecraftInstance  The minecraftinstance.json-file of the modpack to read.
-     * @author Griefed
+     * Update the given PackConfig with values from a CurseForge minecraftinstance.json.
      */
     @Throws(IOException::class)
-    fun updateConfigModelFromMinecraftInstance(packConfig: PackConfig, minecraftInstance: File) {
-        packConfig.modpackJson = utilities.jsonUtilities.getJson(minecraftInstance)
-        val json = packConfig.modpackJson!!
-        val base = json.get("baseModLoader")
-        val modloader = base.get("name").asText().split("-")[0]
-        packConfig.modloader = getModLoaderCase(modloader)
-        //even Fabric, Quilt, and NeoForge have the modloader version under this JSON tag
-        packConfig.modloaderVersion = base.get("forgeVersion").asText()
-        packConfig.minecraftVersion = base.get("minecraftVersion").asText()
-        val urlPath = arrayOf("installedModpack", "thumbnailUrl")
-        val namePath = arrayOf("name")
-        try {
-            getAndSetIcon(json, packConfig, urlPath, namePath)
-        } catch (_: NullPointerException) {
-        } catch (ex: Exception) {
-            log.error("Error acquiring icon.", ex)
-        }
-        packConfig.name = packConfig.modpackJson!!.get("name").asText()
-        packConfig.projectID = packConfig.modpackJson!!.get("projectID").asText()
-        packConfig.versionID = packConfig.modpackJson!!.get("fileID").asText()
-        packConfig.source = ModpackSource.CURSEFORGE
-    }
+    fun updateConfigModelFromMinecraftInstance(packConfig: PackConfig, minecraftInstance: File) =
+        manifestParser.updateConfigModelFromMinecraftInstance(packConfig, minecraftInstance)
 
     /**
-     * **`modrinth.index.json`**
-     *
-     * Update the given ConfigurationModel with values gathered from a Modrinth `modrinth.index.json`-manifest.
-     *
-     * @param packConfig The model to update.
-     * @param manifest           The manifest file.
-     * @author Griefed
+     * Update the given PackConfig with values from a Modrinth modrinth.index.json.
      */
     @Throws(IOException::class)
-    fun updateConfigModelFromModrinthManifest(packConfig: PackConfig, manifest: File) {
-        packConfig.modpackJson = utilities.jsonUtilities.getJson(manifest)
-        val dependencies = packConfig.modpackJson!!.get("dependencies")
-        packConfig.minecraftVersion = dependencies.get("minecraft").asText()
-        val iterator: Iterator<Map.Entry<String, JsonNode>> = dependencies.fields()
-        while (iterator.hasNext()) {
-            val (key, value) = iterator.next()
-            when (key) {
-                "fabric-loader" -> {
-                    packConfig.modloader = "Fabric"
-                    packConfig.modloaderVersion = value.asText()
-                }
-
-                "quilt-loader" -> {
-                    packConfig.modloader = "Quilt"
-                    packConfig.modloaderVersion = value.asText()
-                }
-
-                "forge" -> {
-                    packConfig.modloader = "Forge"
-                    packConfig.modloaderVersion = value.asText()
-                }
-
-                "neoforge" -> {
-                    packConfig.modloader = "NeoForge"
-                    packConfig.modloaderVersion = value.asText()
-                }
-            }
-        }
-    }
+    fun updateConfigModelFromModrinthManifest(packConfig: PackConfig, manifest: File) =
+        manifestParser.updateConfigModelFromModrinthManifest(packConfig, manifest)
 
     /**
-     * **`instance.json`**
-     *
-     * Update the given ConfigurationModel with values gathered from a ATLauncher manifest.
-     *
-     * @param packConfig The model to update.
-     * @param manifest           The manifest file.
-     * @author Griefed
+     * Update the given PackConfig with values from an ATLauncher instance.json.
      */
     @Throws(IOException::class)
-    fun updateConfigModelFromATLauncherInstance(packConfig: PackConfig, manifest: File) {
-        packConfig.modpackJson = utilities.jsonUtilities.getJson(manifest)
-        val json = packConfig.modpackJson!!
-        packConfig.minecraftVersion = json.get("id").asText()
-        val launcher = json.get("launcher")
-        val loaderVersion = launcher.get("loaderVersion")
-        packConfig.modloader = loaderVersion.get("type").asText()
-        packConfig.modloaderVersion = loaderVersion.get("version").asText()
-        val urlPath = arrayOf("launcher", "curseForgeProject", "logo", "thumbnailUrl")
-        val namePath = arrayOf("launcher", "name")
-        try {
-            getAndSetIcon(json, packConfig, urlPath, namePath)
-        } catch (_: NullPointerException) {
-        } catch (ex: Exception) {
-            log.error("Error acquiring icon.", ex)
-        }
-        packConfig.name = packConfig.modpackJson!!.get("launcher").get("name").asText()
-        try {
-            packConfig.projectID = packConfig.modpackJson!!.get("launcher").get("curseForgeProject").get("id").asText()
-            packConfig.versionID = packConfig.modpackJson!!.get("curseForgeFile").get("id").asText()
-            packConfig.source = ModpackSource.CURSEFORGE
-        } catch (ex: Exception) {
-            log.error("Error acquiring modpack-source details. Please report this to ServerPackCreator in GitHub.", ex)
-        }
-    }
-
-    @Throws(NullPointerException::class)
-    private fun getAndSetIcon(json: JsonNode, packConfig: PackConfig, urlPath: Array<String>, namePath: Array<String>) {
-        val iconUrl = URI(utilities.jsonUtilities.getNestedText(json, *urlPath)).toURL()
-        val iconName = utilities.jsonUtilities.getNestedText(json, *namePath) + ".png"
-        val iconFile = File(apiProperties.iconsDirectory.absolutePath, iconName)
-        if (utilities.webUtilities.downloadFile(iconFile, iconUrl)) {
-            packConfig.serverIconPath = iconFile.absolutePath
-        }
-    }
+    fun updateConfigModelFromATLauncherInstance(packConfig: PackConfig, manifest: File) =
+        manifestParser.updateConfigModelFromATLauncherInstance(packConfig, manifest)
 
     /**
-     * **`config.json`**
-     *
-     * Update the given ConfigurationModel with values gathered from the modpacks config.json. A
-     * config.json is usually created by GDLauncher.
-     *
-     * @param packConfig An instance containing a configuration for a modpack from which to
-     * create a server pack.
-     * @param config             The config.json-file of the modpack to read.
-     * @author Griefed
+     * Update the given PackConfig with values from a GDLauncher config.json.
      */
     @Throws(IOException::class)
-    fun updateConfigModelFromConfigJson(packConfig: PackConfig, config: File) {
-        packConfig.modpackJson = utilities.jsonUtilities.getJson(config)
-        val loader = packConfig.modpackJson!!.get("loader")
-        packConfig.modloader = getModLoaderCase(loader.get("loaderType").asText())
-        packConfig.minecraftVersion = loader.get("mcVersion").asText()
-        packConfig.modloaderVersion =
-            loader.get("loaderVersion").asText().replace("${packConfig.minecraftVersion}-", "")
-    }
+    fun updateConfigModelFromConfigJson(packConfig: PackConfig, config: File) =
+        manifestParser.updateConfigModelFromConfigJson(packConfig, config)
 
     /**
-     * **`parentDirectory/instance.json`**
-     *
-     * Update the given PackConfig with values gathered from the modpacks instance.json. An
-     * instance.json is usually created by GDLauncher and located in the modpacks parent directory of the data-directory.
-     *
-     * @param packConfig An instance containing a configuration for a modpack from which to
-     * create a server pack.
-     * @param instance             The instance.json-file of the modpack to read.
+     * Update the given PackConfig with values from a GDLauncher instance.json in the modpacks
+     * parent-directory.
      */
     @Throws(IOException::class)
-    fun updateConfigModelFromGDInstanceJson(packConfig: PackConfig, instance: File) {
-        packConfig.modpackJson = utilities.jsonUtilities.getJson(instance)
-        val version = packConfig.modpackJson!!.get("game_configuration").get("version")
-        packConfig.modloader = version.get("modloaders")[0].get("type").asText()
-        packConfig.minecraftVersion = version.get("release").asText()
-        packConfig.modloaderVersion = version.get("modloaders")[0].get("version").asText().replace("${packConfig.minecraftVersion}-","")
-        packConfig.name = packConfig.modpackJson!!.get("name").asText()
-        packConfig.projectID = packConfig.modpackJson!!.get("modpack").get("project_id").asInt().toString()
-        packConfig.versionID = packConfig.modpackJson!!.get("modpack").get("file_id").asInt().toString()
-        val source = packConfig.modpackJson!!.get("modpack").get("platform").asText()
-        packConfig.source = if (source == "Curseforge") {
-            ModpackSource.CURSEFORGE
-        } else {
-            ModpackSource.MODRINTH
-        }
-    }
+    fun updateConfigModelFromGDInstanceJson(packConfig: PackConfig, instance: File) =
+        manifestParser.updateConfigModelFromGDInstanceJson(packConfig, instance)
 
     /**
-     * **`mmc-pack.json`**
-     *
-     *
-     * Update the given ConfigurationModel with values gathered from the modpacks mmc-pack.json. A
-     * mmc-pack.json is usually created by the MultiMC launcher.
-     *
-     * @param packConfig An instance containing a configuration for a modpack from which to
-     * create a server pack.
-     * @param mmcPack            The config.json-file of the modpack to read.
-     * @author Griefed
+     * Update the given PackConfig with values from a MultiMC/Prism mmc-pack.json.
      */
     @Throws(IOException::class)
-    fun updateConfigModelFromMMCPack(packConfig: PackConfig, mmcPack: File) {
-        packConfig.modpackJson = utilities.jsonUtilities.getJson(mmcPack)
-        val components = packConfig.modpackJson!!.get("components")
-        for (jsonNode in components) {
-            val version = jsonNode.get("version").asText()
-            when (jsonNode.get("uid").asText()) {
-                "net.minecraft" -> packConfig.minecraftVersion = version
-                "net.minecraftforge" -> {
-                    packConfig.modloader = "Forge"
-                    packConfig.modloaderVersion = version
-                }
-
-                "net.fabricmc.fabric-loader" -> {
-                    packConfig.modloader = "Fabric"
-                    packConfig.modloaderVersion = version
-                }
-
-                "org.quiltmc.quilt-loader" -> {
-                    packConfig.modloader = "Quilt"
-                    packConfig.modloaderVersion = version
-                }
-
-                "net.neoforged" -> {
-                    packConfig.modloader = "NeoForge"
-                    packConfig.modloaderVersion = version
-                }
-            }
-        }
-    }
+    fun updateConfigModelFromMMCPack(packConfig: PackConfig, mmcPack: File) =
+        manifestParser.updateConfigModelFromMMCPack(packConfig, mmcPack)
 
     /**
-     * **`instance.cfg`**
-     *
-     * Acquire the name of the modpack/instance of a MultiMC modpack from the modpacks
-     * instance.cfg, which is usually created by the MultiMC launcher.
-     *
-     * @param instanceCfg The config.json-file of the modpack to read.
-     * @return The instance name.
-     * @author Griefed
+     * Acquire the instance-name from a MultiMC/Prism instance.cfg.
      */
     @Throws(IOException::class)
-    fun updateDestinationFromInstanceCfg(instanceCfg: File): String {
-        var name: String
-        instanceCfg.inputStream().use {
-            val properties = Properties()
-            properties.load(it)
-            name = properties.getProperty("name", null)
-        }
-        return name
-    }
+    fun updateDestinationFromInstanceCfg(instanceCfg: File): String =
+        manifestParser.updateDestinationFromInstanceCfg(instanceCfg)
 
     /**
-     * Ensures the modloader is normalized to first letter upper case and rest lower case. Basically
-     * allows the user to input Forge or Fabric in any combination of upper- and lowercase and
-     * ServerPackCreator will still be able to work with the users input.
-     *
-     * @param modloader Modloader String-representation to normalize.
-     * @return A normalized String of the specified modloader.
-     * @author Griefed
+     * Normalize the modloader-name to first-letter-uppercase, defaulting to Forge for unknown
+     * loaders.
      */
-    fun getModLoaderCase(modloader: String) = when {
-        // Most specific names first: "neoforge" contains "forge" and "legacyfabric" contains
-        // "fabric", so checking NeoForge before Forge and LegacyFabric before Fabric prevents
-        // misdetection of the more specific loader as the generic one.
-        modloader.lowercase().matches(neoForge) || modloader.lowercase().contains("neoforge") -> {
-            "NeoForge"
-        }
-        modloader.lowercase().matches(forge) || modloader.lowercase().contains("forge") -> {
-            "Forge"
-        }
-        modloader.lowercase().matches(legacyFabric) || modloader.lowercase().contains("legacyfabric") -> {
-            "LegacyFabric"
-        }
-        modloader.lowercase().matches(fabric) || modloader.lowercase().contains("fabric") -> {
-            "Fabric"
-        }
-        modloader.lowercase().matches(quilt) || modloader.lowercase().contains("quilt") -> {
-            "Quilt"
-        }
-        else -> {
-            log.warn { "No suitable modloader found. Defaulting to Forge." }
-            "Forge"
-        }
-    }
+    fun getModLoaderCase(modloader: String): String = manifestParser.getModLoaderCase(modloader)
 
     /**
-     * Check the passed directory for existence and whether it is a directory, rather than a file.
-     *
-     * @param modpackDir The modpack directory.
-     * @param configCheck Collection of encountered errors, if any, for convenient result-checks.
-     * @return `true` if the directory exists.
-     * @author Griefed
+     * Check the passed directory for existence, type and the absence of the overrides-directory.
      */
     fun checkModpackDir(
         modpackDir: String,
         configCheck: ConfigCheck = ConfigCheck(),
         printLog: Boolean = true
-    ): ConfigCheck {
-        val modpack = File(modpackDir)
-        if (modpackDir.isEmpty()) {
-            if (printLog) {
-                log.error("Modpack directory not specified. Please specify an existing directory.")
-            }
-            configCheck.modpackErrors.add(Translations.configuration_log_error_checkmodpackdir.toString())
-        } else if (!modpack.exists()) {
-            if (printLog) {
-                log.warn("Couldn't find directory $modpackDir.")
-            }
-            configCheck.modpackErrors.add(Translations.configuration_log_error_modpackdirectory(modpackDir))
-        } else if (modpack.isDirectory){
-            val files = modpack.listFiles { entry -> entry.isDirectory }
-            if (files.any { entry -> entry.name == "overrides" }) {
-                log.error("Modpack contains directory \"overrides\". Modpacks must be installed through a client such as CurseForge, GDLauncher, MultiMC etc. Full modpacks shouldn't contain the overrides directory anymore.")
-                configCheck.modpackErrors.add(Translations.configuration_log_error_modpack_overrides.toString())
-            }
-        }
-        return configCheck
-    }
+    ): ConfigCheck = modpackDirectoryValidator.checkModpackDir(modpackDir, configCheck, printLog)
 
     /**
      * Acquire a list of all files and directories in a ZIP-file.
-     *
-     * @param zipFile The ZIP-archive to get the list of files from.
-     * @return All files and directories in the ZIP-file.
-     * @author Griefed
      */
-    @Throws(
-        IllegalArgumentException::class,
-        FileSystemAlreadyExistsException::class,
-        ProviderNotFoundException::class,
-        IOException::class,
-        SecurityException::class
-    )
-    fun getAllFilesAndDirectoriesInModpackZip(zipFile: File): List<String> {
-        val filesAndDirectories: MutableList<String> = ArrayList(100)
-        try {
-            filesAndDirectories.addAll(getDirectoriesInModpackZip(zipFile))
-        } catch (ex: IOException) {
-            log.error("Could not acquire file or directory from ZIP-archive.", ex)
-        }
-        try {
-            filesAndDirectories.addAll(getFilesInModpackZip(zipFile))
-        } catch (ex: IOException) {
-            log.error("Could not acquire file or directory from ZIP-archive.", ex)
-        }
-        return filesAndDirectories
-    }
+    fun getAllFilesAndDirectoriesInModpackZip(zipFile: File): List<String> =
+        zipInspector.getAllFilesAndDirectoriesInModpackZip(zipFile)
 
     /**
-     * Acquire a list of all directories in a ZIP-file. The resulting list excludes files.
-     *
-     * @param zipFile The ZIP-archive to get the list of files from.
-     * @return All directories in the ZIP-file.
-     * @author Griefed
+     * Acquire a list of all directories in a ZIP-file, excluding files.
      */
-    @Throws(
-        IllegalArgumentException::class,
-        FileSystemAlreadyExistsException::class,
-        ProviderNotFoundException::class,
-        IOException::class,
-        SecurityException::class
-    )
-    fun getDirectoriesInModpackZip(zipFile: File): List<String> {
-        val directories: MutableList<String> = ArrayList(100)
-        ZipFile(zipFile).use {
-            for (header in it.fileHeaders) {
-                if (header.isDirectory) {
-                    directories.add(header.fileName)
-                }
-            }
-        }
-        return directories
-    }
+    fun getDirectoriesInModpackZip(zipFile: File): List<String> =
+        zipInspector.getDirectoriesInModpackZip(zipFile)
 
     /**
-     * Acquire a list of all files in a ZIP-file. The resulting list excludes directories.
-     *
-     * @param zipFile The ZIP-archive to get the list of files from.
-     * @return All files in the ZIP-file.
-     * @author Griefed
+     * Acquire a list of all files in a ZIP-file, excluding directories.
      */
-    @Throws(
-        IllegalArgumentException::class,
-        FileSystemAlreadyExistsException::class,
-        ProviderNotFoundException::class,
-        IOException::class,
-        SecurityException::class
-    )
-    fun getFilesInModpackZip(zipFile: File): List<String> {
-        val files: MutableList<String> = ArrayList(100)
-        ZipFile(zipFile).use {
-            for (header in it.fileHeaders) {
-                if (!header.isDirectory) {
-                    files.add(header.fileName)
-                }
-            }
-        }
-        return files
-    }
+    fun getFilesInModpackZip(zipFile: File): List<String> =
+        zipInspector.getFilesInModpackZip(zipFile)
 
     /**
      * Generate a [PackConfig] from a modpack-directory, resulting in a basic server pack configuration with default

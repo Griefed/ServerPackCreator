@@ -178,7 +178,20 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   **ApiProperties final: 1,372 lines (from 3,007), now: orchestration (loadProperties
   ordering, init), jar/OS-info, version/firstRun, preferences, hasteBin, log4j-factory, and
   facades over 8 settings-groups + PropertyStore.**
-- **Next:** Phase 1c — decompose ConfigurationHandler into per-concern validators. Then
+- **Phase 1c (2026-06-12):** ConfigurationHandler decomposed, 1,564 → 897 lines. Extracted
+  into `api.config`: `ModpackZipInspector` (ZIP-listing + validity-checks; 2 tests),
+  `ModpackManifestParser` (manifest-dispatch + 7 launcher-parsers + modloader-normalization),
+  `ModloaderValidator` (name + version-checks vs VersionMeta), `InclusionsValidator`,
+  `ModpackDirectoryValidator` (4 direct tests; deeper behavior pinned by the Phase 1a
+  characterization tests through the facades). ConfigurationHandler is now orchestrator
+  (checkConfiguration, isDir/isZip, checkForProjectInformation), pre-processing
+  (sanitizeLinks, ensureScriptSettingsDefaults), reporting (printConfigurationModel — stays
+  deliberately, it reports the orchestration-result), and facades. Bugs fixed: duplicate
+  unreachable mmcPrismPack-branch in checkManifests; isZip assigned a found
+  server.properties to serverIconPath instead of serverPropertiesPath (copy-paste).
+  Note: the loader-regexes now exist in PackConfig, ConfigurationHandler (public vals) and
+  the new classes — consolidate during Phase 1e.
+- **Next:** Phase 1d — split ServerPackHandler into explicit generation-pipeline steps. Then
   CommandlineParser/MigrationManager tests during Phase 2.
 
 ---
