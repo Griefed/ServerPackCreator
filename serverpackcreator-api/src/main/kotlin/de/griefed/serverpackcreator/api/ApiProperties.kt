@@ -23,6 +23,12 @@ import de.comahe.i18n4k.Locale
 import de.comahe.i18n4k.config.I18n4kConfigDefault
 import de.comahe.i18n4k.i18n4k
 import de.griefed.serverpackcreator.api.settings.GenerationConfig
+import de.griefed.serverpackcreator.api.settings.I18nConfig
+import de.griefed.serverpackcreator.api.settings.JavaConfig
+import de.griefed.serverpackcreator.api.settings.LoggingConfig
+import de.griefed.serverpackcreator.api.settings.UpdateConfig
+import de.griefed.serverpackcreator.api.settings.PathsConfig
+import de.griefed.serverpackcreator.api.settings.ScriptTemplatesConfig
 import de.griefed.serverpackcreator.api.settings.WebserviceConfig
 import de.comahe.i18n4k.toTag
 import de.griefed.serverpackcreator.api.config.ExclusionFilter
@@ -67,12 +73,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     private val jarInformation: JarInformation = JarInformation(this.javaClass)
     private val jarFolderProperties: File = File(jarInformation.jarFolder.absoluteFile, serverPackCreatorProperties)
 
-    private val pVersionCheckPreRelease =
-        "de.griefed.serverpackcreator.versioncheck.prerelease"
-    private val pLanguage =
-        "de.griefed.serverpackcreator.language"
-    private val pConfigurationFallbackUpdateURL =
-        "de.griefed.serverpackcreator.configuration.fallback.updateurl"
     private val pConfigurationFallbackModsList =
         "de.griefed.serverpackcreator.configuration.fallbackmodslist"
     private val pConfigurationFallbackModsListRegex =
@@ -83,29 +83,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         "de.griefed.serverpackcreator.configuration.hastebinserver"
     private val pConfigurationDirectoriesServerPacks =
         "de.griefed.serverpackcreator.configuration.directories.serverpacks"
-    private val pServerPackStartScriptTemplatesPrefix =
-        "de.griefed.serverpackcreator.serverpack.script.template."
-    private val pServerPackJavaScriptTemplatesPrefix =
-        "de.griefed.serverpackcreator.serverpack.java.template."
-    private val pJavaForServerInstall =
-        "de.griefed.serverpackcreator.java"
-    private val pScriptVariablesJavaPaths =
-        "de.griefed.serverpackcreator.script.java"
-    private val pScriptVariablesAutoUpdateJavaPathsEnabled =
-        "de.griefed.serverpackcreator.script.java.autoupdate"
-    private val pHomeDirectory =
-        "de.griefed.serverpackcreator.home"
-    private val pOldVersion =
-        "de.griefed.serverpackcreator.version.old"
-    private val pTomcatBaseDirectory =
-        "server.tomcat.basedir"
-    private val pTomcatLogsDirectory =
-        "server.tomcat.accesslog.directory"
-    private val pLogLevel = "de.griefed.serverpackcreator.loglevel"
 
-    @Deprecated("Deprecated as of 6.0.0")
-    private val pServerPackScriptTemplates =
-        "de.griefed.serverpackcreator.serverpack.script.template"
 
     private val suffixes = arrayOf(".xml")
 
@@ -155,26 +133,42 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      */
     val fallbackAikarsFlags: String get() = generationConfig.fallbackAikarsFlags
 
-    val fallbackUpdateURL =
-        "https://raw.githubusercontent.com/Griefed/ServerPackCreator/main/serverpackcreator-api/src/main/resources/serverpackcreator.properties"
+    val fallbackUpdateURL: String get() = UpdateConfig.FALLBACK_UPDATE_URL
     val fallbackExclusionFilter: ExclusionFilter get() = generationConfig.fallbackExclusionFilter
     val fallbackOverwriteEnabled: Boolean get() = generationConfig.fallbackOverwriteEnabled
-    val fallbackJavaScriptAutoupdateEnabled = true
-    val fallbackCheckingForPreReleasesEnabled = false
+    val fallbackJavaScriptAutoupdateEnabled: Boolean get() = javaConfig.fallbackJavaScriptAutoupdateEnabled
+    val fallbackCheckingForPreReleasesEnabled: Boolean get() = updateConfig.fallbackCheckingForPreReleasesEnabled
     val fallbackZipFileExclusionEnabled: Boolean get() = generationConfig.fallbackZipFileExclusionEnabled
     val fallbackServerPackCleanupEnabled: Boolean get() = generationConfig.fallbackServerPackCleanupEnabled
     val fallbackMinecraftPreReleasesAvailabilityEnabled: Boolean get() = generationConfig.fallbackMinecraftPreReleasesAvailabilityEnabled
     val fallbackAutoExcludingModsEnabled: Boolean get() = generationConfig.fallbackAutoExcludingModsEnabled
+    @Deprecated("Dead since the move to MongoDB. No consumer exists.")
     val fallbackArtemisQueueMaxDiskUsage = 90
-    val fallbackCleanupSchedule = "0 0 0 * * *"
-    val fallbackVersionSchedule = "0 0 0 * * *"
-    val fallbackDatabaseCleanupSchedule = "0 0 0 * * *"
+    val fallbackCleanupSchedule: String get() = webserviceConfig.fallbackCleanupSchedule
+    val fallbackVersionSchedule: String get() = webserviceConfig.fallbackVersionSchedule
+    val fallbackDatabaseCleanupSchedule: String get() = webserviceConfig.fallbackDatabaseCleanupSchedule
     val fallbackUpdateServerPack: Boolean get() = generationConfig.fallbackUpdateServerPack
-    private val checkedJavas = hashMapOf<String, Boolean>()
     private val trueFalseRegex = "^(true|false)$".toRegex()
     private val alphaBetaRegex = "^(.*alpha.*|.*beta.*)$".toRegex()
-    private val serverPacksRegex = "^(?:\\./)?server-packs$".toRegex()
     val i18n4kConfig = I18n4kConfigDefault()
+
+    /**
+     * Settings-group for update- and release-tracking. Prefer accessing these values through
+     * this group; the individual properties on ApiProperties remain as facade.
+     */
+    val updateConfig = UpdateConfig(store, generationConfig) { saveProperties(serverPackCreatorPropertiesFile) }
+
+    /**
+     * Settings-group for ServerPackCreators language. Prefer accessing these values through
+     * this group; the individual properties on ApiProperties remain as facade.
+     */
+    val i18nConfig = I18nConfig(store, i18n4kConfig) { saveProperties(serverPackCreatorPropertiesFile) }
+
+    /**
+     * Settings-group for ServerPackCreators log-level. The log4j-XML machinery stays with
+     * ApiProperties, which acts as log4j's ConfigurationFactory.
+     */
+    val loggingConfig = LoggingConfig(store) { level -> setLoggingLevel(level) }
 
     /**
      * String-list of clientside-only mods to exclude from server packs.
@@ -298,15 +292,10 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      */
     val firstRun: Boolean
 
-    var logLevel = "INFO"
-        get() {
-            field = acquireProperty(pLogLevel, "INFO").uppercase()
-            return field
-        }
+    var logLevel: String
+        get() = loggingConfig.logLevel
         set(value) {
-            field = value.uppercase()
-            defineProperty(pLogLevel, field)
-            setLoggingLevel(field)
+            loggingConfig.logLevel = value
         }
 
     /**
@@ -361,54 +350,21 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         }
 
     /**
-     * Paths to Java installations available to SPC for automatically updating the script variables of a given server pack
-     * configuration.
-     * * key: Java version
-     * * value: Path to the Java .exe or binary
-     *
-     * If you plan on overwriting this property, make sure to format they key-value-pairs as follows:
-     * * key: `de.griefed.serverpackcreator.script.java` followed by the number representing the Java version
-     * * value: Valid path to a Java installation corresponding to the number used in the key
+     * Settings-group for Java-installations: the Java used for modloader-server installs, the
+     * per-version java-paths for script-variables, path-validation and the script-autoupdate
+     * flag. Prefer accessing these values through this group; the individual properties on
+     * ApiProperties remain as facade.
      */
-    var javaPaths = HashMap<String, String>(256)
-        get() {
-            val paths = HashMap<String, String>(256)
-            var path: String
-            var position: String
-            for (i in 8..255) {
-                position = pScriptVariablesJavaPaths + i
-                path = internalProps.getProperty(position, "")
-                if (checkJavaPath(path)) {
-                    paths[i.toString()] = path
-                    internalProps.setProperty(position, path)
-                }
-            }
-            field = paths
-            return paths
-        }
-        set(values) {
-            var position: Int?
-            var newKey: String
-            val paths = HashMap<String, String>(256)
-            for (i in 8..255) {
-                internalProps.remove(pScriptVariablesJavaPaths + i)
-            }
-            for ((key, value) in values) {
-                if (!checkJavaPath(value)) {
-                    continue
-                }
-                position = key.replace(pScriptVariablesJavaPaths, "").toIntOrNull()
-                newKey = pScriptVariablesJavaPaths + position
-                if (position != null && 8 <= position!! && position!! < 256) {
-                    internalProps.setProperty(newKey, value)
-                    paths[newKey] = value
-                }
-            }
-            field = paths
-            log.info("Available Java paths for scripts:")
-            for ((key, value) in field) {
-                log.info("Java $key path: $value")
-            }
+    val javaConfig = JavaConfig(store)
+
+    /**
+     * Paths to Java installations available to SPC for automatically updating the script
+     * variables of a given server pack configuration. Key: Java version, value: path.
+     */
+    var javaPaths: HashMap<String, String>
+        get() = javaConfig.javaPaths
+        set(value) {
+            javaConfig.javaPaths = value
         }
 
     fun getPreference(pref: String, def: String? = null) : Optional<String> {
@@ -422,195 +378,61 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
 
     /**
      * Default list of script templates used by ServerPackCreator.
-     *
-     * @author Griefed
      */
-    @Deprecated("Deprecated as of 6.0.0", ReplaceWith("defaultScriptTemplateMap"))
-    fun defaultScriptTemplates(): List<File> {
-        // See whether we have custom files.
-        val currentFiles = serverFilesDirectory.walk().maxDepth(1).filter {
-            it.name.endsWith("sh", ignoreCase = true) ||
-                    it.name.endsWith("ps1", ignoreCase = true) ||
-                    it.name.endsWith("bat", ignoreCase = true)
-        }.toList()
-        val customTemplates = currentFiles.filter {
-            !it.name.contains("default_template", ignoreCase = true)
-        }
+    @Deprecated("Deprecated as of 6.0.0", ReplaceWith("defaultStartScriptTemplates()"))
+    @Suppress("DEPRECATION")
+    fun defaultScriptTemplates(): List<File> = scriptTemplatesConfig.defaultScriptTemplates()
 
-        val newTemplates = mutableListOf<File>()
-        var shellPresent = false
-        var powershellPresent = false
-        var batchPresent = false
-        for (customTemplate in customTemplates) {
-            when {
-                customTemplate.name.endsWith("sh", ignoreCase = true) && !shellPresent -> {
-                    newTemplates.add(customTemplate.absoluteFile)
-                    shellPresent = true
-                }
-
-                customTemplate.name.endsWith("ps1", ignoreCase = true) && !powershellPresent -> {
-                    newTemplates.add(customTemplate.absoluteFile)
-                    powershellPresent = true
-                }
-
-                customTemplate.name.endsWith("bat", ignoreCase = true) && !batchPresent -> {
-                    newTemplates.add(customTemplate.absoluteFile)
-                    batchPresent = true
-                }
-
-                else -> {
-                    newTemplates.add(customTemplate.absoluteFile)
-                }
-            }
-        }
-
-        if (!shellPresent) {
-            newTemplates.add(File(serverFilesDirectory.absolutePath, defaultShellScriptTemplate.name).absoluteFile)
-        }
-        if (!powershellPresent) {
-            newTemplates.add(File(serverFilesDirectory.absolutePath, defaultPowerShellScriptTemplate.name).absoluteFile)
-        }
-        if (!batchPresent) {
-            newTemplates.add(File(serverFilesDirectory.absolutePath, defaultBatchScriptTemplate.name).absoluteFile)
-        }
-
-        return newTemplates.toList()
-    }
-
+    /**
+     * Deprecated list-based script-templates.
+     */
     @Deprecated("Deprecated as of 6.0.0", ReplaceWith("startScriptTemplates"))
-    var scriptTemplates: TreeSet<File> = TreeSet()
-        get() {
-            val scriptSetting = internalProps.getProperty(pServerPackScriptTemplates)
-            val entries =
-                if (scriptSetting != null && scriptSetting == "default_template.ps1,default_template.sh,default_template.bat") {
-                    defaultScriptTemplates()
-                } else {
-                    getListProperty(
-                        pServerPackScriptTemplates,
-                        defaultScriptTemplates().joinToString(",") { it.absolutePath }
-                    ).map { File(it).absoluteFile }
-                }
-            field.clear()
-            field.addAll(entries)
-            return field
-        }
+    @Suppress("DEPRECATION")
+    var scriptTemplates: TreeSet<File>
+        get() = scriptTemplatesConfig.scriptTemplates
         set(value) {
-            val entries = value.map { it.absolutePath }
-            setListProperty(pServerPackScriptTemplates, entries, ",")
-            field.clear()
-            field.addAll(value.map { it.absoluteFile })
-            log.info("Using script templates:")
-            for (template in field) {
-                log.info("    " + template.path)
-            }
+            scriptTemplatesConfig.scriptTemplates = value
         }
 
     /**
      * Default map of start-script templates: sh, ps1, bat.
      */
-    fun defaultStartScriptTemplates(): HashMap<String, String> {
-        return hashMapOf(
-            Pair("sh", File(serverFilesDirectory.absolutePath, defaultShellScriptTemplate.name).absolutePath),
-            Pair("ps1", File(serverFilesDirectory.absolutePath, defaultPowerShellScriptTemplate.name).absolutePath),
-            Pair("bat", File(serverFilesDirectory.absolutePath, defaultBatchScriptTemplate.name).absolutePath)
-        )
-    }
+    fun defaultStartScriptTemplates(): HashMap<String, String> =
+        scriptTemplatesConfig.defaultStartScriptTemplates()
 
     /**
-     * Start-script templates to use during server pack generation.
-     * Each key represents a different template and script-type.
+     * Start-script templates to use during server pack generation, one entry per script-type.
      */
-    var startScriptTemplates: HashMap<String, String> = hashMapOf()
-        get() {
-            val templateProps = internalProps.keys
-                .filter { entry -> (entry as String).startsWith(pServerPackStartScriptTemplatesPrefix) }
-                .map { entry -> entry as String }
-            var type: String
-            if (templateProps.isEmpty() || templateProps.any { entry ->
-                    entry.replace(pServerPackStartScriptTemplatesPrefix, "").isBlank()
-                }) {
-                log.warn("Found empty definitions for start script templates. Using defaults.")
-                field = defaultStartScriptTemplates()
-            } else {
-                for (templateProp in templateProps) {
-                    type = templateProp.replace(pServerPackStartScriptTemplatesPrefix, "")
-                    field[type] = File(internalProps[templateProp] as String).absolutePath
-                }
-            }
-            if (field.isEmpty()) {
-                log.error("No start script templates defined. Using defaults.")
-                field = defaultStartScriptTemplates()
-            }
-            return field
-        }
-        set(map) {
-            for ((key, value) in map) {
-                defineProperty("$pServerPackStartScriptTemplatesPrefix$key", value)
-                log.info("Set $pServerPackStartScriptTemplatesPrefix$key to $value")
-            }
-            field = map
-        }
-
-    /**
-     * Default map of start-script templates: sh, ps1, bat.
-     */
-    fun defaultJavaScriptTemplates(): HashMap<String, String> {
-        return hashMapOf(
-            Pair("sh", File(serverFilesDirectory.absolutePath, defaultJavaShellScriptTemplate.name).absolutePath),
-            Pair("ps1", File(serverFilesDirectory.absolutePath, defaultJavaPowerShellScriptTemplate.name).absolutePath)
-        )
-    }
-
-    /**
-     * Start-script templates to use during server pack generation.
-     * Each key represents a different template and script-type.
-     */
-    var javaScriptTemplates: HashMap<String, String> = hashMapOf()
-        get() {
-            val templateProps = internalProps.keys
-                .filter { entry -> (entry as String).startsWith(pServerPackJavaScriptTemplatesPrefix) }
-                .map { entry -> entry as String }
-            var type: String
-            if (templateProps.isEmpty() || templateProps.any { entry ->
-                    entry.replace(
-                        pServerPackJavaScriptTemplatesPrefix,
-                        ""
-                    ).isBlank()
-                }) {
-                log.warn("Found empty definitions for java script templates. Using defaults.")
-                field = defaultJavaScriptTemplates()
-            } else {
-                for (templateProp in templateProps) {
-                    type = templateProp.replace(pServerPackJavaScriptTemplatesPrefix, "")
-                    field[type] = File(internalProps[templateProp] as String).absolutePath
-                }
-            }
-            if (field.isEmpty()) {
-                log.error("No java script templates defined. Using defaults.")
-                field = defaultJavaScriptTemplates()
-            }
-            return field
-        }
-        set(map) {
-            for ((key, value) in map) {
-                defineProperty("$pServerPackJavaScriptTemplatesPrefix$key", value)
-                log.info("Set $pServerPackJavaScriptTemplatesPrefix$key to $value")
-            }
-            field = map
-        }
-
-    /**
-     * The URL from which a .properties-file is read during updating of the fallback clientside-mods list.
-     * The default can be found in [fallbackUpdateURL].
-     */
-    var updateUrl: URL = URI(fallbackUpdateURL).toURL()
-        get() {
-            field = URI(acquireProperty(pConfigurationFallbackUpdateURL, fallbackUpdateURL)).toURL()
-            return field
-        }
+    var startScriptTemplates: HashMap<String, String>
+        get() = scriptTemplatesConfig.startScriptTemplates
         set(value) {
-            defineProperty(pConfigurationFallbackUpdateURL, value.toString())
-            field = value
+            scriptTemplatesConfig.startScriptTemplates = value
+        }
+
+    /**
+     * Default map of java-install-script templates: sh, ps1.
+     */
+    fun defaultJavaScriptTemplates(): HashMap<String, String> =
+        scriptTemplatesConfig.defaultJavaScriptTemplates()
+
+    /**
+     * Java-install-script templates to use during server pack generation, one entry per
+     * script-type.
+     */
+    var javaScriptTemplates: HashMap<String, String>
+        get() = scriptTemplatesConfig.javaScriptTemplates
+        set(value) {
+            scriptTemplatesConfig.javaScriptTemplates = value
+        }
+
+    /**
+     * The URL from which a .properties-file is read during updating of the fallback
+     * clientside-mods list.
+     */
+    var updateUrl: URL
+        get() = updateConfig.updateUrl
+        set(value) {
+            updateConfig.updateUrl = value
         }
 
     /**
@@ -634,15 +456,10 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * `de.griefed.serverpackcreator.versioncheck.prerelease`, returns `true` if checks for available PreReleases are
      * enabled, `false` if no checks for available PreReleases should be made.
      */
-    var isCheckingForPreReleasesEnabled = fallbackCheckingForPreReleasesEnabled
-        get() {
-            field = getBoolProperty(pVersionCheckPreRelease, fallbackCheckingForPreReleasesEnabled)
-            return field
-        }
+    var isCheckingForPreReleasesEnabled: Boolean
+        get() = updateConfig.isCheckingForPreReleasesEnabled
         set(value) {
-            setBoolProperty(pVersionCheckPreRelease, value)
-            field = value
-            log.info("Checking for pre-releases set to $field.")
+            updateConfig.isCheckingForPreReleasesEnabled = value
         }
 
     /**
@@ -700,18 +517,13 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         }
 
     /**
-     * Whether to automatically update the `SPC_JAVA_SPC`-placeholder in the script variables
+     * Whether to automatically update the SPC_JAVA_SPC-placeholder in the script variables
      * table with a Java path matching the required Java version for the Minecraft server.
      */
-    var isJavaScriptAutoupdateEnabled = fallbackJavaScriptAutoupdateEnabled
-        get() {
-            field = getBoolProperty(pScriptVariablesAutoUpdateJavaPathsEnabled, fallbackJavaScriptAutoupdateEnabled)
-            return field
-        }
+    var isJavaScriptAutoupdateEnabled: Boolean
+        get() = javaConfig.isJavaScriptAutoupdateEnabled
         set(value) {
-            setBoolProperty(pScriptVariablesAutoUpdateJavaPathsEnabled, value)
-            field = value
-            log.info("Automatically update SPC_JAVA_SPC-placeholder in script variables table set to: $field")
+            javaConfig.isJavaScriptAutoupdateEnabled = value
         }
 
     /**
@@ -741,28 +553,10 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Language used by ServerPackCreator.
      */
-    var language = Locale("en", "GB")
-        get() {
-            val prop = internalProps.getProperty(pLanguage)
-            val lang = if (prop.contains("_")) {
-                val split = prop.split("_")
-                if (split.size == 3) {
-                    Locale(split[0], split[1], split[2])
-                } else {
-                    Locale(split[0], split[1])
-                }
-            } else {
-                Locale(prop)
-            }
-            field = lang
-            i18n4kConfig.locale = field
-            return field
-        }
+    var language: Locale
+        get() = i18nConfig.language
         set(value) {
-            internalProps.setProperty(pLanguage, value.toTag())
-            i18n4kConfig.locale = value
-            field = value
-            log.info("Language set to: ${field.displayLanguage} (${field.toTag()}).")
+            i18nConfig.language = value
         }
 
     /**
@@ -782,26 +576,10 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Java installation used for installing the modloader server during server pack creation.
      */
-    var javaPath = "java"
-        get() {
-            val prop = internalProps.getProperty(pJavaForServerInstall, null)
-            field = if (checkJavaPath(prop)) {
-                prop
-            } else {
-                val acquired = acquireJavaPath()
-                internalProps.setProperty(pJavaForServerInstall, acquired)
-                acquired
-            }
-            return field
-        }
+    var javaPath: String
+        get() = javaConfig.javaPath
         set(value) {
-            if (checkJavaPath(value)) {
-                internalProps.setProperty(pJavaForServerInstall, value)
-                field = value
-                log.info("Java path set to: $field")
-            } else {
-                log.error("Invalid Java path specified: $value")
-            }
+            javaConfig.javaPath = value
         }
 
     /**
@@ -839,609 +617,249 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     fun defaultWebserviceDatabase(): String = webserviceConfig.defaultDatabase()
 
     /**
-     * ServerPackCreators home directory, in which all important files and folders are stored in.
-     *
-     * Changes made to this variable are stored in an overrides.properties inside the installation directory of the
-     * ServerPackCreator application.
-     *
-     * Every operation is based on this home-directory, with the exception being the
-     * [serverPacksDirectory], which can be configured independently of ServerPackCreators
-     * home-directory.
+     * Settings-group for ServerPackCreators home-directory and every directory and file derived
+     * from it. Prefer accessing these values through this group; the individual properties on
+     * ApiProperties remain as facade.
      */
-    var homeDirectory: File = home.absoluteFile
-        get() {
-            val setting = if (getPreference(pHomeDirectory).isPresent) {
-                getPreference(pHomeDirectory).get()
-            } else if (internalProps.containsKey(pHomeDirectory) && internalProps.getProperty(pHomeDirectory).isNotBlank()) {
-                internalProps.getProperty(pHomeDirectory)
-            } else if (jarInformation.jarPath.toFile().isDirectory || devBuild) {
-                // Dev environment
-                File("").absolutePath
-            } else if (File(System.getProperty("user.home")).isDirectory) {
-                File(System.getProperty("user.home"),"ServerPackCreator").absolutePath
-            } else {
-                home.absolutePath
-            }
+    val pathsConfig = PathsConfig(store, spcPreferences, jarInformation, devBuild)
 
-            internalProps.remove(pHomeDirectory)
-            storePreference(pHomeDirectory, setting)
-            field = File(getPreference(pHomeDirectory).get()).absoluteFile
+    /**
+     * Settings-group for the start- and java-script-templates. Prefer accessing these values
+     * through this group; the individual properties on ApiProperties remain as facade.
+     */
+    val scriptTemplatesConfig = ScriptTemplatesConfig(store, pathsConfig)
 
-            if (!field.isDirectory) {
-                field.create(createFileOrDir = true, asDirectory = true)
-            }
-
-            return field
-        }
+    /**
+     * ServerPackCreators home-directory, in which all important files and folders are stored in.
+     */
+    var homeDirectory: File
+        get() = pathsConfig.homeDirectory
         set(value) {
-            storePreference(pHomeDirectory, value.absolutePath)
-            field = value.absoluteFile
-            log.info("Home-directory set to: $field")
-            log.warn("Restart ServerPackCreator for this change to take full effect.")
+            pathsConfig.homeDirectory = value
         }
 
     /**
-     * The `serverpackcreator.properties`-file which both resulted from starting
-     * ServerPackCreator and provided the settings, properties and configurations for the currently
-     * running instance.
+     * The serverpackcreator.properties-file of the currently running instance.
      */
-    var serverPackCreatorPropertiesFile: File = File(homeDirectory, serverPackCreatorProperties).absoluteFile
-        get() {
-            field = File(homeDirectory, serverPackCreatorProperties).absoluteFile
-            return field
-        }
-        private set
+    val serverPackCreatorPropertiesFile: File get() = pathsConfig.serverPackCreatorPropertiesFile
 
     /**
-     * Overrides which, well, override, any property which may be set in the regular [serverPackCreatorPropertiesFile].
+     * Overrides-file which overrides any property set in the regular properties-file.
      */
-    var overridesPropertiesFile: File = File(homeDirectory, "overrides.properties")
-        get() {
-            field = File(homeDirectory, "overrides.properties")
-            return field
-        }
-        private set
+    val overridesPropertiesFile: File get() = pathsConfig.overridesPropertiesFile
 
     /**
-     * Default configuration-file for a server pack generation inside ServerPackCreators
-     * home-directory.
+     * Default configuration-file for a server pack generation in the home-directory.
      */
-    var defaultConfig: File = File(homeDirectory, "serverpackcreator.conf").absoluteFile
-        get() {
-            field = File(homeDirectory, "serverpackcreator.conf").absoluteFile
-            return field
-        }
-        private set
+    val defaultConfig: File get() = pathsConfig.defaultConfig
 
     /**
-     * Directory in which ServerPackCreator configurations from the GUI get saved in by default.
+     * Directory in which GUI-created configurations are saved by default.
      */
-    var configsDirectory: File = File(homeDirectory, "configs").absoluteFile
-        get() {
-            field = File(homeDirectory, "configs").absoluteFile
-            return field
-        }
-        private set
+    val configsDirectory: File get() = pathsConfig.configsDirectory
 
     /**
      * Base-directory for Tomcat, used by the webservice-side of ServerPackCreator.
      */
-    var tomcatBaseDirectory: File = homeDirectory
-        get() {
-            val prop = internalProps.getProperty(pTomcatBaseDirectory, homeDirectory.absolutePath)
-            val dir = if (prop != homeDirectory.absolutePath) {
-                internalProps.setProperty(pTomcatBaseDirectory, homeDirectory.absolutePath)
-                homeDirectory.absolutePath
-            } else {
-                internalProps.getProperty(pTomcatBaseDirectory, homeDirectory.absolutePath)
-            }
-            field = File(dir).absoluteFile
-            return field
-        }
+    var tomcatBaseDirectory: File
+        get() = pathsConfig.tomcatBaseDirectory
         set(value) {
-            internalProps.setProperty(pTomcatBaseDirectory, value.absolutePath)
-            field = value.absoluteFile
-            log.info("Set Tomcat base-directory to: $field")
-        }
-
-    fun defaultTomcatBaseDirectory(): File {
-        return homeDirectory.absoluteFile
-    }
-
-    fun defaultServerPacksDirectory(): File {
-        return File(homeDirectory, "server-packs").absoluteFile
-    }
-
-    /**
-     * Directory in which generated server packs, or server packs being generated, are stored in, as
-     * well as their ZIP-archives, if created.
-     *
-     * By default, this directory will be the `server-packs`-directory in the home-directory of
-     * ServerPackCreator, but it can be configured using the property
-     * `de.griefed.serverpackcreator.configuration.directories.serverpacks` and can even be
-     * configured to be completely independent of ServerPackCreators home-directory.
-     */
-    var serverPacksDirectory: File = File(homeDirectory, "server-packs")
-        get() {
-            val prop = internalProps.getProperty(pConfigurationDirectoriesServerPacks)
-            val directory: File = if (prop.isNullOrBlank() || prop.matches(serverPacksRegex)) {
-                defaultServerPacksDirectory()
-            } else {
-                File(internalProps.getProperty(pConfigurationDirectoriesServerPacks))
-            }
-            if (field.absolutePath != directory.absolutePath) {
-                field = directory
-            }
-            return field
-        }
-        set(value) {
-            internalProps.setProperty(pConfigurationDirectoriesServerPacks, value.absolutePath)
-            field = value.absoluteFile
-            log.info("Server packs directory set to: $field")
+            pathsConfig.tomcatBaseDirectory = value
         }
 
     /**
-     * Storage location for logs created by ServerPackCreator. This is the `logs`-directory
-     * inside ServerPackCreators home-directory.
+     * The default Tomcat base-directory: the home-directory.
      */
-    var logsDirectory: File = File(homeDirectory, "logs").absoluteFile
-        get() {
-            field = File(homeDirectory, "logs").absoluteFile
-            return field
+    fun defaultTomcatBaseDirectory(): File = pathsConfig.defaultTomcatBaseDirectory()
+
+    /**
+     * The default server-packs directory: server-packs inside the home-directory.
+     */
+    fun defaultServerPacksDirectory(): File = pathsConfig.defaultServerPacksDirectory()
+
+    /**
+     * Directory in which generated server packs and their ZIP-archives are stored.
+     */
+    var serverPacksDirectory: File
+        get() = pathsConfig.serverPacksDirectory
+        set(value) {
+            pathsConfig.serverPacksDirectory = value
         }
-        private set
+
+    /**
+     * Storage-location for logs created by ServerPackCreator.
+     */
+    val logsDirectory: File get() = pathsConfig.logsDirectory
 
     /**
      * Logs-directory for Tomcat, used by the webservice-side of ServerPackCreator.
      */
-    var tomcatLogsDirectory: File = logsDirectory
-        get() {
-            val default = logsDirectory.absolutePath
-            val prop = internalProps.getProperty(pTomcatLogsDirectory, default)
-            val dir = if (File(prop).canWrite()) {
-                internalProps.getProperty(pTomcatLogsDirectory, default)
-            } else {
-                default
-            }
-            field = File(dir).absoluteFile
-            return field
-        }
+    var tomcatLogsDirectory: File
+        get() = pathsConfig.tomcatLogsDirectory
         set(value) {
-            internalProps.setProperty(pTomcatLogsDirectory, value.absolutePath)
-            field = value.absoluteFile
-            log.info("Set Tomcat logs-directory to: $field")
+            pathsConfig.tomcatLogsDirectory = value
         }
-
-    fun defaultTomcatLogsDirectory(): File {
-        return File(homeDirectory, "logs").absoluteFile
-    }
 
     /**
-     * Directory to which default/fallback manifests are copied to during the startup of
-     * ServerPackCreator.
-     *
-     * When the [de.griefed.serverpackcreator.api.versionmeta.VersionMeta] is initialized, the
-     * manifests copied to this directory will provide ServerPackCreator with the information required
-     * to check and create your server packs.
-     *
-     * By default, this is the `manifests`-directory inside ServerPackCreators home-directory.
+     * The default Tomcat logs-directory: logs inside the home-directory.
      */
-    var manifestsDirectory: File = File(homeDirectory, "manifests").absoluteFile
-        get() {
-            field = File(homeDirectory, "manifests").absoluteFile
-            return field
-        }
-        private set
+    fun defaultTomcatLogsDirectory(): File = pathsConfig.defaultTomcatLogsDirectory()
 
     /**
-     * The Fabric intermediaries manifest containing all required information about Fabrics
-     * intermediaries. These intermediaries are used by Quilt, Fabric and LegacyFabric.
-     *
-     *
-     * By default, the `fabric-intermediaries-manifest.json`-file resides in the
-     * `manifests`-directory inside ServerPackCreators home-directory.
+     * Directory to which default/fallback version-manifests are copied during startup.
      */
-    var fabricIntermediariesManifest: File =
-        File(manifestsDirectory, "fabric-intermediaries-manifest.json").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "fabric-intermediaries-manifest.json").absoluteFile
-            return field
-        }
-        private set
+    val manifestsDirectory: File get() = pathsConfig.manifestsDirectory
 
     /**
-     * The LegacyFabric game version manifest containing information about which Minecraft version
-     * LegacyFabric is available for.
-     *
-     *
-     * By default, the `legacy-fabric-game-manifest.json`-file resides in the
-     * `manifests`-directory inside ServerPackCreators home-directory.
+     * The Fabric intermediaries-manifest, used by Quilt, Fabric and LegacyFabric.
      */
-    var legacyFabricGameManifest: File = File(manifestsDirectory, "legacy-fabric-game-manifest.json").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "legacy-fabric-game-manifest.json").absoluteFile
-            return field
-        }
-        private set
+    val fabricIntermediariesManifest: File get() = pathsConfig.fabricIntermediariesManifest
 
     /**
-     * LegacyFabric loader manifest containing information about Fabric loader maven versions.
-     *
-     * By default, the `legacy-fabric-loader-manifest.json`-file resides in the
-     * `manifests`-directory inside ServerPackCreators home-directory.
+     * The LegacyFabric game-version manifest.
      */
-    var legacyFabricLoaderManifest: File = File(manifestsDirectory, "legacy-fabric-loader-manifest.json").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "legacy-fabric-loader-manifest.json").absoluteFile
-            return field
-        }
-        private set
+    val legacyFabricGameManifest: File get() = pathsConfig.legacyFabricGameManifest
 
     /**
-     * LegacyFabric installer manifest containing information about available LegacyFabric installers
-     * with which to install a server.
-     *
-     * By default, the `legacy-fabric-installer-manifest.xml`-file resides in the
-     * `manifests`-directory inside ServerPackCreators home-directory.
+     * The LegacyFabric loader-manifest.
      */
-    var legacyFabricInstallerManifest: File =
-        File(manifestsDirectory, "legacy-fabric-installer-manifest.xml").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "legacy-fabric-installer-manifest.xml").absoluteFile
-            return field
-        }
-        private set
+    val legacyFabricLoaderManifest: File get() = pathsConfig.legacyFabricLoaderManifest
 
     /**
-     * Fabric installer manifest containing information about available Fabric installers with which
-     * to install a server.
-     *
-     * By default, the `fabric-installer-manifest.xml`-file resides in the
-     * `manifests`-directory inside ServerPackCreators home-directory.
+     * The LegacyFabric installer-manifest.
      */
-    var fabricInstallerManifest: File = File(manifestsDirectory, "fabric-installer-manifest.xml").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "fabric-installer-manifest.xml").absoluteFile
-            return field
-        }
-        private set
+    val legacyFabricInstallerManifest: File get() = pathsConfig.legacyFabricInstallerManifest
 
     /**
-     * Quilt version manifest containing information about available Quilt loader versions.
-     *
-     * By default, the `quilt-manifest.xml`-file resides in the `manifests`-directory
-     * inside ServerPackCreators home-directory.
+     * The Fabric installer-manifest.
      */
-    var quiltVersionManifest: File = File(manifestsDirectory, "quilt-manifest.xml").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "quilt-manifest.xml").absoluteFile
-            return field
-        }
-        private set
+    val fabricInstallerManifest: File get() = pathsConfig.fabricInstallerManifest
 
     /**
-     * Quilt installer manifest containing information about available Quilt installers with which to
-     * install a server.
-     *
-     * By default, the `quilt-installer-manifest.xml`-file resides in the
-     * `manifests`-directory inside ServerPackCreators home-directory.
+     * The Quilt version-manifest.
      */
-    var quiltInstallerManifest: File = File(manifestsDirectory, "quilt-installer-manifest.xml").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "quilt-installer-manifest.xml").absoluteFile
-            return field
-        }
-        private set
+    val quiltVersionManifest: File get() = pathsConfig.quiltVersionManifest
 
     /**
-     * Forge version manifest containing information about available Forge loader versions.
-     *
-     *
-     * By default, the `forge-manifest.json`-file resides in the `manifests`-directory
-     * inside ServerPackCreators home-directory.
+     * The Quilt installer-manifest.
      */
-    var forgeVersionManifest: File = File(manifestsDirectory, "forge-manifest.json").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "forge-manifest.json").absoluteFile
-            return field
-        }
-        private set
+    val quiltInstallerManifest: File get() = pathsConfig.quiltInstallerManifest
 
     /**
-     * Old NeoForge version manifest containing information about available NeoForge loader versions.
-     * This manifest only contains versions for Minecraft 1.20.1.
-     *
-     *
-     * By default, the `neoforge-manifest.xml`-file resides in the `manifests`-directory
-     * inside ServerPackCreators home-directory.
+     * The Forge version-manifest.
      */
-    var oldNeoForgeVersionManifest: File = File(manifestsDirectory, "neoforge-manifest.xml").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "neoforge-manifest.xml").absoluteFile
-            return field
-        }
-        private set
+    val forgeVersionManifest: File get() = pathsConfig.forgeVersionManifest
 
     /**
-     * New NeoForge version manifest containing information about available NeoForge loader versions.
-     * This manifest contains versions for Minecraft 1.20.2 and up.
-     *
-     *
-     * By default, the `neoforge-manifest-new.xml`-file resides in the `manifests`-directory
-     * inside ServerPackCreators home-directory.
+     * The old NeoForge version-manifest, covering Minecraft 1.20.1 only.
      */
-    var newNeoForgeVersionManifest: File = File(manifestsDirectory, "neoforge-manifest-new.xml").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "neoforge-manifest-new.xml").absoluteFile
-            return field
-        }
-        private set
+    val oldNeoForgeVersionManifest: File get() = pathsConfig.oldNeoForgeVersionManifest
 
     /**
-     * Fabric version manifest containing information about available Fabric loader versions.
-     *
-     *
-     * By default, the `fabric-manifest.xml`-file resides in the `manifests`-directory
-     * inside ServerPackCreators home-directory.
+     * The new NeoForge version-manifest.
      */
-    var fabricVersionManifest: File = File(manifestsDirectory, "fabric-manifest.xml").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "fabric-manifest.xml").absoluteFile
-            return field
-        }
-        private set
+    val newNeoForgeVersionManifest: File get() = pathsConfig.newNeoForgeVersionManifest
 
     /**
-     * Directory to which Minecraft server manifests are copied during the startup of
-     * ServerPackCreator.
-     *
-     * When the [de.griefed.serverpackcreator.api.versionmeta.VersionMeta] is initialized, the
-     * manifests copied to this directory will provide ServerPackCreator with the information required
-     * to check and create your server packs.
-     *
-     * The Minecraft server manifests contain information about the Java version required, the
-     * download-URL of the server-JAR and much more.
-     *
-     * By default, this is the `mcserver`-directory inside the `manifests`-directory
-     * inside ServerPackCreators home-directory.
+     * The Fabric version-manifest.
      */
-    var minecraftServerManifestsDirectory: File = File(manifestsDirectory, "mcserver").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "mcserver").absoluteFile
-            return field
-        }
-        private set
+    val fabricVersionManifest: File get() = pathsConfig.fabricVersionManifest
 
     /**
-     * Minecraft version manifest containing information about available Minecraft versions.
-     *
-     * By default, the `minecraft-manifest.json`-file resides in the `manifests`-directory
-     * inside ServerPackCreators home-directory.
+     * Directory in which Minecraft-server manifests are stored.
      */
-    var minecraftVersionManifest: File = File(manifestsDirectory, "minecraft-manifest.json").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "minecraft-manifest.json").absoluteFile
-            return field
-        }
-        private set
+    val minecraftServerManifestsDirectory: File get() = pathsConfig.minecraftServerManifestsDirectory
 
     /**
-     * Work-directory for storing temporary, non-critical, files and directories.
-     *
-     * Any file and/or directory inside the work-directory is considered `safe-to-delete`,
-     * meaning that it can safely be emptied when ServerPackCreator is not running, without running
-     * the risk of corrupting anything. It is not recommended to empty this directory whilst
-     * ServerPackCreator is running, as in that case, it may interfere with any currently running
-     * operation.
-     *
-     * By default, this is the `work`-directory inside ServerPackCreators home-directory.
+     * The Minecraft version-manifest.
      */
-    var workDirectory: File = File(homeDirectory, "work").absoluteFile
-        get() {
-            field = File(homeDirectory, "work").absoluteFile
-            return field
-        }
-        private set
+    val minecraftVersionManifest: File get() = pathsConfig.minecraftVersionManifest
 
     /**
-     * Caching directory for various types of installers. Mainly used by the version-meta for caching modloaders
-     * server installers, but also used as the ServerPackCreator installer cache-directory in certain scenarios.
-     *
-     * @author Griefed
+     * Work-directory for storage of files and folders required temporarily during any operation.
      */
-    var installerCacheDirectory: File = File(workDirectory, "installers").absoluteFile
-        get() {
-            field = File(workDirectory, "installers").absoluteFile
-            return field
-        }
-        private set
+    val workDirectory: File get() = pathsConfig.workDirectory
 
     /**
-     * Temp-directory storing files and folders required temporarily during the run of a server pack
-     * generation or other operations.
-     *
-     * One example would be when running ServerPackCreator as a webservice and uploading a zipped
-     * modpack for the automatic creation of a server pack from said modpack.
-     *
-     * Any file and/or directory inside the work-directory is considered `safe-to-delete`,
-     * meaning that it can safely be emptied when ServerPackCreator is not running, without running
-     * the risk of corrupting anything. It is not recommended to empty this directory whilst
-     * ServerPackCreator is running, as in that case, it may interfere with any currently running
-     * operation.
-     *
-     *
-     * By default, this directory is `work/temp` inside ServerPackCreators home-directory.
+     * Caching-directory for various types of installers.
      */
-    var tempDirectory: File = File(workDirectory, "temp").absoluteFile
-        get() {
-            field = File(workDirectory, "temp").absoluteFile
-            return field
-        }
-        private set
+    val installerCacheDirectory: File get() = pathsConfig.installerCacheDirectory
 
     /**
-     * Modpacks directory in which uploaded modpack ZIP-archives and extracted modpacks are stored.
-     *
-     * By default, this is the `modpacks`-directory inside the `temp`-directory inside
-     * ServerPackCreators home-directory.
+     * Temp-directory storing files and folders required temporarily during a run.
      */
-    var modpacksDirectory: File = File(homeDirectory, "modpacks").absoluteFile
-        get() {
-            field = File(homeDirectory, "modpacks").absoluteFile
-            return field
-        }
-        private set
+    val tempDirectory: File get() = pathsConfig.tempDirectory
+
+    /**
+     * Modpacks-directory in which uploaded modpack-archives and extracted modpacks are stored.
+     */
+    val modpacksDirectory: File get() = pathsConfig.modpacksDirectory
 
     /**
      * Directory in which default server-files are stored in.
-     *
-     * Default server-files are, for example, the `server.properties`, `server-icon.png`,
-     * `default_template.sh` and `default_template.ps1`.
-     *
-     * The properties and icon are placeholders and/or templates for the user to change to their
-     * liking, should they so desire. The script-templates serve as a one-size-fits-all template for
-     * supporting `Forge`, `Fabric`, `LegacyFabric` and `Quilt`.
-     *
-     * By default, this directory is `server_files` inside ServerPackCreators home-directory.
      */
-    var serverFilesDirectory: File = File(homeDirectory, "server_files").absoluteFile
-        get() {
-            field = File(homeDirectory, "server_files").absoluteFile
-            return field
-        }
-        private set
+    val serverFilesDirectory: File get() = pathsConfig.serverFilesDirectory
 
     /**
-     * The default shell-template for the modded server start scripts. The file returned by this
-     * method does not represent the script-template in the `server_files`-directory. If you
-     * wish access the configured script templates inside the `server_files`-directory, use
-     * [startScriptTemplates].
+     * The default shell-template for the modded server start-scripts.
      */
-    val defaultShellScriptTemplate = File(serverFilesDirectory, "default_template.sh")
+    val defaultShellScriptTemplate: File get() = pathsConfig.defaultShellScriptTemplate
 
     /**
-     * The default PowerShell-template for the modded server start scripts. The file returned by this
-     * method does not represent the script-template in the `server_files`-directory. If you
-     * wish access the configured script templates inside the `server_files`-directory, use
-     * [startScriptTemplates].
+     * The default PowerShell-template for the modded server start-scripts.
      */
-    val defaultPowerShellScriptTemplate = File(serverFilesDirectory, "default_template.ps1")
+    val defaultPowerShellScriptTemplate: File get() = pathsConfig.defaultPowerShellScriptTemplate
 
     /**
-     * The default Batch-template for the modded server start scripts. The file returned by this
-     * method does not represent the script-template in the `server_files`-directory. If you
-     * wish access the configured script templates inside the `server_files`-directory, use
-     * [startScriptTemplates].
+     * The default Batch-template for the modded server start-scripts.
      */
-    val defaultBatchScriptTemplate = File(serverFilesDirectory, "default_template.bat")
+    val defaultBatchScriptTemplate: File get() = pathsConfig.defaultBatchScriptTemplate
 
     /**
-     * The default shell-template for the java-install scripts. The file returned by this
-     * method does not represent the script-template in the `server_files`-directory. If you
-     * wish access the configured script templates inside the `server_files`-directory, use
-     * [javaScriptTemplates].
+     * The default shell-template for the java-install scripts.
      */
-    val defaultJavaShellScriptTemplate = File(serverFilesDirectory, "default_java_template.sh")
+    val defaultJavaShellScriptTemplate: File get() = pathsConfig.defaultJavaShellScriptTemplate
 
     /**
-     * The default PowerShell-template for the java-install scripts. The file returned by this
-     * method does not represent the script-template in the `server_files`-directory. If you
-     * wish access the configured script templates inside the `server_files`-directory, use
-     * [javaScriptTemplates].
+     * The default PowerShell-template for the java-install scripts.
      */
-    val defaultJavaPowerShellScriptTemplate = File(serverFilesDirectory, "default_java_template.ps1")
+    val defaultJavaPowerShellScriptTemplate: File get() = pathsConfig.defaultJavaPowerShellScriptTemplate
 
     /**
-     * The default Batch-template for the java-install scripts. The file returned by this
-     * method does not represent the script-template in the `server_files`-directory. If you
-     * wish access the configured script templates inside the `server_files`-directory, use
-     * [javaScriptTemplates].
+     * The default Batch-template for the java-install scripts.
      */
-    val defaultJavaBatchScriptTemplate = File(serverFilesDirectory, "default_java_template.bat")
+    val defaultJavaBatchScriptTemplate: File get() = pathsConfig.defaultJavaBatchScriptTemplate
 
     /**
-     * Directory in which the properties for quick selection are to be stored in and retrieved from.
+     * Directory in which properties for quick selection are stored and retrieved.
      */
-    var propertiesDirectory: File = File(serverFilesDirectory, "properties").absoluteFile
-        get() {
-            field = File(serverFilesDirectory, "properties").absoluteFile
-            return field
-        }
-        private set
+    val propertiesDirectory: File get() = pathsConfig.propertiesDirectory
 
     /**
-     * Directory in which the icons for quick selection are to be stored in and retrieved from.
+     * Directory in which icons for quick selection are stored and retrieved.
      */
-    var iconsDirectory: File = File(serverFilesDirectory, "icons").absoluteFile
-        get() {
-            field = File(serverFilesDirectory, "icons").absoluteFile
-            return field
-        }
-        private set
+    val iconsDirectory: File get() = pathsConfig.iconsDirectory
 
     /**
-     * Default server.properties-file used by Minecraft servers. This file resides in the
-     * `server_files`-directory inside ServerPackCreators home-directory.
+     * Default server.properties-file used by Minecraft servers.
      */
-    var defaultServerProperties: File = File(serverFilesDirectory, "server.properties").absoluteFile
-        get() {
-            field = File(serverFilesDirectory, "server.properties").absoluteFile
-            return field
-        }
-        private set
+    val defaultServerProperties: File get() = pathsConfig.defaultServerProperties
 
     /**
-     * Default server-icon.png-file used by Minecraft servers. This file resides in the
-     * `server_files`-directory inside ServerPackCreators home-directory.
+     * Default server-icon.png-file used by Minecraft servers.
      */
-    var defaultServerIcon: File = File(serverFilesDirectory, "server-icon.png").absoluteFile
-        get() {
-            field = File(serverFilesDirectory, "server-icon.png").absoluteFile
-            return field
-        }
-        private set
+    val defaultServerIcon: File get() = pathsConfig.defaultServerIcon
 
     /**
      * Directory in which plugins for ServerPackCreator are to be placed in.
-     *
-     * This directory not only holds any potential plugins for ServerPackCreator, but also contains the
-     * directory in which plugin-specific config-files are stored in, as well as the
-     * `disabled.txt`-file, which allows a user to disable any installed plugin.
-     *
-     *
-     * By default, this is the `plugins`-directory inside the ServerPackCreator home-directory.
      */
-    var pluginsDirectory: File = File(homeDirectory, "plugins").absoluteFile
-        get() {
-            field = File(homeDirectory, "plugins").absoluteFile
-            return field
-        }
-        private set
+    val pluginsDirectory: File get() = pathsConfig.pluginsDirectory
 
     /**
      * Directory in which plugin-specific configurations are stored in.
-     *
-     * When ServerPackCreator starts and loads all available plugins, it will also extract a plugins
-     * config-file, if available. This file will be stored inside the config-directory using the ID of
-     * the plugin as its name, with `.toml` appended to it. Think of this like the
-     * config-directory in a modded Minecraft server. Do the names of the config-files there look
-     * familiar to the mods they belong to? Well, they should!
-     *
-     * By default, this is the `config`-directory inside the `plugins`-directory inside
-     * ServerPackCreators home-directory.
      */
-    var pluginsConfigsDirectory: File = File(pluginsDirectory, "config").absoluteFile
-        get() {
-            field = File(pluginsDirectory, "config").absoluteFile
-            return field
-        }
-        private set
+    val pluginsConfigsDirectory: File get() = pathsConfig.pluginsConfigsDirectory
 
-    /**
-     * Load the [propertiesFile] into the provided [props]
-     *
-     * @author Griefed
-     */
     /**
      * Loads the given properties-file into [props] via the [store], dropping blank values and
      * tracking the file for later saving.
@@ -1509,9 +927,9 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         loadFile(serverPackCreatorPropertiesFile, props)
         internalProps.putAll(props)
 
-        internalProps.setProperty(pTomcatBaseDirectory, homeDirectory.absolutePath)
-        if (internalProps.getProperty(pLanguage) != "en_GB") {
-            changeLocale(Locale(internalProps.getProperty(pLanguage)))
+        internalProps.setProperty(PathsConfig.TOMCAT_BASE_DIRECTORY_KEY, homeDirectory.absolutePath)
+        if (internalProps.getProperty(I18nConfig.LANGUAGE_KEY) != "en_GB") {
+            changeLocale(Locale(internalProps.getProperty(I18nConfig.LANGUAGE_KEY)))
         }
 
         // Load all values from the overrides-properties
@@ -1646,46 +1064,10 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
 
 
     /**
-     * Check the given path to a Java installation for validity and return it, if it is valid. If the
-     * passed path is a UNIX symlink or Windows lnk, it is resolved, then returned. If the passed path
-     * is considered invalid, the system default is acquired and returned.
-     *
-     * @param pathToJava The path to check for whether it is a valid Java installation.
-     * @return Returns the path to the Java installation. If user input was incorrect, SPC will try to
-     * acquire the path automatically.
-     * @author Griefed
+     * Check the given path to a Java installation for validity and return it, if it is valid.
+     * Invalid paths yield the automatically acquired system-Java.
      */
-    fun acquireJavaPath(pathToJava: String? = null): String {
-        var checkedJavaPath: String
-        try {
-            if (!pathToJava.isNullOrBlank()) {
-                if (checkJavaPath(pathToJava)) {
-                    return pathToJava
-                }
-                if (checkJavaPath("$pathToJava.exe")) {
-                    return "$pathToJava.exe"
-                }
-                if (checkJavaPath("$pathToJava.lnk")) {
-                    return FileUtilities.resolveLink(File("$pathToJava.lnk"))
-                }
-            }
-            checkedJavaPath = SystemUtilities.acquireJavaPathFromSystem()
-            log.debug("Acquired path to Java installation: $checkedJavaPath")
-        } catch (ex: NullPointerException) {
-            log.info("Java setting invalid or otherwise not usable. Using system default.")
-            checkedJavaPath = SystemUtilities.acquireJavaPathFromSystem()
-            log.debug("Automatically acquired path to Java installation: $checkedJavaPath", ex)
-        } catch (ex: InvalidFileTypeException) {
-            log.info("Java setting invalid or otherwise not usable. Using system default.")
-            checkedJavaPath = SystemUtilities.acquireJavaPathFromSystem()
-            log.debug("Automatically acquired path to Java installation: $checkedJavaPath", ex)
-        } catch (ex: IOException) {
-            log.info("Java setting invalid or otherwise not usable. Using system default.")
-            checkedJavaPath = SystemUtilities.acquireJavaPathFromSystem()
-            log.debug("Automatically acquired path to Java installation: $checkedJavaPath", ex)
-        }
-        return checkedJavaPath
-    }
+    fun acquireJavaPath(pathToJava: String? = null): String = javaConfig.acquireJavaPath(pathToJava)
 
     /**
      * Store the ApplicationProperties to disk, overwriting the existing one.
@@ -1702,83 +1084,10 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     }
 
     /**
-     * Check whether the given path is a valid Java specification.
-     *
-     * @param pathToJava Path to the Java executable
-     * @return `true` if the path is valid.
-     * @author Griefed
-     */
-    private fun checkJavaPath(pathToJava: String?): Boolean {
-        if (pathToJava.isNullOrBlank()) {
-            return false
-        }
-        if (checkedJavas.containsKey(pathToJava)) {
-            return checkedJavas[pathToJava]!!
-        }
-        val result: Boolean
-        when (FileUtilities.checkFileType(pathToJava)) {
-            FileType.FILE -> {
-                result = testJava(pathToJava)
-            }
-
-            FileType.LINK, FileType.SYMLINK -> {
-                result = try {
-                    testJava(FileUtilities.resolveLink(File(pathToJava)))
-                } catch (ex: InvalidFileTypeException) {
-                    log.error("Could not read Java link/symlink.", ex)
-                    false
-                } catch (ex: IOException) {
-                    log.error("Could not read Java link/symlink.", ex)
-                    false
-                }
-            }
-
-            FileType.DIRECTORY -> {
-                log.error("Directory specified. Path to Java must lead to a lnk, symlink or file.")
-                result = false
-            }
-
-            FileType.INVALID -> result = false
-        }
-        checkedJavas[pathToJava] = result
-        return result
-    }
-
-    /**
-     * Test for a valid Java specification by trying to run `java -version`. If the command goes
-     * through without errors, it is considered a correct specification.
-     *
-     * @param pathToJava Path to the java executable/binary.
-     * @return `true` if the specified file is a valid Java executable/binary.
-     * @author Griefed
-     */
-    private fun testJava(pathToJava: String): Boolean {
-        val testSuccessful: Boolean = try {
-            val processBuilder = ProcessBuilder(listOf(pathToJava, "-version"))
-            processBuilder.redirectErrorStream(true)
-            val process = processBuilder.start()
-            val bufferedReader = BufferedReader(InputStreamReader(process.inputStream))
-            while (bufferedReader.readLine() != null && bufferedReader.readLine() != "null") {
-                println(bufferedReader.readLine())
-            }
-            bufferedReader.close()
-            process.destroyForcibly()
-            true
-        } catch (e: IOException) {
-            log.error("Invalid Java specified.")
-            false
-        }
-        return testSuccessful
-    }
-
-    /**
      * Whether a viable path to a Java executable or binary has been configured for
      * ServerPackCreator.
-     *
-     * @return `true` if a viable path has been set.
-     * @author Griefed
      */
-    fun javaAvailable() = checkJavaPath(javaPath)
+    fun javaAvailable() = javaConfig.javaAvailable()
 
     /**
      * Writes the specified locale from -lang your_locale to a lang.properties file to ensure every
@@ -1788,11 +1097,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * -your_locale.
      * @author Griefed
      */
-    fun changeLocale(locale: Locale) {
-        language = locale
-        saveProperties(serverPackCreatorPropertiesFile)
-        log.info("Changed locale to $language")
-    }
+    fun changeLocale(locale: Locale) = i18nConfig.changeLocale(locale)
 
     /**
      * Acquire the default fallback list of clientside-only mods. If
@@ -1819,55 +1124,14 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      *
      * `true` if either was updated.
      */
-    var fallbackUpdated: Boolean = false
-        private set
+    val fallbackUpdated: Boolean get() = updateConfig.fallbackUpdated
 
     /**
-     * Update the fallback clientside-only mod-list of our `serverpackcreator.properties` from
-     * the main-repository or one of its mirrors.
+     * Update the fallback clientside-only mod-list and whitelist from the configured update-URL.
      *
-     * @return `true` if the fallback-property was updated.
-     * @author Griefed
+     * @return `true` if either fallback-list was updated.
      */
-    fun updateFallback(): Boolean {
-        var properties: Properties? = null
-        try {
-            URI(
-                acquireProperty(pConfigurationFallbackUpdateURL, fallbackUpdateURL)
-            ).toURL().openStream().use {
-                properties = Properties()
-                properties!!.load(it)
-            }
-        } catch (e: IOException) {
-            log.debug("GitHub could not be reached.", e)
-        }
-        fallbackUpdated = false
-        if (properties != null) {
-            val newBlacklist = properties!!.getProperty(pConfigurationFallbackModsList)
-            val currentBlacklist = internalProps.getProperty(pConfigurationFallbackModsList)
-            if (newBlacklist != null && currentBlacklist != newBlacklist) {
-                internalProps.setProperty(pConfigurationFallbackModsList, newBlacklist)
-                clientsideMods.clear()
-                clientsideMods.addAll(internalProps.getProperty(pConfigurationFallbackModsList).split(","))
-                log.info("The fallback-list for clientside only mods has been updated to: $clientsideMods")
-                fallbackUpdated = true
-            }
-
-            val newWhitelist = properties!!.getProperty(pConfigurationFallbackModsWhiteList)
-            val currentWhitelist = internalProps.getProperty(pConfigurationFallbackModsWhiteList)
-            if (newWhitelist != null && currentWhitelist != newWhitelist) {
-                internalProps.setProperty(pConfigurationFallbackModsWhiteList, newWhitelist)
-                modsWhitelist.clear()
-                modsWhitelist.addAll(internalProps.getProperty(pConfigurationFallbackModsWhiteList).split(","))
-                log.info("The fallback-list for whitelisted mods has been updated to: $modsWhitelist")
-                fallbackUpdated = true
-            }
-        }
-        if (fallbackUpdated) {
-            saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
-        }
-        return fallbackUpdated
-    }
+    fun updateFallback(): Boolean = updateConfig.updateFallback()
 
     /**
      * Store a custom property in the serverpackcreator.properties-file. Beware that every property you add
@@ -1901,29 +1165,14 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Get the path to the specified Java executable/binary, wrapped in an [Optional] for your
      * convenience.
-     *
-     * @param javaVersion The Java version to acquire the path for.
-     * @return The path to the Java executable/binary, if available.
-     * @author Griefed
      */
-    fun javaPath(javaVersion: Int) =
-        if (javaPaths.containsKey(javaVersion.toString())
-            && javaPaths[javaVersion.toString()]?.let { File(it).isFile } == true
-        ) {
-            Optional.ofNullable(javaPaths[javaVersion.toString()])
-        } else {
-            Optional.empty()
-        }
+    fun javaPath(javaVersion: Int): Optional<String> = javaConfig.javaPath(javaVersion)
 
     /**
      * Get the path to the specified Java executable/binary, wrapped in an [Optional] for your
      * convenience.
-     *
-     * @param javaVersion The Java version to acquire the path for.
-     * @return The path to the Java executable/binary, if available.
-     * @author Griefed
      */
-    fun javaPath(javaVersion: String) = javaPath(javaVersion.toInt())
+    fun javaPath(javaVersion: String): Optional<String> = javaConfig.javaPath(javaVersion)
 
     /**
      * Set the old version of ServerPackCreator used to perform necessary migrations between the old
@@ -1932,10 +1181,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @param version Old version used before upgrading to the current version.
      * @author Griefed
      */
-    fun setOldVersion(version: String) {
-        internalProps.setProperty(pOldVersion, version)
-        saveProperties(serverPackCreatorPropertiesFile)
-    }
+    fun setOldVersion(version: String) = updateConfig.setOldVersion(version)
 
     /**
      * Get the old version of ServerPackCreator used to perform necessary migrations between the old
@@ -1943,7 +1189,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      *
      * @return Old version used before updating. Empty if this is the first run of ServerPackCreator.
      */
-    fun oldVersion(): String = internalProps.getProperty(pOldVersion, "")
+    fun oldVersion(): String = updateConfig.oldVersion()
 
     fun clearPropertyFileList() {
         store.clearTrackedFiles()

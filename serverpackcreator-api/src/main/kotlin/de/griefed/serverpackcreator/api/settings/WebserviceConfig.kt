@@ -59,6 +59,21 @@ class WebserviceConfig(private val store: PropertyStore) {
     }
 
     /**
+     * Fallback cron-schedule for the webservice's cleanup-job.
+     */
+    val fallbackCleanupSchedule = "0 0 0 * * *"
+
+    /**
+     * Fallback cron-schedule for the webservice's version-refresh-job.
+     */
+    val fallbackVersionSchedule = "0 0 0 * * *"
+
+    /**
+     * Fallback cron-schedule for the webservice's file-cleanup-job.
+     */
+    val fallbackDatabaseCleanupSchedule = "0 0 0 * * *"
+
+    /**
      * URI of the MongoDB-database used by the webservice. Reading migrates legacy SQLite- or
      * PostgreSQL-URIs to [FALLBACK_DATABASE_URI]; writing prefixes the mongodb://-scheme when
      * missing.

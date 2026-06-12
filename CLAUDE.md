@@ -152,14 +152,34 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   cleanup-files, ZIP-exclusions, exclusion-filter, six generation-flags incl. legacy
   auto-discovery migration, Aikar's flags; 11 tests). ApiProperties: 3,007 → 2,126 lines.
   Dead code removed: `addDirectoryToExclude` had zero callers. `updateFallback()` stayed in
-  ApiProperties (network + save orchestration), as did the script-templates (they depend on
-  `serverFilesDirectory` from the not-yet-extracted paths-group). Remaining groups, roughly
-  in order: script-templates + paths/directories (large, homeDirectory uses Preferences +
-  overrides — careful), Java-settings (javaPath(s) + detection), update/release-info,
-  i18n/log-level. The log4j2-XML companion in ApiProperties is its own beast — consider
-  moving to a dedicated LoggingConfig last.
-- **Next:** continue Phase 1b group-extractions. Then CommandlineParser/MigrationManager
-  tests during Phase 2.
+  ApiProperties (network + save orchestration). Third group extracted:
+  `api.settings.PathsConfig` (homeDirectory with Preferences-resolution — the Preferences-node
+  is constructor-injected so tests use a scratch-node — all derived directories/files, 12
+  version-manifests, default script-templates, server-packs override, Tomcat-directories;
+  8 tests). Pinned quirk: a deviating Tomcat base-directory is reset to the home-directory on
+  read. ApiProperties: 2,126 → 1,754 lines; `getPreference`/`storePreference` stay on
+  ApiProperties (GUI uses them for general preferences).
+- **Phase 1b, groups 4+5 (2026-06-12):** `api.settings.ScriptTemplatesConfig` (start-/java-
+  template maps under prefixed keys, defaults via PathsConfig, deprecated list-handling;
+  4 tests — note: group-declarations in ApiProperties must come AFTER the groups they depend
+  on, Kotlin initializes properties in declaration order) and `api.settings.JavaConfig`
+  (javaPath with validation + system-fallback, per-version javaPaths map, java-version
+  Optionals, autoupdate-flag; 5 tests using the running JVM's binary as known-valid Java).
+  ApiProperties: 1,624 → 1,440 lines.
+- **Phase 1b COMPLETE (2026-06-12):** final groups extracted — `api.settings.UpdateConfig`
+  (update-URL, pre-release-check flag, old-version tracking, updateFallback with injected
+  save-callback and GenerationConfig; 4 tests, updateFallback tested via file://-URL),
+  `api.settings.I18nConfig` (language-parsing, i18n4k-propagation, changeLocale with
+  save-callback; 3 tests) and `api.settings.LoggingConfig` (uppercased log-level with
+  injected apply-callback; 1 test — the log4j-XML machinery stays in ApiProperties, which IS
+  log4j's ConfigurationFactory via @Plugin; moving that would risk plugin-discovery).
+  Webservice fallback-schedules moved into WebserviceConfig;
+  `fallbackArtemisQueueMaxDiskUsage` deprecated (dead — no consumer since the MongoDB-move).
+  **ApiProperties final: 1,372 lines (from 3,007), now: orchestration (loadProperties
+  ordering, init), jar/OS-info, version/firstRun, preferences, hasteBin, log4j-factory, and
+  facades over 8 settings-groups + PropertyStore.**
+- **Next:** Phase 1c — decompose ConfigurationHandler into per-concern validators. Then
+  CommandlineParser/MigrationManager tests during Phase 2.
 
 ---
 
