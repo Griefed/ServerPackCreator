@@ -24,6 +24,7 @@ import de.comahe.i18n4k.config.I18n4kConfigDefault
 import de.comahe.i18n4k.i18n4k
 import de.griefed.serverpackcreator.api.settings.GenerationConfig
 import de.griefed.serverpackcreator.api.settings.PathsConfig
+import de.griefed.serverpackcreator.api.settings.ScriptTemplatesConfig
 import de.griefed.serverpackcreator.api.settings.WebserviceConfig
 import de.comahe.i18n4k.toTag
 import de.griefed.serverpackcreator.api.config.ExclusionFilter
@@ -84,10 +85,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         "de.griefed.serverpackcreator.configuration.hastebinserver"
     private val pConfigurationDirectoriesServerPacks =
         "de.griefed.serverpackcreator.configuration.directories.serverpacks"
-    private val pServerPackStartScriptTemplatesPrefix =
-        "de.griefed.serverpackcreator.serverpack.script.template."
-    private val pServerPackJavaScriptTemplatesPrefix =
-        "de.griefed.serverpackcreator.serverpack.java.template."
     private val pJavaForServerInstall =
         "de.griefed.serverpackcreator.java"
     private val pScriptVariablesJavaPaths =
@@ -98,9 +95,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         "de.griefed.serverpackcreator.version.old"
     private val pLogLevel = "de.griefed.serverpackcreator.loglevel"
 
-    @Deprecated("Deprecated as of 6.0.0")
-    private val pServerPackScriptTemplates =
-        "de.griefed.serverpackcreator.serverpack.script.template"
 
     private val suffixes = arrayOf(".xml")
 
@@ -416,181 +410,51 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
 
     /**
      * Default list of script templates used by ServerPackCreator.
-     *
-     * @author Griefed
      */
-    @Deprecated("Deprecated as of 6.0.0", ReplaceWith("defaultScriptTemplateMap"))
-    fun defaultScriptTemplates(): List<File> {
-        // See whether we have custom files.
-        val currentFiles = serverFilesDirectory.walk().maxDepth(1).filter {
-            it.name.endsWith("sh", ignoreCase = true) ||
-                    it.name.endsWith("ps1", ignoreCase = true) ||
-                    it.name.endsWith("bat", ignoreCase = true)
-        }.toList()
-        val customTemplates = currentFiles.filter {
-            !it.name.contains("default_template", ignoreCase = true)
-        }
+    @Deprecated("Deprecated as of 6.0.0", ReplaceWith("defaultStartScriptTemplates()"))
+    @Suppress("DEPRECATION")
+    fun defaultScriptTemplates(): List<File> = scriptTemplatesConfig.defaultScriptTemplates()
 
-        val newTemplates = mutableListOf<File>()
-        var shellPresent = false
-        var powershellPresent = false
-        var batchPresent = false
-        for (customTemplate in customTemplates) {
-            when {
-                customTemplate.name.endsWith("sh", ignoreCase = true) && !shellPresent -> {
-                    newTemplates.add(customTemplate.absoluteFile)
-                    shellPresent = true
-                }
-
-                customTemplate.name.endsWith("ps1", ignoreCase = true) && !powershellPresent -> {
-                    newTemplates.add(customTemplate.absoluteFile)
-                    powershellPresent = true
-                }
-
-                customTemplate.name.endsWith("bat", ignoreCase = true) && !batchPresent -> {
-                    newTemplates.add(customTemplate.absoluteFile)
-                    batchPresent = true
-                }
-
-                else -> {
-                    newTemplates.add(customTemplate.absoluteFile)
-                }
-            }
-        }
-
-        if (!shellPresent) {
-            newTemplates.add(File(serverFilesDirectory.absolutePath, defaultShellScriptTemplate.name).absoluteFile)
-        }
-        if (!powershellPresent) {
-            newTemplates.add(File(serverFilesDirectory.absolutePath, defaultPowerShellScriptTemplate.name).absoluteFile)
-        }
-        if (!batchPresent) {
-            newTemplates.add(File(serverFilesDirectory.absolutePath, defaultBatchScriptTemplate.name).absoluteFile)
-        }
-
-        return newTemplates.toList()
-    }
-
+    /**
+     * Deprecated list-based script-templates.
+     */
     @Deprecated("Deprecated as of 6.0.0", ReplaceWith("startScriptTemplates"))
-    var scriptTemplates: TreeSet<File> = TreeSet()
-        get() {
-            val scriptSetting = internalProps.getProperty(pServerPackScriptTemplates)
-            val entries =
-                if (scriptSetting != null && scriptSetting == "default_template.ps1,default_template.sh,default_template.bat") {
-                    defaultScriptTemplates()
-                } else {
-                    getListProperty(
-                        pServerPackScriptTemplates,
-                        defaultScriptTemplates().joinToString(",") { it.absolutePath }
-                    ).map { File(it).absoluteFile }
-                }
-            field.clear()
-            field.addAll(entries)
-            return field
-        }
+    @Suppress("DEPRECATION")
+    var scriptTemplates: TreeSet<File>
+        get() = scriptTemplatesConfig.scriptTemplates
         set(value) {
-            val entries = value.map { it.absolutePath }
-            setListProperty(pServerPackScriptTemplates, entries, ",")
-            field.clear()
-            field.addAll(value.map { it.absoluteFile })
-            log.info("Using script templates:")
-            for (template in field) {
-                log.info("    " + template.path)
-            }
+            scriptTemplatesConfig.scriptTemplates = value
         }
 
     /**
      * Default map of start-script templates: sh, ps1, bat.
      */
-    fun defaultStartScriptTemplates(): HashMap<String, String> {
-        return hashMapOf(
-            Pair("sh", File(serverFilesDirectory.absolutePath, defaultShellScriptTemplate.name).absolutePath),
-            Pair("ps1", File(serverFilesDirectory.absolutePath, defaultPowerShellScriptTemplate.name).absolutePath),
-            Pair("bat", File(serverFilesDirectory.absolutePath, defaultBatchScriptTemplate.name).absolutePath)
-        )
-    }
+    fun defaultStartScriptTemplates(): HashMap<String, String> =
+        scriptTemplatesConfig.defaultStartScriptTemplates()
 
     /**
-     * Start-script templates to use during server pack generation.
-     * Each key represents a different template and script-type.
+     * Start-script templates to use during server pack generation, one entry per script-type.
      */
-    var startScriptTemplates: HashMap<String, String> = hashMapOf()
-        get() {
-            val templateProps = internalProps.keys
-                .filter { entry -> (entry as String).startsWith(pServerPackStartScriptTemplatesPrefix) }
-                .map { entry -> entry as String }
-            var type: String
-            if (templateProps.isEmpty() || templateProps.any { entry ->
-                    entry.replace(pServerPackStartScriptTemplatesPrefix, "").isBlank()
-                }) {
-                log.warn("Found empty definitions for start script templates. Using defaults.")
-                field = defaultStartScriptTemplates()
-            } else {
-                for (templateProp in templateProps) {
-                    type = templateProp.replace(pServerPackStartScriptTemplatesPrefix, "")
-                    field[type] = File(internalProps[templateProp] as String).absolutePath
-                }
-            }
-            if (field.isEmpty()) {
-                log.error("No start script templates defined. Using defaults.")
-                field = defaultStartScriptTemplates()
-            }
-            return field
-        }
-        set(map) {
-            for ((key, value) in map) {
-                defineProperty("$pServerPackStartScriptTemplatesPrefix$key", value)
-                log.info("Set $pServerPackStartScriptTemplatesPrefix$key to $value")
-            }
-            field = map
+    var startScriptTemplates: HashMap<String, String>
+        get() = scriptTemplatesConfig.startScriptTemplates
+        set(value) {
+            scriptTemplatesConfig.startScriptTemplates = value
         }
 
     /**
-     * Default map of start-script templates: sh, ps1, bat.
+     * Default map of java-install-script templates: sh, ps1.
      */
-    fun defaultJavaScriptTemplates(): HashMap<String, String> {
-        return hashMapOf(
-            Pair("sh", File(serverFilesDirectory.absolutePath, defaultJavaShellScriptTemplate.name).absolutePath),
-            Pair("ps1", File(serverFilesDirectory.absolutePath, defaultJavaPowerShellScriptTemplate.name).absolutePath)
-        )
-    }
+    fun defaultJavaScriptTemplates(): HashMap<String, String> =
+        scriptTemplatesConfig.defaultJavaScriptTemplates()
 
     /**
-     * Start-script templates to use during server pack generation.
-     * Each key represents a different template and script-type.
+     * Java-install-script templates to use during server pack generation, one entry per
+     * script-type.
      */
-    var javaScriptTemplates: HashMap<String, String> = hashMapOf()
-        get() {
-            val templateProps = internalProps.keys
-                .filter { entry -> (entry as String).startsWith(pServerPackJavaScriptTemplatesPrefix) }
-                .map { entry -> entry as String }
-            var type: String
-            if (templateProps.isEmpty() || templateProps.any { entry ->
-                    entry.replace(
-                        pServerPackJavaScriptTemplatesPrefix,
-                        ""
-                    ).isBlank()
-                }) {
-                log.warn("Found empty definitions for java script templates. Using defaults.")
-                field = defaultJavaScriptTemplates()
-            } else {
-                for (templateProp in templateProps) {
-                    type = templateProp.replace(pServerPackJavaScriptTemplatesPrefix, "")
-                    field[type] = File(internalProps[templateProp] as String).absolutePath
-                }
-            }
-            if (field.isEmpty()) {
-                log.error("No java script templates defined. Using defaults.")
-                field = defaultJavaScriptTemplates()
-            }
-            return field
-        }
-        set(map) {
-            for ((key, value) in map) {
-                defineProperty("$pServerPackJavaScriptTemplatesPrefix$key", value)
-                log.info("Set $pServerPackJavaScriptTemplatesPrefix$key to $value")
-            }
-            field = map
+    var javaScriptTemplates: HashMap<String, String>
+        get() = scriptTemplatesConfig.javaScriptTemplates
+        set(value) {
+            scriptTemplatesConfig.javaScriptTemplates = value
         }
 
     /**
@@ -838,6 +702,12 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * ApiProperties remain as facade.
      */
     val pathsConfig = PathsConfig(store, spcPreferences, jarInformation, devBuild)
+
+    /**
+     * Settings-group for the start- and java-script-templates. Prefer accessing these values
+     * through this group; the individual properties on ApiProperties remain as facade.
+     */
+    val scriptTemplatesConfig = ScriptTemplatesConfig(store, pathsConfig)
 
     /**
      * ServerPackCreators home-directory, in which all important files and folders are stored in.
