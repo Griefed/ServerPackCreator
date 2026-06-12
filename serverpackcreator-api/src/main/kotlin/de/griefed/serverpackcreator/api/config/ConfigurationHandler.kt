@@ -73,6 +73,21 @@ class ConfigurationHandler(
     val zipCheck = "^\\w+[/\\\\]$".toRegex()
 
     /**
+     * Validator for modloader-names and modloader-versions.
+     */
+    val modloaderValidator = ModloaderValidator(versionMeta)
+
+    /**
+     * Validator for inclusion-specifications.
+     */
+    val inclusionsValidator = InclusionsValidator()
+
+    /**
+     * Validator for the modpack-directory.
+     */
+    val modpackDirectoryValidator = ModpackDirectoryValidator()
+
+    /**
      * Inspector for modpack ZIP-archives: content-listing and validity-checks.
      */
     val zipInspector = ModpackZipInspector()
@@ -299,24 +314,10 @@ class ConfigurationHandler(
     }
 
     /**
-     * Checks whether either Forge or Fabric were specified as the modloader.
-     *
-     * @param modloader Check as case-insensitive for Forge or Fabric.
-     * @return `true` if the specified modloader is either Forge or Fabric. False if neither.
-     * @author Griefed
+     * Checks whether a supported modloader was specified.
      */
-    fun checkModloader(modloader: String, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck {
-        if (!modloader.lowercase().matches(forge)
-            && !modloader.lowercase().matches(neoForge)
-            && !modloader.lowercase().matches(fabric)
-            && !modloader.lowercase().matches(quilt)
-            && !modloader.lowercase().matches(legacyFabric)
-        ) {
-            configCheck.modloaderErrors.add(Translations.configuration_log_error_checkmodloader.toString())
-            log.error("Invalid modloader specified. Modloader must be either Forge, NeoForge, Fabric or Quilt.")
-        }
-        return configCheck
-    }
+    fun checkModloader(modloader: String, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck =
+        modloaderValidator.checkModloader(modloader, configCheck)
 
     /**
      * Sanitize any and all links in a given instance of [PackConfig] modpack-directory,
@@ -486,77 +487,17 @@ class ConfigurationHandler(
         }
         file = File(packName, "server.properties")
         if (file.exists()) {
-            packConfig.serverIconPath = file.absolutePath
+            packConfig.serverPropertiesPath = file.absolutePath
         }
         return configCheck
     }
 
     /**
-     * Check the given Minecraft and modloader versions for the specified modloader.
-     *
-     * @param modloader        The passed modloader which determines whether the check for Forge or
-     * Fabric is called.
-     * @param modloaderVersion The version of the modloader which is checked against the corresponding
-     * modloader's manifest.
-     * @param minecraftVersion The version of Minecraft used for checking the Forge version.
-     * @return `true` if the specified modloader version was found in the corresponding
-     * manifest.
-     * @author Griefed
+     * Check the given Minecraft- and modloader-versions for the specified modloader.
      */
     fun checkModloaderVersion(
         modloader: String, modloaderVersion: String, minecraftVersion: String, configCheck: ConfigCheck = ConfigCheck()
-    ): ConfigCheck {
-        when (modloader) {
-            "Forge" -> if (!versionMeta.forge.isForgeAndMinecraftCombinationValid(minecraftVersion, modloaderVersion)) {
-                configCheck.modloaderVersionErrors.add(
-                    Translations.configuration_log_error_checkmodloaderandversion(
-                        minecraftVersion, modloader, modloaderVersion
-                    )
-                )
-            }
-
-            "NeoForge" -> if (!versionMeta.neoForge.isNeoForgeAndMinecraftCombinationValid(minecraftVersion,modloaderVersion)) {
-                configCheck.modloaderVersionErrors.add(
-                    Translations.configuration_log_error_checkmodloaderandversion(
-                        minecraftVersion, modloader, modloaderVersion
-                    )
-                )
-            }
-
-            "Fabric" -> if (!versionMeta.fabric.isVersionValid(modloaderVersion)
-                || !versionMeta.fabric.getLoaderDetails(minecraftVersion,modloaderVersion).isPresent) {
-                configCheck.modloaderVersionErrors.add(
-                    Translations.configuration_log_error_checkmodloaderandversion(
-                        minecraftVersion, modloader, modloaderVersion
-                    )
-                )
-            }
-
-            "Quilt" -> if (!versionMeta.quilt.isVersionValid(modloaderVersion)
-                || !versionMeta.fabric.isMinecraftSupported(minecraftVersion)) {
-                configCheck.modloaderVersionErrors.add(
-                    Translations.configuration_log_error_checkmodloaderandversion(
-                        minecraftVersion, modloader, modloaderVersion
-                    )
-                )
-            }
-
-            "LegacyFabric" -> if (!versionMeta.legacyFabric.isVersionValid(modloaderVersion)
-                || !versionMeta.legacyFabric.isMinecraftSupported(minecraftVersion)) {
-                configCheck.modloaderVersionErrors.add(
-                    Translations.configuration_log_error_checkmodloaderandversion(
-                        minecraftVersion, modloader, modloaderVersion
-                    )
-                )
-            }
-
-            else -> {
-                log.error("Specified incorrect modloader version. Please check your modpack for the correct version and enter again.")
-                configCheck.modloaderVersionErrors.add("Specified incorrect modloader version. Please check your modpack for the correct version and enter again.")
-            }
-        }
-        return configCheck
-    }
+    ): ConfigCheck = modloaderValidator.checkModloaderVersion(modloader, modloaderVersion, minecraftVersion, configCheck)
 
     /**
      * Convenience method which passes the important fields from an instance of
@@ -649,96 +590,15 @@ class ConfigurationHandler(
     }
 
     /**
-     * Checks whether the passed list of directories which are supposed to be in the modpack directory
-     * is empty, or whether all directories in the list exist in the modpack directory. If the user
-     * specified a `source/file;destination/file`-combination, it is checked whether the
-     * specified source-file exists on the host.
-     *
-     * @param inclusions Directories, or `source/file;destination/file`-combinations, to
-     * check for existence.
-     * `source/file;destination/file`-combinations must be absolute
-     * paths to the source-file.
-     * @param modpackDir        Path to the modpack directory in which to check for existence of the
-     * passed list of directories.
-     * @return `true` if every directory was found in the modpack directory. If any single one
-     * was not found, false is returned.
-     * @author Griefed
+     * Check the inclusion-specifications for existing sources, valid destinations and valid
+     * in-/exclusion-filter regexes.
      */
     fun checkInclusions(
         inclusions: MutableList<InclusionSpecification>,
         modpackDir: String,
         configCheck: ConfigCheck = ConfigCheck(),
         printLog: Boolean = true
-    ): ConfigCheck {
-        val hasLazy = inclusions.any { entry -> entry.source == "lazy_mode" }
-        if (inclusions.isEmpty()) {
-            if (printLog) {
-                log.error("No directories or files specified for copying. This would result in an empty server pack.")
-            }
-            configCheck.inclusionErrors.add(Translations.configuration_log_error_checkcopydirs_empty.toString())
-        } else if (inclusions.size == 1 && hasLazy) {
-            if (printLog) {
-                log.warn(
-                    "!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!"
-                )
-                log.warn(
-                    "Lazy mode specified. This will copy the WHOLE modpack to the server pack. No exceptions."
-                )
-                log.warn(
-                    "You will not receive support from me for a server pack generated this way."
-                )
-                log.warn(
-                    "Do not open an issue on GitHub if this configuration errors or results in a broken server pack."
-                )
-                log.warn(
-                    "!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!"
-                )
-            }
-        } else {
-            if (inclusions.size > 1 && hasLazy && printLog) {
-                log.warn(
-                    "You specified lazy mode in your configuration, but your copyDirs configuration contains other"
-                            + " entries. To use the lazy mode, only specify \"lazy_mode\" and nothing else. Ignoring lazy mode."
-                )
-            }
-            inclusions.removeIf { entry -> entry.source == "lazy_mode" }
-            for (inclusion in inclusions) {
-                if (inclusion.isGlobalFilter()) {
-                    continue
-                }
-                val modpackSource = File(modpackDir, inclusion.source).absoluteFile
-                if (!File(inclusion.source).absoluteFile.exists() && !modpackSource.exists()) {
-                    if (printLog) {
-                        log.error("Source ${inclusion.source} does not exist. Please specify existing files.")
-                    }
-                    configCheck.inclusionErrors.add(Translations.configuration_log_error_checkcopydirs_filenotfound(inclusion.source))
-                }
-                if (inclusion.hasDestination()
-                    && !StringUtilities.checkForInvalidPathCharacters(inclusion.destination!!)) {
-                    log.warn("Invalid destination specified: ${inclusion.destination}.")
-                    inclusion.destination = null
-                    configCheck.inclusionErrors.add(Translations.configuration_log_error_checkcopydirs_destination(inclusion.source))
-                }
-                if (inclusion.hasInclusionFilter()) {
-                    try {
-                        inclusion.inclusionFilter!!.toRegex()
-                    } catch (ex: PatternSyntaxException) {
-                        log.error("Invalid inclusion-regex specified: ${inclusion.inclusionFilter}.", ex)
-                        configCheck.inclusionErrors.add(Translations.configuration_log_error_checkcopydirs_inclusion(inclusion.inclusionFilter ?: ""))
-                    }
-                }
-                if (inclusion.hasExclusionFilter()) {
-                    try {
-                        inclusion.exclusionFilter!!.toRegex()
-                    } catch (ex: PatternSyntaxException) {
-                        log.error("Invalid exclusion-regex specified: ${inclusion.exclusionFilter}.", ex)
-                        configCheck.inclusionErrors.add(Translations.configuration_log_error_checkcopydirs_inclusion(inclusion.exclusionFilter ?: ""))
-                    }
-                }
-            }
-        }
-        return configCheck
-    }
+    ): ConfigCheck = inclusionsValidator.checkInclusions(inclusions, modpackDir, configCheck, printLog)
 
     /**
      * Check a given ZIP-archives contents for validity as a modpack.
@@ -969,38 +829,13 @@ class ConfigurationHandler(
     fun getModLoaderCase(modloader: String): String = manifestParser.getModLoaderCase(modloader)
 
     /**
-     * Check the passed directory for existence and whether it is a directory, rather than a file.
-     *
-     * @param modpackDir The modpack directory.
-     * @param configCheck Collection of encountered errors, if any, for convenient result-checks.
-     * @return `true` if the directory exists.
-     * @author Griefed
+     * Check the passed directory for existence, type and the absence of the overrides-directory.
      */
     fun checkModpackDir(
         modpackDir: String,
         configCheck: ConfigCheck = ConfigCheck(),
         printLog: Boolean = true
-    ): ConfigCheck {
-        val modpack = File(modpackDir)
-        if (modpackDir.isEmpty()) {
-            if (printLog) {
-                log.error("Modpack directory not specified. Please specify an existing directory.")
-            }
-            configCheck.modpackErrors.add(Translations.configuration_log_error_checkmodpackdir.toString())
-        } else if (!modpack.exists()) {
-            if (printLog) {
-                log.warn("Couldn't find directory $modpackDir.")
-            }
-            configCheck.modpackErrors.add(Translations.configuration_log_error_modpackdirectory(modpackDir))
-        } else if (modpack.isDirectory){
-            val files = modpack.listFiles { entry -> entry.isDirectory }
-            if (files.any { entry -> entry.name == "overrides" }) {
-                log.error("Modpack contains directory \"overrides\". Modpacks must be installed through a client such as CurseForge, GDLauncher, MultiMC etc. Full modpacks shouldn't contain the overrides directory anymore.")
-                configCheck.modpackErrors.add(Translations.configuration_log_error_modpack_overrides.toString())
-            }
-        }
-        return configCheck
-    }
+    ): ConfigCheck = modpackDirectoryValidator.checkModpackDir(modpackDir, configCheck, printLog)
 
     /**
      * Acquire a list of all files and directories in a ZIP-file.
