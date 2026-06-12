@@ -23,7 +23,10 @@ import de.comahe.i18n4k.Locale
 import de.comahe.i18n4k.config.I18n4kConfigDefault
 import de.comahe.i18n4k.i18n4k
 import de.griefed.serverpackcreator.api.settings.GenerationConfig
+import de.griefed.serverpackcreator.api.settings.I18nConfig
 import de.griefed.serverpackcreator.api.settings.JavaConfig
+import de.griefed.serverpackcreator.api.settings.LoggingConfig
+import de.griefed.serverpackcreator.api.settings.UpdateConfig
 import de.griefed.serverpackcreator.api.settings.PathsConfig
 import de.griefed.serverpackcreator.api.settings.ScriptTemplatesConfig
 import de.griefed.serverpackcreator.api.settings.WebserviceConfig
@@ -70,12 +73,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     private val jarInformation: JarInformation = JarInformation(this.javaClass)
     private val jarFolderProperties: File = File(jarInformation.jarFolder.absoluteFile, serverPackCreatorProperties)
 
-    private val pVersionCheckPreRelease =
-        "de.griefed.serverpackcreator.versioncheck.prerelease"
-    private val pLanguage =
-        "de.griefed.serverpackcreator.language"
-    private val pConfigurationFallbackUpdateURL =
-        "de.griefed.serverpackcreator.configuration.fallback.updateurl"
     private val pConfigurationFallbackModsList =
         "de.griefed.serverpackcreator.configuration.fallbackmodslist"
     private val pConfigurationFallbackModsListRegex =
@@ -86,9 +83,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         "de.griefed.serverpackcreator.configuration.hastebinserver"
     private val pConfigurationDirectoriesServerPacks =
         "de.griefed.serverpackcreator.configuration.directories.serverpacks"
-    private val pOldVersion =
-        "de.griefed.serverpackcreator.version.old"
-    private val pLogLevel = "de.griefed.serverpackcreator.loglevel"
 
 
     private val suffixes = arrayOf(".xml")
@@ -139,24 +133,42 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      */
     val fallbackAikarsFlags: String get() = generationConfig.fallbackAikarsFlags
 
-    val fallbackUpdateURL =
-        "https://raw.githubusercontent.com/Griefed/ServerPackCreator/main/serverpackcreator-api/src/main/resources/serverpackcreator.properties"
+    val fallbackUpdateURL: String get() = UpdateConfig.FALLBACK_UPDATE_URL
     val fallbackExclusionFilter: ExclusionFilter get() = generationConfig.fallbackExclusionFilter
     val fallbackOverwriteEnabled: Boolean get() = generationConfig.fallbackOverwriteEnabled
     val fallbackJavaScriptAutoupdateEnabled: Boolean get() = javaConfig.fallbackJavaScriptAutoupdateEnabled
-    val fallbackCheckingForPreReleasesEnabled = false
+    val fallbackCheckingForPreReleasesEnabled: Boolean get() = updateConfig.fallbackCheckingForPreReleasesEnabled
     val fallbackZipFileExclusionEnabled: Boolean get() = generationConfig.fallbackZipFileExclusionEnabled
     val fallbackServerPackCleanupEnabled: Boolean get() = generationConfig.fallbackServerPackCleanupEnabled
     val fallbackMinecraftPreReleasesAvailabilityEnabled: Boolean get() = generationConfig.fallbackMinecraftPreReleasesAvailabilityEnabled
     val fallbackAutoExcludingModsEnabled: Boolean get() = generationConfig.fallbackAutoExcludingModsEnabled
+    @Deprecated("Dead since the move to MongoDB. No consumer exists.")
     val fallbackArtemisQueueMaxDiskUsage = 90
-    val fallbackCleanupSchedule = "0 0 0 * * *"
-    val fallbackVersionSchedule = "0 0 0 * * *"
-    val fallbackDatabaseCleanupSchedule = "0 0 0 * * *"
+    val fallbackCleanupSchedule: String get() = webserviceConfig.fallbackCleanupSchedule
+    val fallbackVersionSchedule: String get() = webserviceConfig.fallbackVersionSchedule
+    val fallbackDatabaseCleanupSchedule: String get() = webserviceConfig.fallbackDatabaseCleanupSchedule
     val fallbackUpdateServerPack: Boolean get() = generationConfig.fallbackUpdateServerPack
     private val trueFalseRegex = "^(true|false)$".toRegex()
     private val alphaBetaRegex = "^(.*alpha.*|.*beta.*)$".toRegex()
     val i18n4kConfig = I18n4kConfigDefault()
+
+    /**
+     * Settings-group for update- and release-tracking. Prefer accessing these values through
+     * this group; the individual properties on ApiProperties remain as facade.
+     */
+    val updateConfig = UpdateConfig(store, generationConfig) { saveProperties(serverPackCreatorPropertiesFile) }
+
+    /**
+     * Settings-group for ServerPackCreators language. Prefer accessing these values through
+     * this group; the individual properties on ApiProperties remain as facade.
+     */
+    val i18nConfig = I18nConfig(store, i18n4kConfig) { saveProperties(serverPackCreatorPropertiesFile) }
+
+    /**
+     * Settings-group for ServerPackCreators log-level. The log4j-XML machinery stays with
+     * ApiProperties, which acts as log4j's ConfigurationFactory.
+     */
+    val loggingConfig = LoggingConfig(store) { level -> setLoggingLevel(level) }
 
     /**
      * String-list of clientside-only mods to exclude from server packs.
@@ -280,15 +292,10 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      */
     val firstRun: Boolean
 
-    var logLevel = "INFO"
-        get() {
-            field = acquireProperty(pLogLevel, "INFO").uppercase()
-            return field
-        }
+    var logLevel: String
+        get() = loggingConfig.logLevel
         set(value) {
-            field = value.uppercase()
-            defineProperty(pLogLevel, field)
-            setLoggingLevel(field)
+            loggingConfig.logLevel = value
         }
 
     /**
@@ -419,17 +426,13 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         }
 
     /**
-     * The URL from which a .properties-file is read during updating of the fallback clientside-mods list.
-     * The default can be found in [fallbackUpdateURL].
+     * The URL from which a .properties-file is read during updating of the fallback
+     * clientside-mods list.
      */
-    var updateUrl: URL = URI(fallbackUpdateURL).toURL()
-        get() {
-            field = URI(acquireProperty(pConfigurationFallbackUpdateURL, fallbackUpdateURL)).toURL()
-            return field
-        }
+    var updateUrl: URL
+        get() = updateConfig.updateUrl
         set(value) {
-            defineProperty(pConfigurationFallbackUpdateURL, value.toString())
-            field = value
+            updateConfig.updateUrl = value
         }
 
     /**
@@ -453,15 +456,10 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * `de.griefed.serverpackcreator.versioncheck.prerelease`, returns `true` if checks for available PreReleases are
      * enabled, `false` if no checks for available PreReleases should be made.
      */
-    var isCheckingForPreReleasesEnabled = fallbackCheckingForPreReleasesEnabled
-        get() {
-            field = getBoolProperty(pVersionCheckPreRelease, fallbackCheckingForPreReleasesEnabled)
-            return field
-        }
+    var isCheckingForPreReleasesEnabled: Boolean
+        get() = updateConfig.isCheckingForPreReleasesEnabled
         set(value) {
-            setBoolProperty(pVersionCheckPreRelease, value)
-            field = value
-            log.info("Checking for pre-releases set to $field.")
+            updateConfig.isCheckingForPreReleasesEnabled = value
         }
 
     /**
@@ -555,28 +553,10 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Language used by ServerPackCreator.
      */
-    var language = Locale("en", "GB")
-        get() {
-            val prop = internalProps.getProperty(pLanguage)
-            val lang = if (prop.contains("_")) {
-                val split = prop.split("_")
-                if (split.size == 3) {
-                    Locale(split[0], split[1], split[2])
-                } else {
-                    Locale(split[0], split[1])
-                }
-            } else {
-                Locale(prop)
-            }
-            field = lang
-            i18n4kConfig.locale = field
-            return field
-        }
+    var language: Locale
+        get() = i18nConfig.language
         set(value) {
-            internalProps.setProperty(pLanguage, value.toTag())
-            i18n4kConfig.locale = value
-            field = value
-            log.info("Language set to: ${field.displayLanguage} (${field.toTag()}).")
+            i18nConfig.language = value
         }
 
     /**
@@ -948,8 +928,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         internalProps.putAll(props)
 
         internalProps.setProperty(PathsConfig.TOMCAT_BASE_DIRECTORY_KEY, homeDirectory.absolutePath)
-        if (internalProps.getProperty(pLanguage) != "en_GB") {
-            changeLocale(Locale(internalProps.getProperty(pLanguage)))
+        if (internalProps.getProperty(I18nConfig.LANGUAGE_KEY) != "en_GB") {
+            changeLocale(Locale(internalProps.getProperty(I18nConfig.LANGUAGE_KEY)))
         }
 
         // Load all values from the overrides-properties
@@ -1117,11 +1097,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * -your_locale.
      * @author Griefed
      */
-    fun changeLocale(locale: Locale) {
-        language = locale
-        saveProperties(serverPackCreatorPropertiesFile)
-        log.info("Changed locale to $language")
-    }
+    fun changeLocale(locale: Locale) = i18nConfig.changeLocale(locale)
 
     /**
      * Acquire the default fallback list of clientside-only mods. If
@@ -1148,55 +1124,14 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      *
      * `true` if either was updated.
      */
-    var fallbackUpdated: Boolean = false
-        private set
+    val fallbackUpdated: Boolean get() = updateConfig.fallbackUpdated
 
     /**
-     * Update the fallback clientside-only mod-list of our `serverpackcreator.properties` from
-     * the main-repository or one of its mirrors.
+     * Update the fallback clientside-only mod-list and whitelist from the configured update-URL.
      *
-     * @return `true` if the fallback-property was updated.
-     * @author Griefed
+     * @return `true` if either fallback-list was updated.
      */
-    fun updateFallback(): Boolean {
-        var properties: Properties? = null
-        try {
-            URI(
-                acquireProperty(pConfigurationFallbackUpdateURL, fallbackUpdateURL)
-            ).toURL().openStream().use {
-                properties = Properties()
-                properties!!.load(it)
-            }
-        } catch (e: IOException) {
-            log.debug("GitHub could not be reached.", e)
-        }
-        fallbackUpdated = false
-        if (properties != null) {
-            val newBlacklist = properties!!.getProperty(pConfigurationFallbackModsList)
-            val currentBlacklist = internalProps.getProperty(pConfigurationFallbackModsList)
-            if (newBlacklist != null && currentBlacklist != newBlacklist) {
-                internalProps.setProperty(pConfigurationFallbackModsList, newBlacklist)
-                clientsideMods.clear()
-                clientsideMods.addAll(internalProps.getProperty(pConfigurationFallbackModsList).split(","))
-                log.info("The fallback-list for clientside only mods has been updated to: $clientsideMods")
-                fallbackUpdated = true
-            }
-
-            val newWhitelist = properties!!.getProperty(pConfigurationFallbackModsWhiteList)
-            val currentWhitelist = internalProps.getProperty(pConfigurationFallbackModsWhiteList)
-            if (newWhitelist != null && currentWhitelist != newWhitelist) {
-                internalProps.setProperty(pConfigurationFallbackModsWhiteList, newWhitelist)
-                modsWhitelist.clear()
-                modsWhitelist.addAll(internalProps.getProperty(pConfigurationFallbackModsWhiteList).split(","))
-                log.info("The fallback-list for whitelisted mods has been updated to: $modsWhitelist")
-                fallbackUpdated = true
-            }
-        }
-        if (fallbackUpdated) {
-            saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
-        }
-        return fallbackUpdated
-    }
+    fun updateFallback(): Boolean = updateConfig.updateFallback()
 
     /**
      * Store a custom property in the serverpackcreator.properties-file. Beware that every property you add
@@ -1246,10 +1181,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @param version Old version used before upgrading to the current version.
      * @author Griefed
      */
-    fun setOldVersion(version: String) {
-        internalProps.setProperty(pOldVersion, version)
-        saveProperties(serverPackCreatorPropertiesFile)
-    }
+    fun setOldVersion(version: String) = updateConfig.setOldVersion(version)
 
     /**
      * Get the old version of ServerPackCreator used to perform necessary migrations between the old
@@ -1257,7 +1189,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      *
      * @return Old version used before updating. Empty if this is the first run of ServerPackCreator.
      */
-    fun oldVersion(): String = internalProps.getProperty(pOldVersion, "")
+    fun oldVersion(): String = updateConfig.oldVersion()
 
     fun clearPropertyFileList() {
         store.clearTrackedFiles()
