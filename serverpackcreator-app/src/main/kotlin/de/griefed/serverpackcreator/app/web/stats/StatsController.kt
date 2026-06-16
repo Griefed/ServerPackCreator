@@ -138,7 +138,7 @@ class StatsController @Autowired constructor(
         )
     }
 
-    @GetMapping("/downloads/modpacks/{serverPackID}")
+    @GetMapping("/downloads/serverpacks/{serverPackID}")
     @ResponseBody
     fun allDownloadsForServerPack(@PathVariable serverPackID: String): ResponseEntity<List<ServerPackDownload>> {
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).body(

@@ -23,6 +23,7 @@ dependencies {
     implementation(libs.dokka)
     implementation(libs.dokkaJavaDoc)
     implementation(libs.licenseReport)
+    implementation(libs.koverGradlePlugin)
     implementation(libs.frontendPlugin)
     implementation(libs.install4j)
 }

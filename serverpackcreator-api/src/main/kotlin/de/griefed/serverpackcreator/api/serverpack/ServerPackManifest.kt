@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.api.serverpack
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import de.griefed.serverpackcreator.api.ApiWrapper
 import java.io.File
 
 /**
@@ -39,7 +38,7 @@ class ServerPackManifest {
     var minecraftVersion: String = ""
     var modloader: String = ""
     var modloaderVersion: String = ""
-    val serverPackCreatorVersion: String = ApiWrapper.api().apiProperties.apiVersion
+    val serverPackCreatorVersion: String = javaClass.getPackage().implementationVersion ?: "dev"
 
     constructor(
         files: List<String>,

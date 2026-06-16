@@ -7,6 +7,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("serverpackcreator.java-conventions")
     kotlin("jvm")
+    // Coverage reporting for every Kotlin module: koverHtmlReport / koverXmlReport.
+    id("org.jetbrains.kotlinx.kover")
 }
 
 repositories {
