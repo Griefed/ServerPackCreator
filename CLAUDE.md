@@ -218,8 +218,18 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   Griefed and **stays in the API** — not moved, not deprecated. **Phase 1 (API) COMPLETE:**
   ApiProperties 3,007→1,372, ConfigurationHandler 1,562→897, ServerPackHandler 1,466→490; all
   behind source-compatible facades, six bugs fixed, API tests 75→161.
-- **Next:** Phase 2 (app) — CommandlineParser/MigrationManager tests, then web-backend MVC
-  layering and GUI view-model extraction (ConfigEditor 1,369 lines is the prime target).
+- **Phase 2a, app safety-net (2026-06-12):** characterization tests for the two app entry-point
+  classes before restructuring. `CommandlineParserTest` (10 tests) pins the argument→mode
+  mapping, priority-ordering and file/locale parsing — only the deterministic branches that
+  `return` before the `GraphicsEnvironment.isHeadless()` GUI/failsafe checks, so headless-
+  independent. The `--home` Preferences side-effect is pinned with save/restore of the real
+  node. `MigrationManagerTest` (6 tests) pins `migrate()`'s version-decision logic via a
+  mockk-mocked ApiProperties (controls previous/current version, verifies `setOldVersion`);
+  version-ranges chosen to never match a real migration-method (highest is 6.0.0), so no
+  filesystem side-effects. App suite 39→55 tests.
+- **Next:** Phase 2b — web-backend MVC layering (move logic out of controllers/scheduled
+  tasks into services), then GUI view-model extraction (ConfigEditor 1,369 lines is the prime
+  target; Swing views stay dumb, view-models hold state+validation and are unit-tested).
 
 ---
 
