@@ -529,7 +529,7 @@ class ConfigEditor(
         } else {
             File(apiWrapper.apiProperties.configsDirectory, modpackName)
         }
-        lastConfig = getCurrentConfiguration().save(config)
+        lastConfig = getCurrentConfiguration().save(config, apiWrapper.apiProperties)
         configFile = config
         title.hideWarningIcon()
         saveSuggestions()

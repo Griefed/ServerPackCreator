@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.api
 import de.comahe.i18n4k.Locale
 import de.comahe.i18n4k.config.I18n4kConfigDefault
 import de.comahe.i18n4k.i18n4k
+import de.griefed.serverpackcreator.api.config.SupportedModloaders
 import de.griefed.serverpackcreator.api.settings.GenerationConfig
 import de.griefed.serverpackcreator.api.settings.I18nConfig
 import de.griefed.serverpackcreator.api.settings.JavaConfig
@@ -197,7 +198,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Modloaders supported by ServerPackCreator.
      */
-    val supportedModloaders = arrayOf("Fabric", "Forge", "Quilt", "LegacyFabric", "NeoForge")
+    val supportedModloaders = SupportedModloaders.names
 
     /**
      * The folder containing the ServerPackCreator.exe or JAR-file.

@@ -115,7 +115,7 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
                 val packConfig = apiWrapper.configurationHandler.generateConfigFromModpack(modpack)
                 packConfig.customDestination = Optional.ofNullable(destination?.let { File(it) })
                 val check = apiWrapper.configurationHandler.checkConfiguration(packConfig)
-                packConfig.save(File(apiWrapper.apiProperties.configsDirectory, packConfig.name ?: modpack.name))
+                packConfig.save(File(apiWrapper.apiProperties.configsDirectory, packConfig.name ?: modpack.name), apiWrapper.apiProperties)
                 if (!check.allChecksPassed) {
                     println("Encountered the following errors/problems with the config:")
                     for (error in check.encounteredErrors) {

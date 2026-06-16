@@ -41,11 +41,11 @@ class ModpackManifestParser(
     private val utilities: Utilities
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
-    private val forge = "^forge$".toRegex()
-    private val neoForge = "^neoforge$".toRegex()
-    private val fabric = "^fabric$".toRegex()
-    private val quilt = "^quilt$".toRegex()
-    private val legacyFabric = "^legacyfabric$".toRegex()
+    private val forge = SupportedModloaders.forge
+    private val neoForge = SupportedModloaders.neoForge
+    private val fabric = SupportedModloaders.fabric
+    private val quilt = SupportedModloaders.quilt
+    private val legacyFabric = SupportedModloaders.legacyFabric
 
     /**
      * Check whether various manifests from various launchers exist and use them to update our

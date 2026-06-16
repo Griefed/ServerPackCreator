@@ -119,8 +119,9 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   replacement). API now 105 tests. Fixed bug: `getModLoaderCase` detected "legacyfabric" as
   Fabric (branch order) and had a dead `contains("NeoForge")`-on-lowercase check — most
   specific loader names are now checked first. Documented quirks: `PackConfig.modloader`
-  setter silently ignores unrecognized values; unknown loaders default to Forge;
-  `ReticulatingSplines` is GUI-only (splash texts) and should move to the app module in 1e.
+  setter silently ignores unrecognized values; unknown loaders default to Forge.
+  (`ReticulatingSplines`: GUI-only splash-texts but an intentional just-for-fun API endpoint —
+  stays in the API, see Phase 1e.)
 - **Phase 1a, app side (2026-06-11, started):** the web backend uses **MongoDB**
   (spring-boot-starter-data-mongodb), not JPA — full-context tests would need a Mongo
   instance. Established pattern instead: **standalone MockMvc per controller** with real API
@@ -202,10 +203,23 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   event-listeners, destination-handling and facades. Verified by the five end-to-end
   generation tests plus the Phase 1a characterization tests — all running through the new
   pipeline-classes via the facades.
-- **Next:** Phase 1e — constructor-injection throughout the API, ApiWrapper as thin
-  composition-root, consolidate the tripled loader-regexes, sort the utilities grab-bag
-  (move ReticulatingSplines to the app-module). Then CommandlineParser/MigrationManager
-  tests during Phase 2.
+- **Phase 1e (2026-06-12):** loader-regexes consolidated into one source of truth —
+  `api.config.SupportedModloaders` (the 5 exact-match regexes + canonical `names` array).
+  PackConfig, ConfigurationHandler, ModloaderValidator, ModpackManifestParser and
+  ApiProperties.supportedModloaders now reference it; zero `"^forge$"`-style literals remain
+  outside it. Service-locator reach-backs removed: `ServerPackManifest` derived its
+  SPC-version via `ApiWrapper.api()` — now reads `javaClass.getPackage().implementationVersion`
+  directly; `PackConfig.save(destination, apiProperties)` is now the primary (injection-
+  required) overload, with the old `save(destination)` kept as a `@Deprecated` facade that
+  resolves ApiProperties via the singleton. App call-sites (CLI, ConfigGenCommand,
+  TabbedConfigsTab, ConfigEditor) updated to inject explicitly. `ApiWrapper` was already a
+  thin composition-root (lazy, constructor-injected collaborators) — left as-is.
+  `ReticulatingSplines` (SimCity splash-texts) is an intentional just-for-fun API endpoint per
+  Griefed and **stays in the API** — not moved, not deprecated. **Phase 1 (API) COMPLETE:**
+  ApiProperties 3,007→1,372, ConfigurationHandler 1,562→897, ServerPackHandler 1,466→490; all
+  behind source-compatible facades, six bugs fixed, API tests 75→161.
+- **Next:** Phase 2 (app) — CommandlineParser/MigrationManager tests, then web-backend MVC
+  layering and GUI view-model extraction (ConfigEditor 1,369 lines is the prime target).
 
 ---
 
