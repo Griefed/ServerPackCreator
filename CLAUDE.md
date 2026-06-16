@@ -227,9 +227,22 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   mockk-mocked ApiProperties (controls previous/current version, verifies `setOldVersion`);
   version-ranges chosen to never match a real migration-method (highest is 6.0.0), so no
   filesystem side-effects. App suite 39→55 tests.
-- **Next:** Phase 2b — web-backend MVC layering (move logic out of controllers/scheduled
-  tasks into services), then GUI view-model extraction (ConfigEditor 1,369 lines is the prime
-  target; Swing views stay dumb, view-models hold state+validation and are unit-tested).
+- **Phase 2b, web-backend assessment (2026-06-12):** the Spring backend is **already
+  MVC-layered** — controllers delegate to services (ModPackService, ServerPackService,
+  RunConfigurationService, EventService, the stats-services), no file over 254 lines,
+  scheduling isolated in `web/scheduling`. No restructuring warranted; the controller-tests
+  from Phase 1a already pin the layering. The substantive Phase 2 target is the GUI.
+- **Phase 2b, GUI view-models started (2026-06-12):** first view-model extracted from the
+  1,369-line ConfigEditor — `ConfigEditorViewModel.hasUnsavedChanges(current, lastSaved)` holds
+  the editor's dirty-check (15-field PackConfig comparison) display-independently; the Swing
+  `compareSettings()` is now a 5-line view that just shows/hides the warning-icon. 5 unit tests.
+  **Found (not yet fixed):** `InclusionSpecification` has no value-equality (plain class,
+  reference `equals`), so the dirty-check over-reports — the editor's warning-icon effectively
+  stays on whenever inclusions are present, even right after a load/save. Fixing it means
+  giving InclusionSpecification `equals`/`hashCode` (an API-surface behavior change — check
+  set/map usages first); pinned as a quirk for now. App suite 55→60 tests.
+- **Next:** continue extracting ConfigEditor logic into the view-model (validation orchestration,
+  field↔PackConfig mapping, required-Java-version derivation), leaving Swing as dumb views.
 
 ---
 
