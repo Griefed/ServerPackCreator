@@ -236,11 +236,18 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   1,369-line ConfigEditor — `ConfigEditorViewModel.hasUnsavedChanges(current, lastSaved)` holds
   the editor's dirty-check (15-field PackConfig comparison) display-independently; the Swing
   `compareSettings()` is now a 5-line view that just shows/hides the warning-icon. 5 unit tests.
-  **Found (not yet fixed):** `InclusionSpecification` has no value-equality (plain class,
-  reference `equals`), so the dirty-check over-reports — the editor's warning-icon effectively
-  stays on whenever inclusions are present, even right after a load/save. Fixing it means
-  giving InclusionSpecification `equals`/`hashCode` (an API-surface behavior change — check
-  set/map usages first); pinned as a quirk for now. App suite 55→60 tests.
+  App suite 55→60 tests.
+- **Phase 2b, InclusionSpecification value-equality (2026-06-12):** fixed the dirty-check
+  over-report at its root — `InclusionSpecification` gained `equals`/`hashCode` over its four
+  fields (source, destination, inclusion/exclusion-filter). Manual override, NOT a `data class`
+  conversion, to keep the public API surface stable for plugins. Verified safe: no
+  hash-based collections (`HashSet`/`TreeSet`/`toSet`/`distinct`) of inclusions exist anywhere,
+  so adding `hashCode` has no keying side-effects. Two sites changed, both toward correctness:
+  the editor dirty-check (now accurate), and `ConfigurationHandler.isZip`'s
+  `newCopyDirs.contains(entry)` dedup — which previously NEVER matched (reference equality), so
+  ZIP-extraction could append duplicate inclusions; it now dedupes by value. All other
+  inclusion call-sites use `.source` directly and are unaffected. 4 new InclusionSpecification
+  tests; the editor quirk-test flipped to pin the corrected behavior.
 - **Next:** continue extracting ConfigEditor logic into the view-model (validation orchestration,
   field↔PackConfig mapping, required-Java-version derivation), leaving Swing as dumb views.
 
