@@ -211,11 +211,11 @@ const val spcCleanupKeyDefaultValue =
 open class PackConfig() {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
-    val forge = "^forge$".toRegex()
-    val neoForge = "^neoforge$".toRegex()
-    val fabric = "^fabric$".toRegex()
-    val quilt = "^quilt$".toRegex()
-    val legacyFabric = "^legacyfabric$".toRegex()
+    val forge = SupportedModloaders.forge
+    val neoForge = SupportedModloaders.neoForge
+    val fabric = SupportedModloaders.fabric
+    val quilt = SupportedModloaders.quilt
+    val legacyFabric = SupportedModloaders.legacyFabric
     val whitespace = "^\\s+$".toRegex()
 
     val clientMods: ArrayList<String> = ArrayList(1000)
@@ -438,10 +438,22 @@ open class PackConfig() {
     }
 
     /**
-     * Save this configuration to disk.
+     * Save this configuration to disk, resolving the [ApiProperties] through the global
+     * [ApiWrapper]-singleton. Prefer the explicit [save] overload which receives the
+     * [ApiProperties] directly, avoiding the hidden service-locator dependency.
+     */
+    @Deprecated(
+        "Resolves ApiProperties through the ApiWrapper-singleton.",
+        ReplaceWith("save(destination, apiProperties)")
+    )
+    fun save(destination: File): PackConfig = save(destination, ApiWrapper.api().apiProperties)
+
+    /**
+     * Save this configuration to disk, using the given [apiProperties] for the configuration
+     * version-stamp.
      */
     @Suppress("DuplicatedCode")
-    fun save(destination: File, apiProperties: ApiProperties = ApiWrapper.api().apiProperties): PackConfig {
+    fun save(destination: File, apiProperties: ApiProperties): PackConfig {
         val conf = TomlFormat.instance().createConfig()
 
         conf.setComment(configVersionKey, configVersionComment)

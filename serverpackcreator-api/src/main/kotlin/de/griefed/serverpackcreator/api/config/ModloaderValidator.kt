@@ -32,11 +32,11 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
  */
 class ModloaderValidator(private val versionMeta: VersionMeta) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
-    private val forge = "^forge$".toRegex()
-    private val neoForge = "^neoforge$".toRegex()
-    private val fabric = "^fabric$".toRegex()
-    private val quilt = "^quilt$".toRegex()
-    private val legacyFabric = "^legacyfabric$".toRegex()
+    private val forge = SupportedModloaders.forge
+    private val neoForge = SupportedModloaders.neoForge
+    private val fabric = SupportedModloaders.fabric
+    private val quilt = SupportedModloaders.quilt
+    private val legacyFabric = SupportedModloaders.legacyFabric
 
     /**
      * Checks whether either Forge or Fabric were specified as the modloader.

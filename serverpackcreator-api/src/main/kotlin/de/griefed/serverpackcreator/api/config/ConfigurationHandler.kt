@@ -63,11 +63,11 @@ class ConfigurationHandler(
 ) {
     private val zipRegex = "\\.[Zz][Ii][Pp]".toRegex()
     val log by lazy { cachedLoggerOf(this.javaClass) }
-    val forge = "^forge$".toRegex()
-    val neoForge = "^neoforge$".toRegex()
-    val fabric = "^fabric$".toRegex()
-    val quilt = "^quilt$".toRegex()
-    val legacyFabric = "^legacyfabric$".toRegex()
+    val forge = SupportedModloaders.forge
+    val neoForge = SupportedModloaders.neoForge
+    val fabric = SupportedModloaders.fabric
+    val quilt = SupportedModloaders.quilt
+    val legacyFabric = SupportedModloaders.legacyFabric
     val whitespace = "^\\s+$".toRegex()
     val previous = ".*_\\d".toRegex()
     val zipCheck = "^\\w+[/\\\\]$".toRegex()

@@ -202,10 +202,26 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   event-listeners, destination-handling and facades. Verified by the five end-to-end
   generation tests plus the Phase 1a characterization tests — all running through the new
   pipeline-classes via the facades.
-- **Next:** Phase 1e — constructor-injection throughout the API, ApiWrapper as thin
-  composition-root, consolidate the tripled loader-regexes, sort the utilities grab-bag
-  (move ReticulatingSplines to the app-module). Then CommandlineParser/MigrationManager
-  tests during Phase 2.
+- **Phase 1e (2026-06-12):** loader-regexes consolidated into one source of truth —
+  `api.config.SupportedModloaders` (the 5 exact-match regexes + canonical `names` array).
+  PackConfig, ConfigurationHandler, ModloaderValidator, ModpackManifestParser and
+  ApiProperties.supportedModloaders now reference it; zero `"^forge$"`-style literals remain
+  outside it. Service-locator reach-backs removed: `ServerPackManifest` derived its
+  SPC-version via `ApiWrapper.api()` — now reads `javaClass.getPackage().implementationVersion`
+  directly; `PackConfig.save(destination, apiProperties)` is now the primary (injection-
+  required) overload, with the old `save(destination)` kept as a `@Deprecated` facade that
+  resolves ApiProperties via the singleton. App call-sites (CLI, ConfigGenCommand,
+  TabbedConfigsTab, ConfigEditor) updated to inject explicitly. `ApiWrapper` was already a
+  thin composition-root (lazy, constructor-injected collaborators) — left as-is.
+  `ReticulatingSplines` (GUI-only splash-texts) `@Deprecated` in place rather than physically
+  moved: relocating it would duplicate 458 lines of joke-data to keep an API facade (violates
+  KISS) or break source-compat. Slated to move to the app-module at the next major version
+  when the deprecation is collected; the two app consumers (Reticulation, StatusPanel) carry
+  `@file:Suppress("DEPRECATION")` with a deferral-note. **Phase 1 (API) COMPLETE:** ApiProperties
+  3,007→1,372, ConfigurationHandler 1,562→897, ServerPackHandler 1,466→490; all behind
+  source-compatible facades, six bugs fixed, API tests 75→161.
+- **Next:** Phase 2 (app) — CommandlineParser/MigrationManager tests, then web-backend MVC
+  layering and GUI view-model extraction (ConfigEditor 1,369 lines is the prime target).
 
 ---
 

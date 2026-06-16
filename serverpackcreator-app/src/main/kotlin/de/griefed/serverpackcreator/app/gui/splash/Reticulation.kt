@@ -18,6 +18,10 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  * full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
+// Suppressed: ReticulatingSplines is deprecated in the API pending its move into this app-module
+// at the next major version (refactor Phase 1e). This GUI splash is its destined home.
+@file:Suppress("DEPRECATION")
+
 package de.griefed.serverpackcreator.app.gui.splash
 
 import de.griefed.serverpackcreator.api.utilities.ReticulatingSplines
