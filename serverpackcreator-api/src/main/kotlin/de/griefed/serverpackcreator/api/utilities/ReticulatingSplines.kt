@@ -28,13 +28,8 @@ import de.griefed.serverpackcreator.api.utilities.ReticulatingSplines.Companion.
  * may know from the SimCity games. Thanks go out to MAXIS and Sim City, for the ridiculous messages
  * these games contained. Additional thanks to Larsz for providing a list of all these messages [on GameFAQs](https://gamefaqs.gamespot.com/pc/561176-simcity-4/faqs/22135)
  *
- * GUI-only: the only consumers are the app-module's splash-screen and status-panel. It is slated
- * to move out of the plugin-facing API into the app-module at the next major version; it remains
- * here, deprecated, to preserve source-compatibility until then.
- *
  * @author Griefed
  */
-@Deprecated("GUI-only splash-texts. Slated to move to the app-module at the next major version.")
 class ReticulatingSplines {
     companion object {
         /**

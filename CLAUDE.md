@@ -119,8 +119,9 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   replacement). API now 105 tests. Fixed bug: `getModLoaderCase` detected "legacyfabric" as
   Fabric (branch order) and had a dead `contains("NeoForge")`-on-lowercase check — most
   specific loader names are now checked first. Documented quirks: `PackConfig.modloader`
-  setter silently ignores unrecognized values; unknown loaders default to Forge;
-  `ReticulatingSplines` is GUI-only (splash texts) and should move to the app module in 1e.
+  setter silently ignores unrecognized values; unknown loaders default to Forge.
+  (`ReticulatingSplines`: GUI-only splash-texts but an intentional just-for-fun API endpoint —
+  stays in the API, see Phase 1e.)
 - **Phase 1a, app side (2026-06-11, started):** the web backend uses **MongoDB**
   (spring-boot-starter-data-mongodb), not JPA — full-context tests would need a Mongo
   instance. Established pattern instead: **standalone MockMvc per controller** with real API
@@ -213,13 +214,10 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   resolves ApiProperties via the singleton. App call-sites (CLI, ConfigGenCommand,
   TabbedConfigsTab, ConfigEditor) updated to inject explicitly. `ApiWrapper` was already a
   thin composition-root (lazy, constructor-injected collaborators) — left as-is.
-  `ReticulatingSplines` (GUI-only splash-texts) `@Deprecated` in place rather than physically
-  moved: relocating it would duplicate 458 lines of joke-data to keep an API facade (violates
-  KISS) or break source-compat. Slated to move to the app-module at the next major version
-  when the deprecation is collected; the two app consumers (Reticulation, StatusPanel) carry
-  `@file:Suppress("DEPRECATION")` with a deferral-note. **Phase 1 (API) COMPLETE:** ApiProperties
-  3,007→1,372, ConfigurationHandler 1,562→897, ServerPackHandler 1,466→490; all behind
-  source-compatible facades, six bugs fixed, API tests 75→161.
+  `ReticulatingSplines` (SimCity splash-texts) is an intentional just-for-fun API endpoint per
+  Griefed and **stays in the API** — not moved, not deprecated. **Phase 1 (API) COMPLETE:**
+  ApiProperties 3,007→1,372, ConfigurationHandler 1,562→897, ServerPackHandler 1,466→490; all
+  behind source-compatible facades, six bugs fixed, API tests 75→161.
 - **Next:** Phase 2 (app) — CommandlineParser/MigrationManager tests, then web-backend MVC
   layering and GUI view-model extraction (ConfigEditor 1,369 lines is the prime target).
 
