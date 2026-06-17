@@ -353,12 +353,21 @@ yarn.lock
 *.asc
 
 ### ServerPackCreator ###
+# These ignore ServerPackCreator's generated runtime home-directory output (dev runs at the
+# repo root; tests under serverpackcreator-*/tests/ and src/test/resources/). They are
+# unanchored, so they also match identically-named SOURCE directories — most importantly the
+# app's gui/window/configs/ and the API's api/plugins/ packages. The negations below re-include
+# the Kotlin source directories (test-resource output stays ignored).
 configs
 modpacks
 plugins
 server-packs
 server_files
 work
+!**/src/main/kotlin/**/configs/
+!**/src/test/kotlin/**/configs/
+!**/src/main/kotlin/**/plugins/
+!**/src/test/kotlin/**/plugins/
 licenses/*
 !licenses/.gitkeep
 
