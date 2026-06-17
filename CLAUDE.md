@@ -248,8 +248,22 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   ZIP-extraction could append duplicate inclusions; it now dedupes by value. All other
   inclusion call-sites use `.source` directly and are unaffected. 4 new InclusionSpecification
   tests; the editor quirk-test flipped to pin the corrected behavior.
-- **Next:** continue extracting ConfigEditor logic into the view-model (validation orchestration,
-  field↔PackConfig mapping, required-Java-version derivation), leaving Swing as dumb views.
+- **Phase 2b, view-model rounded out (2026-06-17):** `requiredJavaVersion(minecraftVersion)`
+  (Minecraft→required-Java derivation with the "?"-fallback) moved into ConfigEditorViewModel,
+  which now takes `VersionMeta`; `ConfigEditor.acquireRequiredJavaVersion()` is a one-line
+  facade. 2 more tests (mockk-mocked VersionMeta→minecraft→getServer→javaVersion chain). App
+  suite 60→62. **Assessment: ConfigEditor extraction is essentially done for now** — the two
+  genuinely-pure pieces (dirty-check, Java-version) are out and tested; the remaining ~1,330
+  lines are legitimately view code (widget wiring, MigLayout, status-icon updates, combo-box
+  models, event handlers) whose domain logic already lives in the API (ConfigurationHandler,
+  fully tested in Phase 1c). Not worth mechanically extracting thin Swing getters.
+  **Flagged, NOT changed (needs runtime verification):** ConfigEditor uses `GlobalScope.launch`
+  in 4 places (lines ~702, 1043, 1211, 1333) — a structured-concurrency anti-pattern
+  (`@OptIn(DelicateCoroutinesApi)`). Proper fix is a component-lifecycle-scoped CoroutineScope;
+  deferred because it changes async execution and can't be verified without running the GUI.
+- **Next:** Phase 3 (plugin-example) — update to refactored API idiom, fix the
+  Kotlin-test-in-src/test/java layout, make its tests run a real generation with the plugin
+  loaded (doubles as an integration test of the Phase 1 plugin-hook work).
 
 ---
 

@@ -62,7 +62,7 @@ class ConfigEditor(
 ) : JScrollPane(), ServerPackConfigTab {
 
     private val log by lazy { cachedLoggerOf(this.javaClass) }
-    private val viewModel = ConfigEditorViewModel()
+    private val viewModel = ConfigEditorViewModel(apiWrapper.versionMeta)
     private val panel = JPanel(
         MigLayout(
             "left,wrap",
@@ -671,14 +671,8 @@ class ConfigEditor(
         tabbedConfigsTab.checkAll()
     }
 
-    override fun acquireRequiredJavaVersion(): String {
-        val server = apiWrapper.versionMeta.minecraft.getServer(getMinecraftVersion())
-        return if (server.isPresent && server.get().javaVersion().isPresent) {
-            server.get().javaVersion().get().toString()
-        } else {
-            "?"
-        }
-    }
+    override fun acquireRequiredJavaVersion(): String =
+        viewModel.requiredJavaVersion(getMinecraftVersion())
 
     /**
      * @author Griefed
