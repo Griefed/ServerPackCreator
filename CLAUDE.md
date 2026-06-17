@@ -218,8 +218,52 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   Griefed and **stays in the API** — not moved, not deprecated. **Phase 1 (API) COMPLETE:**
   ApiProperties 3,007→1,372, ConfigurationHandler 1,562→897, ServerPackHandler 1,466→490; all
   behind source-compatible facades, six bugs fixed, API tests 75→161.
-- **Next:** Phase 2 (app) — CommandlineParser/MigrationManager tests, then web-backend MVC
-  layering and GUI view-model extraction (ConfigEditor 1,369 lines is the prime target).
+- **Phase 2a, app safety-net (2026-06-12):** characterization tests for the two app entry-point
+  classes before restructuring. `CommandlineParserTest` (10 tests) pins the argument→mode
+  mapping, priority-ordering and file/locale parsing — only the deterministic branches that
+  `return` before the `GraphicsEnvironment.isHeadless()` GUI/failsafe checks, so headless-
+  independent. The `--home` Preferences side-effect is pinned with save/restore of the real
+  node. `MigrationManagerTest` (6 tests) pins `migrate()`'s version-decision logic via a
+  mockk-mocked ApiProperties (controls previous/current version, verifies `setOldVersion`);
+  version-ranges chosen to never match a real migration-method (highest is 6.0.0), so no
+  filesystem side-effects. App suite 39→55 tests.
+- **Phase 2b, web-backend assessment (2026-06-12):** the Spring backend is **already
+  MVC-layered** — controllers delegate to services (ModPackService, ServerPackService,
+  RunConfigurationService, EventService, the stats-services), no file over 254 lines,
+  scheduling isolated in `web/scheduling`. No restructuring warranted; the controller-tests
+  from Phase 1a already pin the layering. The substantive Phase 2 target is the GUI.
+- **Phase 2b, GUI view-models started (2026-06-12):** first view-model extracted from the
+  1,369-line ConfigEditor — `ConfigEditorViewModel.hasUnsavedChanges(current, lastSaved)` holds
+  the editor's dirty-check (15-field PackConfig comparison) display-independently; the Swing
+  `compareSettings()` is now a 5-line view that just shows/hides the warning-icon. 5 unit tests.
+  App suite 55→60 tests.
+- **Phase 2b, InclusionSpecification value-equality (2026-06-12):** fixed the dirty-check
+  over-report at its root — `InclusionSpecification` gained `equals`/`hashCode` over its four
+  fields (source, destination, inclusion/exclusion-filter). Manual override, NOT a `data class`
+  conversion, to keep the public API surface stable for plugins. Verified safe: no
+  hash-based collections (`HashSet`/`TreeSet`/`toSet`/`distinct`) of inclusions exist anywhere,
+  so adding `hashCode` has no keying side-effects. Two sites changed, both toward correctness:
+  the editor dirty-check (now accurate), and `ConfigurationHandler.isZip`'s
+  `newCopyDirs.contains(entry)` dedup — which previously NEVER matched (reference equality), so
+  ZIP-extraction could append duplicate inclusions; it now dedupes by value. All other
+  inclusion call-sites use `.source` directly and are unaffected. 4 new InclusionSpecification
+  tests; the editor quirk-test flipped to pin the corrected behavior.
+- **Phase 2b, view-model rounded out (2026-06-17):** `requiredJavaVersion(minecraftVersion)`
+  (Minecraft→required-Java derivation with the "?"-fallback) moved into ConfigEditorViewModel,
+  which now takes `VersionMeta`; `ConfigEditor.acquireRequiredJavaVersion()` is a one-line
+  facade. 2 more tests (mockk-mocked VersionMeta→minecraft→getServer→javaVersion chain). App
+  suite 60→62. **Assessment: ConfigEditor extraction is essentially done for now** — the two
+  genuinely-pure pieces (dirty-check, Java-version) are out and tested; the remaining ~1,330
+  lines are legitimately view code (widget wiring, MigLayout, status-icon updates, combo-box
+  models, event handlers) whose domain logic already lives in the API (ConfigurationHandler,
+  fully tested in Phase 1c). Not worth mechanically extracting thin Swing getters.
+  **Flagged, NOT changed (needs runtime verification):** ConfigEditor uses `GlobalScope.launch`
+  in 4 places (lines ~702, 1043, 1211, 1333) — a structured-concurrency anti-pattern
+  (`@OptIn(DelicateCoroutinesApi)`). Proper fix is a component-lifecycle-scoped CoroutineScope;
+  deferred because it changes async execution and can't be verified without running the GUI.
+- **Next:** Phase 3 (plugin-example) — update to refactored API idiom, fix the
+  Kotlin-test-in-src/test/java layout, make its tests run a real generation with the plugin
+  loaded (doubles as an integration test of the Phase 1 plugin-hook work).
 
 ---
 

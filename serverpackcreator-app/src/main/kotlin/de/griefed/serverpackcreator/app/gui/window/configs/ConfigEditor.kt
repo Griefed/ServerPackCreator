@@ -62,6 +62,7 @@ class ConfigEditor(
 ) : JScrollPane(), ServerPackConfigTab {
 
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+    private val viewModel = ConfigEditorViewModel(apiWrapper.versionMeta)
     private val panel = JPanel(
         MigLayout(
             "left,wrap",
@@ -670,48 +671,17 @@ class ConfigEditor(
         tabbedConfigsTab.checkAll()
     }
 
-    override fun acquireRequiredJavaVersion(): String {
-        val server = apiWrapper.versionMeta.minecraft.getServer(getMinecraftVersion())
-        return if (server.isPresent && server.get().javaVersion().isPresent) {
-            server.get().javaVersion().get().toString()
-        } else {
-            "?"
-        }
-    }
+    override fun acquireRequiredJavaVersion(): String =
+        viewModel.requiredJavaVersion(getMinecraftVersion())
 
     /**
      * @author Griefed
      */
     fun compareSettings() {
-        if (lastConfig == null) {
+        if (viewModel.hasUnsavedChanges(getCurrentConfiguration(), lastConfig)) {
             title.showWarningIcon()
-            return
-        }
-
-        val currentConfig = getCurrentConfiguration()
-
-        when {
-            currentConfig.clientMods != lastConfig!!.clientMods
-                    || currentConfig.modsWhitelist != lastConfig!!.modsWhitelist
-                    || currentConfig.inclusions != lastConfig!!.inclusions
-                    || currentConfig.javaArgs != lastConfig!!.javaArgs
-                    || currentConfig.minecraftVersion != lastConfig!!.minecraftVersion
-                    || currentConfig.modloader != lastConfig!!.modloader
-                    || currentConfig.modloaderVersion != lastConfig!!.modloaderVersion
-                    || currentConfig.modpackDir != lastConfig!!.modpackDir
-                    || currentConfig.scriptSettings != lastConfig!!.scriptSettings
-                    || currentConfig.serverIconPath != lastConfig!!.serverIconPath
-                    || currentConfig.serverPropertiesPath != lastConfig!!.serverPropertiesPath
-                    || currentConfig.serverPackSuffix != lastConfig!!.serverPackSuffix
-                    || currentConfig.isServerIconInclusionDesired != lastConfig!!.isServerIconInclusionDesired
-                    || currentConfig.isServerPropertiesInclusionDesired != lastConfig!!.isServerPropertiesInclusionDesired
-                    || currentConfig.isZipCreationDesired != lastConfig!!.isZipCreationDesired -> {
-                title.showWarningIcon()
-            }
-
-            else -> {
-                title.hideWarningIcon()
-            }
+        } else {
+            title.hideWarningIcon()
         }
     }
 
