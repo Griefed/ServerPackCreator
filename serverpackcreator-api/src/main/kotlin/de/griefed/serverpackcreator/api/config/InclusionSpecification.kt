@@ -85,4 +85,28 @@ class InclusionSpecification(
         map["exclusionFilter"] = exclusionFilter ?: ""
         return map
     }
+
+    /**
+     * Value-equality across source, destination and both filters, so two inclusions describing
+     * the same files compare equal — enabling list-deduplication and the editor's dirty-check.
+     */
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is InclusionSpecification) return false
+        return source == other.source
+                && destination == other.destination
+                && inclusionFilter == other.inclusionFilter
+                && exclusionFilter == other.exclusionFilter
+    }
+
+    /**
+     * Hash-code consistent with [equals], derived from source, destination and both filters.
+     */
+    override fun hashCode(): Int {
+        var result = source.hashCode()
+        result = 31 * result + (destination?.hashCode() ?: 0)
+        result = 31 * result + (inclusionFilter?.hashCode() ?: 0)
+        result = 31 * result + (exclusionFilter?.hashCode() ?: 0)
+        return result
+    }
 }
