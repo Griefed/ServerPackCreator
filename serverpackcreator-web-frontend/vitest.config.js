@@ -15,6 +15,7 @@ export default defineConfig({
     alias: {
       src: srcDir,
       app: fileURLToPath(new URL('.', import.meta.url)),
+      assets: `${srcDir}/assets`,
       boot: `${srcDir}/boot`,
       stores: `${srcDir}/stores`,
       components: `${srcDir}/components`,
