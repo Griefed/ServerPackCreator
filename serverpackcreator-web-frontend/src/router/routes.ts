@@ -1,7 +1,8 @@
-import ModPackDownload from 'pages/ModPackDownload.vue';
-import ServerPackDownload from 'pages/ServerPackDownload.vue';
+import type { RouteRecordRaw } from 'vue-router'
+import ModPackDownload from 'pages/ModPackDownload.vue'
+import ServerPackDownload from 'pages/ServerPackDownload.vue'
 
-const routes = [
+const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),

@@ -1,8 +1,30 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import {settings} from "../boot/axios.js";
+import { settings } from '../boot/axios'
+
+/**
+ * Shape of the settings the backend serves at `GET /settings/current`, mirrored into the store's
+ * reactive state. Declared explicitly so the empty-array defaults are typed as `string[]` rather
+ * than inferred as `never[]` under strict mode.
+ */
+interface SettingsState {
+  clientsideMods: string[]
+  whitelistMods: string[]
+  supportedModloaders: string[]
+  version: string
+  devBuild: boolean
+  directoriesToInclude: string[]
+  directoriesToExclude: string[]
+  zipArchiveExclusions: string[]
+  exclusionFilter: string
+  isZipFileExclusionEnabled: boolean
+  isAutoExcludingModsEnabled: boolean
+  isMinecraftPreReleasesAvailabilityEnabled: boolean
+  aikarsFlags: string
+  language: string
+}
 
 export const settingsStore = defineStore('settings', {
-  state: () => ({
+  state: (): SettingsState => ({
     clientsideMods: [],
     whitelistMods: [],
     supportedModloaders: [],
@@ -19,13 +41,14 @@ export const settingsStore = defineStore('settings', {
     language: ''
   }),
 
-  getters: {
-    doubleCount: (state) => state.counter * 2
-  },
-
   actions: {
+    /**
+     * Fetches the current settings from the backend and maps the response into this store's state.
+     * Pure data-fetching: the returned promise rejects on failure so the caller (a component, which
+     * has access to Quasar's `$q`) can surface the error to the user — the store stays UI-agnostic.
+     */
     async refresh() {
-      settings.get('current').then(response => {
+      return settings.get('current').then(response => {
         this.clientsideMods = response.data.clientsideMods
         this.whitelistMods = response.data.whitelistMods
         this.supportedModloaders = response.data.supportedModloaders
@@ -40,15 +63,7 @@ export const settingsStore = defineStore('settings', {
         this.isMinecraftPreReleasesAvailabilityEnabled = response.data.isMinecraftPreReleasesAvailabilityEnabled
         this.aikarsFlags = response.data.aikarsFlags
         this.language = response.data.language
-      }).catch(error => {
-        this.$q.notify({
-          timeout: 5000,
-          progress: true,
-          icon: 'error',
-          color: 'negative',
-          message: 'Could not retrieve settings: ' + error
-        });
-      });
+      })
     }
   }
 })

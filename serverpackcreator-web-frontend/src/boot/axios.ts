@@ -1,5 +1,20 @@
 import { defineBoot } from '#q-app/wrappers'
-import axios from 'axios'
+import axios, { type AxiosInstance } from 'axios'
+
+// Type the axios instances this boot file exposes on the Vue Options-API `this`
+// (registered as global properties below), so components get typed `this.$settings` etc.
+declare module 'vue' {
+  interface ComponentCustomProperties {
+    $axios: AxiosInstance;
+    $versions: AxiosInstance;
+    $settings: AxiosInstance;
+    $events: AxiosInstance;
+    $serverpacks: AxiosInstance;
+    $modpacks: AxiosInstance;
+    $runConfigs: AxiosInstance;
+    $stats: AxiosInstance;
+  }
+}
 
 // Be careful when using SSR for cross-request state pollution
 // due to creating a Singleton instance here;
