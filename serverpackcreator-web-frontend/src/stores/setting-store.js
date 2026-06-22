@@ -1,5 +1,5 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import {settings} from "../boot/axios.js";
+import {settings} from "../boot/axios";
 
 export const settingsStore = defineStore('settings', {
   state: () => ({

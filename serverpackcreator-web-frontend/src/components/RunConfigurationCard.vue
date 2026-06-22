@@ -87,7 +87,7 @@
 <script >
 import {defineComponent, ref} from 'vue';
 import {date} from 'quasar';
-import { runConfigs } from '../boot/axios.js';
+import { runConfigs } from '../boot/axios';
 
 export default defineComponent({
   name: 'RunConfigurationCard',

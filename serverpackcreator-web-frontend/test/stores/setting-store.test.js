@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { settings } from 'boot/axios.js'
+import { settings } from 'boot/axios'
 import { settingsStore } from 'stores/setting-store'
 
 // Mock the axios boot-module so tests never touch the network and never pull in the
-// Quasar-only `#q-app/wrappers` import chain. The store imports `../boot/axios.js`, which
-// resolves to the same module id as the `boot/axios.js` alias mocked here.
-vi.mock('boot/axios.js', () => ({
+// Quasar-only `#q-app/wrappers` import chain. The store imports `../boot/axios`, which
+// resolves to the same module id as the `boot/axios` alias mocked here.
+vi.mock('boot/axios', () => ({
   settings: { get: vi.fn() },
 }))
 
