@@ -1,8 +1,30 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import {settings} from "../boot/axios";
+import { settings } from '../boot/axios'
+
+/**
+ * Shape of the settings the backend serves at `GET /settings/current`, mirrored into the store's
+ * reactive state. Declared explicitly so the empty-array defaults are typed as `string[]` rather
+ * than inferred as `never[]` under strict mode.
+ */
+interface SettingsState {
+  clientsideMods: string[]
+  whitelistMods: string[]
+  supportedModloaders: string[]
+  version: string
+  devBuild: boolean
+  directoriesToInclude: string[]
+  directoriesToExclude: string[]
+  zipArchiveExclusions: string[]
+  exclusionFilter: string
+  isZipFileExclusionEnabled: boolean
+  isAutoExcludingModsEnabled: boolean
+  isMinecraftPreReleasesAvailabilityEnabled: boolean
+  aikarsFlags: string
+  language: string
+}
 
 export const settingsStore = defineStore('settings', {
-  state: () => ({
+  state: (): SettingsState => ({
     clientsideMods: [],
     whitelistMods: [],
     supportedModloaders: [],
