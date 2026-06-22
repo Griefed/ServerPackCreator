@@ -19,13 +19,9 @@ export const settingsStore = defineStore('settings', {
     language: ''
   }),
 
-  getters: {
-    doubleCount: (state) => state.counter * 2
-  },
-
   actions: {
     async refresh() {
-      settings.get('current').then(response => {
+      return settings.get('current').then(response => {
         this.clientsideMods = response.data.clientsideMods
         this.whitelistMods = response.data.whitelistMods
         this.supportedModloaders = response.data.supportedModloaders
