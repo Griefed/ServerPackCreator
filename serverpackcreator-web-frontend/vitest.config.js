@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
+import { quasar, transformAssetUrls } from '@quasar/vite-plugin'
 import { fileURLToPath } from 'node:url'
 
 // Resolve Quasar's path-aliases so test imports match the app's import style
@@ -7,7 +8,9 @@ import { fileURLToPath } from 'node:url'
 const srcDir = fileURLToPath(new URL('./src', import.meta.url))
 
 export default defineConfig({
-  plugins: [vue()],
+  // The Quasar plugin auto-imports Quasar components on demand (as the real build does), so SFCs
+  // mounted in tests render real Quasar DOM rather than unresolved <q-*> custom elements.
+  plugins: [vue({ template: { transformAssetUrls } }), quasar()],
   resolve: {
     alias: {
       src: srcDir,
@@ -23,5 +26,6 @@ export default defineConfig({
     environment: 'happy-dom',
     globals: true,
     include: ['test/**/*.{test,spec}.{js,ts}'],
+    setupFiles: ['./test/install-quasar.ts'],
   },
 })
