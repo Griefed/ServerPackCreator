@@ -9,3 +9,28 @@ export interface ErrorItem {
   id: number
   error: string
 }
+
+/** A modpack record as keyed by id in SubmitModPackForm's modpack picker. */
+export interface ModPack {
+  id: string
+  projectID: string
+  versionID: string
+  dateCreated: string | number
+  name: string
+  size: number
+  status: string
+  source: string
+  sha256: string
+  serverPacks: unknown[]
+}
+
+/** A run-configuration record as keyed by id in SubmitModPackForm's run-config picker. */
+export interface RunConfiguration {
+  id: string
+  minecraftVersion: string
+  modloader: string
+  modloaderVersion: string
+  startArgs: { argument: string }[]
+  clientMods: { mod: string }[]
+  whitelistedMods: { mod: string }[]
+}
