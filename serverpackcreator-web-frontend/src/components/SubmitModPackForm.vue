@@ -764,11 +764,13 @@ export default defineComponent({
       this.file = null;
       this.uploading = false;
     },
-    onRejected(rejectedEntry) {
+    onRejected(rejectedEntries) {
+      // QFile's @rejected hands back an array of rejected entries; surface the offending file's
+      // name. (Previously read `rejectedEntry.name` off the array, which was always undefined.)
       this.$q.notify({
         type: 'negative',
         position: 'center',
-        message: `${rejectedEntry.name} is not a ZIP-file`
+        message: `${rejectedEntries[0]?.file.name} is not a ZIP-file`
       });
     },
     setModloaderVersion(version) {
