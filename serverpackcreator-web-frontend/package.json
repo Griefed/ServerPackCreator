@@ -8,8 +8,9 @@
   "type": "module",
   "packageManager": "npm@11.4.2",
   "scripts": {
-    "lint": "eslint -c ./eslint.config.js \"./src*/**/*.{js,cjs,mjs,vue}\"",
-    "format": "prettier --write \"**/*.{js,vue,html,md,json}\" --ignore-path .gitignore",
+    "lint": "eslint -c ./eslint.config.js \"./src*/**/*.{ts,js,cjs,mjs,vue}\"",
+    "format": "prettier --write \"**/*.{ts,js,vue,html,md,json}\" --ignore-path .gitignore",
+    "type-check": "vue-tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "clean": "quasar clean",
     "dev": "quasar dev",
@@ -38,8 +39,11 @@
     "globals": "^16.5.0",
     "happy-dom": "^20.10.6",
     "prettier": "^3.8.3",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.61.1",
     "vite-plugin-checker": "^0.14.1",
-    "vitest": "^3.2.6"
+    "vitest": "^3.2.6",
+    "vue-tsc": "~3.3.5"
   },
   "engines": {
     "node": ">= 22",
