@@ -147,7 +147,7 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 | api | 161 (from 75) | Phase 1 **complete** |
 | app | 62 (from 5) | Phase 2 largely complete |
 | plugin-example | 3 (from 0) | Phase 3 **complete** |
-| web-frontend | 3 (from 0) | Phase 4a (Vitest) + 4b (store/`$q` decoupling) done |
+| web-frontend | 3 (from 0) | Phase 4a–4c done: Vitest, `$q` decoupling, **full TS migration** |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.
@@ -157,10 +157,9 @@ Java-version) are extracted; the rest is legitimate Swing view code, not worth m
 splitting. `LarsonScanner.kt` 2,217 — self-contained widget, low priority.
 
 **Open issues (details + locations in the relevant module `CLAUDE.md`):**
-`ConfigEditor` `GlobalScope.launch` anti-pattern (app); `jsconfig.json` pointing at a missing
-`tsconfig.json` (frontend — to be resolved by the TS migration). The settings-store `$q` coupling
-is **resolved** (Phase 4b).
+`ConfigEditor` `GlobalScope.launch` anti-pattern (app). The frontend's settings-store `$q` coupling
+(4b) and `jsconfig.json`/TS gap (4c) are **resolved**.
 
-**Current phase — 4 (frontend). Next:** 4c — TS migration (add `tsconfig.json`, which also fixes
-the dangling `jsconfig.json` extends; convert stores/boot first, then components), then add a
-Quasar-plugin test harness for component tests (Vue Test Utils + happy-dom).
+**Current phase — 4 (frontend). Next:** 4d — add a Quasar-plugin test harness for component tests
+(Vue Test Utils + happy-dom), then broaden tests beyond the settings store. The full TypeScript
+migration (4a–4c) is complete; all `src/` is TS, verified by `quasar build`.
