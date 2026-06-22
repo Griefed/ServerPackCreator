@@ -20,6 +20,11 @@ export const settingsStore = defineStore('settings', {
   }),
 
   actions: {
+    /**
+     * Fetches the current settings from the backend and maps the response into this store's state.
+     * Pure data-fetching: the returned promise rejects on failure so the caller (a component, which
+     * has access to Quasar's `$q`) can surface the error to the user — the store stays UI-agnostic.
+     */
     async refresh() {
       return settings.get('current').then(response => {
         this.clientsideMods = response.data.clientsideMods
@@ -36,15 +41,7 @@ export const settingsStore = defineStore('settings', {
         this.isMinecraftPreReleasesAvailabilityEnabled = response.data.isMinecraftPreReleasesAvailabilityEnabled
         this.aikarsFlags = response.data.aikarsFlags
         this.language = response.data.language
-      }).catch(error => {
-        this.$q.notify({
-          timeout: 5000,
-          progress: true,
-          icon: 'error',
-          color: 'negative',
-          message: 'Could not retrieve settings: ' + error
-        });
-      });
+      })
     }
   }
 })

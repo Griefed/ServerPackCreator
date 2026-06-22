@@ -55,6 +55,18 @@ describe('settingsStore', () => {
     expect(store.language).toBe('en_GB')
   })
 
+  it('refresh() rejects when the request fails, leaving notification to the caller', async () => {
+    const failure = new Error('network down')
+    settings.get.mockRejectedValue(failure)
+
+    const store = settingsStore()
+
+    // The store no longer swallows errors with a `$q.notify` — it propagates so the
+    // component (which has `$q`) can surface them. State stays at its defaults.
+    await expect(store.refresh()).rejects.toBe(failure)
+    expect(store.version).toBe('')
+  })
+
   it('starts with empty defaults before any refresh', () => {
     const store = settingsStore()
     expect(store.clientsideMods).toEqual([])

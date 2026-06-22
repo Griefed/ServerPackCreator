@@ -548,7 +548,7 @@
 import {defineComponent, ref} from 'vue';
 import {modpacks, runConfigs, versions} from 'boot/axios';
 import {settingsStore} from 'stores/setting-store';
-import {date} from 'quasar';
+import {date, useQuasar} from 'quasar';
 
 export default defineComponent({
   name: 'SubmitModPackForm',
@@ -558,8 +558,17 @@ export default defineComponent({
     }
   },
   setup() {
+    const $q = useQuasar();
     const store = settingsStore();
-    store.refresh();
+    store.refresh().catch(error => {
+      $q.notify({
+        timeout: 5000,
+        progress: true,
+        icon: 'error',
+        color: 'negative',
+        message: 'Could not retrieve settings: ' + error
+      });
+    });
     const modloaders = ref([]);
     const modloader = ref('');
     const file = ref(null);

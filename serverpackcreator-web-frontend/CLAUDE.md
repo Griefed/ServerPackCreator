@@ -21,10 +21,6 @@
 
 ## OPEN ISSUES — flagged, NOT yet fixed
 
-- **Settings store coupled to `$q`:** `stores/index.js` registers **no** Pinia plugins, so the
-  `this.$q.notify(...)` in `refresh()`'s error path hits an undefined `$q` — error handling is
-  **latently broken.** Fix (Phase 4b): decouple the store from `$q` — return/throw from the store
-  and let the component notify. This is the next task.
 - **`jsconfig.json` extends a non-existent `./tsconfig.json`** — resolve as part of the TS migration.
 
 ## Migration plan (Phase 4)
@@ -32,6 +28,10 @@
 - 4a (done): Vitest infra stood up. Store cleanup: removed dead `doubleCount` getter (template
   leftover referencing a non-existent `counter`); `refresh()` now returns its promise (sole caller
   `SubmitModPackForm` doesn't await — behavior unchanged).
-- 4b (next): decouple settings store from `$q`; then **TypeScript migration** — add `tsconfig.json`,
-  convert `stores`/`boot` first, then components; build/lint stays JS+ESLint9 until then. Then add
-  the component test harness.
+- 4b (done): decoupled the settings store from `$q`. `refresh()` is now pure data-fetching — it
+  returns/rejects its promise; the sole caller `SubmitModPackForm.setup()` uses `useQuasar()` and a
+  `.catch()` to notify. Fixes the latently-broken `this.$q.notify` (the store has no `$q`) and makes
+  the error path unit-testable (new test pins that `refresh()` rejects on a failed request).
+- 4c (next): **TypeScript migration** — add `tsconfig.json` (also resolves the dangling
+  `jsconfig.json` extends), convert `stores`/`boot` first, then components; build/lint stays
+  JS+ESLint9 until then. Then add the component test harness.
