@@ -231,5 +231,16 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
     `ModPackDownload.current()`. Backend payload shapes the templates read live in
     `src/types/api.ts` (only the fields used). All `src/` is now TS (9 `.ts` + 21 `.vue`, 0
     `.js`); config files and the one test stay JS (Quasar convention).
-- **Next:** Phase 4d — add a Quasar-plugin component test harness (Vue Test Utils + happy-dom),
-  then broaden tests beyond the settings store.
+- **Phase 4d, component test harness (2026-06-22):** stood up Vue Test Utils component testing.
+  `vitest.config.js` adds `@quasar/vite-plugin` (already a transitive dep) so SFCs get Quasar's
+  on-demand component auto-import — without it `<q-*>` render as unresolved custom elements; the
+  plugin also resolves Quasar to its client build (Node resolution otherwise picks the `node`/
+  server build, whose `install()` throws in happy-dom — found the hard way). `test/install-quasar.ts`
+  (a `setupFiles` entry) installs Quasar globally on the VTU `config.global.plugins` so mounted
+  components get `$q` + directives. Added `test/components/AboutItem.test.ts` (smoke: renders a
+  target=_blank anchor to its link prop) and `test/components/ErrorsCard.test.ts` (one `.q-item`
+  per error with id+message; empty list for none). Suite 3→6. vue-tsc type-checks the `.ts` tests
+  (tsconfig include covers `test/`); lint scope stays `src*` as before.
+- **Phase 4 complete.** All five modules refactored (api/app/plugin-example/web-frontend) per
+  KISS/MVC/TDD/SOLID. **Next (optional):** broaden component-test coverage; resolve the flagged
+  `ConfigEditor` `GlobalScope.launch` anti-pattern (app) once GUI runtime verification is possible.

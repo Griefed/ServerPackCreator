@@ -33,12 +33,17 @@
   `#q-app/wrappers` import chain. `test/stores/setting-store.test.js` is the template (pins
   `refresh()` data-fetching against the mocked boot module). Import boot/store modules
   extensionless now that they are `.ts`.
-- A Quasar-plugin test harness for **component** tests is not built yet — add it before writing
-  Vue Test Utils component tests.
+- **Component tests (Vue Test Utils):** `vitest.config.js` adds `@quasar/vite-plugin` (Quasar
+  component auto-import + client-build resolution — without it `<q-*>` render as unresolved custom
+  elements / Quasar's SSR build throws), and `test/install-quasar.ts` (a `setupFiles` entry)
+  installs Quasar globally for VTU so mounted SFCs get `$q` and directives. Templates:
+  `test/components/AboutItem.test.ts` (smoke), `test/components/ErrorsCard.test.ts` (props→rows).
+  Just `mount(Component, { props })`; pass plugins like Notify via
+  `global: { plugins: [[Quasar, { plugins: { Notify } }]] }` when a component needs them.
 
 ## OPEN ISSUES — flagged, NOT yet fixed
 
-- (none blocking) — the component test harness is the next planned addition.
+- (none blocking)
 
 ## Migration plan (Phase 4)
 
@@ -55,5 +60,5 @@
   layout + pages; 4c-6 `SubmitModPackForm`. All `src/` is TS; verified by `quasar build`. Config
   files (`quasar.config.js`, `eslint.config.js`, `vitest.config.js`, `postcss.config.js`) and the
   one test stay JS (Quasar convention).
-- 4d (next): add the Quasar-plugin **component test harness** (Vue Test Utils + happy-dom), then
-  broaden tests beyond the settings store.
+- 4d (done): Quasar component test harness (Vue Test Utils + happy-dom) via `@quasar/vite-plugin`
+  + `test/install-quasar.ts`; added AboutItem and ErrorsCard component tests (suite 3→6).
