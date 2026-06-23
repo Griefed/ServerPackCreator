@@ -37,6 +37,7 @@ import de.griefed.serverpackcreator.app.gui.window.configs.components.*
 import de.griefed.serverpackcreator.app.gui.window.configs.components.advanced.AdvancedSettingsPanel
 import de.griefed.serverpackcreator.app.gui.window.configs.components.advanced.ScriptKVPairs
 import de.griefed.serverpackcreator.app.gui.window.configs.components.inclusions.InclusionsEditor
+import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import net.miginfocom.swing.MigLayout
@@ -62,6 +63,11 @@ class ConfigEditor(
 ) : JScrollPane(), ServerPackConfigTab {
 
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+
+    /** Owns the coroutines this editor starts, so they are cancelled when the tab is closed
+     * ([removeNotify]) instead of leaking on [GlobalScope] and outliving the disposed editor. */
+    private val componentScope = ComponentCoroutineScope()
+
     private val viewModel = ConfigEditorViewModel(apiWrapper.versionMeta)
     private val panel = JPanel(
         MigLayout(
@@ -691,9 +697,11 @@ class ConfigEditor(
      *
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
+    // CoroutineStart.ATOMIC is itself a delicate API (the load must not be cancellable before it
+    // starts); the opt-in is for that, not for the now-removed GlobalScope.
+    @OptIn(DelicateCoroutinesApi::class)
     fun loadConfiguration(packConfig: PackConfig, confFile: File) {
-        GlobalScope.launch(guiProps.configDispatcher, CoroutineStart.ATOMIC) {
+        componentScope.scope().launch(guiProps.configDispatcher, CoroutineStart.ATOMIC) {
             try {
                 setModpackDirectory(packConfig.modpackDir)
                 if (packConfig.clientMods.isEmpty()) {
@@ -1032,9 +1040,8 @@ class ConfigEditor(
      *
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     fun updateGuiFromSelectedModpack() {
-        GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
+        componentScope.scope().launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
             val modpack = File(getModpackDirectory()).absoluteFile
             if (modpack.isDirectory) {
                 try {
@@ -1180,7 +1187,6 @@ class ConfigEditor(
      *
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     fun checkServer(): Boolean {
         var okay = true
         if (modloaderVersionSetting.selectedItem == Translations.createserverpack_gui_createserverpack_forge_none.toString()) {
@@ -1202,7 +1208,7 @@ class ConfigEditor(
                 modloader,
                 modloaderVersion
             )
-            GlobalScope.launch(Dispatchers.Swing) {
+            componentScope.scope().launch(Dispatchers.Swing) {
                 JOptionPane.showMessageDialog(
                     tabbedConfigsTab.panel,
                     message,
@@ -1322,9 +1328,8 @@ class ConfigEditor(
      *
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     fun stepByStepGuide() {
-        GlobalScope.launch(Dispatchers.Swing) {
+        componentScope.scope().launch(Dispatchers.Swing) {
             Thread.sleep(500)
             modpackGuide.isVisible = false
             inclusionsGuide.isVisible = false
@@ -1335,5 +1340,15 @@ class ConfigEditor(
             modpackSetting.highlight()
             modpackGuide.isVisible = true
         }
+    }
+
+    /**
+     * Cancel this editor's coroutines when the tab is closed (Swing removes the component from its
+     * container), so any in-flight config load or modpack scan stops instead of touching a disposed
+     * editor.
+     */
+    override fun removeNotify() {
+        componentScope.cancel()
+        super.removeNotify()
     }
 }

@@ -25,6 +25,7 @@ import de.griefed.serverpackcreator.api.config.InclusionSpecification
 import de.griefed.serverpackcreator.api.utilities.common.StringUtilities
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.components.*
+import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import de.griefed.serverpackcreator.app.gui.window.configs.ConfigEditor
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
@@ -70,6 +71,10 @@ class InclusionsEditor(
     whitelistSettings: ScrollTextArea
 ) : JSplitPane(HORIZONTAL_SPLIT) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+
+    /** Owns the tip-update and source-edit coroutines, cancelled on [removeNotify] so they stop
+     * when the editor is closed instead of leaking on [GlobalScope]. */
+    private val componentScope = ComponentCoroutineScope()
     private val expertInclusionSettingsPanel = JPanel(
         MigLayout(
             "left,wrap",
@@ -254,9 +259,8 @@ class InclusionsEditor(
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     private fun updateTip() {
-        GlobalScope.launch(guiProps.miscDispatcher) {
+        componentScope.scope().launch(guiProps.miscDispatcher) {
             selectedInclusionDetailsScrollPanel.isEnabled = false
             inclusionList.isEnabled = false
             selectedInclusionDetailsScrollPanel.text = Translations.createserverpack_gui_inclusions_editor_tip_updating.toString()
@@ -346,9 +350,8 @@ class InclusionsEditor(
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     fun sourceWasEdited() {
-        GlobalScope.launch(Dispatchers.Swing) {
+        componentScope.scope().launch(Dispatchers.Swing) {
             delay(200)
             if (inclusionList.model.size > 0 && !inclusionList.isSelectionEmpty && !inclusionList.valueIsAdjusting) {
                 if (File(configEditor.getModpackDirectory(), source.text).exists() || File(source.text).exists()) {
@@ -678,6 +681,15 @@ class InclusionsEditor(
 
             return true
         }
+    }
+
+    /**
+     * Cancel the tip-update and source-edit coroutines when this editor is removed from the screen,
+     * so none of them run on a discarded component.
+     */
+    override fun removeNotify() {
+        componentScope.cancel()
+        super.removeNotify()
     }
 
     /**

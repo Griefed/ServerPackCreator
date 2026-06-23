@@ -22,12 +22,11 @@ package de.griefed.serverpackcreator.app.gui.window.menu.about
 import Translations
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.app.gui.GuiProps
+import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import de.griefed.serverpackcreator.app.gui.utilities.DialogUtilities
 import de.griefed.serverpackcreator.app.gui.window.MainFrame
 import de.griefed.serverpackcreator.app.updater.MigrationManager
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import javax.swing.JMenuItem
@@ -46,6 +45,10 @@ class MigrationInfoItem(
     private val guiProps: GuiProps,
     private val mainFrame: MainFrame
 ) : JMenuItem(Translations.menubar_gui_migration.toString()) {
+    /** Owns the dialog-display coroutine; cancelled on [removeNotify] (menu teardown / window
+     * close) rather than leaking on [GlobalScope]. */
+    private val componentScope = ComponentCoroutineScope()
+
     private val migrationWindowTextPane: JTextPane = JTextPane()
     private val migrationScrollPane = JScrollPane(
         migrationWindowTextPane,
@@ -114,11 +117,10 @@ class MigrationInfoItem(
      *
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     fun displayMigrationMessages() {
         migrationWindowTextPane.font = guiProps.font
         if (migrationWindowTextPane.text.isNotBlank()) {
-            GlobalScope.launch(Dispatchers.Swing) {
+            componentScope.scope().launch(Dispatchers.Swing) {
                 DialogUtilities.createDialog(
                     migrationScrollPane,
                     Translations.migration_message_title.toString(),
@@ -148,5 +150,14 @@ class MigrationInfoItem(
         for (i in 0 until amount) {
             addText(lineBreak)
         }
+    }
+
+    /**
+     * Cancel the dialog-display coroutine when this menu item is torn down (window close), so it
+     * does not run after the frame is gone.
+     */
+    override fun removeNotify() {
+        componentScope.cancel()
+        super.removeNotify()
     }
 }
