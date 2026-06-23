@@ -21,42 +21,59 @@ package de.griefed.serverpackcreator.app.gui.window.settings.components
 
 import Translations
 import de.griefed.serverpackcreator.app.gui.GuiProps
+import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import de.griefed.serverpackcreator.app.gui.window.settings.SettingsEditorsTab
 import kotlinx.coroutines.*
-import java.awt.event.ActionListener
 import javax.swing.Timer
+import javax.swing.event.AncestorEvent
+import javax.swing.event.AncestorListener
 
 /**
  * Timer responsible for starting configuration checks and comparisons.
  *
  * @author Griefed
  */
-@OptIn(DelicateCoroutinesApi::class)
 class SettingsCheckTimer(
     delay: Int,
     settingsEditor: SettingsEditorsTab,
     guiProps: GuiProps
-) : Timer(delay,
-    ActionListener {
-        GlobalScope.launch(guiProps.configDispatcher, CoroutineStart.UNDISPATCHED) {
-            val errors = mutableListOf<String>()
-            runBlocking {
-                launch {
-                    for (editor in settingsEditor.allTabs) {
-                        errors.addAll((editor as Editor).validateSettings())
-                    }
-                }
-            }
-            if (errors.isEmpty()) {
-                settingsEditor.title.hideErrorIcon()
-            } else {
-                settingsEditor.title.setAndShowErrorIcon(Translations.settings_check_errors.toString())
-            }
-            settingsEditor.settingsHandling.checkAll()
-        }
-    }) {
+) : Timer(delay, null) {
+
+    /** Owns the periodic settings-check coroutine. The listener is registered in `init` (not the
+     * Timer super-constructor) so it can launch on this scope; cancelled when the settings tab
+     * leaves the screen. The check is idempotent, so cancel-on-tab-switch + the helper's lazy
+     * re-create is harmless. */
+    private val componentScope = ComponentCoroutineScope()
+
     init {
         stop()
         isRepeats = false
+        addActionListener {
+            componentScope.scope().launch(guiProps.configDispatcher, CoroutineStart.UNDISPATCHED) {
+                val errors = mutableListOf<String>()
+                runBlocking {
+                    launch {
+                        for (editor in settingsEditor.allTabs) {
+                            errors.addAll((editor as Editor).validateSettings())
+                        }
+                    }
+                }
+                if (errors.isEmpty()) {
+                    settingsEditor.title.hideErrorIcon()
+                } else {
+                    settingsEditor.title.setAndShowErrorIcon(Translations.settings_check_errors.toString())
+                }
+                settingsEditor.settingsHandling.checkAll()
+            }
+        }
+        settingsEditor.panel.addAncestorListener(object : AncestorListener {
+            override fun ancestorRemoved(event: AncestorEvent?) {
+                componentScope.cancel()
+            }
+
+            override fun ancestorAdded(event: AncestorEvent?) {}
+
+            override fun ancestorMoved(event: AncestorEvent?) {}
+        })
     }
 }

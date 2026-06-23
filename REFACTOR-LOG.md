@@ -264,3 +264,29 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   asserting slot-rendered cells — high brittleness for near-zero logic density (same judgment call
   as `LarsonScanner`). Frontend Phase 4 (4a–4e) now closed; the one remaining cross-module flag is
   `ConfigEditor`'s `GlobalScope.launch` (app, needs GUI runtime).
+- **GUI structured-concurrency (2026-06-23, branch `claude-gui-coroutinescope`):** eliminated the
+  `GlobalScope.launch` anti-pattern across the whole Swing GUI — 26 launch sites in 14 files now run
+  on `gui.utilities.ComponentCoroutineScope` (a `SupervisorJob` scope that lazily re-creates after a
+  cancel; `@Synchronized` because launches may start off the EDT). Cancellation is anchored to the
+  owner's lifecycle: JComponents (`ConfigEditor`, `ScrollTextArea`, `IconPreview`,
+  `SelectedInclusionDetails`, `InclusionsEditor`, the two about-menu `JMenuItem`s) cancel from
+  `removeNotify()`; non-components anchor an `AncestorListener` (`ancestorRemoved`) on their backing
+  component (`SuggestionProvider`→sourceComponent, `TabbedConfigsTab`/`ControlPanel`→panel, the two
+  check-timers→owning tab panel) or a `WindowListener` (`windowClosed`) on the frame (`MainWindow`,
+  `TipOfTheDayManager`). Done in two phases: **real-leak components first** (ConfigEditor,
+  ScrollTextArea, IconPreview, SuggestionProvider, inclusions, TabbedConfigsTab — 19 sites,
+  **GUI-verified** by Griefed: load/scan/close-mid-scan, tab close-button, not-found dialog,
+  text-area search/replace, autocomplete, icon preview, inclusion tips, step-by-step guide), then
+  the **app-lifetime singletons + ControlPanel** (MainWindow, the two menu items, TipOfTheDayManager,
+  the two check timers, ControlPanel generation). Notes: (1) `CoroutineStart.ATOMIC` is itself
+  `@DelicateCoroutinesApi` independent of GlobalScope, so the three ATOMIC sites
+  (`ConfigEditor.loadConfiguration`, `IconPreview`, `ControlPanel.generate`) keep a *narrow*
+  `@OptIn(DelicateCoroutinesApi)` with the start preserved; all other opt-ins removed. (2)
+  `ControlPanel.generate` is anchored to the always-visible bottom bar so a running generation is
+  cancelled only on window close, never by a tab-switch. (3) The check timers (`SettingsCheckTimer`,
+  `ConfigCheckTimer`) moved their `ActionListener` out of the `Timer` super-constructor (where `this`
+  is unavailable) into `init`, to launch on an instance scope — `ConfigCheckTimer` keeps its large
+  listener body verbatim as a property to avoid re-indentation churn. No automated tests (Swing view
+  code, verified via the running GUI); app suite stays green throughout, no new compiler warnings.
+  **`checkServer()` confirmed live** (called by `ConfigCheckTimer`), despite the "install server"
+  checkbox being gone from the GUI.

@@ -80,6 +80,14 @@ class SettingsHandling(
             (tab as Editor).saveSettings()
         }
         apiProperties.saveProperties(apiProperties.serverPackCreatorPropertiesFile)
+        // Re-sync each editor from the persisted properties before re-checking. Several settings are
+        // normalized when stored (e.g. database-URI migration, locale parsing, the Tomcat base-dir
+        // being reset to the home-directory), so comparing the raw widget value against the
+        // normalized property would leave the unsaved-changes icon stuck on after a save. Reloading
+        // makes the widgets hold exactly what hasUnsavedChanges() reads back — mirrors load().
+        for (tab in settingsEditorsTab.allTabs) {
+            (tab as Editor).loadSettings()
+        }
         lastAction = Translations.settings_handle_saved(currentTime())
         checkAll()
         controlPanel.updateStatus(Translations.settings_info_saved(apiProperties.serverPackCreatorPropertiesFile.absolutePath))

@@ -157,11 +157,13 @@ Java-version) are extracted; the rest is legitimate Swing view code, not worth m
 splitting. `LarsonScanner.kt` 2,217 — self-contained widget, low priority.
 
 **Open issues (details + locations in the relevant module `CLAUDE.md`):**
-`ConfigEditor` `GlobalScope.launch` anti-pattern (app). The frontend's settings-store `$q` coupling
-(4b) and `jsconfig.json`/TS gap (4c) are **resolved**.
+The GUI `GlobalScope.launch` anti-pattern (app) is **resolved** — all 26 sites now use
+`gui.utilities.ComponentCoroutineScope` (lifecycle-cancelled), GUI-verified. The frontend's
+settings-store `$q` coupling (4b) and `jsconfig.json`/TS gap (4c) are **resolved**.
 
-**Current phase — 4 (frontend), complete.** 4a–4e done: Vitest, settings-store `$q` decoupling,
-full TypeScript migration (all `src/` is TS, verified by `quasar build`), a Quasar component test
-harness (Vue Test Utils), and broadened component coverage (all cards + nav SFCs; suite at 23).
-Tables left untested by design (trivial format-lambda logic vs. brittle QTable rendering). **Next:**
-the remaining cross-module flag is `ConfigEditor`'s `GlobalScope.launch` (app, needs GUI runtime).
+**Current phase — 4 (frontend) complete; GUI structured-concurrency done.** Frontend 4a–4e: Vitest,
+settings-store `$q` decoupling, full TypeScript migration (all `src/` is TS, verified by
+`quasar build`), a Quasar component test harness (Vue Test Utils), and broadened component coverage
+(all cards + nav SFCs; suite at 23; tables left untested by design — trivial format-lambda logic vs.
+brittle QTable rendering). The GUI `GlobalScope.launch` anti-pattern is resolved (see Open issues),
+GUI-verified. **Next (optional):** broaden component-test coverage further.

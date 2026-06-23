@@ -21,11 +21,14 @@ package de.griefed.serverpackcreator.app.gui.tips
 
 import Translations
 import de.griefed.serverpackcreator.app.gui.GuiProps
+import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import tokyo.northside.tipoftheday.TipOfTheDay
 import tokyo.northside.tipoftheday.tips.DefaultTipOfTheDayModel
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
 import java.util.*
 import javax.swing.JFrame
 import kotlin.reflect.full.memberProperties
@@ -41,7 +44,16 @@ class TipOfTheDayManager(private val mainFrame: JFrame, private val guiProps: Gu
     private val showOnStartupChoice = ShowOnStartup()
     private val tipOfTheDayModel = DefaultTipOfTheDayModel()
 
+    /** Owns the tip-display coroutine; cancelled when [mainFrame] is disposed (see the
+     * window-listener in `init`) rather than leaking on [GlobalScope]. */
+    private val componentScope = ComponentCoroutineScope()
+
     init {
+        mainFrame.addWindowListener(object : WindowAdapter() {
+            override fun windowClosed(event: WindowEvent?) {
+                componentScope.cancel()
+            }
+        })
         val tipEntries = Translations::class.memberProperties.filter { it.name.matches("tip_\\d+_name".toRegex()) }
         for (tipEntry in tipEntries) {
             val tipNumber = tipEntry.name
@@ -53,9 +65,8 @@ class TipOfTheDayManager(private val mainFrame: JFrame, private val guiProps: Gu
         }
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     fun showTipOfTheDay() {
-        GlobalScope.launch(Dispatchers.Swing, CoroutineStart.DEFAULT) {
+        componentScope.scope().launch(Dispatchers.Swing, CoroutineStart.DEFAULT) {
             var random = (0..<tipOfTheDayModel.tipCount).random()
             if (guiProps.viewedTips.size == tipOfTheDayModel.tipCount) {
                 random = 0

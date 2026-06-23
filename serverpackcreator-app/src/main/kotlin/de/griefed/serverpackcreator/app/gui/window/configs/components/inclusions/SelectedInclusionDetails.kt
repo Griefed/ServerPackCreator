@@ -23,6 +23,7 @@ import Translations
 import de.griefed.serverpackcreator.api.config.InclusionSpecification
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.components.ScrollTextArea
+import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import java.awt.Toolkit
@@ -47,6 +48,10 @@ class SelectedInclusionDetails(
     private val inclusionList: JList<InclusionSpecification>,
     private val textPane: JTextPane = JTextPane()
 ) : JScrollPane(textPane, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_NEVER), KeyListener {
+
+    /** Owns the focus/search coroutines, cancelled on [removeNotify] so they never run on a
+     * discarded details-tip. */
+    private val componentScope = ComponentCoroutineScope()
 
     private val searchFor = JTextField(100)
     private val search = arrayOf<Any>(
@@ -170,9 +175,8 @@ class SelectedInclusionDetails(
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     private fun requestFocus(component: JComponent) {
-        GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
+        componentScope.scope().launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
             delay(250)
             component.requestFocus()
             component.grabFocus()
@@ -182,7 +186,6 @@ class SelectedInclusionDetails(
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     private fun searchDialog() {
         requestFocus(searchFor)
         if (JOptionPane.showConfirmDialog(
@@ -194,7 +197,7 @@ class SelectedInclusionDetails(
                 guiProps.inspectMediumIcon
             ) == JOptionPane.OK_OPTION
         ) {
-            GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
+            componentScope.scope().launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
                 var i = 0
                 while (i < textPane.text.length) {
                     val end = i + searchFor.text.length
@@ -217,7 +220,6 @@ class SelectedInclusionDetails(
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     private fun searchRegexDialog() {
         requestFocus(searchFor)
         if (JOptionPane.showConfirmDialog(
@@ -230,7 +232,7 @@ class SelectedInclusionDetails(
             ) == JOptionPane.OK_OPTION
         ) {
             textPane.isEnabled = false
-            GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
+            componentScope.scope().launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
                 val regex = searchFor.text.toRegex()
                 var i = 0
                 while (i < textPane.text.length) {
@@ -250,5 +252,14 @@ class SelectedInclusionDetails(
                 textPane.isEnabled = true
             }
         }
+    }
+
+    /**
+     * Cancel this tip's focus/search coroutines when it is removed from the screen, so none of them
+     * run on a discarded component.
+     */
+    override fun removeNotify() {
+        componentScope.cancel()
+        super.removeNotify()
     }
 }

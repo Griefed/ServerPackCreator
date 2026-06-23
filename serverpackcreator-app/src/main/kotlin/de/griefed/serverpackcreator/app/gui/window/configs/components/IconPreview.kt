@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.app.gui.window.configs.components
 
 import de.griefed.serverpackcreator.app.gui.GuiProps
+import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import de.griefed.serverpackcreator.app.gui.utilities.getScaledInstance
 import kotlinx.coroutines.*
 import net.java.balloontip.BalloonTip
@@ -45,6 +46,10 @@ class IconPreview(private val guiProps: GuiProps) : JLabel(guiProps.serverIcon) 
         false
     )
     private var lastLoadedIcon: File? = null
+
+    /** Owns the off-thread icon-loading coroutines, cancelled on [removeNotify] so a slow image
+     * read does not complete into a discarded preview. */
+    private val componentScope = ComponentCoroutineScope()
 
     init {
         balloonTip.isVisible = false
@@ -85,7 +90,9 @@ class IconPreview(private val guiProps: GuiProps) : JLabel(guiProps.serverIcon) 
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
+    // CoroutineStart.ATOMIC is itself a delicate API (the load must not be cancellable before it
+    // starts); the opt-in is for that, not for the now-removed GlobalScope.
+    @OptIn(DelicateCoroutinesApi::class)
     fun updateIcon(newIcon: File) {
         if (lastLoadedIcon != null && lastLoadedIcon!!.absolutePath == newIcon.absolutePath) {
             return
@@ -93,7 +100,7 @@ class IconPreview(private val guiProps: GuiProps) : JLabel(guiProps.serverIcon) 
         icon = guiProps.loadingAnimation32
         bigPreview.icon = guiProps.loadingAnimation128
         lastLoadedIcon = newIcon.absoluteFile
-        GlobalScope.launch(guiProps.miscDispatcher, CoroutineStart.ATOMIC) {
+        componentScope.scope().launch(guiProps.miscDispatcher, CoroutineStart.ATOMIC) {
             updateIcon(ImageIcon(ImageIO.read(newIcon)))
         }
     }
@@ -101,9 +108,9 @@ class IconPreview(private val guiProps: GuiProps) : JLabel(guiProps.serverIcon) 
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
+    @OptIn(DelicateCoroutinesApi::class)
     fun updateIcon(newIcon: ImageIcon, reset: Boolean = false) {
-        GlobalScope.launch(guiProps.miscDispatcher, CoroutineStart.ATOMIC) {
+        componentScope.scope().launch(guiProps.miscDispatcher, CoroutineStart.ATOMIC) {
             run {
                 icon = scaled(newIcon, 32, 32)
             }
@@ -114,5 +121,14 @@ class IconPreview(private val guiProps: GuiProps) : JLabel(guiProps.serverIcon) 
         if (reset) {
             lastLoadedIcon = null
         }
+    }
+
+    /**
+     * Cancel the icon-loading coroutines when this preview leaves the screen, so a pending image
+     * read does not update a discarded component.
+     */
+    override fun removeNotify() {
+        componentScope.cancel()
+        super.removeNotify()
     }
 }
