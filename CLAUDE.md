@@ -157,10 +157,11 @@ Java-version) are extracted; the rest is legitimate Swing view code, not worth m
 splitting. `LarsonScanner.kt` 2,217 — self-contained widget, low priority.
 
 **Open issues (details + locations in the relevant module `CLAUDE.md`):**
-`ConfigEditor` `GlobalScope.launch` anti-pattern (app). The frontend's settings-store `$q` coupling
-(4b) and `jsconfig.json`/TS gap (4c) are **resolved**.
+The GUI `GlobalScope.launch` anti-pattern (app) is **resolved** — all 26 sites now use
+`gui.utilities.ComponentCoroutineScope` (lifecycle-cancelled), pending final GUI verification of the
+app-lifetime sites. The frontend's settings-store `$q` coupling (4b) and `jsconfig.json`/TS gap (4c)
+are **resolved**.
 
 **Current phase — 4 (frontend), essentially complete.** 4a–4d done: Vitest, settings-store `$q`
 decoupling, full TypeScript migration (all `src/` is TS, verified by `quasar build`), and a Quasar
-component test harness (Vue Test Utils). **Next (optional):** broaden component-test coverage; the
-remaining cross-module flag is `ConfigEditor`'s `GlobalScope.launch` (app, needs GUI runtime).
+component test harness (Vue Test Utils). **Next (optional):** broaden component-test coverage.

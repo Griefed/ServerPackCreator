@@ -34,12 +34,22 @@
   with the modpack-history route `/downloads/modpacks/{id}`).
 - The old `WebServiceTest` boots an empty context and asserts nothing — replace, don't extend it.
 
-## OPEN ISSUE — flagged, NOT yet fixed (needs runtime verification)
+## Coroutine ownership (GlobalScope anti-pattern — RESOLVED)
 
-- **`ConfigEditor` uses `GlobalScope.launch` in 4 places** (~lines 702, 1043, 1211, 1333) — a
-  structured-concurrency anti-pattern (`@OptIn(DelicateCoroutinesApi)`). Proper fix: a
-  component-lifecycle-scoped `CoroutineScope`. Deferred because it changes async execution and can't
-  be verified without running the GUI. Raise before doing further `ConfigEditor` work.
+- Every GUI `GlobalScope.launch` (26 sites across 14 files) now launches on a
+  `gui.utilities.ComponentCoroutineScope` — a `SupervisorJob` scope, lazily re-created after a
+  cancel, with synchronized access (launches may start off the EDT). Components cancel it from
+  `removeNotify()`; non-components anchor it to their backing component via an `AncestorListener`
+  (`ancestorRemoved`) or to the frame via a `WindowListener` (`windowClosed`).
+- **`CoroutineStart.ATOMIC` is independently `@DelicateCoroutinesApi`** (unrelated to GlobalScope) —
+  the three ATOMIC sites (`ConfigEditor.loadConfiguration`, `IconPreview`, `ControlPanel.generate`)
+  keep a narrow `@OptIn(DelicateCoroutinesApi)` for ATOMIC alone, with the start preserved (a
+  started generation/load must not be cancellable before its first suspension).
+- **`ControlPanel.generate` is anchored to the always-visible bottom-bar panel**, so a running
+  generation is cancelled only on window close, never by a tab-switch. Don't re-anchor it to a
+  switchable container.
+- The check timers register their `ActionListener` in `init` (not the `Timer` super-constructor,
+  where `this` is unavailable) so they can launch on an instance scope.
 
 ## ConfigEditor status
 
