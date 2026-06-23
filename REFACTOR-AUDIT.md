@@ -1,198 +1,286 @@
-# Refactor audit — `claude-phase4-frontend`
+# Refactor audit — full range (Phase 0 → HEAD)
 
-**Scope:** `git log develop..HEAD` — 14 commits (base `ff1daab4d`). Read-only audit against the
-Refactoring Conventions. No source was modified.
+**Scope:** `git log 69a587b6..develop` — 66 commits, base `69a587b6a` (*Phase 0: baseline*, the
+first claude-refactored commit), tip `41b17afc9` (*Merge branch 'claude-fix-settings-dirty-icon'
+into develop*). Read-only audit against the Refactoring Conventions. **No source was modified.**
 
-**Commits audited (oldest → newest):**
+All 15 `claude-`prefixed branches are merged into `develop` (verified: each tip is an ancestor of
+`develop`); nothing was left unmerged. The only unmerged branch in the repo is `backup-pre-rewrite`,
+a pre-rewrite safety snapshot (17 ahead / 38 behind) — deliberately **not** merged.
 
-| Commit | Subject | Kind |
-|---|---|---|
-| c56c8f825 | Phase 4a: stand up Vitest; test+clean settings store | tests + cleanup |
-| 477737d49 | docs: restructure CLAUDE.md + REFACTOR-LOG | docs |
-| a4fce41f5 | Phase 4b: decouple settings store from `$q` | bugfix + test |
-| bed873110 | Phase 4c-1: TS infrastructure | tooling |
-| 0c1f06587 | Phase 4c-2: boot/router/store/i18n → TS | refactor |
-| 3c3efcd78 | Phase 4c-3: settings store → TS | refactor |
-| 922a18e53 | Phase 4c-4: display components → TS | refactor |
-| 5a2232d47 | Phase 4c-5: layout + pages → TS | refactor |
-| a26c57828 | Phase 4c-6: SubmitModPackForm → TS | refactor + bugfix |
-| 1e13c7011 | docs: mark 4c complete | docs |
-| 68fd279d5 | docs(refactor-log): 4b/4c | docs |
-| 90ae913da | Phase 4d: component test harness | tests |
-| 786494bc8 | Phase 4d: ErrorsCard test | tests |
-| 42c596eb6 | docs: mark 4d done | docs |
+This audit supersedes the previous `REFACTOR-AUDIT.md`, which covered only `69a587b6..37bd79184`
+(48 commits, through the Phase 4 frontend merge). That analysis is retained verbatim below; the
+**§ Post-37bd79184 commits** section adds the 18 commits since (Phase 4e frontend coverage, the GUI
+structured-concurrency refactor, and the settings dirty-icon fix). The Phase 4 branch findings are
+under **§ Phase 4 (already remediated)**; §HIGH/§MEDIUM/§LOW cover Phases 1–3 (api / app /
+plugin-example).
 
-Phase 4 is frontend-only — **no `serverpackcreator-api` / plugin-API surface, Swing, or Spring code
-was touched**, so there are no module-boundary or plugin-contract (HIGH-class) violations of that
-kind on this branch.
+**Phase map of the range:**
+
+| Phase  | Commits                             | Theme                                              | Verdict                         |
+|--------|-------------------------------------|----------------------------------------------------|---------------------------------|
+| 0      | `69a587b6`                          | baseline + Kover                                   | clean                           |
+| 1a     | `c2b708e60` `df2eab16e` `6cfaaab0b` | characterization tests + 3 bugfixes                | **2 mixed-concern**             |
+| 1b     | `a6884f593`…`bea19210d` (+merges)   | ApiProperties → 8 settings-groups                  | clean (model Strangler-Fig)     |
+| 1c     | `a35f3cda6` `50165a44f`             | ConfigurationHandler → validators/parser/inspector | **1 bugfix-in-refactor (HIGH)** |
+| 1d     | `b0dc98131`                         | ServerPackHandler → pipeline steps                 | clean                           |
+| 1e     | `3e4b26d3f` `ae69b89b2`             | regex consolidation, reach-back removal            | LOW (multi-concern)             |
+| 2a/2b  | `5d571b973`…`aef54fe1f`             | app tests, ConfigEditor view-models                | clean (model deferral)          |
+| 3      | `9fe67c232`                         | plugin-example test layout                         | clean                           |
+| 4a–d   | `7c2e98d69`…`308dbb267`             | frontend Vitest/TS/harness                         | see §Phase 4 (remediated)       |
+| 4e     | `704e0f9f7`…`94def0c78`             | broadened frontend component coverage              | **clean (model discipline)**    |
+| GUI-SC | `40e2aab26`…`93ae56765`             | GlobalScope → ComponentCoroutineScope (8 commits)  | **1 test-gap (MEDIUM)**         |
+| fix    | `bef3c1ee2` `585ecb2b9`             | settings dirty-icon stuck-on bugfix                | clean (standalone fix)          |
+
+No pure-refactor commit in Phases 1b/1c/1d/1e/3 modified a **pre-existing test file's assertions** —
+verified mechanically (`git show --name-status`). That is the strongest signal in the range: the
+extractions kept the existing suite green unchanged, exactly as the convention requires.
 
 ---
 
 ## HIGH
 
-### H1 — Bugfix mixed into a refactor commit (`a26c57828`, Phase 4c-6)
-**File:** `serverpackcreator-web-frontend/src/components/SubmitModPackForm.vue:773-778`
-**Rule:** "If you find a bug while refactoring, surface it explicitly and propose a fix in its own
-commit." + "Never mix a refactor with a feature or bugfix."
+### H1 — Behavior bugfix folded into an extraction refactor (`50165a44f`, Phase 1c)
+**File:** `serverpackcreator-api/.../config/ConfigurationHandler.kt` — `isZip()`, the
+`server.properties` branch (now `ConfigurationHandler.kt:490`).
+**Rule broken:** "If you find a bug while refactoring, surface it explicitly and propose a fix in
+**its own commit**." + "Never mix a refactor with a feature or bugfix." (rubric: *behavior change
+mixed into a refactor* → HIGH).
 
-The "convert SubmitModPackForm to TypeScript" commit also fixes a genuine runtime bug in
-`onRejected`: the old `rejectedEntry.name` was always `undefined` (QFile `@rejected` emits a
-`QRejectedEntry[]`, not a single entry), so the rejection toast read *"undefined is not a
-ZIP-file"*. The fix changes observable behavior — it now reads `rejectedEntries[0]?.file.name` and
-shows the real filename.
+The commit's stated job is a pure extraction — pulling `ModloaderValidator`,
+`InclusionsValidator` and `ModpackDirectoryValidator` out of `ConfigurationHandler` (217-line
+production diff, behind facades). Inside that same commit it also flips a real runtime bug:
 
-The bug **was surfaced** (called out in the commit message), which is good and avoids the
-"silently worked around" trap. But the convention requires the fix in **its own commit**; here it
-rides inside a ~135-line pure-refactor commit, so a reviewer bisecting the TS conversion cannot
-separate "rename + type" from "changed the rejection message." Same commit also carries the
-`Map → Record` data-structure swap (see L2) — another behavior-adjacent change folded into the
-"refactor" label.
+```
+-            packConfig.serverIconPath = file.absolutePath
++            packConfig.serverPropertiesPath = file.absolutePath
+```
 
-**Recommendation:** in future, land the `onRejected` fix as a standalone `fix:` commit (ideally
-preceded by a test pinning the old/new message) before or after the TS conversion. No code change
-requested now — flagged for process.
+A `server.properties` discovered in an extracted modpack was being assigned to `serverIconPath`,
+so the icon got overwritten and the properties file was never picked up. This is an **observable
+behavior change** riding inside a commit labelled (and otherwise genuinely) a pure refactor — a
+bisect of the validator extraction cannot be separated from "changed which field server.properties
+lands in."
+
+**Mitigation:** the bug **was surfaced** in the commit message (not silently worked around), which
+is the convention's most important requirement. The defect is in the *current* tree (correct now).
+
+**What the convention wanted:** land the `isZip` field-swap as its own `fix:` commit — ideally
+preceded by a characterization test asserting the old buggy mapping, then flipped — before or after
+the extraction. Process-only; no code change requested.
 
 ---
 
 ## MEDIUM
 
-### M1 — Components refactored without characterization tests first (cross-commit)
-**Commits:** `0c1f06587` (4c-2), `922a18e53` (4c-4), `5a2232d47` (4c-5), `a26c57828` (4c-6)
-**Rule:** "Before refactoring any unit, ensure characterization tests exist that pin its current
-behavior… Never refactor untested code blind."
+### M1 — API-visible bugfix mixed into an "add tests" commit; the "characterization" test pins the *fixed* behavior (`c2b708e60`, Phase 1a)
+**Files:** `ConfigurationHandler.kt` `getModLoaderCase()` (logic now in
+`ModpackManifestParser.kt:439`); test `ConfigurationHandlerCharacterizationTest.kt`.
+**Rules broken:** "One concern per commit" (add-tests vs change-behavior) **and** "ensure
+characterization tests exist that pin its **current** behavior" — the test here pins *new* behavior.
 
-The only unit with a behavior-pinning test before it was refactored is the **settings store**
-(tested in 4a/4b, converted in 4c-3 — that one is the model: existing assertions stayed green
-unchanged). Everything else — all 21 SFCs plus the boot/router/i18n scaffolding — was converted to
-TypeScript with **no tests pinning prior behavior**. The component test harness and the first two
-component tests (`AboutItem`, `ErrorsCard`) only arrived in 4d, *after* the conversions, and cover
-two presentational components. The units that received the most behavior-touching edits —
-`SubmitModPackForm` (H1, L2), `ModPackDownload` / `ServerPackDownload` (L1, L3) — remain untested.
+The commit adds 30 characterization tests (75 → 105) **and** rewrites `getModLoaderCase`'s branch
+order, fixing two bugs: `"legacyfabric"` was detected as `Fabric` (the `contains("fabric")` branch
+matched first), and the NeoForge branch used `contains("NeoForge")` on an already-`lowercase()`d
+string so it could never match. After the fix, `getModLoaderCase("legacyfabric")` returns
+`"LegacyFabric"` instead of `"Fabric"` — and the new test asserts exactly that *post-fix* value:
 
-Mitigation present: `vue-tsc`, `eslint`, and a full `quasar build` gated every commit, and the
-edits are individually small/disclosed. But compile-time checks do not pin render/runtime behavior,
-so "behavior-preserving" here rests on inspection, not on a green characterization suite.
+```
+assertEquals("LegacyFabric", configurationHandler.getModLoaderCase("legacyfabric"))   // new behavior
+```
 
-**Recommendation:** add component tests for `SubmitModPackForm` (esp. `onRejected`, the modloader
-dropdown wiring, the picker dictionaries) and the download pages before further changes.
+So the test does not *characterize* the legacy behavior — it locks in the corrected behavior, in
+the same commit that changes it. The output of a **public API method** changed.
 
-### M2 — Multiple concerns in one commit (`c56c8f825`, Phase 4a)
-**File:** `serverpackcreator-web-frontend/src/stores/setting-store.js` (now `.ts:51`)
-**Rule:** "One concern per commit. Keep 'add tests', 'refactor (no behavior change)', and 'change
-behavior' in separate commits."
+**Why MEDIUM, not HIGH (borderline):** `getModLoaderCase` is part of the exported API surface, so
+strictly this is a changed-API-contract change (which the rubric flags HIGH). It is held at MEDIUM
+because (a) it is a pure correctness fix to a self-evidently broken branch — no plausible plugin
+depends on `"legacyfabric" → "Fabric"`, and (b) the fix was openly surfaced in the message. The
+real defect is process: bugfix + tests in one commit, and a "characterization" test that asserts
+new rather than current behavior.
 
-This single commit bundles three concerns: (a) the Vitest toolchain + first tests, (b) dead-code
-removal (the `doubleCount` getter referencing a non-existent `counter`), and (c) a contract change
-— `refresh()` now `return`s its promise. (c) is a behavior/contract change (made so tests can await
-it); (b) is a refactor. Per the convention these belong in separate commits from "add tests."
-Low blast radius (the sole caller didn't await, dead getter was unreachable), hence MEDIUM not HIGH.
+### M2 — Two web-contract bugfixes mixed into an "add tests" commit (`6cfaaab0b`, Phase 1a)
+**Files:** `app/web/stats/StatsController.kt:141` (route), `app/web/SettingsController.kt:79-83`
+(`@get:JsonProperty`).
+**Rule broken:** "One concern per commit." + surface/fix a bug in its own commit.
+
+This commit adds the standalone-MockMvc suites for six controllers (5 → 39 app tests) **and** ships
+two behavior/contract changes:
+- **Route change:** the server-pack download-history endpoint was mapped to
+  `/downloads/modpacks/{id}`, colliding with the modpack-history route and unreachable; it is moved
+  to `/downloads/serverpacks/{id}`. This is an **HTTP-contract change**.
+- **Serialization change:** `@get:JsonProperty("isZipFileExclusionEnabled")` /
+  `("isAutoExcludingModsEnabled")` restore the `is`-prefixed JSON field names Jackson had stripped,
+  which the frontend `setting-store` reads. This is a **wire-format/contract change** the SPA
+  depends on.
+
+Both were surfaced in the message (good) and both are correctness fixes, but they are public
+behavioral contract changes folded into a commit whose stated concern is "add characterization
+tests." Like M1, the new controller tests assert the *post-fix* routes/field-names, so they pin the
+corrected contract rather than characterizing the broken one. Held at MEDIUM (web contract, not the
+plugin API; openly disclosed; bundled with tests rather than with a refactor).
+
+### M3 — Behavior-affecting GUI change labeled `refactor`, shipped with no characterization tests (`40e2aab26`…`93ae56765`, GUI structured-concurrency)
+**Files:** all 8 GUI commits; new core `app/gui/utilities/ComponentCoroutineScope.kt`.
+**Rules broken:** "ensure characterization tests exist that pin its current behavior … never refactor
+untested code blind" **and** "keep refactor (no behavior change) and change behavior in separate
+commits" (the `refactor(gui)` label vs. an admitted behavior change).
+
+The 8-commit series replaces all 26 `GlobalScope.launch` sites with launches on a lifecycle-owned
+`ComponentCoroutineScope` cancelled from `removeNotify()`. This is the right fix for the
+structured-concurrency anti-pattern, and it is **commendably partitioned** — one component cluster
+per commit (ConfigEditor, ScrollTextArea, IconPreview/SuggestionProvider, inclusions, TabbedConfigsTab,
+dialogs, check-timers, ControlPanel), each keeping its original dispatcher and `CoroutineStart`. Two
+caveats keep it at MEDIUM:
+
+1. **It is a behavior change wearing a `refactor` label.** Each message says so plainly
+   ("Behavior-affecting; needs GUI runtime verification") — coroutines that previously leaked on
+   `GlobalScope` now get **cancelled** when the component leaves the screen. That is an observable
+   lifetime change, not behavior-preserving; the convention reserves the `refactor` label for
+   no-behavior-change commits. (Not HIGH: it is the deliberate, openly-disclosed *point* of the
+   change, not a fix smuggled in behind an unrelated extraction.)
+2. **No tests pin it.** Swing view code needs a GUI runtime, so the leak/cancel behavior was verified
+   manually (per `serverpackcreator-app/CLAUDE.md`) with the app suite green — acceptable for the
+   view classes. But `ComponentCoroutineScope` itself is **plain, runtime-free Kotlin** (scope
+   re-creation after `cancel`, `isActive` gating, `@Synchronized` access) and was shipped in
+   `40e2aab26` with **no unit test**, even though it is trivially unit-testable and is now the single
+   point all 26 sites depend on. That is the one genuinely-testable unit in the series left uncovered.
+
+**What the convention wanted:** a unit test for `ComponentCoroutineScope` (cancel → next `scope()`
+yields an active scope; cancelled children stop) committed before/with its introduction, and the
+view migrations tagged as the behavior change they are. Process + one missing small test; the tree is
+correct and GUI-verified.
 
 ---
 
 ## LOW
 
-### L1 — Behavior-adjacent value edits inside "convert to TS" commits (4c-4, 4c-5, 4c-6)
-Disclosed in the commit messages and plausibly behavior-equivalent, but they change values/semantics
-inside commits labelled as pure refactors, and are unverified by tests:
-- `opacity: 0.75 → '0.75'`, `0.2 → '0.2'` (number→string) — `ErrorsCard.vue:46,54`,
-  `RunConfigurationCard.vue`, `SubmissionPage.vue` (4c-4/4c-5).
-- Added `field: 'download'` to slot-rendered action columns — `ServerPacksTable.vue:130`,
-  `ModpacksTable.vue:101` (4c-4). Inert at runtime (slot overrides), but it is a data edit.
-- `?? ''` fallbacks, `String(...)` coercions, and template `this.x → x` rewrites change edge-case
-  evaluation (empty array → `''` vs previous `undefined`) — `ModPackDownload.vue`,
-  `ServerPackDownload.vue`, `SubmitModPackForm.vue` (4c-5/4c-6).
+### L1 — Multiple structural concerns in one commit (`3e4b26d3f`, Phase 1e)
+The commit does three separable structural things: (a) introduce `SupportedModloaders` as the single
+source of truth for the five loader-regexes and re-point five consumers at it; (b) remove
+service-locator reach-backs into the `ApiWrapper` singleton (`ServerPackManifest` self-derives the
+version; `PackConfig.save` gains an injected overload with the old one kept as a `@Deprecated`
+facade); (c) deprecate `ReticulatingSplines` (later reverted in `ae69b89b2` per Griefed). All three
+are behavior-preserving and done behind source-compatible facades (textbook Strangler-Fig), and
+they are thematically related ("finish decoupling the API core"), so this is a commit-granularity
+nit, not a correctness issue. Ideally (a) and (b) would have been two commits.
 
-### L2 — `Map → Record` data-structure swap folded into the TS refactor (`a26c57828`, 4c-6)
-**File:** `SubmitModPackForm.vue:586,600-601`
-`ref(new Map)` → `ref<Record<…>>({})` for `forgeVersions`/`neoForgeVersions`/`modPacks`/
-`runConfigurations`. The reasoning (they were only ever bracket-accessed; the version maps are
-overwritten by plain JSON) is sound and almost certainly behavior-identical, but it is a structural
-change shipped under the "convert to TypeScript" label, untested. Ideally its own
-"refactor (no behavior change)" commit.
-
-### L3 — Debug `console.log` removal bundled into the TS conversion (`5a2232d47`, 4c-5)
-**File:** `serverpackcreator-web-frontend/src/pages/ModPackDownload.vue` (`current()`)
-Removing the stray `console.log(this.$route)` is a fine Boy-Scout cleanup and was disclosed, but it
-is a (trivial) behavior change living in a "convert layout/pages to TS" commit rather than its own
-cleanup commit.
-
-### L4 — Latent config bug introduced then fixed across commits (`bed873110` → `0c1f06587`)
-4c-1 shipped `tsconfig.json` with a `baseUrl: "."` that mis-rebased the `.quasar` path aliases; it
-passed only because no `.ts` exercised the aliases yet. The fix (dropping `baseUrl`) then landed
-inside the 4c-2 "pure refactor" commit. The infra commit was not self-correct, and the correction
-rode in a refactor rather than a dedicated `fix:`. Minor.
-
-### L5 — Existing test file edited inside a refactor commit (`0c1f06587`, 4c-2)
-**File:** `serverpackcreator-web-frontend/test/stores/setting-store.test.js`
-The "convert scaffolding to TS" commit edits the store test. Inspection confirms this is **only an
-import-specifier update** (`boot/axios.js` → `boot/axios` + the matching `vi.mock` path) forced by
-the `axios.js → axios.ts` rename — **no assertion changed**, so it does not trip the
-"a test had to change ⇒ not behavior-preserving" rule. Noted for completeness; a co-located,
-necessary edit rather than a real violation.
+### L2 — `ae69b89b2` reverts a same-phase decision (Phase 1e)
+The `ReticulatingSplines` deprecation from `3e4b26d3f` is reverted one commit later per Griefed's
+direction. Clean and correctly surfaced; noted only as churn that would have been avoided had the
+deprecation not been bundled into L1's commit in the first place.
 
 ---
 
 ## What was done well (not violations)
 
-- **Incremental / Strangler-Fig:** the TS migration was staged leaf-first across 4c-1…4c-6, each
-  commit independently green (vue-tsc + eslint + vitest). No big-bang module rewrite — the largest
-  single-file change (`SubmitModPackForm`) is one SFC behind its own interface.
-- **4c-3 is the model pure-refactor:** the settings store was converted *after* it had tests, and
-  those existing assertions stayed green **unchanged**.
-- **4b** is a self-contained, explicitly-surfaced bugfix (the broken `$q` error path) in its own
-  commit — the convention's preferred handling. Its only nit (test shipped with the fix rather than
-  a separate "add tests" commit) is borderline and not separately logged.
-- **Bugs surfaced, not buried:** every behavior change (H1, the `$q` fix, the `console.log`) is
-  called out in its commit message rather than slipped in.
-- **Docs cleanly separated:** all CLAUDE.md / REFACTOR-LOG churn lives in dedicated `docs:` commits.
+- **Phase 1b is the model Strangler-Fig.** `ApiProperties` (3,007 → 1,372 lines) was split into
+  eight settings-groups across `a6884f593`…`bea19210d`, each commit: write group-tests first → move
+  get/set logic verbatim → `ApiProperties` keeps a thin delegating facade → run api+app suites. No
+  existing assertion was touched; the facade kept every internal call-site unchanged.
+- **Deferred behavior change handled exactly right (`17d636aca` → `d5c8493c1`, Phase 2b).** The
+  Phase 2b dirty-check extraction *found* that `InclusionSpecification` has no value-equality
+  (so the dirty-check over-reports). Rather than fix it inline, `17d636aca` **surfaced it as a
+  pinned characterization finding and explicitly deferred** the fix; the fix then landed in its own
+  dedicated behavior-change commit `d5c8493c1`, which (correctly, being a behavior change and not a
+  refactor) **flips the quirk-test** to the corrected by-value comparison, adds 4 equality tests,
+  and documents the "verified no hash-based collections exist" safety check. This is the textbook
+  counter-example to H1 — the same situation, handled by the book.
+- **`b0dc98131` (Phase 1d)** split `ServerPackHandler` (1,466 → 490 lines) into
+  `ModListCompiler`/`ServerPackFileGatherer`/`ServerPackProvisioner` behind facades, verified by the
+  five end-to-end generation tests + Phase 1a characterization tests, no test edits — a clean
+  big-unit decomposition done incrementally.
+- **`a35f3cda6` (Phase 1c)** removed genuinely dead code (two identical, unreachable
+  `mmcPrismPack` `when`-branches) as disclosed Boy-Scout cleanup inside its extraction — behavior-
+  preserving, in scope.
+- **`0fcd7aac8`** ("Fix overbroad .gitignore that silently dropped `ConfigEditorViewModel`") is a
+  standalone, single-concern `fix:` commit — the right shape.
+- **Plugin-API stability held (`9fe67c232`, Phase 3):** the example plugin needed **no** production
+  changes after the Phase 1 API refactor; the jar was rebuilt and confirmed pf4j-loadable, and the
+  API's `ApiPluginsTest` still discovers all six extension points. The compatibility policy was
+  honoured.
+- **Module boundaries intact:** no inward dependency from `-api` onto Swing/Spring/frontend was
+  introduced anywhere in the range; the app/frontend remained adapters around the core.
+- **Phase 4e is the discipline H1/M1/M2 lacked — done right.** Characterization tests landed first
+  in their own commits (`704e0f9f7`, `4396adace`; suite 12 → 23), *then* the `DrawerLink`
+  `colour="accent"` → `color` bug — surfaced while writing that component's test — landed as its own
+  dedicated `fix:` commit (`05450f15e`), with the test pinning *rendering* (not colour) so it stays
+  green across the fix. Textbook tests-first → isolated-fix sequencing.
+- **`bef3c1ee2` (dirty-icon fix) is a clean standalone `fix:`** — one file, root-cause disclosed
+  (normalizing getters vs. raw widget values after save), explicitly noted as a pre-existing bug
+  "independent of the GUI coroutine-scope refactor," app suite green. Correct commit shape.
+- **GUI structured-concurrency partitioning (despite M3):** the 26-site `GlobalScope` removal was
+  split into 8 reviewable per-component commits behind one small shared helper, each preserving
+  per-site dispatcher/`CoroutineStart` — the *granularity* the convention asks for, even though the
+  series carries the M3 label/test-gap caveat.
+
+---
+
+## § Phase 4 (web-frontend) — already audited & remediated
+
+The Phase 4 commits (`7c2e98d69`…`308dbb267`) were audited separately on the
+`claude-phase4-frontend` branch and **all findings were remediated before merge** (the cited
+pre-rewrite hashes no longer exist; history was rebuilt and verified byte-identical via
+`backup-pre-rewrite`). Summary of that audit, for the full-range record:
+
+| Was      | Finding                                                            | Status in current history                                                                                    |
+|----------|--------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
+| H (4c-6) | `onRejected` bugfix mixed into the TS-conversion commit            | **RESOLVED** — split into `118701e24` (fix) + `caa6bc8af` (refactor); pinned by `87a7cc859` test             |
+| M (4a)   | Vitest + dead-code + `refresh()` contract change in one commit     | **RESOLVED** — split into `7c2e98d69` (refactor) + `2d20acf34` (tests)                                       |
+| M        | SFCs converted to TS with no characterization tests first          | **RESOLVED** — `SubmitModPackForm` + both download pages now tested (`feca50a25`, `87a7cc859`); suite 6 → 12 |
+| L1–L5    | disclosed behavior-equivalent edits inside "convert to TS" commits | left as-is (correct in tree, several now test-covered)                                                       |
+
+The standing cross-module item that audit noted — `ConfigEditor`'s `GlobalScope.launch`
+anti-pattern (app GUI) — has since been **resolved** by the GUI structured-concurrency series below
+(see M3).
+
+---
+
+## § Post-37bd79184 commits (Phase 4e, GUI structured-concurrency, dirty-icon fix)
+
+The 18 commits merged after the earlier audit's tip. Mechanically verified: in this sub-range test
+files were **only added, never modified** (`git log --name-status … -- '*test*'` shows all `A`,
+no `M`) — so no pure-refactor commit touched a pre-existing assertion. The three merge commits
+(`12bddf10a`, `76a3938eb`, `41b17afc9`) introduce no diff beyond the sum of their branch commits
+(develop did not advance between branches).
+
+| Commits                 | Theme                                        | Verdict                                                               |
+|-------------------------|----------------------------------------------|-----------------------------------------------------------------------|
+| `704e0f9f7` `4396adace` | frontend characterization tests (12 → 23)    | clean — tests-first, own commits                                      |
+| `05450f15e`             | `DrawerLink` `colour`→`color` fix            | clean — dedicated `fix:`, test stays green                            |
+| `94def0c78`             | Phase 4e docs                                | clean — docs only                                                     |
+| `40e2aab26`…`a56314d4e` | 8× `GlobalScope` → `ComponentCoroutineScope` | **MEDIUM (M3)** — behavior change labeled `refactor`; helper untested |
+| `93ae56765`             | GUI structured-concurrency docs              | clean — docs only                                                     |
+| `bef3c1ee2`             | settings dirty-icon stuck-on fix             | clean — standalone `fix:`                                             |
+| `585ecb2b9`             | dirty-check landmine docs                    | clean — docs only                                                     |
+
+Only new finding: **M3** (above). Everything else in this sub-range is clean and, in the Phase 4e
+case, is the model the earlier bugfix-bundling phases should have followed.
 
 ---
 
 ## Summary
 
-| Severity | Count | Items |
-|---|---|---|
-| HIGH | 1 | H1 (bugfix mixed into refactor — 4c-6) |
-| MEDIUM | 2 | M1 (no characterization tests before refactor), M2 (multi-concern 4a) |
-| LOW | 5 | L1–L5 |
+| Severity | Count | Items                                                                                                                                                                                                                                                                           |
+|----------|-------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| HIGH     | 1     | H1 — `isZip` bugfix folded into the Phase 1c validator extraction (`50165a44f`)                                                                                                                                                                                                 |
+| MEDIUM   | 3     | M1 — loader-detection fix + tests, test pins post-fix behavior (`c2b708e60`); M2 — two web-contract fixes bundled with controller tests (`6cfaaab0b`); M3 — GUI `GlobalScope` removal labeled `refactor` + `ComponentCoroutineScope` shipped untested (`40e2aab26`…`93ae56765`) |
+| LOW      | 2     | L1 — multi-concern Phase 1e commit (`3e4b26d3f`); L2 — same-phase revert (`ae69b89b2`)                                                                                                                                                                                          |
 
-The dominant theme is **process, not correctness**: behavior-touching edits (one real bugfix, plus
-several disclosed behavior-equivalent tweaks) were folded into commits labelled "convert to
-TypeScript," and the bulk of the SPA was refactored ahead of any behavior-pinning tests. No broken
-module boundary, no changed plugin/API contract, no silently-buried bug.
+**Dominant theme: process, not correctness — and a discipline that visibly improved over time.**
+The recurring early pattern is the *first* commit of a phase (1a) and the *first* extraction of a
+cluster (1c) bundling a freshly-discovered bugfix in with tests or with the extraction, and — in the
+test cases — writing the new test against the *fixed* behavior so it documents the new state rather
+than characterizing the old one. The later GUI series adds a different flavour (M3): a deliberate,
+disclosed behavior change carrying the `refactor` label with its one unit-testable unit left
+uncovered. Across the whole range every such change was **openly surfaced** in its commit message
+(none buried), every fix is **correct in the current tree**, and the trajectory is clearly upward —
+Phase 2b's `InclusionSpecification` handling (deferred finding → dedicated behaviour-change commit →
+flipped test) and **Phase 4e's tests-first → isolated-fix sequencing** (`05450f15e`) are the model
+the earlier bugfixes should have followed, and the GUI work nailed the *commit granularity* even
+where it slipped on labeling/tests. No broken module boundary and no silently-changed plugin-API
+contract anywhere in the range.
 
 ---
 
-## Remediation (this session)
-
-All findings have been remediated. The commit hashes cited in the findings above are the
-**pre-rewrite** hashes (the history as audited); that history was then cleaned by a non-interactive
-rebuild (cherry-pick-from-base, since `git rebase -i` is unavailable here). The pre-rewrite tip is
-preserved at branch `backup-pre-rewrite`, and the rewrite was verified to leave the final tree
-**byte-identical** to it (`git diff backup-pre-rewrite HEAD` is empty) — only commit structure
-changed. Tests stayed green (12/12).
-
-**Tests added (forward fix for M1 / H1 coverage):**
-- **M1 — RESOLVED.** The previously-untested units that received behavior edits now have
-  characterization tests: `SubmitModPackForm` (`test/components/SubmitModPackForm.test.ts` —
-  onRejected + modloaderSelected + selectedRunConfiguration incl. the unknown-id guard) and both
-  download pages (`test/pages/*.test.ts` — filename derivation). Harness extended: Notify registered
-  in `test/install-quasar.ts`, `assets` path-alias added to `vitest.config.js`. Suite 6 → 12.
-  (Remaining untested SFCs — boot/router/i18n scaffolding and the presentational cards/tables —
-  carry only mechanical typing changes; `ErrorsCard`/`AboutItem` already covered.)
-
-**History cleaned (rewrite):**
-- **H1 — RESOLVED.** The `onRejected` bugfix is now its own commit, *"Phase 4c-6 (fix): onRejected
-  reads the rejected file from QFile's array"*, placed immediately before *"Phase 4c-6 (refactor):
-  convert SubmitModPackForm to TypeScript"* — so the TS-conversion commit is behavior-preserving.
-  The fix is additionally pinned by the regression test above.
-- **M2 — RESOLVED.** The multi-concern 4a commit is split into *"Phase 4a (refactor): tidy the
-  settings store"* (dead `doubleCount` removal + `refresh()` returns its promise) and *"Phase 4a
-  (tests): stand up Vitest and characterize the settings store"*.
-
-**LOW — no code defect, left as-is.** L1–L5 are behavior-equivalent edits (opacity-as-string, inert
-`field`, `?? ''`/`String()` coercions, `Map → Record`, the removed debug log, the corrected
-tsconfig) that are correct in the current tree and several are now exercised by the M1 tests; L2's
-`Map → Record` is covered via `selectedRunConfiguration`. Their only sub-ideal aspect was *also*
-being commit-hygiene (disclosed boy-scout edits inside refactor commits); these were judged not
-worth additional history surgery beyond the HIGH/MEDIUM splits. None require a code change.
+*Read-only audit. No source modified. Awaiting go-ahead before any remediation.*
