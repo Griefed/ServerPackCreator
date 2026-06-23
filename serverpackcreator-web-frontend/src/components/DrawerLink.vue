@@ -1,7 +1,7 @@
 <template>
   <q-item clickable :to="link">
     <q-item-section avatar>
-      <q-icon :name="icon" colour="accent" left/>
+      <q-icon :name="icon" color="accent" left/>
     </q-item-section>
     <q-item-section>
       <q-item-label>{{ title }}</q-item-label>
