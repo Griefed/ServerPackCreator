@@ -140,14 +140,14 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 **Goal:** KISS/MVC/TDD/SOLID across api → app → plugin-example → web-frontend.
 **Phases:** 0 baseline · 1 API · 2 app · 3 plugin-example · 4 frontend.
 
-**Current status (2026-06-22):**
+**Current status (2026-06-23):**
 
-| Module | Tests | Notes |
-|---|---|---|
-| api | 161 (from 75) | Phase 1 **complete** |
-| app | 62 (from 5) | Phase 2 largely complete |
-| plugin-example | 3 (from 0) | Phase 3 **complete** |
-| web-frontend | 6 (from 0) | Phase 4a–4d done: Vitest, `$q` decoupling, **full TS migration**, component harness |
+| Module         | Tests         | Notes                                                                                |
+|----------------|---------------|--------------------------------------------------------------------------------------|
+| api            | 161 (from 75) | Phase 1 **complete**                                                                  |
+| app            | 62 (from 5)   | Phase 2 largely complete                                                              |
+| plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |
+| web-frontend   | 23 (from 0)   | Phase 4a–4e done: Vitest, `$q` decoupling, **full TS migration**, component coverage  |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.
@@ -160,7 +160,8 @@ splitting. `LarsonScanner.kt` 2,217 — self-contained widget, low priority.
 `ConfigEditor` `GlobalScope.launch` anti-pattern (app). The frontend's settings-store `$q` coupling
 (4b) and `jsconfig.json`/TS gap (4c) are **resolved**.
 
-**Current phase — 4 (frontend), essentially complete.** 4a–4d done: Vitest, settings-store `$q`
-decoupling, full TypeScript migration (all `src/` is TS, verified by `quasar build`), and a Quasar
-component test harness (Vue Test Utils). **Next (optional):** broaden component-test coverage; the
-remaining cross-module flag is `ConfigEditor`'s `GlobalScope.launch` (app, needs GUI runtime).
+**Current phase — 4 (frontend), complete.** 4a–4e done: Vitest, settings-store `$q` decoupling,
+full TypeScript migration (all `src/` is TS, verified by `quasar build`), a Quasar component test
+harness (Vue Test Utils), and broadened component coverage (all cards + nav SFCs; suite at 23).
+Tables left untested by design (trivial format-lambda logic vs. brittle QTable rendering). **Next:**
+the remaining cross-module flag is `ConfigEditor`'s `GlobalScope.launch` (app, needs GUI runtime).

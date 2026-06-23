@@ -244,3 +244,23 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
 - **Phase 4 complete.** All five modules refactored (api/app/plugin-example/web-frontend) per
   KISS/MVC/TDD/SOLID. **Next (optional):** broaden component-test coverage; resolve the flagged
   `ConfigEditor` `GlobalScope.launch` anti-pattern (app) once GUI runtime verification is possible.
+- **Phase 4e, broadened component coverage (2026-06-23):** characterized the rest of the cards and
+  nav SFCs the earlier audit flagged as untested (M1). Three presentational tests — `DrawerLink`,
+  `IndexItem` (prop→title/caption/icon, routing left to integration), `NotAvailableCard` (static
+  N/A). Three data-card tests mocking `boot/axios` + `flushPromises`: `ModPackCard` pins the
+  `projectID/versionID.length === 1 ? value : 'N/A'` Modrinth-id template quirk (plus size-MB and
+  server-pack count, asserted via ordered `.q-item__label--caption` nodes); `RunConfigurationCard`
+  pins the nested-array flattening (`{argument}`/`{mod}` → flat strings) and the space-joined
+  start-args; `ServerPackCard` pins fetched-field wiring + size-MB. `RunConfigurationCard` imports
+  `runConfigs` via a relative path that resolves to the same module the `boot/axios` alias points
+  at, so the single `vi.mock('boot/axios')` intercepts it. Suite 6→23 (12→23 vs. the 4d audit
+  baseline). **Bug found + fixed in its own commit** (audit-discipline): `DrawerLink` used
+  `colour="accent"` — Quasar's QIcon prop is `color`, so the misspelled attribute was silently
+  ignored and the drawer icons rendered in the default color rather than accent. Sole occurrence
+  (100 correct `color=` usages elsewhere); the characterization test pins rendering not color, so
+  it stayed green across the fix. **Tables deliberately left untested**
+  (`ModpacksTable`/`ServerPacksTable`/`HistoryTable`): the only non-presentational logic is trivial
+  column `format` lambdas; pinning them requires mounting the full QTable against mocked rows and
+  asserting slot-rendered cells — high brittleness for near-zero logic density (same judgment call
+  as `LarsonScanner`). Frontend Phase 4 (4a–4e) now closed; the one remaining cross-module flag is
+  `ConfigEditor`'s `GlobalScope.launch` (app, needs GUI runtime).

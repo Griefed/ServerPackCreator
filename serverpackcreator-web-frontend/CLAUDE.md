@@ -62,3 +62,15 @@
   one test stay JS (Quasar convention).
 - 4d (done): Quasar component test harness (Vue Test Utils + happy-dom) via `@quasar/vite-plugin`
   + `test/install-quasar.ts`; added AboutItem and ErrorsCard component tests (suite 3→6).
+- 4e (done): **broadened component coverage** to the remaining cards + nav SFCs. Presentational:
+  `DrawerLink`, `IndexItem` (prop→title/caption/icon), `NotAvailableCard` (static N/A). Data cards
+  (mock `boot/axios`, `flushPromises`): `ModPackCard` (pins the
+  `projectID/versionID.length === 1 ? value : 'N/A'` Modrinth-id quirk + size-MB + server-pack
+  count), `RunConfigurationCard` (nested `{argument}`/`{mod}` arrays → flat strings, space-joined
+  args), `ServerPackCard` (fetched-field wiring + size-MB). Suite 12→23 (the 4a-relative figure;
+  6→23 since 4d). Surfaced + fixed a real bug in its own commit: `DrawerLink` used a misspelled
+  `colour="accent"` (QIcon prop is `color`), so those icons rendered in the default color.
+  **Tables left untested by design** (`ModpacksTable`/`ServerPacksTable`/`HistoryTable`): their
+  only non-presentational logic is trivial column `format` lambdas (`.length`, `date.formatDate`);
+  pinning them means mounting the full QTable with mocked rows and asserting slot-rendered cells —
+  high brittleness, near-zero logic density. Not worth it (same call as `LarsonScanner`).
