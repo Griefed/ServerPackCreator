@@ -2,7 +2,8 @@
 
 **Scope:** `git log 69a587b6..develop` — 66 commits, base `69a587b6a` (*Phase 0: baseline*, the
 first claude-refactored commit), tip `41b17afc9` (*Merge branch 'claude-fix-settings-dirty-icon'
-into develop*). Read-only audit against the Refactoring Conventions. **No source was modified.**
+into develop*). Audit against the Refactoring Conventions. **Source was untouched except for the M3
+remediation** (a unit test added for `ComponentCoroutineScope`; see M3 *Remediation*).
 
 All 15 `claude-`prefixed branches are merged into `develop` (verified: each tip is an ancestor of
 `develop`); nothing was left unmerged. The only unmerged branch in the repo is `backup-pre-rewrite`,
@@ -151,6 +152,15 @@ yields an active scope; cancelled children stop) committed before/with its intro
 view migrations tagged as the behavior change they are. Process + one missing small test; the tree is
 correct and GUI-verified.
 
+**Remediation (resolved):** the missing test now exists —
+`serverpackcreator-app/src/test/kotlin/.../gui/utilities/ComponentCoroutineScopeTest.kt` pins all
+four documented behaviours (scope stability while active, cancellation of in-flight work,
+re-creation+usability after `cancel`, and `SupervisorJob` sibling-independence) with no GUI runtime,
+app suite green. Caveat 2 is closed. Caveat 1 (the `refactor` label on a behavior-affecting,
+already-merged series) is a past commit-message/granularity matter; it is **accepted as-is** —
+rewriting merged history to relabel commits is not worth it, and every message already disclosed the
+behavior change in prose.
+
 ---
 
 ## LOW
@@ -244,15 +254,15 @@ no `M`) — so no pure-refactor commit touched a pre-existing assertion. The thr
 (`12bddf10a`, `76a3938eb`, `41b17afc9`) introduce no diff beyond the sum of their branch commits
 (develop did not advance between branches).
 
-| Commits                 | Theme                                        | Verdict                                                               |
-|-------------------------|----------------------------------------------|-----------------------------------------------------------------------|
-| `704e0f9f7` `4396adace` | frontend characterization tests (12 → 23)    | clean — tests-first, own commits                                      |
-| `05450f15e`             | `DrawerLink` `colour`→`color` fix            | clean — dedicated `fix:`, test stays green                            |
-| `94def0c78`             | Phase 4e docs                                | clean — docs only                                                     |
-| `40e2aab26`…`a56314d4e` | 8× `GlobalScope` → `ComponentCoroutineScope` | **MEDIUM (M3)** — behavior change labeled `refactor`; helper untested |
-| `93ae56765`             | GUI structured-concurrency docs              | clean — docs only                                                     |
-| `bef3c1ee2`             | settings dirty-icon stuck-on fix             | clean — standalone `fix:`                                             |
-| `585ecb2b9`             | dirty-check landmine docs                    | clean — docs only                                                     |
+| Commits                 | Theme                                        | Verdict                                                                |
+|-------------------------|----------------------------------------------|------------------------------------------------------------------------|
+| `704e0f9f7` `4396adace` | frontend characterization tests (12 → 23)    | clean — tests-first, own commits                                       |
+| `05450f15e`             | `DrawerLink` `colour`→`color` fix            | clean — dedicated `fix:`, test stays green                             |
+| `94def0c78`             | Phase 4e docs                                | clean — docs only                                                      |
+| `40e2aab26`…`a56314d4e` | 8× `GlobalScope` → `ComponentCoroutineScope` | **MEDIUM (M3)** — behavior change as `refactor`; test gap **resolved** |
+| `93ae56765`             | GUI structured-concurrency docs              | clean — docs only                                                      |
+| `bef3c1ee2`             | settings dirty-icon stuck-on fix             | clean — standalone `fix:`                                              |
+| `585ecb2b9`             | dirty-check landmine docs                    | clean — docs only                                                      |
 
 Only new finding: **M3** (above). Everything else in this sub-range is clean and, in the Phase 4e
 case, is the model the earlier bugfix-bundling phases should have followed.
@@ -261,11 +271,11 @@ case, is the model the earlier bugfix-bundling phases should have followed.
 
 ## Summary
 
-| Severity | Count | Items                                                                                                                                                                                                                                                                           |
-|----------|-------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| HIGH     | 1     | H1 — `isZip` bugfix folded into the Phase 1c validator extraction (`50165a44f`)                                                                                                                                                                                                 |
-| MEDIUM   | 3     | M1 — loader-detection fix + tests, test pins post-fix behavior (`c2b708e60`); M2 — two web-contract fixes bundled with controller tests (`6cfaaab0b`); M3 — GUI `GlobalScope` removal labeled `refactor` + `ComponentCoroutineScope` shipped untested (`40e2aab26`…`93ae56765`) |
-| LOW      | 2     | L1 — multi-concern Phase 1e commit (`3e4b26d3f`); L2 — same-phase revert (`ae69b89b2`)                                                                                                                                                                                          |
+| Severity | Count | Items                                                                                                                                                                                                                                                                                                         |
+|----------|-------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| HIGH     | 1     | H1 — `isZip` bugfix folded into the Phase 1c validator extraction (`50165a44f`)                                                                                                                                                                                                                               |
+| MEDIUM   | 3     | M1 — loader-detection fix + tests, test pins post-fix behavior (`c2b708e60`); M2 — two web-contract fixes bundled with controller tests (`6cfaaab0b`); M3 — GUI `GlobalScope` removal labeled `refactor` + `ComponentCoroutineScope` shipped untested (`40e2aab26`…`93ae56765`) — **test gap since resolved** |
+| LOW      | 2     | L1 — multi-concern Phase 1e commit (`3e4b26d3f`); L2 — same-phase revert (`ae69b89b2`)                                                                                                                                                                                                                        |
 
 **Dominant theme: process, not correctness — and a discipline that visibly improved over time.**
 The recurring early pattern is the *first* commit of a phase (1a) and the *first* extraction of a
@@ -278,9 +288,13 @@ uncovered. Across the whole range every such change was **openly surfaced** in i
 Phase 2b's `InclusionSpecification` handling (deferred finding → dedicated behaviour-change commit →
 flipped test) and **Phase 4e's tests-first → isolated-fix sequencing** (`05450f15e`) are the model
 the earlier bugfixes should have followed, and the GUI work nailed the *commit granularity* even
-where it slipped on labeling/tests. No broken module boundary and no silently-changed plugin-API
+where it slipped on labeling/tests (the latter, the M3 `ComponentCoroutineScope` test gap, has since
+been closed — see M3 *Remediation*). No broken module boundary and no silently-changed plugin-API
 contract anywhere in the range.
 
 ---
 
-*Read-only audit. No source modified. Awaiting go-ahead before any remediation.*
+*Originally a read-only audit (no source modified). Following sign-off, the one mechanically-fixable
+finding — M3's missing `ComponentCoroutineScope` unit test — was remediated: `ComponentCoroutineScopeTest`
+added, app suite green. No other source was touched; the remaining findings are accepted-as-is
+process/labeling matters on already-merged history.*
