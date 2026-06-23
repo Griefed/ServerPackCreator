@@ -25,6 +25,7 @@ import de.griefed.serverpackcreator.api.config.ConfigCheck
 import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
 import de.griefed.serverpackcreator.app.gui.GuiProps
+import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import de.griefed.serverpackcreator.app.gui.window.MainFrame
 import de.griefed.serverpackcreator.app.gui.window.configs.TabbedConfigsTab
 import de.griefed.serverpackcreator.app.gui.window.control.components.GenerationButton
@@ -38,6 +39,8 @@ import java.io.File
 import java.io.IOException
 import javax.swing.JOptionPane
 import javax.swing.JPanel
+import javax.swing.event.AncestorEvent
+import javax.swing.event.AncestorListener
 
 /**
  * Control panel giving the user the ability to start a server pack generation from the currently selected server pack
@@ -55,6 +58,12 @@ class ControlPanel(
     private val mainFrame: MainFrame
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+
+    /** Owns the server-pack generation coroutine. Anchored to [panel] (the always-visible bottom
+     * bar) so it is cancelled only on window close, never on a tab-switch — a running generation
+     * must not be interrupted by a UI event. */
+    private val componentScope = ComponentCoroutineScope()
+
     private val statusPanel = StatusPanel()
 
     private val runGeneration = GenerationButton(guiProps) { generate() }
@@ -72,14 +81,27 @@ class ControlPanel(
         panel.add(runGeneration, "cell 0 0 1 1,grow,height 50!,width 150!,align center")
         panel.add(serverPacks, "cell 0 1 1 1,grow,height 50!,width 150!,align center")
         panel.add(statusPanel.panel, "cell 1 0 1 2,grow,push, h 160!")
+        // The control panel is the always-visible bottom bar, so ancestorRemoved fires only on
+        // window close — never on a tab-switch — which is exactly when cancelling generation is safe.
+        panel.addAncestorListener(object : AncestorListener {
+            override fun ancestorRemoved(event: AncestorEvent?) {
+                componentScope.cancel()
+            }
+
+            override fun ancestorAdded(event: AncestorEvent?) {}
+
+            override fun ancestorMoved(event: AncestorEvent?) {}
+        })
     }
 
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
+    // CoroutineStart.ATOMIC is itself a delicate API (a started generation must not be cancellable
+    // before its first suspension); the opt-in is for that, not for the now-removed GlobalScope.
+    @OptIn(DelicateCoroutinesApi::class)
     fun generate() {
-        GlobalScope.launch(guiProps.generationDispatcher, CoroutineStart.ATOMIC) {
+        componentScope.scope().launch(guiProps.generationDispatcher, CoroutineStart.ATOMIC) {
             launchGeneration()
             readyForGeneration()
         }
