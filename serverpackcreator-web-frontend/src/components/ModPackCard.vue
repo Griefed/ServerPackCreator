@@ -112,7 +112,7 @@
   </q-card>
 </template>
 
-<script >
+<script lang="ts">
 import {defineComponent, ref} from 'vue';
 import {modpacks} from 'boot/axios';
 import {date} from 'quasar';
@@ -157,7 +157,7 @@ export default defineComponent({
     };
   },
   methods: {
-    copyToClipboard(text) {
+    copyToClipboard(text: string) {
       navigator.clipboard.writeText(text);
       this.$q.notify({
         timeout: 5000,

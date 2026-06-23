@@ -216,32 +216,32 @@
                   <q-item-section>
                     {{ id }}
                     <q-tooltip anchor="bottom right" self="top middle">
-                      <div class="row" v-if="this.modPacks[id].projectID.length > 0">
-                        Project ID: {{ this.modPacks[id].projectID }}
+                      <div class="row" v-if="(modPacks[id]?.projectID?.length ?? 0) > 0">
+                        Project ID: {{ modPacks[id]?.projectID }}
                       </div>
-                      <div class="row" v-if="this.modPacks[id].versionID.length > 0">
-                        Version ID: {{ this.modPacks[id].versionID }}
-                      </div>
-                      <div class="row">
-                        Date Created: {{ date.formatDate(this.modPacks[id].dateCreated, 'YYYY-MM-DD : HH:mm') }}
+                      <div class="row" v-if="(modPacks[id]?.versionID?.length ?? 0) > 0">
+                        Version ID: {{ modPacks[id]?.versionID }}
                       </div>
                       <div class="row">
-                        Name: {{ this.modPacks[id].name }}
+                        Date Created: {{ date.formatDate(modPacks[id]?.dateCreated ?? '', 'YYYY-MM-DD : HH:mm') }}
                       </div>
                       <div class="row">
-                        Size: {{ this.modPacks[id].size }}
+                        Name: {{ modPacks[id]?.name }}
                       </div>
                       <div class="row">
-                        Status: {{ this.modPacks[id].status }}
+                        Size: {{ modPacks[id]?.size }}
                       </div>
                       <div class="row">
-                        Source: {{ this.modPacks[id].source }}
+                        Status: {{ modPacks[id]?.status }}
                       </div>
                       <div class="row">
-                        SHA256 Hash: {{ this.modPacks[id].sha256 }}
+                        Source: {{ modPacks[id]?.source }}
                       </div>
                       <div class="row">
-                        Server Packs: {{ this.modPacks[id].serverPacks.length }}
+                        SHA256 Hash: {{ modPacks[id]?.sha256 }}
+                      </div>
+                      <div class="row">
+                        Server Packs: {{ modPacks[id]?.serverPacks.length }}
                       </div>
                     </q-tooltip>
                   </q-item-section>
@@ -277,23 +277,23 @@
                     {{ id }}
                     <q-tooltip anchor="bottom right" self="top middle">
                       <div class="row">
-                        Minecraft Version: {{ this.runConfigurations[id].minecraftVersion }}
+                        Minecraft Version: {{ runConfigurations[id]?.minecraftVersion }}
                       </div>
                       <div class="row">
-                        Modloader: {{ this.runConfigurations[id].modloader }}
+                        Modloader: {{ runConfigurations[id]?.modloader }}
                       </div>
                       <div class="row">
-                        Modloader Version: {{ this.runConfigurations[id].modloaderVersion }}
+                        Modloader Version: {{ runConfigurations[id]?.modloaderVersion }}
                       </div>
                       <div class="row">
-                        Start Args: {{ this.runConfigurations[id].startArgs.map((arg) => arg.argument).join(', ') }}
+                        Start Args: {{ runConfigurations[id]?.startArgs.map((arg) => arg.argument).join(', ') }}
                       </div>
                       <div class="row">
-                        Client Mods: {{ this.runConfigurations[id].clientMods.map((mod) => mod.mod).join(', ') }}
+                        Client Mods: {{ runConfigurations[id]?.clientMods.map((mod) => mod.mod).join(', ') }}
                       </div>
                       <div class="row">
                         Whitelisted Mods: {{
-                          this.runConfigurations[id].whitelistedMods.map((mod) => mod.mod).join(', ')
+                          runConfigurations[id]?.whitelistedMods.map((mod) => mod.mod).join(', ')
                         }}
                       </div>
                     </q-tooltip>
@@ -544,11 +544,12 @@
   </q-dialog>
 </template>
 
-<script >
+<script lang="ts">
 import {defineComponent, ref} from 'vue';
 import {modpacks, runConfigs, versions} from 'boot/axios';
 import {settingsStore} from 'stores/setting-store';
-import {date} from 'quasar';
+import {date, useQuasar, type QRejectedEntry} from 'quasar';
+import type {ModPack, RunConfiguration} from 'src/types/api';
 
 export default defineComponent({
   name: 'SubmitModPackForm',
@@ -558,35 +559,46 @@ export default defineComponent({
     }
   },
   setup() {
+    const $q = useQuasar();
     const store = settingsStore();
-    store.refresh();
-    const modloaders = ref([]);
+    store.refresh().catch(error => {
+      $q.notify({
+        timeout: 5000,
+        progress: true,
+        icon: 'error',
+        color: 'negative',
+        message: 'Could not retrieve settings: ' + error
+      });
+    });
+    const modloaders = ref<string[]>([]);
     const modloader = ref('');
-    const file = ref(null);
+    const file = ref<File | null>(null);
     const minecraftVersion = ref('');
     const modloaderVersion = ref('');
     const startArgs = ref('');
     const clientMods = ref('');
     const whiteListMods = ref('');
-    const minecraftVersions = ref([]);
-    const fabricVersions = ref([]);
-    const legacyFabricVersions = ref([]);
-    const quiltVersions = ref([]);
-    const forgeVersions = ref(new Map);
-    const neoForgeVersions = ref(new Map);
-    const modloaderVersions = ref([]);
+    const minecraftVersions = ref<string[]>([]);
+    const fabricVersions = ref<string[]>([]);
+    const legacyFabricVersions = ref<string[]>([]);
+    const quiltVersions = ref<string[]>([]);
+    // Version maps are keyed by Minecraft version; populated from JSON objects, so plain records.
+    const forgeVersions = ref<Record<string, string[]>>({});
+    const neoForgeVersions = ref<Record<string, string[]>>({});
+    const modloaderVersions = ref<string[]>([]);
     const submitted = ref(false);
     const submitEmpty = ref(false);
     const submitResult = ref([]);
     const progress = ref(0);
     const uploading = ref(false);
-    const modPackID = ref(0);
-    const runConfigID = ref(0);
+    const modPackID = ref<string | number>(0);
+    const runConfigID = ref<string | number>(0);
     const tab = ref('upload');
-    const modPackIDs = ref([]);
-    const runConfigurationIDs = ref([]);
-    const modPacks = ref(new Map);
-    const runConfigurations = ref(new Map);
+    const modPackIDs = ref<string[]>([]);
+    const runConfigurationIDs = ref<string[]>([]);
+    // Picked modpacks / run-configs keyed by id; used as dictionaries (bracket access).
+    const modPacks = ref<Record<string, ModPack>>({});
+    const runConfigurations = ref<Record<string, RunConfiguration>>({});
     const zipInfo = ref(false);
     const zipSlide = ref(1);
     const zipAutoplay = ref(true);
@@ -629,8 +641,8 @@ export default defineComponent({
   methods: {
     refreshModPackIDs() {
       modpacks.get('all').then(response => {
-        this.modPackIDs = response.data.map((modpack) => modpack.id);
-        response.data.forEach(modpack => this.modPacks[modpack.id] = modpack);
+        this.modPackIDs = response.data.map((modpack: ModPack) => modpack.id);
+        response.data.forEach((modpack: ModPack) => this.modPacks[modpack.id] = modpack);
       }).catch(error => {
         this.$q.notify({
           timeout: 5000,
@@ -641,13 +653,13 @@ export default defineComponent({
         });
       })
     },
-    selectedModPack(id) {
+    selectedModPack(id: string | number) {
       this.modPackID = id;
     },
     refreshRunConfigurationIDs() {
       runConfigs.get('all').then(response => {
-        this.runConfigurationIDs = response.data.map(runconfig => runconfig.id);
-        response.data.forEach(runConfig => this.runConfigurations[runConfig.id] = runConfig);
+        this.runConfigurationIDs = response.data.map((runconfig: RunConfiguration) => runconfig.id);
+        response.data.forEach((runConfig: RunConfiguration) => this.runConfigurations[runConfig.id] = runConfig);
       }).catch(error => {
         this.$q.notify({
           timeout: 5000,
@@ -658,9 +670,12 @@ export default defineComponent({
         });
       })
     },
-    selectedRunConfiguration(id) {
+    selectedRunConfiguration(id: string | number) {
       this.runConfigID = id;
-      let config = this.runConfigurations[id];
+      const config = this.runConfigurations[id];
+      if (config === undefined) {
+        return;
+      }
       this.minecraftVersion = config.minecraftVersion;
       this.modloader = config.modloader;
       this.modloaderVersion = config.modloaderVersion;
@@ -668,8 +683,8 @@ export default defineComponent({
       this.whiteListMods = config.whitelistedMods.map(mod => mod.mod).join(', ');
       this.clientMods = config.clientMods.map(mod => mod.mod).join(', ');
     },
-    onSubmitRegeneration(evt) {
-      const formData = new FormData(evt.target);
+    onSubmitRegeneration(evt: Event) {
+      const formData = new FormData(evt.target as HTMLFormElement);
       this.uploading = true;
 
       modpacks.postForm('generate', formData)
@@ -699,8 +714,8 @@ export default defineComponent({
         this.resetForm();
       })
     },
-    onSubmit(evt) {
-      const formData = new FormData(evt.target);
+    onSubmit(evt: Event) {
+      const formData = new FormData(evt.target as HTMLFormElement);
       this.uploading = true;
 
       modpacks.postForm('upload', formData, {
@@ -743,7 +758,7 @@ export default defineComponent({
         }
       })
     },
-    delayedRegenPrep(modPackId, runConfigId) {
+    delayedRegenPrep(modPackId: string | number, runConfigId: string | number) {
       this.refreshModPackIDs();
       this.refreshRunConfigurationIDs();
       this.sleep(2000).then(() => {
@@ -755,44 +770,47 @@ export default defineComponent({
       this.file = null;
       this.uploading = false;
     },
-    onRejected(rejectedEntry) {
+    onRejected(rejectedEntries: QRejectedEntry[]) {
+      // QFile's @rejected hands back the rejected entries; surface the offending file's name.
       this.$q.notify({
         type: 'negative',
         position: 'center',
-        message: `${rejectedEntry.name} is not a ZIP-file`
+        message: `${rejectedEntries[0]?.file.name} is not a ZIP-file`
       });
     },
-    setModloaderVersion(version) {
+    setModloaderVersion(version: string) {
       this.modloaderVersion = version;
     },
-    selectedMinecraft(version) {
+    selectedMinecraft(version: string) {
       this.minecraftVersion = version;
       this.updateForgeVersions();
       this.updateNeoForgeVersions();
     },
     updateForgeVersions() {
       if (this.modloader === 'Forge') {
-        if (this.forgeVersions[this.minecraftVersion] === undefined) {
+        const forgeForMinecraft = this.forgeVersions[this.minecraftVersion];
+        if (forgeForMinecraft === undefined) {
           this.modloaderVersions = [];
           this.modloaderVersion = 'N/A';
         } else {
-          this.modloaderVersions = this.forgeVersions[this.minecraftVersion];
-          this.modloaderVersion = this.modloaderVersions[0];
+          this.modloaderVersions = forgeForMinecraft;
+          this.modloaderVersion = this.modloaderVersions[0] ?? '';
         }
       }
     },
     updateNeoForgeVersions() {
       if (this.modloader === 'NeoForge') {
-        if (this.neoForgeVersions[this.minecraftVersion] === undefined) {
+        const neoForgeForMinecraft = this.neoForgeVersions[this.minecraftVersion];
+        if (neoForgeForMinecraft === undefined) {
           this.modloaderVersions = [];
           this.modloaderVersion = 'N/A';
         } else {
-          this.modloaderVersions = this.neoForgeVersions[this.minecraftVersion];
-          this.modloaderVersion = this.modloaderVersions[0];
+          this.modloaderVersions = neoForgeForMinecraft;
+          this.modloaderVersion = this.modloaderVersions[0] ?? '';
         }
       }
     },
-    modloaderSelected(loader) {
+    modloaderSelected(loader: string) {
       this.modloader = loader;
       switch (this.modloader) {
         case 'Forge':
@@ -801,17 +819,17 @@ export default defineComponent({
 
         case 'Fabric':
           this.modloaderVersions = this.fabricVersions;
-          this.modloaderVersion = this.modloaderVersions[0];
+          this.modloaderVersion = this.modloaderVersions[0] ?? '';
           break;
 
         case 'Quilt':
           this.modloaderVersions = this.quiltVersions;
-          this.modloaderVersion = this.modloaderVersions[0];
+          this.modloaderVersion = this.modloaderVersions[0] ?? '';
           break;
 
         case 'LegacyFabric':
           this.modloaderVersions = this.legacyFabricVersions;
-          this.modloaderVersion = this.modloaderVersions[0];
+          this.modloaderVersion = this.modloaderVersions[0] ?? '';
           break;
 
         case 'NeoForge':
@@ -819,7 +837,7 @@ export default defineComponent({
           break;
       }
     },
-    sleep(ms) {
+    sleep(ms: number) {
       return new Promise(resolve => setTimeout(resolve, ms));
     }
   },
@@ -834,8 +852,8 @@ export default defineComponent({
       this.forgeVersions = response.data.forge;
       this.neoForgeVersions = response.data.neoForge;
       this.modloaders = this.store.supportedModloaders;
-      this.minecraftVersion = this.minecraftVersions[0];
-      this.modloader = this.store.supportedModloaders[0];
+      this.minecraftVersion = this.minecraftVersions[0] ?? '';
+      this.modloader = this.store.supportedModloaders[0] ?? '';
       this.clientMods = this.store.clientsideMods.join(', ');
       this.whiteListMods = this.store.whitelistMods.join(', ');
       this.startArgs = this.store.aikarsFlags;

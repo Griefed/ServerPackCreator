@@ -84,10 +84,10 @@
   </q-card>
 </template>
 
-<script >
+<script lang="ts">
 import {defineComponent, ref} from 'vue';
 import {date} from 'quasar';
-import { runConfigs } from '../boot/axios.js';
+import { runConfigs } from '../boot/axios';
 
 export default defineComponent({
   name: 'RunConfigurationCard',
@@ -128,7 +128,7 @@ export default defineComponent({
         borderRadius: '5px',
         backgroundColor: '#6A1A78',
         width: '5px',
-        opacity: 0.75
+        opacity: '0.75'
       },
 
       barStyle: {
@@ -136,12 +136,12 @@ export default defineComponent({
         borderRadius: '9px',
         backgroundColor: '#6A1A78',
         width: '9px',
-        opacity: 0.2
+        opacity: '0.2'
       }
     };
   },
   methods: {
-    copyToClipboard(text) {
+    copyToClipboard(text: string) {
       navigator.clipboard.writeText(text);
       this.$q.notify({
         timeout: 5000,
@@ -155,13 +155,13 @@ export default defineComponent({
   mounted() {
     this.showTextLoading();
     runConfigs.get(this.id).then(response => {
-      let runConfig = response.data
+      const runConfig = response.data
       this.minecraftVersion = runConfig.minecraftVersion
       this.modloader = runConfig.modloader
       this.modloaderVersion = runConfig.modloaderVersion
-      this.startArgs = runConfig.startArgs.map(entry => entry.argument)
-      this.clientMods = runConfig.clientMods.map(entry => entry.mod)
-      this.whitelistedMods = runConfig.whitelistedMods.map(entry => entry.mod)
+      this.startArgs = runConfig.startArgs.map((entry: { argument: string }) => entry.argument)
+      this.clientMods = runConfig.clientMods.map((entry: { mod: string }) => entry.mod)
+      this.whitelistedMods = runConfig.whitelistedMods.map((entry: { mod: string }) => entry.mod)
       this.visible = false;
       this.showSimulatedReturnData = true;
     }).catch(error => {

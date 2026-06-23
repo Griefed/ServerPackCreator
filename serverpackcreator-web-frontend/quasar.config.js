@@ -38,6 +38,14 @@ export default defineConfig((ctx) => {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#build
     build: {
+      // TypeScript build settings. `strict` enables Quasar's full strict preset (regenerated
+      // into .quasar/tsconfig.json by `quasar prepare`); `vueShim` emits the `*.vue` module
+      // declaration so plain tooling can resolve single-file-component imports.
+      typescript: {
+        strict: true,
+        vueShim: true
+      },
+
       target: {
         browser: [ 'es2022', 'firefox115', 'chrome115', 'safari14' ],
         node: 'node20'
@@ -76,8 +84,9 @@ export default defineConfig((ctx) => {
         }],
 
         ['vite-plugin-checker', {
+          vueTsc: true,
           eslint: {
-            lintCommand: 'eslint -c ./eslint.config.js "./src*/**/*.{js,mjs,cjs,vue}"',
+            lintCommand: 'eslint -c ./eslint.config.js "./src*/**/*.{ts,js,mjs,cjs,vue}"',
             useFlatConfig: true
           }
         }, { server: false }]
