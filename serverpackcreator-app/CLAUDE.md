@@ -33,6 +33,14 @@
 - Stats download-history routes: server packs are `/downloads/serverpacks/{id}` (must not collide
   with the modpack-history route `/downloads/modpacks/{id}`).
 - The old `WebServiceTest` boots an empty context and asserts nothing — replace, don't extend it.
+- **Settings dirty-check normalizes on store/read, so the GUI must reload after save.** Several
+  `ApiProperties` settings are normalized when written or read — `WebserviceConfig` migrates the
+  database URI, the locale is parsed, and `PathsConfig.tomcatBaseDirectory`'s **getter has a
+  side-effect** (a value deviating from the home-directory is reset to it on read). The settings
+  panels' `hasUnsavedChanges()` compares the raw widget value against the (normalized) getter, so
+  saving without reloading leaves the unsaved-changes icon stuck on. `SettingsHandling.save()` must
+  call each editor's `loadSettings()` after persisting and before `checkAll()` (as `load()` does) so
+  the widgets hold exactly what the dirty-check reads back. Don't remove that reload.
 
 ## OPEN ISSUE — flagged, NOT yet fixed (needs runtime verification)
 
