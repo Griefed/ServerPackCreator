@@ -463,6 +463,8 @@ class ServerPackProvisioner(
             try {
                 utilities.webUtilities.isReachable(versionMeta.legacyFabric.releaseInstallerUrl())
             } catch (_: MalformedURLException) {
+                // No valid release-installer URL could be built -> treat the installer as
+                // not downloadable.
                 false
             }
         }

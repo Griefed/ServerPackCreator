@@ -218,6 +218,8 @@ class ModpackManifestParser(
         try {
             getAndSetIcon(json, packConfig, urlPath, namePath)
         } catch (_: NullPointerException) {
+            // The manifest declares no icon URL/name, so there is no icon to download; leave the
+            // server-icon path unset and continue parsing the rest of the manifest.
         } catch (ex: Exception) {
             log.error("Error acquiring icon.", ex)
         }
@@ -291,6 +293,8 @@ class ModpackManifestParser(
         try {
             getAndSetIcon(json, packConfig, urlPath, namePath)
         } catch (_: NullPointerException) {
+            // The manifest declares no icon URL/name, so there is no icon to download; leave the
+            // server-icon path unset and continue parsing the rest of the manifest.
         } catch (ex: Exception) {
             log.error("Error acquiring icon.", ex)
         }

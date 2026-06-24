@@ -277,6 +277,7 @@ class JarUtilities {
             try {
                 File(destination).create()
             } catch (ignored: FileAlreadyExistsException) {
+                // The language directory already exists, which is exactly the desired state.
             } catch (ex: IOException) {
                 log.error("Error creating language directory.", ex)
             }

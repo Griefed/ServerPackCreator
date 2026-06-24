@@ -221,6 +221,8 @@ class ServerPackHandler(
         try {
             serverPack.create(createFileOrDir = true, asDirectory = true)
         } catch (_: IOException) {
+            // The server-pack directory may already exist; a genuine inability to create it would
+            // surface later when files are written into it during generation.
         }
 
         if (apiProperties.isUpdatingServerPacksEnabled && existingManifest.isFile) {
