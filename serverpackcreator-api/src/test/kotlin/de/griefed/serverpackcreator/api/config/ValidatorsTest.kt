@@ -111,15 +111,14 @@ internal class ValidatorsTest {
     }
 
     /**
-     * A destination containing invalid path characters is rejected: it is nulled out and an
-     * inclusion error is recorded. (Note: the current invalidity check only triggers when the
-     * destination contains *every* forbidden character — see audit note on this latent bug.)
+     * A destination containing a forbidden path character is rejected: it is nulled out and an
+     * inclusion error is recorded.
      */
     @Test
     fun invalidDestinationIsRejectedAndNulled(@TempDir tempDir: File) {
         val inclusionsValidator = InclusionsValidator()
         File(tempDir, "config").mkdirs()
-        val inclusion = InclusionSpecification("config", "<>:\"|?*#%&{}\$!@`´=")
+        val inclusion = InclusionSpecification("config", "invalid:destination")
 
         val configCheck = inclusionsValidator.checkInclusions(mutableListOf(inclusion), tempDir.absolutePath)
 
