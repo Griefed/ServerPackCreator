@@ -21,8 +21,8 @@ one with an external (release) gate.
 
 ---
 
-## ☐ PR1 — MockK enabler + network-bound coverage
-- **Branch:** `claude-mockk-network-coverage`
+## ☑ PR1 — MockK enabler + network-bound coverage
+- **Branch:** `claude-mockk-network-coverage` *(merged into `develop`)*
 - **Goal:** unlock the coverage deferred in P7/P9 (network-bound branches).
 - **Scope:** add MockK as `testImplementation` to `serverpackcreator-api/build.gradle.kts`
   (+ version-catalog entry); new tests stubbing `WebUtilities`/`VersionMeta` to drive
