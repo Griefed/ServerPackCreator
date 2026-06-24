@@ -20,21 +20,95 @@
 package de.griefed.serverpackcreator.api.config
 
 import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.api.utilities.common.Utilities
+import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.net.URL
 
 /**
  * Branch coverage for [ModpackManifestParser] complementing the per-launcher happy-path tests in
  * ConfigurationHandlerTest and the characterization suite. Added here: all four modloader branches
  * of the Modrinth manifest parser, the manifest-precedence in `checkManifests` when several
- * manifests coexist, and the malformed-manifest error path. All JSON is crafted minimally so no
- * network icon-download is triggered.
+ * manifests coexist, the malformed-manifest error path, and — via a MockK-stubbed [WebUtilities]
+ * download — the icon download success/failure branches of `getAndSetIcon` (driven offline through
+ * the minecraftinstance.json parser). All other JSON is crafted minimally so no network
+ * icon-download is triggered.
  */
 internal class ModpackManifestParserTest {
     private val api = ApiWrapper.api(File("src/test/resources/serverpackcreator.properties"))
     private val parser = ModpackManifestParser(api.apiProperties, api.utilities)
+
+    /**
+     * Builds a parser whose icon download outcome is fixed to [downloadSucceeds], keeping the real
+     * JSON/XML utilities so manifest parsing and nested-text lookups still run for real while the
+     * network download is stubbed.
+     */
+    private fun parserWithStubbedDownload(downloadSucceeds: Boolean): ModpackManifestParser {
+        val webUtilities = mockk<WebUtilities>()
+        every { webUtilities.downloadFile(any<File>(), any<URL>()) } returns downloadSucceeds
+        val utilities = Utilities(webUtilities, api.utilities.jsonUtilities, api.utilities.xmlUtilities)
+        return ModpackManifestParser(api.apiProperties, utilities)
+    }
+
+    /**
+     * minecraftinstance.json with a thumbnail URL whose download succeeds sets the server-icon path
+     * to the downloaded file under the icons directory.
+     */
+    @Test
+    fun getAndSetIconSetsIconPathWhenDownloadSucceeds(@TempDir tempDir: File) {
+        val manifest = File(tempDir, "minecraftinstance.json").apply {
+            writeText(
+                """
+                {
+                  "baseModLoader": {"name":"forge-40.2.0","forgeVersion":"40.2.0","minecraftVersion":"1.18.2"},
+                  "installedModpack": {"thumbnailUrl":"https://example.com/icon.png"},
+                  "name": "IconPack",
+                  "projectID": "111",
+                  "fileID": "222"
+                }
+                """.trimIndent()
+            )
+        }
+        val packConfig = PackConfig()
+
+        parserWithStubbedDownload(downloadSucceeds = true)
+            .updateConfigModelFromMinecraftInstance(packConfig, manifest)
+
+        val expectedIcon = File(api.apiProperties.iconsDirectory.absolutePath, "IconPack.png")
+        Assertions.assertEquals(expectedIcon.absolutePath, packConfig.serverIconPath)
+    }
+
+    /**
+     * minecraftinstance.json with a thumbnail URL whose download fails leaves the server-icon path
+     * unset.
+     */
+    @Test
+    fun getAndSetIconLeavesIconPathUnsetWhenDownloadFails(@TempDir tempDir: File) {
+        val manifest = File(tempDir, "minecraftinstance.json").apply {
+            writeText(
+                """
+                {
+                  "baseModLoader": {"name":"forge-40.2.0","forgeVersion":"40.2.0","minecraftVersion":"1.18.2"},
+                  "installedModpack": {"thumbnailUrl":"https://example.com/icon.png"},
+                  "name": "IconPack",
+                  "projectID": "111",
+                  "fileID": "222"
+                }
+                """.trimIndent()
+            )
+        }
+        val packConfig = PackConfig()
+
+        parserWithStubbedDownload(downloadSucceeds = false)
+            .updateConfigModelFromMinecraftInstance(packConfig, manifest)
+
+        Assertions.assertEquals("", packConfig.serverIconPath, "Icon path must stay unset on failed download")
+    }
 
     /**
      * Each Modrinth dependency key maps to the correct normalized modloader and version.
