@@ -22,9 +22,6 @@ package de.griefed.serverpackcreator.api.utilities
 import me.cortex.jarscanner.Main
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.nio.file.Path
-/*import dev.kosmx.needle.CheckWrapper
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking*/
 
 /**
  * Various methods to perform security-related scans, such as Nekodetector.
@@ -35,10 +32,6 @@ class SecurityScans {
 
     companion object {
         val log by lazy { cachedLoggerOf(SecurityScans::class.java) }
-
-        /*init {
-            CheckWrapper.init()
-        }*/
 
         /**
          * Uses MCRcortex's nekodetector to detect files infected by the fractureiser malware.
@@ -73,32 +66,5 @@ class SecurityScans {
             }
             return results
         }
-
-        /**
-         * Uses KosmX's jNeedle (or Needle) to detect files infected by the malware.
-         * The code can be found at [KosmX/jneedle](https://github.com/KosmX/jneedle)
-         *
-         * Initially provided via a plugin, available at [Griefed/spc-jneedle-plugin](https://github.com/Griefed/spc-jneedle-plugin)
-         * @author Griefed
-         */
-        /*fun scanUsingJNeedle(destination: Path) : List<String> {
-            val results = mutableListOf<String>()
-            runBlocking {
-                launch {
-                    try {
-                        log.info("Scanning $destination for infections using jNeedle...")
-                        val run = CheckWrapper.checkPath(destination)
-                        for (result in run) {
-                            for (jarCheckResult in result.second) {
-                                results.add("${jarCheckResult.status}: ${jarCheckResult.getMessage()}\n".padStart(9,' '))
-                            }
-                        }
-                    } catch (ex: Exception) {
-                        log.error("Error during jNeedle scan.", ex)
-                    }
-                }
-            }
-            return results
-        }*/
     }
 }
