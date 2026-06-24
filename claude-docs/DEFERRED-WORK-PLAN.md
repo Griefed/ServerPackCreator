@@ -34,8 +34,11 @@ one with an external (release) gate.
 - **DoD:** provisioner/manifest branch% up; api + app suites green; zero production change.
 - **Note:** the app module already uses `springmockk`; the api module currently has no mocking lib.
 
-## ☐ PR2 — ignored-catch documentation pass
+## ☑ PR2 — ignored-catch documentation pass  *(merged into `develop`)*
 - **Branch:** `claude-ignored-catch-comments` (two slices/commits: **api ~48**, **app ~12**)
+- **Outcome:** every silent swallow now carries a why-comment (sites that already had real handling
+  — `KeyComboManager`, `WebserviceSettings`, the `*Config` legacy-skip catches — were left as-is).
+  No swallow was found to hide a real bug. Behavior-preserving (comments only).
 - **Goal:** satisfy the error-handling convention — every swallowed exception carries a why-comment
   or gets real handling.
 - **Scope:** the ~60 `catch (_/ignored)` sites. Per site: add an intent comment, or convert to
