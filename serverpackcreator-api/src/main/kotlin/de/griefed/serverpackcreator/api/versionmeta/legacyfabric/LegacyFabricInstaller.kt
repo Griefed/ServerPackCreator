@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.api.versionmeta.legacyfabric
 
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import org.w3c.dom.Document
 import org.xml.sax.SAXException
@@ -45,14 +46,14 @@ class LegacyFabricInstaller(
     val allVersions: MutableList<String> = ArrayList(100)
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val installerUrlTemplate = "https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/%s/fabric-installer-%s.jar" // TODO Move URL to property
+    val installerUrlTemplate = VersionMetaConfig.LEGACYFABRIC_INSTALLER_TEMPLATE
     var latest: String? = null
         private set
     var release: String? = null
         private set
-    private val latestElement = "latest" // TODO Move tagName to property
-    private val releaseElement = "release" // TODO Move tagName to property
-    private val version = "version" // TODO Move tagName to property
+    private val latestElement = VersionMetaConfig.TAG_LATEST
+    private val releaseElement = VersionMetaConfig.TAG_RELEASE
+    private val version = VersionMetaConfig.TAG_VERSION
 
     /**
      * Update all lists of available versions with new information gathered from the manifest.

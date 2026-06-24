@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.api.versionmeta.neoforge
 
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftMeta
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
@@ -45,7 +46,7 @@ internal class NeoForgeLoader(
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     val minecraftVersions: MutableList<String> = ArrayList(100)
     val neoForgeVersions: MutableList<String> = ArrayList(100)
-    private val version = "version" // TODO Move tagName to property
+    private val version = VersionMetaConfig.TAG_VERSION
 
     /**
      * 1-n Minecraft version to NeoForge versions.

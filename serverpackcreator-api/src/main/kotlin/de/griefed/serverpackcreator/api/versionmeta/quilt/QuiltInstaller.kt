@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.api.versionmeta.quilt
 
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import org.w3c.dom.Document
 import org.xml.sax.SAXException
@@ -42,8 +43,7 @@ internal class QuiltInstaller(
     private val utilities: Utilities
 ) {
     @Suppress("MemberVisibilityCanBePrivate")
-    val installerUrlTemplate =
-        "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/%s/quilt-installer-%s.jar" // TODO Move URL to property
+    val installerUrlTemplate = VersionMetaConfig.QUILT_INSTALLER_TEMPLATE
     val installers: MutableList<String> = ArrayList(100)
     val installerUrlMeta = HashMap<String, URL>(100)
     var latestInstaller: String? = null
@@ -54,9 +54,9 @@ internal class QuiltInstaller(
         private set
     var releaseInstallerUrl: URL? = null
         private set
-    private val latest = "latest" // TODO Move tagName to property
-    private val release = "release" // TODO Move tagName to property
-    private val version = "version" // TODO Move tagName to property
+    private val latest = VersionMetaConfig.TAG_LATEST
+    private val release = VersionMetaConfig.TAG_RELEASE
+    private val version = VersionMetaConfig.TAG_VERSION
 
     /**
      * Update the Quilt installer versions by parsing the Fabric loader manifest.
