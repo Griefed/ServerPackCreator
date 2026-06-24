@@ -34,6 +34,10 @@ dependencies {
     //api("dev.kosmx.needle:jneedle:1.0.1")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.21")
+    // MockK lets the unit tests stub network-bound collaborators (WebUtilities, VersionMeta) so
+    // provisioner/manifest branches can be exercised offline. Version pinned to the same 1.14.6 the
+    // app module already resolves transitively via springmockk, keeping the build's mockk single-versioned.
+    testImplementation("io.mockk:mockk:1.14.6")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.0")
 }
 
