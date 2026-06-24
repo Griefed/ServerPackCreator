@@ -238,7 +238,10 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
             }
             parent.size = preferredDimension
             parent.preferredSize = preferredDimension
-        } catch (_: NullPointerException) {}
+        } catch (_: NullPointerException) {
+            // No enclosing JDialog was found while walking the parent chain, so there is nothing
+            // to resize.
+        }
     }
 
     private fun updateViewedTips() {

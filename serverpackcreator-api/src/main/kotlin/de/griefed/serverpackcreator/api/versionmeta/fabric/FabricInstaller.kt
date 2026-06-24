@@ -102,11 +102,13 @@ internal class FabricInstaller(
             val url = installerUrlTemplate.format(latestInstaller, latestInstaller)
             latestInstallerUrl = URI(url).toURL()
         } catch (ignored: MalformedURLException) {
+            // The latest-installer URL couldn't be parsed -> latestInstallerUrl stays unset.
         }
         try {
             val url = installerUrlTemplate.format(releaseInstaller, releaseInstaller)
             releaseInstallerUrl = URI(url).toURL()
         } catch (ignored: MalformedURLException) {
+            // The release-installer URL couldn't be parsed -> releaseInstallerUrl stays unset.
         }
         installers.clear()
 
@@ -122,6 +124,7 @@ internal class FabricInstaller(
             try {
                 installerUrlMeta[version] = installerUrl(version)
             } catch (ignored: MalformedURLException) {
+                // A version whose installer URL can't be parsed is omitted from the URL map.
             }
         }
     }

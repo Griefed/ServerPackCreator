@@ -81,11 +81,13 @@ internal class QuiltInstaller(
         try {
             latestInstallerUrl = URI(latestUrl).toURL()
         } catch (ignored: MalformedURLException) {
+            // The latest-installer URL couldn't be parsed -> latestInstallerUrl stays unset.
         }
         val releaseUrl = installerUrlTemplate.format(releaseInstaller, releaseInstaller)
         try {
             releaseInstallerUrl = URI(releaseUrl).toURL()
         } catch (ignored: MalformedURLException) {
+            // The release-installer URL couldn't be parsed -> releaseInstallerUrl stays unset.
         }
         installers.clear()
         val elements = document.getElementsByTagName(version)
@@ -100,6 +102,7 @@ internal class QuiltInstaller(
             try {
                 installerUrlMeta[version] = installerUrl(version)
             } catch (ignored: MalformedURLException) {
+                // A version whose installer URL can't be parsed is omitted from the URL map.
             }
         }
     }
