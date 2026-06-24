@@ -48,9 +48,15 @@ one with an external (release) gate.
   module to respect the no-sprawl rule).
 - **DoD:** no unexplained ignored catches; suites green.
 
-## ☐ PR3 — versionmeta URL / tag-name externalization
-- **Branch:** `claude-versionmeta-config` (consider sub-slices per loader:
-  minecraft / forge / neoforge / fabric / quilt / legacyfabric)
+## ☑ PR3 — versionmeta URL / tag-name externalization  *(merged into `develop`)*
+- **Branch:** `claude-versionmeta-config`
+- **Outcome:** all 59 TODOs cleared. Introduced `VersionMetaConfig` (internal object) centralizing
+  every manifest URL, installer/launcher template and tag-name as named compile-time constants;
+  each class sources its value from there. Done as a single cohesive slice (not per-loader) since
+  the constants share one registry. Behavior-preserving — string-identical, guarded by `VersionMetaTest`
+  + a new URL characterization test. **Note:** the constants are centralized but kept compile-time
+  (not made runtime-overridable settings), since making manifest URLs user-configurable would not be
+  behavior-preserving and is out of scope.
 - **Goal:** clear the ~59 `// TODO Move URL/tagName to property` in `versionmeta/*`.
 - **Scope:** move hardcoded manifest URLs and XML/JSON tag-names into named constants / a
   `VersionMetaConfig` group, mirroring the established settings-group pattern.
