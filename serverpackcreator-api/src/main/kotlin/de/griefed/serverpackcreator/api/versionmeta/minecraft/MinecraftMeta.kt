@@ -173,6 +173,8 @@ class MinecraftMeta(
                 return Optional.ofNullable(minecraftServerMeta.meta[minecraftVersion])
             }
         } catch (ignored: Exception) {
+            // Unknown Minecraft version (the !! above) or absent server metadata -> no server is
+            // available, so fall through to returning an empty Optional.
         }
         return Optional.empty()
     }

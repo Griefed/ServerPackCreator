@@ -63,6 +63,9 @@ class LanguageCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) : C
         apiWrapper.apiProperties.changeLocale(Locale(lang))
         try {
             scanner.close()
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+            // The scanner wraps System.in; a failure while closing it is harmless and must not
+            // abort the command.
+        }
     }
 }

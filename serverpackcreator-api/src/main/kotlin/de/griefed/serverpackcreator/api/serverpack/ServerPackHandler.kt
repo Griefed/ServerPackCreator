@@ -221,6 +221,8 @@ class ServerPackHandler(
         try {
             serverPack.create(createFileOrDir = true, asDirectory = true)
         } catch (_: IOException) {
+            // The server-pack directory may already exist; a genuine inability to create it would
+            // surface later when files are written into it during generation.
         }
 
         if (apiProperties.isUpdatingServerPacksEnabled && existingManifest.isFile) {
@@ -321,8 +323,6 @@ class ServerPackHandler(
         val findings = mutableListOf<String>()
         log.info("Performing Nekodetector scan")
         findings.addAll(SecurityScans.scanUsingNekodetector(serverPack.toPath()))
-        /*log.info("Performing jNeedle scan")
-        findings.addAll(SecurityScans.scanUsingJNeedle(serverPack.toPath()))*/
 
         return ServerPackGeneration(
             serverPack,

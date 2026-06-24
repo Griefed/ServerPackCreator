@@ -64,6 +64,9 @@ class HomeDirCommand : Command {
         println("You MUST restart ServerPackCreator for this change to take full effect.")
         try {
             scanner.close()
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+            // The scanner wraps System.in; a failure while closing it is harmless and must not
+            // abort the command.
+        }
     }
 }

@@ -313,6 +313,8 @@ class InclusionsEditor(
                     }
                 }
             } catch (_: ArrayIndexOutOfBoundsException) {
+                // An index ran out of range while assembling the inclusion preview; keep whatever
+                // was gathered so far rather than failing the preview.
             } catch (ex: Exception) {
                 log.error("Couldn't acquire files to include for ${inclusionSelection.source}. ", ex)
             }
@@ -321,6 +323,8 @@ class InclusionsEditor(
                     selectedInclusionDetailsScrollPanel.text = tipContent
                     selectedInclusionDetailsScrollPanel.updateUI()
                 } catch (_: NullPointerException) {
+                    // The details panel may not be fully realized yet; skip updating its text this
+                    // pass.
                 }
                 selectedInclusionDetailsScrollPanel.isEnabled = true
                 inclusionList.isEnabled = true

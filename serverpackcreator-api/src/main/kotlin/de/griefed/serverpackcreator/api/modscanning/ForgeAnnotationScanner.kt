@@ -126,7 +126,10 @@ class ForgeAnnotationScanner(
                                     // Add mod to list of clientmods if clientSideOnly is true
                                     checkForClientSide(child, modId, clientMods)
                                 } catch (ignored: NullPointerException) {
+                                    // This annotation child carries no modId/clientside annotation
+                                    // -> skip it; another child in the same cache may provide one.
                                 } catch (ignored: JsonException) {
+                                    // Malformed annotation entry -> skip it.
                                 }
 
                                 // We already received a modId, perform additional checks to prevent false
@@ -136,6 +139,7 @@ class ForgeAnnotationScanner(
                                     // Get the additional modID
                                     checkAdditionalId(child, modId, clientMods, additionalMods)
                                 } catch (ignored: NullPointerException) {
+                                    // This child declares no additional modId -> nothing to add.
                                 }
                             }
 
@@ -143,6 +147,8 @@ class ForgeAnnotationScanner(
                             checkDependencies(child, modDependencies, mod.name, modId!!)
                         }
                     } catch (ignored: NullPointerException) {
+                        // This node has no "annotations" array -> skip it and continue with the
+                        // next node in the cache.
                     }
                 }
                 if (!additionalMods.isEmpty()) {
@@ -224,7 +230,9 @@ class ForgeAnnotationScanner(
                         log.debug("Added clientMod: $modId")
                     }
                 } catch (ignored: NullPointerException) {
+                    // No "clientSideOnly" flag on this annotation -> treat as not client-only.
                 } catch (ignored: JsonException) {
+                    // Malformed "clientSideOnly" value -> treat as not client-only.
                 }
 
                 // ModIDs are different, possibly two mods in one JAR-file.......
@@ -282,6 +290,8 @@ class ForgeAnnotationScanner(
                 }
             }
         } catch (ignored: NullPointerException) {
+            // This annotation declares no "dependencies" value -> the mod has no dependencies to
+            // record.
         }
     }
 
@@ -345,6 +355,8 @@ class ForgeAnnotationScanner(
                                 }
                             }
                         } catch (ignored: NullPointerException) {
+                            // This child carries no modId/dependencies value -> it can't establish a
+                            // dependency on the first mod, so leave additionalModDependsOnFirst false.
                         }
 
                         /*
@@ -367,6 +379,8 @@ class ForgeAnnotationScanner(
                         }
                     }
                 } catch (ignored: NullPointerException) {
+                    // This node has no "annotations" array -> skip it and continue with the next
+                    // node while resolving additional mods.
                 }
             }
         }
@@ -402,10 +416,14 @@ class ForgeAnnotationScanner(
                             }
                         }
                     } catch (ignored: NullPointerException) {
+                        // This child has no modId / no clientSideOnly flag -> it can't mark the mod
+                        // for the delta, so skip it.
                     } catch (ignored: JsonException) {
+                        // Malformed annotation entry -> skip it.
                     }
                 }
             } catch (ignored: NullPointerException) {
+                // This node has no "annotations" array -> skip it and continue with the next node.
             }
         }
         return addToDelta
@@ -530,10 +548,14 @@ class ForgeAnnotationScanner(
                         clientSide = true
                     }
                 } catch (ignored: NullPointerException) {
+                    // This annotation has no matching modId / no clientSideOnly flag -> it does not
+                    // mark the additional mod client-side, so leave clientSide false.
                 } catch (ignored: JsonException) {
+                    // Malformed annotation entry -> leave clientSide false.
                 }
             }
         } catch (ignored: NullPointerException) {
+            // This node has no "annotations" array -> nothing to inspect, leave clientSide false.
         }
         return clientSide
     }
@@ -546,6 +568,8 @@ class ForgeAnnotationScanner(
                     modsDelta.add(mod)
                 }
             } catch (ignored: Exception) {
+                // A mod without a readable fml_cache_annotation.json can't be evaluated for the
+                // delta, so it is skipped rather than aborting the scan of the remaining mods.
             }
         }
         return modsDelta

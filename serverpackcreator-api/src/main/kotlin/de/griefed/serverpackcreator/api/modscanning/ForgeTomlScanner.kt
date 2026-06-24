@@ -204,6 +204,8 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
                 return entries
             }
         } catch (_: NullPointerException) {
+            // A dependency was missing a modId/side mid-evaluation, so we can't conclude the mod is
+            // confidently client-side. Fall through to the conservative per-dependency pass below.
         }
         for ((key, value) in dependencies) {
             for (commentedConfig in value) {

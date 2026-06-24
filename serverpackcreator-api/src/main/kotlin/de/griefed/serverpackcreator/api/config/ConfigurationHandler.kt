@@ -200,8 +200,6 @@ class ConfigurationHandler(
         if (modpack.isDirectory) {
             configCheck.otherErrors.addAll(SecurityScans.scanUsingNekodetector(modpack.toPath()))
         }
-        /*log.info("Performing jNeedle scan")
-        configCheck.otherErrors.addAll(SecurityScans.scanUsingJNeedle(modpack.toPath()))*/
 
         if (!checkIconAndProperties(packConfig.serverIconPath)) {
             configCheck.serverIconErrors.add(Translations.configuration_log_error_servericon(packConfig.serverIconPath))

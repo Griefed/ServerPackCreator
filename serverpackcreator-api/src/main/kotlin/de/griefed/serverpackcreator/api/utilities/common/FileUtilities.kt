@@ -432,12 +432,14 @@ fun File.deleteQuietly(): Boolean =
         try {
             this.delete()
         } catch (ignored: Exception) {
+            // Quiet by contract (see KDoc): any failure to delete is reported as `false`.
             false
         }
     } else {
         try {
             this.deleteRecursively()
         } catch (ignored: Exception) {
+            // Quiet by contract (see KDoc): any failure to delete is reported as `false`.
             false
         }
     }

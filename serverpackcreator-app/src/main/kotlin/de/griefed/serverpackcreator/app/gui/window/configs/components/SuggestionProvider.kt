@@ -229,6 +229,8 @@ class SuggestionProvider(
             }
             return truncatedSuggestions(text.trim { it <= ' ' })
         } catch (_: BadLocationException) {
+            // The caret position no longer maps to a valid document offset (text changed under us)
+            // -> offer no suggestions.
         }
         return listOf()
     }

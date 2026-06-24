@@ -374,12 +374,15 @@ open class PackConfig() {
             for ((key, value) in (config.get<Any>(pluginsKey) as CommentedConfig).valueMap()) {
                 pluginsConfigs[key] = value as ArrayList<CommentedConfig>
             }
-        } catch (ignored: Exception) {}
+        } catch (ignored: Exception) {
+            // Plugin-configs are optional; a missing or old-format section is intentionally skipped.
+        }
         try {
             for ((key, value) in (config.get<Any>(scriptsKey) as CommentedConfig).valueMap()) {
                 scriptSettings[key] = value.toString()
             }
         } catch (ignored: Exception) {
+            // Script-settings are optional; a missing or old-format section is intentionally skipped.
         }
 
         for ((key,value) in defaultScriptValues) {

@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.api.versionmeta.quilt
 
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import org.w3c.dom.Document
 import org.xml.sax.SAXException
@@ -44,9 +45,9 @@ internal class QuiltLoader(
         private set
     var release: String? = null
         private set
-    private val latestElement = "latest" // TODO Move tagName to property
-    private val releaseElement = "release" // TODO Move tagName to property
-    private val version = "version" // TODO Move tagName to property
+    private val latestElement = VersionMetaConfig.TAG_LATEST
+    private val releaseElement = VersionMetaConfig.TAG_RELEASE
+    private val version = VersionMetaConfig.TAG_VERSION
 
     /**
      * Update the Quilt loader versions by parsing the Fabric loader manifest.

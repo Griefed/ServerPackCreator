@@ -3,7 +3,7 @@
 > **Purpose of this file:** the durable, *current-state* context for Claude Code sessions on
 > ServerPackCreator. Read it before touching code.
 >
-> - Per-sprint **narrative** history → `git log` and `REFACTOR-LOG.md`.
+> - Per-sprint **narrative** history → `git log` and `claude-docs/REFACTOR-LOG.md`.
 > - Module-specific facts, patterns and landmines → each module's own `CLAUDE.md`
 >   (lazy-loaded by Claude Code when you work in that module).
 > - Personal working preferences (general approach, organization, no-shortcuts ethos,
@@ -131,11 +131,11 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 2. Doc comments per **## Conventions** on every new/changed unit.
 3. No new compiler warnings; stale comments updated.
 4. CLAUDE.md "Refactor state" (and the relevant module `CLAUDE.md`) updated when an architectural
-   step lands. Append the blow-by-blow to `REFACTOR-LOG.md`, not here.
+   step lands. Append the blow-by-blow to `claude-docs/REFACTOR-LOG.md`, not here.
 
 ---
 
-## Refactor state (living — current snapshot only; full history in `REFACTOR-LOG.md`)
+## Refactor state (living — current snapshot only; full history in `claude-docs/REFACTOR-LOG.md`)
 
 **Goal:** KISS/MVC/TDD/SOLID across api → app → plugin-example → web-frontend.
 **Phases:** 0 baseline · 1 API · 2 app · 3 plugin-example · 4 frontend.

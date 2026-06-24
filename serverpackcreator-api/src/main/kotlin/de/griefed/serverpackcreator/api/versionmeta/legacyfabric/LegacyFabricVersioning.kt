@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.api.versionmeta.legacyfabric
 
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import java.io.File
 import java.io.IOException
@@ -52,8 +53,8 @@ internal abstract class LegacyFabricVersioning(
         snapshots.clear()
         allVersions.clear()
         for (node in utilities.jsonUtilities.getJson(manifest)) {
-            val version: String = node.get("version").asText() // TODO Move tagName to property
-            val stable = node.get("stable").asBoolean() // TODO Move tagName to property
+            val version: String = node.get(VersionMetaConfig.TAG_VERSION).asText()
+            val stable = node.get(VersionMetaConfig.TAG_STABLE).asBoolean()
             allVersions.add(version)
             if (stable) {
                 releases.add(version)

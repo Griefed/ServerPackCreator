@@ -59,7 +59,10 @@ class ConfigGenCommand(
         } while (!File(path).isDirectory)
         try {
             scanner.close()
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+            // The scanner wraps System.in; a failure while closing it is harmless and must not
+            // abort the command.
+        }
         return File(path)
     }
 

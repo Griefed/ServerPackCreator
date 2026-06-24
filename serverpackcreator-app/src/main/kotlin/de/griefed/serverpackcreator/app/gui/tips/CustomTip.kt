@@ -30,6 +30,7 @@ class CustomTip(name: String, tip: Any, private val imageResource: String): Defa
         return try {
             ImageIcon(this.javaClass.getResource(imageResource))
         } catch (_: Exception) {
+            // The image resource is missing or unreadable -> no icon for this tip.
             null
         }
     }

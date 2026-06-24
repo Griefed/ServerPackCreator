@@ -185,6 +185,8 @@ class ServerPackFileGatherer(private val modListCompiler: ModListCompiler) {
                 try {
                     serverDir.create()
                 } catch (ignored: IOException) {
+                    // The server dir may already exist from an earlier step; an actual write
+                    // failure would resurface when the mods are copied into it below.
                 }
                 acquired = mutableListOf()
                 val mods = modListCompiler.compileModList(clientDir.absolutePath, clientMods, modWhitelist, minecraftVersion, modloader)

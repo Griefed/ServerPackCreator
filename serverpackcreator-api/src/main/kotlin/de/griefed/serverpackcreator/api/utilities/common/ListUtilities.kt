@@ -110,41 +110,15 @@ class ListUtilities {
             chunkSize: Int,
             prefix: String,
             printIndexes: Boolean
-        ) {
-            val text = StringBuilder()
-            var i = 0
-            while (i < list.size) {
-                text.clear()
-                val m = i + chunkSize
-                var n: Int = i
-                while (n < m) {
-                    if (n >= list.size) {
-                        break
-                    } else if (n == i) {
-                        text.append(list[n])
-                    } else {
-                        text.append(", ").append(list[n])
-                    }
-                    n++
-                }
-                if (printIndexes) {
-                    val from = i + 1
-                    println("$prefix($from to $n) $text")
-                } else {
-                    println("$prefix$text")
-                }
-                i = n - 1
-                i++
-            }
-        }
+        ) = forEachChunkedLine(list, chunkSize, prefix, printIndexes) { line -> println(line) }
 
         /**
          * Print a list to our log at info level, in chunks. If a chunk size of 5 is set for a list with
          * 20 entries, the result would be 4 lines printed, with 5 entries each.
          *
-         * @param list         The list to print to the console.
+         * @param list         The list to print to the log.
          * @param chunkSize    The chunk size to print the list with.
-         * @param prefix       A prefix to add to each line printed to the console.
+         * @param prefix       A prefix to add to each line printed to the log.
          * @param printIndexes Whether to print the indexes of the entries.
          * @author Griefed
          */
@@ -153,6 +127,21 @@ class ListUtilities {
             chunkSize: Int,
             prefix: String,
             printIndexes: Boolean
+        ) = forEachChunkedLine(list, chunkSize, prefix, printIndexes) { line -> log.info { line } }
+
+        /**
+         * Split [list] into comma-joined chunks of [chunkSize], prefix each with [prefix] (and the
+         * 1-based index-range of the chunk when [printIndexes] is set), and hand each formatted line
+         * to [emit]. Shared backend for the console- and log-printing chunk helpers.
+         *
+         * @author Griefed
+         */
+        private fun forEachChunkedLine(
+            list: List<String>,
+            chunkSize: Int,
+            prefix: String,
+            printIndexes: Boolean,
+            emit: (String) -> Unit
         ) {
             val text = StringBuilder()
             var i = 0
@@ -172,9 +161,9 @@ class ListUtilities {
                 }
                 if (printIndexes) {
                     val from = i + 1
-                    log.info { "$prefix($from to $n) $text" }
+                    emit("$prefix($from to $n) $text")
                 } else {
-                    log.info { "$prefix$text" }
+                    emit("$prefix$text")
                 }
                 i = n - 1
                 i++

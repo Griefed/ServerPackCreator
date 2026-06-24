@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.api.versionmeta.fabric
 
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.IOException
 import java.net.URI
@@ -32,8 +33,8 @@ import java.util.*
  * @author Griefed
  */
 internal class FabricLoaderDetails(private val objectMapper: ObjectMapper) {
-    private val urlPrefix = "https://meta.fabricmc.net/v2/versions/loader/" // TODO Move URL to property
-    private val json = "/server/json" // TODO Move URL to property
+    private val urlPrefix = VersionMetaConfig.FABRIC_LOADER_DETAILS_URL_PREFIX
+    private val json = VersionMetaConfig.FABRIC_LOADER_DETAILS_JSON_SUFFIX
 
     /**
      * Get the details for a given Minecraft and Fabric version combination.

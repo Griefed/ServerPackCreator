@@ -112,6 +112,8 @@ class FabricScanner(
                         log.debug("Added clientMod: $modId")
                     }
                 } catch (ignored: NullPointerException) {
+                    // No "environment" entry in this fabric.mod.json -> the mod is not declared
+                    // client-only, so there is nothing to add to the client-mods list.
                 }
 
                 // Get this mods dependencies
@@ -129,6 +131,8 @@ class FabricScanner(
                         }
                     }
                 } catch (ignored: NullPointerException) {
+                    // No "depends" block in this fabric.mod.json -> the mod declares no
+                    // dependencies, so there is nothing to record.
                 }
             } catch (ex: NullPointerException) {
                 log.warn("Couldn't scan $mod as it contains no fabric.mod.json.")
@@ -156,11 +160,16 @@ class FabricScanner(
                         addToDelta = true
                     }
                 } catch (ignored: NullPointerException) {
+                    // No "environment" entry -> the mod can't be a client-only mod, so it is left
+                    // out of the delta (addToDelta stays false).
                 }
                 if (addToDelta) {
                     modsDelta.add(mod)
                 }
             } catch (ignored: Exception) {
+                // A mod without a readable fabric.mod.json (missing file, malformed JSON, absent
+                // modId) can't be matched against the client-mods list, so it is left out of the
+                // delta rather than aborting the scan of the remaining mods.
             }
         }
         return modsDelta

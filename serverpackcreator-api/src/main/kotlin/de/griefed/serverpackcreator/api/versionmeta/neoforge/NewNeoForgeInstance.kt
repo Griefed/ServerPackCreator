@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.api.versionmeta.neoforge
 
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftMeta
 import java.net.URI
 import java.net.URL
@@ -43,7 +44,7 @@ class NewNeoForgeInstance(
 ) : NeoForgeInstance {
 
     override val installerUrl: URL =
-        URI("https://maven.neoforged.net/releases/net/neoforged/neoforge/$neoForgeVersion/neoforge-$neoForgeVersion-installer.jar").toURL() // TODO Move URL to property
+        URI(VersionMetaConfig.newNeoForgeInstallerUrl(neoForgeVersion)).toURL()
 
     /**
      * Get this Forge instances corresponding Minecraft client instance, wrapped in an
