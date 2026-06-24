@@ -82,7 +82,11 @@ class ConfigCheckTimer(delay: Int, guiProps: GuiProps, apiWrapper: ApiWrapper, t
                     launch {
                         try {
                             errors.addAll(editor.validateServerIcon())
-                        } catch (_: OutOfMemoryError) {}
+                        } catch (_: OutOfMemoryError) {
+                            // Reading a pathologically large server-icon can exhaust the heap;
+                            // swallow it so the periodic validation coroutine doesn't take down the
+                            // GUI — the icon simply isn't validated on this tick.
+                        }
                     }
                     launch {
                         errors.addAll(editor.validateServerProperties())
