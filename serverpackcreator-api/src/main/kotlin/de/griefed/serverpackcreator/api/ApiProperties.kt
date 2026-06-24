@@ -143,8 +143,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     val fallbackServerPackCleanupEnabled: Boolean get() = generationConfig.fallbackServerPackCleanupEnabled
     val fallbackMinecraftPreReleasesAvailabilityEnabled: Boolean get() = generationConfig.fallbackMinecraftPreReleasesAvailabilityEnabled
     val fallbackAutoExcludingModsEnabled: Boolean get() = generationConfig.fallbackAutoExcludingModsEnabled
-    @Deprecated("Dead since the move to MongoDB. No consumer exists.")
-    val fallbackArtemisQueueMaxDiskUsage = 90
     val fallbackCleanupSchedule: String get() = webserviceConfig.fallbackCleanupSchedule
     val fallbackVersionSchedule: String get() = webserviceConfig.fallbackVersionSchedule
     val fallbackDatabaseCleanupSchedule: String get() = webserviceConfig.fallbackDatabaseCleanupSchedule
