@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.api.versionmeta.fabric
 
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import org.w3c.dom.Document
 import org.xml.sax.SAXException
@@ -43,12 +44,12 @@ internal class FabricInstaller(
     private val utilities: Utilities
 ) {
     @Suppress("MemberVisibilityCanBePrivate")
-    val installerUrlTemplate = "https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar" // TODO Move URL to property
+    val installerUrlTemplate = VersionMetaConfig.FABRIC_INSTALLER_TEMPLATE
     @Suppress("MemberVisibilityCanBePrivate")
-    val improvedLauncherUrlTemplate = "https://meta.fabricmc.net/v2/versions/loader/%s/%s/%s/server/jar" // TODO Move URL to property
-    private val latest = "latest" // TODO Move tagName to property
-    private val release = "release" // TODO Move tagName to property
-    private val version = "version" // TODO Move tagName to property
+    val improvedLauncherUrlTemplate = VersionMetaConfig.FABRIC_IMPROVED_LAUNCHER_TEMPLATE
+    private val latest = VersionMetaConfig.TAG_LATEST
+    private val release = VersionMetaConfig.TAG_RELEASE
+    private val version = VersionMetaConfig.TAG_VERSION
 
     /**
      * Available installer versions for Fabric.

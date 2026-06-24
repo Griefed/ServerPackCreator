@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.api.versionmeta.minecraft
 
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import com.fasterxml.jackson.databind.JsonNode
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
@@ -54,13 +55,13 @@ internal class MinecraftClientMeta(
         private set
     var latestSnapshot: MinecraftClient? = null
         private set
-    private val versions = "versions" // TODO Move tagName to property
-    private val latestType = "latest" // TODO Move tagName to property
-    private val releaseType = "release" // TODO Move tagName to property
-    private val snapshotType = "snapshot" // TODO Move tagName to property
-    private val type = "type" // TODO Move tagName to property
-    private val id = "id" // TODO Move tagName to property
-    private val url = "url" // TODO Move tagName to property
+    private val versions = VersionMetaConfig.TAG_VERSIONS
+    private val latestType = VersionMetaConfig.TAG_LATEST
+    private val releaseType = VersionMetaConfig.TAG_RELEASE
+    private val snapshotType = VersionMetaConfig.TAG_SNAPSHOT
+    private val type = VersionMetaConfig.TAG_TYPE
+    private val id = VersionMetaConfig.TAG_ID
+    private val url = VersionMetaConfig.TAG_URL
 
     /**
      * Update the meta information.

@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.api.versionmeta.minecraft
 
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import com.fasterxml.jackson.databind.JsonNode
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
@@ -49,11 +50,11 @@ class MinecraftServer internal constructor(
 ) {
     private val manifestFile: File = File(apiProperties.minecraftServerManifestsDirectory, "$minecraftVersion.json")
     private var serverJson: JsonNode? = null
-    private val downloads = "downloads" // TODO Move tagName to property
-    private val server = "server" // TODO Move tagName to property
-    private val url = "url" // TODO Move tagName to property
-    private val javaVersion = "javaVersion" // TODO Move tagName to property
-    private val majorVersion = "majorVersion" // TODO Move tagName to property
+    private val downloads = VersionMetaConfig.TAG_DOWNLOADS
+    private val server = VersionMetaConfig.TAG_SERVER
+    private val url = VersionMetaConfig.TAG_URL
+    private val javaVersion = VersionMetaConfig.TAG_JAVA_VERSION
+    private val majorVersion = VersionMetaConfig.TAG_MAJOR_VERSION
 
     /**
      * Get the [URL] to the download of this Minecraft-servers JAR-file.
