@@ -309,15 +309,16 @@ Extended `config/ValidatorsTest.kt` (+6 tests, 4 → 10; full API suite 189 → 
 `ModloaderValidator` line **95.5% → 100%** (branch 90.3%, residual = per-loader invalid-version
 negatives, low value). 
 
-> **Latent bug discovered (not fixed — flagging for decision):**
-> `StringUtilities.checkForInvalidPathCharacters` is an OR-of-negations
-> (`!contains("<") || !contains(">") || …`), so it returns `false` (i.e. "invalid") **only** when
-> the destination contains *every single* forbidden character at once — meaning virtually all
-> invalid destinations pass validation. The P4 test pins the **current** behavior (it feeds a
-> string containing all forbidden chars to exercise the reject branch). Fixing this is a behavior
-> change to a shared utility used by the inclusion-destination check; recommend a separate,
-> clearly-scoped "change behavior" commit (likely `&&` instead of `||`) with its own tests, per the
-> refactor discipline. Needs Griefed's go-ahead.
+> **Latent bug discovered — FIXED** (branch `claude-fix-invalid-path-characters`):
+> `StringUtilities.checkForInvalidPathCharacters` was an OR-of-negations
+> (`!contains("<") || !contains(">") || …`), so it returned `true` (i.e. "valid") unless the
+> destination contained *every single* forbidden character at once — meaning virtually all invalid
+> destinations passed validation, contradicting the method's own contract ("`true` if none of these
+> characters were found"). Fixed by changing `||` to `&&` so the method returns `true` only when not
+> a single forbidden character is present (any one forbidden char now invalidates the path). Both
+> call-sites (`InclusionsValidator`, GUI `InclusionsEditor`) treat `true` as "valid", so the
+> semantics stay consistent. Added a direct regression test in `StringUtilitiesTest` (every forbidden
+> char rejected individually) and simplified the P4 destination test to a single-forbidden-char case.
 
 ### P5 — `ServerPackHandler.run` toggle permutations (done, 2026-06-24)
 
