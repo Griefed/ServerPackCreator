@@ -100,13 +100,17 @@ one with an external (release) gate.
 - **Risk:** breaking for plugins if mis-timed. **Size:** S (code), timing-gated.
 - **DoD:** facades gone, no internal callers, merged into the major release branch.
 
-## ☐ PR6 — `java.awt.Desktop` → adapter  *(optional, low priority)*
-- **Branch:** `claude-desktop-adapter`
-- **Note:** **not** a stated-boundary violation — the module rule names Swing / Spring-web /
-  frontend; `java.awt` is core JDK. Only worth doing for strict core purity. Invert the
-  `WebUtilities` / `FileUtilities` `Desktop` calls (open browser/file) behind an api interface
-  implemented by the app.
-- **Recommendation:** skip unless desired.
+## ☒ PR6 — `java.awt.Desktop` → adapter  *(DISCARDED — won't do, 2026-06-24)*
+- **Branch:** `claude-desktop-adapter` *(never created)*
+- **Original idea:** invert the `WebUtilities` / `FileUtilities` `Desktop` calls (open
+  browser/folder/file) behind an api interface implemented by the app, for strict core purity.
+- **Why discarded (Griefed):** these `Desktop`-backed convenience methods are in `-api`
+  **on purpose**. Only `-api` is published to Maven, and a plugin may run under either the GUI or
+  the web backend, so keeping `openLinkInBrowser` / `openFolder` / `openFile` in the API is what
+  lets plugin authors use them regardless of host. Pushing the implementation into an app-side
+  adapter would remove that capability from plugins. It is also **not** a stated-boundary violation
+  (the module rule names Swing / Spring-web / frontend; `java.awt` is core JDK), so there is no
+  purity rule being broken. Net: a non-goal, not merely deferred.
 
 ---
 
