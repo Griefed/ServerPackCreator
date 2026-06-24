@@ -12,7 +12,8 @@
 1. **PR1** MockK enabler + network coverage — quick enabler, independent.
 2. **PR2** ignored-catch documentation pass — low risk.
 3. **PR3** versionmeta URL/tag-name externalization — bounded refactor.
-4. **PR4** detekt + baseline + `!!` guard — tooling; do *after* PR2/PR3 so the baseline is smaller.
+4. **PR4** detekt + baseline + `!!` guard — ⛔ **deferred / blocked on upstream**: no stable detekt
+   supports Kotlin 2.3.x (see PR4 below).
 5. **PR5** remove 6.0.0-deprecated facades — **hold for the next major (9.0.0)**.
 6. **PR6** `java.awt.Desktop` → adapter — optional, low priority.
 
@@ -77,6 +78,14 @@ one with an external (release) gate.
 - **Risk:** medium (build/CI noise). **Size:** M.
 - **DoD:** `./gradlew detekt` runs in the build; baseline committed; new violations fail; documented
   in `CLAUDE.md`.
+- **⛔ DEFERRED — blocked on upstream (decided 2026-06-24).** This project is on **Kotlin 2.3.20**, and
+  **no stable detekt release supports Kotlin 2.3.x** — per the detekt compatibility table, stable
+  `1.23.8` targets Kotlin 2.0.21 and is incompatible with Kotlin 2.3 metadata (detekt issue #8865);
+  the only build supporting Kotlin 2.3.21 is **`2.0.0-alpha.3`**. Adopting an alpha static-analysis
+  plugin into the build of a Maven-Central-published library was judged not worth the instability
+  (alpha DSL/baseline format may change and break the build). **Revisit when detekt ships a stable
+  release supporting Kotlin 2.3+** (track the 2.0.0 line), or reconsider a lightweight bespoke
+  `!!`-guard if the debt grows. Sources: detekt.dev compatibility table; github.com/detekt/detekt/issues/8865.
 
 ## ☐ PR5 — remove 6.0.0-deprecated facades  ⚠️ release-gated
 - **Branch:** `claude-remove-6x-deprecations`
