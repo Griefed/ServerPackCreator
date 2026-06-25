@@ -46,10 +46,15 @@ open the PR. **All three phases done:** metadata signal + server-boot signal + i
   sticky comment (marker `<!-- serverpackcreator-clientside-report -->`); the report embeds its data as
   a hidden `<!-- clientside-report-data … -->` JSON block the accept-workflow reads back.
   `clientside-verify.yml` (issues opened/edited) runs the cheap metadata pass; `clientside-boot.yml`
-  (the `verify-boot` label or manual dispatch) runs the expensive per-loader boot + uploads boot logs;
-  `clientside-accept.yml` (the `accepted` label) runs `-clientsideapply` and opens a PR against
-  `develop` via `peter-evans/create-pull-request`. All three need the `CURSEFORGE_API_KEY` repo secret
-  for CurseForge links.
+  (the `verify-boot` label or manual dispatch) runs the expensive per-loader boot + uploads boot logs.
+  Both are **thin callers** of the reusable `clientside-report-reusable.yml` (`workflow_call`, the only
+  difference is `boot: true/false`); the report pipeline (build jar → run verb → post sticky comment)
+  lives there once. `clientside-accept.yml` (the `accepted` label) runs `-clientsideapply` and opens a
+  PR against `develop` via `peter-evans/create-pull-request` — it stays **standalone** (a reusable
+  workflow is a separate job, so it cannot share the build job's working-tree edits with the PR step).
+  Each per-goal workflow keeps its own least-privilege `permissions` (verify/boot need only
+  `issues:write`; accept needs `contents`/`pull-requests:write`), which is why they are not collapsed
+  into one file. All need the `CURSEFORGE_API_KEY` repo secret for CurseForge links.
 
 ## Web backend
 

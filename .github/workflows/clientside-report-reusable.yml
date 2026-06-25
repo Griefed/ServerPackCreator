@@ -1,0 +1,159 @@
+name: Clientside report (reusable)
+
+# Shared pipeline behind the two clientside *report* workflows (verify = metadata-only,
+# boot = metadata + server-boot). Builds the jar from source, runs the appropriate CLI verb against
+# the issue's project-link, and posts the result as a single (updated-in-place) issue-comment.
+# Not triggered on its own — called via `workflow_call` by clientside-verify.yml / clientside-boot.yml.
+
+on:
+  workflow_call:
+    inputs:
+      issue_number:
+        description: "The issue to report on."
+        required: true
+        type: string
+      boot:
+        description: "Run the server-boot verb (-verifyclientside) instead of metadata-only (-clientsidereport)."
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      CURSEFORGE_API_KEY:
+        description: "CurseForge API key; required only for CurseForge links."
+        required: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  report:
+    name: Clientside report
+    runs-on: ubuntu-latest
+    # Static ceiling sized for the boot case (per-loader install + boot); job-level timeout-minutes
+    # cannot take an `inputs` expression. The cheap metadata-only run finishes well under this.
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v6
+
+      # The issue-template stores the project-link in a dedicated field; grab the first
+      # Modrinth/CurseForge URL from the issue-body. Works for both the issue and dispatch triggers
+      # since the caller always passes the issue number.
+      - name: Resolve project link
+        id: link
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = Number('${{ inputs.issue_number }}')
+            const { data: issue } = await github.rest.issues.get({
+              owner: context.repo.owner, repo: context.repo.repo, issue_number: issueNumber })
+            core.setOutput('number', String(issueNumber))
+            const match = (issue.body || '').match(/https?:\/\/(www\.)?(modrinth\.com|curseforge\.com)\/[^\s)]+/i)
+            if (!match) {
+              core.setOutput('found', 'false')
+              return
+            }
+            core.setOutput('found', 'true')
+            core.setOutput('url', match[0])
+
+      - name: Comment that no link was found
+        if: steps.link.outputs.found != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = '<!-- serverpackcreator-clientside-report -->'
+            const body = marker + '\n## 🤖 Clientside-mod verification\n\n'
+              + 'I could not find a CurseForge or Modrinth project-link in this issue. '
+              + 'Please edit the issue and add the link so I can assess the mod.'
+            const issueNumber = Number('${{ steps.link.outputs.number }}')
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner, repo: context.repo.repo, issue_number: issueNumber })
+            const existing = comments.find(c => c.body && c.body.includes(marker))
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner, repo: context.repo.repo, comment_id: existing.id, body })
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo, issue_number: issueNumber, body })
+            }
+
+      - name: Set up JDK 21
+        if: steps.link.outputs.found == 'true'
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+          check-latest: true
+          cache: 'gradle'
+
+      - uses: gradle/actions/setup-gradle@v6
+        if: steps.link.outputs.found == 'true'
+        with:
+          gradle-version: wrapper
+
+      - name: Set permissions
+        if: steps.link.outputs.found == 'true'
+        run: chmod +x gradlew
+
+      # Built from source (not a release) so the CLI verbs are always present and match the current
+      # branch. Once a release ships the verbs, this can switch to a cached release-jar.
+      - name: Build ServerPackCreator jar
+        if: steps.link.outputs.found == 'true'
+        run: ./gradlew :serverpackcreator-app:bootJar --no-daemon
+
+      # Best-effort OS deps for the headless browser (boot only; used solely for distribution-locked
+      # CurseForge files). If this fails, non-locked mods still boot and locked ones degrade gracefully.
+      - name: Install browser dependencies
+        if: steps.link.outputs.found == 'true' && inputs.boot
+        continue-on-error: true
+        run: npx --yes playwright install-deps chromium
+
+      - name: Run clientside verification
+        if: steps.link.outputs.found == 'true'
+        env:
+          CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
+          BOOT: ${{ inputs.boot }}
+          PROJECT_URL: ${{ steps.link.outputs.url }}
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/spc-home"
+          JAR=$(ls serverpackcreator-app/build/libs/serverpackcreator-app-*.jar | grep -vE 'plain|javadoc|sources' | head -n1)
+          echo "Using jar: $JAR"
+          if [ "$BOOT" = "true" ]; then VERB="-verifyclientside"; else VERB="-clientsidereport"; fi
+          java -jar "$JAR" \
+            --home "$GITHUB_WORKSPACE/spc-home" \
+            "$VERB" "$PROJECT_URL" \
+            --output "$GITHUB_WORKSPACE/clientside-report.md"
+
+      - name: Upload boot logs
+        if: ${{ always() && steps.link.outputs.found == 'true' && inputs.boot }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: clientside-boot-logs
+          path: spc-home/work/clientside-verify/boot/**/boot.log
+          if-no-files-found: ignore
+
+      - name: Post report comment
+        if: steps.link.outputs.found == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs')
+            const marker = '<!-- serverpackcreator-clientside-report -->'
+            const issueNumber = Number('${{ steps.link.outputs.number }}')
+            let body
+            try {
+              body = fs.readFileSync(process.env.GITHUB_WORKSPACE + '/clientside-report.md', 'utf8')
+            } catch (error) {
+              body = marker + '\n## 🤖 Clientside-mod verification failed\n\n'
+                + 'No report was produced. See the workflow logs for details.'
+            }
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner, repo: context.repo.repo, issue_number: issueNumber })
+            const existing = comments.find(c => c.body && c.body.includes(marker))
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner, repo: context.repo.repo, comment_id: existing.id, body })
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo, issue_number: issueNumber, body })
+            }
