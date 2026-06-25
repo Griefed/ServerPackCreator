@@ -25,8 +25,12 @@ correctness bug, over-broad privilege, or risky pattern · **LOW** = hardening /
   `release`/`prerelease`, `github_release`→`pages`). `virustotal` was already correct.
 - **H3 / L1** — **all third-party actions SHA-pinned** (with a `# vX` comment), including the four
   `nogsantos/scp-deploy@master` → `…@48b9ca0 # v1.3.0` and `actions/checkout@master` → `@v6`.
-  First-party `actions/*` and `gradle/*` deliberately kept on major-version tags (accepted norm;
-  SHA-pinning them is churn with little security gain).
+  First-party `actions/*` and `gradle/*` were initially kept on major-version tags.
+  **Update (2026-06-25, branch `claude-sha-pin-actions`):** that exemption was reversed —
+  every remaining first-party `actions/*` and `gradle/actions/setup-gradle`, plus
+  `peter-evans/create-pull-request`, is now SHA-pinned to the latest patch within its existing
+  major (no major bumps), each carrying a `# vX.Y.Z` comment so Dependabot keeps it current.
+  All `uses:` are now either a 40-char SHA or a local `./.github/workflows/…` reusable workflow.
 - **M1** — `github_release.yml` `pages` job given `needs: [preparations]` (was building with
   `-Pversion=""`).
 - **M2** — removed the stray `${{ steps.preinfo.outputs.content }}` reference from `github_release.yml`’s
