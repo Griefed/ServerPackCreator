@@ -1,0 +1,125 @@
+name: Clientside-mod verification
+
+# Phase 1 of the clientside-mod request automation: on every "[Clientside-mod Addition Request]"
+# issue, derive the candidate clientside-list entries and a per-loader metadata-confidence, then
+# post them as a single (updated-in-place) comment for a maintainer to review. No repository writes
+# happen here — accepting the request (and opening the PR) is a separate, label-gated workflow.
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: clientside-verify-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify clientside-mod request
+    if: contains(github.event.issue.title, '[Clientside-mod Addition Request]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+
+      # The issue-template stores the project-link in a dedicated field; grab the first
+      # Modrinth/CurseForge URL from the rendered issue-body.
+      - name: Extract project link
+        id: link
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.issue.body || ''
+            const match = body.match(/https?:\/\/(www\.)?(modrinth\.com|curseforge\.com)\/[^\s)]+/i)
+            if (!match) {
+              core.setOutput('found', 'false')
+              return
+            }
+            core.setOutput('found', 'true')
+            core.setOutput('url', match[0])
+
+      - name: Comment that no link was found
+        if: steps.link.outputs.found != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = '<!-- serverpackcreator-clientside-report -->'
+            const body = marker + '\n## 🤖 Clientside-mod verification\n\n'
+              + 'I could not find a CurseForge or Modrinth project-link in this issue. '
+              + 'Please edit the issue and add the link so I can assess the mod.'
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number })
+            const existing = comments.find(c => c.body && c.body.includes(marker))
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner, repo: context.repo.repo, comment_id: existing.id, body })
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number, body })
+            }
+
+      - name: Set up JDK 21
+        if: steps.link.outputs.found == 'true'
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+          check-latest: true
+          cache: 'gradle'
+
+      - uses: gradle/actions/setup-gradle@v6
+        if: steps.link.outputs.found == 'true'
+        with:
+          gradle-version: wrapper
+
+      - name: Set permissions
+        if: steps.link.outputs.found == 'true'
+        run: chmod +x gradlew
+
+      # Built from source (not a release) so the -clientsidereport verb is always present and matches
+      # the current branch. Once a release ships the verb, this can switch to a cached release-jar.
+      - name: Build ServerPackCreator jar
+        if: steps.link.outputs.found == 'true'
+        run: ./gradlew :serverpackcreator-app:bootJar --no-daemon
+
+      - name: Run clientside report
+        if: steps.link.outputs.found == 'true'
+        env:
+          CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/spc-home"
+          JAR=$(ls serverpackcreator-app/build/libs/serverpackcreator-app-*.jar | grep -vE 'plain|javadoc|sources' | head -n1)
+          echo "Using jar: $JAR"
+          java -jar "$JAR" \
+            --home "$GITHUB_WORKSPACE/spc-home" \
+            -clientsidereport "${{ steps.link.outputs.url }}" \
+            --output "$GITHUB_WORKSPACE/clientside-report.md"
+
+      - name: Post report comment
+        if: steps.link.outputs.found == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs')
+            const marker = '<!-- serverpackcreator-clientside-report -->'
+            let body
+            try {
+              body = fs.readFileSync(process.env.GITHUB_WORKSPACE + '/clientside-report.md', 'utf8')
+            } catch (error) {
+              body = marker + '\n## 🤖 Clientside-mod verification failed\n\n'
+                + 'No report was produced. See the workflow logs for details.'
+            }
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number })
+            const existing = comments.find(c => c.body && c.body.includes(marker))
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner, repo: context.repo.repo, comment_id: existing.id, body })
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number, body })
+            }

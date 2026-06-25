@@ -139,7 +139,8 @@ class ServerPackCreator(private val args: Array<String>) {
         log.info("OS version:        ${apiWrapper.apiProperties.getOSVersion()}")
 
         when (mode) {
-            Mode.WEB, Mode.CONFIG, Mode.WITHALLINCONFIGDIR, Mode.FEELINGLUCKY, Mode.CLI -> {
+            Mode.WEB, Mode.CONFIG, Mode.WITHALLINCONFIGDIR, Mode.FEELINGLUCKY, Mode.CLI,
+            Mode.SCAN, Mode.CLIENTSIDE_REPORT, Mode.VERIFY_CLIENTSIDE -> {
 
                 apiWrapper.stageOne()
                 migrationManager.migrate()
@@ -174,6 +175,28 @@ class ServerPackCreator(private val args: Array<String>) {
                         interactiveCommandLine.cli(args)
                     }
 
+                    Mode.SCAN -> {
+                        interactiveCommandLine.scanCommand.scan(
+                            commandlineParser.scanDirectory.get(),
+                            commandlineParser.scanLoader ?: "",
+                            commandlineParser.scanMinecraftVersion ?: ""
+                        )
+                    }
+
+                    Mode.CLIENTSIDE_REPORT -> {
+                        interactiveCommandLine.clientsideReportCommand.report(
+                            commandlineParser.clientsideLink.get(),
+                            commandlineParser.clientsideReportOutput?.let { File(it) }
+                        )
+                    }
+
+                    Mode.VERIFY_CLIENTSIDE -> {
+                        interactiveCommandLine.verifyClientsideCommand.verify(
+                            commandlineParser.clientsideVerifyLink.get(),
+                            commandlineParser.clientsideVerifyOutput?.let { File(it) }
+                        )
+                    }
+
                     else -> log.debug("Exiting...")
                 }
 
@@ -192,6 +215,15 @@ class ServerPackCreator(private val args: Array<String>) {
                 migrationManager.migrate()
                 apiWrapper.stageTwo()
                 interactiveCommandLine.configGenCommand.generateConfFromModpack(commandlineParser.modpackDirectory)
+            }
+
+            Mode.CLIENTSIDE_APPLY -> {
+                // Pure source-editing of the fallback-list files; no API staging or network needed.
+                interactiveCommandLine.clientsideApplyCommand.apply(
+                    File(commandlineParser.clientsideApplyReport.get()),
+                    commandlineParser.clientsideApplyGenerationConfig?.let { File(it) },
+                    commandlineParser.clientsideApplyProperties?.let { File(it) }
+                )
             }
 
             Mode.GUI -> {

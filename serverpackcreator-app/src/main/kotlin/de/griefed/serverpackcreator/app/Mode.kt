@@ -67,6 +67,30 @@ enum class Mode(private val argument: String) {
     WITHALLINCONFIGDIR("-withallinconfigdir"),
 
     /**
+     * Scan the mods in a directory for the sideness they declare in their metadata and print the
+     * result as JSON. Requires a directory, a modloader and a Minecraft version.
+     */
+    SCAN("-scan"),
+
+    /**
+     * Assess whether the mod behind a CurseForge/Modrinth project-link is clientside-only and print a
+     * Markdown report. Requires the project-link.
+     */
+    CLIENTSIDE_REPORT("-clientsidereport"),
+
+    /**
+     * Like [CLIENTSIDE_REPORT] but also boots a server with the mod force-included to detect crashes.
+     * Requires the project-link.
+     */
+    VERIFY_CLIENTSIDE("-verifyclientside"),
+
+    /**
+     * Apply the suggested entries from a clientside-report JSON to the official fallback-list files.
+     * Requires the report-JSON path.
+     */
+    CLIENTSIDE_APPLY("-clientsideapply"),
+
+    /**
      *
      * Run ServerPackCreator in commandline-mode. If no graphical environment is supported, this is
      * the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra

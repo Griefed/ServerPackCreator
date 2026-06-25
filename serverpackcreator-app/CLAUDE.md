@@ -4,6 +4,53 @@
 > `web` (Spring Boot 4 / Spring 7 backend serving the frontend), `updater`. Entry points
 > `ServerPackCreator.kt` + `Mode.kt` decide which runs; args parsed in `CommandlineParser.kt`.
 
+## Clientside-mod verification (CLI tooling — `clientside/` package)
+
+Automates the `[Clientside-mod Addition Request]` issues: derive the clientside-list file-name
+stem(s) for a CurseForge/Modrinth project, assess whether it is server-unsafe, and — once accepted —
+open the PR. **All three phases done:** metadata signal + server-boot signal + issue-comments +
+`accepted`-label → auto-PR.
+
+- **Four CLI verbs**, wired the standard way (a picocli `Command` **and** a `Mode` +
+  `CommandlineParser` parse + `ServerPackCreator.kt` dispatch — non-interactive runs go through
+  `Mode`, *not* the picocli shell): `-scan <dir> --loader <L> --minecraft <V>` (declared-sideness of
+  local jars → JSON), `-clientsidereport <url> [--output <f>]` (metadata-only report),
+  `-verifyclientside <url> [--output <f>]` (metadata **+** server-boot), and
+  `-clientsideapply --report <json>` (insert accepted entries into the list files — pure editing, no
+  staging). The first three reuse `apiWrapper.modScanner`.
+  - **Landmine — arg parsing order:** `-clientsideapply` must be checked **before** `CONFIG`/`CGEN` in
+    `CommandlineParser`, because those use `.contains()` and `--generation-config` contains `-config`
+    (would otherwise be misread as `CONFIG`). The new modes are matched with exact `==`.
+- **`MetadataScanner`** mirrors `ModListCompiler`'s loader→scanner dispatch (kept in sync deliberately;
+  it is *not* shared code — if you change one, check the other).
+- **Platform layer**: `ModPlatform` (Modrinth/CurseForge) over an injectable `HttpFetcher` so tests use
+  canned JSON (no live network). **CurseForge has no sideness field** → `Sideness.UNKNOWN`; only
+  Modrinth declares `client_side`/`server_side`. Use `JsonNode.textOrNull` for nullable URL fields —
+  `asText(null)` returns the literal `"null"` for a JSON-null and would defeat `ModFile.locked`.
+- **Boot signal** (`BootVerifier`): force-includes the mod (auto-exclude off, empty clientside-list) +
+  its recursively-resolved required deps, generates a server pack and boots it via the ServerStarterJar.
+  `BootLogClassifier` reads the `Done (…)! For help` ready-line vs a non-zero exit (pure, unit-tested).
+  **Asymmetry baked into the confidence model:** only a CRASH is decisive (→ HIGH, incl. the
+  "declares server/both yet crashes" lie); a clean boot does not prove server-safe.
+- **`allowModDistribution=false`** CurseForge files arrive with `downloadUrl=null` (`ModFile.locked`);
+  routed (`selectDownloader`) to the **Playwright** headless-browser `BrowserDownloader` (lazy; only
+  launched for locked files), everything else to `HttpJarDownloader`. Playwright dep is in the app
+  build (`com.microsoft.playwright:playwright`).
+- **`ClientsideListEditor`** (pure, unit-tested) inserts accepted entries into both files that ship the
+  fallback-list: the `fallbackMods` `listOf(...)` block in `GenerationConfig.kt` (sorted, aligned
+  `//link` comment, Kotlin trailing-comma is fine) and the backslash-continued `fallbackmodslist` in
+  `serverpackcreator.properties`. **Landmine — properties continuation:** the *last* entry must NOT end
+  in `,\`, or the continuation bleeds into the next property and corrupts it; the editor strips the
+  delimiter off the final line and adds one to the previous-last when appending.
+- **Workflows** build the jar **from source** (the verbs aren't in any release yet) and post/update a
+  sticky comment (marker `<!-- serverpackcreator-clientside-report -->`); the report embeds its data as
+  a hidden `<!-- clientside-report-data … -->` JSON block the accept-workflow reads back.
+  `clientside-verify.yml` (issues opened/edited) runs the cheap metadata pass; `clientside-boot.yml`
+  (the `verify-boot` label or manual dispatch) runs the expensive per-loader boot + uploads boot logs;
+  `clientside-accept.yml` (the `accepted` label) runs `-clientsideapply` and opens a PR against
+  `develop` via `peter-evans/create-pull-request`. All three need the `CURSEFORGE_API_KEY` repo secret
+  for CurseForge links.
+
 ## Web backend
 
 - **Persistence is MongoDB** (`spring-boot-starter-data-mongodb`), **not JPA.** Full-context tests
