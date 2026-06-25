@@ -55,6 +55,10 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
     val runHeadlessCommand = RunHeadlessCommand(apiWrapper)
     val setupCommand = SetupCommand(apiWrapper)
     val updateCommand = UpdateCommand(updateChecker)
+    val scanCommand = ScanCommand(apiWrapper)
+    val clientsideReportCommand = ClientsideReportCommand(apiWrapper)
+    val verifyClientsideCommand = VerifyClientsideCommand(apiWrapper)
+    val clientsideApplyCommand = ClientsideApplyCommand()
 
     @CommandLine.Command(
         name = "",
@@ -67,6 +71,10 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
             RunHeadlessCommand::class,
             SetupCommand::class,
             UpdateCommand::class,
+            ScanCommand::class,
+            ClientsideReportCommand::class,
+            VerifyClientsideCommand::class,
+            ClientsideApplyCommand::class,
             ClearScreen::class,
             CommandLine.HelpCommand::class
         ]

@@ -105,6 +105,56 @@ internal class CommandlineParserTest {
     }
 
     /**
+     * Pins that -scan selects SCAN mode and captures the directory plus the loader/Minecraft options
+     * regardless of their order relative to the directory.
+     */
+    @Test
+    fun scanModeCapturesDirectoryLoaderAndMinecraftVersion(@TempDir tempDir: File) {
+        val modsDir = File(tempDir, "mods")
+        modsDir.mkdirs()
+        val parser = parse("-scan", modsDir.absolutePath, "--loader", "Forge", "--minecraft", "1.20.1")
+        Assertions.assertEquals(Mode.SCAN, parser.mode)
+        Assertions.assertEquals(modsDir, parser.scanDirectory.get())
+        Assertions.assertEquals("Forge", parser.scanLoader)
+        Assertions.assertEquals("1.20.1", parser.scanMinecraftVersion)
+    }
+
+    /**
+     * Pins that -clientsidereport selects CLIENTSIDE_REPORT mode and captures the project-link.
+     */
+    @Test
+    fun clientsideReportModeCapturesProjectLink() {
+        val parser = parse("-clientsidereport", "https://modrinth.com/mod/jei")
+        Assertions.assertEquals(Mode.CLIENTSIDE_REPORT, parser.mode)
+        Assertions.assertEquals("https://modrinth.com/mod/jei", parser.clientsideLink.get())
+    }
+
+    /**
+     * Pins that -verifyclientside selects VERIFY_CLIENTSIDE mode with the project-link and output.
+     */
+    @Test
+    fun verifyClientsideModeCapturesLinkAndOutput() {
+        val parser = parse("-verifyclientside", "https://modrinth.com/mod/jei", "--output", "report.md")
+        Assertions.assertEquals(Mode.VERIFY_CLIENTSIDE, parser.mode)
+        Assertions.assertEquals("https://modrinth.com/mod/jei", parser.clientsideVerifyLink.get())
+        Assertions.assertEquals("report.md", parser.clientsideVerifyOutput)
+    }
+
+    /**
+     * Pins that -clientsideapply selects CLIENTSIDE_APPLY mode and captures the report-path from
+     * either the --report option or the positional argument.
+     */
+    @Test
+    fun clientsideApplyModeCapturesReportPath() {
+        val optionForm = parse("-clientsideapply", "--report", "report.json")
+        Assertions.assertEquals(Mode.CLIENTSIDE_APPLY, optionForm.mode)
+        Assertions.assertEquals("report.json", optionForm.clientsideApplyReport.get())
+
+        val positionalForm = parse("-clientsideapply", "report.json")
+        Assertions.assertEquals("report.json", positionalForm.clientsideApplyReport.get())
+    }
+
+    /**
      * Pins that -lang parses the following argument into a locale, and that its absence leaves
      * the language null so the ApiProperties-locale is used downstream.
      */

@@ -55,6 +55,9 @@ dependencies {
     api("net.java.balloontip:balloontip:1.2.4.1")
     api("tokyo.northside:tipoftheday:0.6.0")
 
+    //CLIENTSIDE-MOD VERIFICATION — headless-browser download of distribution-locked CurseForge files
+    api("com.microsoft.playwright:playwright:1.60.0")
+
     //WEB
     api("org.springframework.boot:spring-boot-starter-web:4.0.6")
     api("org.springframework.boot:spring-boot-starter-log4j2:4.0.6")

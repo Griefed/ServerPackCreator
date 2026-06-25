@@ -1,0 +1,105 @@
+name: Clientside-mod acceptance
+
+# Phase 3: when a maintainer adds the `accepted` label to a "[Clientside-mod Addition Request]"
+# issue, turn the suggested entries from the verification-comment into a PR that adds them to the
+# official fallback-list (GenerationConfig.kt + serverpackcreator.properties), targeting develop.
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: clientside-accept-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  accept:
+    name: Open clientside-list PR
+    if: >-
+      github.event.label.name == 'accepted' &&
+      contains(github.event.issue.title, '[Clientside-mod Addition Request]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+        with:
+          ref: develop
+
+      # Recover the report-JSON the verify workflow embedded in its sticky comment, so we apply the
+      # exact entries a maintainer reviewed rather than re-deriving (and re-booting) them.
+      - name: Extract report JSON from comment
+        id: report
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        with:
+          script: |
+            const fs = require('fs')
+            const marker = '<!-- serverpackcreator-clientside-report -->'
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number })
+            const comment = comments.find(c => c.body && c.body.includes(marker))
+            const match = comment && comment.body.match(/<!-- clientside-report-data\n([\s\S]*?)\n-->/)
+            if (!match) {
+              core.setOutput('found', 'false')
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number,
+                body: 'Could not find a verification report to accept. Re-run the verification first.' })
+              return
+            }
+            fs.writeFileSync(process.env.GITHUB_WORKSPACE + '/clientside-report.json', match[1])
+            core.setOutput('found', 'true')
+
+      - name: Set up JDK 21
+        if: steps.report.outputs.found == 'true'
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+          check-latest: true
+          cache: 'gradle'
+
+      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+        if: steps.report.outputs.found == 'true'
+        with:
+          gradle-version: wrapper
+
+      - name: Set permissions
+        if: steps.report.outputs.found == 'true'
+        run: chmod +x gradlew
+
+      - name: Build ServerPackCreator jar
+        if: steps.report.outputs.found == 'true'
+        run: ./gradlew :serverpackcreator-app:bootJar --no-daemon
+
+      - name: Apply entries to the fallback-list files
+        if: steps.report.outputs.found == 'true'
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/spc-home"
+          JAR=$(ls serverpackcreator-app/build/libs/serverpackcreator-app-*.jar | grep -vE 'plain|javadoc|sources' | head -n1)
+          java -jar "$JAR" \
+            --home "$GITHUB_WORKSPACE/spc-home" \
+            -clientsideapply --report "$GITHUB_WORKSPACE/clientside-report.json"
+
+      - name: Open pull request
+        if: steps.report.outputs.found == 'true'
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7.0.11
+        with:
+          base: develop
+          branch: clientside/issue-${{ github.event.issue.number }}
+          add-paths: |
+            serverpackcreator-api/src/main/kotlin/de/griefed/serverpackcreator/api/settings/GenerationConfig.kt
+            serverpackcreator-api/src/main/resources/serverpackcreator.properties
+          commit-message: "feat(api): add clientside-only mod(s) from #${{ github.event.issue.number }}"
+          title: "Add clientside-only mod(s) — closes #${{ github.event.issue.number }}"
+          body: |
+            Automated from the accepted clientside-mod request #${{ github.event.issue.number }}.
+
+            Adds the reviewed entries to the official fallback clientside-list
+            (`GenerationConfig.kt` + `serverpackcreator.properties`).
+
+            Closes #${{ github.event.issue.number }}
+          labels: enhancement
+          delete-branch: true

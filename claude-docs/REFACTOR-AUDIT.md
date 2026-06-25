@@ -1,3 +1,143 @@
+# Audit — branch `claude-workflow-audit` (2026-06-25)
+
+**Scope:** `git log develop..HEAD` — **0 commits.** The branch's work (a security/correctness audit of
+the six pre-existing CI workflows + its remediation) is **entirely uncommitted** in the working tree:
+`.github/workflows/{devbuild,github-prerelease,github_release,test,update_readme,virustotal}.yml`
+modified, `claude-docs/WORKFLOW-AUDIT.md` new. Source was **not** modified by this audit (report only).
+
+**Applicability:** these are **GitHub Actions YAML** changes, not application-code refactoring. The
+code-centric conventions — characterization-tests-before-refactor, Strangler-Fig, module boundary /
+plugin-API, Kotlin idioms — are **N/A** (no Kotlin/JVM source touched). What *can* be judged is commit
+hygiene (one concern per commit, bug-in-its-own-commit, boy-scout/scope) — and since nothing is
+committed yet, those are **forward-looking guidance for the pending commit(s)**, not violations in
+history. The substantive findings + remediation detail live in `claude-docs/WORKFLOW-AUDIT.md`; this
+entry only assesses convention-compliance.
+
+## HIGH — none
+No application behavior changed; no module boundary or plugin-API touched (no code in scope).
+
+## MEDIUM (commit-hygiene guidance for when this is committed)
+
+- **MED-1 — Bugfixes bundled with hardening; would violate "one concern per commit".** The working tree
+  mixes three distinct concerns that the conventions say to separate:
+  (a) the **audit report** (`claude-docs/WORKFLOW-AUDIT.md`);
+  (b) **correctness bugfixes** to existing workflows — **M1** `github_release.yml:261` (added
+  `needs: [preparations]`; the job was building docs with `-Pversion=""`) and **M2**
+  `github_release.yml:167` (removed a dead `steps.preinfo` reference);
+  (c) **security hardening** (H1 tj-actions removal, H2 permissions, H3 SHA-pinning, M4/M5/M6, L2/L3).
+  The "surface a bug in its own commit" rule specifically wants (b) isolated. **Recommend** committing
+  as ≥3 commits: report → correctness fixes → hardening.
+
+- **MED-2 — A behaviour change rides along with the mechanical hardening (M5), on an untestable path.**
+  `update_readme.yml:70-71` rewrites the GitLab push from `git push https://user:token@host` to
+  `git -c http.extraheader=… push https://host HEAD:refs/heads/main`. That is a real **behaviour
+  change** to the push mechanism (new refspec/auth path), not a pure security tweak, and it is bundled
+  with the SHA-pins. Per the "don't mix behaviour-change with mechanical edits" spirit it should be its
+  own commit and **verified on the next run** (these workflows only fire on tag-push/release/dispatch,
+  so none of this is locally testable).
+
+## LOW
+
+- **LOW-1 — Permission tightening may under-scope actions that relied on the default broad token.**
+  `update_readme.yml` now has `permissions: contents: read`; the sponsor/contributor actions previously
+  ran with the repo-default token. If either needed a scope beyond `contents: read`, it will now fail.
+  Verify on next run. (Same caution applies generally to the new least-privilege blocks — intended, but
+  unverifiable offline.)
+- **LOW-2 — One self-introduced YAML bug, already fixed, leaves no trace.** The `run: echo "Version: …"`
+  added to the `preparations` jobs was an unquoted scalar whose `: ` parsed as a mapping key; fixed by
+  switching to a block scalar before any commit. Noted only for completeness (caught by YAML lint).
+
+## Not findings / positives
+
+- **Scope discipline:** all changes confined to `.github/workflows/` + the audit doc — no sprawl into
+  unrelated files (boy-scout rule respected).
+- **M3 correctly left unchanged** (`if: always()` on release jobs) per maintainer intent — *not* a
+  silent work-around; a clarifying comment was added and it's recorded in `WORKFLOW-AUDIT.md`.
+- All ten workflows YAML-validate; all third-party actions SHA-pinned; permissions least-privilege.
+
+---
+
+# Audit — branch `claude-clientside-verify` (2026-06-25)
+
+**Scope:** `git log develop..HEAD` — **1 commit**, `13d8c4fbf`
+(*feat(app): automate clientside-mod request verification & acceptance*). Audited against the
+Refactoring Conventions. **Source was NOT modified** (this report only).
+
+**Remediation status (2026-06-25, after maintainer go-ahead):** **L1 fixed**, **L2 confirmed-covered**,
+**M2 addressed** (pure logic extracted + tested; remainder accepted as integration-only), **M1 accepted**.
+Remediation is staged in the working tree to land as a **separate follow-up commit** (kept apart from
+the feature commit, per one-concern-per-commit). Details inline below.
+
+**Nature of the branch:** this is an **additive feature**, not a refactor. No existing tested unit was
+restructured. Changes to pre-existing files are additive only — `Mode.kt` (+24/-0),
+`CommandlineParser.kt` (+81/-0), `InteractiveCommandLine.kt` (+8/-0), `build.gradle.kts` (+3/-0), and
+`ServerPackCreator.kt` (+33/-1, the single deletion being the `when (mode)` header line extended
+in place with the new modes — **no existing mode's behavior changed**). All new logic lives in
+`serverpackcreator-app` (`clientside/` package + 4 CLI verbs) plus 3 new `clientside-*` workflows.
+
+## HIGH — none
+
+- **Module boundary intact:** the domain core `serverpackcreator-api` is **untouched**; no Swing /
+  Spring-web / frontend inward dependency was introduced; the new `playwright` + `java.net.http`
+  dependencies are confined to `-app`. ✅
+- **Plugin-API contract unchanged** (no `-api` change). ✅
+- **No behavior change mixed into a refactor** — there is no refactor; existing-file edits are purely
+  additive and existing modes dispatch unchanged. ✅
+
+## MEDIUM
+
+- **M1 — One concern per commit. → ACCEPTED.** `13d8c4fbf` (whole commit, ~3.5k LOC) bundles three
+  distinct phases (metadata signal / server-boot signal / `accepted`→PR), all their tests, **and** an
+  in-development bugfix into a single commit. The conventions call for one concern per commit and
+  separating "add tests" from feature work; ideally this would be ≥3 commits. **Accepted by the
+  maintainer** — the single feature commit was intentional; the change is purely additive (no existing
+  behavior altered), so bisection risk is contained to the new feature.
+- **M2 — Test gap on integration seams. → ADDRESSED (remainder accepted).** *Done:* the pure
+  file/version-selection logic was extracted from `BootVerifier` into `BootCandidateSelector`
+  (behavior-preserving move) and unit-tested (`BootCandidateSelectorTest` — Minecraft ordering,
+  bootable-candidate fallback, dependency-file selection); the `BrowserDownloader` no-page-URL
+  short-circuit is now tested without launching Chromium (`BrowserDownloaderTest`). *Accepted as
+  integration-only:* the live boot (`BootVerifier.boot` generate + `start.sh`), the live Playwright
+  download, and the `ServerPackCreator.kt` dispatch wiring remain uncovered — booting a Minecraft
+  server / launching a browser is too heavy and network-dependent for the offline unit suite, and is
+  exercised by the `clientside-boot` workflow instead.
+
+## LOW
+
+- **L1 — New `!!` non-null assertion. → FIXED.** `clientside/ClientsideListEditor.kt:69` previously
+  used `kotlinEntryLine.find(lines[first])!!.groupValues[1]`; replaced with
+  `…?.groupValues?.get(1) ?: "<12-space indent>"`. No `!!` remains in the new main source.
+- **L2 — In-development bug folded into the feature commit (observational). → COVERED.** The
+  `serverpackcreator.properties` last-entry `,\` continuation-corruption bug (would bleed into the next
+  property) was found during local validation and fixed in `ClientsideListEditor.addToProperties`. It
+  is pinned by the regression test
+  `ClientsideListEditorTest.appendingPropertiesEntryGivesPreviousLastABackslashButNotTheNewLast`. The
+  "surface a bug in its own commit" rule targets *pre-existing* bugs found during refactor; this was a
+  defect in new, not-yet-committed code (strictly N/A) — the regression test is the durable safeguard.
+
+## N/A — refactor-specific conventions (no refactor in scope)
+
+- **Characterization-before-refactor:** no existing tested unit was refactored. The one pre-existing
+  tested unit touched (`CommandlineParser`) already had `CommandlineParserTest`; new branches were
+  added **with** new tests in the same commit, and the existing assertions were left **unchanged**
+  (diff is additive-only — verified, no deletions).
+- **Pure-refactor-green-with-existing-assertions:** no pure-refactor commit exists. All prior
+  `CommandlineParserTest` assertions still pass unmodified.
+- **Strangler-Fig / no big-bang:** N/A — this is a new feature, not a module rewrite. (It was *built*
+  in phases but *landed* as one commit; see M1.)
+
+## Not findings (explicitly cleared)
+
+- `private var` on picocli `@CommandLine.Option` fields (`ScanCommand`, `ClientsideReportCommand`,
+  `VerifyClientsideCommand`, `ClientsideApplyCommand`) is **required** by picocli's field injection —
+  not a var-over-val violation.
+- `private var playwright/browser` in `BrowserDownloader` is legitimately mutable (lazy creation, reset
+  to `null` on `close()`).
+- Boy-Scout / scope sprawl: none — all changes confined to `-app` + the 3 clientside workflows; no
+  unrelated files touched.
+
+---
+
 # Refactor audit — full range (Phase 0 → HEAD)
 
 **Scope:** `git log 69a587b6..develop` — 66 commits, base `69a587b6a` (*Phase 0: baseline*, the

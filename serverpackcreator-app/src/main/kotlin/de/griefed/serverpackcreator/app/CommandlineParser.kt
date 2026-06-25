@@ -57,6 +57,16 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
     var serverPackDestination : Optional<File> = Optional.empty()
     var modpackDirectory: Optional<File> = Optional.empty()
     var homeDir: Optional<File> = Optional.empty()
+    var scanDirectory: Optional<File> = Optional.empty()
+    var scanLoader: String? = null
+    var scanMinecraftVersion: String? = null
+    var clientsideLink: Optional<String> = Optional.empty()
+    var clientsideReportOutput: String? = null
+    var clientsideVerifyLink: Optional<String> = Optional.empty()
+    var clientsideVerifyOutput: String? = null
+    var clientsideApplyReport: Optional<String> = Optional.empty()
+    var clientsideApplyGenerationConfig: String? = null
+    var clientsideApplyProperties: String? = null
 
     init {
         val argsList = args.toList()
@@ -112,6 +122,61 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
             */
             if (argsList.any { entry -> entry.contains(Mode.WITHALLINCONFIGDIR.argument()) }) {
                 mode = Mode.WITHALLINCONFIGDIR
+                return@run
+            }
+
+            /*
+            * Check whether the user wants to scan a mods-directory for declared sideness.
+            */
+            if (argsList.any { entry -> entry == Mode.SCAN.argument() }) {
+                val directoryArg = argsList.getOrNull(argsList.indexOf(Mode.SCAN.argument()) + 1)
+                if (directoryArg != null && File(directoryArg).isDirectory) {
+                    scanDirectory = Optional.of(File(directoryArg))
+                }
+                scanLoader = optionValue(argsList, "--loader", "-l")
+                scanMinecraftVersion = optionValue(argsList, "--minecraft", "-m")
+                mode = Mode.SCAN
+                return@run
+            }
+
+            /*
+            * Check whether the user wants a clientside-only assessment of a CurseForge/Modrinth link.
+            */
+            if (argsList.any { entry -> entry == Mode.CLIENTSIDE_REPORT.argument() }) {
+                val linkArg = argsList.getOrNull(argsList.indexOf(Mode.CLIENTSIDE_REPORT.argument()) + 1)
+                if (!linkArg.isNullOrBlank()) {
+                    clientsideLink = Optional.of(linkArg)
+                }
+                clientsideReportOutput = optionValue(argsList, "--output", "-o")
+                mode = Mode.CLIENTSIDE_REPORT
+                return@run
+            }
+
+            /*
+            * Check whether the user wants a clientside-only assessment including a server-boot test.
+            */
+            if (argsList.any { entry -> entry == Mode.VERIFY_CLIENTSIDE.argument() }) {
+                val linkArg = argsList.getOrNull(argsList.indexOf(Mode.VERIFY_CLIENTSIDE.argument()) + 1)
+                if (!linkArg.isNullOrBlank()) {
+                    clientsideVerifyLink = Optional.of(linkArg)
+                }
+                clientsideVerifyOutput = optionValue(argsList, "--output", "-o")
+                mode = Mode.VERIFY_CLIENTSIDE
+                return@run
+            }
+
+            /*
+            * Check whether the user wants to apply a clientside-report's entries to the list files.
+            */
+            if (argsList.any { entry -> entry == Mode.CLIENTSIDE_APPLY.argument() }) {
+                val reportArg = optionValue(argsList, "--report", "-r")
+                    ?: argsList.getOrNull(argsList.indexOf(Mode.CLIENTSIDE_APPLY.argument()) + 1)
+                if (!reportArg.isNullOrBlank()) {
+                    clientsideApplyReport = Optional.of(reportArg)
+                }
+                clientsideApplyGenerationConfig = optionValue(argsList, "--generation-config")
+                clientsideApplyProperties = optionValue(argsList, "--properties")
+                mode = Mode.CLIENTSIDE_APPLY
                 return@run
             }
 
@@ -222,5 +287,21 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
                 return@run
             }
         }
+    }
+
+    /**
+     * Read the value following the first present option-flag among [names] in [args], or `null` when
+     * none of the flags occur with a following value. Used to parse the `-scan` sub-options.
+     *
+     * @author Griefed
+     */
+    private fun optionValue(args: List<String>, vararg names: String): String? {
+        for (name in names) {
+            val index = args.indexOf(name)
+            if (index >= 0 && index + 1 < args.size) {
+                return args[index + 1]
+            }
+        }
+        return null
     }
 }
