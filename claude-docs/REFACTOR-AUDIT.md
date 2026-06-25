@@ -1,3 +1,62 @@
+# Audit — branch `claude-workflow-audit` (2026-06-25)
+
+**Scope:** `git log develop..HEAD` — **0 commits.** The branch's work (a security/correctness audit of
+the six pre-existing CI workflows + its remediation) is **entirely uncommitted** in the working tree:
+`.github/workflows/{devbuild,github-prerelease,github_release,test,update_readme,virustotal}.yml`
+modified, `claude-docs/WORKFLOW-AUDIT.md` new. Source was **not** modified by this audit (report only).
+
+**Applicability:** these are **GitHub Actions YAML** changes, not application-code refactoring. The
+code-centric conventions — characterization-tests-before-refactor, Strangler-Fig, module boundary /
+plugin-API, Kotlin idioms — are **N/A** (no Kotlin/JVM source touched). What *can* be judged is commit
+hygiene (one concern per commit, bug-in-its-own-commit, boy-scout/scope) — and since nothing is
+committed yet, those are **forward-looking guidance for the pending commit(s)**, not violations in
+history. The substantive findings + remediation detail live in `claude-docs/WORKFLOW-AUDIT.md`; this
+entry only assesses convention-compliance.
+
+## HIGH — none
+No application behavior changed; no module boundary or plugin-API touched (no code in scope).
+
+## MEDIUM (commit-hygiene guidance for when this is committed)
+
+- **MED-1 — Bugfixes bundled with hardening; would violate "one concern per commit".** The working tree
+  mixes three distinct concerns that the conventions say to separate:
+  (a) the **audit report** (`claude-docs/WORKFLOW-AUDIT.md`);
+  (b) **correctness bugfixes** to existing workflows — **M1** `github_release.yml:261` (added
+  `needs: [preparations]`; the job was building docs with `-Pversion=""`) and **M2**
+  `github_release.yml:167` (removed a dead `steps.preinfo` reference);
+  (c) **security hardening** (H1 tj-actions removal, H2 permissions, H3 SHA-pinning, M4/M5/M6, L2/L3).
+  The "surface a bug in its own commit" rule specifically wants (b) isolated. **Recommend** committing
+  as ≥3 commits: report → correctness fixes → hardening.
+
+- **MED-2 — A behaviour change rides along with the mechanical hardening (M5), on an untestable path.**
+  `update_readme.yml:70-71` rewrites the GitLab push from `git push https://user:token@host` to
+  `git -c http.extraheader=… push https://host HEAD:refs/heads/main`. That is a real **behaviour
+  change** to the push mechanism (new refspec/auth path), not a pure security tweak, and it is bundled
+  with the SHA-pins. Per the "don't mix behaviour-change with mechanical edits" spirit it should be its
+  own commit and **verified on the next run** (these workflows only fire on tag-push/release/dispatch,
+  so none of this is locally testable).
+
+## LOW
+
+- **LOW-1 — Permission tightening may under-scope actions that relied on the default broad token.**
+  `update_readme.yml` now has `permissions: contents: read`; the sponsor/contributor actions previously
+  ran with the repo-default token. If either needed a scope beyond `contents: read`, it will now fail.
+  Verify on next run. (Same caution applies generally to the new least-privilege blocks — intended, but
+  unverifiable offline.)
+- **LOW-2 — One self-introduced YAML bug, already fixed, leaves no trace.** The `run: echo "Version: …"`
+  added to the `preparations` jobs was an unquoted scalar whose `: ` parsed as a mapping key; fixed by
+  switching to a block scalar before any commit. Noted only for completeness (caught by YAML lint).
+
+## Not findings / positives
+
+- **Scope discipline:** all changes confined to `.github/workflows/` + the audit doc — no sprawl into
+  unrelated files (boy-scout rule respected).
+- **M3 correctly left unchanged** (`if: always()` on release jobs) per maintainer intent — *not* a
+  silent work-around; a clarifying comment was added and it's recorded in `WORKFLOW-AUDIT.md`.
+- All ten workflows YAML-validate; all third-party actions SHA-pinned; permissions least-privilege.
+
+---
+
 # Audit — branch `claude-clientside-verify` (2026-06-25)
 
 **Scope:** `git log develop..HEAD` — **1 commit**, `13d8c4fbf`
