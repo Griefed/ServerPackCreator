@@ -66,7 +66,9 @@ object ClientsideListEditor {
         if (last == first) {
             return content
         }
-        val indent = kotlinEntryLine.find(lines[first])!!.groupValues[1]
+        // lines[first] is guaranteed to match (the loop above only advances over matching lines), but
+        // resolve the indent defensively rather than asserting non-null.
+        val indent = kotlinEntryLine.find(lines[first])?.groupValues?.get(1) ?: "            "
         val block = lines.subList(first, last)
         insertSorted(block, entries, ::valueOfKotlin) { entry -> renderKotlin(indent, entry) }.also {
             ensureTrailingDelimiter(block, ::hasKotlinComma, ::addKotlinComma)

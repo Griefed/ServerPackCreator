@@ -1,3 +1,84 @@
+# Audit — branch `claude-clientside-verify` (2026-06-25)
+
+**Scope:** `git log develop..HEAD` — **1 commit**, `13d8c4fbf`
+(*feat(app): automate clientside-mod request verification & acceptance*). Audited against the
+Refactoring Conventions. **Source was NOT modified** (this report only).
+
+**Remediation status (2026-06-25, after maintainer go-ahead):** **L1 fixed**, **L2 confirmed-covered**,
+**M2 addressed** (pure logic extracted + tested; remainder accepted as integration-only), **M1 accepted**.
+Remediation is staged in the working tree to land as a **separate follow-up commit** (kept apart from
+the feature commit, per one-concern-per-commit). Details inline below.
+
+**Nature of the branch:** this is an **additive feature**, not a refactor. No existing tested unit was
+restructured. Changes to pre-existing files are additive only — `Mode.kt` (+24/-0),
+`CommandlineParser.kt` (+81/-0), `InteractiveCommandLine.kt` (+8/-0), `build.gradle.kts` (+3/-0), and
+`ServerPackCreator.kt` (+33/-1, the single deletion being the `when (mode)` header line extended
+in place with the new modes — **no existing mode's behavior changed**). All new logic lives in
+`serverpackcreator-app` (`clientside/` package + 4 CLI verbs) plus 3 new `clientside-*` workflows.
+
+## HIGH — none
+
+- **Module boundary intact:** the domain core `serverpackcreator-api` is **untouched**; no Swing /
+  Spring-web / frontend inward dependency was introduced; the new `playwright` + `java.net.http`
+  dependencies are confined to `-app`. ✅
+- **Plugin-API contract unchanged** (no `-api` change). ✅
+- **No behavior change mixed into a refactor** — there is no refactor; existing-file edits are purely
+  additive and existing modes dispatch unchanged. ✅
+
+## MEDIUM
+
+- **M1 — One concern per commit. → ACCEPTED.** `13d8c4fbf` (whole commit, ~3.5k LOC) bundles three
+  distinct phases (metadata signal / server-boot signal / `accepted`→PR), all their tests, **and** an
+  in-development bugfix into a single commit. The conventions call for one concern per commit and
+  separating "add tests" from feature work; ideally this would be ≥3 commits. **Accepted by the
+  maintainer** — the single feature commit was intentional; the change is purely additive (no existing
+  behavior altered), so bisection risk is contained to the new feature.
+- **M2 — Test gap on integration seams. → ADDRESSED (remainder accepted).** *Done:* the pure
+  file/version-selection logic was extracted from `BootVerifier` into `BootCandidateSelector`
+  (behavior-preserving move) and unit-tested (`BootCandidateSelectorTest` — Minecraft ordering,
+  bootable-candidate fallback, dependency-file selection); the `BrowserDownloader` no-page-URL
+  short-circuit is now tested without launching Chromium (`BrowserDownloaderTest`). *Accepted as
+  integration-only:* the live boot (`BootVerifier.boot` generate + `start.sh`), the live Playwright
+  download, and the `ServerPackCreator.kt` dispatch wiring remain uncovered — booting a Minecraft
+  server / launching a browser is too heavy and network-dependent for the offline unit suite, and is
+  exercised by the `clientside-boot` workflow instead.
+
+## LOW
+
+- **L1 — New `!!` non-null assertion. → FIXED.** `clientside/ClientsideListEditor.kt:69` previously
+  used `kotlinEntryLine.find(lines[first])!!.groupValues[1]`; replaced with
+  `…?.groupValues?.get(1) ?: "<12-space indent>"`. No `!!` remains in the new main source.
+- **L2 — In-development bug folded into the feature commit (observational). → COVERED.** The
+  `serverpackcreator.properties` last-entry `,\` continuation-corruption bug (would bleed into the next
+  property) was found during local validation and fixed in `ClientsideListEditor.addToProperties`. It
+  is pinned by the regression test
+  `ClientsideListEditorTest.appendingPropertiesEntryGivesPreviousLastABackslashButNotTheNewLast`. The
+  "surface a bug in its own commit" rule targets *pre-existing* bugs found during refactor; this was a
+  defect in new, not-yet-committed code (strictly N/A) — the regression test is the durable safeguard.
+
+## N/A — refactor-specific conventions (no refactor in scope)
+
+- **Characterization-before-refactor:** no existing tested unit was refactored. The one pre-existing
+  tested unit touched (`CommandlineParser`) already had `CommandlineParserTest`; new branches were
+  added **with** new tests in the same commit, and the existing assertions were left **unchanged**
+  (diff is additive-only — verified, no deletions).
+- **Pure-refactor-green-with-existing-assertions:** no pure-refactor commit exists. All prior
+  `CommandlineParserTest` assertions still pass unmodified.
+- **Strangler-Fig / no big-bang:** N/A — this is a new feature, not a module rewrite. (It was *built*
+  in phases but *landed* as one commit; see M1.)
+
+## Not findings (explicitly cleared)
+
+- `private var` on picocli `@CommandLine.Option` fields (`ScanCommand`, `ClientsideReportCommand`,
+  `VerifyClientsideCommand`, `ClientsideApplyCommand`) is **required** by picocli's field injection —
+  not a var-over-val violation.
+- `private var playwright/browser` in `BrowserDownloader` is legitimately mutable (lazy creation, reset
+  to `null` on `close()`).
+- Boy-Scout / scope sprawl: none — all changes confined to `-app` + the 3 clientside workflows; no
+  unrelated files touched.
+
+---
+
 # Refactor audit — full range (Phase 0 → HEAD)
 
 **Scope:** `git log 69a587b6..develop` — 66 commits, base `69a587b6a` (*Phase 0: baseline*, the

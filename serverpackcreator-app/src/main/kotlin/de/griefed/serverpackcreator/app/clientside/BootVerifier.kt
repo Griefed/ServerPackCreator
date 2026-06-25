@@ -62,17 +62,6 @@ class BootVerifier(
     /** The vanilla server's ready-line, watched while streaming the boot. */
     private val readyLine = Regex("""Done \([^)]*\)! For help""")
 
-    /** Numeric Minecraft-version ordering (so `1.20` sorts above `1.9`, unlike a string compare). */
-    private val minecraftComparator = Comparator<String> { left, right ->
-        val leftParts = left.split('.').map { it.toIntOrNull() ?: 0 }
-        val rightParts = right.split('.').map { it.toIntOrNull() ?: 0 }
-        for (index in 0 until maxOf(leftParts.size, rightParts.size)) {
-            val difference = leftParts.getOrElse(index) { 0 }.compareTo(rightParts.getOrElse(index) { 0 })
-            if (difference != 0) return@Comparator difference
-        }
-        0
-    }
-
     /**
      * Result of a single boot-attempt: the verdict, the captured log-file, a human-readable note, and
      * (on a crash) the excerpt of the console-output around the failure for in-comment analysis.
@@ -90,8 +79,9 @@ class BootVerifier(
      * is reported as [BootResult.INCONCLUSIVE] rather than thrown.
      */
     fun verify(project: ProjectFiles, loader: String): BootOutcome {
-        val candidate = pickBootableCandidate(project, loader)
-            ?: return BootOutcome(BootResult.INCONCLUSIVE, null, "No bootable file/Minecraft/loader combination for $loader.")
+        val candidate = BootCandidateSelector.pickBootableCandidate(project.files, loader) { minecraftVersion ->
+            loaderVersionResolver.latest(loader, minecraftVersion) != null
+        } ?: return BootOutcome(BootResult.INCONCLUSIVE, null, "No bootable file/Minecraft/loader combination for $loader.")
         val (mainFile, minecraftVersion) = candidate
         val loaderVersion = loaderVersionResolver.latest(loader, minecraftVersion)
             ?: return BootOutcome(BootResult.INCONCLUSIVE, null, "No $loader version for Minecraft $minecraftVersion.")
@@ -108,16 +98,6 @@ class BootVerifier(
 
         return boot(serverPack, File(attemptDir, "boot.log"), minecraftVersion, loader, loaderVersion)
     }
-
-    /**
-     * Choose the newest (file, Minecraft-version) pair for [loader] for which a loader-version is
-     * actually known, so the boot uses a combination that can install.
-     */
-    private fun pickBootableCandidate(project: ProjectFiles, loader: String): Pair<ModFile, String>? =
-        project.files.filter { loader in it.loaders }
-            .flatMap { file -> file.minecraftVersions.map { file to it } }
-            .sortedWith { left, right -> minecraftComparator.compare(right.second, left.second) }
-            .firstOrNull { loaderVersionResolver.latest(loader, it.second) != null }
 
     /**
      * Download [file] and, recursively up to [maxDependencyDepth], its required dependencies into
@@ -144,7 +124,7 @@ class BootVerifier(
                 continue
             }
             val dependencyProject = platform.resolveDependency(dependencyRef) ?: continue
-            val dependencyFile = pickDependencyFile(dependencyProject, loader, minecraftVersion)
+            val dependencyFile = BootCandidateSelector.pickDependencyFile(dependencyProject.files, loader, minecraftVersion)
             if (dependencyFile == null) {
                 log.warn("No $loader file for dependency '$dependencyRef'; booting without it.")
                 continue
@@ -152,12 +132,6 @@ class BootVerifier(
             downloadWithDependencies(dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1)
         }
         return true
-    }
-
-    /** Pick a dependency-file for the same [loader], preferring an exact [minecraftVersion] match. */
-    private fun pickDependencyFile(dependency: ProjectFiles, loader: String, minecraftVersion: String): ModFile? {
-        val forLoader = dependency.files.filter { loader in it.loaders }
-        return forLoader.firstOrNull { minecraftVersion in it.minecraftVersions } ?: forLoader.firstOrNull()
     }
 
     /**
