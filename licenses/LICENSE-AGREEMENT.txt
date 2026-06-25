@@ -474,7 +474,7 @@ Used libraries / dependencies licenses:
 
 -------------------------------------------------------
 
-(1 of 39)
+(1 of 42)
 Group:   com.cronutils
 Name:    cron-utils
 Version: 9.2.1
@@ -497,7 +497,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(2 of 39)
+(2 of 42)
 Group:   com.electronwill.night-config
 Name:    toml
 Version: 3.8.4
@@ -517,7 +517,7 @@ URL: https://www.gnu.org/licenses/lgpl-3.0.txt
 
 #######################################
 
-(3 of 39)
+(3 of 42)
 Group:   com.fasterxml.jackson.core
 Name:    jackson-databind
 Version: 2.21.1
@@ -760,10 +760,10 @@ from the source code management (SCM) system project uses.
 
 #######################################
 
-(4 of 39)
+(4 of 42)
 Group:   com.fasterxml.jackson.module
 Name:    jackson-module-kotlin
-Version: 2.21.1
+Version: 2.22.0
 Project URL: https://github.com/FasterXML/jackson-module-kotlin\n\n
 Manifest license URL: https://www.apache.org/licenses/LICENSE-2.0
 
@@ -1006,10 +1006,10 @@ from the source code management (SCM) system project uses.
 
 #######################################
 
-(5 of 39)
+(5 of 42)
 Group:   com.formdev
 Name:    flatlaf
-Version: 3.7
+Version: 3.7.1
 POM Project URL: https://github.com/JFormDesigner/FlatLaf
 
 
@@ -1224,10 +1224,10 @@ Embedded license:
 
 #######################################
 
-(6 of 39)
+(6 of 42)
 Group:   com.formdev
 Name:    flatlaf-extras
-Version: 3.7
+Version: 3.7.1
 POM Project URL: https://github.com/JFormDesigner/FlatLaf
 
 
@@ -1442,7 +1442,7 @@ Embedded license:
 
 #######################################
 
-(7 of 39)
+(7 of 42)
 Group:   com.formdev
 Name:    flatlaf-fonts-inter
 Version: 4.1
@@ -1758,7 +1758,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
 #######################################
 
-(8 of 39)
+(8 of 42)
 Group:   com.formdev
 Name:    flatlaf-fonts-jetbrains-mono
 Version: 2.304
@@ -1980,7 +1980,7 @@ Embedded license:
 
 #######################################
 
-(9 of 39)
+(9 of 42)
 Group:   com.formdev
 Name:    flatlaf-fonts-roboto
 Version: 2.137
@@ -2402,7 +2402,7 @@ Embedded license:
 
 #######################################
 
-(10 of 39)
+(10 of 42)
 Group:   com.formdev
 Name:    flatlaf-fonts-roboto-mono
 Version: 3.000
@@ -2824,10 +2824,10 @@ Embedded license:
 
 #######################################
 
-(11 of 39)
+(11 of 42)
 Group:   com.formdev
 Name:    flatlaf-intellij-themes
-Version: 3.7
+Version: 3.7.1
 POM Project URL: https://github.com/JFormDesigner/FlatLaf
 
 
@@ -3042,7 +3042,7 @@ Embedded license:
 
 #######################################
 
-(12 of 39)
+(12 of 42)
 Group:   com.formdev
 Name:    svgSalamander
 Version: 1.1.4
@@ -3070,7 +3070,7 @@ URL: https://opensource.org/licenses/BSD-2-Clause
 
 #######################################
 
-(13 of 39)
+(13 of 42)
 Group:   com.github.MCRcortex
 Name:    nekodetector
 Version: Version-1.1-pre
@@ -3090,10 +3090,10 @@ URL: https://opensource.org/licenses/MIT
 
 #######################################
 
-(14 of 39)
+(14 of 42)
 Group:   com.install4j
 Name:    install4j-runtime
-Version: 12.0.3
+Version: 12.0.4
 POM Project URL: https://www.ej-technologies.com/install4j
 
 
@@ -3110,7 +3110,24 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(15 of 39)
+(15 of 42)
+Group:   com.microsoft.playwright
+Name:    playwright
+Version: 1.60.0
+POM License: Apache License, Version 2.0
+ - https://www.apache.org/licenses/LICENSE-2.0
+
+
+POM license(s): 
+
+
+License: Apache License, Version 2.0
+URL: https://www.apache.org/licenses/LICENSE-2.0
+
+
+#######################################
+
+(16 of 42)
 Group:   com.miglayout
 Name:    miglayout-swing
 Version: 11.4.3
@@ -3130,10 +3147,10 @@ URL: https://opensource.org/licenses/0BSD
 
 #######################################
 
-(16 of 39)
+(17 of 42)
 Group:   commons-io
 Name:    commons-io
-Version: 2.21.0
+Version: 2.22.0
 Project URL: https://commons.apache.org/proper/commons-io/\n\n
 Manifest license URL: https://www.apache.org/licenses/LICENSE-2.0
 
@@ -3350,7 +3367,7 @@ Embedded license:
 
 
 Apache Commons IO
-Copyright 2002-2025 The Apache Software Foundation
+Copyright 2002-2026 The Apache Software Foundation
 
 This product includes software developed at
 The Apache Software Foundation (https://www.apache.org/).
@@ -3358,10 +3375,10 @@ The Apache Software Foundation (https://www.apache.org/).
 
 #######################################
 
-(17 of 39)
+(18 of 42)
 Group:   de.comahe.i18n4k
 Name:    i18n4k-core
-Version: 0.11.1
+Version: 0.11.2
 POM Project URL: https://comahe-de.github.io/i18n4k/
 
 
@@ -3378,10 +3395,10 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(18 of 39)
+(19 of 42)
 Group:   de.comahe.i18n4k
 Name:    i18n4k-core-jvm
-Version: 0.11.1
+Version: 0.11.2
 POM Project URL: https://comahe-de.github.io/i18n4k/
 
 
@@ -3398,10 +3415,10 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(19 of 39)
+(20 of 42)
 Group:   de.jensklingenberg.ktorfit
 Name:    ktorfit-lib
-Version: 2.7.2
+Version: 2.7.3
 POM Project URL: https://github.com/Foso/Ktorfit
 
 
@@ -3418,7 +3435,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(20 of 39)
+(21 of 42)
 Group:   info.picocli
 Name:    picocli-shell-jline3
 Version: 4.7.7
@@ -3438,7 +3455,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(21 of 39)
+(22 of 42)
 Group:   io.github.microutils
 Name:    kotlin-logging
 Version: 3.0.5
@@ -3458,7 +3475,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(22 of 39)
+(23 of 42)
 Group:   net.java.balloontip
 Name:    balloontip
 Version: 1.2.4.1
@@ -3478,7 +3495,7 @@ URL: https://opensource.org/licenses/BSD-3-Clause
 
 #######################################
 
-(23 of 39)
+(24 of 42)
 Group:   net.lingala.zip4j
 Name:    zip4j
 Version: 2.11.6
@@ -3501,7 +3518,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(24 of 39)
+(25 of 42)
 Group:   org.apache.logging.log4j
 Name:    log4j-api-kotlin
 Version: 1.5.0
@@ -3728,10 +3745,10 @@ The Apache Software Foundation (http://www.apache.org/).
 
 #######################################
 
-(25 of 39)
+(26 of 42)
 Group:   org.apache.logging.log4j
 Name:    log4j-core
-Version: 2.25.4
+Version: 2.26.0
 Manifest license URL: https://www.apache.org/licenses/LICENSE-2.0
 
 
@@ -3959,7 +3976,7 @@ Copyright 2005-2006 Tim Fennell
 
 #######################################
 
-(26 of 39)
+(27 of 42)
 Group:   org.bouncycastle
 Name:    bcpkix-jdk18on
 Version: 1.84
@@ -3979,7 +3996,7 @@ URL: https://www.bouncycastle.org/licence.html
 
 #######################################
 
-(27 of 39)
+(28 of 42)
 Group:   org.jabref
 Name:    mslinks
 Version: 1.2
@@ -3999,7 +4016,7 @@ URL: http://www.wtfpl.net/about/
 
 #######################################
 
-(28 of 39)
+(29 of 42)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-bom
 Version: 2.3.20
@@ -4019,10 +4036,10 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(29 of 39)
+(30 of 42)
 Group:   org.jetbrains.kotlin
-Name:    kotlin-reflect
-Version: 2.3.20
+Name:    kotlin-bom
+Version: 2.3.21
 POM Project URL: https://kotlinlang.org/
 
 
@@ -4039,7 +4056,27 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(30 of 39)
+(31 of 42)
+Group:   org.jetbrains.kotlin
+Name:    kotlin-reflect
+Version: 2.3.21
+POM Project URL: https://kotlinlang.org/
+
+
+POM License: Apache License, Version 2.0
+ - https://www.apache.org/licenses/LICENSE-2.0
+
+
+POM license(s): 
+
+
+License: Apache License, Version 2.0
+URL: https://www.apache.org/licenses/LICENSE-2.0
+
+
+#######################################
+
+(32 of 42)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-stdlib
 Version: 2.3.20
@@ -4059,7 +4096,27 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(31 of 39)
+(33 of 42)
+Group:   org.jetbrains.kotlin
+Name:    kotlin-stdlib
+Version: 2.3.21
+POM Project URL: https://kotlinlang.org/
+
+
+POM License: Apache License, Version 2.0
+ - https://www.apache.org/licenses/LICENSE-2.0
+
+
+POM license(s): 
+
+
+License: Apache License, Version 2.0
+URL: https://www.apache.org/licenses/LICENSE-2.0
+
+
+#######################################
+
+(34 of 42)
 Group:   org.jetbrains.kotlinx
 Name:    kotlinx-coroutines-core
 Version: 1.10.2
@@ -4079,7 +4136,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(32 of 39)
+(35 of 42)
 Group:   org.jetbrains.kotlinx
 Name:    kotlinx-coroutines-swing
 Version: 1.10.2
@@ -4099,10 +4156,10 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(33 of 39)
+(36 of 42)
 Group:   org.jetbrains.kotlinx
 Name:    kotlinx-datetime
-Version: 0.7.1-0.6.x-compat
+Version: 0.8.0-0.6.x-compat
 POM Project URL: https://github.com/Kotlin/kotlinx-datetime
 
 
@@ -4119,7 +4176,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(34 of 39)
+(37 of 42)
 Group:   org.pf4j
 Name:    pf4j
 Version: 3.15.0
@@ -4136,10 +4193,10 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(35 of 39)
+(38 of 42)
 Group:   org.springframework.boot
 Name:    spring-boot-devtools
-Version: 4.0.3
+Version: 4.0.6
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -4352,7 +4409,7 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 4.0.3
+Spring Boot 4.0.6
 Copyright (c) 2012-2026 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
@@ -4361,10 +4418,10 @@ the License.
 
 #######################################
 
-(36 of 39)
+(39 of 42)
 Group:   org.springframework.boot
 Name:    spring-boot-starter-data-mongodb
-Version: 4.0.3
+Version: 4.0.6
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -4577,7 +4634,7 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 4.0.3
+Spring Boot 4.0.6
 Copyright (c) 2012-2026 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
@@ -4586,10 +4643,10 @@ the License.
 
 #######################################
 
-(37 of 39)
+(40 of 42)
 Group:   org.springframework.boot
 Name:    spring-boot-starter-log4j2
-Version: 4.0.3
+Version: 4.0.6
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -4802,7 +4859,7 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 4.0.3
+Spring Boot 4.0.6
 Copyright (c) 2012-2026 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
@@ -4811,10 +4868,10 @@ the License.
 
 #######################################
 
-(38 of 39)
+(41 of 42)
 Group:   org.springframework.boot
 Name:    spring-boot-starter-web
-Version: 4.0.3
+Version: 4.0.6
 POM Project URL: https://spring.io/projects/spring-boot
 
 
@@ -5027,7 +5084,7 @@ Embedded license:
    See the License for the specific language governing permissions and
    limitations under the License.
 
-Spring Boot 4.0.3
+Spring Boot 4.0.6
 Copyright (c) 2012-2026 VMware, Inc.
 
 This product is licensed to you under the Apache License, Version 2.0
@@ -5036,7 +5093,7 @@ the License.
 
 #######################################
 
-(39 of 39)
+(42 of 42)
 Group:   tokyo.northside
 Name:    tipoftheday
 Version: 0.6.0
