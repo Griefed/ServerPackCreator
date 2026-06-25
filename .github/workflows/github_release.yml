@@ -5,27 +5,21 @@ on:
     tags:
       - '[0-9]+.[0-9]+.[0-9]+'
 
+permissions:
+  contents: read
+
 jobs:
   preparations:
     name: "Preparations"
     runs-on: ubuntu-latest
-    # OUTPUTS
+    # OUTPUTS — the pushed tag is the version (no third-party action needed).
     outputs:
-      version: ${{ steps.tag.outputs.tag }}
+      version: ${{ github.ref_name }}
 
     steps:
-      # GET THE LATEST CODE
-      - name: Checkout latest code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      # EXTRACT TAG FROM PUSH
-      - name: Get tag
-        id: tag
-        uses: tj-actions/branch-names@v9.0.2
-      - name: Use tag
-        run: echo ${{steps.tag.outputs.tag}}
+      - name: Show version
+        run: |
+          echo "Version: ${{ github.ref_name }}"
 
   jar-and-media:
     name: "JAR and media"
@@ -55,7 +49,7 @@ jobs:
         with:
           gradle-version: wrapper
 
-      - uses: luangong/setup-install4j@v1
+      - uses: luangong/setup-install4j@2afa9cd876188382ea8249f56b898a93587e5f2a # v1
         with:
           version: '12.0.2'
           license: ${{ secrets.INSTALL4J_LICENSE }}
@@ -86,7 +80,7 @@ jobs:
           rm -f ${{ needs.preparations.outputs.version }}/output.txt ${{ needs.preparations.outputs.version }}/*plain.jar 
 
       - name: Generate checksum
-        uses: jmgilman/actions-generate-checksum@v1
+        uses: jmgilman/actions-generate-checksum@238073f4c02f2810adb91c96bdd1e276a5ae9ed6 # v1
         with:
           patterns: |
             ${{ needs.preparations.outputs.version }}/*
@@ -119,9 +113,13 @@ jobs:
 
   release:
     name: "Release"
+    # always() is intentional: publish the release (source + notes) even if a build/upload step
+    # hiccups, so assets can be attached afterwards.
     if: ${{ always() }}
     runs-on: ubuntu-latest
     needs: [preparations, jar-and-media]
+    permissions:
+      contents: write
 
     steps:
       # GET THE LATEST CODE
@@ -139,7 +137,7 @@ jobs:
 
       # GET DESCRIPTION
       - name: Extract version changelog
-        uses: sergeysova/jq-action@v2.3.0
+        uses: sergeysova/jq-action@a3f0d4ff59cc1dddf023fc0b325dd75b10deec58 # v2.3.0
         id: description
         with:
           cmd: "jq .description version.json -r | sed -e 's/\\n/\\n/g' > description.txt"
@@ -147,7 +145,7 @@ jobs:
 
       - name: General Info
         id: info
-        uses: jaywcjlove/github-action-read-file@v2.1.0
+        uses: jaywcjlove/github-action-read-file@935d2b17432f2350fd155a3ccbd3f2934be9e410 # v2.1.0
         with:
           path: misc/INFO.md
 
@@ -167,18 +165,17 @@ jobs:
           path: ${{ needs.preparations.outputs.version }}
 
       - name: Append Info
-        uses: DamianReeves/write-file-action@v1.3
+        uses: DamianReeves/write-file-action@6929a9a6d1807689191dcc8bbe62b54d70a32b42 # v1.3
         with:
           path: description.txt
           write-mode: append
           contents: |
-            ${{ steps.preinfo.outputs.content }}
             ${{ steps.info.outputs.content }}
 
       # GENERATE RELEASE
       - name: Create Release
         id: create_release
-        uses: softprops/action-gh-release@v3.0.0
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{ needs.preparations.outputs.version }}
@@ -196,7 +193,7 @@ jobs:
           wget -O ${{ needs.preparations.outputs.version }}/source.tar.gz https://github.com/Griefed/ServerPackCreator/archive/refs/tags/${{ needs.preparations.outputs.version }}.tar.gz
 
       - name: Upload release to version-dir
-        uses: nogsantos/scp-deploy@master
+        uses: nogsantos/scp-deploy@48b9ca0b1adcb229b1568eebda8e16e06436495a # v1.3.0
         with:
           src: ./${{ needs.preparations.outputs.version }}
           host: ${{ secrets.SPCUPLOAD_HOST }}
@@ -206,7 +203,7 @@ jobs:
 
       - name: Cleanup latest
         id: action-ssh
-        uses: tiyee/action-ssh@v1.0.1
+        uses: tiyee/action-ssh@b2d48d44e978ff09e0c37479a429a8374da6bb63 # v1.0.1
         with:
           host: ${{ secrets.SPCUPLOAD_HOST }}
           username: ${{ secrets.SPCUPLOAD_USERNAME }}
@@ -214,7 +211,7 @@ jobs:
           command: 'rm -f ${{ secrets.SPCUPLOAD_TARGET }}/latest/*'
 
       - name: Upload release to latest-dir
-        uses: nogsantos/scp-deploy@master
+        uses: nogsantos/scp-deploy@48b9ca0b1adcb229b1568eebda8e16e06436495a # v1.3.0
         with:
           src: ./${{ needs.preparations.outputs.version }}/*
           host: ${{ secrets.SPCUPLOAD_HOST }}
@@ -230,11 +227,15 @@ jobs:
     steps:
       - name: Get current date
         id: date
-        run: echo "::set-output name=today::$(date +'%Y-%m-%dT%H:%M:%S')"
+        run: echo "today=$(date +'%Y-%m-%dT%H:%M:%S')" >> "$GITHUB_OUTPUT"
 
       - name: Post WebHook Message
         run: |
-          curl -L --output ./discord.sh https://raw.githubusercontent.com/ChaoticWeg/discord.sh/master/discord.sh
+          # Pinned to a specific commit and checksum-verified before executing, instead of running
+          # whatever is on the script's master branch.
+          curl -L --output ./discord.sh \
+            https://raw.githubusercontent.com/ChaoticWeg/discord.sh/f274ed60c86f5d17b26a18e8f189a563c7c4482c/discord.sh
+          echo "01619fc6b89dd88fef7386d14f3b1db9aaaf9b5a8501d263f24228924fe0d528  ./discord.sh" | sha256sum -c -
           chmod a+x ./discord.sh
           ./discord.sh \
             --webhook-url="${{ secrets.WEBHOOK_URL }}" \
@@ -257,9 +258,12 @@ jobs:
   pages:
     name: "GitHub Pages"
     runs-on: ubuntu-latest
+    needs: [preparations]
+    permissions:
+      contents: write
     steps:
       - name: Checkout latest code
-        uses: actions/checkout@master
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -283,7 +287,7 @@ jobs:
 
       # DEPLOY TO GH-PAGES
       - name: Deploy to GitHub-Pages
-        uses: JamesIves/github-pages-deploy-action@v4.8.0
+        uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f # v4.8.0
         with:
           branch: gh-pages
           folder: serverpackcreator-api/build/dokka
