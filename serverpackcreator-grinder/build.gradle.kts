@@ -17,6 +17,10 @@ dependencies {
     api("com.github.docker-java:docker-java-core:3.7.1")
     api("com.github.docker-java:docker-java-transport-zerodep:3.7.1")
 
+    // Instant (de)serialization for the file-backed verdict store; jackson-databind + the Kotlin
+    // module arrive transitively via -clientside / -api.
+    api("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.22.0")
+
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.21")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.0")
 }
