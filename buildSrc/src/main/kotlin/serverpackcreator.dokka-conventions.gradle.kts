@@ -1,4 +1,3 @@
-import org.jetbrains.dokka.DokkaDefaults.failOnWarning
 import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
 
 plugins {
@@ -50,6 +49,10 @@ dokka {
             )
         }
     }
+}
+
+tasks.dokkaGeneratePublicationJavadoc {
+    dependsOn(tasks.getByName("compileJava"), tasks.getByName("compileTestJava"))
 }
 
 tasks.register<Jar>("dokkaJavadocJar") {
