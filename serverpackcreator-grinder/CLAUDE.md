@@ -62,6 +62,13 @@ container, so the box running the grinder needs:
   tuples cached independently. All offline.
 - docker-java and the real installer have no offline doubles; `DockerJavaContainerEngine` and the
   production `LoaderInstaller` are integration-only.
+- **`DockerJavaContainerEngineIT`** is the live-daemon integration test for the docker glue, **gated
+  behind `GRINDER_DOCKER_IT=1`** (`@EnabledIfEnvironmentVariable`) so it is skipped on a normal /
+  daemon-less CI run. Run it with a daemon + the `busybox:latest` image present:
+  `docker pull busybox && GRINDER_DOCKER_IT=1 ./gradlew :serverpackcreator-grinder:test --tests "*DockerJavaContainerEngineIT"`.
+  It verifies the full path (create → start → stream → ready-detect/stop → exit code → **force-remove**,
+  no leaked containers) under the production hardening defaults. **Verified passing** against Docker
+  29.5 on 2026-06-26.
 
 ## Still to build (the fire-and-forget service)
 
