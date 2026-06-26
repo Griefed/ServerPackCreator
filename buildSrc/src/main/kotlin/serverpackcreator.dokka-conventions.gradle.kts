@@ -38,7 +38,13 @@ dokka {
             reportUndocumented.set(true)
             skipEmptyPackages.set(true)
             jdkVersion.set(21)
-            suppressGeneratedFiles.set(false)
+            // Generated sources (e.g. the i18n4k `Translations` object) carry no hand-written
+            // KDoc, so documenting them is neither possible nor meaningful — exclude them to keep
+            // the docs (and the reportUndocumented output) focused on first-party code.
+            // `suppressGeneratedFiles` alone does not catch the i18n4k output under
+            // `build/generated`, so we additionally suppress that directory by path.
+            suppressGeneratedFiles.set(true)
+            suppressedFiles.from(layout.buildDirectory.dir("generated"))
             includes.from(
                 projectDir.resolve("module.md")
             )
