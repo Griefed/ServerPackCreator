@@ -346,3 +346,15 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   spec/mount/eula. **grinder 3/3 green; clientside 41/41 green.** Remaining for fire-and-forget: pre-bake
   cache, popularity-ranked queue + worker pool, verdict store → sortable/CSV table via the existing
   frontend.
+- **Grinder pre-bake cache + host-prereqs doc (2026-06-26, branch `claude-grinder`):** added
+  `LoaderCache` — the `--network none` enabler. `ensureInstalled(loader, loaderVersion,
+  minecraftVersion)` returns a cached installed-server base, running a one-off `LoaderInstaller` (with
+  network) only on a miss; **marker-gated** (`.spc-installed` written only after success, so a partial
+  install is redone not served) and **serialized per tuple** (parallel workers share one install).
+  `LoaderInstaller` is the seam (real impl = a setup container with network snapshotting the
+  ServerStarterJar self-install — integration-only); the cache logic is pure. `LoaderCacheTest` (5,
+  offline, fake installer) pins miss-installs-once-then-hits, failed/throwing→null+clean, install-once
+  across 6 concurrent threads, and independent tuples. Also documented the host prerequisites that land
+  when `BootVerifier` is wired in: `CURSEFORGE_API_KEY` (CF resolution) + Playwright/Chromium on the
+  host (locked-file `BrowserDownloader`, which runs host-side during staging, not in the boot
+  container) — key + browser are complementary, a locked CF mod needs both. **grinder 8/8 green.**

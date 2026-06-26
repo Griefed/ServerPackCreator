@@ -25,6 +25,13 @@ containers:
   inspect exit → force-remove). **Not unit-tested** (needs a live daemon) — that is the whole reason
   the testable orchestration sits in `ContainerServerRunner` behind the seam. If you change it, verify
   against a real Docker daemon.
+- **`LoaderCache`** — the pre-bake cache (the `--network none` enabler). `ensureInstalled(loader,
+  loaderVersion, minecraftVersion)` returns a cached installed-server base, running a one-off
+  `LoaderInstaller` (with network) only on a **miss**; **marker-gated** (`.spc-installed` written only
+  after success, so a crash mid-install is redone, never served half-baked) and **serialized per
+  tuple** so parallel workers share a single install. `LoaderInstaller` is the seam — its real impl (a
+  setup container *with* network that snapshots the ServerStarterJar's self-install) is
+  integration-only; everything else here is pure and unit-tested.
 
 **Landmine — network vs. install:** the hardening default is `--network none`, but the *first* boot of
 a given loader/MC needs network for the ServerStarterJar to download the loader + libraries. The plan
@@ -32,18 +39,39 @@ is to **pre-bake that once per `(loader, loaderVersion, minecraftVersion)`** int
 base tree (network only on the cache-miss), then every actual mod-boot mounts it and runs offline.
 Don't wire the candidate-mod boot to run with network — that defeats the isolation.
 
+**Host prerequisites (apply once `ContainerServerRunner` is wired into a `BootVerifier`):** the
+download/resolve phase runs on the **host** (in `BootVerifier.prepareBootPack`), *not* in the boot
+container, so the box running the grinder needs:
+- **`CURSEFORGE_API_KEY`** env var — `clientside.supportedPlatforms()` only registers CurseForge when
+  the key is present; without it CurseForge links cannot be resolved at all (Modrinth needs no key).
+- **Playwright + Chromium installed** (`playwright install chromium` + OS deps, as `clientside-boot.yml`
+  does) — distribution-locked CurseForge files (`allowModDistribution=false`, `downloadUrl=null`) are
+  routed by `clientside.selectDownloader` to the headless-browser `BrowserDownloader`, which runs on
+  the host during staging. The key and the browser are **complementary**: the key resolves the project
+  and reveals the file is locked; the browser fetches the withheld jar. A locked CurseForge mod needs
+  **both**. Wire the `BootVerifier` with a `BrowserDownloader()` (disposed via `use {}`) exactly as
+  `VerifyClientsideCommand` does — locked-file support is then inherited, not reimplemented.
+
 ## Testing
 
 - `ContainerServerRunnerTest` uses a fake `ContainerEngine`: no-start.sh → `NotStarted` (engine never
   called), raw output → `RunResult.Completed`, and the assembled spec carries the hardening + pack
   mount + written eula. All offline.
-- docker-java has no offline test double here; `DockerJavaContainerEngine` is integration-only.
+- `LoaderCacheTest` uses a fake `LoaderInstaller`: miss-installs-once-then-hits, failed/throwing
+  install → `null` + nothing left installed, concurrent requests for one tuple install once, distinct
+  tuples cached independently. All offline.
+- docker-java and the real installer have no offline doubles; `DockerJavaContainerEngine` and the
+  production `LoaderInstaller` are integration-only.
 
 ## Still to build (the fire-and-forget service)
 
-1. **`ContainerServerRunner` wired into a `BootVerifier`** via its `serverRunner` ctor param, against a
-   built runtime image (JRE + ServerStarterJar + entrypoint).
-2. **Pre-bake cache** keyed on `(loader, loaderVersion, minecraftVersion)`.
+Done so far: the container `ServerRunner` (+ hardening seam) and the `LoaderCache` pre-bake.
+
+1. **Runtime image** (JRE + ServerStarterJar + entrypoint) and the real `LoaderInstaller` — a setup
+   container run *with* network that snapshots the install into the `LoaderCache`.
+2. **Grind orchestrator** tying it together: resolve project → `BootVerifier.prepareBootPack` (host
+   download incl. the locked-file browser path) → overlay the `LoaderCache` base into the pack → boot
+   via `ContainerServerRunner` (`--network none`) → `BootVerifier.outcomeFor`.
 3. **Popularity-ranked work queue + bounded worker pool** (parallelism ≈ host-RAM / per-boot-memory),
    under a `SupervisorJob` so one worker dying doesn't sink the pool.
 4. **Verdict store** (survives restarts) feeding the sortable / CSV-exportable table — render through
