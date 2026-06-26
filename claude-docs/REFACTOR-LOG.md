@@ -327,3 +327,22 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   then add tests). **clientside 41/41 green; app compiles; no new warnings.** Next for the grinder: a
   `ContainerServerRunner` (`docker-java`, `--network none`, resource-capped), the worker pool/queue, and
   a per-`(loader, loaderVer, mcVer)` pre-bake cache so each mod-boot runs offline.
+- **Grinder module scaffolded — container-backed ServerRunner (2026-06-26, branch `claude-grinder`):**
+  new standalone `serverpackcreator-grinder` (package `de.griefed.serverpackcreator.grinder`),
+  depending only on `-clientside` + `docker-java` (`docker-java-core` + `-transport-zerodep`, 3.7.1; no
+  Spring/Swing, unpublished). Reuses the clientside `ServerRunner` seam: `ContainerServerRunner`
+  implements it by booting a prepared pack in a hardened container instead of a host process, so it
+  drops into `BootVerifier` unchanged and feeds the same `BootLogClassifier` (via `outcomeFor`). The
+  docker interaction sits behind a `ContainerEngine` seam (same injectable-boundary pattern as
+  clientside's `HttpFetcher`), so the runner's host-side staging (start-script check, eula,
+  `ContainerSpec` assembly) + result mapping are unit-tested with a fake; `ContainerSpec` carries the
+  untrusted-mod hardening as *defaults* (`--network none`, read-only rootfs, drop ALL caps,
+  no-new-privileges, non-root, tmpfs `/tmp`, memory/cpu/pids caps; socket never mounted). The real
+  `DockerJavaContainerEngine` (create→start→follow→stop→inspect→remove) is integration-only — it
+  compiles against docker-java 3.7.1 (validating the API surface) but needs a live daemon to run.
+  Also a Boy-Scout cleanup of the just-landed seam: writing the second runner revealed `ServerRunner.run`
+  carried a dead `logFile` param (the caller persists the log), now dropped. `ContainerServerRunnerTest`
+  (3, offline) pins no-start.sh→NotStarted-without-launching, raw-output→Completed, and the hardened
+  spec/mount/eula. **grinder 3/3 green; clientside 41/41 green.** Remaining for fire-and-forget: pre-bake
+  cache, popularity-ranked queue + worker pool, verdict store → sortable/CSV table via the existing
+  frontend.

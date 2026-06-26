@@ -50,6 +50,10 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 - **serverpackcreator-web-frontend** — Quasar 2 / Vue 3 SPA, JavaScript (TS migration planned),
   Pinia stores, built into the app's web backend via the org.siouan frontend Gradle plugin. See
   `serverpackcreator-web-frontend/CLAUDE.md`.
+- **serverpackcreator-grinder** — standalone fire-and-forget service that boot-verifies mods at scale
+  in isolated, network-less **Docker containers** (docker-java). Depends on `-clientside` (+ `-api`);
+  no Spring/Swing; not published. Foundation stage: the container-backed `ServerRunner`. See
+  `serverpackcreator-grinder/CLAUDE.md`.
 - Not in the Gradle build: `serverpackcreator-help` (docs), `buildSrc`, `docker`, `misc`.
 
 ## Build & test commands
@@ -153,6 +157,7 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 | app            | 71            | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay             |
 | plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |
 | web-frontend   | 23 (from 0)   | Phase 4a–4e done: Vitest, `$q` decoupling, **full TS migration**, component coverage  |
+| grinder        | 3             | New module: container-backed `ServerRunner` (docker-java); orchestration still to build |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.
