@@ -34,7 +34,10 @@ import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import de.griefed.serverpackcreator.app.gui.window.MainFrame
 import de.griefed.serverpackcreator.app.updater.MigrationManager
 import de.griefed.serverpackcreator.app.updater.UpdateChecker
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import java.awt.EventQueue
 import java.awt.Frame

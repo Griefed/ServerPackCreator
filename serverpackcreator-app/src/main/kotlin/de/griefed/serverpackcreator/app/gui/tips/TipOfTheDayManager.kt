@@ -22,7 +22,10 @@ package de.griefed.serverpackcreator.app.gui.tips
 import Translations
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import tokyo.northside.tipoftheday.TipOfTheDay

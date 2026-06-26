@@ -19,8 +19,8 @@
  */
 package de.griefed.serverpackcreator.api.versionmeta.fabric
 
-import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import com.fasterxml.jackson.databind.ObjectMapper
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import java.io.IOException
 import java.net.URI
 import java.util.*

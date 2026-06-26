@@ -21,29 +21,20 @@ package de.griefed.serverpackcreator.api.serverpack
 
 import de.griefed.serverpackcreator.api.ApiPlugins
 import de.griefed.serverpackcreator.api.ApiProperties
-import de.griefed.serverpackcreator.api.config.ExclusionFilter
 import de.griefed.serverpackcreator.api.config.InclusionSpecification
 import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.api.modscanning.ModScanner
 import de.griefed.serverpackcreator.api.utilities.*
-import de.griefed.serverpackcreator.api.utilities.common.*
+import de.griefed.serverpackcreator.api.utilities.common.StringUtilities
+import de.griefed.serverpackcreator.api.utilities.common.Utilities
+import de.griefed.serverpackcreator.api.utilities.common.create
+import de.griefed.serverpackcreator.api.utilities.common.deleteQuietly
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
-import net.lingala.zip4j.ZipFile
-import net.lingala.zip4j.model.ExcludeFileFilter
-import net.lingala.zip4j.model.ZipParameters
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import java.awt.Image
-import java.awt.image.BufferedImage
 import java.io.File
 import java.io.IOException
-import java.net.MalformedURLException
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.util.*
-import java.util.regex.PatternSyntaxException
-import javax.imageio.ImageIO
-import kotlin.io.path.absolute
 
 /**
  * Everything revolving around creating a server pack. The intended workflow is to create a [PackConfig] and run

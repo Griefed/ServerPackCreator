@@ -19,8 +19,8 @@
  */
 package de.griefed.serverpackcreator.api.versionmeta.quilt
 
-import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import org.w3c.dom.Document
 import org.xml.sax.SAXException
 import java.io.File

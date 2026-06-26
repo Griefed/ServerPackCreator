@@ -19,8 +19,8 @@
  */
 package de.griefed.serverpackcreator.api.versionmeta.neoforge
 
-import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftMeta
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.w3c.dom.Document

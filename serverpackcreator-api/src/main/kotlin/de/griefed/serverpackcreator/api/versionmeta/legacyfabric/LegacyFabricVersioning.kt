@@ -19,8 +19,8 @@
  */
 package de.griefed.serverpackcreator.api.versionmeta.legacyfabric
 
-import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import java.io.File
 import java.io.IOException
 

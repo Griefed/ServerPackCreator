@@ -23,7 +23,9 @@ import Translations
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import de.griefed.serverpackcreator.app.gui.window.settings.SettingsEditorsTab
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.swing.Timer
 import javax.swing.event.AncestorEvent
 import javax.swing.event.AncestorListener

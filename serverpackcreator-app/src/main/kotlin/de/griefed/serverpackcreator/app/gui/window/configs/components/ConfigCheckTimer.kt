@@ -25,7 +25,9 @@ import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import de.griefed.serverpackcreator.app.gui.window.configs.ConfigEditor
 import de.griefed.serverpackcreator.app.gui.window.configs.TabbedConfigsTab
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.awt.event.ActionListener
 import java.io.File
 import javax.swing.Timer

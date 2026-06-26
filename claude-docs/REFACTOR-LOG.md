@@ -290,3 +290,40 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   code, verified via the running GUI); app suite stays green throughout, no new compiler warnings.
   **`checkServer()` confirmed live** (called by `ConfigCheckTimer`), despite the "install server"
   checkbox being gone from the GUI.
+- **Clientside engine extracted to its own module (2026-06-26, branch `claude-grinder`):**
+  behavior-preserving move of the `clientside/` package out of `serverpackcreator-app` into a new
+  `serverpackcreator-clientside` Gradle module, ahead of building a standalone Docker "grinder"
+  service that boots candidate mods in parallel isolated containers. **Why a new module, not `-api`
+  and not exclusions:** the engine pulls Playwright + boot machinery, which must not pollute the
+  published, compatibility-frozen `-api` core (module-boundary rule); and excluding `-app`'s
+  transitive deps from a grinder dependency is fragile whack-a-mole (runtime `NoClassDefFoundError`,
+  rotting exclude-list) versus a lean module that never carries Spring/Swing in the first place. The
+  engine was already clean — its only imports are `-api` (`ApiWrapper`, `ModScanner`, `PackConfig`,
+  `versionmeta`, `utilities`), Playwright, Jackson and log4j-kotlin; no `-app` types. Moves: 16 main
+  + 10 test files via `git mv`, package renamed `de.griefed.serverpackcreator.app.clientside` →
+  `de.griefed.serverpackcreator.clientside` (dropping the wrong `.app.` segment). New module build
+  reuses `kotlin`/`dokka` conventions, declares Playwright + `jackson-module-kotlin` (the API ships
+  `jackson-databind` and `log4j-api-kotlin` transitively but not the Kotlin module), and mirrors the
+  app's `dependsOn(:serverpackcreator-api:processTestResources)` for `MetadataScannerTest`'s offline
+  `ApiWrapper`. `-app` now depends on the module via `api(project(...))` (Playwright dropped from its
+  build — transitive from here); the four CLI command files repointed their imports. Docs split
+  accordingly: `module.md` and module `CLAUDE.md` for the engine created in the new module, trimmed
+  out of `-app`'s (CLI verbs + arg-order landmine stay). **All 37 clientside tests green; full app
+  suite (71) green; no new warnings.** Next: split `BootVerifier` into a host-side `prepareBootPack()`
+  and a `runServer()` interface so a container impl can slot in for the grinder.
+- **BootVerifier split into staging + a ServerRunner seam (2026-06-26, branch `claude-grinder`):**
+  behavior-preserving extraction so the grinder can boot prepared packs in isolated containers while
+  reusing the verdict logic. `BootVerifier.verify()` now delegates to (1) `prepareBootPack()` — public
+  host-side staging (candidate pick → download mod + deps → generate self-installing pack), returning a
+  `Prepared.Ready`/`Failed`; (2) a `ServerRunner` interface returning *raw* `RunResult.Completed(lines,
+  exitCode, timedOut)` / `NotStarted(detail)` (classification deliberately left to the caller so every
+  runner is judged by the same `BootLogClassifier`), with `HostProcessServerRunner` = the old `start.sh`
+  -spawning `boot()` body verbatim; and (3) a companion `outcomeFor()` — the shared verdict seam (write
+  log → classify → crash-excerpt). `verify()`'s signature is unchanged; the new `serverRunner` ctor
+  param defaults to the host runner, so the `VerifyClientsideCommand` caller (named args) is untouched.
+  The split makes two previously boot-only paths offline-testable: `BootVerifierOutcomeTest` (3 cases:
+  NotStarted→INCONCLUSIVE/no-log, non-zero→CRASHED+excerpt+written-log, ready-line→SURVIVED/no-excerpt)
+  and `HostProcessServerRunnerTest` (no-`start.sh`→`NotStarted`). Done as two commits (pure refactor,
+  then add tests). **clientside 41/41 green; app compiles; no new warnings.** Next for the grinder: a
+  `ContainerServerRunner` (`docker-java`, `--network none`, resource-capped), the worker pool/queue, and
+  a per-`(loader, loaderVer, mcVer)` pre-bake cache so each mod-boot runs offline.

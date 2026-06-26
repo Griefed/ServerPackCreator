@@ -9,6 +9,7 @@ dependencyResolutionManagement {
 }
 
 include(":serverpackcreator-api")
+include(":serverpackcreator-clientside")
 include(":serverpackcreator-app")
 include(":serverpackcreator-web-frontend")
 include(":serverpackcreator-plugin-example")

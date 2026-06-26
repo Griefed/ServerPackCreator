@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.api.config
 
 import Translations
-import com.fasterxml.jackson.databind.JsonNode
 import de.griefed.serverpackcreator.api.ApiPlugins
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.SPCConfigCheckListener
@@ -28,16 +27,10 @@ import de.griefed.serverpackcreator.api.utilities.SPCGenericListener
 import de.griefed.serverpackcreator.api.utilities.SecurityScans
 import de.griefed.serverpackcreator.api.utilities.common.*
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
-import net.lingala.zip4j.ZipFile
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.io.IOException
-import java.net.URI
-import java.nio.file.FileSystemAlreadyExistsException
 import java.nio.file.Paths
-import java.nio.file.ProviderNotFoundException
-import java.util.*
-import java.util.regex.PatternSyntaxException
 
 /**
  * Check any given [PackConfig] for errors and, if so desired, add them to a passed

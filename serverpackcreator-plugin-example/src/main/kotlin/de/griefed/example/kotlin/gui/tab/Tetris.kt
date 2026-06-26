@@ -21,7 +21,10 @@ package de.griefed.example.kotlin.gui.tab
 
 import Example
 import java.awt.*
-import java.awt.event.*
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
 import java.beans.PropertyChangeEvent
 import java.beans.PropertyChangeListener
 import java.beans.PropertyChangeSupport
