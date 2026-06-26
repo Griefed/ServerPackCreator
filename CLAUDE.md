@@ -157,7 +157,7 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 | app            | 71            | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay             |
 | plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |
 | web-frontend   | 23 (from 0)   | Phase 4a–4e done: Vitest, `$q` decoupling, **full TS migration**, component coverage  |
-| grinder        | 21 (+2 IT)    | Container runner (daemon-verified) + `LoaderCache` + grind orchestration/CSV; integration adapter + web table to build |
+| grinder        | 30 (+2 IT)    | Container runner (daemon-verified) + `LoaderCache` + orchestration + persistent store + web report; integration adapter to build |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.

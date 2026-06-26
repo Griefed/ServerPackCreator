@@ -375,3 +375,17 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   21/21 unit green, +2 IT (gated).** Remaining: runtime image + real `LoaderInstaller`, the real
   `CandidateVerifier` integration adapter (incl. the cache-overlay seam in `BootVerifier`), a
   persistent `VerdictStore`, and the web table over the existing Quasar frontend.
+- **Grinder persistence + self-contained web report (2026-06-26, branch `claude-grinder`):** the
+  *visible half* of the original feature ask. `JsonVerdictStore` — file-backed `VerdictStore` (loads on
+  start, whole-file temp-then-atomic-move write so a crash can't truncate it, corrupt-file → empty +
+  log) so a multi-day fire-and-forget run resumes after a restart; Instant via jackson-datatype-jsr310.
+  `VerdictReportRenderer` — a self-contained HTML page with click-to-sort columns and an embedded-CSV
+  download button, HTML-escaped cells **and** `\uXXXX`-escaped CSV inside the `<script>` block so a
+  mod-supplied `</script>` can't break out. `ReportServer` — serves the table (`/`) + CSV
+  (`/export.csv`) live off the store via the JDK's built-in `com.sun.net.httpserver.HttpServer`, **no
+  Spring / no new web dependency**. **Decision:** kept the report standalone rather than rendering
+  through the app's Quasar frontend (as first mooted), because the grinder must not depend on `-app`
+  (which would drag in Spring/Mongo/Swing and break its standalone nature). 9 new tests incl.
+  `ReportServerTest` exercising a real loopback HTTP server on an ephemeral port. **grinder 30/30 unit
+  green (+2 gated IT).** Remaining: runtime image + real `LoaderInstaller`, the real `CandidateVerifier`
+  adapter (cache-overlay seam), a candidate source, and the main fire-and-forget entrypoint.

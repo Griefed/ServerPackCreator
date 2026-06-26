@@ -41,6 +41,15 @@ containers:
   renders RFC-4180 CSV (`Name, Project, NamePattern, Confidence, Loader, Detail`, highest-confidence
   first). **`CandidateVerifier` is the seam that collapses the integration-bound boot pipeline**, so
   the whole orchestration is unit-tested with fakes.
+- **Persistence + web interface**: `JsonVerdictStore` (file-backed, loads on start, whole-file
+  temp-then-atomic-move write, corrupt-file → empty) makes a multi-day run restart-safe.
+  `VerdictReportRenderer` renders a **self-contained** HTML page — click-to-sort columns, an
+  embedded-CSV download button, HTML-escaped cells **and** `\uXXXX`-escaped CSV-in-`<script>` so a
+  mod-supplied `</script>` can't break out. `ReportServer` serves the table (`/`) and CSV
+  (`/export.csv`) live off the store via the **JDK's built-in `com.sun.net.httpserver.HttpServer`** —
+  **no Spring, no new dependency**. *Deliberately standalone:* the report is self-contained rather than
+  rendered through the app's Quasar frontend, because the grinder must not depend on `-app` (that would
+  drag in Spring/Mongo/Swing and break its standalone nature).
 
 **Landmine — network vs. install:** the hardening default is `--network none`, but the *first* boot of
 a given loader/MC needs network for the ServerStarterJar to download the loader + libraries. The plan
@@ -73,6 +82,9 @@ container, so the box running the grinder needs:
   `CandidateVerifier` (shared builders in `GrindTestFixtures.kt`): replace-not-duplicate, CSV
   escaping + confidence ordering + name-pattern column, per-loader recording, skip-already-done,
   swallow-throw, pool drains every candidate + most-popular-first. All offline.
+- `JsonVerdictStoreTest` (survive-reopen, replace-across-reopen, corrupt→empty, creates-file+parents),
+  `VerdictReportRendererTest` (sortable headers, embedded CSV, HTML/script escaping), `ReportServerTest`
+  (real **loopback** HTTP on an ephemeral port: `/` HTML + `/export.csv`, live store, content-types).
 - docker-java and the real installer have no offline doubles; `DockerJavaContainerEngine` and the
   production `LoaderInstaller` are integration-only.
 - **`DockerJavaContainerEngineIT`** is the live-daemon integration test for the docker glue, **gated
@@ -85,9 +97,10 @@ container, so the box running the grinder needs:
 
 ## Still to build (the fire-and-forget service)
 
-Done so far: the container `ServerRunner` (+ hardening seam), the `LoaderCache` pre-bake, and the
-grind **orchestration** (`Grinder` + `GrindPool` + `VerdictStore` + `VerdictCsvExporter`, behind the
-`CandidateVerifier` seam).
+Done so far: container `ServerRunner` (+ hardening), `LoaderCache` pre-bake, grind **orchestration**
+(`Grinder`/`GrindPool`/`VerdictStore`/`VerdictCsvExporter`), restart-safe `JsonVerdictStore`, and the
+self-contained web report (`VerdictReportRenderer` + `ReportServer`). The **visible half** (sortable
+table + CSV) is shipped; what's left is the integration that makes a real boot happen.
 
 1. **Runtime image** (JRE + ServerStarterJar + entrypoint) and the real `LoaderInstaller` — a setup
    container run *with* network that snapshots the install into the `LoaderCache`.
@@ -97,7 +110,7 @@ grind **orchestration** (`Grinder` + `GrindPool` + `VerdictStore` + `VerdictCsvE
    `prepareBootPack` and the container run) is the one design decision left — resolve it with real
    ServerStarterJar behaviour in hand (it may need a hook in `BootVerifier`, since `ServerRunner.run`
    does not carry the loader/MC tuple). Needs the host prerequisites above (CF key + Playwright).
-3. **Persistent `VerdictStore`** (file/Mongo) so a multi-day fire-and-forget run survives restarts;
-   the `slug`-keyed skip + replace semantics already make resuming idempotent.
-4. **Web table** over `VerdictStore.all()` + `VerdictCsvExporter`, through the existing Quasar frontend
-   (QTable = sort + CSV free), not a new web stack.
+3. **A candidate source** — enumerate Modrinth/CurseForge projects, popularity-ranked, to feed the
+   queue (cheap metadata triage; Modrinth declares sideness for free, CurseForge needs the jar scan).
+4. **Main entrypoint** wiring candidate-source → `GrindPool(Grinder(realVerifier, JsonVerdictStore))`
+   + `ReportServer` for the actual fire-and-forget run.
