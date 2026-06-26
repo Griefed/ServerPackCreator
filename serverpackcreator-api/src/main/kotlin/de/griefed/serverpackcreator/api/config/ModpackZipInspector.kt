@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.api.config
 
+import Translations
 import de.griefed.serverpackcreator.api.utilities.common.isNotValidZipFile
 import net.lingala.zip4j.ZipFile
 import org.apache.logging.log4j.kotlin.cachedLoggerOf

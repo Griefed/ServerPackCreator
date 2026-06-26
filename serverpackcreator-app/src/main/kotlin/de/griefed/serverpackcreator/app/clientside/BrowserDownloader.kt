@@ -19,11 +19,7 @@
  */
 package de.griefed.serverpackcreator.app.clientside
 
-import com.microsoft.playwright.Browser
-import com.microsoft.playwright.BrowserType
-import com.microsoft.playwright.Download
-import com.microsoft.playwright.Page
-import com.microsoft.playwright.Playwright
+import com.microsoft.playwright.*
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 

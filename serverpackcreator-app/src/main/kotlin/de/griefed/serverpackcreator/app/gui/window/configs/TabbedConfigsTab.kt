@@ -33,7 +33,9 @@ import de.griefed.serverpackcreator.app.gui.window.MainFrame
 import de.griefed.serverpackcreator.app.gui.window.configs.components.ComponentResizer
 import de.griefed.serverpackcreator.app.gui.window.configs.components.ConfigCheckTimer
 import de.griefed.serverpackcreator.app.gui.window.menu.file.ConfigChooser
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import org.apache.commons.io.monitor.FileAlterationListener
 import org.apache.commons.io.monitor.FileAlterationMonitor

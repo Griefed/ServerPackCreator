@@ -24,7 +24,10 @@ import de.griefed.serverpackcreator.api.config.InclusionSpecification
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.components.ScrollTextArea
 import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection

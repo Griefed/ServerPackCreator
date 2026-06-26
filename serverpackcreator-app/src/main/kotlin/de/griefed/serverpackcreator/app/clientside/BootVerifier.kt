@@ -24,7 +24,7 @@ import de.griefed.serverpackcreator.api.config.PackConfig
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.time.Duration
-import java.util.Optional
+import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**

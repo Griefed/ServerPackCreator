@@ -33,11 +33,11 @@ import de.griefed.serverpackcreator.api.utilities.common.ListUtilities
 import de.griefed.serverpackcreator.api.utilities.common.StringUtilities
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.components.*
+import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import de.griefed.serverpackcreator.app.gui.window.configs.components.*
 import de.griefed.serverpackcreator.app.gui.window.configs.components.advanced.AdvancedSettingsPanel
 import de.griefed.serverpackcreator.app.gui.window.configs.components.advanced.ScriptKVPairs
 import de.griefed.serverpackcreator.app.gui.window.configs.components.inclusions.InclusionsEditor
-import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import net.miginfocom.swing.MigLayout

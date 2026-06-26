@@ -19,6 +19,10 @@
  */
 package de.griefed.serverpackcreator.app.clientside
 
+import de.griefed.serverpackcreator.app.clientside.BootResult.CRASHED
+import de.griefed.serverpackcreator.app.clientside.BootResult.SURVIVED
+
+
 /**
  * Outcome of booting a server with the candidate mod force-included. Note the asymmetry: only
  * [CRASHED] is a strong positive for "clientside" — a graceful clientside mod boots fine

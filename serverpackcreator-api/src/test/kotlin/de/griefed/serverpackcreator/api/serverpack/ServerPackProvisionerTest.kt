@@ -39,7 +39,7 @@ import java.awt.image.BufferedImage
 import java.io.File
 import java.net.MalformedURLException
 import java.net.URI
-import java.util.Optional
+import java.util.*
 import javax.imageio.ImageIO
 
 /**

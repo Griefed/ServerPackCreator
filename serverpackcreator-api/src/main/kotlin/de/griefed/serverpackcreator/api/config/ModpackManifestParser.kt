@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.api.config
 
+import Translations
 import com.fasterxml.jackson.databind.JsonNode
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.Utilities

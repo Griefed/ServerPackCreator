@@ -31,7 +31,9 @@ import de.griefed.serverpackcreator.app.gui.window.configs.TabbedConfigsTab
 import de.griefed.serverpackcreator.app.gui.window.control.components.GenerationButton
 import de.griefed.serverpackcreator.app.gui.window.control.components.LarsonScanner
 import de.griefed.serverpackcreator.app.gui.window.control.components.ServerPacksButton
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.launch
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Desktop

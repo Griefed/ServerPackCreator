@@ -19,11 +19,11 @@
  */
 package de.griefed.serverpackcreator.api.versionmeta.minecraft
 
-import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import com.fasterxml.jackson.databind.JsonNode
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.Type
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import de.griefed.serverpackcreator.api.versionmeta.forge.ForgeMeta
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File

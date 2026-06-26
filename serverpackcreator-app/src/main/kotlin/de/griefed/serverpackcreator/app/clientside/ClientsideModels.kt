@@ -19,6 +19,9 @@
  */
 package de.griefed.serverpackcreator.app.clientside
 
+import de.griefed.serverpackcreator.app.clientside.Sideness.UNKNOWN
+
+
 /**
  * Platform-declared support-level of a mod for a given side (client or server). Mirrors Modrinth's
  * `client_side`/`server_side` values; CurseForge exposes no such field and therefore always reports
