@@ -35,7 +35,7 @@ internal class HostProcessServerRunnerTest {
 
     @Test
     fun reportsNotStartedWhenNoStartScript(@TempDir packDir: File) {
-        val outcome = HostProcessServerRunner().run(packDir, File(packDir, "boot.log"), Duration.ofSeconds(1))
+        val outcome = HostProcessServerRunner().run(packDir, Duration.ofSeconds(1))
         Assertions.assertTrue(outcome is RunResult.NotStarted)
         Assertions.assertEquals("No start.sh in the generated server pack.", (outcome as RunResult.NotStarted).detail)
     }

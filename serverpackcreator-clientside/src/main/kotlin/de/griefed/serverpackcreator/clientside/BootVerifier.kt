@@ -84,7 +84,7 @@ class BootVerifier(
         }
         val pack = prepared as Prepared.Ready
         log.info("Booting ${pack.loader} ${pack.loaderVersion} (Minecraft ${pack.minecraftVersion}) server pack at ${pack.serverPack.absolutePath}")
-        val runResult = serverRunner.run(pack.serverPack, pack.logFile, bootTimeout)
+        val runResult = serverRunner.run(pack.serverPack, bootTimeout)
         return outcomeFor(runResult, pack.logFile, "${pack.loader} ${pack.loaderVersion} / Minecraft ${pack.minecraftVersion}")
     }
 

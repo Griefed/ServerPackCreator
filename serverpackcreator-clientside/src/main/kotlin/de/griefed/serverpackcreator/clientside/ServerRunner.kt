@@ -55,10 +55,11 @@ sealed interface RunResult {
  */
 interface ServerRunner {
     /**
-     * Boot [serverPack], streaming its console to [logFile] is the caller's concern; the runner only
-     * returns the captured lines. Stops once the server is ready or [timeout] elapses.
+     * Boot [serverPack], stopping once the server is ready or [timeout] elapses. Returns the *raw*
+     * console lines + exit status; persisting and classifying them is the caller's concern
+     * ([BootVerifier.outcomeFor]).
      */
-    fun run(serverPack: File, logFile: File, timeout: Duration): RunResult
+    fun run(serverPack: File, timeout: Duration): RunResult
 }
 
 /**
@@ -75,7 +76,7 @@ class HostProcessServerRunner : ServerRunner {
     /** The vanilla server's ready-line, watched while streaming the boot to stop early. */
     private val readyLine = Regex("""Done \([^)]*\)! For help""")
 
-    override fun run(serverPack: File, logFile: File, timeout: Duration): RunResult {
+    override fun run(serverPack: File, timeout: Duration): RunResult {
         val startScript = File(serverPack, "start.sh")
         if (!startScript.isFile) {
             return RunResult.NotStarted("No start.sh in the generated server pack.")
