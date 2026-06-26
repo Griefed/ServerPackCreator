@@ -31,6 +31,9 @@ configurations {
 
 dependencies {
     api(project(":serverpackcreator-api"))
+    // Clientside-mod verification engine (platforms, metadata/boot signals, list editing). The CLI
+    // verbs in this module are thin wrappers over it; Playwright arrives transitively from here.
+    api(project(":serverpackcreator-clientside"))
     api("org.jetbrains.kotlin:kotlin-reflect:2.3.21")
     api("commons-io:commons-io:2.22.0")
     api("com.cronutils:cron-utils:9.2.1")
@@ -54,9 +57,6 @@ dependencies {
     api("com.formdev:svgSalamander:1.1.4")
     api("net.java.balloontip:balloontip:1.2.4.1")
     api("tokyo.northside:tipoftheday:0.6.0")
-
-    //CLIENTSIDE-MOD VERIFICATION — headless-browser download of distribution-locked CurseForge files
-    api("com.microsoft.playwright:playwright:1.60.0")
 
     //WEB
     api("org.springframework.boot:spring-boot-starter-web:4.0.6")

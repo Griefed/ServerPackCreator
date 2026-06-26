@@ -20,7 +20,7 @@
 package de.griefed.serverpackcreator.app.cli.commands
 
 import de.griefed.serverpackcreator.api.ApiWrapper
-import de.griefed.serverpackcreator.app.clientside.*
+import de.griefed.serverpackcreator.clientside.*
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import picocli.CommandLine
 import picocli.shell.jline3.PicocliCommands.ClearScreen

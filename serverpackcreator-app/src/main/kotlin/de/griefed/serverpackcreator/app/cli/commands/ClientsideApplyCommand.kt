@@ -20,8 +20,8 @@
 package de.griefed.serverpackcreator.app.cli.commands
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import de.griefed.serverpackcreator.app.clientside.ClientsideListEditor
-import de.griefed.serverpackcreator.app.clientside.ClientsideListEditor.Entry
+import de.griefed.serverpackcreator.clientside.ClientsideListEditor
+import de.griefed.serverpackcreator.clientside.ClientsideListEditor.Entry
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import picocli.CommandLine
 import picocli.shell.jline3.PicocliCommands.ClearScreen

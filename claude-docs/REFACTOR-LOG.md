@@ -290,3 +290,24 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   code, verified via the running GUI); app suite stays green throughout, no new compiler warnings.
   **`checkServer()` confirmed live** (called by `ConfigCheckTimer`), despite the "install server"
   checkbox being gone from the GUI.
+- **Clientside engine extracted to its own module (2026-06-26, branch `claude-grinder`):**
+  behavior-preserving move of the `clientside/` package out of `serverpackcreator-app` into a new
+  `serverpackcreator-clientside` Gradle module, ahead of building a standalone Docker "grinder"
+  service that boots candidate mods in parallel isolated containers. **Why a new module, not `-api`
+  and not exclusions:** the engine pulls Playwright + boot machinery, which must not pollute the
+  published, compatibility-frozen `-api` core (module-boundary rule); and excluding `-app`'s
+  transitive deps from a grinder dependency is fragile whack-a-mole (runtime `NoClassDefFoundError`,
+  rotting exclude-list) versus a lean module that never carries Spring/Swing in the first place. The
+  engine was already clean — its only imports are `-api` (`ApiWrapper`, `ModScanner`, `PackConfig`,
+  `versionmeta`, `utilities`), Playwright, Jackson and log4j-kotlin; no `-app` types. Moves: 16 main
+  + 10 test files via `git mv`, package renamed `de.griefed.serverpackcreator.app.clientside` →
+  `de.griefed.serverpackcreator.clientside` (dropping the wrong `.app.` segment). New module build
+  reuses `kotlin`/`dokka` conventions, declares Playwright + `jackson-module-kotlin` (the API ships
+  `jackson-databind` and `log4j-api-kotlin` transitively but not the Kotlin module), and mirrors the
+  app's `dependsOn(:serverpackcreator-api:processTestResources)` for `MetadataScannerTest`'s offline
+  `ApiWrapper`. `-app` now depends on the module via `api(project(...))` (Playwright dropped from its
+  build — transitive from here); the four CLI command files repointed their imports. Docs split
+  accordingly: `module.md` and module `CLAUDE.md` for the engine created in the new module, trimmed
+  out of `-app`'s (CLI verbs + arg-order landmine stay). **All 37 clientside tests green; full app
+  suite (71) green; no new warnings.** Next: split `BootVerifier` into a host-side `prepareBootPack()`
+  and a `runServer()` interface so a container impl can slot in for the grinder.

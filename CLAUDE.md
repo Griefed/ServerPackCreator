@@ -37,6 +37,10 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   `serverpack`, `modscanning`, `versionmeta`, `plugins` (pf4j API), `utilities`, plus `ApiWrapper`
   (composition root), `ApiProperties`, `ApiPlugins`. **Plugins compile against this module — its
   public surface is a compatibility constraint.** See `serverpackcreator-api/CLAUDE.md`.
+- **serverpackcreator-clientside** — the clientside-mod verification engine (platforms, metadata +
+  server-boot signals, downloaders, fallback-list editor). Depends only on `-api`; **not** published
+  to Maven, so it churns freely. Reused by the app's CLI verbs and the planned grinder service. See
+  `serverpackcreator-clientside/CLAUDE.md`.
 - **serverpackcreator-app** — four apps in one module under `de.griefed.serverpackcreator.app`:
   `cli`, `gui` (Swing), `web` (Spring Boot 4 backend), `updater`. Entry point `ServerPackCreator.kt`
     + `Mode.kt`. See `serverpackcreator-app/CLAUDE.md`.
@@ -140,12 +144,13 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 **Goal:** KISS/MVC/TDD/SOLID across api → app → plugin-example → web-frontend.
 **Phases:** 0 baseline · 1 API · 2 app · 3 plugin-example · 4 frontend.
 
-**Current status (2026-06-23):**
+**Current status (2026-06-26):**
 
 | Module         | Tests         | Notes                                                                                |
 |----------------|---------------|--------------------------------------------------------------------------------------|
 | api            | 161 (from 75) | Phase 1 **complete**                                                                  |
-| app            | 62 (from 5)   | Phase 2 largely complete                                                              |
+| clientside     | 37            | Extracted from `-app` into its own `-api`-only module (engine for app + grinder)      |
+| app            | 71            | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay             |
 | plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |
 | web-frontend   | 23 (from 0)   | Phase 4a–4e done: Vitest, `$q` decoupling, **full TS migration**, component coverage  |
 
