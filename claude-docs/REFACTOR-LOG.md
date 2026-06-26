@@ -358,3 +358,20 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   when `BootVerifier` is wired in: `CURSEFORGE_API_KEY` (CF resolution) + Playwright/Chromium on the
   host (locked-file `BrowserDownloader`, which runs host-side during staging, not in the boot
   container) — key + browser are complementary, a locked CF mod needs both. **grinder 8/8 green.**
+- **Grinder docker glue live-verified + grind orchestration (2026-06-26, branch `claude-grinder`):**
+  two steps. (1) `DockerJavaContainerEngineIT` — gated behind `GRINDER_DOCKER_IT=1`
+  (`@EnabledIfEnvironmentVariable`, skipped on daemon-less CI) — ran against **Docker Desktop 29.5.3**
+  and passed: create→start→stream→ready-detect/stop→exit-code→force-remove, under the production
+  hardening (`--network none`, read-only rootfs, dropped caps, non-root), no leaked containers. This is
+  the one layer no unit test can reach, now validated. (2) The grind **orchestration**, built at a
+  testable altitude by collapsing the integration-bound boot pipeline behind a `CandidateVerifier`
+  seam: `Grinder.grind` verifies one candidate (skip already-ground, swallow a thrown boot) and records
+  one `GrindVerdict` per loader; `GrindPool.grindAll` drains a popularity-ranked batch across N worker
+  threads; `VerdictStore` (in-memory, `slug+loader`-keyed, replace-not-duplicate) accumulates;
+  `VerdictCsvExporter` renders RFC-4180 CSV (`Name, Project, NamePattern, Confidence, Loader, Detail`,
+  highest-confidence-first) — the export from the original feature ask. 13 new unit tests
+  (`VerdictStoreTest`, `VerdictCsvExporterTest`, `GrinderTest` + shared `GrindTestFixtures`) cover
+  replace/skip/swallow/per-loader-recording/CSV-escaping+ordering/pool-drain+popularity. **grinder
+  21/21 unit green, +2 IT (gated).** Remaining: runtime image + real `LoaderInstaller`, the real
+  `CandidateVerifier` integration adapter (incl. the cache-overlay seam in `BootVerifier`), a
+  persistent `VerdictStore`, and the web table over the existing Quasar frontend.

@@ -32,6 +32,15 @@ containers:
   tuple** so parallel workers share a single install. `LoaderInstaller` is the seam — its real impl (a
   setup container *with* network that snapshots the ServerStarterJar's self-install) is
   integration-only; everything else here is pure and unit-tested.
+- **Orchestration** (`Grinder`, `GrindPool`, `VerdictStore`, `VerdictCsvExporter`): `Grinder.grind`
+  verifies one candidate (skipping already-ground projects, *swallowing* a thrown boot so a bad mod
+  can't sink a worker) via the `CandidateVerifier` seam and records one `GrindVerdict` per loader.
+  `GrindPool.grindAll` drains a **popularity-ranked** batch across N worker threads (N ≈ host-RAM /
+  per-boot-memory — each in-flight grind holds a booting container). `VerdictStore` (in-memory default)
+  accumulates, keyed by `slug+loader` (re-verify replaces, not duplicates); `VerdictCsvExporter`
+  renders RFC-4180 CSV (`Name, Project, NamePattern, Confidence, Loader, Detail`, highest-confidence
+  first). **`CandidateVerifier` is the seam that collapses the integration-bound boot pipeline**, so
+  the whole orchestration is unit-tested with fakes.
 
 **Landmine — network vs. install:** the hardening default is `--network none`, but the *first* boot of
 a given loader/MC needs network for the ServerStarterJar to download the loader + libraries. The plan
@@ -60,6 +69,10 @@ container, so the box running the grinder needs:
 - `LoaderCacheTest` uses a fake `LoaderInstaller`: miss-installs-once-then-hits, failed/throwing
   install → `null` + nothing left installed, concurrent requests for one tuple install once, distinct
   tuples cached independently. All offline.
+- `VerdictStoreTest`, `VerdictCsvExporterTest`, `GrinderTest` cover the orchestration with a fake
+  `CandidateVerifier` (shared builders in `GrindTestFixtures.kt`): replace-not-duplicate, CSV
+  escaping + confidence ordering + name-pattern column, per-loader recording, skip-already-done,
+  swallow-throw, pool drains every candidate + most-popular-first. All offline.
 - docker-java and the real installer have no offline doubles; `DockerJavaContainerEngine` and the
   production `LoaderInstaller` are integration-only.
 - **`DockerJavaContainerEngineIT`** is the live-daemon integration test for the docker glue, **gated
@@ -72,14 +85,19 @@ container, so the box running the grinder needs:
 
 ## Still to build (the fire-and-forget service)
 
-Done so far: the container `ServerRunner` (+ hardening seam) and the `LoaderCache` pre-bake.
+Done so far: the container `ServerRunner` (+ hardening seam), the `LoaderCache` pre-bake, and the
+grind **orchestration** (`Grinder` + `GrindPool` + `VerdictStore` + `VerdictCsvExporter`, behind the
+`CandidateVerifier` seam).
 
 1. **Runtime image** (JRE + ServerStarterJar + entrypoint) and the real `LoaderInstaller` — a setup
    container run *with* network that snapshots the install into the `LoaderCache`.
-2. **Grind orchestrator** tying it together: resolve project → `BootVerifier.prepareBootPack` (host
-   download incl. the locked-file browser path) → overlay the `LoaderCache` base into the pack → boot
-   via `ContainerServerRunner` (`--network none`) → `BootVerifier.outcomeFor`.
-3. **Popularity-ranked work queue + bounded worker pool** (parallelism ≈ host-RAM / per-boot-memory),
-   under a `SupervisorJob` so one worker dying doesn't sink the pool.
-4. **Verdict store** (survives restarts) feeding the sortable / CSV-exportable table — render through
-   the existing web frontend (QTable = sort + CSV free), not a new web stack.
+2. **Real `CandidateVerifier`** — the integration adapter: a `ClientsideVerifier` whose
+   `bootVerifierFactory` builds a `BootVerifier` over a `ContainerServerRunner`, with the `LoaderCache`
+   base overlaid onto the generated pack before the offline boot. **The cache-overlay seam** (between
+   `prepareBootPack` and the container run) is the one design decision left — resolve it with real
+   ServerStarterJar behaviour in hand (it may need a hook in `BootVerifier`, since `ServerRunner.run`
+   does not carry the loader/MC tuple). Needs the host prerequisites above (CF key + Playwright).
+3. **Persistent `VerdictStore`** (file/Mongo) so a multi-day fire-and-forget run survives restarts;
+   the `slug`-keyed skip + replace semantics already make resuming idempotent.
+4. **Web table** over `VerdictStore.all()` + `VerdictCsvExporter`, through the existing Quasar frontend
+   (QTable = sort + CSV free), not a new web stack.
