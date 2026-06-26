@@ -149,7 +149,7 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 | Module         | Tests         | Notes                                                                                |
 |----------------|---------------|--------------------------------------------------------------------------------------|
 | api            | 161 (from 75) | Phase 1 **complete**                                                                  |
-| clientside     | 37            | Extracted from `-app` into its own `-api`-only module (engine for app + grinder)      |
+| clientside     | 41            | Extracted from `-app` into its own `-api`-only module; `BootVerifier` split for grinder |
 | app            | 71            | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay             |
 | plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |
 | web-frontend   | 23 (from 0)   | Phase 4a–4e done: Vitest, `$q` decoupling, **full TS migration**, component coverage  |

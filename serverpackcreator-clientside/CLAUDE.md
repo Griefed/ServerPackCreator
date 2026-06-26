@@ -38,21 +38,31 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   in `,\`, or the continuation bleeds into the next property and corrupts it; the editor strips the
   delimiter off the final line and adds one to the previous-last when appending.
 
+## Boot seam (for the grinder — DONE)
+
+`BootVerifier` is split so a container-backed runner can reuse it: **`prepareBootPack()`** does
+host-side staging (pick combo → download mod + deps → generate the self-installing pack) and returns a
+`Prepared.Ready`; a **`ServerRunner`** runs the pack and returns *raw* `RunResult` lines + exit status
+(classification deliberately left to the caller); **`BootVerifier.outcomeFor()`** is the shared verdict
+seam (writes the log, then `BootLogClassifier` + `BootLogExcerpt`). The default
+`HostProcessServerRunner` spawns `start.sh`; the grinder will supply a `ContainerServerRunner`
+(`--network none`, resource-capped) and `BootLogClassifier` is reused verbatim on its streamed logs.
+`verify()`'s signature is unchanged (the `serverRunner` ctor param defaults to the host runner).
+
 ## Testing patterns
 
-- 37 tests across 10 files, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
+- 41 tests across 12 files, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
   JSON to a fake `HttpFetcher`; **`MetadataScannerTest` is the only one needing a resource** — it boots
   an offline `ApiWrapper` from `src/test/resources/serverpackcreator.properties` (whose `ModScanner`
   relies on the API's cached version-manifests, hence `test` `dependsOn :serverpackcreator-api:processTestResources`).
-- `BootCandidateSelector`, `BootLogClassifier`, `FilenameStemDeriver`, `ClientsideListEditor` are pure
-  and unit-tested without a network or a running server — keep new logic that way where you can.
+- `BootCandidateSelector`, `BootLogClassifier`, `FilenameStemDeriver`, `ClientsideListEditor`, plus the
+  extracted `BootVerifier.outcomeFor` (`BootVerifierOutcomeTest`) and `HostProcessServerRunner`'s
+  no-start-script contract are pure/offline-testable without a running server — keep new logic that way.
 
 ## Roadmap — the grinder (`serverpackcreator-grinder`, planned)
 
-A standalone fire-and-forget Docker service depending on this module + `docker-java` will boot
-candidate mods **in parallel, isolated containers** (`--network none`, resource-capped) to build a
-catalog-wide list of suspected-clientside mods. The seam it needs: **split `BootVerifier` into
-`prepareBootPack()` (host-side staging, reused) and a `runServer()` interface** with a host-process
-impl (current behavior, keeps tests green) and a container impl (new). `BootLogClassifier` is reused
-verbatim on the container's streamed logs. Pre-bake/cache the installed loader+libraries per
-`(loader, loaderVer, mcVer)` so each actual mod-boot runs offline.
+A standalone fire-and-forget Docker service depending on this module + `docker-java` boots candidate
+mods **in parallel, isolated containers** to build a catalog-wide list of suspected-clientside mods.
+The boot seam above is in place; remaining to build: the `ContainerServerRunner`, the worker
+pool/queue, and a per-`(loader, loaderVer, mcVer)` pre-bake cache of the installed loader+libraries so
+each actual mod-boot runs offline.
