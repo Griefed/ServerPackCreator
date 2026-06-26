@@ -413,6 +413,10 @@ serverpackcreator-app/tests/*
 # ServerPackCreator Clientside
 serverpackcreator-clientside/tests/*
 !serverpackcreator-clientside/tests/.gitkeep
+
+# ServerPackCreator Grinder
+serverpackcreator-grinder/tests/*
+!serverpackcreator-grinder/tests/.gitkeep
 serverpackcreator-app/src/main/resources/static/*
 !serverpackcreator-app/src/main/resources/static/.gitkeep
 
