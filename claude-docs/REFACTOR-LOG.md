@@ -412,3 +412,17 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   smoke-tested: all three `java -version` work, `$JAVA` defaults to 21, tools present, runs non-root
   uid 1000; ~1.6 GB. Next: the real `LoaderInstaller` (setup boot *with* network, snapshot into
   `LoaderCache`) + the `CandidateVerifier` cache-overlay seam.
+- **Grinder cache-overlay hook + real LoaderInstaller (2026-06-28, branch `claude-grinder`):** built on
+  the loader-install spike. (1) **`BootVerifier.packPostProcessor` hook** (in `-clientside`): an
+  optional `((Prepared.Ready) -> Unit)?` run after `prepareBootPack`, before `serverRunner.run` — the
+  cache-overlay seam, default `null` = unchanged host behavior, a thrown hook → INCONCLUSIVE. Extracted
+  the post-process→boot→classify path into a companion `runPrepared` so it's unit-tested without
+  `ApiWrapper` (`BootVerifierRunPreparedTest`, 3); `ServerRunner` is now a `fun interface`. (2) The real
+  **`LoaderInstaller`** (`DockerLoaderInstaller`): generates a mod-less pack (`VanillaPackGenerator`/
+  `ApiVanillaPackGenerator`), boots once **with network** (`bridge`), snapshots the install layer into
+  `LoaderCache`. Its error-prone cores are pure + tested: `InstallLayerSnapshot` (denylist diff/copy —
+  snapshot added non-runtime files; SPC's `CLEANUP` var rejected as incomplete), `PackVariables` (eula
+  + `WAIT_FOR_USER_INPUT=false` + `JAVA` per MC + offline `SERVERSTARTERJAR_FORCE_FETCH=false`),
+  `JavaForMinecraft` (MC→bundled-JDK, the 1.20.4/1.20.5 boundary). 11 new tests. **clientside 44/44,
+  grinder 43/43 unit green (+2 gated IT).** Remaining: the real `CandidateVerifier` wiring (post-processor
+  → ensureInstalled → overlay) + the main fire-and-forget entrypoint.

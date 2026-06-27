@@ -55,6 +55,17 @@ containers:
   ground first), paginating behind the clientside `HttpFetcher` seam (unit-tested with canned JSON).
   Feeds `GrindPool` its popularity-ranked queue. A CurseForge sibling (needs the API key, no declared
   sideness) is the natural follow-up.
+- **Loader install (the `LoaderCache` `LoaderInstaller`)**: `DockerLoaderInstaller` generates a
+  **mod-less** pack (`VanillaPackGenerator` → `ApiVanillaPackGenerator` over `ApiWrapper`), boots it
+  **once with network** (`networkMode="bridge"` — the *only* networked boot) so `start.sh` installs the
+  loader + MC server + libraries, then snapshots the install layer into the cache. The error-prone
+  pieces are pure + unit-tested: **`InstallLayerSnapshot`** (denylist diff/copy — snapshots added
+  non-runtime files, the spike-derived design), **`PackVariables`** (the unattended-boot levers:
+  eula + `WAIT_FOR_USER_INPUT=false` + `JAVA` per MC + `SERVERSTARTERJAR_FORCE_FETCH=false` *only* for
+  offline boots), and **`JavaForMinecraft`** (MC→bundled-JDK). `DockerLoaderInstaller` /
+  `ApiVanillaPackGenerator` themselves are integration-only (daemon + image + real `ApiWrapper`).
+  **Operational note:** the bind-mounted pack must be writable by the container's uid 1000 (the install
+  writes `libraries/` etc. into it) — align uids or `--user root` (Docker Desktop maps automatically).
 
 **Landmine — network vs. install:** the hardening default is `--network none`, but the *first* boot of
 a given loader/MC needs network for the ServerStarterJar to download the loader + libraries. The plan
@@ -143,6 +154,10 @@ Spike workspace (not committed): `~/spc-grinder-spike/{configs,packs,baselines}`
 - `ModrinthCandidateSourceTest` (canned search JSON via a fake `HttpFetcher`): download-order
   preserved, pagination + catalog-exhaustion + over-limit trim, failed-page returns partial, limit-0
   fetches nothing.
+- `InstallLayerSnapshotTest` (added-non-runtime files copied, pre-boot + runtime excluded),
+  `PackVariablesTest` (in-place key replace not touching `JAVA_ARGS`, append-if-absent, offline
+  force-fetch toggle, eula), `JavaForMinecraftTest` (the 1.20.4/1.20.5 Java-17→21 boundary). The
+  `LoaderInstaller`/`VanillaPackGenerator` impls are integration-only.
 - docker-java and the real installer have no offline doubles; `DockerJavaContainerEngine` and the
   production `LoaderInstaller` are integration-only.
 - **`DockerJavaContainerEngineIT`** is the live-daemon integration test for the docker glue, **gated
@@ -155,22 +170,20 @@ Spike workspace (not committed): `~/spc-grinder-spike/{configs,packs,baselines}`
 
 ## Still to build (the fire-and-forget service)
 
-Done so far: container `ServerRunner` (+ hardening), `LoaderCache` pre-bake, grind **orchestration**
-(`Grinder`/`GrindPool`/`VerdictStore`/`VerdictCsvExporter`), restart-safe `JsonVerdictStore`, and the
-self-contained web report (`VerdictReportRenderer` + `ReportServer`). The **visible half** (sortable
-table + CSV) is shipped; what's left is the integration that makes a real boot happen.
+Done so far: container `ServerRunner` (+ hardening, daemon-verified), the **runtime image** (built +
+smoke-tested), `LoaderCache` + the **`LoaderInstaller`** (`DockerLoaderInstaller` + the tested
+`InstallLayerSnapshot`/`PackVariables`/`JavaForMinecraft` cores), the **`BootVerifier.packPostProcessor`
+hook** (the cache-overlay seam — in `-clientside`), grind **orchestration**, restart-safe
+`JsonVerdictStore`, the self-contained web report, and the `ModrinthCandidateSource`. What remains is
+the wiring that turns these into one running service.
 
-1. **Runtime image** — **drafted** at `docker/Dockerfile` (loader-agnostic: bash + curl/wget + gawk +
-   tar + Temurin JDK 8/17/21; SPC's `start.sh` installs the loader itself). Still needs a real build +
-   boot to validate. Then the real `LoaderInstaller` — a setup container run *with* network that
-   snapshots the install into the `LoaderCache`.
-2. **Real `CandidateVerifier`** — the integration adapter: a `ClientsideVerifier` whose
-   `bootVerifierFactory` builds a `BootVerifier` over a `ContainerServerRunner`, with the `LoaderCache`
-   base overlaid onto the generated pack before the offline boot. **The cache-overlay seam** (between
-   `prepareBootPack` and the container run) is the one design decision left — resolve it with real
-   ServerStarterJar behaviour in hand (it may need a hook in `BootVerifier`, since `ServerRunner.run`
-   does not carry the loader/MC tuple). Needs the host prerequisites above (CF key + Playwright).
-3. **CurseForge candidate source** — `ModrinthCandidateSource` is done (keyless, popularity-ranked);
-   the CF sibling needs the API key and leans entirely on the jar scan (CF declares no sideness).
-4. **Main entrypoint** wiring candidate-source → `GrindPool(Grinder(realVerifier, JsonVerdictStore))`
+1. **Real `CandidateVerifier`** — the integration adapter: a `ClientsideVerifier` whose
+   `bootVerifierFactory` builds a `BootVerifier` over a `ContainerServerRunner`, supplying a
+   `packPostProcessor` that does `loaderCache.ensureInstalled(tuple)` →
+   `InstallLayerSnapshot`-overlay into the pack → `PackVariables.prepareUnattended(offline=true)`. The
+   cache-overlay seam itself is **resolved** (the hook + the snapshot/overlay are in place); this is the
+   remaining wiring. Needs the host prerequisites above (CF key + Playwright).
+2. **Main entrypoint** wiring candidate-source → `GrindPool(Grinder(realVerifier, JsonVerdictStore))`
    + `ReportServer` for the actual fire-and-forget run (can already use `ModrinthCandidateSource`).
+3. **CurseForge candidate source** (optional) — `ModrinthCandidateSource` is done (keyless,
+   popularity-ranked); the CF sibling needs the API key and leans entirely on the jar scan.

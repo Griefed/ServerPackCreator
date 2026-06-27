@@ -1,0 +1,92 @@
+/* Copyright (C) 2025 Griefed
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
+ *
+ * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
+ */
+package de.griefed.serverpackcreator.grinder
+
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
+import java.io.File
+import java.time.Duration
+
+/**
+ * The production [LoaderInstaller]: generates a mod-less pack for the tuple, boots it **once with
+ * network** in the runtime container so SPC's `start.sh` installs the loader + Minecraft server +
+ * libraries, then snapshots the [InstallLayerSnapshot] into the [LoaderCache] target. Subsequent
+ * mod-boots overlay that cached layer and run offline (`--network none`).
+ *
+ * The install boot is the **only** place network is allowed; it keeps the `ServerStarterJar` re-fetch
+ * on (`offline = false`) because it must download `server.jar`. Integration-only — needs a live daemon,
+ * the runtime image, and a real `ApiWrapper` behind the generator — so it is not unit-tested; the
+ * error-prone pieces it leans on ([InstallLayerSnapshot], [PackVariables], [JavaForMinecraft]) are.
+ *
+ * @param engine         The container runtime.
+ * @param image          The runtime image (must carry the JDKs + SPC's shell tooling).
+ * @param packGenerator  Produces the mod-less pack for the tuple.
+ * @param installTimeout Budget for the install boot (downloads + first server start).
+ * @param resources      CPU/memory/pid caps for the install container.
+ * @author Griefed
+ */
+class DockerLoaderInstaller(
+    private val engine: ContainerEngine,
+    private val image: String,
+    private val packGenerator: VanillaPackGenerator,
+    private val installTimeout: Duration = Duration.ofMinutes(20),
+    private val resources: ContainerResources = ContainerResources()
+) : LoaderInstaller {
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
+
+    /** Watched in the install console: once the server is ready, the loader+libraries are fully installed. */
+    private val readyLine = Regex("""Done \([^)]*\)! For help""")
+
+    override fun install(target: File, loader: String, loaderVersion: String, minecraftVersion: String): Boolean {
+        val pack = packGenerator.generate(loader, loaderVersion, minecraftVersion)
+        if (pack == null) {
+            log.warn("Vanilla pack generation failed for $loader $loaderVersion / Minecraft $minecraftVersion.")
+            return false
+        }
+        try {
+            val preBoot = InstallLayerSnapshot.relativeFilePaths(pack)
+            // Unattended boot, but the install still needs network + the ServerStarterJar fetch.
+            PackVariables.prepareUnattended(pack, minecraftVersion, offline = false)
+
+            val spec = ContainerSpec(
+                image = image,
+                command = listOf("bash", "start.sh"),
+                workingDir = PACK_MOUNT,
+                mounts = listOf(BindMount(pack.absolutePath, PACK_MOUNT, readOnly = false)),
+                resources = resources,
+                networkMode = "bridge" // the ONLY networked boot — downloads loader + MC server + libraries
+            )
+            engine.run(spec, readyLine, installTimeout)
+
+            val copied = InstallLayerSnapshot.copyInstallLayer(pack, preBoot, target)
+            val installed = copied > 0 && File(target, "libraries").isDirectory
+            if (!installed) {
+                log.warn("Install produced no library layer for $loader $loaderVersion / Minecraft $minecraftVersion (copied=$copied).")
+            }
+            return installed
+        } finally {
+            pack.deleteRecursively()
+        }
+    }
+
+    companion object {
+        /** Where the pack is bind-mounted inside the install container (and its working directory). */
+        const val PACK_MOUNT = "/srv/pack"
+    }
+}
