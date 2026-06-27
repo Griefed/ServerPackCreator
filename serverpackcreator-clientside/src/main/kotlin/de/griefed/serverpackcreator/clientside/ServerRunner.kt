@@ -53,7 +53,7 @@ sealed interface RunResult {
  *
  * @author Griefed
  */
-interface ServerRunner {
+fun interface ServerRunner {
     /**
      * Boot [serverPack], stopping once the server is ready or [timeout] elapses. Returns the *raw*
      * console lines + exit status; persisting and classifying them is the caller's concern

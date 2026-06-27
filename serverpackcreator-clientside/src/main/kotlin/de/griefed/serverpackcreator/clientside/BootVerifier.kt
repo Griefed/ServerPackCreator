@@ -43,6 +43,9 @@ import java.util.*
  * @param workDirectory        Scratch root for the synthetic modpack and generated server pack.
  * @param serverRunner         Executes the prepared pack; defaults to the host-process runner, swapped
  *                             for a container-backed one by the grinder.
+ * @param packPostProcessor    Optional hook invoked on the staged pack **after** preparation and
+ *                             **before** the boot — e.g. the grinder overlays the cached loader install
+ *                             and sets the offline-boot levers. A thrown hook is reported INCONCLUSIVE.
  * @param bootTimeout          Budget for install + boot before declaring the run inconclusive.
  * @author Griefed
  */
@@ -54,6 +57,7 @@ class BootVerifier(
     private val loaderVersionResolver: LoaderVersionResolver,
     private val workDirectory: File,
     private val serverRunner: ServerRunner = HostProcessServerRunner(),
+    private val packPostProcessor: ((Prepared.Ready) -> Unit)? = null,
     private val bootTimeout: Duration = Duration.ofMinutes(12)
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
@@ -82,10 +86,7 @@ class BootVerifier(
         if (prepared is Prepared.Failed) {
             return BootOutcome(BootResult.INCONCLUSIVE, null, prepared.detail)
         }
-        val pack = prepared as Prepared.Ready
-        log.info("Booting ${pack.loader} ${pack.loaderVersion} (Minecraft ${pack.minecraftVersion}) server pack at ${pack.serverPack.absolutePath}")
-        val runResult = serverRunner.run(pack.serverPack, bootTimeout)
-        return outcomeFor(runResult, pack.logFile, "${pack.loader} ${pack.loaderVersion} / Minecraft ${pack.minecraftVersion}")
+        return runPrepared(prepared as Prepared.Ready, serverRunner, packPostProcessor, bootTimeout)
     }
 
     /**
@@ -204,6 +205,31 @@ class BootVerifier(
     }
 
     companion object {
+        private val log by lazy { cachedLoggerOf(BootVerifier::class.java) }
+
+        /**
+         * Post-process (optionally), boot, and classify a staged pack — the path shared by [verify] and
+         * unit-tested directly (it needs no [ApiWrapper], unlike staging). [packPostProcessor] runs
+         * first; a thrown hook is reported INCONCLUSIVE rather than propagated, so a grinder overlay
+         * failure can't crash the worker.
+         */
+        internal fun runPrepared(
+            pack: Prepared.Ready,
+            serverRunner: ServerRunner,
+            packPostProcessor: ((Prepared.Ready) -> Unit)?,
+            bootTimeout: Duration
+        ): BootOutcome {
+            if (packPostProcessor != null) {
+                val processing = runCatching { packPostProcessor.invoke(pack) }
+                if (processing.isFailure) {
+                    return BootOutcome(BootResult.INCONCLUSIVE, null, "Pack post-processing failed: ${processing.exceptionOrNull()?.message}")
+                }
+            }
+            log.info("Booting ${pack.loader} ${pack.loaderVersion} (Minecraft ${pack.minecraftVersion}) server pack at ${pack.serverPack.absolutePath}")
+            val runResult = serverRunner.run(pack.serverPack, bootTimeout)
+            return outcomeFor(runResult, pack.logFile, "${pack.loader} ${pack.loaderVersion} / Minecraft ${pack.minecraftVersion}")
+        }
+
         /**
          * Turn a [RunResult] into the reported [BootOutcome]: a [RunResult.NotStarted] is INCONCLUSIVE
          * with no log; a [RunResult.Completed] is written to [logFile], classified by
