@@ -3,8 +3,8 @@
   <groupId>net.neoforged</groupId>
   <artifactId>neoforge</artifactId>
   <versioning>
-    <latest>26.1.2.43-beta</latest>
-    <release>26.1.2.43-beta</release>
+    <latest>26.2.0.7-beta</latest>
+    <release>26.2.0.7-beta</release>
     <versions>
       <version>20.2.12-beta</version>
       <version>20.2.13-beta</version>
@@ -1542,7 +1542,52 @@
       <version>26.1.2.41-beta</version>
       <version>26.1.2.42-beta</version>
       <version>26.1.2.43-beta</version>
+      <version>26.1.2.44-beta</version>
+      <version>21.1.229</version>
+      <version>26.1.2.45-beta</version>
+      <version>26.1.2.46-beta</version>
+      <version>26.1.2.47-beta</version>
+      <version>26.1.2.48-beta</version>
+      <version>26.1.2.49-beta</version>
+      <version>26.1.2.50-beta</version>
+      <version>26.1.2.51-beta</version>
+      <version>26.1.2.52-beta</version>
+      <version>26.1.2.53-beta</version>
+      <version>21.1.230</version>
+      <version>26.1.2.54-beta</version>
+      <version>26.1.2.55-beta</version>
+      <version>26.1.2.56-beta</version>
+      <version>26.1.2.57-beta</version>
+      <version>26.1.2.58-beta</version>
+      <version>26.1.2.59-beta</version>
+      <version>26.1.2.60-beta</version>
+      <version>26.1.2.61-beta</version>
+      <version>26.1.2.62-beta</version>
+      <version>26.1.2.63-beta</version>
+      <version>26.1.2.64-beta</version>
+      <version>26.1.2.65-beta</version>
+      <version>26.1.2.66-beta</version>
+      <version>21.1.231</version>
+      <version>26.1.2.67-beta</version>
+      <version>21.1.232</version>
+      <version>26.1.2.68-beta</version>
+      <version>21.1.233</version>
+      <version>26.1.2.69-beta</version>
+      <version>26.1.2.70-beta</version>
+      <version>26.1.2.71</version>
+      <version>26.1.2.72</version>
+      <version>26.1.2.73</version>
+      <version>26.1.2.74</version>
+      <version>26.1.2.75</version>
+      <version>26.1.2.76</version>
+      <version>26.2.0.0-beta</version>
+      <version>26.2.0.1-beta</version>
+      <version>26.2.0.2-beta</version>
+      <version>26.2.0.3-beta</version>
+      <version>26.2.0.6-beta</version>
+      <version>21.1.234</version>
+      <version>26.2.0.7-beta</version>
     </versions>
-    <lastUpdated>20260507144208</lastUpdated>
+    <lastUpdated>20260622221342</lastUpdated>
   </versioning>
 </metadata>
