@@ -389,3 +389,14 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   `ReportServerTest` exercising a real loopback HTTP server on an ephemeral port. **grinder 30/30 unit
   green (+2 gated IT).** Remaining: runtime image + real `LoaderInstaller`, the real `CandidateVerifier`
   adapter (cache-overlay seam), a candidate source, and the main fire-and-forget entrypoint.
+- **Grinder Modrinth candidate source (2026-06-26, branch `claude-grinder`):** `ModrinthCandidateSource`
+  seeds the queue from Modrinth **most-downloaded-first** — the keyless search API returns the download
+  count, so the popularity ranking (which decides what to grind first) is free. Paginates until the
+  requested limit or catalog exhaustion, behind the clientside `HttpFetcher` seam (reused from
+  `-clientside`), so it's unit-tested against canned JSON with no network. 5 tests
+  (`ModrinthCandidateSourceTest`) — order preserved, pagination + exhaustion + a defensive over-limit
+  `take` (a test caught a final page overshooting the limit), failed-page-returns-partial, limit-0
+  no-fetch. **grinder 35/35 unit green (+2 gated IT).** A CurseForge sibling (needs the API key, no
+  declared sideness) is the natural follow-up; the visible half (table/CSV) plus the queue source are
+  now in place, leaving the integration adapter (real `CandidateVerifier` + runtime image) and the
+  main entrypoint.

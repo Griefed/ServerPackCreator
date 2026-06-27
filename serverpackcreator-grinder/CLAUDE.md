@@ -50,6 +50,11 @@ containers:
   **no Spring, no new dependency**. *Deliberately standalone:* the report is self-contained rather than
   rendered through the app's Quasar frontend, because the grinder must not depend on `-app` (that would
   drag in Spring/Mongo/Swing and break its standalone nature).
+- **Candidate source**: `ModrinthCandidateSource` enumerates Modrinth mod projects **most-downloaded
+  first** (keyless search API; popularity = downloads, so the mods most likely to be in a modpack get
+  ground first), paginating behind the clientside `HttpFetcher` seam (unit-tested with canned JSON).
+  Feeds `GrindPool` its popularity-ranked queue. A CurseForge sibling (needs the API key, no declared
+  sideness) is the natural follow-up.
 
 **Landmine — network vs. install:** the hardening default is `--network none`, but the *first* boot of
 a given loader/MC needs network for the ServerStarterJar to download the loader + libraries. The plan
@@ -85,6 +90,9 @@ container, so the box running the grinder needs:
 - `JsonVerdictStoreTest` (survive-reopen, replace-across-reopen, corrupt→empty, creates-file+parents),
   `VerdictReportRendererTest` (sortable headers, embedded CSV, HTML/script escaping), `ReportServerTest`
   (real **loopback** HTTP on an ephemeral port: `/` HTML + `/export.csv`, live store, content-types).
+- `ModrinthCandidateSourceTest` (canned search JSON via a fake `HttpFetcher`): download-order
+  preserved, pagination + catalog-exhaustion + over-limit trim, failed-page returns partial, limit-0
+  fetches nothing.
 - docker-java and the real installer have no offline doubles; `DockerJavaContainerEngine` and the
   production `LoaderInstaller` are integration-only.
 - **`DockerJavaContainerEngineIT`** is the live-daemon integration test for the docker glue, **gated
@@ -110,7 +118,7 @@ table + CSV) is shipped; what's left is the integration that makes a real boot h
    `prepareBootPack` and the container run) is the one design decision left — resolve it with real
    ServerStarterJar behaviour in hand (it may need a hook in `BootVerifier`, since `ServerRunner.run`
    does not carry the loader/MC tuple). Needs the host prerequisites above (CF key + Playwright).
-3. **A candidate source** — enumerate Modrinth/CurseForge projects, popularity-ranked, to feed the
-   queue (cheap metadata triage; Modrinth declares sideness for free, CurseForge needs the jar scan).
+3. **CurseForge candidate source** — `ModrinthCandidateSource` is done (keyless, popularity-ranked);
+   the CF sibling needs the API key and leans entirely on the jar scan (CF declares no sideness).
 4. **Main entrypoint** wiring candidate-source → `GrindPool(Grinder(realVerifier, JsonVerdictStore))`
-   + `ReportServer` for the actual fire-and-forget run.
+   + `ReportServer` for the actual fire-and-forget run (can already use `ModrinthCandidateSource`).
