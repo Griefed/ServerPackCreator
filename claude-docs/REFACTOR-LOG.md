@@ -400,3 +400,15 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   declared sideness) is the natural follow-up; the visible half (table/CSV) plus the queue source are
   now in place, leaving the integration adapter (real `CandidateVerifier` + runtime image) and the
   main entrypoint.
+- **Grinder runtime image drafted + build-verified (2026-06-26, branch `claude-grinder`):**
+  `docker/Dockerfile` (+ `docker/README.md`). Key realisation from reading `ServerPackProvisioner` +
+  the `default_template.sh`: SPC's generated `start.sh` installs the loader itself, so the image is
+  **loader-agnostic** — the **neoforged `ServerStarterJar` is Forge/NeoForge only** (Fabric uses
+  `fabric-installer`/`fabric-server-launch(er).jar`, Quilt the `quilt-installer`, LegacyFabric its
+  own). The image therefore ships only the shell tooling the template needs (`bash`, `curl`/`wget`,
+  `gawk`, `tar`/`gzip`, `ca-certificates`) + Temurin JDK **8/17/21** (a single JDK can't boot every MC:
+  ≤1.16→8, 1.17–1.20.4→17, 1.20.5+→21), so the grinder sets `$JAVA` per MC version with no Java
+  download (keeps mod-boots offline under `--network none`). Built on Docker Desktop 29.5.3 and
+  smoke-tested: all three `java -version` work, `$JAVA` defaults to 21, tools present, runs non-root
+  uid 1000; ~1.6 GB. Next: the real `LoaderInstaller` (setup boot *with* network, snapshot into
+  `LoaderCache`) + the `CandidateVerifier` cache-overlay seam.

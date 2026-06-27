@@ -62,6 +62,16 @@ is to **pre-bake that once per `(loader, loaderVersion, minecraftVersion)`** int
 base tree (network only on the cache-miss), then every actual mod-boot mounts it and runs offline.
 Don't wire the candidate-mod boot to run with network — that defeats the isolation.
 
+**Loader / Java facts (durable — drive the runtime image):** SPC's generated `start.sh` is
+*self-contained* — it installs the modloader + Minecraft server itself at first boot, so the image is
+**loader-agnostic** (no per-loader logic). The **`ServerStarterJar` (neoforged) is Forge/NeoForge
+only**; Fabric uses `fabric-installer`/`fabric-server-launch(er).jar`, Quilt the `quilt-installer`,
+LegacyFabric its own installer. A single JDK can't boot every Minecraft version (≤1.16→8,
+1.17–1.20.4→17, 1.20.5+→21), so the image bundles Temurin 8/17/21 and the grinder sets `$JAVA` per MC
+version (via the pack's `variables.txt`) — **no Java download**, which is what keeps mod-boots runnable
+under `--network none`. The template needs `bash`, `curl`/`wget`, `gawk`, `tar`/`gzip`. See
+`docker/README.md`.
+
 **Host prerequisites (apply once `ContainerServerRunner` is wired into a `BootVerifier`):** the
 download/resolve phase runs on the **host** (in `BootVerifier.prepareBootPack`), *not* in the boot
 container, so the box running the grinder needs:
@@ -110,8 +120,10 @@ Done so far: container `ServerRunner` (+ hardening), `LoaderCache` pre-bake, gri
 self-contained web report (`VerdictReportRenderer` + `ReportServer`). The **visible half** (sortable
 table + CSV) is shipped; what's left is the integration that makes a real boot happen.
 
-1. **Runtime image** (JRE + ServerStarterJar + entrypoint) and the real `LoaderInstaller` — a setup
-   container run *with* network that snapshots the install into the `LoaderCache`.
+1. **Runtime image** — **drafted** at `docker/Dockerfile` (loader-agnostic: bash + curl/wget + gawk +
+   tar + Temurin JDK 8/17/21; SPC's `start.sh` installs the loader itself). Still needs a real build +
+   boot to validate. Then the real `LoaderInstaller` — a setup container run *with* network that
+   snapshots the install into the `LoaderCache`.
 2. **Real `CandidateVerifier`** — the integration adapter: a `ClientsideVerifier` whose
    `bootVerifierFactory` builds a `BootVerifier` over a `ContainerServerRunner`, with the `LoaderCache`
    base overlaid onto the generated pack before the offline boot. **The cache-overlay seam** (between
