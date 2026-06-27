@@ -85,6 +85,46 @@ container, so the box running the grinder needs:
   **both**. Wire the `BootVerifier` with a `BrowserDownloader()` (disposed via `use {}`) exactly as
   `VerifyClientsideCommand` does — locked-file support is then inherited, not reimplemented.
 
+## Loader-install spike findings (2026-06-27 — drive the `LoaderCache` + cache-overlay)
+
+Generated + booted real packs (Forge 1.20.6 & 1.12.2, NeoForge 1.21, Fabric 1.20.6, Quilt 1.20.6) and
+diffed each booted dir against its pre-boot baseline. Conclusions:
+
+- **The install layer is mod-independent but loader-specific.** Per loader, the boot adds (besides the
+  always-present **`libraries/`**, the dominant cost — ~40 MB Fabric/Quilt/old-Forge to ~180 MB
+  NeoForge/Forge-1.20):
+  - **SSJ (Forge ≥1.17, NeoForge):** `server.jar` + `<loader>-<ver>-installer.jar`(+`.log`) +
+    `*-shim.jar` (Forge) + `run.sh` + `run.bat` + `user_jvm_args.txt`.
+  - **Old Forge (<1.17, e.g. 1.12.2):** `forge.jar` + `minecraft_server.<mc>.jar` +
+    `forge-installer.jar.log` — **no** `server.jar`/run-scripts (the SSJ path is not taken).
+  - **Fabric:** `fabric-server-launcher.jar` + `.fabric/` + `versions/`.
+  - **Quilt:** `quilt-server-launch.jar` + `quilt-server-launcher.properties` + `server.jar` (vanilla MC)
+    + `.cache/` + `versions/`.
+- **The `CLEANUP` variable is an *incomplete* snapshot manifest — do not use it as the include-list.**
+  It lists `libraries, run.sh, run.bat, *installer.jar(.log), server.jar, fabric-server-launch(er).jar,
+  …` but misses `forge.jar`, `minecraft_server.*.jar`, `*-shim.jar`, `quilt-server-launch.jar`,
+  `versions/`, `.fabric/`, `.cache/`, `user_jvm_args.txt`.
+- **Snapshot strategy = DENYLIST, not includelist.** `LoaderInstaller` boots a *vanilla* (empty-mods)
+  pack once per tuple **with** network, then snapshots `(post-boot files) − (pre-boot pack files) −
+  runtime-state`. The **runtime-state denylist** (created at boot, never cached): `world*/`, `logs/`,
+  `crash-reports/`, `ops.json`, `whitelist.json`, `banned-ips.json`, `banned-players.json`,
+  `usercache.json`, `eula.txt`, `.previousrun`, `hs_err_pid*.log`, `README.txt`, `.DS_Store`.
+- **Offline-boot levers (set in `variables.txt` before every cached `--network none` boot; confirmed in
+  `default_template.sh`):** `WAIT_FOR_USER_INPUT=false` (else it blocks on a `read`),
+  `SERVERSTARTERJAR_FORCE_FETCH=false` (else Forge/NeoForge *re-download* `server.jar` → needs network),
+  and pre-write `eula.txt` = `eula=true` (else an interactive EULA prompt). Also set `JAVA` to the
+  bundled per-MC JDK (`/opt/java-{8,17,21}`).
+- **Cache-overlay seam — RESOLVED (no deep `BootVerifier` change needed).** The install layer never
+  name-collides with pack files (`libraries/`, `server.jar`, run-scripts vs. `start.sh`/`mods/`/`config/`),
+  so the overlay is a plain recursive copy. Plan: add an optional `packPostProcessor:
+  ((Prepared.Ready) -> Unit)? = null` hook to `BootVerifier.verify`, invoked **after** `prepareBootPack`
+  and **before** `serverRunner.run` (it receives `loader`/`loaderVersion`/`minecraftVersion`). The
+  grinder's post-processor does `loaderCache.ensureInstalled(tuple)` → copy the install layer in → set
+  the offline levers + write `eula.txt`. Default `null` keeps the host runner's behavior unchanged.
+
+Spike workspace (not committed): `~/spc-grinder-spike/{configs,packs,baselines}` + the
+`serverpackcreator-app-dev.jar` generation command. Reusable by the `LoaderInstaller` work.
+
 ## Testing
 
 - `ContainerServerRunnerTest` uses a fake `ContainerEngine`: no-start.sh → `NotStarted` (engine never
