@@ -107,5 +107,5 @@ abstract class JsonBasedScanner {
      * server pack.
      * @author Griefed
      */
-    abstract fun getModsDelta(filesInModsDir: Collection<File>, clientMods: TreeSet<String>): TreeSet<File>
+    abstract fun getModsDelta(filesInModsDir: Collection<File>, clientMods: TreeSet<String>): List<Exclusion>
 }
