@@ -40,13 +40,17 @@ RUN set -eux; \
     echo "deb [signed-by=/etc/apt/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb bookworm main" \
         > /etc/apt/sources.list.d/adoptium.list; \
     apt-get update; \
-    apt-get install -y --no-install-recommends temurin-8-jdk temurin-17-jdk temurin-21-jdk temurin-25-jdk; \
+    apt-get install -y --no-install-recommends \
+        temurin-8-jdk   \
+        temurin-17-jdk  \
+        temurin-21-jdk  \
+        temurin-25-jdk; \
     rm -rf /var/lib/apt/lists/*
 
 # Stable, arch-independent symlinks the grinder points $JAVA at (Temurin installs to
 # /usr/lib/jvm/temurin-N-jdk-<arch>, e.g. -amd64 / -arm64).
 RUN set -eux; \
-    ln -s /usr/lib/jvm/temurin-8-jdk-*  /opt/java-8; \
+    ln -s /usr/lib/jvm/temurin-8-jdk-*  /opt/java-8;  \
     ln -s /usr/lib/jvm/temurin-17-jdk-* /opt/java-17; \
     ln -s /usr/lib/jvm/temurin-21-jdk-* /opt/java-21; \
     ln -s /usr/lib/jvm/temurin-25-jdk-* /opt/java-25
