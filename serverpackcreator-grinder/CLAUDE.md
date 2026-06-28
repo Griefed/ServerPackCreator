@@ -168,6 +168,24 @@ Spike workspace (not committed): `~/spc-grinder-spike/{configs,packs,baselines}`
   no leaked containers) under the production hardening defaults. **Verified passing** against Docker
   29.5 on 2026-06-26.
 
+## End-to-end verification (2026-06-28) & the Java limitation
+
+A real run (`GrinderApplication` grinding a live Modrinth mod through the whole chain) **verified**:
+resolve → download → generate → install-attempt → verdict → `JsonVerdictStore` → CSV → `ReportServer`
+all work on real data, and the **hardened** container install works end-to-end on a Java-21 Minecraft
+(1.20.6 → 38 library files under `--network none`-style hardening: uid 1000, read-only rootfs). It also
+**found + fixed** real bugs (boot-pack `inclusions` in `BootVerifier` *and* `ApiVanillaPackGenerator` —
+the boot had never actually worked; plus the release-only MC gate and install diagnostics).
+
+**Known limitation (next work):** the grinder picks the *newest* Minecraft release, which in this
+environment is **26.x** — and `start.sh` reports it needs a **JDK newer than the bundled 8/17/21**, so
+the install aborts (it would prompt for a Jabba Java-install). Two coupled gaps: (1) the runtime image
+must bundle the JDK current Minecraft needs; (2) **`JavaForMinecraft` is wrong for the new `26.x`
+versioning** (it maps `major≠1 → 21`). The grinder must **bound MC selection to image-supported Java**
+— otherwise it either aborts (Jabba prompt) or, if the check were blindly skipped, a Java-version crash
+would be **mis-scored as a clientside crash (false HIGH)**. So don't just set `SKIP_JAVA_CHECK`; gate on
+the Minecraft version's actual required Java (from SPC) vs. what the image ships.
+
 ## Still to build (the fire-and-forget service)
 
 Done so far: container `ServerRunner` (+ hardening, daemon-verified), the **runtime image** (built +
