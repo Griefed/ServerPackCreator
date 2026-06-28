@@ -146,6 +146,10 @@ class BootVerifier(
         packConfig.modloader = loader
         packConfig.modloaderVersion = loaderVersion
         packConfig.clientMods.clear()
+        // Without inclusions the config-check rejects the pack as "empty". Auto-detect the modpack's
+        // directories (here: mods) the same way the CLI/GUI would, so the candidate mod is copied in.
+        packConfig.inclusions.clear()
+        packConfig.inclusions.addAll(apiWrapper.configurationHandler.suggestInclusions(modpackDir.absolutePath))
         packConfig.customDestination = Optional.of(destination)
 
         val check = apiWrapper.configurationHandler.checkConfiguration(packConfig)
@@ -169,8 +173,11 @@ class BootVerifier(
      * container-backed [ServerRunner].
      */
     fun prepareBootPack(project: ProjectFiles, loader: String): Prepared {
+        // Only ever boot a stable Minecraft *release* — a mod's newest file may target a pre-release
+        // (a `-pre`/`-rc`/`-snapshot` of the current version), which is unstable and a waste to boot.
+        val releaseVersions = apiWrapper.versionMeta.minecraft.serverReleases().map { it.minecraftVersion }.toHashSet()
         val candidate = BootCandidateSelector.pickBootableCandidate(project.files, loader) { minecraftVersion ->
-            loaderVersionResolver.latest(loader, minecraftVersion) != null
+            minecraftVersion in releaseVersions && loaderVersionResolver.latest(loader, minecraftVersion) != null
         } ?: return Prepared.Failed("No bootable file/Minecraft/loader combination for $loader.")
         val (mainFile, minecraftVersion) = candidate
         val loaderVersion = loaderVersionResolver.latest(loader, minecraftVersion)

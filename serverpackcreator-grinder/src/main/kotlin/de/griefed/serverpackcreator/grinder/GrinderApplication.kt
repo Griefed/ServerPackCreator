@@ -48,7 +48,10 @@ object GrinderApplication {
 
         log.info("Grinder starting — image=$image work=$workDir cache=$cacheRoot store=$storeFile port=$port workers=$workers")
 
-        val apiWrapper = ApiWrapper.api()
+        // Point SPC at a specific home/config when given (reproducible runs), else its default.
+        val apiWrapper = System.getenv("SPC_GRINDER_SPC_PROPERTIES")?.takeIf { it.isNotBlank() }
+            ?.let { ApiWrapper.api(File(it)) }
+            ?: ApiWrapper.api()
         val engine = DockerJavaContainerEngine()
         val installer = DockerLoaderInstaller(engine, image, ApiVanillaPackGenerator(apiWrapper, File(workDir, "install")))
         val cache = LoaderCache(cacheRoot, installer)

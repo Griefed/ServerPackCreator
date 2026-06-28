@@ -55,6 +55,11 @@ class ApiVanillaPackGenerator(
     override fun generate(loader: String, loaderVersion: String, minecraftVersion: String): File? {
         val tupleDir = File(workDirectory, sanitize("$minecraftVersion-$loader-$loaderVersion")).apply { deleteRecursively() }
         val modpack = File(tupleDir, "modpack").apply { File(this, "mods").mkdirs() }
+        // SPC refuses to generate an "empty" pack, so give the (mod-less) modpack a minimal includable
+        // directory. The install only needs start.sh + the loader; this placeholder is harmless and is
+        // excluded from the install-layer snapshot (it's a pre-boot file).
+        File(modpack, "config").mkdirs()
+        File(modpack, "config/.spc-grinder-keep").writeText("Placeholder so the vanilla install pack is not empty.\n")
 
         // Keep generation faithful to the boot path: no scanner-driven exclusion, empty clientside-list.
         apiWrapper.apiProperties.isAutoExcludingModsEnabled = false
@@ -64,6 +69,8 @@ class ApiVanillaPackGenerator(
             modloader = loader
             modloaderVersion = loaderVersion
             clientMods.clear()
+            inclusions.clear()
+            inclusions.addAll(apiWrapper.configurationHandler.suggestInclusions(modpack.absolutePath))
             customDestination = Optional.of(File(tupleDir, "serverpack"))
         }
 

@@ -72,12 +72,16 @@ class DockerLoaderInstaller(
                 resources = resources,
                 networkMode = "bridge" // the ONLY networked boot — downloads loader + MC server + libraries
             )
-            engine.run(spec, readyLine, installTimeout)
+            val output = engine.run(spec, readyLine, installTimeout)
 
             val copied = InstallLayerSnapshot.copyInstallLayer(pack, preBoot, target)
             val installed = copied > 0 && File(target, "libraries").isDirectory
             if (!installed) {
-                log.warn("Install produced no library layer for $loader $loaderVersion / Minecraft $minecraftVersion (copied=$copied).")
+                log.warn(
+                    "Install produced no library layer for $loader $loaderVersion / Minecraft $minecraftVersion " +
+                        "(copied=$copied, exitCode=${output.exitCode}, timedOut=${output.timedOut}). Last container output:\n" +
+                        output.lines.takeLast(25).joinToString("\n")
+                )
             }
             return installed
         } finally {
