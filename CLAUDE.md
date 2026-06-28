@@ -157,7 +157,7 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 | app            | 71            | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay             |
 | plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |
 | web-frontend   | 23 (from 0)   | Phase 4a–4e done: Vitest, `$q` decoupling, **full TS migration**, component coverage  |
-| grinder        | 43 (+2 IT)    | Container runner (daemon-verified) + runtime image + `LoaderCache`/`LoaderInstaller` + orchestration + persistent store + web report + Modrinth source; wiring (`CandidateVerifier` + main) to build |
+| grinder        | 44 (+2 IT)    | Full chain wired + e2e-verified on live data; container runner (daemon-verified), runtime image, `LoaderCache`/`LoaderInstaller`, orchestration, persistent store, web report, Modrinth source; MC selection bounded to image-supported Java via `MinecraftMeta.requiredJavaVersion` (`ImageJavaRuntimes`) |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.

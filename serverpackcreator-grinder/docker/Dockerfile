@@ -27,7 +27,10 @@ RUN set -eux; \
         bash curl wget ca-certificates gawk tar gzip gnupg; \
     rm -rf /var/lib/apt/lists/*
 
-# Eclipse Temurin JDKs 8/17/21 from the Adoptium apt repository (covers the Minecraft -> Java matrix).
+# Eclipse Temurin JDKs 8/17/21 from the Adoptium apt repository. This set MUST match
+# ImageJavaRuntimes.bundledMajors: the grinder only boots Minecraft versions whose SPC-declared
+# required Java is bundled here (a too-new version is skipped, never run on the wrong JDK). To extend
+# coverage to a newer Minecraft, add its JDK below AND to ImageJavaRuntimes.bundledMajors.
 RUN set -eux; \
     mkdir -p /etc/apt/keyrings; \
     curl -fsSL https://packages.adoptium.net/artifactory/api/gpg/key/public \

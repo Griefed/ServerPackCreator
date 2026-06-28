@@ -46,6 +46,10 @@ import java.util.*
  * @param packPostProcessor    Optional hook invoked on the staged pack **after** preparation and
  *                             **before** the boot — e.g. the grinder overlays the cached loader install
  *                             and sets the offline-boot levers. A thrown hook is reported INCONCLUSIVE.
+ * @param minecraftAcceptable  Extra gate on the Minecraft version to boot, AND-ed into selection.
+ *                             Defaults to accept-all (the host process can run whatever Java it has);
+ *                             the grinder passes its image's supported-Java check so a version whose
+ *                             JDK the runtime image lacks is never selected (and thus never mis-scored).
  * @param bootTimeout          Budget for install + boot before declaring the run inconclusive.
  * @author Griefed
  */
@@ -58,6 +62,7 @@ class BootVerifier(
     private val workDirectory: File,
     private val serverRunner: ServerRunner = HostProcessServerRunner(),
     private val packPostProcessor: ((Prepared.Ready) -> Unit)? = null,
+    private val minecraftAcceptable: (String) -> Boolean = { true },
     private val bootTimeout: Duration = Duration.ofMinutes(12)
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
@@ -175,9 +180,12 @@ class BootVerifier(
     fun prepareBootPack(project: ProjectFiles, loader: String): Prepared {
         // Only ever boot a stable Minecraft *release* — a mod's newest file may target a pre-release
         // (a `-pre`/`-rc`/`-snapshot` of the current version), which is unstable and a waste to boot.
+        // [minecraftAcceptable] adds the host's own constraint (e.g. the grinder's supported-Java gate).
         val releaseVersions = apiWrapper.versionMeta.minecraft.serverReleases().map { it.minecraftVersion }.toHashSet()
         val candidate = BootCandidateSelector.pickBootableCandidate(project.files, loader) { minecraftVersion ->
-            minecraftVersion in releaseVersions && loaderVersionResolver.latest(loader, minecraftVersion) != null
+            minecraftVersion in releaseVersions &&
+                minecraftAcceptable(minecraftVersion) &&
+                loaderVersionResolver.latest(loader, minecraftVersion) != null
         } ?: return Prepared.Failed("No bootable file/Minecraft/loader combination for $loader.")
         val (mainFile, minecraftVersion) = candidate
         val loaderVersion = loaderVersionResolver.latest(loader, minecraftVersion)

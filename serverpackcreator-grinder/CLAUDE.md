@@ -61,8 +61,9 @@ containers:
   loader + MC server + libraries, then snapshots the install layer into the cache. The error-prone
   pieces are pure + unit-tested: **`InstallLayerSnapshot`** (denylist diff/copy — snapshots added
   non-runtime files, the spike-derived design), **`PackVariables`** (the unattended-boot levers:
-  eula + `WAIT_FOR_USER_INPUT=false` + `JAVA` per MC + `SERVERSTARTERJAR_FORCE_FETCH=false` *only* for
-  offline boots), and **`JavaForMinecraft`** (MC→bundled-JDK). `DockerLoaderInstaller` /
+  eula + `WAIT_FOR_USER_INPUT=false` + a resolved `JAVA` path + `SERVERSTARTERJAR_FORCE_FETCH=false`
+  *only* for offline boots), and **`ImageJavaRuntimes`** (MC→bundled-JDK + the supported-Java gate,
+  required-Java sourced authoritatively from `MinecraftMeta.requiredJavaVersion`). `DockerLoaderInstaller` /
   `ApiVanillaPackGenerator` themselves are integration-only (daemon + image + real `ApiWrapper`).
   **Operational note:** the bind-mounted pack must be writable by the container's uid 1000 (the install
   writes `libraries/` etc. into it) — align uids or `--user root` (Docker Desktop maps automatically).
@@ -156,7 +157,8 @@ Spike workspace (not committed): `~/spc-grinder-spike/{configs,packs,baselines}`
   fetches nothing.
 - `InstallLayerSnapshotTest` (added-non-runtime files copied, pre-boot + runtime excluded),
   `PackVariablesTest` (in-place key replace not touching `JAVA_ARGS`, append-if-absent, offline
-  force-fetch toggle, eula), `JavaForMinecraftTest` (the 1.20.4/1.20.5 Java-17→21 boundary). The
+  force-fetch toggle, eula), `ImageJavaRuntimesTest` (the bundled-JDK resolution + supported-Java gate:
+  a version whose required Java isn't bundled is unsupported, not booted on the wrong JDK). The
   `LoaderInstaller`/`VanillaPackGenerator` impls are integration-only.
 - docker-java and the real installer have no offline doubles; `DockerJavaContainerEngine` and the
   production `LoaderInstaller` are integration-only.
@@ -177,20 +179,26 @@ all work on real data, and the **hardened** container install works end-to-end o
 **found + fixed** real bugs (boot-pack `inclusions` in `BootVerifier` *and* `ApiVanillaPackGenerator` —
 the boot had never actually worked; plus the release-only MC gate and install diagnostics).
 
-**Known limitation (next work):** the grinder picks the *newest* Minecraft release, which in this
-environment is **26.x** — and `start.sh` reports it needs a **JDK newer than the bundled 8/17/21**, so
-the install aborts (it would prompt for a Jabba Java-install). Two coupled gaps: (1) the runtime image
-must bundle the JDK current Minecraft needs; (2) **`JavaForMinecraft` is wrong for the new `26.x`
-versioning** (it maps `major≠1 → 21`). The grinder must **bound MC selection to image-supported Java**
-— otherwise it either aborts (Jabba prompt) or, if the check were blindly skipped, a Java-version crash
-would be **mis-scored as a clientside crash (false HIGH)**. So don't just set `SKIP_JAVA_CHECK`; gate on
-the Minecraft version's actual required Java (from SPC) vs. what the image ships.
+**Java/image bound (RESOLVED 2026-06-28).** The grinder picks the *newest* Minecraft release; in this
+environment that is **26.x**, which `start.sh` reports needs a **JDK newer than the bundled 8/17/21**
+(the install would otherwise prompt for a Jabba Java-install). The fix is **`ImageJavaRuntimes`**: it
+sources the required Java major **authoritatively** from `MinecraftMeta.requiredJavaVersion(mc)` (Mojang's
+declared `javaVersion.majorVersion`, scheme-proof — no hand-rolled heuristic) and exposes (a)
+`supports(mc)` — required-Java known *and* in `bundledMajors` (default 8/17/21, **must mirror the
+Dockerfile**), and (b) `javaPath(mc)` → the bundled JDK path or null. `BootVerifier` now takes an injected
+`minecraftAcceptable` predicate (default accept-all for the host CLI; `ContainerCandidateVerifier` passes
+`imageJava::supports`), AND-ed into candidate selection, so a version whose JDK the image lacks is **never
+selected** — never booted on the wrong JDK and **never mis-scored as a clientside crash (false HIGH)**.
+This is deliberately *not* `SKIP_JAVA_CHECK`. **Trade-off:** until the image bundles a newer JDK, mods that
+*only* target 26.x are skipped (a mod supporting an older MC still boots on its newest image-supported
+version). **To extend coverage:** add the JDK to the Dockerfile *and* to `ImageJavaRuntimes.bundledMajors`
+— the two are the single coupled source of truth.
 
 ## Still to build (the fire-and-forget service)
 
 Done so far: container `ServerRunner` (+ hardening, daemon-verified), the **runtime image** (built +
 smoke-tested), `LoaderCache` + the **`LoaderInstaller`** (`DockerLoaderInstaller` + the tested
-`InstallLayerSnapshot`/`PackVariables`/`JavaForMinecraft` cores), the **`BootVerifier.packPostProcessor`
+`InstallLayerSnapshot`/`PackVariables`/`ImageJavaRuntimes` cores), the **`BootVerifier.packPostProcessor`
 hook** (the cache-overlay seam — in `-clientside`), grind **orchestration**, restart-safe
 `JsonVerdictStore`, the self-contained web report, and the `ModrinthCandidateSource`. What remains is
 the wiring that turns these into one running service.

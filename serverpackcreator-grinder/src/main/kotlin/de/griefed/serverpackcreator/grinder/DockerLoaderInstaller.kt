@@ -32,11 +32,12 @@ import java.time.Duration
  * The install boot is the **only** place network is allowed; it keeps the `ServerStarterJar` re-fetch
  * on (`offline = false`) because it must download `server.jar`. Integration-only — needs a live daemon,
  * the runtime image, and a real `ApiWrapper` behind the generator — so it is not unit-tested; the
- * error-prone pieces it leans on ([InstallLayerSnapshot], [PackVariables], [JavaForMinecraft]) are.
+ * error-prone pieces it leans on ([InstallLayerSnapshot], [PackVariables], [ImageJavaRuntimes]) are.
  *
  * @param engine         The container runtime.
  * @param image          The runtime image (must carry the JDKs + SPC's shell tooling).
  * @param packGenerator  Produces the mod-less pack for the tuple.
+ * @param imageJava      Resolves the bundled JDK for the tuple's Minecraft version.
  * @param installTimeout Budget for the install boot (downloads + first server start).
  * @param resources      CPU/memory/pid caps for the install container.
  * @author Griefed
@@ -45,6 +46,7 @@ class DockerLoaderInstaller(
     private val engine: ContainerEngine,
     private val image: String,
     private val packGenerator: VanillaPackGenerator,
+    private val imageJava: ImageJavaRuntimes,
     private val installTimeout: Duration = Duration.ofMinutes(20),
     private val resources: ContainerResources = ContainerResources()
 ) : LoaderInstaller {
@@ -59,10 +61,16 @@ class DockerLoaderInstaller(
             log.warn("Vanilla pack generation failed for $loader $loaderVersion / Minecraft $minecraftVersion.")
             return false
         }
+        val javaPath = imageJava.javaPath(minecraftVersion)
+        if (javaPath == null) {
+            log.warn("No bundled JDK for Minecraft $minecraftVersion — cannot install $loader $loaderVersion offline.")
+            pack.deleteRecursively()
+            return false
+        }
         try {
             val preBoot = InstallLayerSnapshot.relativeFilePaths(pack)
             // Unattended boot, but the install still needs network + the ServerStarterJar fetch.
-            PackVariables.prepareUnattended(pack, minecraftVersion, offline = false)
+            PackVariables.prepareUnattended(pack, javaPath, offline = false)
 
             val spec = ContainerSpec(
                 image = image,

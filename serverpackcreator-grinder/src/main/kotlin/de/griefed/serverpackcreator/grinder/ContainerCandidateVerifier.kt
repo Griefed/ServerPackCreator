@@ -46,6 +46,7 @@ import java.time.Duration
  * @param loaderCache     The per-tuple install cache (its installer boots-with-network on a miss).
  * @param containerEngine The container runtime the mod-boots use.
  * @param runtimeImage    The image carrying the JDKs + SPC's shell tooling.
+ * @param imageJava       The image's supported-Java gate + per-version JDK resolution.
  * @param workDirectory   Scratch root for verification + boot staging.
  * @param bootTimeout     Per-boot budget.
  * @param resources       CPU/memory/pid caps per mod-boot container.
@@ -57,6 +58,7 @@ class ContainerCandidateVerifier(
     private val loaderCache: LoaderCache,
     private val containerEngine: ContainerEngine,
     private val runtimeImage: String,
+    private val imageJava: ImageJavaRuntimes,
     private val workDirectory: File,
     private val bootTimeout: Duration = Duration.ofMinutes(15),
     private val resources: ContainerResources = ContainerResources(),
@@ -83,6 +85,7 @@ class ContainerCandidateVerifier(
                         workDirectory = File(workDirectory, "boot"),
                         serverRunner = ContainerServerRunner(containerEngine, runtimeImage, resources),
                         packPostProcessor = ::overlayLoaderInstall,
+                        minecraftAcceptable = imageJava::supports,
                         bootTimeout = bootTimeout
                     )
                 }
@@ -96,10 +99,12 @@ class ContainerCandidateVerifier(
      * [BootVerifier] reports it INCONCLUSIVE rather than booting a pack that would need network.
      */
     private fun overlayLoaderInstall(pack: BootVerifier.Prepared.Ready) {
+        val javaPath = imageJava.javaPath(pack.minecraftVersion)
+            ?: throw IllegalStateException("No bundled JDK for Minecraft ${pack.minecraftVersion}")
         val base = loaderCache.ensureInstalled(pack.loader, pack.loaderVersion, pack.minecraftVersion)
             ?: throw IllegalStateException("No cached loader install for ${pack.loader} ${pack.loaderVersion} / Minecraft ${pack.minecraftVersion}")
         copyInstallLayer(base, pack.serverPack)
-        PackVariables.prepareUnattended(pack.serverPack, pack.minecraftVersion, offline = true)
+        PackVariables.prepareUnattended(pack.serverPack, javaPath, offline = true)
     }
 
     /** Copy the cached install layer from [base] into [pack], skipping the cache's completion marker. */

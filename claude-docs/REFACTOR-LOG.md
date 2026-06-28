@@ -426,3 +426,21 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   `JavaForMinecraft` (MC→bundled-JDK, the 1.20.4/1.20.5 boundary). 11 new tests. **clientside 44/44,
   grinder 43/43 unit green (+2 gated IT).** Remaining: the real `CandidateVerifier` wiring (post-processor
   → ensureInstalled → overlay) + the main fire-and-forget entrypoint.
+
+- **Grinder MC selection bounded to image-supported Java (2026-06-28, branch `claude-grinder`):**
+  resolves the Java/image limitation the e2e verification surfaced (the grinder picked the *newest*
+  Minecraft release — 26.x in this environment — whose required JDK the image's 8/17/21 set lacks, so
+  `start.sh` aborted at a Jabba Java-install prompt). Replaced the hand-rolled `JavaForMinecraft`
+  heuristic (wrong for the `26.x` scheme) with **`ImageJavaRuntimes`**, which sources the required Java
+  major **authoritatively** from `MinecraftMeta.requiredJavaVersion(mc)` (Mojang's declared
+  `javaVersion.majorVersion`) and exposes `supports(mc)` (required-Java known *and* in `bundledMajors`,
+  default 8/17/21 — mirrors the Dockerfile) + `javaPath(mc)`. `BootVerifier` gained an injected
+  `minecraftAcceptable: (String)->Boolean = { true }` AND-ed into candidate selection (host CLI keeps
+  accept-all; `ContainerCandidateVerifier` passes `imageJava::supports`), so a version whose JDK the
+  image lacks is **never selected** — never booted on the wrong JDK and never mis-scored as a clientside
+  crash (false HIGH). Deliberately *not* `SKIP_JAVA_CHECK`. `PackVariables.prepareUnattended` now takes a
+  resolved `javaPath` (no version heuristic); `DockerLoaderInstaller`/`ContainerCandidateVerifier` resolve
+  it via `ImageJavaRuntimes`. Trade-off: until a newer JDK is bundled, mods targeting *only* 26.x are
+  skipped (extend coverage by adding the JDK to the Dockerfile **and** `ImageJavaRuntimes.bundledMajors`).
+  Swapped `JavaForMinecraftTest`→`ImageJavaRuntimesTest` (gate + resolution). **clientside 44/44, grinder
+  44/44 unit green (+2 gated IT).**

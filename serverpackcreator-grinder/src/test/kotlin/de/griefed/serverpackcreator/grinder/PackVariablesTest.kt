@@ -46,12 +46,12 @@ internal class PackVariablesTest {
     fun prepareUnattendedWritesEulaAndOfflineLevers(@TempDir dir: File) {
         File(dir, "variables.txt").writeText("JAVA=java\nWAIT_FOR_USER_INPUT=true\nSERVERSTARTERJAR_FORCE_FETCH=true\n")
 
-        PackVariables.prepareUnattended(dir, "1.12.2", offline = true)
+        PackVariables.prepareUnattended(dir, "/opt/java-8/bin/java", offline = true)
 
         val vars = File(dir, "variables.txt").readText()
         Assertions.assertEquals("eula=true\n", File(dir, "eula.txt").readText())
         Assertions.assertTrue(vars.contains("WAIT_FOR_USER_INPUT=false"))
-        Assertions.assertTrue(vars.contains("JAVA=/opt/java-8/bin/java"), "1.12.2 → bundled JDK 8")
+        Assertions.assertTrue(vars.contains("JAVA=/opt/java-8/bin/java"), "the resolved bundled JDK path is written verbatim")
         Assertions.assertTrue(vars.contains("SERVERSTARTERJAR_FORCE_FETCH=false"), "offline must not re-fetch server.jar")
     }
 
@@ -59,7 +59,7 @@ internal class PackVariablesTest {
     fun installBootKeepsForceFetchOn(@TempDir dir: File) {
         File(dir, "variables.txt").writeText("JAVA=java\nSERVERSTARTERJAR_FORCE_FETCH=true\n")
 
-        PackVariables.prepareUnattended(dir, "1.20.6", offline = false)
+        PackVariables.prepareUnattended(dir, "/opt/java-21/bin/java", offline = false)
 
         Assertions.assertTrue(File(dir, "variables.txt").readText().contains("SERVERSTARTERJAR_FORCE_FETCH=true"),
             "the install boot still needs to fetch server.jar")

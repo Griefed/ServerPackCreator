@@ -53,9 +53,11 @@ object GrinderApplication {
             ?.let { ApiWrapper.api(File(it)) }
             ?: ApiWrapper.api()
         val engine = DockerJavaContainerEngine()
-        val installer = DockerLoaderInstaller(engine, image, ApiVanillaPackGenerator(apiWrapper, File(workDir, "install")))
+        // Authoritative Minecraft -> required-Java from SPC's own metadata; gates selection to the image's JDKs.
+        val imageJava = ImageJavaRuntimes.from(apiWrapper.versionMeta.minecraft)
+        val installer = DockerLoaderInstaller(engine, image, ApiVanillaPackGenerator(apiWrapper, File(workDir, "install")), imageJava)
         val cache = LoaderCache(cacheRoot, installer)
-        val verifier = ContainerCandidateVerifier(apiWrapper, cache, engine, image, File(workDir, "verify"))
+        val verifier = ContainerCandidateVerifier(apiWrapper, cache, engine, image, imageJava, File(workDir, "verify"))
         val store = JsonVerdictStore(storeFile)
         val grinder = Grinder(verifier, store)
 

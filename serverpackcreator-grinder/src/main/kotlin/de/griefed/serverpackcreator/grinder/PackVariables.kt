@@ -45,11 +45,12 @@ object PackVariables {
     }
 
     /**
-     * Apply the unattended-boot levers to the pack at [packDir] for [minecraftVersion]. Pass
+     * Apply the unattended-boot levers to the pack at [packDir], pointing `$JAVA` at the already
+     * resolved [javaPath] (the caller picks the bundled JDK via [ImageJavaRuntimes]). Pass
      * [offline] = `true` for a cached `--network none` boot (disables the ServerStarterJar re-fetch),
      * `false` for the one-off install boot that still needs network.
      */
-    fun prepareUnattended(packDir: File, minecraftVersion: String, offline: Boolean) {
+    fun prepareUnattended(packDir: File, javaPath: String, offline: Boolean) {
         File(packDir, "eula.txt").writeText("eula=true\n")
         val variables = File(packDir, "variables.txt")
         if (!variables.isFile) {
@@ -57,7 +58,7 @@ object PackVariables {
         }
         var text = variables.readText()
         text = set(text, "WAIT_FOR_USER_INPUT", "false")
-        text = set(text, "JAVA", JavaForMinecraft.javaPath(minecraftVersion))
+        text = set(text, "JAVA", javaPath)
         if (offline) {
             text = set(text, "SERVERSTARTERJAR_FORCE_FETCH", "false")
         }
