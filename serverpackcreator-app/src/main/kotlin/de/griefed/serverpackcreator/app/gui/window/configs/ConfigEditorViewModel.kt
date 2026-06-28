@@ -63,9 +63,9 @@ class ConfigEditorViewModel(private val versionMeta: VersionMeta) {
      * server or no Java-requirement is known for it.
      */
     fun requiredJavaVersion(minecraftVersion: String): String {
-        val server = versionMeta.minecraft.getServer(minecraftVersion)
-        return if (server.isPresent && server.get().javaVersion().isPresent) {
-            server.get().javaVersion().get().toString()
+        val version = versionMeta.minecraft.requiredJavaVersion(minecraftVersion)
+        return if (version.isPresent) {
+            version.get()
         } else {
             "?"
         }
