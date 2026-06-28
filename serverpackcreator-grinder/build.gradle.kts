@@ -1,6 +1,11 @@
 plugins {
     id("serverpackcreator.kotlin-conventions")
     id("serverpackcreator.dokka-conventions")
+    application
+}
+
+application {
+    mainClass.set("de.griefed.serverpackcreator.grinder.GrinderApplication")
 }
 
 repositories {
