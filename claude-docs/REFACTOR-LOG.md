@@ -444,3 +444,13 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   skipped (extend coverage by adding the JDK to the Dockerfile **and** `ImageJavaRuntimes.bundledMajors`).
   Swapped `JavaForMinecraftTest`→`ImageJavaRuntimesTest` (gate + resolution). **clientside 44/44, grinder
   44/44 unit green (+2 gated IT).**
+
+- **Grinder runtime image: bundle Temurin 25 for current Minecraft (2026-06-28, branch `claude-grinder`):**
+  the verified follow-up to the Java/image bound. Checked: latest MC release is **26.2**, declaring
+  **Java 25** (`java-runtime-epsilon`); Adoptium ships Temurin 25 GA (now most-recent LTS) and
+  `temurin-25-jdk` is in the `bookworm` apt pool (amd64 + arm64). Added `temurin-25-jdk` + the
+  `/opt/java-25` symlink to the Dockerfile and `25` to `ImageJavaRuntimes.bundledMajors`
+  (`setOf(8,17,21,25)`). Java 26 is *not* bundled — it appears only on snapshots, which the release-gate
+  skips. Rebuilt + smoke-tested: all four JDKs resolve (`25.0.3` LTS), `$JAVA` defaults to 21, non-root
+  uid 1000, tooling intact; image ~2.08 GB (was ~1.6 GB). New test `bundlingTheRequiredJavaMakesTheVersionSupported`
+  pins 26.2→Java 25 now booting. grinder 45/45 unit green (+2 gated IT).

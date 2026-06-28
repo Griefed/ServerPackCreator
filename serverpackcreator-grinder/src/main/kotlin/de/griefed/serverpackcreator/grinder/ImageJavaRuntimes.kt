@@ -26,7 +26,7 @@ import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftMeta
  * at all. The required Java major comes from SPC's own version metadata
  * ([MinecraftMeta.requiredJavaVersion]) — Mojang's *declared* server requirement — not a hand-rolled
  * heuristic, so it stays correct across Minecraft versioning-scheme changes. The image ships a fixed
- * JDK set ([bundledMajors], default 8/17/21 to match the runtime Dockerfile); a version whose required
+ * JDK set ([bundledMajors], default 8/17/21/25 to match the runtime Dockerfile); a version whose required
  * Java isn't bundled is reported **unsupported** so the grinder skips it. Skipping (rather than booting
  * on the wrong JDK) is the whole point: a Java-version crash would otherwise be mis-scored as a
  * clientside crash (a false HIGH).
@@ -38,7 +38,7 @@ import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftMeta
  */
 class ImageJavaRuntimes(
     private val requiredJavaMajor: (String) -> Int?,
-    private val bundledMajors: Set<Int> = setOf(8, 17, 21)
+    private val bundledMajors: Set<Int> = setOf(8, 17, 21, 25)
 ) {
     /** True when [minecraftVersion]'s required Java major is both known and bundled in the image. */
     fun supports(minecraftVersion: String): Boolean =
@@ -55,7 +55,7 @@ class ImageJavaRuntimes(
          * Build from SPC's version metadata: the required Java comes straight from Mojang's server
          * manifest via [MinecraftMeta.requiredJavaVersion] (a stringified major), parsed to an Int.
          */
-        fun from(minecraftMeta: MinecraftMeta, bundledMajors: Set<Int> = setOf(8, 17, 21)): ImageJavaRuntimes =
+        fun from(minecraftMeta: MinecraftMeta, bundledMajors: Set<Int> = setOf(8, 17, 21, 25)): ImageJavaRuntimes =
             ImageJavaRuntimes(
                 requiredJavaMajor = { minecraftMeta.requiredJavaVersion(it).orElse(null)?.toIntOrNull() },
                 bundledMajors = bundledMajors

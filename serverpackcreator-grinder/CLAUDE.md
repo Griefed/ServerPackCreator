@@ -78,10 +78,11 @@ Don't wire the candidate-mod boot to run with network — that defeats the isola
 *self-contained* — it installs the modloader + Minecraft server itself at first boot, so the image is
 **loader-agnostic** (no per-loader logic). The **`ServerStarterJar` (neoforged) is Forge/NeoForge
 only**; Fabric uses `fabric-installer`/`fabric-server-launch(er).jar`, Quilt the `quilt-installer`,
-LegacyFabric its own installer. A single JDK can't boot every Minecraft version (≤1.16→8,
-1.17–1.20.4→17, 1.20.5+→21), so the image bundles Temurin 8/17/21 and the grinder sets `$JAVA` per MC
-version (via the pack's `variables.txt`) — **no Java download**, which is what keeps mod-boots runnable
-under `--network none`. The template needs `bash`, `curl`/`wget`, `gawk`, `tar`/`gzip`. See
+LegacyFabric its own installer. A single JDK can't boot every Minecraft version (8 for the oldest,
+through 21 for 1.20.5+ and **25** for the current release 26.2), so the image bundles Temurin 8/17/21/25
+and the grinder sets `$JAVA` per MC version (via the pack's `variables.txt`) from SPC's declared
+required-Java — **no Java download**, which is what keeps mod-boots runnable under `--network none`.
+The template needs `bash`, `curl`/`wget`, `gawk`, `tar`/`gzip`. See
 `docker/README.md`.
 
 **Host prerequisites (apply once `ContainerServerRunner` is wired into a `BootVerifier`):** the
@@ -125,7 +126,7 @@ diffed each booted dir against its pre-boot baseline. Conclusions:
   `default_template.sh`):** `WAIT_FOR_USER_INPUT=false` (else it blocks on a `read`),
   `SERVERSTARTERJAR_FORCE_FETCH=false` (else Forge/NeoForge *re-download* `server.jar` → needs network),
   and pre-write `eula.txt` = `eula=true` (else an interactive EULA prompt). Also set `JAVA` to the
-  bundled per-MC JDK (`/opt/java-{8,17,21}`).
+  bundled per-MC JDK (`/opt/java-{8,17,21,25}`).
 - **Cache-overlay seam — RESOLVED (no deep `BootVerifier` change needed).** The install layer never
   name-collides with pack files (`libraries/`, `server.jar`, run-scripts vs. `start.sh`/`mods/`/`config/`),
   so the overlay is a plain recursive copy. Plan: add an optional `packPostProcessor:
@@ -180,19 +181,20 @@ all work on real data, and the **hardened** container install works end-to-end o
 the boot had never actually worked; plus the release-only MC gate and install diagnostics).
 
 **Java/image bound (RESOLVED 2026-06-28).** The grinder picks the *newest* Minecraft release; in this
-environment that is **26.x**, which `start.sh` reports needs a **JDK newer than the bundled 8/17/21**
-(the install would otherwise prompt for a Jabba Java-install). The fix is **`ImageJavaRuntimes`**: it
-sources the required Java major **authoritatively** from `MinecraftMeta.requiredJavaVersion(mc)` (Mojang's
-declared `javaVersion.majorVersion`, scheme-proof — no hand-rolled heuristic) and exposes (a)
-`supports(mc)` — required-Java known *and* in `bundledMajors` (default 8/17/21, **must mirror the
-Dockerfile**), and (b) `javaPath(mc)` → the bundled JDK path or null. `BootVerifier` now takes an injected
-`minecraftAcceptable` predicate (default accept-all for the host CLI; `ContainerCandidateVerifier` passes
-`imageJava::supports`), AND-ed into candidate selection, so a version whose JDK the image lacks is **never
-selected** — never booted on the wrong JDK and **never mis-scored as a clientside crash (false HIGH)**.
-This is deliberately *not* `SKIP_JAVA_CHECK`. **Trade-off:** until the image bundles a newer JDK, mods that
-*only* target 26.x are skipped (a mod supporting an older MC still boots on its newest image-supported
-version). **To extend coverage:** add the JDK to the Dockerfile *and* to `ImageJavaRuntimes.bundledMajors`
-— the two are the single coupled source of truth.
+environment that is **26.2**, which requires **Java 25** (`java-runtime-epsilon`). Originally the image
+bundled only 8/17/21, so `start.sh` aborted at a Jabba Java-install prompt. The fix is
+**`ImageJavaRuntimes`**: it sources the required Java major **authoritatively** from
+`MinecraftMeta.requiredJavaVersion(mc)` (Mojang's declared `javaVersion.majorVersion`, scheme-proof — no
+hand-rolled heuristic) and exposes (a) `supports(mc)` — required-Java known *and* in `bundledMajors`
+(default **8/17/21/25**, **must mirror the Dockerfile**), and (b) `javaPath(mc)` → the bundled JDK path
+or null. `BootVerifier` now takes an injected `minecraftAcceptable` predicate (default accept-all for the
+host CLI; `ContainerCandidateVerifier` passes `imageJava::supports`), AND-ed into candidate selection, so
+a version whose JDK the image lacks is **never selected** — never booted on the wrong JDK and **never
+mis-scored as a clientside crash (false HIGH)**. This is deliberately *not* `SKIP_JAVA_CHECK`.
+**Image now ships Temurin 25** (verified: `25.0.3` LTS, image ~2.08 GB), so the current release 26.2 boots.
+Java-**26** is intentionally *not* bundled: it only appears on snapshots (e.g. 26.3-snapshot), which the
+release-gate already skips. **To extend coverage** to a future release: add its JDK to the Dockerfile
+*and* to `ImageJavaRuntimes.bundledMajors` — the two are the single coupled source of truth.
 
 ## Still to build (the fire-and-forget service)
 

@@ -27,10 +27,12 @@ RUN set -eux; \
         bash curl wget ca-certificates gawk tar gzip gnupg; \
     rm -rf /var/lib/apt/lists/*
 
-# Eclipse Temurin JDKs 8/17/21 from the Adoptium apt repository. This set MUST match
+# Eclipse Temurin JDKs 8/17/21/25 from the Adoptium apt repository. This set MUST match
 # ImageJavaRuntimes.bundledMajors: the grinder only boots Minecraft versions whose SPC-declared
-# required Java is bundled here (a too-new version is skipped, never run on the wrong JDK). To extend
-# coverage to a newer Minecraft, add its JDK below AND to ImageJavaRuntimes.bundledMajors.
+# required Java is bundled here (a too-new version is skipped, never run on the wrong JDK). 25 (LTS)
+# covers the current release Minecraft 26.2 (java-runtime-epsilon); the Java-26 snapshots are skipped
+# by the release-gate, so 26 is deliberately not bundled. To extend coverage to a newer Minecraft, add
+# its JDK below AND to ImageJavaRuntimes.bundledMajors.
 RUN set -eux; \
     mkdir -p /etc/apt/keyrings; \
     curl -fsSL https://packages.adoptium.net/artifactory/api/gpg/key/public \
@@ -38,7 +40,7 @@ RUN set -eux; \
     echo "deb [signed-by=/etc/apt/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb bookworm main" \
         > /etc/apt/sources.list.d/adoptium.list; \
     apt-get update; \
-    apt-get install -y --no-install-recommends temurin-8-jdk temurin-17-jdk temurin-21-jdk; \
+    apt-get install -y --no-install-recommends temurin-8-jdk temurin-17-jdk temurin-21-jdk temurin-25-jdk; \
     rm -rf /var/lib/apt/lists/*
 
 # Stable, arch-independent symlinks the grinder points $JAVA at (Temurin installs to
@@ -46,7 +48,8 @@ RUN set -eux; \
 RUN set -eux; \
     ln -s /usr/lib/jvm/temurin-8-jdk-*  /opt/java-8; \
     ln -s /usr/lib/jvm/temurin-17-jdk-* /opt/java-17; \
-    ln -s /usr/lib/jvm/temurin-21-jdk-* /opt/java-21
+    ln -s /usr/lib/jvm/temurin-21-jdk-* /opt/java-21; \
+    ln -s /usr/lib/jvm/temurin-25-jdk-* /opt/java-25
 
 # Default to Java 21; the grinder overrides $JAVA per Minecraft version (via the pack's variables.txt).
 ENV JAVA=/opt/java-21/bin/java

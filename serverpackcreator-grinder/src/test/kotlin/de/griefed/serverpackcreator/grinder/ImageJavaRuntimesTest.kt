@@ -48,7 +48,15 @@ internal class ImageJavaRuntimesTest {
     @Test
     fun supportsOnlyVersionsWhoseRequiredJavaIsBundled() {
         Assertions.assertTrue(runtimes.supports("1.20.6"), "Java 21 is bundled")
-        Assertions.assertFalse(runtimes.supports("26.2"), "Java 25 is not bundled — must be skipped, not booted on 21")
+        Assertions.assertFalse(runtimes.supports("26.2"), "Java 25 is not in this set — must be skipped, not booted on 21")
+    }
+
+    @Test
+    fun bundlingTheRequiredJavaMakesTheVersionSupported() {
+        // The shipped default bundles 25, so the current release (26.2 -> Java 25) boots rather than being skipped.
+        val withJava25 = ImageJavaRuntimes(requiredJavaMajor = { declaredRequiredJava[it] }, bundledMajors = setOf(8, 17, 21, 25))
+        Assertions.assertTrue(withJava25.supports("26.2"))
+        Assertions.assertEquals("/opt/java-25/bin/java", withJava25.javaPath("26.2"))
     }
 
     @Test

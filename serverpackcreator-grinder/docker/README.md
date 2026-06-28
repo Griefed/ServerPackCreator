@@ -24,16 +24,21 @@ So the **ServerStarterJar is Forge/NeoForge only** — the other loaders never t
 
 ## Java per Minecraft version
 
-A single JDK can't boot every Minecraft version. The image bundles Temurin **8, 17, 21** at stable
-paths (`/opt/java-8|17|21`) and the grinder sets `$JAVA` (via the pack's `variables.txt`) to the right
-one — so **no Java is ever downloaded**, which is what lets the actual mod-boots run under
-`--network none`:
+A single JDK can't boot every Minecraft version. The image bundles Temurin **8, 17, 21, 25** at stable
+paths (`/opt/java-8|17|21|25`) and the grinder sets `$JAVA` (via the pack's `variables.txt`) to the right
+one — resolved from SPC's own declared required-Java (`MinecraftMeta.requiredJavaVersion`), so **no Java
+is ever downloaded**, which is what lets the actual mod-boots run under `--network none`:
 
 | Minecraft | Java |
 |---|---|
 | ≤ 1.16.5 | 8 |
 | 1.17 – 1.20.4 | 17 |
-| 1.20.5+ | 21 |
+| 1.20.5 – 1.21.x | 21 |
+| 26.2 (current release) | 25 |
+
+The bundled set **must mirror `ImageJavaRuntimes.bundledMajors`** — a Minecraft version whose required
+Java isn't bundled is skipped, never booted on the wrong JDK. Java 26 (snapshots only) is not bundled;
+the release-gate skips snapshots.
 
 ## Build
 
@@ -51,7 +56,7 @@ run with network — that defeats the isolation (see `serverpackcreator-grinder/
 
 ## Known limitations (draft)
 
-- **Size:** ~3 bundled JDKs make this a large image (~1.6 GB, verified). A leaner variant could ship only JDK 21
+- **Size:** 4 bundled JDKs make this a large image (~2.08 GB, verified). A leaner variant could ship only JDK 21
   and let the pack's `install_java.sh` fetch others during pre-bake (more pre-bake network, larger
   cache) — a deliberate tradeoff, not done here.
 - **uid alignment:** runs as `1000:1000`; the host-side bind-mounted pack dir must be writable by that
