@@ -327,3 +327,130 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   then add tests). **clientside 41/41 green; app compiles; no new warnings.** Next for the grinder: a
   `ContainerServerRunner` (`docker-java`, `--network none`, resource-capped), the worker pool/queue, and
   a per-`(loader, loaderVer, mcVer)` pre-bake cache so each mod-boot runs offline.
+- **Grinder module scaffolded — container-backed ServerRunner (2026-06-26, branch `claude-grinder`):**
+  new standalone `serverpackcreator-grinder` (package `de.griefed.serverpackcreator.grinder`),
+  depending only on `-clientside` + `docker-java` (`docker-java-core` + `-transport-zerodep`, 3.7.1; no
+  Spring/Swing, unpublished). Reuses the clientside `ServerRunner` seam: `ContainerServerRunner`
+  implements it by booting a prepared pack in a hardened container instead of a host process, so it
+  drops into `BootVerifier` unchanged and feeds the same `BootLogClassifier` (via `outcomeFor`). The
+  docker interaction sits behind a `ContainerEngine` seam (same injectable-boundary pattern as
+  clientside's `HttpFetcher`), so the runner's host-side staging (start-script check, eula,
+  `ContainerSpec` assembly) + result mapping are unit-tested with a fake; `ContainerSpec` carries the
+  untrusted-mod hardening as *defaults* (`--network none`, read-only rootfs, drop ALL caps,
+  no-new-privileges, non-root, tmpfs `/tmp`, memory/cpu/pids caps; socket never mounted). The real
+  `DockerJavaContainerEngine` (create→start→follow→stop→inspect→remove) is integration-only — it
+  compiles against docker-java 3.7.1 (validating the API surface) but needs a live daemon to run.
+  Also a Boy-Scout cleanup of the just-landed seam: writing the second runner revealed `ServerRunner.run`
+  carried a dead `logFile` param (the caller persists the log), now dropped. `ContainerServerRunnerTest`
+  (3, offline) pins no-start.sh→NotStarted-without-launching, raw-output→Completed, and the hardened
+  spec/mount/eula. **grinder 3/3 green; clientside 41/41 green.** Remaining for fire-and-forget: pre-bake
+  cache, popularity-ranked queue + worker pool, verdict store → sortable/CSV table via the existing
+  frontend.
+- **Grinder pre-bake cache + host-prereqs doc (2026-06-26, branch `claude-grinder`):** added
+  `LoaderCache` — the `--network none` enabler. `ensureInstalled(loader, loaderVersion,
+  minecraftVersion)` returns a cached installed-server base, running a one-off `LoaderInstaller` (with
+  network) only on a miss; **marker-gated** (`.spc-installed` written only after success, so a partial
+  install is redone not served) and **serialized per tuple** (parallel workers share one install).
+  `LoaderInstaller` is the seam (real impl = a setup container with network snapshotting the
+  ServerStarterJar self-install — integration-only); the cache logic is pure. `LoaderCacheTest` (5,
+  offline, fake installer) pins miss-installs-once-then-hits, failed/throwing→null+clean, install-once
+  across 6 concurrent threads, and independent tuples. Also documented the host prerequisites that land
+  when `BootVerifier` is wired in: `CURSEFORGE_API_KEY` (CF resolution) + Playwright/Chromium on the
+  host (locked-file `BrowserDownloader`, which runs host-side during staging, not in the boot
+  container) — key + browser are complementary, a locked CF mod needs both. **grinder 8/8 green.**
+- **Grinder docker glue live-verified + grind orchestration (2026-06-26, branch `claude-grinder`):**
+  two steps. (1) `DockerJavaContainerEngineIT` — gated behind `GRINDER_DOCKER_IT=1`
+  (`@EnabledIfEnvironmentVariable`, skipped on daemon-less CI) — ran against **Docker Desktop 29.5.3**
+  and passed: create→start→stream→ready-detect/stop→exit-code→force-remove, under the production
+  hardening (`--network none`, read-only rootfs, dropped caps, non-root), no leaked containers. This is
+  the one layer no unit test can reach, now validated. (2) The grind **orchestration**, built at a
+  testable altitude by collapsing the integration-bound boot pipeline behind a `CandidateVerifier`
+  seam: `Grinder.grind` verifies one candidate (skip already-ground, swallow a thrown boot) and records
+  one `GrindVerdict` per loader; `GrindPool.grindAll` drains a popularity-ranked batch across N worker
+  threads; `VerdictStore` (in-memory, `slug+loader`-keyed, replace-not-duplicate) accumulates;
+  `VerdictCsvExporter` renders RFC-4180 CSV (`Name, Project, NamePattern, Confidence, Loader, Detail`,
+  highest-confidence-first) — the export from the original feature ask. 13 new unit tests
+  (`VerdictStoreTest`, `VerdictCsvExporterTest`, `GrinderTest` + shared `GrindTestFixtures`) cover
+  replace/skip/swallow/per-loader-recording/CSV-escaping+ordering/pool-drain+popularity. **grinder
+  21/21 unit green, +2 IT (gated).** Remaining: runtime image + real `LoaderInstaller`, the real
+  `CandidateVerifier` integration adapter (incl. the cache-overlay seam in `BootVerifier`), a
+  persistent `VerdictStore`, and the web table over the existing Quasar frontend.
+- **Grinder persistence + self-contained web report (2026-06-26, branch `claude-grinder`):** the
+  *visible half* of the original feature ask. `JsonVerdictStore` — file-backed `VerdictStore` (loads on
+  start, whole-file temp-then-atomic-move write so a crash can't truncate it, corrupt-file → empty +
+  log) so a multi-day fire-and-forget run resumes after a restart; Instant via jackson-datatype-jsr310.
+  `VerdictReportRenderer` — a self-contained HTML page with click-to-sort columns and an embedded-CSV
+  download button, HTML-escaped cells **and** `\uXXXX`-escaped CSV inside the `<script>` block so a
+  mod-supplied `</script>` can't break out. `ReportServer` — serves the table (`/`) + CSV
+  (`/export.csv`) live off the store via the JDK's built-in `com.sun.net.httpserver.HttpServer`, **no
+  Spring / no new web dependency**. **Decision:** kept the report standalone rather than rendering
+  through the app's Quasar frontend (as first mooted), because the grinder must not depend on `-app`
+  (which would drag in Spring/Mongo/Swing and break its standalone nature). 9 new tests incl.
+  `ReportServerTest` exercising a real loopback HTTP server on an ephemeral port. **grinder 30/30 unit
+  green (+2 gated IT).** Remaining: runtime image + real `LoaderInstaller`, the real `CandidateVerifier`
+  adapter (cache-overlay seam), a candidate source, and the main fire-and-forget entrypoint.
+- **Grinder Modrinth candidate source (2026-06-26, branch `claude-grinder`):** `ModrinthCandidateSource`
+  seeds the queue from Modrinth **most-downloaded-first** — the keyless search API returns the download
+  count, so the popularity ranking (which decides what to grind first) is free. Paginates until the
+  requested limit or catalog exhaustion, behind the clientside `HttpFetcher` seam (reused from
+  `-clientside`), so it's unit-tested against canned JSON with no network. 5 tests
+  (`ModrinthCandidateSourceTest`) — order preserved, pagination + exhaustion + a defensive over-limit
+  `take` (a test caught a final page overshooting the limit), failed-page-returns-partial, limit-0
+  no-fetch. **grinder 35/35 unit green (+2 gated IT).** A CurseForge sibling (needs the API key, no
+  declared sideness) is the natural follow-up; the visible half (table/CSV) plus the queue source are
+  now in place, leaving the integration adapter (real `CandidateVerifier` + runtime image) and the
+  main entrypoint.
+- **Grinder runtime image drafted + build-verified (2026-06-26, branch `claude-grinder`):**
+  `docker/Dockerfile` (+ `docker/README.md`). Key realisation from reading `ServerPackProvisioner` +
+  the `default_template.sh`: SPC's generated `start.sh` installs the loader itself, so the image is
+  **loader-agnostic** — the **neoforged `ServerStarterJar` is Forge/NeoForge only** (Fabric uses
+  `fabric-installer`/`fabric-server-launch(er).jar`, Quilt the `quilt-installer`, LegacyFabric its
+  own). The image therefore ships only the shell tooling the template needs (`bash`, `curl`/`wget`,
+  `gawk`, `tar`/`gzip`, `ca-certificates`) + Temurin JDK **8/17/21** (a single JDK can't boot every MC:
+  ≤1.16→8, 1.17–1.20.4→17, 1.20.5+→21), so the grinder sets `$JAVA` per MC version with no Java
+  download (keeps mod-boots offline under `--network none`). Built on Docker Desktop 29.5.3 and
+  smoke-tested: all three `java -version` work, `$JAVA` defaults to 21, tools present, runs non-root
+  uid 1000; ~1.6 GB. Next: the real `LoaderInstaller` (setup boot *with* network, snapshot into
+  `LoaderCache`) + the `CandidateVerifier` cache-overlay seam.
+- **Grinder cache-overlay hook + real LoaderInstaller (2026-06-28, branch `claude-grinder`):** built on
+  the loader-install spike. (1) **`BootVerifier.packPostProcessor` hook** (in `-clientside`): an
+  optional `((Prepared.Ready) -> Unit)?` run after `prepareBootPack`, before `serverRunner.run` — the
+  cache-overlay seam, default `null` = unchanged host behavior, a thrown hook → INCONCLUSIVE. Extracted
+  the post-process→boot→classify path into a companion `runPrepared` so it's unit-tested without
+  `ApiWrapper` (`BootVerifierRunPreparedTest`, 3); `ServerRunner` is now a `fun interface`. (2) The real
+  **`LoaderInstaller`** (`DockerLoaderInstaller`): generates a mod-less pack (`VanillaPackGenerator`/
+  `ApiVanillaPackGenerator`), boots once **with network** (`bridge`), snapshots the install layer into
+  `LoaderCache`. Its error-prone cores are pure + tested: `InstallLayerSnapshot` (denylist diff/copy —
+  snapshot added non-runtime files; SPC's `CLEANUP` var rejected as incomplete), `PackVariables` (eula
+  + `WAIT_FOR_USER_INPUT=false` + `JAVA` per MC + offline `SERVERSTARTERJAR_FORCE_FETCH=false`),
+  `JavaForMinecraft` (MC→bundled-JDK, the 1.20.4/1.20.5 boundary). 11 new tests. **clientside 44/44,
+  grinder 43/43 unit green (+2 gated IT).** Remaining: the real `CandidateVerifier` wiring (post-processor
+  → ensureInstalled → overlay) + the main fire-and-forget entrypoint.
+
+- **Grinder MC selection bounded to image-supported Java (2026-06-28, branch `claude-grinder`):**
+  resolves the Java/image limitation the e2e verification surfaced (the grinder picked the *newest*
+  Minecraft release — 26.x in this environment — whose required JDK the image's 8/17/21 set lacks, so
+  `start.sh` aborted at a Jabba Java-install prompt). Replaced the hand-rolled `JavaForMinecraft`
+  heuristic (wrong for the `26.x` scheme) with **`ImageJavaRuntimes`**, which sources the required Java
+  major **authoritatively** from `MinecraftMeta.requiredJavaVersion(mc)` (Mojang's declared
+  `javaVersion.majorVersion`) and exposes `supports(mc)` (required-Java known *and* in `bundledMajors`,
+  default 8/17/21 — mirrors the Dockerfile) + `javaPath(mc)`. `BootVerifier` gained an injected
+  `minecraftAcceptable: (String)->Boolean = { true }` AND-ed into candidate selection (host CLI keeps
+  accept-all; `ContainerCandidateVerifier` passes `imageJava::supports`), so a version whose JDK the
+  image lacks is **never selected** — never booted on the wrong JDK and never mis-scored as a clientside
+  crash (false HIGH). Deliberately *not* `SKIP_JAVA_CHECK`. `PackVariables.prepareUnattended` now takes a
+  resolved `javaPath` (no version heuristic); `DockerLoaderInstaller`/`ContainerCandidateVerifier` resolve
+  it via `ImageJavaRuntimes`. Trade-off: until a newer JDK is bundled, mods targeting *only* 26.x are
+  skipped (extend coverage by adding the JDK to the Dockerfile **and** `ImageJavaRuntimes.bundledMajors`).
+  Swapped `JavaForMinecraftTest`→`ImageJavaRuntimesTest` (gate + resolution). **clientside 44/44, grinder
+  44/44 unit green (+2 gated IT).**
+
+- **Grinder runtime image: bundle Temurin 25 for current Minecraft (2026-06-28, branch `claude-grinder`):**
+  the verified follow-up to the Java/image bound. Checked: latest MC release is **26.2**, declaring
+  **Java 25** (`java-runtime-epsilon`); Adoptium ships Temurin 25 GA (now most-recent LTS) and
+  `temurin-25-jdk` is in the `bookworm` apt pool (amd64 + arm64). Added `temurin-25-jdk` + the
+  `/opt/java-25` symlink to the Dockerfile and `25` to `ImageJavaRuntimes.bundledMajors`
+  (`setOf(8,17,21,25)`). Java 26 is *not* bundled — it appears only on snapshots, which the release-gate
+  skips. Rebuilt + smoke-tested: all four JDKs resolve (`25.0.3` LTS), `$JAVA` defaults to 21, non-root
+  uid 1000, tooling intact; image ~2.08 GB (was ~1.6 GB). New test `bundlingTheRequiredJavaMakesTheVersionSupported`
+  pins 26.2→Java 25 now booting. grinder 45/45 unit green (+2 gated IT).

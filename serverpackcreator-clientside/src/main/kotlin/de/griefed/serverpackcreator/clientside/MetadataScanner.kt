@@ -56,21 +56,21 @@ class MetadataScanner(private val modScanner: ModScanner) {
         val files = listOf(jar)
         return try {
             val clientside: Collection<File> = when (loader) {
-                "Fabric", "LegacyFabric" -> modScanner.fabricScanner.scan(files).first
+                "Fabric", "LegacyFabric" -> modScanner.fabricScanner.scan(files).exclusions.map { entry -> entry.excludedMod }
 
-                "Quilt" -> modScanner.fabricScanner.scan(files).first +
-                        modScanner.quiltScanner.scan(files).first
+                "Quilt" -> modScanner.fabricScanner.scan(files).exclusions.map { entry -> entry.excludedMod } +
+                        modScanner.quiltScanner.scan(files).exclusions.map { entry -> entry.excludedMod }
 
                 "Forge" -> if (forgeUsesToml(minecraftVersion)) {
-                    modScanner.forgeTomlScanner.scan(files).first
+                    modScanner.forgeTomlScanner.scan(files).exclusions.map { entry -> entry.excludedMod }
                 } else {
-                    modScanner.forgeAnnotationScanner.scan(files).first
+                    modScanner.forgeAnnotationScanner.scan(files).exclusions.map { entry -> entry.excludedMod }
                 }
 
                 "NeoForge" -> if (neoForgeUsesNeoToml(minecraftVersion)) {
-                    modScanner.neoForgeTomlScanner.scan(files).first
+                    modScanner.neoForgeTomlScanner.scan(files).exclusions.map { entry -> entry.excludedMod }
                 } else {
-                    modScanner.forgeTomlScanner.scan(files).first
+                    modScanner.forgeTomlScanner.scan(files).exclusions.map { entry -> entry.excludedMod }
                 }
 
                 else -> emptyList()

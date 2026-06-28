@@ -1,5 +1,65 @@
 [
   {
+    "maven": "net.fabricmc:intermediary:26.3-snapshot-1",
+    "version": "26.3-snapshot-1",
+    "stable": true
+  },
+  {
+    "maven": "net.fabricmc:intermediary:26.2",
+    "version": "26.2",
+    "stable": true
+  },
+  {
+    "maven": "net.fabricmc:intermediary:26.2-rc-2",
+    "version": "26.2-rc-2",
+    "stable": true
+  },
+  {
+    "maven": "net.fabricmc:intermediary:26.2-rc-1",
+    "version": "26.2-rc-1",
+    "stable": true
+  },
+  {
+    "maven": "net.fabricmc:intermediary:26.2-pre-6",
+    "version": "26.2-pre-6",
+    "stable": true
+  },
+  {
+    "maven": "net.fabricmc:intermediary:26.2-pre-5",
+    "version": "26.2-pre-5",
+    "stable": true
+  },
+  {
+    "maven": "net.fabricmc:intermediary:26.2-pre-4",
+    "version": "26.2-pre-4",
+    "stable": true
+  },
+  {
+    "maven": "net.fabricmc:intermediary:26.2-pre-3",
+    "version": "26.2-pre-3",
+    "stable": true
+  },
+  {
+    "maven": "net.fabricmc:intermediary:26.2-pre-2",
+    "version": "26.2-pre-2",
+    "stable": true
+  },
+  {
+    "maven": "net.fabricmc:intermediary:26.2-pre-1",
+    "version": "26.2-pre-1",
+    "stable": true
+  },
+  {
+    "maven": "net.fabricmc:intermediary:26.2-snapshot-8",
+    "version": "26.2-snapshot-8",
+    "stable": true
+  },
+  {
+    "maven": "net.fabricmc:intermediary:26.2-snapshot-7",
+    "version": "26.2-snapshot-7",
+    "stable": true
+  },
+  {
     "maven": "net.fabricmc:intermediary:26.2-snapshot-6",
     "version": "26.2-snapshot-6",
     "stable": true

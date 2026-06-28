@@ -43,6 +43,13 @@ import java.util.*
  * @param workDirectory        Scratch root for the synthetic modpack and generated server pack.
  * @param serverRunner         Executes the prepared pack; defaults to the host-process runner, swapped
  *                             for a container-backed one by the grinder.
+ * @param packPostProcessor    Optional hook invoked on the staged pack **after** preparation and
+ *                             **before** the boot — e.g. the grinder overlays the cached loader install
+ *                             and sets the offline-boot levers. A thrown hook is reported INCONCLUSIVE.
+ * @param minecraftAcceptable  Extra gate on the Minecraft version to boot, AND-ed into selection.
+ *                             Defaults to accept-all (the host process can run whatever Java it has);
+ *                             the grinder passes its image's supported-Java check so a version whose
+ *                             JDK the runtime image lacks is never selected (and thus never mis-scored).
  * @param bootTimeout          Budget for install + boot before declaring the run inconclusive.
  * @author Griefed
  */
@@ -54,6 +61,8 @@ class BootVerifier(
     private val loaderVersionResolver: LoaderVersionResolver,
     private val workDirectory: File,
     private val serverRunner: ServerRunner = HostProcessServerRunner(),
+    private val packPostProcessor: ((Prepared.Ready) -> Unit)? = null,
+    private val minecraftAcceptable: (String) -> Boolean = { true },
     private val bootTimeout: Duration = Duration.ofMinutes(12)
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
@@ -82,10 +91,7 @@ class BootVerifier(
         if (prepared is Prepared.Failed) {
             return BootOutcome(BootResult.INCONCLUSIVE, null, prepared.detail)
         }
-        val pack = prepared as Prepared.Ready
-        log.info("Booting ${pack.loader} ${pack.loaderVersion} (Minecraft ${pack.minecraftVersion}) server pack at ${pack.serverPack.absolutePath}")
-        val runResult = serverRunner.run(pack.serverPack, bootTimeout)
-        return outcomeFor(runResult, pack.logFile, "${pack.loader} ${pack.loaderVersion} / Minecraft ${pack.minecraftVersion}")
+        return runPrepared(prepared as Prepared.Ready, serverRunner, packPostProcessor, bootTimeout)
     }
 
     /**
@@ -145,6 +151,10 @@ class BootVerifier(
         packConfig.modloader = loader
         packConfig.modloaderVersion = loaderVersion
         packConfig.clientMods.clear()
+        // Without inclusions the config-check rejects the pack as "empty". Auto-detect the modpack's
+        // directories (here: mods) the same way the CLI/GUI would, so the candidate mod is copied in.
+        packConfig.inclusions.clear()
+        packConfig.inclusions.addAll(apiWrapper.configurationHandler.suggestInclusions(modpackDir.absolutePath))
         packConfig.customDestination = Optional.of(destination)
 
         val check = apiWrapper.configurationHandler.checkConfiguration(packConfig)
@@ -168,8 +178,14 @@ class BootVerifier(
      * container-backed [ServerRunner].
      */
     fun prepareBootPack(project: ProjectFiles, loader: String): Prepared {
+        // Only ever boot a stable Minecraft *release* — a mod's newest file may target a pre-release
+        // (a `-pre`/`-rc`/`-snapshot` of the current version), which is unstable and a waste to boot.
+        // [minecraftAcceptable] adds the host's own constraint (e.g. the grinder's supported-Java gate).
+        val releaseVersions = apiWrapper.versionMeta.minecraft.serverReleases().map { it.minecraftVersion }.toHashSet()
         val candidate = BootCandidateSelector.pickBootableCandidate(project.files, loader) { minecraftVersion ->
-            loaderVersionResolver.latest(loader, minecraftVersion) != null
+            minecraftVersion in releaseVersions &&
+                minecraftAcceptable(minecraftVersion) &&
+                loaderVersionResolver.latest(loader, minecraftVersion) != null
         } ?: return Prepared.Failed("No bootable file/Minecraft/loader combination for $loader.")
         val (mainFile, minecraftVersion) = candidate
         val loaderVersion = loaderVersionResolver.latest(loader, minecraftVersion)
@@ -204,6 +220,31 @@ class BootVerifier(
     }
 
     companion object {
+        private val log by lazy { cachedLoggerOf(BootVerifier::class.java) }
+
+        /**
+         * Post-process (optionally), boot, and classify a staged pack — the path shared by [verify] and
+         * unit-tested directly (it needs no [ApiWrapper], unlike staging). [packPostProcessor] runs
+         * first; a thrown hook is reported INCONCLUSIVE rather than propagated, so a grinder overlay
+         * failure can't crash the worker.
+         */
+        internal fun runPrepared(
+            pack: Prepared.Ready,
+            serverRunner: ServerRunner,
+            packPostProcessor: ((Prepared.Ready) -> Unit)?,
+            bootTimeout: Duration
+        ): BootOutcome {
+            if (packPostProcessor != null) {
+                val processing = runCatching { packPostProcessor.invoke(pack) }
+                if (processing.isFailure) {
+                    return BootOutcome(BootResult.INCONCLUSIVE, null, "Pack post-processing failed: ${processing.exceptionOrNull()?.message}")
+                }
+            }
+            log.info("Booting ${pack.loader} ${pack.loaderVersion} (Minecraft ${pack.minecraftVersion}) server pack at ${pack.serverPack.absolutePath}")
+            val runResult = serverRunner.run(pack.serverPack, bootTimeout)
+            return outcomeFor(runResult, pack.logFile, "${pack.loader} ${pack.loaderVersion} / Minecraft ${pack.minecraftVersion}")
+        }
+
         /**
          * Turn a [RunResult] into the reported [BootOutcome]: a [RunResult.NotStarted] is INCONCLUSIVE
          * with no log; a [RunResult.Completed] is written to [logFile], classified by
