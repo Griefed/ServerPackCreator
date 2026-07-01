@@ -41,7 +41,7 @@ jobs:
       # since the caller always passes the issue number.
       - name: Resolve project link
         id: link
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const issueNumber = Number('${{ inputs.issue_number }}')
@@ -58,7 +58,7 @@ jobs:
 
       - name: Comment that no link was found
         if: steps.link.outputs.found != 'true'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const marker = '<!-- serverpackcreator-clientside-report -->'
@@ -134,7 +134,7 @@ jobs:
 
       - name: Post report comment
         if: steps.link.outputs.found == 'true'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const fs = require('fs')
