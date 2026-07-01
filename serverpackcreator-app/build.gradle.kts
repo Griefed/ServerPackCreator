@@ -34,7 +34,7 @@ dependencies {
     // Clientside-mod verification engine (platforms, metadata/boot signals, list editing). The CLI
     // verbs in this module are thin wrappers over it; Playwright arrives transitively from here.
     api(project(":serverpackcreator-clientside"))
-    api("org.jetbrains.kotlin:kotlin-reflect:2.3.21")
+    api("org.jetbrains.kotlin:kotlin-reflect:2.4.0")
     api("commons-io:commons-io:2.22.0")
     api("com.cronutils:cron-utils:9.2.1")
     api("com.fasterxml.jackson.module:jackson-module-kotlin:2.22.0")
@@ -68,7 +68,7 @@ dependencies {
         exclude(group = "org.mockito", module = "mockito-core")
     }
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.21")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.4.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.0")
 
     testImplementation("com.ninja-squad:springmockk:5.0.1")
