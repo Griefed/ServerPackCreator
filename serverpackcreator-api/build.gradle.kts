@@ -16,7 +16,7 @@ dependencies {
     api("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0-0.6.x-compat")
     implementation("org.jetbrains.kotlin:kotlin-bom:2.3.21")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.21")
-    api("de.jensklingenberg.ktorfit:ktorfit-lib:2.7.3")
+    api("de.jensklingenberg.ktorfit:ktorfit-lib:2.7.5")
     api("de.comahe.i18n4k:i18n4k-core:0.11.2")
     api("de.comahe.i18n4k:i18n4k-core-jvm:0.11.2")
     implementation(files("${layout.buildDirectory.asFile.get()}/resources/main"))
