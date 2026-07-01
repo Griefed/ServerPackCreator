@@ -38,7 +38,7 @@ dependencies {
     // provisioner/manifest branches can be exercised offline. Version pinned to the same 1.14.6 the
     // app module already resolves transitively via springmockk, keeping the build's mockk single-versioned.
     testImplementation("io.mockk:mockk:1.14.6")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.0")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.1")
 }
 
 tasks.sourcesJar {
