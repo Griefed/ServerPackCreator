@@ -14,8 +14,8 @@ repositories {
 dependencies {
     api("io.github.microutils:kotlin-logging:3.0.5")
     api("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0-0.6.x-compat")
-    implementation("org.jetbrains.kotlin:kotlin-bom:2.3.21")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.21")
+    implementation("org.jetbrains.kotlin:kotlin-bom:2.4.0")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.4.0")
     api("de.jensklingenberg.ktorfit:ktorfit-lib:2.7.3")
     api("de.comahe.i18n4k:i18n4k-core:0.11.2")
     api("de.comahe.i18n4k:i18n4k-core-jvm:0.11.2")
@@ -33,7 +33,7 @@ dependencies {
     api("com.github.MCRcortex:nekodetector:Version-1.1-pre")
     //api("dev.kosmx.needle:jneedle:1.0.1")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.21")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.4.0")
     // MockK lets the unit tests stub network-bound collaborators (WebUtilities, VersionMeta) so
     // provisioner/manifest branches can be exercised offline. Version pinned to the same 1.14.6 the
     // app module already resolves transitively via springmockk, keeping the build's mockk single-versioned.
