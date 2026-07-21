@@ -459,6 +459,7 @@ class GenerationConfig(private val store: PropertyStore) {
             "guicompass-",                  //https://www.curseforge.com/minecraft/mc-mods/gui-compass
             "guideme-",                     //https://www.curseforge.com/minecraft/mc-mods/guideme
             "guifollowers-",                //https://www.curseforge.com/minecraft/mc-mods/gui-followers
+            "hdr_mod-",                     //https://www.curseforge.com/minecraft/mc-mods/shaders-hdr
             "helium-",                      //Gone? Reduces to atoms?
             "hennyfullbright-",             //https://www.curseforge.com/minecraft/mc-mods/henny-fullbright
             "hiddenrecipebook_",            //https://www.curseforge.com/minecraft/mc-mods/hidden-recipe-book
