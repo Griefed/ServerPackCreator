@@ -163,6 +163,7 @@ class GenerationConfig(private val store: PropertyStore) {
             "BetterThirdPerson",            //https://www.curseforge.com/minecraft/mc-mods/better-third-person
             "BetterTitleScreen-",           //https://www.curseforge.com/minecraft/mc-mods/better-title-screen
             "Blur-",                        //https://www.curseforge.com/minecraft/mc-mods/blur
+            "BruteForceRenderingCulling-",  //https://www.curseforge.com/minecraft/mc-mods/brute-force-rendering-culling
             "BoccHUD-",                     //https://modrinth.com/mod/bocchud/
             "BorderlessWindow-",            //https://www.curseforge.com/minecraft/mc-mods/borderless
             "CTM-",                         //https://www.curseforge.com/minecraft/mc-mods/ctm
@@ -216,10 +217,12 @@ class GenerationConfig(private val store: PropertyStore) {
             "FpsReducer2-",                 //https://www.curseforge.com/minecraft/mc-mods/fps-reducer
             "FullscreenWindowed-",          //https://www.curseforge.com/minecraft/mc-mods/fullscreen-windowed-borderless-for-minecraft
             "GameMenuModOption-",           //https://www.curseforge.com/minecraft/mc-mods/gamemenumodoption
+            "Gnetum-",                      //https://www.curseforge.com/minecraft/mc-mods/gnetum
             "GpuTape-",                     //https://www.curseforge.com/minecraft/mc-mods/gputape
             "GPUTape-",                     //https://www.curseforge.com/minecraft/mc-mods/gputape
             "HealthOverlay-",               //https://www.curseforge.com/minecraft/mc-mods/health-overlay
             "HeldItemTooltips-",            //https://www.curseforge.com/minecraft/mc-mods/held-item-tooltips
+            "Hide_Nameplates-",             //https://www.curseforge.com/minecraft/mc-mods/hidenameplates
             "HorseStatsMod-",               //https://www.curseforge.com/minecraft/bukkit-plugins/horsestats
             "ImmediatelyFast-",             //https://www.curseforge.com/minecraft/mc-mods/immediatelyfast
             "ImmediatelyFastReforged-",     //https://www.curseforge.com/minecraft/mc-mods/immediatelyfast-reforged
@@ -235,6 +238,7 @@ class GenerationConfig(private val store: PropertyStore) {
             "JustEnoughCalculation-",       //https://www.curseforge.com/minecraft/mc-mods/just-enough-calculation
             "JustEnoughEffects-",           //https://www.curseforge.com/minecraft/mc-mods/just-enough-effects
             "JustEnoughProfessions-",       //https://www.curseforge.com/minecraft/mc-mods/just-enough-professions-jep
+            "Kerria-",                      //https://www.curseforge.com/minecraft/mc-mods/kerria
             "KeybindsPurger-",              //https://www.curseforge.com/minecraft/mc-mods/keybindspurger
             "KeepTheResourcePack-",         //https://www.curseforge.com/minecraft/mc-mods/keep-the-resourcepack
             "KeybindsPurger-",              //https://www.curseforge.com/minecraft/mc-mods/keybindspurger/
@@ -246,6 +250,7 @@ class GenerationConfig(private val store: PropertyStore) {
             "LegendaryTooltips-",           //https://www.curseforge.com/minecraft/mc-mods/legendary-tooltips
             "LightOverlay-",                //https://www.curseforge.com/minecraft/mc-mods/light-level-overlay-display
             "MaFgLib-",                     //https://modrinth.com/mod/mafglib
+            "MenuFPSUnlocker-",             //https://www.curseforge.com/minecraft/mc-mods/menufpsunlocker
             "MinecraftCapes ",              //https://www.curseforge.com/minecraft/mc-mods/minecraftcapes-mod
             "MineMenu-",                    //https://www.curseforge.com/minecraft/mc-mods/minemenu
             "MoBends",                      //https://www.curseforge.com/minecraft/mc-mods/mo-bends
@@ -261,6 +266,7 @@ class GenerationConfig(private val store: PropertyStore) {
             "NeoForge-cobblemon_vocalized-",//https://www.curseforge.com/minecraft/mc-mods/cobblemon-vocalized
             "NoAutoJump-",                  //https://www.curseforge.com/minecraft/mc-mods/no-autojump
             "NoFog-",                       //https://www.curseforge.com/minecraft/mc-mods/nofog
+            "NoPackCompatCheck-",           //https://www.curseforge.com/minecraft/mc-mods/nopackcompatcheck
             "Notes-",                       //https://www.curseforge.com/minecraft/mc-mods/notes
             "NotifMod-",                    //https://www.curseforge.com/minecraft/mc-mods/notifmod
             "OldJavaWarning-",              //https://www.curseforge.com/minecraft/mc-mods/oldjavawarning
@@ -273,6 +279,7 @@ class GenerationConfig(private val store: PropertyStore) {
             "PackModeMenu-",                //https://www.curseforge.com/minecraft/mc-mods/packmodemenu,
             "ParticleEffects-",             //https://www.curseforge.com/minecraft/mc-mods/particle-effects
             "Particle Effects-",            //https://www.curseforge.com/minecraft/mc-mods/particle-effects
+            "PartiCull-",                   //https://www.curseforge.com/minecraft/mc-mods/particull
             "Perception-",                  //https://www.curseforge.com/minecraft/mc-mods/perception
             "PickUpNotifier-",              //https://www.curseforge.com/minecraft/mc-mods/pick-up-notifier
             "Ping-",                        //https://www.curseforge.com/minecraft/mc-mods/ping
@@ -300,6 +307,7 @@ class GenerationConfig(private val store: PropertyStore) {
             "SpawnerFix-",                  //https://www.curseforge.com/minecraft/mc-mods/spawner-fix
             "StylishEffects-",              //https://www.curseforge.com/minecraft/mc-mods/stylish-effects
             "TextruesRubidiumOptions-",     //https://www.curseforge.com/minecraft/mc-mods/textrues-rubidium-options
+            "Threads-",                     //https://www.curseforge.com/minecraft/mc-mods/threads
             "TRansliterationLib-",          //https://www.curseforge.com/minecraft/mc-mods/transliterationlib
             "TipTheScales-",                //https://www.curseforge.com/minecraft/mc-mods/tipthescales
             "Tips-",                        //https://www.curseforge.com/minecraft/mc-mods/tips
@@ -307,17 +315,22 @@ class GenerationConfig(private val store: PropertyStore) {
             "Toast-Control-",               //https://www.curseforge.com/minecraft/mc-mods/toast-control
             "ToastControl-",                //https://www.curseforge.com/minecraft/mc-mods/toast-control
             "TravelersTitles-",             //https://www.curseforge.com/minecraft/mc-mods/travelers-titles
+            "UIQuest-",                     //https://www.curseforge.com/minecraft/mc-mods/uiquest
             "VoidFog-",                     //https://www.curseforge.com/minecraft/mc-mods/void-fog
             "VR-Combat_",                   //https://www.curseforge.com/minecraft/mc-mods/vr-combat
             "Vramo21-",                     //https://www.curseforge.com/minecraft/mc-mods/vramo
             "Vramo-",                       //https://www.curseforge.com/minecraft/mc-mods/vramo
             "vramo-",                       //https://www.curseforge.com/minecraft/mc-mods/vramo
+            "WI-Zoom-",                     //https://www.curseforge.com/minecraft/mc-mods/wi-zoom/
+            "WeatherRefind-",               //https://www.curseforge.com/minecraft/mc-mods/weather-refined
             "WindowedFullscreen-",          //https://www.curseforge.com/minecraft/mc-mods/windowed-fullscreen
+            "Windy_",                       //https://www.curseforge.com/minecraft/mc-mods/windy-configurable
             "WorldNameRandomizer-",         //https://www.curseforge.com/minecraft/mc-mods/world-name-randomizer
             "YeetusExperimentus-",          //https://www.curseforge.com/minecraft/mc-mods/yeetusexperimentus
             "YungsMenuTweaks-",             //https://www.curseforge.com/minecraft/mc-mods/yungs-menu-tweaks
             "[1.12.2]DamageIndicatorsMod-", //https://www.curseforge.com/minecraft/mc-mods/damage-indicators-mod
             "[1.12.2]bspkrscore-",          //https://www.curseforge.com/minecraft/mc-mods/bspkrscore
+            "acceleratedrendering-",        //https://www.curseforge.com/minecraft/mc-mods/accelerated-rendering
             "advancementscreenshot-",       //https://www.curseforge.com/minecraft/mc-mods/advancement-screenshot
             "ae_pattern_improve-",          //https://www.curseforge.com/minecraft/mc-mods/ae2-pattern-qol-improving
             "ahznbstools-",                 //https://www.curseforge.com/minecraft/mc-mods/ahznbs-tools/
@@ -328,6 +341,7 @@ class GenerationConfig(private val store: PropertyStore) {
             "armorchroma-",                 //https://www.curseforge.com/minecraft/mc-mods/armor-chroma
             "armorhud",                     //https://www.curseforge.com/minecraft/mc-mods/armor-durability-hud
             "armorpointspp-",               //https://www.curseforge.com/minecraft/mc-mods/armorpoints
+            "asynclogger-",                 //https://www.curseforge.com/minecraft/mc-mods/asynclogger
             "auditory-",                    //https://www.curseforge.com/minecraft/mc-mods/auditory
             "authme-",                      //Gone? Reduces to atoms?
             "auto-reconnect-",              //https://www.curseforge.com/minecraft/mc-mods/auto-reconnect
@@ -341,6 +355,7 @@ class GenerationConfig(private val store: PropertyStore) {
             "beddium-",                     //https://www.curseforge.com/minecraft/mc-mods/beddium
             "beenfo-",                      //https://www.curseforge.com/minecraft/mc-mods/beenfo
             "better_client",                //https://www.curseforge.com/minecraft/mc-mods/better-client
+            "better_tab-",                  //https://www.curseforge.com/minecraft/mc-mods/bettertabinfo
             "better_tooltips-",             //https://www.curseforge.com/minecraft/mc-mods/better-tooltips-neoforge
             "better-clouds-",               //Gone? Reduces to atoms?
             "better_hp-",                   //https://www.curseforge.com/minecraft/mc-mods/better-hp
@@ -352,7 +367,9 @@ class GenerationConfig(private val store: PropertyStore) {
             "biomemusic-",                  //https://www.curseforge.com/minecraft/mc-mods/biome-music
             "blinkload-",                   //https://www.curseforge.com/minecraft/mc-mods/blinkload
             "block-counter-",               //https://www.curseforge.com/minecraft/mc-mods/block-counter
+            "block_entity_render_distance-fork",//https://www.curseforge.com/minecraft/mc-mods/block-entity-render-distance-x-sinytra-connector
             "blur-",                        //https://www.curseforge.com/minecraft/mc-mods/blur
+            "bocchium-",                    //https://www.curseforge.com/minecraft/mc-mods/bocchium
             "borderless-",                  //https://www.curseforge.com/minecraft/mc-mods/borderless
             "cat_jam-",                     //https://www.curseforge.com/minecraft/mc-mods/cat_jam
             "catalogue-",                   //https://www.curseforge.com/minecraft/mc-mods/catalogue
@@ -366,12 +383,15 @@ class GenerationConfig(private val store: PropertyStore) {
             "chatnotify-",                  //https://www.curseforge.com/minecraft/mc-mods/chatnotify
             "chat_heads-",                  //https://www.curseforge.com/minecraft/mc-mods/chat-heads
             "cherishedworlds-",             //https://www.curseforge.com/minecraft/mc-mods/cherished-worlds
+            "chloride-",                    //https://www.curseforge.com/minecraft/mc-mods/chloride
             "cirback-1.0-",                 //Gone? Reduces to atoms?
             "citresewn-",                   //https://www.curseforge.com/minecraft/mc-mods/forge-cit
+            "classic-c418-music-tweaker-",  //https://www.curseforge.com/minecraft/mc-mods/classic-c418-music-tweaker
             "classicbar-",                  //https://www.curseforge.com/minecraft/mc-mods/classic-bars
             "cleanview",                    //https://www.curseforge.com/minecraft/mc-mods/clean-view
             "clientcrafting-",              //https://www.curseforge.com/minecraft/mc-mods/client-crafting
             "clienttweaks-",                //https://www.curseforge.com/minecraft/mc-mods/client-tweaks
+            "createbetterfps-",             //https://www.curseforge.com/minecraft/mc-mods/create-better-fps
             "cobeffectiveness-",            //https://www.curseforge.com/minecraft/mc-mods/cobblemon-effectiveness
             "cobbledex-rei-emi-jei-",       //https://www.curseforge.com/minecraft/mc-mods/cobbledex-rei-emi-jei
             "cobbleit-",                    //https://www.curseforge.com/minecraft/mc-mods/cobblemon-cobble-it
@@ -386,6 +406,7 @@ class GenerationConfig(private val store: PropertyStore) {
             "controllable-",                //https://www.curseforge.com/minecraft/mc-mods/controllable
             "coolrain-",                    //https://www.curseforge.com/minecraft/mc-mods/cool-rain
             "crash_assistant-",             //https://www.curseforge.com/minecraft/mc-mods/crash-assistant
+            "colorful_lighting-",           //https://www.curseforge.com/minecraft/mc-mods/colorful-lighting-sodium
             "colorwheel-",                  //https://www.curseforge.com/minecraft/mc-mods/colorwheel
             "colorwheel_patcher-",          //https://www.curseforge.com/minecraft/mc-mods/colorwheel-patcher
             "cubium-",                      //https://www.curseforge.com/minecraft/mc-mods/cubium
@@ -396,8 +417,11 @@ class GenerationConfig(private val store: PropertyStore) {
             "customcursor-",                //https://www.curseforge.com/minecraft/mc-mods/custom-cursor
             "customdiscordrpc-",            //https://www.curseforge.com/minecraft/mc-mods/custom-discordrpc
             "cwb-",                         //https://www.curseforge.com/minecraft/mc-mods/cubes-without-borders
+            "dahud-",                       //https://www.curseforge.com/minecraft/mc-mods/dahud-medieval-rpg-hud
+            "darkmodeeverywhere-",          //https://www.curseforge.com/minecraft/mc-mods/dark-mode-everywhere/
             "darkness-",                    //Gone? Reduces to atoms?
             "dashloader-",                  //https://www.curseforge.com/minecraft/mc-mods/dashloader
+            "deathlogplus-",                //https://www.curseforge.com/minecraft/mc-mods/deathlogplus
             "defaultoptions-",              //https://www.curseforge.com/minecraft/mc-mods/default-options
             "desiredservers-",              //https://www.curseforge.com/minecraft/mc-mods/desired-servers
             "discordrpc-",                  //https://www.curseforge.com/minecraft/mc-mods/discordrpc
@@ -441,7 +465,9 @@ class GenerationConfig(private val store: PropertyStore) {
             "flickerfix-",                  //https://www.curseforge.com/minecraft/mc-mods/flickerfix
             "fm_audio_extension_",          //https://www.curseforge.com/minecraft/mc-mods/audio-extension-for-fancymenu-forge
             "fabricmod_VoxelMap-",          //https://www.curseforge.com/minecraft/mc-mods/voxelmap
+            "fastspawner-",                 //https://www.curseforge.com/minecraft/mc-mods/fastspawner
             "floppyhud-",                   //https://www.curseforge.com/minecraft/mc-mods/floppy-hud
+            "fpsbooster-",                  //https://www.curseforge.com/minecraft/mc-mods/fps-booster-triio
             "forestryworktabledisplay-",    //https://www.curseforge.com/minecraft/mc-mods/forestry-worktable-display
             "forgemod_VoxelMap-",           //https://www.curseforge.com/minecraft/mc-mods/voxelmap
             "forgeshot-",                   //https://www.curseforge.com/minecraft/mc-mods/forgeshot
@@ -452,6 +478,7 @@ class GenerationConfig(private val store: PropertyStore) {
             "fwa+",                         //https://www.curseforge.com/minecraft/mc-mods/fwa
             "galacticraft-rpc-",            //https://www.curseforge.com/minecraft/mc-mods/galacticraft-rpc
             "gamestagesviewer-",            //https://www.curseforge.com/minecraft/mc-mods/game-stages-viewer
+            "gbf-",                         //https://www.curseforge.com/minecraft/mc-mods/geckolibbetterfps
             "gpushift-",                    //https://www.curseforge.com/minecraft/mc-mods/gpushift
             "gpumemleakfix-",               //https://www.curseforge.com/minecraft/mc-mods/fix-gpu-memory-leak
             "grid-",                        //https://www.curseforge.com/minecraft/mc-mods/grid
@@ -462,6 +489,8 @@ class GenerationConfig(private val store: PropertyStore) {
             "hdr_mod-",                     //https://www.curseforge.com/minecraft/mc-mods/shaders-hdr
             "helium-",                      //Gone? Reduces to atoms?
             "hennyfullbright-",             //https://www.curseforge.com/minecraft/mc-mods/henny-fullbright
+            "hidehud-",                     //https://www.curseforge.com/minecraft/mc-mods/hidehud
+            "hidenameplates-",              //https://www.curseforge.com/minecraft/mc-mods/hidenameplates
             "hiddenrecipebook_",            //https://www.curseforge.com/minecraft/mc-mods/hidden-recipe-book
             "hiddenrecipebook-",            //https://www.curseforge.com/minecraft/mc-mods/hidden-recipe-book
             "hidehands-",                   //https://www.curseforge.com/minecraft/mc-mods/hide-hands
@@ -472,6 +501,7 @@ class GenerationConfig(private val store: PropertyStore) {
             "immersivemessages-",           //https://www.curseforge.com/minecraft/mc-mods/immersive-messages-api
             "immersivetips-",               //https://www.curseforge.com/minecraft/mc-mods/immersive-tips
             "improvedsignediting-",         //https://www.curseforge.com/minecraft/mc-mods/improved-sign-editing
+            "increase_audio_streams-",      //https://www.curseforge.com/minecraft/mc-mods/increase-audio-streams
             "infinitemusic-",               //https://www.curseforge.com/minecraft/mc-mods/infinite-music
             "inline_tooltips-",             //https://www.curseforge.com/minecraft/mc-mods/inline-tooltips
             "inventoryhud.",                //https://www.curseforge.com/minecraft/mc-mods/inventory-hud-forge
@@ -485,6 +515,7 @@ class GenerationConfig(private val store: PropertyStore) {
             "jei_trim_hider-",              //https://www.curseforge.com/minecraft/mc-mods/jei-trim-hider
             "jeiintegration_",              //https://www.curseforge.com/minecraft/mc-mods/jei-integration
             "jerintegration-",              //https://www.curseforge.com/minecraft/mc-mods/jer-integration
+            "jeioptimizer",                 //https://www.curseforge.com/minecraft/mc-mods/jeioptimizer
             "jmi-",                         //https://www.curseforge.com/minecraft/mc-mods/journeymap-integration
             "jumpoverfences-",              //https://www.curseforge.com/minecraft/mc-mods/jumpoverfences
             "just-enough-harvestcraft-",    //https://www.curseforge.com/minecraft/mc-mods/just-enough-harvestcraft
@@ -500,6 +531,7 @@ class GenerationConfig(private val store: PropertyStore) {
             "light-overlay-",               //https://www.curseforge.com/minecraft/mc-mods/light-overlay
             "lightfallclient-",             //https://www.curseforge.com/minecraft/mc-mods/lightfallclient-updated
             "lightspeed-",                  //https://www.curseforge.com/minecraft/mc-mods/lightspeedmod
+                                            //https://www.curseforge.com/minecraft/mc-mods/lightspeedre-launch-optimizations
             "litematica-",                  //https://www.curseforge.com/minecraft/mc-mods/litematica-update-port
             "loadmyresources_",             //https://www.curseforge.com/minecraft/mc-mods/load-my-resources-forge
             "lock_minecart_view-",          //Gone? Reduces to atoms?
@@ -540,11 +572,15 @@ class GenerationConfig(private val store: PropertyStore) {
             "neiRecipeHandlers-",           //Gone? Reduces to atoms?
             "ngrok-lan-expose-mod-",        //Gone? Reduces to atoms?
             "no_nv_flash-",                 //https://www.curseforge.com/minecraft/mc-mods/no-nv-flash
+            "no_search_bar-",               //https://www.curseforge.com/minecraft/mc-mods/remove-search-bar
+            "nomorepopups-",                //https://www.curseforge.com/minecraft/mc-mods/no-more-popups
             "nopotionshift_",               //https://www.curseforge.com/minecraft/mc-mods/no-potion-shift
             "nostartupmessages-",           //https://www.curseforge.com/minecraft/mc-mods/no-startup-messages-please
             "notenoughanimations-",         //https://www.curseforge.com/minecraft/mc-mods/not-enough-animations
+            "obe+",                         //https://www.curseforge.com/minecraft/mc-mods/obe
             "obscure_tooltips_fix-",        //https://www.curseforge.com/minecraft/mc-mods/obscure-tooltips-fix
             "oculus-",                      //https://www.curseforge.com/minecraft/mc-mods/oculus
+            "ocs-",                         //https://www.curseforge.com/minecraft/mc-mods/optimization-of-campfire-smoke
             "omegamute-",                   //https://www.curseforge.com/minecraft/mc-mods/omega-mute
             "optigui-",                     //https://www.curseforge.com/minecraft/mc-mods/optigui
             "ornaments-",                   //https://www.curseforge.com/minecraft/mc-mods/ornaments
@@ -566,13 +602,16 @@ class GenerationConfig(private val store: PropertyStore) {
             "rebind-narrator-",             //https://www.curseforge.com/minecraft/mc-mods/rebind-narrator
             "rebindnarrator-",              //https://www.curseforge.com/minecraft/mc-mods/rebind-narrator
             "rebrand-",                     //https://www.curseforge.com/minecraft/mc-mods/rebrand
+            "reflex-",                      //https://www.curseforge.com/minecraft/mc-mods/reflex-antilag
             "reforgium-",                   //https://www.curseforge.com/minecraft/mc-mods/reforgium
+            "renderscale-",                 //https://www.curseforge.com/minecraft/mc-mods/renderscale
             "relictium-",                   //https://www.curseforge.com/minecraft/mc-mods/relictium
             "replanter-",                   //https://www.curseforge.com/minecraft/mc-mods/replanter
             "resource_gamma_util-",         //https://www.curseforge.com/minecraft/mc-mods/resource-gamma-utils
             "rrls-",                        //https://www.curseforge.com/minecraft/mc-mods/rrls
             "rubidium-",                    //https://www.curseforge.com/minecraft/mc-mods/rubidium
             "rubidium_extras-",             //https://www.curseforge.com/minecraft/mc-mods/rubidium-extra
+            "sclp-",                        //https://www.curseforge.com/minecraft/mc-mods/sodium-chinese-localization-package1-16-x
             "screenshot-to-clipboard-",     //https://www.curseforge.com/minecraft/mc-mods/screenshot-to-clipboard
             "seasonhud-",                   //https://www.curseforge.com/minecraft/mc-mods/seasonhud
             "servercountryflags-",          //https://www.curseforge.com/minecraft/mc-mods/server-country-flags
@@ -583,10 +622,13 @@ class GenerationConfig(private val store: PropertyStore) {
             "simple-rpc-",                  //https://www.curseforge.com/minecraft/mc-mods/simple-discord-rpc
             "simpleautorun-",               //Gone? Reduces to atoms?
             "simplefog-",                   //https://www.curseforge.com/minecraft/mc-mods/simplefog
+            "skinlayers3d-",                //https://www.curseforge.com/minecraft/mc-mods/skin-layers-3d
+            "smartcullplus-",               //https://www.curseforge.com/minecraft/mc-mods/smartcullplus
             "smartcursor-",                 //https://www.curseforge.com/minecraft/mc-mods/smartcursor
             "smarthud-",                    //https://www.curseforge.com/minecraft/mc-mods/smart-hud
             "smoke-suppression-",           //https://www.curseforge.com/minecraft/mc-mods/smoke-suppression
             "smoothboot-",                  //https://www.curseforge.com/minecraft/mc-mods/smoothboot
+            "smoothcameramovement-",        //https://www.curseforge.com/minecraft/mc-mods/smooth-camera-movement
             "smoothfocus-",                 //https://www.curseforge.com/minecraft/mc-mods/smoothfocus
             "smoothswapping-",              //https://www.curseforge.com/minecraft/mc-mods/smooth-swapping
             "sodium-fabric-",               //https://www.curseforge.com/minecraft/mc-mods/sodium
@@ -600,14 +642,17 @@ class GenerationConfig(private val store: PropertyStore) {
             "sounddeviceoptions-",          //https://www.curseforge.com/minecraft/mc-mods/more-sound-config
             "soundreloader-",               //https://www.curseforge.com/minecraft/mc-mods/sound-reloader
             "sounds-",                      //https://www.curseforge.com/minecraft/mc-mods/sound
+            "spiffyxgnetum-",               //https://www.curseforge.com/minecraft/mc-mods/spiffyhud-x-gnetum
             "spoticraft-",                  //https://www.curseforge.com/minecraft/mc-mods/spoticraft-inactive and https://www.curseforge.com/minecraft/mc-mods/spoticraft-2
             "status-effect-bars-",          //https://www.curseforge.com/minecraft/mc-mods/status-effect-bars
             "stop_rendering-",              //https://www.curseforge.com/minecraft/mc-mods/stoprendering
-            "skinlayers3d-",                //https://www.curseforge.com/minecraft/mc-mods/skin-layers-3d
+            "superior-ambience-",           //https://www.curseforge.com/minecraft/mc-mods/superior-ambience
+            "tacz_optimization-",           //https://www.curseforge.com/minecraft/mc-mods/tacz-optimization
             "talkingheads-",                //https://www.curseforge.com/minecraft/mc-mods/talkingheads
             "tconjei-",                     //https://www.curseforge.com/minecraft/mc-mods/tconjei
             "tconplanner-",                 //https://www.curseforge.com/minecraft/mc-mods/tinkers-planner
             "textrues_embeddium_options-",  //https://www.curseforge.com/minecraft/mc-mods/textrues-embeddium-options
+            "threatengl-",                  //https://www.curseforge.com/minecraft/mc-mods/tgl
             "timestamp-chat-",              //https://www.curseforge.com/minecraft/mc-mods/timestamp-chat
             "timestamps-",                  //https://www.curseforge.com/minecraft/mc-mods/timestamps
             "tooltipscroller-",             //https://www.curseforge.com/minecraft/mc-mods/tooltip-scroller
@@ -616,8 +661,10 @@ class GenerationConfig(private val store: PropertyStore) {
             "totaldarkness",                //https://www.curseforge.com/minecraft/mc-mods/total-darkness
             "toughnessbar-",                //https://www.curseforge.com/minecraft/mc-mods/armor-toughness-bar
             "translucent-window-",          //https://www.curseforge.com/minecraft/mc-mods/translucent-window
+            "tridentperf-",                 //https://www.curseforge.com/minecraft/mc-mods/tridentperf-1-0-0
             "tweakeroo-",                   //https://www.curseforge.com/minecraft/mc-mods/tweakeroo-update-port
             "twitchchat-",                  //https://www.curseforge.com/minecraft/mc-mods/twitch-chat-for-streamer
+            "vanillin-",                    //https://www.curseforge.com/minecraft/mc-mods/vanillin
             "vanillazoom-",                 //https://www.curseforge.com/minecraft/mc-mods/vanilla-zoom
             "viaforge-",                    //https://www.curseforge.com/minecraft/mc-mods/viaforge
             "wakes-",                       //https://www.curseforge.com/minecraft/mc-mods/wakes
