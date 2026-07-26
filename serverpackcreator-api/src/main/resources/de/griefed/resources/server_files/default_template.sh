@@ -174,9 +174,9 @@ cleanServerFiles() {
 
   for FILE_TO_REMOVE in "${FILES_TO_REMOVE[@]}"
   do
-    rm -r -v \
-      "$FILE_TO_REMOVE" 2> /dev/null \
-      && echo "Deleted $FILE_TO_REMOVE"
+    while IFS= read -r MATCH; do
+      rm -r -v "$MATCH" 2> /dev/null && echo "Deleted $MATCH"
+    done < <(find . -maxdepth 1 -mindepth 1 -name "$FILE_TO_REMOVE")
   done
 }
 
@@ -290,12 +290,12 @@ setupFabric() {
   if commandAvailable curl ; then
     FABRIC_AVAILABLE="$(curl -LI ${FABRIC_CHECK_URL} -o /dev/null -w '%{http_code}\n' -s)"
   elif commandAvailable wget ; then
-    FABRIC_AVAILABLE="$(wget --server-response ${FABRIC_CHECK_URL}  2>&1 | awk '/^  HTTP/{print $2}')"
+    FABRIC_AVAILABLE="$(wget --spider --server-response ${FABRIC_CHECK_URL}  2>&1 | awk '/^  HTTP/{print $2}')"
   fi
   if commandAvailable curl ; then
     IMPROVED_FABRIC_LAUNCHER_AVAILABLE="$(curl -LI ${IMPROVED_FABRIC_LAUNCHER_URL} -o /dev/null -w '%{http_code}\n' -s)"
   elif commandAvailable wget ; then
-    IMPROVED_FABRIC_LAUNCHER_AVAILABLE="$(wget --server-response ${IMPROVED_FABRIC_LAUNCHER_URL}  2>&1 | awk '/^  HTTP/{print $2}')"
+    IMPROVED_FABRIC_LAUNCHER_AVAILABLE="$(wget --spider --server-response ${IMPROVED_FABRIC_LAUNCHER_URL}  2>&1 | awk '/^  HTTP/{print $2}')"
   fi
 
   if [[ "$IMPROVED_FABRIC_LAUNCHER_AVAILABLE" == "200" ]]; then
@@ -338,12 +338,12 @@ setupQuilt() {
   QUILT_INSTALLER_URL="https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/${QUILT_INSTALLER_VERSION}/quilt-installer-${QUILT_INSTALLER_VERSION}.jar"
   QUILT_CHECK_URL="https://meta.fabricmc.net/v2/versions/intermediary/${MINECRAFT_VERSION}"
   if commandAvailable curl ; then
-    QUILT_AVAILABLE="$(curl -LI ${QUILT_CHECK_URL} -o /dev/null -w '%{http_code}\n' -s)"
+    QUILT_AVAILABLE="$(curl -sL "${QUILT_CHECK_URL}")"
   elif commandAvailable wget ; then
-    QUILT_AVAILABLE="$(wget --server-response ${QUILT_CHECK_URL}  2>&1 | awk '/^  HTTP/{print $2}')"
+    QUILT_AVAILABLE="$(wget -qO- "${QUILT_CHECK_URL}")"
   fi
 
-  if [[ "${#QUILT_AVAILABLE}" -eq "2" ]]; then
+  if [[ "${QUILT_AVAILABLE}" == "[]" ]]; then
     crashServer "Quilt is not available for Minecraft ${MINECRAFT_VERSION}, Quilt ${MODLOADER_VERSION}."
   elif [[ $(downloadIfNotExist "quilt-server-launch.jar" "quilt-installer.jar" "${QUILT_INSTALLER_URL}") == "true" ]]; then
     echo "Installer downloaded. Installing..."
@@ -373,12 +373,12 @@ setupLegacyFabric() {
   LEGACYFABRIC_INSTALLER_URL="https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/${LEGACYFABRIC_INSTALLER_VERSION}/fabric-installer-${LEGACYFABRIC_INSTALLER_VERSION}.jar"
   LEGACYFABRIC_CHECK_URL="https://meta.legacyfabric.net/v2/versions/loader/${MINECRAFT_VERSION}"
   if commandAvailable curl ; then
-    LEGACYFABRIC_AVAILABLE="$(curl -LI ${LEGACYFABRIC_CHECK_URL} -o /dev/null -w '%{http_code}\n' -s)"
+    LEGACYFABRIC_AVAILABLE="$(curl -sL "${LEGACYFABRIC_CHECK_URL}")"
   elif commandAvailable wget ; then
-    IMPROVED_FABRIC_LAUNCHER_AVAILABLE="$(wget --server-response ${LEGACYFABRIC_CHECK_URL}  2>&1 | awk '/^  HTTP/{print $2}')"
+    LEGACYFABRIC_AVAILABLE="$(wget -qO- "${LEGACYFABRIC_CHECK_URL}")"
   fi
 
-  if [[ "${#LEGACYFABRIC_AVAILABLE}" -eq "2" ]]; then
+  if [[ "${LEGACYFABRIC_AVAILABLE}" == "[]" ]]; then
     crashServer "LegacyFabric is not available for Minecraft ${MINECRAFT_VERSION}, LegacyFabric ${MODLOADER_VERSION}."
   elif [[ $(downloadIfNotExist "fabric-server-launch.jar" "legacyfabric-installer.jar" "${LEGACYFABRIC_INSTALLER_URL}") == "true" ]]; then
     echo "Installer downloaded. Installing..."
