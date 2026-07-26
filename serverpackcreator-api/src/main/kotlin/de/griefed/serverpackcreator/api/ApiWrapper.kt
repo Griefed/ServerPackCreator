@@ -454,9 +454,11 @@ class ApiWrapper private constructor(
             apiProperties.defaultServerIcon
         )
         overwriteServerFilesFile(apiProperties.defaultShellScriptTemplate)
+        overwriteServerFilesFile(apiProperties.defaultFishScriptTemplate)
         overwriteServerFilesFile(apiProperties.defaultPowerShellScriptTemplate)
         overwriteServerFilesFile(apiProperties.defaultBatchScriptTemplate)
         overwriteServerFilesFile(apiProperties.defaultJavaShellScriptTemplate)
+        overwriteServerFilesFile(apiProperties.defaultJavaFishScriptTemplate)
         overwriteServerFilesFile(apiProperties.defaultJavaPowerShellScriptTemplate)
         overwriteServerFilesFile(apiProperties.defaultJavaBatchScriptTemplate)
         if (serverProperties || serverIcon) {

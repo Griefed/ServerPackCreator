@@ -506,6 +506,7 @@ class MigrationManager(
             val previousSetting = apiProperties.scriptTemplates.joinToString(",")
             val currentFiles = apiProperties.serverFilesDirectory.walk().maxDepth(1).filter {
                 it.name.endsWith("sh",ignoreCase = true) ||
+                        it.name.endsWith("fish",ignoreCase = true) ||
                         it.name.endsWith("ps1",ignoreCase = true) ||
                         it.name.endsWith("bat",ignoreCase = true)
             }.filter { !it.name.contains("default_template",ignoreCase = true)}.toList()

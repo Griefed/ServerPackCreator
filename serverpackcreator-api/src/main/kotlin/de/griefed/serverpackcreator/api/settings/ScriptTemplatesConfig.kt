@@ -65,6 +65,7 @@ class ScriptTemplatesConfig(
         // See whether we have custom files.
         val currentFiles = paths.serverFilesDirectory.walk().maxDepth(1).filter {
             it.name.endsWith("sh", ignoreCase = true) ||
+                    it.name.endsWith("fish", ignoreCase = true) ||
                     it.name.endsWith("ps1", ignoreCase = true) ||
                     it.name.endsWith("bat", ignoreCase = true)
         }.toList()
@@ -74,6 +75,7 @@ class ScriptTemplatesConfig(
 
         val newTemplates = mutableListOf<File>()
         var shellPresent = false
+        var fishPresent = false
         var powershellPresent = false
         var batchPresent = false
         for (customTemplate in customTemplates) {
@@ -81,6 +83,11 @@ class ScriptTemplatesConfig(
                 customTemplate.name.endsWith("sh", ignoreCase = true) && !shellPresent -> {
                     newTemplates.add(customTemplate.absoluteFile)
                     shellPresent = true
+                }
+
+                customTemplate.name.endsWith("fish", ignoreCase = true) && !shellPresent -> {
+                    newTemplates.add(customTemplate.absoluteFile)
+                    fishPresent = true
                 }
 
                 customTemplate.name.endsWith("ps1", ignoreCase = true) && !powershellPresent -> {
@@ -102,6 +109,9 @@ class ScriptTemplatesConfig(
         if (!shellPresent) {
             newTemplates.add(File(paths.serverFilesDirectory.absolutePath, paths.defaultShellScriptTemplate.name).absoluteFile)
         }
+        if (!fishPresent) {
+            newTemplates.add(File(paths.serverFilesDirectory.absolutePath, paths.defaultFishScriptTemplate.name).absoluteFile)
+        }
         if (!powershellPresent) {
             newTemplates.add(File(paths.serverFilesDirectory.absolutePath, paths.defaultPowerShellScriptTemplate.name).absoluteFile)
         }
@@ -117,7 +127,7 @@ class ScriptTemplatesConfig(
         get() {
             val scriptSetting = store.properties.getProperty(LEGACY_SCRIPT_TEMPLATES_KEY)
             val entries =
-                if (scriptSetting != null && scriptSetting == "default_template.ps1,default_template.sh,default_template.bat") {
+                if (scriptSetting != null && scriptSetting == "default_template.ps1,default_template.sh,default_template.fish,default_template.bat") {
                     defaultScriptTemplates()
                 } else {
                     store.getList(
@@ -147,7 +157,8 @@ class ScriptTemplatesConfig(
         return hashMapOf(
             Pair("sh", File(paths.serverFilesDirectory.absolutePath, paths.defaultShellScriptTemplate.name).absolutePath),
             Pair("ps1", File(paths.serverFilesDirectory.absolutePath, paths.defaultPowerShellScriptTemplate.name).absolutePath),
-            Pair("bat", File(paths.serverFilesDirectory.absolutePath, paths.defaultBatchScriptTemplate.name).absolutePath)
+            Pair("bat", File(paths.serverFilesDirectory.absolutePath, paths.defaultBatchScriptTemplate.name).absolutePath),
+            Pair("fish", File(paths.serverFilesDirectory.absolutePath, paths.defaultFishScriptTemplate.name).absolutePath)
         )
     }
 
@@ -192,6 +203,7 @@ class ScriptTemplatesConfig(
     fun defaultJavaScriptTemplates(): HashMap<String, String> {
         return hashMapOf(
             Pair("sh", File(paths.serverFilesDirectory.absolutePath, paths.defaultJavaShellScriptTemplate.name).absolutePath),
+            Pair("fish", File(paths.serverFilesDirectory.absolutePath, paths.defaultJavaFishScriptTemplate.name).absolutePath),
             Pair("ps1", File(paths.serverFilesDirectory.absolutePath, paths.defaultJavaPowerShellScriptTemplate.name).absolutePath)
         )
     }

@@ -47,12 +47,14 @@ internal class ScriptTemplatesConfigTest {
         val serverFiles = File(tempDir.absoluteFile, "server_files")
         val startDefaults = templates.defaultStartScriptTemplates()
         Assertions.assertEquals(File(serverFiles, "default_template.sh").absolutePath, startDefaults["sh"])
+        Assertions.assertEquals(File(serverFiles, "default_template.fish").absolutePath, startDefaults["fish"])
         Assertions.assertEquals(File(serverFiles, "default_template.ps1").absolutePath, startDefaults["ps1"])
         Assertions.assertEquals(File(serverFiles, "default_template.bat").absolutePath, startDefaults["bat"])
         val javaDefaults = templates.defaultJavaScriptTemplates()
         Assertions.assertEquals(File(serverFiles, "default_java_template.sh").absolutePath, javaDefaults["sh"])
+        Assertions.assertEquals(File(serverFiles, "default_java_template.fish").absolutePath, javaDefaults["fish"])
         Assertions.assertEquals(File(serverFiles, "default_java_template.ps1").absolutePath, javaDefaults["ps1"])
-        Assertions.assertEquals(2, javaDefaults.size, "Java-templates default to sh and ps1 only")
+        Assertions.assertEquals(3, javaDefaults.size, "Java-templates default to sh, fish and ps1 only")
     }
 
     /**

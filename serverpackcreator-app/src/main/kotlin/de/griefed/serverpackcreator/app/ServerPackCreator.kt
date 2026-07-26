@@ -340,12 +340,24 @@ class ServerPackCreator(private val args: Array<String>) {
                         } else if (check(file, apiWrapper.apiProperties.defaultShellScriptTemplate)) {
                             apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultShellScriptTemplate)
                             log.info("Restored default_template.sh.")
+                        } else if (check(file, apiWrapper.apiProperties.defaultFishScriptTemplate)) {
+                            apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultFishScriptTemplate)
+                            log.info("Restored default_template.fish.")
                         } else if (check(file, apiWrapper.apiProperties.defaultBatchScriptTemplate)) {
                             apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultBatchScriptTemplate)
                             log.info("Restored default_template.bat.")
                         } else if (check(file, apiWrapper.apiProperties.defaultPowerShellScriptTemplate)) {
                             apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultPowerShellScriptTemplate)
                             log.info("Restored default_template.ps1.")
+                        } else if (check(file, apiWrapper.apiProperties.defaultJavaShellScriptTemplate)) {
+                            apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultJavaShellScriptTemplate)
+                            log.info("Restored default_Java_template.sh.")
+                        } else if (check(file, apiWrapper.apiProperties.defaultJavaFishScriptTemplate)) {
+                            apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultJavaFishScriptTemplate)
+                            log.info("Restored default_Java_template.fish.")
+                        } else if (check(file, apiWrapper.apiProperties.defaultJavaPowerShellScriptTemplate)) {
+                            apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultJavaPowerShellScriptTemplate)
+                            log.info("Restored default_Java_template.ps1.")
                         }
                     }
                 }

@@ -132,9 +132,11 @@ internal class PathsConfigTest {
         val paths = pathsConfig()
         val serverFiles = File(tempDir.absoluteFile, "server_files")
         Assertions.assertEquals(File(serverFiles, "default_template.sh"), paths.defaultShellScriptTemplate)
+        Assertions.assertEquals(File(serverFiles, "default_template.fish"), paths.defaultFishScriptTemplate)
         Assertions.assertEquals(File(serverFiles, "default_template.ps1"), paths.defaultPowerShellScriptTemplate)
         Assertions.assertEquals(File(serverFiles, "default_template.bat"), paths.defaultBatchScriptTemplate)
         Assertions.assertEquals(File(serverFiles, "default_java_template.sh"), paths.defaultJavaShellScriptTemplate)
+        Assertions.assertEquals(File(serverFiles, "default_java_template.fish"), paths.defaultJavaFishScriptTemplate)
         Assertions.assertEquals(File(serverFiles, "default_java_template.ps1"), paths.defaultJavaPowerShellScriptTemplate)
         Assertions.assertEquals(File(serverFiles, "default_java_template.bat"), paths.defaultJavaBatchScriptTemplate)
     }
