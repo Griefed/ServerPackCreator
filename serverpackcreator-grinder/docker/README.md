@@ -46,6 +46,22 @@ the release-gate skips snapshots.
 docker build -t spc-grinder-runtime:latest serverpackcreator-grinder/docker
 ```
 
+## Template-test image (`Dockerfile.templates`)
+
+A **separate derived image** for the script-template matrix IT (`ScriptTemplateMatrixIT`), which boots
+the generated `start.sh` / `start.fish` / `start.ps1` to prove the templates install + boot. It extends
+the runtime image with `fish` (the new `.fish` templates) and PowerShell `pwsh` (the `.ps1` templates,
+installed from the GitHub release tarball so it works on amd64 **and** arm64). Kept separate so the
+production grind image stays bash-only and lean; the grinder never uses it. `.ps1` on Linux `pwsh`
+validates script logic/Java-path/install flow, not Windows-cmdlet fidelity.
+
+```sh
+docker build -t spc-grinder-runtime:latest serverpackcreator-grinder/docker            # base first
+docker build -t spc-grinder-templates:latest -f serverpackcreator-grinder/docker/Dockerfile.templates serverpackcreator-grinder/docker
+```
+
+Verified: `fish 3.6.0`, `pwsh 7.4.6`, JDK 8/17/21/25 + bash intact, non-root uid 1000, ~2.48 GB.
+
 ## Network: the `--network none` relationship
 
 `start.sh` downloads the loader + Minecraft server + libraries **on first boot** (needs network). That
