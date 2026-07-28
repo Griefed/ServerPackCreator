@@ -192,14 +192,27 @@ Spike workspace (not committed): `~/spc-grinder-spike/{configs,packs,baselines}`
   no leaked containers) under the production hardening defaults. **Verified passing** against Docker
   29.5 on 2026-06-26.
 
-## End-to-end verification (2026-06-28) & the Java limitation
+## End-to-end verification & the Java limitation
 
-A real run (`GrinderApplication` grinding a live Modrinth mod through the whole chain) **verified**:
-resolve → download → generate → install-attempt → verdict → `JsonVerdictStore` → CSV → `ReportServer`
-all work on real data, and the **hardened** container install works end-to-end on a Java-21 Minecraft
-(1.20.6 → 38 library files under `--network none`-style hardening: uid 1000, read-only rootfs). It also
-**found + fixed** real bugs (boot-pack `inclusions` in `BootVerifier` *and* `ApiVanillaPackGenerator` —
-the boot had never actually worked; plus the release-only MC gate and install diagnostics).
+**Full-loop verification on current Minecraft (2026-07-28).** `GrinderApplication` grinding
+`modrinth.com/mod/modmenu` against the **JDK-25 image** produced two verdicts on **MC 26.2** and proved
+the complete chain on current Minecraft:
+- **Quilt / 26.2 → SURVIVED (MEDIUM): a genuine full success.** The cached loader install ran (network,
+  102 jars snapshotted), then the mod-boot ran **offline** (`--network none`, confirmed by
+  `UnknownHostException` for Mojang hosts) on `/opt/java-25` (`Compatibility level set to JAVA_25`) and
+  reached **`Done (5.744s)! For help`** — MC 26.2 server fully started → correctly SURVIVED (a clean
+  boot proves nothing for a clientside mod, hence MEDIUM). This validates container install → offline
+  boot → classify → verdict → store on current MC with the new image.
+- **Fabric / 26.2 → was a false HIGH, now fixed.** Fabric has no build for 26.2 yet, so start.sh
+  aborted "Fabric is not available for Minecraft 26.2" *before loading the mod*; the classifier scored
+  the exit-1 as CRASHED → HIGH. Fixed in `-clientside`: `BootLogClassifier.setupAbortMarkers` maps all
+  pre-launch `crashServer` failures (loader-unavailable, install/download failure, Java/EULA/variables
+  setup) to **INCONCLUSIVE** — the mod was never tested. See `serverpackcreator-clientside/CLAUDE.md`.
+
+**Earlier run (2026-06-28)** verified the visible half (resolve → download → generate → verdict →
+`JsonVerdictStore` → CSV → `ReportServer`) on live data and the hardened install on a Java-21 Minecraft
+(1.20.6 → 38 library files), and **found + fixed** the boot-pack `inclusions` bug (boot had never
+actually worked) plus the release-only MC gate and install diagnostics.
 
 **Java/image bound (RESOLVED 2026-06-28).** The grinder picks the *newest* Minecraft release; in this
 environment that is **26.2**, which requires **Java 25** (`java-runtime-epsilon`). Originally the image
@@ -217,22 +230,26 @@ Java-**26** is intentionally *not* bundled: it only appears on snapshots (e.g. 2
 release-gate already skips. **To extend coverage** to a future release: add its JDK to the Dockerfile
 *and* to `ImageJavaRuntimes.bundledMajors` — the two are the single coupled source of truth.
 
-## Still to build (the fire-and-forget service)
+## Status & what remains
 
-Done so far: container `ServerRunner` (+ hardening, daemon-verified), the **runtime image** (built +
-smoke-tested), `LoaderCache` + the **`LoaderInstaller`** (`DockerLoaderInstaller` + the tested
-`InstallLayerSnapshot`/`PackVariables`/`ImageJavaRuntimes` cores), the **`BootVerifier.packPostProcessor`
-hook** (the cache-overlay seam — in `-clientside`), grind **orchestration**, restart-safe
-`JsonVerdictStore`, the self-contained web report, and the `ModrinthCandidateSource`. What remains is
-the wiring that turns these into one running service.
+**The core loop is built and e2e-verified** (see the verification section above). The full chain —
+candidate source → `Grinder`/`GrindPool` → `ContainerCandidateVerifier` (`ClientsideVerifier` +
+container `BootVerifier` + `packPostProcessor` doing `loaderCache.ensureInstalled` → install-layer
+overlay → offline boot) → `JsonVerdictStore` → `ReportServer`/CSV — runs end-to-end via
+`GrinderApplication`. `ModrinthCandidateSource` seeds the queue.
 
-1. **Real `CandidateVerifier`** — the integration adapter: a `ClientsideVerifier` whose
-   `bootVerifierFactory` builds a `BootVerifier` over a `ContainerServerRunner`, supplying a
-   `packPostProcessor` that does `loaderCache.ensureInstalled(tuple)` →
-   `InstallLayerSnapshot`-overlay into the pack → `PackVariables.prepareUnattended(offline=true)`. The
-   cache-overlay seam itself is **resolved** (the hook + the snapshot/overlay are in place); this is the
-   remaining wiring. Needs the host prerequisites above (CF key + Playwright).
-2. **Main entrypoint** wiring candidate-source → `GrindPool(Grinder(realVerifier, JsonVerdictStore))`
-   + `ReportServer` for the actual fire-and-forget run (can already use `ModrinthCandidateSource`).
-3. **CurseForge candidate source** (optional) — `ModrinthCandidateSource` is done (keyless,
-   popularity-ranked); the CF sibling needs the API key and leans entirely on the jar scan.
+Remaining (none blocking the core loop):
+
+1. **Continuous operation** — `GrinderApplication` currently runs one popularity-ranked batch
+   (`grindAll`) then holds the report server open. A true fire-and-forget daemon would add a re-scan
+   loop / re-verification cadence and queue checkpointing across restarts (today only verdicts persist,
+   not queue position).
+2. **CurseForge candidate source** (optional) — `ModrinthCandidateSource` is done (keyless,
+   popularity-ranked); the CF sibling needs the API key and leans entirely on the jar scan. The boot
+   path can already *download* locked CF files (Playwright + `CURSEFORGE_API_KEY`); only catalog
+   enumeration is missing.
+3. **Loader-availability selection** — SPC's `loaderVersionResolver.latest(loader, mc)` can return a
+   version for a brand-new Minecraft the loader has no build for yet (seen for Fabric on 26.2). The
+   boot correctly self-reports INCONCLUSIVE now (start.sh aborts "not available", classifier maps it —
+   see the e2e section), so this is *safe*, just wasteful (a pointless container spin-up). A future
+   optimization: skip the combo at selection time when the loader truly lacks support.
