@@ -153,11 +153,11 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 | Module         | Tests         | Notes                                                                                |
 |----------------|---------------|--------------------------------------------------------------------------------------|
 | api            | 163 (from 75) | Phase 1 **complete**; + `MinecraftMetaTest` characterizing `requiredJavaVersion`      |
-| clientside     | 50            | Extracted from `-app`; `BootVerifier` split + `packPostProcessor` hook; selection + setup-abort classification pinned |
+| clientside     | 53            | Extracted from `-app`; `BootVerifier` split + `packPostProcessor` hook; selection (MC-support gate) + setup-abort classification pinned |
 | app            | 71            | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay             |
 | plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |
 | web-frontend   | 23 (from 0)   | Phase 4a–4e done: Vitest, `$q` decoupling, **full TS migration**, component coverage  |
-| grinder        | 47 (+IT)      | Core loop **e2e-verified on current MC** (26.2/Quilt boots offline on JDK 25); organized into container/loader/report/source subpackages; MC selection bounded to image-supported Java (`ImageJavaRuntimes`) |
+| grinder        | 50 (+IT)      | Core loop **e2e-verified on current MC** (26.2/Quilt boots offline on JDK 25); **continuous fire-and-forget** mode with stale-verdict re-verification; container/loader/report/source subpackages; MC selection bounded to image-supported Java (`ImageJavaRuntimes`) |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.

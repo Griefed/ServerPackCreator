@@ -24,13 +24,16 @@ import de.griefed.serverpackcreator.grinder.report.InMemoryVerdictStore
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.time.Duration
+import java.time.Instant
 import java.util.Collections
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Pins the grind orchestration with a fake [CandidateVerifier] (no containers): one verdict recorded
- * per loader, already-ground projects skipped, a thrown verification swallowed (not propagated), and
- * the pool draining every candidate across workers most-popular-first.
+ * per loader, projects with a *fresh* verdict skipped while *stale* ones are re-verified, a thrown
+ * verification swallowed (not propagated), and the pool draining every candidate across workers
+ * most-popular-first.
  */
 internal class GrinderTest {
 
@@ -60,16 +63,31 @@ internal class GrinderTest {
     }
 
     @Test
-    fun skipsProjectsThatAlreadyHaveAVerdict() {
+    fun skipsProjectsWithAFreshVerdict() {
+        val now = Instant.parse("2026-06-01T00:00:00Z")
         val store = InMemoryVerdictStore()
-        store.record(grindVerdict("jei", "Forge"))
+        store.record(grindVerdict("jei", "Forge", verifiedAt = now.minus(Duration.ofDays(5))))
         val calls = AtomicInteger(0)
         val verifier = CandidateVerifier { c -> calls.incrementAndGet(); clientsideReport(c.slug, listOf(loaderVerdict("Forge", "jei-", Confidence.HIGH))) }
 
-        Grinder(verifier, store).grind(candidate("jei"))
+        Grinder(verifier, store, reverifyTtl = Duration.ofDays(30), clock = { now }).grind(candidate("jei"))
 
-        Assertions.assertEquals(0, calls.get(), "an already-ground project must not be re-verified")
+        Assertions.assertEquals(0, calls.get(), "a verdict younger than the TTL must not be re-verified")
         Assertions.assertEquals(1, store.all().size)
+    }
+
+    @Test
+    fun reVerifiesAProjectWhoseVerdictIsStale() {
+        val now = Instant.parse("2026-06-01T00:00:00Z")
+        val store = InMemoryVerdictStore()
+        store.record(grindVerdict("jei", "Forge", confidence = Confidence.LOW, verifiedAt = now.minus(Duration.ofDays(40))))
+        val calls = AtomicInteger(0)
+        val verifier = CandidateVerifier { c -> calls.incrementAndGet(); clientsideReport(c.slug, listOf(loaderVerdict("Forge", "jei-", Confidence.HIGH))) }
+
+        Grinder(verifier, store, reverifyTtl = Duration.ofDays(30), clock = { now }).grind(candidate("jei"))
+
+        Assertions.assertEquals(1, calls.get(), "a verdict older than the TTL must be re-verified")
+        Assertions.assertEquals(Confidence.HIGH, store.all().single { it.loader == "Forge" }.confidence)
     }
 
     @Test

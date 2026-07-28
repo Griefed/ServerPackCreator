@@ -236,20 +236,26 @@ release-gate already skips. **To extend coverage** to a future release: add its 
 candidate source → `Grinder`/`GrindPool` → `ContainerCandidateVerifier` (`ClientsideVerifier` +
 container `BootVerifier` + `packPostProcessor` doing `loaderCache.ensureInstalled` → install-layer
 overlay → offline boot) → `JsonVerdictStore` → `ReportServer`/CSV — runs end-to-end via
-`GrinderApplication`. `ModrinthCandidateSource` seeds the queue.
+`GrinderApplication`, seeded by `ModrinthCandidateSource`.
 
-Remaining (none blocking the core loop):
+**Continuous operation — DONE.** With no project-URL args, `GrinderApplication` loops fire-and-forget:
+each pass re-pulls the popularity-ranked candidates and grinds them; `Grinder` skips a project whose
+verdict is still *fresh* (younger than `reverifyTtl`, via `VerdictStore.newestVerification`) and
+re-verifies stale ones, so evolving mods, new loader versions and newly-supported Minecraft releases get
+picked up over successive passes. Verdicts persist after every record, so a restart resumes. A JVM
+shutdown hook stops the loop. Passing explicit project URLs keeps the **one-shot** path (verification).
+Config (env): `SPC_GRINDER_INTERVAL` (seconds between passes, default 21600 = 6h),
+`SPC_GRINDER_REVERIFY_TTL_DAYS` (verdict staleness, default 30). There is still **no queue cursor** —
+each pass re-fetches the source fresh (cheap; the store's freshness check does the skipping).
 
-1. **Continuous operation** — `GrinderApplication` currently runs one popularity-ranked batch
-   (`grindAll`) then holds the report server open. A true fire-and-forget daemon would add a re-scan
-   loop / re-verification cadence and queue checkpointing across restarts (today only verdicts persist,
-   not queue position).
-2. **CurseForge candidate source** (optional) — `ModrinthCandidateSource` is done (keyless,
+**Loader-availability at selection — DONE.** `LoaderVersionResolver.latest` now returns `null` for a
+Minecraft a loader doesn't support (Fabric/Quilt/LegacyFabric gated on `Meta.isMinecraftSupported`;
+Forge/NeoForge already MC-specific), so an unsupported combo is dropped from selection instead of spun
+up and aborted. The classifier's setup-abort INCONCLUSIVE mapping remains the backstop.
+
+Remaining:
+
+1. **CurseForge candidate source** (optional) — `ModrinthCandidateSource` is done (keyless,
    popularity-ranked); the CF sibling needs the API key and leans entirely on the jar scan. The boot
    path can already *download* locked CF files (Playwright + `CURSEFORGE_API_KEY`); only catalog
    enumeration is missing.
-3. **Loader-availability selection** — SPC's `loaderVersionResolver.latest(loader, mc)` can return a
-   version for a brand-new Minecraft the loader has no build for yet (seen for Fabric on 26.2). The
-   boot correctly self-reports INCONCLUSIVE now (start.sh aborts "not available", classifier maps it —
-   see the e2e section), so this is *safe*, just wasteful (a pointless container spin-up). A future
-   optimization: skip the combo at selection time when the loader truly lacks support.

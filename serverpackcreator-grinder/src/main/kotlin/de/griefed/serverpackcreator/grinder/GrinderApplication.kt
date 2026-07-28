@@ -30,7 +30,9 @@ import de.griefed.serverpackcreator.grinder.report.ReportServer
 import de.griefed.serverpackcreator.grinder.source.ModrinthCandidateSource
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
+import java.time.Duration
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * The fire-and-forget entry point. Wires the real chain — [ModrinthCandidateSource] (or project URLs
@@ -67,23 +69,56 @@ object GrinderApplication {
         val cache = LoaderCache(cacheRoot, installer)
         val verifier = ContainerCandidateVerifier(apiWrapper, cache, engine, image, imageJava, File(workDir, "verify"))
         val store = JsonVerdictStore(storeFile)
-        val grinder = Grinder(verifier, store)
+        val reverifyTtl = Duration.ofDays(env("SPC_GRINDER_REVERIFY_TTL_DAYS", "30").toLong())
+        val grinder = Grinder(verifier, store, reverifyTtl)
 
         val server = ReportServer(store, port).start()
         log.info("Report:  http://localhost:${server.port}/    CSV: http://localhost:${server.port}/export.csv")
 
-        val candidates = if (args.isNotEmpty()) {
-            args.map { GrindCandidate(it, slugFromUrl(it), 0) }
-        } else {
-            val limit = env("SPC_GRINDER_MODRINTH_LIMIT", "25").toInt()
-            log.info("No project URLs given — pulling the top $limit Modrinth mods by downloads.")
-            ModrinthCandidateSource().candidates(limit)
+        if (args.isNotEmpty()) {
+            // One-shot: grind a fixed set of project URLs (handy for an end-to-end verification), then
+            // hold the report open. The re-verify TTL still applies, so re-running skips fresh verdicts.
+            val candidates = args.map { GrindCandidate(it, slugFromUrl(it), 0) }
+            log.info("One-shot run: grinding ${candidates.size} candidate(s) with $workers worker(s)...")
+            GrindPool(grinder, workers).grindAll(candidates)
+            log.info("Grind complete: ${store.all().size} verdict(s). Report stays up at http://localhost:${server.port}/ — Ctrl-C to exit.")
+            CountDownLatch(1).await() // keep the report server alive
+            return
         }
 
-        log.info("Grinding ${candidates.size} candidate(s) with $workers worker(s)...")
-        GrindPool(grinder, workers).grindAll(candidates)
-        log.info("Grind complete: ${store.all().size} verdict(s). Report stays up at http://localhost:${server.port}/ — Ctrl-C to exit.")
-        CountDownLatch(1).await() // keep the report server alive
+        // Continuous fire-and-forget: each pass re-pulls the popularity-ranked candidates and grinds
+        // them. The grinder skips any project whose verdict is still fresh (younger than the re-verify
+        // TTL) and re-checks stale ones, so evolving mods, new loader versions and newly-supported
+        // Minecraft releases get picked up over successive passes. Verdicts persist after every record,
+        // so a restart resumes rather than starting over.
+        val modrinthLimit = env("SPC_GRINDER_MODRINTH_LIMIT", "25").toInt()
+        val intervalSeconds = env("SPC_GRINDER_INTERVAL", "21600").toLong()
+        val running = AtomicBoolean(true)
+        val mainThread = Thread.currentThread()
+        Runtime.getRuntime().addShutdownHook(Thread {
+            log.info("Shutdown requested — stopping the grind loop.")
+            running.set(false)
+            mainThread.interrupt()
+        })
+        log.info("Continuous mode: re-verify TTL ${reverifyTtl.toDays()}d, interval ${intervalSeconds}s, $workers worker(s).")
+
+        var pass = 0
+        while (running.get()) {
+            pass++
+            val candidates = ModrinthCandidateSource().candidates(modrinthLimit)
+            log.info("Pass #$pass: grinding ${candidates.size} candidate(s)...")
+            GrindPool(grinder, workers).grindAll(candidates)
+            log.info("Pass #$pass complete: ${store.all().size} verdict(s) total.")
+            if (!running.get()) {
+                break
+            }
+            try {
+                Thread.sleep(intervalSeconds * 1000)
+            } catch (_: InterruptedException) {
+                break // shutdown requested during the inter-pass sleep
+            }
+        }
+        log.info("Grinder stopped after $pass pass(es).")
     }
 
     /** Read [key] from the environment, falling back to [default] when unset or blank. */
