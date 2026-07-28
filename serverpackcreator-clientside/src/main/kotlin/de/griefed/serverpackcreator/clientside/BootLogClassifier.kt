@@ -55,19 +55,46 @@ object BootLogClassifier {
     private val readyLine = Regex("""Done \([^)]*\)! For help""")
 
     /**
+     * Signatures of a **pre-launch setup abort** — `start.sh`'s `crashServer` messages for
+     * environment/loader/install failures that stop the server *before the mod is ever loaded*: the
+     * loader not supporting the Minecraft version, a loader/launcher-jar download failure, the
+     * ServerStarterJar install failing, a Java setup failure, a missing `variables.txt`, an
+     * unrecognized modloader, or a declined EULA. None of these are the mod's fault, so they are
+     * [BootResult.INCONCLUSIVE], not [BootResult.CRASHED] — scoring them as a crash would be a false
+     * clientside HIGH. Kept specific so a genuine mod-load crash (a stacktrace, a mixin error) does
+     * **not** match.
+     */
+    private val setupAbortMarkers = Regex(
+        "(is not available for Minecraft" +
+            "|servers are having trouble" +
+            "|Something went wrong during the server installation" +
+            "|Java install-script failed" +
+            "|Java installation failed" +
+            "|wget or curl is required" +
+            "|variables\\.txt not present" +
+            "|Incorrect modloader specified" +
+            "|did not agree to Mojang's EULA)",
+        RegexOption.IGNORE_CASE
+    )
+
+    /**
      * Classify a boot from its [consoleLines], the process [exitCode] (`null` if it was killed/never
      * exited) and whether the time-budget was exceeded ([timedOut]).
      *
      * The ready-line wins outright — when present the boot [BootResult.SURVIVED] even though the
-     * process is subsequently killed (yielding a non-zero exit). Otherwise a timeout or an unknown
-     * exit is [BootResult.INCONCLUSIVE], a clean `0` exit without ever reaching ready is
-     * [BootResult.INCONCLUSIVE], and any non-zero exit is [BootResult.CRASHED].
+     * process is subsequently killed (yielding a non-zero exit). Otherwise a timeout is
+     * [BootResult.INCONCLUSIVE]; a pre-launch [setupAbortMarkers] hit is [BootResult.INCONCLUSIVE]
+     * (the mod was never tested — the loader/env/install failed first); a clean `0` exit without ever
+     * reaching ready is [BootResult.INCONCLUSIVE]; and any other non-zero exit is [BootResult.CRASHED].
      */
     fun classify(consoleLines: List<String>, exitCode: Int?, timedOut: Boolean): BootResult {
         if (consoleLines.any { readyLine.containsMatchIn(it) }) {
             return BootResult.SURVIVED
         }
         if (timedOut) {
+            return BootResult.INCONCLUSIVE
+        }
+        if (consoleLines.any { setupAbortMarkers.containsMatchIn(it) }) {
             return BootResult.INCONCLUSIVE
         }
         return when (exitCode) {

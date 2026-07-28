@@ -27,6 +27,11 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   **Asymmetry baked into the confidence model:** only a CRASH is decisive (→ HIGH, incl. the
   "declares server/both yet crashes" lie); a clean boot does not prove server-safe. **The declared
   sideness is a self-report and is unreliable** — that asymmetry is *why* the expensive boot exists.
+  **Landmine — pre-launch aborts are NOT crashes:** `start.sh`'s `crashServer` messages (loader not
+  available for the MC version, launcher-jar/install download failure, Java/EULA/`variables.txt` setup
+  failure, unknown modloader) all exit non-zero *before the mod is loaded*. `BootLogClassifier` maps
+  those (`setupAbortMarkers`) to **INCONCLUSIVE**, not CRASHED — otherwise a loader simply lacking a
+  build for a brand-new Minecraft becomes a false clientside HIGH (found by a grinder e2e on MC 26.2).
 - **`allowModDistribution=false`** CurseForge files arrive with `downloadUrl=null` (`ModFile.locked`);
   routed (`selectDownloader`) to the **Playwright** headless-browser `BrowserDownloader` (lazy; only
   launched for locked files), everything else to `HttpJarDownloader`. Playwright is declared in **this**

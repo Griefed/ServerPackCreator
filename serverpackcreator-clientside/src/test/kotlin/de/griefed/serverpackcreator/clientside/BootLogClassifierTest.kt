@@ -48,6 +48,43 @@ internal class BootLogClassifierTest {
     }
 
     @Test
+    fun loaderNotAvailableForMinecraftIsInconclusiveNotCrashed() {
+        // Verbatim from a grinder e2e: Fabric has no build for a brand-new Minecraft, so start.sh
+        // aborts before the mod is ever loaded. Scoring this CRASHED was a false clientside HIGH.
+        val lines = listOf(
+            "Detected 26.2. - Java 25",
+            "Running Fabric checks and setup...",
+            "Fabric is not available for Minecraft 26.2, Fabric 0.19.3."
+        )
+        Assertions.assertEquals(BootResult.INCONCLUSIVE, BootLogClassifier.classify(lines, 1, timedOut = false))
+    }
+
+    @Test
+    fun loaderLauncherDownloadFailureIsInconclusive() {
+        val lines = listOf(
+            "Running Quilt checks and setup...",
+            "quilt-server-launch.jar not found. Maybe the Quilt servers are having trouble. Please try again in a couple of minutes and check your internet connection."
+        )
+        Assertions.assertEquals(BootResult.INCONCLUSIVE, BootLogClassifier.classify(lines, 1, timedOut = false))
+    }
+
+    @Test
+    fun environmentSetupAbortsAreInconclusive() {
+        // A spread of the pre-launch crashServer failures — none are the mod's fault.
+        listOf(
+            "Something went wrong during the server installation. Please try again in a couple of minutes and check your internet connection.",
+            "Java installation failed. Couldn't find /opt/java-25/bin/java.",
+            "User did not agree to Mojang's EULA. Entered: no."
+        ).forEach { marker ->
+            Assertions.assertEquals(
+                BootResult.INCONCLUSIVE,
+                BootLogClassifier.classify(listOf(marker), exitCode = 1, timedOut = false),
+                "setup abort must not be a crash: $marker"
+            )
+        }
+    }
+
+    @Test
     fun timeoutWithoutReadyIsInconclusive() {
         Assertions.assertEquals(
             BootResult.INCONCLUSIVE,
