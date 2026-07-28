@@ -157,7 +157,7 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 | app            | 71            | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay             |
 | plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |
 | web-frontend   | 23 (from 0)   | Phase 4a–4e done: Vitest, `$q` decoupling, **full TS migration**, component coverage  |
-| grinder        | 50 (+IT)      | Core loop **e2e-verified on current MC** (26.2/Quilt boots offline on JDK 25); **continuous fire-and-forget** mode with stale-verdict re-verification; container/loader/report/source subpackages; MC selection bounded to image-supported Java (`ImageJavaRuntimes`) |
+| grinder        | 56 (+IT)      | Core loop **e2e-verified on current MC** (26.2/Quilt boots offline on JDK 25); **continuous fire-and-forget** with stale re-verification; Modrinth + CurseForge candidate sources; container/loader/report/source subpackages; MC selection bounded to image-supported Java (`ImageJavaRuntimes`) |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.

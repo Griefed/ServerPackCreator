@@ -25,7 +25,8 @@ base package's orchestration, only its domain models).
   `ImageJavaRuntimes`. Depends on `grinder.container`.
 - **`grinder.report`** — verdict persistence + web/CSV output: `VerdictStore` (+ `InMemoryVerdictStore`),
   `JsonVerdictStore`, `VerdictCsvExporter`, `VerdictReportRenderer`, `ReportServer`.
-- **`grinder.source`** — candidate discovery: `ModrinthCandidateSource`.
+- **`grinder.source`** — candidate discovery: the `CandidateSource` interface + `ModrinthCandidateSource`
+  and `CurseForgeCandidateSource`.
 
 ## Current state — the boot seam (container ServerRunner)
 
@@ -71,11 +72,14 @@ containers:
   **no Spring, no new dependency**. *Deliberately standalone:* the report is self-contained rather than
   rendered through the app's Quasar frontend, because the grinder must not depend on `-app` (that would
   drag in Spring/Mongo/Swing and break its standalone nature).
-- **Candidate source**: `ModrinthCandidateSource` enumerates Modrinth mod projects **most-downloaded
-  first** (keyless search API; popularity = downloads, so the mods most likely to be in a modpack get
-  ground first), paginating behind the clientside `HttpFetcher` seam (unit-tested with canned JSON).
-  Feeds `GrindPool` its popularity-ranked queue. A CurseForge sibling (needs the API key, no declared
-  sideness) is the natural follow-up.
+- **Candidate sources** (`CandidateSource` interface — `candidates(limit): List<GrindCandidate>`,
+  most-downloaded first): `ModrinthCandidateSource` (keyless Modrinth search) and
+  `CurseForgeCandidateSource` (CF `/mods/search` sorted by `sortField=6` TotalDownloads, `x-api-key`,
+  `index`/`pageSize≤50` pagination capped at `index<10000`; project link = `links.websiteUrl`). Both
+  paginate behind the clientside `HttpFetcher` seam (unit-tested with canned JSON). `GrinderApplication`
+  wires Modrinth always and CurseForge **only when `CURSEFORGE_API_KEY` is set**; `GrindPool` re-sorts
+  the union by popularity so the platforms interleave. Store dedup is by `slug`, so a mod on both
+  platforms is treated as one project (accepted for now).
 - **Loader install (the `LoaderCache` `LoaderInstaller`)**: `DockerLoaderInstaller` generates a
   **mod-less** pack (`VanillaPackGenerator` → `ApiVanillaPackGenerator` over `ApiWrapper`), boots it
   **once with network** (`networkMode="bridge"` — the *only* networked boot) so `start.sh` installs the
@@ -253,9 +257,14 @@ Minecraft a loader doesn't support (Fabric/Quilt/LegacyFabric gated on `Meta.isM
 Forge/NeoForge already MC-specific), so an unsupported combo is dropped from selection instead of spun
 up and aborted. The classifier's setup-abort INCONCLUSIVE mapping remains the backstop.
 
+**CurseForge candidate source — DONE.** `CurseForgeCandidateSource` enumerates CF most-downloaded-first
+behind the `CandidateSource` interface; wired when `CURSEFORGE_API_KEY` is set (see the candidate-sources
+bullet above).
+
 Remaining:
 
-1. **CurseForge candidate source** (optional) — `ModrinthCandidateSource` is done (keyless,
-   popularity-ranked); the CF sibling needs the API key and leans entirely on the jar scan. The boot
-   path can already *download* locked CF files (Playwright + `CURSEFORGE_API_KEY`); only catalog
-   enumeration is missing.
+1. **Script-template Docker matrix** (step 4) — a gated IT booting the generated `start.{sh,fish,ps1}`
+   across Minecraft/loader cells to prove the templates (especially the new `.fish`) install + boot.
+   Needs a `spc-grinder-templates` image (base + fish + pwsh). See the plan.
+2. **Store dedup across platforms** (minor) — verdicts are keyed by `slug`, so the same mod on Modrinth
+   and CurseForge collapses to one project. Fine for now; a platform-qualified key would separate them.

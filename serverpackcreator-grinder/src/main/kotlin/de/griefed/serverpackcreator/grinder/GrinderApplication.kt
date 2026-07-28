@@ -27,6 +27,7 @@ import de.griefed.serverpackcreator.grinder.loader.ImageJavaRuntimes
 import de.griefed.serverpackcreator.grinder.loader.LoaderCache
 import de.griefed.serverpackcreator.grinder.report.JsonVerdictStore
 import de.griefed.serverpackcreator.grinder.report.ReportServer
+import de.griefed.serverpackcreator.grinder.source.CurseForgeCandidateSource
 import de.griefed.serverpackcreator.grinder.source.ModrinthCandidateSource
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
@@ -91,7 +92,18 @@ object GrinderApplication {
         // TTL) and re-checks stale ones, so evolving mods, new loader versions and newly-supported
         // Minecraft releases get picked up over successive passes. Verdicts persist after every record,
         // so a restart resumes rather than starting over.
+        // Candidate suppliers: Modrinth always (keyless); CurseForge only when its API key is set
+        // (mirrors clientside's supportedPlatforms). Each pass re-runs them; GrindPool re-sorts the
+        // union by popularity, so the two platforms interleave.
         val modrinthLimit = env("SPC_GRINDER_MODRINTH_LIMIT", "25").toInt()
+        val curseForgeLimit = env("SPC_GRINDER_CF_LIMIT", "25").toInt()
+        val curseForgeKey = System.getenv("CURSEFORGE_API_KEY")?.takeIf { it.isNotBlank() }
+        val candidateSuppliers = buildList<() -> List<GrindCandidate>> {
+            add { ModrinthCandidateSource().candidates(modrinthLimit) }
+            if (curseForgeKey != null) {
+                add { CurseForgeCandidateSource(curseForgeKey).candidates(curseForgeLimit) }
+            }
+        }
         val intervalSeconds = env("SPC_GRINDER_INTERVAL", "21600").toLong()
         val running = AtomicBoolean(true)
         val mainThread = Thread.currentThread()
@@ -100,12 +112,13 @@ object GrinderApplication {
             running.set(false)
             mainThread.interrupt()
         })
-        log.info("Continuous mode: re-verify TTL ${reverifyTtl.toDays()}d, interval ${intervalSeconds}s, $workers worker(s).")
+        val sourceNames = if (curseForgeKey != null) "Modrinth + CurseForge" else "Modrinth (no CURSEFORGE_API_KEY)"
+        log.info("Continuous mode: sources=$sourceNames, re-verify TTL ${reverifyTtl.toDays()}d, interval ${intervalSeconds}s, $workers worker(s).")
 
         var pass = 0
         while (running.get()) {
             pass++
-            val candidates = ModrinthCandidateSource().candidates(modrinthLimit)
+            val candidates = candidateSuppliers.flatMap { it() }
             log.info("Pass #$pass: grinding ${candidates.size} candidate(s)...")
             GrindPool(grinder, workers).grindAll(candidates)
             log.info("Pass #$pass complete: ${store.all().size} verdict(s) total.")

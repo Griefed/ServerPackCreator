@@ -47,7 +47,7 @@ class ModrinthCandidateSource(
     private val httpFetcher: HttpFetcher = JdkHttpFetcher(),
     private val objectMapper: ObjectMapper = ObjectMapper(),
     private val pageSize: Int = 100
-) {
+) : CandidateSource {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val apiBase = "https://api.modrinth.com/v2"
     private val headers = mapOf(
@@ -60,7 +60,7 @@ class ModrinthCandidateSource(
      * pagination and returns what was gathered so far (the grind proceeds with a partial catalog rather
      * than aborting).
      */
-    fun candidates(limit: Int): List<GrindCandidate> {
+    override fun candidates(limit: Int): List<GrindCandidate> {
         require(limit >= 0) { "limit must be >= 0, was $limit" }
         val gathered = ArrayList<GrindCandidate>(minOf(limit, 1024))
         var offset = 0
