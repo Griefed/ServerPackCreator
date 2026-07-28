@@ -24,7 +24,9 @@ import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 /**
  * Picks the newest known loader-version to boot a server with, for a given loader and Minecraft
  * version, from SPC's [VersionMeta]. Forge/NeoForge are Minecraft-version-specific; Fabric/Quilt/
- * LegacyFabric loaders are Minecraft-independent so their latest is used regardless.
+ * LegacyFabric loader versions are Minecraft-independent, but the loader still has to *support* the
+ * Minecraft version (a brand-new Minecraft has no intermediary yet), so their latest is only returned
+ * when [de.griefed.serverpackcreator.api.versionmeta.Meta.isMinecraftSupported] holds.
  *
  * @param versionMeta SPC's cached version manifests (from [de.griefed.serverpackcreator.api.ApiWrapper]).
  * @author Griefed
@@ -32,15 +34,17 @@ import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 class LoaderVersionResolver(private val versionMeta: VersionMeta) {
 
     /**
-     * Newest loader-version for the [loader]/[minecraftVersion] pair, or `null` when none is known
-     * (e.g. the Minecraft version is unsupported by that loader).
+     * Newest loader-version for the [loader]/[minecraftVersion] pair, or `null` when none is known —
+     * i.e. the loader has no build for (Forge/NeoForge) or does not yet support (Fabric/Quilt/
+     * LegacyFabric) that Minecraft version. A `null` here stops the combo being selected for a boot,
+     * so a loader lacking support for a fresh Minecraft is skipped rather than spun up and aborted.
      */
     fun latest(loader: String, minecraftVersion: String): String? = when (loader) {
         "Forge" -> versionMeta.forge.newestForgeVersion(minecraftVersion).orElse(null)
         "NeoForge" -> versionMeta.neoForge.newestNeoForgeVersion(minecraftVersion).orElse(null)
-        "Fabric" -> versionMeta.fabric.latestLoader()
-        "Quilt" -> versionMeta.quilt.latestLoader()
-        "LegacyFabric" -> versionMeta.legacyFabric.latestLoader()
+        "Fabric" -> if (versionMeta.fabric.isMinecraftSupported(minecraftVersion)) versionMeta.fabric.latestLoader() else null
+        "Quilt" -> if (versionMeta.quilt.isMinecraftSupported(minecraftVersion)) versionMeta.quilt.latestLoader() else null
+        "LegacyFabric" -> if (versionMeta.legacyFabric.isMinecraftSupported(minecraftVersion)) versionMeta.legacyFabric.latestLoader() else null
         else -> null
     }
 }
