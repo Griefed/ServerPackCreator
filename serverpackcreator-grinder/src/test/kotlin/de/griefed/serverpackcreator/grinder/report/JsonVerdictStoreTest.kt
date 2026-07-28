@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.time.Instant
 
 /**
  * Pins the file-backed store: verdicts survive a "restart" (a fresh instance over the same file reloads
@@ -66,6 +67,19 @@ internal class JsonVerdictStoreTest {
         // ...and the store is still usable (recovers by overwriting on the next record).
         store.record(grindVerdict("jei", "Forge"))
         Assertions.assertEquals(1, JsonVerdictStore(file).all().size)
+    }
+
+    @Test
+    fun newestVerificationSurvivesAReopen(@TempDir dir: File) {
+        val file = File(dir, "verdicts.json")
+        val when1 = Instant.parse("2026-02-01T00:00:00Z")
+        val when2 = Instant.parse("2026-05-01T00:00:00Z")
+        JsonVerdictStore(file).apply {
+            record(grindVerdict("jei", "Forge", verifiedAt = when1))
+            record(grindVerdict("jei", "NeoForge", verifiedAt = when2))
+        }
+
+        Assertions.assertEquals(when2, JsonVerdictStore(file).newestVerification("jei"))
     }
 
     @Test

@@ -23,11 +23,12 @@ import de.griefed.serverpackcreator.clientside.Confidence
 import de.griefed.serverpackcreator.grinder.grindVerdict
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import java.time.Instant
 
 /**
  * Pins the in-memory verdict store: a re-verified `(slug, loader)` replaces rather than duplicates,
- * distinct loaders of one project coexist, and [VerdictStore.hasVerdictFor] drives the skip-already-done
- * check.
+ * distinct loaders of one project coexist, [VerdictStore.hasVerdictFor] drives the skip check, and
+ * [VerdictStore.newestVerification] returns the freshest timestamp across a project's loaders.
  */
 internal class VerdictStoreTest {
 
@@ -58,5 +59,17 @@ internal class VerdictStoreTest {
         store.record(grindVerdict("rubidium", "Forge"))
         Assertions.assertTrue(store.hasVerdictFor("rubidium"))
         Assertions.assertFalse(store.hasVerdictFor("something-else"))
+    }
+
+    @Test
+    fun newestVerificationReturnsTheFreshestTimestampAcrossLoaders() {
+        val store = InMemoryVerdictStore()
+        val older = Instant.parse("2026-01-01T00:00:00Z")
+        val newer = Instant.parse("2026-06-01T00:00:00Z")
+        store.record(grindVerdict("sodium", "Fabric", verifiedAt = older))
+        store.record(grindVerdict("sodium", "Quilt", verifiedAt = newer))
+
+        Assertions.assertEquals(newer, store.newestVerification("sodium"))
+        Assertions.assertNull(store.newestVerification("never-ground"))
     }
 }

@@ -61,7 +61,7 @@ internal fun clientsideReport(
     fileNames = emptyList()
 )
 
-/** Build a [GrindVerdict] for store/CSV tests. */
+/** Build a [GrindVerdict] for store/CSV tests. [verifiedAt] matters only for freshness/TTL tests. */
 internal fun grindVerdict(
     slug: String,
     loader: String,
@@ -69,5 +69,6 @@ internal fun grindVerdict(
     suggestedEntry: String? = "$slug-",
     projectUrl: String = "https://modrinth.com/mod/$slug",
     detail: String = "",
-    platform: String = "Modrinth"
-) = GrindVerdict(platform, slug, projectUrl, loader, suggestedEntry, confidence, detail, Instant.EPOCH)
+    platform: String = "Modrinth",
+    verifiedAt: Instant = Instant.EPOCH
+) = GrindVerdict(platform, slug, projectUrl, loader, suggestedEntry, confidence, detail, verifiedAt)
