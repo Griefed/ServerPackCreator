@@ -17,12 +17,13 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.grinder
+package de.griefed.serverpackcreator.grinder.report
 
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import de.griefed.serverpackcreator.grinder.GrindVerdict
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.nio.file.AtomicMoveNotSupportedException

@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.grinder
+package de.griefed.serverpackcreator.grinder.container
 
 import de.griefed.serverpackcreator.clientside.RunResult
 import de.griefed.serverpackcreator.clientside.ServerRunner

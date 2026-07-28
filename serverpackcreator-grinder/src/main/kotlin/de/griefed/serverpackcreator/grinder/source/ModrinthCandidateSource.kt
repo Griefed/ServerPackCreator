@@ -17,12 +17,13 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.grinder
+package de.griefed.serverpackcreator.grinder.source
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import de.griefed.serverpackcreator.clientside.HttpFetcher
 import de.griefed.serverpackcreator.clientside.JdkHttpFetcher
+import de.griefed.serverpackcreator.grinder.GrindCandidate
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets

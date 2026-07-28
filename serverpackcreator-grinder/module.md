@@ -19,18 +19,18 @@ service running for days to accumulate a list of suspected-clientside mods.
 
 ## What's here so far (the boot seam)
 
-- [ContainerServerRunner][de.griefed.serverpackcreator.grinder.ContainerServerRunner] — a
+- [ContainerServerRunner][de.griefed.serverpackcreator.grinder.container.ContainerServerRunner] — a
   `de.griefed.serverpackcreator.clientside.ServerRunner` that boots a prepared server pack inside a
   hardened container instead of as a host process. It drops straight into `BootVerifier` and feeds the
   same `BootLogClassifier`. Host-side staging (start-script check, eula, spec assembly) and result
   mapping live here; the container interaction is delegated so this is unit-testable.
-- [ContainerEngine][de.griefed.serverpackcreator.grinder.ContainerEngine] — the thin, mockable
+- [ContainerEngine][de.griefed.serverpackcreator.grinder.container.ContainerEngine] — the thin, mockable
   boundary over the container runtime (`ContainerSpec` in, captured lines + exit code out), with
-  [ContainerSpec][de.griefed.serverpackcreator.grinder.ContainerSpec] /
-  [ContainerResources][de.griefed.serverpackcreator.grinder.ContainerResources] /
-  [BindMount][de.griefed.serverpackcreator.grinder.BindMount] carrying the untrusted-mod hardening
+  [ContainerSpec][de.griefed.serverpackcreator.grinder.container.ContainerSpec] /
+  [ContainerResources][de.griefed.serverpackcreator.grinder.container.ContainerResources] /
+  [BindMount][de.griefed.serverpackcreator.grinder.container.BindMount] carrying the untrusted-mod hardening
   defaults (no network, read-only rootfs, dropped capabilities, non-root, pid/cpu/memory caps).
-- [DockerJavaContainerEngine][de.griefed.serverpackcreator.grinder.DockerJavaContainerEngine] — the
+- [DockerJavaContainerEngine][de.griefed.serverpackcreator.grinder.container.DockerJavaContainerEngine] — the
   real docker-java translation (create → start → stream → stop → inspect → remove). Exercised only
   against a live daemon; the testable orchestration is deliberately kept out of it.
 

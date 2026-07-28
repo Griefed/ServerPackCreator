@@ -6,6 +6,27 @@
 > transitively) and **docker-java** (`docker-java-core` + `docker-java-transport-zerodep`, 3.7.1). No
 > Spring, no Swing. Not published to Maven.
 
+## Package layout
+
+Organized by subsystem; the base package is the composition/orchestration core and the four
+subpackages are leaves it wires together (dependencies point **inward**: subpackages never import the
+base package's orchestration, only its domain models).
+
+- **`grinder`** (base) — the core: `GrindModels` (`GrindCandidate`, `GrindVerdict`, the
+  `CandidateVerifier` seam — the shared vocabulary every subpackage speaks), `Grinder`/`GrindPool`
+  (orchestration), `ContainerCandidateVerifier` (the production `CandidateVerifier` that wires the
+  subsystems together), and `GrinderApplication` (the `main` entry point / composition root — its
+  fully-qualified name is the build's `mainClass`, so it stays here).
+- **`grinder.container`** — the isolated-container runtime: `ContainerEngine` (+ `ContainerSpec`,
+  `ContainerResources`, `BindMount`, `ContainerRunOutput`), `DockerJavaContainerEngine`,
+  `ContainerServerRunner`.
+- **`grinder.loader`** — per-tuple loader install + offline pre-bake: `LoaderCache` (+ `LoaderInstaller`
+  seam), `DockerLoaderInstaller`, `VanillaPackGenerator`, `InstallLayerSnapshot`, `PackVariables`,
+  `ImageJavaRuntimes`. Depends on `grinder.container`.
+- **`grinder.report`** — verdict persistence + web/CSV output: `VerdictStore` (+ `InMemoryVerdictStore`),
+  `JsonVerdictStore`, `VerdictCsvExporter`, `VerdictReportRenderer`, `ReportServer`.
+- **`grinder.source`** — candidate discovery: `ModrinthCandidateSource`.
+
 ## Current state — the boot seam (container ServerRunner)
 
 The reuse hinge is the clientside module's `ServerRunner` interface. The grinder implements it for

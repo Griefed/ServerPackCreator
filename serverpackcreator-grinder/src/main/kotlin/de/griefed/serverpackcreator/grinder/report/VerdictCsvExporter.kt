@@ -17,7 +17,9 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.grinder
+package de.griefed.serverpackcreator.grinder.report
+
+import de.griefed.serverpackcreator.grinder.GrindVerdict
 
 /**
  * Renders verdicts as RFC-4180 CSV — the export behind the web table's "download CSV" action. Columns
