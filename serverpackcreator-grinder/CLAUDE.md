@@ -261,10 +261,19 @@ up and aborted. The classifier's setup-abort INCONCLUSIVE mapping remains the ba
 behind the `CandidateSource` interface; wired when `CURSEFORGE_API_KEY` is set (see the candidate-sources
 bullet above).
 
+**Script-template matrix — DONE.** `ScriptTemplateMatrixIT` (gated `GRINDER_TEMPLATE_IT=1`) boots the
+generated `start.{sh,fish,ps1}` across `{MC} × {loader} × {bash,fish,pwsh}` cells in the
+`spc-grinder-templates` image (base + fish + pwsh, `docker/Dockerfile.templates`), asserting each valid
+cell reaches the ready-line; invalid loader/MC combos are skipped via the step-3 `LoaderVersionResolver`
+gate. Cells generate a pack (default sh/fish/ps1 templates forced on), point `$JAVA` at the bundled JDK,
+and boot with `networkMode=bridge` (the template does its own install), through a bounded executor with
+one `@TestFactory` `DynamicTest` per cell. Matrix dims are env-overridable for a focused subset. **On its
+first real run it earned its keep:** Fabric/1.20.1 bash passed but fish failed with "Could not find or
+load main class" — `default_template.fish`'s `runJavaCommand` split the command on spaces *keeping* empty
+tokens (fish, unlike bash, doesn't drop them), so an empty `$JAVA_ARGS` injected a stray `""` arg. Fixed
+in the api template with `string split --no-empty`; re-run → bash and fish both reach the ready-line.
+
 Remaining:
 
-1. **Script-template Docker matrix** (step 4) — a gated IT booting the generated `start.{sh,fish,ps1}`
-   across Minecraft/loader cells to prove the templates (especially the new `.fish`) install + boot.
-   Needs a `spc-grinder-templates` image (base + fish + pwsh). See the plan.
-2. **Store dedup across platforms** (minor) — verdicts are keyed by `slug`, so the same mod on Modrinth
+1. **Store dedup across platforms** (minor) — verdicts are keyed by `slug`, so the same mod on Modrinth
    and CurseForge collapses to one project. Fine for now; a platform-qualified key would separate them.

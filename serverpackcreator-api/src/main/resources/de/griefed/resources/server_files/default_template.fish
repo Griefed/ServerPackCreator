@@ -173,9 +173,12 @@ end
 # Runs the command $argv[1] using the Java installation set in $JAVA.
 # NOTE: bash's original does an intentionally-unquoted `"$JAVA" ${1}` so the string gets
 # word-split into separate argv entries. Fish does NOT word-split unquoted variables, so that
-# trick doesn't translate directly -- we split explicitly on spaces instead.
+# trick doesn't translate directly -- we split explicitly on spaces instead. `--no-empty` drops
+# empty tokens (e.g. from an empty $JAVA_ARGS producing a double space), matching bash's
+# word-splitting -- otherwise Java receives a stray "" argument and reads it as the main class
+# ("Could not find or load main class").
 function runJavaCommand --argument-names cmd
-    set -l args (string split " " -- $cmd)
+    set -l args (string split --no-empty " " -- $cmd)
     "$JAVA" $args
 end
 
