@@ -31,6 +31,7 @@ import de.griefed.serverpackcreator.grinder.loader.PackVariables
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.DynamicTest
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
 import java.io.File
@@ -74,23 +75,32 @@ internal class ScriptTemplateMatrixIT {
     private val image = env("SPC_GRINDER_IMAGE_TEMPLATES", "spc-grinder-templates:latest")
     private val minecraftVersions = envList("SPC_GRINDER_TEMPLATE_MC", "1.12.2,1.16.1,1.20.1")
     private val loaders = envList("SPC_GRINDER_TEMPLATE_LOADERS", "Forge,NeoForge,Fabric,Quilt")
-    private val shells = envList("SPC_GRINDER_TEMPLATE_SHELLS", "bash,fish,pwsh")
+    private val shells = envList("SPC_GRINDER_TEMPLATE_SHELLS", "bash,fish")
     private val workers = env("SPC_GRINDER_TEMPLATE_WORKERS", "3").toInt()
     private val bootTimeout = Duration.ofMinutes(env("SPC_GRINDER_TEMPLATE_TIMEOUT_MINUTES", "20").toLong())
 
     /** The vanilla server's ready-line — the template did its job when this appears. */
     private val readyLine = Regex("""Done \([^)]*\)! For help""")
 
-    /** How each shell is invoked and which generated script it runs. */
+    /**
+     * How each shell is invoked and which generated script it runs. **Boot cells are Linux shells only.**
+     * `.ps1` is deliberately absent: the PowerShell template shells out to Windows `CMD /C` (Java-version
+     * detection, the server launch itself and the bit check), so it cannot execute in a Linux container by
+     * design — it is validated by [powerShellTemplatesParse] instead. Verified empirically: a `pwsh` boot
+     * dies at `The term 'CMD' is not recognized`, then mis-detects Java and aborts at the Jabba prompt.
+     */
     private fun scriptFor(shell: String): String = when (shell) {
         "bash" -> "start.sh"
         "fish" -> "start.fish"
-        "pwsh" -> "start.ps1"
-        else -> throw IllegalArgumentException("Unknown shell '$shell' (expected bash|fish|pwsh)")
+        "pwsh" -> throw IllegalArgumentException(
+            "`.ps1` cannot be booted in a Linux container (it invokes Windows `CMD`); " +
+                "PowerShell is covered by the parse check, not the boot matrix"
+        )
+        else -> throw IllegalArgumentException("Unknown shell '$shell' (expected bash|fish)")
     }
 
-    private fun commandFor(shell: String, script: String): List<String> =
-        if (shell == "pwsh") listOf("pwsh", "-File", script) else listOf(shell, script)
+    /** Launch a script with its shell. Both bash and fish take the script path directly. */
+    private fun commandFor(shell: String, script: String): List<String> = listOf(shell, script)
 
     /**
      * Build the matrix, generate a pack per valid cell (sequentially — generation is cheap and mutates
@@ -164,6 +174,52 @@ internal class ScriptTemplateMatrixIT {
             })
         }
         return tests
+    }
+
+    /**
+     * PowerShell's coverage: parse both shipped `.ps1` templates with PowerShell's **own** parser inside
+     * the image. This is the honest ceiling on Linux — the templates invoke Windows `CMD`, so they cannot
+     * be *booted* here (see [scriptFor]) — but a parse catches the syntax-level regressions that are the
+     * whole reason these templates get tested at all (the `.fish` bug was found the same way, one rung up).
+     * Templates are mounted read-only straight from the api resources, so this checks what actually ships.
+     */
+    @Test
+    @EnabledIfEnvironmentVariable(named = "GRINDER_TEMPLATE_IT", matches = "1")
+    fun powerShellTemplatesParse() {
+        val templates = File("../serverpackcreator-api/src/main/resources/de/griefed/resources/server_files")
+            .canonicalFile
+        Assertions.assertTrue(templates.isDirectory, "template resources not found at $templates")
+
+        // `HOME=/tmp` because pwsh writes $HOME/.cache on start-up and the rootfs is read-only (tmpfs /tmp).
+        val script = """
+            HOME=/tmp exec pwsh -NoProfile -Command '
+              ${'$'}failed = 0
+              foreach (${'$'}f in @("/templates/default_template.ps1","/templates/default_java_template.ps1")) {
+                ${'$'}errors = ${'$'}null
+                [System.Management.Automation.Language.Parser]::ParseFile(${'$'}f, [ref]${'$'}null, [ref]${'$'}errors) | Out-Null
+                if (${'$'}errors) { Write-Output ("PARSE ERRORS in " + ${'$'}f); ${'$'}errors | ForEach-Object { Write-Output ${'$'}_.ToString() }; ${'$'}failed = 1 }
+                else { Write-Output ("parse OK: " + ${'$'}f) }
+              }
+              exit ${'$'}failed'
+        """.trimIndent()
+
+        val output = DockerJavaContainerEngine().run(
+            ContainerSpec(
+                image = image,
+                command = listOf("sh", "-c", script),
+                workingDir = "/templates",
+                mounts = listOf(BindMount(templates.absolutePath, "/templates", readOnly = true)),
+                networkMode = "none"
+            ),
+            readyPattern = Regex("""PARSE ERRORS"""), // never expected; the run simply exits
+            timeout = Duration.ofMinutes(3)
+        )
+        val rendered = output.lines.joinToString("\n")
+        Assertions.assertEquals(0, output.exitCode, "PowerShell reported parse errors:\n$rendered")
+        Assertions.assertTrue(
+            rendered.contains("parse OK: /templates/default_template.ps1"),
+            "expected a successful parse of default_template.ps1, got:\n$rendered"
+        )
     }
 
     /** Boot one cell in a container and classify by the ready-line. */

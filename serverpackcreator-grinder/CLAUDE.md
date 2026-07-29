@@ -282,22 +282,35 @@ bash's `IFS="," read -ra` keeps empty fields too, and both shells hand the empty
 the keeper). Left as-is deliberately: adding `--no-empty` there would be churn and a needless divergence
 from the bash reference. Don't "fix" it again.
 
-**Matrix coverage actually exercised so far — read before trusting a cell.** The IT machinery is proven,
-but only **2 of ~36 cells have ever run**: `Fabric 1.20.1 [bash]` and `Fabric 1.20.1 [fish]` (which is how
-the fish bug was found and its fix confirmed). Specifically **not yet run**: every **`pwsh`** cell (the
-`.ps1` templates have never been executed — only `pwsh --version` was smoke-tested, and fish proved a
-template can be genuinely broken), every **Forge / NeoForge / Quilt** cell, and the older Minecraft rows
-(**1.12.2**, **1.16.1** — i.e. the Java 8 path and the pre-ServerStarterJar Forge branch). Run the full
-grid before claiming template parity.
+**Landmine — `.ps1` CANNOT be boot-tested on Linux.** The PowerShell template shells out to Windows
+**`CMD /C`** in three places (`default_template.ps1`: Java-version detection ~line 142, the server launch
+~228, the bit check ~696). In a Linux container that fails with `The term 'CMD' is not recognized`, the
+Java version then reads as `do_not_manually_edit`, and the run aborts at the Jabba prompt — a platform
+mismatch, **not** a template defect. (A `pwsh` boot also needs `HOME` on a writable mount, since it
+creates `$HOME/.cache` and the rootfs is read-only — exit 133 before it even parses the script.) So
+PowerShell is covered by **`powerShellTemplatesParse`**, which runs PowerShell's *own* parser
+(`Parser::ParseFile`) over both shipped `.ps1` files inside the image — catching the syntax-class
+regressions these tests exist for. Don't "fix" the matrix by adding a `pwsh` boot cell; `scriptFor`
+rejects it with the reason.
+
+**Matrix coverage actually exercised so far — read before trusting a cell.** Verified:
+`Fabric 1.20.1 [bash]` ✅, `Fabric 1.20.1 [fish]` ✅ (how the fish bug was found *and* its fix confirmed),
+and the `.ps1` parse check ✅. **Not yet run:** every **Forge / NeoForge / Quilt** cell and the older
+Minecraft rows (**1.12.2**, **1.16.1** — the Java 8 path and the pre-ServerStarterJar Forge branch). Run
+the full grid before claiming template parity.
+
+**Continuous mode — verified live (2026-07-29).** With a pre-seeded *fresh* verdict and `interval=40s`:
+two passes ran 40s apart, both skipping the fresh project (no boots), the report server answered
+`HTTP 200` + CSV throughout, and `SIGTERM` fired the shutdown hook mid-sleep ("Grinder stopped after 2
+pass(es)"). With `SPC_GRINDER_REVERIFY_TTL_DAYS=0` the same verdict became stale and re-verification
+**actually ran** (resolve → mod scan → boot-pack *and* install-pack generation for 26.2/Fabric), proving
+both sides of the TTL boundary outside the unit tests.
 
 Remaining:
 
-1. **Run the full template matrix** — especially the `pwsh` cells and the older-Minecraft/other-loader
-   rows listed above. Machinery is ready; it is a slow, network-heavy manual run.
-2. **Live verification of two shipped paths:** the continuous loop (`GrinderApplication` with no args —
-   pass → sleep → pass, shutdown hook) is covered by unit tests for the TTL policy but has **never been
-   run end-to-end**; and `CurseForgeCandidateSource` has **never made a real API call** (no
-   `CURSEFORGE_API_KEY` available — its contract is doc-verified and defended by `warnIfNotDescending`,
-   which is not the same as observed).
+1. **Run the full template matrix** — the Forge/NeoForge/Quilt cells and the older-Minecraft rows above.
+   Machinery is ready; it is a slow, network-heavy manual run.
+2. **`CurseForgeCandidateSource` has never made a real API call** (no `CURSEFORGE_API_KEY` available). Its
+   contract is docs-verified and defended by `warnIfNotDescending`, which is not the same as observed.
 3. **Store dedup across platforms** (minor) — verdicts are keyed by `slug`, so the same mod on Modrinth
    and CurseForge collapses to one project. Fine for now; a platform-qualified key would separate them.
