@@ -1,0 +1,60 @@
+# Line-ending policy for ServerPackCreator.
+#
+# Why this file exists: the repo is uniformly LF, but nothing enforced it. A contributor with
+# `core.autocrlf=true` (the Windows default in some setups) would commit CRLF shell scripts, and a CRLF
+# `start.sh` fails at runtime with a "bad interpreter" error — in a *shipped* server pack. The templates
+# under `serverpackcreator-api/src/main/resources/de/griefed/resources/server_files/` are the sharp edge:
+# they are copied verbatim into every generated server pack, so their endings are user-facing.
+#
+# Rule of thumb: LF everywhere, CRLF only where Windows genuinely requires it.
+
+# ---------------------------------------------------------------------------------------------------
+# Default: treat as text, store LF, check out LF on every platform.
+# ---------------------------------------------------------------------------------------------------
+* text=auto eol=lf
+
+# ---------------------------------------------------------------------------------------------------
+# Must stay LF — a CRLF here breaks execution, not just the diff.
+# Shell and fish scripts are run by an interpreter that chokes on carriage returns, and the SPC start
+# templates become the scripts inside generated server packs.
+# ---------------------------------------------------------------------------------------------------
+*.sh        text eol=lf
+*.fish      text eol=lf
+gradlew     text eol=lf
+
+# ---------------------------------------------------------------------------------------------------
+# Must be CRLF — Windows batch files. cmd.exe mis-parses LF-only .bat in some constructs (labels,
+# multi-line blocks), so pin them explicitly. This covers Gradle's wrapper scripts *and*
+# `default_template.bat`, which SPC turns into the `start.bat` shipped to Windows users.
+# PowerShell is happy with LF, so .ps1 stays on the LF default.
+# ---------------------------------------------------------------------------------------------------
+*.bat       text eol=crlf
+
+# ---------------------------------------------------------------------------------------------------
+# Tool-owned: left byte-for-byte alone so install4j can rewrite it without git reformatting it.
+# ---------------------------------------------------------------------------------------------------
+spc.install4j -text
+
+# ---------------------------------------------------------------------------------------------------
+# Binary — never touch. git's auto-detection already gets these right, but declaring them means a new
+# fixture (the test jars, the icons, the sample modpack zip) can never be corrupted by normalisation.
+# ---------------------------------------------------------------------------------------------------
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.webp      binary
+*.ico       binary
+*.icns      binary
+*.xcf       binary
+*.jar       binary
+*.zip       binary
+*.gz        binary
+*.exe       binary
+*.dll       binary
+*.so        binary
+*.dylib     binary
+*.ttf       binary
+*.woff      binary
+*.woff2     binary
+*.pdf       binary
