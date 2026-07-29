@@ -55,6 +55,26 @@ internal class PackVariablesTest {
         Assertions.assertTrue(vars.contains("SERVERSTARTERJAR_FORCE_FETCH=false"), "offline must not re-fetch server.jar")
     }
 
+    /**
+     * `JAVA_INSTALLER` is written only when supplied, and never disturbs `JAVA` — the server keeps its own
+     * (possibly older) JDK while modloader installers that need Java 17+ get a newer one.
+     */
+    @Test
+    fun writesTheInstallerJavaOverrideOnlyWhenGiven(@TempDir dir: File) {
+        File(dir, "variables.txt").writeText("JAVA=java\n")
+        PackVariables.prepareUnattended(dir, "/opt/java-8/bin/java", offline = true)
+        Assertions.assertFalse(
+            File(dir, "variables.txt").readText().contains("JAVA_INSTALLER"),
+            "absent by default, so existing packs are untouched"
+        )
+
+        PackVariables.prepareUnattended(dir, "/opt/java-8/bin/java", offline = true, installerJavaPath = "/opt/java-21/bin/java")
+        val vars = File(dir, "variables.txt").readText()
+        Assertions.assertTrue(vars.contains("JAVA_INSTALLER=/opt/java-21/bin/java"))
+        Assertions.assertTrue(vars.contains("JAVA=/opt/java-8/bin/java"), "the server's Java must stay as-is")
+        Assertions.assertEquals(1, Regex("(?m)^JAVA=").findAll(vars).count(), "no duplicate JAVA key")
+    }
+
     @Test
     fun installBootKeepsForceFetchOn(@TempDir dir: File) {
         File(dir, "variables.txt").writeText("JAVA=java\nSERVERSTARTERJAR_FORCE_FETCH=true\n")

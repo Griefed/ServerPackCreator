@@ -48,9 +48,40 @@ class ImageJavaRuntimes(
     fun javaPath(minecraftVersion: String): String? =
         requiredJavaMajor(minecraftVersion)
             ?.takeIf { it in bundledMajors }
-            ?.let { "/opt/java-$it/bin/java" }
+            ?.let { pathFor(it) }
+
+    /**
+     * A bundled JDK for running modloader **installers**, which can require a newer Java than the server
+     * they install — the Quilt installer needs 17+ even for Minecraft 1.16.1, which itself must run on
+     * Java 8. Returns the newest bundled major that is at least [minimumInstallerJava], or `null` if the
+     * image ships nothing new enough. The pack's `JAVA` (the server's Java) is left untouched.
+     */
+    fun installerJavaPath(minimumInstallerJava: Int = MINIMUM_INSTALLER_JAVA): String? =
+        bundledMajors.filter { it >= minimumInstallerJava }.maxOrNull()?.let { pathFor(it) }
+
+    /**
+     * The installer JDK **only when [minecraftVersion] actually needs one** — i.e. when the server's own
+     * Java is older than [minimumInstallerJava]. For a modern Minecraft the server JDK already satisfies
+     * every installer, so this returns `null` and the pack is left without a `JAVA_INSTALLER` entry, which
+     * is exactly what a hand-made pack looks like. Keeping the common case on the templates' plain
+     * `JAVA` fallback means that fallback stays the *exercised* path rather than dead weight.
+     */
+    fun installerJavaPathFor(minecraftVersion: String, minimumInstallerJava: Int = MINIMUM_INSTALLER_JAVA): String? {
+        val serverJava = requiredJavaMajor(minecraftVersion) ?: return null
+        return if (serverJava >= minimumInstallerJava) null else installerJavaPath(minimumInstallerJava)
+    }
+
+    /** The conventional in-image path for a bundled JDK [major] (see the runtime Dockerfile's symlinks). */
+    private fun pathFor(major: Int) = "/opt/java-$major/bin/java"
 
     companion object {
+        /**
+         * Minimum Java the modloader installers need. Set by the Quilt installer, which refuses to run on
+         * anything older ("Quilt Installer requires Java 17 or greater to run.") — found by booting the
+         * template matrix on Minecraft 1.16.1, whose server Java is 8.
+         */
+        const val MINIMUM_INSTALLER_JAVA = 17
+
         /**
          * Build from SPC's version metadata: the required Java comes straight from Mojang's server
          * manifest via [MinecraftMeta.requiredJavaVersion] (a stringified major), parsed to an Int.

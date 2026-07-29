@@ -49,8 +49,13 @@ object PackVariables {
      * resolved [javaPath] (the caller picks the bundled JDK via [ImageJavaRuntimes]). Pass
      * [offline] = `true` for a cached `--network none` boot (disables the ServerStarterJar re-fetch),
      * `false` for the one-off install boot that still needs network.
+     *
+     * [installerJavaPath], when given, is written as `JAVA_INSTALLER` — the JDK the templates use for
+     * modloader *installers* that need a newer Java than the server. Without it, Quilt cannot install on
+     * an older Minecraft (its installer requires Java 17+ while e.g. 1.16.1 runs on Java 8). Harmless for
+     * every other loader: the templates fall back to `JAVA` and only Quilt's install consults it.
      */
-    fun prepareUnattended(packDir: File, javaPath: String, offline: Boolean) {
+    fun prepareUnattended(packDir: File, javaPath: String, offline: Boolean, installerJavaPath: String? = null) {
         File(packDir, "eula.txt").writeText("eula=true\n")
         val variables = File(packDir, "variables.txt")
         if (!variables.isFile) {
@@ -59,6 +64,9 @@ object PackVariables {
         var text = variables.readText()
         text = set(text, "WAIT_FOR_USER_INPUT", "false")
         text = set(text, "JAVA", javaPath)
+        if (installerJavaPath != null) {
+            text = set(text, "JAVA_INSTALLER", installerJavaPath)
+        }
         if (offline) {
             text = set(text, "SERVERSTARTERJAR_FORCE_FETCH", "false")
         }

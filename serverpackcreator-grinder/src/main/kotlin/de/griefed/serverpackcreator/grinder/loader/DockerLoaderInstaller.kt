@@ -75,7 +75,7 @@ class DockerLoaderInstaller(
         try {
             val preBoot = InstallLayerSnapshot.relativeFilePaths(pack)
             // Unattended boot, but the install still needs network + the ServerStarterJar fetch.
-            PackVariables.prepareUnattended(pack, javaPath, offline = false)
+            PackVariables.prepareUnattended(pack, javaPath, offline = false, installerJavaPath = imageJava.installerJavaPathFor(minecraftVersion))
 
             val spec = ContainerSpec(
                 image = image,

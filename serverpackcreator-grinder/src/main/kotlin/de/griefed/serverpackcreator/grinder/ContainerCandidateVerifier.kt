@@ -110,7 +110,7 @@ class ContainerCandidateVerifier(
         val base = loaderCache.ensureInstalled(pack.loader, pack.loaderVersion, pack.minecraftVersion)
             ?: throw IllegalStateException("No cached loader install for ${pack.loader} ${pack.loaderVersion} / Minecraft ${pack.minecraftVersion}")
         copyInstallLayer(base, pack.serverPack)
-        PackVariables.prepareUnattended(pack.serverPack, javaPath, offline = true)
+        PackVariables.prepareUnattended(pack.serverPack, javaPath, offline = true, installerJavaPath = imageJava.installerJavaPathFor(pack.minecraftVersion))
     }
 
     /** Copy the cached install layer from [base] into [pack], skipping the cache's completion marker. */
