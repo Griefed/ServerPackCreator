@@ -27,13 +27,20 @@ import de.griefed.serverpackcreator.grinder.GrindCandidate
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 
 /**
- * Seeds the grind queue from CurseForge, **most-downloaded first** (`sortField=6` = TotalDownloads).
- * Unlike Modrinth, CurseForge's API requires an `x-api-key`, so this source is only wired when the key
- * is present. Paginates by `index`/`pageSize` (CF caps a page at 50 and the `index` at 10 000) until
- * [candidates]' `limit` is met or the catalog is exhausted; behind an [HttpFetcher] so it is unit-tested
- * against canned JSON. Each result's `links.websiteUrl` becomes the project link (a
- * `curseforge.com/minecraft/mc-mods/<slug>` URL the clientside `CurseForgePlatform` resolves), falling
- * back to one built from the slug.
+ * Seeds the grind queue from CurseForge, **most-downloaded first**. Unlike Modrinth, CurseForge's API
+ * requires an `x-api-key`, so this source is only wired when the key is present. Paginates by
+ * `index`/`pageSize` until [candidates]' `limit` is met or the catalog is exhausted; behind an
+ * [HttpFetcher] so it is unit-tested against canned JSON. Each result's `links.websiteUrl` becomes the
+ * project link (a `curseforge.com/minecraft/mc-mods/<slug>` URL the clientside `CurseForgePlatform`
+ * resolves), falling back to one built from the slug.
+ *
+ * **The request contract is verified, not assumed** (see [SORT_FIELD_TOTAL_DOWNLOADS]): `pageSize`
+ * defaults to and maxes at 50, the API rejects `index + pageSize > 10 000`, `sortOrder` takes
+ * `asc`/`desc`, results carry `downloadCount` and `links.websiteUrl`, and auth is the `x-api-key`
+ * header — all per CurseForge's REST docs. Ordering is additionally *not* relied upon for correctness:
+ * `GrindPool` re-sorts the union of all sources by `popularity` anyway, so a mis-sorted page would only
+ * change *which* projects get fetched, never the grind order. [warnIfNotDescending] surfaces that case
+ * instead of letting it pass silently.
  *
  * @param apiKey       The CurseForge API-key (from `CURSEFORGE_API_KEY`).
  * @param httpFetcher  HTTP boundary, swapped for canned JSON in tests.
@@ -51,14 +58,10 @@ class CurseForgeCandidateSource(
     private val apiBase = "https://api.curseforge.com/v1"
     private val minecraftGameId = 432
     private val modsClassId = 6
-    private val sortFieldTotalDownloads = 6
-
-    /** CurseForge rejects a search whose `index` reaches this cap, so pagination stops here. */
-    private val maxIndex = 10_000
     private val headers = mapOf("x-api-key" to apiKey, "Accept" to "application/json")
 
     init {
-        require(pageSize in 1..50) { "CurseForge caps pageSize at 50, was $pageSize" }
+        require(pageSize in 1..MAX_PAGE_SIZE) { "CurseForge caps pageSize at $MAX_PAGE_SIZE, was $pageSize" }
     }
 
     /**
@@ -70,8 +73,8 @@ class CurseForgeCandidateSource(
         require(limit >= 0) { "limit must be >= 0, was $limit" }
         val gathered = ArrayList<GrindCandidate>(minOf(limit, 1024))
         var index = 0
-        while (gathered.size < limit && index < maxIndex) {
-            val count = pageSize.coerceAtMost(limit - gathered.size).coerceAtMost(maxIndex - index)
+        while (gathered.size < limit && index < MAX_INDEX) {
+            val count = pageSize.coerceAtMost(limit - gathered.size).coerceAtMost(MAX_INDEX - index)
             if (count <= 0) {
                 break
             }
@@ -91,13 +94,32 @@ class CurseForgeCandidateSource(
     /** One page of mods ordered by downloads, or `null` when the request failed. */
     private fun searchPage(index: Int, count: Int): List<GrindCandidate>? {
         val url = "$apiBase/mods/search?gameId=$minecraftGameId&classId=$modsClassId" +
-            "&sortField=$sortFieldTotalDownloads&sortOrder=desc&index=$index&pageSize=$count"
+            "&sortField=$SORT_FIELD_TOTAL_DOWNLOADS&sortOrder=desc&index=$index&pageSize=$count"
         val body = runCatching { httpFetcher.get(url, headers) }
             .getOrElse {
                 log.warn("CurseForge search failed at index $index: ${it.message}")
                 return null
             }
-        return objectMapper.readTree(body).path("data").map { toCandidate(it) }
+        val page = objectMapper.readTree(body).path("data").map { toCandidate(it) }
+        warnIfNotDescending(page, index)
+        return page
+    }
+
+    /**
+     * Log a warning when [page] is not in descending download order — i.e. the API did not honour the
+     * requested sort. Advisory only: the page is still used as-is (`GrindPool` sorts by popularity), but
+     * a silently mis-sorted catalog would quietly change which projects get picked, so it must be visible.
+     */
+    private fun warnIfNotDescending(page: List<GrindCandidate>, index: Int) {
+        val outOfOrder = page.zipWithNext().any { (left, right) -> right.popularity > left.popularity }
+        if (outOfOrder) {
+            log.warn(
+                "CurseForge page at index $index is not sorted by descending downloads — " +
+                    "sortField=$SORT_FIELD_TOTAL_DOWNLOADS may no longer mean TotalDownloads. " +
+                    "Candidates are still usable (the pool re-sorts by popularity), but the fetched " +
+                    "subset is no longer the most-downloaded projects."
+            )
+        }
     }
 
     /** Map one CurseForge mod-node onto a [GrindCandidate] (websiteUrl → project link, downloads → rank). */
@@ -110,5 +132,23 @@ class CurseForgeCandidateSource(
             slug = slug,
             popularity = node.path("downloadCount").asLong(0)
         )
+    }
+
+    companion object {
+        /**
+         * CurseForge's `ModsSearchSortField` value for **TotalDownloads**. The REST docs render the enum
+         * numerically without names, so the mapping is corroborated against PrismLauncher's
+         * `FlameAPI::getSortingMethods()` (a long-standing consumer of this same endpoint), which lists:
+         * `1 Featured, 2 Popularity, 3 LastUpdated, 4 Name, 5 Author, 6 TotalDownloads, 7 Category,
+         * 8 GameVersion`. Note **2 is Popularity, not downloads** — the grinder deliberately ranks by
+         * lifetime downloads. [warnIfNotDescending] catches it should this ever change upstream.
+         */
+        const val SORT_FIELD_TOTAL_DOWNLOADS = 6
+
+        /** CurseForge rejects a search whose `index + pageSize` exceeds this (per its REST docs). */
+        const val MAX_INDEX = 10_000
+
+        /** CurseForge's documented default and maximum `pageSize`. */
+        const val MAX_PAGE_SIZE = 50
     }
 }

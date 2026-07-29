@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.grinder.source
 import de.griefed.serverpackcreator.clientside.HttpFetcher
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.io.IOException
 
 /**
@@ -38,9 +39,14 @@ internal class CurseForgeCandidateSourceTest {
         private val throwAtIndex: Int? = null
     ) : HttpFetcher {
         val requestedIndexes = mutableListOf<Int>()
+        val requestedUrls = mutableListOf<String>()
+        val seenHeaders = mutableListOf<Map<String, String>>()
         override fun get(url: String, headers: Map<String, String>): String {
-            val index = Regex("index=(\\d+)").find(url)!!.groupValues[1].toInt()
+            val index = requireNotNull(Regex("index=(\\d+)").find(url)) { "no index= in $url" }
+                .groupValues[1].toInt()
             requestedIndexes.add(index)
+            requestedUrls.add(url)
+            seenHeaders.add(headers)
             if (index == throwAtIndex) throw IOException("curseforge 503")
             return pagesByIndex[index] ?: """{"data":[]}"""
         }
@@ -112,6 +118,45 @@ internal class CurseForgeCandidateSourceTest {
         val candidates = CurseForgeCandidateSource("key", fetcher, pageSize = 2).candidates(limit = 10)
 
         Assertions.assertEquals(listOf("a", "b"), candidates.map { it.slug })
+    }
+
+    /**
+     * Pins the request contract verified against CurseForge's REST docs (and, for the sort value, against
+     * PrismLauncher's published enum): Minecraft `gameId=432`, mods `classId=6`, `sortField=6`
+     * (TotalDownloads) with `sortOrder=desc`, `pageSize` within the documented max, and the `x-api-key`
+     * header. A silent change to any of these would fetch the wrong catalog slice.
+     */
+    @Test
+    fun requestsTheDocumentedSearchContract() {
+        val fetcher = CannedSearch(mapOf(0 to searchJson(Triple("jei", 9L, "u/jei"))))
+        CurseForgeCandidateSource("secret-key", fetcher, pageSize = 50).candidates(limit = 1)
+
+        val url = fetcher.requestedUrls.single()
+        Assertions.assertTrue(url.startsWith("https://api.curseforge.com/v1/mods/search?"), url)
+        listOf("gameId=432", "classId=6", "sortField=${CurseForgeCandidateSource.SORT_FIELD_TOTAL_DOWNLOADS}", "sortOrder=desc", "index=0")
+            .forEach { Assertions.assertTrue(url.contains(it), "missing '$it' in $url") }
+        Assertions.assertEquals(6, CurseForgeCandidateSource.SORT_FIELD_TOTAL_DOWNLOADS, "CF TotalDownloads sort value")
+        Assertions.assertEquals("secret-key", fetcher.seenHeaders.single()["x-api-key"])
+    }
+
+    @Test
+    fun rejectsAPageSizeAboveTheDocumentedMaximum() {
+        assertThrows<IllegalArgumentException> {
+            CurseForgeCandidateSource("key", CannedSearch(emptyMap()), pageSize = CurseForgeCandidateSource.MAX_PAGE_SIZE + 1)
+        }
+    }
+
+    /**
+     * A page the API returned out of download-order is still passed through unchanged (the warning is
+     * advisory — `GrindPool` re-sorts by popularity, so nothing is dropped or reordered here).
+     */
+    @Test
+    fun anOutOfOrderPageIsStillReturnedIntact() {
+        val fetcher = CannedSearch(mapOf(0 to searchJson(Triple("low", 1L, "u/low"), Triple("high", 999L, "u/high"))))
+        val candidates = CurseForgeCandidateSource("key", fetcher).candidates(limit = 2)
+
+        Assertions.assertEquals(listOf("low", "high"), candidates.map { it.slug })
+        Assertions.assertEquals(listOf(1L, 999L), candidates.map { it.popularity })
     }
 
     @Test
