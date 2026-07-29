@@ -152,12 +152,12 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 
 | Module         | Tests         | Notes                                                                                |
 |----------------|---------------|--------------------------------------------------------------------------------------|
-| api            | 163 (from 75) | Phase 1 **complete**; + `MinecraftMetaTest` characterizing `requiredJavaVersion`      |
+| api            | 228 (1 skip)  | Phase 1 **complete**; + `MinecraftMetaTest` (`requiredJavaVersion`) and `ScriptTemplateContentTest` (non-gated guard for the shipped fish templates; its `fish -n` case skips where fish is absent). *Count measured 2026-07-29 — the previous "163" here was stale, not a regression.* |
 | clientside     | 53            | Extracted from `-app`; `BootVerifier` split + `packPostProcessor` hook; selection (MC-support gate) + setup-abort classification pinned |
 | app            | 71            | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay             |
 | plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |
 | web-frontend   | 23 (from 0)   | Phase 4a–4e done: Vitest, `$q` decoupling, **full TS migration**, component coverage  |
-| grinder        | 56 (+2 IT)    | Core loop **e2e-verified on current MC** (26.2/Quilt boots offline on JDK 25); **continuous fire-and-forget** with stale re-verification; Modrinth + CurseForge sources; **script-template matrix IT** (bash/fish/pwsh — caught + fixed a real `.fish` bug); container/loader/report/source subpackages; MC selection bounded to image-supported Java |
+| grinder        | 60 (3 gated)  | Core loop **e2e-verified on current MC** (26.2/Quilt boots offline on JDK 25); **continuous fire-and-forget** with stale re-verification; Modrinth + CurseForge sources; **script-template matrix IT** (bash/fish/pwsh — caught + fixed a real `.fish` bug); container/loader/report/source subpackages; MC selection bounded to image-supported Java. 57 run + 3 daemon-gated (2 engine IT, 1 template matrix) |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.

@@ -454,3 +454,32 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   skips. Rebuilt + smoke-tested: all four JDKs resolve (`25.0.3` LTS), `$JAVA` defaults to 21, non-root
   uid 1000, tooling intact; image ~2.08 GB (was ~1.6 GB). New test `bundlingTheRequiredJavaMakesTheVersionSupported`
   pins 26.2→Java 25 now booting. grinder 45/45 unit green (+2 gated IT).
+
+- **Audit remediation on `claude-grinder-followups` (2026-07-29):** `/audit` over the 7 follow-up commits
+  reported 0 HIGH / 4 MEDIUM / 5 LOW; all fixed or closed with evidence.
+  **M1** — `VerdictStore.kt` carried a literal **NUL byte** (`"${slug}\x00${loader}"` instead of a space),
+  which made git store a Kotlin source as **binary**: no textual diffs, useless blame, textually
+  unresolvable merges — and it left `InMemoryVerdictStore` keying by NUL while `JsonVerdictStore.keyOf`
+  used a space. A repo-wide byte scan found it was the *only* affected tracked source. Replaced with a
+  space; the committed blob is now text and forward diffs render normally (verified).
+  **M2** — the CurseForge search contract was unverified magic numbers. Verified against CF's REST docs
+  (`pageSize` max 50, `index + pageSize <= 10000`, `sortOrder`, `downloadCount`, `links.websiteUrl`,
+  `x-api-key`); the docs render `ModsSearchSortField` *without names*, so `sortField=6` = TotalDownloads
+  was corroborated against PrismLauncher's `FlameAPI` sort table (the original assumption was right).
+  Named the constants with their sources, added `warnIfNotDescending` so an unsorted page is logged rather
+  than silently changing which projects get fetched, and documented that ordering never depended on the
+  API (`GrindPool` re-sorts by popularity). New tests pin the request contract + the pageSize guard.
+  **M3** — the fish `--no-empty` fix was only covered by the daemon-gated matrix IT, so it could regress
+  silently in a *published* resource. Added `-api`'s `ScriptTemplateContentTest`: pins the construct at
+  source level (**verified to fail when the bug is reintroduced**) and runs `fish -n` over both fish
+  templates when a fish binary exists, skipping otherwise.
+  **M4** — suspected sibling bug in `cleanServerFiles`' comma split **investigated and closed as a
+  non-issue**: bash's `IFS="," read -ra` keeps empty fields too, and both shells hand the empty token to
+  `find -name ""`, which matches nothing. Confirmed empirically in the container (both shells: 3 fields,
+  deleted exactly the target, keeper untouched). Left unchanged deliberately and documented.
+  **LOW** — one `PACK_MOUNT` const instead of three; all `!!` removed from touched files (the IT now
+  resolves each cell's loader version once into a map that doubles as the validity filter);
+  the IT's process-wide `ApiProperties` mutation is scoped and restored in a `finally`.
+  Suites after remediation: **api 228 (1 skip), clientside 53, grinder 60 (3 daemon-gated)**, all green.
+  Not fixed (history-only): the audit's L1/L2 — a refactor mixed into `913e6462f` and a fix landing with
+  its first test in `14c319e4b` — remediable only by rewriting history; left for Griefed to decide.
