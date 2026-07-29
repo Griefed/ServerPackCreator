@@ -26,9 +26,10 @@ base package's orchestration, only its domain models).
 - **`grinder.report`** — verdict persistence + web/CSV output: `VerdictStore` (+ `InMemoryVerdictStore`),
   `JsonVerdictStore`, `VerdictCsvExporter`, `VerdictReportRenderer`, `ReportServer`.
 - **`grinder.source`** — candidate discovery **and the crawl position**: the `CandidateSource` interface
-  (offset-based `page(offset, limit)` → `CandidatePage`) + `ModrinthCandidateSource` /
-  `CurseForgeCandidateSource`, plus `CatalogCrawler` (hands out the next slice per pass) and `CursorStore` /
-  `InMemoryCursorStore` / `JsonCursorStore` (`CatalogCursor` = offset + completed sweeps, persisted).
+  (`page(offset, limit, partition)` → `CandidatePage`) + `ModrinthCandidateSource` /
+  `CurseForgeCandidateSource` (+ `CurseForgePartition` / `CurseForgePartitions`, its partitioned-crawl plan),
+  plus `CatalogCrawler` (hands out the next slice per pass) and `CursorStore` / `InMemoryCursorStore` /
+  `JsonCursorStore` (`CatalogCursor` = offset + completed sweeps + the source's opaque partition token).
 
 ## Current state — the boot seam (container ServerRunner)
 
@@ -74,24 +75,45 @@ containers:
   **no Spring, no new dependency**. *Deliberately standalone:* the report is self-contained rather than
   rendered through the app's Quasar frontend, because the grinder must not depend on `-app` (that would
   drag in Spring/Mongo/Swing and break its standalone nature).
-- **Candidate sources** (`CandidateSource` — `platform` + `page(offset, limit): CandidatePage`,
-  most-downloaded first): `ModrinthCandidateSource` (keyless Modrinth search) and
-  `CurseForgeCandidateSource` (CF `/mods/search` sorted by `sortField=6` TotalDownloads, `x-api-key`,
-  `index`/`pageSize≤50` pagination capped at `index<10000`; project link = `links.websiteUrl`). Both
-  paginate behind the clientside `HttpFetcher` seam (unit-tested with canned JSON). `GrinderApplication`
-  wires Modrinth always and CurseForge **only when `CURSEFORGE_API_KEY` is set**; `GrindPool` re-sorts
-  the union by popularity so the platforms interleave. Store dedup is by `slug`, so a mod on both
-  platforms is treated as one project (accepted for now).
+- **Candidate sources** (`CandidateSource` — `platform` + `page(offset, limit, partition): CandidatePage`,
+  most-downloaded first): `ModrinthCandidateSource` (keyless Modrinth search, one offset sequence, ignores
+  `partition`) and `CurseForgeCandidateSource` (CF `/mods/search` sorted by `sortField=6` TotalDownloads,
+  `x-api-key`, `index`/`pageSize≤50`, `index+pageSize≤10000`; project link = `links.websiteUrl`; **crawled in
+  partitions**, see below). Both paginate behind the clientside `HttpFetcher` seam (unit-tested with canned
+  JSON). `GrinderApplication` wires Modrinth always and CurseForge **only when `CURSEFORGE_API_KEY` is set**;
+  `GrindPool` re-sorts the union by popularity so the platforms interleave. Store dedup is by `slug`, so a mod
+  on both platforms is treated as one project (accepted for now).
+- **CurseForge partitioned crawl** (`CurseForgePartitions`, pure + unit-tested — the *only* place that decides
+  what CF gets crawled): one query can never expose more than 10 000 mods (`index+pageSize` cap), so a sweep
+  walks a **sequence** of bounded queries: (1) the unfiltered catalog, (2) each game version newest-first from
+  `/games/{gameId}/versions`, (3) a version whose `pagination.totalCount` exceeds the cap re-crawled per
+  modloader — *this* is what reaches past 10 000 — (4) a loader slice still over the cap also crawled
+  `sortOrder=asc` (bottom 10 000), so ≤20 000 per slice is fully covered. Splitting only where a count demands
+  it keeps a sweep at ~1 request per version, not per version×loader; `totalCount` rides along on every
+  response, so sizing is free (the lone probe case is a slice resuming exactly at the cap). All six documented
+  loaders are crawled incl. legacy Cauldron/LiteLoader — one request each beats making their mods unreachable.
+  **Version list refreshes at sweep start** (`partition == null`), so versions released mid-run get picked up;
+  a failed fetch degrades to the unfiltered top 10 000 rather than crawling nothing.
+  **Residual gaps (logged with counts, not hidden):** a single (version, loader) slice >20 000 loses its middle,
+  and a mod with no loader tag is only reachable while its version fits under the cap → the remedy is a third
+  axis (`categoryId`). **Landmine:** `warnIfMisordered` must follow the partition's direction — an ascending
+  slice is *supposed* to come back least-downloaded first, so the old descending-only check would have cried
+  wolf on every bottom-up slice.
   **`CandidatePage.endOfCatalog` is load-bearing, don't collapse it:** it is `true` only when the platform
-  genuinely ran out (or CF hit its index cap), never on a failed request — the crawler wraps to offset 0 on
-  it, so treating a transient 503 as "the end" would silently reset a deep crawl to the popular head.
+  genuinely ran out — for a partitioned source, when the *last* partition ran out — never on a failed request
+  or a failed size probe. The crawler wraps to the start of the plan on it, so treating a transient 503 as
+  "the end" would silently reset a deep crawl to the popular head.
+  **The partition token is opaque outside its source.** `CatalogCursor.partition` / `CandidatePage.nextPartition`
+  are carried and persisted verbatim by the crawler; only `CurseForgeCandidateSource` parses them
+  (`CurseForgePartition.parse`, which falls back to the start of the sweep for anything unreadable, so an old
+  or hand-edited `cursors.json` can't crash the daemon). Don't teach the crawler what a partition means.
 - **Catalog crawl (the coverage mechanism)**: `CatalogCrawler.nextBatch()` resumes each source at its
   persisted `CatalogCursor`, advances it by what was actually handed out, and on `endOfCatalog` wraps to the
   top and counts a sweep (the verdict TTL then decides what the new sweep re-grinds). A failed page keeps its
   position (retried next pass); a *throwing* source is skipped, not fatal. A position already past the end
-  wraps **and** takes the head slice in the same pass — guarded by `cursor.offset > 0` so an empty catalog
-  can't spin. `JsonCursorStore` persists offset+sweeps per platform (temp-then-atomic-move, corrupt → start
-  of catalog) — **this file is the difference between eventual full coverage and re-checking the top N
+  wraps **and** takes the head slice in the same pass — guarded by `cursor.offset > 0 || partition != null` so
+  an empty catalog can't spin. `JsonCursorStore` persists offset+sweeps+partition per platform
+  (temp-then-atomic-move, corrupt → start of catalog) — **this file is the difference between eventual full coverage and re-checking the top N
   forever**; deleting it costs one re-sweep (fresh verdicts are skipped), not correctness.
 - **Pacing** (`GrindPacing.pauseAfterPass`, pure + unit-tested): work found → no pause; nothing due but
   catalog remains → short `SPC_GRINDER_SCAN_DELAY`; sweep completed with nothing due → `SPC_GRINDER_INTERVAL`.
@@ -199,13 +221,24 @@ Spike workspace (not committed): `~/spc-grinder-spike/{configs,packs,baselines}`
 - `ModrinthCandidateSourceTest` / `CurseForgeCandidateSourceTest` (canned search JSON via a fake
   `HttpFetcher`): download-order preserved, one slice spanning several API pages, the slice starting at the
   requested offset, short/empty page ⇒ `endOfCatalog`, **failed page ⇒ NOT `endOfCatalog`**, limit-0 fetches
-  nothing; CF additionally: the documented request contract, `websiteUrl` fallback, and the index cap
-  (at-cap ⇒ `endOfCatalog` without sending a request the API would reject; a straddling slice clamped).
+  nothing; CF additionally: the documented request contract and the `websiteUrl` fallback (its partition
+  behaviour is listed below).
 - `CatalogCrawlerTest` (fake catalog of N synthetic projects): consecutive batches walk forward, wrap +
   sweep-count at the end, resume from a persisted position, failed request keeps its position and is retried,
   sources crawled independently and unioned, past-the-end wrap fetches the head in the same pass, empty
-  catalog requested only once, throwing source skipped. `CursorStoreTest`: unknown source ⇒ start, per-source
-  positions, JSON survives reopen, replaces rather than appends, creates file+parents, corrupt ⇒ start.
+  catalog requested only once, throwing source skipped, **partition token replayed verbatim** and cleared on a
+  completed sweep. `CursorStoreTest`: unknown source ⇒ start, per-source positions, JSON survives reopen,
+  replaces rather than appends, creates file+parents, corrupt ⇒ start, partition token round-trips, and a
+  pre-partition `cursors.json` (no `partition` key) still loads.
+- `CurseForgePartitionTest` (pure, no HTTP — **the CF coverage spec**): sweep opens unfiltered, hands over to
+  the newest version, under-cap version skips the loader split, over-cap version splits by loader, all six
+  loaders walked in order, over-cap loader slice gets its ascending twin, ascending always moves on, last
+  loader/version ends the catalog, empty version list ends after the unfiltered slice, a version that vanished
+  falls forward, key round-trip + unreadable key ⇒ start of sweep, version ordering numeric-descending with
+  unparsable last. Partitioned-source behaviour in `CurseForgeCandidateSourceTest`: which filters each slice
+  queries, crossing a partition boundary mid-slice (offset resets relative to the new partition), version list
+  refreshed at sweep start only, cap → loader split via `totalCount` (incl. the single-item probe), failed
+  probe keeps the position, and an unavailable version list degrading to the unfiltered top 10 000.
   `GrindPacingTest`: the three pause cases + work outranking a completed sweep.
 - **`CatalogCrawlLiveIT`** (gated `GRINDER_LIVE_IT=1`, no containers, a few search calls) pins the *platform*
   assumptions no fake can: consecutive live batches return **different** projects, a fresh crawler over the
@@ -408,11 +441,14 @@ Remaining:
    contract is docs-verified and defended by `warnIfNotDescending`, which is not the same as observed.
 2. **Store dedup is slug+platform, not project-identity** — good enough today; a mod that changes slug on a
    platform would be re-ground as a new project.
-3. **CurseForge coverage is capped at its 10 000 most-downloaded mods** — `/mods/search` refuses
-   `index >= 10000`, so a sweep covers those and wraps (logged by `logIndexCapReached`, pinned by
-   `theSearchIndexCapCountsAsTheEndOfTheCatalog`). The crawl cursor cannot fix this: reaching the deeper
-   catalog needs the search **partitioned** into sub-10 000 slices (e.g. `gameVersion` × `modLoaderType`, or
-   `categoryId`) with the results unioned — a separate feature, and one that can't be verified without a key
-   (see 1). Modrinth has no equivalent wall: offset is usable to 99 999 (measured) vs. ~71 000 mod projects
-   today, so the whole catalog is reachable — but **if Modrinth ever exceeds 100 000 mods the tail silently
-   looks like the end of the catalog** and the crawl would wrap early.
+3. **CurseForge partitioning is implemented but never observed live** (same root cause as 1: no key). The
+   traversal is pinned by pure unit tests and canned JSON against the published contract; what cannot be
+   checked offline is whether CF's `gameVersion` vocabulary, `totalCount` and loader filters behave as
+   documented. First run with a key: confirm the "crawl covers N game version(s)" log line, and watch for
+   `not sorted by` / `holds N mods but only` warnings.
+4. **Residual CF gaps by design** — a (version, loader) slice >20 000 mods loses its middle; a mod with no
+   loader tag is unreachable beyond its version's cap. Both are logged with counts. Fix is a third axis
+   (`categoryId`), deferred until a real run shows it matters.
+5. **Modrinth's offset ceiling is 99 999** (measured) vs. ~71 000 mod projects today, so the whole catalog is
+   reachable — but **if it ever exceeds 100 000 the tail silently looks like the end of the catalog** and the
+   crawl would wrap early.

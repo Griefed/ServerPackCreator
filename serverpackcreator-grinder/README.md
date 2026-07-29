@@ -83,11 +83,25 @@ at the default 25 that is ~2 850 passes for one sweep — plan on raising the ba
 you want a full sweep in weeks rather than months, and give it a `SPC_GRINDER_REVERIFY_TTL_DAYS` longer than
 a sweep takes (otherwise verdicts go stale faster than the crawl advances and it never reaches the tail).
 
-**CurseForge coverage is capped at 10 000 projects.** Its `/mods/search` refuses an `index` beyond 10 000, so
-a sweep covers the 10 000 most-downloaded CurseForge mods and then restarts — however long you leave it
-running. Reaching the rest needs the search partitioned into sub-10 000 slices (by game version, loader or
-category) and the results unioned; that is not implemented yet. Modrinth has no such wall (its offset is
-usable to 99 999, comfortably past today's catalog).
+**CurseForge is crawled in partitions**, because its `/mods/search` refuses an `index` beyond 10 000 — one
+query can only ever show you the 10 000 most-downloaded mods. So a sweep walks a sequence of bounded queries:
+the unfiltered catalog first, then every game version newest-first, splitting a version by modloader when the
+API reports it holds more than 10 000, and crawling such a slice from both ends (`sortOrder` desc *and* asc)
+when even that overflows. A CurseForge sweep is therefore much longer than a Modrinth one — roughly one
+request per game version, plus paging — and mods supporting many versions turn up in several partitions,
+which costs nothing but a store lookup because fresh verdicts are skipped.
+
+Two residual gaps are **logged with a count** rather than left to look like completeness: a single
+(version, loader) slice holding more than 20 000 mods loses its middle, and a mod tagged with no modloader at
+all is only reachable while its version fits under 10 000. If either shows up in your logs, the fix is a third
+partition axis (`categoryId`).
+
+> **Not yet observed against the live API.** This project has never had a `CURSEFORGE_API_KEY`, so the whole
+> CurseForge crawl — the request contract and the partition traversal — is pinned against the published REST
+> docs and canned JSON, not against real responses. If you run it with a key, check the log line reporting how
+> many game versions the crawl covers, and watch for `not sorted by` or `holds N mods but only` warnings.
+
+Modrinth needs no partitioning: its offset is usable to 99 999, comfortably past today's ~71 000 mod projects.
 
 For a real deployment, build a start script instead of using Gradle:
 
@@ -143,7 +157,8 @@ learned, e.g. the loader has no build for that Minecraft version, so the mod was
 
 The store is plain JSON (`SPC_GRINDER_STORE`), keyed by platform + slug + loader — the same slug on
 Modrinth and CurseForge stays two separate projects. How far the crawl has got is in `SPC_GRINDER_CURSORS`:
-one entry per platform with the next `offset` and the number of completed `sweeps` — read it to tell
+one entry per platform with the next `offset`, the number of completed `sweeps`, and — for CurseForge — the
+`partition` being walked (`gameVersion|modLoaderType|direction`, `*` meaning "no filter"). Read it to tell
 "still on the first pass over this platform" from "covered it, now keeping it current".
 
 ---
@@ -186,6 +201,8 @@ Give `TimeoutStopSec` room: on stop the grinder removes in-flight containers bef
 | Nothing gets ground on a second run      | Working as intended: verdicts are still fresh. Lower `SPC_GRINDER_REVERIFY_TTL_DAYS` or delete the store                      |
 | Passes run but verify nothing for a while | Also expected: the crawl is scanning past projects whose verdicts are fresh, one batch per `SPC_GRINDER_SCAN_DELAY`          |
 | It re-grinds popular mods, never the tail | The crawl position was lost (deleted/unwritable `SPC_GRINDER_CURSORS`) or the TTL is shorter than a sweep takes — raise it    |
+| `game-version list unavailable`          | CurseForge's `/games/432/versions` failed, so that sweep covers only the unfiltered top 10 000. Check the key and connectivity |
+| `holds N mods but only 20000 are reachable` | One (version, loader) slice is too big to page through; its middle is skipped. Needs a third partition axis (`categoryId`)   |
 | A container outlived the process         | Should not happen — shutdown drains them. If it does, `docker ps` and remove it, and please report it                         |
 
 ---

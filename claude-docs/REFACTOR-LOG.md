@@ -584,3 +584,35 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   hook and the join were both already there), reproduced as a failing test first, then fixed: `grindAll`
   catches it, requests stop, restores the interrupt flag and returns the count so far. Re-verified live —
   clean shutdown, no leaked containers.
+
+- **CurseForge partitioned crawl on `claude-grinder-catalog-cursor` (2026-07-29):** closed the coverage hole the
+  cursor work had left explicit — CF's `/mods/search` refuses `index + pageSize > 10 000`, so *one* query can
+  never expose more than the 10 000 most-downloaded mods no matter how long the service runs. **Researched
+  before designing** (no API key here, so the contract had to come from documentation): `docs.curseforge.com`
+  confirmed the `index + pageSize ≤ 10 000` cap, `pageSize ≤ 50`, the `gameVersion` / `modLoaderType` /
+  `categoryId` filters, `sortOrder` asc|desc, `pagination.totalCount`, and the
+  `/games/{gameId}/versions` → `data: [{type, versions[]}]` shape; PrismLauncher's Flame integration corroborated
+  the namelessly-documented `ModLoaderType` enum (Forge 1, Cauldron 2, LiteLoader 3, Fabric 4, Quilt 5,
+  NeoForge 6) — the same source already cited for `sortField=6`.
+  **Design:** the catalog is walked as a *sequence* of bounded queries — unfiltered catalog first (its top
+  10 000, i.e. exactly what the crawl did before), then every game version newest-first, a version whose
+  `totalCount` exceeds the cap re-crawled per modloader (the part that actually reaches past 10 000), and a
+  loader slice still over the cap crawled ascending too (bottom 10 000 → ≤20 000 per slice fully covered).
+  Splitting only where a *reported* count demands it keeps a sweep at ~1 request per version instead of per
+  version×loader, and `totalCount` rides along on every response so sizing costs nothing (the one probe case is a
+  slice resuming exactly at the cap). All six loaders are crawled, legacy ones included — one request each versus
+  making their mods unreachable.
+  **Plumbing:** traversal state travels as an *opaque, source-defined* token (`CatalogCursor.partition` /
+  `CandidatePage.nextPartition`) that the crawler persists and replays verbatim, so the crawler never learns what
+  a game version is and a partitioned crawl is restart-safe. `CurseForgePartition.parse` falls back to the start
+  of the sweep for any unreadable token, and a `cursors.json` from before this change (no `partition` key) still
+  loads — both pinned by tests.
+  **Kept honest rather than optimistic:** the version list refresh happens at sweep start and *degrades* to the
+  unfiltered top 10 000 when unavailable; a failed request or probe keeps its position; and the two residual gaps
+  (a >20 000 (version, loader) slice losing its middle, a loader-less mod beyond its version's cap) are logged
+  with counts. Caught while implementing: the existing `warnIfNotDescending` would have cried wolf on every
+  ascending slice — it now follows the partition's direction (`warnIfMisordered`).
+  **Verification status — explicitly incomplete:** the traversal is a pure function with 14 unit tests and the
+  source has 18 canned-JSON tests, but **nothing here has ever touched the real CurseForge API** (no key, the
+  module's oldest open item). The README and module CLAUDE.md say so, and name the log lines to watch on a first
+  keyed run. Suite: grinder 120 run + 8 gated, green; the Modrinth live IT still passes.
