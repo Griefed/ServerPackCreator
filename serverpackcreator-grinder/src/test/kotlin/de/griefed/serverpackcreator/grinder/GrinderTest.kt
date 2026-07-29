@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger
 internal class GrinderTest {
 
     private fun candidate(slug: String, popularity: Long = 1) =
-        GrindCandidate("https://modrinth.com/mod/$slug", slug, popularity)
+        GrindCandidate("https://modrinth.com/mod/$slug", slug, popularity, ModPlatforms.MODRINTH)
 
     @Test
     fun recordsOneVerdictPerLoaderFromTheReport() {
@@ -74,6 +74,33 @@ internal class GrinderTest {
 
         Assertions.assertEquals(0, calls.get(), "a verdict younger than the TTL must not be re-verified")
         Assertions.assertEquals(1, store.all().size)
+    }
+
+    /**
+     * The freshness check is per-platform: a fresh Modrinth verdict for `jei` must not stop CurseForge's
+     * `jei` — a different project that happens to share a slug — from being ground.
+     */
+    @Test
+    fun aFreshVerdictOnOnePlatformDoesNotSkipTheSameSlugOnAnother() {
+        val now = Instant.parse("2026-06-01T00:00:00Z")
+        val store = InMemoryVerdictStore()
+        store.record(grindVerdict("jei", "Forge", platform = ModPlatforms.MODRINTH, verifiedAt = now.minus(Duration.ofDays(1))))
+        val ground = Collections.synchronizedList(mutableListOf<String>())
+        val verifier = CandidateVerifier { c ->
+            ground.add(c.platform)
+            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "jei-", Confidence.HIGH)), platform = c.platform)
+        }
+        val grinder = Grinder(verifier, store, reverifyTtl = Duration.ofDays(30), clock = { now })
+
+        grinder.grind(GrindCandidate("https://modrinth.com/mod/jei", "jei", 1, ModPlatforms.MODRINTH))
+        grinder.grind(GrindCandidate("https://www.curseforge.com/minecraft/mc-mods/jei", "jei", 1, ModPlatforms.CURSEFORGE))
+
+        Assertions.assertEquals(listOf(ModPlatforms.CURSEFORGE), ground, "only the CurseForge project was due")
+        Assertions.assertEquals(
+            setOf(ModPlatforms.MODRINTH, ModPlatforms.CURSEFORGE),
+            store.all().map { it.platform }.toSet(),
+            "both platforms' jei coexist in the store"
+        )
     }
 
     @Test

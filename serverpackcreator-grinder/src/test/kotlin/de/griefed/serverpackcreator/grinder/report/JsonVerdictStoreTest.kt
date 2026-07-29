@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.grinder.report
 
 import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.grinder.ModPlatforms.MODRINTH
 import de.griefed.serverpackcreator.grinder.grindVerdict
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -43,7 +44,7 @@ internal class JsonVerdictStoreTest {
 
         val reopened = JsonVerdictStore(file)
         Assertions.assertEquals(2, reopened.all().size)
-        Assertions.assertTrue(reopened.hasVerdictFor("jei"))
+        Assertions.assertTrue(reopened.hasVerdictFor(MODRINTH, "jei"))
         Assertions.assertEquals(Confidence.HIGH, reopened.all().first { it.slug == "jei" }.confidence)
     }
 
@@ -79,7 +80,7 @@ internal class JsonVerdictStoreTest {
             record(grindVerdict("jei", "NeoForge", verifiedAt = when2))
         }
 
-        Assertions.assertEquals(when2, JsonVerdictStore(file).newestVerification("jei"))
+        Assertions.assertEquals(when2, JsonVerdictStore(file).newestVerification(MODRINTH, "jei"))
     }
 
     @Test

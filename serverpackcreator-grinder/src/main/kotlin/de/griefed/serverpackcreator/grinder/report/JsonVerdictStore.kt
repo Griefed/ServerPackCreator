@@ -34,9 +34,11 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * File-backed [VerdictStore] that survives restarts: verdicts are loaded from [file] on construction
  * and re-persisted on every [record], so a multi-day fire-and-forget grind resumes where it left off
- * instead of re-booting everything. Keyed by `slug + loader` like the in-memory store, so a re-verified
- * pair replaces rather than duplicates. A corrupt/unreadable file is logged and treated as empty rather
- * than crashing the service.
+ * instead of re-booting everything. Keyed by [verdictKey] (platform + slug + loader) like the in-memory
+ * store — shared so the two key schemes cannot drift — so a re-verified triple replaces rather than
+ * duplicates, while the same slug on another platform keeps its own row. Existing stores need no
+ * migration: keys are derived from fields every persisted verdict already carries. A corrupt/unreadable
+ * file is logged and treated as empty rather than crashing the service.
  *
  * @param file The JSON document backing the store (its parent directory is created on first write).
  * @author Griefed
@@ -56,15 +58,12 @@ class JsonVerdictStore(private val file: File) : VerdictStore {
 
     @Synchronized
     override fun record(verdict: GrindVerdict) {
-        verdicts[keyOf(verdict.slug, verdict.loader)] = verdict
+        verdicts[verdictKey(verdict.platform, verdict.slug, verdict.loader)] = verdict
         persist()
     }
 
     override fun all(): List<GrindVerdict> = verdicts.values.toList()
 
-    override fun hasVerdictFor(slug: String): Boolean = verdicts.values.any { it.slug == slug }
-
-    private fun keyOf(slug: String, loader: String) = "$slug $loader"
 
     /** Populate from the backing file if it exists; a read failure leaves the store empty (logged). */
     private fun load() {
@@ -72,7 +71,7 @@ class JsonVerdictStore(private val file: File) : VerdictStore {
             return
         }
         runCatching { mapper.readValue<List<GrindVerdict>>(file) }
-            .onSuccess { stored -> stored.forEach { verdicts[keyOf(it.slug, it.loader)] = it } }
+            .onSuccess { stored -> stored.forEach { verdicts[verdictKey(it.platform, it.slug, it.loader)] = it } }
             .onFailure { log.warn("Could not read verdict store ${file.absolutePath}; starting empty: ${it.message}") }
     }
 

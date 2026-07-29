@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import de.griefed.serverpackcreator.clientside.HttpFetcher
 import de.griefed.serverpackcreator.clientside.JdkHttpFetcher
 import de.griefed.serverpackcreator.grinder.GrindCandidate
+import de.griefed.serverpackcreator.grinder.ModPlatforms
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 
 /**
@@ -130,7 +131,8 @@ class CurseForgeCandidateSource(
         return GrindCandidate(
             projectUrl = website ?: "https://www.curseforge.com/minecraft/mc-mods/$slug",
             slug = slug,
-            popularity = node.path("downloadCount").asLong(0)
+            popularity = node.path("downloadCount").asLong(0),
+            platform = ModPlatforms.CURSEFORGE
         )
     }
 

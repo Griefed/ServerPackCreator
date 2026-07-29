@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import de.griefed.serverpackcreator.clientside.HttpFetcher
 import de.griefed.serverpackcreator.clientside.JdkHttpFetcher
 import de.griefed.serverpackcreator.grinder.GrindCandidate
+import de.griefed.serverpackcreator.grinder.ModPlatforms
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -98,7 +99,8 @@ class ModrinthCandidateSource(
         return GrindCandidate(
             projectUrl = "https://modrinth.com/mod/$slug",
             slug = slug,
-            popularity = hit.path("downloads").asLong(0)
+            popularity = hit.path("downloads").asLong(0),
+            platform = ModPlatforms.MODRINTH
         )
     }
 }

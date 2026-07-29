@@ -20,15 +20,18 @@
 package de.griefed.serverpackcreator.grinder.report
 
 import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.grinder.ModPlatforms.CURSEFORGE
+import de.griefed.serverpackcreator.grinder.ModPlatforms.MODRINTH
 import de.griefed.serverpackcreator.grinder.grindVerdict
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.time.Instant
 
 /**
- * Pins the in-memory verdict store: a re-verified `(slug, loader)` replaces rather than duplicates,
- * distinct loaders of one project coexist, [VerdictStore.hasVerdictFor] drives the skip check, and
- * [VerdictStore.newestVerification] returns the freshest timestamp across a project's loaders.
+ * Pins the in-memory verdict store: a re-verified `(platform, slug, loader)` replaces rather than
+ * duplicates, distinct loaders of one project coexist, **the same slug on two platforms stays two
+ * projects**, [VerdictStore.hasVerdictFor] drives the skip check, and [VerdictStore.newestVerification]
+ * returns the freshest timestamp across a project's loaders — both scoped to the platform.
  */
 internal class VerdictStoreTest {
 
@@ -49,16 +52,45 @@ internal class VerdictStoreTest {
         store.record(grindVerdict("sodium", "Quilt"))
 
         Assertions.assertEquals(2, store.all().size)
-        Assertions.assertTrue(store.hasVerdictFor("sodium"))
+        Assertions.assertTrue(store.hasVerdictFor(MODRINTH, "sodium"))
     }
 
     @Test
     fun hasVerdictForIsFalseUntilSomethingIsRecorded() {
         val store = InMemoryVerdictStore()
-        Assertions.assertFalse(store.hasVerdictFor("rubidium"))
+        Assertions.assertFalse(store.hasVerdictFor(MODRINTH, "rubidium"))
         store.record(grindVerdict("rubidium", "Forge"))
-        Assertions.assertTrue(store.hasVerdictFor("rubidium"))
-        Assertions.assertFalse(store.hasVerdictFor("something-else"))
+        Assertions.assertTrue(store.hasVerdictFor(MODRINTH, "rubidium"))
+        Assertions.assertFalse(store.hasVerdictFor(MODRINTH, "something-else"))
+    }
+
+    /**
+     * The dedup identity includes the platform: slugs are not globally unique (`jei` ships on Modrinth
+     * *and* CurseForge), so the same slug+loader on two platforms must be two rows. Before this, one
+     * platform's verdict overwrote the other's and suppressed grinding it at all.
+     */
+    @Test
+    fun theSameSlugOnTwoPlatformsIsTwoProjects() {
+        val store = InMemoryVerdictStore()
+        store.record(grindVerdict("jei", "Forge", platform = MODRINTH, confidence = Confidence.LOW))
+        store.record(grindVerdict("jei", "Forge", platform = CURSEFORGE, confidence = Confidence.HIGH))
+
+        Assertions.assertEquals(2, store.all().size, "one row per platform, not one overwriting the other")
+        Assertions.assertEquals(Confidence.LOW, store.all().single { it.platform == MODRINTH }.confidence)
+        Assertions.assertEquals(Confidence.HIGH, store.all().single { it.platform == CURSEFORGE }.confidence)
+    }
+
+    /** A verdict on one platform must not make the *other* platform's project look already-ground. */
+    @Test
+    fun freshnessAndPresenceAreScopedToThePlatform() {
+        val store = InMemoryVerdictStore()
+        val recorded = Instant.parse("2026-06-01T00:00:00Z")
+        store.record(grindVerdict("jei", "Forge", platform = MODRINTH, verifiedAt = recorded))
+
+        Assertions.assertTrue(store.hasVerdictFor(MODRINTH, "jei"))
+        Assertions.assertFalse(store.hasVerdictFor(CURSEFORGE, "jei"), "CurseForge's jei is still un-ground")
+        Assertions.assertEquals(recorded, store.newestVerification(MODRINTH, "jei"))
+        Assertions.assertNull(store.newestVerification(CURSEFORGE, "jei"), "must not inherit the other platform's timestamp")
     }
 
     @Test
@@ -69,7 +101,7 @@ internal class VerdictStoreTest {
         store.record(grindVerdict("sodium", "Fabric", verifiedAt = older))
         store.record(grindVerdict("sodium", "Quilt", verifiedAt = newer))
 
-        Assertions.assertEquals(newer, store.newestVerification("sodium"))
-        Assertions.assertNull(store.newestVerification("never-ground"))
+        Assertions.assertEquals(newer, store.newestVerification(MODRINTH, "sodium"))
+        Assertions.assertNull(store.newestVerification(MODRINTH, "never-ground"))
     }
 }

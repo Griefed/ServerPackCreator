@@ -26,15 +26,45 @@ import java.time.Instant
 /**
  * A mod queued for verification: the project link to grind plus the [popularity] used to order the
  * queue (most-used mods first, since they are the most likely to land in a modpack). [slug] is the
- * project's stable identifier, used to skip projects already ground.
+ * project's identifier **within its [platform]** — slugs are *not* globally unique (`jei` exists on both
+ * Modrinth and CurseForge), so the pair identifies a project and the store keys on both. [platform] must
+ * match the name the corresponding clientside `ModPlatform` reports (see [ModPlatforms]) or the same
+ * project would be re-ground every pass.
  *
  * @author Griefed
  */
 data class GrindCandidate(
     val projectUrl: String,
     val slug: String,
-    val popularity: Long
+    val popularity: Long,
+    val platform: String
 )
+
+/**
+ * The platform names shared by the candidate sources and the clientside `ModPlatform` implementations.
+ * They must agree: a candidate's [GrindCandidate.platform] is what the store's freshness check looks up,
+ * while the recorded [GrindVerdict.platform] comes from the resolved clientside report. `Grinder` warns
+ * when the two disagree rather than silently re-grinding forever.
+ *
+ * @author Griefed
+ */
+object ModPlatforms {
+    /** As reported by clientside's `ModrinthPlatform`. */
+    const val MODRINTH = "Modrinth"
+
+    /** As reported by clientside's `CurseForgePlatform`. */
+    const val CURSEFORGE = "CurseForge"
+
+    /** Fallback for a hand-passed project URL whose host matches no known platform. */
+    const val UNKNOWN = "Unknown"
+
+    /** Best-effort platform for an arbitrary project [url] — used for URLs passed on the command line. */
+    fun ofUrl(url: String): String = when {
+        url.contains("modrinth.com", ignoreCase = true) -> MODRINTH
+        url.contains("curseforge.com", ignoreCase = true) -> CURSEFORGE
+        else -> UNKNOWN
+    }
+}
 
 /**
  * The accumulated verdict for one `(project, loader)` — one row behind the eventual sortable / CSV

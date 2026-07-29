@@ -79,7 +79,7 @@ object GrinderApplication {
         if (args.isNotEmpty()) {
             // One-shot: grind a fixed set of project URLs (handy for an end-to-end verification), then
             // hold the report open. The re-verify TTL still applies, so re-running skips fresh verdicts.
-            val candidates = args.map { GrindCandidate(it, slugFromUrl(it), 0) }
+            val candidates = args.map { GrindCandidate(it, slugFromUrl(it), 0, ModPlatforms.ofUrl(it)) }
             log.info("One-shot run: grinding ${candidates.size} candidate(s) with $workers worker(s)...")
             GrindPool(grinder, workers).grindAll(candidates)
             log.info("Grind complete: ${store.all().size} verdict(s). Report stays up at http://localhost:${server.port}/ — Ctrl-C to exit.")

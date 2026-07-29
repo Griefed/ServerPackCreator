@@ -49,13 +49,23 @@ class Grinder(
 
     /** Verify [candidate] (unless a fresh verdict exists) and record its per-loader verdicts. */
     fun grind(candidate: GrindCandidate) {
-        val lastVerified = store.newestVerification(candidate.slug)
+        // Freshness is per (platform, slug): the same slug on Modrinth and CurseForge is two projects.
+        val lastVerified = store.newestVerification(candidate.platform, candidate.slug)
         if (lastVerified != null && Duration.between(lastVerified, clock()) < reverifyTtl) {
             return
         }
         val report = runCatching { verifier.verify(candidate) }
             .onFailure { log.warn("Verification failed for ${candidate.projectUrl}: ${it.message}") }
             .getOrNull() ?: return
+        if (report.platform != candidate.platform) {
+            // Recording uses the resolved report's platform, while the skip-check above uses the
+            // candidate's. If a source ever labels a project differently from the platform that resolves
+            // it, the two keys never meet and the project is re-ground every pass — so make it loud.
+            log.warn(
+                "Platform mismatch for ${candidate.projectUrl}: candidate says '${candidate.platform}', " +
+                    "resolved report says '${report.platform}'. It will be re-verified every pass until they agree."
+            )
+        }
         val now = clock()
         for (verdict in report.perLoader) {
             store.record(
