@@ -76,7 +76,14 @@ internal class ScriptTemplateMatrixIT {
     private val minecraftVersions = envList("SPC_GRINDER_TEMPLATE_MC", "1.12.2,1.16.1,1.20.1")
     private val loaders = envList("SPC_GRINDER_TEMPLATE_LOADERS", "Forge,NeoForge,Fabric,Quilt")
     private val shells = envList("SPC_GRINDER_TEMPLATE_SHELLS", "bash,fish")
-    private val workers = env("SPC_GRINDER_TEMPLATE_WORKERS", "3").toInt()
+    /**
+     * Concurrent boots. **Defaults to 1 on purpose.** Each cell boots a real Minecraft server with a 3 GB
+     * container limit, so running several at once starves the host: measured on a dev machine, 3 workers
+     * produced 8 spurious failures (`start.sh: line 144: Killed "$JAVA"` — the JVM SIGKILLed mid
+     * "Preparing level"), and every one of them passed when re-run serially. For a correctness harness a
+     * false FAIL is far worse than a slow pass, so raise this only with headroom to match.
+     */
+    private val workers = env("SPC_GRINDER_TEMPLATE_WORKERS", "1").toInt()
     private val bootTimeout = Duration.ofMinutes(env("SPC_GRINDER_TEMPLATE_TIMEOUT_MINUTES", "20").toLong())
 
     /** The vanilla server's ready-line — the template did its job when this appears. */

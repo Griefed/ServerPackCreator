@@ -293,11 +293,31 @@ PowerShell is covered by **`powerShellTemplatesParse`**, which runs PowerShell's
 regressions these tests exist for. Don't "fix" the matrix by adding a `pwsh` boot cell; `scriptFor`
 rejects it with the reason.
 
-**Matrix coverage actually exercised so far — read before trusting a cell.** Verified:
-`Fabric 1.20.1 [bash]` ✅, `Fabric 1.20.1 [fish]` ✅ (how the fish bug was found *and* its fix confirmed),
-and the `.ps1` parse check ✅. **Not yet run:** every **Forge / NeoForge / Quilt** cell and the older
-Minecraft rows (**1.12.2**, **1.16.1** — the Java 8 path and the pre-ServerStarterJar Forge branch). Run
-the full grid before claiming template parity.
+**Full matrix run (2026-07-29) — `{1.12.2, 1.16.1, 1.20.1} × {Forge, NeoForge, Fabric, Quilt} × {bash, fish}`
++ the `.ps1` parse check. bash ≡ fish in every single cell**, which is what this harness was built to prove:
+
+| Loader | 1.12.2 | 1.16.1 | 1.20.1 |
+|---|---|---|---|
+| Forge | ✅ ✅ | ✅ ✅ | ✅ ✅ |
+| NeoForge | N/A | N/A | ✅ ✅ |
+| Fabric | N/A | ✅ ✅ | ✅ ✅ |
+| Quilt | N/A | ❌ ❌ (real, below) | ✅ ✅ |
+
+(`✅ ✅` = bash, fish. N/A = the loader has no build for that Minecraft — correctly filtered by
+`LoaderVersionResolver`, which is the step-3 gate doing its job. `.ps1` parse ✅.)
+
+**Finding — Quilt cannot install on Minecraft 1.16.1 (all shells).** `Quilt Installer requires Java 17 or
+greater to run.` → `quilt-server-launch.jar not found`. The template runs the Quilt installer with `$JAVA`,
+which for 1.16.1 is **Java 8** (Mojang's declared requirement for that version), but the installer itself
+needs 17+. Reproducible in bash *and* fish, so it is **not** a shell-porting defect — it is a real
+toolchain constraint in the template: the *installer* and the *server* need different JDKs. Fixing it means
+running the Quilt installer under a newer JDK than the server (all three templates) — Griefed's call, not
+done here.
+
+**Landmine — do not raise `SPC_GRINDER_TEMPLATE_WORKERS`.** It defaults to **1**. Each cell boots a real
+Minecraft server capped at 3 GB, so parallel cells starve the host: at 3 workers this run produced **8
+spurious failures** (`start.sh: line 144: Killed "$JAVA"` — SIGKILL mid "Preparing level"), *all* of which
+passed when re-run serially. Judge no cell from a parallel run.
 
 **Continuous mode — verified live (2026-07-29).** With a pre-seeded *fresh* verdict and `interval=40s`:
 two passes ran 40s apart, both skipping the fresh project (no boots), the report server answered
@@ -308,9 +328,11 @@ both sides of the TTL boundary outside the unit tests.
 
 Remaining:
 
-1. **Run the full template matrix** — the Forge/NeoForge/Quilt cells and the older-Minecraft rows above.
-   Machinery is ready; it is a slow, network-heavy manual run.
+1. **Quilt on old Minecraft** — the installer/server JDK split described above (`Quilt Installer requires
+   Java 17`). Affects all three templates; needs a decision on running the installer under a newer JDK.
 2. **`CurseForgeCandidateSource` has never made a real API call** (no `CURSEFORGE_API_KEY` available). Its
    contract is docs-verified and defended by `warnIfNotDescending`, which is not the same as observed.
-3. **Store dedup across platforms** (minor) — verdicts are keyed by `slug`, so the same mod on Modrinth
-   and CurseForge collapses to one project. Fine for now; a platform-qualified key would separate them.
+3. **Graceful shutdown doesn't drain in-flight boots** — `SIGTERM` stops the loop, but a boot already
+   running is abandoned, so `DockerJavaContainerEngine`'s force-remove `finally` never executes and the
+   container leaks (observed once during the continuous-mode verification; removed by hand). A drain-then-
+   exit, or a startup sweep of stale grinder containers, would close it.

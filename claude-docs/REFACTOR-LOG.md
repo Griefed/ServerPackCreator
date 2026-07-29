@@ -483,3 +483,23 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   Suites after remediation: **api 228 (1 skip), clientside 53, grinder 60 (3 daemon-gated)**, all green.
   Not fixed (history-only): the audit's L1/L2 — a refactor mixed into `913e6462f` and a fix landing with
   its first test in `14c319e4b` — remediable only by rewriting history; left for Griefed to decide.
+
+- **Full script-template matrix + per-platform verdict dedup (2026-07-29, branch `claude-grinder-matrix-dedup`):**
+  **(c)** Ran the whole grid `{1.12.2, 1.16.1, 1.20.1} × {Forge, NeoForge, Fabric, Quilt} × {bash, fish}`
+  plus the `.ps1` parse check. **bash ≡ fish in every cell** — the parity this harness exists to prove.
+  N/A cells (NeoForge <1.20, Fabric/Quilt on 1.12.2) were filtered correctly by the step-3
+  `LoaderVersionResolver` gate. Two real outcomes: **(i)** Quilt on **1.16.1** fails in *both* shells —
+  `Quilt Installer requires Java 17 or greater` while 1.16.1 pins `$JAVA` to Java 8 (Mojang's declared
+  requirement), i.e. installer and server need different JDKs; a genuine template/toolchain constraint,
+  left for Griefed. **(ii)** A first pass with 3 workers produced **8 spurious failures**
+  (`start.sh: line 144: Killed "$JAVA"` — container OOM mid "Preparing level"); every one passed on a
+  serial re-run, so `SPC_GRINDER_TEMPLATE_WORKERS` now defaults to **1** with the reason documented — a
+  false FAIL in a correctness harness is worse than a slow pass. Also found: pwsh cannot *boot* `.ps1` on
+  Linux at all (the template calls Windows `CMD /C`), so PowerShell is covered by a parser check instead.
+  **(d)** Verdict dedup moved from `slug + loader` to **`platform + slug + loader`** via a shared
+  `verdictKey()` (both stores, so the schemes can't drift as they once did). Slugs aren't globally unique —
+  `jei` is on Modrinth *and* CurseForge — and the old key meant one platform's verdict overwrote the
+  other's *and* made it look already-ground, so it was never verified. `GrindCandidate` now carries its
+  platform (`ModPlatforms`), `hasVerdictFor`/`newestVerification` are platform-scoped, and `Grinder` warns
+  if a candidate's platform disagrees with the resolved report's (that pair would re-grind forever). No
+  store migration needed. grinder 64/64 green.
