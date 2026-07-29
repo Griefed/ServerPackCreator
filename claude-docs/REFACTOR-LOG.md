@@ -503,3 +503,47 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   platform (`ModPlatforms`), `hasVerdictFor`/`newestVerification` are platform-scoped, and `Grinder` warns
   if a candidate's platform disagrees with the resolved report's (that pair would re-grind forever). No
   store migration needed. grinder 64/64 green.
+
+- **Shutdown drain, Quilt installer JDK, 1.21 line + LegacyFabric (2026-07-29, branch
+  `claude-grinder-drain-quilt-versions`):** three follow-ups, each verified rather than assumed.
+  **Shutdown drain:** `DockerJavaContainerEngine` now tracks its containers and is `AutoCloseable`;
+  `close()` force-removes in-flight ones, since `run`'s `finally` is skipped when the JVM dies mid-boot
+  (a `SIGTERM` had left a Minecraft server running). The hook is registered right after the engine is
+  built so it covers one-shot runs too, and `GrindPool.requestStop()` abandons the queue after the current
+  candidate. Proven on a live daemon ("Removing 1 container(s) abandoned by an interrupted run").
+  **Quilt installer JDK:** Quilt could not install on old Minecraft at all — its installer needs Java 17+
+  while 1.16.1 must run on Java 8. All three templates now run modloader installers via
+  `runInstallerJavaCommand`, honouring an **optional** `JAVA_INSTALLER` from `variables.txt` and falling
+  back to `JAVA`, so existing packs are untouched and no new placeholder plumbing was required; the
+  misleading "check your internet connection" message now names the real cause. The grinder supplies it
+  from `ImageJavaRuntimes.installerJavaPath()` (newest bundled ≥17). Quilt 1.16.1 went from failing in both
+  shells to reaching the ready-line in both. Gotcha found while fixing: each boot path writes its own
+  variables, and the matrix IT had its own `prepareUnattended` call that also needed the parameter.
+  **Coverage:** matrix defaults grew to `{1.12.2, 1.16.1, 1.20.1, 1.21.1, 1.21.11}` ×
+  `{Forge, NeoForge, Fabric, Quilt, LegacyFabric}` — LegacyFabric's first tests anywhere. Ran the new
+  cells: **all green**, incl. LegacyFabric 1.12.2 and the whole 1.21.1/1.21.11 rows for the four modern
+  loaders, with N/A correctly filtered (LegacyFabric ≥1.14, Fabric/Quilt pre-intermediary). Unit coverage
+  added for the 1.21 line (two-digit patch deliberately) and LegacyFabric's era in
+  `LoaderVersionResolverTest`/`ImageJavaRuntimesTest`. Suites: api 229, clientside 56, grinder 68 — green.
+
+- **Audit remediation on `claude-grinder-drain-quilt-versions` (2026-07-29):** `/audit` over the branch
+  reported 0 HIGH / 4 MEDIUM / 5 LOW; all closed.
+  **M1** — a scripted docs edit had rewritten *all* of `CLAUDE.md` (CRLF→LF, 179 lines changed where only
+  **3** were content, per `git diff --ignore-all-space`). Original CRLF restored, so the docs diff is the
+  three table rows it claims to be; the history was rebuilt (below) so the churn never lands.
+  **M2** — the `JAVA_INSTALLER`-*unset* fallback, which is the branch every real pack takes, was executed by
+  nothing: all three boot paths passed the override unconditionally. Now
+  `ImageJavaRuntimes.installerJavaPathFor(mc)` supplies it **only** when the server's Java is older than the
+  installer minimum, so modern-Minecraft cells run the fallback for real (verified: Quilt 1.20.1 boots with
+  no `JAVA_INSTALLER`; Quilt 1.16.1 still boots with it).
+  **M3** — the `.ps1` change shipped parse-verified only. Added a test that extracts
+  `RunInstallerJavaCommand` from the shipped template via the PowerShell **AST**, stubs `CMD`, and executes
+  both branches on Linux pwsh (`unset → /server/java8`, `set → /installer/java21`) — real execution of
+  template code whose production path needs Windows.
+  **M4** — the Quilt commit had bundled api templates + a new grinder API + a signature change + call sites
+  + test infra. The branch's last three commits were rebuilt into concern-separated commits (api template
+  fix · grinder installer-JDK · seam cleanup · coverage · docs), each compiled in turn.
+  **LOWs** — container cleanup moved onto the `ContainerEngine` seam (`AutoCloseable` with a no-op default)
+  so the seam's own "always removes it" contract is enforceable and any engine can be drained (L1); two
+  shutdown hooks collapsed into one with defined ordering (L4); a stray cross-subject assertion dropped
+  (L2); the drain IT tidied — `DockerClient` imported, no shadowed `engine` (L3). Idioms were already clean.

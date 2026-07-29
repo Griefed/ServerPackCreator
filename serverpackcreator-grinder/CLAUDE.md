@@ -293,26 +293,41 @@ PowerShell is covered by **`powerShellTemplatesParse`**, which runs PowerShell's
 regressions these tests exist for. Don't "fix" the matrix by adding a `pwsh` boot cell; `scriptFor`
 rejects it with the reason.
 
-**Full matrix run (2026-07-29) — `{1.12.2, 1.16.1, 1.20.1} × {Forge, NeoForge, Fabric, Quilt} × {bash, fish}`
-+ the `.ps1` parse check. bash ≡ fish in every single cell**, which is what this harness was built to prove:
+**Full matrix (2026-07-29) — 5 Minecraft versions × 5 loaders × {bash, fish}, plus the `.ps1` parse check.
+bash ≡ fish in every single cell, and every runnable cell is green:**
 
-| Loader | 1.12.2 | 1.16.1 | 1.20.1 |
-|---|---|---|---|
-| Forge | ✅ ✅ | ✅ ✅ | ✅ ✅ |
-| NeoForge | N/A | N/A | ✅ ✅ |
-| Fabric | N/A | ✅ ✅ | ✅ ✅ |
-| Quilt | N/A | ❌ ❌ (real, below) | ✅ ✅ |
+| Loader | 1.12.2 | 1.16.1 | 1.20.1 | 1.21.1 | 1.21.11 |
+|---|---|---|---|---|---|
+| Forge | ✅ ✅ | ✅ ✅ | ✅ ✅ | ✅ ✅ | ✅ ✅ |
+| NeoForge | N/A | N/A | ✅ ✅ | ✅ ✅ | ✅ ✅ |
+| Fabric | N/A | ✅ ✅ | ✅ ✅ | ✅ ✅ | ✅ ✅ |
+| Quilt | N/A | ✅ ✅ *(after the JAVA_INSTALLER fix)* | ✅ ✅ | ✅ ✅ | ✅ ✅ |
+| LegacyFabric | ✅ ✅ | N/A | N/A | N/A | N/A |
 
-(`✅ ✅` = bash, fish. N/A = the loader has no build for that Minecraft — correctly filtered by
-`LoaderVersionResolver`, which is the step-3 gate doing its job. `.ps1` parse ✅.)
+(`✅ ✅` = bash, fish. N/A = the loader genuinely has no build for that Minecraft — `LoaderVersionResolver`'s
+support gate filtering correctly, incl. LegacyFabric's pre-1.14 era and Fabric/Quilt's need for an
+intermediary. `.ps1` parse ✅.)
 
-**Finding — Quilt cannot install on Minecraft 1.16.1 (all shells).** `Quilt Installer requires Java 17 or
-greater to run.` → `quilt-server-launch.jar not found`. The template runs the Quilt installer with `$JAVA`,
-which for 1.16.1 is **Java 8** (Mojang's declared requirement for that version), but the installer itself
-needs 17+. Reproducible in bash *and* fish, so it is **not** a shell-porting defect — it is a real
-toolchain constraint in the template: the *installer* and the *server* need different JDKs. Fixing it means
-running the Quilt installer under a newer JDK than the server (all three templates) — Griefed's call, not
-done here.
+**Fixed — Quilt could not install on old Minecraft (found here, in all shells).** `Quilt Installer requires
+Java 17 or greater to run.` → `quilt-server-launch.jar not found`, because the templates ran *every*
+installer with `$JAVA`, which for 1.16.1 is Java 8 (Mojang's declared requirement) — one JDK cannot satisfy
+both installer and server. All three templates now run modloader installers through
+`runInstallerJavaCommand` / `RunInstallerJavaCommand`, which uses the **optional** `JAVA_INSTALLER` from
+`variables.txt` and falls back to `JAVA` when unset (so existing packs are unaffected, and no new
+placeholder plumbing was needed — the templates already parse `variables.txt`).
+
+The grinder supplies it through **`ImageJavaRuntimes.installerJavaPathFor(minecraftVersion)`**, which
+deliberately returns the override *only when the server's own Java is older than* `MINIMUM_INSTALLER_JAVA`
+(17). A modern Minecraft therefore gets **no** `JAVA_INSTALLER` — identical to a hand-made pack — which is
+the point: the plain-`JAVA` fallback is the branch every real pack takes, so it must stay the *exercised*
+one. Consequence in the matrix: Quilt on 1.16.1 covers the override, Quilt on 1.20.1+ covers the fallback.
+Do **not** "simplify" this back to an unconditional `installerJavaPath()` — that leaves the fallback
+untested while every user runs it. **Landmine:** each boot path writes its own variables (installer,
+verifier overlay *and* the matrix IT), so a new boot path must pass `installerJavaPath` too, or
+Quilt-on-old-MC silently breaks again.
+**`.ps1` selection is executed, not just parsed:** `powerShellInstallerJavaSelectionHonoursTheOverrideAndIts
+Fallback` pulls `RunInstallerJavaCommand` out of the shipped template via the PowerShell AST, stubs `CMD`
+and runs both branches on Linux pwsh — the only way to execute template code whose real path needs Windows.
 
 **Landmine — do not raise `SPC_GRINDER_TEMPLATE_WORKERS`.** It defaults to **1**. Each cell boots a real
 Minecraft server capped at 3 GB, so parallel cells starve the host: at 3 workers this run produced **8
@@ -326,13 +341,17 @@ pass(es)"). With `SPC_GRINDER_REVERIFY_TTL_DAYS=0` the same verdict became stale
 **actually ran** (resolve → mod scan → boot-pack *and* install-pack generation for 26.2/Fabric), proving
 both sides of the TTL boundary outside the unit tests.
 
+**Shutdown drain — DONE.** `DockerJavaContainerEngine` tracks the containers it owns and is `AutoCloseable`;
+`close()` force-removes whatever is still in flight, because `run`'s per-run `finally` never executes when
+the JVM is torn down mid-boot (a `SIGTERM` used to leave a Minecraft server running — observed once, removed
+by hand). `GrinderApplication` registers that cleanup as a shutdown hook immediately after building the
+engine, so it covers the one-shot path too, and `GrindPool.requestStop()` makes workers abandon the queue
+after their current candidate instead of draining a whole batch. Verified against a live daemon by
+`closeRemovesAContainerLeftRunningByAnAbandonedRun`.
+
 Remaining:
 
-1. **Quilt on old Minecraft** — the installer/server JDK split described above (`Quilt Installer requires
-   Java 17`). Affects all three templates; needs a decision on running the installer under a newer JDK.
-2. **`CurseForgeCandidateSource` has never made a real API call** (no `CURSEFORGE_API_KEY` available). Its
+1. **`CurseForgeCandidateSource` has never made a real API call** (no `CURSEFORGE_API_KEY` available). Its
    contract is docs-verified and defended by `warnIfNotDescending`, which is not the same as observed.
-3. **Graceful shutdown doesn't drain in-flight boots** — `SIGTERM` stops the loop, but a boot already
-   running is abandoned, so `DockerJavaContainerEngine`'s force-remove `finally` never executes and the
-   container leaks (observed once during the continuous-mode verification; removed by hand). A drain-then-
-   exit, or a startup sweep of stale grinder containers, would close it.
+2. **Store dedup is slug+platform, not project-identity** — good enough today; a mod that changes slug on a
+   platform would be re-ground as a new project.
