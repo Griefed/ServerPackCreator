@@ -44,6 +44,42 @@ internal class LoaderVersionResolverTest {
         Assertions.assertNotNull(resolver.latest("LegacyFabric", "1.8.9"), "LegacyFabric supports 1.8.9")
     }
 
+    /**
+     * The 1.21 line, where all four modern loaders have builds — including a late patch (1.21.11) to catch
+     * a resolver that only understands `1.21.x` with a single-digit patch.
+     */
+    @Test
+    fun resolvesEveryModernLoaderAcrossThe1_21Line() {
+        for (minecraftVersion in listOf("1.21.1", "1.21.11")) {
+            for (loader in listOf("Forge", "NeoForge", "Fabric", "Quilt")) {
+                Assertions.assertNotNull(
+                    resolver.latest(loader, minecraftVersion),
+                    "$loader should resolve a version for Minecraft $minecraftVersion"
+                )
+            }
+        }
+    }
+
+    /**
+     * LegacyFabric only covers the old versions (its game manifest stops at 1.13.2). Before the
+     * Minecraft-support gate it happily returned its global-latest loader for *any* version, so a modern
+     * Minecraft looked LegacyFabric-bootable — this pins both directions.
+     */
+    @Test
+    fun legacyFabricResolvesOnlyItsOwnEra() {
+        Assertions.assertNotNull(resolver.latest("LegacyFabric", "1.12.2"), "LegacyFabric covers 1.12.2")
+        Assertions.assertNotNull(resolver.latest("LegacyFabric", "1.8.9"), "LegacyFabric covers 1.8.9")
+        Assertions.assertNull(resolver.latest("LegacyFabric", "1.21.1"), "LegacyFabric must not claim 1.21.1")
+        Assertions.assertNull(resolver.latest("LegacyFabric", "1.20.1"), "LegacyFabric must not claim 1.20.1")
+    }
+
+    /** Fabric/Quilt need an intermediary, which the pre-1.14 versions LegacyFabric serves do not have. */
+    @Test
+    fun fabricAndQuiltDoNotClaimThePreIntermediaryEra() {
+        Assertions.assertNull(resolver.latest("Fabric", "1.12.2"))
+        Assertions.assertNull(resolver.latest("Quilt", "1.12.2"))
+    }
+
     @Test
     fun returnsNullForAMinecraftVersionTheLoaderDoesNotSupport() {
         // A version no loader has metadata for — before the Minecraft-support gate, Fabric/Quilt/
