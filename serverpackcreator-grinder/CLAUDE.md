@@ -272,6 +272,15 @@ first real run it earned its keep:** Fabric/1.20.1 bash passed but fish failed w
 load main class" — `default_template.fish`'s `runJavaCommand` split the command on spaces *keeping* empty
 tokens (fish, unlike bash, doesn't drop them), so an empty `$JAVA_ARGS` injected a stray `""` arg. Fixed
 in the api template with `string split --no-empty`; re-run → bash and fish both reach the ready-line.
+**Non-gated guard:** because this IT never runs in CI, `-api`'s `ScriptTemplateContentTest` pins the
+`--no-empty` construct at source level (and runs `fish -n` on both fish templates when a `fish` binary is
+present, skipping otherwise) — verified to fail if the bug is reintroduced.
+**Verified NOT a bug — `cleanServerFiles`' comma split** (`default_template.fish:204`, no `--no-empty`):
+bash's `IFS="," read -ra` keeps empty fields too, and both shells hand the empty token to
+`find -maxdepth 1 -name ""`, which matches nothing and exits 0. Checked empirically in the container
+(`CLEANUP="deleteme.jar,,*.absent"` → both shells produced 3 fields, deleted exactly `deleteme.jar`, left
+the keeper). Left as-is deliberately: adding `--no-empty` there would be churn and a needless divergence
+from the bash reference. Don't "fix" it again.
 
 Remaining:
 
