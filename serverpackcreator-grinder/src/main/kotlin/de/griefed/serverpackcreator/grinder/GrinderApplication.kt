@@ -34,6 +34,7 @@ import java.io.File
 import java.time.Duration
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * The fire-and-forget entry point. Wires the real chain — [ModrinthCandidateSource] (or project URLs
@@ -64,6 +65,13 @@ object GrinderApplication {
             ?.let { ApiWrapper.api(File(it)) }
             ?: ApiWrapper.api()
         val engine = DockerJavaContainerEngine()
+        // Registered for BOTH modes and before any boot can start: a container whose run is interrupted by
+        // JVM teardown never reaches the engine's per-run `finally`, so without this a Minecraft server
+        // outlives the grinder. Idempotent, so the continuous hook below may also close the engine.
+        Runtime.getRuntime().addShutdownHook(Thread {
+            runCatching { engine.close() }
+                .onFailure { log.warn("Could not clean up in-flight containers: ${it.message}") }
+        })
         // Authoritative Minecraft -> required-Java from SPC's own metadata; gates selection to the image's JDKs.
         val imageJava = ImageJavaRuntimes.from(apiWrapper.versionMeta.minecraft)
         val installer = DockerLoaderInstaller(engine, image, ApiVanillaPackGenerator(apiWrapper, File(workDir, "install")), imageJava)
@@ -107,10 +115,14 @@ object GrinderApplication {
         val intervalSeconds = env("SPC_GRINDER_INTERVAL", "21600").toLong()
         val running = AtomicBoolean(true)
         val mainThread = Thread.currentThread()
+        // The pool of the pass currently in flight, so the shutdown hook can tell it to stop pulling new
+        // candidates instead of letting it drain a whole popularity-ranked batch first.
+        val activePool = AtomicReference<GrindPool?>(null)
         Runtime.getRuntime().addShutdownHook(Thread {
             log.info("Shutdown requested — stopping the grind loop.")
             running.set(false)
-            mainThread.interrupt()
+            activePool.get()?.requestStop()
+            mainThread.interrupt() // the engine-cleanup hook registered above removes in-flight containers
         })
         val sourceNames = if (curseForgeKey != null) "Modrinth + CurseForge" else "Modrinth (no CURSEFORGE_API_KEY)"
         log.info("Continuous mode: sources=$sourceNames, re-verify TTL ${reverifyTtl.toDays()}d, interval ${intervalSeconds}s, $workers worker(s).")
@@ -120,7 +132,9 @@ object GrinderApplication {
             pass++
             val candidates = candidateSuppliers.flatMap { it() }
             log.info("Pass #$pass: grinding ${candidates.size} candidate(s)...")
-            GrindPool(grinder, workers).grindAll(candidates)
+            val pool = GrindPool(grinder, workers).also { activePool.set(it) }
+            pool.grindAll(candidates)
+            activePool.set(null)
             log.info("Pass #$pass complete: ${store.all().size} verdict(s) total.")
             if (!running.get()) {
                 break

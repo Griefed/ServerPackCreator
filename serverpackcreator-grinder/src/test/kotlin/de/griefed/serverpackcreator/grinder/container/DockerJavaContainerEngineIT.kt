@@ -71,4 +71,47 @@ internal class DockerJavaContainerEngineIT {
         Assertions.assertFalse(output.timedOut, "ready was seen, so this is not a timeout")
         Assertions.assertTrue(elapsedSeconds < 30, "must stop on ready, not wait out the 120s sleep (took ${elapsedSeconds}s)")
     }
+
+    /**
+     * The shutdown drain: a boot abandoned by JVM teardown never reaches [DockerJavaContainerEngine.run]'s
+     * `finally`, so [DockerJavaContainerEngine.close] must remove whatever is still in flight. Simulated by
+     * starting a long-running container on another thread and closing the engine while it runs — observed
+     * once for real, when a `SIGTERM` mid-boot left a Minecraft server container behind.
+     */
+    @Test
+    fun closeRemovesAContainerLeftRunningByAnAbandonedRun() {
+        val engine = DockerJavaContainerEngine()
+        val booting = Thread {
+            runCatching {
+                engine.run(busyboxSpec("echo booting; sleep 300"), Regex("this-never-appears"), Duration.ofMinutes(5))
+            }
+        }.apply { isDaemon = true; start() }
+
+        // Wait for the container to actually exist before pulling the rug out.
+        val client = DockerJavaContainerEngine.defaultClient()
+        val deadline = System.currentTimeMillis() + 60_000
+        var running = countBusyboxSleepers(client)
+        while (running == 0 && System.currentTimeMillis() < deadline) {
+            Thread.sleep(500)
+            running = countBusyboxSleepers(client)
+        }
+        Assertions.assertTrue(running > 0, "the probe container should be running before close()")
+
+        engine.close()
+        booting.interrupt()
+
+        // close() force-removes, so the sleeper must be gone almost immediately.
+        val goneBy = System.currentTimeMillis() + 30_000
+        while (countBusyboxSleepers(client) > 0 && System.currentTimeMillis() < goneBy) {
+            Thread.sleep(500)
+        }
+        Assertions.assertEquals(0, countBusyboxSleepers(client), "close() must force-remove abandoned containers")
+    }
+
+    /** Count running containers that look like this test's probe, so the assertion can't match anything else. */
+    private fun countBusyboxSleepers(client: com.github.dockerjava.api.DockerClient): Int =
+        client.listContainersCmd().withShowAll(false).exec()
+            .count { container ->
+                container.image == "busybox:latest" && (container.command?.contains("sleep 300") == true)
+            }
 }

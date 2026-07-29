@@ -158,6 +158,27 @@ internal class GrinderTest {
         Assertions.assertEquals(listOf("high", "mid", "low"), processed)
     }
 
+    /**
+     * A stop request abandons the rest of the batch instead of draining it, so the daemon's shutdown ends
+     * the current pass promptly. The candidate in flight is *not* cancelled — it finishes — which is why
+     * the in-flight container is torn down separately by closing the engine.
+     */
+    @Test
+    fun requestStopAbandonsTheRestOfTheBatch() {
+        val processed = Collections.synchronizedList(mutableListOf<String>())
+        lateinit var pool: GrindPool
+        val verifier = CandidateVerifier { c ->
+            processed.add(c.slug)
+            pool.requestStop() // ask to stop while the very first candidate is still being ground
+            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "${c.slug}-", Confidence.HIGH)))
+        }
+        pool = GrindPool(Grinder(verifier, InMemoryVerdictStore()), workerCount = 1)
+
+        pool.grindAll((1..20).map { candidate("mod$it", it.toLong()) })
+
+        Assertions.assertEquals(1, processed.size, "only the in-flight candidate completes; the queue is dropped")
+    }
+
     @Test
     fun poolRejectsANonPositiveWorkerCount() {
         val grinder = Grinder({ clientsideReport("x", emptyList()) }, InMemoryVerdictStore())

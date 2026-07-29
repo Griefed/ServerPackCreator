@@ -24,6 +24,7 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.time.Instant
 import java.time.Duration
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Grinds one candidate: skip it while its verdict is still *fresh*, otherwise run the
@@ -99,16 +100,32 @@ class GrindPool(
     private val grinder: Grinder,
     private val workerCount: Int
 ) {
+    /** Set by [requestStop]; workers finish their current candidate and then stop taking new ones. */
+    private val stopRequested = AtomicBoolean(false)
+
     init {
         require(workerCount >= 1) { "workerCount must be at least 1, was $workerCount" }
     }
 
-    /** Process every candidate in [candidates] (popularity-first), returning once all are done. */
+    /**
+     * Ask the workers to stop after their current candidate — the queue is abandoned, nothing is
+     * cancelled mid-grind. Used by the daemon's shutdown hook so a pass ends promptly instead of draining
+     * a whole popularity-ranked batch; the in-flight boot is torn down separately by closing the
+     * container engine.
+     */
+    fun requestStop() {
+        stopRequested.set(true)
+    }
+
+    /**
+     * Process every candidate in [candidates] (popularity-first), returning once all are done — or
+     * early if [requestStop] is called.
+     */
     fun grindAll(candidates: Collection<GrindCandidate>) {
         val queue = ConcurrentLinkedQueue(candidates.sortedByDescending { it.popularity })
         val workers = (1..workerCount).map {
             Thread {
-                while (true) {
+                while (!stopRequested.get()) {
                     val candidate = queue.poll() ?: break
                     grinder.grind(candidate)
                 }

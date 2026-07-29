@@ -33,6 +33,7 @@ import com.github.dockerjava.zerodep.ZerodepDockerHttpClient
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.time.Duration
 import java.util.Collections
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -49,8 +50,16 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 class DockerJavaContainerEngine(
     private val client: DockerClient = defaultClient()
-) : ContainerEngine {
+) : ContainerEngine, AutoCloseable {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+
+    /**
+     * Containers currently owned by this engine. [run]'s `finally` removes a container on the normal
+     * path, but that block never executes if the JVM is torn down mid-boot — which is exactly what a
+     * `SIGTERM` to the daemon does — leaking a running Minecraft server. [close] force-removes whatever
+     * is still tracked, so shutdown cleans up after in-flight work.
+     */
+    private val liveContainers: MutableSet<String> = Collections.newSetFromMap(ConcurrentHashMap())
 
     override fun run(spec: ContainerSpec, readyPattern: Regex, timeout: Duration): ContainerRunOutput {
         val containerId = client.createContainerCmd(spec.image)
@@ -60,6 +69,7 @@ class DockerJavaContainerEngine(
             .withUser(spec.user)
             .exec()
             .id
+        liveContainers.add(containerId)
 
         val lines = Collections.synchronizedList(ArrayList<String>())
         val ready = AtomicBoolean(false)
@@ -100,6 +110,25 @@ class DockerJavaContainerEngine(
         } finally {
             runCatching { client.removeContainerCmd(containerId).withForce(true).exec() }
                 .onFailure { log.warn("Could not remove container $containerId: ${it.message}") }
+            liveContainers.remove(containerId)
+        }
+    }
+
+    /**
+     * Force-remove every container this engine still owns. Called on shutdown so a boot interrupted by a
+     * `SIGTERM` cannot leave a Minecraft server running — [run]'s `finally` is skipped when the JVM dies
+     * mid-boot. Safe to call repeatedly and never throws: a container that already vanished is fine.
+     */
+    override fun close() {
+        val abandoned = liveContainers.toList()
+        if (abandoned.isEmpty()) {
+            return
+        }
+        log.info("Removing ${abandoned.size} container(s) abandoned by an interrupted run.")
+        for (containerId in abandoned) {
+            runCatching { client.removeContainerCmd(containerId).withForce(true).exec() }
+                .onFailure { log.warn("Could not remove abandoned container $containerId: ${it.message}") }
+            liveContainers.remove(containerId)
         }
     }
 
