@@ -14,13 +14,13 @@ root filesystem, all capabilities dropped, no-new-privileges, as non-root, under
 
 ## 1. Prerequisites
 
-| Requirement | Notes |
-|---|---|
-| Docker | A running daemon the current user can talk to. Verified against Docker 29.x |
-| JDK 21+ | To build and run the service |
-| Disk | The runtime image is ~2 GB; each cached loader install adds a few hundred MB |
-| RAM | ~3 GB **per parallel worker** (each worker holds a booting Minecraft server) |
-| `CURSEFORGE_API_KEY` | Optional. Without it the grinder uses Modrinth only |
+| Requirement          | Notes                                                                        |
+|----------------------|------------------------------------------------------------------------------|
+| Docker               | A running daemon the current user can talk to. Verified against Docker 29.x  |
+| JDK 21+              | To build and run the service                                                 |
+| Disk                 | The runtime image is ~2 GB; each cached loader install adds a few hundred MB |
+| RAM                  | ~3 GB **per parallel worker** (each worker holds a booting Minecraft server) |
+| `CURSEFORGE_API_KEY` | Optional. Without it the grinder uses Modrinth only                          |
 
 ---
 
@@ -79,20 +79,20 @@ mid-boot, so no Minecraft server is left running.
 
 ## 5. Configuration (environment variables)
 
-| Variable | Default | Meaning |
-|---|---|---|
-| `SPC_GRINDER_IMAGE` | `spc-grinder-runtime:latest` | Image used for the boots |
-| `SPC_GRINDER_WORK` | `~/.spc-grinder/work` | Scratch space for generated packs |
-| `SPC_GRINDER_CACHE` | `~/.spc-grinder/cache` | Cached loader installs, one per loader/version/Minecraft |
-| `SPC_GRINDER_STORE` | `~/.spc-grinder/verdicts.json` | Verdict store — delete to start fresh |
-| `SPC_GRINDER_PORT` | `8757` | Report server port |
-| `SPC_GRINDER_WORKERS` | `2` | Parallel boots. **Budget ~3 GB RAM each** |
-| `SPC_GRINDER_INTERVAL` | `21600` (6 h) | Seconds between passes (continuous mode only) |
-| `SPC_GRINDER_REVERIFY_TTL_DAYS` | `30` | How long a verdict stays fresh before re-verification |
-| `SPC_GRINDER_MODRINTH_LIMIT` | `25` | Modrinth projects pulled per pass |
-| `SPC_GRINDER_CF_LIMIT` | `25` | CurseForge projects pulled per pass (needs the key) |
-| `SPC_GRINDER_SPC_PROPERTIES` | *(unset)* | Point SPC at a specific `serverpackcreator.properties` for reproducible runs |
-| `CURSEFORGE_API_KEY` | *(unset)* | Enables the CurseForge candidate source |
+| Variable                        | Default                        | Meaning                                                                      |
+|---------------------------------|--------------------------------|------------------------------------------------------------------------------|
+| `SPC_GRINDER_IMAGE`             | `spc-grinder-runtime:latest`   | Image used for the boots                                                     |
+| `SPC_GRINDER_WORK`              | `~/.spc-grinder/work`          | Scratch space for generated packs                                            |
+| `SPC_GRINDER_CACHE`             | `~/.spc-grinder/cache`         | Cached loader installs, one per loader/version/Minecraft                     |
+| `SPC_GRINDER_STORE`             | `~/.spc-grinder/verdicts.json` | Verdict store — delete to start fresh                                        |
+| `SPC_GRINDER_PORT`              | `8757`                         | Report server port                                                           |
+| `SPC_GRINDER_WORKERS`           | `2`                            | Parallel boots. **Budget ~3 GB RAM each**                                    |
+| `SPC_GRINDER_INTERVAL`          | `21600` (6 h)                  | Seconds between passes (continuous mode only)                                |
+| `SPC_GRINDER_REVERIFY_TTL_DAYS` | `30`                           | How long a verdict stays fresh before re-verification                        |
+| `SPC_GRINDER_MODRINTH_LIMIT`    | `25`                           | Modrinth projects pulled per pass                                            |
+| `SPC_GRINDER_CF_LIMIT`          | `25`                           | CurseForge projects pulled per pass (needs the key)                          |
+| `SPC_GRINDER_SPC_PROPERTIES`    | *(unset)*                      | Point SPC at a specific `serverpackcreator.properties` for reproducible runs |
+| `CURSEFORGE_API_KEY`            | *(unset)*                      | Enables the CurseForge candidate source                                      |
 
 ```bash
 export SPC_GRINDER_WORKERS=4
@@ -148,15 +148,15 @@ Give `TimeoutStopSec` room: on stop the grinder removes in-flight containers bef
 
 ## 8. Troubleshooting
 
-| Symptom | Cause & fix |
-|---|---|
-| `Cannot connect to the Docker daemon` | Daemon not running, or your user isn't in the `docker` group |
-| `No cached loader install for …` | The one-off install boot failed — it is the only boot allowed network. Check connectivity and the logs above it |
+| Symptom                                  | Cause & fix                                                                                                                   |
+|------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|
+| `Cannot connect to the Docker daemon`    | Daemon not running, or your user isn't in the `docker` group                                                                  |
+| `No cached loader install for …`         | The one-off install boot failed — it is the only boot allowed network. Check connectivity and the logs above it               |
 | Mods on the newest Minecraft are skipped | The image lacks that version's required JDK. Add it to the Dockerfile **and** `ImageJavaRuntimes.bundledMajors`, then rebuild |
-| Boots die with `Killed` mid-startup | Host out of memory — lower `SPC_GRINDER_WORKERS` |
-| Everything is `INCONCLUSIVE` | Often the loader genuinely has no build for the selected Minecraft version; check the `Detail` column |
-| Nothing gets ground on a second run | Working as intended: verdicts are still fresh. Lower `SPC_GRINDER_REVERIFY_TTL_DAYS` or delete the store |
-| A container outlived the process | Should not happen — shutdown drains them. If it does, `docker ps` and remove it, and please report it |
+| Boots die with `Killed` mid-startup      | Host out of memory — lower `SPC_GRINDER_WORKERS`                                                                              |
+| Everything is `INCONCLUSIVE`             | Often the loader genuinely has no build for the selected Minecraft version; check the `Detail` column                         |
+| Nothing gets ground on a second run      | Working as intended: verdicts are still fresh. Lower `SPC_GRINDER_REVERIFY_TTL_DAYS` or delete the store                      |
+| A container outlived the process         | Should not happen — shutdown drains them. If it does, `docker ps` and remove it, and please report it                         |
 
 ---
 
