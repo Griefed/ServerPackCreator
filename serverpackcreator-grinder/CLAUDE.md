@@ -380,6 +380,20 @@ pass(es)"). With `SPC_GRINDER_REVERIFY_TTL_DAYS=0` the same verdict became stale
 **actually ran** (resolve → mod scan → boot-pack *and* install-pack generation for 26.2/Fabric), proving
 both sides of the TTL boundary outside the unit tests.
 
+**Catalog crawl — verified live (2026-07-29).** Ran the installed daemon against live Modrinth with
+`SPC_GRINDER_BATCH=5`, `SPC_GRINDER_SCAN_DELAY=3` and a verdict store pre-seeded *fresh* for the top 10
+projects: passes #1 and #2 each took 5 candidates, verified **0** (all fresh) and paused exactly 3s — the
+scan-ahead pacing — while `cursors.json` advanced 5 → 10 → 15 and pass #3 reached the first *unseeded*
+projects and began real verification. That is the whole claim in one run: the position moves forward, is
+persisted, and unverified projects deeper in the catalog do get reached.
+
+**Shutdown — `SIGTERM` mid-pass used to kill the JVM with a bare `Exception in thread "main"`** (found
+2026-07-29 while verifying the crawl loop): the hook interrupts the main thread, which is normally parked in
+`GrindPool.grindAll`'s `Thread.join()`, and the `InterruptedException` escaped `main`. `grindAll` now catches
+it, `requestStop()`s and restores the interrupt flag, returning the count so far — pinned by
+`anInterruptedPassStopsInsteadOfThrowing`. (The JVM often halts before `main` can log "Grinder stopped": once
+the hooks finish it exits, so a missing final line on `SIGTERM` is normal, not a hang.)
+
 **Shutdown drain — DONE.** `DockerJavaContainerEngine` tracks the containers it owns and is `AutoCloseable`;
 `close()` force-removes whatever is still in flight, because `run`'s per-run `finally` never executes when
 the JVM is torn down mid-boot (a `SIGTERM` used to leave a Minecraft server running — observed once, removed

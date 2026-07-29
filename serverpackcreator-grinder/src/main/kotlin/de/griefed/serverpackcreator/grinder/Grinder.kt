@@ -142,9 +142,9 @@ class GrindPool(
 
     /**
      * Process every candidate in [candidates] (popularity-first), returning once all are done — or early if
-     * [requestStop] is called. Returns how many candidates were actually **verified**, which is the daemon's
-     * measure of whether the pass did useful work (see [GrindPacing]); skipped-as-fresh and failed candidates
-     * deliberately do not count.
+     * [requestStop] is called or the calling thread is interrupted (the daemon's shutdown path). Returns how
+     * many candidates were actually **verified**, which is the daemon's measure of whether the pass did useful
+     * work (see [GrindPacing]); skipped-as-fresh and failed candidates deliberately do not count.
      */
     fun grindAll(candidates: Collection<GrindCandidate>): Int {
         val queue = ConcurrentLinkedQueue(candidates.sortedByDescending { it.popularity })
@@ -159,7 +159,17 @@ class GrindPool(
                 }
             }.apply { name = "grind-worker-$it"; start() }
         }
-        workers.forEach { it.join() }
+        try {
+            workers.forEach { it.join() }
+        } catch (_: InterruptedException) {
+            // The daemon's shutdown hook interrupts the thread that is parked here. Abandon the rest of the
+            // batch instead of letting the interrupt escape as an uncaught exception (which killed the
+            // process outright on SIGTERM mid-pass), and hand the flag back so the caller sees the shutdown.
+            // Workers still finish their current candidate; their in-flight containers are torn down
+            // separately by closing the container engine.
+            requestStop()
+            Thread.currentThread().interrupt()
+        }
         return verified.get()
     }
 }

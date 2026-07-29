@@ -578,3 +578,9 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   `index >= 10 000`, so CF coverage is capped at its 10 000 most-downloaded mods however long the service
   runs; the cursor cannot fix that (it needs a partitioned search) and the cap is now logged, tested and
   documented rather than silent. Suite: grinder 93 run + 8 gated, green.
+  **Bug found by that verification, fixed here:** `SIGTERM` mid-pass killed the JVM with a bare
+  `Exception in thread "main"` — the shutdown hook interrupts the main thread, which is parked in
+  `GrindPool.grindAll`'s `Thread.join()`, and the `InterruptedException` escaped `main`. Pre-existing (the
+  hook and the join were both already there), reproduced as a failing test first, then fixed: `grindAll`
+  catches it, requests stop, restores the interrupt flag and returns the count so far. Re-verified live —
+  clean shutdown, no leaked containers.

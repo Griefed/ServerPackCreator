@@ -27,6 +27,7 @@ import org.junit.jupiter.api.assertThrows
 import java.time.Duration
 import java.time.Instant
 import java.util.Collections
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -203,6 +204,31 @@ internal class GrinderTest {
             .grindAll(listOf(candidate("fresh"), candidate("doomed"), candidate("due"), candidate("alsoDue")))
 
         Assertions.assertEquals(2, verified, "one fresh skip and one failure are not work")
+    }
+
+    /**
+     * The daemon's shutdown hook interrupts the main thread, which is normally parked in `grindAll` joining
+     * its workers. An interrupted join must end the pass, **not** escape as an uncaught `InterruptedException`
+     * (observed killing the process with a bare `Exception in thread "main"` on `SIGTERM` mid-pass). The
+     * interrupt flag is handed back to the caller so the daemon loop still sees the shutdown.
+     */
+    @Test
+    fun anInterruptedPassStopsInsteadOfThrowing() {
+        val firstStarted = CountDownLatch(1)
+        val verifier = CandidateVerifier { c ->
+            firstStarted.countDown()
+            Thread.sleep(50)
+            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "${c.slug}-", Confidence.HIGH)))
+        }
+        val pool = GrindPool(Grinder(verifier, InMemoryVerdictStore()), workerCount = 1)
+        val mainThread = Thread.currentThread()
+        Thread { firstStarted.await(); mainThread.interrupt() }.apply { isDaemon = true; start() }
+
+        // Must return rather than throw, even though the caller is interrupted mid-join.
+        val verified = pool.grindAll((1..40).map { candidate("mod$it", it.toLong()) })
+
+        Assertions.assertTrue(Thread.interrupted(), "the caller's interrupt flag must be restored (and is cleared here)")
+        Assertions.assertTrue(verified < 40, "the pass was abandoned, not drained; verified=$verified")
     }
 
     @Test
