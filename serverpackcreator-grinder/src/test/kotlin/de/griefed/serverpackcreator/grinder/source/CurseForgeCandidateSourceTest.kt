@@ -37,6 +37,7 @@ internal class CurseForgeCandidateSourceTest {
 
     private val searchUrl = "https://api.curseforge.com/v1/mods/search"
     private val versionsUrl = "https://api.curseforge.com/v1/games/432/versions"
+    private val categoriesUrl = "https://api.curseforge.com/v1/categories"
 
     /**
      * Canned [HttpFetcher] answering by URL. `searchAnswers` maps a *substring* of the search URL (the
@@ -46,6 +47,7 @@ internal class CurseForgeCandidateSourceTest {
     private class CannedApi(
         private val searchAnswers: List<Pair<String, String>> = emptyList(),
         private val versionsBody: String? = null,
+        private val categoriesBody: String? = null,
         private val failUrlsContaining: String? = null
     ) : HttpFetcher {
         val requestedUrls = mutableListOf<String>()
@@ -57,6 +59,9 @@ internal class CurseForgeCandidateSourceTest {
             failUrlsContaining?.let { if (url.contains(it)) throw IOException("curseforge 503 for $url") }
             if (url.contains("/games/432/versions")) {
                 return versionsBody ?: """{"data":[]}"""
+            }
+            if (url.contains("/categories")) {
+                return categoriesBody ?: """{"data":[]}"""
             }
             return searchAnswers.firstOrNull { (fragment, _) -> url.contains(fragment) }?.second
                 ?: """{"data":[],"pagination":{"index":0,"pageSize":50,"resultCount":0,"totalCount":0}}"""
@@ -81,6 +86,13 @@ internal class CurseForgeCandidateSourceTest {
             """{"type":${7000 + groupIndex},"versions":[${versions.joinToString(",") { "\"$it\"" }}]}"""
         }
         return """{"data":[${data.joinToString(",")}]}"""
+    }
+
+    /** A `/categories` body: the mods class itself plus its categories, as the API returns them together. */
+    private fun categoriesJson(vararg categoryIds: Int): String {
+        val theClass = """{"id":6,"name":"Mods","isClass":true,"classId":null}"""
+        val categories = categoryIds.map { """{"id":$it,"name":"cat$it","isClass":false,"classId":6}""" }
+        return """{"data":[${(listOf(theClass) + categories).joinToString(",")}]}"""
     }
 
     @Test
@@ -190,20 +202,138 @@ internal class CurseForgeCandidateSourceTest {
         Assertions.assertEquals(CurseForgePartitions.FIRST.key, page.nextPartition)
     }
 
-    /** The version list is refreshed at the start of a sweep only — not on every slice of it. */
+    /** Both axis lists are refreshed at the start of a sweep only — not on every slice of it. */
     @Test
-    fun theGameVersionListIsRefreshedAtTheStartOfASweepOnly() {
+    fun theAxisListsAreRefreshedAtTheStartOfASweepOnly() {
         val fetcher = CannedApi(
             searchAnswers = listOf("index=0" to searchJson(Triple("jei", 9L, "u/jei"), totalCount = 250_000)),
-            versionsBody = versionsJson(listOf("1.21.1", "1.20.1"))
+            versionsBody = versionsJson(listOf("1.21.1", "1.20.1")),
+            categoriesBody = categoriesJson(406, 426)
         )
         val source = CurseForgeCandidateSource("key", fetcher, pageSize = 50)
 
         source.page(offset = 0, limit = 1, partition = null)
-        Assertions.assertEquals(1, fetcher.requestedUrls.count { it == versionsUrl }, "sweep start refreshes the list")
+        Assertions.assertEquals(1, fetcher.requestedUrls.count { it == versionsUrl }, "sweep start refreshes the versions")
+        Assertions.assertEquals(1, fetcher.requestedUrls.count { it.startsWith(categoriesUrl) }, "and the categories")
 
         source.page(offset = 50, limit = 1, partition = CurseForgePartitions.FIRST.key)
-        Assertions.assertEquals(1, fetcher.requestedUrls.count { it == versionsUrl }, "mid-sweep slices must not re-fetch it")
+        Assertions.assertEquals(1, fetcher.requestedUrls.count { it == versionsUrl }, "mid-sweep slices must not re-fetch")
+        Assertions.assertEquals(1, fetcher.requestedUrls.count { it.startsWith(categoriesUrl) }, "either list")
+    }
+
+    /**
+     * The restart case, and the reason the axis lists are not only read at the start of a sweep: a resumed
+     * cursor arrives with a partition token and an in-memory source that knows no versions or categories. It
+     * has to fetch them, or the plan finds no next partition, declares the catalog finished, and wraps — which
+     * discards exactly the position the cursor exists to preserve.
+     */
+    @Test
+    fun resumingMidSweepFetchesTheAxisListsItHasNotGotYet() {
+        val fetcher = CannedApi(
+            searchAnswers = listOf("gameVersion=1.21.1" to searchJson(Triple("resumed", 5L, "u/resumed"), totalCount = 4_000)),
+            versionsBody = versionsJson(listOf("1.21.1", "1.20.1")),
+            categoriesBody = categoriesJson(406)
+        )
+        val resumedPartition = CurseForgePartition("1.21.1", categoryId = null, modLoaderType = null, ascending = false)
+
+        // A fresh source, as after a restart — never asked for partition == null.
+        val page = CurseForgeCandidateSource("key", fetcher, pageSize = 50)
+            .page(offset = 200, limit = 1, partition = resumedPartition.key)
+
+        Assertions.assertEquals(1, fetcher.requestedUrls.count { it == versionsUrl }, "the resumed crawl needs the versions")
+        Assertions.assertEquals(1, fetcher.requestedUrls.count { it.startsWith(categoriesUrl) }, "and the categories")
+        Assertions.assertTrue(fetcher.searchRequests().single().contains("index=200"), "it resumes at the stored offset")
+        Assertions.assertEquals(listOf("resumed"), page.candidates.map { it.slug })
+        Assertions.assertFalse(page.endOfCatalog, "resuming mid-sweep must not look like a finished catalog")
+        Assertions.assertEquals(resumedPartition.key, page.nextPartition, "still in the partition it resumed into")
+        Assertions.assertEquals(201, page.nextOffset)
+    }
+
+    /** The categories request has to ask for the *mods* class, or it returns another class's categories. */
+    @Test
+    fun theCategoryListIsRequestedForTheModsClass() {
+        val fetcher = CannedApi(categoriesBody = categoriesJson(406))
+        CurseForgeCandidateSource("key", fetcher).page(offset = 0, limit = 1, partition = null)
+
+        val url = fetcher.requestedUrls.single { it.startsWith(categoriesUrl) }
+        Assertions.assertTrue(url.contains("gameId=432"), url)
+        Assertions.assertTrue(url.contains("classId=6"), url)
+    }
+
+    /** A category slice queries that category — the axis that reaches mods carrying no modloader tag. */
+    @Test
+    fun aCategoryPartitionFiltersByThatCategory() {
+        val partition = CurseForgePartition("1.20.1", categoryId = 426, modLoaderType = null, ascending = false)
+        val fetcher = CannedApi(
+            searchAnswers = listOf("categoryId=426" to searchJson(Triple("mapmod", 3L, "u/mapmod"), totalCount = 40)),
+            versionsBody = versionsJson(listOf("1.20.1")),
+            categoriesBody = categoriesJson(406, 426)
+        )
+
+        val page = CurseForgeCandidateSource("key", fetcher, pageSize = 50).page(offset = 0, limit = 1, partition = partition.key)
+
+        val url = fetcher.searchRequests().single()
+        Assertions.assertTrue(url.contains("gameVersion=1.20.1"), url)
+        Assertions.assertTrue(url.contains("categoryId=426"), url)
+        Assertions.assertFalse(url.contains("modLoaderType="), "a category slice is not narrowed by loader yet: $url")
+        Assertions.assertEquals(listOf("mapmod"), page.candidates.map { it.slug })
+    }
+
+    /** The deepest slice carries all three filters at once. */
+    @Test
+    fun theDeepestPartitionFiltersByVersionCategoryAndLoader() {
+        val partition = CurseForgePartition("1.20.1", categoryId = 426, modLoaderType = CurseForgePartitions.QUILT, ascending = false)
+        val fetcher = CannedApi(
+            searchAnswers = listOf("categoryId=426" to searchJson(Triple("deep", 2L, "u/deep"), totalCount = 5)),
+            versionsBody = versionsJson(listOf("1.20.1")),
+            categoriesBody = categoriesJson(426)
+        )
+
+        CurseForgeCandidateSource("key", fetcher, pageSize = 50).page(offset = 0, limit = 1, partition = partition.key)
+
+        val url = fetcher.searchRequests().single()
+        listOf("gameVersion=1.20.1", "categoryId=426", "modLoaderType=${CurseForgePartitions.QUILT}")
+            .forEach { Assertions.assertTrue(url.contains(it), "missing '$it' in $url") }
+    }
+
+    /**
+     * After the last modloader of an over-cap version, the crawl continues into that version's **category**
+     * slices — the transition that closes the loader-less-mod hole, end to end through the source.
+     */
+    @Test
+    fun theLoaderStageHandsOverToTheCategoryStageWithinOneSlice() {
+        val fetcher = CannedApi(
+            searchAnswers = listOf("categoryId=406" to searchJson(Triple("categorised", 3L, "u/cat"), totalCount = 70)),
+            versionsBody = versionsJson(listOf("1.20.1")),
+            categoriesBody = categoriesJson(406, 426)
+        )
+        // The last loader slice answers empty (exhausted), so the slice must move on to the first category.
+        val lastLoader = CurseForgePartition("1.20.1", categoryId = null, modLoaderType = CurseForgePartitions.NEOFORGE, ascending = false)
+
+        val page = CurseForgeCandidateSource("key", fetcher, pageSize = 50).page(offset = 0, limit = 1, partition = lastLoader.key)
+
+        Assertions.assertEquals(listOf("categorised"), page.candidates.map { it.slug })
+        Assertions.assertEquals(
+            CurseForgePartition("1.20.1", categoryId = 406, modLoaderType = null, ascending = false).key,
+            page.nextPartition,
+            "the crawl is now in the version's first category slice"
+        )
+        Assertions.assertFalse(page.endOfCatalog)
+    }
+
+    /** No category list must not stop the crawl — the version is simply done after its loader slices. */
+    @Test
+    fun anUnavailableCategoryListLeavesTheLoaderStageWorking() {
+        val fetcher = CannedApi(
+            versionsBody = versionsJson(listOf("1.20.1")),
+            failUrlsContaining = "/categories"
+        )
+        val lastLoader = CurseForgePartition("1.20.1", categoryId = null, modLoaderType = CurseForgePartitions.NEOFORGE, ascending = false)
+
+        val page = CurseForgeCandidateSource("key", fetcher, pageSize = 50).page(offset = 0, limit = 1, partition = lastLoader.key)
+
+        Assertions.assertTrue(page.candidates.isEmpty())
+        Assertions.assertTrue(page.endOfCatalog, "one version, its loaders done, no categories to fall back on")
     }
 
     @Test
@@ -212,7 +342,7 @@ internal class CurseForgeCandidateSourceTest {
             searchAnswers = listOf("gameVersion=1.20.1" to searchJson(Triple("create", 5L, "u/create"), totalCount = 300)),
             versionsBody = versionsJson(listOf("1.21.1", "1.20.1"))
         )
-        val partition = CurseForgePartition("1.20.1", null, ascending = false)
+        val partition = CurseForgePartition("1.20.1", categoryId = null, modLoaderType = null, ascending = false)
 
         val page = CurseForgeCandidateSource("key", fetcher, pageSize = 50)
             .page(offset = 0, limit = 1, partition = partition.key)
@@ -225,7 +355,7 @@ internal class CurseForgeCandidateSourceTest {
     /** A loader slice carries both the modloader filter and, when crawling the bottom, the ascending sort. */
     @Test
     fun aLoaderPartitionFiltersByModLoaderAndSortDirection() {
-        val partition = CurseForgePartition("1.20.1", CurseForgePartitions.FABRIC, ascending = true)
+        val partition = CurseForgePartition("1.20.1", categoryId = null, modLoaderType = CurseForgePartitions.FABRIC, ascending = true)
         val fetcher = CannedApi(
             searchAnswers = listOf("modLoaderType=${CurseForgePartitions.FABRIC}" to searchJson(Triple("tiny", 1L, "u/tiny"), totalCount = 20)),
             versionsBody = versionsJson(listOf("1.20.1"))
@@ -259,7 +389,7 @@ internal class CurseForgeCandidateSourceTest {
 
         Assertions.assertEquals(listOf("global", "versioned"), page.candidates.map { it.slug }, "both partitions contributed")
         Assertions.assertEquals(
-            CurseForgePartition("1.21.1", null, ascending = false).key, page.nextPartition,
+            CurseForgePartition("1.21.1", categoryId = null, modLoaderType = null, ascending = false).key, page.nextPartition,
             "the crawl is now in the newest version's partition"
         )
         Assertions.assertEquals(1, page.nextOffset, "offset is relative to the new partition, not the old one")
@@ -281,14 +411,14 @@ internal class CurseForgeCandidateSourceTest {
             ),
             versionsBody = versionsJson(listOf("1.20.1"))
         )
-        val cappedPartition = CurseForgePartition("1.20.1", null, ascending = false)
+        val cappedPartition = CurseForgePartition("1.20.1", categoryId = null, modLoaderType = null, ascending = false)
 
         val page = CurseForgeCandidateSource("key", fetcher, pageSize = 50)
             .page(offset = CurseForgeCandidateSource.MAX_INDEX, limit = 1, partition = cappedPartition.key)
 
         Assertions.assertEquals(listOf("forge-mod"), page.candidates.map { it.slug })
         Assertions.assertEquals(
-            CurseForgePartition("1.20.1", CurseForgePartitions.FORGE, ascending = false).key, page.nextPartition,
+            CurseForgePartition("1.20.1", categoryId = null, modLoaderType = CurseForgePartitions.FORGE, ascending = false).key, page.nextPartition,
             "past the cap, the version is re-crawled per modloader"
         )
         Assertions.assertFalse(page.endOfCatalog, "the catalog is not over — it is only this query that is capped")
@@ -301,7 +431,7 @@ internal class CurseForgeCandidateSourceTest {
     /** If the size probe fails, the crawl must stay put rather than skip the rest of that partition. */
     @Test
     fun aFailedSizeProbeKeepsTheCrawlPosition() {
-        val partition = CurseForgePartition("1.20.1", null, ascending = false)
+        val partition = CurseForgePartition("1.20.1", categoryId = null, modLoaderType = null, ascending = false)
         val fetcher = CannedApi(failUrlsContaining = "pageSize=1")
 
         val page = CurseForgeCandidateSource("key", fetcher, pageSize = 50)
@@ -330,9 +460,9 @@ internal class CurseForgeCandidateSourceTest {
 
     @Test
     fun theLastPartitionRunningOutEndsTheCatalog() {
-        // One version, and every query answers empty ⇒ the plan runs out.
-        val fetcher = CannedApi(versionsBody = versionsJson(listOf("1.20.1")))
-        val lastPartition = CurseForgePartition("1.20.1", CurseForgePartitions.NEOFORGE, ascending = false)
+        // One version and one category, and every query answers empty ⇒ the plan runs out.
+        val fetcher = CannedApi(versionsBody = versionsJson(listOf("1.20.1")), categoriesBody = categoriesJson(406))
+        val lastPartition = CurseForgePartition("1.20.1", categoryId = 406, modLoaderType = null, ascending = false)
 
         val page = CurseForgeCandidateSource("key", fetcher, pageSize = 50)
             .page(offset = 0, limit = 5, partition = lastPartition.key)

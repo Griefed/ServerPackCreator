@@ -86,19 +86,29 @@ containers:
 - **CurseForge partitioned crawl** (`CurseForgePartitions`, pure + unit-tested — the *only* place that decides
   what CF gets crawled): one query can never expose more than 10 000 mods (`index+pageSize` cap), so a sweep
   walks a **sequence** of bounded queries: (1) the unfiltered catalog, (2) each game version newest-first from
-  `/games/{gameId}/versions`, (3) a version whose `pagination.totalCount` exceeds the cap re-crawled per
-  modloader — *this* is what reaches past 10 000 — (4) a loader slice still over the cap also crawled
-  `sortOrder=asc` (bottom 10 000), so ≤20 000 per slice is fully covered. Splitting only where a count demands
-  it keeps a sweep at ~1 request per version, not per version×loader; `totalCount` rides along on every
-  response, so sizing is free (the lone probe case is a slice resuming exactly at the cap). All six documented
-  loaders are crawled incl. legacy Cauldron/LiteLoader — one request each beats making their mods unreachable.
-  **Version list refreshes at sweep start** (`partition == null`), so versions released mid-run get picked up;
-  a failed fetch degrades to the unfiltered top 10 000 rather than crawling nothing.
-  **Residual gaps (logged with counts, not hidden):** a single (version, loader) slice >20 000 loses its middle,
-  and a mod with no loader tag is only reachable while its version fits under the cap → the remedy is a third
-  axis (`categoryId`). **Landmine:** `warnIfMisordered` must follow the partition's direction — an ascending
-  slice is *supposed* to come back least-downloaded first, so the old descending-only check would have cried
-  wolf on every bottom-up slice.
+  `/games/{gameId}/versions`, (3) a version whose `pagination.totalCount` exceeds the cap re-crawled **per
+  modloader and then per category** (`/categories?classId=6`) — *this* is what reaches past 10 000 — (4) any
+  slice still over the cap also crawled `sortOrder=asc` (bottom 10 000 ⇒ ≤20 000 covered), and a *category*
+  slice past even that narrowed by modloader (version × category × loader, the deepest the API allows).
+  **Both axes on purpose, not redundancy:** a mod carries a loader tag only if it has one, and CF's own docs
+  disagree on whether a category is mandatory (submission guide says the main category is required; the
+  project-creation page lists only the class) — so neither axis is provably total, and running both means a mod
+  is reachable if it has *either*. ~6 extra requests per over-cap version buys removal of a silent hole.
+  Splitting only where a count demands it keeps a sweep at ~1 request per version; `totalCount` rides along on
+  every response, so sizing is free (the lone probe case is a slice resuming exactly at the cap). All six
+  documented loaders are crawled incl. legacy Cauldron/LiteLoader, and **every** category incl. children
+  (parent-includes-child is undocumented, so both are crawled) — one request each beats unreachable mods.
+  **Axis lists refresh at sweep start *and whenever missing*** — the second condition is not an optimisation
+  but a **restart-correctness fix**: a resumed cursor arrives with a partition token and an empty in-memory
+  list, and without re-reading it the plan finds no next partition, reports the catalog finished and **throws
+  the resumed position away** (found by `theLoaderStageHandsOverToTheCategoryStageWithinOneSlice`, pinned by
+  `resumingMidSweepFetchesTheAxisListsItHasNotGotYet`). A failed version fetch degrades to the unfiltered top
+  10 000; a failed category fetch leaves the loader stage working.
+  **Residual gap (logged with a count, not hidden):** a (version, category, loader) slice >20 000 loses its
+  middle — no narrower filter exists. A mod with *neither* a loader nor a category is unreachable beyond its
+  version's cap and cannot be detected from outside. **Landmine:** `warnIfMisordered` must follow the
+  partition's direction — an ascending slice is *supposed* to come back least-downloaded first, so the old
+  descending-only check would have cried wolf on every bottom-up slice.
   **`CandidatePage.endOfCatalog` is load-bearing, don't collapse it:** it is `true` only when the platform
   genuinely ran out — for a partitioned source, when the *last* partition ran out — never on a failed request
   or a failed size probe. The crawler wraps to the start of the plan on it, so treating a transient 503 as
@@ -231,14 +241,18 @@ Spike workspace (not committed): `~/spc-grinder-spike/{configs,packs,baselines}`
   replaces rather than appends, creates file+parents, corrupt ⇒ start, partition token round-trips, and a
   pre-partition `cursors.json` (no `partition` key) still loads.
 - `CurseForgePartitionTest` (pure, no HTTP — **the CF coverage spec**): sweep opens unfiltered, hands over to
-  the newest version, under-cap version skips the loader split, over-cap version splits by loader, all six
-  loaders walked in order, over-cap loader slice gets its ascending twin, ascending always moves on, last
-  loader/version ends the catalog, empty version list ends after the unfiltered slice, a version that vanished
-  falls forward, key round-trip + unreadable key ⇒ start of sweep, version ordering numeric-descending with
-  unparsable last. Partitioned-source behaviour in `CurseForgeCandidateSourceTest`: which filters each slice
-  queries, crossing a partition boundary mid-slice (offset resets relative to the new partition), version list
-  refreshed at sweep start only, cap → loader split via `totalCount` (incl. the single-item probe), failed
-  probe keeps the position, and an unavailable version list degrading to the unfiltered top 10 000.
+  the newest version, under-cap version skips every split, over-cap version splits by loader **then by
+  category**, all six loaders + every category walked in order for one version, each stage's ascending twin,
+  category >2×cap narrowed by loader, deepest slices walk loaders then the next category, last category/version
+  ends the catalog, empty version list ends after the unfiltered slice, **no categories still leaves the loader
+  stage**, a vanished version/category falls forward, key round-trip + unreadable key (incl. the **3-field
+  pre-category token**) ⇒ start of sweep, version ordering numeric-descending with unparsable last.
+  Partitioned-source behaviour in `CurseForgeCandidateSourceTest`: which filters each slice queries (version,
+  category, and all three at once), `/categories` requested for the mods class, crossing a partition boundary
+  mid-slice (offset resets relative to the new partition), loader stage → category stage inside one slice, axis
+  lists refreshed at sweep start only *but re-read when resuming mid-sweep*, cap → loader split via `totalCount`
+  (incl. the single-item probe), failed probe keeps the position, and unavailable version/category lists
+  degrading rather than breaking.
   `GrindPacingTest`: the three pause cases + work outranking a completed sweep.
 - **`CatalogCrawlLiveIT`** (gated `GRINDER_LIVE_IT=1`, no containers, a few search calls) pins the *platform*
   assumptions no fake can: consecutive live batches return **different** projects, a fresh crawler over the
@@ -443,12 +457,14 @@ Remaining:
    platform would be re-ground as a new project.
 3. **CurseForge partitioning is implemented but never observed live** (same root cause as 1: no key). The
    traversal is pinned by pure unit tests and canned JSON against the published contract; what cannot be
-   checked offline is whether CF's `gameVersion` vocabulary, `totalCount` and loader filters behave as
-   documented. First run with a key: confirm the "crawl covers N game version(s)" log line, and watch for
-   `not sorted by` / `holds N mods but only` warnings.
-4. **Residual CF gaps by design** — a (version, loader) slice >20 000 mods loses its middle; a mod with no
-   loader tag is unreachable beyond its version's cap. Both are logged with counts. Fix is a third axis
-   (`categoryId`), deferred until a real run shows it matters.
+   checked offline is whether CF's `gameVersion` vocabulary, category ids, `totalCount` and loader filters
+   behave as documented — in particular whether a search on a parent category also returns its children (both
+   are crawled, so it is safe either way) and whether every mod really carries a category. First run with a
+   key: confirm the "crawl covers N game version(s)" and "narrow … by N categor(y/ies)" log lines, and watch
+   for `not sorted by` / `holds N mods but only` warnings.
+4. **Residual CF gap by design** — a (version, category, loader) slice >20 000 mods loses its middle (logged
+   with a count; no narrower filter exists), and a mod with *neither* a loader tag nor a category is
+   unreachable beyond its version's cap (undetectable from outside).
 5. **Modrinth's offset ceiling is 99 999** (measured) vs. ~71 000 mod projects today, so the whole catalog is
    reachable — but **if it ever exceeds 100 000 the tail silently looks like the end of the catalog** and the
    crawl would wrap early.

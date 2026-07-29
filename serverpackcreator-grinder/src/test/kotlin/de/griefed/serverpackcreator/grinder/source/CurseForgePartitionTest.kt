@@ -24,15 +24,38 @@ import org.junit.jupiter.api.Test
 
 /**
  * Pins the CurseForge partition plan — the traversal that gets past the platform's 10 000-result paging cap.
- * It is deliberately a pure function of (current partition, that partition's `totalCount`, version list) so
- * the *only* code that decides what gets crawled is testable without an API key, which this module does not
- * have. Every rule here is a coverage decision: a wrong "next" silently skips part of the catalog.
+ * It is deliberately a pure function of (current partition, that partition's `totalCount`, version list,
+ * category list) so the *only* code that decides what gets crawled is testable without an API key, which this
+ * module does not have. Every rule here is a coverage decision: a wrong "next" silently skips part of the
+ * catalog.
+ *
+ * The plan crawls an over-cap version along **two independent axes** — modloader and category — because
+ * neither is provably total: CurseForge tags a mod with a loader only when it has one, and its own submission
+ * docs disagree on whether a category is mandatory. Running both means a mod is reachable if it has *either*,
+ * and the tests below assert that both stages really do run.
  */
 internal class CurseForgePartitionTest {
 
     private val versions = listOf("1.21.1", "1.20.1", "1.12.2")
+    private val categories = listOf(406, 426, 4485) // as returned by /categories?classId=6, ascending by id
     private val underCap = CurseForgeCandidateSource.MAX_INDEX - 1
     private val overCap = CurseForgeCandidateSource.MAX_INDEX + 1
+    private val overTwiceTheCap = 2 * CurseForgeCandidateSource.MAX_INDEX + 1
+
+    private fun versionSlice(version: String, ascending: Boolean = false) =
+        CurseForgePartition(gameVersion = version, categoryId = null, modLoaderType = null, ascending = ascending)
+
+    private fun loaderSlice(version: String, loader: Int, ascending: Boolean = false) =
+        CurseForgePartition(gameVersion = version, categoryId = null, modLoaderType = loader, ascending = ascending)
+
+    private fun categorySlice(version: String, category: Int, ascending: Boolean = false) =
+        CurseForgePartition(gameVersion = version, categoryId = category, modLoaderType = null, ascending = ascending)
+
+    private fun categoryLoaderSlice(version: String, category: Int, loader: Int, ascending: Boolean = false) =
+        CurseForgePartition(gameVersion = version, categoryId = category, modLoaderType = loader, ascending = ascending)
+
+    private fun next(current: CurseForgePartition, totalCount: Int) =
+        CurseForgePartitions.next(current, totalCount, versions, categories)
 
     /** Every sweep opens with the unfiltered, most-downloaded-first slice, preserving the popularity premise. */
     @Test
@@ -40,6 +63,7 @@ internal class CurseForgePartitionTest {
         val first = CurseForgePartitions.FIRST
 
         Assertions.assertNull(first.gameVersion, "the opening partition filters by nothing")
+        Assertions.assertNull(first.categoryId)
         Assertions.assertNull(first.modLoaderType)
         Assertions.assertFalse(first.ascending, "most-downloaded first")
     }
@@ -50,56 +74,57 @@ internal class CurseForgePartitionTest {
      */
     @Test
     fun theWholeCatalogPartitionHandsOverToTheNewestVersion() {
-        val next = CurseForgePartitions.next(CurseForgePartitions.FIRST, totalCount = 250_000, versions = versions)
-
-        Assertions.assertEquals(CurseForgePartition("1.21.1", null, ascending = false), next)
+        Assertions.assertEquals(versionSlice("1.21.1"), next(CurseForgePartitions.FIRST, totalCount = 250_000))
     }
 
     @Test
     fun aVersionThatFitsUnderTheCapMovesStraightToTheNextVersion() {
-        val next = CurseForgePartitions.next(
-            CurseForgePartition("1.21.1", null, ascending = false), totalCount = underCap, versions = versions
-        )
-
         Assertions.assertEquals(
-            CurseForgePartition("1.20.1", null, ascending = false), next,
-            "a version whose mods are all reachable needs no loader split"
+            versionSlice("1.20.1"), next(versionSlice("1.21.1"), underCap),
+            "a version whose mods are all reachable needs neither loader nor category split"
         )
     }
 
     /** Over the cap, the version is re-crawled per modloader — each slice small enough to page through. */
     @Test
     fun aVersionOverTheCapSplitsByModLoader() {
-        val next = CurseForgePartitions.next(
-            CurseForgePartition("1.20.1", null, ascending = false), totalCount = overCap, versions = versions
-        )
-
         Assertions.assertEquals(
-            CurseForgePartition("1.20.1", CurseForgePartitions.FORGE, ascending = false), next,
+            loaderSlice("1.20.1", CurseForgePartitions.FORGE), next(versionSlice("1.20.1"), overCap),
             "the split starts with the first modloader of the same version"
         )
     }
 
+    /**
+     * The whole point of the third axis: after the loader stage, an over-cap version is crawled *again* by
+     * category. A mod that carries no modloader tag appears in no loader slice, so without this stage it was
+     * unreachable beyond the version's top 10 000.
+     */
     @Test
-    fun loaderSlicesUnderTheCapWalkThroughEveryLoaderThenTheNextVersion() {
-        var current = CurseForgePartition("1.20.1", CurseForgePartitions.FORGE, ascending = false)
-        val visited = mutableListOf<Int?>()
-
-        // Walk the whole loader split, each slice comfortably under the cap.
-        while (current.gameVersion == "1.20.1" && current.modLoaderType != null) {
-            visited.add(current.modLoaderType)
-            current = CurseForgePartitions.next(current, underCap, versions)!!
-        }
+    fun theLoaderStageIsFollowedByTheCategoryStage() {
+        val lastLoader = loaderSlice("1.20.1", CurseForgePartitions.NEOFORGE)
 
         Assertions.assertEquals(
-            listOf(
-                CurseForgePartitions.FORGE, CurseForgePartitions.CAULDRON, CurseForgePartitions.LITELOADER,
-                CurseForgePartitions.FABRIC, CurseForgePartitions.QUILT, CurseForgePartitions.NEOFORGE
-            ),
-            visited,
-            "every documented modloader must be crawled, or its mods are unreachable"
+            categorySlice("1.20.1", 406), next(lastLoader, underCap),
+            "after the last loader the same version is crawled by category"
         )
-        Assertions.assertEquals(CurseForgePartition("1.12.2", null, ascending = false), current)
+    }
+
+    @Test
+    fun everyLoaderThenEveryCategoryIsVisitedForAnOverCapVersion() {
+        val loadersVisited = mutableListOf<Int>()
+        val categoriesVisited = mutableListOf<Int>()
+        var current: CurseForgePartition? = next(versionSlice("1.20.1"), overCap)
+
+        // Walk the whole of 1.20.1's split, every sub-slice comfortably under the cap.
+        while (current != null && current.gameVersion == "1.20.1") {
+            current.modLoaderType?.takeIf { current!!.categoryId == null }?.let { loadersVisited.add(it) }
+            current.categoryId?.takeIf { current!!.modLoaderType == null }?.let { categoriesVisited.add(it) }
+            current = next(current, underCap)
+        }
+
+        Assertions.assertEquals(CurseForgePartitions.LOADERS, loadersVisited, "every documented modloader")
+        Assertions.assertEquals(categories, categoriesVisited, "every category of the mods class")
+        Assertions.assertEquals(versionSlice("1.12.2"), current, "then on to the next version")
     }
 
     /**
@@ -108,80 +133,134 @@ internal class CurseForgePartitionTest {
      */
     @Test
     fun aLoaderSliceOverTheCapIsAlsoCrawledFromTheBottom() {
-        val forgeDescending = CurseForgePartition("1.20.1", CurseForgePartitions.FORGE, ascending = false)
+        val forgeDescending = loaderSlice("1.20.1", CurseForgePartitions.FORGE)
 
-        val next = CurseForgePartitions.next(forgeDescending, totalCount = overCap, versions = versions)
-
-        Assertions.assertEquals(forgeDescending.copy(ascending = true), next, "same slice, least-downloaded first")
-    }
-
-    /** After the bottom-up pass the plan moves on regardless of size — the middle of a >20 000 slice is lost. */
-    @Test
-    fun anAscendingSliceAlwaysMovesOnToTheNextLoader() {
-        val next = CurseForgePartitions.next(
-            CurseForgePartition("1.20.1", CurseForgePartitions.FORGE, ascending = true),
-            totalCount = 100_000,
-            versions = versions
+        Assertions.assertEquals(
+            forgeDescending.copy(ascending = true), next(forgeDescending, overCap),
+            "same slice, least-downloaded first"
         )
-
-        Assertions.assertEquals(CurseForgePartition("1.20.1", CurseForgePartitions.CAULDRON, ascending = false), next)
     }
 
     @Test
-    fun theLastLoaderOfTheLastVersionEndsTheCatalog() {
-        val last = CurseForgePartition("1.12.2", CurseForgePartitions.NEOFORGE, ascending = false)
+    fun anAscendingLoaderSliceMovesOnToTheNextLoader() {
+        Assertions.assertEquals(
+            loaderSlice("1.20.1", CurseForgePartitions.CAULDRON),
+            next(loaderSlice("1.20.1", CurseForgePartitions.FORGE, ascending = true), overTwiceTheCap),
+            "the loader stage moves on; the category stage is the second path to those mods"
+        )
+    }
 
+    @Test
+    fun aCategorySliceOverTheCapIsAlsoCrawledFromTheBottom() {
+        val category = categorySlice("1.20.1", 426)
+
+        Assertions.assertEquals(category.copy(ascending = true), next(category, overCap))
+    }
+
+    /**
+     * The deepest split, for the pathological case: a category slice of one version holding more than both
+     * sort directions can reach is narrowed further by modloader. Without this the middle of such a slice
+     * would be lost.
+     */
+    @Test
+    fun aCategorySliceOverTwiceTheCapIsNarrowedByModLoader() {
+        val exhaustedCategory = categorySlice("1.20.1", 426, ascending = true)
+
+        Assertions.assertEquals(
+            categoryLoaderSlice("1.20.1", 426, CurseForgePartitions.FORGE),
+            next(exhaustedCategory, overTwiceTheCap),
+            "category × loader is the last available narrowing"
+        )
+    }
+
+    @Test
+    fun categoryLoaderSlicesWalkEveryLoaderThenTheNextCategory() {
+        var current = categoryLoaderSlice("1.20.1", 426, CurseForgePartitions.FORGE)
+        val visited = mutableListOf<Int>()
+
+        while (current.categoryId == 426 && current.modLoaderType != null) {
+            visited.add(current.modLoaderType!!)
+            current = next(current, underCap)!!
+        }
+
+        Assertions.assertEquals(CurseForgePartitions.LOADERS, visited)
+        Assertions.assertEquals(categorySlice("1.20.1", 4485), current, "then the next category of that version")
+    }
+
+    @Test
+    fun aCategoryLoaderSliceOverTheCapIsAlsoCrawledFromTheBottom() {
+        val deepest = categoryLoaderSlice("1.20.1", 426, CurseForgePartitions.FABRIC)
+
+        Assertions.assertEquals(deepest.copy(ascending = true), next(deepest, overCap))
+    }
+
+    @Test
+    fun theLastCategoryOfTheLastVersionEndsTheCatalog() {
         Assertions.assertNull(
-            CurseForgePartitions.next(last, underCap, versions),
+            next(categorySlice("1.12.2", categories.last()), underCap),
             "nothing left to crawl ⇒ end of catalog, which makes the crawler wrap and start a new sweep"
         )
     }
 
     @Test
     fun theLastVersionUnderTheCapEndsTheCatalog() {
-        val last = CurseForgePartition("1.12.2", null, ascending = false)
-
-        Assertions.assertNull(CurseForgePartitions.next(last, underCap, versions))
+        Assertions.assertNull(next(versionSlice("1.12.2"), underCap))
     }
 
     /** Without a version list there is nothing to partition, so the sweep is just the unfiltered slice. */
     @Test
     fun anEmptyVersionListEndsAfterTheWholeCatalogPartition() {
         Assertions.assertNull(
-            CurseForgePartitions.next(CurseForgePartitions.FIRST, totalCount = 250_000, versions = emptyList())
+            CurseForgePartitions.next(CurseForgePartitions.FIRST, 250_000, versions = emptyList(), categories = categories)
+        )
+    }
+
+    /** No category list (the platform call failed) must still leave the loader stage working. */
+    @Test
+    fun withoutCategoriesAnOverCapVersionStillGetsItsLoaderStage() {
+        val lastLoader = loaderSlice("1.20.1", CurseForgePartitions.NEOFORGE)
+
+        Assertions.assertEquals(
+            versionSlice("1.12.2"),
+            CurseForgePartitions.next(lastLoader, underCap, versions, categories = emptyList()),
+            "with no categories to crawl, the version is done after its loaders"
         )
     }
 
     /** A version that vanished from the platform's list must not dead-end the crawl. */
     @Test
     fun aVersionNoLongerInTheListFallsForwardToTheNewestOne() {
-        val next = CurseForgePartitions.next(
-            CurseForgePartition("1.19.9-removed", null, ascending = false), underCap, versions
-        )
+        Assertions.assertEquals(versionSlice("1.21.1"), next(versionSlice("1.19.9-removed"), underCap))
+    }
 
-        Assertions.assertEquals(CurseForgePartition("1.21.1", null, ascending = false), next)
+    /** A category that vanished likewise falls forward instead of stalling that version. */
+    @Test
+    fun aCategoryNoLongerInTheListFallsForwardToTheFirstOne() {
+        Assertions.assertEquals(categorySlice("1.20.1", categories.first()), next(categorySlice("1.20.1", 999_999), underCap))
     }
 
     @Test
     fun partitionKeysRoundTrip() {
-        val partitions = listOf(
+        listOf(
             CurseForgePartitions.FIRST,
-            CurseForgePartition("1.20.1", null, ascending = false),
-            CurseForgePartition("1.20.1", CurseForgePartitions.FABRIC, ascending = true),
-            CurseForgePartition("1.20.1-Snapshot", CurseForgePartitions.NEOFORGE, ascending = false)
-        )
-
-        partitions.forEach { partition ->
+            versionSlice("1.20.1"),
+            loaderSlice("1.20.1", CurseForgePartitions.FABRIC, ascending = true),
+            categorySlice("1.20.1", 426),
+            categoryLoaderSlice("1.20.1-Snapshot", 4485, CurseForgePartitions.NEOFORGE, ascending = true)
+        ).forEach { partition ->
             Assertions.assertEquals(partition, CurseForgePartition.parse(partition.key), "round trip of ${partition.key}")
         }
     }
 
-    /** An unreadable token restarts the sweep rather than crashing the daemon or silently crawling nothing. */
+    /**
+     * An unreadable token restarts the sweep rather than crashing the daemon or silently crawling nothing.
+     * That deliberately includes the **three-field token** written before the category axis existed: one
+     * re-sweep costs nothing (fresh verdicts are skipped), whereas mis-reading it would crawl the wrong slice.
+     */
     @Test
     fun anUnreadableKeyParsesBackToTheStartOfTheSweep() {
-        listOf("", "garbage", "1.20.1", "1.20.1|notanumber|desc", "1.20.1|1|sideways").forEach {
-            Assertions.assertEquals(CurseForgePartitions.FIRST, CurseForgePartition.parse(it), "token '$it'")
-        }
+        listOf("", "garbage", "1.20.1", "1.20.1|1|desc", "1.20.1|*|notanumber|desc", "1.20.1|*|1|sideways")
+            .forEach { Assertions.assertEquals(CurseForgePartitions.FIRST, CurseForgePartition.parse(it), "token '$it'") }
     }
 
     /**

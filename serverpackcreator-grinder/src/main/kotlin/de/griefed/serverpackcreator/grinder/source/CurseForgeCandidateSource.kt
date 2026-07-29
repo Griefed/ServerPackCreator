@@ -41,15 +41,17 @@ import java.nio.charset.StandardCharsets
  * an `index` beyond [MAX_INDEX], so any single query exposes at most 10 000 mods — far less than CurseForge
  * hosts. The crawl therefore walks a *sequence* of bounded queries ([CurseForgePartitions]): the unfiltered
  * catalog first (its top 10 000 by downloads, the mods that matter most), then every game version newest
- * first, splitting a version by modloader when its `pagination.totalCount` says it holds more than can be
- * paged, and crawling such a slice from both ends when even that overflows. Which partition the crawl is in
- * travels in the crawl cursor ([CandidatePage.nextPartition]), so it survives restarts.
+ * first, splitting a version by modloader **and** by category when its `pagination.totalCount` says it holds
+ * more than can be paged, and crawling any such slice from both ends when even that overflows. Which
+ * partition the crawl is in travels in the crawl cursor ([CandidatePage.nextPartition]), so it survives
+ * restarts.
  *
- * The game-version list comes from `/games/{gameId}/versions` and is refreshed at the start of each sweep;
- * if it cannot be fetched the crawl degrades to the unfiltered top 10 000 — reduced coverage, still working.
- * **Residual gaps, logged rather than hidden:** a single (version, loader) slice holding more than
- * `2 × MAX_INDEX` mods loses its middle, and a mod tagged with no modloader is only reachable while its
- * version fits under the cap. A third axis (`categoryId`) is the remedy if either shows up in practice.
+ * The axis lists come from `/games/{gameId}/versions` and `/categories?classId=…`, refreshed at the start of
+ * each sweep; without versions the crawl degrades to the unfiltered top 10 000, and without categories an
+ * over-cap version falls back to its modloader slices — reduced coverage, still working.
+ * **Residual gap, logged rather than hidden:** a single (version, category, modloader) slice holding more than
+ * `2 × MAX_INDEX` mods loses its middle. That is the narrowest slice this API can express, so a mod there —
+ * or one carrying neither a loader nor a category — is beyond reach of any partitioning.
  *
  * **The request contract is verified, not assumed** (see [SORT_FIELD_TOTAL_DOWNLOADS]): `pageSize`
  * defaults to and maxes at 50, the API rejects `index + pageSize > 10 000`, `sortOrder` takes
@@ -79,11 +81,18 @@ class CurseForgeCandidateSource(
     private val headers = mapOf("x-api-key" to apiKey, "Accept" to "application/json")
 
     /**
-     * The partition axis: platform game versions, newest first. Refreshed at the start of every sweep; empty
-     * until the first successful fetch, which leaves the crawl unpartitioned (top [MAX_INDEX] only).
+     * The primary partition axis: platform game versions, newest first. Refreshed at the start of every sweep;
+     * empty until the first successful fetch, which leaves the crawl unpartitioned (top [MAX_INDEX] only).
      */
     @Volatile
     private var gameVersions: List<String> = emptyList()
+
+    /**
+     * The second axis, for versions too big to page through: the mod class's category ids. Refreshed alongside
+     * [gameVersions]; empty means an over-cap version is covered by its modloader slices alone.
+     */
+    @Volatile
+    private var categoryIds: List<Int> = emptyList()
 
     override val platform = ModPlatforms.CURSEFORGE
 
@@ -100,8 +109,15 @@ class CurseForgeCandidateSource(
     override fun page(offset: Int, limit: Int, partition: String?): CandidatePage {
         require(offset >= 0) { "offset must be >= 0, was $offset" }
         require(limit >= 0) { "limit must be >= 0, was $limit" }
-        if (partition == null) {
-            refreshGameVersions() // start of a sweep: pick up versions added since the last one
+        // At the start of a sweep, re-read both axis lists so versions and categories added since the last one
+        // get crawled. Also read them whenever they are *missing*, which is the case that matters after a
+        // restart: the cursor resumes mid-sweep with a partition token, and without its axis lists the plan
+        // would find no next partition, report the catalog finished and throw the resumed position away.
+        if (partition == null || gameVersions.isEmpty()) {
+            refreshGameVersions()
+        }
+        if (partition == null || categoryIds.isEmpty()) {
+            refreshCategories()
         }
         var current = partition?.let { CurseForgePartition.parse(it) } ?: CurseForgePartitions.FIRST
         var index = offset
@@ -114,7 +130,7 @@ class CurseForgeCandidateSource(
                 // This query is paged out. Its true size decides whether the rest is reachable by splitting.
                 val total = knownTotal ?: totalCountOf(current) ?: break // probe failed: keep the position
                 warnIfSliceIsUnreachable(current, total)
-                val following = CurseForgePartitions.next(current, total, gameVersions)
+                val following = CurseForgePartitions.next(current, total, gameVersions, categoryIds)
                 if (following == null) {
                     endOfCatalog = true
                     break
@@ -134,7 +150,7 @@ class CurseForgeCandidateSource(
             index += fitting.size
             if (response.candidates.size < count) {
                 // Fewer than asked for ⇒ this partition is exhausted; carry on in the next one.
-                val following = CurseForgePartitions.next(current, knownTotal ?: 0, gameVersions)
+                val following = CurseForgePartitions.next(current, knownTotal ?: 0, gameVersions, categoryIds)
                 if (following == null) {
                     endOfCatalog = true
                     break
@@ -178,6 +194,42 @@ class CurseForgeCandidateSource(
     }
 
     /**
+     * Re-read the mod class's categories — the second partition axis, used for versions whose mods cannot all
+     * be paged through. **Every** category is taken, parents and children alike, because whether a search on a
+     * parent category also returns its children is not documented; crawling both costs a few requests and
+     * removes the doubt. Class entries (`isClass`) are dropped: searching the class is what `classId` already
+     * does. A failed fetch leaves the previous list (or none, which reduces an over-cap version to its
+     * modloader slices) rather than aborting.
+     */
+    private fun refreshCategories() {
+        val url = "$apiBase/categories?gameId=$minecraftGameId&classId=$modsClassId"
+        val body = runCatching { httpFetcher.get(url, headers) }
+            .getOrElse {
+                log.warn(
+                    "CurseForge category list unavailable (${it.message}) — an over-cap game version will be " +
+                        "covered by its modloader slices only this sweep."
+                )
+                return
+            }
+        val ids = runCatching {
+            objectMapper.readTree(body).path("data")
+                .filterNot { it.path("isClass").asBoolean(false) }
+                .mapNotNull { node -> node.path("id").takeIf { it.isInt }?.asInt() }
+                .distinct()
+                .sorted()
+        }.getOrElse {
+            log.warn("CurseForge category list could not be read (${it.message}); keeping the previous one.")
+            return
+        }
+        if (ids.isEmpty()) {
+            log.warn("CurseForge reported no mod categories; keeping the previous list of ${categoryIds.size}.")
+            return
+        }
+        categoryIds = ids
+        log.info("CurseForge crawl can narrow an over-cap game version by ${ids.size} categor(y/ies).")
+    }
+
+    /**
      * The `pagination.totalCount` of [partition], read with a single-item query, or `null` when that request
      * failed. Only needed when a slice resumes exactly at the paging cap without having seen a count yet —
      * every ordinary response carries one for free.
@@ -190,12 +242,14 @@ class CurseForgeCandidateSource(
      * than left silent, because a sweep that skips 30 000 mods must not look complete.
      */
     private fun warnIfSliceIsUnreachable(partition: CurseForgePartition, totalCount: Int) {
-        val reachable = if (partition.modLoaderType == null) MAX_INDEX else 2 * MAX_INDEX
-        if (partition.ascending && totalCount > reachable) {
+        val isDeepestSlice = partition.gameVersion != null && partition.categoryId != null && partition.modLoaderType != null
+        val reachable = 2 * MAX_INDEX
+        if (isDeepestSlice && partition.ascending && totalCount > reachable) {
             log.warn(
                 "CurseForge partition ${partition.key} holds $totalCount mods but only $reachable are reachable " +
                     "(the API caps paging at $MAX_INDEX per sort direction) — ${totalCount - reachable} are being " +
-                    "skipped. Split this axis further (e.g. by categoryId) to cover them."
+                    "skipped. This is already the narrowest slice the search API allows (version × category × " +
+                    "modloader), so covering them needs another filter entirely."
             )
         }
     }
@@ -225,6 +279,7 @@ class CurseForgeCandidateSource(
         append("&sortField=$SORT_FIELD_TOTAL_DOWNLOADS")
         append("&sortOrder=${if (partition.ascending) "asc" else "desc"}")
         partition.gameVersion?.let { append("&gameVersion=${URLEncoder.encode(it, StandardCharsets.UTF_8)}") }
+        partition.categoryId?.let { append("&categoryId=$it") }
         partition.modLoaderType?.let { append("&modLoaderType=$it") }
         append("&index=$index&pageSize=$count")
     }

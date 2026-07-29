@@ -616,3 +616,22 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   source has 18 canned-JSON tests, but **nothing here has ever touched the real CurseForge API** (no key, the
   module's oldest open item). The README and module CLAUDE.md say so, and name the log lines to watch on a first
   keyed run. Suite: grinder 120 run + 8 gated, green; the Modrinth live IT still passes.
+  **Third axis (`categoryId`) added the same day.** The loader split left two holes: a mod with no modloader tag
+  was unreachable past its version's top 10 000 (it appears in no loader slice), and a (version, loader) slice
+  above 20 000 lost its middle. Researched first: `/categories?gameId=&classId=` is documented with `isClass`
+  separating the class from its categories — but CF's own support docs **disagree** on whether a category is
+  mandatory (the submission guide calls the main category required; the project-creation page lists only the
+  class as required). So the axis is added *alongside* the loader stage rather than replacing it: an over-cap
+  version is crawled per loader **and** per category, which makes a mod reachable if it carries *either* tag —
+  ~6 extra requests per over-cap version to remove a silent hole. A category slice past both sort directions is
+  narrowed by loader (version × category × loader, the deepest the API expresses). Every category is crawled,
+  children included, because "does a parent category include its children" is undocumented. Residual gap is now
+  a single deepest slice above 20 000 (logged with a count) plus mods with neither tag (undetectable).
+  **Bug found by the new tests, and it was a real one:** the axis lists were read only when `partition == null`,
+  i.e. at sweep start. A daemon restarting *mid-sweep* resumes with a partition token and an empty in-memory
+  list, so the plan found no next partition, reported the catalog finished and **wrapped — discarding exactly
+  the position the cursor exists to preserve**. Introduced by the partitioning commit earlier the same day;
+  fixed by also re-reading a list whenever it is missing, and pinned by
+  `resumingMidSweepFetchesTheAxisListsItHasNotGotYet`. Kept in the same commit as the category axis because the
+  category-stage test that exposed it cannot pass without the fix. Suite: grinder 133 run + 8 gated, green;
+  Modrinth live IT still passes.

@@ -85,16 +85,25 @@ a sweep takes (otherwise verdicts go stale faster than the crawl advances and it
 
 **CurseForge is crawled in partitions**, because its `/mods/search` refuses an `index` beyond 10 000 — one
 query can only ever show you the 10 000 most-downloaded mods. So a sweep walks a sequence of bounded queries:
-the unfiltered catalog first, then every game version newest-first, splitting a version by modloader when the
-API reports it holds more than 10 000, and crawling such a slice from both ends (`sortOrder` desc *and* asc)
-when even that overflows. A CurseForge sweep is therefore much longer than a Modrinth one — roughly one
-request per game version, plus paging — and mods supporting many versions turn up in several partitions,
-which costs nothing but a store lookup because fresh verdicts are skipped.
 
-Two residual gaps are **logged with a count** rather than left to look like completeness: a single
-(version, loader) slice holding more than 20 000 mods loses its middle, and a mod tagged with no modloader at
-all is only reachable while its version fits under 10 000. If either shows up in your logs, the fix is a third
-partition axis (`categoryId`).
+1. the unfiltered catalog (its top 10 000 by downloads);
+2. then every game version, newest first — a version the API reports as holding fewer than 10 000 mods is
+   done in one slice;
+3. a version over that is re-crawled **per modloader** and **per category** — both, because CurseForge tags a
+   mod with a loader only if it has one, and its own submission docs disagree on whether a category is
+   mandatory, so running both axes means a mod is reachable if it has *either*;
+4. any slice still over 10 000 is crawled from both ends (`sortOrder` desc *and* asc, reaching 20 000), and a
+   category slice past even that is narrowed by modloader as a last resort.
+
+A CurseForge sweep is therefore much longer than a Modrinth one — roughly one request per game version, plus
+~56 more for each version big enough to need splitting, plus paging. Mods supporting many versions turn up in
+several partitions, which costs nothing but a store lookup because fresh verdicts are skipped.
+
+One residual gap remains, and it is **logged with a count** rather than left to look like completeness: a
+single (version, category, modloader) slice holding more than 20 000 mods loses its middle. That is the
+narrowest slice this API can express, so covering it would need a filter CurseForge does not offer. A mod
+carrying *neither* a loader tag nor a category is likewise only reachable while its version fits under
+10 000 — that one cannot be detected from outside, so it cannot be logged.
 
 > **Not yet observed against the live API.** This project has never had a `CURSEFORGE_API_KEY`, so the whole
 > CurseForge crawl — the request contract and the partition traversal — is pinned against the published REST
@@ -202,7 +211,8 @@ Give `TimeoutStopSec` room: on stop the grinder removes in-flight containers bef
 | Passes run but verify nothing for a while | Also expected: the crawl is scanning past projects whose verdicts are fresh, one batch per `SPC_GRINDER_SCAN_DELAY`          |
 | It re-grinds popular mods, never the tail | The crawl position was lost (deleted/unwritable `SPC_GRINDER_CURSORS`) or the TTL is shorter than a sweep takes — raise it    |
 | `game-version list unavailable`          | CurseForge's `/games/432/versions` failed, so that sweep covers only the unfiltered top 10 000. Check the key and connectivity |
-| `holds N mods but only 20000 are reachable` | One (version, loader) slice is too big to page through; its middle is skipped. Needs a third partition axis (`categoryId`)   |
+| `category list unavailable`               | CurseForge's `/categories` failed, so an over-cap version is covered by its modloader slices only that sweep                   |
+| `holds N mods but only 20000 are reachable` | Even a version × category × modloader slice is too big to page through; its middle is skipped. No further filter exists      |
 | A container outlived the process         | Should not happen — shutdown drains them. If it does, `docker ps` and remove it, and please report it                         |
 
 ---
