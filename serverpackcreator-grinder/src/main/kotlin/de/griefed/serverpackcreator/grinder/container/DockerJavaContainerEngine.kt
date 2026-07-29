@@ -50,7 +50,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 class DockerJavaContainerEngine(
     private val client: DockerClient = defaultClient()
-) : ContainerEngine, AutoCloseable {
+) : ContainerEngine {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /**

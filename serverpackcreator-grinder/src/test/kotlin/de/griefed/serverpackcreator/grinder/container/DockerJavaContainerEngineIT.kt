@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder.container
 
+import com.github.dockerjava.api.DockerClient
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
@@ -80,10 +81,10 @@ internal class DockerJavaContainerEngineIT {
      */
     @Test
     fun closeRemovesAContainerLeftRunningByAnAbandonedRun() {
-        val engine = DockerJavaContainerEngine()
+        val drainEngine = DockerJavaContainerEngine()
         val booting = Thread {
             runCatching {
-                engine.run(busyboxSpec("echo booting; sleep 300"), Regex("this-never-appears"), Duration.ofMinutes(5))
+                drainEngine.run(busyboxSpec("echo booting; sleep 300"), Regex("this-never-appears"), Duration.ofMinutes(5))
             }
         }.apply { isDaemon = true; start() }
 
@@ -97,7 +98,7 @@ internal class DockerJavaContainerEngineIT {
         }
         Assertions.assertTrue(running > 0, "the probe container should be running before close()")
 
-        engine.close()
+        drainEngine.close()
         booting.interrupt()
 
         // close() force-removes, so the sleeper must be gone almost immediately.
@@ -109,7 +110,7 @@ internal class DockerJavaContainerEngineIT {
     }
 
     /** Count running containers that look like this test's probe, so the assertion can't match anything else. */
-    private fun countBusyboxSleepers(client: com.github.dockerjava.api.DockerClient): Int =
+    private fun countBusyboxSleepers(client: DockerClient): Int =
         client.listContainersCmd().withShowAll(false).exec()
             .count { container ->
                 container.image == "busybox:latest" && (container.command?.contains("sleep 300") == true)

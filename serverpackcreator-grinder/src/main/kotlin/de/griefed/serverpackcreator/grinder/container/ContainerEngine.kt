@@ -108,10 +108,21 @@ data class ContainerRunOutput(val lines: List<String>, val exitCode: Int?, val t
  *
  * @author Griefed
  */
-interface ContainerEngine {
+interface ContainerEngine : AutoCloseable {
     /**
      * Run [spec] to a terminal state, stopping once [readyPattern] is seen or [timeout] elapses, and
      * return its captured output. Implementations must remove the container before returning.
      */
     fun run(spec: ContainerSpec, readyPattern: Regex, timeout: Duration): ContainerRunOutput
+
+    /**
+     * Release whatever [run] could not clean up itself — the per-run removal is skipped when the JVM is
+     * torn down mid-boot, which would leave a container (and a Minecraft server) running. Part of the seam
+     * rather than one implementation, so *any* engine can be drained on shutdown and the contract above
+     * ("always removes it") holds even on an interrupted run. Must be idempotent and must not throw; the
+     * default is a no-op for engines with nothing to release (e.g. test fakes).
+     */
+    override fun close() {
+        // Nothing to release by default.
+    }
 }
