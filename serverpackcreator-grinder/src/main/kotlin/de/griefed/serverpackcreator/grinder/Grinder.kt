@@ -25,6 +25,7 @@ import java.time.Instant
 import java.time.Duration
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Grinds one candidate: skip it while its verdict is still *fresh*, otherwise run the
@@ -48,16 +49,19 @@ class Grinder(
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
-    /** Verify [candidate] (unless a fresh verdict exists) and record its per-loader verdicts. */
-    fun grind(candidate: GrindCandidate) {
+    /**
+     * Verify [candidate] (unless a fresh verdict exists), record its per-loader verdicts and report what
+     * happened — the daemon paces itself on how much real work a pass did (see [GrindPacing]).
+     */
+    fun grind(candidate: GrindCandidate): GrindOutcome {
         // Freshness is per (platform, slug): the same slug on Modrinth and CurseForge is two projects.
         val lastVerified = store.newestVerification(candidate.platform, candidate.slug)
         if (lastVerified != null && Duration.between(lastVerified, clock()) < reverifyTtl) {
-            return
+            return GrindOutcome.SKIPPED_FRESH
         }
         val report = runCatching { verifier.verify(candidate) }
             .onFailure { log.warn("Verification failed for ${candidate.projectUrl}: ${it.message}") }
-            .getOrNull() ?: return
+            .getOrNull() ?: return GrindOutcome.FAILED
         if (report.platform != candidate.platform) {
             // Recording uses the resolved report's platform, while the skip-check above uses the
             // candidate's. If a source ever labels a project differently from the platform that resolves
@@ -82,7 +86,26 @@ class Grinder(
                 )
             )
         }
+        return GrindOutcome.VERIFIED
     }
+}
+
+/**
+ * What one [Grinder.grind] call did. Distinguishing *skipped because fresh* from *attempted and failed* is
+ * what lets the daemon pace itself: only [VERIFIED] counts as progress, so a pass that found nothing due —
+ * or one where everything failed — waits instead of racing the crawl position onward.
+ *
+ * @author Griefed
+ */
+enum class GrindOutcome {
+    /** The candidate was verified and its per-loader verdicts recorded. */
+    VERIFIED,
+
+    /** Verification was attempted but threw; nothing was recorded and the project stays due. */
+    FAILED,
+
+    /** The project's verdict is still younger than the re-verify TTL, so nothing was done. */
+    SKIPPED_FRESH
 }
 
 /**
@@ -118,19 +141,25 @@ class GrindPool(
     }
 
     /**
-     * Process every candidate in [candidates] (popularity-first), returning once all are done — or
-     * early if [requestStop] is called.
+     * Process every candidate in [candidates] (popularity-first), returning once all are done — or early if
+     * [requestStop] is called. Returns how many candidates were actually **verified**, which is the daemon's
+     * measure of whether the pass did useful work (see [GrindPacing]); skipped-as-fresh and failed candidates
+     * deliberately do not count.
      */
-    fun grindAll(candidates: Collection<GrindCandidate>) {
+    fun grindAll(candidates: Collection<GrindCandidate>): Int {
         val queue = ConcurrentLinkedQueue(candidates.sortedByDescending { it.popularity })
+        val verified = AtomicInteger(0)
         val workers = (1..workerCount).map {
             Thread {
                 while (!stopRequested.get()) {
                     val candidate = queue.poll() ?: break
-                    grinder.grind(candidate)
+                    if (grinder.grind(candidate) == GrindOutcome.VERIFIED) {
+                        verified.incrementAndGet()
+                    }
                 }
             }.apply { name = "grind-worker-$it"; start() }
         }
         workers.forEach { it.join() }
+        return verified.get()
     }
 }

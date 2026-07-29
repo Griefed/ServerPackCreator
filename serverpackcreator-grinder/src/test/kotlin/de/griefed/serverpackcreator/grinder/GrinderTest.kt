@@ -33,7 +33,8 @@ import java.util.concurrent.atomic.AtomicInteger
  * Pins the grind orchestration with a fake [CandidateVerifier] (no containers): one verdict recorded
  * per loader, projects with a *fresh* verdict skipped while *stale* ones are re-verified, a thrown
  * verification swallowed (not propagated), and the pool draining every candidate across workers
- * most-popular-first.
+ * most-popular-first. Each grind also reports its [GrindOutcome], and the pool counts the verified ones —
+ * the daemon paces itself on that count, so it is part of the contract, not a convenience.
  */
 internal class GrinderTest {
 
@@ -52,8 +53,9 @@ internal class GrinderTest {
                 )
             )
         }
-        Grinder(verifier, store).grind(candidate("jei"))
+        val outcome = Grinder(verifier, store).grind(candidate("jei"))
 
+        Assertions.assertEquals(GrindOutcome.VERIFIED, outcome)
         Assertions.assertEquals(2, store.all().size)
         Assertions.assertEquals(
             setOf("Forge" to Confidence.HIGH, "Fabric" to Confidence.MEDIUM),
@@ -70,8 +72,9 @@ internal class GrinderTest {
         val calls = AtomicInteger(0)
         val verifier = CandidateVerifier { c -> calls.incrementAndGet(); clientsideReport(c.slug, listOf(loaderVerdict("Forge", "jei-", Confidence.HIGH))) }
 
-        Grinder(verifier, store, reverifyTtl = Duration.ofDays(30), clock = { now }).grind(candidate("jei"))
+        val outcome = Grinder(verifier, store, reverifyTtl = Duration.ofDays(30), clock = { now }).grind(candidate("jei"))
 
+        Assertions.assertEquals(GrindOutcome.SKIPPED_FRESH, outcome)
         Assertions.assertEquals(0, calls.get(), "a verdict younger than the TTL must not be re-verified")
         Assertions.assertEquals(1, store.all().size)
     }
@@ -123,8 +126,9 @@ internal class GrinderTest {
         val verifier = CandidateVerifier { throw IllegalStateException("boot host exploded") }
 
         // Must not throw — a bad candidate cannot sink the worker.
-        Grinder(verifier, store).grind(candidate("doomed"))
+        val outcome = Grinder(verifier, store).grind(candidate("doomed"))
 
+        Assertions.assertEquals(GrindOutcome.FAILED, outcome, "a failure is not progress — the daemon throttles on it")
         Assertions.assertTrue(store.all().isEmpty())
     }
 
@@ -137,8 +141,9 @@ internal class GrinderTest {
         }
         val candidates = (1..30).map { candidate("mod$it", it.toLong()) }
 
-        GrindPool(Grinder(verifier, store), workerCount = 4).grindAll(candidates)
+        val verified = GrindPool(Grinder(verifier, store), workerCount = 4).grindAll(candidates)
 
+        Assertions.assertEquals(30, verified, "every candidate was verified")
         Assertions.assertEquals(30, store.all().size)
         Assertions.assertEquals((1..30).map { "mod$it" }.toSet(), store.all().map { it.slug }.toSet())
     }
@@ -177,6 +182,27 @@ internal class GrinderTest {
         pool.grindAll((1..20).map { candidate("mod$it", it.toLong()) })
 
         Assertions.assertEquals(1, processed.size, "only the in-flight candidate completes; the queue is dropped")
+    }
+
+    /**
+     * The pacing input: only verified candidates count. A pass made up of fresh skips and failures reports
+     * zero, which is what makes the daemon wait instead of racing its crawl position through the catalog.
+     */
+    @Test
+    fun poolCountsOnlyTheCandidatesItActuallyVerified() {
+        val now = Instant.parse("2026-06-01T00:00:00Z")
+        val store = InMemoryVerdictStore()
+        store.record(grindVerdict("fresh", "Forge", verifiedAt = now.minus(Duration.ofDays(1))))
+        val verifier = CandidateVerifier { c ->
+            if (c.slug == "doomed") throw IllegalStateException("boot host exploded")
+            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "${c.slug}-", Confidence.HIGH)))
+        }
+        val grinder = Grinder(verifier, store, reverifyTtl = Duration.ofDays(30), clock = { now })
+
+        val verified = GrindPool(grinder, workerCount = 2)
+            .grindAll(listOf(candidate("fresh"), candidate("doomed"), candidate("due"), candidate("alsoDue")))
+
+        Assertions.assertEquals(2, verified, "one fresh skip and one failure are not work")
     }
 
     @Test
