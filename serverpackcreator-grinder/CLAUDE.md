@@ -282,7 +282,22 @@ bash's `IFS="," read -ra` keeps empty fields too, and both shells hand the empty
 the keeper). Left as-is deliberately: adding `--no-empty` there would be churn and a needless divergence
 from the bash reference. Don't "fix" it again.
 
+**Matrix coverage actually exercised so far — read before trusting a cell.** The IT machinery is proven,
+but only **2 of ~36 cells have ever run**: `Fabric 1.20.1 [bash]` and `Fabric 1.20.1 [fish]` (which is how
+the fish bug was found and its fix confirmed). Specifically **not yet run**: every **`pwsh`** cell (the
+`.ps1` templates have never been executed — only `pwsh --version` was smoke-tested, and fish proved a
+template can be genuinely broken), every **Forge / NeoForge / Quilt** cell, and the older Minecraft rows
+(**1.12.2**, **1.16.1** — i.e. the Java 8 path and the pre-ServerStarterJar Forge branch). Run the full
+grid before claiming template parity.
+
 Remaining:
 
-1. **Store dedup across platforms** (minor) — verdicts are keyed by `slug`, so the same mod on Modrinth
+1. **Run the full template matrix** — especially the `pwsh` cells and the older-Minecraft/other-loader
+   rows listed above. Machinery is ready; it is a slow, network-heavy manual run.
+2. **Live verification of two shipped paths:** the continuous loop (`GrinderApplication` with no args —
+   pass → sleep → pass, shutdown hook) is covered by unit tests for the TTL policy but has **never been
+   run end-to-end**; and `CurseForgeCandidateSource` has **never made a real API call** (no
+   `CURSEFORGE_API_KEY` available — its contract is doc-verified and defended by `warnIfNotDescending`,
+   which is not the same as observed).
+3. **Store dedup across platforms** (minor) — verdicts are keyed by `slug`, so the same mod on Modrinth
    and CurseForge collapses to one project. Fine for now; a platform-qualified key would separate them.
