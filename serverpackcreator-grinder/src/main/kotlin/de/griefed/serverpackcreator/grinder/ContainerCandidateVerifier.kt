@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,12 @@
 package de.griefed.serverpackcreator.grinder
 
 import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.grinder.container.ContainerEngine
+import de.griefed.serverpackcreator.grinder.container.ContainerResources
+import de.griefed.serverpackcreator.grinder.container.ContainerServerRunner
+import de.griefed.serverpackcreator.grinder.loader.ImageJavaRuntimes
+import de.griefed.serverpackcreator.grinder.loader.LoaderCache
+import de.griefed.serverpackcreator.grinder.loader.PackVariables
 import de.griefed.serverpackcreator.clientside.BootVerifier
 import de.griefed.serverpackcreator.clientside.BrowserDownloader
 import de.griefed.serverpackcreator.clientside.ClientsideReport
@@ -104,7 +110,7 @@ class ContainerCandidateVerifier(
         val base = loaderCache.ensureInstalled(pack.loader, pack.loaderVersion, pack.minecraftVersion)
             ?: throw IllegalStateException("No cached loader install for ${pack.loader} ${pack.loaderVersion} / Minecraft ${pack.minecraftVersion}")
         copyInstallLayer(base, pack.serverPack)
-        PackVariables.prepareUnattended(pack.serverPack, javaPath, offline = true)
+        PackVariables.prepareUnattended(pack.serverPack, javaPath, offline = true, installerJavaPath = imageJava.installerJavaPathFor(pack.minecraftVersion))
     }
 
     /** Copy the cached install layer from [base] into [pack], skipping the cache's completion marker. */

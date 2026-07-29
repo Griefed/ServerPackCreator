@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -454,9 +454,11 @@ class ApiWrapper private constructor(
             apiProperties.defaultServerIcon
         )
         overwriteServerFilesFile(apiProperties.defaultShellScriptTemplate)
+        overwriteServerFilesFile(apiProperties.defaultFishScriptTemplate)
         overwriteServerFilesFile(apiProperties.defaultPowerShellScriptTemplate)
         overwriteServerFilesFile(apiProperties.defaultBatchScriptTemplate)
         overwriteServerFilesFile(apiProperties.defaultJavaShellScriptTemplate)
+        overwriteServerFilesFile(apiProperties.defaultJavaFishScriptTemplate)
         overwriteServerFilesFile(apiProperties.defaultJavaPowerShellScriptTemplate)
         overwriteServerFilesFile(apiProperties.defaultJavaBatchScriptTemplate)
         if (serverProperties || serverIcon) {

@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -801,6 +801,11 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     val defaultShellScriptTemplate: File get() = pathsConfig.defaultShellScriptTemplate
 
     /**
+     * The default fish-template for the modded server start-scripts.
+     */
+    val defaultFishScriptTemplate: File get() = pathsConfig.defaultFishScriptTemplate
+
+    /**
      * The default PowerShell-template for the modded server start-scripts.
      */
     val defaultPowerShellScriptTemplate: File get() = pathsConfig.defaultPowerShellScriptTemplate
@@ -814,6 +819,11 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * The default shell-template for the java-install scripts.
      */
     val defaultJavaShellScriptTemplate: File get() = pathsConfig.defaultJavaShellScriptTemplate
+
+    /**
+     * The default fish-template for the java-install scripts.
+     */
+    val defaultJavaFishScriptTemplate: File get() = pathsConfig.defaultJavaFishScriptTemplate
 
     /**
      * The default PowerShell-template for the java-install scripts.

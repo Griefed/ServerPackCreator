@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,21 +20,25 @@
 package de.griefed.serverpackcreator.grinder
 
 import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.grinder.report.InMemoryVerdictStore
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.time.Duration
+import java.time.Instant
 import java.util.Collections
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Pins the grind orchestration with a fake [CandidateVerifier] (no containers): one verdict recorded
- * per loader, already-ground projects skipped, a thrown verification swallowed (not propagated), and
- * the pool draining every candidate across workers most-popular-first.
+ * per loader, projects with a *fresh* verdict skipped while *stale* ones are re-verified, a thrown
+ * verification swallowed (not propagated), and the pool draining every candidate across workers
+ * most-popular-first.
  */
 internal class GrinderTest {
 
     private fun candidate(slug: String, popularity: Long = 1) =
-        GrindCandidate("https://modrinth.com/mod/$slug", slug, popularity)
+        GrindCandidate("https://modrinth.com/mod/$slug", slug, popularity, ModPlatforms.MODRINTH)
 
     @Test
     fun recordsOneVerdictPerLoaderFromTheReport() {
@@ -59,16 +63,58 @@ internal class GrinderTest {
     }
 
     @Test
-    fun skipsProjectsThatAlreadyHaveAVerdict() {
+    fun skipsProjectsWithAFreshVerdict() {
+        val now = Instant.parse("2026-06-01T00:00:00Z")
         val store = InMemoryVerdictStore()
-        store.record(grindVerdict("jei", "Forge"))
+        store.record(grindVerdict("jei", "Forge", verifiedAt = now.minus(Duration.ofDays(5))))
         val calls = AtomicInteger(0)
         val verifier = CandidateVerifier { c -> calls.incrementAndGet(); clientsideReport(c.slug, listOf(loaderVerdict("Forge", "jei-", Confidence.HIGH))) }
 
-        Grinder(verifier, store).grind(candidate("jei"))
+        Grinder(verifier, store, reverifyTtl = Duration.ofDays(30), clock = { now }).grind(candidate("jei"))
 
-        Assertions.assertEquals(0, calls.get(), "an already-ground project must not be re-verified")
+        Assertions.assertEquals(0, calls.get(), "a verdict younger than the TTL must not be re-verified")
         Assertions.assertEquals(1, store.all().size)
+    }
+
+    /**
+     * The freshness check is per-platform: a fresh Modrinth verdict for `jei` must not stop CurseForge's
+     * `jei` — a different project that happens to share a slug — from being ground.
+     */
+    @Test
+    fun aFreshVerdictOnOnePlatformDoesNotSkipTheSameSlugOnAnother() {
+        val now = Instant.parse("2026-06-01T00:00:00Z")
+        val store = InMemoryVerdictStore()
+        store.record(grindVerdict("jei", "Forge", platform = ModPlatforms.MODRINTH, verifiedAt = now.minus(Duration.ofDays(1))))
+        val ground = Collections.synchronizedList(mutableListOf<String>())
+        val verifier = CandidateVerifier { c ->
+            ground.add(c.platform)
+            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "jei-", Confidence.HIGH)), platform = c.platform)
+        }
+        val grinder = Grinder(verifier, store, reverifyTtl = Duration.ofDays(30), clock = { now })
+
+        grinder.grind(GrindCandidate("https://modrinth.com/mod/jei", "jei", 1, ModPlatforms.MODRINTH))
+        grinder.grind(GrindCandidate("https://www.curseforge.com/minecraft/mc-mods/jei", "jei", 1, ModPlatforms.CURSEFORGE))
+
+        Assertions.assertEquals(listOf(ModPlatforms.CURSEFORGE), ground, "only the CurseForge project was due")
+        Assertions.assertEquals(
+            setOf(ModPlatforms.MODRINTH, ModPlatforms.CURSEFORGE),
+            store.all().map { it.platform }.toSet(),
+            "both platforms' jei coexist in the store"
+        )
+    }
+
+    @Test
+    fun reVerifiesAProjectWhoseVerdictIsStale() {
+        val now = Instant.parse("2026-06-01T00:00:00Z")
+        val store = InMemoryVerdictStore()
+        store.record(grindVerdict("jei", "Forge", confidence = Confidence.LOW, verifiedAt = now.minus(Duration.ofDays(40))))
+        val calls = AtomicInteger(0)
+        val verifier = CandidateVerifier { c -> calls.incrementAndGet(); clientsideReport(c.slug, listOf(loaderVerdict("Forge", "jei-", Confidence.HIGH))) }
+
+        Grinder(verifier, store, reverifyTtl = Duration.ofDays(30), clock = { now }).grind(candidate("jei"))
+
+        Assertions.assertEquals(1, calls.get(), "a verdict older than the TTL must be re-verified")
+        Assertions.assertEquals(Confidence.HIGH, store.all().single { it.loader == "Forge" }.confidence)
     }
 
     @Test
@@ -110,6 +156,27 @@ internal class GrinderTest {
         GrindPool(Grinder(verifier, InMemoryVerdictStore()), workerCount = 1).grindAll(candidates)
 
         Assertions.assertEquals(listOf("high", "mid", "low"), processed)
+    }
+
+    /**
+     * A stop request abandons the rest of the batch instead of draining it, so the daemon's shutdown ends
+     * the current pass promptly. The candidate in flight is *not* cancelled — it finishes — which is why
+     * the in-flight container is torn down separately by closing the engine.
+     */
+    @Test
+    fun requestStopAbandonsTheRestOfTheBatch() {
+        val processed = Collections.synchronizedList(mutableListOf<String>())
+        lateinit var pool: GrindPool
+        val verifier = CandidateVerifier { c ->
+            processed.add(c.slug)
+            pool.requestStop() // ask to stop while the very first candidate is still being ground
+            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "${c.slug}-", Confidence.HIGH)))
+        }
+        pool = GrindPool(Grinder(verifier, InMemoryVerdictStore()), workerCount = 1)
+
+        pool.grindAll((1..20).map { candidate("mod$it", it.toLong()) })
+
+        Assertions.assertEquals(1, processed.size, "only the in-flight candidate completes; the queue is dropped")
     }
 
     @Test

@@ -573,6 +573,15 @@ class PathsConfig(
     val defaultShellScriptTemplate = File(serverFilesDirectory, "default_template.sh")
 
     /**
+     * The default fish-template for the modded server start scripts. The file returned by this
+     * method does not represent the script-template in the `server_files`-directory. If you
+     * wish access the configured script templates inside the `server_files`-directory, use
+     * `startScriptTemplates`.
+     */
+    val defaultFishScriptTemplate = File(serverFilesDirectory, "default_template.fish")
+
+
+    /**
      * The default PowerShell-template for the modded server start scripts. The file returned by this
      * method does not represent the script-template in the `server_files`-directory. If you
      * wish access the configured script templates inside the `server_files`-directory, use
@@ -595,6 +604,14 @@ class PathsConfig(
      * `javaScriptTemplates`.
      */
     val defaultJavaShellScriptTemplate = File(serverFilesDirectory, "default_java_template.sh")
+
+    /**
+     * The default fish-template for the java-install scripts. The file returned by this
+     * method does not represent the script-template in the `server_files`-directory. If you
+     * wish access the configured script templates inside the `server_files`-directory, use
+     * `javaScriptTemplates`.
+     */
+    val defaultJavaFishScriptTemplate = File(serverFilesDirectory, "default_java_template.fish")
 
     /**
      * The default PowerShell-template for the java-install scripts. The file returned by this

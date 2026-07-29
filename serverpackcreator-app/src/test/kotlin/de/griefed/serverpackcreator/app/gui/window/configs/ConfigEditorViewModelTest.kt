@@ -3,7 +3,6 @@ package de.griefed.serverpackcreator.app.gui.window.configs
 import de.griefed.serverpackcreator.api.config.InclusionSpecification
 import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
-import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftServer
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions
@@ -123,14 +122,13 @@ internal class ConfigEditorViewModelTest {
     }
 
     /**
-     * Pins that the required-Java-version is taken from the server-meta when the Minecraft
-     * version has a server with a known Java requirement.
+     * Pins that the required-Java-version comes from the version-meta. The view-model delegates straight to
+     * [de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftMeta.requiredJavaVersion], so that is
+     * what gets stubbed — stubbing `getServer` instead left the delegate unanswered and mockk failed.
      */
     @Test
     fun requiredJavaVersionComesFromServerMeta() {
-        val server = mockk<MinecraftServer>()
-        every { server.javaVersion() } returns Optional.of(17)
-        every { versionMeta.minecraft.getServer("1.20.1") } returns Optional.of(server)
+        every { versionMeta.minecraft.requiredJavaVersion("1.20.1") } returns Optional.of("17")
         Assertions.assertEquals("17", viewModel.requiredJavaVersion("1.20.1"))
     }
 
@@ -139,7 +137,7 @@ internal class ConfigEditorViewModelTest {
      */
     @Test
     fun requiredJavaVersionFallsBackToQuestionMark() {
-        every { versionMeta.minecraft.getServer("0.0.0") } returns Optional.empty()
+        every { versionMeta.minecraft.requiredJavaVersion("0.0.0") } returns Optional.empty()
         Assertions.assertEquals("?", viewModel.requiredJavaVersion("0.0.0"))
     }
 }

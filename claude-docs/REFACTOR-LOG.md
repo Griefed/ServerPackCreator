@@ -454,3 +454,96 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   skips. Rebuilt + smoke-tested: all four JDKs resolve (`25.0.3` LTS), `$JAVA` defaults to 21, non-root
   uid 1000, tooling intact; image ~2.08 GB (was ~1.6 GB). New test `bundlingTheRequiredJavaMakesTheVersionSupported`
   pins 26.2→Java 25 now booting. grinder 45/45 unit green (+2 gated IT).
+
+- **Audit remediation on `claude-grinder-followups` (2026-07-29):** `/audit` over the 7 follow-up commits
+  reported 0 HIGH / 4 MEDIUM / 5 LOW; all fixed or closed with evidence.
+  **M1** — `VerdictStore.kt` carried a literal **NUL byte** (`"${slug}\x00${loader}"` instead of a space),
+  which made git store a Kotlin source as **binary**: no textual diffs, useless blame, textually
+  unresolvable merges — and it left `InMemoryVerdictStore` keying by NUL while `JsonVerdictStore.keyOf`
+  used a space. A repo-wide byte scan found it was the *only* affected tracked source. Replaced with a
+  space; the committed blob is now text and forward diffs render normally (verified).
+  **M2** — the CurseForge search contract was unverified magic numbers. Verified against CF's REST docs
+  (`pageSize` max 50, `index + pageSize <= 10000`, `sortOrder`, `downloadCount`, `links.websiteUrl`,
+  `x-api-key`); the docs render `ModsSearchSortField` *without names*, so `sortField=6` = TotalDownloads
+  was corroborated against PrismLauncher's `FlameAPI` sort table (the original assumption was right).
+  Named the constants with their sources, added `warnIfNotDescending` so an unsorted page is logged rather
+  than silently changing which projects get fetched, and documented that ordering never depended on the
+  API (`GrindPool` re-sorts by popularity). New tests pin the request contract + the pageSize guard.
+  **M3** — the fish `--no-empty` fix was only covered by the daemon-gated matrix IT, so it could regress
+  silently in a *published* resource. Added `-api`'s `ScriptTemplateContentTest`: pins the construct at
+  source level (**verified to fail when the bug is reintroduced**) and runs `fish -n` over both fish
+  templates when a fish binary exists, skipping otherwise.
+  **M4** — suspected sibling bug in `cleanServerFiles`' comma split **investigated and closed as a
+  non-issue**: bash's `IFS="," read -ra` keeps empty fields too, and both shells hand the empty token to
+  `find -name ""`, which matches nothing. Confirmed empirically in the container (both shells: 3 fields,
+  deleted exactly the target, keeper untouched). Left unchanged deliberately and documented.
+  **LOW** — one `PACK_MOUNT` const instead of three; all `!!` removed from touched files (the IT now
+  resolves each cell's loader version once into a map that doubles as the validity filter);
+  the IT's process-wide `ApiProperties` mutation is scoped and restored in a `finally`.
+  Suites after remediation: **api 228 (1 skip), clientside 53, grinder 60 (3 daemon-gated)**, all green.
+  Not fixed (history-only): the audit's L1/L2 — a refactor mixed into `913e6462f` and a fix landing with
+  its first test in `14c319e4b` — remediable only by rewriting history; left for Griefed to decide.
+
+- **Full script-template matrix + per-platform verdict dedup (2026-07-29, branch `claude-grinder-matrix-dedup`):**
+  **(c)** Ran the whole grid `{1.12.2, 1.16.1, 1.20.1} × {Forge, NeoForge, Fabric, Quilt} × {bash, fish}`
+  plus the `.ps1` parse check. **bash ≡ fish in every cell** — the parity this harness exists to prove.
+  N/A cells (NeoForge <1.20, Fabric/Quilt on 1.12.2) were filtered correctly by the step-3
+  `LoaderVersionResolver` gate. Two real outcomes: **(i)** Quilt on **1.16.1** fails in *both* shells —
+  `Quilt Installer requires Java 17 or greater` while 1.16.1 pins `$JAVA` to Java 8 (Mojang's declared
+  requirement), i.e. installer and server need different JDKs; a genuine template/toolchain constraint,
+  left for Griefed. **(ii)** A first pass with 3 workers produced **8 spurious failures**
+  (`start.sh: line 144: Killed "$JAVA"` — container OOM mid "Preparing level"); every one passed on a
+  serial re-run, so `SPC_GRINDER_TEMPLATE_WORKERS` now defaults to **1** with the reason documented — a
+  false FAIL in a correctness harness is worse than a slow pass. Also found: pwsh cannot *boot* `.ps1` on
+  Linux at all (the template calls Windows `CMD /C`), so PowerShell is covered by a parser check instead.
+  **(d)** Verdict dedup moved from `slug + loader` to **`platform + slug + loader`** via a shared
+  `verdictKey()` (both stores, so the schemes can't drift as they once did). Slugs aren't globally unique —
+  `jei` is on Modrinth *and* CurseForge — and the old key meant one platform's verdict overwrote the
+  other's *and* made it look already-ground, so it was never verified. `GrindCandidate` now carries its
+  platform (`ModPlatforms`), `hasVerdictFor`/`newestVerification` are platform-scoped, and `Grinder` warns
+  if a candidate's platform disagrees with the resolved report's (that pair would re-grind forever). No
+  store migration needed. grinder 64/64 green.
+
+- **Shutdown drain, Quilt installer JDK, 1.21 line + LegacyFabric (2026-07-29, branch
+  `claude-grinder-drain-quilt-versions`):** three follow-ups, each verified rather than assumed.
+  **Shutdown drain:** `DockerJavaContainerEngine` now tracks its containers and is `AutoCloseable`;
+  `close()` force-removes in-flight ones, since `run`'s `finally` is skipped when the JVM dies mid-boot
+  (a `SIGTERM` had left a Minecraft server running). The hook is registered right after the engine is
+  built so it covers one-shot runs too, and `GrindPool.requestStop()` abandons the queue after the current
+  candidate. Proven on a live daemon ("Removing 1 container(s) abandoned by an interrupted run").
+  **Quilt installer JDK:** Quilt could not install on old Minecraft at all — its installer needs Java 17+
+  while 1.16.1 must run on Java 8. All three templates now run modloader installers via
+  `runInstallerJavaCommand`, honouring an **optional** `JAVA_INSTALLER` from `variables.txt` and falling
+  back to `JAVA`, so existing packs are untouched and no new placeholder plumbing was required; the
+  misleading "check your internet connection" message now names the real cause. The grinder supplies it
+  from `ImageJavaRuntimes.installerJavaPath()` (newest bundled ≥17). Quilt 1.16.1 went from failing in both
+  shells to reaching the ready-line in both. Gotcha found while fixing: each boot path writes its own
+  variables, and the matrix IT had its own `prepareUnattended` call that also needed the parameter.
+  **Coverage:** matrix defaults grew to `{1.12.2, 1.16.1, 1.20.1, 1.21.1, 1.21.11}` ×
+  `{Forge, NeoForge, Fabric, Quilt, LegacyFabric}` — LegacyFabric's first tests anywhere. Ran the new
+  cells: **all green**, incl. LegacyFabric 1.12.2 and the whole 1.21.1/1.21.11 rows for the four modern
+  loaders, with N/A correctly filtered (LegacyFabric ≥1.14, Fabric/Quilt pre-intermediary). Unit coverage
+  added for the 1.21 line (two-digit patch deliberately) and LegacyFabric's era in
+  `LoaderVersionResolverTest`/`ImageJavaRuntimesTest`. Suites: api 229, clientside 56, grinder 68 — green.
+
+- **Audit remediation on `claude-grinder-drain-quilt-versions` (2026-07-29):** `/audit` over the branch
+  reported 0 HIGH / 4 MEDIUM / 5 LOW; all closed.
+  **M1** — a scripted docs edit had rewritten *all* of `CLAUDE.md` (CRLF→LF, 179 lines changed where only
+  **3** were content, per `git diff --ignore-all-space`). Original CRLF restored, so the docs diff is the
+  three table rows it claims to be; the history was rebuilt (below) so the churn never lands.
+  **M2** — the `JAVA_INSTALLER`-*unset* fallback, which is the branch every real pack takes, was executed by
+  nothing: all three boot paths passed the override unconditionally. Now
+  `ImageJavaRuntimes.installerJavaPathFor(mc)` supplies it **only** when the server's Java is older than the
+  installer minimum, so modern-Minecraft cells run the fallback for real (verified: Quilt 1.20.1 boots with
+  no `JAVA_INSTALLER`; Quilt 1.16.1 still boots with it).
+  **M3** — the `.ps1` change shipped parse-verified only. Added a test that extracts
+  `RunInstallerJavaCommand` from the shipped template via the PowerShell **AST**, stubs `CMD`, and executes
+  both branches on Linux pwsh (`unset → /server/java8`, `set → /installer/java21`) — real execution of
+  template code whose production path needs Windows.
+  **M4** — the Quilt commit had bundled api templates + a new grinder API + a signature change + call sites
+  + test infra. The branch's last three commits were rebuilt into concern-separated commits (api template
+  fix · grinder installer-JDK · seam cleanup · coverage · docs), each compiled in turn.
+  **LOWs** — container cleanup moved onto the `ContainerEngine` seam (`AutoCloseable` with a no-op default)
+  so the seam's own "always removes it" contract is enforceable and any engine can be drained (L1); two
+  shutdown hooks collapsed into one with defined ordering (L4); a stray cross-subject assertion dropped
+  (L2); the drain IT tidied — `DockerClient` imported, no shadowed `engine` (L3). Idioms were already clean.
