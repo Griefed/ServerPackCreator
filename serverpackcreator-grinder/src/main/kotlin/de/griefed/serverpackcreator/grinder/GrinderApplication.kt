@@ -115,9 +115,9 @@ object GrinderApplication {
         val curseForgeLimit = env("SPC_GRINDER_CF_LIMIT", "25").toInt()
         val curseForgeKey = System.getenv("CURSEFORGE_API_KEY")?.takeIf { it.isNotBlank() }
         val candidateSuppliers = buildList<() -> List<GrindCandidate>> {
-            add { ModrinthCandidateSource().candidates(modrinthLimit) }
+            add { ModrinthCandidateSource().page(offset = 0, limit = modrinthLimit).candidates }
             if (curseForgeKey != null) {
-                add { CurseForgeCandidateSource(curseForgeKey).candidates(curseForgeLimit) }
+                add { CurseForgeCandidateSource(curseForgeKey).page(offset = 0, limit = curseForgeLimit).candidates }
             }
         }
         val intervalSeconds = env("SPC_GRINDER_INTERVAL", "21600").toLong()

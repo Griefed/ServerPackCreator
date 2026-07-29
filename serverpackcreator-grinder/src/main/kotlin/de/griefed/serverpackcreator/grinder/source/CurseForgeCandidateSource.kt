@@ -28,12 +28,19 @@ import de.griefed.serverpackcreator.grinder.ModPlatforms
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 
 /**
- * Seeds the grind queue from CurseForge, **most-downloaded first**. Unlike Modrinth, CurseForge's API
- * requires an `x-api-key`, so this source is only wired when the key is present. Paginates by
- * `index`/`pageSize` until [candidates]' `limit` is met or the catalog is exhausted; behind an
- * [HttpFetcher] so it is unit-tested against canned JSON. Each result's `links.websiteUrl` becomes the
- * project link (a `curseforge.com/minecraft/mc-mods/<slug>` URL the clientside `CurseForgePlatform`
- * resolves), falling back to one built from the slug.
+ * Enumerates the CurseForge mod catalog, **most-downloaded first**. Unlike Modrinth, CurseForge's API
+ * requires an `x-api-key`, so this source is only wired when the key is present. One [page] call fills a
+ * whole slice by walking `index`/`pageSize`; behind an [HttpFetcher] so it is unit-tested against canned
+ * JSON. Each result's `links.websiteUrl` becomes the project link (a
+ * `curseforge.com/minecraft/mc-mods/<slug>` URL the clientside `CurseForgePlatform` resolves), falling
+ * back to one built from the slug.
+ *
+ * **Coverage ceiling — read before assuming a crawl covers CurseForge:** `/mods/search` refuses an
+ * `index` beyond [MAX_INDEX], so only the **10 000 most-downloaded** mods are reachable through this
+ * endpoint, however long the grinder runs. [page] reports that boundary as `endOfCatalog` (and logs it),
+ * which makes the crawler wrap around and start a fresh sweep of those 10 000 rather than stall. Reaching
+ * the deeper catalog needs the search *partitioned* into sub-10 000 slices (e.g. by `gameVersion` ×
+ * `modLoaderType`, or by `categoryId`) and the results unioned — a separate feature, not a config knob.
  *
  * **The request contract is verified, not assumed** (see [SORT_FIELD_TOTAL_DOWNLOADS]): `pageSize`
  * defaults to and maxes at 50, the API rejects `index + pageSize > 10 000`, `sortOrder` takes
@@ -61,35 +68,58 @@ class CurseForgeCandidateSource(
     private val modsClassId = 6
     private val headers = mapOf("x-api-key" to apiKey, "Accept" to "application/json")
 
+    override val platform = ModPlatforms.CURSEFORGE
+
     init {
         require(pageSize in 1..MAX_PAGE_SIZE) { "CurseForge caps pageSize at $MAX_PAGE_SIZE, was $pageSize" }
     }
 
     /**
-     * Up to [limit] mod projects, most-downloaded first. A failed page stops pagination and returns what
-     * was gathered so far (a partial catalog beats aborting); pagination also stops at CurseForge's
-     * `index` cap.
+     * Up to [limit] mod projects starting at [offset], most-downloaded first. Ends the catalog on a short
+     * page *or* at [MAX_INDEX] (the reachable end — see the class docs); a *failed* request only ends this
+     * slice, returning what was gathered with `endOfCatalog = false` so the crawler retries the same region
+     * instead of wrapping to the top.
      */
-    override fun candidates(limit: Int): List<GrindCandidate> {
+    override fun page(offset: Int, limit: Int): CandidatePage {
+        require(offset >= 0) { "offset must be >= 0, was $offset" }
         require(limit >= 0) { "limit must be >= 0, was $limit" }
         val gathered = ArrayList<GrindCandidate>(minOf(limit, 1024))
-        var index = 0
-        while (gathered.size < limit && index < MAX_INDEX) {
-            val count = pageSize.coerceAtMost(limit - gathered.size).coerceAtMost(MAX_INDEX - index)
-            if (count <= 0) {
+        var index = offset
+        var endOfCatalog = false
+        while (gathered.size < limit) {
+            if (index >= MAX_INDEX) {
+                logIndexCapReached(index)
+                endOfCatalog = true
                 break
             }
-            val hits = searchPage(index, count) ?: break
+            // Clamp so `index + pageSize` never exceeds the cap — the API rejects such a request outright.
+            val count = pageSize.coerceAtMost(limit - gathered.size).coerceAtMost(MAX_INDEX - index)
+            val hits = searchPage(index, count) ?: break // request failed: partial slice, catalog unknown
             if (hits.isEmpty()) {
+                endOfCatalog = true
                 break
             }
             hits.forEach { gathered.add(it) }
-            if (hits.size < count) {
-                break // fewer than asked for ⇒ catalog exhausted
-            }
             index += hits.size
+            if (hits.size < count) {
+                endOfCatalog = true // fewer than asked for ⇒ catalog exhausted
+                break
+            }
         }
-        return gathered.take(limit)
+        val slice = gathered.take(limit)
+        return CandidatePage(slice, offset + slice.size, endOfCatalog)
+    }
+
+    /**
+     * Make the coverage ceiling visible in the log instead of letting a crawl look complete. Logged when a
+     * slice starts at or past [MAX_INDEX], i.e. every time a sweep of the reachable catalog wraps around.
+     */
+    private fun logIndexCapReached(index: Int) {
+        log.info(
+            "CurseForge search index $index is at its $MAX_INDEX cap — the deeper catalog is unreachable " +
+                "via /mods/search, so a sweep covers the $MAX_INDEX most-downloaded mods and then restarts. " +
+                "Full coverage needs the search partitioned into sub-$MAX_INDEX slices."
+        )
     }
 
     /** One page of mods ordered by downloads, or `null` when the request failed. */
@@ -132,7 +162,7 @@ class CurseForgeCandidateSource(
             projectUrl = website ?: "https://www.curseforge.com/minecraft/mc-mods/$slug",
             slug = slug,
             popularity = node.path("downloadCount").asLong(0),
-            platform = ModPlatforms.CURSEFORGE
+            platform = platform
         )
     }
 
