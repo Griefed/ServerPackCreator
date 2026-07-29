@@ -22,14 +22,20 @@ package de.griefed.serverpackcreator.grinder.source
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * How far a crawl has walked into one platform's catalog: the [offset] the next slice starts at, plus how
- * many complete [sweeps] of that catalog are behind it. The sweep count is not used for control flow — it
- * exists so an operator reading the log or the cursor file can see whether the grinder is still on its first
- * pass over a platform or already re-checking, which is the difference between "incomplete" and "current".
+ * How far a crawl has walked into one platform's catalog: the [offset] the next slice starts at, the
+ * source-defined [partition] that offset belongs to, plus how many complete [sweeps] of that catalog are
+ * behind it. The sweep count is not used for control flow — it exists so an operator reading the log or the
+ * cursor file can see whether the grinder is still on its first pass over a platform or already re-checking,
+ * which is the difference between "incomplete" and "current".
+ *
+ * [partition] is **opaque here on purpose**: only the source that produced it knows what it means (see
+ * [CandidateSource.page]). Keeping it in the cursor rather than in the source is what makes a partitioned
+ * crawl restart-safe — CurseForge's catalog is walked as hundreds of bounded sub-queries, and losing track of
+ * which one it was in would restart that traversal from the top every time the service restarts.
  *
  * @author Griefed
  */
-data class CatalogCursor(val offset: Int, val sweeps: Int) {
+data class CatalogCursor(val offset: Int, val sweeps: Int, val partition: String? = null) {
     init {
         require(offset >= 0) { "offset must be >= 0, was $offset" }
         require(sweeps >= 0) { "sweeps must be >= 0, was $sweeps" }
@@ -37,7 +43,7 @@ data class CatalogCursor(val offset: Int, val sweeps: Int) {
 
     companion object {
         /** The start of a catalog — what an unseen source reports. */
-        val START = CatalogCursor(offset = 0, sweeps = 0)
+        val START = CatalogCursor(offset = 0, sweeps = 0, partition = null)
     }
 }
 

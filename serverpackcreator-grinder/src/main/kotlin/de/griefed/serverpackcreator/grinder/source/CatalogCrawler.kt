@@ -57,10 +57,11 @@ class CatalogCrawler(
         var sweepCompleted = false
         for (source in sources) {
             val cursor = cursors.cursor(source.platform)
-            val page = pageOrNull(source, cursor.offset) ?: continue // failed: position untouched, retried later
+            // The partition token is the source's own business — carried through verbatim, never interpreted.
+            val page = pageOrNull(source, cursor.offset, cursor.partition) ?: continue // failed: position kept
             candidates.addAll(page.candidates)
             if (!page.endOfCatalog) {
-                cursors.store(source.platform, cursor.copy(offset = page.nextOffset))
+                cursors.store(source.platform, cursor.copy(offset = page.nextOffset, partition = page.nextPartition))
                 continue
             }
             sweepCompleted = true
@@ -76,15 +77,17 @@ class CatalogCrawler(
      * at all when the position was already 0), so an empty catalog cannot spin.
      */
     private fun wrapAround(source: CandidateSource, cursor: CatalogCursor, ended: CandidatePage): List<GrindCandidate> {
-        val wrapped = CatalogCursor(offset = 0, sweeps = cursor.sweeps + 1)
+        // Both offset and partition reset: a new sweep starts at the beginning of the source's plan.
+        val wrapped = CatalogCursor(offset = 0, sweeps = cursor.sweeps + 1, partition = null)
         log.info(
-            "${source.platform}: reached the end of the catalog at offset ${cursor.offset} — " +
-                "sweep #${wrapped.sweeps} complete, starting the next one at the top."
+            "${source.platform}: reached the end of the catalog at offset ${cursor.offset}" +
+                (cursor.partition?.let { " of partition $it" } ?: "") +
+                " — sweep #${wrapped.sweeps} complete, starting the next one at the top."
         )
-        if (ended.candidates.isEmpty() && cursor.offset > 0) {
-            val head = pageOrNull(source, offset = 0)
+        if (ended.candidates.isEmpty() && (cursor.offset > 0 || cursor.partition != null)) {
+            val head = pageOrNull(source, offset = 0, partition = null)
             if (head != null) {
-                cursors.store(source.platform, wrapped.copy(offset = head.nextOffset))
+                cursors.store(source.platform, wrapped.copy(offset = head.nextOffset, partition = head.nextPartition))
                 return head.candidates
             }
         }
@@ -93,9 +96,9 @@ class CatalogCrawler(
     }
 
     /** One slice from [source], or `null` when the source failed outright (logged, never propagated). */
-    private fun pageOrNull(source: CandidateSource, offset: Int): CandidatePage? =
-        runCatching { source.page(offset, batchSize) }
-            .onFailure { log.warn("Could not read ${source.platform} at offset $offset: ${it.message}") }
+    private fun pageOrNull(source: CandidateSource, offset: Int, partition: String?): CandidatePage? =
+        runCatching { source.page(offset, batchSize, partition) }
+            .onFailure { log.warn("Could not read ${source.platform} at offset $offset (partition $partition): ${it.message}") }
             .getOrNull()
 }
 

@@ -45,8 +45,15 @@ interface CandidateSource {
      * Implementations may need several API calls to fill one slice (platform page caps are smaller than a
      * useful batch) and must distinguish the two ways a slice can come back short — see
      * [CandidatePage.endOfCatalog].
+     *
+     * [partition] is the source's **own**, opaque traversal token, echoed back from the last
+     * [CandidatePage.nextPartition] (`null` = start of a sweep). A platform whose catalog cannot be
+     * enumerated in one sequence uses it to record which sub-query it is walking — CurseForge caps search
+     * paging at 10 000, so it crawls the catalog as many bounded partitions and needs to remember which one
+     * it is in. Sources that need no partitioning ignore it and return `null`; nothing outside the source
+     * interprets the token, so its format is free to change.
      */
-    fun page(offset: Int, limit: Int): CandidatePage
+    fun page(offset: Int, limit: Int, partition: String? = null): CandidatePage
 }
 
 /**
@@ -56,15 +63,20 @@ interface CandidateSource {
  * same region later). Conflating the two would silently reset a deep crawl to the top of the catalog on any
  * transient HTTP error.
  *
- * @param candidates   The projects in this slice, most-downloaded first.
- * @param nextOffset   Offset the next slice should start at — `offset + candidates.size`, i.e. only what was
- *                     actually handed out is treated as consumed.
- * @param endOfCatalog `true` only when the platform genuinely ran out of results (or the reachable catalog
- *                     ended, as with CurseForge's search-index cap); never on a failed request.
+ * @param candidates    The projects in this slice, most-downloaded first.
+ * @param nextOffset    Offset the next slice should start at. Normally `offset + candidates.size`, i.e. only
+ *                      what was actually handed out is treated as consumed — but for a partitioned source it
+ *                      is the offset *within* [nextPartition], which resets whenever a slice crosses a
+ *                      partition boundary.
+ * @param endOfCatalog  `true` only when the platform genuinely ran out of results — for a partitioned source,
+ *                      when the *last* partition ran out. Never on a failed request.
+ * @param nextPartition The source's opaque traversal token to hand back on the next call (`null` when the
+ *                      source does not partition, or to restart at the beginning of its plan).
  * @author Griefed
  */
 data class CandidatePage(
     val candidates: List<GrindCandidate>,
     val nextOffset: Int,
-    val endOfCatalog: Boolean
+    val endOfCatalog: Boolean,
+    val nextPartition: String? = null
 )

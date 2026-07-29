@@ -45,7 +45,7 @@ internal class CatalogCrawlerTest {
     ) : CandidateSource {
         val requestedOffsets = mutableListOf<Int>()
 
-        override fun page(offset: Int, limit: Int): CandidatePage {
+        override fun page(offset: Int, limit: Int, partition: String?): CandidatePage {
             requestedOffsets.add(offset)
             if (offset == throwAtOffset) throw IllegalStateException("$platform exploded at $offset")
             if (offset == failAtOffset) return CandidatePage(emptyList(), offset, endOfCatalog = false)
@@ -53,6 +53,32 @@ internal class CatalogCrawlerTest {
                 GrindCandidate("https://example.invalid/$platform/mod$it", "mod$it", (catalogSize - it).toLong(), platform)
             }
             return CandidatePage(candidates, offset + candidates.size, endOfCatalog = offset + limit >= catalogSize)
+        }
+    }
+
+    /**
+     * A source whose catalog is walked as a sequence of opaque partitions — the CurseForge shape. Records what
+     * token it was handed so the crawler's replay can be asserted.
+     */
+    private class PartitionedSource(
+        private val tokens: List<String>,
+        private val endAfterLastToken: Boolean = false
+    ) : CandidateSource {
+        override val platform = "CurseForge"
+        val received = mutableListOf<String?>()
+        private var calls = 0
+
+        override fun page(offset: Int, limit: Int, partition: String?): CandidatePage {
+            received.add(partition)
+            val token = tokens[calls.coerceAtMost(tokens.lastIndex)]
+            val exhausted = endAfterLastToken && calls >= tokens.lastIndex
+            calls++
+            return CandidatePage(
+                candidates = listOf(GrindCandidate("https://example.invalid/mod$calls", "mod$calls", 1, platform)),
+                nextOffset = 1,
+                endOfCatalog = exhausted,
+                nextPartition = token
+            )
         }
     }
 
@@ -183,6 +209,42 @@ internal class CatalogCrawlerTest {
         Assertions.assertEquals(listOf("mod0", "mod1"), batch.candidates.map { it.slug })
         Assertions.assertEquals(CatalogCursor(offset = 0, sweeps = 0), cursors.cursor("CurseForge"), "a thrown page leaves the position alone")
         Assertions.assertEquals(CatalogCursor(offset = 2, sweeps = 0), cursors.cursor("Modrinth"))
+    }
+
+    /**
+     * A partitioned source (CurseForge, whose catalog cannot be paged as one sequence) hands back an opaque
+     * token saying which sub-query it is in. The crawler must persist and replay it verbatim — losing it would
+     * restart that traversal at the top of the catalog on every pass, which is exactly the bug the cursor
+     * exists to prevent. The crawler must not interpret the token.
+     */
+    @Test
+    fun carriesTheSourcesPartitionTokenThroughTheCursor() {
+        val source = PartitionedSource(tokens = listOf("version=1.21.1", "version=1.20.1"))
+        val cursors = InMemoryCursorStore()
+        val crawler = CatalogCrawler(listOf(source), cursors, batchSize = 1)
+
+        crawler.nextBatch()
+        Assertions.assertEquals(
+            CatalogCursor(offset = 1, sweeps = 0, partition = "version=1.21.1"), cursors.cursor("CurseForge")
+        )
+
+        crawler.nextBatch()
+        Assertions.assertEquals(listOf(null, "version=1.21.1"), source.received, "the token is replayed verbatim")
+    }
+
+    /** Finishing the last partition starts a fresh sweep at the beginning of the source's plan, not mid-way. */
+    @Test
+    fun aCompletedSweepClearsThePartitionAsWellAsTheOffset() {
+        val source = PartitionedSource(tokens = listOf("version=1.21.1"), endAfterLastToken = true)
+        val cursors = InMemoryCursorStore()
+
+        val batch = CatalogCrawler(listOf(source), cursors, batchSize = 1).nextBatch()
+
+        Assertions.assertTrue(batch.sweepCompleted)
+        Assertions.assertEquals(
+            CatalogCursor(offset = 0, sweeps = 1, partition = null), cursors.cursor("CurseForge"),
+            "a new sweep must start at the first partition"
+        )
     }
 
     @Test

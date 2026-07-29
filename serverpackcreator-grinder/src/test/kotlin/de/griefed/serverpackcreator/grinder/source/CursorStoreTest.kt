@@ -97,6 +97,33 @@ internal class CursorStoreTest {
         Assertions.assertEquals(CatalogCursor(0, 0), store.cursor("Modrinth"))
     }
 
+    /** A partitioned source's traversal token has to survive a restart too, or its crawl restarts at the top. */
+    @Test
+    fun theJsonStoreRoundTripsAPartitionToken() {
+        val file = File(tempDir.toFile(), "cursors.json")
+        JsonCursorStore(file).store("CurseForge", CatalogCursor(offset = 350, sweeps = 1, partition = "1.20.1|1|desc"))
+
+        Assertions.assertEquals(
+            CatalogCursor(offset = 350, sweeps = 1, partition = "1.20.1|1|desc"),
+            JsonCursorStore(file).cursor("CurseForge")
+        )
+    }
+
+    /**
+     * A cursor file written before partitioning existed has no `partition` key. It must load as "start of the
+     * plan" rather than failing the whole file, which would silently reset every platform's crawl position.
+     */
+    @Test
+    fun aCursorFileWithoutAPartitionKeyStillLoads() {
+        val file = File(tempDir.toFile(), "cursors.json").apply {
+            writeText("""{"Modrinth":{"offset":12300,"sweeps":2}}""")
+        }
+
+        val store = JsonCursorStore(file)
+
+        Assertions.assertEquals(CatalogCursor(offset = 12_300, sweeps = 2, partition = null), store.cursor("Modrinth"))
+    }
+
     @Test
     fun aNegativeOffsetOrSweepCountIsRejected() {
         Assertions.assertThrows(IllegalArgumentException::class.java) { CatalogCursor(offset = -1, sweeps = 0) }

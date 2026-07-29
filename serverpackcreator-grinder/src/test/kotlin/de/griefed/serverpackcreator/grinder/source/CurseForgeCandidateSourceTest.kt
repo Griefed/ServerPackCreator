@@ -20,152 +20,93 @@
 package de.griefed.serverpackcreator.grinder.source
 
 import de.griefed.serverpackcreator.clientside.HttpFetcher
+import de.griefed.serverpackcreator.grinder.ModPlatforms
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.io.IOException
 
 /**
- * Pins the CurseForge candidate source against canned search JSON (no network): mods map to candidates
- * preserving the API's download order, the project link is the `links.websiteUrl` (falling back to one
- * built from the slug), one slice spans several `index` pages, a slice starts at the requested offset, and
- * — the crawl-critical part — the catalog counts as ended on a short page *or* at CurseForge's hard
- * search-index cap, but never on a failed request.
+ * Pins the CurseForge candidate source against canned JSON (no network, and no API key — which this module
+ * has never had, so these tests *are* the contract). Two things are checked: the mapping (download order,
+ * `links.websiteUrl` with a slug fallback, the documented request parameters) and the **partitioned crawl**
+ * that gets past the platform's 10 000-result paging cap — which partition each slice queries, how a slice
+ * crosses into the next partition, and that a failure anywhere keeps the crawl position instead of losing it.
  */
 internal class CurseForgeCandidateSourceTest {
 
-    /** Canned [HttpFetcher] serving a page per `index=`, optionally throwing at one index. */
-    private class CannedSearch(
-        private val pagesByIndex: Map<Int, String>,
-        private val throwAtIndex: Int? = null
+    private val searchUrl = "https://api.curseforge.com/v1/mods/search"
+    private val versionsUrl = "https://api.curseforge.com/v1/games/432/versions"
+
+    /**
+     * Canned [HttpFetcher] answering by URL. `searchAnswers` maps a *substring* of the search URL (the
+     * distinguishing filters, e.g. `gameVersion=1.20.1&`) to a body; the first match wins, so a test only
+     * spells out the parts it cares about. Anything unmatched answers with an empty result set.
+     */
+    private class CannedApi(
+        private val searchAnswers: List<Pair<String, String>> = emptyList(),
+        private val versionsBody: String? = null,
+        private val failUrlsContaining: String? = null
     ) : HttpFetcher {
-        val requestedIndexes = mutableListOf<Int>()
         val requestedUrls = mutableListOf<String>()
         val seenHeaders = mutableListOf<Map<String, String>>()
+
         override fun get(url: String, headers: Map<String, String>): String {
-            val index = requireNotNull(Regex("index=(\\d+)").find(url)) { "no index= in $url" }
-                .groupValues[1].toInt()
-            requestedIndexes.add(index)
             requestedUrls.add(url)
             seenHeaders.add(headers)
-            if (index == throwAtIndex) throw IOException("curseforge 503")
-            return pagesByIndex[index] ?: """{"data":[]}"""
+            failUrlsContaining?.let { if (url.contains(it)) throw IOException("curseforge 503 for $url") }
+            if (url.contains("/games/432/versions")) {
+                return versionsBody ?: """{"data":[]}"""
+            }
+            return searchAnswers.firstOrNull { (fragment, _) -> url.contains(fragment) }?.second
+                ?: """{"data":[],"pagination":{"index":0,"pageSize":50,"resultCount":0,"totalCount":0}}"""
         }
+
+        /** Search URLs only, in request order — the crawl path. */
+        fun searchRequests(): List<String> = requestedUrls.filter { it.contains("/mods/search") }
     }
 
-    /** Build a CurseForge-search body; each mod carries slug, downloadCount and a websiteUrl link. */
-    private fun searchJson(vararg mods: Triple<String, Long, String?>): String {
+    /** A CurseForge search body: mods plus the `pagination.totalCount` that drives partition splitting. */
+    private fun searchJson(vararg mods: Triple<String, Long, String?>, totalCount: Int = mods.size): String {
         val data = mods.joinToString(",") { (slug, downloads, website) ->
             val links = if (website == null) """{}""" else """{"websiteUrl":"$website"}"""
             """{"slug":"$slug","downloadCount":$downloads,"links":$links}"""
         }
-        return """{"data":[$data]}"""
+        return """{"data":[$data],"pagination":{"index":0,"pageSize":50,"resultCount":${mods.size},"totalCount":$totalCount}}"""
+    }
+
+    /** A `/games/{id}/versions` body: version-type groups, each with its version strings. */
+    private fun versionsJson(vararg groups: List<String>): String {
+        val data = groups.mapIndexed { groupIndex, versions ->
+            """{"type":${7000 + groupIndex},"versions":[${versions.joinToString(",") { "\"$it\"" }}]}"""
+        }
+        return """{"data":[${data.joinToString(",")}]}"""
     }
 
     @Test
     fun mapsResultsToCandidatesPreservingDownloadOrder() {
-        val fetcher = CannedSearch(
-            mapOf(
-                0 to searchJson(
+        val fetcher = CannedApi(
+            listOf(
+                "index=0" to searchJson(
                     Triple("jei", 900_000_000L, "https://www.curseforge.com/minecraft/mc-mods/jei"),
                     Triple("jade", 500_000_000L, "https://www.curseforge.com/minecraft/mc-mods/jade")
                 )
             )
         )
-        val candidates = CurseForgeCandidateSource("key", fetcher).page(offset = 0, limit = 2).candidates
+        val page = CurseForgeCandidateSource("key", fetcher).page(offset = 0, limit = 2)
 
-        Assertions.assertEquals(listOf("jei", "jade"), candidates.map { it.slug })
-        Assertions.assertEquals(listOf(900_000_000L, 500_000_000L), candidates.map { it.popularity })
-        Assertions.assertEquals("https://www.curseforge.com/minecraft/mc-mods/jei", candidates.first().projectUrl)
+        Assertions.assertEquals(listOf("jei", "jade"), page.candidates.map { it.slug })
+        Assertions.assertEquals(listOf(900_000_000L, 500_000_000L), page.candidates.map { it.popularity })
+        Assertions.assertEquals("https://www.curseforge.com/minecraft/mc-mods/jei", page.candidates.first().projectUrl)
+        Assertions.assertEquals(ModPlatforms.CURSEFORGE, page.candidates.first().platform)
     }
 
     @Test
     fun fallsBackToASlugBuiltUrlWhenWebsiteUrlIsMissing() {
-        val fetcher = CannedSearch(mapOf(0 to searchJson(Triple("appleskin", 100L, null))))
+        val fetcher = CannedApi(listOf("index=0" to searchJson(Triple("appleskin", 100L, null))))
         val candidate = CurseForgeCandidateSource("key", fetcher).page(offset = 0, limit = 1).candidates.single()
 
         Assertions.assertEquals("https://www.curseforge.com/minecraft/mc-mods/appleskin", candidate.projectUrl)
-    }
-
-    @Test
-    fun fillsOneSliceFromSeveralApiPages() {
-        val fetcher = CannedSearch(
-            mapOf(
-                0 to searchJson(Triple("a", 9L, "u/a"), Triple("b", 8L, "u/b")),
-                2 to searchJson(Triple("c", 7L, "u/c"), Triple("d", 6L, "u/d"))
-            )
-        )
-        val page = CurseForgeCandidateSource("key", fetcher, pageSize = 2).page(offset = 0, limit = 3)
-
-        Assertions.assertEquals(listOf("a", "b", "c"), page.candidates.map { it.slug })
-        Assertions.assertEquals(listOf(0, 2), fetcher.requestedIndexes)
-        Assertions.assertEquals(3, page.nextOffset, "only what was handed out counts as consumed")
-        Assertions.assertFalse(page.endOfCatalog)
-    }
-
-    /** The crawl case: a slice deep in the catalog starts where it was told to, not at the top. */
-    @Test
-    fun startsAtTheRequestedOffsetAndReportsWhereToContinue() {
-        val fetcher = CannedSearch(mapOf(400 to searchJson(Triple("deep", 3L, "u/deep"), Triple("deeper", 2L, "u/deeper"))))
-        val page = CurseForgeCandidateSource("key", fetcher, pageSize = 2).page(offset = 400, limit = 2)
-
-        Assertions.assertEquals(listOf(400), fetcher.requestedIndexes, "must not restart at index 0")
-        Assertions.assertEquals(listOf("deep", "deeper"), page.candidates.map { it.slug })
-        Assertions.assertEquals(402, page.nextOffset)
-    }
-
-    @Test
-    fun aShortPageMeansTheCatalogEnded() {
-        val fetcher = CannedSearch(mapOf(0 to searchJson(Triple("a", 9L, "u/a"), Triple("b", 8L, "u/b"))))
-        val page = CurseForgeCandidateSource("key", fetcher, pageSize = 50).page(offset = 0, limit = 100)
-
-        Assertions.assertEquals(2, page.candidates.size)
-        Assertions.assertEquals(listOf(0), fetcher.requestedIndexes)
-        Assertions.assertTrue(page.endOfCatalog)
-    }
-
-    /**
-     * CurseForge's `/mods/search` rejects an `index` at or beyond [CurseForgeCandidateSource.MAX_INDEX], so
-     * the *reachable* catalog ends there even though the platform hosts far more mods. The source must
-     * report that as the end of the catalog — the crawler then wraps around and starts a new sweep instead
-     * of hammering a request the API will refuse. **This is the documented CurseForge coverage ceiling.**
-     */
-    @Test
-    fun theSearchIndexCapCountsAsTheEndOfTheCatalog() {
-        val fetcher = CannedSearch(emptyMap())
-        val source = CurseForgeCandidateSource("key", fetcher, pageSize = 50)
-
-        val atCap = source.page(offset = CurseForgeCandidateSource.MAX_INDEX, limit = 50)
-        Assertions.assertTrue(atCap.candidates.isEmpty())
-        Assertions.assertTrue(atCap.endOfCatalog, "the index cap is the end of the reachable catalog")
-        Assertions.assertTrue(fetcher.requestedIndexes.isEmpty(), "a request the API would reject is not sent")
-
-        // A slice that *straddles* the cap is clamped to it rather than asking for a rejected range.
-        val straddling = source.page(offset = CurseForgeCandidateSource.MAX_INDEX - 10, limit = 50)
-        Assertions.assertEquals(listOf(CurseForgeCandidateSource.MAX_INDEX - 10), fetcher.requestedIndexes)
-        Assertions.assertTrue(
-            fetcher.requestedUrls.single().contains("pageSize=10"),
-            "index + pageSize must stay within the cap, was ${fetcher.requestedUrls.single()}"
-        )
-        Assertions.assertTrue(straddling.endOfCatalog)
-    }
-
-    /**
-     * A failed request must **not** look like the end of the catalog: the crawler wraps around to offset 0
-     * on `endOfCatalog`, so a transient 503 deep in the catalog would otherwise throw away the whole crawl
-     * position and restart at the most-downloaded mods.
-     */
-    @Test
-    fun aFailedPageReturnsWhatWasGatheredWithoutClaimingTheCatalogEnded() {
-        val fetcher = CannedSearch(
-            mapOf(0 to searchJson(Triple("a", 9L, "u/a"), Triple("b", 8L, "u/b"))),
-            throwAtIndex = 2
-        )
-        val page = CurseForgeCandidateSource("key", fetcher, pageSize = 2).page(offset = 0, limit = 10)
-
-        Assertions.assertEquals(listOf("a", "b"), page.candidates.map { it.slug })
-        Assertions.assertEquals(2, page.nextOffset, "resume after what did arrive")
-        Assertions.assertFalse(page.endOfCatalog, "a failed request is not the end of the catalog")
     }
 
     /**
@@ -176,43 +117,240 @@ internal class CurseForgeCandidateSourceTest {
      */
     @Test
     fun requestsTheDocumentedSearchContract() {
-        val fetcher = CannedSearch(mapOf(0 to searchJson(Triple("jei", 9L, "u/jei"))))
+        val fetcher = CannedApi(listOf("index=0" to searchJson(Triple("jei", 9L, "u/jei"))))
         CurseForgeCandidateSource("secret-key", fetcher, pageSize = 50).page(offset = 0, limit = 1)
 
-        val url = fetcher.requestedUrls.single()
-        Assertions.assertTrue(url.startsWith("https://api.curseforge.com/v1/mods/search?"), url)
+        val url = fetcher.searchRequests().single()
+        Assertions.assertTrue(url.startsWith("$searchUrl?"), url)
         listOf("gameId=432", "classId=6", "sortField=${CurseForgeCandidateSource.SORT_FIELD_TOTAL_DOWNLOADS}", "sortOrder=desc", "index=0")
             .forEach { Assertions.assertTrue(url.contains(it), "missing '$it' in $url") }
         Assertions.assertEquals(6, CurseForgeCandidateSource.SORT_FIELD_TOTAL_DOWNLOADS, "CF TotalDownloads sort value")
-        Assertions.assertEquals("secret-key", fetcher.seenHeaders.single()["x-api-key"])
+        Assertions.assertEquals("secret-key", fetcher.seenHeaders.first()["x-api-key"])
     }
 
     @Test
     fun rejectsAPageSizeAboveTheDocumentedMaximum() {
         assertThrows<IllegalArgumentException> {
-            CurseForgeCandidateSource("key", CannedSearch(emptyMap()), pageSize = CurseForgeCandidateSource.MAX_PAGE_SIZE + 1)
+            CurseForgeCandidateSource("key", CannedApi(), pageSize = CurseForgeCandidateSource.MAX_PAGE_SIZE + 1)
         }
     }
 
-    /**
-     * A page the API returned out of download-order is still passed through unchanged (the warning is
-     * advisory — `GrindPool` re-sorts by popularity, so nothing is dropped or reordered here).
-     */
     @Test
-    fun anOutOfOrderPageIsStillReturnedIntact() {
-        val fetcher = CannedSearch(mapOf(0 to searchJson(Triple("low", 1L, "u/low"), Triple("high", 999L, "u/high"))))
-        val candidates = CurseForgeCandidateSource("key", fetcher).page(offset = 0, limit = 2).candidates
-
-        Assertions.assertEquals(listOf("low", "high"), candidates.map { it.slug })
-        Assertions.assertEquals(listOf(1L, 999L), candidates.map { it.popularity })
+    fun rejectsANegativeOffsetOrLimit() {
+        val source = CurseForgeCandidateSource("key", CannedApi())
+        assertThrows<IllegalArgumentException> { source.page(offset = -1, limit = 10) }
+        assertThrows<IllegalArgumentException> { source.page(offset = 0, limit = -1) }
     }
 
     @Test
     fun limitZeroFetchesNothing() {
-        val fetcher = CannedSearch(emptyMap())
-        val candidates = CurseForgeCandidateSource("key", fetcher).page(offset = 0, limit = 0).candidates
+        val fetcher = CannedApi()
+        val page = CurseForgeCandidateSource("key", fetcher).page(offset = 0, limit = 0)
 
-        Assertions.assertTrue(candidates.isEmpty())
-        Assertions.assertTrue(fetcher.requestedIndexes.isEmpty(), "limit 0 must not hit the API")
+        Assertions.assertTrue(page.candidates.isEmpty())
+        Assertions.assertTrue(fetcher.searchRequests().isEmpty(), "limit 0 must not search")
+    }
+
+    /** A slice deep inside a partition starts where it was told to, not at the top. */
+    @Test
+    fun startsAtTheRequestedOffsetAndReportsWhereToContinue() {
+        val fetcher = CannedApi(listOf("index=400" to searchJson(Triple("deep", 3L, "u/deep"), Triple("deeper", 2L, "u/deeper"))))
+        val page = CurseForgeCandidateSource("key", fetcher, pageSize = 2).page(offset = 400, limit = 2)
+
+        Assertions.assertEquals(listOf("deep", "deeper"), page.candidates.map { it.slug })
+        Assertions.assertEquals(402, page.nextOffset)
+    }
+
+    @Test
+    fun aFailedPageReturnsWhatWasGatheredWithoutClaimingTheCatalogEnded() {
+        val fetcher = CannedApi(
+            searchAnswers = listOf("index=0" to searchJson(Triple("a", 9L, "u/a"), Triple("b", 8L, "u/b"), totalCount = 500)),
+            failUrlsContaining = "index=2"
+        )
+        val page = CurseForgeCandidateSource("key", fetcher, pageSize = 2).page(offset = 0, limit = 10)
+
+        Assertions.assertEquals(listOf("a", "b"), page.candidates.map { it.slug })
+        Assertions.assertEquals(2, page.nextOffset, "resume after what did arrive")
+        Assertions.assertFalse(page.endOfCatalog, "a failed request is not the end of the catalog")
+    }
+
+    // ---------------------------------------------------------------------------------------------------
+    // The partitioned crawl — how coverage gets past the 10 000-result cap.
+    // ---------------------------------------------------------------------------------------------------
+
+    /** A sweep opens on the unfiltered catalog: no version or loader filter, most-downloaded first. */
+    @Test
+    fun aSweepStartsOnTheUnfilteredCatalog() {
+        val fetcher = CannedApi(listOf("index=0" to searchJson(Triple("jei", 9L, "u/jei"), totalCount = 250_000)))
+        val page = CurseForgeCandidateSource("key", fetcher, pageSize = 50).page(offset = 0, limit = 1, partition = null)
+
+        val url = fetcher.searchRequests().single()
+        Assertions.assertFalse(url.contains("gameVersion="), url)
+        Assertions.assertFalse(url.contains("modLoaderType="), url)
+        Assertions.assertEquals(CurseForgePartitions.FIRST.key, page.nextPartition)
+    }
+
+    /** The version list is refreshed at the start of a sweep only — not on every slice of it. */
+    @Test
+    fun theGameVersionListIsRefreshedAtTheStartOfASweepOnly() {
+        val fetcher = CannedApi(
+            searchAnswers = listOf("index=0" to searchJson(Triple("jei", 9L, "u/jei"), totalCount = 250_000)),
+            versionsBody = versionsJson(listOf("1.21.1", "1.20.1"))
+        )
+        val source = CurseForgeCandidateSource("key", fetcher, pageSize = 50)
+
+        source.page(offset = 0, limit = 1, partition = null)
+        Assertions.assertEquals(1, fetcher.requestedUrls.count { it == versionsUrl }, "sweep start refreshes the list")
+
+        source.page(offset = 50, limit = 1, partition = CurseForgePartitions.FIRST.key)
+        Assertions.assertEquals(1, fetcher.requestedUrls.count { it == versionsUrl }, "mid-sweep slices must not re-fetch it")
+    }
+
+    @Test
+    fun aVersionPartitionFiltersByThatGameVersion() {
+        val fetcher = CannedApi(
+            searchAnswers = listOf("gameVersion=1.20.1" to searchJson(Triple("create", 5L, "u/create"), totalCount = 300)),
+            versionsBody = versionsJson(listOf("1.21.1", "1.20.1"))
+        )
+        val partition = CurseForgePartition("1.20.1", null, ascending = false)
+
+        val page = CurseForgeCandidateSource("key", fetcher, pageSize = 50)
+            .page(offset = 0, limit = 1, partition = partition.key)
+
+        Assertions.assertEquals(listOf("create"), page.candidates.map { it.slug })
+        Assertions.assertTrue(fetcher.searchRequests().single().contains("gameVersion=1.20.1"))
+        Assertions.assertEquals(partition.key, page.nextPartition)
+    }
+
+    /** A loader slice carries both the modloader filter and, when crawling the bottom, the ascending sort. */
+    @Test
+    fun aLoaderPartitionFiltersByModLoaderAndSortDirection() {
+        val partition = CurseForgePartition("1.20.1", CurseForgePartitions.FABRIC, ascending = true)
+        val fetcher = CannedApi(
+            searchAnswers = listOf("modLoaderType=${CurseForgePartitions.FABRIC}" to searchJson(Triple("tiny", 1L, "u/tiny"), totalCount = 20)),
+            versionsBody = versionsJson(listOf("1.20.1"))
+        )
+
+        CurseForgeCandidateSource("key", fetcher, pageSize = 50).page(offset = 0, limit = 1, partition = partition.key)
+
+        val url = fetcher.searchRequests().single()
+        Assertions.assertTrue(url.contains("gameVersion=1.20.1"), url)
+        Assertions.assertTrue(url.contains("modLoaderType=${CurseForgePartitions.FABRIC}"), url)
+        Assertions.assertTrue(url.contains("sortOrder=asc"), "the bottom of a slice is reached by sorting ascending: $url")
+    }
+
+    /**
+     * The heart of it: when a partition runs out mid-slice the crawl continues **in the next partition**
+     * within the same call, and reports an offset relative to that new partition — otherwise the cursor would
+     * point into the wrong query and skip a chunk of the catalog.
+     */
+    @Test
+    fun crossingAPartitionBoundaryContinuesInTheNextPartitionAndResetsTheOffset() {
+        val fetcher = CannedApi(
+            searchAnswers = listOf(
+                // The unfiltered slice is exhausted after one mod (a short page ⇒ partition over)...
+                "gameVersion" to searchJson(Triple("versioned", 4L, "u/versioned"), totalCount = 300),
+                "index=0" to searchJson(Triple("global", 9L, "u/global"), totalCount = 1)
+            ),
+            versionsBody = versionsJson(listOf("1.21.1", "1.20.1"))
+        )
+
+        val page = CurseForgeCandidateSource("key", fetcher, pageSize = 2).page(offset = 0, limit = 2, partition = null)
+
+        Assertions.assertEquals(listOf("global", "versioned"), page.candidates.map { it.slug }, "both partitions contributed")
+        Assertions.assertEquals(
+            CurseForgePartition("1.21.1", null, ascending = false).key, page.nextPartition,
+            "the crawl is now in the newest version's partition"
+        )
+        Assertions.assertEquals(1, page.nextOffset, "offset is relative to the new partition, not the old one")
+        Assertions.assertFalse(page.endOfCatalog, "there are more versions to crawl")
+    }
+
+    /**
+     * Reaching the paging cap is not the end of the catalog any more: the partition's `totalCount` says it
+     * holds more than can be paged, so the crawl splits that version by modloader and carries on. The size is
+     * probed when the slice resumes exactly at the cap and no count has been seen yet this call.
+     */
+    @Test
+    fun reachingThePagingCapSplitsTheVersionByModLoader() {
+        val overCap = CurseForgeCandidateSource.MAX_INDEX + 5_000
+        val fetcher = CannedApi(
+            searchAnswers = listOf(
+                "modLoaderType=${CurseForgePartitions.FORGE}" to searchJson(Triple("forge-mod", 7L, "u/forge"), totalCount = 900),
+                "gameVersion=1.20.1" to searchJson(Triple("probe-only", 1L, "u/probe"), totalCount = overCap)
+            ),
+            versionsBody = versionsJson(listOf("1.20.1"))
+        )
+        val cappedPartition = CurseForgePartition("1.20.1", null, ascending = false)
+
+        val page = CurseForgeCandidateSource("key", fetcher, pageSize = 50)
+            .page(offset = CurseForgeCandidateSource.MAX_INDEX, limit = 1, partition = cappedPartition.key)
+
+        Assertions.assertEquals(listOf("forge-mod"), page.candidates.map { it.slug })
+        Assertions.assertEquals(
+            CurseForgePartition("1.20.1", CurseForgePartitions.FORGE, ascending = false).key, page.nextPartition,
+            "past the cap, the version is re-crawled per modloader"
+        )
+        Assertions.assertFalse(page.endOfCatalog, "the catalog is not over — it is only this query that is capped")
+        Assertions.assertTrue(
+            fetcher.searchRequests().any { it.contains("pageSize=1") },
+            "the partition size is probed with a single-item query: ${fetcher.searchRequests()}"
+        )
+    }
+
+    /** If the size probe fails, the crawl must stay put rather than skip the rest of that partition. */
+    @Test
+    fun aFailedSizeProbeKeepsTheCrawlPosition() {
+        val partition = CurseForgePartition("1.20.1", null, ascending = false)
+        val fetcher = CannedApi(failUrlsContaining = "pageSize=1")
+
+        val page = CurseForgeCandidateSource("key", fetcher, pageSize = 50)
+            .page(offset = CurseForgeCandidateSource.MAX_INDEX, limit = 5, partition = partition.key)
+
+        Assertions.assertTrue(page.candidates.isEmpty())
+        Assertions.assertFalse(page.endOfCatalog)
+        Assertions.assertEquals(CurseForgeCandidateSource.MAX_INDEX, page.nextOffset)
+        Assertions.assertEquals(partition.key, page.nextPartition, "same partition, to be retried next pass")
+    }
+
+    /**
+     * Without a version list there is nothing to partition, so the crawl degrades to what it did before
+     * partitioning existed: the top 10 000 by downloads, then wrap. Coverage is reduced, not broken.
+     */
+    @Test
+    fun anUnavailableVersionListDegradesToTheUnpartitionedTopOfTheCatalog() {
+        val fetcher = CannedApi(failUrlsContaining = "/games/432/versions")
+        val source = CurseForgeCandidateSource("key", fetcher, pageSize = 50)
+
+        val page = source.page(offset = CurseForgeCandidateSource.MAX_INDEX, limit = 5, partition = CurseForgePartitions.FIRST.key)
+
+        Assertions.assertTrue(page.candidates.isEmpty())
+        Assertions.assertTrue(page.endOfCatalog, "with no partitions, the paging cap really is the end of the crawl")
+    }
+
+    @Test
+    fun theLastPartitionRunningOutEndsTheCatalog() {
+        // One version, and every query answers empty ⇒ the plan runs out.
+        val fetcher = CannedApi(versionsBody = versionsJson(listOf("1.20.1")))
+        val lastPartition = CurseForgePartition("1.20.1", CurseForgePartitions.NEOFORGE, ascending = false)
+
+        val page = CurseForgeCandidateSource("key", fetcher, pageSize = 50)
+            .page(offset = 0, limit = 5, partition = lastPartition.key)
+
+        Assertions.assertTrue(page.candidates.isEmpty())
+        Assertions.assertTrue(page.endOfCatalog, "the end of the last partition is the end of the catalog")
+    }
+
+    /**
+     * A page the API returned out of the requested order is still passed through unchanged (the warning is
+     * advisory — `GrindPool` re-sorts by popularity, so nothing is dropped or reordered here).
+     */
+    @Test
+    fun anOutOfOrderPageIsStillReturnedIntact() {
+        val fetcher = CannedApi(listOf("index=0" to searchJson(Triple("low", 1L, "u/low"), Triple("high", 999L, "u/high"))))
+        val page = CurseForgeCandidateSource("key", fetcher).page(offset = 0, limit = 2)
+
+        Assertions.assertEquals(listOf("low", "high"), page.candidates.map { it.slug })
+        Assertions.assertEquals(listOf(1L, 999L), page.candidates.map { it.popularity })
     }
 }

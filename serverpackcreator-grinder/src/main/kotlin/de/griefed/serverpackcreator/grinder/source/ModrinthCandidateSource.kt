@@ -64,8 +64,12 @@ class ModrinthCandidateSource(
      * Up to [limit] mod projects starting at [offset], most-downloaded first. A short or empty page ends
      * the catalog (`endOfCatalog`); a *failed* request only ends this slice, returning what was gathered
      * with `endOfCatalog = false` so the crawler retries the same region instead of wrapping to the top.
+     *
+     * `partition` is ignored and never handed back: Modrinth's whole mod catalog is one offset sequence (its
+     * offset ceiling of 99 999 sits comfortably above today's ~71 000 projects), so there is nothing to
+     * partition — unlike CurseForge, whose paging cap forces a partitioned crawl.
      */
-    override fun page(offset: Int, limit: Int): CandidatePage {
+    override fun page(offset: Int, limit: Int, partition: String?): CandidatePage {
         require(offset >= 0) { "offset must be >= 0, was $offset" }
         require(limit >= 0) { "limit must be >= 0, was $limit" }
         val gathered = ArrayList<GrindCandidate>(minOf(limit, 1024))
