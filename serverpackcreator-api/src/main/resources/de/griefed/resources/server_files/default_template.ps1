@@ -237,6 +237,25 @@ Function global:RunJavaCommand
     #>
 }
 
+Function global:RunInstallerJavaCommand
+{
+    param ($CommandToRun)
+    $InstallerJava = if ([string]::IsNullOrWhiteSpace($JavaInstaller)) { $Java } else { $JavaInstaller }
+    CMD /C "`"${InstallerJava}`" ${CommandToRun}"
+
+    <#
+    .SYNOPSIS
+
+    Runs a modloader *installer* with the Java installation set in $JavaInstaller when that is present in
+    the variables.txt, otherwise with $Java. Some installers require a newer Java than the server they
+    install: the Quilt installer needs Java 17+, while e.g. Minecraft 1.16.1 must run on Java 8 - one JDK
+    cannot satisfy both. Leave JAVA_INSTALLER unset and behaviour is unchanged.
+
+    .PARAMETER CommandToRun
+    The command to run as a Java command.
+    #>
+}
+
 Function DownloadIfNotExists
 {
     param ($FileToCheck, $FileToDownload, $DownloadURL)
@@ -524,7 +543,8 @@ Function global:SetupQuilt
     elseif ((DownloadIfNotExists "quilt-server-launch.jar" "quilt-installer.jar" "${QuiltInstallerUrl}"))
     {
         "Installer downloaded. Installing..."
-        RunJavaCommand "-jar quilt-installer.jar install server ${MinecraftVersion} --download-server --install-dir=."
+        # The Quilt installer itself requires Java 17+, even when the server will run on an older Java.
+        RunInstallerJavaCommand "-jar quilt-installer.jar install server ${MinecraftVersion} --download-server --install-dir=."
         if ((Test-Path -Path 'quilt-server-launch.jar' -PathType Leaf))
         {
             DeleteFileSilently 'quilt-installer.jar'
@@ -533,7 +553,7 @@ Function global:SetupQuilt
         else
         {
             DeleteFileSilently 'quilt-installer.jar'
-            CrashServer "quilt-server-launch.jar not found. Maybe the Quilt servers are having trouble. Please try again in a couple of minutes and check your internet connection."
+            CrashServer "quilt-server-launch.jar not found. The Quilt installer requires Java 17 or newer: if the message above says so, set JAVA_INSTALLER in your variables.txt to a Java 17+ binary (your server keeps running on JAVA). Otherwise the Quilt servers may be having trouble - try again in a couple of minutes and check your internet connection."
         }
     }
     $script:LauncherJarLocation = "quilt-server-launch.jar"
@@ -627,6 +647,9 @@ $LegacyFabricInstallerVersion = $ExternalVariables['LEGACYFABRIC_INSTALLER_VERSI
 $FabricInstallerVersion = $ExternalVariables['FABRIC_INSTALLER_VERSION']
 $QuiltInstallerVersion = $ExternalVariables['QUILT_INSTALLER_VERSION']
 $Java = $ExternalVariables['JAVA']
+# Optional: a Java 17+ binary used only for modloader installers that need one (the Quilt installer does,
+# even when the server runs on an older Java). Absent from variables.txt -> $null -> installers use $Java.
+$JavaInstaller = $ExternalVariables['JAVA_INSTALLER']
 $WaitForUserInput = $ExternalVariables['WAIT_FOR_USER_INPUT']
 $JavaArgs = $ExternalVariables['JAVA_ARGS']
 $AdditionalArgs = $ExternalVariables['ADDITIONAL_ARGS']

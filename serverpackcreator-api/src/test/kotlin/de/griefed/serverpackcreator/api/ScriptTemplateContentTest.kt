@@ -61,6 +61,34 @@ internal class ScriptTemplateContentTest {
     }
 
     /**
+     * All three start-script templates must run modloader **installers** through the `JAVA_INSTALLER`
+     * override rather than plain `JAVA`. The Quilt installer requires Java 17+ even when the server runs
+     * on an older Java (Minecraft 1.16.1 → Java 8), so without this Quilt cannot be installed on older
+     * Minecraft at all — reproduced in a container for bash *and* fish before the fix. The override falls
+     * back to `JAVA` when unset, so packs that never set it are unaffected.
+     */
+    @Test
+    fun allTemplatesRunTheQuiltInstallerWithTheInstallerJavaOverride() {
+        val expectations = mapOf(
+            "default_template.sh" to listOf("runInstallerJavaCommand()", "\${JAVA_INSTALLER:-\$JAVA}", "runInstallerJavaCommand \"-jar quilt-installer.jar"),
+            "default_template.fish" to listOf("function runInstallerJavaCommand", "JAVA_INSTALLER", "runInstallerJavaCommand \"-jar quilt-installer.jar"),
+            "default_template.ps1" to listOf("RunInstallerJavaCommand", "\$ExternalVariables['JAVA_INSTALLER']", "RunInstallerJavaCommand \"-jar quilt-installer.jar")
+        )
+        for ((name, needles) in expectations) {
+            val body = template(name)
+            for (needle in needles) {
+                Assertions.assertTrue(body.contains(needle), "$name must contain `$needle`")
+            }
+            // The Quilt install must not silently regress to the server's Java.
+            Assertions.assertFalse(
+                body.contains("runJavaCommand \"-jar quilt-installer.jar") ||
+                    body.contains("RunJavaCommand \"-jar quilt-installer.jar"),
+                "$name must not run the Quilt installer with the server's JAVA"
+            )
+        }
+    }
+
+    /**
      * Syntax-checks the fish templates with `fish -n` when a fish interpreter is available, so a broken
      * edit is caught without needing the container matrix. Skipped (not failed) where fish is absent,
      * which is the normal case on CI and most dev machines.

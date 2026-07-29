@@ -182,6 +182,20 @@ function runJavaCommand --argument-names cmd
     "$JAVA" $args
 end
 
+# runInstallerJavaCommand command
+# Runs a modloader *installer* with $JAVA_INSTALLER when that is set in the variables.txt, otherwise
+# with $JAVA. Some installers need a newer Java than the server they install: the Quilt installer
+# requires Java 17+, while e.g. Minecraft 1.16.1 must run on Java 8 -- one JDK cannot satisfy both.
+# Leave JAVA_INSTALLER unset and nothing changes; set it to a Java 17+ binary to install such a loader.
+function runInstallerJavaCommand --argument-names cmd
+    set -l args (string split --no-empty " " -- $cmd)
+    if set -q JAVA_INSTALLER; and test -n "$JAVA_INSTALLER"
+        "$JAVA_INSTALLER" $args
+    else
+        "$JAVA" $args
+    end
+end
+
 # refreshServerJar
 # Refresh the ServerStarterJar used for running Forge and NeoForge servers.
 function refreshServerJar
@@ -386,14 +400,15 @@ function setupQuilt
         crashServer "Quilt is not available for Minecraft $MINECRAFT_VERSION, Quilt $MODLOADER_VERSION."
     else if test (downloadIfNotExist "quilt-server-launch.jar" "quilt-installer.jar" "$QUILT_INSTALLER_URL") = "true"
         echo "Installer downloaded. Installing..."
-        runJavaCommand "-jar quilt-installer.jar install server $MINECRAFT_VERSION --download-server --install-dir=."
+        # The Quilt installer itself requires Java 17+, even when the server will run on an older Java.
+        runInstallerJavaCommand "-jar quilt-installer.jar install server $MINECRAFT_VERSION --download-server --install-dir=."
 
         if test -s "quilt-server-launch.jar"
             rm quilt-installer.jar
             echo "Installation complete. quilt-installer.jar deleted."
         else
             rm -f quilt-installer.jar
-            crashServer "quilt-server-launch.jar not found. Maybe the Quilt servers are having trouble. Please try again in a couple of minutes and check your internet connection."
+            crashServer "quilt-server-launch.jar not found. The Quilt installer requires Java 17 or newer: if the message above says so, set JAVA_INSTALLER in your variables.txt to a Java 17+ binary (your server keeps running on JAVA). Otherwise the Quilt servers may be having trouble - try again in a couple of minutes and check your internet connection."
         end
     end
 
