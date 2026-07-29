@@ -24,11 +24,17 @@ gradlew     text eol=lf
 
 # ---------------------------------------------------------------------------------------------------
 # Must be CRLF — Windows batch files. cmd.exe mis-parses LF-only .bat in some constructs (labels,
-# multi-line blocks), so pin them explicitly. This covers Gradle's wrapper scripts *and*
-# `default_template.bat`, which SPC turns into the `start.bat` shipped to Windows users.
+# multi-line blocks), so pin them explicitly. This covers Gradle's wrapper scripts.
 # PowerShell is happy with LF, so .ps1 stays on the LF default.
 # ---------------------------------------------------------------------------------------------------
 *.bat       text eol=crlf
+
+# Exception: the start-script *templates* stay LF. They are copied verbatim into every generated server
+# pack, so their endings are the endings users receive — flipping them to CRLF would change generated
+# output, which is a product decision and not something a line-ending pin should make. Griefed's call:
+# keep shipping LF. Scoped to the directory so a future .bat template inherits the same rule.
+# (Later rules win in .gitattributes, so this must stay below the `*.bat` line above.)
+serverpackcreator-api/src/main/resources/de/griefed/resources/server_files/*.bat text eol=lf
 
 # ---------------------------------------------------------------------------------------------------
 # Tool-owned: left byte-for-byte alone so install4j can rewrite it without git reformatting it.
