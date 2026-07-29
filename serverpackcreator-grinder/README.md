@@ -60,10 +60,34 @@ With **no arguments** it enters fire-and-forget mode:
 ./gradlew :serverpackcreator-grinder:run
 ```
 
-Each pass pulls the most-downloaded mods, grinds the ones that need it, then sleeps. A project is **skipped
-while its verdict is fresh** and **re-verified once stale**, so evolving mods, new loader versions and newly
-supported Minecraft releases get picked up over time. Verdicts are written after every result, so a restart
-resumes instead of starting over.
+Each pass takes the **next slice** of every platform's catalog — most-downloaded first — and grinds the
+projects that need it. The crawl position is saved per platform (`SPC_GRINDER_CURSORS`), so passes keep
+working *forward* through the catalog and a restart resumes mid-catalog instead of starting over at the
+popular mods. When a platform runs out, the crawl wraps to the top and starts a new sweep.
+
+A project is **skipped while its verdict is fresh** and **re-verified once stale**
+(`SPC_GRINDER_REVERIFY_TTL_DAYS`), so a completed sweep keeps the catalog current — evolving mods, new loader
+versions and newly supported Minecraft releases get picked up — while an unfinished one keeps extending
+coverage. Verdicts are written after every result, so a restart never redoes finished work.
+
+**The loop waits only when there is nothing to get on with:** it moves straight to the next slice while
+projects keep needing verification, pauses `SPC_GRINDER_SCAN_DELAY` while merely scanning past fresh ones,
+and idles `SPC_GRINDER_INTERVAL` once a full sweep found nothing due. So the service goes as fast as your
+host allows and settles down once it is caught up. Leave it running and check the report whenever.
+
+### How long is "eventually"?
+
+Sweep time is `catalog ÷ batch × pass duration`, and a pass is dominated by real container boots (minutes
+each, `SPC_GRINDER_WORKERS` in parallel). Modrinth carries ~71 000 mod projects, so with `SPC_GRINDER_BATCH`
+at the default 25 that is ~2 850 passes for one sweep — plan on raising the batch, the workers, or both if
+you want a full sweep in weeks rather than months, and give it a `SPC_GRINDER_REVERIFY_TTL_DAYS` longer than
+a sweep takes (otherwise verdicts go stale faster than the crawl advances and it never reaches the tail).
+
+**CurseForge coverage is capped at 10 000 projects.** Its `/mods/search` refuses an `index` beyond 10 000, so
+a sweep covers the 10 000 most-downloaded CurseForge mods and then restarts — however long you leave it
+running. Reaching the rest needs the search partitioned into sub-10 000 slices (by game version, loader or
+category) and the results unioned; that is not implemented yet. Modrinth has no such wall (its offset is
+usable to 99 999, comfortably past today's catalog).
 
 For a real deployment, build a start script instead of using Gradle:
 
@@ -85,18 +109,19 @@ mid-boot, so no Minecraft server is left running.
 | `SPC_GRINDER_WORK`              | `~/.spc-grinder/work`          | Scratch space for generated packs                                            |
 | `SPC_GRINDER_CACHE`             | `~/.spc-grinder/cache`         | Cached loader installs, one per loader/version/Minecraft                     |
 | `SPC_GRINDER_STORE`             | `~/.spc-grinder/verdicts.json` | Verdict store — delete to start fresh                                        |
+| `SPC_GRINDER_CURSORS`           | `~/.spc-grinder/cursors.json`  | Crawl position per platform — delete to re-sweep from the most-downloaded    |
 | `SPC_GRINDER_PORT`              | `8757`                         | Report server port                                                           |
 | `SPC_GRINDER_WORKERS`           | `2`                            | Parallel boots. **Budget ~3 GB RAM each**                                    |
-| `SPC_GRINDER_INTERVAL`          | `21600` (6 h)                  | Seconds between passes (continuous mode only)                                |
+| `SPC_GRINDER_BATCH`             | `25`                           | Projects taken from **each** platform per pass — the sweep-speed lever       |
+| `SPC_GRINDER_INTERVAL`          | `21600` (6 h)                  | Seconds to idle after a full sweep found nothing due                         |
+| `SPC_GRINDER_SCAN_DELAY`        | `15`                           | Seconds between passes that only scanned past fresh verdicts                 |
 | `SPC_GRINDER_REVERIFY_TTL_DAYS` | `30`                           | How long a verdict stays fresh before re-verification                        |
-| `SPC_GRINDER_MODRINTH_LIMIT`    | `25`                           | Modrinth projects pulled per pass                                            |
-| `SPC_GRINDER_CF_LIMIT`          | `25`                           | CurseForge projects pulled per pass (needs the key)                          |
 | `SPC_GRINDER_SPC_PROPERTIES`    | *(unset)*                      | Point SPC at a specific `serverpackcreator.properties` for reproducible runs |
 | `CURSEFORGE_API_KEY`            | *(unset)*                      | Enables the CurseForge candidate source                                      |
 
 ```bash
 export SPC_GRINDER_WORKERS=4
-export SPC_GRINDER_INTERVAL=3600
+export SPC_GRINDER_BATCH=100
 export SPC_GRINDER_PORT=8757
 ./gradlew :serverpackcreator-grinder:run
 ```
@@ -117,7 +142,9 @@ means the server booted — which does *not* prove the mod is server-safe. `INCO
 learned, e.g. the loader has no build for that Minecraft version, so the mod was never actually tested.
 
 The store is plain JSON (`SPC_GRINDER_STORE`), keyed by platform + slug + loader — the same slug on
-Modrinth and CurseForge stays two separate projects.
+Modrinth and CurseForge stays two separate projects. How far the crawl has got is in `SPC_GRINDER_CURSORS`:
+one entry per platform with the next `offset` and the number of completed `sweeps` — read it to tell
+"still on the first pass over this platform" from "covered it, now keeping it current".
 
 ---
 
@@ -132,7 +159,8 @@ Requires=docker.service
 [Service]
 User=grinder
 Environment=SPC_GRINDER_WORKERS=4
-Environment=SPC_GRINDER_INTERVAL=21600
+Environment=SPC_GRINDER_BATCH=100
+Environment=SPC_GRINDER_REVERIFY_TTL_DAYS=180
 # Environment=CURSEFORGE_API_KEY=...
 ExecStart=/opt/spc-grinder/bin/serverpackcreator-grinder
 Restart=on-failure
@@ -156,6 +184,8 @@ Give `TimeoutStopSec` room: on stop the grinder removes in-flight containers bef
 | Boots die with `Killed` mid-startup      | Host out of memory — lower `SPC_GRINDER_WORKERS`                                                                              |
 | Everything is `INCONCLUSIVE`             | Often the loader genuinely has no build for the selected Minecraft version; check the `Detail` column                         |
 | Nothing gets ground on a second run      | Working as intended: verdicts are still fresh. Lower `SPC_GRINDER_REVERIFY_TTL_DAYS` or delete the store                      |
+| Passes run but verify nothing for a while | Also expected: the crawl is scanning past projects whose verdicts are fresh, one batch per `SPC_GRINDER_SCAN_DELAY`          |
+| It re-grinds popular mods, never the tail | The crawl position was lost (deleted/unwritable `SPC_GRINDER_CURSORS`) or the TTL is shorter than a sweep takes — raise it    |
 | A container outlived the process         | Should not happen — shutdown drains them. If it does, `docker ps` and remove it, and please report it                         |
 
 ---
@@ -175,5 +205,13 @@ GRINDER_TEMPLATE_IT=1 ./gradlew :serverpackcreator-grinder:test --tests "*Script
 It is slow and network-heavy, and gated behind `GRINDER_TEMPLATE_IT=1` so normal runs skip it. Keep
 `SPC_GRINDER_TEMPLATE_WORKERS` at **1** — parallel cells starve the host and produce false failures. The
 docker-glue integration test is gated separately behind `GRINDER_DOCKER_IT=1`.
+
+The catalog crawl has its own live-API check — no containers, a handful of search calls — which pins that
+Modrinth really serves the offsets the crawl walks (including a deep one) and that the position survives a
+restart. Run it after touching paging or the cursor:
+
+```bash
+GRINDER_LIVE_IT=1 ./gradlew :serverpackcreator-grinder:test --tests "*CatalogCrawlLiveIT"
+```
 
 Internals, design decisions and landmines live in [`CLAUDE.md`](CLAUDE.md) and [`module.md`](module.md).

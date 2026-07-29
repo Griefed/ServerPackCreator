@@ -547,3 +547,34 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   so the seam's own "always removes it" contract is enforceable and any engine can be drained (L1); two
   shutdown hooks collapsed into one with defined ordering (L4); a stray cross-subject assertion dropped
   (L2); the drain IT tidied — `DockerClient` imported, no shadowed `engine` (L3). Idioms were already clean.
+
+- **Catalog crawl cursor on `claude-grinder-catalog-cursor` (2026-07-29):** answered "left alone long enough,
+  will the grinder check *every* mod on CurseForge and Modrinth?" — it would not. Both sources restarted at
+  offset 0 on every call (`candidates(limit)`), so the continuous loop re-fetched the *same* top-25 per
+  platform forever: ~50 projects ground for the lifetime of the service, rank 26 unreachable, and after the
+  first pass every pass was a no-op until the 30-day TTL. Fixed in four concern-separated commits:
+  **(1) offset paging** — `CandidateSource` becomes `platform` + `page(offset, limit): CandidatePage`
+  (candidates + `nextOffset` + `endOfCatalog`). `endOfCatalog` is the load-bearing bit: true only when the
+  platform genuinely ran out (or CF hit its index cap), **never** on a failed request, because the crawler
+  wraps to 0 on it and a transient 503 deep in the catalog would otherwise reset the whole crawl to the
+  popular head. **(2) the cursor** — `CatalogCursor` (offset + completed sweeps), `CursorStore` with an
+  in-memory double and a `JsonCursorStore` (temp-then-atomic-move like the verdict store, corrupt → start),
+  and `CatalogCrawler` handing out the next slice per source per pass: advance by what was handed out, wrap +
+  count a sweep at the end, keep the position on a failed page, skip a *throwing* source, and on a
+  past-the-end position wrap **and** take the head slice in the same pass (guarded by `offset > 0` so an
+  empty catalog can't spin). **(3) work-driven pacing** — `Grinder.grind` returns a `GrindOutcome`
+  (VERIFIED/FAILED/SKIPPED_FRESH) and `GrindPool.grindAll` returns the verified count, feeding the pure
+  `GrindPacing.pauseAfterPass`: no pause while work keeps turning up, a short `SPC_GRINDER_SCAN_DELAY` while
+  only scanning past fresh verdicts, the long `SPC_GRINDER_INTERVAL` once a full sweep found nothing due. A
+  fixed per-pass sleep was the second ceiling — 25 projects per 6 h cannot cover 71 000. Failures deliberately
+  don't count as work, so a broken host throttles instead of racing the cursor past thousands of unverified
+  projects. **(4) wiring + docs** — `SPC_GRINDER_BATCH` (replacing the two per-platform `*_LIMIT` knobs, whose
+  "top N" meaning no longer existed), `SPC_GRINDER_CURSORS`, `SPC_GRINDER_SCAN_DELAY`; README gained the
+  sweep-time arithmetic and the coverage ceilings.
+  **Measured, not assumed:** probed the live Modrinth API — `total_hits` 71 267 for `project_type:mod`,
+  offset 40 000 serves real projects, offset clamps at 99 999 — and kept it as `CatalogCrawlLiveIT` (gated
+  `GRINDER_LIVE_IT=1`): consecutive live batches return different projects, a fresh crawler over the same
+  cursor file resumes, deep offset works. **Honest limit:** CurseForge's `/mods/search` refuses
+  `index >= 10 000`, so CF coverage is capped at its 10 000 most-downloaded mods however long the service
+  runs; the cursor cannot fix that (it needs a partitioned search) and the cap is now logged, tested and
+  documented rather than silent. Suite: grinder 93 run + 8 gated, green.

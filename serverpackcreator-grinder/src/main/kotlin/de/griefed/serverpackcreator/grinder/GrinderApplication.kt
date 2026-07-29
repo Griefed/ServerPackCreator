@@ -27,7 +27,10 @@ import de.griefed.serverpackcreator.grinder.loader.ImageJavaRuntimes
 import de.griefed.serverpackcreator.grinder.loader.LoaderCache
 import de.griefed.serverpackcreator.grinder.report.JsonVerdictStore
 import de.griefed.serverpackcreator.grinder.report.ReportServer
+import de.griefed.serverpackcreator.grinder.source.CandidateSource
+import de.griefed.serverpackcreator.grinder.source.CatalogCrawler
 import de.griefed.serverpackcreator.grinder.source.CurseForgeCandidateSource
+import de.griefed.serverpackcreator.grinder.source.JsonCursorStore
 import de.griefed.serverpackcreator.grinder.source.ModrinthCandidateSource
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
@@ -37,11 +40,15 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 /**
- * The fire-and-forget entry point. Wires the real chain — [ModrinthCandidateSource] (or project URLs
- * from the command line) → [GrindPool] over a [Grinder] backed by the [ContainerCandidateVerifier] and
- * a restart-safe [JsonVerdictStore] — and serves the live table/CSV via [ReportServer]. Configured by
- * environment variables so the daemon needs no flags; pass project URLs as args to grind a fixed set
- * (handy for an end-to-end verification), or none to pull the top Modrinth mods by downloads.
+ * The fire-and-forget entry point. Wires the real chain — a [CatalogCrawler] over the available candidate
+ * sources (or project URLs from the command line) → [GrindPool] over a [Grinder] backed by the
+ * [ContainerCandidateVerifier] and a restart-safe [JsonVerdictStore] — and serves the live table/CSV via
+ * [ReportServer]. Configured by environment variables so the daemon needs no flags.
+ *
+ * With no arguments it crawls: every pass takes the next slice of each platform's catalog, so left running
+ * it works its way through the whole catalog and then keeps it current, resuming mid-catalog after a restart
+ * ([JsonCursorStore]) and pacing itself on how much work each pass found ([GrindPacing]). Pass project URLs
+ * instead to grind a fixed set once (handy for an end-to-end verification).
  *
  * @author Griefed
  */
@@ -103,43 +110,56 @@ object GrinderApplication {
             return
         }
 
-        // Continuous fire-and-forget: each pass re-pulls the popularity-ranked candidates and grinds
-        // them. The grinder skips any project whose verdict is still fresh (younger than the re-verify
-        // TTL) and re-checks stale ones, so evolving mods, new loader versions and newly-supported
-        // Minecraft releases get picked up over successive passes. Verdicts persist after every record,
-        // so a restart resumes rather than starting over.
-        // Candidate suppliers: Modrinth always (keyless); CurseForge only when its API key is set
-        // (mirrors clientside's supportedPlatforms). Each pass re-runs them; GrindPool re-sorts the
-        // union by popularity, so the two platforms interleave.
-        val modrinthLimit = env("SPC_GRINDER_MODRINTH_LIMIT", "25").toInt()
-        val curseForgeLimit = env("SPC_GRINDER_CF_LIMIT", "25").toInt()
+        // Continuous fire-and-forget: each pass takes the *next* slice of every platform's catalog and
+        // grinds it, so coverage keeps extending instead of re-checking the same most-downloaded projects.
+        // The crawl position is persisted per platform, so a restart resumes mid-catalog; once a source runs
+        // out the crawler wraps to the top and the re-verify TTL decides what actually gets re-ground, which
+        // is how evolving mods, new loader versions and newly-supported Minecraft releases get picked up.
+        // Verdicts persist after every record, so a restart never redoes finished work.
+        // Sources: Modrinth always (keyless); CurseForge only when its API key is set (mirrors clientside's
+        // supportedPlatforms). GrindPool re-sorts each batch by popularity, so the platforms interleave.
+        val batchSize = env("SPC_GRINDER_BATCH", "25").toInt()
+        val cursorFile = File(env("SPC_GRINDER_CURSORS", File(base, "cursors.json").path))
+            .apply { parentFile?.mkdirs() }
         val curseForgeKey = System.getenv("CURSEFORGE_API_KEY")?.takeIf { it.isNotBlank() }
-        val candidateSuppliers = buildList<() -> List<GrindCandidate>> {
-            add { ModrinthCandidateSource().page(offset = 0, limit = modrinthLimit).candidates }
+        val sources = buildList<CandidateSource> {
+            add(ModrinthCandidateSource())
             if (curseForgeKey != null) {
-                add { CurseForgeCandidateSource(curseForgeKey).page(offset = 0, limit = curseForgeLimit).candidates }
+                add(CurseForgeCandidateSource(curseForgeKey))
             }
         }
-        val intervalSeconds = env("SPC_GRINDER_INTERVAL", "21600").toLong()
+        val crawler = CatalogCrawler(sources, JsonCursorStore(cursorFile), batchSize)
+        val betweenSweeps = Duration.ofSeconds(env("SPC_GRINDER_INTERVAL", "21600").toLong())
+        val whileCrawling = Duration.ofSeconds(env("SPC_GRINDER_SCAN_DELAY", "15").toLong())
         val sourceNames = if (curseForgeKey != null) "Modrinth + CurseForge" else "Modrinth (no CURSEFORGE_API_KEY)"
-        log.info("Continuous mode: sources=$sourceNames, re-verify TTL ${reverifyTtl.toDays()}d, interval ${intervalSeconds}s, $workers worker(s).")
+        log.info(
+            "Continuous mode: sources=$sourceNames, batch $batchSize/pass, re-verify TTL ${reverifyTtl.toDays()}d, " +
+                "${betweenSweeps.toSeconds()}s between completed sweeps, ${whileCrawling.toSeconds()}s while scanning ahead, " +
+                "$workers worker(s), cursors=$cursorFile."
+        )
 
         var pass = 0
         while (running.get()) {
             pass++
-            val candidates = candidateSuppliers.flatMap { it() }
-            log.info("Pass #$pass: grinding ${candidates.size} candidate(s)...")
+            val batch = crawler.nextBatch()
+            log.info("Pass #$pass: grinding ${batch.candidates.size} candidate(s)...")
             val pool = GrindPool(grinder, workers).also { activePool.set(it) }
-            pool.grindAll(candidates)
+            val verified = pool.grindAll(batch.candidates)
             activePool.set(null)
-            log.info("Pass #$pass complete: ${store.all().size} verdict(s) total.")
+            log.info("Pass #$pass complete: $verified verified, ${store.all().size} verdict(s) total.")
             if (!running.get()) {
                 break
             }
+            // Wait only when there is nothing to get on with — a fixed sleep per pass would cap how fast the
+            // catalog can be swept, which is the difference between covering it in weeks and never.
+            val pause = GrindPacing.pauseAfterPass(verified, batch.sweepCompleted, betweenSweeps, whileCrawling)
+            if (pause.isZero) {
+                continue
+            }
             try {
-                Thread.sleep(intervalSeconds * 1000)
+                Thread.sleep(pause.toMillis())
             } catch (_: InterruptedException) {
-                break // shutdown requested during the inter-pass sleep
+                break // shutdown requested during the inter-pass wait
             }
         }
         log.info("Grinder stopped after $pass pass(es).")

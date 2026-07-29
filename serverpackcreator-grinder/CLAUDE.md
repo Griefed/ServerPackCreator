@@ -25,8 +25,10 @@ base package's orchestration, only its domain models).
   `ImageJavaRuntimes`. Depends on `grinder.container`.
 - **`grinder.report`** — verdict persistence + web/CSV output: `VerdictStore` (+ `InMemoryVerdictStore`),
   `JsonVerdictStore`, `VerdictCsvExporter`, `VerdictReportRenderer`, `ReportServer`.
-- **`grinder.source`** — candidate discovery: the `CandidateSource` interface + `ModrinthCandidateSource`
-  and `CurseForgeCandidateSource`.
+- **`grinder.source`** — candidate discovery **and the crawl position**: the `CandidateSource` interface
+  (offset-based `page(offset, limit)` → `CandidatePage`) + `ModrinthCandidateSource` /
+  `CurseForgeCandidateSource`, plus `CatalogCrawler` (hands out the next slice per pass) and `CursorStore` /
+  `InMemoryCursorStore` / `JsonCursorStore` (`CatalogCursor` = offset + completed sweeps, persisted).
 
 ## Current state — the boot seam (container ServerRunner)
 
@@ -72,7 +74,7 @@ containers:
   **no Spring, no new dependency**. *Deliberately standalone:* the report is self-contained rather than
   rendered through the app's Quasar frontend, because the grinder must not depend on `-app` (that would
   drag in Spring/Mongo/Swing and break its standalone nature).
-- **Candidate sources** (`CandidateSource` interface — `candidates(limit): List<GrindCandidate>`,
+- **Candidate sources** (`CandidateSource` — `platform` + `page(offset, limit): CandidatePage`,
   most-downloaded first): `ModrinthCandidateSource` (keyless Modrinth search) and
   `CurseForgeCandidateSource` (CF `/mods/search` sorted by `sortField=6` TotalDownloads, `x-api-key`,
   `index`/`pageSize≤50` pagination capped at `index<10000`; project link = `links.websiteUrl`). Both
@@ -80,6 +82,22 @@ containers:
   wires Modrinth always and CurseForge **only when `CURSEFORGE_API_KEY` is set**; `GrindPool` re-sorts
   the union by popularity so the platforms interleave. Store dedup is by `slug`, so a mod on both
   platforms is treated as one project (accepted for now).
+  **`CandidatePage.endOfCatalog` is load-bearing, don't collapse it:** it is `true` only when the platform
+  genuinely ran out (or CF hit its index cap), never on a failed request — the crawler wraps to offset 0 on
+  it, so treating a transient 503 as "the end" would silently reset a deep crawl to the popular head.
+- **Catalog crawl (the coverage mechanism)**: `CatalogCrawler.nextBatch()` resumes each source at its
+  persisted `CatalogCursor`, advances it by what was actually handed out, and on `endOfCatalog` wraps to the
+  top and counts a sweep (the verdict TTL then decides what the new sweep re-grinds). A failed page keeps its
+  position (retried next pass); a *throwing* source is skipped, not fatal. A position already past the end
+  wraps **and** takes the head slice in the same pass — guarded by `cursor.offset > 0` so an empty catalog
+  can't spin. `JsonCursorStore` persists offset+sweeps per platform (temp-then-atomic-move, corrupt → start
+  of catalog) — **this file is the difference between eventual full coverage and re-checking the top N
+  forever**; deleting it costs one re-sweep (fresh verdicts are skipped), not correctness.
+- **Pacing** (`GrindPacing.pauseAfterPass`, pure + unit-tested): work found → no pause; nothing due but
+  catalog remains → short `SPC_GRINDER_SCAN_DELAY`; sweep completed with nothing due → `SPC_GRINDER_INTERVAL`.
+  **A fixed per-pass sleep is what made coverage impossible** (25 projects/6 h vs. ~71 000 Modrinth mods).
+  **Failed verifications deliberately don't count as work** — with a broken host every candidate fails, and
+  counting that as progress would race the cursor through the catalog leaving thousands unverified.
 - **Loader install (the `LoaderCache` `LoaderInstaller`)**: `DockerLoaderInstaller` generates a
   **mod-less** pack (`VanillaPackGenerator` → `ApiVanillaPackGenerator` over `ApiWrapper`), boots it
   **once with network** (`networkMode="bridge"` — the *only* networked boot) so `start.sh` installs the
@@ -178,9 +196,21 @@ Spike workspace (not committed): `~/spc-grinder-spike/{configs,packs,baselines}`
 - `JsonVerdictStoreTest` (survive-reopen, replace-across-reopen, corrupt→empty, creates-file+parents),
   `VerdictReportRendererTest` (sortable headers, embedded CSV, HTML/script escaping), `ReportServerTest`
   (real **loopback** HTTP on an ephemeral port: `/` HTML + `/export.csv`, live store, content-types).
-- `ModrinthCandidateSourceTest` (canned search JSON via a fake `HttpFetcher`): download-order
-  preserved, pagination + catalog-exhaustion + over-limit trim, failed-page returns partial, limit-0
-  fetches nothing.
+- `ModrinthCandidateSourceTest` / `CurseForgeCandidateSourceTest` (canned search JSON via a fake
+  `HttpFetcher`): download-order preserved, one slice spanning several API pages, the slice starting at the
+  requested offset, short/empty page ⇒ `endOfCatalog`, **failed page ⇒ NOT `endOfCatalog`**, limit-0 fetches
+  nothing; CF additionally: the documented request contract, `websiteUrl` fallback, and the index cap
+  (at-cap ⇒ `endOfCatalog` without sending a request the API would reject; a straddling slice clamped).
+- `CatalogCrawlerTest` (fake catalog of N synthetic projects): consecutive batches walk forward, wrap +
+  sweep-count at the end, resume from a persisted position, failed request keeps its position and is retried,
+  sources crawled independently and unioned, past-the-end wrap fetches the head in the same pass, empty
+  catalog requested only once, throwing source skipped. `CursorStoreTest`: unknown source ⇒ start, per-source
+  positions, JSON survives reopen, replaces rather than appends, creates file+parents, corrupt ⇒ start.
+  `GrindPacingTest`: the three pause cases + work outranking a completed sweep.
+- **`CatalogCrawlLiveIT`** (gated `GRINDER_LIVE_IT=1`, no containers, a few search calls) pins the *platform*
+  assumptions no fake can: consecutive live batches return **different** projects, a fresh crawler over the
+  same cursor file resumes rather than re-serving the head, and offset 40 000 still serves real projects.
+  **Verified passing 2026-07-29.** Run it after touching paging or the cursor.
 - `InstallLayerSnapshotTest` (added-non-runtime files copied, pre-boot + runtime excluded),
   `PackVariablesTest` (in-place key replace not touching `JAVA_ARGS`, append-if-absent, offline
   force-fetch toggle, eula), `ImageJavaRuntimesTest` (the bundled-JDK resolution + supported-Java gate:
@@ -243,14 +273,23 @@ overlay → offline boot) → `JsonVerdictStore` → `ReportServer`/CSV — runs
 `GrinderApplication`, seeded by `ModrinthCandidateSource`.
 
 **Continuous operation — DONE.** With no project-URL args, `GrinderApplication` loops fire-and-forget:
-each pass re-pulls the popularity-ranked candidates and grinds them; `Grinder` skips a project whose
-verdict is still *fresh* (younger than `reverifyTtl`, via `VerdictStore.newestVerification`) and
-re-verifies stale ones, so evolving mods, new loader versions and newly-supported Minecraft releases get
-picked up over successive passes. Verdicts persist after every record, so a restart resumes. A JVM
-shutdown hook stops the loop. Passing explicit project URLs keeps the **one-shot** path (verification).
-Config (env): `SPC_GRINDER_INTERVAL` (seconds between passes, default 21600 = 6h),
-`SPC_GRINDER_REVERIFY_TTL_DAYS` (verdict staleness, default 30). There is still **no queue cursor** —
-each pass re-fetches the source fresh (cheap; the store's freshness check does the skipping).
+each pass takes the **next slice** of every platform's catalog from the `CatalogCrawler` and grinds it;
+`Grinder` skips a project whose verdict is still *fresh* (younger than `reverifyTtl`, via
+`VerdictStore.newestVerification`) and re-verifies stale ones. Verdicts *and* the crawl position persist
+after every step, so a restart resumes mid-catalog. A JVM shutdown hook stops the loop. Passing explicit
+project URLs keeps the **one-shot** path (verification).
+Config (env): `SPC_GRINDER_BATCH` (projects per platform per pass, default 25 — **the sweep-speed lever**),
+`SPC_GRINDER_CURSORS` (crawl-position file), `SPC_GRINDER_INTERVAL` (idle after a completed sweep found
+nothing due, default 21600 = 6h), `SPC_GRINDER_SCAN_DELAY` (pause while only scanning past fresh verdicts,
+default 15s), `SPC_GRINDER_REVERIFY_TTL_DAYS` (verdict staleness, default 30).
+
+**Queue cursor — DONE (2026-07-29).** Previously every pass re-fetched *the same* top-N (both sources
+restarted at offset 0), so the grinder verified ~50 projects forever and rank N+1 was unreachable. Now the
+crawl position is persisted per platform and advances each pass, so an unattended grinder works through a
+catalog and then keeps it current. **Sizing matters more than it looks:** a sweep is
+`catalog ÷ batch × pass-duration`, so the default 25/pass over ~71 000 Modrinth mods is ~2 850 passes —
+raise `SPC_GRINDER_BATCH`/`SPC_GRINDER_WORKERS` and keep `SPC_GRINDER_REVERIFY_TTL_DAYS` **longer than a
+sweep takes**, or verdicts go stale faster than the crawl advances and the tail is never reached.
 
 **Loader-availability at selection — DONE.** `LoaderVersionResolver.latest` now returns `null` for a
 Minecraft a loader doesn't support (Fabric/Quilt/LegacyFabric gated on `Meta.isMinecraftSupported`;
@@ -355,3 +394,11 @@ Remaining:
    contract is docs-verified and defended by `warnIfNotDescending`, which is not the same as observed.
 2. **Store dedup is slug+platform, not project-identity** — good enough today; a mod that changes slug on a
    platform would be re-ground as a new project.
+3. **CurseForge coverage is capped at its 10 000 most-downloaded mods** — `/mods/search` refuses
+   `index >= 10000`, so a sweep covers those and wraps (logged by `logIndexCapReached`, pinned by
+   `theSearchIndexCapCountsAsTheEndOfTheCatalog`). The crawl cursor cannot fix this: reaching the deeper
+   catalog needs the search **partitioned** into sub-10 000 slices (e.g. `gameVersion` × `modLoaderType`, or
+   `categoryId`) with the results unioned — a separate feature, and one that can't be verified without a key
+   (see 1). Modrinth has no equivalent wall: offset is usable to 99 999 (measured) vs. ~71 000 mod projects
+   today, so the whole catalog is reachable — but **if Modrinth ever exceeds 100 000 mods the tail silently
+   looks like the end of the catalog** and the crawl would wrap early.
