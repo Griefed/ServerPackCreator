@@ -23,6 +23,7 @@ import de.griefed.serverpackcreator.grinder.container.BindMount
 import de.griefed.serverpackcreator.grinder.container.ContainerEngine
 import de.griefed.serverpackcreator.grinder.container.ContainerResources
 import de.griefed.serverpackcreator.grinder.container.ContainerSpec
+import de.griefed.serverpackcreator.grinder.container.PACK_MOUNT
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.time.Duration
@@ -99,10 +100,5 @@ class DockerLoaderInstaller(
         } finally {
             pack.deleteRecursively()
         }
-    }
-
-    companion object {
-        /** Where the pack is bind-mounted inside the install container (and its working directory). */
-        const val PACK_MOUNT = "/srv/pack"
     }
 }

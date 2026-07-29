@@ -81,16 +81,16 @@ internal class ContainerServerRunnerTest {
 
         ContainerServerRunner(engine, "spc-grind:latest").run(pack, Duration.ofMinutes(1))
 
-        val spec = engine.lastSpec!!
+        val spec = requireNotNull(engine.lastSpec) { "the runner never handed a spec to the engine" }
         Assertions.assertEquals("none", spec.networkMode, "an untrusted mod must boot without network")
         Assertions.assertTrue(spec.readonlyRootfs)
         Assertions.assertTrue(spec.dropAllCapabilities)
         Assertions.assertTrue(spec.noNewPrivileges)
         Assertions.assertEquals(listOf("bash", "start.sh"), spec.command)
-        Assertions.assertEquals(ContainerServerRunner.PACK_MOUNT, spec.workingDir)
+        Assertions.assertEquals(PACK_MOUNT, spec.workingDir)
         val packMount = spec.mounts.single()
         Assertions.assertEquals(pack.absolutePath, packMount.hostPath)
-        Assertions.assertEquals(ContainerServerRunner.PACK_MOUNT, packMount.containerPath)
+        Assertions.assertEquals(PACK_MOUNT, packMount.containerPath)
         Assertions.assertFalse(packMount.readOnly, "the server writes its world/logs into the pack")
         Assertions.assertEquals("eula=true\n", File(pack, "eula.txt").readText())
     }

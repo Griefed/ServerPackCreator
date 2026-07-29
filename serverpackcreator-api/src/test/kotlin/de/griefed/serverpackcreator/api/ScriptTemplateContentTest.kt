@@ -67,15 +67,15 @@ internal class ScriptTemplateContentTest {
      */
     @Test
     fun fishTemplatesAreSyntacticallyValidWhenFishIsAvailable() {
-        val fish = which("fish")
-        Assumptions.assumeTrue(fish != null, "fish not installed — syntax check skipped")
+        // `abort` returns Nothing-like, so `fish` is non-null below without a !! assertion.
+        val fish = which("fish") ?: Assumptions.abort("fish not installed — syntax check skipped")
 
         for (name in listOf("default_template.fish", "default_java_template.fish")) {
             val temp = File.createTempFile("spc-template-", ".fish").apply {
                 writeText(template(name))
                 deleteOnExit()
             }
-            val process = ProcessBuilder(fish!!.absolutePath, "-n", temp.absolutePath)
+            val process = ProcessBuilder(fish.absolutePath, "-n", temp.absolutePath)
                 .redirectErrorStream(true)
                 .start()
             val output = process.inputStream.bufferedReader().use { it.readText() }

@@ -24,6 +24,7 @@ import de.griefed.serverpackcreator.clientside.LoaderVersionResolver
 import de.griefed.serverpackcreator.grinder.container.BindMount
 import de.griefed.serverpackcreator.grinder.container.ContainerSpec
 import de.griefed.serverpackcreator.grinder.container.DockerJavaContainerEngine
+import de.griefed.serverpackcreator.grinder.container.PACK_MOUNT
 import de.griefed.serverpackcreator.grinder.loader.ApiVanillaPackGenerator
 import de.griefed.serverpackcreator.grinder.loader.ImageJavaRuntimes
 import de.griefed.serverpackcreator.grinder.loader.PackVariables
@@ -103,11 +104,6 @@ internal class ScriptTemplateMatrixIT {
         val apiWrapper = System.getenv("SPC_GRINDER_SPC_PROPERTIES")?.takeIf { it.isNotBlank() }
             ?.let { ApiWrapper.api(File(it)) }
             ?: ApiWrapper.api()
-        // Force the *default* sh/fish/ps1 templates so every generated pack carries all three scripts,
-        // regardless of any custom template override in the SPC properties.
-        apiWrapper.apiProperties.startScriptTemplates = apiWrapper.apiProperties.defaultStartScriptTemplates()
-        apiWrapper.apiProperties.javaScriptTemplates = apiWrapper.apiProperties.defaultJavaScriptTemplates()
-
         val imageJava = ImageJavaRuntimes.from(apiWrapper.versionMeta.minecraft)
         val resolver = LoaderVersionResolver(apiWrapper.versionMeta)
         val engine = DockerJavaContainerEngine()
@@ -118,16 +114,36 @@ internal class ScriptTemplateMatrixIT {
                 shells.map { shell -> Cell(loader, mc, shell, scriptFor(shell)) }
             }
         }
-        // Valid = the image has the JDK and the loader actually has a build for this Minecraft version.
-        val (valid, invalid) = cells.partition {
-            imageJava.supports(it.minecraftVersion) && resolver.latest(it.loader, it.minecraftVersion) != null
-        }
+        // A cell is runnable only when the image has the Minecraft version's JDK *and* the loader really
+        // has a build for it. Resolving the loader version up-front doubles as that filter and gives each
+        // valid cell its version without a second (nullable) lookup later.
+        val loaderVersions: Map<Cell, String> = cells.mapNotNull { cell ->
+            val version = if (imageJava.supports(cell.minecraftVersion)) {
+                resolver.latest(cell.loader, cell.minecraftVersion)
+            } else {
+                null
+            }
+            version?.let { cell to it }
+        }.toMap()
+        val valid = cells.filter { it in loaderVersions }
+        val invalid = cells.filterNot { it in loaderVersions }
 
-        // Generate a pack per valid cell (sequential), then boot them in bounded parallel.
-        val packs: Map<Cell, File?> = valid.associateWith { cell ->
-            val loaderVersion = resolver.latest(cell.loader, cell.minecraftVersion)!!
-            val cellId = sanitize("${cell.loader}-${cell.minecraftVersion}-${cell.shell}")
-            ApiVanillaPackGenerator(apiWrapper, File(genRoot, cellId)).generate(cell.loader, loaderVersion, cell.minecraftVersion)
+        // Generate a pack per valid cell (sequential), then boot them in bounded parallel. Forcing the
+        // default sh/fish/ps1 templates is a mutation of process-wide ApiProperties, so it is scoped to
+        // generation and restored afterwards — otherwise it would leak into any other test in this JVM.
+        val previousStartTemplates = HashMap(apiWrapper.apiProperties.startScriptTemplates)
+        val previousJavaTemplates = HashMap(apiWrapper.apiProperties.javaScriptTemplates)
+        val packs: Map<Cell, File?> = try {
+            apiWrapper.apiProperties.startScriptTemplates = apiWrapper.apiProperties.defaultStartScriptTemplates()
+            apiWrapper.apiProperties.javaScriptTemplates = apiWrapper.apiProperties.defaultJavaScriptTemplates()
+            valid.associateWith { cell ->
+                val cellId = sanitize("${cell.loader}-${cell.minecraftVersion}-${cell.shell}")
+                ApiVanillaPackGenerator(apiWrapper, File(genRoot, cellId))
+                    .generate(cell.loader, loaderVersions.getValue(cell), cell.minecraftVersion)
+            }
+        } finally {
+            apiWrapper.apiProperties.startScriptTemplates = previousStartTemplates
+            apiWrapper.apiProperties.javaScriptTemplates = previousJavaTemplates
         }
         val executor = Executors.newFixedThreadPool(workers.coerceAtLeast(1))
         val futures: Map<Cell, Future<Outcome>> = valid.associateWith { cell ->
@@ -179,9 +195,4 @@ internal class ScriptTemplateMatrixIT {
     private fun env(key: String, default: String): String = System.getenv(key)?.takeIf { it.isNotBlank() } ?: default
     private fun envList(key: String, default: String): List<String> = env(key, default).split(',').map { it.trim() }.filter { it.isNotEmpty() }
     private fun sanitize(token: String): String = token.replace(Regex("[^A-Za-z0-9._-]"), "_")
-
-    private companion object {
-        /** Where the pack is bind-mounted inside the container (and its working directory). */
-        const val PACK_MOUNT = "/srv/pack"
-    }
 }

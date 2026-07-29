@@ -70,9 +70,4 @@ class ContainerServerRunner(
         val output = engine.run(spec, readyLine, timeout)
         return RunResult.Completed(output.lines, output.exitCode, output.timedOut)
     }
-
-    companion object {
-        /** Where the generated server pack is bind-mounted (and the container's working directory). */
-        const val PACK_MOUNT = "/srv/pack"
-    }
 }

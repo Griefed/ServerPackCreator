@@ -22,6 +22,14 @@ package de.griefed.serverpackcreator.grinder.container
 import java.time.Duration
 
 /**
+ * Where a server pack is bind-mounted inside a grinder container — and every such container's working
+ * directory, since the pack's `start` script expects to run from the pack root. Single source of truth
+ * for the mount point: the boot runner, the loader installer and the template matrix must all agree, or
+ * a pack would be mounted somewhere its script isn't looking.
+ */
+const val PACK_MOUNT = "/srv/pack"
+
+/**
  * CPU / memory / pid caps applied to every boot container, so one fat modpack can't exhaust the host
  * and a runaway can't peg every core. Defaults are sized for a single Minecraft server boot.
  *
