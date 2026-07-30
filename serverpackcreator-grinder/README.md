@@ -128,6 +128,12 @@ For a real deployment, build a start script instead of using Gradle:
 `Ctrl-C` / `SIGTERM` stops cleanly: it stops taking new candidates and removes any container still
 mid-boot, so no Minecraft server is left running.
 
+**Disk:** each cached loader install — one per `(Minecraft, loader, loader-version)` — is ~150 MB, and loaders
+keep shipping builds, so the cache would grow without limit over a long sweep. After every pass the grinder
+deletes cached installs nothing has booted for `SPC_GRINDER_CACHE_TTL_DAYS` (default 7). Retention is measured
+from **last use**, not from install time: a tuple the sweep still boots is stamped fresh on every cache hit and
+never evicted, and a re-install costs one networked setup boot if it comes back. Set `0` to keep everything.
+
 ---
 
 ## 5. Configuration (environment variables)
@@ -145,6 +151,7 @@ mid-boot, so no Minecraft server is left running.
 | `SPC_GRINDER_INTERVAL`          | `21600` (6 h)                  | Seconds to idle after a full sweep found nothing due                         |
 | `SPC_GRINDER_SCAN_DELAY`        | `15`                           | Seconds between passes that only scanned past fresh verdicts                 |
 | `SPC_GRINDER_REVERIFY_TTL_DAYS` | `30`                           | How long a verdict stays fresh before re-verification                        |
+| `SPC_GRINDER_CACHE_TTL_DAYS`    | `7`                            | Delete cached loader installs unused this long (~150 MB each). `0` = never   |
 | `SPC_GRINDER_SPC_PROPERTIES`    | *(unset)*                      | Point SPC at a specific `serverpackcreator.properties` for reproducible runs |
 | `CURSEFORGE_API_KEY`            | *(unset)*                      | Enables the CurseForge candidate source                                      |
 

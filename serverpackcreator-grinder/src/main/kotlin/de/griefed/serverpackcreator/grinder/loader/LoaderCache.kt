@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.grinder.loader
 
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
+import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -46,6 +47,10 @@ fun interface LoaderInstaller {
  * offline (`--network none`). A tuple counts as installed only once its [MARKER] file is present, so a
  * crash mid-install is redone rather than served half-baked; installs of the same tuple are serialized
  * so concurrent workers can't install it twice.
+ *
+ * The cache is **bounded by time, not size**: [evictUnusedSince] drops tuples nothing has booted for a while
+ * (see [ensureInstalled], which stamps a tuple as used on every hit), because each one costs ~150 MB and a
+ * long sweep keeps minting new ones as loaders ship builds.
  *
  * @param cacheRoot Root directory under which per-tuple base trees live.
  * @param installer Performs the one-off, network-using install on a cache miss.
@@ -75,12 +80,12 @@ class LoaderCache(
      */
     fun ensureInstalled(loader: String, loaderVersion: String, minecraftVersion: String): File? {
         val baseDir = baseDirFor(loader, loaderVersion, minecraftVersion)
-        if (File(baseDir, MARKER).isFile) {
+        if (markUsed(baseDir)) {
             return baseDir
         }
-        synchronized(lockFor(loader, loaderVersion, minecraftVersion)) {
+        synchronized(lockFor(baseDir)) {
             // Re-check under the lock: another worker may have installed it while we waited.
-            if (File(baseDir, MARKER).isFile) {
+            if (markUsed(baseDir)) {
                 return baseDir
             }
             baseDir.deleteRecursively()
@@ -97,9 +102,67 @@ class LoaderCache(
         }
     }
 
-    /** Intern a per-tuple lock; the map is bounded by the finite loader/version combination space. */
-    private fun lockFor(loader: String, loaderVersion: String, minecraftVersion: String): Any =
-        installLocks.computeIfAbsent("$loader/$loaderVersion/$minecraftVersion") { Any() }
+    /**
+     * Delete every cached tuple that has not been *used* within [retention], returning how many went. A
+     * `zero`/negative retention disables eviction entirely (nothing is deleted), which is the opt-out.
+     *
+     * Without this the cache only grows: each tuple costs on the order of 150 MB, and loaders keep shipping
+     * builds, so a months-long sweep mints new tuples indefinitely and eventually fills the disk. Eviction is
+     * keyed on **last use** — [ensureInstalled] stamps the marker on every hit — so a tuple the sweep still
+     * boots is never dropped however old its install is; only genuinely idle ones go, and a re-install costs
+     * one networked setup boot if it comes back.
+     *
+     * Directories without a completion [MARKER] are swept regardless of age: an install that never finished
+     * can never be served, so keeping it only leaks disk. Each candidate is examined under the same per-tuple
+     * lock that installs take, so eviction can never delete a tree a worker is installing into.
+     */
+    fun evictUnusedSince(retention: Duration): Int {
+        if (retention.isZero || retention.isNegative) {
+            return 0
+        }
+        val cutoff = System.currentTimeMillis() - retention.toMillis()
+        var evicted = 0
+        for (baseDir in cachedTupleDirs()) {
+            synchronized(lockFor(baseDir)) {
+                val marker = File(baseDir, MARKER)
+                val idle = if (marker.isFile) marker.lastModified() < cutoff else true
+                if (idle && baseDir.deleteRecursively()) {
+                    evicted++
+                    log.info("Evicted cached loader install ${baseDir.name} (${baseDir.parentFile?.name}) — unused for longer than ${retention.toDays()}d.")
+                }
+            }
+        }
+        return evicted
+    }
+
+    /**
+     * Every `<minecraft>/<loader>/<loaderVersion>` directory currently under [cacheRoot]. Walked from disk
+     * rather than from a registry so a cache left behind by an earlier run (or a crashed one) is covered too.
+     */
+    private fun cachedTupleDirs(): List<File> =
+        (cacheRoot.listFiles()?.filter { it.isDirectory } ?: emptyList())
+            .flatMap { minecraft -> minecraft.listFiles()?.filter { it.isDirectory } ?: emptyList() }
+            .flatMap { loader -> loader.listFiles()?.filter { it.isDirectory } ?: emptyList() }
+
+    /**
+     * Whether [baseDir] holds a completed install, refreshing its last-use stamp when it does. The stamp is
+     * what [evictUnusedSince] reads, so *asking* for a tuple is what keeps it alive.
+     */
+    private fun markUsed(baseDir: File): Boolean {
+        val marker = File(baseDir, MARKER)
+        if (!marker.isFile) {
+            return false
+        }
+        marker.setLastModified(System.currentTimeMillis())
+        return true
+    }
+
+    /**
+     * Intern a lock per cache *directory* — deliberately keyed on the sanitized path rather than the raw
+     * tuple, so installs and eviction agree on the same monitor (and two raw tuples that sanitize onto one
+     * directory serialize, since they share its contents). Bounded by the finite tuple space.
+     */
+    private fun lockFor(baseDir: File): Any = installLocks.computeIfAbsent(baseDir.path) { Any() }
 
     /** Make a token safe to use as a path segment, collapsing anything unusual to an underscore. */
     private fun sanitize(token: String): String = token.replace(Regex("[^A-Za-z0-9._-]"), "_")

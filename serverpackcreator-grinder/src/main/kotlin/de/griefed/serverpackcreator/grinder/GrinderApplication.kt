@@ -134,13 +134,14 @@ object GrinderApplication {
             }
         }
         val crawler = CatalogCrawler(sources, JsonCursorStore(cursorFile), batchSize)
+        val cacheRetention = Duration.ofDays(env("SPC_GRINDER_CACHE_TTL_DAYS", "7").toLong())
         val betweenSweeps = Duration.ofSeconds(env("SPC_GRINDER_INTERVAL", "21600").toLong())
         val whileCrawling = Duration.ofSeconds(env("SPC_GRINDER_SCAN_DELAY", "15").toLong())
         val sourceNames = if (curseForgeKey != null) "Modrinth + CurseForge" else "Modrinth (no CURSEFORGE_API_KEY)"
         log.info(
             "Continuous mode: sources=$sourceNames, batch $batchSize/pass, re-verify TTL ${reverifyTtl.toDays()}d, " +
                 "${betweenSweeps.toSeconds()}s between completed sweeps, ${whileCrawling.toSeconds()}s while scanning ahead, " +
-                "$workers worker(s), cursors=$cursorFile."
+                "$workers worker(s), cache retention ${cacheRetention.toDays()}d, cursors=$cursorFile."
         )
 
         var pass = 0
@@ -152,6 +153,13 @@ object GrinderApplication {
             val verified = pool.grindAll(batch.candidates)
             activePool.set(null)
             log.info("Pass #$pass complete: $verified verified, ${store.all().size} verdict(s) total.")
+            // Bound the loader cache by time. Each tuple costs ~150 MB and loaders keep shipping builds, so an
+            // unattended sweep would grow it without limit; a tuple still being booted is stamped as used on
+            // every cache hit, so only genuinely idle ones go.
+            val evicted = cache.evictUnusedSince(cacheRetention)
+            if (evicted > 0) {
+                log.info("Evicted $evicted loader install(s) unused for over ${cacheRetention.toDays()}d.")
+            }
             if (!running.get()) {
                 break
             }
