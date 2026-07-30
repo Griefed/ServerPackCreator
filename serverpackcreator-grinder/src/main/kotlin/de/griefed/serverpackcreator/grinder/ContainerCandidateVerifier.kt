@@ -73,7 +73,21 @@ class ContainerCandidateVerifier(
 ) : CandidateVerifier {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
+    /** Reclaims each candidate's staging once its verdicts are in; without it the work tree grows without bound. */
+    private val reaper = BootWorkspaceReaper(workDirectory)
+
     override fun verify(candidate: GrindCandidate): ClientsideReport {
+        try {
+            return verifyStaged(candidate)
+        } finally {
+            // In a `finally` because a *thrown* verification is exactly when staging is most likely to be left
+            // behind, and the reaper keeps the boot logs the failure will have to be diagnosed from.
+            reaper.reap(candidate.slug)
+        }
+    }
+
+    /** Run the actual verification, leaving the staging cleanup to [verify]. */
+    private fun verifyStaged(candidate: GrindCandidate): ClientsideReport {
         val httpDownloader = HttpJarDownloader(apiWrapper.webUtilities)
         // The browser is only launched for distribution-locked CurseForge files; disposed after the run.
         return BrowserDownloader().use { browserDownloader ->

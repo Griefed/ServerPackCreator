@@ -77,6 +77,13 @@ object GrinderApplication {
         val installer = DockerLoaderInstaller(engine, image, ApiVanillaPackGenerator(apiWrapper, File(workDir, "install")), imageJava)
         val cache = LoaderCache(cacheRoot, installer)
         val verifier = ContainerCandidateVerifier(apiWrapper, cache, engine, image, imageJava, File(workDir, "verify"))
+        // A run killed mid-boot leaves a staged pack that no per-candidate reap will ever come for, so sweep what
+        // we inherited before adding to it. Safe here and only here: nothing is in flight yet.
+        BootWorkspaceReaper(File(workDir, "verify")).reapAll().let { reclaimed ->
+            if (reclaimed > 0) {
+                log.info("Reclaimed ${reclaimed / 1_048_576} MiB of staging left behind by a previous run.")
+            }
+        }
         val store = JsonVerdictStore(storeFile)
         // Live activity record, so `/status` can answer "what is it doing right now?" (the verdict table only
         // ever answers "what has it found?").
