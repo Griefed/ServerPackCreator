@@ -112,8 +112,15 @@ data class CurseForgePartition(
  * 2. then each game version, newest first. A version whose `totalCount` fits under the cap is done in one
  *    slice;
  * 3. a version over the cap is re-crawled once per **modloader**, then once per **category** — see below;
- * 4. any slice that is still over the cap is crawled from the bottom too (`sortOrder=asc`), covering up to
- *    20 000 mods in it, and a *category* slice past even that is narrowed by modloader as a last resort.
+ * 4. any slice that is still saturated is crawled from the bottom too (`sortOrder=asc`), covering up to
+ *    20 000 mods in it, and a *category* slice still saturated after both directions is narrowed by modloader
+ *    as a last resort.
+ *
+ * **What `totalCount` can and cannot say (measured, 2026-07-29).** The API clamps it at the cap: a slice
+ * holding 200 000 mods and one holding exactly 10 000 both report `10 000`, while anything smaller reports its
+ * true size. So the only question it answers is "is this slice saturated?", which is why every split condition
+ * here is `>= CAP` and not `> CAP` — the latter can never be true, and with it the whole plan would collapse to
+ * crawling the top 10 000 of each version and never splitting at all.
  *
  * **Why an over-cap version is crawled along two axes rather than one.** Neither tag is guaranteed: a mod
  * carries a modloader only if it has one, and CurseForge's own submission docs disagree on whether a category
@@ -176,30 +183,43 @@ object CurseForgePartitions {
             // still be capped, so the per-version slices are what reach deeper.
             ?: return versions.firstOrNull()?.let { versionSlice(it) }
 
-        // A slice too big to page through from the top is worth a second pass from the bottom.
-        if (!current.ascending && totalCount > CAP && current != versionSlice(version)) {
+        // **`totalCount` saturates at the cap** (measured against the live API: a slice of 200 000 and one of
+        // exactly 10 000 both report 10 000, while anything smaller reports its true size). So "saturated" is
+        // all the API will tell us — it means "at least CAP, possibly far more", and it is the only signal
+        // available for deciding that a slice needs splitting.
+        val saturated = totalCount >= CAP
+
+        val category = current.categoryId
+        val loader = current.modLoaderType
+
+        // Any *narrower* slice that is saturated is crawled from the bottom as well before moving on. The
+        // version slice itself is excluded: its loader and category stages already reach deeper than a second
+        // sort direction would.
+        if ((category != null || loader != null) && !current.ascending && saturated) {
             return current.copy(ascending = true)
         }
-        return when {
-            // The version itself: under the cap it is done; over it, the loader stage opens the split.
-            current.categoryId == null && current.modLoaderType == null ->
-                if (totalCount > CAP) loaderSlice(version, LOADERS.first()) else versionSliceAfter(version, versions)
-
-            // Loader stage of a version: walk the loaders, then hand over to the category stage.
-            current.categoryId == null ->
-                loaderAfter(current.modLoaderType!!)?.let { loaderSlice(version, it) }
+        return if (category == null) {
+            if (loader == null) {
+                // The version itself: fully reachable ⇒ done; saturated ⇒ open the loader stage.
+                if (saturated) loaderSlice(version, LOADERS.first()) else versionSliceAfter(version, versions)
+            } else {
+                // Loader stage of a version: walk the loaders, then hand over to the category stage.
+                loaderAfter(loader)?.let { loaderSlice(version, it) }
                     ?: categories.firstOrNull()?.let { categorySlice(version, it) }
                     ?: versionSliceAfter(version, versions)
-
-            // Category stage: a category past *both* sort directions is narrowed by loader as a last resort.
-            current.modLoaderType == null ->
-                if (totalCount > 2 * CAP) categoryLoaderSlice(version, current.categoryId, LOADERS.first())
-                else categorySliceAfter(version, current.categoryId, categories, versions)
-
-            // Deepest slices (category × loader): walk the loaders, then on to the next category.
-            else ->
-                loaderAfter(current.modLoaderType)?.let { categoryLoaderSlice(version, current.categoryId, it) }
-                    ?: categorySliceAfter(version, current.categoryId, categories, versions)
+            }
+        } else {
+            if (loader == null) {
+                // Category stage. Still saturated after both directions ⇒ narrow by loader, the deepest slice
+                // the search API can express. (Before the live run this asked for `> 2 × CAP`, which saturation
+                // makes unobservable, so the narrowing could never have happened at all.)
+                if (saturated) categoryLoaderSlice(version, category, LOADERS.first())
+                else categorySliceAfter(version, category, categories, versions)
+            } else {
+                // Deepest slices (category × loader): walk the loaders, then on to the next category.
+                loaderAfter(loader)?.let { categoryLoaderSlice(version, category, it) }
+                    ?: categorySliceAfter(version, category, categories, versions)
+            }
         }
     }
 

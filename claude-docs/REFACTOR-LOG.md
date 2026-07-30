@@ -635,3 +635,34 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   `resumingMidSweepFetchesTheAxisListsItHasNotGotYet`. Kept in the same commit as the category axis because the
   category-stage test that exposed it cannot pass without the fix. Suite: grinder 133 run + 8 gated, green;
   Modrinth live IT still passes.
+  **Live-verified with a real API key (2026-07-30) — and the docs turned out to be badly insufficient.** Griefed
+  supplied a `CURSEFORGE_API_KEY` via the macOS Keychain (no file, no transcript). Probing the real API before
+  touching code found **two silent design-killers** in the partitioning that had been derived from
+  documentation:
+  1. **`pagination.totalCount` saturates at the paging cap.** The whole catalog, `gameVersion=1.12.2` and any
+     slice above 10 000 all report exactly `10 000`; only genuinely smaller slices report a true size. Every
+     split condition had been written as `> CAP` (and `> 2 × CAP` for the category→loader narrowing), so **not
+     one of them could ever fire** — the "partitioned" crawl would have covered the top 10 000 of each version
+     and nothing more, silently, and `warnIfSliceIsUnreachable` was dead for the same reason. All rules now key
+     off `>= CAP` ("saturated ⇒ at least this many, possibly far more"), which is the only signal the API gives.
+  2. **The version axis was 98 % junk.** `/games/432/versions` returns **7 339** strings over 36 version types,
+     including Forge version families (`47.0.42`) and types named `Server Side`, `Shader Loader`, `Addons`,
+     `DO NOT USE - Grouped MC Versions`. Filtering to types whose name starts with `Minecraft ` (via
+     `/games/432/version-types`) leaves **135** real versions — a 54× smaller axis; unfiltered, a sweep would
+     have burned 7 200 requests on partitions that can hold no mods.
+  A third fix came from the live data too: `sortOrder=desc` only *trends* by downloads (one adjacent inversion in
+  a 10-mod page) and `asc` is not ordered at all, so `warnIfMisordered` would have cried wolf on ordinary pages;
+  it now checks the descending **trend** (first vs last) and skips ascending, which does reach the tail and is
+  what makes the both-ends crawl worth an extra ~10 000 mods per slice.
+  **Assumptions that held:** the cap applies to `index + pageSize` (9 950+50 served, 9 951+50 refused); the
+  modloader filter is honoured and maps as PrismLauncher documents (1.16.5 → Forge 10 000 / Fabric 3 344 /
+  Quilt 377 / NeoForge 238, and `sodium` appears under Fabric but not Forge); 0 of 100 sampled mods lack a
+  category. One assumption was *disproved in the safe direction*: a parent category does **not** reliably include
+  its children (3 of 6 sampled child mods invisible under the parent), which is exactly why the crawl already
+  visited all 52 categories rather than the 23 parents.
+  All of it is now pinned by **`CurseForgeCrawlLiveIT`** (gated `GRINDER_CF_IT=1` + a present key, ~40 small
+  calls), including the saturation fix end-to-end: `1.12.2` paged out at 10 000 continues into `1.12.2|*|1|desc`
+  with real candidates instead of declaring the catalog finished, and consecutive batches advance and survive a
+  restart (jei/mouse-tweaks → geckolib/cloth-config → placebo/waystones). Suite: grinder 134 offline + 18 gated
+  (12 of them live-API), all green. Still unproven: a full sweep, which is weeks of wall-clock and a large slice
+  of the key's quota.

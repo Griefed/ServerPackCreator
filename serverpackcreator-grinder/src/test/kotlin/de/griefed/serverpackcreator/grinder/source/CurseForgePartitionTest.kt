@@ -38,9 +38,14 @@ internal class CurseForgePartitionTest {
 
     private val versions = listOf("1.21.1", "1.20.1", "1.12.2")
     private val categories = listOf(406, 426, 4485) // as returned by /categories?classId=6, ascending by id
+    /**
+     * `totalCount` as the live API actually reports it: its **true size** while a slice fits under the cap, and
+     * **clamped to exactly the cap** for anything at or above it (measured 2026-07-29 — a 200 000-mod slice and
+     * a 10 000-mod slice both report 10 000). A count above the cap is therefore not a value any test may use:
+     * it cannot occur, and pinning the plan against it is what made the splits unreachable in the first place.
+     */
     private val underCap = CurseForgeCandidateSource.MAX_INDEX - 1
-    private val overCap = CurseForgeCandidateSource.MAX_INDEX + 1
-    private val overTwiceTheCap = 2 * CurseForgeCandidateSource.MAX_INDEX + 1
+    private val saturated = CurseForgeCandidateSource.MAX_INDEX
 
     private fun versionSlice(version: String, ascending: Boolean = false) =
         CurseForgePartition(gameVersion = version, categoryId = null, modLoaderType = null, ascending = ascending)
@@ -85,11 +90,11 @@ internal class CurseForgePartitionTest {
         )
     }
 
-    /** Over the cap, the version is re-crawled per modloader — each slice small enough to page through. */
+    /** Saturated, the version is re-crawled per modloader — each slice small enough to page through. */
     @Test
-    fun aVersionOverTheCapSplitsByModLoader() {
+    fun aSaturatedVersionSplitsByModLoader() {
         Assertions.assertEquals(
-            loaderSlice("1.20.1", CurseForgePartitions.FORGE), next(versionSlice("1.20.1"), overCap),
+            loaderSlice("1.20.1", CurseForgePartitions.FORGE), next(versionSlice("1.20.1"), saturated),
             "the split starts with the first modloader of the same version"
         )
     }
@@ -113,13 +118,17 @@ internal class CurseForgePartitionTest {
     fun everyLoaderThenEveryCategoryIsVisitedForAnOverCapVersion() {
         val loadersVisited = mutableListOf<Int>()
         val categoriesVisited = mutableListOf<Int>()
-        var current: CurseForgePartition? = next(versionSlice("1.20.1"), overCap)
+        var current: CurseForgePartition? = next(versionSlice("1.20.1"), saturated)
 
         // Walk the whole of 1.20.1's split, every sub-slice comfortably under the cap.
         while (current != null && current.gameVersion == "1.20.1") {
-            current.modLoaderType?.takeIf { current!!.categoryId == null }?.let { loadersVisited.add(it) }
-            current.categoryId?.takeIf { current!!.modLoaderType == null }?.let { categoriesVisited.add(it) }
-            current = next(current, underCap)
+            val slice = current
+            if (slice.categoryId == null) {
+                slice.modLoaderType?.let { loadersVisited.add(it) }
+            } else if (slice.modLoaderType == null) {
+                categoriesVisited.add(slice.categoryId)
+            }
+            current = next(slice, underCap)
         }
 
         Assertions.assertEquals(CurseForgePartitions.LOADERS, loadersVisited, "every documented modloader")
@@ -136,16 +145,20 @@ internal class CurseForgePartitionTest {
         val forgeDescending = loaderSlice("1.20.1", CurseForgePartitions.FORGE)
 
         Assertions.assertEquals(
-            forgeDescending.copy(ascending = true), next(forgeDescending, overCap),
+            forgeDescending.copy(ascending = true), next(forgeDescending, saturated),
             "same slice, least-downloaded first"
         )
     }
 
+    /**
+     * A loader slice that is *still* saturated after both directions moves on regardless: the category stage is
+     * the second path to those mods, and narrowing a loader slice further is not something the API allows.
+     */
     @Test
     fun anAscendingLoaderSliceMovesOnToTheNextLoader() {
         Assertions.assertEquals(
             loaderSlice("1.20.1", CurseForgePartitions.CAULDRON),
-            next(loaderSlice("1.20.1", CurseForgePartitions.FORGE, ascending = true), overTwiceTheCap),
+            next(loaderSlice("1.20.1", CurseForgePartitions.FORGE, ascending = true), saturated),
             "the loader stage moves on; the category stage is the second path to those mods"
         )
     }
@@ -154,22 +167,32 @@ internal class CurseForgePartitionTest {
     fun aCategorySliceOverTheCapIsAlsoCrawledFromTheBottom() {
         val category = categorySlice("1.20.1", 426)
 
-        Assertions.assertEquals(category.copy(ascending = true), next(category, overCap))
+        Assertions.assertEquals(category.copy(ascending = true), next(category, saturated))
     }
 
     /**
-     * The deepest split, for the pathological case: a category slice of one version holding more than both
-     * sort directions can reach is narrowed further by modloader. Without this the middle of such a slice
-     * would be lost.
+     * The deepest split: a category slice still reporting a saturated count after **both** sort directions have
+     * been crawled may hold more than the 20 000 they reach, so it is narrowed by modloader. Saturation is the
+     * only evidence available — the API will not report a size above the cap — so this rule cannot be written
+     * as "more than twice the cap", which is exactly the mistake the live run exposed.
      */
     @Test
-    fun aCategorySliceOverTwiceTheCapIsNarrowedByModLoader() {
+    fun aStillSaturatedCategorySliceIsNarrowedByModLoaderAfterBothDirections() {
         val exhaustedCategory = categorySlice("1.20.1", 426, ascending = true)
 
         Assertions.assertEquals(
             categoryLoaderSlice("1.20.1", 426, CurseForgePartitions.FORGE),
-            next(exhaustedCategory, overTwiceTheCap),
+            next(exhaustedCategory, saturated),
             "category × loader is the last available narrowing"
+        )
+    }
+
+    /** A category slice whose count fits under the cap was covered in one direction — no narrowing needed. */
+    @Test
+    fun aCategorySliceUnderTheCapMovesStraightToTheNextCategory() {
+        Assertions.assertEquals(
+            categorySlice("1.20.1", 4485),
+            next(categorySlice("1.20.1", 426, ascending = true), underCap)
         )
     }
 
@@ -178,8 +201,9 @@ internal class CurseForgePartitionTest {
         var current = categoryLoaderSlice("1.20.1", 426, CurseForgePartitions.FORGE)
         val visited = mutableListOf<Int>()
 
-        while (current.categoryId == 426 && current.modLoaderType != null) {
-            visited.add(current.modLoaderType!!)
+        while (current.categoryId == 426) {
+            val loader = current.modLoaderType ?: break
+            visited.add(loader)
             current = next(current, underCap)!!
         }
 
@@ -191,7 +215,7 @@ internal class CurseForgePartitionTest {
     fun aCategoryLoaderSliceOverTheCapIsAlsoCrawledFromTheBottom() {
         val deepest = categoryLoaderSlice("1.20.1", 426, CurseForgePartitions.FABRIC)
 
-        Assertions.assertEquals(deepest.copy(ascending = true), next(deepest, overCap))
+        Assertions.assertEquals(deepest.copy(ascending = true), next(deepest, saturated))
     }
 
     @Test

@@ -87,17 +87,18 @@ a sweep takes (otherwise verdicts go stale faster than the crawl advances and it
 query can only ever show you the 10 000 most-downloaded mods. So a sweep walks a sequence of bounded queries:
 
 1. the unfiltered catalog (its top 10 000 by downloads);
-2. then every game version, newest first — a version the API reports as holding fewer than 10 000 mods is
-   done in one slice;
-3. a version over that is re-crawled **per modloader** and **per category** — both, because CurseForge tags a
+2. then every Minecraft version, newest first — **135 of them** (the API's version list also carries 7 200
+   modloader and non-Minecraft version strings, which are filtered out). A version reporting fewer than
+   10 000 mods is done in one slice;
+3. a version at the cap is re-crawled **per modloader** and **per category** — both, because CurseForge tags a
    mod with a loader only if it has one, and its own submission docs disagree on whether a category is
    mandatory, so running both axes means a mod is reachable if it has *either*;
-4. any slice still over 10 000 is crawled from both ends (`sortOrder` desc *and* asc, reaching 20 000), and a
-   category slice past even that is narrowed by modloader as a last resort.
+4. any slice still at the cap is crawled from both ends (`sortOrder` desc *and* asc, reaching 20 000), and a
+   category slice still capped after both is narrowed by modloader as a last resort.
 
-A CurseForge sweep is therefore much longer than a Modrinth one — roughly one request per game version, plus
-~56 more for each version big enough to need splitting, plus paging. Mods supporting many versions turn up in
-several partitions, which costs nothing but a store lookup because fresh verdicts are skipped.
+A CurseForge sweep is therefore much longer than a Modrinth one — 135 versions, plus ~58 more requests for
+each version big enough to need splitting, plus paging. Mods supporting many versions turn up in several
+partitions, which costs nothing but a store lookup because fresh verdicts are skipped.
 
 One residual gap remains, and it is **logged with a count** rather than left to look like completeness: a
 single (version, category, modloader) slice holding more than 20 000 mods loses its middle. That is the
@@ -105,10 +106,15 @@ narrowest slice this API can express, so covering it would need a filter CurseFo
 carrying *neither* a loader tag nor a category is likewise only reachable while its version fits under
 10 000 — that one cannot be detected from outside, so it cannot be logged.
 
-> **Not yet observed against the live API.** This project has never had a `CURSEFORGE_API_KEY`, so the whole
-> CurseForge crawl — the request contract and the partition traversal — is pinned against the published REST
-> docs and canned JSON, not against real responses. If you run it with a key, check the log line reporting how
-> many game versions the crawl covers, and watch for `not sorted by` or `holds N mods but only` warnings.
+> **Verified against the live API on 2026-07-30**, which is worth knowing because the design was originally
+> built from CurseForge's documentation alone and the documentation was not enough. The real API showed that
+> `pagination.totalCount` **saturates at 10 000** (a version holding 200 000 mods reports the same number as one
+> holding exactly 10 000), so the split conditions had to key off saturation rather than a size comparison —
+> as written from the docs they could never have fired, and the crawl would silently have covered only the top
+> 10 000 of each version. The version list, the modloader filter (Forge 1 … NeoForge 6), the category list, the
+> paging cap and the crawl's own advance-and-resume behaviour are all now pinned by a gated live test.
+>
+> Still unproven: a *full* sweep has never run — that is weeks of work and a large slice of an API key's quota.
 
 Modrinth needs no partitioning: its offset is usable to 99 999, comfortably past today's ~71 000 mod projects.
 

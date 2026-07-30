@@ -96,8 +96,24 @@ containers:
   is reachable if it has *either*. ~6 extra requests per over-cap version buys removal of a silent hole.
   Splitting only where a count demands it keeps a sweep at ~1 request per version; `totalCount` rides along on
   every response, so sizing is free (the lone probe case is a slice resuming exactly at the cap). All six
-  documented loaders are crawled incl. legacy Cauldron/LiteLoader, and **every** category incl. children
-  (parent-includes-child is undocumented, so both are crawled) — one request each beats unreachable mods.
+  documented loaders are crawled incl. legacy Cauldron/LiteLoader, and **every** category incl. children —
+  measured live: a parent category does **not** reliably include its children (3 of 6 sampled child-category
+  mods were invisible under their parent), so crawling parents only would lose them.
+  **LANDMINE #1 — `pagination.totalCount` SATURATES at `MAX_INDEX`** (measured 2026-07-30: the whole catalog,
+  `gameVersion=1.12.2` and a 200 000-mod slice all report exactly `10 000`; only a slice genuinely below the cap
+  reports its true size). Therefore **every split condition is `>= CAP`, never `> CAP`** — the `> CAP` /
+  `> 2 × CAP` rules written from the docs could never fire, which made the entire partition plan inert (it would
+  have crawled the top 10 000 of each version and nothing else) and left `warnIfSliceIsUnreachable` dead too.
+  Do not "tidy" these back into size comparisons.
+  **LANDMINE #2 — the version axis must be filtered by version *type*.** `/games/432/versions` returns **7 339**
+  strings across 36 types, including Forge version families (`47.0.42`) and types named `Server Side`,
+  `Shader Loader`, `Addons`, `DO NOT USE - Grouped MC Versions`. Keeping only types whose name starts with
+  `Minecraft ` (via `/games/432/version-types`) leaves **135** real versions — a 54× smaller axis. Unfiltered,
+  a sweep would burn 7 200 requests on partitions that can hold no mods.
+  **LANDMINE #3 — sort order is approximate.** `desc` only *trends* by downloads (a live 10-mod page had one
+  adjacent inversion: 385 316 073 before 386 940 279), and `asc` is not ordered at all though it does reach the
+  tail (counts in the hundreds). `warnIfMisordered` therefore checks the descending **trend** (first vs last)
+  and skips ascending entirely; checking adjacent pairs would warn on ordinary pages.
   **Axis lists refresh at sweep start *and whenever missing*** — the second condition is not an optimisation
   but a **restart-correctness fix**: a resumed cursor arrives with a partition token and an empty in-memory
   list, and without re-reading it the plan finds no next partition, reports the catalog finished and **throws
@@ -258,6 +274,15 @@ Spike workspace (not committed): `~/spc-grinder-spike/{configs,packs,baselines}`
   assumptions no fake can: consecutive live batches return **different** projects, a fresh crawler over the
   same cursor file resumes rather than re-serving the head, and offset 40 000 still serves real projects.
   **Verified passing 2026-07-29.** Run it after touching paging or the cursor.
+- **`CurseForgeCrawlLiveIT`** (gated `GRINDER_CF_IT=1` **and** a present `CURSEFORGE_API_KEY`; ~40 small calls,
+  no downloads) pins every CurseForge behaviour the design rests on, each of which was *wrong or unknown* when
+  taken from the docs alone: `totalCount` saturation, the cap applying to `index + pageSize`, the descending
+  trend + unordered-but-tail-reaching ascending, the Minecraft-only version axis, the loader filter being
+  honoured (1.16.5 slices: Forge 10 000 / Fabric 3 344 / Quilt 377 / NeoForge 238) and `sodium` appearing under
+  Fabric but not Forge, a parent category not reliably including children, ~0 % of sampled mods lacking a
+  category, the saturation split working end-to-end (`1.12.2` paged out at 10 000 → `1.12.2|*|1|desc` with real
+  candidates), and the crawl advancing + resuming. **Verified passing 2026-07-30.** Each test prints a `[live]`
+  line with the measured numbers — read them, they are the source for the facts quoted here.
 - `InstallLayerSnapshotTest` (added-non-runtime files copied, pre-boot + runtime excluded),
   `PackVariablesTest` (in-place key replace not touching `JAVA_ARGS`, append-if-absent, offline
   force-fetch toggle, eula), `ImageJavaRuntimesTest` (the bundled-JDK resolution + supported-Java gate:
@@ -451,17 +476,16 @@ after their current candidate instead of draining a whole batch. Verified agains
 
 Remaining:
 
-1. **`CurseForgeCandidateSource` has never made a real API call** (no `CURSEFORGE_API_KEY` available). Its
-   contract is docs-verified and defended by `warnIfNotDescending`, which is not the same as observed.
+1. **CurseForge is now live-verified** (2026-07-30, `CurseForgeCrawlLiveIT` — the module's oldest open item,
+   closed). What is *still* unproven is a **full sweep**: weeks of wall-clock and a large slice of an API key's
+   quota, so nobody has watched the crawl walk all 135 versions to the end.
 2. **Store dedup is slug+platform, not project-identity** — good enough today; a mod that changes slug on a
    platform would be re-ground as a new project.
-3. **CurseForge partitioning is implemented but never observed live** (same root cause as 1: no key). The
-   traversal is pinned by pure unit tests and canned JSON against the published contract; what cannot be
-   checked offline is whether CF's `gameVersion` vocabulary, category ids, `totalCount` and loader filters
-   behave as documented — in particular whether a search on a parent category also returns its children (both
-   are crawled, so it is safe either way) and whether every mod really carries a category. First run with a
-   key: confirm the "crawl covers N game version(s)" and "narrow … by N categor(y/ies)" log lines, and watch
-   for `not sorted by` / `holds N mods but only` warnings.
+3. **The API key lives in the macOS Keychain on Griefed's machine** (`security find-generic-password -w -s
+   spc-curseforge-key`), deliberately not in a file or in any transcript. The grinder itself only reads
+   `CURSEFORGE_API_KEY` from the environment — there is no dotenv support anywhere in the build — so pass it in
+   per command. The key rides in the `x-api-key` **header** and `JdkHttpFetcher` logs nothing, so it cannot leak
+   into grinder logs or a failing test's output.
 4. **Residual CF gap by design** — a (version, category, loader) slice >20 000 mods loses its middle (logged
    with a count; no narrower filter exists), and a mod with *neither* a loader tag nor a category is
    unreachable beyond its version's cap (undetectable from outside).

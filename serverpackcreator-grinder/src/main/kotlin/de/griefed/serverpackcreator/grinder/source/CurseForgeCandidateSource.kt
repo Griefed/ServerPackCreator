@@ -164,22 +164,29 @@ class CurseForgeCandidateSource(
     }
 
     /**
-     * Re-read the platform's game-version list — the partition axis — ordered newest first. Called once per
-     * sweep so versions released while the daemon runs get crawled. A failed fetch keeps the previous list
-     * (or none at all, which degrades the crawl to the unfiltered top [MAX_INDEX]) rather than aborting.
+     * Re-read the platform's game-version list — the partition axis — ordered newest first, **restricted to
+     * Minecraft version types**. Called once per sweep (and whenever the list is missing) so versions released
+     * while the daemon runs get crawled. A failed fetch keeps the previous list (or none at all, which degrades
+     * the crawl to the unfiltered top [MAX_INDEX]) rather than aborting.
+     *
+     * The restriction is not cosmetic. `/games/{gameId}/versions` groups versions by *version type*, and for
+     * Minecraft those types include far more than Minecraft releases: measured against the live API it returns
+     * **7 335 version strings across 36 types**, among them modloader version families (Forge `47.0.42`) and
+     * types named `Server Side`, `Shader Loader`, `Addons` and even `DO NOT USE - Grouped MC Versions`. Keeping
+     * only the types whose name begins with `Minecraft ` (as reported by `/games/{gameId}/version-types`) leaves
+     * **135** real versions — a 54× smaller axis, and a sweep that spends its requests on partitions that can
+     * actually hold mods.
      */
     private fun refreshGameVersions() {
-        val url = "$apiBase/games/$minecraftGameId/versions"
-        val body = runCatching { httpFetcher.get(url, headers) }
-            .getOrElse {
-                log.warn(
-                    "CurseForge game-version list unavailable (${it.message}) — crawling only the unfiltered " +
-                        "top $MAX_INDEX mods this sweep, since partitioning the catalog needs that list."
-                )
-                return
-            }
+        val minecraftTypes = minecraftVersionTypeIds()
+        val body = fetchOrNull("$apiBase/games/$minecraftGameId/versions") {
+            "CurseForge game-version list unavailable ($it) — crawling only the unfiltered top $MAX_INDEX mods " +
+                "this sweep, since partitioning the catalog needs that list."
+        } ?: return
         val versions = runCatching {
-            objectMapper.readTree(body).path("data").flatMap { group -> group.path("versions").map { it.asText() } }
+            objectMapper.readTree(body).path("data")
+                .filter { group -> minecraftTypes.isEmpty() || group.path("type").asInt(-1) in minecraftTypes }
+                .flatMap { group -> group.path("versions").map { it.asText() } }
         }.getOrElse {
             log.warn("CurseForge game-version list could not be read (${it.message}); keeping the previous one.")
             return
@@ -194,6 +201,27 @@ class CurseForgeCandidateSource(
     }
 
     /**
+     * The `/games/{gameId}/version-types` ids whose name marks them a Minecraft release family. An **empty**
+     * result means "could not tell", and [refreshGameVersions] then keeps every type — a slower sweep beats a
+     * sweep that silently crawls nothing.
+     */
+    private fun minecraftVersionTypeIds(): Set<Int> {
+        val body = fetchOrNull("$apiBase/games/$minecraftGameId/version-types") {
+            "CurseForge version-type list unavailable ($it) — crawling every version type this sweep, including " +
+                "the modloader and non-Minecraft ones, which wastes requests but loses no coverage."
+        } ?: return emptySet()
+        return runCatching {
+            objectMapper.readTree(body).path("data")
+                .filter { it.path("name").asText("").startsWith(MINECRAFT_VERSION_TYPE_PREFIX, ignoreCase = true) }
+                .mapNotNull { node -> node.path("id").takeIf { it.isInt }?.asInt() }
+                .toSet()
+        }.getOrElse {
+            log.warn("CurseForge version-type list could not be read (${it.message}); crawling every type.")
+            emptySet()
+        }
+    }
+
+    /**
      * Re-read the mod class's categories — the second partition axis, used for versions whose mods cannot all
      * be paged through. **Every** category is taken, parents and children alike, because whether a search on a
      * parent category also returns its children is not documented; crawling both costs a few requests and
@@ -202,15 +230,10 @@ class CurseForgeCandidateSource(
      * modloader slices) rather than aborting.
      */
     private fun refreshCategories() {
-        val url = "$apiBase/categories?gameId=$minecraftGameId&classId=$modsClassId"
-        val body = runCatching { httpFetcher.get(url, headers) }
-            .getOrElse {
-                log.warn(
-                    "CurseForge category list unavailable (${it.message}) — an over-cap game version will be " +
-                        "covered by its modloader slices only this sweep."
-                )
-                return
-            }
+        val body = fetchOrNull("$apiBase/categories?gameId=$minecraftGameId&classId=$modsClassId") {
+            "CurseForge category list unavailable ($it) — an over-cap game version will be covered by its " +
+                "modloader slices only this sweep."
+        } ?: return
         val ids = runCatching {
             objectMapper.readTree(body).path("data")
                 .filterNot { it.path("isClass").asBoolean(false) }
@@ -229,6 +252,14 @@ class CurseForgeCandidateSource(
         log.info("CurseForge crawl can narrow an over-cap game version by ${ids.size} categor(y/ies).")
     }
 
+    /** GET [url], or `null` with the warning [onFailure] builds from the error — used for the axis lists. */
+    private fun fetchOrNull(url: String, onFailure: (String?) -> String): String? =
+        runCatching { httpFetcher.get(url, headers) }
+            .getOrElse {
+                log.warn(onFailure(it.message))
+                return null
+            }
+
     /**
      * The `pagination.totalCount` of [partition], read with a single-item query, or `null` when that request
      * failed. Only needed when a slice resumes exactly at the paging cap without having seen a count yet —
@@ -243,13 +274,16 @@ class CurseForgeCandidateSource(
      */
     private fun warnIfSliceIsUnreachable(partition: CurseForgePartition, totalCount: Int) {
         val isDeepestSlice = partition.gameVersion != null && partition.categoryId != null && partition.modLoaderType != null
-        val reachable = 2 * MAX_INDEX
-        if (isDeepestSlice && partition.ascending && totalCount > reachable) {
+        // Saturation is the signal, not a size comparison: `totalCount` never reports more than the cap, so
+        // "holds more than the two sort directions reach" is unobservable — asking for `> 2 × MAX_INDEX` here
+        // meant this warning could never fire, and an unbounded coverage hole would have stayed silent.
+        if (isDeepestSlice && partition.ascending && totalCount >= MAX_INDEX) {
             log.warn(
-                "CurseForge partition ${partition.key} holds $totalCount mods but only $reachable are reachable " +
-                    "(the API caps paging at $MAX_INDEX per sort direction) — ${totalCount - reachable} are being " +
-                    "skipped. This is already the narrowest slice the search API allows (version × category × " +
-                    "modloader), so covering them needs another filter entirely."
+                "CurseForge partition ${partition.key} is still saturated ($totalCount = the API's reporting cap) " +
+                    "after being crawled from both ends, so it holds an unknown number of mods beyond the " +
+                    "${2 * MAX_INDEX} reachable this way, and they are being skipped. This is already the narrowest " +
+                    "slice the search API allows (version × category × modloader), so covering them needs another " +
+                    "filter entirely."
             )
         }
     }
@@ -291,13 +325,20 @@ class CurseForgeCandidateSource(
      * expected direction follows the partition, since the bottom of an oversized slice is fetched ascending.
      */
     private fun warnIfMisordered(candidates: List<GrindCandidate>, partition: CurseForgePartition, index: Int) {
-        val outOfOrder = candidates.zipWithNext().any { (left, right) ->
-            if (partition.ascending) right.popularity < left.popularity else right.popularity > left.popularity
+        // Only the descending direction is checked, and only for its *trend*. Measured against the live API:
+        // `sortOrder=asc` returns the catalog's tail but in no particular order, and even `desc` is not strictly
+        // monotonic (a 10-mod page had 385 316 073 before 386 940 279 — the sort key is evidently not exactly
+        // the `downloadCount` the response reports). Flagging adjacent inversions would therefore warn on
+        // perfectly normal pages; what this is meant to catch is `sortField=6` ceasing to mean downloads at all,
+        // which shows up as a page whose last mod outranks its first.
+        if (partition.ascending || candidates.size < 2) {
+            return
         }
-        if (outOfOrder) {
+        val trendsUpwards = candidates.first().popularity < candidates.last().popularity
+        if (trendsUpwards) {
             log.warn(
-                "CurseForge page for ${partition.key} at index $index is not sorted by " +
-                    "${if (partition.ascending) "ascending" else "descending"} downloads — " +
+                "CurseForge page for ${partition.key} at index $index trends *upwards* in downloads " +
+                    "(${candidates.first().popularity} … ${candidates.last().popularity}) — " +
                     "sortField=$SORT_FIELD_TOTAL_DOWNLOADS may no longer mean TotalDownloads. " +
                     "Candidates are still usable (the pool re-sorts by popularity), but the fetched " +
                     "subset is no longer the intended one."
@@ -340,5 +381,12 @@ class CurseForgeCandidateSource(
 
         /** CurseForge's documented default and maximum `pageSize`. */
         const val MAX_PAGE_SIZE = 50
+
+        /**
+         * Version-type names beginning with this are Minecraft release families; every other type
+         * (`Server Side`, `Shader Loader`, modloader version families, …) is not a Minecraft version and must
+         * not become a crawl partition. See [minecraftVersionTypeIds].
+         */
+        const val MINECRAFT_VERSION_TYPE_PREFIX = "Minecraft "
     }
 }
