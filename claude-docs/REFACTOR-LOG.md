@@ -684,3 +684,22 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   java.lang.InterruptedException` — the `CountDownLatch.await()` holding the report server open let the shutdown
   hook's interrupt escape `main`, the same defect fixed earlier inside `GrindPool.grindAll` for the continuous
   path. Now caught and logged as "Report server stopped"; re-verified by SIGTERM against a rebuilt dist.
+
+- **Loader-install reuse + crash re-check (2026-07-30):** Griefed spotted that the install cache, while keyed
+  uniquely on `(Minecraft, loader, loaderVersion)`, churns — `BootVerifier` always booted
+  `LoaderVersionResolver.latest`, so every loader release minted another ~150 MB install for a server that boots
+  mods identically. Two changes, deliberately paired. **(1)** Extracted `LoaderVersionPolicy` in `-clientside`
+  (`preferredVersion` = what to boot, `latestVersion` = authoritative newest; `LoaderVersionResolver` answers both
+  the same, so the default path is unchanged) and gave the grinder `CachedLoaderVersions`, which prefers the
+  most-recently-used installed build for the pair — most-recently-used so the sweep stays on one build and keeps it
+  warm against the new eviction instead of rotating. Raw versions are recovered from the completion marker, not the
+  sanitized directory name. **(2)** The safeguard that makes (1) admissible: `BootVerifier` now re-boots a CRASHED
+  outcome on the **newest** build whenever the crash happened on an older one. Without it, a mod merely needing a
+  newer loader fails to load, exits non-zero, classifies as CRASHED, and is published as a HIGH-confidence
+  clientside mod — precisely the false HIGH this module is built to avoid. `latestVersion` also still drives the
+  support gate, so a cached build can never revive an unsupported loader/Minecraft combination.
+  Decisions kept pure and unit-tested (`shouldRecheckCrash`, `reconcileRecheck`) since `verify` needs an
+  `ApiWrapper` + generation + a live server: crash-then-survive takes the newest verdict and says why,
+  crash-then-crash keeps CRASHED with the newest evidence, and an **INCONCLUSIVE re-check leaves the crash
+  standing** (a flaky second boot is not evidence). Suites: api / clientside (63) / grinder (147+18 gated) / app
+  all green, no new warnings.

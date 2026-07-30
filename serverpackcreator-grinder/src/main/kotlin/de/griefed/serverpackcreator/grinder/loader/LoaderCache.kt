@@ -103,6 +103,29 @@ class LoaderCache(
     }
 
     /**
+     * Every loader-version installed for the `(loader, minecraftVersion)` pair, **most recently used first**.
+     *
+     * Versions are read back from each tuple's [MARKER], not from the directory name: [baseDirFor] sanitizes
+     * path segments, so a version string containing anything unusual would come back mangled and be handed to
+     * pack generation as a version that does not exist. Incomplete installs (no marker) are skipped — they
+     * cannot be booted. Used by [CachedLoaderVersions] to reuse an install instead of fetching a fresh one.
+     */
+    fun installedVersions(loader: String, minecraftVersion: String): List<String> {
+        val loaderDir = File(cacheRoot, "${sanitize(minecraftVersion)}/${sanitize(loader)}")
+        val versionDirs = loaderDir.listFiles()?.filter { it.isDirectory } ?: return emptyList()
+        return versionDirs
+            .mapNotNull { dir -> File(dir, MARKER).takeIf { it.isFile }?.let { marker -> marker to recordedVersion(marker) } }
+            .filter { (_, version) -> version != null }
+            .sortedByDescending { (marker, _) -> marker.lastModified() }
+            .mapNotNull { (_, version) -> version }
+    }
+
+    /** The raw `loaderVersion` a completion marker recorded, or `null` when it is unreadable. */
+    private fun recordedVersion(marker: File): String? = runCatching {
+        marker.readLines().firstOrNull { it.startsWith("loaderVersion=") }?.removePrefix("loaderVersion=")
+    }.getOrNull()
+
+    /**
      * Delete every cached tuple that has not been *used* within [retention], returning how many went. A
      * `zero`/negative retention disables eviction entirely (nothing is deleted), which is the opt-out.
      *

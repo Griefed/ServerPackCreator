@@ -37,6 +37,17 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   not available, launcher-jar/install download failure, Java/EULA/`variables.txt` setup failure,
   unknown modloader) exit non-zero *before the mod is loaded*; `BootLogClassifier` maps those
   (`setupAbortMarkers`) to **INCONCLUSIVE**, not CRASHED. Both found via a grinder e2e on MC 26.2.
+- **`LoaderVersionPolicy` (seam) + crash re-check.** `BootVerifier` takes a *policy*, not the concrete
+  `LoaderVersionResolver`: `preferredVersion` is what gets booted, `latestVersion` is the authoritative newest.
+  The default resolver answers both identically. A caller may prefer an **older** build it already has installed
+  (the grinder's `CachedLoaderVersions` does, to avoid a ~150 MB install per loader release) — which is only safe
+  because of the guard: **`latestVersion` alone drives the support gate**, and a CRASHED outcome on a
+  non-newest build is re-booted on the newest one before it may stand (`recheckCrashOnNewestVersion`).
+  **Why it must exist:** a mod needing a newer loader than the cached build fails to load, exits non-zero, and
+  the classifier reads CRASHED → a server-safe mod published as a **HIGH-confidence clientside mod**. The two
+  decisions are pure and unit-tested (`shouldRecheckCrash`, `reconcileRecheck`) because `verify` itself needs an
+  `ApiWrapper` + real generation + a running server — same split as `outcomeFor`. **Landmine:** an INCONCLUSIVE
+  re-check must never clear the crash (a flaky second boot is not evidence); only a clean boot on the newest may.
 - **`allowModDistribution=false`** CurseForge files arrive with `downloadUrl=null` (`ModFile.locked`);
   routed (`selectDownloader`) to the **Playwright** headless-browser `BrowserDownloader` (lazy; only
   launched for locked files), everything else to `HttpJarDownloader`. Playwright is declared in **this**

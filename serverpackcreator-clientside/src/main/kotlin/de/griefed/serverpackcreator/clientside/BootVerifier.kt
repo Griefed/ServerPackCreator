@@ -39,7 +39,9 @@ import java.util.*
  * @param platform             The hosting platform, for recursive dependency resolution.
  * @param httpDownloader       Downloads freely-distributable files.
  * @param browserDownloader    Downloads distribution-locked files (headless browser).
- * @param loaderVersionResolver Picks the loader-version to install.
+ * @param loaderVersionPolicy  Picks the loader-version to install. A policy may prefer an older build it
+ *                             already has installed (the grinder does, to reuse its install cache); a crash on
+ *                             such a build is re-checked against the policy's newest before it counts.
  * @param workDirectory        Scratch root for the synthetic modpack and generated server pack.
  * @param serverRunner         Executes the prepared pack; defaults to the host-process runner, swapped
  *                             for a container-backed one by the grinder.
@@ -58,7 +60,7 @@ class BootVerifier(
     private val platform: ModPlatform,
     private val httpDownloader: JarDownloader,
     private val browserDownloader: JarDownloader,
-    private val loaderVersionResolver: LoaderVersionResolver,
+    private val loaderVersionPolicy: LoaderVersionPolicy,
     private val workDirectory: File,
     private val serverRunner: ServerRunner = HostProcessServerRunner(),
     private val packPostProcessor: ((Prepared.Ready) -> Unit)? = null,
@@ -91,7 +93,42 @@ class BootVerifier(
         if (prepared is Prepared.Failed) {
             return BootOutcome(BootResult.INCONCLUSIVE, null, prepared.detail)
         }
-        return runPrepared(prepared as Prepared.Ready, serverRunner, packPostProcessor, bootTimeout)
+        val ready = prepared as Prepared.Ready
+        val outcome = runPrepared(ready, serverRunner, packPostProcessor, bootTimeout)
+        return recheckCrashOnNewestVersion(project, loader, ready, outcome)
+    }
+
+    /**
+     * When [outcome] is a crash produced on a build that is *not* the newest, boot the newest build once and
+     * let that decide. This is what makes an install-cache-preferring [LoaderVersionPolicy] safe: without it,
+     * a mod that merely needs a newer loader than the cached build would be published as a HIGH-confidence
+     * clientside mod. Re-staging repeats the download for that one candidate — crashes are rare, and a wrong
+     * HIGH is far more expensive than one extra boot.
+     *
+     * Anything that stops the re-check from happening leaves the original crash untouched: a crash we cannot
+     * disprove stays a crash.
+     */
+    private fun recheckCrashOnNewestVersion(
+        project: ProjectFiles,
+        loader: String,
+        first: Prepared.Ready,
+        outcome: BootOutcome
+    ): BootOutcome {
+        val newest = loaderVersionPolicy.latestVersion(loader, first.minecraftVersion)
+        if (!shouldRecheckCrash(outcome, first.loaderVersion, newest)) {
+            return outcome
+        }
+        log.info(
+            "${project.slug}: $loader ${first.loaderVersion} crashed, but that is not the newest build — " +
+                "re-checking on $loader $newest before trusting the crash."
+        )
+        val restaged = prepareBootPack(project, loader, loaderVersionOverride = newest)
+        if (restaged is Prepared.Failed) {
+            log.warn("Could not re-stage ${project.slug} on $loader $newest (${restaged.detail}); keeping the crash.")
+            return outcome
+        }
+        val second = runPrepared(restaged as Prepared.Ready, serverRunner, packPostProcessor, bootTimeout)
+        return reconcileRecheck(outcome, second, first.loaderVersion, newest!!)
     }
 
     /**
@@ -175,9 +212,10 @@ class BootVerifier(
      * download it plus its required dependencies, and generate a self-installing server pack. Returns a
      * [Prepared.Ready] pointing at the pack (and its log-file target), or [Prepared.Failed] with the
      * reason. Public so the grinder can stage on the host and then hand the pack to its own
-     * container-backed [ServerRunner].
+     * container-backed [ServerRunner]. [loaderVersionOverride] forces a specific loader-version instead of the
+     * policy's preference — used by the crash re-check to re-stage on the newest build.
      */
-    fun prepareBootPack(project: ProjectFiles, loader: String): Prepared {
+    fun prepareBootPack(project: ProjectFiles, loader: String, loaderVersionOverride: String? = null): Prepared {
         // Only ever boot a stable Minecraft *release* — a mod's newest file may target a pre-release
         // (a `-pre`/`-rc`/`-snapshot` of the current version), which is unstable and a waste to boot.
         // [minecraftAcceptable] adds the host's own constraint (e.g. the grinder's supported-Java gate).
@@ -185,10 +223,11 @@ class BootVerifier(
         val candidate = BootCandidateSelector.pickBootableCandidate(project.files, loader) { minecraftVersion ->
             minecraftVersion in releaseVersions &&
                 minecraftAcceptable(minecraftVersion) &&
-                loaderVersionResolver.latest(loader, minecraftVersion) != null
+                loaderVersionPolicy.latestVersion(loader, minecraftVersion) != null
         } ?: return Prepared.Failed("No bootable file/Minecraft/loader combination for $loader.")
         val (mainFile, minecraftVersion) = candidate
-        val loaderVersion = loaderVersionResolver.latest(loader, minecraftVersion)
+        val loaderVersion = loaderVersionOverride
+            ?: loaderVersionPolicy.preferredVersion(loader, minecraftVersion)
             ?: return Prepared.Failed("No $loader version for Minecraft $minecraftVersion.")
 
         val attemptDir = File(workDirectory, "${project.slug}-$loader").apply { deleteRecursively() }
@@ -251,6 +290,37 @@ class BootVerifier(
          * [BootLogClassifier], and — only on a crash — given a [BootLogExcerpt]. [label] prefixes the
          * human-readable detail. This is the verdict seam every runner (host or container) shares.
          */
+        /**
+         * Whether a crash deserves a second boot on the newest loader build: only a CRASHED outcome, only when
+         * a newest build is known, and only when it differs from the one that actually crashed.
+         */
+        internal fun shouldRecheckCrash(outcome: BootOutcome, bootedVersion: String, latestVersion: String?): Boolean =
+            outcome.result == BootResult.CRASHED && latestVersion != null && latestVersion != bootedVersion
+
+        /**
+         * Combine the original crash with the newest build's re-check. The newest build decides when it says
+         * something usable — a clean boot there means the crash belonged to the older build, not the mod — while
+         * an INCONCLUSIVE re-check proves nothing and leaves the crash standing. Either way the note records
+         * both builds, so nobody reading the report has to guess why two versions are involved.
+         */
+        internal fun reconcileRecheck(
+            first: BootOutcome,
+            second: BootOutcome,
+            bootedVersion: String,
+            latestVersion: String
+        ): BootOutcome = when (second.result) {
+            BootResult.INCONCLUSIVE -> first.copy(
+                detail = "${first.detail} (crash on $bootedVersion could not be re-checked on $latestVersion: ${second.detail})"
+            )
+            BootResult.CRASHED -> second.copy(
+                detail = "${second.detail} (crash on $bootedVersion confirmed on the newest build $latestVersion)"
+            )
+            BootResult.SURVIVED -> second.copy(
+                detail = "${second.detail} (crashed on $bootedVersion but not on the newest build $latestVersion — " +
+                    "treating the crash as a loader-build artefact, not the mod)"
+            )
+        }
+
         internal fun outcomeFor(runResult: RunResult, logFile: File, label: String): BootOutcome = when (runResult) {
             is RunResult.NotStarted -> BootOutcome(BootResult.INCONCLUSIVE, null, runResult.detail)
             is RunResult.Completed -> {

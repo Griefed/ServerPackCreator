@@ -141,6 +141,20 @@ containers:
   an empty catalog can't spin. `JsonCursorStore` persists offset+sweeps+partition per platform
   (temp-then-atomic-move, corrupt → start of catalog) — **this file is the difference between eventual full coverage and re-checking the top N
   forever**; deleting it costs one re-sweep (fresh verdicts are skipped), not correctness.
+- **Loader-install reuse** (`CachedLoaderVersions`, `grinder.loader`): boots a loader build the cache already
+  holds instead of the newest, falling back to newest when the `(loader, Minecraft)` pair is uncached. Loaders
+  ship builds constantly and each new one is a fresh ~150 MB networked install for a server that boots mods
+  identically, so on a catalog sweep this is the difference between a cache that grows with every loader release
+  and one bounded by the pairs actually crawled. Picks the **most recently used** cached build, which also keeps
+  it warm against eviction rather than rotating builds. Raw versions come from the marker, not the sanitized
+  directory name (`LoaderCache.installedVersions`). **Safe only because of clientside's crash re-check** — see
+  `serverpackcreator-clientside/CLAUDE.md`; `latestVersion` always delegates, so the cache can never revive an
+  unsupported combo nor turn "needs a newer loader" into a false HIGH.
+- **Cache eviction** (`LoaderCache.evictUnusedSince`, run after every pass, `SPC_GRINDER_CACHE_TTL_DAYS`,
+  default 7, `0` = off): drops tuples nothing has booted in the window. Keyed on **last use** — `ensureInstalled`
+  stamps the marker on every hit — so an in-service tuple is never pulled out from under a boot; unmarked
+  partials go at any age. Takes the same per-tuple lock as installing, which is why that lock is keyed on the
+  sanitized **path** rather than the raw tuple (eviction only ever learns the on-disk name).
 - **Pacing** (`GrindPacing.pauseAfterPass`, pure + unit-tested): work found → no pause; nothing due but
   catalog remains → short `SPC_GRINDER_SCAN_DELAY`; sweep completed with nothing due → `SPC_GRINDER_INTERVAL`.
   **A fixed per-pass sleep is what made coverage impossible** (25 projects/6 h vs. ~71 000 Modrinth mods).

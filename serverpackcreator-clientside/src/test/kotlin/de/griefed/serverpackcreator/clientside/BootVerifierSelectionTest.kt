@@ -56,7 +56,7 @@ internal class BootVerifierSelectionTest {
         platform = unusedPlatform,
         httpDownloader = noNetworkDownloader,
         browserDownloader = noNetworkDownloader,
-        loaderVersionResolver = resolver,
+        loaderVersionPolicy = resolver,
         workDirectory = workDir,
         minecraftAcceptable = minecraftAcceptable
     )

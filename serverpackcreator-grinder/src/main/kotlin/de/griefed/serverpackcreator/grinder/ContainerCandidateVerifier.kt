@@ -31,6 +31,7 @@ import de.griefed.serverpackcreator.clientside.BrowserDownloader
 import de.griefed.serverpackcreator.clientside.ClientsideReport
 import de.griefed.serverpackcreator.clientside.ClientsideVerifier
 import de.griefed.serverpackcreator.clientside.HttpJarDownloader
+import de.griefed.serverpackcreator.grinder.loader.CachedLoaderVersions
 import de.griefed.serverpackcreator.clientside.LoaderVersionResolver
 import de.griefed.serverpackcreator.clientside.MetadataScanner
 import de.griefed.serverpackcreator.clientside.supportedPlatforms
@@ -87,7 +88,10 @@ class ContainerCandidateVerifier(
                         platform = platform,
                         httpDownloader = httpDownloader,
                         browserDownloader = browserDownloader,
-                        loaderVersionResolver = LoaderVersionResolver(apiWrapper.versionMeta),
+                        // Reuse an installed loader build rather than installing every fresh release; the
+                        // policy still reports the newest truthfully, so the support gate and BootVerifier's
+                        // crash re-check are unaffected (see CachedLoaderVersions).
+                        loaderVersionPolicy = CachedLoaderVersions(LoaderVersionResolver(apiWrapper.versionMeta), loaderCache),
                         workDirectory = File(workDirectory, "boot"),
                         serverRunner = ContainerServerRunner(containerEngine, runtimeImage, resources),
                         packPostProcessor = ::overlayLoaderInstall,
