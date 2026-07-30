@@ -842,3 +842,35 @@ the grinder each get their own node — `ServerPackCreatorPathsConfigTest` and `
 already do exactly that, so the pattern exists and is simply not applied suite-wide. It is an *additive* API change
 (optional ctor param / env var), but it touches published `-api` surface and changes where a test-suite run stores
 state, so it was **not** implemented unilaterally. Until then: never run a test suite while a grinder run is live.
+
+**Resolved (same day, Griefed's call: make the node injectable).** `ApiProperties.resolvePreferencesNode()` now picks
+the `Preferences` node from `-Dde.griefed.serverpackcreator.preferences.node`, else `SPC_PREFERENCES_NODE`, else the
+unchanged default `ServerPackCreator` (blank overrides fall back, since `userRoot().node("")` is the *root* node).
+`GrinderApplication` claims `ServerPackCreator-grinder` before any `ApiProperties` exists and logs it; the build gives
+every test JVM `ServerPackCreator-test-<module>`.
+
+**The isolated node immediately exposed a second, worse fault — one this change introduced.** With no *stored* home in
+a fresh node, `homeDirectory` fell through to the dev-build branch `File("").absolutePath`, i.e. the test JVM's working
+directory = **the module's own source directory** — and `ApiWrapper.setup()` *writes* into the home (README.md,
+CHANGELOG.md, `server_files`, `log4j2.xml`, `manifests/`). The clientside module's checked-in 186-line CLI guide was
+overwritten by the bundled root README, which is what `ClientsideReadmeFlagsTest` then failed on: `--setup` documented
+but unaccepted, nine real flags undocumented. `PathsConfig` therefore also honours
+`-Dde.griefed.serverpackcreator.home` ahead of that fallback, and the build points every test JVM at
+`<module>/build/spc-test-home`. `PathsConfigTest` and `ScriptTemplatesConfigTest` clear the property per test (they
+exist to exercise the preference/properties/fallback layers, which an explicit override outranks).
+
+**Verified:** all four suites green; a full api suite run *concurrently with a live daemon* left it untouched
+(`Using Preferences node 'ServerPackCreator-grinder'`, `Home directory set to: ~/.spc-grinder`, zero references to the
+repo test home); no README/LICENSE/manifests churn in `git status` after a full run.
+
+**Correction to an earlier claim in this log's session:** the first "all four suites pass" reading counted the app
+module as passing when Gradle had reported it up-to-date without executing anything. The two
+`ClientsideReadmeFlagsTest` failures were real and pre-existing at that moment.
+
+**Method note:** Java's macOS `Preferences` store is per-process cached and flushed on a ~30 s timer, so concurrent
+JVMs clobber each other's view. Cross-process `defaults read` snapshots taken while Gradle JVMs are alive are not
+evidence — an apparent "every suite writes the shared node" result was this artifact. Use in-process logs and
+same-JVM tests.
+
+**Still open:** whether anything writes the *shared* `ServerPackCreator` node during a build (it holds a repo test
+path on this machine, affecting only a GUI/dev instance). The five remaining hard-coded call sites are all in `-app`.

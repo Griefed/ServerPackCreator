@@ -97,29 +97,36 @@ though their detail lives deeper:
 - **`installDist` is not rebuilt by `test`** — always rebuild before a live run, or you will draw conclusions
   from a stale jar (this has happened: a run reported the unfiltered 7 339-version axis because of it).
 
-- **NEVER run any module's test suite while a live grinder run is going.** SPC resolves its home directory through
-  `Preferences.userRoot().node("ServerPackCreator")` (`PathsConfig.homeDirectory`) — one **machine-wide, per-user**
-  node shared by the GUI, the web backend, the test suites *and* the grinder — and the getter **re-reads it on every
-  access**, storing whatever it resolved. So a test suite starting up relocates the *running* daemon's home to its
-  own scratch dir (`serverpackcreator-<module>/tests`), and then deletes it. Measured 2026-07-30: at 14:29 a
-  `:serverpackcreator-api:test` run silently moved the live daemon's home into the repo, and every subsequent boot
-  failed with `.../serverpackcreator-api/tests/server_files/server-icon.png: The source file doesn't exist` — which
-  surfaces as **`boot:none` metadata-only verdicts**, i.e. it looks exactly like "these mods were never bootable"
-  rather than like a broken host. 30+ candidates were recorded that way before it was caught.
-  **Consequences worth knowing:**
-  - The daemon's home is decided by whichever SPC process last touched the preference — *not* by cwd or by
-    `serverpackcreator.properties` (the preference is consulted **first** and wins over both, so
-    `SPC_GRINDER_SPC_PROPERTIES` cannot protect against this either).
-  - Editing a template under the grinder home is pointless while the preference points elsewhere — the generation
-    reads `server_files` from the *then-current* home.
-  - Repair: set the preference back explicitly (`Preferences.userRoot().node("ServerPackCreator")
-    .put("de.griefed.serverpackcreator.home", …)` + `sync()`), then relaunch. Reading the value on macOS:
-    `defaults read com.apple.java.util.prefs | grep -A2 ServerPackCreator`.
-  - The collision runs **both ways**: a developer running the suites also moves their own GUI installation's home.
-    Two test classes already isolate themselves onto their own nodes (`ServerPackCreatorPathsConfigTest`,
-    `ServerPackCreatorScriptTemplatesConfigTest`), so the pattern exists — it is just not applied suite-wide.
-    Making the node name injectable (tests and the grinder each on their own node) is the real fix; **not yet
-    decided/implemented** — see the open question in `claude-docs/REFACTOR-LOG.md`.
+- **The daemon owns its own `Preferences` node — do not "simplify" that away.** SPC resolves its home directory
+  through a `Preferences` node (`PathsConfig.homeDirectory`), historically the hard-coded, **machine-wide per-user**
+  `ServerPackCreator` shared by the GUI, the web backend, every test suite *and* the grinder — and the getter
+  **re-reads it on every access**, storing whatever it resolved. A test suite booting an `ApiWrapper` therefore
+  relocated the *running* daemon's home to its own scratch dir and then deleted it. Measured 2026-07-30: a
+  `:serverpackcreator-api:test` run mid-session moved the live daemon's home into the repo, and every subsequent boot
+  failed with `.../serverpackcreator-api/tests/server_files/server-icon.png: The source file doesn't exist` —
+  surfacing as **`boot:none` metadata-only verdicts**, i.e. looking exactly like "these mods were never bootable"
+  rather than like a broken host. 30+ candidates were recorded that way before it was caught, and the store had to be
+  archived. `GrinderApplication` now claims **`ServerPackCreator-grinder`** (via
+  `ApiProperties.PREFERENCES_NODE_PROPERTY`, set before any `ApiProperties` exists, and only when the operator has
+  not chosen a node themselves) and logs which node it used. Verified: a full api suite run *concurrently* with a
+  live daemon left it untouched.
+  - The node override is `-Dde.griefed.serverpackcreator.preferences.node` / `SPC_PREFERENCES_NODE`; the home
+    override is `-Dde.griefed.serverpackcreator.home`, which now beats the dev-build working-directory fallback.
+  - The preference is consulted **before** cwd and `serverpackcreator.properties`, so `SPC_GRINDER_SPC_PROPERTIES`
+    alone never protected against this — the node claim is what does.
+  - Editing a template under the grinder home is pointless while the home resolves elsewhere; generation reads
+    `server_files` from the *then-current* home. Check the daemon's own startup lines (`Using Preferences node …`,
+    `Home directory set to: …`) rather than guessing.
+  - **Measuring this from outside is unreliable:** Java's macOS `Preferences` backing store
+    (`~/Library/Preferences/com.apple.java.util.prefs.plist`) is cached per process and flushed on a ~30 s timer, so
+    concurrent JVMs clobber each other's view and an external `defaults read` can show a value that a still-running
+    JVM is about to overwrite. Trust in-process logs and same-JVM tests, not cross-process snapshots. (A per-module
+    loop appearing to show "every suite writes the shared node" was exactly this artifact.)
+  - **Still open:** whether anything continues to write the *shared* `ServerPackCreator` node during a build. It
+    holds a repo test path on this machine, which only affects a GUI/dev instance, not the grinder. The five
+    remaining hard-coded `Preferences.userRoot().node("ServerPackCreator")` call sites all live in **`-app`**
+    (`CommandlineParser`, `ServerPackCreator.kt` ×2, `HomeDirCommand`, `GuiProps`) and are the obvious next
+    candidates if it turns out to matter.
 
 - **Staging is reclaimed, not accumulated** (`BootWorkspaceReaper`). Each attempt stages a full server pack with the
   overlaid loader libraries under `<work>/verify/boot/<slug>-<loader>` plus downloaded jars under
