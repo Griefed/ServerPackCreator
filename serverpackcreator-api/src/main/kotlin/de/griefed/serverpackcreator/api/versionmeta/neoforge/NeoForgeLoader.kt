@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.api.versionmeta.neoforge
 
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
+import de.griefed.serverpackcreator.api.utilities.common.toDotEscapedRegex
 import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftMeta
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
@@ -134,15 +135,29 @@ internal class NeoForgeLoader(
         val newNeoDocument: Document = utilities.xmlUtilities.getXml(newNeoForgeManifest)
         val newNeoElements = newNeoDocument.getElementsByTagName(version)
         for (mcVersion in minecraftMeta.allVersions().map { it.version }) {
-            /*if (mcVersion.length < 6) { //Why did I do this in the first place? O.o
-                continue
-            }*/
-            val mcVersionRegex = if (mcVersion.startsWith("1.") && mcVersion.matches("\\d+.\\d+.?\\d*".toRegex())) {
-                "^${mcVersion.substring(2)}.*".toRegex()
-            } else if (mcVersion.matches("\\d+.\\d+.?\\d*".toRegex())) {
-                "^$mcVersion.*".toRegex()
-            } else {
-                continue
+            val mcVersionSubRegex: Regex
+            val mcVersionRegex = when {
+                mcVersion.matches("1\\.\\d+".toRegex()) -> {
+                    mcVersionSubRegex = mcVersion.substring(2).toDotEscapedRegex()
+                    "^$mcVersionSubRegex\\.0(?:\\.\\d+)+(?:-.*)?".toRegex()
+                }
+                mcVersion.matches("1\\.\\d+(.\\d+)?".toRegex()) -> {
+                    mcVersionSubRegex = mcVersion.substring(2).toDotEscapedRegex()
+                    "^$mcVersionSubRegex(?:\\.\\d+)+(?:-.*)?".toRegex()
+                }
+
+                mcVersion.matches("\\d{2}.\\d+".toRegex()) -> {
+                    mcVersionSubRegex = mcVersion.toDotEscapedRegex()
+                    "^$mcVersionSubRegex\\.0(?:\\.\\d+)+(?:-.*)?".toRegex()
+                }
+                mcVersion.matches("\\d{2}.\\d+.\\d+".toRegex()) -> {
+                    mcVersionSubRegex = mcVersion.toDotEscapedRegex()
+                    "^$mcVersionSubRegex(?:\\.\\d+)+(?:-.*)?".toRegex()
+                }
+
+                else -> {
+                    continue
+                }
             }
             val newNeoForgeVersionsForMCVer: MutableList<String> = ArrayList(100)
 

@@ -33,3 +33,8 @@ fun List<Regex>.matchAll(string: String): Boolean {
     }
     return found
 }
+
+fun String.toDotEscapedRegex(): Regex {
+    val escaped = this.replace(".", "\\.")
+    return escaped.toRegex()
+}
