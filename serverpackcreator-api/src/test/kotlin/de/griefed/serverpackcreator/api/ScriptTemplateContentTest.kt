@@ -112,7 +112,6 @@ internal class ScriptTemplateContentTest {
         }
     }
 
-    /** Locate an executable on `PATH`, or `null` when it is not installed. */
     /**
      * Every template must settle the Fabric launcher from **what is on disk** before it asks the network.
      *
@@ -145,6 +144,76 @@ internal class ScriptTemplateContentTest {
         }
     }
 
+    /**
+     * **Executes** the bash template's `setupFabric` on an offline pack that already has its launcher jar, and
+     * asserts the function still produces a runnable command. Ordering alone is not enough: the first version of
+     * the offline short-circuit above `return`ed as soon as it found the jar — jumping over the
+     * `SERVER_RUN_COMMAND=...` assignment at the end of the function. The pack then launched
+     * `java -Dlog4j2... do_not_manually_edit` (the placeholder) and died with "Could not find or load main class",
+     * *past* every ordering assertion. Only running the function catches that, so this test runs it.
+     *
+     * The stubs make network use fatal rather than merely unnecessary: `commandAvailable` denies curl/wget and any
+     * download or install call exits non-zero, so an offline pack that reaches for the network fails loudly here.
+     */
+    @Test
+    fun theBashTemplateStillBuildsARunCommandWhenTheFabricLauncherIsAlreadyInstalled() {
+        val bash = which("bash") ?: Assumptions.abort("bash not installed — offline Fabric execution check skipped")
+        val packDir = File.createTempFile("spc-fabric-offline-", "-pack").apply { delete(); mkdirs() }
+        // A non-empty jar: the template's `-s` test requires size, not mere existence.
+        File(packDir, "fabric-server-launcher.jar").writeBytes(ByteArray(64))
+
+        val harness = File(packDir, "harness.sh")
+        harness.writeText(
+            """
+            commandAvailable() { return 1; }
+            crashServer() { echo "CRASHED: ${'$'}1"; exit 3; }
+            downloadIfNotExist() { echo "NETWORK: download attempted"; exit 4; }
+            runJavaCommand() { echo "NETWORK: installer run"; exit 5; }
+            JAVA_ARGS="-Xmx4G"
+            MINECRAFT_VERSION="1.20.1"
+            MODLOADER_VERSION="0.16.9"
+            FABRIC_INSTALLER_VERSION="1.0.1"
+            LAUNCHER_JAR_LOCATION="do_not_manually_edit"
+            SERVER_RUN_COMMAND="do_not_manually_edit"
+            ${extractShellFunction("default_template.sh", "setupFabric")}
+            setupFabric
+            echo "RESULT=${'$'}{SERVER_RUN_COMMAND}"
+            """.trimIndent()
+        )
+
+        val process = ProcessBuilder(bash.absolutePath, harness.absolutePath)
+            .directory(packDir)
+            .redirectErrorStream(true)
+            .start()
+        val output = process.inputStream.bufferedReader().use { it.readText() }
+        val exit = process.waitFor()
+
+        Assertions.assertEquals(0, exit, "setupFabric failed on an offline pack that has its launcher:\n$output")
+        Assertions.assertTrue(
+            output.contains("RESULT=-Xmx4G -jar fabric-server-launcher.jar nogui"),
+            "the offline path must still assemble the run command, was:\n$output"
+        )
+        Assertions.assertFalse(
+            output.contains("do_not_manually_edit"),
+            "an unset placeholder reached the run command — the offline branch skipped the assignment:\n$output"
+        )
+        packDir.deleteRecursively()
+    }
+
+    /**
+     * Cut one `name() { ... }` function out of a shell template so it can be sourced in isolation. Matches the
+     * closing brace in column 0, which is how the shipped templates format their function bodies.
+     */
+    private fun extractShellFunction(template: String, name: String): String {
+        val lines = template(template).lines()
+        val start = lines.indexOfFirst { it.startsWith("$name()") }
+        Assertions.assertTrue(start >= 0, "template $template has no function `$name` — update this test")
+        val end = lines.drop(start + 1).indexOfFirst { it == "}" }
+        Assertions.assertTrue(end >= 0, "function `$name` in $template is not closed by a brace in column 0")
+        return lines.subList(start, start + end + 2).joinToString("\n")
+    }
+
+    /** Locate an executable on `PATH`, or `null` when it is not installed. */
     private fun which(executable: String): File? =
         System.getenv("PATH")?.split(File.pathSeparator)
             ?.map { File(it, executable) }

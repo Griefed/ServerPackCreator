@@ -344,48 +344,46 @@ function setupFabric
     if test -s "fabric-server-launcher.jar"
         echo "fabric-server-launcher.jar present. Moving on..."
         set -g LAUNCHER_JAR_LOCATION "fabric-server-launcher.jar"
-        return 0
     else if test -s "fabric-server-launch.jar"
         echo "fabric-server-launch.jar present. Moving on..."
         set -g LAUNCHER_JAR_LOCATION "fabric-server-launch.jar"
-        return 0
-    end
-
-    if commandAvailable curl
-        set -g FABRIC_AVAILABLE (curl -LI "$FABRIC_CHECK_URL" -o /dev/null -w '%{http_code}\n' -s)
-    else if commandAvailable wget
-        set -g FABRIC_AVAILABLE (wget --spider --server-response "$FABRIC_CHECK_URL" 2>&1 | awk '/^  HTTP/{print $2}')
-    end
-
-    if commandAvailable curl
-        set -g IMPROVED_FABRIC_LAUNCHER_AVAILABLE (curl -LI "$IMPROVED_FABRIC_LAUNCHER_URL" -o /dev/null -w '%{http_code}\n' -s)
-    else if commandAvailable wget
-        set -g IMPROVED_FABRIC_LAUNCHER_AVAILABLE (wget --spider --server-response "$IMPROVED_FABRIC_LAUNCHER_URL" 2>&1 | awk '/^  HTTP/{print $2}')
-    end
-
-    if test "$IMPROVED_FABRIC_LAUNCHER_AVAILABLE" = "200"
-        echo "Improved Fabric Server Launcher available..."
-        echo "The improved launcher will be used to run this Fabric server."
-        set -g LAUNCHER_JAR_LOCATION "fabric-server-launcher.jar"
-        downloadIfNotExist "fabric-server-launcher.jar" "fabric-server-launcher.jar" "$IMPROVED_FABRIC_LAUNCHER_URL" >/dev/null
-    else if test "$FABRIC_AVAILABLE" != "200"
-        crashServer "Fabric is not available for Minecraft $MINECRAFT_VERSION, Fabric $MODLOADER_VERSION."
-    else if test (downloadIfNotExist "fabric-server-launch.jar" "fabric-installer.jar" "$FABRIC_INSTALLER_URL") = "true"
-        echo "Installer downloaded..."
-        set -g LAUNCHER_JAR_LOCATION "fabric-server-launch.jar"
-        runJavaCommand "-jar fabric-installer.jar server -mcversion $MINECRAFT_VERSION -loader $MODLOADER_VERSION -downloadMinecraft"
-
-        if test -s "fabric-server-launch.jar"
-            rm -rf .fabric-installer
-            rm -f fabric-installer.jar
-            echo "Installation complete. fabric-installer.jar deleted."
-        else
-            rm -f fabric-installer.jar
-            crashServer "fabric-server-launch.jar not found. Maybe the Fabric servers are having trouble. Please try again in a couple of minutes and check your internet connection."
-        end
     else
-        echo "fabric-server-launch.jar present. Moving on..."
-        set -g LAUNCHER_JAR_LOCATION "fabric-server-launch.jar"
+        if commandAvailable curl
+            set -g FABRIC_AVAILABLE (curl -LI "$FABRIC_CHECK_URL" -o /dev/null -w '%{http_code}\n' -s)
+        else if commandAvailable wget
+            set -g FABRIC_AVAILABLE (wget --spider --server-response "$FABRIC_CHECK_URL" 2>&1 | awk '/^  HTTP/{print $2}')
+        end
+
+        if commandAvailable curl
+            set -g IMPROVED_FABRIC_LAUNCHER_AVAILABLE (curl -LI "$IMPROVED_FABRIC_LAUNCHER_URL" -o /dev/null -w '%{http_code}\n' -s)
+        else if commandAvailable wget
+            set -g IMPROVED_FABRIC_LAUNCHER_AVAILABLE (wget --spider --server-response "$IMPROVED_FABRIC_LAUNCHER_URL" 2>&1 | awk '/^  HTTP/{print $2}')
+        end
+
+        if test "$IMPROVED_FABRIC_LAUNCHER_AVAILABLE" = "200"
+            echo "Improved Fabric Server Launcher available..."
+            echo "The improved launcher will be used to run this Fabric server."
+            set -g LAUNCHER_JAR_LOCATION "fabric-server-launcher.jar"
+            downloadIfNotExist "fabric-server-launcher.jar" "fabric-server-launcher.jar" "$IMPROVED_FABRIC_LAUNCHER_URL" >/dev/null
+        else if test "$FABRIC_AVAILABLE" != "200"
+            crashServer "Fabric is not available for Minecraft $MINECRAFT_VERSION, Fabric $MODLOADER_VERSION."
+        else if test (downloadIfNotExist "fabric-server-launch.jar" "fabric-installer.jar" "$FABRIC_INSTALLER_URL") = "true"
+            echo "Installer downloaded..."
+            set -g LAUNCHER_JAR_LOCATION "fabric-server-launch.jar"
+            runJavaCommand "-jar fabric-installer.jar server -mcversion $MINECRAFT_VERSION -loader $MODLOADER_VERSION -downloadMinecraft"
+
+            if test -s "fabric-server-launch.jar"
+                rm -rf .fabric-installer
+                rm -f fabric-installer.jar
+                echo "Installation complete. fabric-installer.jar deleted."
+            else
+                rm -f fabric-installer.jar
+                crashServer "fabric-server-launch.jar not found. Maybe the Fabric servers are having trouble. Please try again in a couple of minutes and check your internet connection."
+            end
+        else
+            echo "fabric-server-launch.jar present. Moving on..."
+            set -g LAUNCHER_JAR_LOCATION "fabric-server-launch.jar"
+        end
     end
 
     set -g SERVER_RUN_COMMAND "$JAVA_ARGS -jar $LAUNCHER_JAR_LOCATION nogui"

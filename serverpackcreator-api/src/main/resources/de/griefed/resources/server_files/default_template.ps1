@@ -479,61 +479,61 @@ Function global:SetupFabric
     {
         Write-Host "fabric-server-launcher.jar present. Moving on..."
         $script:LauncherJarLocation = "fabric-server-launcher.jar"
-        return
     }
-    if (Test-Path -Path 'fabric-server-launch.jar' -PathType Leaf)
+    elseif (Test-Path -Path 'fabric-server-launch.jar' -PathType Leaf)
     {
         Write-Host "fabric-server-launch.jar present. Moving on..."
         $script:LauncherJarLocation = "fabric-server-launch.jar"
-        return
-    }
-
-    $script:ImprovedFabricLauncherAvailable = [int][System.Net.WebRequest]::Create("${ImprovedFabricLauncherUrl}").GetResponse().StatusCode
-    $ErrorActionPreference = "Continue";
-    if ("${ImprovedFabricLauncherAvailable}" -eq "200")
-    {
-        "Improved Fabric Server Launcher available..."
-        "The improved launcher will be used to run this Fabric server."
-        $script:LauncherJarLocation = "fabric-server-launcher.jar"
-        (DownloadIfNotExists "${script:LauncherJarLocation}" "${script:LauncherJarLocation}" "${ImprovedFabricLauncherUrl}") > $null
     }
     else
     {
-        try
+        $script:ImprovedFabricLauncherAvailable = [int][System.Net.WebRequest]::Create("${ImprovedFabricLauncherUrl}").GetResponse().StatusCode
+        $ErrorActionPreference = "Continue";
+        if ("${ImprovedFabricLauncherAvailable}" -eq "200")
         {
-            $ErrorActionPreference = "SilentlyContinue";
-            $FabricAvailable = [int][System.Net.WebRequest]::Create("https://meta.fabricmc.net/v2/versions/loader/${MinecraftVersion}/${ModLoaderVersion}/server/json").GetResponse().StatusCode
-            $ErrorActionPreference = "Continue";
-        }
-        catch
-        {
-            $FabricAvailable = "400"
-        }
-        if ("${FabricAvailable}" -ne "200")
-        {
-            CrashServer "Fabric is not available for Minecraft ${MinecraftVersion}, Fabric ${ModLoaderVersion}."
-        }
-        if ((DownloadIfNotExists "fabric-server-launch.jar" "fabric-installer.jar" "${FabricInstallerUrl}"))
-        {
-            "Installer downloaded..."
-            $script:LauncherJarLocation = "fabric-server-launch.jar"
-            RunJavaCommand "-jar fabric-installer.jar server -mcversion ${MinecraftVersion} -loader ${ModLoaderVersion} -downloadMinecraft"
-            if ((Test-Path -Path 'fabric-server-launch.jar' -PathType Leaf))
-            {
-                DeleteFileSilently '.fabric-installer' -Recurse
-                DeleteFileSilently 'fabric-installer.jar'
-                "Installation complete. fabric-installer.jar deleted."
-            }
-            else
-            {
-                DeleteFileSilently  'fabric-installer.jar'
-                CrashServer "fabric-server-launch.jar not found. Maybe the Fabric servers are having trouble. Please try again in a couple of minutes and check your internet connection."
-            }
+            "Improved Fabric Server Launcher available..."
+            "The improved launcher will be used to run this Fabric server."
+            $script:LauncherJarLocation = "fabric-server-launcher.jar"
+            (DownloadIfNotExists "${script:LauncherJarLocation}" "${script:LauncherJarLocation}" "${ImprovedFabricLauncherUrl}") > $null
         }
         else
         {
-            "fabric-server-launch.jar present. Moving on..."
-            $script:LauncherJarLocation = "fabric-server-launch.jar"
+            try
+            {
+                $ErrorActionPreference = "SilentlyContinue";
+                $FabricAvailable = [int][System.Net.WebRequest]::Create("https://meta.fabricmc.net/v2/versions/loader/${MinecraftVersion}/${ModLoaderVersion}/server/json").GetResponse().StatusCode
+                $ErrorActionPreference = "Continue";
+            }
+            catch
+            {
+                $FabricAvailable = "400"
+            }
+            if ("${FabricAvailable}" -ne "200")
+            {
+                CrashServer "Fabric is not available for Minecraft ${MinecraftVersion}, Fabric ${ModLoaderVersion}."
+            }
+            if ((DownloadIfNotExists "fabric-server-launch.jar" "fabric-installer.jar" "${FabricInstallerUrl}"))
+            {
+                "Installer downloaded..."
+                $script:LauncherJarLocation = "fabric-server-launch.jar"
+                RunJavaCommand "-jar fabric-installer.jar server -mcversion ${MinecraftVersion} -loader ${ModLoaderVersion} -downloadMinecraft"
+                if ((Test-Path -Path 'fabric-server-launch.jar' -PathType Leaf))
+                {
+                    DeleteFileSilently '.fabric-installer' -Recurse
+                    DeleteFileSilently 'fabric-installer.jar'
+                    "Installation complete. fabric-installer.jar deleted."
+                }
+                else
+                {
+                    DeleteFileSilently  'fabric-installer.jar'
+                    CrashServer "fabric-server-launch.jar not found. Maybe the Fabric servers are having trouble. Please try again in a couple of minutes and check your internet connection."
+                }
+            }
+            else
+            {
+                "fabric-server-launch.jar present. Moving on..."
+                $script:LauncherJarLocation = "fabric-server-launch.jar"
+            }
         }
     }
     $script:ServerRunCommand = "${script:JavaArgs} -jar ${script:LauncherJarLocation} nogui"
