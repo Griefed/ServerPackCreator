@@ -791,3 +791,14 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   That is what needs fixing; suppressing the symptom was the wrong instinct. Also note the store now holds
   metadata-only verdicts for Fabric candidates that are "fresh" for a year (`SPC_GRINDER_REVERIFY_TTL_DAYS=365`),
   so they must be invalidated once the offline path works, or they will never be re-ground with a real boot.
+  **Root cause fixed in the templates (2026-07-30).** `setupFabric` settled the launcher from the *network* before
+  looking at disk: `default_template.sh:311-317` took the improved-launcher branch only on an HTTP `200`, and
+  otherwise crashed on `FABRIC_AVAILABLE != "200"` — the **negative** form, which an unreachable network satisfies
+  trivially. Quilt and LegacyFabric crash on the *positive* form (`== "[]"`), which is exactly why they booted
+  offline and Fabric never did. All three templates now check for an existing `fabric-server-launcher.jar` /
+  `fabric-server-launch.jar` **first** and return immediately when one is there — which is also correct for any
+  user with a complete pack and no internet, not just the grinder. The pre-baked cache already contained
+  `fabric-server-launcher.jar` (verified in `cache/1.14/Fabric/0.19.3/`), so no change to the install layer was
+  needed. Pinned at source level by `ScriptTemplateContentTest.allTemplatesUseAnAlreadyInstalledFabricLauncher-
+  BeforeCheckingTheNetwork`, which asserts the disk check *precedes* the probe in each template — a check that
+  works without fish or pwsh installed.

@@ -472,6 +472,22 @@ Function global:SetupFabric
     $FabricInstallerUrl = "https://maven.fabricmc.net/net/fabricmc/fabric-installer/${FabricInstallerVersion}/fabric-installer-${FabricInstallerVersion}.jar"
     $ImprovedFabricLauncherUrl = "https://meta.fabricmc.net/v2/versions/loader/${MinecraftVersion}/${ModLoaderVersion}/${FabricInstallerVersion}/server/jar"
     $ErrorActionPreference = "SilentlyContinue";
+    # An already-installed launcher needs neither a check nor a download. This must come FIRST: the checks below
+    # ask the network, and a failed request is indistinguishable from "Fabric does not support this version" —
+    # which made a complete, ready-to-run pack refuse to start whenever it had no internet.
+    if (Test-Path -Path 'fabric-server-launcher.jar' -PathType Leaf)
+    {
+        Write-Host "fabric-server-launcher.jar present. Moving on..."
+        $script:LauncherJarLocation = "fabric-server-launcher.jar"
+        return
+    }
+    if (Test-Path -Path 'fabric-server-launch.jar' -PathType Leaf)
+    {
+        Write-Host "fabric-server-launch.jar present. Moving on..."
+        $script:LauncherJarLocation = "fabric-server-launch.jar"
+        return
+    }
+
     $script:ImprovedFabricLauncherAvailable = [int][System.Net.WebRequest]::Create("${ImprovedFabricLauncherUrl}").GetResponse().StatusCode
     $ErrorActionPreference = "Continue";
     if ("${ImprovedFabricLauncherAvailable}" -eq "200")

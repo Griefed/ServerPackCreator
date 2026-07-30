@@ -113,6 +113,38 @@ internal class ScriptTemplateContentTest {
     }
 
     /** Locate an executable on `PATH`, or `null` when it is not installed. */
+    /**
+     * Every template must settle the Fabric launcher from **what is on disk** before it asks the network.
+     *
+     * The checks that follow ask `meta.fabricmc.net` whether Fabric supports this Minecraft version, and Fabric's
+     * branch crashes on the *negative* form (`!= 200`) — so a request that simply could not be made reads as
+     * "Fabric does not support this version". A complete, ready-to-run pack therefore refused to start with no
+     * internet, and in the grinder (whose mod-boots run `--network none` by design) *every* Fabric boot aborted
+     * before the mod was ever loaded: 103 wasted boots in one morning, and 22 Minecraft versions wrongly
+     * concluded to be unsupported. Quilt and LegacyFabric were never affected because they crash on the positive
+     * form (`== "[]"`), which an unreachable network cannot produce.
+     */
+    @Test
+    fun allTemplatesUseAnAlreadyInstalledFabricLauncherBeforeCheckingTheNetwork() {
+        val expectations = mapOf(
+            "default_template.sh" to listOf("""if [[ -s "fabric-server-launcher.jar" ]]; then""", "FABRIC_AVAILABLE=\"\$(curl"),
+            "default_template.fish" to listOf("""if test -s "fabric-server-launcher.jar"""", "set -g FABRIC_AVAILABLE (curl"),
+            "default_template.ps1" to listOf("""if (Test-Path -Path 'fabric-server-launcher.jar' -PathType Leaf)""", "ImprovedFabricLauncherAvailable = [int]")
+        )
+        expectations.forEach { (name, markers) ->
+            val text = template(name)
+            val (presentCheck, networkProbe) = markers
+            val presentAt = text.indexOf(presentCheck)
+            val probeAt = text.indexOf(networkProbe)
+            Assertions.assertTrue(presentAt >= 0, "$name does not check for an existing fabric-server-launcher.jar")
+            Assertions.assertTrue(probeAt >= 0, "$name: the network probe marker is stale, update this test")
+            Assertions.assertTrue(
+                presentAt < probeAt,
+                "$name asks the network before looking at the launcher jar it already has — an offline pack cannot boot"
+            )
+        }
+    }
+
     private fun which(executable: String): File? =
         System.getenv("PATH")?.split(File.pathSeparator)
             ?.map { File(it, executable) }

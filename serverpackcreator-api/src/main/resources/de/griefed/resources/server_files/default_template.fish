@@ -338,6 +338,19 @@ function setupFabric
     set -g FABRIC_CHECK_URL "https://meta.fabricmc.net/v2/versions/loader/$MINECRAFT_VERSION/$MODLOADER_VERSION/server/json"
     set -g IMPROVED_FABRIC_LAUNCHER_URL "https://meta.fabricmc.net/v2/versions/loader/$MINECRAFT_VERSION/$MODLOADER_VERSION/$FABRIC_INSTALLER_VERSION/server/jar"
 
+    # An already-installed launcher needs neither a check nor a download. This must come FIRST: the checks below
+    # ask the network, and a failed request is indistinguishable from "Fabric does not support this version" —
+    # which made a complete, ready-to-run pack refuse to start whenever it had no internet.
+    if test -s "fabric-server-launcher.jar"
+        echo "fabric-server-launcher.jar present. Moving on..."
+        set -g LAUNCHER_JAR_LOCATION "fabric-server-launcher.jar"
+        return 0
+    else if test -s "fabric-server-launch.jar"
+        echo "fabric-server-launch.jar present. Moving on..."
+        set -g LAUNCHER_JAR_LOCATION "fabric-server-launch.jar"
+        return 0
+    end
+
     if commandAvailable curl
         set -g FABRIC_AVAILABLE (curl -LI "$FABRIC_CHECK_URL" -o /dev/null -w '%{http_code}\n' -s)
     else if commandAvailable wget
