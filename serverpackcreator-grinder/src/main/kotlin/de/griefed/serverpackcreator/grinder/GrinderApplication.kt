@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder
 
+import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.grinder.container.DockerJavaContainerEngine
 import de.griefed.serverpackcreator.grinder.loader.ApiVanillaPackGenerator
@@ -66,6 +67,17 @@ object GrinderApplication {
         val workers = env("SPC_GRINDER_WORKERS", "2").toInt()
 
         log.info("Grinder starting — image=$image work=$workDir cache=$cacheRoot store=$storeFile port=$port workers=$workers")
+
+        // Claim our own Preferences node BEFORE any ApiProperties is built, so the daemon's home directory cannot be
+        // moved by another SPC process on this account (a test suite did exactly that mid-run: it relocated the home
+        // into its own scratch dir, deleted it, and every boot then failed on a missing server-icon.png and was
+        // recorded as a metadata-only verdict). Only set when the operator has not chosen a node themselves.
+        if (System.getProperty(ApiProperties.PREFERENCES_NODE_PROPERTY).isNullOrBlank() &&
+            System.getenv(ApiProperties.PREFERENCES_NODE_ENV).isNullOrBlank()
+        ) {
+            System.setProperty(ApiProperties.PREFERENCES_NODE_PROPERTY, "${ApiProperties.DEFAULT_PREFERENCES_NODE}-grinder")
+        }
+        log.info("Using Preferences node '${ApiProperties.resolvePreferencesNode()}' for SPC settings.")
 
         // Point SPC at a specific home/config when given (reproducible runs), else its default.
         val apiWrapper = System.getenv("SPC_GRINDER_SPC_PROPERTIES")?.takeIf { it.isNotBlank() }
