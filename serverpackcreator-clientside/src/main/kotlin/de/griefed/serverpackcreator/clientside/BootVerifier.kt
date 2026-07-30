@@ -146,8 +146,12 @@ class BootVerifier(
     /**
      * Download [file] and, recursively up to [maxDependencyDepth], its required dependencies into
      * [modsDir]. Locked files go through the [browserDownloader], everything else through the
-     * [httpDownloader]. Returns false only if the main file itself could not be obtained; a missing
-     * dependency is logged but does not abort (the boot may still be meaningful).
+     * [httpDownloader]. Returns false only if the main file itself could not be obtained.
+     *
+     * Every required dependency that could **not** be staged — unresolvable ref, no usable file, or a failed
+     * download — is collected into [unsatisfied] instead of being shrugged off. The caller refuses to boot when that
+     * set is non-empty (see [refuseForMissingDependencies]): a mod the loader rejects for missing dependencies never
+     * runs its own code, so the boot cannot say anything about sideness.
      */
     private fun downloadWithDependencies(
         file: ModFile,
@@ -155,7 +159,8 @@ class BootVerifier(
         minecraftVersion: String,
         modsDir: File,
         visited: MutableSet<String>,
-        depth: Int
+        depth: Int,
+        unsatisfied: MutableSet<String>
     ): Boolean {
         if (selectDownloader(file, httpDownloader, browserDownloader).download(file, modsDir) == null) {
             return false
@@ -167,13 +172,23 @@ class BootVerifier(
             if (!visited.add(dependencyRef)) {
                 continue
             }
-            val dependencyProject = platform.resolveDependency(dependencyRef) ?: continue
-            val dependencyFile = BootCandidateSelector.pickDependencyFile(dependencyProject.files, loader, minecraftVersion)
-            if (dependencyFile == null) {
-                log.warn("No $loader file for dependency '$dependencyRef'; booting without it.")
+            val dependencyProject = platform.resolveDependency(dependencyRef)
+            if (dependencyProject == null) {
+                // Previously a silent `continue`, which is how missing dependencies went unnoticed for so long.
+                log.warn("Required dependency '$dependencyRef' could not be resolved on its platform.")
+                unsatisfied.add(dependencyRef)
                 continue
             }
-            downloadWithDependencies(dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1)
+            val dependencyFile = BootCandidateSelector.pickDependencyFile(dependencyProject.files, loader, minecraftVersion)
+            if (dependencyFile == null) {
+                log.warn("Required dependency '$dependencyRef' publishes no $loader file for Minecraft $minecraftVersion.")
+                unsatisfied.add(dependencyRef)
+                continue
+            }
+            if (!downloadWithDependencies(dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied)) {
+                log.warn("Required dependency '$dependencyRef' (${dependencyFile.fileName}) could not be downloaded.")
+                unsatisfied.add(dependencyRef)
+            }
         }
         return true
     }
@@ -245,9 +260,11 @@ class BootVerifier(
         val attemptDir = File(workDirectory, "${project.slug}-$loader").apply { deleteRecursively() }
         val modsDir = File(attemptDir, "modpack/mods").apply { mkdirs() }
 
-        if (!downloadWithDependencies(mainFile, loader, minecraftVersion, modsDir, mutableSetOf(), 0)) {
-            return Prepared.Failed("Could not download ${mainFile.fileName} (or a dependency).")
+        val unsatisfied = mutableSetOf<String>()
+        if (!downloadWithDependencies(mainFile, loader, minecraftVersion, modsDir, mutableSetOf(), 0, unsatisfied)) {
+            return Prepared.Failed("Could not download ${mainFile.fileName}.")
         }
+        refuseForMissingDependencies(unsatisfied, loader, minecraftVersion)?.let { return it }
 
         val serverPack = generateServerPack(File(attemptDir, "modpack"), File(attemptDir, "serverpack"), minecraftVersion, loader, loaderVersion)
             ?: return Prepared.Failed("Server-pack generation failed for $loader $minecraftVersion.")
@@ -322,6 +339,31 @@ class BootVerifier(
          * Whether a crash deserves a second boot on the newest loader build: only a CRASHED outcome, only when
          * a newest build is known, and only when it differs from the one that actually crashed.
          */
+        /**
+         * Refuse to boot when a required dependency could not be staged, returning the reason — or `null` when
+         * everything needed is present and the boot may proceed.
+         *
+         * **Why refuse rather than boot anyway:** a loader that rejects a mod for missing dependencies never runs the
+         * mod's code, so the run cannot distinguish client-only from server-safe; it just produces a non-zero exit
+         * that *looks* like a crash. Measured 2026-07-30 across 112 kept boot logs, 36 failed exactly that way — the
+         * largest failure class — each burning a full boot (~70 s) to learn nothing. Reporting the unmet dependency
+         * is both honest and actionable, where a "crash" would have been neither.
+         */
+        internal fun refuseForMissingDependencies(
+            unsatisfied: Set<String>,
+            loader: String,
+            minecraftVersion: String
+        ): Prepared.Failed? =
+            if (unsatisfied.isEmpty()) {
+                null
+            } else {
+                Prepared.Failed(
+                    "Required ${if (unsatisfied.size == 1) "dependency" else "dependencies"} unavailable for " +
+                        "$loader / Minecraft $minecraftVersion: ${unsatisfied.sorted().joinToString(", ")}. " +
+                        "Not booting — a mod refused for missing dependencies says nothing about sideness."
+                )
+            }
+
         internal fun shouldRecheckCrash(outcome: BootOutcome, bootedVersion: String, latestVersion: String?): Boolean =
             outcome.result == BootResult.CRASHED && latestVersion != null && latestVersion != bootedVersion
 
@@ -359,7 +401,11 @@ class BootVerifier(
                     .onFailure { log.warn("Could not write the boot log ${logFile.absolutePath}: ${it.message}") }
                 val result = BootLogClassifier.classify(runResult.lines, runResult.exitCode, runResult.timedOut)
                 val crashExcerpt = if (result == BootResult.CRASHED) BootLogExcerpt.crashExcerpt(runResult.lines) else null
-                BootOutcome(result, logFile, "$label → $result", crashExcerpt)
+                // The exit status is *the* input that decides CRASHED vs INCONCLUSIVE when no ready-line appeared, so
+                // record it. Without it an INCONCLUSIVE verdict is undiagnosable from the report alone: a run that
+                // crashed loudly in its console but reported exit 0 looks identical to one that never started.
+                val exitDetail = if (runResult.timedOut) "timed out" else "exit ${runResult.exitCode ?: "unknown"}"
+                BootOutcome(result, logFile, "$label → $result ($exitDetail)", crashExcerpt)
             }
         }
     }

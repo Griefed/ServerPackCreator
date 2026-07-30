@@ -894,3 +894,37 @@ Modrinth's ~71 000 mod projects alone are ~2 months of wall-clock, both platform
 **Raising Docker Desktop's memory is by far the biggest throughput lever available** — at 16 GiB the host could run
 4 concurrent 3 GiB boots, roughly quartering the sweep. That is a Docker Desktop UI change (Settings → Resources)
 which restarts the daemon, so it wants doing between sweeps, with `SPC_GRINDER_WORKERS` raised to match.
+
+### 2026-07-30 — the grinder had never produced a single HIGH verdict, and why
+
+Classifying the 26 % INCONCLUSIVE rate turned up something much worse than an efficiency problem: the store held
+**131 MEDIUM, 387 LOW, 0 HIGH** after 3.5 h and 517 verdicts, while a kept boot log sat there containing
+`java.lang.NoClassDefFoundError: net/minecraft/client/Minecraft` — a textbook clientside crash. The one decisive
+signal in the whole confidence model was being produced and then thrown away. Three causes, in the order found:
+
+1. **The start scripts swallowed the server's exit status.** `default_template.sh`'s run loop ended in an
+   unconditional `exit 0`, so `BootLogClassifier` saw `0` for every boot and took its `null, 0 -> INCONCLUSIVE`
+   branch. Fixed in all three templates (`SERVER_EXIT_CODE`, captured immediately because the following checks
+   overwrite `$?`). Correct for users too — systemd, Docker restart policies and CI all read that code — and pinned by
+   a test that **executes** the extracted run loop for statuses 0/1/137, verified to fail with `exit 0` reinstated.
+2. **The exit code is not trustworthy anyway.** With the template fixed, the reproducer *still* read INCONCLUSIVE. The
+   new exit status in the boot detail gave the answer: **`exit 0`** — NeoForge's ServerStarterJar reports the crash in
+   full and exits successfully. So `clientOnlyClassMarker` now decides **CRASHED from the console alone**, ahead of
+   the exit-code logic, while staying subordinate to the timeout and killed/OOM guards so host trouble can never
+   manufacture a HIGH. That produced the engine's first ever `NeoForge=HIGH(boot:CRASHED)` on `modelfix`.
+3. **Missing dependencies were wasting boots** (Griefed: "the required dependencies should be downloaded as well in
+   order to prevent exactly that"). Two causes: `pickDependencyFile` matched loaders strictly, so a Quilt boot dropped
+   **Fabric API** — the canonical Quilt dependency, published only as Fabric files — 210 dropped deps overall, all but
+   44 on Quilt; and an unresolvable ref was a **silent** `continue`. Now Quilt falls back to the Fabric build
+   (one-way, deliberately not extended to Fabric→Quilt or NeoForge→Forge), every unstageable required dependency is
+   collected and logged, and `refuseForMissingDependencies` **aborts staging instead of booting** — a mod the loader
+   rejects for missing deps never runs its own code, so the boot cannot speak to sideness. 36 of 112 kept boot logs
+   had failed exactly that way, ~70 s each.
+
+**Corrections recorded:** the "missing dependencies become false HIGHs" hypothesis was **wrong** — they were already
+INCONCLUSIVE, because cause 1 made *everything* INCONCLUSIVE; and the NeoForge `21.1.247` 404 was **not** the dominant
+inconclusive cause (that build still produced 17 SURVIVED verdicts). Both were checked against the store before being
+acted on, which is what redirected the work to the real fault.
+
+**Consequence for the store:** all 517 verdicts predate the crash signal working, so none of them can contain a HIGH
+and every one is fresh for 365 days — they would never be re-ground. Archived rather than kept.

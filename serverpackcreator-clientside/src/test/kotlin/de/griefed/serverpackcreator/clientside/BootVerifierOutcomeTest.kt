@@ -56,7 +56,9 @@ internal class BootVerifierOutcomeTest {
 
         Assertions.assertEquals(BootResult.CRASHED, outcome.result)
         Assertions.assertEquals(logFile, outcome.logFile)
-        Assertions.assertEquals("Forge 1.0 / Minecraft 1.20.1 → CRASHED", outcome.detail)
+        // The exit status is part of the detail on purpose: when no ready-line appeared it is the input that decides
+        // CRASHED vs INCONCLUSIVE, and without it an inconclusive verdict cannot be diagnosed from the report alone.
+        Assertions.assertEquals("Forge 1.0 / Minecraft 1.20.1 → CRASHED (exit 1)", outcome.detail)
         Assertions.assertNotNull(outcome.crashExcerpt)
         Assertions.assertTrue(outcome.crashExcerpt!!.contains("NoClassDefFoundError"))
         Assertions.assertEquals(lines.joinToString("\n"), logFile.readText())
@@ -72,5 +74,39 @@ internal class BootVerifierOutcomeTest {
         Assertions.assertEquals(logFile, outcome.logFile)
         Assertions.assertNull(outcome.crashExcerpt, "a clean boot is no crash, so no excerpt")
         Assertions.assertTrue(logFile.exists())
+    }
+
+    /**
+     * Staging must refuse to boot when a required dependency could not be supplied. The loader would reject the mod
+     * before running any of its code, so the run cannot tell client-only from server-safe — it only yields a non-zero
+     * exit that *looks* like a crash. Measured 2026-07-30: 36 of 112 kept boot logs failed exactly this way, the
+     * largest failure class, each burning a full boot to learn nothing.
+     */
+    @Test
+    fun stagingRefusesToBootWithoutARequiredDependency() {
+        val refusal = BootVerifier.refuseForMissingDependencies(setOf("P7dR8mSH"), "Quilt", "1.20.1")
+
+        Assertions.assertNotNull(refusal, "a missing required dependency must stop the boot")
+        Assertions.assertTrue(
+            refusal!!.detail.contains("P7dR8mSH") && refusal.detail.contains("Quilt") && refusal.detail.contains("1.20.1"),
+            "the reason must name the dependency and the combination, was: ${refusal.detail}"
+        )
+        Assertions.assertTrue(refusal.detail.contains("dependency"), "singular for one missing dependency")
+    }
+
+    /** Several missing dependencies are listed in a stable order, so the same failure reads the same way twice. */
+    @Test
+    fun everyMissingDependencyIsNamedInAStableOrder() {
+        val refusal = BootVerifier.refuseForMissingDependencies(setOf("zeta", "alpha"), "Forge", "1.21.1")
+
+        Assertions.assertNotNull(refusal)
+        Assertions.assertTrue(refusal!!.detail.contains("alpha, zeta"), "sorted, was: ${refusal.detail}")
+        Assertions.assertTrue(refusal.detail.contains("dependencies"), "plural for more than one")
+    }
+
+    /** Nothing missing, nothing to report — staging proceeds to the boot. */
+    @Test
+    fun stagingProceedsWhenEveryDependencyWasStaged() {
+        Assertions.assertNull(BootVerifier.refuseForMissingDependencies(emptySet(), "Fabric", "1.20.1"))
     }
 }

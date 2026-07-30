@@ -74,6 +74,30 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   guard test made. `-api`'s `ScriptTemplateContentTest` now **executes** the extracted bash `setupFabric` against a
   staged launcher jar with network calls stubbed to fail, which is the only assertion that catches this; verified
   to fail when the `return 0` is reinstated.
+- **LANDMINE — the exit code is NOT a reliable crash signal; the console decides.** Measured 2026-07-30: NeoForge's
+  **ServerStarterJar prints a mod-loading crash in full and then exits `0`**. Because `classify` keyed CRASHED on a
+  non-zero exit, `modelfix` — whose console holds a textbook `NoClassDefFoundError: net/minecraft/client/Minecraft` —
+  came out INCONCLUSIVE, and **no verdict in a 517-verdict store ever reached HIGH**: the expensive boot was running,
+  crashing correctly, and being discarded. `clientOnlyClassMarker` now returns **CRASHED from the console alone**,
+  ahead of the exit-code logic, and that is what finally produced the engine's first `HIGH(boot:CRASHED)`. It is safe
+  to trust over the exit code precisely because no environment failure can fabricate it — but it stays **subordinate
+  to the timeout and killed/OOM guards**, so host trouble can never manufacture a HIGH (tests pin both directions).
+  A separate fix propagates the server's real status through the start scripts (`SERVER_EXIT_CODE`, all three
+  templates), which is correct and useful for users' service wrappers — it just cannot rescue a loader that reports
+  success for a crash, so **never make CRASHED depend on the exit code alone again**.
+- **Missing dependencies must not reach a boot at all.** `downloadWithDependencies` collects every required dependency
+  it could not stage (unresolvable ref, no usable file, failed download — the first of which used to be a *silent*
+  `continue`), and `refuseForMissingDependencies` then aborts staging with a named reason instead of booting. A loader
+  that rejects a mod for missing dependencies never runs the mod's code, so the run cannot speak to sideness; it just
+  produces a failure that looks like a crash. Measured across 112 kept boot logs: **36** failed exactly that way, the
+  largest single failure class, each burning ~70 s to learn nothing. `BootLogClassifier` keeps a matching backstop
+  (`dependencyFailureMarkers` → INCONCLUSIVE) for deps that go missing despite staging.
+- **Quilt dependencies fall back to the Fabric build** (`BootCandidateSelector.fallbackLoaders`). Quilt deliberately
+  runs Fabric mods, which is why the canonical dependency of a Quilt mod is **Fabric API — a project publishing only
+  Fabric-tagged files**. Strict loader matching dropped it silently: measured 2026-07-30, **210** dropped
+  dependencies, all but 44 on Quilt, `P7dR8mSH`/`306612` (Fabric API) the most-dropped ref. The map is deliberately
+  one-way and minimal — Fabric cannot load Quilt mods, and NeoForge/Forge cross-loading is version-dependent, so
+  guessing there would stage a jar the loader cannot use.
 - **`allowModDistribution=false`** CurseForge files arrive with `downloadUrl=null` (`ModFile.locked`);
   routed (`selectDownloader`) to the **Playwright** headless-browser `BrowserDownloader` (lazy; only
   launched for locked files), everything else to `HttpJarDownloader`. Playwright is declared in **this**

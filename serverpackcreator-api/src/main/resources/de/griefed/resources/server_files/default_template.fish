@@ -614,6 +614,9 @@ echo ""
 # Depending on $RESTART the server runs in a loop, to make sure it comes right back up after crashing.
 while true
     runJavaCommand "$ADDITIONAL_ARGS $SERVER_RUN_COMMAND"
+    # Captured immediately: the checks below run their own commands and would overwrite $status. The script exits with
+    # this status, so a crashed server is distinguishable from a clean shutdown by anything reading the exit code.
+    set -l server_exit_code $status
     if test "$SKIP_JAVA_CHECK" = "true"
         echo "Java version check was skipped. Did the server stop or crash because of a Java version mismatch?"
         echo "Detected $SEMANTICS[1].$SEMANTICS[2].$SEMANTICS[3] - Java $JAVA_VERSION, recommended $RECOMMENDED_JAVA_VERSION."
@@ -623,7 +626,7 @@ while true
         if test "$WAIT_FOR_USER_INPUT" = "true"
             pause
         end
-        exit 0
+        exit $server_exit_code
     end
     echo "Automatically restarting server in 5 seconds. Press CTRL + C to abort and exit."
     sleep 5

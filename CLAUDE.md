@@ -4,6 +4,7 @@
 > ServerPackCreator. Read it before touching code.
 >
 > - Per-sprint **narrative** history → `git log` and `claude-docs/REFACTOR-LOG.md`.
+> - **Deferred-but-agreed work** → `claude-docs/BACKLOG.md` (why it waited + context to pick it up cold).
 > - Module-specific facts, patterns and landmines → each module's own `CLAUDE.md`
 >   (lazy-loaded by Claude Code when you work in that module).
 > - Personal working preferences (general approach, organization, no-shortcuts ethos,

@@ -585,6 +585,11 @@ echo ""
 while true
 do
   runJavaCommand "${ADDITIONAL_ARGS} ${SERVER_RUN_COMMAND}"
+  # Captured immediately: the checks below run their own commands and would overwrite $?. The script exits with this
+  # status, so a crashed server is distinguishable from a clean shutdown by anything reading the exit code --
+  # systemd, Docker restart policies, CI, and the grinder's boot classifier (for which a swallowed status meant a
+  # mod crash could never be told apart from a clean stop).
+  SERVER_EXIT_CODE=$?
   if [[ "${SKIP_JAVA_CHECK}" == "true" ]]; then
     echo "Java version check was skipped. Did the server stop or crash because of a Java version mismatch?"
     echo "Detected ${SEMANTICS[0]}.${SEMANTICS[1]}.${SEMANTICS[2]} - Java ${JAVA_VERSION}, recommended $RECOMMENDED_JAVA_VERSION."
@@ -594,7 +599,7 @@ do
       if [[ "${WAIT_FOR_USER_INPUT}" == "true" ]]; then
         pause
       fi
-    exit 0
+    exit ${SERVER_EXIT_CODE}
   fi
   echo "Automatically restarting server in 5 seconds. Press CTRL + C to abort and exit."
   sleep 5

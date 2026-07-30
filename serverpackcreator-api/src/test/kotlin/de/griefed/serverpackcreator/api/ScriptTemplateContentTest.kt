@@ -201,6 +201,61 @@ internal class ScriptTemplateContentTest {
     }
 
     /**
+     * **Executes** the bash template's run-loop and asserts it exits with the *server's* status.
+     *
+     * The loop used to end in an unconditional `exit 0`, throwing the server's exit status away — so a modded server
+     * that crashed on startup looked, to anything reading the script's exit code, exactly like a clean shutdown.
+     * For the grinder that erased the single decisive signal in its whole confidence model: `BootLogClassifier` maps
+     * a `0` exit without a ready-line to INCONCLUSIVE, so **CRASHED could never be observed and no verdict could
+     * ever reach HIGH**. Measured 2026-07-30: 517 verdicts over 3.5 h, zero HIGH, while a boot log sat there with
+     * `NoClassDefFoundError: net/minecraft/client/Minecraft` in it. It matters for ordinary users too — `systemd`,
+     * Docker restart policies and CI all read the exit code to decide whether the server failed.
+     */
+    @Test
+    fun theBashTemplatesRunLoopExitsWithTheServersStatus() {
+        val bash = which("bash") ?: Assumptions.abort("bash not installed — run-loop execution check skipped")
+
+        for (serverStatus in listOf(0, 1, 137)) {
+            val harness = File.createTempFile("spc-runloop-", ".sh").apply { deleteOnExit() }
+            harness.writeText(
+                """
+                runJavaCommand() { return $serverStatus; }
+                pause() { :; }
+                SKIP_JAVA_CHECK="false"
+                RESTART="false"
+                WAIT_FOR_USER_INPUT="false"
+                ADDITIONAL_ARGS=""
+                SERVER_RUN_COMMAND="-jar server.jar nogui"
+                ${extractShellBlock("default_template.sh", "while true", "done")}
+                """.trimIndent()
+            )
+
+            val process = ProcessBuilder(bash.absolutePath, harness.absolutePath).redirectErrorStream(true).start()
+            val output = process.inputStream.bufferedReader().use { it.readText() }
+            val exit = process.waitFor()
+
+            Assertions.assertEquals(
+                serverStatus,
+                exit,
+                "the run loop must exit with the server's status ($serverStatus), not swallow it. Output:\n$output"
+            )
+        }
+    }
+
+    /**
+     * Cut a block out of a shell template, from the line equal to [startsWith] to the next line equal to [endsWith]
+     * at column 0. Used for the run-loop, which is top-level script text rather than a function.
+     */
+    private fun extractShellBlock(template: String, startsWith: String, endsWith: String): String {
+        val lines = template(template).lines()
+        val start = lines.indexOfFirst { it == startsWith }
+        Assertions.assertTrue(start >= 0, "template $template has no line `$startsWith` — update this test")
+        val end = lines.drop(start + 1).indexOfFirst { it == endsWith }
+        Assertions.assertTrue(end >= 0, "block starting at `$startsWith` in $template is not closed by `$endsWith`")
+        return lines.subList(start, start + end + 2).joinToString("\n")
+    }
+
+    /**
      * Cut one `name() { ... }` function out of a shell template so it can be sourced in isolation. Matches the
      * closing brace in column 0, which is how the shipped templates format their function bodies.
      */

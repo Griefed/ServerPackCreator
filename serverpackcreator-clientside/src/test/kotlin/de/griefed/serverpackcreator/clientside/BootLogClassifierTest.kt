@@ -191,6 +191,105 @@ internal class BootLogClassifierTest {
         Assertions.assertEquals(BootResult.CRASHED, BootLogClassifier.classify(console, exitCode = 1, timedOut = false))
     }
 
+    /**
+     * A mod whose **required dependencies** were not satisfied never got a fair test, so its failure says nothing
+     * about sideness and must not be scored a clientside crash.
+     *
+     * Staging force-includes the mod plus its recursively-resolved required deps, but resolution is imperfect —
+     * transitive requirements, version ranges and distribution-locked CurseForge files all leak through. Measured
+     * 2026-07-30 across 112 kept boot logs: **36** failed on exactly this (e.g. `biomes-o-plenty` →
+     * `Mod biomesoplenty requires terrablender 26.2.0.0.1 or above`), making it the single largest failure class.
+     * It was previously masked, because the start script swallowed the server's exit status and everything read as
+     * INCONCLUSIVE anyway; once the templates propagate the real status these become non-zero exits, and without this
+     * guard all 36 would have been promoted to HIGH-confidence "clientside" — a far bigger false-positive source
+     * than the one the exit-status fix was meant to expose.
+     */
+    @Test
+    fun unsatisfiedModDependenciesAreInconclusiveNotCrashed() {
+        val cases = listOf(
+            "[main/ERROR] [ne.ne.fm.lo.ModSorter/LOADING]: Missing or unsupported mandatory dependencies:",
+            "[main/ERROR] [ne.ne.fm.lo.FMLLoader/]: Mod biomesoplenty requires terrablender 26.2.0.0.1 or above",
+            "Incompatible mods found! net.fabricmc.loader.impl.FormattedException",
+            "Unmet dependency listing:"
+        )
+        for (line in cases) {
+            Assertions.assertEquals(
+                BootResult.INCONCLUSIVE,
+                BootLogClassifier.classify(listOf("booting", line), exitCode = 1, timedOut = false),
+                "a dependency our staging failed to supply is not evidence about the mod: $line"
+            )
+        }
+    }
+
+    /**
+     * The dependency guard must not swallow the decisive signal: a mod that loads and *then* dies reaching for a
+     * client-only class is the one case the whole expensive boot exists to catch.
+     */
+    @Test
+    fun aClientOnlyClassCrashIsStillCrashedEvenWhenDependencyWordsAppear() {
+        val console = listOf(
+            "[main/INFO]: Found 2 dependencies adding them to mods collection",
+            "java.lang.NoClassDefFoundError: net/minecraft/client/Minecraft"
+        )
+
+        Assertions.assertEquals(
+            BootResult.CRASHED,
+            BootLogClassifier.classify(console, exitCode = 1, timedOut = false),
+            "the word 'dependencies' in an informational line must not excuse a real client-class crash"
+        )
+    }
+
+    /**
+     * **The signal the whole engine exists for, and it must not depend on the exit status.**
+     *
+     * Measured 2026-07-30: NeoForge's ServerStarterJar prints a mod-loading crash in full and then exits **0**. With
+     * classification keyed on the exit code, `modelfix` — whose console holds a textbook
+     * `NoClassDefFoundError: net/minecraft/client/Minecraft` — was scored INCONCLUSIVE, and **no verdict in a
+     * 517-verdict store ever reached HIGH**: the expensive boot was running, crashing correctly, and being thrown
+     * away. A client-only-class failure is decisive on the console alone, and safe to trust there because no
+     * environment problem (memory, network, missing loader build) can fabricate it.
+     */
+    @Test
+    fun aClientOnlyClassCrashIsDecisiveEvenOnAZeroExit() {
+        val console = listOf(
+            "[main/INFO]: Loading mods",
+            "java.lang.NoClassDefFoundError: net/minecraft/client/Minecraft",
+            "Exiting..."
+        )
+
+        Assertions.assertEquals(
+            BootResult.CRASHED,
+            BootLogClassifier.classify(console, exitCode = 0, timedOut = false),
+            "the loader swallowing the failure into a 0 exit must not erase the crash"
+        )
+        Assertions.assertEquals(
+            BootResult.CRASHED,
+            BootLogClassifier.classify(console, exitCode = null, timedOut = false),
+            "nor must an unknown exit status"
+        )
+    }
+
+    /**
+     * The console override stays subordinate to the two guards that mean "the mod never got a fair run": a boot the
+     * host killed, or one that timed out, is still INCONCLUSIVE even if the log mentions a client class — otherwise
+     * host trouble could manufacture a HIGH verdict, the failure mode the confidence model most needs to avoid.
+     */
+    @Test
+    fun theConsoleOverrideDoesNotBeatTheKilledOrTimedOutGuards() {
+        val console = listOf("java.lang.NoClassDefFoundError: net/minecraft/client/Minecraft")
+
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(console, exitCode = 137, timedOut = false),
+            "a killed boot proves nothing, whatever its log says"
+        )
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(console, exitCode = null, timedOut = true),
+            "nor does one that ran out of time"
+        )
+    }
+
     /** A boot that reached the ready-line and was then killed stays SURVIVED — the ready-line still wins outright. */
     @Test
     fun aReadyServerKilledAfterwardsStillSurvived() {

@@ -95,6 +95,33 @@ object BootLogClassifier {
     )
 
     /**
+     * A mod whose **required dependencies** were not satisfied never got a fair test: it was refused before its own
+     * code ran, so its failure says nothing about client-vs-server.
+     *
+     * Staging force-includes the mod plus its recursively-resolved required deps, but resolution is imperfect —
+     * transitive requirements, version ranges and distribution-locked CurseForge files leak through. Measured
+     * 2026-07-30 across 112 kept boot logs: **36** failed exactly here, the largest single failure class. Kept
+     * deliberately narrow, and always subordinate to [clientOnlyClassMarker] below.
+     */
+    private val dependencyFailureMarkers = Regex(
+        "(Missing or unsupported mandatory dependencies" +
+            "|Unmet dependency listing" +
+            "|Incompatible mods found" +
+            "|requires .{1,80} or above" +
+            "|requires any version of)",
+        RegexOption.IGNORE_CASE
+    )
+
+    /**
+     * The decisive clientside signal: the server loaded the mod and then died reaching for a client-only class. This
+     * is the one thing the expensive boot exists to catch, so it outranks the dependency excuse above — an
+     * informational "Found 2 dependencies" line must never suppress it.
+     */
+    private val clientOnlyClassMarker = Regex(
+        "(NoClassDefFoundError: net/minecraft/client|ClassNotFoundException: net\\.minecraft\\.client)"
+    )
+
+    /**
      * Exit codes meaning "terminated from outside" (POSIX `128 + signal`): `SIGKILL` — what Docker reports for an
      * OOM-killed container — and `SIGTERM`. Neither says anything about the mod, so neither may count as a crash.
      * `SIGABRT` (134) is deliberately **not** here: a fatal JVM abort is a real failure of the running server.
@@ -123,6 +150,18 @@ object BootLogClassifier {
         }
         // Killed from outside, or killed for memory: the mod never got the chance to fail on its own merits.
         if (exitCode in killedExitCodes || consoleLines.any { outOfMemoryMarkers.containsMatchIn(it) }) {
+            return BootResult.INCONCLUSIVE
+        }
+        // A server that died reaching for a client-only class is decisive on the console alone, and must be, because
+        // the exit status cannot be trusted here: measured 2026-07-30, NeoForge's ServerStarterJar reports the crash
+        // in full and then exits **0**, so `modelfix` -- textbook `NoClassDefFoundError: net/minecraft/client/
+        // Minecraft` -- was scored INCONCLUSIVE and no verdict in a 517-strong store ever reached HIGH. Environment
+        // failures cannot fake this marker, which is what makes it safe to trust over the exit code.
+        if (consoleLines.any { clientOnlyClassMarker.containsMatchIn(it) }) {
+            return BootResult.CRASHED
+        }
+        // Dependencies our staging failed to supply mean the mod was never fairly tested.
+        if (consoleLines.any { dependencyFailureMarkers.containsMatchIn(it) }) {
             return BootResult.INCONCLUSIVE
         }
         return when (exitCode) {

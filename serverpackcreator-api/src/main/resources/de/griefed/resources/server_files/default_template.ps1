@@ -839,6 +839,10 @@ RunJavaCommand "-version"
 while ($true)
 {
     RunJavaCommand "${AdditionalArgs} ${ServerRunCommand}"
+    # Captured immediately: the checks below run their own commands and would overwrite $LASTEXITCODE. The script
+    # exits with this status, so a crashed server is distinguishable from a clean shutdown by anything reading the
+    # exit code -- service wrappers, scheduled tasks and CI.
+    $ServerExitCode = if ($null -eq $LASTEXITCODE) { 0 } else { $LASTEXITCODE }
     if ("${SkipJavaCheck}" -eq "true")
     {
         "Java version check was skipped. Did the server stop or crash because of a Java version mismatch?"
@@ -851,7 +855,7 @@ while ($true)
         {
             PauseScript
         }
-        exit 0
+        exit $ServerExitCode
     }
     "Automatically restarting server in 5 seconds. Press CTRL + C to abort and exit."
     Start-Sleep -Seconds 5
