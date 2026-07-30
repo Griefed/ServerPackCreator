@@ -135,30 +135,7 @@ internal class NeoForgeLoader(
         val newNeoDocument: Document = utilities.xmlUtilities.getXml(newNeoForgeManifest)
         val newNeoElements = newNeoDocument.getElementsByTagName(version)
         for (mcVersion in minecraftMeta.allVersions().map { it.version }) {
-            val mcVersionSubRegex: Regex
-            val mcVersionRegex = when {
-                mcVersion.matches("1\\.\\d+".toRegex()) -> {
-                    mcVersionSubRegex = mcVersion.substring(2).toDotEscapedRegex()
-                    "^$mcVersionSubRegex\\.0(?:\\.\\d+)+(?:-.*)?".toRegex()
-                }
-                mcVersion.matches("1\\.\\d+(.\\d+)?".toRegex()) -> {
-                    mcVersionSubRegex = mcVersion.substring(2).toDotEscapedRegex()
-                    "^$mcVersionSubRegex(?:\\.\\d+)+(?:-.*)?".toRegex()
-                }
-
-                mcVersion.matches("\\d{2}.\\d+".toRegex()) -> {
-                    mcVersionSubRegex = mcVersion.toDotEscapedRegex()
-                    "^$mcVersionSubRegex\\.0(?:\\.\\d+)+(?:-.*)?".toRegex()
-                }
-                mcVersion.matches("\\d{2}.\\d+.\\d+".toRegex()) -> {
-                    mcVersionSubRegex = mcVersion.toDotEscapedRegex()
-                    "^$mcVersionSubRegex(?:\\.\\d+)+(?:-.*)?".toRegex()
-                }
-
-                else -> {
-                    continue
-                }
-            }
+            val mcVersionRegex = neoForgeVersionPatternFor(mcVersion) ?: continue
             val newNeoForgeVersionsForMCVer: MutableList<String> = ArrayList(100)
 
             for (i in 0 until newNeoElements.length) {
@@ -209,6 +186,39 @@ internal class NeoForgeLoader(
 
         for ((key, value) in versionMeta.entries) {
             versionMeta[key] = value.reversed()
+        }
+    }
+
+    internal companion object {
+        /**
+         * Translate a Minecraft version into the pattern that NeoForge versions for it must **fully** match, or
+         * `null` when the version can carry no NeoForge builds at all and must be skipped.
+         *
+         * NeoForge encodes the Minecraft version it targets into its own version, in two different schemes:
+         * for Minecraft `1.x[.y]` it drops the leading `1.` (Minecraft `1.21.1` → NeoForge `21.1.247`, and
+         * Minecraft `1.21` → NeoForge `21.0.167`, where the omitted patch becomes an explicit `0`), while for the
+         * newer `YY.x[.y]` Minecraft scheme it keeps the version as-is (Minecraft `26.1.2` → `26.1.2.93`, and
+         * Minecraft `26.2` → `26.2.0.40-beta`, again with the omitted patch as `0`). Anything that is not a plain
+         * release — snapshots (`24w14a`), pre-releases, release candidates — never has NeoForge builds and yields
+         * `null`.
+         *
+         * Extracted from the loader's parse loop so it can be unit-tested: a wrong mapping here does not fail
+         * loudly, it silently produces empty or mis-assigned NeoForge version lists.
+         */
+        internal fun neoForgeVersionPatternFor(minecraftVersion: String): Regex? = when {
+            minecraftVersion.matches("1\\.\\d+".toRegex()) ->
+                "^${minecraftVersion.substring(2).toDotEscapedRegex()}\\.0(?:\\.\\d+)+(?:-.*)?".toRegex()
+
+            minecraftVersion.matches("1\\.\\d+(.\\d+)?".toRegex()) ->
+                "^${minecraftVersion.substring(2).toDotEscapedRegex()}(?:\\.\\d+)+(?:-.*)?".toRegex()
+
+            minecraftVersion.matches("\\d{2}.\\d+".toRegex()) ->
+                "^${minecraftVersion.toDotEscapedRegex()}\\.0(?:\\.\\d+)+(?:-.*)?".toRegex()
+
+            minecraftVersion.matches("\\d{2}.\\d+.\\d+".toRegex()) ->
+                "^${minecraftVersion.toDotEscapedRegex()}(?:\\.\\d+)+(?:-.*)?".toRegex()
+
+            else -> null
         }
     }
 }
