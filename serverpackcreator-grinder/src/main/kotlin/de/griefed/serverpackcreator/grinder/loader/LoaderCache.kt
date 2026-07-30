@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.grinder.loader
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.time.Duration
+import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -52,18 +53,33 @@ fun interface LoaderInstaller {
  * (see [ensureInstalled], which stamps a tuple as used on every hit), because each one costs ~150 MB and a
  * long sweep keeps minting new ones as loaders ship builds.
  *
- * @param cacheRoot Root directory under which per-tuple base trees live.
- * @param installer Performs the one-off, network-using install on a cache miss.
+ * @param cacheRoot       Root directory under which per-tuple base trees live.
+ * @param installer       Performs the one-off, network-using install on a cache miss.
+ * @param failureCooldown How long a *failed* tuple is left alone before another install is attempted. Without
+ *                        this, an upstream artefact that 404s costs a full download-and-boot for every candidate
+ *                        that wants it, for the rest of the sweep.
+ * @param clock           Supplies "now" for the cooldown (injectable for tests).
  * @author Griefed
  */
 class LoaderCache(
     private val cacheRoot: File,
-    private val installer: LoaderInstaller
+    private val installer: LoaderInstaller,
+    private val failureCooldown: Duration = Duration.ofHours(1),
+    private val clock: () -> Instant = Instant::now
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /** Per-tuple locks so an install serializes by tuple without blocking unrelated tuples. */
     private val installLocks = ConcurrentHashMap<String, Any>()
+
+    /**
+     * When each tuple's install last failed, so a broken one is not re-attempted for every candidate that wants
+     * it. Observed live: NeoForge 21.1.247's installer jar 404s upstream, and 1.21.1+NeoForge is one of the most
+     * common combinations in the catalogue — without this, every such candidate paid a full download-and-boot
+     * before failing, and turned a decisive boot into INCONCLUSIVE while doing so. In memory on purpose: a
+     * restart is a reasonable moment to find out whether upstream has been fixed.
+     */
+    private val recentFailures = ConcurrentHashMap<String, Instant>()
 
     /** The cache directory for a version-tuple, whether or not it has been installed yet. */
     fun baseDirFor(loader: String, loaderVersion: String, minecraftVersion: String): File =
@@ -88,6 +104,14 @@ class LoaderCache(
             if (markUsed(baseDir)) {
                 return baseDir
             }
+            val failedAt = recentFailures[baseDir.path]
+            if (failedAt != null && Duration.between(failedAt, clock()) < failureCooldown) {
+                log.debug(
+                    "Not re-attempting $loader $loaderVersion / Minecraft $minecraftVersion — its install failed " +
+                        "${Duration.between(failedAt, clock()).toMinutes()}m ago and is on cooldown."
+                )
+                return null
+            }
             baseDir.deleteRecursively()
             baseDir.mkdirs()
             val installed = runCatching { installer.install(baseDir, loader, loaderVersion, minecraftVersion) }
@@ -95,8 +119,18 @@ class LoaderCache(
                 .getOrDefault(false)
             if (!installed) {
                 baseDir.deleteRecursively()
+                // Remember the failure so the next candidate wanting this tuple fails fast instead of repeating a
+                // full install; the reason was logged once, by whoever failed.
+                if (recentFailures.put(baseDir.path, clock()) == null) {
+                    log.warn(
+                        "Install of $loader $loaderVersion / Minecraft $minecraftVersion failed — not retrying it " +
+                            "for ${failureCooldown.toMinutes()}m. Candidates needing this combination will be " +
+                            "reported INCONCLUSIVE until then."
+                    )
+                }
                 return null
             }
+            recentFailures.remove(baseDir.path)
             File(baseDir, MARKER).writeText("loader=$loader\nloaderVersion=$loaderVersion\nminecraftVersion=$minecraftVersion\n")
             return baseDir
         }

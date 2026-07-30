@@ -755,3 +755,24 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   propagated out and failed a verification that had already run — pre-existing, now wrapped, pinned by
   `anUnwritableLogFileDoesNotFailTheBoot`. Suites: clientside 67, grinder 170 run + 18 gated, app — all green,
   no warnings.
+
+- **Diagnosing the "465 projects/hour" sweep, and four fixes (2026-07-30):** the hourly check showed throughput
+  jumping 10× while the loader cache stayed frozen at 44 tuples — the tell that verdicts were being produced
+  *without booting*. In the log window: 10 candidates ground, 18 boots attempted, **every one INCONCLUSIVE**. The
+  new logging paid for itself: `DockerLoaderInstaller`'s failure dump showed NeoForge `21.1.247`'s
+  `-installer.jar` returning 404 (the version *is* in maven metadata — verified by hand), and the new per-boot
+  consoles showed `Fabric is not available for Minecraft 26.1.2 / 26.2` across **103** boot directories.
+  **Griefed's question — did the grinder boot a version the mod never listed? — answered: no.** CurseForge's own
+  `latestFilesIndexes` matrix lists `26.1.2 modLoader=4` (Fabric) for Croptopia, so the mod does claim it;
+  `BootCandidateSelector` pairs each file with *its own* declared versions and was correct. The wrong party was the
+  loader-support gate: Fabric's meta lists 26.1.2 and returns a **placeholder `0.0.0` intermediary**, so
+  `Meta.isMinecraftSupported` says yes and `start.sh` then aborts. Layer 2 (setup-abort → INCONCLUSIVE) caught it
+  every time, so no false HIGH — but each occurrence wasted a boot.
+  Fixes: **(1)** `LoaderCache.failureCooldown` (1h, in memory) so a broken tuple is not re-installed per candidate;
+  **(2)** the live install console moved out of the cache dir, which `LoaderCache` wipes on failure — deleting the
+  evidence exactly when needed (a defect in the logging shipped an hour earlier); **(3)** `BootVerifier` logs *why*
+  a boot was inconclusive, at the source, instead of leaving only `boot:INCONCLUSIVE`; **(4)** `LoaderSupportMemory`
+  — learn from the abort: a `(loader, Minecraft)` combination whose console says the loader has no build is
+  recorded and dropped from candidate selection (24h expiry so upstream can catch up), keyed off a deliberately
+  narrow `BootLogClassifier.loaderUnavailable` so the Java/EULA/variables aborts cannot poison good combinations.
+  Suites: clientside 75, grinder 175 run + 18 gated, app — green, no warnings.

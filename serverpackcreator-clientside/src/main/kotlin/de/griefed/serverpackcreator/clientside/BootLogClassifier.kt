@@ -87,6 +87,17 @@ object BootLogClassifier {
      * (the mod was never tested — the loader/env/install failed first); a clean `0` exit without ever
      * reaching ready is [BootResult.INCONCLUSIVE]; and any other non-zero exit is [BootResult.CRASHED].
      */
+    /**
+     * `start.sh`'s own words when the modloader has no build for the Minecraft version it was asked for — as
+     * opposed to the other pre-launch aborts (Java, EULA, variables), which say nothing about loader support.
+     * Narrow on purpose: it feeds [LoaderSupportMemory], which stops that combination being selected again.
+     */
+    private val loaderUnavailableMarker = Regex("is not available for Minecraft", RegexOption.IGNORE_CASE)
+
+    /** Whether [consoleLines] show the modloader having no usable build for the requested Minecraft version. */
+    fun loaderUnavailable(consoleLines: List<String>): Boolean =
+        consoleLines.any { loaderUnavailableMarker.containsMatchIn(it) }
+
     fun classify(consoleLines: List<String>, exitCode: Int?, timedOut: Boolean): BootResult {
         if (consoleLines.any { readyLine.containsMatchIn(it) }) {
             return BootResult.SURVIVED

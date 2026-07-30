@@ -103,9 +103,13 @@ class Grinder(
                 )
             )
         }
+        // Report the boot result alongside the confidence: a verdict reached *without* a boot is a much weaker
+        // claim than one that booted, and only the log can tell them apart afterwards.
         log.info(
             "Done ${candidate.platform}/${candidate.slug} → " +
-                report.perLoader.joinToString(", ") { "${it.loader}=${it.confidence}" }.ifEmpty { "no loader verdicts" } +
+                report.perLoader
+                    .joinToString(", ") { "${it.loader}=${it.confidence}(boot:${it.bootResult ?: "none"})" }
+                    .ifEmpty { "no loader verdicts" } +
                 " after ${Duration.between(startedAt, clock()).seconds}s"
         )
         status?.endCandidate(GrindOutcome.VERIFIED)

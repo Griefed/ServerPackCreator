@@ -48,6 +48,17 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   decisions are pure and unit-tested (`shouldRecheckCrash`, `reconcileRecheck`) because `verify` itself needs an
   `ApiWrapper` + real generation + a running server — same split as `outcomeFor`. **Landmine:** an INCONCLUSIVE
   re-check must never clear the crash (a flaky second boot is not evidence); only a clean boot on the newest may.
+- **`LoaderSupportMemory` — trust the console over the version metadata.** The grinder always boots the *newest*
+  Minecraft a mod supports, so a loader that only *claims* support for the newest version wastes one boot per mod.
+  Measured 2026-07-30: Fabric's meta lists MC `26.1.2` and answers the intermediary query with a placeholder
+  `0.0.0`, so `Meta.isMinecraftSupported` says yes and `start.sh` then aborts *"Fabric is not available for
+  Minecraft 26.1.2"* — **103 wasted boots in one morning**; NeoForge `21.1.247` is the same shape (listed in maven
+  metadata, `-installer.jar` 404s). `BootVerifier` now AND-s `loaderSupport.isUsable(loader, mc)` into candidate
+  selection and records a combination when `BootLogClassifier.loaderUnavailable` matches the console. Expires
+  (24h default) so upstream can catch up; the marker regex is deliberately narrow — the other pre-launch aborts
+  (Java/EULA/variables) say nothing about loader support, and marking on their account would drop good combos.
+  **Not a mod-version problem:** the mod's own declared versions are respected — CurseForge's matrix really does
+  list `26.1.2 modLoader=4` (Fabric) for Croptopia. The loader, not the mod, is what could not deliver.
 - **`allowModDistribution=false`** CurseForge files arrive with `downloadUrl=null` (`ModFile.locked`);
   routed (`selectDownloader`) to the **Playwright** headless-browser `BrowserDownloader` (lazy; only
   launched for locked files), everything else to `HttpJarDownloader`. Playwright is declared in **this**

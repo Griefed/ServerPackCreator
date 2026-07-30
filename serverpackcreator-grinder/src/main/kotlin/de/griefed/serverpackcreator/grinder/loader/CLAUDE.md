@@ -107,3 +107,13 @@ diffed each booted dir against its pre-boot baseline. Conclusions:
 
 Spike workspace (not committed): `~/spc-grinder-spike/{configs,packs,baselines}` + the
 `serverpackcreator-app-dev.jar` generation command. Reusable by the `LoaderInstaller` work.
+
+- **Failed installs are on a cooldown** (`LoaderCache.failureCooldown`, default 1h, in memory): a tuple whose
+  install just failed is not re-attempted, so candidates wanting it fail fast and the reason is logged once.
+  Measured 2026-07-30: NeoForge `21.1.247`'s `-installer.jar` 404s upstream while maven metadata lists the
+  version, and `1.21.1 + NeoForge` is one of the most common combinations in the catalogue — every candidate was
+  paying a full download-and-boot (~46 s of container time) before failing. A restart retries, which is a
+  reasonable moment to find out whether upstream has been fixed.
+- **The live install console goes beside the generated pack, NOT into the cache dir** (`install.log`), because
+  `LoaderCache` wipes the cache directory when an install fails — which would delete the console exactly when it
+  is the only evidence of why. Learned the hard way: the first version of this logging did precisely that.

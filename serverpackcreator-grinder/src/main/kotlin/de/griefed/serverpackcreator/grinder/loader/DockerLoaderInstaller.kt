@@ -28,8 +28,8 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.time.Duration
 
-/** Name of the live install console written into a tuple's cache directory. */
-const val INSTALL_LOG = ".spc-install.log"
+/** Name of the live install console, written beside the generated pack so it outlives a failed install. */
+const val INSTALL_LOG = "install.log"
 
 /**
  * The production [LoaderInstaller]: generates a mod-less pack for the tuple, boots it **once with
@@ -95,7 +95,10 @@ class DockerLoaderInstaller(
             // slowest phase of a cold grind (minutes of library downloads), so it is the one an operator most
             // needs to watch, and unlike output only returned at the end it survives a kill. Named as cache
             // bookkeeping (leading dot) and so it goes with the tuple when eviction removes it.
-            val installLog = File(target, installLogName)
+            // Deliberately NOT inside `target`: LoaderCache wipes the cache directory when an install fails, which
+            // would delete the console exactly when it is the only evidence of *why* it failed. The generated
+            // pack's tuple directory survives until that tuple is regenerated.
+            val installLog = File(pack.parentFile ?: target, installLogName)
             log.info("Installing $loader $loaderVersion / Minecraft $minecraftVersion — live console: ${installLog.absolutePath}")
             val liveLog = runCatching { installLog.bufferedWriter() }.getOrNull()
             val output = try {

@@ -53,6 +53,9 @@ import java.util.*
  *                             the grinder passes its image's supported-Java check so a version whose
  *                             JDK the runtime image lacks is never selected (and thus never mis-scored).
  * @param bootTimeout          Budget for install + boot before declaring the run inconclusive.
+ * @param loaderSupport        Shared memory of `(loader, Minecraft)` combinations that proved unbootable, so the
+ *                             first mod to discover one spares every later mod the same wasted boot. Pass one
+ *                             instance for the whole run; the default is private to this verifier (i.e. off).
  * @author Griefed
  */
 class BootVerifier(
@@ -65,7 +68,8 @@ class BootVerifier(
     private val serverRunner: ServerRunner = HostProcessServerRunner(),
     private val packPostProcessor: ((Prepared.Ready) -> Unit)? = null,
     private val minecraftAcceptable: (String) -> Boolean = { true },
-    private val bootTimeout: Duration = Duration.ofMinutes(12)
+    private val bootTimeout: Duration = Duration.ofMinutes(12),
+    private val loaderSupport: LoaderSupportMemory = LoaderSupportMemory()
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
@@ -91,11 +95,29 @@ class BootVerifier(
     fun verify(project: ProjectFiles, loader: String): BootOutcome {
         val prepared = prepareBootPack(project, loader)
         if (prepared is Prepared.Failed) {
+            // Say so out loud. This reason used to be returned as a detail string and then dropped by
+            // `ClientsideVerifier.aggregate` whenever the metadata already decided the confidence, which made a
+            // *silently un-booted* catalogue indistinguishable from a booted one — the boot is the only decisive
+            // signal this engine has, so "it did not run, and here is why" has to reach the log.
+            log.info("Not booting ${project.slug} on $loader: ${prepared.detail}")
             return BootOutcome(BootResult.INCONCLUSIVE, null, prepared.detail)
         }
         val ready = prepared as Prepared.Ready
         val outcome = runPrepared(ready, serverRunner, packPostProcessor, bootTimeout)
-        return recheckCrashOnNewestVersion(project, loader, ready, outcome)
+        val decided = recheckCrashOnNewestVersion(project, loader, ready, outcome)
+        // An inconclusive boot learned nothing, so the *reason* is the whole value of the attempt — a missing
+        // loader build, an overlay that could not be staged, a timeout. Without this the log said only
+        // "boot:INCONCLUSIVE" and the reason had to be dug out of the per-boot console.
+        if (decided.result == BootResult.INCONCLUSIVE) {
+            log.info("Boot of ${project.slug} on $loader was inconclusive: ${decided.detail}")
+            // If the console says the loader has no build for this Minecraft, that is a fact about the
+            // *combination*, not about this mod — record it so the combination stops being selected at all.
+            val console = decided.logFile?.takeIf { it.isFile }?.let { runCatching { it.readLines() }.getOrNull() }
+            if (console != null && BootLogClassifier.loaderUnavailable(console)) {
+                loaderSupport.rememberUnbootable(loader, ready.minecraftVersion, "start.sh aborted before loading the mod")
+            }
+        }
+        return decided
     }
 
     /**
@@ -223,6 +245,8 @@ class BootVerifier(
         val candidate = BootCandidateSelector.pickBootableCandidate(project.files, loader) { minecraftVersion ->
             minecraftVersion in releaseVersions &&
                 minecraftAcceptable(minecraftVersion) &&
+                // Metadata says the loader supports this version; experience may already say otherwise.
+                loaderSupport.isUsable(loader, minecraftVersion) &&
                 loaderVersionPolicy.latestVersion(loader, minecraftVersion) != null
         } ?: return Prepared.Failed("No bootable file/Minecraft/loader combination for $loader.")
         val (mainFile, minecraftVersion) = candidate
