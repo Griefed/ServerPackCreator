@@ -62,6 +62,24 @@ file small enough to stay useful. Read the one for the subsystem you are touchin
   **Failed verifications deliberately don't count as work** — with a broken host every candidate fails, and
   counting that as progress would race the cursor through the catalog leaving thousands unverified.
 
+## Operator-facing logging (three surfaces, all live)
+
+- **`/status` on the report server** (`GrinderStatus` → `StatusSnapshot`, Jackson-serialized): uptime, current
+  pass, per-worker candidate + `busySeconds`, crawl cursor per platform, installed-tuple count. Written from the
+  worker threads, read from HTTP threads — `snapshot()` is a point-in-time **copy**, not a live view, so a
+  serializing reader never observes mutation. Optional collaborators (`status`/`cursors`/`cacheRoot`): absent ones
+  render `null` instead of failing, because a monitoring endpoint that 500s is worse than a thin one. Slugs are
+  internet-supplied, so the document is *serialized*, never string-built.
+- **One INFO line per candidate** in `Grinder.grind` (`Grinding <platform>/<slug>` … `Done … → Forge=LOW`), with
+  the fresh-skip deliberately at DEBUG — a pass can skip dozens in microseconds and would bury the real line.
+- **Live per-boot console.** `ServerRunner.run` takes an `onLine` sink (defaulted, so callers that don't care are
+  unaffected); `BootVerifier.runPrepared` appends+flushes each line into the attempt's `boot.log` *during* the
+  boot, and `DockerLoaderInstaller` does the same into `<tuple>/.spc-install.log`. **Why it matters:** output used
+  to be buffered in memory and written only on completion, so a hung boot was undiagnosable until its 12-minute
+  timeout fired and a killed boot left nothing at all. **Landmine:** every write is wrapped — a failing sink or an
+  unwritable log must never fail a boot (a test pins that; `outcomeFor`'s final write was unguarded and *did*
+  propagate before this).
+
 ## Cross-cutting landmines (do not let these load lazily)
 
 These bite regardless of which subsystem you are in, so they stay in this always-loaded-for-the-module file even

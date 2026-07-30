@@ -19,10 +19,19 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.grinder.GrindCandidate
+import de.griefed.serverpackcreator.grinder.GrinderStatus
+import de.griefed.serverpackcreator.grinder.ModPlatforms
+import de.griefed.serverpackcreator.grinder.loader.LoaderCache
+import de.griefed.serverpackcreator.grinder.source.CatalogCursor
+import de.griefed.serverpackcreator.grinder.source.InMemoryCursorStore
 import de.griefed.serverpackcreator.grinder.grindVerdict
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+import java.io.File
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -72,4 +81,72 @@ internal class ReportServerTest {
             server.stop()
         }
     }
+    /**
+     * The live-activity endpoint. An operator needs "what is it doing *now*" — which the verdict table cannot
+     * answer — so `/status` reports the current pass, each busy worker and its candidate, the crawl position per
+     * platform and the install-cache size, as JSON.
+     */
+    @Test
+    fun statusReportsLiveActivityAsJson(@TempDir cacheRoot: File) {
+        val status = GrinderStatus()
+        status.beginPass(number = 7, candidates = 100)
+        status.beginCandidate(GrindCandidate("https://modrinth.com/mod/sodium", "sodium", 5, ModPlatforms.MODRINTH))
+        val cursors = InMemoryCursorStore().apply {
+            store(ModPlatforms.MODRINTH, CatalogCursor(offset = 250, sweeps = 1))
+            store(ModPlatforms.CURSEFORGE, CatalogCursor(offset = 50, sweeps = 0, partition = "1.20.1|*|1|desc"))
+        }
+        File(cacheRoot, "1.21.1/Forge/52.1.16").mkdirs()
+        File(cacheRoot, "1.21.1/Forge/52.1.16/${LoaderCache.MARKER}").writeText("marker")
+        val server = ReportServer(InMemoryVerdictStore(), 0, status = status, cursors = cursors, cacheRoot = cacheRoot).start()
+
+        try {
+            val response = get(server.port, "/status")
+
+            Assertions.assertEquals(200, response.statusCode())
+            Assertions.assertTrue(
+                response.headers().firstValue("Content-Type").orElse("").startsWith("application/json"),
+                "content type was ${response.headers().firstValue("Content-Type")}"
+            )
+            val body = response.body()
+            listOf("\"pass\" : 7", "\"slug\" : \"sodium\"", "\"platform\" : \"Modrinth\"",
+                   "\"offset\" : 250", "1.20.1|*|1|desc", "\"installedTuples\" : 1")
+                .forEach { Assertions.assertTrue(body.contains(it), "missing $it in:\n$body") }
+        } finally {
+            server.stop()
+        }
+    }
+
+    /** Wired without the optional collaborators it still answers, with the parts it cannot know left null. */
+    @Test
+    fun statusStaysAvailableWhenNothingIsWiredIntoIt() {
+        val server = ReportServer(InMemoryVerdictStore(), 0).start()
+        try {
+            val response = get(server.port, "/status")
+            Assertions.assertEquals(200, response.statusCode(), "a monitoring endpoint must not 500 just because it is thin")
+            Assertions.assertTrue(response.body().contains("\"activity\" : null"), response.body())
+        } finally {
+            server.stop()
+        }
+    }
+
+    /**
+     * Slugs come from the internet. Jackson escapes them, so a hostile one cannot break out of the document —
+     * the same discipline the HTML and CSV renderers already follow.
+     */
+    @Test
+    fun aHostileSlugCannotBreakTheJson() {
+        val hostile = """evil", "admin": true, "x": """"
+        val status = GrinderStatus()
+        status.beginCandidate(GrindCandidate("https://x.invalid/a", hostile, 1, ModPlatforms.MODRINTH))
+        val server = ReportServer(InMemoryVerdictStore(), 0, status = status).start()
+        try {
+            val parsed = jacksonObjectMapper().readTree(get(server.port, "/status").body())
+            val worker = parsed.path("activity").path("workers").first()
+            Assertions.assertEquals(hostile, worker.path("slug").asText(), "the slug must stay data, not become structure")
+            Assertions.assertTrue(parsed.path("admin").isMissingNode, "no smuggled sibling keys")
+        } finally {
+            server.stop()
+        }
+    }
+
 }

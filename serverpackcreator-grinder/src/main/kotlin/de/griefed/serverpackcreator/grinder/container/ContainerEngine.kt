@@ -112,8 +112,13 @@ interface ContainerEngine : AutoCloseable {
     /**
      * Run [spec] to a terminal state, stopping once [readyPattern] is seen or [timeout] elapses, and
      * return its captured output. Implementations must remove the container before returning.
+     *
+     * [onLine] receives each console line **as it is streamed**, so the caller can persist a boot log live
+     * rather than only once the container has exited — without it, a hung boot is undiagnosable until its
+     * timeout fires. Implementations must still return every line in [ContainerRunOutput]; the sink is
+     * additive, and a throwing sink must not break the run.
      */
-    fun run(spec: ContainerSpec, readyPattern: Regex, timeout: Duration): ContainerRunOutput
+    fun run(spec: ContainerSpec, readyPattern: Regex, timeout: Duration, onLine: (String) -> Unit = {}): ContainerRunOutput
 
     /**
      * Release whatever [run] could not clean up itself — the per-run removal is skipped when the JVM is

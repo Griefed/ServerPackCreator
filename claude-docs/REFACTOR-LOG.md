@@ -733,3 +733,25 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   a category error that silently promoted one platform for the whole run. Four tests, incl. the one that states the
   goal — an interrupted pass must have reached both platforms. Every doc claiming a global popularity sort was
   corrected in the same commit. Grinder suite 160 run + 18 gated, green.
+
+- **Operator-facing logging (2026-07-30):** Griefed asked whether an admin can see what the grinder and its
+  workers are doing. Audit: the daemon *did* have a live rolling log (`~/.spc-grinder/logs/serverpackcreator.log`,
+  log4j `ApplicationLogger`, worker thread in every line), but the boot containers had **nothing** — the engine
+  streamed with `withFollowStream(true)` yet only did `lines.add(line)`, and the per-attempt `boot.log` was written
+  by `outcomeFor` *after* the run, so a hung boot was undiagnosable until its 12-minute timeout and a killed boot
+  left no output at all. The report server exposed only `/` and `/export.csv` — results, never activity. Three
+  additions:
+  **(1) Live per-boot console.** `ServerRunner.run` gained an `onLine` sink (defaulted, so indifferent callers are
+  untouched; `ServerRunner` stopped being a `fun interface` briefly for that and was reverted — a functional
+  interface may not default its abstract method's parameters, so the sink is explicit and the three SAM fakes took
+  a third `_`). `BootVerifier.runPrepared` appends+flushes each line into the attempt's `boot.log` while the boot
+  runs; `DockerLoaderInstaller` does the same into `<tuple>/.spc-install.log` (the slow cold-cache phase).
+  **(2) `/status`** — `GrinderStatus`/`StatusSnapshot` served as Jackson JSON: uptime, current pass, each busy
+  worker with its candidate and `busySeconds`, crawl cursor per platform, installed-tuple count. Snapshot is a
+  copy, absent collaborators render `null` rather than 500, and slugs are serialized rather than string-built.
+  **(3) One INFO line per candidate** (`Grinding <platform>/<slug>` … `Done … → Forge=LOW`), fresh-skips at DEBUG
+  so they cannot bury it.
+  **Bug found by the new tests:** `outcomeFor`'s final `logFile.writeText` was unguarded, so an unwritable boot log
+  propagated out and failed a verification that had already run — pre-existing, now wrapped, pinned by
+  `anUnwritableLogFileDoesNotFailTheBoot`. Suites: clientside 67, grinder 170 run + 18 gated, app — all green,
+  no warnings.

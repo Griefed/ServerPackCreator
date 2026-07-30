@@ -173,6 +173,21 @@ While the service runs:
 
 Columns are `Name, Project, NamePattern, Confidence, Loader, Detail`, highest confidence first.
 
+### Watching what it is doing right now
+
+The table answers *what it has found*. For *what it is doing*, there are three live views:
+
+- **`http://localhost:8757/status`** — JSON: uptime, current pass,each busy worker with the candidate it holds and
+  how long it has held it, the crawl position per platform, and the installed-tuple count of the loader cache.
+  This is the one to poll or eyeball when a boot seems stuck.
+- **`~/.spc-grinder/logs/serverpackcreator.log`** — the daemon log (rolling). One `Grinding <platform>/<slug>` line
+  when a candidate starts and one `Done … → Forge=LOW, …` when it finishes, with the worker thread in every line:
+  `tail -f ~/.spc-grinder/logs/serverpackcreator.log`
+- **the per-boot console, live** — each boot streams into its attempt's `boot.log` *as the server starts*, so a
+  boot in progress can be followed: `tail -f ~/.spc-grinder/work/verify/boot/<slug>-<Loader>/boot.log`. The
+  loader install does the same into `<cache>/<mc>/<loader>/<version>/.spc-install.log`, which is the slow phase
+  worth watching on a cold cache.
+
 **Interpreting confidence:** only `HIGH` (the server crashed with the mod in place) is decisive. `MEDIUM`
 means the server booted — which does *not* prove the mod is server-safe. `INCONCLUSIVE` means nothing was
 learned, e.g. the loader has no build for that Minecraft version, so the mod was never actually tested.

@@ -38,7 +38,7 @@ internal class ContainerServerRunnerTest {
     private class RecordingEngine(private val output: ContainerRunOutput) : ContainerEngine {
         var lastSpec: ContainerSpec? = null
         var called = false
-        override fun run(spec: ContainerSpec, readyPattern: Regex, timeout: Duration): ContainerRunOutput {
+        override fun run(spec: ContainerSpec, readyPattern: Regex, timeout: Duration, onLine: (String) -> Unit): ContainerRunOutput {
             called = true
             lastSpec = spec
             return output
@@ -53,7 +53,7 @@ internal class ContainerServerRunnerTest {
     @Test
     fun reportsNotStartedWithoutLaunchingWhenNoStartScript(@TempDir packDir: File) {
         val engine = RecordingEngine(ContainerRunOutput(emptyList(), 0, false))
-        val outcome = ContainerServerRunner(engine, "spc-grind:latest").run(packDir, Duration.ofMinutes(1))
+        val outcome = ContainerServerRunner(engine, "spc-grind:latest").run(packDir, Duration.ofMinutes(1)) { }
 
         Assertions.assertTrue(outcome is RunResult.NotStarted)
         Assertions.assertFalse(engine.called, "a pack with no start.sh must never reach the container engine")
@@ -65,7 +65,7 @@ internal class ContainerServerRunnerTest {
         val lines = listOf("[Server thread/INFO]: Starting", "java.lang.NoClassDefFoundError: net/minecraft/client/Foo")
         val engine = RecordingEngine(ContainerRunOutput(lines, exitCode = 1, timedOut = false))
 
-        val outcome = ContainerServerRunner(engine, "spc-grind:latest").run(pack, Duration.ofMinutes(1))
+        val outcome = ContainerServerRunner(engine, "spc-grind:latest").run(pack, Duration.ofMinutes(1)) { }
 
         Assertions.assertTrue(outcome is RunResult.Completed)
         val completed = outcome as RunResult.Completed
@@ -79,7 +79,7 @@ internal class ContainerServerRunnerTest {
         val pack = packWithStartScript(packDir)
         val engine = RecordingEngine(ContainerRunOutput(emptyList(), 0, false))
 
-        ContainerServerRunner(engine, "spc-grind:latest").run(pack, Duration.ofMinutes(1))
+        ContainerServerRunner(engine, "spc-grind:latest").run(pack, Duration.ofMinutes(1)) { }
 
         val spec = requireNotNull(engine.lastSpec) { "the runner never handed a spec to the engine" }
         Assertions.assertEquals("none", spec.networkMode, "an untrusted mod must boot without network")

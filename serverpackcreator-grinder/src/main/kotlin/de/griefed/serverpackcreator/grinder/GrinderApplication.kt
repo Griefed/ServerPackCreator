@@ -78,8 +78,11 @@ object GrinderApplication {
         val cache = LoaderCache(cacheRoot, installer)
         val verifier = ContainerCandidateVerifier(apiWrapper, cache, engine, image, imageJava, File(workDir, "verify"))
         val store = JsonVerdictStore(storeFile)
+        // Live activity record, so `/status` can answer "what is it doing right now?" (the verdict table only
+        // ever answers "what has it found?").
+        val status = GrinderStatus()
         val reverifyTtl = Duration.ofDays(env("SPC_GRINDER_REVERIFY_TTL_DAYS", "30").toLong())
-        val grinder = Grinder(verifier, store, reverifyTtl)
+        val grinder = Grinder(verifier, store, reverifyTtl, status = status)
 
         // ONE shutdown hook, registered before any boot can start so it covers the one-shot path too and
         // its ordering is unambiguous: stop pulling new candidates, then release containers whose run was
@@ -96,8 +99,14 @@ object GrinderApplication {
             mainThread.interrupt()
         })
 
-        val server = ReportServer(store, port).start()
-        log.info("Report:  http://localhost:${server.port}/    CSV: http://localhost:${server.port}/export.csv")
+        val cursorFile = File(env("SPC_GRINDER_CURSORS", File(base, "cursors.json").path))
+            .apply { parentFile?.mkdirs() }
+        val cursorStore = JsonCursorStore(cursorFile)
+        val server = ReportServer(store, port, status = status, cursors = cursorStore, cacheRoot = cacheRoot).start()
+        log.info(
+            "Report:  http://localhost:${server.port}/    CSV: http://localhost:${server.port}/export.csv" +
+                "    live status: http://localhost:${server.port}/status"
+        )
 
         if (args.isNotEmpty()) {
             // One-shot: grind a fixed set of project URLs (handy for an end-to-end verification), then
@@ -124,8 +133,6 @@ object GrinderApplication {
         // Sources: Modrinth always (keyless); CurseForge only when its API key is set (mirrors clientside's
         // supportedPlatforms). GrindPool orders each batch round-robin across platforms, so neither starves.
         val batchSize = env("SPC_GRINDER_BATCH", "25").toInt()
-        val cursorFile = File(env("SPC_GRINDER_CURSORS", File(base, "cursors.json").path))
-            .apply { parentFile?.mkdirs() }
         val curseForgeKey = System.getenv("CURSEFORGE_API_KEY")?.takeIf { it.isNotBlank() }
         val sources = buildList<CandidateSource> {
             add(ModrinthCandidateSource())
@@ -133,7 +140,7 @@ object GrinderApplication {
                 add(CurseForgeCandidateSource(curseForgeKey))
             }
         }
-        val crawler = CatalogCrawler(sources, JsonCursorStore(cursorFile), batchSize)
+        val crawler = CatalogCrawler(sources, cursorStore, batchSize)
         val cacheRetention = Duration.ofDays(env("SPC_GRINDER_CACHE_TTL_DAYS", "7").toLong())
         val betweenSweeps = Duration.ofSeconds(env("SPC_GRINDER_INTERVAL", "21600").toLong())
         val whileCrawling = Duration.ofSeconds(env("SPC_GRINDER_SCAN_DELAY", "15").toLong())
@@ -149,6 +156,7 @@ object GrinderApplication {
             pass++
             val batch = crawler.nextBatch()
             log.info("Pass #$pass: grinding ${batch.candidates.size} candidate(s)...")
+            status.beginPass(pass, batch.candidates.size)
             val pool = GrindPool(grinder, workers).also { activePool.set(it) }
             val pass = pool.grindAll(batch.candidates)
             val verified = pass.verified

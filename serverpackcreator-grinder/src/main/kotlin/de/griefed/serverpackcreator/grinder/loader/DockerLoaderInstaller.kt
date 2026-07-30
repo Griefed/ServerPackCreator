@@ -28,6 +28,9 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.time.Duration
 
+/** Name of the live install console written into a tuple's cache directory. */
+const val INSTALL_LOG = ".spc-install.log"
+
 /**
  * The production [LoaderInstaller]: generates a mod-less pack for the tuple, boots it **once with
  * network** in the runtime container so SPC's `start.sh` installs the loader + Minecraft server +
@@ -58,6 +61,9 @@ class DockerLoaderInstaller(
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /** Watched in the install console: once the server is ready, the loader+libraries are fully installed. */
+    /** Live install console, written into the tuple's cache directory as bookkeeping (see the run below). */
+    private val installLogName = INSTALL_LOG
+
     private val readyLine = Regex("""Done \([^)]*\)! For help""")
 
     override fun install(target: File, loader: String, loaderVersion: String, minecraftVersion: String): Boolean {
@@ -85,7 +91,23 @@ class DockerLoaderInstaller(
                 resources = resources,
                 networkMode = "bridge" // the ONLY networked boot — downloads loader + MC server + libraries
             )
-            val output = engine.run(spec, readyLine, installTimeout)
+            // Stream the install console live into the cache dir, next to the completion marker. This is the
+            // slowest phase of a cold grind (minutes of library downloads), so it is the one an operator most
+            // needs to watch, and unlike output only returned at the end it survives a kill. Named as cache
+            // bookkeeping (leading dot) and so it goes with the tuple when eviction removes it.
+            val installLog = File(target, installLogName)
+            log.info("Installing $loader $loaderVersion / Minecraft $minecraftVersion — live console: ${installLog.absolutePath}")
+            val liveLog = runCatching { installLog.bufferedWriter() }.getOrNull()
+            val output = try {
+                engine.run(spec, readyLine, installTimeout) { line ->
+                    runCatching {
+                        liveLog?.appendLine(line)
+                        liveLog?.flush()
+                    }
+                }
+            } finally {
+                runCatching { liveLog?.close() }
+            }
 
             val copied = InstallLayerSnapshot.copyInstallLayer(pack, preBoot, target)
             val installed = copied > 0 && File(target, "libraries").isDirectory

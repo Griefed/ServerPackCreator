@@ -279,8 +279,24 @@ class BootVerifier(
                     return BootOutcome(BootResult.INCONCLUSIVE, null, "Pack post-processing failed: ${processing.exceptionOrNull()?.message}")
                 }
             }
-            log.info("Booting ${pack.loader} ${pack.loaderVersion} (Minecraft ${pack.minecraftVersion}) server pack at ${pack.serverPack.absolutePath}")
-            val runResult = serverRunner.run(pack.serverPack, bootTimeout)
+            log.info(
+                "Booting ${pack.loader} ${pack.loaderVersion} (Minecraft ${pack.minecraftVersion}) — " +
+                    "live console: ${pack.logFile.absolutePath}"
+            )
+            // Stream the console into the attempt's log file as it arrives, so an operator can `tail -f` a boot
+            // that is still running, and so a boot killed mid-flight still leaves its output behind. `outcomeFor`
+            // rewrites the same file from the complete list afterwards. A failing sink must never fail a boot.
+            val liveLog = runCatching { pack.logFile.also { it.parentFile?.mkdirs() }.bufferedWriter() }.getOrNull()
+            val runResult = try {
+                serverRunner.run(pack.serverPack, bootTimeout) { line ->
+                    runCatching {
+                        liveLog?.appendLine(line)
+                        liveLog?.flush()
+                    }
+                }
+            } finally {
+                runCatching { liveLog?.close() }
+            }
             return outcomeFor(runResult, pack.logFile, "${pack.loader} ${pack.loaderVersion} / Minecraft ${pack.minecraftVersion}")
         }
 
@@ -324,7 +340,11 @@ class BootVerifier(
         internal fun outcomeFor(runResult: RunResult, logFile: File, label: String): BootOutcome = when (runResult) {
             is RunResult.NotStarted -> BootOutcome(BootResult.INCONCLUSIVE, null, runResult.detail)
             is RunResult.Completed -> {
-                logFile.writeText(runResult.lines.joinToString("\n"))
+                // Persisting the console must never fail the verification: the verdict comes from the lines in
+                // memory, and an unwritable log (a full disk, a path that is a directory) is a diagnostics
+                // problem, not a reason to lose a boot that already ran.
+                runCatching { logFile.writeText(runResult.lines.joinToString("\n")) }
+                    .onFailure { log.warn("Could not write the boot log ${logFile.absolutePath}: ${it.message}") }
                 val result = BootLogClassifier.classify(runResult.lines, runResult.exitCode, runResult.timedOut)
                 val crashExcerpt = if (result == BootResult.CRASHED) BootLogExcerpt.crashExcerpt(runResult.lines) else null
                 BootOutcome(result, logFile, "$label → $result", crashExcerpt)

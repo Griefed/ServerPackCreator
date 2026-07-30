@@ -40,13 +40,16 @@ import java.util.concurrent.atomic.AtomicInteger
  * @param store       Where verdicts accumulate.
  * @param reverifyTtl How long a verdict stays fresh before the project is re-ground.
  * @param clock       Supplies the verdict timestamp and the freshness "now" (injectable for tests).
+ * @param status      Live activity record for the report server's `/status`, updated around each candidate.
+ *                    Optional so the orchestration stays testable without it.
  * @author Griefed
  */
 class Grinder(
     private val verifier: CandidateVerifier,
     private val store: VerdictStore,
     private val reverifyTtl: Duration = Duration.ofDays(30),
-    private val clock: () -> Instant = Instant::now
+    private val clock: () -> Instant = Instant::now,
+    private val status: GrinderStatus? = null
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
@@ -58,11 +61,24 @@ class Grinder(
         // Freshness is per (platform, slug): the same slug on Modrinth and CurseForge is two projects.
         val lastVerified = store.newestVerification(candidate.platform, candidate.slug)
         if (lastVerified != null && Duration.between(lastVerified, clock()) < reverifyTtl) {
+            // Deliberately not INFO: a pass can skip dozens of fresh projects in microseconds, and logging each
+            // would bury the one line that matters — the candidate actually being worked on.
+            log.debug("Skipping ${candidate.platform}/${candidate.slug}: verdict still fresh.")
             return GrindOutcome.SKIPPED_FRESH
         }
+        // One readable line per candidate actually being ground, so `tail -f` answers "what is it doing?"
+        // without decoding pack paths. The thread name in the log pattern says which worker.
+        log.info("Grinding ${candidate.platform}/${candidate.slug} — ${candidate.projectUrl}")
+        status?.beginCandidate(candidate)
+        val startedAt = clock()
         val report = runCatching { verifier.verify(candidate) }
             .onFailure { log.warn("Verification failed for ${candidate.projectUrl}: ${it.message}") }
-            .getOrNull() ?: return GrindOutcome.FAILED
+            .getOrNull()
+        if (report == null) {
+            log.warn("Done ${candidate.platform}/${candidate.slug} → FAILED after ${Duration.between(startedAt, clock()).seconds}s")
+            status?.endCandidate(GrindOutcome.FAILED)
+            return GrindOutcome.FAILED
+        }
         if (report.platform != candidate.platform) {
             // Recording uses the resolved report's platform, while the skip-check above uses the
             // candidate's. If a source ever labels a project differently from the platform that resolves
@@ -87,6 +103,12 @@ class Grinder(
                 )
             )
         }
+        log.info(
+            "Done ${candidate.platform}/${candidate.slug} → " +
+                report.perLoader.joinToString(", ") { "${it.loader}=${it.confidence}" }.ifEmpty { "no loader verdicts" } +
+                " after ${Duration.between(startedAt, clock()).seconds}s"
+        )
+        status?.endCandidate(GrindOutcome.VERIFIED)
         return GrindOutcome.VERIFIED
     }
 }
