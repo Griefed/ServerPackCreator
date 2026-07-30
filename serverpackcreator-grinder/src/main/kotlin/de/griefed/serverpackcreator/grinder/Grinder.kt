@@ -112,7 +112,8 @@ enum class GrindOutcome {
 /**
  * Drains a batch of candidates across a fixed pool of worker threads, so multiple servers boot in
  * parallel (the throughput lever — sequential grinding would never finish a catalog). Candidates are
- * processed most-popular-first; each worker pulls the next from a shared queue until it drains.
+ * ordered round-robin across platforms, each platform most-downloaded first (see [interleaveByPlatform]);
+ * each worker pulls the next from a shared queue until it drains.
  * Parallelism should be sized to the host (≈ RAM / per-boot-memory), since each in-flight grind holds
  * a booting container.
  *
@@ -142,8 +143,9 @@ class GrindPool(
     }
 
     /**
-     * Process every candidate in [candidates] (popularity-first), returning once all are done — or early if
-     * [requestStop] is called or the calling thread is interrupted (the daemon's shutdown path).
+     * Process every candidate in [candidates] — round-robin across platforms, each platform most-downloaded
+     * first ([interleaveByPlatform]) — returning once all are done, or early if [requestStop] is called or the
+     * calling thread is interrupted (the daemon's shutdown path).
      *
      * The returned [GrindPass] reports **which candidates were reached** as well as how many were verified.
      * Reached matters as much as verified: the crawl cursor may only advance past candidates something actually
@@ -153,7 +155,7 @@ class GrindPool(
      * `verified` stays the pacing measure (see [GrindPacing]); skipped-as-fresh and failed do not count there.
      */
     fun grindAll(candidates: Collection<GrindCandidate>): GrindPass {
-        val queue = ConcurrentLinkedQueue(candidates.sortedByDescending { it.popularity })
+        val queue = ConcurrentLinkedQueue(interleaveByPlatform(candidates))
         val verified = AtomicInteger(0)
         val reached = ConcurrentHashMap.newKeySet<GrindCandidate>()
         val workers = (1..workerCount).map {
@@ -180,6 +182,34 @@ class GrindPool(
             Thread.currentThread().interrupt()
         }
         return GrindPass(reached, verified.get())
+    }
+
+    /**
+     * Order a batch **round-robin across platforms**, each platform most-downloaded first — one CurseForge, one
+     * Modrinth, one CurseForge, and so on, with a platform that runs out simply dropping out of the rotation.
+     *
+     * Sorting the whole batch by `popularity` instead starves a platform. Measured live on 2026-07-30:
+     * CurseForge's counts run several times Modrinth's for equivalent mods (`jei` 602 M vs `fabric-api` 218 M),
+     * so every CurseForge candidate outranked every Modrinth one and a two-hour pass produced 108 CurseForge
+     * verdicts and **zero** Modrinth ones — indefinitely, for any interruption shorter than a full pass.
+     *
+     * The counts are not comparable in the first place: CurseForge counts file downloads across every version,
+     * Modrinth counts differently, so ranking them against each other was never meaningful — it just silently
+     * promoted one platform. This keeps the comparison that *is* meaningful (within a platform) and drops the one
+     * that is not. Platform order in the rotation is alphabetical, purely so a pass is reproducible.
+     */
+    private fun interleaveByPlatform(candidates: Collection<GrindCandidate>): List<GrindCandidate> {
+        val perPlatform = candidates
+            .groupBy { it.platform }
+            .toSortedMap()
+            .map { (_, ofPlatform) -> ArrayDeque(ofPlatform.sortedByDescending { it.popularity }) }
+        val ordered = ArrayList<GrindCandidate>(candidates.size)
+        while (ordered.size < candidates.size) {
+            for (platformQueue in perPlatform) {
+                platformQueue.removeFirstOrNull()?.let { ordered.add(it) }
+            }
+        }
+        return ordered
     }
 }
 

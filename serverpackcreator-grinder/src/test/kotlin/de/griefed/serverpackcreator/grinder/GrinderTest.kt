@@ -34,7 +34,8 @@ import java.util.concurrent.atomic.AtomicInteger
  * Pins the grind orchestration with a fake [CandidateVerifier] (no containers): one verdict recorded
  * per loader, projects with a *fresh* verdict skipped while *stale* ones are re-verified, a thrown
  * verification swallowed (not propagated), and the pool draining every candidate across workers
- * most-popular-first. Each grind also reports its [GrindOutcome], and the pool counts the verified ones —
+ * in the pool's order (round-robin by platform — pinned in `GrindPoolOrderTest`). Each grind also reports its
+ * [GrindOutcome], and the pool counts the verified ones —
  * the daemon paces itself on that count, so it is part of the contract, not a convenience.
  */
 internal class GrinderTest {

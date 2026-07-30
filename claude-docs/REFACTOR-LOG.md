@@ -721,3 +721,15 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   wrap-with-un-ground-head case. Suites: clientside + grinder (156 run, 18 gated) green, no warnings.
   **Process note:** a scripted edit computed its slice boundaries backwards (`grindAll` lives *after* the enum),
   so `str.replace("", …)` inflated `Grinder.kt` to 18 MB; restored from HEAD and redone with anchored edits.
+  **Round-robin ordering across platforms (2026-07-30, follow-up):** the hour-later check on the live sweep showed
+  the fairness half of the same problem — `GrindPool` sorted each batch by `popularity`, and CurseForge's counts
+  run several times Modrinth's for equivalent mods (`jei` 602 M vs `fabric-api` 218 M), so *every* CF candidate
+  outranked *every* Modrinth one. Measured: 65 min of grinding produced 108 CurseForge projects and **zero**
+  Modrinth ones, and with a ~2-hour pass any shorter interruption meant Modrinth never progressed at all. The
+  two-phase commit prevents *loss* but not starvation. `GrindPool.interleaveByPlatform` now rotates one candidate
+  per platform per turn, keeping each platform's own most-downloaded-first order and dropping a platform out of the
+  rotation when it runs out. The deeper justification: the two counts are not comparable in the first place (CF
+  counts file downloads across every version, Modrinth counts differently), so ranking them against each other was
+  a category error that silently promoted one platform for the whole run. Four tests, incl. the one that states the
+  goal — an interrupted pass must have reached both platforms. Every doc claiming a global popularity sort was
+  corrected in the same commit. Grinder suite 160 run + 18 gated, green.

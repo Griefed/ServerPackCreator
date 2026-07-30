@@ -58,9 +58,9 @@ import java.nio.charset.StandardCharsets
  * `asc`/`desc`, results carry `downloadCount` and `links.websiteUrl`, and auth is the `x-api-key`
  * header, `pagination.totalCount` reports a query's true size, and `/games/{gameId}/versions` answers with
  * `data: [{type, versions: [...]}]` — all per CurseForge's REST docs. Ordering is additionally *not* relied
- * upon for correctness: `GrindPool` re-sorts the union of all sources by `popularity` anyway, so a mis-sorted
- * page would only change *which* projects get fetched, never the grind order. [warnIfMisordered] surfaces
- * that case instead of letting it pass silently.
+ * upon for correctness: `GrindPool` re-orders each batch itself (round-robin across platforms, each platform by
+ * `popularity`), so a mis-sorted page would only change *which* projects get fetched, never the grind order.
+ * [warnIfMisordered] surfaces that case instead of letting it pass silently.
  *
  * @param apiKey       The CurseForge API-key (from `CURSEFORGE_API_KEY`).
  * @param httpFetcher  HTTP boundary, swapped for canned JSON in tests.
@@ -340,7 +340,7 @@ class CurseForgeCandidateSource(
                 "CurseForge page for ${partition.key} at index $index trends *upwards* in downloads " +
                     "(${candidates.first().popularity} … ${candidates.last().popularity}) — " +
                     "sortField=$SORT_FIELD_TOTAL_DOWNLOADS may no longer mean TotalDownloads. " +
-                    "Candidates are still usable (the pool re-sorts by popularity), but the fetched " +
+                    "Candidates are still usable (the pool re-orders each batch itself), but the fetched " +
                     "subset is no longer the intended one."
             )
         }

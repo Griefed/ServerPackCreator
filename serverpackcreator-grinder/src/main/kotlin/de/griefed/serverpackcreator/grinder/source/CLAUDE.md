@@ -12,7 +12,7 @@ were each *measured* against the live API after the documentation proved insuffi
   `x-api-key`, `index`/`pageSize≤50`, `index+pageSize≤10000`; project link = `links.websiteUrl`; **crawled in
   partitions**, see below). Both paginate behind the clientside `HttpFetcher` seam (unit-tested with canned
   JSON). `GrinderApplication` wires Modrinth always and CurseForge **only when `CURSEFORGE_API_KEY` is set**;
-  `GrindPool` re-sorts the union by popularity so the platforms interleave. Store dedup is by `slug`, so a mod
+  `GrindPool` orders each batch round-robin across platforms (see below). Store dedup is by `slug`, so a mod
   on both platforms is treated as one project (accepted for now).
 - **CurseForge partitioned crawl** (`CurseForgePartitions`, pure + unit-tested — the *only* place that decides
   what CF gets crawled): one query can never expose more than 10 000 mods (`index+pageSize` cap), so a sweep
@@ -87,3 +87,13 @@ were each *measured* against the live API after the documentation proved insuffi
   candidate's exact catalog position isn't recoverable from outside. Re-handing a whole page is nearly free —
   everything already ground in it has a fresh verdict and is skipped in microseconds. A sweep is likewise only
   counted when the page that ended the catalog was itself fully ground.
+
+- **Cross-platform ordering is round-robin, never a global popularity sort** (`GrindPool.interleaveByPlatform`).
+  The counts are not comparable: CurseForge counts file downloads across every version, Modrinth counts
+  differently, so `jei` at 602 M vs `fabric-api` at 218 M says nothing about relative importance. Sorting the
+  union by `popularity` therefore put **every** CurseForge candidate ahead of **every** Modrinth one — measured
+  live on 2026-07-30: a two-hour pass produced 108 CurseForge verdicts and **zero** Modrinth ones, and any
+  interruption shorter than a full pass meant Modrinth never progressed at all. Within a platform the ranking is
+  kept, because there it is meaningful. This is *fairness*, a separate concern from the two-phase commit above,
+  which is *correctness* — the commit stops un-ground candidates being skipped, but on its own would have left
+  Modrinth starved forever.

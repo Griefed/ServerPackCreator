@@ -122,7 +122,7 @@ object GrinderApplication {
         // is how evolving mods, new loader versions and newly-supported Minecraft releases get picked up.
         // Verdicts persist after every record, so a restart never redoes finished work.
         // Sources: Modrinth always (keyless); CurseForge only when its API key is set (mirrors clientside's
-        // supportedPlatforms). GrindPool re-sorts each batch by popularity, so the platforms interleave.
+        // supportedPlatforms). GrindPool orders each batch round-robin across platforms, so neither starves.
         val batchSize = env("SPC_GRINDER_BATCH", "25").toInt()
         val cursorFile = File(env("SPC_GRINDER_CURSORS", File(base, "cursors.json").path))
             .apply { parentFile?.mkdirs() }

@@ -473,7 +473,7 @@ internal class CurseForgeCandidateSourceTest {
 
     /**
      * A page the API returned out of the requested order is still passed through unchanged (the warning is
-     * advisory — `GrindPool` re-sorts by popularity, so nothing is dropped or reordered here). This one trends
+     * advisory — `GrindPool` re-orders each batch itself, so nothing is dropped or reordered here). This one trends
      * *upwards*, which is the only shape that warns: live CurseForge pages are not strictly monotonic, so
      * adjacent jitter must never be treated as a mis-sorted catalog.
      */
