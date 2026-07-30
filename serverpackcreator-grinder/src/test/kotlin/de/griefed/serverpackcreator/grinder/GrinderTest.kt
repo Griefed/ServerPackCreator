@@ -142,9 +142,10 @@ internal class GrinderTest {
         }
         val candidates = (1..30).map { candidate("mod$it", it.toLong()) }
 
-        val verified = GrindPool(Grinder(verifier, store), workerCount = 4).grindAll(candidates)
+        val pass = GrindPool(Grinder(verifier, store), workerCount = 4).grindAll(candidates)
 
-        Assertions.assertEquals(30, verified, "every candidate was verified")
+        Assertions.assertEquals(30, pass.verified, "every candidate was verified")
+        Assertions.assertEquals(candidates.toSet(), pass.reached, "and every candidate was reached")
         Assertions.assertEquals(30, store.all().size)
         Assertions.assertEquals((1..30).map { "mod$it" }.toSet(), store.all().map { it.slug }.toSet())
     }
@@ -180,8 +181,12 @@ internal class GrinderTest {
         }
         pool = GrindPool(Grinder(verifier, InMemoryVerdictStore()), workerCount = 1)
 
-        pool.grindAll((1..20).map { candidate("mod$it", it.toLong()) })
+        val pass = pool.grindAll((1..20).map { candidate("mod$it", it.toLong()) })
 
+        Assertions.assertEquals(
+            setOf(processed.single()), pass.reached.map { it.slug }.toSet(),
+            "the abandoned batch reports exactly the one candidate it got to"
+        )
         Assertions.assertEquals(1, processed.size, "only the in-flight candidate completes; the queue is dropped")
     }
 
@@ -200,10 +205,15 @@ internal class GrinderTest {
         }
         val grinder = Grinder(verifier, store, reverifyTtl = Duration.ofDays(30), clock = { now })
 
-        val verified = GrindPool(grinder, workerCount = 2)
-            .grindAll(listOf(candidate("fresh"), candidate("doomed"), candidate("due"), candidate("alsoDue")))
+        val candidates = listOf(candidate("fresh"), candidate("doomed"), candidate("due"), candidate("alsoDue"))
+        val pass = GrindPool(grinder, workerCount = 2).grindAll(candidates)
 
-        Assertions.assertEquals(2, verified, "one fresh skip and one failure are not work")
+        Assertions.assertEquals(2, pass.verified, "one fresh skip and one failure are not work")
+        Assertions.assertEquals(
+            candidates.toSet(), pass.reached,
+            "a fresh skip and a failure are still *reached* — the crawl may advance past them, or a poison " +
+                "candidate would stall the sweep forever"
+        )
     }
 
     /**
@@ -225,10 +235,14 @@ internal class GrinderTest {
         Thread { firstStarted.await(); mainThread.interrupt() }.apply { isDaemon = true; start() }
 
         // Must return rather than throw, even though the caller is interrupted mid-join.
-        val verified = pool.grindAll((1..40).map { candidate("mod$it", it.toLong()) })
+        val pass = pool.grindAll((1..40).map { candidate("mod$it", it.toLong()) })
 
         Assertions.assertTrue(Thread.interrupted(), "the caller's interrupt flag must be restored (and is cleared here)")
-        Assertions.assertTrue(verified < 40, "the pass was abandoned, not drained; verified=$verified")
+        Assertions.assertTrue(pass.verified < 40, "the pass was abandoned, not drained; verified=${pass.verified}")
+        Assertions.assertTrue(
+            pass.reached.size < 40,
+            "an abandoned pass must report the candidates it never reached, so the crawl does not skip them"
+        )
     }
 
     @Test

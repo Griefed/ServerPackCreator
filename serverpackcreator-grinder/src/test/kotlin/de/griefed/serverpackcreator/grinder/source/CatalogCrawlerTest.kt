@@ -82,14 +82,21 @@ internal class CatalogCrawlerTest {
         }
     }
 
+    /** Hand out a batch and commit it as fully ground — the ordinary pass, now that advancing needs a commit. */
+    private fun CatalogCrawler.groundBatch(): CandidateBatch {
+        val batch = nextBatch()
+        commit(batch, batch.candidates.toSet())
+        return batch
+    }
+
     @Test
     fun advancesThroughTheCatalogAcrossBatches() {
         val source = FakeSource("Modrinth", catalogSize = 5)
         val cursors = InMemoryCursorStore()
         val crawler = CatalogCrawler(listOf(source), cursors, batchSize = 2)
 
-        val first = crawler.nextBatch()
-        val second = crawler.nextBatch()
+        val first = crawler.groundBatch()
+        val second = crawler.groundBatch()
 
         Assertions.assertEquals(listOf("mod0", "mod1"), first.candidates.map { it.slug })
         Assertions.assertEquals(listOf("mod2", "mod3"), second.candidates.map { it.slug }, "the second batch must move on")
@@ -104,14 +111,14 @@ internal class CatalogCrawlerTest {
         val cursors = InMemoryCursorStore()
         val crawler = CatalogCrawler(listOf(source), cursors, batchSize = 2)
 
-        crawler.nextBatch() // mod0, mod1
-        crawler.nextBatch() // mod2, mod3
-        val last = crawler.nextBatch() // mod4, and the catalog ends
+        crawler.groundBatch() // mod0, mod1
+        crawler.groundBatch() // mod2, mod3
+        val last = crawler.groundBatch() // mod4, and the catalog ends
 
         Assertions.assertEquals(listOf("mod4"), last.candidates.map { it.slug })
         Assertions.assertTrue(last.sweepCompleted, "reaching the end of the catalog completes a sweep")
         Assertions.assertEquals(CatalogCursor(offset = 0, sweeps = 1), cursors.cursor("Modrinth"))
-        Assertions.assertEquals(listOf("mod0", "mod1"), crawler.nextBatch().candidates.map { it.slug }, "next sweep restarts at the top")
+        Assertions.assertEquals(listOf("mod0", "mod1"), crawler.groundBatch().candidates.map { it.slug }, "next sweep restarts at the top")
     }
 
     /** The restart property: a fresh crawler over the same store continues, it does not start over. */
@@ -120,7 +127,7 @@ internal class CatalogCrawlerTest {
         val source = FakeSource("Modrinth", catalogSize = 100)
         val cursors = InMemoryCursorStore().apply { store("Modrinth", CatalogCursor(offset = 40, sweeps = 3)) }
 
-        val batch = CatalogCrawler(listOf(source), cursors, batchSize = 2).nextBatch()
+        val batch = CatalogCrawler(listOf(source), cursors, batchSize = 2).groundBatch()
 
         Assertions.assertEquals(listOf(40), source.requestedOffsets)
         Assertions.assertEquals(listOf("mod40", "mod41"), batch.candidates.map { it.slug })
@@ -138,14 +145,14 @@ internal class CatalogCrawlerTest {
         val cursors = InMemoryCursorStore()
         val crawler = CatalogCrawler(listOf(source), cursors, batchSize = 2)
 
-        crawler.nextBatch() // mod0, mod1 -> offset 2
-        val failed = crawler.nextBatch() // fails at offset 2
+        crawler.groundBatch() // mod0, mod1 -> offset 2
+        val failed = crawler.groundBatch() // fails at offset 2
 
         Assertions.assertTrue(failed.candidates.isEmpty())
         Assertions.assertFalse(failed.sweepCompleted, "a failed request is not the end of the catalog")
         Assertions.assertEquals(CatalogCursor(offset = 2, sweeps = 0), cursors.cursor("Modrinth"))
 
-        crawler.nextBatch()
+        crawler.groundBatch()
         Assertions.assertEquals(listOf(0, 2, 2), source.requestedOffsets, "the failed region is retried, not skipped")
     }
 
@@ -156,7 +163,7 @@ internal class CatalogCrawlerTest {
         val cursors = InMemoryCursorStore().apply { store("CurseForge", CatalogCursor(offset = 50, sweeps = 0)) }
         val crawler = CatalogCrawler(listOf(modrinth, curseForge), cursors, batchSize = 2)
 
-        val batch = crawler.nextBatch()
+        val batch = crawler.groundBatch()
 
         Assertions.assertEquals(
             setOf("Modrinth" to "mod0", "Modrinth" to "mod1", "CurseForge" to "mod50", "CurseForge" to "mod51"),
@@ -175,7 +182,7 @@ internal class CatalogCrawlerTest {
         val source = FakeSource("Modrinth", catalogSize = 5)
         val cursors = InMemoryCursorStore().apply { store("Modrinth", CatalogCursor(offset = 10, sweeps = 0)) }
 
-        val batch = CatalogCrawler(listOf(source), cursors, batchSize = 2).nextBatch()
+        val batch = CatalogCrawler(listOf(source), cursors, batchSize = 2).groundBatch()
 
         Assertions.assertEquals(listOf(10, 0), source.requestedOffsets, "wrap, then take the head straight away")
         Assertions.assertEquals(listOf("mod0", "mod1"), batch.candidates.map { it.slug })
@@ -189,7 +196,7 @@ internal class CatalogCrawlerTest {
         val source = FakeSource("Modrinth", catalogSize = 0)
         val cursors = InMemoryCursorStore()
 
-        val batch = CatalogCrawler(listOf(source), cursors, batchSize = 2).nextBatch()
+        val batch = CatalogCrawler(listOf(source), cursors, batchSize = 2).groundBatch()
 
         Assertions.assertTrue(batch.candidates.isEmpty())
         Assertions.assertEquals(listOf(0), source.requestedOffsets, "already at the head — nothing to wrap to")
@@ -204,7 +211,7 @@ internal class CatalogCrawlerTest {
         val healthy = FakeSource("Modrinth", catalogSize = 100)
         val cursors = InMemoryCursorStore()
 
-        val batch = CatalogCrawler(listOf(broken, healthy), cursors, batchSize = 2).nextBatch()
+        val batch = CatalogCrawler(listOf(broken, healthy), cursors, batchSize = 2).groundBatch()
 
         Assertions.assertEquals(listOf("mod0", "mod1"), batch.candidates.map { it.slug })
         Assertions.assertEquals(CatalogCursor(offset = 0, sweeps = 0), cursors.cursor("CurseForge"), "a thrown page leaves the position alone")
@@ -223,12 +230,12 @@ internal class CatalogCrawlerTest {
         val cursors = InMemoryCursorStore()
         val crawler = CatalogCrawler(listOf(source), cursors, batchSize = 1)
 
-        crawler.nextBatch()
+        crawler.groundBatch()
         Assertions.assertEquals(
             CatalogCursor(offset = 1, sweeps = 0, partition = "version=1.21.1"), cursors.cursor("CurseForge")
         )
 
-        crawler.nextBatch()
+        crawler.groundBatch()
         Assertions.assertEquals(listOf(null, "version=1.21.1"), source.received, "the token is replayed verbatim")
     }
 
@@ -238,7 +245,7 @@ internal class CatalogCrawlerTest {
         val source = PartitionedSource(tokens = listOf("version=1.21.1"), endAfterLastToken = true)
         val cursors = InMemoryCursorStore()
 
-        val batch = CatalogCrawler(listOf(source), cursors, batchSize = 1).nextBatch()
+        val batch = CatalogCrawler(listOf(source), cursors, batchSize = 1).groundBatch()
 
         Assertions.assertTrue(batch.sweepCompleted)
         Assertions.assertEquals(

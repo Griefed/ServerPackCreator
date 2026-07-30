@@ -104,7 +104,7 @@ object GrinderApplication {
             // hold the report open. The re-verify TTL still applies, so re-running skips fresh verdicts.
             val candidates = args.map { GrindCandidate(it, slugFromUrl(it), 0, ModPlatforms.ofUrl(it)) }
             log.info("One-shot run: grinding ${candidates.size} candidate(s) with $workers worker(s)...")
-            GrindPool(grinder, workers).grindAll(candidates)
+            GrindPool(grinder, workers).grindAll(candidates) // one-shot: no crawl cursor to advance
             log.info("Grind complete: ${store.all().size} verdict(s). Report stays up at http://localhost:${server.port}/ — Ctrl-C to exit.")
             // Park until the shutdown hook interrupts us. Catching the interrupt is the point: the hook calls
             // `mainThread.interrupt()`, and letting that escape printed a bare `Exception in thread "main"
@@ -150,8 +150,12 @@ object GrinderApplication {
             val batch = crawler.nextBatch()
             log.info("Pass #$pass: grinding ${batch.candidates.size} candidate(s)...")
             val pool = GrindPool(grinder, workers).also { activePool.set(it) }
-            val verified = pool.grindAll(batch.candidates)
+            val pass = pool.grindAll(batch.candidates)
+            val verified = pass.verified
             activePool.set(null)
+            // Advance the crawl only past what was actually ground. An interrupted pass re-hands the rest next
+            // time instead of skipping those projects until the next full sweep, weeks or months away.
+            crawler.commit(batch, pass.reached)
             log.info("Pass #$pass complete: $verified verified, ${store.all().size} verdict(s) total.")
             // Bound the loader cache by time. Each tuple costs ~150 MB and loaders keep shipping builds, so an
             // unattended sweep would grow it without limit; a tuple still being booted is stamped as used on

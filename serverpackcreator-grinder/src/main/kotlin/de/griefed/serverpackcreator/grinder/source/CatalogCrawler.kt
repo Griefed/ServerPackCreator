@@ -32,6 +32,10 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
  * A source whose request failed keeps its position (retried next pass) and one that throws is skipped
  * entirely, so neither a flaky platform nor a broken source can stall or sink the crawl.
  *
+ * **Two-phase by design:** [nextBatch] hands out candidates without moving anything, and [commit] advances each
+ * source only past the pages whose candidates were actually ground. An interrupted pass therefore re-hands what
+ * it never reached instead of silently skipping it.
+ *
  * Not thread-safe by design: the daemon loop calls it once per pass, then fans the batch out to the workers.
  *
  * @param sources   The platforms to crawl, each identified by its [CandidateSource.platform].
@@ -51,32 +55,77 @@ class CatalogCrawler(
         require(batchSize >= 1) { "batchSize must be at least 1, was $batchSize" }
     }
 
-    /** The next slice of every source's catalog, with each source's position advanced accordingly. */
+    /**
+     * The next slice of every source's catalog. **Does not move any cursor** — the position advances only in
+     * [commit], once the caller reports which candidates were actually reached. Calling this twice without a
+     * commit in between therefore hands out the same slice twice.
+     */
     fun nextBatch(): CandidateBatch {
         val candidates = ArrayList<GrindCandidate>(batchSize * sources.size.coerceAtLeast(1))
+        val pages = ArrayList<CrawledPage>(sources.size + 1)
         var sweepCompleted = false
         for (source in sources) {
             val cursor = cursors.cursor(source.platform)
             // The partition token is the source's own business — carried through verbatim, never interpreted.
             val page = pageOrNull(source, cursor.offset, cursor.partition) ?: continue // failed: position kept
             candidates.addAll(page.candidates)
+            pages.add(CrawledPage(source.platform, cursor, page.candidates, page.endOfCatalog, page.nextOffset, page.nextPartition))
             if (!page.endOfCatalog) {
-                cursors.store(source.platform, cursor.copy(offset = page.nextOffset, partition = page.nextPartition))
                 continue
             }
             sweepCompleted = true
-            candidates.addAll(wrapAround(source, cursor, page))
+            wrapAround(source, cursor, page)?.let { head ->
+                candidates.addAll(head.candidates)
+                pages.add(head)
+            }
         }
-        return CandidateBatch(candidates, sweepCompleted)
+        return CandidateBatch(candidates, sweepCompleted, pages)
     }
 
     /**
-     * Start [source]'s next sweep at the top of its catalog and return whatever extra candidates that yields.
-     * When the ended slice came back *empty* — the position already sat past the end — the head slice is
-     * fetched right away so the pass still has work to do; that retry happens at most once per pass (and not
-     * at all when the position was already 0), so an empty catalog cannot spin.
+     * Move each source's cursor past the pages of [batch] whose candidates were **all** reached, where "reached"
+     * means the grind loop actually got to them (verified, skipped as fresh, or attempted and failed — all three
+     * are done with; only never-processed candidates are not).
+     *
+     * A page is committed whole or not at all, and the first page that was not fully reached stops that source:
+     * its cursor stays where that page began, so every candidate in it is handed out again next pass. That is the
+     * property the design turns on — **a pass abandoned half-way (shutdown, `requestStop`) must not advance the
+     * crawl past projects nothing ever ground**, or they would not be revisited until the next full sweep, weeks
+     * or months later.
+     *
+     * Whole-page granularity is deliberate rather than per-candidate: a partitioned source can cross partitions
+     * *inside* one page, so a candidate's exact catalog position is not recoverable from the outside. Re-handing
+     * a whole page costs almost nothing, because everything already ground in it now has a fresh verdict and is
+     * skipped in microseconds.
      */
-    private fun wrapAround(source: CandidateSource, cursor: CatalogCursor, ended: CandidatePage): List<GrindCandidate> {
+    fun commit(batch: CandidateBatch, reached: Set<GrindCandidate>) {
+        for ((platform, pages) in batch.pages.groupBy { it.platform }) {
+            for (page in pages) {
+                if (!reached.containsAll(page.candidates)) {
+                    // Not fully ground: rewind to where this page started and re-hand it next pass.
+                    cursors.store(platform, page.cursorAtStart)
+                    val missed = page.candidates.count { it !in reached }
+                    log.info(
+                        "$platform: $missed of ${page.candidates.size} candidate(s) were not reached — " +
+                            "holding the cursor at offset ${page.cursorAtStart.offset}" +
+                            (page.cursorAtStart.partition?.let { " of partition $it" } ?: "") + " so they are not skipped."
+                    )
+                    break
+                }
+                cursors.store(platform, page.committedCursor())
+            }
+        }
+    }
+
+    /**
+     * Start [source]'s next sweep at the top of its catalog, returning the head page when one was fetched. When
+     * the ended slice came back *empty* — the position already sat past the end — the head slice is fetched right
+     * away so the pass still has work to do; that retry happens at most once per pass (and not at all when the
+     * position was already 0), so an empty catalog cannot spin. Nothing is stored here: the wrap is expressed as
+     * a page whose `cursorAtStart` is already the new sweep's start, so [commit] applies it only if the page was
+     * fully ground.
+     */
+    private fun wrapAround(source: CandidateSource, cursor: CatalogCursor, ended: CandidatePage): CrawledPage? {
         // Both offset and partition reset: a new sweep starts at the beginning of the source's plan.
         val wrapped = CatalogCursor(offset = 0, sweeps = cursor.sweeps + 1, partition = null)
         log.info(
@@ -87,12 +136,10 @@ class CatalogCrawler(
         if (ended.candidates.isEmpty() && (cursor.offset > 0 || cursor.partition != null)) {
             val head = pageOrNull(source, offset = 0, partition = null)
             if (head != null) {
-                cursors.store(source.platform, wrapped.copy(offset = head.nextOffset, partition = head.nextPartition))
-                return head.candidates
+                return CrawledPage(source.platform, wrapped, head.candidates, head.endOfCatalog, head.nextOffset, head.nextPartition)
             }
         }
-        cursors.store(source.platform, wrapped)
-        return emptyList()
+        return null
     }
 
     /** One slice from [source], or `null` when the source failed outright (logged, never propagated). */
@@ -100,6 +147,27 @@ class CatalogCrawler(
         runCatching { source.page(offset, batchSize, partition) }
             .onFailure { log.warn("Could not read ${source.platform} at offset $offset (partition $partition): ${it.message}") }
             .getOrNull()
+}
+
+/**
+ * One page handed out by one source in a batch, carrying everything [CatalogCrawler.commit] needs to either
+ * advance past it or re-hand it: where the source stood *before* the page, the candidates it produced, and where
+ * the source said to continue. Internal because it is crawl bookkeeping, not part of the grind vocabulary.
+ *
+ * @author Griefed
+ */
+data class CrawledPage(
+    val platform: String,
+    val cursorAtStart: CatalogCursor,
+    val candidates: List<GrindCandidate>,
+    val endedCatalog: Boolean,
+    val nextOffset: Int,
+    val nextPartition: String?
+) {
+    /** Where the cursor belongs once every candidate in this page has been ground. */
+    fun committedCursor(): CatalogCursor =
+        if (endedCatalog) CatalogCursor(offset = 0, sweeps = cursorAtStart.sweeps + 1, partition = null)
+        else cursorAtStart.copy(offset = nextOffset, partition = nextPartition)
 }
 
 /**
@@ -112,5 +180,6 @@ class CatalogCrawler(
  */
 data class CandidateBatch(
     val candidates: List<GrindCandidate>,
-    val sweepCompleted: Boolean
+    val sweepCompleted: Boolean,
+    val pages: List<CrawledPage> = emptyList()
 )

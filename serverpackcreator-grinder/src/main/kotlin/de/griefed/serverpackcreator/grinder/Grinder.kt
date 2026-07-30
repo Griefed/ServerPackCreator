@@ -23,6 +23,7 @@ import de.griefed.serverpackcreator.grinder.report.VerdictStore
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.time.Instant
 import java.time.Duration
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -142,18 +143,26 @@ class GrindPool(
 
     /**
      * Process every candidate in [candidates] (popularity-first), returning once all are done — or early if
-     * [requestStop] is called or the calling thread is interrupted (the daemon's shutdown path). Returns how
-     * many candidates were actually **verified**, which is the daemon's measure of whether the pass did useful
-     * work (see [GrindPacing]); skipped-as-fresh and failed candidates deliberately do not count.
+     * [requestStop] is called or the calling thread is interrupted (the daemon's shutdown path).
+     *
+     * The returned [GrindPass] reports **which candidates were reached** as well as how many were verified.
+     * Reached matters as much as verified: the crawl cursor may only advance past candidates something actually
+     * got to, so an abandoned pass has to be able to say what it never touched (see `CatalogCrawler.commit`).
+     * A candidate counts as reached only once [Grinder.grind] has *returned* for it, so one still being ground
+     * while the JVM tears down is deliberately not reported — it gets handed out again next time.
+     * `verified` stays the pacing measure (see [GrindPacing]); skipped-as-fresh and failed do not count there.
      */
-    fun grindAll(candidates: Collection<GrindCandidate>): Int {
+    fun grindAll(candidates: Collection<GrindCandidate>): GrindPass {
         val queue = ConcurrentLinkedQueue(candidates.sortedByDescending { it.popularity })
         val verified = AtomicInteger(0)
+        val reached = ConcurrentHashMap.newKeySet<GrindCandidate>()
         val workers = (1..workerCount).map {
             Thread {
                 while (!stopRequested.get()) {
                     val candidate = queue.poll() ?: break
-                    if (grinder.grind(candidate) == GrindOutcome.VERIFIED) {
+                    val outcome = grinder.grind(candidate)
+                    reached.add(candidate)
+                    if (outcome == GrindOutcome.VERIFIED) {
                         verified.incrementAndGet()
                     }
                 }
@@ -170,6 +179,19 @@ class GrindPool(
             requestStop()
             Thread.currentThread().interrupt()
         }
-        return verified.get()
+        return GrindPass(reached, verified.get())
     }
 }
+
+/**
+ * What one pass of [GrindPool.grindAll] achieved: the candidates it **reached** (ground to any outcome — verified,
+ * skipped as fresh, or attempted and failed) and how many of those were verified. Two different questions, which
+ * is why both are reported: the daemon paces itself on [verified], while the crawl cursor may only advance past
+ * [reached].
+ *
+ * @author Griefed
+ */
+data class GrindPass(
+    val reached: Set<GrindCandidate>,
+    val verified: Int
+)

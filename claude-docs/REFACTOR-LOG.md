@@ -703,3 +703,21 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   crash-then-crash keeps CRASHED with the newest evidence, and an **INCONCLUSIVE re-check leaves the crash
   standing** (a flaky second boot is not evidence). Suites: api / clientside (63) / grinder (147+18 gated) / app
   all green, no new warnings.
+
+- **Crawl cursor advances on work done, not hand-out (2026-07-30):** the live sweep exposed that
+  `CatalogCrawler.nextBatch()` committed each source's position the moment candidates were handed out. Restarting
+  the daemon mid-pass — which happened twice that day, to pick up new builds — abandoned the remainder of the
+  in-flight batch while both cursors had already moved past it, so those projects were silently deferred to the
+  *next full sweep* (~7 weeks at the measured 60 projects/hour). Griefed asked for the correct fix rather than the
+  cheap round-robin one. Split into two phases: `nextBatch()` moves nothing and returns the batch plus a
+  `CrawledPage` per source (its cursor-at-start, candidates, end-of-catalog flag, continuation), and
+  `commit(batch, reached)` advances each source only past pages whose candidates were **all** reached, stopping at
+  the first that was not. `GrindPool.grindAll` now returns `GrindPass(reached, verified)`; *reached* deliberately
+  includes fresh-skips and failures (a poison candidate must not stall the sweep) but only after `grind` returns,
+  so a candidate still being ground during teardown comes back next pass. Commit granularity is per **page**, not
+  per candidate, because a partitioned source can cross partitions inside one page — re-handing a page costs a
+  fresh-verdict skip, while per-candidate positions aren't recoverable from outside the source. A sweep counts
+  only when the page that ended the catalog was itself fully ground. Nine new tests pin it, incl. the
+  wrap-with-un-ground-head case. Suites: clientside + grinder (156 run, 18 gated) green, no warnings.
+  **Process note:** a scripted edit computed its slice boundaries backwards (`grindAll` lives *after* the enum),
+  so `str.replace("", …)` inflated `Grinder.kt` to 18 MB; restored from HEAD and redone with anchored edits.
