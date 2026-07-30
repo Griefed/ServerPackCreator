@@ -51,3 +51,23 @@ per-boot cap`, with the per-boot cap being `ContainerResources.memoryBytes` (3 G
 versus **1** on the dev box. The Docker VM's memory must exceed `workers × cap`, or boots are OOM-killed rather than
 capped (which is what made the killed/OOM classifier guard necessary). Worth putting in `README.md` §5 as explicit
 guidance rather than leaving operators to infer it.
+
+## Found 2026-07-30 during the sweep — next dominant cause
+
+### B8 — every Forge boot on newer Minecraft fails to launch (`Unable to access jarfile forge.jar`)
+**24 boot logs, all Forge**, never started the server at all: the generated `start.sh` reports
+`Launcher JAR: forge.jar` / `Run Command: … -jar forge.jar nogui` — the template's **legacy** Forge branch — while
+no `forge.jar` exists in the pack or anywhere under the loader cache. Modern Forge installs use
+`@libraries/net/minecraftforge/forge/<mc>-<ver>/unix_args.txt` instead (`default_template.sh` has that branch too, at
+the `SERVER_RUN_COMMAND="@user_jvm_args.txt @libraries/…/unix_args.txt nogui"` line), so either the branch condition
+misfires for these Minecraft versions — worth checking against the new `26.x` versioning, which breaks any `1.x`
+numeric assumption — or the grinder's pre-baked install layer does not contain what the chosen branch expects.
+Affected examples: `balm`, `better-advancements`, `biomes-o-plenty`, `cherished-worlds`, `collective`,
+`cubes-without-borders`, `cyclops-core`, `euphoria-patches`, `forge-config-api-port`, `geckolib`, `iceberg`,
+`inventory-profiles-next`.
+
+**Cost:** a full boot (~70 s) per Forge candidate, learning nothing — Forge coverage is effectively zero on those
+versions. It is no longer *dangerous* (these now classify INCONCLUSIVE via `launchFailureMarkers` rather than being
+promoted to a false clientside HIGH), which is why it is backlog and not an emergency, but it is the largest remaining
+waste and the biggest blind spot in the deliverable. Reproduce with a one-shot on any of the mods above and read
+`work/verify/boot/<slug>-Forge/boot.log`.

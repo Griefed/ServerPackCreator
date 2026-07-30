@@ -95,6 +95,23 @@ object BootLogClassifier {
     )
 
     /**
+     * The JVM never started: it could not open or identify the jar it was told to run. The server therefore never
+     * loaded the mod, so the run says nothing about sideness.
+     *
+     * Found live on 2026-07-30 immediately after exit-status propagation began working: consoles consisting of
+     * `Error: Unable to access jarfile forge.jar` (an incomplete cached Forge install layer) exited non-zero and were
+     * promoted to HIGH-confidence clientside — ten of the sweep's first fifteen HIGH verdicts, including the
+     * definitely-server-side libraries `balm`, `collective` and `geckolib`. Trusting the exit status is what made this
+     * class visible, which is why it needs the same pre-launch treatment as [setupAbortMarkers].
+     */
+    private val launchFailureMarkers = Regex(
+        "(Unable to access jarfile" +
+            "|Could not find or load main class" +
+            "|Invalid or corrupt jarfile)",
+        RegexOption.IGNORE_CASE
+    )
+
+    /**
      * A mod whose **required dependencies** were not satisfied never got a fair test: it was refused before its own
      * code ran, so its failure says nothing about client-vs-server.
      *
@@ -146,6 +163,10 @@ object BootLogClassifier {
             return BootResult.INCONCLUSIVE
         }
         if (consoleLines.any { setupAbortMarkers.containsMatchIn(it) }) {
+            return BootResult.INCONCLUSIVE
+        }
+        // The JVM never got as far as running the server, so nothing about the mod was exercised.
+        if (consoleLines.any { launchFailureMarkers.containsMatchIn(it) }) {
             return BootResult.INCONCLUSIVE
         }
         // Killed from outside, or killed for memory: the mod never got the chance to fail on its own merits.

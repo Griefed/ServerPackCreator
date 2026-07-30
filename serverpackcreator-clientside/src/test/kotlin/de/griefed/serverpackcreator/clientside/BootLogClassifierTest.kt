@@ -290,6 +290,32 @@ internal class BootLogClassifierTest {
         )
     }
 
+    /**
+     * A JVM that could not even start is never evidence about a mod.
+     *
+     * Found live on 2026-07-30, minutes after exit-status propagation started working: boots whose console was just
+     * `Error: Unable to access jarfile forge.jar` (an incomplete cached Forge install layer — the server never
+     * launched) exited non-zero and were promoted to **HIGH-confidence clientside**. Ten of the sweep's first fifteen
+     * HIGH verdicts were this, including `balm`, `collective` and `geckolib` — library mods that certainly do run on
+     * a server. Making the exit status trustworthy is exactly what made this class visible, so it needs the same
+     * pre-launch treatment as the other setup aborts.
+     */
+    @Test
+    fun aJvmThatNeverLaunchedIsInconclusive() {
+        val cases = listOf(
+            "Error: Unable to access jarfile forge.jar",
+            "Error: Could not find or load main class do_not_manually_edit",
+            "Error: Invalid or corrupt jarfile server.jar"
+        )
+        for (line in cases) {
+            Assertions.assertEquals(
+                BootResult.INCONCLUSIVE,
+                BootLogClassifier.classify(listOf("openjdk version \"25.0.3\"", line, "Exiting..."), exitCode = 1, timedOut = false),
+                "the server never started, so this says nothing about the mod: $line"
+            )
+        }
+    }
+
     /** A boot that reached the ready-line and was then killed stays SURVIVED — the ready-line still wins outright. */
     @Test
     fun aReadyServerKilledAfterwardsStillSurvived() {
