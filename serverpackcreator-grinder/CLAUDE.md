@@ -97,6 +97,41 @@ though their detail lives deeper:
 - **`installDist` is not rebuilt by `test`** — always rebuild before a live run, or you will draw conclusions
   from a stale jar (this has happened: a run reported the unfiltered 7 339-version axis because of it).
 
+- **NEVER run any module's test suite while a live grinder run is going.** SPC resolves its home directory through
+  `Preferences.userRoot().node("ServerPackCreator")` (`PathsConfig.homeDirectory`) — one **machine-wide, per-user**
+  node shared by the GUI, the web backend, the test suites *and* the grinder — and the getter **re-reads it on every
+  access**, storing whatever it resolved. So a test suite starting up relocates the *running* daemon's home to its
+  own scratch dir (`serverpackcreator-<module>/tests`), and then deletes it. Measured 2026-07-30: at 14:29 a
+  `:serverpackcreator-api:test` run silently moved the live daemon's home into the repo, and every subsequent boot
+  failed with `.../serverpackcreator-api/tests/server_files/server-icon.png: The source file doesn't exist` — which
+  surfaces as **`boot:none` metadata-only verdicts**, i.e. it looks exactly like "these mods were never bootable"
+  rather than like a broken host. 30+ candidates were recorded that way before it was caught.
+  **Consequences worth knowing:**
+  - The daemon's home is decided by whichever SPC process last touched the preference — *not* by cwd or by
+    `serverpackcreator.properties` (the preference is consulted **first** and wins over both, so
+    `SPC_GRINDER_SPC_PROPERTIES` cannot protect against this either).
+  - Editing a template under the grinder home is pointless while the preference points elsewhere — the generation
+    reads `server_files` from the *then-current* home.
+  - Repair: set the preference back explicitly (`Preferences.userRoot().node("ServerPackCreator")
+    .put("de.griefed.serverpackcreator.home", …)` + `sync()`), then relaunch. Reading the value on macOS:
+    `defaults read com.apple.java.util.prefs | grep -A2 ServerPackCreator`.
+  - The collision runs **both ways**: a developer running the suites also moves their own GUI installation's home.
+    Two test classes already isolate themselves onto their own nodes (`ServerPackCreatorPathsConfigTest`,
+    `ServerPackCreatorScriptTemplatesConfigTest`), so the pattern exists — it is just not applied suite-wide.
+    Making the node name injectable (tests and the grinder each on their own node) is the real fix; **not yet
+    decided/implemented** — see the open question in `claude-docs/REFACTOR-LOG.md`.
+
+- **Staging is reclaimed, not accumulated** (`BootWorkspaceReaper`). Each attempt stages a full server pack with the
+  overlaid loader libraries under `<work>/verify/boot/<slug>-<loader>` plus downloaded jars under
+  `<work>/verify/verify/<slug>-<loader>`, and staging only ever deleted a directory when that *same* `(slug, loader)`
+  was retried — which during a catalog sweep is never. Measured 2026-07-30: **98 GB across 1750 attempt directories,
+  ~23 GB/h**, enough to fill the host inside a day. The reaper strips each finished candidate's staging down to its
+  `boot.log` (the verdict detail is read from it; the packs are reproducible), runs in a `finally` so a *thrown*
+  verification is reclaimed too, and sweeps orphans at startup — first live startup reclaimed 8 897 MiB, taking the
+  work tree from 8.7 GB to 155 MB. **Landmine:** it is scoped to one slug on purpose, matching `<slug>-<loader>` by
+  cutting the loader suffix rather than prefix-matching the slug — workers run in parallel, and a prefix match
+  (`jei` vs `jei-extras`) would delete the pack out from under a container that is still booting it.
+
 and the grinder sets `$JAVA` per MC version (via the pack's `variables.txt`) from SPC's declared
 required-Java — **no Java download**, which is what keeps mod-boots runnable under `--network none`.
 The template needs `bash`, `curl`/`wget`, `gawk`, `tar`/`gzip`. See

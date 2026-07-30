@@ -802,3 +802,43 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   needed. Pinned at source level by `ScriptTemplateContentTest.allTemplatesUseAnAlreadyInstalledFabricLauncher-
   BeforeCheckingTheNetwork`, which asserts the disk check *precedes* the probe in each template — a check that
   works without fish or pwsh installed.
+
+### 2026-07-30 — the Fabric offline fix needed a second half, plus two bugs it exposed
+
+**The offline short-circuit was only half a fix.** The disk-first check landed correctly, but it `return 0`-ed as
+soon as it found the launcher — jumping over `setupFabric`'s closing
+`SERVER_RUN_COMMAND="${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"`. Every Fabric boot then ran
+`java -Dlog4j2.formatMsgNoLookups=true do_not_manually_edit` and died with
+`Could not find or load main class do_not_manually_edit`, i.e. still INCONCLUSIVE — and *every* assertion in
+`allTemplatesUseAnAlreadyInstalledFabricLauncherBeforeCheckingTheNetwork` stayed green, because ordering was all it
+checked. All three templates now fall through into the assignment (the network path moved into an `else`).
+**New test with actual teeth:** `theBashTemplateStillBuildsARunCommandWhenTheFabricLauncherIsAlreadyInstalled`
+extracts the bash `setupFabric`, sources it with `commandAvailable` denying curl/wget and every download/install
+stub exiting non-zero, stages a launcher jar, runs it, and asserts the assembled command — verified to fail when
+the `return 0` is reinstated. **Live confirmation:** `Modrinth/simple-voice-chat → Fabric=LOW(boot:SURVIVED)`,
+whose `boot.log` shows `fabric-server-launcher.jar present. Moving on...`,
+`-jar fabric-server-launcher.jar nogui`, and `Done (7.277s)! For help` under `--network none`.
+
+**Bug found while verifying: the work tree grew without bound.** Staging keeps a full server pack (with the
+overlaid loader libraries) per `(slug, loader)` and only deleted it when that same pair was retried — never, during
+a catalog sweep. Measured: **98 GB across 1750 attempt directories, ~23 GB/h**. New `BootWorkspaceReaper` strips a
+finished candidate's staging to its `boot.log`, in a `finally` (a thrown verification is exactly when garbage is
+left), scoped to one slug by cutting the `-<loader>` suffix rather than prefix-matching (workers run in parallel;
+`jei` must not reap `jei-extras`), plus a startup sweep for what a killed run left behind. First live startup
+reclaimed **8 897 MiB, 8.7 GB → 155 MB**; per-candidate reclamation is ~700 MiB. 10 unit tests.
+
+**Bug found while diagnosing: the test suites hijack a live daemon's home directory.** SPC resolves
+`PathsConfig.homeDirectory` through `Preferences.userRoot().node("ServerPackCreator")` — one machine-wide per-user
+node shared by GUI, web backend, test suites and grinder — and re-reads it on **every access**. A
+`:serverpackcreator-api:test` run mid-session moved the *running* daemon's home to `serverpackcreator-api/tests`
+and then deleted it, after which every boot failed on `server_files/server-icon.png: The source file doesn't exist`
+and was recorded as a **metadata-only `boot:none` verdict** — indistinguishable, in the report, from "this mod was
+never bootable". 30+ candidates were polluted before it was caught; the store was archived and the run restarted.
+The preference wins over both cwd and `serverpackcreator.properties`, so `SPC_GRINDER_SPC_PROPERTIES` is no
+defence. It cuts both ways: running the suites also relocates a developer's own GUI installation.
+
+**OPEN QUESTION (needs Griefed's call):** the real fix is to make the preferences node name injectable so tests and
+the grinder each get their own node — `ServerPackCreatorPathsConfigTest` and `ServerPackCreatorScriptTemplatesConfigTest`
+already do exactly that, so the pattern exists and is simply not applied suite-wide. It is an *additive* API change
+(optional ctor param / env var), but it touches published `-api` surface and changes where a test-suite run stores
+state, so it was **not** implemented unilaterally. Until then: never run a test suite while a grinder run is live.

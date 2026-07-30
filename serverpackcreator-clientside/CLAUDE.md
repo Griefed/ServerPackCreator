@@ -55,8 +55,16 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   treated it as unsupported marked Fabric unusable for **22 Minecraft versions** (1.19.2 through 26.2 — i.e. all
   of them) within minutes, and was reverted. `0.19.3` is a genuine current Fabric *loader* version, so SPC's
   version plumbing is fine; Fabric installer versions (`1.1.2`…) are a separate series and are not what is passed.
-  **Open issue:** Fabric's offline path in the pre-baked cache is incomplete — Forge/NeoForge/Quilt reach the
-  ready line offline, Fabric aborts on this probe. Fix the pre-bake, do not suppress the symptom.
+  **FIXED 2026-07-30 in the templates (all three shells):** `setupFabric` now settles the launcher from disk
+  (`fabric-server-launcher.jar` / `fabric-server-launch.jar`) *before* probing, so an offline pack that already has
+  its launcher never asks the network. **Landmine — the fix has two halves, and the first attempt only had one:**
+  the disk branch must **fall through** to the `SERVER_RUN_COMMAND="${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION}
+  nogui"` assignment at the end of the function. The first cut `return 0`-ed as soon as it found the jar, jumping
+  over that assignment, so the pack launched `java -Dlog4j2... do_not_manually_edit` (the untouched placeholder)
+  and died with `Could not find or load main class do_not_manually_edit` — *past* every ordering assertion the
+  guard test made. `-api`'s `ScriptTemplateContentTest` now **executes** the extracted bash `setupFabric` against a
+  staged launcher jar with network calls stubbed to fail, which is the only assertion that catches this; verified
+  to fail when the `return 0` is reinstated.
 - **`allowModDistribution=false`** CurseForge files arrive with `downloadUrl=null` (`ModFile.locked`);
   routed (`selectDownloader`) to the **Playwright** headless-browser `BrowserDownloader` (lazy; only
   launched for locked files), everything else to `HttpJarDownloader`. Playwright is declared in **this**
