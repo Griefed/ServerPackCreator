@@ -31,7 +31,6 @@ import de.griefed.serverpackcreator.clientside.BrowserDownloader
 import de.griefed.serverpackcreator.clientside.ClientsideReport
 import de.griefed.serverpackcreator.clientside.ClientsideVerifier
 import de.griefed.serverpackcreator.clientside.HttpJarDownloader
-import de.griefed.serverpackcreator.clientside.LoaderSupportMemory
 import de.griefed.serverpackcreator.grinder.loader.CachedLoaderVersions
 import de.griefed.serverpackcreator.clientside.LoaderVersionResolver
 import de.griefed.serverpackcreator.clientside.MetadataScanner
@@ -74,13 +73,6 @@ class ContainerCandidateVerifier(
 ) : CandidateVerifier {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
-    /**
-     * Shared across every candidate: the first mod to discover that a loader cannot actually boot a Minecraft
-     * version spares all later mods the same wasted boot. Measured live — Fabric on 26.x and NeoForge 21.1.247
-     * both claim support in version metadata and then abort in `start.sh`.
-     */
-    private val loaderSupport = LoaderSupportMemory()
-
     override fun verify(candidate: GrindCandidate): ClientsideReport {
         val httpDownloader = HttpJarDownloader(apiWrapper.webUtilities)
         // The browser is only launched for distribution-locked CurseForge files; disposed after the run.
@@ -100,7 +92,6 @@ class ContainerCandidateVerifier(
                         // policy still reports the newest truthfully, so the support gate and BootVerifier's
                         // crash re-check are unaffected (see CachedLoaderVersions).
                         loaderVersionPolicy = CachedLoaderVersions(LoaderVersionResolver(apiWrapper.versionMeta), loaderCache),
-                        loaderSupport = loaderSupport,
                         workDirectory = File(workDirectory, "boot"),
                         serverRunner = ContainerServerRunner(containerEngine, runtimeImage, resources),
                         packPostProcessor = ::overlayLoaderInstall,

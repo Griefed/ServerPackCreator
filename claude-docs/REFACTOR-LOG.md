@@ -776,3 +776,18 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   recorded and dropped from candidate selection (24h expiry so upstream can catch up), keyed off a deliberately
   narrow `BootLogClassifier.loaderUnavailable` so the Java/EULA/variables aborts cannot poison good combinations.
   Suites: clientside 75, grinder 175 run + 18 gated, app — green, no warnings.
+  **Fix (4) reverted the same hour, on evidence.** Within minutes of deploying, `LoaderSupportMemory` had marked
+  Fabric unusable for **22 Minecraft versions** — 1.19.2, 1.20.x, 1.21.x through 26.2, i.e. every version Fabric
+  actually supports. The marker was wrong, not the data: `default_template.sh:316` raises
+  `"Fabric is not available for Minecraft X"` when `FABRIC_AVAILABLE != 200`, and that variable holds an HTTP
+  status from a `curl`/`wget` probe that **cannot succeed under `--network none`**. The message means "I could not
+  check", not "unsupported". Left running, the fix would have deleted Fabric from the sweep — trading wasted boots
+  for a silent coverage hole, a strictly worse outcome. Reverted: the gate, the recording, the class, its tests and
+  the misleading `BootLogClassifier.loaderUnavailable` predicate are all gone; the *finding* is kept as a landmine
+  in `serverpackcreator-clientside/CLAUDE.md`. Fixes (1)-(3) stand and were verified firing in the live daemon
+  (cooldown on NeoForge 21.1.247, install logs beside the pack, 38 inconclusive-reason lines).
+  **The real open issue this exposed:** Fabric's offline path in the pre-baked install layer is incomplete —
+  Forge/NeoForge/Quilt reach the ready line under `--network none`, Fabric aborts on an online availability probe.
+  That is what needs fixing; suppressing the symptom was the wrong instinct. Also note the store now holds
+  metadata-only verdicts for Fabric candidates that are "fresh" for a year (`SPC_GRINDER_REVERIFY_TTL_DAYS=365`),
+  so they must be invalidated once the offline path works, or they will never be re-ground with a real boot.
