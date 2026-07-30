@@ -298,79 +298,33 @@ Spike workspace (not committed): `~/spc-grinder-spike/{configs,packs,baselines}`
   no leaked containers) under the production hardening defaults. **Verified passing** against Docker
   29.5 on 2026-06-26.
 
-## End-to-end verification & the Java limitation
+## Java / image bound (landmine)
 
-**Full-loop verification on current Minecraft (2026-07-28).** `GrinderApplication` grinding
-`modrinth.com/mod/modmenu` against the **JDK-25 image** produced two verdicts on **MC 26.2** and proved
-the complete chain on current Minecraft:
-- **Quilt / 26.2 → SURVIVED (MEDIUM): a genuine full success.** The cached loader install ran (network,
-  102 jars snapshotted), then the mod-boot ran **offline** (`--network none`, confirmed by
-  `UnknownHostException` for Mojang hosts) on `/opt/java-25` (`Compatibility level set to JAVA_25`) and
-  reached **`Done (5.744s)! For help`** — MC 26.2 server fully started → correctly SURVIVED (a clean
-  boot proves nothing for a clientside mod, hence MEDIUM). This validates container install → offline
-  boot → classify → verdict → store on current MC with the new image.
-- **Fabric / 26.2 → was a false HIGH, now fixed.** Fabric has no build for 26.2 yet, so start.sh
-  aborted "Fabric is not available for Minecraft 26.2" *before loading the mod*; the classifier scored
-  the exit-1 as CRASHED → HIGH. Fixed in `-clientside`: `BootLogClassifier.setupAbortMarkers` maps all
-  pre-launch `crashServer` failures (loader-unavailable, install/download failure, Java/EULA/variables
-  setup) to **INCONCLUSIVE** — the mod was never tested. See `serverpackcreator-clientside/CLAUDE.md`.
-
-**Earlier run (2026-06-28)** verified the visible half (resolve → download → generate → verdict →
-`JsonVerdictStore` → CSV → `ReportServer`) on live data and the hardened install on a Java-21 Minecraft
-(1.20.6 → 38 library files), and **found + fixed** the boot-pack `inclusions` bug (boot had never
-actually worked) plus the release-only MC gate and install diagnostics.
-
-**Java/image bound (RESOLVED 2026-06-28).** The grinder picks the *newest* Minecraft release; in this
-environment that is **26.2**, which requires **Java 25** (`java-runtime-epsilon`). Originally the image
-bundled only 8/17/21, so `start.sh` aborted at a Jabba Java-install prompt. The fix is
-**`ImageJavaRuntimes`**: it sources the required Java major **authoritatively** from
-`MinecraftMeta.requiredJavaVersion(mc)` (Mojang's declared `javaVersion.majorVersion`, scheme-proof — no
-hand-rolled heuristic) and exposes (a) `supports(mc)` — required-Java known *and* in `bundledMajors`
-(default **8/17/21/25**, **must mirror the Dockerfile**), and (b) `javaPath(mc)` → the bundled JDK path
-or null. `BootVerifier` now takes an injected `minecraftAcceptable` predicate (default accept-all for the
-host CLI; `ContainerCandidateVerifier` passes `imageJava::supports`), AND-ed into candidate selection, so
-a version whose JDK the image lacks is **never selected** — never booted on the wrong JDK and **never
-mis-scored as a clientside crash (false HIGH)**. This is deliberately *not* `SKIP_JAVA_CHECK`.
-**Image now ships Temurin 25** (verified: `25.0.3` LTS, image ~2.08 GB), so the current release 26.2 boots.
-Java-**26** is intentionally *not* bundled: it only appears on snapshots (e.g. 26.3-snapshot), which the
-release-gate already skips. **To extend coverage** to a future release: add its JDK to the Dockerfile
-*and* to `ImageJavaRuntimes.bundledMajors` — the two are the single coupled source of truth.
-
+The grinder picks the *newest* Minecraft release, and one JDK cannot boot every version.
+**`ImageJavaRuntimes`** sources the required Java major **authoritatively** from
+`MinecraftMeta.requiredJavaVersion(mc)` (Mojang's declared `javaVersion.majorVersion` — scheme-proof, no
+hand-rolled heuristic) and exposes `supports(mc)` (required Java known *and* in `bundledMajors`, default
+**8/17/21/25**, which **must mirror the Dockerfile**) plus `javaPath(mc)`. `BootVerifier` takes an injected
+`minecraftAcceptable` predicate (accept-all for the host CLI; `imageJava::supports` from
+`ContainerCandidateVerifier`), AND-ed into candidate selection — so a version whose JDK the image lacks is
+**never selected**, never booted on the wrong JDK, and **never mis-scored as a clientside crash (false
+HIGH)**. Deliberately *not* `SKIP_JAVA_CHECK`. Java **26** is intentionally not bundled: it appears only on
+snapshots, which the release gate already skips.
+**To extend coverage** to a future release, add its JDK to the Dockerfile *and* to
+`ImageJavaRuntimes.bundledMajors` — the two are the single coupled source of truth.
 ## Status & what remains
 
-**The core loop is built and e2e-verified** (see the verification section above). The full chain —
-candidate source → `Grinder`/`GrindPool` → `ContainerCandidateVerifier` (`ClientsideVerifier` +
-container `BootVerifier` + `packPostProcessor` doing `loaderCache.ensureInstalled` → install-layer
-overlay → offline boot) → `JsonVerdictStore` → `ReportServer`/CSV — runs end-to-end via
-`GrinderApplication`, seeded by `ModrinthCandidateSource`.
-
-**Continuous operation — DONE.** With no project-URL args, `GrinderApplication` loops fire-and-forget:
-each pass takes the **next slice** of every platform's catalog from the `CatalogCrawler` and grinds it;
-`Grinder` skips a project whose verdict is still *fresh* (younger than `reverifyTtl`, via
-`VerdictStore.newestVerification`) and re-verifies stale ones. Verdicts *and* the crawl position persist
-after every step, so a restart resumes mid-catalog. A JVM shutdown hook stops the loop. Passing explicit
-project URLs keeps the **one-shot** path (verification).
-Config (env): `SPC_GRINDER_BATCH` (projects per platform per pass, default 25 — **the sweep-speed lever**),
-`SPC_GRINDER_CURSORS` (crawl-position file), `SPC_GRINDER_INTERVAL` (idle after a completed sweep found
-nothing due, default 21600 = 6h), `SPC_GRINDER_SCAN_DELAY` (pause while only scanning past fresh verdicts,
-default 15s), `SPC_GRINDER_REVERIFY_TTL_DAYS` (verdict staleness, default 30).
-
-**Queue cursor — DONE (2026-07-29).** Previously every pass re-fetched *the same* top-N (both sources
-restarted at offset 0), so the grinder verified ~50 projects forever and rank N+1 was unreachable. Now the
-crawl position is persisted per platform and advances each pass, so an unattended grinder works through a
-catalog and then keeps it current. **Sizing matters more than it looks:** a sweep is
-`catalog ÷ batch × pass-duration`, so the default 25/pass over ~71 000 Modrinth mods is ~2 850 passes —
-raise `SPC_GRINDER_BATCH`/`SPC_GRINDER_WORKERS` and keep `SPC_GRINDER_REVERIFY_TTL_DAYS` **longer than a
-sweep takes**, or verdicts go stale faster than the crawl advances and the tail is never reached.
-
+**Continuous mode + crawl cursor.** With no project-URL args `GrinderApplication` loops: each pass takes
+the next catalog slice from `CatalogCrawler`, grinds what is stale, and persists verdicts *and* the crawl
+position after every step, so a restart resumes mid-catalog. Env vars and their defaults are documented in
+`README.md` §5 (pinned by `ReadmeConfigurationTest`); the implementation history is in `REFACTOR-LOG.md`.
+**Sizing gotcha:** a sweep is `catalog ÷ batch × pass-duration`, so `SPC_GRINDER_REVERIFY_TTL_DAYS` must be
+**longer than a sweep takes** — otherwise verdicts go stale faster than the crawl advances and the tail is
+never reached.
 **Loader-availability at selection — DONE.** `LoaderVersionResolver.latest` now returns `null` for a
 Minecraft a loader doesn't support (Fabric/Quilt/LegacyFabric gated on `Meta.isMinecraftSupported`;
 Forge/NeoForge already MC-specific), so an unsupported combo is dropped from selection instead of spun
 up and aborted. The classifier's setup-abort INCONCLUSIVE mapping remains the backstop.
-
-**CurseForge candidate source — DONE.** `CurseForgeCandidateSource` enumerates CF most-downloaded-first
-behind the `CandidateSource` interface; wired when `CURSEFORGE_API_KEY` is set (see the candidate-sources
-bullet above).
 
 **Script-template matrix — DONE.** `ScriptTemplateMatrixIT` (gated `GRINDER_TEMPLATE_IT=1`) boots the
 generated `start.{sh,fish,ps1}` across `{MC} × {loader} × {bash,fish,pwsh}` cells in the
@@ -404,21 +358,9 @@ PowerShell is covered by **`powerShellTemplatesParse`**, which runs PowerShell's
 regressions these tests exist for. Don't "fix" the matrix by adding a `pwsh` boot cell; `scriptFor`
 rejects it with the reason.
 
-**Full matrix (2026-07-29) — 5 Minecraft versions × 5 loaders × {bash, fish}, plus the `.ps1` parse check.
-bash ≡ fish in every single cell, and every runnable cell is green:**
-
-| Loader | 1.12.2 | 1.16.1 | 1.20.1 | 1.21.1 | 1.21.11 |
-|---|---|---|---|---|---|
-| Forge | ✅ ✅ | ✅ ✅ | ✅ ✅ | ✅ ✅ | ✅ ✅ |
-| NeoForge | N/A | N/A | ✅ ✅ | ✅ ✅ | ✅ ✅ |
-| Fabric | N/A | ✅ ✅ | ✅ ✅ | ✅ ✅ | ✅ ✅ |
-| Quilt | N/A | ✅ ✅ *(after the JAVA_INSTALLER fix)* | ✅ ✅ | ✅ ✅ | ✅ ✅ |
-| LegacyFabric | ✅ ✅ | N/A | N/A | N/A | N/A |
-
-(`✅ ✅` = bash, fish. N/A = the loader genuinely has no build for that Minecraft — `LoaderVersionResolver`'s
-support gate filtering correctly, incl. LegacyFabric's pre-1.14 era and Fabric/Quilt's need for an
-intermediary. `.ps1` parse ✅.)
-
+**Matrix results are point-in-time** — the last full run (5 Minecraft × 5 loaders × {bash, fish}, bash ≡
+fish everywhere, `.ps1` parse ✅) is recorded in `claude-docs/REFACTOR-LOG.md`. Re-run it, don't trust a
+table here. `N/A` cells are `LoaderVersionResolver`'s support gate filtering correctly, not failures.
 **Fixed — Quilt could not install on old Minecraft (found here, in all shells).** `Quilt Installer requires
 Java 17 or greater to run.` → `quilt-server-launch.jar not found`, because the templates ran *every*
 installer with `$JAVA`, which for 1.16.1 is Java 8 (Mojang's declared requirement) — one JDK cannot satisfy
@@ -445,40 +387,34 @@ Minecraft server capped at 3 GB, so parallel cells starve the host: at 3 workers
 spurious failures** (`start.sh: line 144: Killed "$JAVA"` — SIGKILL mid "Preparing level"), *all* of which
 passed when re-run serially. Judge no cell from a parallel run.
 
-**Continuous mode — verified live (2026-07-29).** With a pre-seeded *fresh* verdict and `interval=40s`:
-two passes ran 40s apart, both skipping the fresh project (no boots), the report server answered
-`HTTP 200` + CSV throughout, and `SIGTERM` fired the shutdown hook mid-sleep ("Grinder stopped after 2
-pass(es)"). With `SPC_GRINDER_REVERIFY_TTL_DAYS=0` the same verdict became stale and re-verification
-**actually ran** (resolve → mod scan → boot-pack *and* install-pack generation for 26.2/Fabric), proving
-both sides of the TTL boundary outside the unit tests.
-
-**Catalog crawl — verified live (2026-07-29).** Ran the installed daemon against live Modrinth with
-`SPC_GRINDER_BATCH=5`, `SPC_GRINDER_SCAN_DELAY=3` and a verdict store pre-seeded *fresh* for the top 10
-projects: passes #1 and #2 each took 5 candidates, verified **0** (all fresh) and paused exactly 3s — the
-scan-ahead pacing — while `cursors.json` advanced 5 → 10 → 15 and pass #3 reached the first *unseeded*
-projects and began real verification. That is the whole claim in one run: the position moves forward, is
-persisted, and unverified projects deeper in the catalog do get reached.
+**Landmine — `installDist` is not rebuilt by `test`.** A live run launched from
+`build/install/serverpackcreator-grinder/bin/…` uses whatever jar was last built, and a stale one lies
+convincingly: on 2026-07-30 a supervised run reported `crawl covers 7339 game version(s), newest first (65.1.0)`
+— the *unfiltered* axis with a Forge version at its head — purely because the dist predated the version-type
+filter by one commit. **Always `./gradlew :serverpackcreator-grinder:installDist` immediately before a live
+run**, and sanity-check the axis log line (135 versions, newest a real Minecraft version) before trusting
+anything the run says.
 
 **Shutdown — `SIGTERM` mid-pass used to kill the JVM with a bare `Exception in thread "main"`** (found
 2026-07-29 while verifying the crawl loop): the hook interrupts the main thread, which is normally parked in
 `GrindPool.grindAll`'s `Thread.join()`, and the `InterruptedException` escaped `main`. `grindAll` now catches
 it, `requestStop()`s and restores the interrupt flag, returning the count so far — pinned by
 `anInterruptedPassStopsInsteadOfThrowing`. (The JVM often halts before `main` can log "Grinder stopped": once
-the hooks finish it exits, so a missing final line on `SIGTERM` is normal, not a hang.)
+the hooks finish it exits, so a missing final line on `SIGTERM` is normal, not a hang.) **The one-shot path had
+the same hole** — its `CountDownLatch.await()` that holds the report server open threw the interrupt straight
+out of `main`; both paths now swallow it. Any new park/join in `main` must do likewise.
 
-**Shutdown drain — DONE.** `DockerJavaContainerEngine` tracks the containers it owns and is `AutoCloseable`;
-`close()` force-removes whatever is still in flight, because `run`'s per-run `finally` never executes when
-the JVM is torn down mid-boot (a `SIGTERM` used to leave a Minecraft server running — observed once, removed
-by hand). `GrinderApplication` registers that cleanup as a shutdown hook immediately after building the
-engine, so it covers the one-shot path too, and `GrindPool.requestStop()` makes workers abandon the queue
-after their current candidate instead of draining a whole batch. Verified against a live daemon by
-`closeRemovesAContainerLeftRunningByAnAbandonedRun`.
-
+**Shutdown drain.** `DockerJavaContainerEngine` is `AutoCloseable` and force-removes the containers it
+still owns, because `run`'s per-run `finally` never executes when the JVM is torn down mid-boot;
+`GrinderApplication` registers that as a shutdown hook (covers the one-shot path too) and
+`GrindPool.requestStop()` makes workers abandon the queue after their current candidate.
 Remaining:
 
-1. **CurseForge is now live-verified** (2026-07-30, `CurseForgeCrawlLiveIT` — the module's oldest open item,
-   closed). What is *still* unproven is a **full sweep**: weeks of wall-clock and a large slice of an API key's
-   quota, so nobody has watched the crawl walk all 135 versions to the end.
+1. **CurseForge is now live-verified end to end** (2026-07-30): discovery by `CurseForgeCrawlLiveIT`, and the
+   *grind* path by a supervised one-shot that produced real verdicts for a CurseForge project on two loaders
+   (Forge/1.20.6 and NeoForge/26.2, both booting offline). The module's oldest open item is closed. What is
+   *still* unproven is a **full sweep**: weeks of wall-clock and a large slice of an API key's quota, so nobody
+   has watched the crawl walk all 135 versions to the end.
 2. **Store dedup is slug+platform, not project-identity** — good enough today; a mod that changes slug on a
    platform would be re-ground as a new project.
 3. **The API key lives in the macOS Keychain on Griefed's machine** (`security find-generic-password -w -s

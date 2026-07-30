@@ -106,7 +106,12 @@ object GrinderApplication {
             log.info("One-shot run: grinding ${candidates.size} candidate(s) with $workers worker(s)...")
             GrindPool(grinder, workers).grindAll(candidates)
             log.info("Grind complete: ${store.all().size} verdict(s). Report stays up at http://localhost:${server.port}/ — Ctrl-C to exit.")
-            CountDownLatch(1).await() // keep the report server alive
+            // Park until the shutdown hook interrupts us. Catching the interrupt is the point: the hook calls
+            // `mainThread.interrupt()`, and letting that escape printed a bare `Exception in thread "main"
+            // java.lang.InterruptedException` over an otherwise clean Ctrl-C — the same defect that was fixed
+            // inside `GrindPool.grindAll` for the continuous path.
+            runCatching { CountDownLatch(1).await() }
+                .onFailure { log.info("Report server stopped.") }
             return
         }
 

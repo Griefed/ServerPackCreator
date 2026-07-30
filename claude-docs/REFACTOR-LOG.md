@@ -666,3 +666,21 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   restart (jei/mouse-tweaks → geckolib/cloth-config → placebo/waystones). Suite: grinder 134 offline + 18 gated
   (12 of them live-API), all green. Still unproven: a full sweep, which is weeks of wall-clock and a large slice
   of the key's quota.
+  **Supervised live run (2026-07-30) — the CurseForge *grind* path proven, plus one more interrupt bug.** Two
+  runs. (a) Continuous mode with both sources wired for the first time: `Modrinth + CurseForge`, 135-version and
+  52-category axes reported correctly, 12 candidates/pass popularity-interleaved across platforms, `cursors.json`
+  carrying both platforms (CF partition `*|*|*|desc`), report server 200 on `/` and `/export.csv`, clean
+  `SIGTERM`, no leaked containers. **Caught a self-inflicted trap first:** the initial attempt logged
+  `covers 7339 game version(s), newest first (65.1.0)` — the *unfiltered* axis with a Forge version at its head —
+  because the run used a `installDist` jar one commit older than the version-type filter. `test` does not rebuild
+  the dist; recorded as a landmine. (b) One-shot grind of `curseforge.com/minecraft/mc-mods/curios`: resolve →
+  download → mod scan → containerised loader install (network, 174 MB for 1.20.6/Forge + 161 MB for
+  26.2/NeoForge, both `.spc-installed`-marked) → **offline** mod boot (7 × `UnknownHostException`, `/opt/java-25`,
+  `Compatibility level set to JAVA_25`) → ready-line `Done (4.684s)! For help` on NeoForge/26.2 and
+  `Done (7.161s)!` on Forge/1.20.6 → two `LOW` verdicts (correct: `curios` declares server/both and did not
+  crash, so `metadataServer -> Confidence.LOW`) → store → CSV. Ran inside Docker's 1.93 GiB VM despite the 3 GiB
+  cgroup cap, peaking ~770 MiB.
+  **Bug found and fixed:** `SIGTERM` on the one-shot path printed `Exception in thread "main"
+  java.lang.InterruptedException` — the `CountDownLatch.await()` holding the report server open let the shutdown
+  hook's interrupt escape `main`, the same defect fixed earlier inside `GrindPool.grindAll` for the continuous
+  path. Now caught and logged as "Report server stopped"; re-verified by SIGTERM against a rebuilt dist.
