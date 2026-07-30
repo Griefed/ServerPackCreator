@@ -874,3 +874,23 @@ same-JVM tests.
 
 **Still open:** whether anything writes the *shared* `ServerPackCreator` node during a build (it holds a repo test
 path on this machine, affecting only a GUI/dev instance). The five remaining hard-coded call sites are all in `-app`.
+
+### 2026-07-30 — sizing the real sweep surfaced a systematic false-HIGH source
+
+Before starting the catalog sweep, the host was measured: 48 GiB RAM, 16 CPUs — but **Docker Desktop's VM held
+1.93 GiB**, while `ContainerResources` caps each boot at **3 GiB**. The cap therefore cannot be honoured, and a fat
+modpack mod is OOM-killed by the VM. Docker reports that as exit **137**, there is no ready-line, and the template's
+`Killed "$JAVA"` line deliberately does not match `setupAbortMarkers` — which left `BootLogClassifier.classify` exactly
+one outcome: `CRASHED`, promoted by `ClientsideVerifier.aggregate` to **HIGH confidence "this mod is clientside"**.
+Purely from host memory pressure, and biased towards the *largest* mods. Over a months-long sweep whose entire
+deliverable is the suspected-clientside list, that is a systematic poison, so it was fixed before the sweep ran:
+`killedExitCodes` (137/143) and `outOfMemoryMarkers` now map to INCONCLUSIVE. `SIGABRT` (134) is deliberately still
+CRASHED (a fatal JVM abort is a real failure), and a test pins that a genuine
+`NoClassDefFoundError: net/minecraft/client/…` still reads CRASHED — verified to fail with the guard removed.
+
+**Sweep sizing at one worker** (`WORKERS=1` is forced by the 1.93 GiB VM): ~60–90 s per candidate including boots, so
+Modrinth's ~71 000 mod projects alone are ~2 months of wall-clock, both platforms interleaved considerably more.
+`REVERIFY_TTL_DAYS=365` comfortably exceeds that (the sizing rule: TTL must be longer than a sweep takes).
+**Raising Docker Desktop's memory is by far the biggest throughput lever available** — at 16 GiB the host could run
+4 concurrent 3 GiB boots, roughly quartering the sweep. That is a Docker Desktop UI change (Settings → Resources)
+which restarts the daemon, so it wants doing between sweeps, with `SPC_GRINDER_WORKERS` raised to match.
