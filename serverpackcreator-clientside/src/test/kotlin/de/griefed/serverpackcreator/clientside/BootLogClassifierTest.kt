@@ -127,4 +127,75 @@ internal class BootLogClassifierTest {
     fun crashExcerptIsNullForEmptyLog() {
         Assertions.assertNull(BootLogExcerpt.crashExcerpt(emptyList()))
     }
+
+    /**
+     * A server killed from outside — the OOM killer, or any `SIGKILL`/`SIGTERM` — says nothing about the mod, so it
+     * must never be scored as a crash.
+     *
+     * This is not hypothetical: the grinder caps each boot at 3 GiB while the host's Docker VM was measured at
+     * **1.93 GiB** (2026-07-30), so the cap cannot actually be honoured and a fat modpack mod gets OOM-killed by the
+     * VM instead. Docker reports that as exit **137**, there is no ready-line, and the template's `Killed "$JAVA"`
+     * line deliberately does not match the setup-abort markers — which previously left exactly one outcome:
+     * `CRASHED`, i.e. a **HIGH-confidence "this mod is clientside"** produced purely by host memory pressure. In a
+     * catalog-wide sweep that is a systematic false-positive source, and the suspected-clientside list is the entire
+     * deliverable.
+     */
+    @Test
+    fun aKilledServerIsInconclusiveNotCrashed() {
+        val console = listOf("[Server thread/INFO]: Preparing spawn area: 24%", "start.sh: line 144: Killed \"\$JAVA\"")
+
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(console, exitCode = 137, timedOut = false),
+            "exit 137 is SIGKILL — the mod was never given the chance to fail on its own"
+        )
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(listOf("no ready line here"), exitCode = 143, timedOut = false),
+            "exit 143 is SIGTERM — an externally stopped server is not evidence either"
+        )
+    }
+
+    /**
+     * Memory exhaustion reported by the JVM or the kernel is environmental, not a sideness signal. A mod *can* be
+     * memory-hungry, but running out of memory is still not evidence that it needs a client — and the confidence
+     * model only ever claims CRASHED when it is sure.
+     */
+    @Test
+    fun memoryExhaustionMarkersAreInconclusive() {
+        val cases = listOf(
+            "java.lang.OutOfMemoryError: Java heap space",
+            "There is insufficient memory for the Java Runtime Environment to continue.",
+            "os::commit_memory failed; error='Cannot allocate memory' (errno=12)"
+        )
+        for (line in cases) {
+            Assertions.assertEquals(
+                BootResult.INCONCLUSIVE,
+                BootLogClassifier.classify(listOf("booting", line), exitCode = 1, timedOut = false),
+                "must not be scored a clientside crash: $line"
+            )
+        }
+    }
+
+    /**
+     * The guard must stay narrow: a genuine mod-load failure still has to read as CRASHED, or the boot signal — the
+     * one decisive piece of evidence in the whole confidence model — would be neutered.
+     */
+    @Test
+    fun aGenuineModCrashIsStillCrashed() {
+        val console = listOf(
+            "[Server thread/ERROR]: Failed to create mod instance.",
+            "java.lang.NoClassDefFoundError: net/minecraft/client/Minecraft"
+        )
+
+        Assertions.assertEquals(BootResult.CRASHED, BootLogClassifier.classify(console, exitCode = 1, timedOut = false))
+    }
+
+    /** A boot that reached the ready-line and was then killed stays SURVIVED — the ready-line still wins outright. */
+    @Test
+    fun aReadyServerKilledAfterwardsStillSurvived() {
+        val console = listOf("[Server thread/INFO]: Done (7.2s)! For help, type \"help\"", "Killed")
+
+        Assertions.assertEquals(BootResult.SURVIVED, BootLogClassifier.classify(console, exitCode = 137, timedOut = false))
+    }
 }

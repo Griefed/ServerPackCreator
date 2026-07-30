@@ -78,6 +78,30 @@ object BootLogClassifier {
     )
 
     /**
+     * Console evidence that the run died for lack of memory rather than because of the mod — the JVM's own
+     * out-of-memory reports and the shell's message when the kernel's OOM killer takes the server.
+     *
+     * A mod *can* be memory-hungry, but running out of memory is not evidence that it needs a client, and the
+     * confidence model only claims [BootResult.CRASHED] when it is sure. Measured 2026-07-30: the grinder caps a boot
+     * at 3 GiB while the host's Docker VM held 1.93 GiB, so the cap could not be honoured and fat mods were killed by
+     * the VM — which, without this, scored as a HIGH-confidence clientside crash.
+     */
+    private val outOfMemoryMarkers = Regex(
+        "(java\\.lang\\.OutOfMemoryError" +
+            "|insufficient memory for the Java Runtime Environment" +
+            "|Cannot allocate memory" +
+            "|Killed\\s+\"?\\\$?JAVA)",
+        RegexOption.IGNORE_CASE
+    )
+
+    /**
+     * Exit codes meaning "terminated from outside" (POSIX `128 + signal`): `SIGKILL` — what Docker reports for an
+     * OOM-killed container — and `SIGTERM`. Neither says anything about the mod, so neither may count as a crash.
+     * `SIGABRT` (134) is deliberately **not** here: a fatal JVM abort is a real failure of the running server.
+     */
+    private val killedExitCodes = setOf(137, 143)
+
+    /**
      * Classify a boot from its [consoleLines], the process [exitCode] (`null` if it was killed/never
      * exited) and whether the time-budget was exceeded ([timedOut]).
      *
@@ -95,6 +119,10 @@ object BootLogClassifier {
             return BootResult.INCONCLUSIVE
         }
         if (consoleLines.any { setupAbortMarkers.containsMatchIn(it) }) {
+            return BootResult.INCONCLUSIVE
+        }
+        // Killed from outside, or killed for memory: the mod never got the chance to fail on its own merits.
+        if (exitCode in killedExitCodes || consoleLines.any { outOfMemoryMarkers.containsMatchIn(it) }) {
             return BootResult.INCONCLUSIVE
         }
         return when (exitCode) {
