@@ -173,21 +173,6 @@ While the service runs:
 
 Columns are `Name, Project, NamePattern, Confidence, Loader, Detail`, highest confidence first.
 
-### Watching what it is doing right now
-
-The table answers *what it has found*. For *what it is doing*, there are three live views:
-
-- **`http://localhost:8757/status`** — JSON: uptime, current pass,each busy worker with the candidate it holds and
-  how long it has held it, the crawl position per platform, and the installed-tuple count of the loader cache.
-  This is the one to poll or eyeball when a boot seems stuck.
-- **`~/.spc-grinder/logs/serverpackcreator.log`** — the daemon log (rolling). One `Grinding <platform>/<slug>` line
-  when a candidate starts and one `Done … → Forge=LOW, …` when it finishes, with the worker thread in every line:
-  `tail -f ~/.spc-grinder/logs/serverpackcreator.log`
-- **the per-boot console, live** — each boot streams into its attempt's `boot.log` *as the server starts*, so a
-  boot in progress can be followed: `tail -f ~/.spc-grinder/work/verify/boot/<slug>-<Loader>/boot.log`. The
-  loader install does the same into `<cache>/<mc>/<loader>/<version>/.spc-install.log`, which is the slow phase
-  worth watching on a cold cache.
-
 **Interpreting confidence:** only `HIGH` (the server crashed with the mod in place) is decisive. `MEDIUM`
 means the server booted — which does *not* prove the mod is server-safe. `INCONCLUSIVE` means nothing was
 learned, e.g. the loader has no build for that Minecraft version, so the mod was never actually tested.
@@ -200,7 +185,133 @@ one entry per platform with the next `offset`, the number of completed `sweeps`,
 
 ---
 
-## 7. Running as a systemd service
+## 7. Watch what it is doing (logs and live status)
+
+The report table answers *what the grinder has found*. These answer *what it is doing right now* — which is what
+you want when a boot has been quiet for eight minutes.
+
+| Question | Where to look |
+|---|---|
+| What is each worker on, and for how long? | `curl -s localhost:8757/status` |
+| What did it just decide about a mod? | daemon log — `Grinding …` / `Done … →` lines |
+| What is the Minecraft server printing *right now*? | that attempt's `boot.log` (live) |
+| Why is a cold tuple taking minutes? | that tuple's `.spc-install.log` (live) |
+| Where has the crawl got to? | `/status` → `crawl`, or `SPC_GRINDER_CURSORS` |
+
+### `/status` — live activity, as JSON
+
+```bash
+curl -s http://localhost:8757/status
+```
+
+```json
+{
+  "verdicts" : 454,
+  "activity" : {
+    "uptimeSeconds" : 22, "pass" : 1, "passCandidates" : 100,
+    "passRunningSeconds" : 20, "verified" : 2, "failed" : 0, "skippedFresh" : 0,
+    "workers" : [ {
+      "worker" : "grind-worker-1", "platform" : "Modrinth", "slug" : "deeperdarker",
+      "projectUrl" : "https://modrinth.com/mod/deeperdarker", "busySeconds" : 19
+    } ]
+  },
+  "crawl" : {
+    "Modrinth"   : { "offset" : 200, "sweeps" : 0, "partition" : null },
+    "CurseForge" : { "offset" : 200, "sweeps" : 0, "partition" : "*|*|*|desc" }
+  },
+  "loaderCache" : { "installedTuples" : 43, "path" : "/…/.spc-grinder/cache" }
+}
+```
+
+**`busySeconds` is the one to watch.** A worker past a few minutes on one candidate is either installing a cold
+loader tuple or stuck; the boot budget is 12 minutes, so anything approaching that will end as `INCONCLUSIVE`.
+A worker between candidates is simply absent from `workers`, so a shorter list than `SPC_GRINDER_WORKERS` means
+the rest are idle. `verified`/`failed`/`skippedFresh` count since the process started, not per pass.
+
+Handy one-liners:
+
+```bash
+curl -s localhost:8757/status | jq '.activity.workers'                  # who is on what
+curl -s localhost:8757/status | jq '.crawl'                             # crawl position per platform
+watch -n5 'curl -s localhost:8757/status | jq -c .activity'             # a poor man's dashboard
+```
+
+### The daemon log
+
+```bash
+tail -f ~/.spc-grinder/logs/serverpackcreator.log
+```
+
+Every line carries the worker thread, and each candidate produces a pair:
+
+```
+[grind-worker-1] Grinding CurseForge/chameleon — https://www.curseforge.com/minecraft/mc-mods/chameleon
+[grind-worker-1] Done CurseForge/chameleon → Forge=LOW, NeoForge=LOW after 47s
+```
+
+Projects skipped because their verdict is still fresh are logged at DEBUG, not INFO — a pass can skip dozens in
+microseconds, and they would bury the line you care about.
+
+Lines worth grepping for:
+
+| Pattern | Means |
+|---|---|
+| `Grinding ` / `Done .*→` | candidate started / finished, with its per-loader verdicts |
+| `Reusing cached` | an installed loader build was reused instead of installing a newer one |
+| `not the newest build` | a crash is being re-checked on the newest loader before it counts |
+| `were not reached` | a pass was cut short; the crawl cursor was held back so nothing is skipped |
+| `Evicted` | idle loader installs reclaimed (`SPC_GRINDER_CACHE_TTL_DAYS`) |
+| `holds .* mods but only` | a CurseForge slice is too big to page through; its middle is unreachable |
+| `trends upwards` | CurseForge stopped honouring the download sort — the fetched subset is no longer the intended one |
+| `list unavailable` | a CurseForge axis list (versions/categories) could not be fetched; coverage reduced this sweep |
+| `Killed` | a boot was OOM-killed — lower `SPC_GRINDER_WORKERS` or give Docker more memory |
+
+### The live per-boot console
+
+Each boot streams the server's console into its attempt directory **as it happens**, so a boot in progress can be
+followed:
+
+```bash
+tail -f ~/.spc-grinder/work/verify/boot/<slug>-<Loader>/boot.log
+```
+
+The loader install — the slow part on a cold cache, minutes of library downloads — streams the same way into the
+tuple's cache directory:
+
+```bash
+tail -f ~/.spc-grinder/cache/<minecraft>/<loader>/<version>/.spc-install.log
+```
+
+Both survive a killed boot, which is the point: output is written as it arrives rather than at the end. Once a
+boot finishes, `boot.log` is rewritten with the authoritative console. The attempt directory is reused per
+`(slug, loader)` and wiped at the start of each new attempt, so copy anything you want to keep.
+
+As an alternative you can attach to the container directly:
+
+```bash
+docker ps --format '{{.Names}}'   # the in-flight boot
+docker logs -f <name>
+```
+
+### Log files and rotation
+
+| Path | What | Rotates |
+|---|---|---|
+| `~/.spc-grinder/logs/serverpackcreator.log` | the daemon log (log4j) | yes, automatically |
+| `~/.spc-grinder/logs/plugins.log` | SPC plugin log — normally empty here | yes |
+| `<work>/verify/boot/<slug>-<Loader>/boot.log` | one boot's console | no; replaced per attempt |
+| `<cache>/<mc>/<loader>/<ver>/.spc-install.log` | one loader install's console | no; removed with the tuple |
+
+A `grinder.log` in `~/.spc-grinder` exists only if *you* redirected the process's stdout there. The log4j file
+above is written regardless. Under systemd, console output goes to the journal instead:
+
+```bash
+journalctl -fu spc-grinder
+```
+
+---
+
+## 8. Running as a systemd service
 
 ```ini
 [Unit]
@@ -226,7 +337,7 @@ Give `TimeoutStopSec` room: on stop the grinder removes in-flight containers bef
 
 ---
 
-## 8. Troubleshooting
+## 9. Troubleshooting
 
 | Symptom                                  | Cause & fix                                                                                                                   |
 |------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|
@@ -245,7 +356,7 @@ Give `TimeoutStopSec` room: on stop the grinder removes in-flight containers bef
 
 ---
 
-## 9. Testing the start-script templates (maintainers)
+## 10. Testing the start-script templates (maintainers)
 
 The module also hosts the harness that boots SPC's generated `start.sh` / `start.fish` across Minecraft
 versions and loaders, plus a PowerShell parse/behaviour check. It needs a second image:

@@ -64,6 +64,8 @@ file small enough to stay useful. Read the one for the subsystem you are touchin
 
 ## Operator-facing logging (three surfaces, all live)
 
+*Operator-facing documentation for these lives in `README.md` §7 — keep the two in step.*
+
 - **`/status` on the report server** (`GrinderStatus` → `StatusSnapshot`, Jackson-serialized): uptime, current
   pass, per-worker candidate + `busySeconds`, crawl cursor per platform, installed-tuple count. Written from the
   worker threads, read from HTTP threads — `snapshot()` is a point-in-time **copy**, not a live view, so a
