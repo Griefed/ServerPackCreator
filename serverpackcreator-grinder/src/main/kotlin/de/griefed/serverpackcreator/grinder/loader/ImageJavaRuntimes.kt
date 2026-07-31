@@ -22,6 +22,27 @@ package de.griefed.serverpackcreator.grinder.loader
 import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftMeta
 
 /**
+ * Whether the runtime image can boot a given Minecraft version, and when it cannot, **why**.
+ *
+ * The two failing cases are deliberately separate. [JDK_NOT_BUNDLED] is a decision — the image ships a fixed JDK
+ * set and this version needs one outside it — so reporting the version as skipped is accurate. [REQUIREMENT_UNKNOWN]
+ * is an *absence of information*: SPC could not tell us what the version needs, which
+ * `MinecraftServer.javaVersion()` also returns when the per-version manifest is missing and its download fails.
+ * Presenting that as "not applicable" is how the newest Minecraft versions quietly dropped out of the template
+ * matrix while it still reported green.
+ */
+enum class ImageSupport {
+    /** The required Java major is known and bundled — the version can be booted. */
+    SUPPORTED,
+
+    /** The required Java major is known, but this image does not ship it. A legitimate, permanent exclusion. */
+    JDK_NOT_BUNDLED,
+
+    /** Nothing is known about the version's Java requirement. A metadata failure, not an exclusion. */
+    REQUIREMENT_UNKNOWN
+}
+
+/**
  * Decides which bundled JDK boots a given Minecraft version, and whether the runtime image can run it
  * at all. The required Java major comes from SPC's own version metadata
  * ([MinecraftMeta.requiredJavaVersion]) — Mojang's *declared* server requirement — not a hand-rolled
@@ -41,8 +62,18 @@ class ImageJavaRuntimes(
     private val bundledMajors: Set<Int> = setOf(8, 17, 21, 25)
 ) {
     /** True when [minecraftVersion]'s required Java major is both known and bundled in the image. */
-    fun supports(minecraftVersion: String): Boolean =
-        requiredJavaMajor(minecraftVersion)?.let { it in bundledMajors } ?: false
+    fun supports(minecraftVersion: String): Boolean = supportFor(minecraftVersion) == ImageSupport.SUPPORTED
+
+    /**
+     * *Why* [minecraftVersion] can or cannot be booted here, which [supports] necessarily throws away by
+     * answering a single boolean. Callers that report to a human need the distinction: a missing JDK is a
+     * permanent, honest exclusion, whereas an unknown requirement means the metadata lookup failed and any
+     * "skipped" message built from it is claiming knowledge nobody has.
+     */
+    fun supportFor(minecraftVersion: String): ImageSupport {
+        val required = requiredJavaMajor(minecraftVersion) ?: return ImageSupport.REQUIREMENT_UNKNOWN
+        return if (required in bundledMajors) ImageSupport.SUPPORTED else ImageSupport.JDK_NOT_BUNDLED
+    }
 
     /** The in-image `java` binary path for [minecraftVersion], or `null` when its Java isn't bundled. */
     fun javaPath(minecraftVersion: String): String? =

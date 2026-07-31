@@ -24,6 +24,7 @@ import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.Type
 import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.net.URI
 import java.net.URL
@@ -48,6 +49,7 @@ class MinecraftServer internal constructor(
     private val utilities: Utilities,
     apiProperties: ApiProperties
 ) {
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val manifestFile: File = File(apiProperties.minecraftServerManifestsDirectory, "$minecraftVersion.json")
     private var serverJson: JsonNode? = null
     private val downloads = VersionMetaConfig.TAG_DOWNLOADS
@@ -72,6 +74,9 @@ class MinecraftServer internal constructor(
             val url = srv?.get(url)?.asText()
             Optional.ofNullable(URI(url).toURL())
         } catch (e: Exception) {
+            // An unreadable or undownloadable manifest is indistinguishable from "no server URL declared" to a
+            // caller, so say which one happened. Callers treat the empty Optional as "no server available".
+            log.warn("Could not read the server download URL for Minecraft $minecraftVersion from $manifestFile.", e)
             Optional.empty()
         }
 
@@ -103,6 +108,12 @@ class MinecraftServer internal constructor(
             val major = jv?.get(majorVersion)?.asInt()?.toByte()
             Optional.ofNullable(major)
         } catch (e: Exception) {
+            // The empty Optional here is what every consumer reads as "this version declares no required Java",
+            // which is also what a *failed manifest download* produces -- and downstream that became a
+            // benign-looking "not applicable" that silently dropped the newest Minecraft versions from the
+            // template matrix. The Optional contract is exported, so it stays; the cause gets logged instead of
+            // vanishing. See ImageSupport.REQUIREMENT_UNKNOWN for the consumer-side half.
+            log.warn("Could not determine the required Java version for Minecraft $minecraftVersion from $manifestFile.", e)
             Optional.empty()
         }
 
