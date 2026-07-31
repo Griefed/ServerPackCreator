@@ -99,3 +99,19 @@ a download seam `MinecraftServer` does not currently have, since it constructs i
 That seam is the actual work, and the reason this is an entry rather than a same-day fix. **Note the exported
 `Optional` contract must not change:** callers read empty as "no server available", and B20's consumer-side
 distinction (`ImageSupport.REQUIREMENT_UNKNOWN`) already depends on that shape.
+
+### B24 — every test run wipes `<module>/tests`, so cached version metadata never survives a run
+Found 2026-07-31 while removing the build's shared-Preferences writes. `java-conventions`' `cleanup()` runs in
+`doFirst` of both `test` and `clean` and deletes everything under `<module>/tests` except `.gitkeep`. Since that
+directory is now also each module's SPC **home**, the deletion takes the version manifests and the per-version
+`mcserver/*.json` cache with it, every run.
+
+**This explains B20's disappearing metadata.** `26.2.json` had to be seeded by hand to get the Forge proof, and it
+vanished again between runs — not deleted by `VersionMeta`, but by the build's own pre-test cleanup. It also means
+`ScriptTemplateMatrixIT`'s first run after any `clean`/`test` starts from an empty metadata cache, which is when the
+newest Minecraft versions are most likely to resolve as `REQUIREMENT_UNKNOWN`.
+
+It further contradicts the root `CLAUDE.md` claim that the api suite needs **no live network** because "version
+manifests are cached": with the cache wiped before every run, the suite re-fetches them. Worth measuring — run the
+api suite with networking blocked and see what fails — before deciding whether the clean-slate guarantee or the
+offline guarantee is the one to keep. Both are defensible; they cannot both be true as written.

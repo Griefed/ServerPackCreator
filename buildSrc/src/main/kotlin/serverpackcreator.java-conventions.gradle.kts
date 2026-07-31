@@ -4,7 +4,6 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.prefs.Preferences
 
 repositories {
     mavenCentral()
@@ -130,11 +129,12 @@ fun cleanup() {
         .forEach {
             it.deleteRecursively()
         }
-    Preferences.userRoot().node("ServerPackCreator").removeNode()
-    Preferences.userRoot().node("ServerPackCreator").put(
-        "de.griefed.serverpackcreator.home",
-        projectDir.resolve("tests").absolutePath
-    )
+    // Deliberately does NOT touch the Preferences store any more. This used to `removeNode()` the shared,
+    // machine-wide `ServerPackCreator` node and write the module's test directory into it as the home -- so every
+    // `test` or `clean` invocation relocated the home of the developer's own GUI, and of any running daemon, into
+    // the repository. The isolated per-module node and `-Dde.griefed.serverpackcreator.home` injected on the test
+    // task above replace it completely; SPC prefers that property over the stored preference, so nothing needs a
+    // stored value. Verified: the shared node held a repo test path from this mechanism.
 }
 
 tasks.jar {
