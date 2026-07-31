@@ -24,6 +24,7 @@ import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.Type
 import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.net.URI
 import java.net.URL
@@ -48,6 +49,7 @@ class MinecraftServer internal constructor(
     private val utilities: Utilities,
     apiProperties: ApiProperties
 ) {
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val manifestFile: File = File(apiProperties.minecraftServerManifestsDirectory, "$minecraftVersion.json")
     private var serverJson: JsonNode? = null
     private val downloads = VersionMetaConfig.TAG_DOWNLOADS
@@ -72,6 +74,10 @@ class MinecraftServer internal constructor(
             val url = srv?.get(url)?.asText()
             Optional.ofNullable(URI(url).toURL())
         } catch (e: Exception) {
+            // An unreadable or undownloadable manifest is indistinguishable from "no server URL declared" to a
+            // caller, so leave a trace of which one happened. Callers treat the empty Optional as "no server
+            // available". DEBUG, message-only: see javaVersion() for why this must not be warn-with-stacktrace.
+            log.debug("No server download URL for Minecraft $minecraftVersion in $manifestFile: ${e.javaClass.simpleName}")
             Optional.empty()
         }
 
@@ -103,6 +109,18 @@ class MinecraftServer internal constructor(
             val major = jv?.get(majorVersion)?.asInt()?.toByte()
             Optional.ofNullable(major)
         } catch (e: Exception) {
+            // The empty Optional here is what every consumer reads as "this version declares no required Java",
+            // which is also what a *failed manifest download* produces -- and downstream that became a
+            // benign-looking "not applicable" that silently dropped the newest Minecraft versions from the
+            // template matrix. The Optional contract is exported, so it stays; the cause leaves a trace instead
+            // of vanishing. See ImageSupport.REQUIREMENT_UNKNOWN for the consumer-side half.
+            //
+            // DEBUG and message-only, deliberately. This is a hot path on a *repeating* failure: setServerJson()
+            // does not remember a failed fetch, and getServer() calls both url() and javaVersion(), so one
+            // requiredJavaVersion lookup on a broken version costs two attempts -- and that lookup runs per
+            // candidate in the grinder, per cell in the template matrix, and on every GUI version selection. At
+            // warn-with-stacktrace that is a log flood; the exception type carries the diagnosis without it.
+            log.debug("No required Java version for Minecraft $minecraftVersion in $manifestFile: ${e.javaClass.simpleName}")
             Optional.empty()
         }
 

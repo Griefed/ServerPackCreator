@@ -65,9 +65,13 @@ class LoaderCache(
     private val cacheRoot: File,
     private val installer: LoaderInstaller,
     private val failureCooldown: Duration = Duration.ofHours(1),
-    private val clock: () -> Instant = Instant::now
+    private val clock: () -> Instant = Instant::now,
+    private val templateProvenance: () -> String? = { null }
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+
+    /** Set once the operator has been told that pre-provenance installs are being trusted. */
+    private val legacyProvenanceWarned = java.util.concurrent.atomic.AtomicBoolean(false)
 
     /** Per-tuple locks so an install serializes by tuple without blocking unrelated tuples. */
     private val installLocks = ConcurrentHashMap<String, Any>()
@@ -85,9 +89,53 @@ class LoaderCache(
     fun baseDirFor(loader: String, loaderVersion: String, minecraftVersion: String): File =
         File(cacheRoot, "${sanitize(minecraftVersion)}/${sanitize(loader)}/${sanitize(loaderVersion)}")
 
-    /** Whether the tuple's base is fully installed (its completion marker is present). */
-    fun isInstalled(loader: String, loaderVersion: String, minecraftVersion: String): Boolean =
-        File(baseDirFor(loader, loaderVersion, minecraftVersion), MARKER).isFile
+    /**
+     * Whether the tuple's base is fully installed *and* was produced by the templates currently in force.
+     *
+     * The marker alone only says an install succeeded, which is why a template change that alters what an install
+     * produces used to be served from cache regardless. A recorded provenance that differs from the current one is
+     * therefore a miss. An **absent** provenance is not: it predates this field, and treating unknown as different
+     * would re-install every cached tuple to answer a question that may not apply to it.
+     */
+    fun isInstalled(loader: String, loaderVersion: String, minecraftVersion: String): Boolean {
+        val marker = File(baseDirFor(loader, loaderVersion, minecraftVersion), MARKER)
+        if (!marker.isFile) {
+            return false
+        }
+        val current = templateProvenance() ?: return true
+        val recorded = recordedProvenance(marker) ?: run {
+            warnAboutLegacyProvenanceOnce()
+            return true
+        }
+        if (recorded == current) {
+            return true
+        }
+        log.info(
+            "Cached $loader $loaderVersion / Minecraft $minecraftVersion was installed with different start-script " +
+                "templates (recorded ${recorded.take(12)}…, current ${current.take(12)}…); reinstalling so the " +
+                "cached layer matches what a boot now expects."
+        )
+        return false
+    }
+
+    /** The template digest recorded in a completion [marker], or `null` for a marker written before it existed. */
+    private fun recordedProvenance(marker: File): String? = runCatching {
+        marker.readLines().firstOrNull { it.startsWith("$TEMPLATES_KEY=") }?.removePrefix("$TEMPLATES_KEY=")
+    }.getOrNull()
+
+    /**
+     * Say once — not per tuple — that pre-provenance installs are being trusted, so an operator who changes a
+     * template knows the older layers are not re-checked automatically and can invalidate by hand if it matters.
+     */
+    private fun warnAboutLegacyProvenanceOnce() {
+        if (legacyProvenanceWarned.compareAndSet(false, true)) {
+            log.warn(
+                "Some cached loader installs predate template-provenance tracking and are being reused as-is. If a " +
+                    "start-script template change altered what an install produces, delete the affected tuples " +
+                    "under the cache root to force a reinstall; installs from now on record their provenance."
+            )
+        }
+    }
 
     /**
      * Return the installed base directory for the tuple, running [installer] (once, with network) on a
@@ -131,7 +179,10 @@ class LoaderCache(
                 return null
             }
             recentFailures.remove(baseDir.path)
-            File(baseDir, MARKER).writeText("loader=$loader\nloaderVersion=$loaderVersion\nminecraftVersion=$minecraftVersion\n")
+            val provenance = templateProvenance()?.let { "$TEMPLATES_KEY=$it\n" } ?: ""
+            File(baseDir, MARKER).writeText(
+                "loader=$loader\nloaderVersion=$loaderVersion\nminecraftVersion=$minecraftVersion\n$provenance"
+            )
             return baseDir
         }
     }
@@ -240,5 +291,8 @@ class LoaderCache(
     companion object {
         /** Completion marker, written only after a successful install; its presence means cache-hit. */
         const val MARKER = ".spc-installed"
+
+        /** Marker key holding the digest of the start-script templates an install was produced with. */
+        internal const val TEMPLATES_KEY = "templates"
     }
 }

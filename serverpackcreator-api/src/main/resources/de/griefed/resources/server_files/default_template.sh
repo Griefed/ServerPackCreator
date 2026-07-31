@@ -240,13 +240,26 @@ setupForge() {
       # useless -- the VM refuses to start ("A command line option has attempted to allow or enable the Security
       # Manager"). Minecraft 26.x requires Java 25, so passing it there breaks every modern Forge pack before Forge
       # loads. Keep it where it is still needed, drop it where it is fatal.
-      local ssjForgeArgs="${SSJ_FORGE_ARGS}"
+      #
+      # That flag is not cosmetic to SSJ: it runs the Forge installer inside its own JVM and needs a SecurityManager
+      # to swallow the System.exit(0) the installer calls when it is done. Without it the installer's exit ends the
+      # whole process -- the pack installs, reports success, exits 0, and never launches the server. So on Java that
+      # cannot trap the exit we do not hand SSJ the install at all: install here, then launch through the argfile the
+      # installer produces, exactly as the USE_SSJ=false path does. Below Java 24 nothing changes.
       if [[ "${JAVA_VERSION}" =~ ^[0-9]+$ ]] && [[ ${JAVA_VERSION} -ge 24 ]]; then
-        ssjForgeArgs=""
+        echo "Java ${JAVA_VERSION} cannot grant ServerStarterJar the Security Manager it needs to run the Forge"
+        echo "installer, so this pack installs Forge directly and starts it from its argfile instead."
+        FORGE_ARGS_FILE="libraries/net/minecraftforge/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/unix_args.txt"
+        SERVER_RUN_COMMAND="@user_jvm_args.txt @${FORGE_ARGS_FILE} nogui"
+        if [[ $(downloadIfNotExist "${FORGE_ARGS_FILE}" "forge-installer.jar" "${FORGE_INSTALLER_URL}") == "true" ]]; then
+          echo "Forge Installer downloaded. Installing..."
+          runJavaCommand "-jar forge-installer.jar --installServer"
+        fi
+      else
+        SERVER_RUN_COMMAND="@user_jvm_args.txt ${SSJ_FORGE_ARGS} -jar server.jar --installer-force --installer ${FORGE_INSTALLER_URL} nogui"
+        # Download ServerStarterJar to server.jar
+        refreshServerJar
       fi
-      SERVER_RUN_COMMAND="@user_jvm_args.txt ${ssjForgeArgs} -jar server.jar --installer-force --installer ${FORGE_INSTALLER_URL} nogui"
-      # Download ServerStarterJar to server.jar
-      refreshServerJar
     fi
 
     echo "Generating user_jvm_args.txt from variables..."

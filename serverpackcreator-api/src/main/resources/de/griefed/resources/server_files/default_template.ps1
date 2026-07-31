@@ -404,14 +404,30 @@ Function global:SetupForge
             # SSJForgeArgs defaults to -Djava.security.manager=allow, which JEP 486 made fatal from Java 24 on: the
             # VM refuses to start rather than ignoring it. Minecraft 26.x requires Java 25, so passing it there
             # breaks every modern Forge pack before Forge loads. Keep it where needed, drop it where it kills.
-            $EffectiveSSJForgeArgs = ${SSJForgeArgs}
+            #
+            # That flag is not cosmetic to SSJ: it runs the Forge installer inside its own JVM and needs a
+            # SecurityManager to swallow the System.exit(0) the installer calls when it is done. Without it the
+            # installer's exit ends the whole process -- the pack installs, reports success, exits 0, and never
+            # launches the server. So on Java that cannot trap the exit we do not hand SSJ the install at all:
+            # install here, then launch from the argfile the installer produces, as the UseSSJ=false path does.
             if (("${JavaVersion}" -match '^\d+$') -And ([int]${JavaVersion} -ge 24))
             {
-                $EffectiveSSJForgeArgs = ""
+                Write-Host "Java ${JavaVersion} cannot grant ServerStarterJar the Security Manager it needs to run the"
+                Write-Host "Forge installer, so this pack installs Forge directly and starts it from its argfile instead."
+                $ForgeArgsFile = "libraries/net/minecraftforge/forge/${MinecraftVersion}-${ModLoaderVersion}/win_args.txt"
+                $script:ServerRunCommand = "@user_jvm_args.txt @${ForgeArgsFile} nogui"
+                if ((DownloadIfNotExists "${ForgeArgsFile}" "forge-installer.jar" "${ForgeInstallerUrl}"))
+                {
+                    Write-Host "Forge Installer downloaded. Installing..."
+                    RunJavaCommand "-jar forge-installer.jar --installServer"
+                }
             }
-            $script:ServerRunCommand = "@user_jvm_args.txt ${EffectiveSSJForgeArgs} -jar server.jar --installer-force --installer ${ForgeInstallerUrl} nogui"
-            # Download ServerStarterJar to server.jar
-            RefreshServerJar
+            else
+            {
+                $script:ServerRunCommand = "@user_jvm_args.txt ${SSJForgeArgs} -jar server.jar --installer-force --installer ${ForgeInstallerUrl} nogui"
+                # Download ServerStarterJar to server.jar
+                RefreshServerJar
+            }
         }
 
         Write-Host "Generating user_jvm_args.txt from variables..."

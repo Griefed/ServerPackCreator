@@ -92,6 +92,7 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 |---|---|
 | `PathsConfig.homeDirectory` consults `-Dde.griefed.serverpackcreator.home` **before** the stored preference and the properties file (`PathsConfig.kt:106`) | A host that sets that property now resolves a different home than the same code did before. Additive and opt-in — nothing changes unless the property is set — but every plugin reading `apiProperties.homeDirectory` follows it. |
 | `ApiProperties.resolvePreferencesNode` + `PREFERENCES_NODE_PROPERTY` / `PREFERENCES_NODE_ENV` / `DEFAULT_PREFERENCES_NODE` | New exported surface; the default node name is unchanged, so existing installations keep reading their own settings. |
+| `ServerPackProvisioner.variables` reads the shipped `server_files/variables.txt` instead of a compiled-in string literal, falling back to the bundled copy (`ServerPackProvisioner.kt:56-63`). New exported members: `PathsConfig.defaultVariablesTemplate`, `ApiProperties.defaultVariablesTemplate` | A default installation gets byte-identical output — but the value is no longer a constant. An operator who edits that file changes what **every** embedder's generation emits, and one who deletes it gets the bundled fallback (the app's delete-watcher restores it). Anything asserting on a fixed `variables` string should read the template instead. |
 
 ---
 
@@ -136,6 +137,26 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   **confirm the test fails before the fix**: a guard whose teeth were never checked has repeatedly turned
   out to assert nothing (twice in one session, when a mis-indented edit meant the "broken" run was
   actually unmodified code).
+- **Pin first means *commit* first, not just write first.** The failing test lands in its own `test(...)`
+  commit, **red**, and the fix follows in the next one. In-session verification is not a substitute: it leaves
+  no evidence, and it is exactly what silently passed twice above. Audited 2026-07-31 — all **eight** code
+  commits of that day's plan (`2a9a03473`, `30f6cbded`, `c571e2d7f`, `07a647f01`, `aa2d27f7f`, `91ac0e1a9`,
+  `1f92f585c`, `5caa6833f`) bundled guard and change, so nobody can check out `2a9a03473^` and watch the pin
+  go red. The tests were written first; only the boundary collapsed, which is the part that costs nothing to
+  keep and everything to reconstruct later.
+- **`refactor:` is a claim about behaviour, not about intent.** Use it only when behaviour is preserved; label
+  a behaviour change `fix:` or `feat:` however tidy it looks. If an **existing** test's *assertion, argument or
+  expected value* has to change, the label is already wrong — that is the stop-and-flag signal, not a formality.
+  **Carve-out: a reference-only update is not the signal.** Moving a symbol between modules necessarily updates
+  imports and receivers in its tests, and Strangler-Fig moves are exactly what the conventions ask for — so
+  `- Old.isSuspendGap(gap, poll)` / `+ New.isSuspendGap(gap, poll)`, with every assertion byte-identical, stays a
+  `refactor:`. Judge the diff, not the file list: if no expectation changed, the test did not change in the sense
+  this rule means. (Written after the rule's first draft flagged `b6b778b82`, a clean cross-module move, as
+  mislabelled — a convention that cries wolf on legitimate refactors gets ignored wholesale.) Two commits got this
+  wrong: `5f138ef8a` (`refactor(app)`) moved four call-sites onto a *resolved* Preferences node, changing where
+  any host with its own node reads and writes, and had to edit `CommandlineParserTest`; `7815d5960`
+  (`refactor(api)`) added an operator-editable template path plus a delete-watcher branch in `-app`. Both
+  described the change honestly in the body — only the type lied.
 
 ### Kotlin idioms
 
@@ -170,16 +191,16 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 **Goal:** KISS/MVC/TDD/SOLID across api → app → plugin-example → web-frontend.
 **Phases:** 0 baseline · 1 API · 2 app · 3 plugin-example · 4 frontend.
 
-**Current status (2026-06-26):**
+**Current status (2026-07-31):**
 
 | Module         | Tests         | Notes                                                                                |
 |----------------|---------------|--------------------------------------------------------------------------------------|
-| api            | 233 (1 skip)  | Phase 1 **complete**; + `MinecraftMetaTest` (`requiredJavaVersion`) and `ScriptTemplateContentTest` (non-gated guard for the shipped templates; skips its `fish -n` case where fish is absent, and **executes** the bash `setupFabric` to pin the offline launcher path). |
-| clientside     | 67            | Extracted from `-app`; `BootVerifier` split + `packPostProcessor` hook; selection (MC-support gate) + setup-abort classification pinned |
-| app            | 73            | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay             |
+| api            | 272 (1 skip)  | Phase 1 **complete**; + `MinecraftMetaTest` (`requiredJavaVersion`) and `ScriptTemplateContentTest` (non-gated guard for the shipped templates; skips its `fish -n` case where fish is absent, and **executes** the bash `setupFabric` to pin the offline launcher path). |
+| clientside     | 87            | Extracted from `-app`; `BootVerifier` split + `packPostProcessor` hook; selection (MC-support gate) + setup-abort classification pinned |
+| app            | 76            | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay             |
 | plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |
 | web-frontend   | 23 (from 0)   | Phase 4a–4e done: Vitest, `$q` decoupling, **full TS migration**, component coverage  |
-| grinder        | 203 (19 skip) | + `BootWorkspaceReaper` — staging reclamation; the work tree grew unbounded at ~23 GB/h (98 GB measured) before it. Core loop **e2e-verified on current MC** (26.2/Quilt boots offline on JDK 25); **continuous fire-and-forget** with a **persisted catalog crawl cursor** (each pass takes the next slice, so coverage accumulates instead of re-checking the top N) + work-driven pacing; Modrinth + CurseForge sources; **script-template matrix IT** (bash/fish/pwsh — caught + fixed a real `.fish` bug); container/loader/report/source subpackages; MC selection bounded to image-supported Java. 94 run + 8 gated (3 engine IT, 3 live-crawl IT, 2 template-matrix). Template matrix fully green: 5 MC x 5 loaders x bash/fish, bash == fish everywhere. CurseForge is crawled **in partitions** (135 Minecraft versions × modloader × category, both sort directions) to get past its 10 000-result API cap — **now live-verified with a real API key** (`CurseForgeCrawlLiveIT`), which caught two silent design-killers the docs had hidden: `totalCount` saturates at the cap (so no split could ever fire) and the version list is 98 % non-Minecraft strings |
+| grinder        | 224 (19 skip) | + `BootWorkspaceReaper` — staging reclamation; the work tree grew unbounded at ~23 GB/h (98 GB measured) before it. Core loop **e2e-verified on current MC** (26.2/Quilt boots offline on JDK 25); **continuous fire-and-forget** with a **persisted catalog crawl cursor** (each pass takes the next slice, so coverage accumulates instead of re-checking the top N) + work-driven pacing; Modrinth + CurseForge sources; **script-template matrix IT** (bash/fish/pwsh — caught + fixed a real `.fish` bug); container/loader/report/source subpackages; MC selection bounded to image-supported Java. 94 run + 8 gated (3 engine IT, 3 live-crawl IT, 2 template-matrix). Template matrix fully green: 5 MC x 5 loaders x bash/fish, bash == fish everywhere. CurseForge is crawled **in partitions** (135 Minecraft versions × modloader × category, both sort directions) to get past its 10 000-result API cap — **now live-verified with a real API key** (`CurseForgeCrawlLiveIT`), which caught two silent design-killers the docs had hidden: `totalCount` saturates at the cap (so no split could ever fire) and the version list is 98 % non-Minecraft strings |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.
@@ -192,6 +213,16 @@ splitting. `LarsonScanner.kt` 2,217 — self-contained widget, low priority.
 The GUI `GlobalScope.launch` anti-pattern (app) is **resolved** — all 26 sites now use
 `gui.utilities.ComponentCoroutineScope` (lifecycle-cancelled), GUI-verified. The frontend's
 settings-store `$q` coupling (4b) and `jsconfig.json`/TS gap (4c) are **resolved**.
+
+**2026-07-31 — audit + backlog cleanup (`claude-audit-backlog-cleanup`).** Three audit findings closed (the
+`variables.txt` contract row, and pin-first/`refactor:`-labelling as binding rules); one **withdrawn** as wrong on
+inspection, its inverse recorded as backlog B21. Backlog B13–B20 closed: a fresh Forge pack on Minecraft 26.x
+installed and exited **0** without launching (ServerStarterJar needs a `SecurityManager` to swallow the Forge
+installer's `System.exit`, which JEP 486 removed in Java 24 — so from 24 the templates install Forge themselves and
+launch from the installer's argfile); the "not applicable" skip that hid it now fails loudly; both boot paths share
+one suspend-aware deadline; the loader cache records which templates produced an install; test properties are
+generated rather than committed with one machine's paths; and `.gitignore` no longer hides shipped `server_files`
+resources. Remaining backlog: B4, B5, B11 (deliberate) plus B21, B22.
 
 **Current phase — 4 (frontend) complete; GUI structured-concurrency done.** Frontend 4a–4e: Vitest,
 settings-store `$q` decoupling, full TypeScript migration (all `src/` is TS, verified by

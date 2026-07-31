@@ -137,3 +137,17 @@ mods **in parallel, isolated containers** to build a catalog-wide list of suspec
 The boot seam above is in place; remaining to build: the `ContainerServerRunner`, the worker
 pool/queue, and a per-`(loader, loaderVer, mcVer)` pre-bake cache of the installed loader+libraries so
 each actual mod-boot runs offline.
+
+## Boot deadlines are suspend-aware (shared with the grinder)
+
+`SuspendAwareDeadline` (this module) is what both boot paths poll: `HostProcessServerRunner` here and the grinder's
+`DockerJavaContainerEngine`. A plain wall-clock deadline expires on a boot the host froze — measured, a laptop
+idle-sleeping in ~16-minute cycles produced 19 of 153 verdicts reading `timed out`, several `SURVIVED (timed out)`
+whose console showed the server reaching ready seconds after launch. Any gap between polls too large to be mere
+slowness is added back to the budget, so a timeout means *"the boot had this long and did not make it"*.
+
+It lives **here, not in the grinder**, because grinder depends on clientside and not the reverse — the detection was
+originally written in the container engine's companion, where this module could not reach it. The clock is injected
+so the threshold is testable at all: both real callers are integration-shaped and cannot be made to sleep.
+**Landmine:** any new poll/park loop that bounds a boot must use it rather than `System.currentTimeMillis()`, or that
+path silently reacquires the bug.
