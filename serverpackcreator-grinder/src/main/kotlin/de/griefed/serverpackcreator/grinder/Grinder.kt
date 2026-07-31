@@ -251,6 +251,8 @@ class GrindPool(
  * @author Griefed
  */
 data class GrindPass(
+    /** Every candidate this pass actually reached, used to commit each source's cursor no further than the work done. */
     val reached: Set<GrindCandidate>,
+    /** How many reached a verdict. Failures are excluded deliberately — pacing on failures races the cursor. */
     val verified: Int
 )

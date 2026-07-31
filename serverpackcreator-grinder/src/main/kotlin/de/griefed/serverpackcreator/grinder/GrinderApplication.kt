@@ -57,6 +57,11 @@ import java.util.concurrent.atomic.AtomicReference
 object GrinderApplication {
     private val log by lazy { cachedLoggerOf(GrinderApplication::class.java) }
 
+    /**
+     * Entry point. With project URLs as [args] it grinds exactly those once and exits; with none it runs
+     * continuously, taking the next catalogue slice each pass and persisting verdicts and crawl position after every
+     * step so a restart resumes mid-catalogue. Everything else is read from the environment — see README §5.
+     */
     @JvmStatic
     fun main(args: Array<String>) {
         val base = File(System.getProperty("user.home"), ".spc-grinder")
