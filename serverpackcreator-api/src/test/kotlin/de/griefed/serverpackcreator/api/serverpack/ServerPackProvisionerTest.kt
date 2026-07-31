@@ -52,7 +52,7 @@ import javax.imageio.ImageIO
  * launcher-present/absent branches of `getImprovedFabricLauncher`, all driven offline.
  */
 internal class ServerPackProvisionerTest {
-    private val api = ApiWrapper.api(File("src/test/resources/serverpackcreator.properties"))
+    private val api = ApiWrapper.api(File("build/resources/test/serverpackcreator.properties"))
     private val apiProperties = api.apiProperties
     private val provisioner = api.serverPackHandler.provisioner
 

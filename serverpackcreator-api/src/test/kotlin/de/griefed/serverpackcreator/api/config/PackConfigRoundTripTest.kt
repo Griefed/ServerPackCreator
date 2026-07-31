@@ -34,7 +34,7 @@ import java.io.File
 internal class PackConfigRoundTripTest {
 
     private val apiProperties =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).apiProperties
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).apiProperties
 
     /**
      * A fully-populated configuration survives a save/load cycle with all scalar fields, mod-lists,

@@ -40,7 +40,7 @@ import java.net.URL
  * icon-download is triggered.
  */
 internal class ModpackManifestParserTest {
-    private val api = ApiWrapper.api(File("src/test/resources/serverpackcreator.properties"))
+    private val api = ApiWrapper.api(File("build/resources/test/serverpackcreator.properties"))
     private val parser = ModpackManifestParser(api.apiProperties, api.utilities)
 
     /**

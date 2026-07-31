@@ -38,7 +38,7 @@ import java.util.*
  * server-packs directory is not polluted and the tests stay isolated.
  */
 internal class ServerPackHandlerRunTest {
-    private val api = ApiWrapper.api(File("src/test/resources/serverpackcreator.properties"))
+    private val api = ApiWrapper.api(File("build/resources/test/serverpackcreator.properties"))
     private val apiProperties = api.apiProperties
     private val configurationHandler = api.configurationHandler
     private val serverPackHandler = api.serverPackHandler

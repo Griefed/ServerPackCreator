@@ -16,9 +16,9 @@ import javax.imageio.ImageIO
  */
 internal class ServerPackHandlerCharacterizationTest {
     private val serverPackHandler =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).serverPackHandler
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).serverPackHandler
     private val apiProperties =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).apiProperties
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).apiProperties
 
     /**
      * Pins destination computation: pack name plus suffix, spaces replaced with underscores,

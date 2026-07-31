@@ -45,7 +45,7 @@ import java.io.File
 internal class LoaderMinecraftSupportTest {
 
     private val versionMeta: VersionMeta =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).versionMeta
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).versionMeta
 
     /** A version string that is not a Minecraft version must never be claimed by any loader. */
     @Test
