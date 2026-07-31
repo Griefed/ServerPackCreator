@@ -92,6 +92,7 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 |---|---|
 | `PathsConfig.homeDirectory` consults `-Dde.griefed.serverpackcreator.home` **before** the stored preference and the properties file (`PathsConfig.kt:106`) | A host that sets that property now resolves a different home than the same code did before. Additive and opt-in — nothing changes unless the property is set — but every plugin reading `apiProperties.homeDirectory` follows it. |
 | `ApiProperties.resolvePreferencesNode` + `PREFERENCES_NODE_PROPERTY` / `PREFERENCES_NODE_ENV` / `DEFAULT_PREFERENCES_NODE` | New exported surface; the default node name is unchanged, so existing installations keep reading their own settings. |
+| `ServerPackProvisioner.variables` reads the shipped `server_files/variables.txt` instead of a compiled-in string literal, falling back to the bundled copy (`ServerPackProvisioner.kt:56-63`). New exported members: `PathsConfig.defaultVariablesTemplate`, `ApiProperties.defaultVariablesTemplate` | A default installation gets byte-identical output — but the value is no longer a constant. An operator who edits that file changes what **every** embedder's generation emits, and one who deletes it gets the bundled fallback (the app's delete-watcher restores it). Anything asserting on a fixed `variables` string should read the template instead. |
 
 ---
 
@@ -136,6 +137,20 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   **confirm the test fails before the fix**: a guard whose teeth were never checked has repeatedly turned
   out to assert nothing (twice in one session, when a mis-indented edit meant the "broken" run was
   actually unmodified code).
+- **Pin first means *commit* first, not just write first.** The failing test lands in its own `test(...)`
+  commit, **red**, and the fix follows in the next one. In-session verification is not a substitute: it leaves
+  no evidence, and it is exactly what silently passed twice above. Audited 2026-07-31 — all **eight** code
+  commits of that day's plan (`2a9a03473`, `30f6cbded`, `c571e2d7f`, `07a647f01`, `aa2d27f7f`, `91ac0e1a9`,
+  `1f92f585c`, `5caa6833f`) bundled guard and change, so nobody can check out `2a9a03473^` and watch the pin
+  go red. The tests were written first; only the boundary collapsed, which is the part that costs nothing to
+  keep and everything to reconstruct later.
+- **`refactor:` is a claim about behaviour, not about intent.** Use it only when behaviour is preserved; label
+  a behaviour change `fix:` or `feat:` however tidy it looks. If an **existing** test has to change, the label
+  is already wrong — that is the stop-and-flag signal, not a formality. Two commits the same day got this
+  wrong: `5f138ef8a` (`refactor(app)`) moved four call-sites onto a *resolved* Preferences node, changing where
+  any host with its own node reads and writes, and had to edit `CommandlineParserTest`; `7815d5960`
+  (`refactor(api)`) added an operator-editable template path plus a delete-watcher branch in `-app`. Both
+  described the change honestly in the body — only the type lied.
 
 ### Kotlin idioms
 
