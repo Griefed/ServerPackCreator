@@ -130,21 +130,41 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      */
     val fallbackAikarsFlags: String get() = generationConfig.fallbackAikarsFlags
 
+    /**
+     * Shipped default for the update-check URL, used when no property overrides it.
+     *
+     * Every `fallback*` member below is the same idea: the value SPC falls back on when the corresponding property is
+     * unset or invalid, delegated to whichever settings group owns it. They exist so a broken or missing
+     * `serverpackcreator.properties` still yields a working configuration rather than an error.
+     */
     val fallbackUpdateURL: String get() = UpdateConfig.FALLBACK_UPDATE_URL
+    /** Default matching mode for clientside-mod exclusions (start/end/contains/regex). */
     val fallbackExclusionFilter: ExclusionFilter get() = generationConfig.fallbackExclusionFilter
+    /** Whether an existing server pack is overwritten instead of the run aborting. */
     val fallbackOverwriteEnabled: Boolean get() = generationConfig.fallbackOverwriteEnabled
+    /** Whether the generated Java-install helper scripts are refreshed on each generation. */
     val fallbackJavaScriptAutoupdateEnabled: Boolean get() = javaConfig.fallbackJavaScriptAutoupdateEnabled
+    /** Whether update checks consider alpha/beta releases as well as stable ones. */
     val fallbackCheckingForPreReleasesEnabled: Boolean get() = updateConfig.fallbackCheckingForPreReleasesEnabled
+    /** Whether the ZIP-exclusion list is applied when archiving a finished pack. */
     val fallbackZipFileExclusionEnabled: Boolean get() = generationConfig.fallbackZipFileExclusionEnabled
+    /** Whether post-install cleanup runs, deleting installer leftovers from the finished pack. */
     val fallbackServerPackCleanupEnabled: Boolean get() = generationConfig.fallbackServerPackCleanupEnabled
+    /** Whether Minecraft snapshots and pre-releases are offered alongside releases. */
     val fallbackMinecraftPreReleasesAvailabilityEnabled: Boolean get() = generationConfig.fallbackMinecraftPreReleasesAvailabilityEnabled
+    /** Whether the mod scanners exclude clientside mods automatically, on top of the configured list. */
     val fallbackAutoExcludingModsEnabled: Boolean get() = generationConfig.fallbackAutoExcludingModsEnabled
+    /** Cron expression for the web backend's generic cleanup job. */
     val fallbackCleanupSchedule: String get() = webserviceConfig.fallbackCleanupSchedule
+    /** Cron expression for refreshing the cached version manifests. */
     val fallbackVersionSchedule: String get() = webserviceConfig.fallbackVersionSchedule
+    /** Cron expression for pruning old records from the web backend's database. */
     val fallbackDatabaseCleanupSchedule: String get() = webserviceConfig.fallbackDatabaseCleanupSchedule
+    /** Whether regenerating a pack updates the existing directory instead of creating a new one. */
     val fallbackUpdateServerPack: Boolean get() = generationConfig.fallbackUpdateServerPack
     private val trueFalseRegex = "^(true|false)$".toRegex()
     private val alphaBetaRegex = "^(.*alpha.*|.*beta.*)$".toRegex()
+    /** i18n4k's mutable configuration, held here because the locale setting is applied through it. */
     val i18n4kConfig = I18n4kConfigDefault()
 
     /**
@@ -261,18 +281,25 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * The version of the ServerPackCreator API.
      */
+    /** This build's version from the jar manifest, or `dev` when running from a source build. */
     val apiVersion: String = javaClass.getPackage().implementationVersion ?: "dev"
 
+    /**
+     * Whether this is a source build. Widely consequential, not cosmetic: it turns on DEBUG logging, rewrites
+     * `log4j2.xml` on every start, and makes the home directory fall back to the working directory.
+     */
     val devBuild: Boolean
         get() {
             return apiVersion == "dev"
         }
 
+    /** Whether this build is an alpha or beta, which relaxes the same behaviours as [devBuild]. */
     val preRelease: Boolean
         get() {
             return apiVersion.matches(alphaBetaRegex)
         }
 
+    /** Config-format version stamped into generated `.conf` files, so migrations know what they are reading. */
     val configVersion: String = if (preRelease || devBuild) {
         "TEST"
     } else {
@@ -287,6 +314,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      */
     val firstRun: Boolean
 
+    /** Log level SPC runs at. Setting it rewrites [log4jXml], so it takes effect without a restart. */
     var logLevel: String
         get() = loggingConfig.logLevel
         set(value) {
@@ -362,10 +390,17 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
             javaConfig.javaPaths = value
         }
 
+    /**
+     * Read one value from SPC's `Preferences` node, or [def] when unset.
+     *
+     * **Landmine:** which node that is depends on `resolvePreferencesNode` — a host claiming its own node (the
+     * grinder daemon, every test JVM) reads and writes a different store than the default installation, deliberately.
+     */
     fun getPreference(pref: String, def: String? = null) : Optional<String> {
         return Optional.ofNullable(spcPreferences.get(pref, def))
     }
 
+    /** Write one value into SPC's `Preferences` node. Same node caveat as [getPreference]. */
     fun storePreference(pref: String, value: String) {
         spcPreferences.put(pref, value)
         spcPreferences.sync()
@@ -1202,6 +1237,13 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      */
     fun oldVersion(): String = updateConfig.oldVersion()
 
+    /**
+     * Forget every properties file the store has loaded from.
+     *
+     * `PropertyStore` writes to **all** tracked files on every save, so a file loaded once keeps being rewritten for
+     * the life of the process — which is how a daemon started from a checkout dropped a settings file into the
+     * repository root. Call this when a host wants its saves confined to the file it just pointed SPC at.
+     */
     fun clearPropertyFileList() {
         store.clearTrackedFiles()
     }
@@ -1243,7 +1285,12 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         log.info("============================== PROPERTIES ==============================")
     }
 
+    /**
+     * `log4j2.xml` beside the jar rather than in the home directory — [home] is the *jar folder*, not SPC's home.
+     * Legacy install-location copy; [log4jXml] is the one logging actually reads.
+     */
     val installLocationXml: File = File(home, "log4j2.xml")
+    /** The `log4j2.xml` in SPC's home that logging is configured from; rewritten on a dev or pre-release build. */
     val log4jXml: File
 
     init {
@@ -1302,6 +1349,10 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         log4jXml.writeText(loggingConfig)
     }
 
+    /**
+     * The preferences-node resolution used before any instance exists, the singleton accessor, and the
+     * regex that identifies a pre-release version.
+     */
     companion object {
         /**
          * @author Griefed
