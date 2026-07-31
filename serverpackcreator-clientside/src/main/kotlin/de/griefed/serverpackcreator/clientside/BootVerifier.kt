@@ -127,7 +127,9 @@ class BootVerifier(
         outcome: BootOutcome
     ): BootOutcome {
         val newest = loaderVersionPolicy.latestVersion(loader, first.minecraftVersion)
-        if (!shouldRecheckCrash(outcome, first.loaderVersion, newest)) {
+        // The null check is redundant with shouldRecheckCrash (which is false for a null newest) but stated here so
+        // the non-nullness is visible where it is used, rather than resting on another function's contract.
+        if (newest == null || !shouldRecheckCrash(outcome, first.loaderVersion, newest)) {
             return outcome
         }
         log.info(
@@ -140,7 +142,7 @@ class BootVerifier(
             return outcome
         }
         val second = runPrepared(restaged as Prepared.Ready, serverRunner, packPostProcessor, bootTimeout)
-        return reconcileRecheck(outcome, second, first.loaderVersion, newest!!)
+        return reconcileRecheck(outcome, second, first.loaderVersion, newest)
     }
 
     /**
