@@ -145,8 +145,14 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   go red. The tests were written first; only the boundary collapsed, which is the part that costs nothing to
   keep and everything to reconstruct later.
 - **`refactor:` is a claim about behaviour, not about intent.** Use it only when behaviour is preserved; label
-  a behaviour change `fix:` or `feat:` however tidy it looks. If an **existing** test has to change, the label
-  is already wrong — that is the stop-and-flag signal, not a formality. Two commits the same day got this
+  a behaviour change `fix:` or `feat:` however tidy it looks. If an **existing** test's *assertion, argument or
+  expected value* has to change, the label is already wrong — that is the stop-and-flag signal, not a formality.
+  **Carve-out: a reference-only update is not the signal.** Moving a symbol between modules necessarily updates
+  imports and receivers in its tests, and Strangler-Fig moves are exactly what the conventions ask for — so
+  `- Old.isSuspendGap(gap, poll)` / `+ New.isSuspendGap(gap, poll)`, with every assertion byte-identical, stays a
+  `refactor:`. Judge the diff, not the file list: if no expectation changed, the test did not change in the sense
+  this rule means. (Written after the rule's first draft flagged `b6b778b82`, a clean cross-module move, as
+  mislabelled — a convention that cries wolf on legitimate refactors gets ignored wholesale.) Two commits got this
   wrong: `5f138ef8a` (`refactor(app)`) moved four call-sites onto a *resolved* Preferences node, changing where
   any host with its own node reads and writes, and had to edit `CommandlineParserTest`; `7815d5960`
   (`refactor(api)`) added an operator-editable template path plus a delete-watcher branch in `-app`. Both
