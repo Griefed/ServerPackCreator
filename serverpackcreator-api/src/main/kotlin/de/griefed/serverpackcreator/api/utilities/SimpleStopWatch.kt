@@ -37,22 +37,27 @@ import kotlin.time.DurationUnit
  */
 class SimpleStopWatch {
     @Suppress("MemberVisibilityCanBePrivate")
+    /** When [start] was last called. Initialised to construction time so a mis-ordered call cannot throw. */
     var startTime: Instant = Clock.System.now()
         private set
 
     @Suppress("MemberVisibilityCanBePrivate")
+    /** When [stop] was last called. */
     var stopTime: Instant = Clock.System.now()
         private set
 
     @Suppress("MemberVisibilityCanBePrivate")
+    /** The measured span. Only meaningful once [stopped] is true; before that it is the difference of two defaults. */
     var elapsedTime: Duration = stopTime - startTime
         private set
 
     @Suppress("MemberVisibilityCanBePrivate")
+    /** Whether this watch has been started, so a double start can be rejected rather than silently rebased. */
     var started = false
         private set
 
     @Suppress("MemberVisibilityCanBePrivate")
+    /** Whether this watch has been stopped, which is what makes [elapsedTime] meaningful. */
     var stopped = false
         private set
 

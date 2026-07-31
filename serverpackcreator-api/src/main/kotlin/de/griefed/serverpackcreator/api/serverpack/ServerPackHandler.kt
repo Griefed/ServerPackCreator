@@ -81,7 +81,12 @@ class ServerPackHandler(
     private val modScanner: ModScanner
 ) {
 
+    /** Logger for generation progress, which is the only running commentary a CLI user gets. */
     val log by lazy { cachedLoggerOf(this.javaClass) }
+    /**
+     * Extensions treated as mod files. `disabled` is included deliberately: a launcher marks a mod off by
+     * renaming it, and such a file must still be recognised so it can be excluded rather than copied blindly.
+     */
     val modFileEndings = listOf("jar", "disabled")
 
     /**
@@ -109,18 +114,22 @@ class ServerPackHandler(
     private val spcPreServerPackZipListener: ArrayList<SPCPreServerPackZipListener> = ArrayList(0)
     private val spcPostGenListener: ArrayList<SPCPostGenListener> = ArrayList(0)
 
+    /** Register a listener notified when generation finishes, regardless of outcome. */
     fun addEventListener(genericEventListener: SPCGenericListener) {
         spcGenericEventListeners.add(genericEventListener)
     }
 
+    /** Register a listener invoked before generation begins — the hook for preparing or vetoing a run. */
     fun addEventListener(preServerPackGenerationListener: SPCPreServerPackGenerationListener) {
         spcPreServerPackGenerationListener.add(preServerPackGenerationListener)
     }
 
+    /** Register a listener invoked after the pack is assembled but before it is zipped, to amend its contents. */
     fun addEventListener(preServerPackZipListener: SPCPreServerPackZipListener) {
         spcPreServerPackZipListener.add(preServerPackZipListener)
     }
 
+    /** Register a listener invoked once everything, zip included, is finished. */
     fun addEventListener(postGenListener: SPCPostGenListener) {
         spcPostGenListener.add(postGenListener)
     }
