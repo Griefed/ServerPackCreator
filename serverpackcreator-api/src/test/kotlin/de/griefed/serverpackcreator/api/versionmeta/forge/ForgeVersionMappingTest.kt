@@ -84,9 +84,9 @@ internal class ForgeVersionMappingTest {
      * key as a prefix**, and `minecraftVersion` is always derived from that key, so the wrong-offset case below
      * cannot arise in practice. What remains genuinely unhandled is an entry equal to the key with nothing after it:
      * it throws, and `ForgeLoader.update` catches only `MalformedURLException` and `NoSuchElementException`, so it
-     * would abort the whole Forge load rather than cost one version. See the TODO on `forgeVersionFrom` — and note
-     * that the obvious `startsWith` guard is the wrong fix, because entries carry the *raw* key while the Minecraft
-     * version may be the reconciled one.
+     * would abort the whole Forge load rather than cost one version. See the hardening note on `forgeVersionFrom`
+     * (and B12 in `claude-docs/BACKLOG.md`) — in particular that the obvious `startsWith` guard is the wrong fix,
+     * because entries carry the *raw* manifest key while the Minecraft version may be the reconciled one.
      */
     @Test
     fun anEntryThatDoesNotCarryItsMinecraftKeyIsNotDetected() {
