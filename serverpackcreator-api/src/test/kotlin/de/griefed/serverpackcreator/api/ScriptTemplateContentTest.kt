@@ -388,6 +388,75 @@ internal class ScriptTemplateContentTest {
     }
 
     /**
+     * **Executes** `setupForge`'s ServerStarterJar path and asserts that `SSJ_FORGE_ARGS` is dropped on a Java that
+     * cannot accept it.
+     *
+     * SPC's default `SSJ_FORGE_ARGS` is `-Djava.security.manager=allow` (`PackConfig.spcSSJArgsKeyDefaultValue`),
+     * which Forge's ServerStarterJar needed on older Java. **JEP 486 removed Security Manager support in Java 24**, so
+     * from that release the flag does not merely do nothing — the VM refuses to start:
+     *
+     * ```
+     * Error occurred during initialization of VM
+     * java.lang.Error: A command line option has attempted to allow or enable the Security Manager.
+     * ```
+     *
+     * Minecraft 26.x requires Java 25, so **every modern Forge pack SPC generates dies before Forge loads** on
+     * current Minecraft — measured in the grinder on 2026-07-31, and the reason Forge coverage stayed at zero even
+     * after the launcher-era fix. NeoForge, Fabric and Quilt never pass the flag, which is exactly why they boot.
+     */
+    @Test
+    fun theBashTemplateDropsTheSecurityManagerFlagOnJavaThatRejectsIt() {
+        val bash = which("bash") ?: Assumptions.abort("bash not installed — SSJ args check skipped")
+
+        // Java major to whether -Djava.security.manager=allow may still be passed.
+        val expectations = mapOf(17 to true, 21 to true, 24 to false, 25 to false)
+
+        for ((javaVersion, flagAllowed) in expectations) {
+            val packDir = File.createTempFile("spc-ssj-args-", "-pack").apply { delete(); mkdirs() }
+            val harness = File(packDir, "harness.sh")
+            harness.writeText(
+                """
+                downloadIfNotExist() { echo "false"; }
+                runJavaCommand() { :; }
+                refreshServerJar() { :; }
+                crashServer() { echo "CRASHED: ${'$'}1"; exit 3; }
+                JAVA_ARGS="-Xmx4G"
+                USE_SSJ="true"
+                SSJ_FORGE_ARGS="-Djava.security.manager=allow"
+                JAVA_VERSION="$javaVersion"
+                MINECRAFT_VERSION="26.1.2"
+                MODLOADER_VERSION="64.1.0"
+                SERVER_RUN_COMMAND="do_not_manually_edit"
+                IFS="." read -ra SEMANTICS <<<"${'$'}{MINECRAFT_VERSION}"
+                ${extractShellFunction("default_template.sh", "setupForge")}
+                setupForge
+                echo "RESULT=${'$'}{SERVER_RUN_COMMAND}"
+                """.trimIndent()
+            )
+
+            val process = ProcessBuilder(bash.absolutePath, harness.absolutePath)
+                .directory(packDir)
+                .redirectErrorStream(true)
+                .start()
+            val output = process.inputStream.bufferedReader().use { it.readText() }
+            val exit = process.waitFor()
+            packDir.deleteRecursively()
+
+            Assertions.assertEquals(0, exit, "setupForge failed on Java $javaVersion:\n$output")
+            val runCommand = output.lines().firstOrNull { it.startsWith("RESULT=") }
+                ?: Assertions.fail("no run command produced on Java $javaVersion:\n$output")
+            val passesFlag = runCommand.contains("-Djava.security.manager=allow")
+
+            Assertions.assertEquals(
+                flagAllowed,
+                passesFlag,
+                "on Java $javaVersion the security-manager flag was ${if (passesFlag) "passed" else "dropped"}; " +
+                    "expected it to be ${if (flagAllowed) "passed" else "dropped"}. Run command: $runCommand"
+            )
+        }
+    }
+
+    /**
      * Cut a block out of a shell template, from the line equal to [startsWith] to the next line equal to [endsWith]
      * at column 0. Used for the run-loop, which is top-level script text rather than a function.
      */

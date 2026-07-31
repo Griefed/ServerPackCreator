@@ -235,7 +235,16 @@ setupForge() {
         runJavaCommand "-jar forge-installer.jar --installServer"
       fi
     else
-      SERVER_RUN_COMMAND="@user_jvm_args.txt ${SSJ_FORGE_ARGS} -jar server.jar --installer-force --installer ${FORGE_INSTALLER_URL} nogui"
+      # SSJ_FORGE_ARGS defaults to -Djava.security.manager=allow, which Forge's ServerStarterJar needed on older
+      # Java. JEP 486 removed Security Manager support in Java 24, so from that release the flag is not merely
+      # useless -- the VM refuses to start ("A command line option has attempted to allow or enable the Security
+      # Manager"). Minecraft 26.x requires Java 25, so passing it there breaks every modern Forge pack before Forge
+      # loads. Keep it where it is still needed, drop it where it is fatal.
+      local ssjForgeArgs="${SSJ_FORGE_ARGS}"
+      if [[ "${JAVA_VERSION}" =~ ^[0-9]+$ ]] && [[ ${JAVA_VERSION} -ge 24 ]]; then
+        ssjForgeArgs=""
+      fi
+      SERVER_RUN_COMMAND="@user_jvm_args.txt ${ssjForgeArgs} -jar server.jar --installer-force --installer ${FORGE_INSTALLER_URL} nogui"
       # Download ServerStarterJar to server.jar
       refreshServerJar
     fi

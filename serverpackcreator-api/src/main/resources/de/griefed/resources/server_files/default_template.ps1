@@ -401,7 +401,15 @@ Function global:SetupForge
         }
         else
         {
-            $script:ServerRunCommand = "@user_jvm_args.txt ${SSJForgeArgs} -jar server.jar --installer-force --installer ${ForgeInstallerUrl} nogui"
+            # SSJForgeArgs defaults to -Djava.security.manager=allow, which JEP 486 made fatal from Java 24 on: the
+            # VM refuses to start rather than ignoring it. Minecraft 26.x requires Java 25, so passing it there
+            # breaks every modern Forge pack before Forge loads. Keep it where needed, drop it where it kills.
+            $EffectiveSSJForgeArgs = ${SSJForgeArgs}
+            if (("${JavaVersion}" -match '^\d+$') -And ([int]${JavaVersion} -ge 24))
+            {
+                $EffectiveSSJForgeArgs = ""
+            }
+            $script:ServerRunCommand = "@user_jvm_args.txt ${EffectiveSSJForgeArgs} -jar server.jar --installer-force --installer ${ForgeInstallerUrl} nogui"
             # Download ServerStarterJar to server.jar
             RefreshServerJar
         }
