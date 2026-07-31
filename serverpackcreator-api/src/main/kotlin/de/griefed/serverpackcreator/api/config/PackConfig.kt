@@ -211,25 +211,71 @@ const val spcCleanupKeyDefaultValue =
 open class PackConfig() {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
+    /** Loader-name matcher for Forge, from the single source of truth in `SupportedModloaders`. */
     val forge = SupportedModloaders.forge
+
+    /** Loader-name matcher for NeoForge. Tested before [forge], whose pattern also matches `neoforge`. */
     val neoForge = SupportedModloaders.neoForge
+
+    /** Loader-name matcher for Fabric. */
     val fabric = SupportedModloaders.fabric
+
+    /** Loader-name matcher for Quilt. */
     val quilt = SupportedModloaders.quilt
+
+    /** Loader-name matcher for LegacyFabric. Tested before [fabric], whose pattern would otherwise swallow it. */
     val legacyFabric = SupportedModloaders.legacyFabric
+
+    /** Matches a string that is only whitespace, so a blank-but-not-empty config value can be rejected. */
     val whitespace = "^\\s+$".toRegex()
 
+    /**
+     * Mods to exclude from the server pack because they are clientside — filenames or name-fragments matched
+     * against the modpack's `mods` directory. [modsWhitelist] wins over anything matched here.
+     */
     val clientMods: ArrayList<String> = ArrayList(1000)
+
+    /** Mods to keep even when [clientMods] matches them — the escape hatch for an over-broad exclusion. */
     val modsWhitelist: ArrayList<String> = ArrayList(1000)
+
+    /** What to copy into the server pack: per-entry source, destination and optional filters. */
     val inclusions: ArrayList<InclusionSpecification> = ArrayList(100)
+
+    /** Values substituted into the generated start scripts, keyed by their `SPC_..._SPC` placeholder. */
     val scriptSettings = HashMap<String, String>(100)
+
+    /** Per-plugin configuration, keyed by plugin id and handed to whichever extension declared it. */
     val pluginsConfigs = HashMap<String, ArrayList<CommentedConfig>>(20)
+
+    /** Path to the modpack this server pack is generated from. */
     var modpackDir = ""
+
+    /** The Minecraft version the modpack targets, which drives loader-version validity and the required Java. */
     var minecraftVersion = ""
+
+    /** The modloader version — meaningful only together with [minecraftVersion] and [modloader]. */
     var modloaderVersion = ""
+
+    /** JVM arguments written into the generated start scripts. */
     var javaArgs = ""
+
+    /** Appended to the server pack's directory name, so variants of one modpack can coexist. */
     var serverPackSuffix = ""
+
+    /** Path to a server icon to include, or empty to use the shipped default. */
     var serverIconPath = ""
+
+    /** Path to a `server.properties` to include, or empty to use the shipped default. */
     var serverPropertiesPath = ""
+
+    /**
+     * The modloader, always stored in SPC's canonical spelling (`Forge`, `NeoForge`, `Fabric`, `Quilt`,
+     * `LegacyFabric`).
+     *
+     * **Landmine:** the setter *silently ignores* an unrecognised value, leaving the previous one in place — a typo
+     * does not fail, it does nothing. Check order matters for the same reason: `neoforge` also matches Forge's
+     * pattern and `legacyfabric` matches Fabric's, so the specific names are tested first.
+     */
     var modloader = ""
         set(newModLoader) {
             if (newModLoader.lowercase().matches(forge)) {
@@ -244,17 +290,34 @@ open class PackConfig() {
                 field = "LegacyFabric"
             }
         }
+    /** Whether the server icon is copied into the pack. Keep the `@get:JsonProperty` rule in mind for web entities. */
     var isServerIconInclusionDesired = true
+
+    /** Whether `server.properties` is copied into the pack. */
     var isServerPropertiesInclusionDesired = true
+
+    /** Whether the finished pack is also zipped, which is what a user downloads from the web frontend. */
     var isZipCreationDesired = true
+
+    /** The modpack's own manifest, when generation was driven from one (CurseForge/Modrinth export). */
     var modpackJson: JsonNode? = null
+
+    /** Version of the config format this instance was read from, used to migrate older `.conf` files. */
     var configVersion: String? = null
 
+    /** Where to write the server pack instead of SPC's server-packs directory, when a caller overrides it. */
     var customDestination: Optional<File> = Optional.empty()
 
+    /** Platform project id when the modpack came from Modrinth or CurseForge, else `null`. */
     open var projectID: String? = null
+
+    /** Platform version/file id the modpack was resolved from, else `null`. */
     open var versionID: String? = null
+
+    /** Where the modpack came from — a directory, a zip, or a platform link — which decides how it is unpacked. */
     open var source: ModpackSource = ModpackSource.DIRECTORY
+
+    /** Display name for the pack, used for the generated directory and in the web frontend. */
     open var name: String? = null
 
     /**
@@ -535,11 +598,16 @@ open class PackConfig() {
         return this
     }
 
+    /** Replace all per-plugin configuration wholesale, discarding whatever was set before. */
     fun setPluginsConfigs(pluginConfigs: HashMap<String, ArrayList<CommentedConfig>>) {
         this.pluginsConfigs.clear()
         this.pluginsConfigs.putAll(pluginConfigs)
     }
 
+    /**
+     * Configuration for one plugin, **creating an empty list on first ask** so an extension can always read and
+     * append without null-checking. That side effect is why this is a function rather than a map access.
+     */
     fun getPluginConfigs(pluginId: String): ArrayList<CommentedConfig> {
         if (!pluginsConfigs.containsKey(pluginId)) {
             pluginsConfigs[pluginId] = ArrayList(100)
@@ -547,28 +615,33 @@ open class PackConfig() {
         return pluginsConfigs[pluginId]!!
     }
 
+    /** Replace the clientside-exclusion list wholesale. */
     fun setClientMods(newClientMods: MutableList<String>) {
         clientMods.clear()
         newClientMods.removeIf { entry: String -> entry.isBlank() || entry.matches(whitespace) }
         clientMods.addAll(newClientMods)
     }
 
+    /** Replace the whitelist wholesale — entries here survive a [clientMods] match. */
     fun setModsWhitelist(newModsWhitelist: MutableList<String>) {
         modsWhitelist.clear()
         newModsWhitelist.removeIf { entry: String -> entry.isBlank() || entry.matches(whitespace) }
         modsWhitelist.addAll(newModsWhitelist)
     }
 
+    /** Replace the inclusion specifications wholesale. */
     fun setInclusions(newCopyDirs: ArrayList<InclusionSpecification>) {
         inclusions.clear()
         inclusions.addAll(newCopyDirs)
     }
 
+    /** Replace the start-script placeholder values wholesale. */
     fun setScriptSettings(settings: HashMap<String, String>) {
         scriptSettings.clear()
         scriptSettings.putAll(settings)
     }
 
+    /** Every field of this configuration, for logging a generation run and for debugging a rejected config. */
     override fun toString(): String {
         return "Pack(" +
                 " clientMods=$clientMods," +
@@ -589,7 +662,13 @@ open class PackConfig() {
                 " isZipCreationDesired=$isZipCreationDesired)"
     }
 
+    /** The start-script placeholder defaults every new configuration begins with. */
     companion object {
+        /**
+         * Default value per `SPC_..._SPC` placeholder, applied unless a config overrides it. **Do not drop entries
+         * here to "simplify":** `SPC_SSJ_FORGE_ARGS_SPC` still defaults to `-Djava.security.manager=allow` because
+         * Forge's ServerStarterJar needs it below Java 24, and the templates decide when to pass it.
+         */
         val defaultScriptValues = hashMapOf(
             Pair(javaKey,javaKeyDefaultValue),
             Pair(spcWaitForUserInputKey,spcWaitForUserInputKeyDefaultValue),
