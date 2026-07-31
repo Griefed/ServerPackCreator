@@ -84,6 +84,14 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 - Refactors keep old entry points as thin deprecated facades (`@Deprecated` with `ReplaceWith`)
   for at least one major release before removal.
 - Internal-only types may move/change freely once they are no longer exported.
+- **Source-compatible is not the same as behaviour-compatible.** A change that keeps every signature but
+  alters what an exported call *returns* is still a contract change for embedders, and belongs in the
+  release notes even though nothing fails to compile. Recorded because this branch made one:
+
+| Change | Effect on an embedder |
+|---|---|
+| `PathsConfig.homeDirectory` consults `-Dde.griefed.serverpackcreator.home` **before** the stored preference and the properties file (`PathsConfig.kt:106`) | A host that sets that property now resolves a different home than the same code did before. Additive and opt-in — nothing changes unless the property is set — but every plugin reading `apiProperties.homeDirectory` follows it. |
+| `ApiProperties.resolvePreferencesNode` + `PREFERENCES_NODE_PROPERTY` / `PREFERENCES_NODE_ENV` / `DEFAULT_PREFERENCES_NODE` | New exported surface; the default node name is unchanged, so existing installations keep reading their own settings. |
 
 ---
 
