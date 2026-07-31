@@ -80,3 +80,22 @@ worth fixing: artifacts landing outside the home a process was told to use. Cons
 dirty `git status` while a sweep runs, which is how a genuinely unexpected file gets overlooked. Worth checking
 whether `ApiProperties`' log4j `ConfigurationFactory` role writes `log4j2.xml` relative to something captured at
 class-load rather than to the resolved home, since `log4j2.xml` is the more surprising of the two.
+
+### B23 — a failed Minecraft server-manifest fetch is never remembered, so every lookup retries it
+Found by the fourth audit (2026-07-31) while reducing the log volume that finding introduced.
+`MinecraftServer.setServerJson()` re-downloads whenever `manifestFile` is absent and, on failure, leaves
+`serverJson` null — so the next call tries again. `MinecraftMeta.getServer` (`:166`) then evaluates
+`server.url().isPresent && server.javaVersion().isPresent`, and **both** call it: one `requiredJavaVersion`
+lookup on a version whose manifest cannot be fetched costs **two** download attempts.
+
+That lookup is hot: `ImageJavaRuntimes.requiredJavaMajor` reaches it from `supportFor`, `javaPath` and
+`installerJavaPathFor` — per candidate in `ContainerCandidateVerifier`, per cell in `ScriptTemplateMatrixIT`, and
+from the GUI on every version selection (`ConfigEditor.kt:681`). So a single unfetchable version can generate
+network attempts in proportion to catalogue size, silently.
+
+The logging is now `debug` and message-only, so the *symptom* is gone; the retry is not. The fix is to remember the
+failure per instance (a resolved-or-null cache, so a miss is answered from memory) and it wants a pin — which needs
+a download seam `MinecraftServer` does not currently have, since it constructs its own fetch through `utilities`.
+That seam is the actual work, and the reason this is an entry rather than a same-day fix. **Note the exported
+`Optional` contract must not change:** callers read empty as "no server available", and B20's consumer-side
+distinction (`ImageSupport.REQUIREMENT_UNKNOWN`) already depends on that shape.

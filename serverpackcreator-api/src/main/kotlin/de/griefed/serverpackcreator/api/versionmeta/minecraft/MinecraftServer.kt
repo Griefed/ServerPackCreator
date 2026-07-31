@@ -75,8 +75,9 @@ class MinecraftServer internal constructor(
             Optional.ofNullable(URI(url).toURL())
         } catch (e: Exception) {
             // An unreadable or undownloadable manifest is indistinguishable from "no server URL declared" to a
-            // caller, so say which one happened. Callers treat the empty Optional as "no server available".
-            log.warn("Could not read the server download URL for Minecraft $minecraftVersion from $manifestFile.", e)
+            // caller, so leave a trace of which one happened. Callers treat the empty Optional as "no server
+            // available". DEBUG, message-only: see javaVersion() for why this must not be warn-with-stacktrace.
+            log.debug("No server download URL for Minecraft $minecraftVersion in $manifestFile: ${e.javaClass.simpleName}")
             Optional.empty()
         }
 
@@ -111,9 +112,15 @@ class MinecraftServer internal constructor(
             // The empty Optional here is what every consumer reads as "this version declares no required Java",
             // which is also what a *failed manifest download* produces -- and downstream that became a
             // benign-looking "not applicable" that silently dropped the newest Minecraft versions from the
-            // template matrix. The Optional contract is exported, so it stays; the cause gets logged instead of
-            // vanishing. See ImageSupport.REQUIREMENT_UNKNOWN for the consumer-side half.
-            log.warn("Could not determine the required Java version for Minecraft $minecraftVersion from $manifestFile.", e)
+            // template matrix. The Optional contract is exported, so it stays; the cause leaves a trace instead
+            // of vanishing. See ImageSupport.REQUIREMENT_UNKNOWN for the consumer-side half.
+            //
+            // DEBUG and message-only, deliberately. This is a hot path on a *repeating* failure: setServerJson()
+            // does not remember a failed fetch, and getServer() calls both url() and javaVersion(), so one
+            // requiredJavaVersion lookup on a broken version costs two attempts -- and that lookup runs per
+            // candidate in the grinder, per cell in the template matrix, and on every GUI version selection. At
+            // warn-with-stacktrace that is a log flood; the exception type carries the diagnosis without it.
+            log.debug("No required Java version for Minecraft $minecraftVersion in $manifestFile: ${e.javaClass.simpleName}")
             Optional.empty()
         }
 
