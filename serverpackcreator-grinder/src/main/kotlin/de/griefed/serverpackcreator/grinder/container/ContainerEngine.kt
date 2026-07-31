@@ -95,7 +95,14 @@ data class ContainerSpec(
  *
  * @author Griefed
  */
-data class ContainerRunOutput(val lines: List<String>, val exitCode: Int?, val timedOut: Boolean)
+data class ContainerRunOutput(
+    /** The container's combined stdout+stderr, in order. What the classifier reads — the console decides, not the exit code. */
+    val lines: List<String>,
+    /** The container's exit status, or `null` when it could not be determined (killed, or inspect failed). */
+    val exitCode: Int?,
+    /** Whether the boot ran out of its budget rather than finishing. Suspended host time is excluded; see `SuspendAwareDeadline`. */
+    val timedOut: Boolean
+)
 
 /**
  * Thin, mockable boundary over the container runtime. An implementation creates + starts a container

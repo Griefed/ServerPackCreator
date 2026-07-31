@@ -103,6 +103,8 @@ class BootWorkspaceReaper(private val workDirectory: File) {
     private fun File.sizeRecursively(): Long =
         if (isDirectory) walkTopDown().filter { it.isFile }.sumOf { it.length() } else length()
 
+    /** The staging-directory layout constants the reaper matches on. */
+
     companion object {
         /** The two staging roots, relative to the work directory: boot packs and downloaded mod jars. */
         private val STAGING_ROOTS = listOf("boot", "verify")

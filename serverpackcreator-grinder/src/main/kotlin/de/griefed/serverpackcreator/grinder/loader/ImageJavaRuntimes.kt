@@ -105,6 +105,8 @@ class ImageJavaRuntimes(
     /** The conventional in-image path for a bundled JDK [major] (see the runtime Dockerfile's symlinks). */
     private fun pathFor(major: Int) = "/opt/java-$major/bin/java"
 
+    /** The installer-Java floor and the factory that sources required-Java from SPC's own metadata. */
+
     companion object {
         /**
          * Minimum Java the modloader installers need. Set by the Quilt installer, which refuses to run on

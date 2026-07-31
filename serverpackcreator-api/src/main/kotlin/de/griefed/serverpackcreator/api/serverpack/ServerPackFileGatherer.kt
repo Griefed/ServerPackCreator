@@ -124,6 +124,7 @@ class ServerPackFileGatherer(private val modListCompiler: ModListCompiler) {
         return copiedFiles
     }
 
+    /** Resolve one inclusion into the concrete files to copy, applying its filters and destination. */
     fun getServerFiles(
         inclusion: InclusionSpecification,
         modpackDir: String,

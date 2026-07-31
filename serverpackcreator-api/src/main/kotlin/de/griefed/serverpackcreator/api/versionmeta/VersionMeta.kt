@@ -84,50 +84,66 @@ class VersionMeta(
     apiProperties: ApiProperties
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+    /** Upstream list of Minecraft versions LegacyFabric supports. Separate from the loader list below: LegacyFabric
+     * publishes the two independently, and a version needs an entry in *both* to be usable. */
     @Suppress("MemberVisibilityCanBePrivate")
     val legacyFabricUrlGame: URL =
         URI(VersionMetaConfig.LEGACYFABRIC_GAME_MANIFEST).toURL()
 
+    /** Upstream LegacyFabric loader versions. */
     @Suppress("MemberVisibilityCanBePrivate")
     val legacyFabricUrlLoader: URL =
         URI(VersionMetaConfig.LEGACYFABRIC_LOADER_MANIFEST).toURL()
 
+    /** Upstream LegacyFabric *installer* versions — a different series from the loader versions, and not interchangeable. */
     @Suppress("MemberVisibilityCanBePrivate")
     val legacyfabricUrlManifest: URL =
         URI(VersionMetaConfig.LEGACYFABRIC_INSTALLER_MANIFEST).toURL()
 
+    /** Mojang's version manifest: the authority for which Minecraft versions exist, their type, and where each
+     * version's own JSON lives (which is what declares the required Java). */
     @Suppress("MemberVisibilityCanBePrivate")
     val minecraftUrlManifest: URL =
         URI(VersionMetaConfig.MINECRAFT_MANIFEST).toURL()
 
+    /** Upstream Forge versions, keyed by Minecraft version. */
     @Suppress("MemberVisibilityCanBePrivate")
     val forgeUrlManifest: URL =
         URI(VersionMetaConfig.FORGE_MANIFEST).toURL()
 
+    /** NeoForge's *legacy* maven metadata, covering its first releases under the `net/neoforged/forge` artifact —
+     * Minecraft 1.20 and 1.20.1 only. Kept because those versions exist nowhere else. */
     @Suppress("MemberVisibilityCanBePrivate")
     val oldNeoForgeUrlManifest: URL =
         URI(VersionMetaConfig.NEOFORGE_OLD_MANIFEST).toURL()
 
+    /** NeoForge's current maven metadata, covering everything after the 1.20.1 era. */
     @Suppress("MemberVisibilityCanBePrivate")
     val newNeoForgeUrlManifest: URL =
         URI(VersionMetaConfig.NEOFORGE_NEW_MANIFEST).toURL()
 
+    /** Upstream Fabric loader versions. Minecraft-independent: one loader line serves every supported version. */
     @Suppress("MemberVisibilityCanBePrivate")
     val fabricUrlManifest: URL =
         URI(VersionMetaConfig.FABRIC_LOADER_MANIFEST).toURL()
 
+    /** Fabric's intermediary mappings, which is what actually says whether Fabric supports a given Minecraft
+     * version — the loader list alone cannot answer that. */
     @Suppress("MemberVisibilityCanBePrivate")
     val fabricUrlIntermediariesManifest: URL =
         URI(VersionMetaConfig.FABRIC_INTERMEDIARIES_MANIFEST).toURL()
 
+    /** Upstream Fabric *installer* versions, a separate series from the loader versions. */
     @Suppress("MemberVisibilityCanBePrivate")
     val fabricUrlInstallerManifest: URL =
         URI(VersionMetaConfig.FABRIC_INSTALLER_MANIFEST).toURL()
 
+    /** Upstream Quilt loader versions. Minecraft-independent, like Fabric's. */
     @Suppress("MemberVisibilityCanBePrivate")
     val quiltUrlManifest: URL =
         URI(VersionMetaConfig.QUILT_LOADER_MANIFEST).toURL()
 
+    /** Upstream Quilt *installer* versions. The installer needs Java 17+ even when the server it installs runs on 8. */
     @Suppress("MemberVisibilityCanBePrivate")
     val quiltUrlInstallerManifest: URL =
         URI(VersionMetaConfig.QUILT_INSTALLER_MANIFEST).toURL()
@@ -168,6 +184,10 @@ class VersionMeta(
     @Suppress("MemberVisibilityCanBePrivate")
     val legacyFabric: LegacyFabricMeta
 
+    /**
+     * Fabric's intermediary mappings. Consulted to answer whether Fabric (or Quilt, which runs Fabric mods)
+     * supports a given Minecraft version — the loader versions alone cannot, since one loader line serves them all.
+     */
     @Suppress("MemberVisibilityCanBePrivate")
     val fabricIntermediaries: FabricIntermediaries
 

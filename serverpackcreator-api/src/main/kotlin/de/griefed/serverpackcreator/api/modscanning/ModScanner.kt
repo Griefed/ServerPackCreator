@@ -35,5 +35,6 @@ class ModScanner(
     val fabricScanner: FabricScanner,
     val quiltScanner: QuiltScanner,
     val forgeTomlScanner: ForgeTomlScanner,
+    /** Scanner for NeoForge jars, which moved the descriptor and so cannot reuse Forge's path. */
     val neoForgeTomlScanner: NeoForgeTomlScanner
 )

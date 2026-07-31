@@ -190,6 +190,18 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   restatement of the signature. One or two sentences is the target; needing more is a sign the unit
   is doing too much (KISS). Keep comments truthful as code changes — a stale comment is worse than
   none.
+- **Documenting a single-line constructor means reshaping it, and that reshape is in scope.** Per-parameter KDoc
+  cannot attach to a parameter sharing a line with others, so `data class X(val a: A, val b: B)` has to become one
+  parameter per line before each can be documented. Four declarations were reshaped that way on 2026-07-31
+  (`ContainerRunOutput`, `CatalogCursor`, `Exclusion`, `Dependency`); an audit flagged it as scope creep, which it is
+  not — it is the enabling change. Keep it to the declaration being documented, and verify the obvious: parameter
+  names, types, order and defaults must survive untouched. The alternative, a class-level `@param` block, leaves the
+  properties themselves undocumented as far as dokka is concerned.
+- **A doc that only restates the signature is barely better than none — but silence is worse.** For a pure accessor
+  over a well-named field there is often nothing to add, and dokka flags the omission either way. Put the shared
+  meaning where it belongs: `ServerPackConfigTab`'s accessors were labels until the *interface* doc explained that
+  they read live tab state rather than the saved configuration, which is the fact every one of them depends on.
+  Prefer one honest paragraph on the type over forty restatements on its members.
 - **Errors:** always handle, never ignore with `_` unless intentional (comment why).
 
 ## Definition of done (per change)

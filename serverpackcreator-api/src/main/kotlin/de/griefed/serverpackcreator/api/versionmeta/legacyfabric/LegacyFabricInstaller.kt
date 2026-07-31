@@ -43,12 +43,16 @@ class LegacyFabricInstaller(
     private val installerManifest: File,
     private val utilities: Utilities
 ) {
+    /** Every LegacyFabric *installer* version, newest first. A separate series from the loader versions. */
     val allVersions: MutableList<String> = ArrayList(100)
 
     @Suppress("MemberVisibilityCanBePrivate")
+    /** URL template the installer download is built from, with the version substituted in. */
     val installerUrlTemplate = VersionMetaConfig.LEGACYFABRIC_INSTALLER_TEMPLATE
+    /** Newest installer version the manifest advertises, or `null` before the manifest has been read. */
     var latest: String? = null
         private set
+    /** Newest *stable* installer version, or `null` before the manifest has been read. */
     var release: String? = null
         private set
     private val latestElement = VersionMetaConfig.TAG_LATEST

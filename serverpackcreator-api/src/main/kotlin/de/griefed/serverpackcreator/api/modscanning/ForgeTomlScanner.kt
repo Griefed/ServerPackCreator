@@ -46,10 +46,19 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
     private val mandatory = "mandatory"
     private val requiredAsDep = "REQUIRED"
 
+    /** Path of the descriptor inside a Forge jar. `open` because NeoForge moved it, and that subclass overrides it. */
     open val modsToml = "META-INF/mods.toml"
 
+    /**
+     * Dependency ids that are the platform itself rather than another mod. A mod declaring these is not depending on
+     * anything the server pack has to keep, so they must not pull a jar into the dependency list.
+     */
     val neoForgeMinecraft: Regex
         get() = "^(neoforge|forge|minecraft)$".toRegex()
+    /**
+     * Sides that mean a mod belongs on a server. Matched against the descriptor's declared side — a self-report, and
+     * an unreliable one, which is why a boot test exists at all rather than trusting it.
+     */
     val bothServer: Regex
         get() = "^(BOTH|SERVER)$".toRegex()
 

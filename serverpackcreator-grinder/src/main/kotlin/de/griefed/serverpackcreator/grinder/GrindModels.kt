@@ -34,9 +34,13 @@ import java.time.Instant
  * @author Griefed
  */
 data class GrindCandidate(
+    /** Canonical link to the project page, which is what the verification engine resolves files from. */
     val projectUrl: String,
+    /** The project's slug on its platform — a *mutable* display name; see [projectId] for stable identity. */
     val slug: String,
+    /** Download count, used only to rank a batch so the most-used mods are ground first. */
     val popularity: Long,
+    /** Which platform this came from (`Modrinth`, `CurseForge`). Part of a project's identity: slugs collide across platforms. */
     val platform: String,
     /**
      * The platform's own immutable project identifier (Modrinth's `project_id`, CurseForge's numeric `id`), or
@@ -84,13 +88,21 @@ object ModPlatforms {
  * @author Griefed
  */
 data class GrindVerdict(
+    /** Platform the project was ground on. Part of the dedup identity, since the same slug exists on both. */
     val platform: String,
+    /** The project's slug *at the time of verification* — recorded for the report; identity lives in [projectId]. */
     val slug: String,
+    /** Link to the project, carried through so a reader of the report can check the verdict against the source. */
     val projectUrl: String,
+    /** The modloader this verdict is about. One project yields one verdict per loader, since sideness can differ. */
     val loader: String,
+    /** The line to add to the clientside fallback-list if accepted, or `null` when nothing is being suggested. */
     val suggestedEntry: String?,
+    /** How strongly the evidence says "clientside". Only a crash is decisive; a clean boot proves nothing. */
     val confidence: Confidence,
+    /** Human-readable evidence behind [confidence] — the boot outcome and exit detail, as shown in the report. */
     val detail: String,
+    /** When this verdict was reached, which the re-verify TTL compares against to decide staleness. */
     val verifiedAt: Instant,
     /**
      * The platform's immutable project identifier, or `null` for verdicts recorded before it was tracked. Dedup

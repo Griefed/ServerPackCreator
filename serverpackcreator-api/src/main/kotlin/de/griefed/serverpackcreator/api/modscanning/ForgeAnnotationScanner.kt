@@ -51,8 +51,10 @@ class ForgeAnnotationScanner(
     private val clientSideOnly = "clientSideOnly"
     private val dependencies = "dependencies"
 
+    /** Matches a dependency entry worth recording, filtering out the malformed ones older packs contain. */
     val dependencyCheck: Regex
         get() = "(before:.*|after:.*|required-after:.*|)".toRegex()
+    /** Strips the version range off a dependency entry, leaving the mod id the scanner matches on. */
     val dependencyReplace: Regex
         get() = "(@.*|\\[.*)".toRegex()
 

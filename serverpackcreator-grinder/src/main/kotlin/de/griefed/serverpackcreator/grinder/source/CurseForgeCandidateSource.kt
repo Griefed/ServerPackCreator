@@ -364,6 +364,8 @@ class CurseForgeCandidateSource(
         )
     }
 
+    /** API endpoint, paging limits and the sort/filter constants the crawl is built from. */
+
     companion object {
         /**
          * CurseForge's `ModsSearchSortField` value for **TotalDownloads**. The REST docs render the enum

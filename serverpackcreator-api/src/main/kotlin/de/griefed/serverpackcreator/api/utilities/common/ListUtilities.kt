@@ -33,6 +33,8 @@ import kotlin.coroutines.CoroutineContext
 @Suppress("unused")
 class ListUtilities {
 
+    /** Cleanup helpers for the list-valued properties, which arrive as delimited strings. */
+
     companion object {
         private val log by lazy { cachedLoggerOf(ListUtilities::class.java) }
         private val whitespace = "\\s+".toRegex()
@@ -224,6 +226,7 @@ fun <T> MutableList<T>.addMultiple(vararg entries: T) {
     entries.forEach { add(it) }
 }
 
+/** Flatten several lists into one, preserving order. Top-level so callers need no utilities instance. */
 fun <T> concatenate(vararg lists: List<T>): List<T> {
     return listOf(*lists).flatten()
 }

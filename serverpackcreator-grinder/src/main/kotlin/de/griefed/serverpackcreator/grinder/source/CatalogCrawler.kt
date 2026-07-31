@@ -157,11 +157,17 @@ class CatalogCrawler(
  * @author Griefed
  */
 data class CrawledPage(
+    /** Which source produced this page, so the cursor is committed against the right platform. */
     val platform: String,
+    /** The cursor this page was fetched at — kept so a failed pass can be retried from where it began. */
     val cursorAtStart: CatalogCursor,
+    /** The candidates on this page, already mapped out of the platform's response. */
     val candidates: List<GrindCandidate>,
+    /** Whether this page ran off the end of the catalogue, which is what completes a sweep and rewinds the offset. */
     val endedCatalog: Boolean,
+    /** Where the next page starts. Watch it against the source's offset ceiling — past it, the tail looks like the end. */
     val nextOffset: Int,
+    /** The next partition token for a partitioned crawl (CurseForge), or `null` for a flat one (Modrinth). */
     val nextPartition: String?
 ) {
     /** Where the cursor belongs once every candidate in this page has been ground. */
@@ -179,7 +185,10 @@ data class CrawledPage(
  * @author Griefed
  */
 data class CandidateBatch(
+    /** Everything this pass will grind, across all sources, ranked so the most-downloaded go first. */
     val candidates: List<GrindCandidate>,
+    /** Whether a source finished its catalogue this pass, which is what `GrindPacing` treats as "nothing left due". */
     val sweepCompleted: Boolean,
+    /** The pages this batch came from, so cursors can be committed per source only after the work is done. */
     val pages: List<CrawledPage> = emptyList()
 )
