@@ -27,6 +27,29 @@ java {
     withJavadocJar()
 }
 
+// The suite boots an ApiWrapper from build/resources/test/serverpackcreator.properties in dozens of places, and two
+// of its values are inherently per-machine: the JDK path SPC writes into generated packs, and the tomcat basedir.
+// Committing resolved values means committing one developer's filesystem, so the committed file leaves them blank and
+// the build fills them in on the way to build/resources/test. Pinned by `TestPropertiesTest`.
+tasks.processTestResources {
+    val moduleTestHome = layout.projectDirectory.dir("tests").asFile.absolutePath
+    val testJavaExecutable = javaToolchains.launcherFor(java.toolchain).get().executablePath.asFile.absolutePath
+    // Declared as inputs so a changed toolchain or module path re-runs the copy instead of serving a stale one.
+    inputs.property("spcTestJavaExecutable", testJavaExecutable)
+    inputs.property("spcTestModuleHome", moduleTestHome)
+    filesMatching("serverpackcreator.properties") {
+        filter { line: String ->
+            when {
+                line.startsWith("de.griefed.serverpackcreator.java=") ->
+                    "de.griefed.serverpackcreator.java=${escapeForProperties(testJavaExecutable)}"
+                line.startsWith("server.tomcat.basedir=") ->
+                    "server.tomcat.basedir=${escapeForProperties(moduleTestHome)}"
+                else -> line
+            }
+        }
+    }
+}
+
 tasks.test {
     useJUnitPlatform()
     // Keep test runs off the shared Preferences node. SPC's home directory lives in a per-user, machine-wide node
@@ -212,3 +235,8 @@ signing {
     useInMemoryPgpKeys(signingKey, signingPassword)
     sign(publishing.publications)
 }
+/**
+ * Escape a filesystem path for a `.properties` value: backslashes and colons are separators there, so a Windows
+ * path written verbatim would be read back mangled (`C:\dir` becomes `C` + a value starting at `dir`).
+ */
+fun escapeForProperties(path: String): String = path.replace("\\", "\\\\").replace(":", "\\:")
