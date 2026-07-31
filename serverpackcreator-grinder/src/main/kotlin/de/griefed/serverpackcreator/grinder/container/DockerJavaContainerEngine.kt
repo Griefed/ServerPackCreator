@@ -94,9 +94,27 @@ class DockerJavaContainerEngine(
                     }
                 })
 
-            val deadline = System.currentTimeMillis() + timeout.toMillis()
+            // The budget must not be spent while the host is asleep. A suspend freezes the container mid-boot, and a
+            // wall-clock deadline then expires on a server that never got the time — measured 2026-07-31, a laptop
+            // idle-sleeping in ~16-minute cycles produced 19 of 153 verdicts reading `timed out`, several of them
+            // `SURVIVED (timed out)` whose console showed the server reaching ready seconds after launch. Each
+            // suspended interval is added back to the deadline, so the timeout means "the boot had this long and did
+            // not make it" rather than "this much clock passed".
+            var deadline = System.currentTimeMillis() + timeout.toMillis()
+            var lastTick = System.currentTimeMillis()
             while (isRunning(containerId) && !ready.get() && System.currentTimeMillis() < deadline) {
-                Thread.sleep(500)
+                Thread.sleep(POLL_INTERVAL_MILLIS)
+                val now = System.currentTimeMillis()
+                val gap = now - lastTick
+                if (isSuspendGap(gap, POLL_INTERVAL_MILLIS)) {
+                    deadline += gap
+                    log.warn(
+                        "The host appears to have suspended for ~${gap / 1000}s while booting; that time is not counted " +
+                            "against the boot's ${timeout.toMinutes()}-minute budget. Keep the machine awake for a sweep " +
+                            "(e.g. `caffeinate -ims`) — a boot interrupted this way learns nothing either way."
+                    )
+                }
+                lastTick = now
             }
             val timedOut = !ready.get() && System.currentTimeMillis() >= deadline
 
@@ -164,6 +182,24 @@ class DockerJavaContainerEngine(
         runCatching { client.inspectContainerCmd(containerId).exec().state.exitCodeLong?.toInt() }.getOrNull()
 
     companion object {
+        /** How often the boot's liveness and ready-state are polled. */
+        internal const val POLL_INTERVAL_MILLIS = 500L
+
+        /**
+         * Smallest wall-clock gap between two polls that is read as the host having suspended rather than merely
+         * being busy. Generous on purpose: scheduling jitter, a starved container host or a long GC pause can cost
+         * seconds, but nothing short of a suspend costs a minute between two 500 ms polls. Under-detecting is the safe
+         * direction — it only means a suspended boot still times out, which is the behaviour this replaces.
+         */
+        internal const val SUSPEND_GAP_FLOOR_MILLIS = 60_000L
+
+        /**
+         * True when [gapMillis] between two polls is too large to be anything but the host having been asleep.
+         * Pure so the threshold is testable without a Docker daemon — the surrounding engine is integration-only.
+         */
+        internal fun isSuspendGap(gapMillis: Long, pollIntervalMillis: Long): Boolean =
+            gapMillis >= maxOf(SUSPEND_GAP_FLOOR_MILLIS, pollIntervalMillis * 30)
+
         /** Build a [DockerClient] from the ambient Docker environment (DOCKER_HOST, TLS settings, …). */
         fun defaultClient(): DockerClient {
             val config = DefaultDockerClientConfig.createDefaultConfigBuilder().build()
