@@ -131,3 +131,27 @@ Not fixed with the audit finding because it predates this range, spans eight pro
 a test that changes the home mid-instance and asserts the template paths follow. The fix is either the
 re-deriving getter the other 31 use, or a computed `val … get() =`, which is the cleaner Kotlin and behaviour-
 identical (the field write in that pattern is dead — the getter recomputes unconditionally).
+
+### B22 — the grinder writes `serverpackcreator.properties` and `log4j2.xml` into the repository root on every start
+Observed 2026-07-31 while restoring the sweep. Both files appear untracked in the repo root seconds after the
+daemon starts, and stay gone when it is stopped — verified by stopping it, deleting them, and waiting: nothing
+reappears, so the daemon is the writer.
+
+Neither obvious lever changes it:
+
+- its working directory was **verified** to be `~/.spc-grinder` (via `lsof -d cwd`), so this is not the
+  CWD-relative default of `ApiWrapper.api()` (`GrinderApplication.kt:85`);
+- pointing `SPC_GRINDER_SPC_PROPERTIES` at `~/.spc-grinder/serverpackcreator.properties` (the path
+  `GrinderApplication.kt:84` honours) makes it *read* from there but it still writes the pair into the repo root.
+
+**The test suite is ruled out as the producer**, which is the natural first suspicion since it *was* the cause of
+this class of pollution before 2026-07-31: a full module test run now leaves the repository root untouched,
+because `serverpackcreator.java-conventions.gradle.kts:44` pins every module's test home to `<module>/tests`.
+Confirmed by running a suite with the root clean and re-checking `git status`. Only the daemon reproduces it, and
+only at startup — the pair can be deleted while it runs and does not come back until the next start.
+
+Same class as the test-suite pollution fixed on 2026-07-31 (`ef3280e4c`/`e7cce83fb`) and the reason that one was
+worth fixing: artifacts landing outside the home a process was told to use. Consequence today is a permanently
+dirty `git status` while a sweep runs, which is how a genuinely unexpected file gets overlooked. Worth checking
+whether `ApiProperties`' log4j `ConfigurationFactory` role writes `log4j2.xml` relative to something captured at
+class-load rather than to the resolved home, since `log4j2.xml` is the more surprising of the two.
