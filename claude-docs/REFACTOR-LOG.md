@@ -1123,9 +1123,18 @@ so offline boots keep working and hours of re-installs were avoided. `verdicts.j
 reaches a real signal); sweep rebuilt and restarted under `caffeinate`.
 
 **Environment, not code.** Two of the four matrix runs failed wholesale on container DNS: the host resolves through
-`nameserver 127.0.0.1`, which Docker's VM forwarder cannot reach. A hard Docker restart fixed it once and then
-stopped working, so with Griefed's approval `~/.docker/daemon.json` now pins `dns: [1.1.1.1, 8.8.8.8]` (backup kept
-alongside). Worth knowing that this also silently blocks the sweep's pre-bake, which is the one networked boot.
+`nameserver 127.0.0.1`, a loopback resolver that Docker's VM forwarder cannot reach — a standing incompatibility on
+this machine, not a transient wedge (a hard Docker restart cleared it once and then stopped working). The fix is to
+pin explicit resolvers for the daemon in `~/.docker/daemon.json` (a timestamped backup sits beside it).
+
+**Which resolvers is a trust decision, not a technical one — do not re-suggest the obvious public ones.** Griefed
+rejected Cloudflare and Google outright (a resolver sees every hostname you look up, so its operator's business model
+is the whole question) and set OpenDNS + Quad9 instead. Any future advice here should name the *requirement* — a
+reachable, non-loopback resolver the operator trusts — and let them pick.
+
+Worth knowing regardless: broken container DNS silently blocks the sweep's **pre-bake**, which is the one networked
+boot, so new loader tuples stop installing while cached ones keep booting fine. It looks like a quiet sweep, not an
+error.
 
 ## 2026-07-31 — audit/backlog cleanup, Phases 3–6 (`claude-audit-backlog-cleanup`)
 
