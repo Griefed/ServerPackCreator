@@ -928,3 +928,27 @@ acted on, which is what redirected the work to the real fault.
 
 **Consequence for the store:** all 517 verdicts predate the crash signal working, so none of them can contain a HIGH
 and every one is fresh for 365 days — they would never be re-ground. Archived rather than kept.
+
+### 2026-07-31 — Minecraft's two versioning schemes, and the Forge coverage they cost (B8 + sibling)
+
+`REFACTOR-AUDIT.md`'s programme started with the backlog's biggest functional gap, and exploration turned it from
+one bug into a class. All three start-script templates chose Forge's launcher era with `SEMANTICS[1] -le 16` — the
+Minecraft **minor** component — which only carries that meaning under the `1.x` scheme. Minecraft `26.2` has minor
+`2`, so every Forge boot on current Minecraft took the legacy `forge.jar` path and died with `Error: Unable to
+access jarfile forge.jar` *before loading any mod*: **24 grinder boot logs, every one of them Forge, never started
+the server.** Forge coverage on current Minecraft was effectively zero, and only harmless because
+`launchFailureMarkers` scores a never-launched JVM INCONCLUSIVE rather than as a false clientside HIGH.
+
+Sweeping for siblings rather than stopping at the observed symptom found a second instance: NeoForge's
+1.20/1.20.1-only legacy installer coordinate (`SEMANTICS[1] -eq 20`) would send a future Minecraft `26.20` at a URL
+that does not exist for it. Latent, and fixed anyway — an unreachable bug is cheaper to close than to rediscover.
+
+Both tests **execute** the extracted shell function across both schemes and were confirmed failing against the
+unmodified templates first (`"Minecraft 26.1.2 picked the legacy forge.jar launcher"`, `"Minecraft 26.20 was sent at
+the legacy 1.20-era URL"`) — the pin-first order that audit finding M-A says this class of change keeps slipping on.
+
+**The Kotlin side was surveyed and is clean**, which bounds the class: `BootCandidateSelector.minecraftComparator`
+compares component-wise (and correctly ranks `26.2` above `1.21.1`, which is precisely what walked Forge into the
+broken branch), `ImageJavaRuntimes` sources required-Java from `MinecraftMeta.requiredJavaVersion`, and
+`LoaderVersionResolver` delegates to the manifests. The rule is recorded as a landmine in
+`serverpackcreator-api/CLAUDE.md` so the next scheme change has one place to check.

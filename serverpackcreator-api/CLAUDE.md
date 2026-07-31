@@ -33,6 +33,23 @@
   stays there; moving it risks breaking log4j plugin-discovery.
 - **Loader regexes have a single source of truth:** `config.SupportedModloaders` (5 exact-match
   regexes + canonical `names`). Do **not** reintroduce `"^forge$"`-style literals anywhere else.
+- **LANDMINE — Minecraft has two versioning schemes; never read a component in isolation.** Releases are
+  either `1.x[.y]` or the newer `YY.x[.y]` (`26.1.2`, `26.2`). Any test on the *minor* component alone is
+  therefore wrong: `26.2`'s minor is `2`, which reads as the 1.2 era. Two live instances were found and fixed
+  on 2026-07-31, both in the start-script templates and both silent — a wrong branch produces a pack that dies
+  before loading a mod, not an error:
+  - the Forge launcher era (`SEMANTICS[1] -le 16`) sent every Forge boot on Minecraft 26.x down the legacy
+    `forge.jar` path → `Error: Unable to access jarfile forge.jar`. **24 grinder boot logs, all Forge, never
+    started the server.**
+  - the NeoForge 1.20/1.20.1 installer coordinate (`SEMANTICS[1] -eq 20`) would send a future `26.20` at a
+    1.20-era URL. Latent, fixed anyway.
+
+  Both now require major `1` as well, pinned by `ScriptTemplateContentTest`, which **executes** the extracted
+  shell functions across both schemes. **The Kotlin side was surveyed and is clean by construction — keep it
+  that way:** `BootCandidateSelector.minecraftComparator` compares component-wise, `ImageJavaRuntimes` takes
+  required-Java from `MinecraftMeta.requiredJavaVersion` (Mojang's own declaration), and
+  `LoaderVersionResolver` delegates to the manifests. Derive from metadata or compare all components; never
+  hand-roll an era heuristic.
 - **`PackConfig.modloader` setter silently ignores unrecognized values**; unknown loaders default
   to **Forge**. Most-specific loader names must be matched first (LegacyFabric before Fabric, etc.).
 - **`PackConfig.save(destination, apiProperties)`** is the primary (injection-required) overload;
