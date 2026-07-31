@@ -148,4 +148,80 @@ internal class CachedLoaderVersionsTest {
 
         Assertions.assertTrue(cache.installedVersions("Forge", "1.21.1").isEmpty())
     }
+
+    /**
+     * With nothing cached, a build whose install the cache is refusing must be stepped over in favour of an older one.
+     *
+     * A loader version can be listed by its maven metadata while its installer artifact is simply absent: measured
+     * 2026-07-30, NeoForge `21.1.247` appears in the version index but `neoforge-21.1.247-installer.jar` **404s**, and
+     * `1.21.1 + NeoForge` is among the most common combinations in the catalogue — so every candidate wanting it paid a
+     * full download-and-boot before failing, and took an INCONCLUSIVE verdict for a build that cannot be installed at
+     * all.
+     */
+    @Test
+    fun aBuildOnInstallCooldownIsSteppedOverForAnOlderOne() {
+        val failing = LoaderInstaller { _, _, loaderVersion, _ -> loaderVersion != "21.1.247" }
+        val cache = LoaderCache(tempDir.toFile(), failing)
+        val newest = FakeNewest(mapOf(("NeoForge" to "1.21.1") to "21.1.247"))
+        val policy = CachedLoaderVersions(newest, cache) { _, _ -> listOf("21.1.247", "21.1.244", "21.1.243") }
+
+        // Nothing has failed yet, so the newest is still the preference.
+        Assertions.assertEquals("21.1.247", policy.preferredVersion("NeoForge", "1.21.1"))
+
+        // The first attempt fails and puts that build on cooldown...
+        Assertions.assertNull(cache.ensureInstalled("NeoForge", "21.1.247", "1.21.1"))
+
+        // ...after which the policy steps down rather than handing out the uninstallable build again.
+        Assertions.assertEquals("21.1.244", policy.preferredVersion("NeoForge", "1.21.1"))
+    }
+
+    /**
+     * The step-down must not touch what is reported as newest: `latestVersion` drives the support gate and the crash
+     * re-check, and weakening it is how a reused build would turn "needs a newer loader" into a false HIGH.
+     */
+    @Test
+    fun steppingDownLeavesTheReportedNewestUntouched() {
+        val failing = LoaderInstaller { _, _, loaderVersion, _ -> loaderVersion != "21.1.247" }
+        val cache = LoaderCache(tempDir.toFile(), failing)
+        val newest = FakeNewest(mapOf(("NeoForge" to "1.21.1") to "21.1.247"))
+        val policy = CachedLoaderVersions(newest, cache) { _, _ -> listOf("21.1.247", "21.1.244") }
+
+        Assertions.assertNull(cache.ensureInstalled("NeoForge", "21.1.247", "1.21.1"))
+
+        Assertions.assertEquals("21.1.244", policy.preferredVersion("NeoForge", "1.21.1"))
+        Assertions.assertEquals(
+            "21.1.247",
+            policy.latestVersion("NeoForge", "1.21.1"),
+            "the real newest must still be reported, or the support gate and crash re-check are compromised"
+        )
+    }
+
+    /** Nothing to fall back to: the newest is handed out anyway, so behaviour is unchanged rather than null. */
+    @Test
+    fun withNoOlderBuildAvailableTheNewestIsStillOffered() {
+        val failing = LoaderInstaller { _, _, _, _ -> false }
+        val cache = LoaderCache(tempDir.toFile(), failing)
+        val newest = FakeNewest(mapOf(("NeoForge" to "1.21.1") to "21.1.247"))
+        val policy = CachedLoaderVersions(newest, cache) { _, _ -> listOf("21.1.247") }
+
+        Assertions.assertNull(cache.ensureInstalled("NeoForge", "21.1.247", "1.21.1"))
+
+        Assertions.assertEquals("21.1.247", policy.preferredVersion("NeoForge", "1.21.1"))
+    }
+
+    /**
+     * Loaders with no per-Minecraft builds (Fabric, Quilt, LegacyFabric) supply no version list, and must keep behaving
+     * exactly as before — there is no sibling build to step down to.
+     */
+    @Test
+    fun aLoaderWithoutSiblingBuildsIsUnaffected() {
+        val failing = LoaderInstaller { _, _, _, _ -> false }
+        val cache = LoaderCache(tempDir.toFile(), failing)
+        val newest = FakeNewest(mapOf(("Fabric" to "1.20.1") to "0.16.9"))
+        val policy = CachedLoaderVersions(newest, cache)
+
+        Assertions.assertNull(cache.ensureInstalled("Fabric", "0.16.9", "1.20.1"))
+
+        Assertions.assertEquals("0.16.9", policy.preferredVersion("Fabric", "1.20.1"))
+    }
 }

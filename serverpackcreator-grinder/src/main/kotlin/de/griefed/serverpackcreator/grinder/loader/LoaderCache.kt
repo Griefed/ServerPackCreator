@@ -154,6 +154,19 @@ class LoaderCache(
             .mapNotNull { (_, version) -> version }
     }
 
+    /**
+     * Whether this tuple's install failed recently enough that [ensureInstalled] would refuse to retry it.
+     *
+     * Lets a version *policy* ask before choosing, rather than every candidate discovering it the expensive way: a
+     * loader build whose installer artifact is missing upstream (NeoForge `21.1.247`, measured 2026-07-30) is on
+     * cooldown after the first failure, and knowing that up front is what allows stepping down to an older build
+     * instead of handing out an inconclusive verdict per candidate.
+     */
+    fun isInstallOnCooldown(loader: String, loaderVersion: String, minecraftVersion: String): Boolean {
+        val failedAt = recentFailures[baseDirFor(loader, loaderVersion, minecraftVersion).path] ?: return false
+        return Duration.between(failedAt, clock()) < failureCooldown
+    }
+
     /** The raw `loaderVersion` a completion marker recorded, or `null` when it is unreadable. */
     private fun recordedVersion(marker: File): String? = runCatching {
         marker.readLines().firstOrNull { it.startsWith("loaderVersion=") }?.removePrefix("loaderVersion=")
