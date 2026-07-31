@@ -61,7 +61,10 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 
 - `./gradlew build` — full build. The app build depends on the frontend build and license report.
 - `./gradlew :serverpackcreator-api:test` — API suite (runs against fixture modpacks in
-  `serverpackcreator-api/tests/` and `src/test/resources/testresources/`; no live network needed).
+  `serverpackcreator-api/tests/` and `src/test/resources/testresources/`). **Offline for every Minecraft version in
+  the shipped manifest snapshot**, which `ApiWrapper.setup()` seeds from the jar; a version newer than that snapshot
+  costs one fetch of its `mcserver/<version>.json`. The snapshot currently lags its own parent manifest (backlog
+  B25). The test home is wiped before each run **except** `manifests/`, so that cache persists and accumulates.
 - `./gradlew :serverpackcreator-app:test` — app suite.
 - `./gradlew :<module>:koverHtmlReport` / `koverXmlReport` — coverage (Kover), report under
   `<module>/build/reports/kover/`.

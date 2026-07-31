@@ -12,8 +12,11 @@
 - `ApiWrapper` is the composition root — a thin, lazy, constructor-injected collaborator graph.
   Leave it thin.
 - Tests: JUnit 5; real fixture modpacks under `tests/` and `src/test/resources/testresources/`.
-  "Tested" = unit tests per class **plus** generation end-to-end. No live network (version
-  manifests are cached).
+  "Tested" = unit tests per class **plus** generation end-to-end. **Offline for versions in the shipped manifest
+  snapshot** (`src/main/resources/de/griefed/resources/manifests`, seeded into the home by `ApiWrapper.setup()`); a
+  newer version costs one `mcserver/<version>.json` fetch, and the snapshot lags its own parent manifest (B25).
+  `cleanup()` in the java-conventions plugin wipes the test home before every run but **spares `manifests/`** —
+  before 2026-07-31 it did not, taking that cache from 643 files to 0 on every single run.
 
 ## Established patterns
 

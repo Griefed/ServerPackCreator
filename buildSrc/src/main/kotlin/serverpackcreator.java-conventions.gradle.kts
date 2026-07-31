@@ -129,9 +129,17 @@ fun cleanup() {
     if (!gitkeep.exists()) {
         File(tests,".gitkeep").writeText("Hi")
     }
+    // Everything in the test home is disposable *except* the version manifests. Those are a cache of immutable
+    // upstream data -- SPC seeds them from the jar and fetches a per-version `mcserver/<version>.json` on demand --
+    // so deleting them makes every run re-download, which contradicts the module's documented "no live network
+    // needed" and quietly eats any newly-fetched version. Measured 2026-07-31: a single test task took the cache
+    // from 643 files to 0, and that is what kept deleting the hand-seeded Minecraft 26.2 metadata during the Forge
+    // work, and what left the newest versions resolving as "required Java unknown" in the template matrix.
+    // `updateManifests` benefits too: it copies this directory into the shipped resources, so preserving it lets
+    // the snapshot accumulate versions released since the last refresh instead of being capped at the seeded set.
     projectDir.resolve("tests")
         .listFiles()
-        .filter { !it.name.endsWith("gitkeep") }
+        .filter { !it.name.endsWith("gitkeep") && it.name != "manifests" }
         .forEach {
             it.deleteRecursively()
         }

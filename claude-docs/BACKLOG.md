@@ -53,18 +53,20 @@ dirty `git status` while a sweep runs, which is how a genuinely unexpected file 
 whether `ApiProperties`' log4j `ConfigurationFactory` role writes `log4j2.xml` relative to something captured at
 class-load rather than to the resolved home, since `log4j2.xml` is the more surprising of the two.
 
-### B24 — every test run wipes `<module>/tests`, so cached version metadata never survives a run
-Found 2026-07-31 while removing the build's shared-Preferences writes. `java-conventions`' `cleanup()` runs in
-`doFirst` of both `test` and `clean` and deletes everything under `<module>/tests` except `.gitkeep`. Since that
-directory is now also each module's SPC **home**, the deletion takes the version manifests and the per-version
-`mcserver/*.json` cache with it, every run.
+### B25 — the shipped per-version manifest snapshot lags its own parent manifest
+Found 2026-07-31 while closing B24, which had the mechanism wrong: the version manifests **are** shipped as
+resources (`serverpackcreator-api/src/main/resources/de/griefed/resources/manifests`, `mcserver/` included) and
+`ApiWrapper.setup()` seeds them from the jar, so the offline guarantee has real backing. The defect is narrower and
+it is a *data* problem: the shipped set is internally inconsistent.
 
-**This explains B20's disappearing metadata.** `26.2.json` had to be seeded by hand to get the Forge proof, and it
-vanished again between runs — not deleted by `VersionMeta`, but by the build's own pre-test cleanup. It also means
-`ScriptTemplateMatrixIT`'s first run after any `clean`/`test` starts from an empty metadata cache, which is when the
-newest Minecraft versions are most likely to resolve as `REQUIREMENT_UNKNOWN`.
+`minecraft-manifest.json` lists **26.2** as the newest release, while `mcserver/` — 643 per-version files — has no
+`26.2.json`, no `1.21.11.json` and no `1.21.1.json`; its newest is around the 1.20.1 era. So a fresh clone, or CI,
+asks for a version the shipped manifest advertises and must fetch it. When that fetch fails or is slow, the answer
+is "required Java unknown", which is what left the newest Minecraft versions out of the template matrix.
 
-It further contradicts the root `CLAUDE.md` claim that the api suite needs **no live network** because "version
-manifests are cached": with the cache wiped before every run, the suite re-fetches them. Worth measuring — run the
-api suite with networking blocked and see what fails — before deciding whether the clean-slate guarantee or the
-offline guarantee is the one to keep. Both are defensible; they cannot both be true as written.
+The project already has the refresh mechanism: `updateManifests` (`serverpackcreator-api/build.gradle.kts:134`)
+copies `serverpackcreator-app/tests/manifests` into the shipped resources, and since B24 that directory now
+*accumulates* newly-fetched versions instead of being wiped each run — so a run followed by `updateManifests`
+genuinely advances the snapshot. Left as a maintainer decision because it is a large data commit (hundreds of
+files) that needs network and the app suite, not a code change.
+
