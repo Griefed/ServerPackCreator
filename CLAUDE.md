@@ -142,6 +142,17 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   **confirm the test fails before the fix**: a guard whose teeth were never checked has repeatedly turned
   out to assert nothing (twice in one session, when a mis-indented edit meant the "broken" run was
   actually unmodified code).
+- **Build logic is verified by measurement, not by tests — and the measurement goes in the commit message.**
+  `buildSrc` has no test source set and no Gradle TestKit harness, and we have decided not to add one to pin single
+  predicates (a task-wiring change or a one-line filter is not worth a second test framework in the build). So for a
+  change to `buildSrc`, a `build.gradle.kts` or task wiring, the standard is: **measure the behaviour before and
+  after, and record both numbers in the commit message.** `8b87057cf` did this (a planted marker plus a cached
+  manifest; the cache went 643 → 0 before the change and survived after), as did the `updateManifests` retarget (app
+  home 643 files vs api home 659, the difference being exactly the 16 releases that could never have been copied).
+  Two audits flagged these as missing pins; this is the deliberate ceiling, so state it rather than re-flag it. Where
+  a *consequence* is reachable from a normal suite, pin that instead — `ShippedManifestSnapshotTest` guards the
+  outcome of the manifest work even though nothing can guard `cleanup()` itself, because `ApiWrapper.setup()`
+  re-seeds from the jar and makes a wiped cache indistinguishable from a preserved one at test time.
 - **Pin first means *commit* first, not just write first.** The failing test lands in its own `test(...)`
   commit, **red**, and the fix follows in the next one. In-session verification is not a substitute: it leaves
   no evidence, and it is exactly what silently passed twice above. Audited 2026-07-31 — all **eight** code
