@@ -30,8 +30,11 @@ import java.time.Instant
 /**
  * Pins the in-memory verdict store: a re-verified `(platform, slug, loader)` replaces rather than
  * duplicates, distinct loaders of one project coexist, **the same slug on two platforms stays two
- * projects**, [VerdictStore.hasVerdictFor] drives the skip check, and [VerdictStore.newestVerification]
- * returns the freshest timestamp across a project's loaders — both scoped to the platform.
+ * projects**, and [VerdictStore.newestVerification] returns the freshest timestamp across a project's loaders —
+ * both scoped to the platform. **[VerdictStore.hasVerdictFor] does *not* drive production's skip check** (an
+ * earlier version of this comment claimed it did): `Grinder.grind` compares `newestVerification` against the
+ * re-verify TTL, because "seen at all" and "seen recently enough" are different questions. `hasVerdictFor` is kept
+ * as the readable predicate for tests and for callers that only need the former.
  */
 internal class VerdictStoreTest {
 

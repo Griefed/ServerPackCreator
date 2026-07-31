@@ -39,7 +39,11 @@ interface VerdictStore {
     fun all(): List<GrindVerdict>
 
     /**
-     * Whether any verdict has been recorded for [slug] **on [platform]**. Slugs are not globally unique —
+     * Whether any verdict has been recorded for this project **on [platform]**. Answers "seen at all", which is
+     * *not* what the daemon's skip check asks — `Grinder.grind` uses [newestVerification] against the re-verify TTL,
+     * because a stale verdict must be re-ground. Kept as the readable predicate for that narrower question.
+     *
+     * Slugs are not globally unique —
      * `jei` exists on Modrinth *and* CurseForge — so the platform is part of the identity; without it one
      * platform's verdict would suppress grinding the other's project entirely.
      */
