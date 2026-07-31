@@ -57,6 +57,23 @@
   every modern Forge pack died before Forge loaded; NeoForge/Fabric/Quilt never pass the flag, which is why
   only Forge was affected. Pinned by `ScriptTemplateContentTest`. Do not "simplify" by dropping the default —
   old packs still need it — and do not pass it unconditionally.
+
+  **The flag is load-bearing, not cosmetic — dropping it exposed a second failure.** ServerStarterJar runs the
+  Forge installer **inside its own JVM** and installs a `SecurityManager` (`SecurityAccess.wrapNoForceExit`)
+  purely to swallow the `System.exit(0)` that installer calls on success. On Java 24+ that manager cannot be
+  installed, SSJ catches the `UnsupportedOperationException` **silently**, and the installer's exit terminates
+  the whole process: a fresh Forge pack installs, prints *"The server installed successfully"*, exits **0**, and
+  never launches. Booting the same pack again works, because the install is then present and SSJ only launches.
+  Verified on Minecraft 26.2 / Java 25, in bash *and* fish, while Forge 1.20.1 (Java 17) and NeoForge 26.2
+  (Java 25) both install-and-launch in one go — so it is Forge-on-modern-Java specifically, and **exit code 0
+  means `BootLogClassifier` cannot distinguish it from a clean shutdown.** From Java 24 on the templates
+  therefore never hand SSJ the install: they run the Forge installer themselves and launch from the argfile it
+  produces (`unix_args.txt`, `win_args.txt` on Windows). Below Java 24 the SSJ path is untouched. Pinned by
+  `ScriptTemplateContentTest.theBashTemplateInstallsForgeItselfWhenSSJCannotTrapTheInstallersExit` and by
+  `ScriptTemplateMatrixIT` (Forge 26.2, bash + fish, fresh pack, first invocation).
+  **The grinder cannot catch this class of bug** — it pre-bakes the install and boots offline from cache, so it
+  only ever exercises the launch of an already-installed tuple. Cached tuples stay valid across this change:
+  their `unix_args.txt` is what the new path launches, and `downloadIfNotExist` short-circuits on it offline.
 - **`PackConfig.modloader` setter silently ignores unrecognized values**; unknown loaders default
   to **Forge**. Most-specific loader names must be matched first (LegacyFabric before Fabric, etc.).
 - **`PackConfig.save(destination, apiProperties)`** is the primary (injection-required) overload;

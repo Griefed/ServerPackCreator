@@ -1088,3 +1088,41 @@ fish/`.ps1` template changes (the gated matrix IT has not run since), `HostProce
 deadline B9 fixed only in the container engine, the loader-cache marker not recording which template produced an
 install, the checked-in test properties still carrying machine-specific absolute paths (M1's other half), `.gitignore`
 hiding new `server_files` resources, and an install failure's console being wiped by the next attempt on that tuple.
+
+## 2026-07-31 — audit/backlog cleanup, Phases 1–2 (`claude-audit-backlog-cleanup`)
+
+**Phase 1 — audit findings.** H-B closed by tabling the `variables.txt` contract change (generation reads an
+operator-editable file; two new exported members) in the root `CLAUDE.md` compatibility table — the policy exists
+for exactly that case and had not been applied to it. M-B and M-C closed as binding rules: pin-first now names the
+*commit* boundary (red test commit, then the fix), and `refactor:` is reserved for behaviour-preserving change, a
+changed *existing* test being the stop-and-flag signal. Both cite the commits that got it wrong.
+
+**L-C withdrawn.** The finding claimed gratuitous exported mutability at `PathsConfig.kt:694`. Reading the whole
+declaration before changing it showed otherwise: the setter is `private`, and the `var` is load-bearing because the
+getter assigns the backing field so the path re-derives per access and follows a changed home — the pattern 31
+properties in that file use. The two plain `val`s the audit measured against are the exception *and* carry the real
+defect (captured once at construction, they do not follow a home change), recorded as **B21**.
+
+**Phase 2 — B19, a shipped defect.** A fresh Forge pack on Minecraft 26.x installed and exited **0** without ever
+launching. The suspected cause (Forge passes an installer URL where NeoForge passes a bare version) was wrong.
+ServerStarterJar runs the Forge installer in its own JVM and depends on a `SecurityManager` to swallow the
+installer's `System.exit(0)`; JEP 486 removed that from Java 24 and SSJ catches the failure silently, so the exit
+takes the process with it. This was the second half of `c571e2d7f`: dropping the fatal flag stopped the VM refusing
+to start and revealed the flag was load-bearing for SSJ's *install* step.
+
+Landed as the two commits the new rule requires — `203a32534` adds the guard **red** (executing `setupForge` across
+Java 17/21/24/25; observed failing with *"on Java 24 … expected: <false> but was: <true>"*), `f6c23e972` turns it
+green across sh/fish/ps1. From Java 24 on the templates install Forge themselves and launch from the installer's
+argfile (`unix_args.txt`; `win_args.txt` for PowerShell); below 24 nothing changed.
+
+Verified end-to-end by `ScriptTemplateMatrixIT`: **8/8 cells green**, Forge 26.2 passing in bash *and* fish on a
+fresh pack at first invocation (world directory created), with Forge 1.20.1 and NeoForge 26.2 as regression
+controls, plus both PowerShell tests. Cached loader tuples were checked rather than blanket-invalidated: every 26.x
+Forge tuple already carries the `unix_args.txt` the new path launches and `downloadIfNotExist` short-circuits on it,
+so offline boots keep working and hours of re-installs were avoided. `verdicts.json` archived (Forge on 26.x now
+reaches a real signal); sweep rebuilt and restarted under `caffeinate`.
+
+**Environment, not code.** Two of the four matrix runs failed wholesale on container DNS: the host resolves through
+`nameserver 127.0.0.1`, which Docker's VM forwarder cannot reach. A hard Docker restart fixed it once and then
+stopped working, so with Griefed's approval `~/.docker/daemon.json` now pins `dns: [1.1.1.1, 8.8.8.8]` (backup kept
+alongside). Worth knowing that this also silently blocks the sweep's pre-bake, which is the one networked boot.

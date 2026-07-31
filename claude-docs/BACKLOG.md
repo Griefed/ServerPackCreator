@@ -85,27 +85,14 @@ container's last 25 lines (which is what made Phase 1's Java 24 diagnosis possib
 gap rather than a blind spot: keep the previous log as `install.log.previous`, or write it under the tuple's cache entry
 instead.
 
-### B19 — a fresh Forge pack on Minecraft 26.x installs and exits 0 without ever launching the server
-Found by `ScriptTemplateMatrixIT` on 2026-07-31: `Forge 26.2` failed in **both** bash and fish while every other cell
-passed. Not a shell port and not the Java-25 guard — a controlled comparison isolates it to Forge-on-26.x alone:
-
-| cell (fresh pack, `USE_SSJ=true`) | Java | installer ran | server launched |
-|---|---|---|---|
-| Forge 1.20.1 | 17 | yes | **yes** |
-| NeoForge 26.2 | 25 | yes | **yes** |
-| Forge 26.2 | 25 | yes | **no** |
-
-On a fresh pack the ServerStarterJar runs Forge's installer, which prints `The server installed successfully` /
-`Exiting...`, and the process then **exits 0** with no world directory and no ready-line. Booting the *same* pack a
-second time reaches `Done (7.287s)! For help` — so it needs two invocations. The difference from the NeoForge branch is
-the argument: Forge passes a full installer **URL** (`--installer <url>`), NeoForge passes just the **version**
-(`--installer ${MODLOADER_VERSION}`) on anything past 1.20.x.
-
-Why it has not been seen in the sweep: the grinder pre-bakes the install and then boots offline from the loader cache,
-so it always boots on an already-installed tuple (`26.2/Forge/65.1.0` installed fine at 09:27 that day). A **user**
-running `start.sh` on a fresh Forge 26.x pack hits it directly — the server appears to do nothing and quit.
-Exit code 0 also means `BootLogClassifier` cannot tell this from a clean shutdown. Confirm whether the launch-vs-install
-split is SSJ behaviour or the URL form before changing anything, and pin it with a failing cell first.
+### B19 — a fresh Forge pack on Minecraft 26.x installs and exits 0 without launching — **DONE 2026-07-31**
+Root cause was not the URL-vs-version argument this entry suspected. ServerStarterJar runs the Forge installer in
+its **own JVM** and needs a `SecurityManager` (`SecurityAccess.wrapNoForceExit`) to swallow the `System.exit(0)`
+the installer calls on success; JEP 486 makes that impossible from Java 24 and SSJ swallows the failure silently,
+so the installer's exit kills the process before launch. Fixed by `203a32534` (red pin) + `f6c23e972`: from Java 24
+on, the templates install Forge themselves and launch from the installer's argfile; below 24 the SSJ path is
+untouched. Verified fresh-pack, first-invocation on Minecraft 26.2 in bash **and** fish, with Forge 1.20.1 and
+NeoForge 26.2 green as regression controls. Full landmine in `serverpackcreator-api/CLAUDE.md`.
 
 ### B20 — a missing per-version Minecraft manifest silently becomes "N/A", deleting matrix coverage
 `MinecraftServer.javaVersion()` wraps its body in `catch (e: Exception) -> Optional.empty()`, and `getServer()` requires
