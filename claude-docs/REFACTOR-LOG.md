@@ -1126,3 +1126,44 @@ reaches a real signal); sweep rebuilt and restarted under `caffeinate`.
 `nameserver 127.0.0.1`, which Docker's VM forwarder cannot reach. A hard Docker restart fixed it once and then
 stopped working, so with Griefed's approval `~/.docker/daemon.json` now pins `dns: [1.1.1.1, 8.8.8.8]` (backup kept
 alongside). Worth knowing that this also silently blocks the sweep's pre-bake, which is the one networked boot.
+
+## 2026-07-31 — audit/backlog cleanup, Phases 3–6 (`claude-audit-backlog-cleanup`)
+
+**Phase 3 — B20, the silent skip that hid B19.** `MinecraftServer.javaVersion()` turned every exception, a failed
+manifest download included, into the same `Optional.empty()` that means "declares no required Java", and
+`ImageJavaRuntimes.supports()` collapsed that into the same `false` as "the image lacks this JDK". The template
+matrix rendered the result as `[N/A] SKIPPED` — so all four Minecraft 26.2 cells, Fabric among them, vanished from a
+green run. `supportFor()` now returns `SUPPORTED` / `JDK_NOT_BUNDLED` / `REQUIREMENT_UNKNOWN` with `supports()` as a
+facade keeping its contract; the IT skips the first two with accurate reasons and **fails** the third, saying what is
+missing and why. The api-side swallow keeps its exported `Optional` but logs the cause. `26.2` also joins the IT's
+default Minecraft axis, which had contained only `1.x` versions while three separate bugs lived in `YY.x` handling.
+
+**Phase 4 — B14, B15, B18.**
+- **B14** — `HostProcessServerRunner` had the wall-clock deadline B9 fixed only in the container engine, so a host
+  suspend still wrote off a boot on the `-verifyclientside` path. Rather than copy it, `SuspendAwareDeadline` was
+  extracted into **`-clientside`**: grinder depends on clientside, so that is the direction that keeps dependencies
+  pointing inward. It takes an injected clock, which is the only way the threshold is testable — both real callers
+  are integration-shaped and cannot be made to sleep. Three commits: red pin, behaviour-preserving extraction (the
+  grinder's existing `SuspendGapTest` repointed, assertions untouched), then the host-runner adoption as its own
+  behaviour change.
+- **B15** — the loader-cache marker now records a digest of the start-script templates that produced an install, and
+  a *differing* provenance is a miss. An **absent** one is tolerated with a single warning per run: treating unknown
+  as different would reinstall all 74 cached tuples at ~150 MB and a networked boot each, and Phase 2 is the proof
+  that would have been waste — its cached Forge tuples were checked and every one was still bootable.
+- **B18** — one generation of install console now survives the wipe that starts a retry.
+
+**Phase 5 — build hygiene.**
+- **B16** — the committed test properties no longer carry one machine's absolute paths; `processTestResources` fills
+  the JDK path from the configured Java 21 toolchain and the tomcat basedir from `<module>/tests`, both declared as
+  task inputs and escaped for properties syntax.
+- **B17** — `.gitignore`'s bare `server_files` rule hid the shipped resources (it swallowed a `git add` twice this
+  session). Re-included with the idiom the file already uses for `configs`, deliberately *not* by anchoring to the
+  repository root, since each module's test home is `<module>/tests` and `<module>/tests/server_files` must stay
+  ignored. **Measurement note:** `git check-ignore` suppresses any path containing tracked files and reported the
+  still-ignored directory as clean — `--no-index` is what tells the truth.
+
+**Suites at the end of the branch:** api 272 (1 skipped) · clientside 87 · grinder 224 (19 skipped) · app 76 — all
+green. Every guard in these phases was verified by breaking it and watching it fail.
+
+**Audit outcome.** H-B, M-B and M-C closed; **L-C withdrawn** as wrong on inspection, with the inverse defect it
+pointed at recorded as B21. Backlog now holds only B4, B5, B11 (deliberate deferrals) plus B21 and B22.

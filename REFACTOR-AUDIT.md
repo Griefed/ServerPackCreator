@@ -50,8 +50,8 @@ deletes that file changes what every embedder's generation emits, which was prev
 `CLAUDE.md:93-94` tables exactly two such changes (`PathsConfig.homeDirectory`, `resolvePreferencesNode`).
 This one is absent, so the policy that was written *for this situation* was not applied to it.
 
-**Remediation:** documentation only — one row in the compatibility table naming the new members and the
-"generation now reflects an on-disk file" effect. No code change is implied; the behaviour is wanted.
+**Remediation:** **DONE** (`70cfe7fd9`) — the compatibility table now carries the row, naming both new members and
+the "generation reflects an on-disk file" effect. No code change was needed; the behaviour is wanted.
 
 ---
 
@@ -174,11 +174,16 @@ Recorded because it is the majority of the picture and the contrast with report 
 
 ## Recommended order of action
 
+**Status 2026-07-31, branch `claude-audit-backlog-cleanup`:** H-B, M-B and M-C are **closed** (`70cfe7fd9`);
+**L-C is withdrawn** (`b9777ddf9`) — see its section. **H-A remains the only open action and cannot be done
+locally.**
+
 1. **Push.** **H-A** is unchanged and now 102 commits deep. Every other finding in this report is either
    historical, already closed, or documentation.
 2. **H-B — add the compatibility-table row** for `variables.txt` / `defaultVariablesTemplate`. Cheap, and it is
    the project's own stated policy for exactly this kind of change.
-3. **M-B is a boundary habit, not a correctness gap.** The pin-first rule now exists; what the eight commits
+3. **DONE — M-B and M-C are now binding rules** in the root `CLAUDE.md`, and this branch follows them: every code
+   change landed as a red `test(...)` commit followed by its fix. **M-B is a boundary habit, not a correctness gap.** The pin-first rule now exists; what the eight commits
    show is that "written first" and "committed first" drifted apart. If the failing-guard evidence matters
    (and the two silently-passing teeth checks argue it does), the rule needs the commit boundary spelled out,
    not just the ordering.
