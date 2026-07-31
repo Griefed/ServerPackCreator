@@ -132,6 +132,17 @@ though their detail lives deeper:
     **A stale value may still be stored** from before the fix — check the shared node once if a GUI instance
     resolves a surprising home.
 
+- **Never hand SPC a *relative* properties file — a loaded one becomes a permanent write target.**
+  `PropertyStore.loadProperties` adds every file it reads to `trackedPropertyFiles`, and `save()` writes to **all**
+  of them on every save (skipping any that no longer exist, except `alwaysWrite`). `ApiProperties`' default is the
+  relative `File("serverpackcreator.properties")`, so `ApiWrapper.api()` with no argument made the daemon create and
+  rewrite a settings file in whatever directory it was started from — a checkout got one in its repository root on
+  every start. `GrinderApplication.resolveSpcPropertiesFile` now always returns an absolute path (the operator's
+  `SPC_GRINDER_SPC_PROPERTIES`, else one inside the daemon's own home), pinned by
+  `GrinderPropertiesResolutionTest`; verified by starting the daemon *from* the repo root and watching the tree stay
+  clean. **Expected and harmless:** the startup log also shows a save into
+  `build/install/serverpackcreator-grinder/lib/serverpackcreator.properties` — the dist's own copy, which SPC loads
+  and therefore tracks. It lives under `build/`, so it is regenerated and gitignored; don't chase it.
 - **A cached install is a product of the templates that built it** (`TemplateProvenance` + the marker's
   `templates=` key). The install boot runs the pack's own `start.sh`, so a template change that alters what an
   install *produces* leaves cached layers stale — and the marker used to record only loader/version/Minecraft, so
