@@ -146,7 +146,7 @@ never evicted, and a re-install costs one networked setup boot if it comes back.
 | `SPC_GRINDER_STORE`             | `~/.spc-grinder/verdicts.json` | Verdict store — delete to start fresh                                        |
 | `SPC_GRINDER_CURSORS`           | `~/.spc-grinder/cursors.json`  | Crawl position per platform — delete to re-sweep from the most-downloaded    |
 | `SPC_GRINDER_PORT`              | `8757`                         | Report server port                                                           |
-| `SPC_GRINDER_WORKERS`           | `2`                            | Parallel boots. **Budget ~3 GB RAM each**                                    |
+| `SPC_GRINDER_WORKERS`           | `2`                            | Parallel boots. **Budget 3 GiB RAM each** — see *Sizing the worker count*    |
 | `SPC_GRINDER_BATCH`             | `25`                           | Projects taken from **each** platform per pass — the sweep-speed lever       |
 | `SPC_GRINDER_INTERVAL`          | `21600` (6 h)                  | Seconds to idle after a full sweep found nothing due                         |
 | `SPC_GRINDER_SCAN_DELAY`        | `15`                           | Seconds between passes that only scanned past fresh verdicts                 |
@@ -161,6 +161,35 @@ export SPC_GRINDER_BATCH=100
 export SPC_GRINDER_PORT=8757
 ./gradlew :serverpackcreator-grinder:run
 ```
+
+### Sizing the worker count
+
+Each in-flight grind holds a booting Minecraft server, capped at **3 GiB** (`ContainerResources.memoryBytes`), so the
+worker count is a memory question rather than a CPU one:
+
+```
+SPC_GRINDER_WORKERS  ≈  (memory available to Docker − ~2 GiB overhead) / 3 GiB
+```
+
+| Host | Memory available to Docker | Sensible `SPC_GRINDER_WORKERS` |
+|---|---|---|
+| Dedicated grinder box, ~80 GB free | 64 GiB assigned | ~20 |
+| Workstation, 16 GiB assigned to Docker | 16 GiB | 4 |
+| Laptop with Docker Desktop at its default | ~2 GiB | **1** |
+
+**The memory available to Docker must exceed `workers × 3 GiB`, not the host's total.** On Docker Desktop the VM gets a
+fixed slice (Settings → Resources), and it is easy for that slice to be far smaller than the machine: measured on a
+48 GB laptop whose Docker VM held **1.93 GiB**, less than a single boot's cap. When the cap cannot be honoured the
+container is OOM-killed rather than throttled, and a killed boot teaches nothing — it is scored INCONCLUSIVE, so
+over-subscribing does not corrupt results, it just wastes the boot.
+
+Throughput is roughly linear in workers until memory runs out: at one worker a candidate takes 60–90 s including its
+boot, so ~50/hour; Modrinth's ~71 000 mod projects alone are then about two months of wall-clock, and both platforms
+interleaved considerably more. Raising the worker count is the single biggest lever on how long a full sweep takes.
+
+**Keep the host awake.** A suspend freezes a boot mid-flight; the grinder adds detected suspends back to the boot's
+budget, but a machine asleep for eight hours simply is not grinding. Run it under `caffeinate -ims` on macOS (or the
+equivalent inhibitor elsewhere) for an unattended sweep.
 
 ---
 

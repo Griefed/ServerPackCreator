@@ -199,7 +199,11 @@ setupForge() {
   FORGE_INSTALLER_URL="https://files.minecraftforge.net/maven/net/minecraftforge/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}-installer.jar"
   FORGE_JAR_LOCATION="do_not_manually_edit"
 
-  if [[ ${SEMANTICS[1]} -le 16 ]]; then
+  # Forge changed how a server is launched: up to Minecraft 1.16 the installer produced a runnable forge.jar, from
+  # 1.17 it produces libraries/.../unix_args.txt instead. The major must be checked too, because the minor alone only
+  # carries that meaning under the 1.x scheme -- Minecraft 26.2 has minor 2, which would otherwise read as the 1.2 era
+  # and take the legacy path, where the server dies with "Unable to access jarfile forge.jar" before loading any mod.
+  if [[ ${SEMANTICS[0]} -eq 1 ]] && [[ ${SEMANTICS[1]} -le 16 ]]; then
     FORGE_JAR_LOCATION="forge.jar"
     LAUNCHER_JAR_LOCATION="forge.jar"
     SERVER_RUN_COMMAND="${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"
@@ -231,9 +235,31 @@ setupForge() {
         runJavaCommand "-jar forge-installer.jar --installServer"
       fi
     else
-      SERVER_RUN_COMMAND="@user_jvm_args.txt ${SSJ_FORGE_ARGS} -jar server.jar --installer-force --installer ${FORGE_INSTALLER_URL} nogui"
-      # Download ServerStarterJar to server.jar
-      refreshServerJar
+      # SSJ_FORGE_ARGS defaults to -Djava.security.manager=allow, which Forge's ServerStarterJar needed on older
+      # Java. JEP 486 removed Security Manager support in Java 24, so from that release the flag is not merely
+      # useless -- the VM refuses to start ("A command line option has attempted to allow or enable the Security
+      # Manager"). Minecraft 26.x requires Java 25, so passing it there breaks every modern Forge pack before Forge
+      # loads. Keep it where it is still needed, drop it where it is fatal.
+      #
+      # That flag is not cosmetic to SSJ: it runs the Forge installer inside its own JVM and needs a SecurityManager
+      # to swallow the System.exit(0) the installer calls when it is done. Without it the installer's exit ends the
+      # whole process -- the pack installs, reports success, exits 0, and never launches the server. So on Java that
+      # cannot trap the exit we do not hand SSJ the install at all: install here, then launch through the argfile the
+      # installer produces, exactly as the USE_SSJ=false path does. Below Java 24 nothing changes.
+      if [[ "${JAVA_VERSION}" =~ ^[0-9]+$ ]] && [[ ${JAVA_VERSION} -ge 24 ]]; then
+        echo "Java ${JAVA_VERSION} cannot grant ServerStarterJar the Security Manager it needs to run the Forge"
+        echo "installer, so this pack installs Forge directly and starts it from its argfile instead."
+        FORGE_ARGS_FILE="libraries/net/minecraftforge/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/unix_args.txt"
+        SERVER_RUN_COMMAND="@user_jvm_args.txt @${FORGE_ARGS_FILE} nogui"
+        if [[ $(downloadIfNotExist "${FORGE_ARGS_FILE}" "forge-installer.jar" "${FORGE_INSTALLER_URL}") == "true" ]]; then
+          echo "Forge Installer downloaded. Installing..."
+          runJavaCommand "-jar forge-installer.jar --installServer"
+        fi
+      else
+        SERVER_RUN_COMMAND="@user_jvm_args.txt ${SSJ_FORGE_ARGS} -jar server.jar --installer-force --installer ${FORGE_INSTALLER_URL} nogui"
+        # Download ServerStarterJar to server.jar
+        refreshServerJar
+      fi
     fi
 
     echo "Generating user_jvm_args.txt from variables..."
@@ -276,7 +302,11 @@ setupNeoForge() {
     echo "${JAVA_ARGS}"
   } >>user_jvm_args.txt
 
-  if [[ ${SEMANTICS[1]} -eq 20 ]] && [[ ${#SEMANTICS[@]} -eq 2 || ${SEMANTICS[2]} -eq 1 ]]; then
+  # NeoForge's first releases -- Minecraft 1.20 and 1.20.1 only -- live under the legacy net/neoforged/forge/ artifact
+  # group and must be installed by URL; everything later installs by bare version. The major is part of the test
+  # because "minor is 20" only means the 1.20 era under the 1.x scheme: a future Minecraft 26.20 would otherwise be
+  # sent at a 1.20-era URL that does not exist for it.
+  if [[ ${SEMANTICS[0]} -eq 1 ]] && [[ ${SEMANTICS[1]} -eq 20 ]] && [[ ${#SEMANTICS[@]} -eq 2 || ${SEMANTICS[2]} -eq 1 ]]; then
     SERVER_RUN_COMMAND="@user_jvm_args.txt -jar server.jar --installer-force --installer https://maven.neoforged.net/releases/net/neoforged/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}-installer.jar nogui"
   else
     SERVER_RUN_COMMAND="@user_jvm_args.txt -jar server.jar --installer-force --installer ${MODLOADER_VERSION} nogui"

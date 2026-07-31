@@ -364,6 +364,11 @@ plugins
 server-packs
 server_files
 work
+# The *shipped* templates live under src/main/resources and must stay tracked: the bare `server_files`
+# rule above is for the home directory SPC creates when it runs (including each module's `tests/` home),
+# and it silently hid new resources -- `variables.txt` needed `git add -f`, and the next one would have
+# gone untracked into a release. Same re-include idiom as the `configs` lines below.
+!**/src/main/resources/**/server_files/
 !**/src/main/kotlin/**/configs/
 !**/src/test/kotlin/**/configs/
 !**/src/main/kotlin/**/plugins/

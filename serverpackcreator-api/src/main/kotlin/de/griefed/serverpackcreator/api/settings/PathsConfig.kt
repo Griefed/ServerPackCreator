@@ -103,13 +103,20 @@ class PathsConfig(
      */
     var homeDirectory: File = home.absoluteFile
         get() {
-            val systemPropertyHome = System.getProperty(HOME_DIRECTORY_KEY)?.takeIf { it.isNotBlank() }
-            val setting = if (systemPropertyHome != null) {
-                // An explicit `-D` wins outright. This is what lets a host that must not touch the shared state --
-                // above all a test JVM, whose working directory is the module's own source tree -- pin its home,
-                // because `ApiWrapper.setup()` *writes* into the home directory (README, CHANGELOG, server_files).
-                systemPropertyHome
-            } else if (getPreference(HOME_DIRECTORY_KEY).isPresent) {
+            // An explicit `-D` wins outright, and is deliberately **not persisted**. It is what lets a host that must
+            // not touch shared state pin its home -- above all a test JVM, whose working directory is the module's own
+            // source tree, because `ApiWrapper.setup()` *writes* into the home directory (README, CHANGELOG,
+            // server_files). Writing it into the preference as well would let a one-off override quietly replace the
+            // user's durable setting, and every later read (including from another process) would inherit it.
+            System.getProperty(HOME_DIRECTORY_KEY)?.takeIf { it.isNotBlank() }?.let { overridden ->
+                field = File(overridden).absoluteFile
+                if (!field.isDirectory) {
+                    field.create(createFileOrDir = true, asDirectory = true)
+                }
+                return field
+            }
+
+            val setting = if (getPreference(HOME_DIRECTORY_KEY).isPresent) {
                 getPreference(HOME_DIRECTORY_KEY).get()
             } else if (store.properties.containsKey(HOME_DIRECTORY_KEY) && store.properties.getProperty(HOME_DIRECTORY_KEY).isNotBlank()) {
                 store.properties.getProperty(HOME_DIRECTORY_KEY)
@@ -673,6 +680,20 @@ class PathsConfig(
     var defaultServerIcon: File = File(serverFilesDirectory, "server-icon.png").absoluteFile
         get() {
             field = File(serverFilesDirectory, "server-icon.png").absoluteFile
+            return field
+        }
+        private set
+
+    /**
+     * The `variables.txt` template shipped with SPC, in the `server_files`-directory inside its home-directory.
+     *
+     * Generation reads this file and substitutes its `SPC_..._SPC` placeholders per server pack, so the text an
+     * operator sees — the comments explaining every setting — is editable without rebuilding the API. It sits
+     * alongside the start-script templates because it is the same kind of thing: shipped content the user may adjust.
+     */
+    var defaultVariablesTemplate: File = File(serverFilesDirectory, "variables.txt").absoluteFile
+        get() {
+            field = File(serverFilesDirectory, "variables.txt").absoluteFile
             return field
         }
         private set

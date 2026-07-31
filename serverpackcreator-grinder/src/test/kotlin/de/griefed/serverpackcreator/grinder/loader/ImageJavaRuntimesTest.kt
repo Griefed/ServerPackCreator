@@ -57,6 +57,39 @@ internal class ImageJavaRuntimesTest {
         Assertions.assertFalse(runtimes.supports("26.2"), "Java 25 is not in this set — must be skipped, not booted on 21")
     }
 
+    /**
+     * A version whose required Java is simply **unknown** must be distinguishable from one whose JDK the image
+     * does not ship. Both are equally unbootable, so [ImageJavaRuntimes.supports] rightly collapses them to
+     * `false` — but they mean opposite things to a caller. "This image lacks Java 25" is a legitimate,
+     * permanent exclusion; "I could not find out what this version needs" is a *metadata failure* that silently
+     * removes coverage, and `MinecraftServer.javaVersion()` turns any exception, a failed download included,
+     * into exactly that empty answer.
+     *
+     * It is not hypothetical: `ScriptTemplateMatrixIT` reported **all four Minecraft 26.2 cells** as a
+     * benign-looking `[N/A] SKIPPED` — including Fabric, which the live sweep boots fine — while still passing
+     * green. The newest Minecraft, and the exact branch the Forge template fixes were written for, went
+     * untested behind a message that reads like a deliberate exclusion.
+     */
+    @Test
+    fun distinguishesAnUnknownRequirementFromAnUnbundledJdk() {
+        Assertions.assertEquals(
+            ImageSupport.SUPPORTED, runtimes.supportFor("1.20.6"),
+            "Java 21 is bundled and declared"
+        )
+        Assertions.assertEquals(
+            ImageSupport.JDK_NOT_BUNDLED, runtimes.supportFor("26.2"),
+            "26.2 declares Java 25, which this image does not ship — a permanent, legitimate exclusion"
+        )
+        Assertions.assertEquals(
+            ImageSupport.REQUIREMENT_UNKNOWN, runtimes.supportFor("99.99"),
+            "nothing is known about 99.99's Java — a metadata failure, not an exclusion"
+        )
+
+        // supports() keeps its contract: both non-SUPPORTED states remain false, so no caller changes meaning.
+        Assertions.assertFalse(runtimes.supports("26.2"))
+        Assertions.assertFalse(runtimes.supports("99.99"))
+    }
+
     @Test
     fun bundlingTheRequiredJavaMakesTheVersionSupported() {
         // The shipped default bundles 25, so the current release (26.2 -> Java 25) boots rather than being skipped.

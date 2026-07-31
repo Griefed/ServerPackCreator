@@ -356,7 +356,11 @@ Function global:SetupForge
     "Running Forge checks and setup..."
     $ForgeInstallerUrl = "https://files.minecraftforge.net/maven/net/minecraftforge/forge/${MinecraftVersion}-${ModLoaderVersion}/forge-${MinecraftVersion}-${ModLoaderVersion}-installer.jar"
     $ForgeJarLocation = "do_not_manually_edit"
-    if ([int]$Semantics[1] -le 16)
+    # Forge changed how a server is launched: up to Minecraft 1.16 the installer produced a runnable forge.jar, from
+    # 1.17 it produces libraries/.../win_args.txt instead. The major must be checked too, because the minor alone only
+    # carries that meaning under the 1.x scheme -- Minecraft 26.2 has minor 2, which would otherwise read as the 1.2
+    # era and take the legacy path, where the server cannot find forge.jar at all.
+    if ([int]$Semantics[0] -eq 1 -And [int]$Semantics[1] -le 16)
     {
         $ForgeJarLocation = "forge.jar"
         $script:LauncherJarLocation = "forge.jar"
@@ -397,9 +401,33 @@ Function global:SetupForge
         }
         else
         {
-            $script:ServerRunCommand = "@user_jvm_args.txt ${SSJForgeArgs} -jar server.jar --installer-force --installer ${ForgeInstallerUrl} nogui"
-            # Download ServerStarterJar to server.jar
-            RefreshServerJar
+            # SSJForgeArgs defaults to -Djava.security.manager=allow, which JEP 486 made fatal from Java 24 on: the
+            # VM refuses to start rather than ignoring it. Minecraft 26.x requires Java 25, so passing it there
+            # breaks every modern Forge pack before Forge loads. Keep it where needed, drop it where it kills.
+            #
+            # That flag is not cosmetic to SSJ: it runs the Forge installer inside its own JVM and needs a
+            # SecurityManager to swallow the System.exit(0) the installer calls when it is done. Without it the
+            # installer's exit ends the whole process -- the pack installs, reports success, exits 0, and never
+            # launches the server. So on Java that cannot trap the exit we do not hand SSJ the install at all:
+            # install here, then launch from the argfile the installer produces, as the UseSSJ=false path does.
+            if (("${JavaVersion}" -match '^\d+$') -And ([int]${JavaVersion} -ge 24))
+            {
+                Write-Host "Java ${JavaVersion} cannot grant ServerStarterJar the Security Manager it needs to run the"
+                Write-Host "Forge installer, so this pack installs Forge directly and starts it from its argfile instead."
+                $ForgeArgsFile = "libraries/net/minecraftforge/forge/${MinecraftVersion}-${ModLoaderVersion}/win_args.txt"
+                $script:ServerRunCommand = "@user_jvm_args.txt @${ForgeArgsFile} nogui"
+                if ((DownloadIfNotExists "${ForgeArgsFile}" "forge-installer.jar" "${ForgeInstallerUrl}"))
+                {
+                    Write-Host "Forge Installer downloaded. Installing..."
+                    RunJavaCommand "-jar forge-installer.jar --installServer"
+                }
+            }
+            else
+            {
+                $script:ServerRunCommand = "@user_jvm_args.txt ${SSJForgeArgs} -jar server.jar --installer-force --installer ${ForgeInstallerUrl} nogui"
+                # Download ServerStarterJar to server.jar
+                RefreshServerJar
+            }
         }
 
         Write-Host "Generating user_jvm_args.txt from variables..."
@@ -446,7 +474,9 @@ Function global:SetupNeoForge
             "${script:JavaArgs}"
     WriteFileUTF8NoBom "user_jvm_args.txt" $Content
 
-    if ([int]$Semantics[1] -eq 20 -And ($Semantics.count -eq 2 -Or [int]$Semantics[2] -eq 1))
+    # The major is part of the test because "minor is 20" only means the 1.20 era under the 1.x scheme: a future
+    # Minecraft 26.20 would otherwise be sent at a 1.20-era URL that does not exist for it.
+    if ([int]$Semantics[0] -eq 1 -And [int]$Semantics[1] -eq 20 -And ($Semantics.count -eq 2 -Or [int]$Semantics[2] -eq 1))
     {
         $script:ServerRunCommand = "@user_jvm_args.txt -jar server.jar --installer-force --installer https://maven.neoforged.net/releases/net/neoforged/forge/${MinecraftVersion}-${ModLoaderVersion}/forge-${MinecraftVersion}-${ModLoaderVersion}-installer.jar nogui"
     }

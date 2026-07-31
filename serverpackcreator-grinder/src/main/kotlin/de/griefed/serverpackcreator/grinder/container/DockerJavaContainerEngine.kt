@@ -31,6 +31,7 @@ import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientImpl
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
+import de.griefed.serverpackcreator.clientside.SuspendAwareDeadline
 import java.time.Duration
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
@@ -94,11 +95,24 @@ class DockerJavaContainerEngine(
                     }
                 })
 
-            val deadline = System.currentTimeMillis() + timeout.toMillis()
-            while (isRunning(containerId) && !ready.get() && System.currentTimeMillis() < deadline) {
-                Thread.sleep(500)
+            // The budget must not be spent while the host is asleep. A suspend freezes the container mid-boot, and a
+            // wall-clock deadline then expires on a server that never got the time — measured 2026-07-31, a laptop
+            // idle-sleeping in ~16-minute cycles produced 19 of 153 verdicts reading `timed out`, several of them
+            // `SURVIVED (timed out)` whose console showed the server reaching ready seconds after launch. Each
+            // suspended interval is added back to the deadline, so the timeout means "the boot had this long and did
+            // not make it" rather than "this much clock passed".
+            val deadline = SuspendAwareDeadline(timeout, POLL_INTERVAL_MILLIS) { gapMillis ->
+                log.warn(
+                    "The host appears to have suspended for ~${gapMillis / 1000}s while booting; that time is not counted " +
+                        "against the boot's ${timeout.toMinutes()}-minute budget. Keep the machine awake for a sweep " +
+                        "(e.g. `caffeinate -ims`) — a boot interrupted this way learns nothing either way."
+                )
             }
-            val timedOut = !ready.get() && System.currentTimeMillis() >= deadline
+            while (isRunning(containerId) && !ready.get() && deadline.hasTimeLeft()) {
+                Thread.sleep(POLL_INTERVAL_MILLIS)
+                deadline.tick()
+            }
+            val timedOut = !ready.get() && !deadline.hasTimeLeft()
 
             // A server that became ready stays up by design, so stop it; classification keys on the
             // captured lines + exit code, never on liveness. Kill if a graceful stop fails.
@@ -164,6 +178,9 @@ class DockerJavaContainerEngine(
         runCatching { client.inspectContainerCmd(containerId).exec().state.exitCodeLong?.toInt() }.getOrNull()
 
     companion object {
+        /** How often the boot's liveness and ready-state are polled. */
+        internal const val POLL_INTERVAL_MILLIS = 500L
+
         /** Build a [DockerClient] from the ambient Docker environment (DOCKER_HOST, TLS settings, …). */
         fun defaultClient(): DockerClient {
             val config = DefaultDockerClientConfig.createDefaultConfigBuilder().build()

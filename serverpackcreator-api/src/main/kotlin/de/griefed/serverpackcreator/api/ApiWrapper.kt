@@ -453,6 +453,9 @@ class ApiWrapper private constructor(
         val serverIcon = checkServerFilesFile(
             apiProperties.defaultServerIcon
         )
+        // Created when absent rather than overwritten like the script templates: an operator may have adjusted the
+        // wording, and generation only needs the placeholders, which their edit keeps.
+        checkServerFilesFile(apiProperties.defaultVariablesTemplate)
         overwriteServerFilesFile(apiProperties.defaultShellScriptTemplate)
         overwriteServerFilesFile(apiProperties.defaultFishScriptTemplate)
         overwriteServerFilesFile(apiProperties.defaultPowerShellScriptTemplate)

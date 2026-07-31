@@ -238,8 +238,13 @@ function setupForge
     set -g FORGE_INSTALLER_URL "https://files.minecraftforge.net/maven/net/minecraftforge/forge/$MINECRAFT_VERSION-$MODLOADER_VERSION/forge-$MINECRAFT_VERSION-$MODLOADER_VERSION-installer.jar"
     set -g FORGE_JAR_LOCATION "do_not_manually_edit"
 
-    # NOTE: fish arrays are 1-indexed. Bash's ${SEMANTICS[1]} (minor version) is $SEMANTICS[2] here.
-    if test $SEMANTICS[2] -le 16
+    # NOTE: fish arrays are 1-indexed. Bash's ${SEMANTICS[0]} (major) is $SEMANTICS[1] here, and its
+    # ${SEMANTICS[1]} (minor) is $SEMANTICS[2].
+    # Forge changed how a server is launched: up to Minecraft 1.16 the installer produced a runnable forge.jar, from
+    # 1.17 it produces libraries/.../unix_args.txt instead. The major must be checked too, because the minor alone only
+    # carries that meaning under the 1.x scheme -- Minecraft 26.2 has minor 2, which would otherwise read as the 1.2
+    # era and take the legacy path, where the server dies with "Unable to access jarfile forge.jar".
+    if test $SEMANTICS[1] -eq 1; and test $SEMANTICS[2] -le 16
         set -g FORGE_JAR_LOCATION "forge.jar"
         set -g LAUNCHER_JAR_LOCATION "forge.jar"
         set -g SERVER_RUN_COMMAND "$JAVA_ARGS -jar $LAUNCHER_JAR_LOCATION nogui"
@@ -269,8 +274,28 @@ function setupForge
                 runJavaCommand "-jar forge-installer.jar --installServer"
             end
         else
-            set -g SERVER_RUN_COMMAND "@user_jvm_args.txt $SSJ_FORGE_ARGS -jar server.jar --installer-force --installer $FORGE_INSTALLER_URL nogui"
-            refreshServerJar
+            # SSJ_FORGE_ARGS defaults to -Djava.security.manager=allow, which JEP 486 made fatal from Java 24 on:
+            # the VM refuses to start rather than ignoring it. Minecraft 26.x requires Java 25, so passing it there
+            # breaks every modern Forge pack before Forge loads. Keep it where it is needed, drop it where it kills.
+            #
+            # That flag is not cosmetic to SSJ: it runs the Forge installer inside its own JVM and needs a
+            # SecurityManager to swallow the System.exit(0) the installer calls when it is done. Without it the
+            # installer's exit ends the whole process -- the pack installs, reports success, exits 0, and never
+            # launches the server. So on Java that cannot trap the exit we do not hand SSJ the install at all:
+            # install here, then launch from the argfile the installer produces, as the USE_SSJ=false path does.
+            if string match -qr '^[0-9]+$' -- "$JAVA_VERSION"; and test "$JAVA_VERSION" -ge 24
+                echo "Java $JAVA_VERSION cannot grant ServerStarterJar the Security Manager it needs to run the Forge"
+                echo "installer, so this pack installs Forge directly and starts it from its argfile instead."
+                set -g FORGE_ARGS_FILE "libraries/net/minecraftforge/forge/$MINECRAFT_VERSION-$MODLOADER_VERSION/unix_args.txt"
+                set -g SERVER_RUN_COMMAND "@user_jvm_args.txt @$FORGE_ARGS_FILE nogui"
+                if test (downloadIfNotExist "$FORGE_ARGS_FILE" "forge-installer.jar" "$FORGE_INSTALLER_URL") = "true"
+                    echo "Forge Installer downloaded. Installing..."
+                    runJavaCommand "-jar forge-installer.jar --installServer"
+                end
+            else
+                set -g SERVER_RUN_COMMAND "@user_jvm_args.txt $SSJ_FORGE_ARGS -jar server.jar --installer-force --installer $FORGE_INSTALLER_URL nogui"
+                refreshServerJar
+            end
         end
 
         echo "Generating user_jvm_args.txt from variables..."
@@ -319,7 +344,9 @@ function setupNeoForge
         set patch_ok 1
     end
 
-    if test $SEMANTICS[2] -eq 20; and test $patch_ok -eq 1
+    # The major is part of the test because "minor is 20" only means the 1.20 era under the 1.x scheme: a future
+    # Minecraft 26.20 would otherwise be sent at a 1.20-era URL that does not exist for it.
+    if test $SEMANTICS[1] -eq 1; and test $SEMANTICS[2] -eq 20; and test $patch_ok -eq 1
         set -g SERVER_RUN_COMMAND "@user_jvm_args.txt -jar server.jar --installer-force --installer https://maven.neoforged.net/releases/net/neoforged/forge/$MINECRAFT_VERSION-$MODLOADER_VERSION/forge-$MINECRAFT_VERSION-$MODLOADER_VERSION-installer.jar nogui"
     else
         set -g SERVER_RUN_COMMAND "@user_jvm_args.txt -jar server.jar --installer-force --installer $MODLOADER_VERSION nogui"

@@ -856,6 +856,12 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     val defaultServerIcon: File get() = pathsConfig.defaultServerIcon
 
     /**
+     * The shipped `variables.txt` template that server-pack generation fills in. Lives in the `server_files`-directory
+     * inside ServerPackCreator's home-directory, like the start-script templates.
+     */
+    val defaultVariablesTemplate: File get() = pathsConfig.defaultVariablesTemplate
+
+    /**
      * Directory in which plugins for ServerPackCreator are to be placed in.
      */
     val pluginsDirectory: File get() = pathsConfig.pluginsDirectory

@@ -105,7 +105,11 @@ class ContainerCandidateVerifier(
                         // Reuse an installed loader build rather than installing every fresh release; the
                         // policy still reports the newest truthfully, so the support gate and BootVerifier's
                         // crash re-check are unaffected (see CachedLoaderVersions).
-                        loaderVersionPolicy = CachedLoaderVersions(LoaderVersionResolver(apiWrapper.versionMeta), loaderCache),
+                        loaderVersionPolicy = CachedLoaderVersions(
+                            LoaderVersionResolver(apiWrapper.versionMeta),
+                            loaderCache,
+                            ::knownLoaderVersionsNewestFirst
+                        ),
                         workDirectory = File(workDirectory, "boot"),
                         serverRunner = ContainerServerRunner(containerEngine, runtimeImage, resources),
                         packPostProcessor = ::overlayLoaderInstall,
@@ -129,6 +133,21 @@ class ContainerCandidateVerifier(
             ?: throw IllegalStateException("No cached loader install for ${pack.loader} ${pack.loaderVersion} / Minecraft ${pack.minecraftVersion}")
         copyInstallLayer(base, pack.serverPack)
         PackVariables.prepareUnattended(pack.serverPack, javaPath, offline = true, installerJavaPath = imageJava.installerJavaPathFor(pack.minecraftVersion))
+    }
+
+    /**
+     * Every known build for a `(loader, Minecraft)` pair, **newest first**, so the version policy can step down from a
+     * build whose installer artifact is missing upstream (see `CachedLoaderVersions`).
+     *
+     * Only Forge and NeoForge are listed, because only they publish per-Minecraft builds where one can be absent while
+     * another works; Fabric, Quilt and LegacyFabric ship a single Minecraft-independent loader line, so there is no
+     * sibling build to fall back to and an empty list leaves them on the existing behaviour. SPC's metadata returns
+     * these ascending, hence the reversal.
+     */
+    private fun knownLoaderVersionsNewestFirst(loader: String, minecraftVersion: String): List<String> = when (loader) {
+        "Forge" -> apiWrapper.versionMeta.forge.supportedForgeVersions(minecraftVersion).orElse(emptyList()).reversed()
+        "NeoForge" -> apiWrapper.versionMeta.neoForge.supportedNeoForgeVersions(minecraftVersion).orElse(emptyList()).reversed()
+        else -> emptyList()
     }
 
     /** Copy the cached install layer from [base] into [pack], skipping the cache's completion marker. */

@@ -928,3 +928,251 @@ acted on, which is what redirected the work to the real fault.
 
 **Consequence for the store:** all 517 verdicts predate the crash signal working, so none of them can contain a HIGH
 and every one is fresh for 365 days — they would never be re-ground. Archived rather than kept.
+
+### 2026-07-31 — Minecraft's two versioning schemes, and the Forge coverage they cost (B8 + sibling)
+
+`REFACTOR-AUDIT.md`'s programme started with the backlog's biggest functional gap, and exploration turned it from
+one bug into a class. All three start-script templates chose Forge's launcher era with `SEMANTICS[1] -le 16` — the
+Minecraft **minor** component — which only carries that meaning under the `1.x` scheme. Minecraft `26.2` has minor
+`2`, so every Forge boot on current Minecraft took the legacy `forge.jar` path and died with `Error: Unable to
+access jarfile forge.jar` *before loading any mod*: **24 grinder boot logs, every one of them Forge, never started
+the server.** Forge coverage on current Minecraft was effectively zero, and only harmless because
+`launchFailureMarkers` scores a never-launched JVM INCONCLUSIVE rather than as a false clientside HIGH.
+
+Sweeping for siblings rather than stopping at the observed symptom found a second instance: NeoForge's
+1.20/1.20.1-only legacy installer coordinate (`SEMANTICS[1] -eq 20`) would send a future Minecraft `26.20` at a URL
+that does not exist for it. Latent, and fixed anyway — an unreachable bug is cheaper to close than to rediscover.
+
+Both tests **execute** the extracted shell function across both schemes and were confirmed failing against the
+unmodified templates first (`"Minecraft 26.1.2 picked the legacy forge.jar launcher"`, `"Minecraft 26.20 was sent at
+the legacy 1.20-era URL"`) — the pin-first order that audit finding M-A says this class of change keeps slipping on.
+
+**The Kotlin side was surveyed and is clean**, which bounds the class: `BootCandidateSelector.minecraftComparator`
+compares component-wise (and correctly ranks `26.2` above `1.21.1`, which is precisely what walked Forge into the
+broken branch), `ImageJavaRuntimes` sources required-Java from `MinecraftMeta.requiredJavaVersion`, and
+`LoaderVersionResolver` delegates to the manifests. The rule is recorded as a landmine in
+`serverpackcreator-api/CLAUDE.md` so the next scheme change has one place to check.
+
+**The era fix uncovered the actual blocker.** With Forge finally reaching its ServerStarterJar path, the boot
+failed differently: `-Djava.security.manager=allow` — SPC's default `SSJ_FORGE_ARGS` — makes a Java 24+ VM refuse
+to start outright (JEP 486 removed Security Manager support). Minecraft 26.x requires Java 25, so **every modern
+Forge pack SPC generates died before Forge loaded**, and this is user-facing rather than grinder-specific. NeoForge,
+Fabric and Quilt never pass the flag, which is exactly why only Forge was ever affected. All three templates now
+pass it only below Java 24, guarded against the non-numeric `JAVA_VERSION` that `SKIP_JAVA_CHECK` leaves behind; the
+default is unchanged because older Java still needs it.
+
+**A second consequence worth knowing: the pre-bake cache had to be invalidated by hand.** The install boot runs the
+same templates, so the cached Forge layers for 26.x had been produced by the legacy branch — no `server.jar`, and a
+success marker that made `ensureInstalled` serve them anyway. Deleting the two affected tuples let them reinstall
+correctly. **A template change that alters what an install produces requires invalidating the affected cache
+tuples**, because the marker records success without recording which template produced it.
+
+Verified end-to-end: `balm` on Minecraft 26.1.2 now reports `Fabric=LOW(boot:SURVIVED), Forge=LOW(boot:SURVIVED),
+NeoForge=LOW(boot:SURVIVED)` — the first successful Forge boot on current Minecraft — with `server.jar` and
+`libraries` present in the reinstalled cache entry.
+
+### 2026-07-31 — Phase 2: grinder correctness and coverage (B12, B6, B9, B2)
+
+Four backlog items, one commit each, all with the pin-first order the audit's M-A finding asked for.
+
+- **B12** `ForgeLoader.forgeVersionFrom` sliced blindly, so an entry with nothing after its Minecraft key threw
+  `StringIndexOutOfBoundsException` — uncaught by `update()`, which would have abandoned the Forge parse for every
+  remaining Minecraft version. It now returns `null` and the caller logs and skips. The guard is a **length check**,
+  never `startsWith`, because entries carry the raw manifest key while the Minecraft version may be the reconciled
+  `1.7.10-pre4` form. Verified against the real manifest: of 5025 entries across 77 keys it rejects **0**.
+- **B6** Modrinth clamps `offset` at 99 999 and answers with zero hits past it, which `page` cannot distinguish from an
+  exhausted catalog — so a catalog that outgrows the ceiling would wrap early and report itself complete. Two warnings
+  now mark the region; behaviour is deliberately unchanged, because the source genuinely cannot tell the cases apart
+  and guessing either way is worse than saying so. The boundary is a pure decision, tested without an HTTP fetcher.
+- **B9** The boot deadline was wall-clock, so a suspended host spent the budget on a frozen container. The wait loop
+  now adds a detected suspend back to the deadline, so a timeout means "the boot had this long and did not make it".
+  Detection is conservative on purpose (a gap must exceed a minute *and* 30× the poll interval): under-detecting only
+  preserves the old behaviour, while over-detecting would hand a genuinely slow boot budget it should not get.
+- **B2** A loader build can be listed by maven metadata while its installer artifact is absent (NeoForge `21.1.247`
+  404s). With nothing cached the policy now prefers the newest build the cache is not already refusing, stepping down
+  when it is on install cooldown; `LoaderCache.isInstallOnCooldown` lets the policy ask before choosing instead of each
+  candidate discovering it the expensive way. **`latestVersion` still delegates**, so the support gate and the crash
+  re-check keep measuring against the real newest — a crash on a stepped-down build is re-checked exactly as a cached
+  build's is. Scoped to Forge/NeoForge, the only loaders with sibling per-Minecraft builds.
+
+**Correction — a bookkeeping mistake, owned here.** The commit that closed B8 (`64d2d70e5`) truncated `BACKLOG.md` from
+B8's heading to end-of-file, which silently removed **B9, B10, B11 and B12** as well. B10 and B11 were still open and
+have been restored from history; B9 and B12 are closed by this phase, so they stay gone deliberately rather than by
+accident. Removing a queue entry must cut only that entry's own section.
+
+**Deferred, not forgotten: B5** (verdict dedup by project identity). It needs a stable project id threaded through
+`GrindCandidate`, `GrindVerdict` and the store key, plus a migration for existing `verdicts.json` files that carry no
+id — a schema change that deserves its own focused pass rather than the tail of a long one. Its cost today is only that
+a renamed project is re-ground as new, which is wasted work rather than a wrong verdict.
+
+### 2026-07-31 — Phase 3: API and app hygiene (B1, B10)
+
+- **B1** Four call-sites in `-app` hard-coded both the `Preferences` node name and the home key while `-api` resolves
+  the node through `ApiProperties.resolvePreferencesNode`, so a host claiming its own node — the grinder, every test
+  JVM — had the app writing a home `-api` would never read back. `HomeDirectoryPreference` now owns both, resolving the
+  node **per call** rather than capturing it. `CommandlineParserTest` reads through the same resolver, because
+  asserting against the literal node only passes while the default happens to be in play.
+  **`GuiProps` deliberately stays on the default node**, with the reasoning recorded at the call-site: window geometry
+  belongs to the installation a user sees, not to whichever process resolved a home, and routing it through the
+  resolver would reset every existing user's saved layout. It needs a migration, not a rename.
+- **A bug found by B1's test, fixed first.** `PathsConfig.homeDirectory` persists whatever it resolves, so the `-D`
+  override added in `dd4fcc935` was writing *itself* into the preference — a temporary override, which the build sets
+  for every test JVM, quietly replacing the user's durable home, with every later read inheriting it. It is now honoured
+  for the process and never persisted. Surfaced as the `--home` test failing: `CommandlineParser` stored a home and the
+  next `ApiProperties` read overwrote it. Verified by reinstating the persistence and watching the new test fail.
+- **B10** The 91-line `variables.txt` body moved out of a Kotlin string literal into `server_files`, beside the
+  start-script templates. Verified as a faithful move — the resource is **byte-identical** to what the literal produced
+  through `trimIndent` (91 lines, 5912 chars). Existing homes keep their copy (`checkServerFilesFile`, not the
+  templates' overwrite), so edited wording survives an upgrade, and the delete-watcher restores it when removed so the
+  file the operator edits is the file generation reads. Reading from disk introduces a failure the literal could not
+  have, so it is guarded: a missing or unreadable template falls back to the jar's copy rather than shipping a pack with
+  no `variables.txt`.
+
+### 2026-07-31 — Phase 4: operator documentation (B7)
+
+`SPC_GRINDER_WORKERS` is the biggest lever on sweep duration and the README documented only "budget ~3 GB RAM each".
+§5 now carries the rule — `workers ≈ (memory available to Docker − overhead) / 3 GiB` — with figures for a dedicated
+box (~20), a workstation (4) and a laptop on Docker Desktop's default (**1**), plus the two facts an operator actually
+trips over: the constraint is the memory assigned to *Docker*, not the host's (measured: a 48 GB laptop whose VM held
+1.93 GiB, less than one boot's cap), and over-subscribing wastes boots rather than corrupting results, because an
+OOM-killed boot is scored INCONCLUSIVE. Keeping the host awake is noted for the same reason B9 exists.
+
+`ReadmeConfigurationTest` now compares the quoted per-boot figure against `ContainerResources.memoryBytes`, since the
+formula divides by it — change the cap and the advice would silently start over-subscribing. Verified by doubling the
+cap and watching the test fail.
+
+### 2026-07-31 — Phase 5: frontend component coverage (B3)
+
+Suite 23 → 31, across two files. The judgement about *what not to test* is the substance here: of the untested
+surface, only `MainLayout` held real logic.
+
+- **`MainLayout`** — its drawer `linksList` is hand-maintained and must track the router, so the test compares it
+  against `src/router/routes` **in both directions**: a routed page with no drawer link is unreachable from the UI, and
+  a link pointing at no route goes nowhere. Comparing the array against a literal copy of itself would have passed
+  forever regardless of what the app actually routes. `drawerClick` is pinned too, including the `stopPropagation`
+  call — without it the click bubbles to the drawer and toggles the mini-state straight back, a break that leaves every
+  other test green.
+- **`AboutPage`** — no logic, so the test covers only what fails invisibly: an empty, relative or non-`https` link
+  renders as a perfectly normal row and the only symptom is a user going nowhere.
+- **Verified by breaking all three**: removing the History nav entry, removing `stopPropagation`, and dropping
+  `https://` from the Discord link each fail with the intended message.
+- **Deliberately still untested:** `SubmissionPage` (its only script content is two scrollbar style objects),
+  `DownloadsPage`, `HistoryPage`, `ErrorPage` — pure composition — and the three tables, for 4e's reason. Covering them
+  would raise the count without raising confidence.
+
+Two harness facts cost time and are now recorded in the module's `CLAUDE.md`: `src/router/routes` *statically* imports
+the two download pages, so importing it drags in `boot/axios` → `#q-app/wrappers` and needs `vi.mock('boot/axios')`;
+and **QPage refuses to render outside a QLayout**, so a page test must stub it as a passthrough or the page's children
+never mount — which is why the existing download-page tests assert through `vm` rather than the DOM.
+
+### 2026-07-31 — Phase 6: the convention the session kept paying for (audit M-A)
+
+The audit's M-A finding was that template and parsing fixes get verified by hand and pinned afterwards — a *habit*, not
+an incident, found across two audits in three instances (`28a786b58` NeoForge mapping with no test; `2e16bf0c8` fish
+`--no-empty` pinned five commits later; `1a55797df` Fabric fall-through, whose guard asserted ordering and stayed green
+while the behaviour was broken). Phase 1 then supplied two more data points in the other direction: writing the test
+first and *watching it fail* is what proved both the Forge launcher-era bug and its latent NeoForge sibling.
+
+Two lines are now in the root `CLAUDE.md`'s **Refactor discipline**:
+
+1. Shell templates, manifests and version parsing get their test written and observed failing first — with the reason
+   (these fail silently, producing a plausible value rather than an error) and the measured cost (24 wasted boots; 820
+   mis-attributed NeoForge versions).
+2. A test that only asserts *shape* is not a pin — prefer executing the unit, and confirm the test fails before the fix.
+   That second half is not theoretical: a teeth-check silently passed **twice in this session** because a mis-indented
+   edit meant the supposedly-broken run was unmodified code. A guard whose teeth were never checked has repeatedly
+   turned out to assert nothing.
+
+**Also recorded (B13–B18):** six items observed while executing the plan but outside its phases — the unverified
+fish/`.ps1` template changes (the gated matrix IT has not run since), `HostProcessServerRunner` sharing the wall-clock
+deadline B9 fixed only in the container engine, the loader-cache marker not recording which template produced an
+install, the checked-in test properties still carrying machine-specific absolute paths (M1's other half), `.gitignore`
+hiding new `server_files` resources, and an install failure's console being wiped by the next attempt on that tuple.
+
+## 2026-07-31 — audit/backlog cleanup, Phases 1–2 (`claude-audit-backlog-cleanup`)
+
+**Phase 1 — audit findings.** H-B closed by tabling the `variables.txt` contract change (generation reads an
+operator-editable file; two new exported members) in the root `CLAUDE.md` compatibility table — the policy exists
+for exactly that case and had not been applied to it. M-B and M-C closed as binding rules: pin-first now names the
+*commit* boundary (red test commit, then the fix), and `refactor:` is reserved for behaviour-preserving change, a
+changed *existing* test being the stop-and-flag signal. Both cite the commits that got it wrong.
+
+**L-C withdrawn.** The finding claimed gratuitous exported mutability at `PathsConfig.kt:694`. Reading the whole
+declaration before changing it showed otherwise: the setter is `private`, and the `var` is load-bearing because the
+getter assigns the backing field so the path re-derives per access and follows a changed home — the pattern 31
+properties in that file use. The two plain `val`s the audit measured against are the exception *and* carry the real
+defect (captured once at construction, they do not follow a home change), recorded as **B21**.
+
+**Phase 2 — B19, a shipped defect.** A fresh Forge pack on Minecraft 26.x installed and exited **0** without ever
+launching. The suspected cause (Forge passes an installer URL where NeoForge passes a bare version) was wrong.
+ServerStarterJar runs the Forge installer in its own JVM and depends on a `SecurityManager` to swallow the
+installer's `System.exit(0)`; JEP 486 removed that from Java 24 and SSJ catches the failure silently, so the exit
+takes the process with it. This was the second half of `c571e2d7f`: dropping the fatal flag stopped the VM refusing
+to start and revealed the flag was load-bearing for SSJ's *install* step.
+
+Landed as the two commits the new rule requires — `203a32534` adds the guard **red** (executing `setupForge` across
+Java 17/21/24/25; observed failing with *"on Java 24 … expected: <false> but was: <true>"*), `f6c23e972` turns it
+green across sh/fish/ps1. From Java 24 on the templates install Forge themselves and launch from the installer's
+argfile (`unix_args.txt`; `win_args.txt` for PowerShell); below 24 nothing changed.
+
+Verified end-to-end by `ScriptTemplateMatrixIT`: **8/8 cells green**, Forge 26.2 passing in bash *and* fish on a
+fresh pack at first invocation (world directory created), with Forge 1.20.1 and NeoForge 26.2 as regression
+controls, plus both PowerShell tests. Cached loader tuples were checked rather than blanket-invalidated: every 26.x
+Forge tuple already carries the `unix_args.txt` the new path launches and `downloadIfNotExist` short-circuits on it,
+so offline boots keep working and hours of re-installs were avoided. `verdicts.json` archived (Forge on 26.x now
+reaches a real signal); sweep rebuilt and restarted under `caffeinate`.
+
+**Environment, not code.** Two of the four matrix runs failed wholesale on container DNS: the host resolves through
+`nameserver 127.0.0.1`, a loopback resolver that Docker's VM forwarder cannot reach — a standing incompatibility on
+this machine, not a transient wedge (a hard Docker restart cleared it once and then stopped working). The fix is to
+pin explicit resolvers for the daemon in `~/.docker/daemon.json` (a timestamped backup sits beside it).
+
+**Which resolvers is a trust decision, not a technical one — do not re-suggest the obvious public ones.** Griefed
+rejected Cloudflare and Google outright (a resolver sees every hostname you look up, so its operator's business model
+is the whole question) and set OpenDNS + Quad9 instead. Any future advice here should name the *requirement* — a
+reachable, non-loopback resolver the operator trusts — and let them pick.
+
+Worth knowing regardless: broken container DNS silently blocks the sweep's **pre-bake**, which is the one networked
+boot, so new loader tuples stop installing while cached ones keep booting fine. It looks like a quiet sweep, not an
+error.
+
+## 2026-07-31 — audit/backlog cleanup, Phases 3–6 (`claude-audit-backlog-cleanup`)
+
+**Phase 3 — B20, the silent skip that hid B19.** `MinecraftServer.javaVersion()` turned every exception, a failed
+manifest download included, into the same `Optional.empty()` that means "declares no required Java", and
+`ImageJavaRuntimes.supports()` collapsed that into the same `false` as "the image lacks this JDK". The template
+matrix rendered the result as `[N/A] SKIPPED` — so all four Minecraft 26.2 cells, Fabric among them, vanished from a
+green run. `supportFor()` now returns `SUPPORTED` / `JDK_NOT_BUNDLED` / `REQUIREMENT_UNKNOWN` with `supports()` as a
+facade keeping its contract; the IT skips the first two with accurate reasons and **fails** the third, saying what is
+missing and why. The api-side swallow keeps its exported `Optional` but logs the cause. `26.2` also joins the IT's
+default Minecraft axis, which had contained only `1.x` versions while three separate bugs lived in `YY.x` handling.
+
+**Phase 4 — B14, B15, B18.**
+- **B14** — `HostProcessServerRunner` had the wall-clock deadline B9 fixed only in the container engine, so a host
+  suspend still wrote off a boot on the `-verifyclientside` path. Rather than copy it, `SuspendAwareDeadline` was
+  extracted into **`-clientside`**: grinder depends on clientside, so that is the direction that keeps dependencies
+  pointing inward. It takes an injected clock, which is the only way the threshold is testable — both real callers
+  are integration-shaped and cannot be made to sleep. Three commits: red pin, behaviour-preserving extraction (the
+  grinder's existing `SuspendGapTest` repointed, assertions untouched), then the host-runner adoption as its own
+  behaviour change.
+- **B15** — the loader-cache marker now records a digest of the start-script templates that produced an install, and
+  a *differing* provenance is a miss. An **absent** one is tolerated with a single warning per run: treating unknown
+  as different would reinstall all 74 cached tuples at ~150 MB and a networked boot each, and Phase 2 is the proof
+  that would have been waste — its cached Forge tuples were checked and every one was still bootable.
+- **B18** — one generation of install console now survives the wipe that starts a retry.
+
+**Phase 5 — build hygiene.**
+- **B16** — the committed test properties no longer carry one machine's absolute paths; `processTestResources` fills
+  the JDK path from the configured Java 21 toolchain and the tomcat basedir from `<module>/tests`, both declared as
+  task inputs and escaped for properties syntax.
+- **B17** — `.gitignore`'s bare `server_files` rule hid the shipped resources (it swallowed a `git add` twice this
+  session). Re-included with the idiom the file already uses for `configs`, deliberately *not* by anchoring to the
+  repository root, since each module's test home is `<module>/tests` and `<module>/tests/server_files` must stay
+  ignored. **Measurement note:** `git check-ignore` suppresses any path containing tracked files and reported the
+  still-ignored directory as clean — `--no-index` is what tells the truth.
+
+**Suites at the end of the branch:** api 272 (1 skipped) · clientside 87 · grinder 224 (19 skipped) · app 76 — all
+green. Every guard in these phases was verified by breaking it and watching it fail.
+
+**Audit outcome.** H-B, M-B and M-C closed; **L-C withdrawn** as wrong on inspection, with the inverse defect it
+pointed at recorded as B21. Backlog now holds only B4, B5, B11 (deliberate deferrals) plus B21 and B22.

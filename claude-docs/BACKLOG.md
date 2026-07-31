@@ -9,27 +9,6 @@ When an item lands, delete it here and record it in `REFACTOR-LOG.md`.
 These were ranked below sweep-output quality: none of them change what the grinder produces, which is why they
 waited. Griefed asked for them to be recorded and tackled afterwards.
 
-### B1 — `-app`'s five hard-coded `Preferences` node call-sites
-`CommandlineParser.kt:98`, `ServerPackCreator.kt:72` and `:99`, `HomeDirCommand.kt:59`, `GuiProps.kt:504` still use
-`Preferences.userRoot().node("ServerPackCreator")` literally. `-api` now resolves the node through
-`ApiProperties.resolvePreferencesNode()`, and the grinder + test suites each claim their own, so the grinder is safe;
-what remains is that a **test-suite run can still move a developer's own GUI installation's home directory**, and the
-shared node currently holds a repo test path on Griefed's machine. Mechanical fix: route these through the same
-resolver. Watch out: `GuiProps` is GUI state (window geometry etc.), so moving it to a different node **loses a
-user's saved layout** — that one needs a deliberate decision, not a blind sed.
-
-### B2 — NeoForge builds whose installer artifact is missing upstream
-`21.1.247` is listed in `maven.neoforged.net`'s version index but `neoforge-21.1.247-installer.jar` **404s** (verified
-2026-07-30), so SPC's metadata is right and the artifact simply is not there. Observed effect is smaller than first
-assumed — that build still produced `SURVIVED` verdicts (17 of them), because a cached install layer can already
-exist — but a cold cache wastes an install attempt per candidate. Option: have `LoaderCache` fall back to the
-next-newest *installable* build on a download failure. **Careful:** `latestVersion` alone drives the support gate and
-the crash re-check (`serverpackcreator-clientside/CLAUDE.md`), so a fallback must not quietly redefine "newest".
-
-### B3 — Frontend component-test breadth
-Phase 4 is complete (Vitest, full TS migration, all cards + nav SFCs, suite at 23). Tables are untested **by
-design** — trivial format-lambda logic vs. brittle QTable rendering. Only worth extending if a real bug appears there.
-
 ### B4 — `LarsonScanner.kt` (2,217 lines)
 Self-contained Swing widget, no dependants beyond the GUI, no known defects. Left alone deliberately: splitting it
 buys nothing a reader needs today. `ConfigEditor.kt` (1,369) was assessed and closed — its two pure pieces are
@@ -39,68 +18,10 @@ already extracted and the rest is legitimate view code.
 A project that changes its slug on a platform is re-ground as a new project and its old verdicts linger. Fine today;
 would want a stable project id if the store is ever published as a long-lived dataset.
 
-### B6 — Modrinth's offset ceiling
-Measured at 99,999 against ~71,000 `project_type:mod` projects, so the whole catalog is reachable **today**. If it
-ever exceeds 100,000 the tail silently looks like the end of the catalog and the crawl wraps early, losing coverage
-with no error. Worth a guard that logs when `offset` approaches the ceiling.
-
-### B7 — Worker sizing for the production host
-The grinder will run on a machine with **~80 GB free memory** (Griefed, 2026-07-30), not on the dev box whose Docker
-VM is deliberately capped at 1.93 GiB. Sizing rule: `SPC_GRINDER_WORKERS ≈ (memory available to Docker − overhead) /
-per-boot cap`, with the per-boot cap being `ContainerResources.memoryBytes` (3 GiB default) — so ~20+ workers there,
-versus **1** on the dev box. The Docker VM's memory must exceed `workers × cap`, or boots are OOM-killed rather than
-capped (which is what made the killed/OOM classifier guard necessary). Worth putting in `README.md` §5 as explicit
-guidance rather than leaving operators to infer it.
-
-## Found 2026-07-30 during the sweep — next dominant cause
-
-### B8 — every Forge boot on newer Minecraft fails to launch (`Unable to access jarfile forge.jar`)
-**24 boot logs, all Forge**, never started the server at all: the generated `start.sh` reports
-`Launcher JAR: forge.jar` / `Run Command: … -jar forge.jar nogui` — the template's **legacy** Forge branch — while
-no `forge.jar` exists in the pack or anywhere under the loader cache. Modern Forge installs use
-`@libraries/net/minecraftforge/forge/<mc>-<ver>/unix_args.txt` instead (`default_template.sh` has that branch too, at
-the `SERVER_RUN_COMMAND="@user_jvm_args.txt @libraries/…/unix_args.txt nogui"` line), so either the branch condition
-misfires for these Minecraft versions — worth checking against the new `26.x` versioning, which breaks any `1.x`
-numeric assumption — or the grinder's pre-baked install layer does not contain what the chosen branch expects.
-Affected examples: `balm`, `better-advancements`, `biomes-o-plenty`, `cherished-worlds`, `collective`,
-`cubes-without-borders`, `cyclops-core`, `euphoria-patches`, `forge-config-api-port`, `geckolib`, `iceberg`,
-`inventory-profiles-next`.
-
-**Cost:** a full boot (~70 s) per Forge candidate, learning nothing — Forge coverage is effectively zero on those
-versions. It is no longer *dangerous* (these now classify INCONCLUSIVE via `launchFailureMarkers` rather than being
-promoted to a false clientside HIGH), which is why it is backlog and not an emergency, but it is the largest remaining
-waste and the biggest blind spot in the deliverable. Reproduce with a one-shot on any of the mods above and read
-`work/verify/boot/<slug>-Forge/boot.log`.
-
-### B9 — boot deadlines are wall-clock, so a host suspend writes off good boots
-`BootVerifier`'s `bootTimeout` (12 min in the grinder) is measured against wall-clock, not against time the boot was
-actually allowed to run. A host that suspends mid-boot therefore blows the deadline while the server is frozen, and the
-run is recorded INCONCLUSIVE even though it succeeded. Measured 2026-07-31: the dev box idle-slept in a repeating
-~16-minute cycle overnight, and **19 of 153 verdicts** came back `timed out` — including several reading
-`SURVIVED (timed out)`, whose console shows the server reaching `Done (6.572s)!` seconds after launch. The wake times
-in `pmset -g log` line up with the grinder's log gaps to the second.
-
-Mitigated operationally by launching under `caffeinate -ims` (assertions are held by a child of the grinder JVM, so
-they expire with it) — note `PreventSystemSleep` only binds on AC, and closing the lid sleeps regardless. Irrelevant on
-the ~80 GB production host, which does not suspend, which is why this is backlog rather than a fix. If it is ever worth
-closing properly: measure the deadline against a monotonic clock **and** detect a suspend (a jump between successive
-log-line timestamps far larger than the poll interval) so the boot can be re-run rather than scored, since a frozen JVM
-resumes into a world where its own timers already expired.
-
 ## Existing TODO markers in the codebase (recorded 2026-07-31)
 
 Every `TODO` presently in SPC's sources, so they are tracked somewhere other than a grep. (A fourth apparent hit,
 `Translations_pt_BR.properties:636`, is a false positive — `TODO` is Portuguese for "all".)
-
-### B10 — `ServerPackProvisioner`'s `variables.txt` content is a Kotlin string literal
-`serverpackcreator-api/.../serverpack/ServerPackProvisioner.kt:53` — *"move to template file, just like the scripts."*
-The whole `variables.txt` body, comments and escaping guidance included, is a multi-line string constant in Kotlin, so
-changing operator-facing documentation means editing and recompiling the API. The start scripts already live in
-`src/main/resources/de/griefed/resources/server_files/` and are copied into SPC's home for users to adjust; this should
-follow the same route. **Worth knowing before touching it:** those templates are copied into the SPC home directory and
-are then read from *there*, not from the jar — a change to the shipped file does not reach an installation whose home
-already exists (see `serverpackcreator-grinder/CLAUDE.md`). Any move must decide what happens to an existing
-`variables.txt` on upgrade.
 
 ### B11 — `installCorepackLatest` is a workaround for an upstream Corepack bug
 `buildSrc/.../serverpackcreator.quasar-conventions.gradle.kts:31` — *"Remove once the error, which caused this task to
@@ -109,12 +30,88 @@ exist in the first place, is fixed in NodeJS/Corepack."* Tracks
 installs `corepack@latest` before `installQuasar`, adding a network round-trip to every frontend build. Re-check the
 upstream issue periodically; when fixed, drop the task and the `dependsOn`.
 
-### B12 — `ForgeLoader.forgeVersionFrom` has no length guard
-`serverpackcreator-api/.../versionmeta/forge/ForgeLoader.kt:147`. Low priority and **not** the obvious fix — see the
-TODO itself. Measured against the real manifest, all 5025 entries across 77 Minecraft keys carry their own key as a
-prefix, so the only unhandled shape is an entry equal to its key with nothing after it, which throws
-`StringIndexOutOfBoundsException`; `update()` catches only `MalformedURLException` and `NoSuchElementException`, so it
-would abort the whole Forge load rather than cost one version. A length check closes it. Do **not** use
-`startsWith("$minecraftVersion-")`: entries carry the raw manifest key while the Minecraft version may be reconciled
-(`1.7.10_pre4` → `1.7.10-pre4`), so that guard would reject a legitimate entry. Behaviour is pinned by
-`ForgeVersionMappingTest`, which must be updated alongside any fix.
+## Found while executing the 2026-07-31 plan — not planned, not yet done
+
+Each of these was observed and verified during the plan's phases but fell outside their scope. Newest concern first.
+
+### B21 — eight template paths are captured at construction and do not follow a changed home directory
+Found while withdrawing audit finding L-C (2026-07-31). `PathsConfig` resolves 31 of its properties through a
+re-deriving getter (`var x = …; get() { field = …; return field }; private set`) precisely so they track a home
+directory that changes at runtime — `serverFilesDirectory` (`:573-578`) does this on top of `homeDirectory`,
+which **this branch made re-resolve on every access**.
+
+The eight script-template properties do not (`PathsConfig.kt:586`, `:594`, `:603`, `:611`, `:619`, `:627`,
+`:635`, `:643`):
+
+```kotlin
+val defaultShellScriptTemplate = File(serverFilesDirectory, "default_template.sh")   // evaluated once
+```
+
+They are plain `val`s evaluated at construction, so after a home change (`--home`, the `-D` override, or the
+GUI's settings panel) they still point into the **old** home while everything around them has moved. These feed
+`defaultStartScriptTemplates()` / `defaultJavaScriptTemplates()`, so the consequence is generation reading
+templates from a directory the user has left behind — silent, and it looks like "my template edits do nothing".
+
+Not fixed with the audit finding because it predates this range, spans eight properties, and needs its own pin:
+a test that changes the home mid-instance and asserts the template paths follow. The fix is either the
+re-deriving getter the other 31 use, or a computed `val … get() =`, which is the cleaner Kotlin and behaviour-
+identical (the field write in that pattern is dead — the getter recomputes unconditionally).
+
+### B22 — the grinder writes `serverpackcreator.properties` and `log4j2.xml` into the repository root on every start
+Observed 2026-07-31 while restoring the sweep. Both files appear untracked in the repo root seconds after the
+daemon starts, and stay gone when it is stopped — verified by stopping it, deleting them, and waiting: nothing
+reappears, so the daemon is the writer.
+
+Neither obvious lever changes it:
+
+- its working directory was **verified** to be `~/.spc-grinder` (via `lsof -d cwd`), so this is not the
+  CWD-relative default of `ApiWrapper.api()` (`GrinderApplication.kt:85`);
+- pointing `SPC_GRINDER_SPC_PROPERTIES` at `~/.spc-grinder/serverpackcreator.properties` (the path
+  `GrinderApplication.kt:84` honours) makes it *read* from there but it still writes the pair into the repo root.
+
+**The test suite is ruled out as the producer**, which is the natural first suspicion since it *was* the cause of
+this class of pollution before 2026-07-31: a full module test run now leaves the repository root untouched,
+because `serverpackcreator.java-conventions.gradle.kts:44` pins every module's test home to `<module>/tests`.
+Confirmed by running a suite with the root clean and re-checking `git status`. Only the daemon reproduces it, and
+only at startup — the pair can be deleted while it runs and does not come back until the next start.
+
+Same class as the test-suite pollution fixed on 2026-07-31 (`ef3280e4c`/`e7cce83fb`) and the reason that one was
+worth fixing: artifacts landing outside the home a process was told to use. Consequence today is a permanently
+dirty `git status` while a sweep runs, which is how a genuinely unexpected file gets overlooked. Worth checking
+whether `ApiProperties`' log4j `ConfigurationFactory` role writes `log4j2.xml` relative to something captured at
+class-load rather than to the resolved home, since `log4j2.xml` is the more surprising of the two.
+
+### B23 — a failed Minecraft server-manifest fetch is never remembered, so every lookup retries it
+Found by the fourth audit (2026-07-31) while reducing the log volume that finding introduced.
+`MinecraftServer.setServerJson()` re-downloads whenever `manifestFile` is absent and, on failure, leaves
+`serverJson` null — so the next call tries again. `MinecraftMeta.getServer` (`:166`) then evaluates
+`server.url().isPresent && server.javaVersion().isPresent`, and **both** call it: one `requiredJavaVersion`
+lookup on a version whose manifest cannot be fetched costs **two** download attempts.
+
+That lookup is hot: `ImageJavaRuntimes.requiredJavaMajor` reaches it from `supportFor`, `javaPath` and
+`installerJavaPathFor` — per candidate in `ContainerCandidateVerifier`, per cell in `ScriptTemplateMatrixIT`, and
+from the GUI on every version selection (`ConfigEditor.kt:681`). So a single unfetchable version can generate
+network attempts in proportion to catalogue size, silently.
+
+The logging is now `debug` and message-only, so the *symptom* is gone; the retry is not. The fix is to remember the
+failure per instance (a resolved-or-null cache, so a miss is answered from memory) and it wants a pin — which needs
+a download seam `MinecraftServer` does not currently have, since it constructs its own fetch through `utilities`.
+That seam is the actual work, and the reason this is an entry rather than a same-day fix. **Note the exported
+`Optional` contract must not change:** callers read empty as "no server available", and B20's consumer-side
+distinction (`ImageSupport.REQUIREMENT_UNKNOWN`) already depends on that shape.
+
+### B24 — every test run wipes `<module>/tests`, so cached version metadata never survives a run
+Found 2026-07-31 while removing the build's shared-Preferences writes. `java-conventions`' `cleanup()` runs in
+`doFirst` of both `test` and `clean` and deletes everything under `<module>/tests` except `.gitkeep`. Since that
+directory is now also each module's SPC **home**, the deletion takes the version manifests and the per-version
+`mcserver/*.json` cache with it, every run.
+
+**This explains B20's disappearing metadata.** `26.2.json` had to be seeded by hand to get the Forge proof, and it
+vanished again between runs — not deleted by `VersionMeta`, but by the build's own pre-test cleanup. It also means
+`ScriptTemplateMatrixIT`'s first run after any `clean`/`test` starts from an empty metadata cache, which is when the
+newest Minecraft versions are most likely to resolve as `REQUIREMENT_UNKNOWN`.
+
+It further contradicts the root `CLAUDE.md` claim that the api suite needs **no live network** because "version
+manifests are cached": with the cache wiped before every run, the suite re-fetches them. Worth measuring — run the
+api suite with networking blocked and see what fails — before deciding whether the clean-slate guarantee or the
+offline guarantee is the one to keep. Both are defensible; they cannot both be true as written.

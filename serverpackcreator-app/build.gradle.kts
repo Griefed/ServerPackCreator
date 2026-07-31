@@ -1,4 +1,3 @@
-import java.util.prefs.Preferences
 
 plugins {
     id("serverpackcreator.dokka-conventions")
@@ -122,8 +121,6 @@ tasks.test {
             File(tests,".gitkeep").writeText("Hi")
         }
     }
-    Preferences.userRoot().node("ServerPackCreator").clear()
-    Preferences.userRoot().node("ServerPackCreator").sync()
 }
 
 tasks.signMavenJavaPublication {

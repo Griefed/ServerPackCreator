@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.grinder
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.io.File
+import de.griefed.serverpackcreator.grinder.container.ContainerResources
 
 /**
  * Keeps the README's configuration table in step with [GrinderApplication].
@@ -108,5 +109,32 @@ internal class ReadmeConfigurationTest {
 
         val phantom = documented - known
         Assertions.assertTrue(phantom.isEmpty(), "README documents variables nothing reads: $phantom")
+    }
+
+    /**
+     * Keeps the README's worker-sizing arithmetic in step with the per-boot memory cap it divides by.
+     *
+     * §5 tells an operator to size `SPC_GRINDER_WORKERS` as roughly *(memory available to Docker − overhead) / 3 GiB*,
+     * where 3 GiB is [ContainerResources.memoryBytes]. Change the cap and that advice silently starts
+     * over-subscribing a host — and an over-subscribed host OOM-kills boots, which cost their full budget and teach
+     * nothing. Prose cannot be compiled, so the figure is compared against the real default instead.
+     */
+    @Test
+    fun theWorkerSizingAdviceQuotesTheRealPerBootMemoryCap() {
+        val capGiB = ContainerResources().memoryBytes / (1024L * 1024L * 1024L)
+        val text = readme.readText()
+
+        Assertions.assertTrue(
+            text.contains("### Sizing the worker count"),
+            "the worker-sizing section is gone — SPC_GRINDER_WORKERS is the biggest lever on sweep duration"
+        )
+        Assertions.assertTrue(
+            text.contains("$capGiB GiB"),
+            "README's sizing advice must quote the real per-boot cap of $capGiB GiB (ContainerResources.memoryBytes)"
+        )
+        Assertions.assertTrue(
+            text.contains("/ $capGiB GiB"),
+            "the sizing formula must divide by the real per-boot cap of $capGiB GiB, or it over-subscribes the host"
+        )
     }
 }

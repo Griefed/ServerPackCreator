@@ -243,6 +243,311 @@ internal class ScriptTemplateContentTest {
     }
 
     /**
+     * **Executes** the bash template's `setupForge` across both Minecraft versioning schemes and asserts each one
+     * picks the right launcher era.
+     *
+     * Forge changed how a server is launched: up to Minecraft 1.16 the installer produced a runnable `forge.jar`,
+     * from 1.17 onwards it produces `libraries/…/unix_args.txt` consumed via `@user_jvm_args.txt`. The template
+     * chooses between them, and choosing wrong is not a subtle failure — the legacy path on a modern Minecraft dies
+     * with `Error: Unable to access jarfile forge.jar` before the server starts, so the mod under test is never
+     * exercised at all.
+     *
+     * **The versions below are the point.** The era test may not read the Minecraft *minor* component in isolation,
+     * because that is only meaningful under the `1.x` scheme: `26.2` has minor `2`, which looks like the 1.2 era.
+     * Measured 2026-07-30 in the grinder: **24 boot logs, every one of them Forge**, never started the server for
+     * exactly this reason, making Forge coverage on current Minecraft effectively zero.
+     */
+    @Test
+    fun theBashTemplateChoosesTheForgeLauncherEraForBothVersioningSchemes() {
+        val bash = which("bash") ?: Assumptions.abort("bash not installed — Forge era execution check skipped")
+
+        // Minecraft version to whether the *legacy* runnable forge.jar is the correct launcher.
+        val expectations = mapOf(
+            "1.12.2" to true,
+            "1.16.5" to true,
+            "1.17.1" to false,
+            "1.20.1" to false,
+            "1.21.1" to false,
+            // The newer YY.x scheme: these are modern Forge, whatever their minor component looks like.
+            "26.1.2" to false,
+            "26.2" to false
+        )
+
+        for ((minecraftVersion, legacyExpected) in expectations) {
+            val packDir = File.createTempFile("spc-forge-era-", "-pack").apply { delete(); mkdirs() }
+            val harness = File(packDir, "harness.sh")
+            harness.writeText(
+                """
+                downloadIfNotExist() { echo "false"; }
+                runJavaCommand() { :; }
+                refreshServerJar() { :; }
+                crashServer() { echo "CRASHED: ${'$'}1"; exit 3; }
+                JAVA_ARGS="-Xmx4G"
+                USE_SSJ="true"
+                SSJ_FORGE_ARGS=""
+                MINECRAFT_VERSION="$minecraftVersion"
+                MODLOADER_VERSION="47.4.22"
+                LAUNCHER_JAR_LOCATION="do_not_manually_edit"
+                SERVER_RUN_COMMAND="do_not_manually_edit"
+                IFS="." read -ra SEMANTICS <<<"${'$'}{MINECRAFT_VERSION}"
+                ${extractShellFunction("default_template.sh", "setupForge")}
+                setupForge
+                echo "RESULT=${'$'}{SERVER_RUN_COMMAND}"
+                """.trimIndent()
+            )
+
+            val process = ProcessBuilder(bash.absolutePath, harness.absolutePath)
+                .directory(packDir)
+                .redirectErrorStream(true)
+                .start()
+            val output = process.inputStream.bufferedReader().use { it.readText() }
+            val exit = process.waitFor()
+            packDir.deleteRecursively()
+
+            Assertions.assertEquals(0, exit, "setupForge failed for Minecraft $minecraftVersion:\n$output")
+            val runCommand = output.lines().firstOrNull { it.startsWith("RESULT=") }
+                ?: Assertions.fail("no run command produced for Minecraft $minecraftVersion:\n$output")
+            val choseLegacy = runCommand.contains("-jar forge.jar")
+
+            Assertions.assertEquals(
+                legacyExpected,
+                choseLegacy,
+                "Minecraft $minecraftVersion picked the ${if (choseLegacy) "legacy forge.jar" else "modern @user_jvm_args"} " +
+                    "launcher; expected the ${if (legacyExpected) "legacy" else "modern"} one. Run command: $runCommand"
+            )
+        }
+    }
+
+    /**
+     * **Executes** the bash template's `setupNeoForge` and asserts which installer coordinate it passes, across both
+     * Minecraft versioning schemes.
+     *
+     * NeoForge's first releases — for Minecraft 1.20 and 1.20.1 only — were published under the legacy
+     * `net/neoforged/forge/` artifact group and have to be installed by URL; everything later is installed by bare
+     * version. The template distinguishes them, and like the Forge era test above it must not read the *minor*
+     * component in isolation: under the `YY.x` scheme a future Minecraft `26.20` would match "minor is 20" and be
+     * sent at a 1.20-era URL that does not exist for it.
+     *
+     * This case is **latent** — no such Minecraft has shipped — so the test documents the rule rather than a
+     * live failure. It is here because this is the second instance of the same assumption found in one sweep, and an
+     * unreachable bug is still cheaper to close now than to rediscover when Mojang makes it reachable.
+     */
+    @Test
+    fun theBashTemplateChoosesTheNeoForgeInstallerCoordinateForBothVersioningSchemes() {
+        val bash = which("bash") ?: Assumptions.abort("bash not installed — NeoForge coordinate check skipped")
+
+        // Minecraft version to whether the legacy net/neoforged/forge/ URL is the correct installer coordinate.
+        val expectations = mapOf(
+            "1.20" to true,
+            "1.20.1" to true,
+            "1.20.2" to false,
+            "1.21.1" to false,
+            "26.2" to false,
+            // The latent cases: a YY.20 Minecraft must not be mistaken for the 1.20 era.
+            "26.20" to false,
+            "26.20.1" to false
+        )
+
+        for ((minecraftVersion, legacyUrlExpected) in expectations) {
+            val packDir = File.createTempFile("spc-neoforge-coord-", "-pack").apply { delete(); mkdirs() }
+            val harness = File(packDir, "harness.sh")
+            harness.writeText(
+                """
+                refreshServerJar() { :; }
+                JAVA_ARGS="-Xmx4G"
+                MINECRAFT_VERSION="$minecraftVersion"
+                MODLOADER_VERSION="21.1.247"
+                SERVER_RUN_COMMAND="do_not_manually_edit"
+                IFS="." read -ra SEMANTICS <<<"${'$'}{MINECRAFT_VERSION}"
+                ${extractShellFunction("default_template.sh", "setupNeoForge")}
+                setupNeoForge
+                echo "RESULT=${'$'}{SERVER_RUN_COMMAND}"
+                """.trimIndent()
+            )
+
+            val process = ProcessBuilder(bash.absolutePath, harness.absolutePath)
+                .directory(packDir)
+                .redirectErrorStream(true)
+                .start()
+            val output = process.inputStream.bufferedReader().use { it.readText() }
+            val exit = process.waitFor()
+            packDir.deleteRecursively()
+
+            Assertions.assertEquals(0, exit, "setupNeoForge failed for Minecraft $minecraftVersion:\n$output")
+            val runCommand = output.lines().firstOrNull { it.startsWith("RESULT=") }
+                ?: Assertions.fail("no run command produced for Minecraft $minecraftVersion:\n$output")
+            val choseLegacyUrl = runCommand.contains("net/neoforged/forge/")
+
+            Assertions.assertEquals(
+                legacyUrlExpected,
+                choseLegacyUrl,
+                "Minecraft $minecraftVersion was sent at the ${if (choseLegacyUrl) "legacy 1.20-era URL" else "bare version"}; " +
+                    "expected the ${if (legacyUrlExpected) "legacy URL" else "bare version"}. Run command: $runCommand"
+            )
+        }
+    }
+
+    /**
+     * **Executes** `setupForge`'s ServerStarterJar path and asserts that `SSJ_FORGE_ARGS` is dropped on a Java that
+     * cannot accept it.
+     *
+     * SPC's default `SSJ_FORGE_ARGS` is `-Djava.security.manager=allow` (`PackConfig.spcSSJArgsKeyDefaultValue`),
+     * which Forge's ServerStarterJar needed on older Java. **JEP 486 removed Security Manager support in Java 24**, so
+     * from that release the flag does not merely do nothing — the VM refuses to start:
+     *
+     * ```
+     * Error occurred during initialization of VM
+     * java.lang.Error: A command line option has attempted to allow or enable the Security Manager.
+     * ```
+     *
+     * Minecraft 26.x requires Java 25, so **every modern Forge pack SPC generates dies before Forge loads** on
+     * current Minecraft — measured in the grinder on 2026-07-31, and the reason Forge coverage stayed at zero even
+     * after the launcher-era fix. NeoForge, Fabric and Quilt never pass the flag, which is exactly why they boot.
+     */
+    @Test
+    fun theBashTemplateDropsTheSecurityManagerFlagOnJavaThatRejectsIt() {
+        val bash = which("bash") ?: Assumptions.abort("bash not installed — SSJ args check skipped")
+
+        // Java major to whether -Djava.security.manager=allow may still be passed.
+        val expectations = mapOf(17 to true, 21 to true, 24 to false, 25 to false)
+
+        for ((javaVersion, flagAllowed) in expectations) {
+            val packDir = File.createTempFile("spc-ssj-args-", "-pack").apply { delete(); mkdirs() }
+            val harness = File(packDir, "harness.sh")
+            harness.writeText(
+                """
+                downloadIfNotExist() { echo "false"; }
+                runJavaCommand() { :; }
+                refreshServerJar() { :; }
+                crashServer() { echo "CRASHED: ${'$'}1"; exit 3; }
+                JAVA_ARGS="-Xmx4G"
+                USE_SSJ="true"
+                SSJ_FORGE_ARGS="-Djava.security.manager=allow"
+                JAVA_VERSION="$javaVersion"
+                MINECRAFT_VERSION="26.1.2"
+                MODLOADER_VERSION="64.1.0"
+                SERVER_RUN_COMMAND="do_not_manually_edit"
+                IFS="." read -ra SEMANTICS <<<"${'$'}{MINECRAFT_VERSION}"
+                ${extractShellFunction("default_template.sh", "setupForge")}
+                setupForge
+                echo "RESULT=${'$'}{SERVER_RUN_COMMAND}"
+                """.trimIndent()
+            )
+
+            val process = ProcessBuilder(bash.absolutePath, harness.absolutePath)
+                .directory(packDir)
+                .redirectErrorStream(true)
+                .start()
+            val output = process.inputStream.bufferedReader().use { it.readText() }
+            val exit = process.waitFor()
+            packDir.deleteRecursively()
+
+            Assertions.assertEquals(0, exit, "setupForge failed on Java $javaVersion:\n$output")
+            val runCommand = output.lines().firstOrNull { it.startsWith("RESULT=") }
+                ?: Assertions.fail("no run command produced on Java $javaVersion:\n$output")
+            val passesFlag = runCommand.contains("-Djava.security.manager=allow")
+
+            Assertions.assertEquals(
+                flagAllowed,
+                passesFlag,
+                "on Java $javaVersion the security-manager flag was ${if (passesFlag) "passed" else "dropped"}; " +
+                    "expected it to be ${if (flagAllowed) "passed" else "dropped"}. Run command: $runCommand"
+            )
+        }
+    }
+
+    /**
+     * **Executes** the bash template's `setupForge` and asserts *who* installs Forge, by Java version.
+     *
+     * ServerStarterJar runs the Forge installer **in its own JVM** and relies on a `SecurityManager`
+     * (`SecurityAccess.wrapNoForceExit`) to swallow the `System.exit(0)` the installer calls when it finishes.
+     * JEP 486 removed Security Manager support in Java 24, and SSJ catches the resulting
+     * `UnsupportedOperationException` *silently* — so from Java 24 on, the installer's exit terminates the whole
+     * process. Measured on Minecraft 26.2 (Java 25): the pack installs, prints "The server installed
+     * successfully", exits **0**, and never launches the server — no world, no ready-line. Booting the same pack a
+     * second time works, because the install is then already there and SSJ only has to launch.
+     *
+     * Exit code 0 is what makes this dangerous: nothing downstream can tell it from a clean shutdown, and the
+     * grinder never sees it at all because it pre-bakes the install and boots from cache. Only a user starting a
+     * fresh Forge pack hits it, and to them the server simply does nothing.
+     *
+     * So on Java that cannot trap the exit, the template must install Forge itself and launch through the
+     * argfile the installer produces, never handing the install to SSJ. Below Java 24 the SSJ path is left exactly
+     * as it was — that combination demonstrably works.
+     */
+    @Test
+    fun theBashTemplateInstallsForgeItselfWhenSSJCannotTrapTheInstallersExit() {
+        val bash = which("bash") ?: Assumptions.abort("bash not installed — Forge install-ownership check skipped")
+
+        // Java major to whether SSJ may be trusted with the install (it can trap System.exit below 24).
+        val expectations = mapOf(17 to true, 21 to true, 24 to false, 25 to false)
+
+        for ((javaVersion, ssjMayInstall) in expectations) {
+            val packDir = File.createTempFile("spc-forge-install-", "-pack").apply { delete(); mkdirs() }
+            val harness = File(packDir, "harness.sh")
+            harness.writeText(
+                """
+                # "true" == the artifact was absent and has been downloaded, which is what triggers an install.
+                downloadIfNotExist() { echo "true"; }
+                runJavaCommand() { echo "JAVACMD=${'$'}1"; }
+                refreshServerJar() { echo "REFRESH_SSJ"; }
+                crashServer() { echo "CRASHED: ${'$'}1"; exit 3; }
+                JAVA_ARGS="-Xmx4G"
+                USE_SSJ="true"
+                SSJ_FORGE_ARGS="-Djava.security.manager=allow"
+                JAVA_VERSION="$javaVersion"
+                MINECRAFT_VERSION="26.2"
+                MODLOADER_VERSION="65.1.0"
+                SERVER_RUN_COMMAND="do_not_manually_edit"
+                IFS="." read -ra SEMANTICS <<<"${'$'}{MINECRAFT_VERSION}"
+                ${extractShellFunction("default_template.sh", "setupForge")}
+                setupForge
+                echo "RESULT=${'$'}{SERVER_RUN_COMMAND}"
+                """.trimIndent()
+            )
+
+            val process = ProcessBuilder(bash.absolutePath, harness.absolutePath)
+                .directory(packDir)
+                .redirectErrorStream(true)
+                .start()
+            val output = process.inputStream.bufferedReader().use { it.readText() }
+            val exit = process.waitFor()
+            packDir.deleteRecursively()
+
+            Assertions.assertEquals(0, exit, "setupForge failed on Java $javaVersion:\n$output")
+            val runCommand = output.lines().firstOrNull { it.startsWith("RESULT=") }
+                ?: Assertions.fail("no run command produced on Java $javaVersion:\n$output")
+            val installedUpFront = output.lines().any { it.contains("JAVACMD=") && it.contains("--installServer") }
+            val handsInstallToSsj = runCommand.contains("--installer")
+
+            if (ssjMayInstall) {
+                Assertions.assertTrue(
+                    handsInstallToSsj,
+                    "on Java $javaVersion SSJ can trap the installer's exit, so the install must stay with it — " +
+                        "this path works today and must not change. Run command: $runCommand"
+                )
+            } else {
+                Assertions.assertFalse(
+                    handsInstallToSsj,
+                    "on Java $javaVersion SSJ cannot trap the Forge installer's System.exit, so handing it the " +
+                        "install means the pack installs and then exits 0 without ever launching. " +
+                        "Run command: $runCommand"
+                )
+                Assertions.assertTrue(
+                    installedUpFront,
+                    "on Java $javaVersion the template must run the Forge installer itself before launching; " +
+                        "nothing invoked --installServer:\n$output"
+                )
+                Assertions.assertTrue(
+                    runCommand.contains("unix_args.txt"),
+                    "on Java $javaVersion the launch must go through the argfile the installer produced. " +
+                        "Run command: $runCommand"
+                )
+            }
+        }
+    }
+
+    /**
      * Cut a block out of a shell template, from the line equal to [startsWith] to the next line equal to [endsWith]
      * at column 0. Used for the run-loop, which is top-level script text rather than a function.
      */

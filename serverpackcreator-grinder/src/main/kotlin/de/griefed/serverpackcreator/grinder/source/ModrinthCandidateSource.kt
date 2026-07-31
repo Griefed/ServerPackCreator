@@ -79,11 +79,29 @@ class ModrinthCandidateSource(
             val batch = pageSize.coerceAtMost(limit - gathered.size)
             val hits = searchPage(cursor, batch) ?: break // request failed: partial slice, catalog unknown
             if (hits.isEmpty()) {
+                // An empty page normally means the catalog ran out — but at the offset ceiling the API also answers
+                // with zero hits, and the two are indistinguishable from here. Say so rather than let a truncated
+                // crawl look like a completed one.
+                if (ceilingMayMasqueradeAsEnd(cursor)) {
+                    log.warn(
+                        "Modrinth returned no hits at offset $cursor, which is at or past the measured offset ceiling " +
+                            "of $OFFSET_CEILING. This is reported as the end of the catalog, but it may instead be the " +
+                            "ceiling clamping the response — in which case every project beyond it is unreachable and " +
+                            "the sweep is silently incomplete. Narrow the query (facets) if the catalog has outgrown it."
+                    )
+                }
                 endOfCatalog = true
                 break
             }
             hits.forEach { gathered.add(it) }
             cursor += hits.size
+            if (approachingOffsetCeiling(cursor, pageSize)) {
+                log.warn(
+                    "Modrinth crawl is at offset $cursor, within one page of the measured offset ceiling of " +
+                        "$OFFSET_CEILING. Beyond it the API answers with zero hits, which this source cannot tell " +
+                        "apart from the end of the catalog — the tail would be dropped without an error."
+                )
+            }
             if (hits.size < batch) {
                 endOfCatalog = true // fewer than asked for ⇒ catalog exhausted
                 break
@@ -116,5 +134,27 @@ class ModrinthCandidateSource(
             popularity = hit.path("downloads").asLong(0),
             platform = platform
         )
+    }
+
+    internal companion object {
+        /**
+         * The deepest `offset` Modrinth's search will serve, measured 2026-07-29: offset 40 000 returns real hits,
+         * and beyond this the API answers with **zero hits** rather than an error. `project_type:mod` sits around
+         * 71 000 projects today, comfortably below it.
+         */
+        const val OFFSET_CEILING = 99_999
+
+        /**
+         * True when the next page would reach the ceiling, so the crawl is about to enter the region where a
+         * truncated answer is indistinguishable from an exhausted catalog. Pure so the boundary is testable without
+         * an HTTP fetcher.
+         */
+        internal fun approachingOffsetCeiling(offset: Int, pageSize: Int): Boolean = offset + pageSize >= OFFSET_CEILING
+
+        /**
+         * True when an empty page at this [offset] could be the ceiling clamping the response rather than the real
+         * end of the catalog — the case that would otherwise let an incomplete sweep report itself as complete.
+         */
+        internal fun ceilingMayMasqueradeAsEnd(offset: Int): Boolean = offset >= OFFSET_CEILING
     }
 }

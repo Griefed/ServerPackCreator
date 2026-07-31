@@ -111,11 +111,23 @@ class HostProcessServerRunner : ServerRunner {
             }
         }.apply { isDaemon = true; start() }
 
-        val deadline = System.currentTimeMillis() + timeout.toMillis()
-        while (process.isAlive && !ready.get() && System.currentTimeMillis() < deadline) {
-            Thread.sleep(500)
+        // The budget must not be spent while the host is asleep. A suspend freezes the server mid-boot and a
+        // wall-clock deadline then expires on a boot that never got the time — measured in the grinder, a laptop
+        // idle-sleeping in ~16-minute cycles produced 19 of 153 verdicts reading `timed out`, several of them
+        // `SURVIVED (timed out)` whose console showed the server reaching ready seconds after launch. The container
+        // engine was fixed for this first; this path, which the `-verifyclientside` verb uses, had the same hole.
+        val deadline = SuspendAwareDeadline(timeout, POLL_INTERVAL_MILLIS) { gapMillis ->
+            log.warn(
+                "The host appears to have suspended for ~${gapMillis / 1000}s while booting; that time is not counted " +
+                    "against the boot's ${timeout.toMinutes()}-minute budget. A boot interrupted this way learns " +
+                    "nothing either way, so keep the machine awake (e.g. `caffeinate -ims` on macOS)."
+            )
         }
-        val timedOut = !ready.get() && System.currentTimeMillis() >= deadline
+        while (process.isAlive && !ready.get() && deadline.hasTimeLeft()) {
+            Thread.sleep(POLL_INTERVAL_MILLIS)
+            deadline.tick()
+        }
+        val timedOut = !ready.get() && !deadline.hasTimeLeft()
 
         if (process.isAlive) {
             process.destroyForcibly()
@@ -125,5 +137,10 @@ class HostProcessServerRunner : ServerRunner {
         val exitCode = if (process.isAlive) null else runCatching { process.exitValue() }.getOrNull()
 
         return RunResult.Completed(synchronized(lines) { ArrayList(lines) }, exitCode, timedOut)
+    }
+
+    companion object {
+        /** How often the boot's liveness and ready-state are polled; also sets what counts as a suspend gap. */
+        internal const val POLL_INTERVAL_MILLIS = 500L
     }
 }

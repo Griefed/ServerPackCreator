@@ -26,6 +26,7 @@ import de.griefed.serverpackcreator.grinder.loader.ApiVanillaPackGenerator
 import de.griefed.serverpackcreator.grinder.loader.DockerLoaderInstaller
 import de.griefed.serverpackcreator.grinder.loader.ImageJavaRuntimes
 import de.griefed.serverpackcreator.grinder.loader.LoaderCache
+import de.griefed.serverpackcreator.grinder.loader.TemplateProvenance
 import de.griefed.serverpackcreator.grinder.report.JsonVerdictStore
 import de.griefed.serverpackcreator.grinder.report.ReportServer
 import de.griefed.serverpackcreator.grinder.source.CandidateSource
@@ -87,7 +88,14 @@ object GrinderApplication {
         // Authoritative Minecraft -> required-Java from SPC's own metadata; gates selection to the image's JDKs.
         val imageJava = ImageJavaRuntimes.from(apiWrapper.versionMeta.minecraft)
         val installer = DockerLoaderInstaller(engine, image, ApiVanillaPackGenerator(apiWrapper, File(workDir, "install")), imageJava)
-        val cache = LoaderCache(cacheRoot, installer)
+        // A cached install is a product of the start-script templates that built it, so record which ones those
+        // were. Read per call rather than once: SPC resolves its templates from the then-current home, and the
+        // daemon's home can be re-resolved while it runs.
+        val cache = LoaderCache(cacheRoot, installer, templateProvenance = {
+            TemplateProvenance.digestOf(
+                apiWrapper.apiProperties.defaultStartScriptTemplates().values.map { File(it) }
+            )
+        })
         val verifier = ContainerCandidateVerifier(apiWrapper, cache, engine, image, imageJava, File(workDir, "verify"))
         // A run killed mid-boot leaves a staged pack that no per-candidate reap will ever come for, so sweep what
         // we inherited before adding to it. Safe here and only here: nothing is in flight yet.

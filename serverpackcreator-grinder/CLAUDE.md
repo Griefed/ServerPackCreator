@@ -122,12 +122,32 @@ though their detail lives deeper:
     concurrent JVMs clobber each other's view and an external `defaults read` can show a value that a still-running
     JVM is about to overwrite. Trust in-process logs and same-JVM tests, not cross-process snapshots. (A per-module
     loop appearing to show "every suite writes the shared node" was exactly this artifact.)
-  - **Still open:** whether anything continues to write the *shared* `ServerPackCreator` node during a build. It
-    holds a repo test path on this machine, which only affects a GUI/dev instance, not the grinder. The five
-    remaining hard-coded `Preferences.userRoot().node("ServerPackCreator")` call sites all live in **`-app`**
-    (`CommandlineParser`, `ServerPackCreator.kt` ×2, `HomeDirCommand`, `GuiProps`) and are the obvious next
-    candidates if it turns out to matter.
+  - **ANSWERED 2026-07-31 — it was the build itself, and it is fixed.** Three build-script writers touched the
+    shared node: `java-conventions`' `cleanup()` did `removeNode()` and then wrote the module's `tests` directory in
+    as the home, and the `-api` and `-app` build files each `clear()`ed it at *configuration* time. `cleanup()` runs
+    in `doFirst` of **both `test` and `clean`, for every module**, so any build relocated the home of the
+    developer's own GUI — and of a running daemon — into the repository. All three are gone; the isolated per-module
+    node plus the injected `-Dde.griefed.serverpackcreator.home` replace them entirely. The `-app` call sites were
+    already routed through `HomeDirectoryPreference` (B1), with `GuiProps` left on the shared node deliberately.
+    **A stale value may still be stored** from before the fix — check the shared node once if a GUI instance
+    resolves a surprising home.
 
+- **A cached install is a product of the templates that built it** (`TemplateProvenance` + the marker's
+  `templates=` key). The install boot runs the pack's own `start.sh`, so a template change that alters what an
+  install *produces* leaves cached layers stale — and the marker used to record only loader/version/Minecraft, so
+  `ensureInstalled` served them regardless (the launcher-era fix needed two Forge tuples invalidated by hand). A
+  **differing** digest is now a miss; an **absent** one is tolerated with one warning per run, because treating
+  unknown as different would reinstall all ~74 tuples at ~150 MB and a networked boot each. That default is
+  evidence-based: when the Forge install-ownership fix landed, the cached tuples were checked and every one was
+  still bootable, since the argfile the new launch path uses is what the installer had already produced. **Check
+  before invalidating.**
+- **"Not applicable" must never mean "we could not find out."** `ImageJavaRuntimes.supportFor` distinguishes
+  `JDK_NOT_BUNDLED` (a real, permanent exclusion) from `REQUIREMENT_UNKNOWN` (SPC could not determine the version's
+  required Java — which `MinecraftServer.javaVersion()` also returns for a *failed* manifest download). Collapsing
+  the two is how **all four Minecraft 26.2 cells**, Fabric included, disappeared from a green `ScriptTemplateMatrixIT`
+  run — the newest Minecraft, and the exact branch the Forge template fixes were written for. The IT now fails the
+  unknown case instead of skipping it, and `26.2` is in the default Minecraft axis so the `YY.x` scheme is exercised
+  without anyone remembering to pass `SPC_GRINDER_TEMPLATE_MC`.
 - **Staging is reclaimed, not accumulated** (`BootWorkspaceReaper`). Each attempt stages a full server pack with the
   overlaid loader libraries under `<work>/verify/boot/<slug>-<loader>` plus downloaded jars under
   `<work>/verify/verify/<slug>-<loader>`, and staging only ever deleted a directory when that *same* `(slug, loader)`

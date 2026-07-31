@@ -27,6 +27,7 @@ import de.griefed.serverpackcreator.grinder.container.DockerJavaContainerEngine
 import de.griefed.serverpackcreator.grinder.container.PACK_MOUNT
 import de.griefed.serverpackcreator.grinder.loader.ApiVanillaPackGenerator
 import de.griefed.serverpackcreator.grinder.loader.ImageJavaRuntimes
+import de.griefed.serverpackcreator.grinder.loader.ImageSupport
 import de.griefed.serverpackcreator.grinder.loader.PackVariables
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assumptions
@@ -73,7 +74,13 @@ internal class ScriptTemplateMatrixIT {
     private data class Outcome(val passed: Boolean, val detail: String)
 
     private val image = env("SPC_GRINDER_IMAGE_TEMPLATES", "spc-grinder-templates:latest")
-    private val minecraftVersions = envList("SPC_GRINDER_TEMPLATE_MC", "1.12.2,1.16.1,1.20.1,1.21.1,1.21.11")
+    /**
+     * The Minecraft axis. **Both versioning schemes must stay represented**: the defaults carried only `1.x`
+     * versions while three separate template bugs lived in `YY.x` handling (the Forge launcher era, the NeoForge
+     * installer coordinate, and Forge's install ownership on Java 24+), so the branch the fixes were written for
+     * was never exercised unless someone passed `SPC_GRINDER_TEMPLATE_MC` by hand. `26.2` is here to prevent that.
+     */
+    private val minecraftVersions = envList("SPC_GRINDER_TEMPLATE_MC", "1.12.2,1.16.1,1.20.1,1.21.11,26.2")
     private val loaders = envList("SPC_GRINDER_TEMPLATE_LOADERS", "Forge,NeoForge,Fabric,Quilt,LegacyFabric")
     private val shells = envList("SPC_GRINDER_TEMPLATE_SHELLS", "bash,fish")
     /**
@@ -134,6 +141,12 @@ internal class ScriptTemplateMatrixIT {
         // A cell is runnable only when the image has the Minecraft version's JDK *and* the loader really
         // has a build for it. Resolving the loader version up-front doubles as that filter and gives each
         // valid cell its version without a second (nullable) lookup later.
+        //
+        // Cells whose Minecraft version has *no known Java requirement* are held apart from both. They are not
+        // "not applicable": SPC could not determine what the version needs, which is also what a failed manifest
+        // download looks like, and reporting that as a skip is how all four Minecraft 26.2 cells vanished from a
+        // green run -- Fabric included, which the live sweep boots fine. They are failed loudly below instead.
+        val unknownJava = cells.filter { imageJava.supportFor(it.minecraftVersion) == ImageSupport.REQUIREMENT_UNKNOWN }
         val loaderVersions: Map<Cell, String> = cells.mapNotNull { cell ->
             val version = if (imageJava.supports(cell.minecraftVersion)) {
                 resolver.latest(cell.loader, cell.minecraftVersion)
@@ -143,7 +156,7 @@ internal class ScriptTemplateMatrixIT {
             version?.let { cell to it }
         }.toMap()
         val valid = cells.filter { it in loaderVersions }
-        val invalid = cells.filterNot { it in loaderVersions }
+        val invalid = cells.filterNot { it in loaderVersions || it in unknownJava }
 
         // Generate a pack per valid cell (sequential), then boot them in bounded parallel. Forcing the
         // default sh/fish/ps1 templates is a mutation of process-wide ApiProperties, so it is scoped to
@@ -171,7 +184,25 @@ internal class ScriptTemplateMatrixIT {
         val tests = ArrayList<DynamicTest>(cells.size)
         invalid.forEach { cell ->
             tests.add(DynamicTest.dynamicTest("${cell.label} [N/A]") {
-                Assumptions.assumeTrue(false, "N/A: ${cell.loader} has no build for Minecraft ${cell.minecraftVersion} (or its JDK is not bundled)")
+                val reason = when (imageJava.supportFor(cell.minecraftVersion)) {
+                    ImageSupport.JDK_NOT_BUNDLED ->
+                        "the image does not bundle Minecraft ${cell.minecraftVersion}'s required Java"
+                    else -> "${cell.loader} has no build for Minecraft ${cell.minecraftVersion}"
+                }
+                Assumptions.assumeTrue(false, "N/A: $reason")
+            })
+        }
+        // Loud on purpose: a metadata gap removes coverage, and it removes it from the newest Minecraft versions
+        // first -- precisely the ones worth testing. Failing beats a skip that reads like a deliberate exclusion.
+        unknownJava.forEach { cell ->
+            tests.add(DynamicTest.dynamicTest("${cell.label} [metadata]") {
+                Assertions.fail<Unit>(
+                    "Minecraft ${cell.minecraftVersion} has no known required Java version, so this cell could not " +
+                        "be run and its coverage is missing. This is a metadata failure, not an exclusion: SPC's " +
+                        "per-version server manifest for ${cell.minecraftVersion} is absent and could not be " +
+                        "downloaded (see the MinecraftServer warning in the log). Fix the metadata, or drop " +
+                        "${cell.minecraftVersion} from SPC_GRINDER_TEMPLATE_MC deliberately."
+                )
             })
         }
         valid.forEach { cell ->
