@@ -1040,3 +1040,27 @@ OOM-killed boot is scored INCONCLUSIVE. Keeping the host awake is noted for the 
 `ReadmeConfigurationTest` now compares the quoted per-boot figure against `ContainerResources.memoryBytes`, since the
 formula divides by it — change the cap and the advice would silently start over-subscribing. Verified by doubling the
 cap and watching the test fail.
+
+### 2026-07-31 — Phase 5: frontend component coverage (B3)
+
+Suite 23 → 31, across two files. The judgement about *what not to test* is the substance here: of the untested
+surface, only `MainLayout` held real logic.
+
+- **`MainLayout`** — its drawer `linksList` is hand-maintained and must track the router, so the test compares it
+  against `src/router/routes` **in both directions**: a routed page with no drawer link is unreachable from the UI, and
+  a link pointing at no route goes nowhere. Comparing the array against a literal copy of itself would have passed
+  forever regardless of what the app actually routes. `drawerClick` is pinned too, including the `stopPropagation`
+  call — without it the click bubbles to the drawer and toggles the mini-state straight back, a break that leaves every
+  other test green.
+- **`AboutPage`** — no logic, so the test covers only what fails invisibly: an empty, relative or non-`https` link
+  renders as a perfectly normal row and the only symptom is a user going nowhere.
+- **Verified by breaking all three**: removing the History nav entry, removing `stopPropagation`, and dropping
+  `https://` from the Discord link each fail with the intended message.
+- **Deliberately still untested:** `SubmissionPage` (its only script content is two scrollbar style objects),
+  `DownloadsPage`, `HistoryPage`, `ErrorPage` — pure composition — and the three tables, for 4e's reason. Covering them
+  would raise the count without raising confidence.
+
+Two harness facts cost time and are now recorded in the module's `CLAUDE.md`: `src/router/routes` *statically* imports
+the two download pages, so importing it drags in `boot/axios` → `#q-app/wrappers` and needs `vi.mock('boot/axios')`;
+and **QPage refuses to render outside a QLayout**, so a page test must stub it as a passthrough or the page's children
+never mount — which is why the existing download-page tests assert through `vm` rather than the DOM.

@@ -9,10 +9,6 @@ When an item lands, delete it here and record it in `REFACTOR-LOG.md`.
 These were ranked below sweep-output quality: none of them change what the grinder produces, which is why they
 waited. Griefed asked for them to be recorded and tackled afterwards.
 
-### B3 — Frontend component-test breadth
-Phase 4 is complete (Vitest, full TS migration, all cards + nav SFCs, suite at 23). Tables are untested **by
-design** — trivial format-lambda logic vs. brittle QTable rendering. Only worth extending if a real bug appears there.
-
 ### B4 — `LarsonScanner.kt` (2,217 lines)
 Self-contained Swing widget, no dependants beyond the GUI, no known defects. Left alone deliberately: splitting it
 buys nothing a reader needs today. `ConfigEditor.kt` (1,369) was assessed and closed — its two pure pieces are
