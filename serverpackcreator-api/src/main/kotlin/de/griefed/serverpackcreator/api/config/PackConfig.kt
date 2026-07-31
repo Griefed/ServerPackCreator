@@ -162,19 +162,68 @@ private const val spcUseServerStarterJarKey = "SPC_USE_SSJ_SPC"
 
 private const val spcCleanupKey = "SPC_CLEANUP_SPC"
 
+/**
+ * Default `JAVA`: the `java` on `PATH`. The grinder overrides it with a bundled JDK per Minecraft version, which
+ * is what keeps its boots runnable with no network.
+ */
 const val javaKeyDefaultValue = "java"
+/**
+ * Default `WAIT_FOR_USER_INPUT`: a human-run server pauses before closing so the console can be read. **Any
+ * unattended boot must set this to `false`, or the script blocks on a `read` forever.**
+ */
 const val spcWaitForUserInputKeyDefaultValue = "true"
+/**
+ * Default `RESTART`: do not relaunch the server after it stops.
+ */
 const val spcRestartServerKeyDefaultValue = "false"
+/**
+ * Default `SKIP_JAVA_CHECK`: verify the Java version before launching. Deliberately not used to paper over an
+ * unsupported JDK — the grinder gates on the image's bundled Javas instead.
+ */
 const val spcSkipJavaCheckKeyDefaultValue = "false"
+/**
+ * Default JDK vendor for the Jabba-based Java install helper.
+ */
 const val spcJDKVendorKeyDefaultValue = "temurin"
+/**
+ * Where the shell Java-install helper fetches Jabba from.
+ */
 const val spcJabbaInstallURLShKeyDefaultValue = "https://github.com/Jabba-Team/jabba/raw/main/install.sh"
+/**
+ * Where the PowerShell Java-install helper fetches Jabba from.
+ */
 const val spcJabbaInstallURLPSKeyDefaultValue = "https://github.com/Jabba-Team/jabba/raw/main/install.ps1"
+/**
+ * Pinned Jabba version, so the helper cannot change under a pack that already worked.
+ */
 const val spcJabbaInstallVersionKeyDefaultValue = "0.14.0"
+/**
+ * Default `ADDITIONAL_ARGS`: the Log4Shell mitigation, passed to every server SPC generates.
+ */
 const val spcAdditionalArgsKeyDefaultValue = "-Dlog4j2.formatMsgNoLookups=true"
+/**
+ * Default `SSJ_FORGE_ARGS`.
+ *
+ * **Landmine — do not remove this default, and do not pass it unconditionally.** Forge's ServerStarterJar needs it
+ * below Java 24 to trap the installer's `System.exit`; from Java 24 JEP 486 makes the VM *refuse to start* with it.
+ * The templates therefore pass it only below 24 and install Forge themselves above, and both halves are pinned by
+ * `ScriptTemplateContentTest`.
+ */
 const val spcSSJArgsKeyDefaultValue = "-Djava.security.manager=allow"
+/**
+ * Default `SERVERSTARTERJAR_FORCE_FETCH`: re-download the starter jar on each boot. **An offline boot must set
+ * this to `false`**, or Forge/NeoForge try to fetch it with no network.
+ */
 const val spcServerStarterJarForceFetchKeyDefaultValue = "true"
+/**
+ * Default ServerStarterJar version to fetch.
+ */
 const val spcServerStarterJarVersionKeyDefaultValue = "latest"
+/**
+ * Default `USE_SSJ`: launch Forge/NeoForge through the ServerStarterJar rather than the installer's argfile.
+ */
 const val spcUseServerStarterJarKeyDefaultValue = "true"
+/** Default `CLEANUP`: which installer leftovers a finished pack deletes on first boot. */
 const val spcCleanupKeyDefaultValue =
     "libraries," +
     "run.sh," +

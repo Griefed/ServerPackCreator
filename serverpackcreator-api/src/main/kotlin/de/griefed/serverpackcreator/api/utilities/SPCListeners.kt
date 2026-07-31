@@ -24,6 +24,7 @@ import de.griefed.serverpackcreator.api.config.PackConfig
 import java.nio.file.Path
 
 interface SPCGenericListener {
+    /** Called when the event fires. Carries no payload — use a typed listener when the details matter. */
     fun run()
 }
 

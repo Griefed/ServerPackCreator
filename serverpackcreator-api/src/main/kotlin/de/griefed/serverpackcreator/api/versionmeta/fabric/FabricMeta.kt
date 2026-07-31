@@ -63,6 +63,7 @@ class FabricMeta(
     }
 
     @Suppress("MemberVisibilityCanBePrivate")
+    /** Per-loader-version details, cached after first lookup so repeated queries cost nothing. */
     val loaderDetails = HashMap<String, FabricDetails>(100)
 
     /**

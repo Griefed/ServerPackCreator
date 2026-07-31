@@ -40,6 +40,8 @@ class UpdateConfig(
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
+    /** Property keys for update checking, plus the fallback update URL. */
+
     companion object {
         /**
          * URL of the main-repository properties-file from which fallback-lists are refreshed

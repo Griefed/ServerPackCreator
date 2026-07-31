@@ -739,6 +739,7 @@ class GenerationConfig(private val store: PropertyStore) {
         )
     )
 
+    /** Shipped default for what is left out of the ZIP — chiefly the files a user must supply themselves. */
     val fallbackZipExclusions = TreeSet(
         listOf(
             "minecraft_server.MINECRAFT_VERSION.jar",

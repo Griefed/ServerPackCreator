@@ -32,6 +32,8 @@ import de.griefed.serverpackcreator.api.utilities.common.StringUtilities.Compani
 @Suppress("unused")
 class StringUtilities {
 
+    /** String cleanup and the Mongo URI builder the web backend configures itself from. */
+
     companion object {
         /**
          * Converts a list of Strings, for example from a list, into a concatenated String.
@@ -303,6 +305,7 @@ class StringUtilities {
             return encoded.toString()
         }
 
+        /** Assemble the Mongo connection URI the web backend configures itself from. */
         fun createMongoUri(user: String, password: String, host: String, port: Int, database: String) =
             "mongodb://${percentEncode(user)}" +
                     ":${percentEncode(password)}" +

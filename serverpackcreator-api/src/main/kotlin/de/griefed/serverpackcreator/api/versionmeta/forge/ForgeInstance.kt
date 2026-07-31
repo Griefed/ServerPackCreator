@@ -42,6 +42,7 @@ class ForgeInstance(
     val forgeVersion: String,
     private val minecraftMeta: MinecraftMeta
 ) {
+    /** Where this Forge build's installer is downloaded from. */
     val installerUrl: URL =
         URI(VersionMetaConfig.forgeInstallerUrl(minecraftVersion, forgeVersion)).toURL()
 

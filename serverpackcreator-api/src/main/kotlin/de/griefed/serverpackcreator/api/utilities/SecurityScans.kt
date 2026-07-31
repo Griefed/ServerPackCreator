@@ -30,7 +30,10 @@ import java.nio.file.Path
  */
 class SecurityScans {
 
+    /** Zip-slip and archive-safety checks applied before an upload is trusted. */
+
     companion object {
+        /** Logger for rejected archives, so a refused upload leaves a trace of *why*. */
         val log by lazy { cachedLoggerOf(SecurityScans::class.java) }
 
         /**
