@@ -116,14 +116,14 @@ class UpdateConfig(
         try {
             updateUrl.openStream().use {
                 remoteProperties = Properties()
-                remoteProperties!!.load(it)
+                remoteProperties.load(it)
             }
         } catch (e: IOException) {
             log.debug("GitHub could not be reached.", e)
         }
         fallbackUpdated = false
         if (remoteProperties != null) {
-            val newBlacklist = remoteProperties!!.getProperty(GenerationConfig.FALLBACK_MODS_LIST_KEY)
+            val newBlacklist = remoteProperties.getProperty(GenerationConfig.FALLBACK_MODS_LIST_KEY)
             val currentBlacklist = store.properties.getProperty(GenerationConfig.FALLBACK_MODS_LIST_KEY)
             if (newBlacklist != null && currentBlacklist != newBlacklist) {
                 store.define(GenerationConfig.FALLBACK_MODS_LIST_KEY, newBlacklist)
@@ -133,7 +133,7 @@ class UpdateConfig(
                 fallbackUpdated = true
             }
 
-            val newWhitelist = remoteProperties!!.getProperty(GenerationConfig.MODS_WHITELIST_KEY)
+            val newWhitelist = remoteProperties.getProperty(GenerationConfig.MODS_WHITELIST_KEY)
             val currentWhitelist = store.properties.getProperty(GenerationConfig.MODS_WHITELIST_KEY)
             if (newWhitelist != null && currentWhitelist != newWhitelist) {
                 store.define(GenerationConfig.MODS_WHITELIST_KEY, newWhitelist)
