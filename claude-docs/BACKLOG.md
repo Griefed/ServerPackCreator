@@ -18,14 +18,6 @@ shared node currently holds a repo test path on Griefed's machine. Mechanical fi
 resolver. Watch out: `GuiProps` is GUI state (window geometry etc.), so moving it to a different node **loses a
 user's saved layout** — that one needs a deliberate decision, not a blind sed.
 
-### B2 — NeoForge builds whose installer artifact is missing upstream
-`21.1.247` is listed in `maven.neoforged.net`'s version index but `neoforge-21.1.247-installer.jar` **404s** (verified
-2026-07-30), so SPC's metadata is right and the artifact simply is not there. Observed effect is smaller than first
-assumed — that build still produced `SURVIVED` verdicts (17 of them), because a cached install layer can already
-exist — but a cold cache wastes an install attempt per candidate. Option: have `LoaderCache` fall back to the
-next-newest *installable* build on a download failure. **Careful:** `latestVersion` alone drives the support gate and
-the crash re-check (`serverpackcreator-clientside/CLAUDE.md`), so a fallback must not quietly redefine "newest".
-
 ### B3 — Frontend component-test breadth
 Phase 4 is complete (Vitest, full TS migration, all cards + nav SFCs, suite at 23). Tables are untested **by
 design** — trivial format-lambda logic vs. brittle QTable rendering. Only worth extending if a real bug appears there.
@@ -39,11 +31,6 @@ already extracted and the rest is legitimate view code.
 A project that changes its slug on a platform is re-ground as a new project and its old verdicts linger. Fine today;
 would want a stable project id if the store is ever published as a long-lived dataset.
 
-### B6 — Modrinth's offset ceiling
-Measured at 99,999 against ~71,000 `project_type:mod` projects, so the whole catalog is reachable **today**. If it
-ever exceeds 100,000 the tail silently looks like the end of the catalog and the crawl wraps early, losing coverage
-with no error. Worth a guard that logs when `offset` approaches the ceiling.
-
 ### B7 — Worker sizing for the production host
 The grinder will run on a machine with **~80 GB free memory** (Griefed, 2026-07-30), not on the dev box whose Docker
 VM is deliberately capped at 1.93 GiB. Sizing rule: `SPC_GRINDER_WORKERS ≈ (memory available to Docker − overhead) /
@@ -51,3 +38,25 @@ per-boot cap`, with the per-boot cap being `ContainerResources.memoryBytes` (3 G
 versus **1** on the dev box. The Docker VM's memory must exceed `workers × cap`, or boots are OOM-killed rather than
 capped (which is what made the killed/OOM classifier guard necessary). Worth putting in `README.md` §5 as explicit
 guidance rather than leaving operators to infer it.
+
+## Existing TODO markers in the codebase (recorded 2026-07-31)
+
+Every `TODO` presently in SPC's sources, so they are tracked somewhere other than a grep. (A fourth apparent hit,
+`Translations_pt_BR.properties:636`, is a false positive — `TODO` is Portuguese for "all".)
+
+### B10 — `ServerPackProvisioner`'s `variables.txt` content is a Kotlin string literal
+`serverpackcreator-api/.../serverpack/ServerPackProvisioner.kt:53` — *"move to template file, just like the scripts."*
+The whole `variables.txt` body, comments and escaping guidance included, is a multi-line string constant in Kotlin, so
+changing operator-facing documentation means editing and recompiling the API. The start scripts already live in
+`src/main/resources/de/griefed/resources/server_files/` and are copied into SPC's home for users to adjust; this should
+follow the same route. **Worth knowing before touching it:** those templates are copied into the SPC home directory and
+are then read from *there*, not from the jar — a change to the shipped file does not reach an installation whose home
+already exists (see `serverpackcreator-grinder/CLAUDE.md`). Any move must decide what happens to an existing
+`variables.txt` on upgrade.
+
+### B11 — `installCorepackLatest` is a workaround for an upstream Corepack bug
+`buildSrc/.../serverpackcreator.quasar-conventions.gradle.kts:31` — *"Remove once the error, which caused this task to
+exist in the first place, is fixed in NodeJS/Corepack."* Tracks
+[nodejs/corepack#612](https://github.com/nodejs/corepack/issues/612#issuecomment-2631491212). The task globally
+installs `corepack@latest` before `installQuasar`, adding a network round-trip to every frontend build. Re-check the
+upstream issue periodically; when fixed, drop the task and the `dependsOn`.

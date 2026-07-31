@@ -970,3 +970,37 @@ tuples**, because the marker records success without recording which template pr
 Verified end-to-end: `balm` on Minecraft 26.1.2 now reports `Fabric=LOW(boot:SURVIVED), Forge=LOW(boot:SURVIVED),
 NeoForge=LOW(boot:SURVIVED)` — the first successful Forge boot on current Minecraft — with `server.jar` and
 `libraries` present in the reinstalled cache entry.
+
+### 2026-07-31 — Phase 2: grinder correctness and coverage (B12, B6, B9, B2)
+
+Four backlog items, one commit each, all with the pin-first order the audit's M-A finding asked for.
+
+- **B12** `ForgeLoader.forgeVersionFrom` sliced blindly, so an entry with nothing after its Minecraft key threw
+  `StringIndexOutOfBoundsException` — uncaught by `update()`, which would have abandoned the Forge parse for every
+  remaining Minecraft version. It now returns `null` and the caller logs and skips. The guard is a **length check**,
+  never `startsWith`, because entries carry the raw manifest key while the Minecraft version may be the reconciled
+  `1.7.10-pre4` form. Verified against the real manifest: of 5025 entries across 77 keys it rejects **0**.
+- **B6** Modrinth clamps `offset` at 99 999 and answers with zero hits past it, which `page` cannot distinguish from an
+  exhausted catalog — so a catalog that outgrows the ceiling would wrap early and report itself complete. Two warnings
+  now mark the region; behaviour is deliberately unchanged, because the source genuinely cannot tell the cases apart
+  and guessing either way is worse than saying so. The boundary is a pure decision, tested without an HTTP fetcher.
+- **B9** The boot deadline was wall-clock, so a suspended host spent the budget on a frozen container. The wait loop
+  now adds a detected suspend back to the deadline, so a timeout means "the boot had this long and did not make it".
+  Detection is conservative on purpose (a gap must exceed a minute *and* 30× the poll interval): under-detecting only
+  preserves the old behaviour, while over-detecting would hand a genuinely slow boot budget it should not get.
+- **B2** A loader build can be listed by maven metadata while its installer artifact is absent (NeoForge `21.1.247`
+  404s). With nothing cached the policy now prefers the newest build the cache is not already refusing, stepping down
+  when it is on install cooldown; `LoaderCache.isInstallOnCooldown` lets the policy ask before choosing instead of each
+  candidate discovering it the expensive way. **`latestVersion` still delegates**, so the support gate and the crash
+  re-check keep measuring against the real newest — a crash on a stepped-down build is re-checked exactly as a cached
+  build's is. Scoped to Forge/NeoForge, the only loaders with sibling per-Minecraft builds.
+
+**Correction — a bookkeeping mistake, owned here.** The commit that closed B8 (`64d2d70e5`) truncated `BACKLOG.md` from
+B8's heading to end-of-file, which silently removed **B9, B10, B11 and B12** as well. B10 and B11 were still open and
+have been restored from history; B9 and B12 are closed by this phase, so they stay gone deliberately rather than by
+accident. Removing a queue entry must cut only that entry's own section.
+
+**Deferred, not forgotten: B5** (verdict dedup by project identity). It needs a stable project id threaded through
+`GrindCandidate`, `GrindVerdict` and the store key, plus a migration for existing `verdicts.json` files that carry no
+id — a schema change that deserves its own focused pass rather than the tail of a long one. Its cost today is only that
+a renamed project is re-ground as new, which is wasted work rather than a wrong verdict.
