@@ -47,7 +47,9 @@ class ApiWrapper private constructor(
     val properties: File = File("serverpackcreator.properties"),
     runSetup: Boolean = true
 ) {
+    /** Matches the manifest files seeded from the jar, so setup can copy exactly those and nothing else. */
     val xmlJsonRegex = ".*\\.(xml|json)".toRegex()
+    /** Whether [setup] has already run, so repeated calls are cheap. `setup(force = true)` clears it. */
     var setupWasRun: Boolean = false
 
     private val log by lazy { cachedLoggerOf(this.javaClass) }
@@ -318,6 +320,7 @@ class ApiWrapper private constructor(
         }
     }
 
+    /** The singleton accessor and the `api()` factory that builds and optionally sets up the collaborator graph. */
     companion object {
         @Volatile
         private var api: ApiWrapper? = null

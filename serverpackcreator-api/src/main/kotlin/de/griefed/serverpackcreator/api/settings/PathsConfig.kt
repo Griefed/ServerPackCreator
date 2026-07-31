@@ -44,6 +44,7 @@ class PathsConfig(
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val serverPacksRegex = "^(?:\\./)?server-packs$".toRegex()
 
+    /** Property keys for the paths this group owns, plus the home-directory override key. */
     companion object {
         /**
          * Property- and preference-key holding ServerPackCreators home-directory.
@@ -210,10 +211,17 @@ class PathsConfig(
             log.info("Set Tomcat base-directory to: $field")
         }
 
+    /**
+     * Where the web backend's Tomcat keeps its working files: always the home directory.
+     *
+     * **Landmine:** the `tomcatBaseDirectory` *getter* resets a deviating stored value to this on read, so the GUI's
+     * dirty-check compares a raw widget against a normalised value and needs a reload after saving.
+     */
     fun defaultTomcatBaseDirectory(): File {
         return homeDirectory.absoluteFile
     }
 
+    /** Where generated packs go unless a configuration overrides the destination. */
     fun defaultServerPacksDirectory(): File {
         return File(homeDirectory, "server-packs").absoluteFile
     }
@@ -278,6 +286,7 @@ class PathsConfig(
             log.info("Set Tomcat logs-directory to: $field")
         }
 
+    /** Where the web backend logs, falling back when the configured location is not writable. */
     fun defaultTomcatLogsDirectory(): File {
         return File(homeDirectory, "logs").absoluteFile
     }
