@@ -450,7 +450,9 @@ Function global:SetupNeoForge
             "${script:JavaArgs}"
     WriteFileUTF8NoBom "user_jvm_args.txt" $Content
 
-    if ([int]$Semantics[1] -eq 20 -And ($Semantics.count -eq 2 -Or [int]$Semantics[2] -eq 1))
+    # The major is part of the test because "minor is 20" only means the 1.20 era under the 1.x scheme: a future
+    # Minecraft 26.20 would otherwise be sent at a 1.20-era URL that does not exist for it.
+    if ([int]$Semantics[0] -eq 1 -And [int]$Semantics[1] -eq 20 -And ($Semantics.count -eq 2 -Or [int]$Semantics[2] -eq 1))
     {
         $script:ServerRunCommand = "@user_jvm_args.txt -jar server.jar --installer-force --installer https://maven.neoforged.net/releases/net/neoforged/forge/${MinecraftVersion}-${ModLoaderVersion}/forge-${MinecraftVersion}-${ModLoaderVersion}-installer.jar nogui"
     }

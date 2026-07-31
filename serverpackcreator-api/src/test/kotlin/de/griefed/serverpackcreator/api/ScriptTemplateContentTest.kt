@@ -319,6 +319,75 @@ internal class ScriptTemplateContentTest {
     }
 
     /**
+     * **Executes** the bash template's `setupNeoForge` and asserts which installer coordinate it passes, across both
+     * Minecraft versioning schemes.
+     *
+     * NeoForge's first releases — for Minecraft 1.20 and 1.20.1 only — were published under the legacy
+     * `net/neoforged/forge/` artifact group and have to be installed by URL; everything later is installed by bare
+     * version. The template distinguishes them, and like the Forge era test above it must not read the *minor*
+     * component in isolation: under the `YY.x` scheme a future Minecraft `26.20` would match "minor is 20" and be
+     * sent at a 1.20-era URL that does not exist for it.
+     *
+     * This case is **latent** — no such Minecraft has shipped — so the test documents the rule rather than a
+     * live failure. It is here because this is the second instance of the same assumption found in one sweep, and an
+     * unreachable bug is still cheaper to close now than to rediscover when Mojang makes it reachable.
+     */
+    @Test
+    fun theBashTemplateChoosesTheNeoForgeInstallerCoordinateForBothVersioningSchemes() {
+        val bash = which("bash") ?: Assumptions.abort("bash not installed — NeoForge coordinate check skipped")
+
+        // Minecraft version to whether the legacy net/neoforged/forge/ URL is the correct installer coordinate.
+        val expectations = mapOf(
+            "1.20" to true,
+            "1.20.1" to true,
+            "1.20.2" to false,
+            "1.21.1" to false,
+            "26.2" to false,
+            // The latent cases: a YY.20 Minecraft must not be mistaken for the 1.20 era.
+            "26.20" to false,
+            "26.20.1" to false
+        )
+
+        for ((minecraftVersion, legacyUrlExpected) in expectations) {
+            val packDir = File.createTempFile("spc-neoforge-coord-", "-pack").apply { delete(); mkdirs() }
+            val harness = File(packDir, "harness.sh")
+            harness.writeText(
+                """
+                refreshServerJar() { :; }
+                JAVA_ARGS="-Xmx4G"
+                MINECRAFT_VERSION="$minecraftVersion"
+                MODLOADER_VERSION="21.1.247"
+                SERVER_RUN_COMMAND="do_not_manually_edit"
+                IFS="." read -ra SEMANTICS <<<"${'$'}{MINECRAFT_VERSION}"
+                ${extractShellFunction("default_template.sh", "setupNeoForge")}
+                setupNeoForge
+                echo "RESULT=${'$'}{SERVER_RUN_COMMAND}"
+                """.trimIndent()
+            )
+
+            val process = ProcessBuilder(bash.absolutePath, harness.absolutePath)
+                .directory(packDir)
+                .redirectErrorStream(true)
+                .start()
+            val output = process.inputStream.bufferedReader().use { it.readText() }
+            val exit = process.waitFor()
+            packDir.deleteRecursively()
+
+            Assertions.assertEquals(0, exit, "setupNeoForge failed for Minecraft $minecraftVersion:\n$output")
+            val runCommand = output.lines().firstOrNull { it.startsWith("RESULT=") }
+                ?: Assertions.fail("no run command produced for Minecraft $minecraftVersion:\n$output")
+            val choseLegacyUrl = runCommand.contains("net/neoforged/forge/")
+
+            Assertions.assertEquals(
+                legacyUrlExpected,
+                choseLegacyUrl,
+                "Minecraft $minecraftVersion was sent at the ${if (choseLegacyUrl) "legacy 1.20-era URL" else "bare version"}; " +
+                    "expected the ${if (legacyUrlExpected) "legacy URL" else "bare version"}. Run command: $runCommand"
+            )
+        }
+    }
+
+    /**
      * Cut a block out of a shell template, from the line equal to [startsWith] to the next line equal to [endsWith]
      * at column 0. Used for the run-loop, which is top-level script text rather than a function.
      */

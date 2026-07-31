@@ -280,7 +280,11 @@ setupNeoForge() {
     echo "${JAVA_ARGS}"
   } >>user_jvm_args.txt
 
-  if [[ ${SEMANTICS[1]} -eq 20 ]] && [[ ${#SEMANTICS[@]} -eq 2 || ${SEMANTICS[2]} -eq 1 ]]; then
+  # NeoForge's first releases -- Minecraft 1.20 and 1.20.1 only -- live under the legacy net/neoforged/forge/ artifact
+  # group and must be installed by URL; everything later installs by bare version. The major is part of the test
+  # because "minor is 20" only means the 1.20 era under the 1.x scheme: a future Minecraft 26.20 would otherwise be
+  # sent at a 1.20-era URL that does not exist for it.
+  if [[ ${SEMANTICS[0]} -eq 1 ]] && [[ ${SEMANTICS[1]} -eq 20 ]] && [[ ${#SEMANTICS[@]} -eq 2 || ${SEMANTICS[2]} -eq 1 ]]; then
     SERVER_RUN_COMMAND="@user_jvm_args.txt -jar server.jar --installer-force --installer https://maven.neoforged.net/releases/net/neoforged/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}-installer.jar nogui"
   else
     SERVER_RUN_COMMAND="@user_jvm_args.txt -jar server.jar --installer-force --installer ${MODLOADER_VERSION} nogui"

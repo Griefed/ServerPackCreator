@@ -324,7 +324,9 @@ function setupNeoForge
         set patch_ok 1
     end
 
-    if test $SEMANTICS[2] -eq 20; and test $patch_ok -eq 1
+    # The major is part of the test because "minor is 20" only means the 1.20 era under the 1.x scheme: a future
+    # Minecraft 26.20 would otherwise be sent at a 1.20-era URL that does not exist for it.
+    if test $SEMANTICS[1] -eq 1; and test $SEMANTICS[2] -eq 20; and test $patch_ok -eq 1
         set -g SERVER_RUN_COMMAND "@user_jvm_args.txt -jar server.jar --installer-force --installer https://maven.neoforged.net/releases/net/neoforged/forge/$MINECRAFT_VERSION-$MODLOADER_VERSION/forge-$MINECRAFT_VERSION-$MODLOADER_VERSION-installer.jar nogui"
     else
         set -g SERVER_RUN_COMMAND "@user_jvm_args.txt -jar server.jar --installer-force --installer $MODLOADER_VERSION nogui"
