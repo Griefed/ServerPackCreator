@@ -1004,3 +1004,26 @@ accident. Removing a queue entry must cut only that entry's own section.
 `GrindCandidate`, `GrindVerdict` and the store key, plus a migration for existing `verdicts.json` files that carry no
 id — a schema change that deserves its own focused pass rather than the tail of a long one. Its cost today is only that
 a renamed project is re-ground as new, which is wasted work rather than a wrong verdict.
+
+### 2026-07-31 — Phase 3: API and app hygiene (B1, B10)
+
+- **B1** Four call-sites in `-app` hard-coded both the `Preferences` node name and the home key while `-api` resolves
+  the node through `ApiProperties.resolvePreferencesNode`, so a host claiming its own node — the grinder, every test
+  JVM — had the app writing a home `-api` would never read back. `HomeDirectoryPreference` now owns both, resolving the
+  node **per call** rather than capturing it. `CommandlineParserTest` reads through the same resolver, because
+  asserting against the literal node only passes while the default happens to be in play.
+  **`GuiProps` deliberately stays on the default node**, with the reasoning recorded at the call-site: window geometry
+  belongs to the installation a user sees, not to whichever process resolved a home, and routing it through the
+  resolver would reset every existing user's saved layout. It needs a migration, not a rename.
+- **A bug found by B1's test, fixed first.** `PathsConfig.homeDirectory` persists whatever it resolves, so the `-D`
+  override added in `dd4fcc935` was writing *itself* into the preference — a temporary override, which the build sets
+  for every test JVM, quietly replacing the user's durable home, with every later read inheriting it. It is now honoured
+  for the process and never persisted. Surfaced as the `--home` test failing: `CommandlineParser` stored a home and the
+  next `ApiProperties` read overwrote it. Verified by reinstating the persistence and watching the new test fail.
+- **B10** The 91-line `variables.txt` body moved out of a Kotlin string literal into `server_files`, beside the
+  start-script templates. Verified as a faithful move — the resource is **byte-identical** to what the literal produced
+  through `trimIndent` (91 lines, 5912 chars). Existing homes keep their copy (`checkServerFilesFile`, not the
+  templates' overwrite), so edited wording survives an upgrade, and the delete-watcher restores it when removed so the
+  file the operator edits is the file generation reads. Reading from disk introduces a failure the literal could not
+  have, so it is guarded: a missing or unreadable template falls back to the jar's copy rather than shipping a pack with
+  no `variables.txt`.
