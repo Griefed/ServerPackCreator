@@ -80,10 +80,9 @@ object GrinderApplication {
         }
         log.info("Using Preferences node '${ApiProperties.resolvePreferencesNode()}' for SPC settings.")
 
-        // Point SPC at a specific home/config when given (reproducible runs), else its default.
-        val apiWrapper = System.getenv("SPC_GRINDER_SPC_PROPERTIES")?.takeIf { it.isNotBlank() }
-            ?.let { ApiWrapper.api(File(it)) }
-            ?: ApiWrapper.api()
+        // Point SPC at a specific config when given (reproducible runs), else one inside our own home -- never
+        // ApiWrapper.api()'s relative default, see resolveSpcPropertiesFile.
+        val apiWrapper = ApiWrapper.api(resolveSpcPropertiesFile(System.getenv("SPC_GRINDER_SPC_PROPERTIES"), base))
         val engine = DockerJavaContainerEngine()
         // Authoritative Minecraft -> required-Java from SPC's own metadata; gates selection to the image's JDKs.
         val imageJava = ImageJavaRuntimes.from(apiWrapper.versionMeta.minecraft)
@@ -218,6 +217,21 @@ object GrinderApplication {
     }
 
     /** Read [key] from the environment, falling back to [default] when unset or blank. */
+    /**
+     * Where the daemon's SPC settings file lives: [explicitPath] when the operator named one, otherwise
+     * `serverpackcreator.properties` inside the daemon's own [home]. Always absolute.
+     *
+     * Absoluteness is the point, not tidiness. `ApiProperties`' default is the *relative*
+     * `File("serverpackcreator.properties")`, and `PropertyStore` keeps every file it loads in
+     * `trackedPropertyFiles` and writes to all of them on every save — so that default made the daemon create and
+     * rewrite a settings file in whatever directory it was launched from. Started from a checkout, it dropped one
+     * into the repository root on every start. The daemon already derives `work`, `cache` and the verdict store
+     * from its home; its settings belong there too, and then where it was started from stops mattering.
+     */
+    internal fun resolveSpcPropertiesFile(explicitPath: String?, home: File): File =
+        explicitPath?.takeIf { it.isNotBlank() }?.let { File(it).absoluteFile }
+            ?: File(home, "serverpackcreator.properties").absoluteFile
+
     private fun env(key: String, default: String): String = System.getenv(key)?.takeIf { it.isNotBlank() } ?: default
 
     /** Best-effort project-slug from a URL (last path segment) — used only for the skip-already-done check. */

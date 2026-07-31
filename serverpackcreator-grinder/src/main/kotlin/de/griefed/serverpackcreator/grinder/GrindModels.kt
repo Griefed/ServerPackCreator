@@ -37,7 +37,13 @@ data class GrindCandidate(
     val projectUrl: String,
     val slug: String,
     val popularity: Long,
-    val platform: String
+    val platform: String,
+    /**
+     * The platform's own immutable project identifier (Modrinth's `project_id`, CurseForge's numeric `id`), or
+     * `null` when the candidate came from somewhere that does not know it — a URL passed on the command line, for
+     * instance. A slug is a mutable display name, so this is what makes a renamed project recognisable as itself.
+     */
+    val projectId: String? = null
 )
 
 /**
@@ -85,7 +91,12 @@ data class GrindVerdict(
     val suggestedEntry: String?,
     val confidence: Confidence,
     val detail: String,
-    val verifiedAt: Instant
+    val verifiedAt: Instant,
+    /**
+     * The platform's immutable project identifier, or `null` for verdicts recorded before it was tracked. Dedup
+     * falls back to [slug] when absent, so a store written by an older build stays readable and correct.
+     */
+    val projectId: String? = null
 )
 
 /**

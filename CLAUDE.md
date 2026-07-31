@@ -61,7 +61,10 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 
 - `./gradlew build` — full build. The app build depends on the frontend build and license report.
 - `./gradlew :serverpackcreator-api:test` — API suite (runs against fixture modpacks in
-  `serverpackcreator-api/tests/` and `src/test/resources/testresources/`; no live network needed).
+  `serverpackcreator-api/tests/` and `src/test/resources/testresources/`). **Offline for every Minecraft version in
+  the shipped manifest snapshot**, which `ApiWrapper.setup()` seeds from the jar; a version newer than that snapshot
+  costs one fetch of its `mcserver/<version>.json`. The snapshot currently lags its own parent manifest (backlog
+  B25). The test home is wiped before each run **except** `manifests/`, so that cache persists and accumulates.
 - `./gradlew :serverpackcreator-app:test` — app suite.
 - `./gradlew :<module>:koverHtmlReport` / `koverXmlReport` — coverage (Kover), report under
   `<module>/build/reports/kover/`.
@@ -92,6 +95,8 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 |---|---|
 | `PathsConfig.homeDirectory` consults `-Dde.griefed.serverpackcreator.home` **before** the stored preference and the properties file (`PathsConfig.kt:106`) | A host that sets that property now resolves a different home than the same code did before. Additive and opt-in — nothing changes unless the property is set — but every plugin reading `apiProperties.homeDirectory` follows it. |
 | `ApiProperties.resolvePreferencesNode` + `PREFERENCES_NODE_PROPERTY` / `PREFERENCES_NODE_ENV` / `DEFAULT_PREFERENCES_NODE` | New exported surface; the default node name is unchanged, so existing installations keep reading their own settings. |
+| The eight `default*ScriptTemplate` properties are computed per access (`PathsConfig.kt:586`–`:643`) instead of captured at construction, and the `ApiProperties` facades (`:801`–`:836`) pass that through | For a stable home the value is identical, so nothing changes for a normal embedder. What changes is that the value is no longer a *constant*: a host that moves the home at runtime (`--home`, the `-D` override, the GUI settings panel) now sees the template paths follow it, where before they kept pointing into the old home. Anything caching one of these paths across a home change was reading a stale path and should re-read instead. |
+| `MinecraftServer` gains defaulted `downloadCooldown` / `clock` parameters, and a failed manifest **download** is not re-attempted for an hour (`MinecraftServer.kt`, `readServerJson`) | A manifest already on disk is still always read, so a working installation is unchanged. What changes is a *failing* one: an embedder that previously saw a download attempt — and `WebUtilities`' ERROR-with-stack-trace — on every `getServer`/`requiredJavaVersion` call now sees at most one per hour per version. The exported `Optional` shape is unchanged; a caller reading empty as "no server available" still gets that. |
 | `ServerPackProvisioner.variables` reads the shipped `server_files/variables.txt` instead of a compiled-in string literal, falling back to the bundled copy (`ServerPackProvisioner.kt:56-63`). New exported members: `PathsConfig.defaultVariablesTemplate`, `ApiProperties.defaultVariablesTemplate` | A default installation gets byte-identical output — but the value is no longer a constant. An operator who edits that file changes what **every** embedder's generation emits, and one who deletes it gets the bundled fallback (the app's delete-watcher restores it). Anything asserting on a fixed `variables` string should read the template instead. |
 
 ---
@@ -137,6 +142,17 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   **confirm the test fails before the fix**: a guard whose teeth were never checked has repeatedly turned
   out to assert nothing (twice in one session, when a mis-indented edit meant the "broken" run was
   actually unmodified code).
+- **Build logic is verified by measurement, not by tests — and the measurement goes in the commit message.**
+  `buildSrc` has no test source set and no Gradle TestKit harness, and we have decided not to add one to pin single
+  predicates (a task-wiring change or a one-line filter is not worth a second test framework in the build). So for a
+  change to `buildSrc`, a `build.gradle.kts` or task wiring, the standard is: **measure the behaviour before and
+  after, and record both numbers in the commit message.** `8b87057cf` did this (a planted marker plus a cached
+  manifest; the cache went 643 → 0 before the change and survived after), as did the `updateManifests` retarget (app
+  home 643 files vs api home 659, the difference being exactly the 16 releases that could never have been copied).
+  Two audits flagged these as missing pins; this is the deliberate ceiling, so state it rather than re-flag it. Where
+  a *consequence* is reachable from a normal suite, pin that instead — `ShippedManifestSnapshotTest` guards the
+  outcome of the manifest work even though nothing can guard `cleanup()` itself, because `ApiWrapper.setup()`
+  re-seeds from the jar and makes a wiped cache indistinguishable from a preserved one at test time.
 - **Pin first means *commit* first, not just write first.** The failing test lands in its own `test(...)`
   commit, **red**, and the fix follows in the next one. In-session verification is not a substitute: it leaves
   no evidence, and it is exactly what silently passed twice above. Audited 2026-07-31 — all **eight** code
