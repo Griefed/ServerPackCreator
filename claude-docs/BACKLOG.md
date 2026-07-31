@@ -28,21 +28,3 @@ upstream issue periodically; when fixed, drop the task and the `dependsOn`.
 ## Found while executing the 2026-07-31 plan — not planned, not yet done
 
 Each of these was observed and verified during the plan's phases but fell outside their scope. Newest concern first.
-
-### B25 — the shipped per-version manifest snapshot lags its own parent manifest
-Found 2026-07-31 while closing B24, which had the mechanism wrong: the version manifests **are** shipped as
-resources (`serverpackcreator-api/src/main/resources/de/griefed/resources/manifests`, `mcserver/` included) and
-`ApiWrapper.setup()` seeds them from the jar, so the offline guarantee has real backing. The defect is narrower and
-it is a *data* problem: the shipped set is internally inconsistent.
-
-`minecraft-manifest.json` lists **26.2** as the newest release, while `mcserver/` — 643 per-version files — has no
-`26.2.json`, no `1.21.11.json` and no `1.21.1.json`; its newest is around the 1.20.1 era. So a fresh clone, or CI,
-asks for a version the shipped manifest advertises and must fetch it. When that fetch fails or is slow, the answer
-is "required Java unknown", which is what left the newest Minecraft versions out of the template matrix.
-
-The project already has the refresh mechanism: `updateManifests` (`serverpackcreator-api/build.gradle.kts:134`)
-copies `serverpackcreator-app/tests/manifests` into the shipped resources, and since B24 that directory now
-*accumulates* newly-fetched versions instead of being wiped each run — so a run followed by `updateManifests`
-genuinely advances the snapshot. Left as a maintainer decision because it is a large data commit (hundreds of
-files) that needs network and the app suite, not a code change.
-
