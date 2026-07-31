@@ -144,6 +144,16 @@ internal class ForgeLoader(
          * `minecraftVersion.length` stays correct for those versions — a reconciliation that changed the length would
          * silently slice the version in the wrong place instead of failing.
          */
+        //TODO guard this cut: it trusts the manifest entirely, and fails in two ways that are worse than a skip.
+        // 1. An entry not prefixed by its Minecraft key cuts at the wrong offset and returns plausible garbage --
+        //    "1.18.2-40.0.17" cut with "1.18.2-40." yields ".17", and nothing downstream can tell that apart from a
+        //    correct mapping.
+        // 2. An entry no longer than the key throws StringIndexOutOfBoundsException, which `update()` does not catch
+        //    (only MalformedURLException and NoSuchElementException), so one malformed entry aborts the whole Forge
+        //    load instead of costing a single version.
+        // Suggested shape: return null when `manifestEntry` does not start with "$minecraftVersion-", and have the
+        // caller log-and-skip. Both failure modes are pinned in ForgeVersionMappingTest
+        // (anEntryThatDoesNotCarryItsMinecraftKeyIsNotDetected), so that test must be updated with the fix.
         internal fun forgeVersionFrom(manifestEntry: String, minecraftVersion: String): String =
             manifestEntry.substring(minecraftVersion.length + 1)
     }
