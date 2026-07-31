@@ -1027,3 +1027,16 @@ a renamed project is re-ground as new, which is wasted work rather than a wrong 
   file the operator edits is the file generation reads. Reading from disk introduces a failure the literal could not
   have, so it is guarded: a missing or unreadable template falls back to the jar's copy rather than shipping a pack with
   no `variables.txt`.
+
+### 2026-07-31 — Phase 4: operator documentation (B7)
+
+`SPC_GRINDER_WORKERS` is the biggest lever on sweep duration and the README documented only "budget ~3 GB RAM each".
+§5 now carries the rule — `workers ≈ (memory available to Docker − overhead) / 3 GiB` — with figures for a dedicated
+box (~20), a workstation (4) and a laptop on Docker Desktop's default (**1**), plus the two facts an operator actually
+trips over: the constraint is the memory assigned to *Docker*, not the host's (measured: a 48 GB laptop whose VM held
+1.93 GiB, less than one boot's cap), and over-subscribing wastes boots rather than corrupting results, because an
+OOM-killed boot is scored INCONCLUSIVE. Keeping the host awake is noted for the same reason B9 exists.
+
+`ReadmeConfigurationTest` now compares the quoted per-boot figure against `ContainerResources.memoryBytes`, since the
+formula divides by it — change the cap and the advice would silently start over-subscribing. Verified by doubling the
+cap and watching the test fail.

@@ -22,14 +22,6 @@ already extracted and the rest is legitimate view code.
 A project that changes its slug on a platform is re-ground as a new project and its old verdicts linger. Fine today;
 would want a stable project id if the store is ever published as a long-lived dataset.
 
-### B7 — Worker sizing for the production host
-The grinder will run on a machine with **~80 GB free memory** (Griefed, 2026-07-30), not on the dev box whose Docker
-VM is deliberately capped at 1.93 GiB. Sizing rule: `SPC_GRINDER_WORKERS ≈ (memory available to Docker − overhead) /
-per-boot cap`, with the per-boot cap being `ContainerResources.memoryBytes` (3 GiB default) — so ~20+ workers there,
-versus **1** on the dev box. The Docker VM's memory must exceed `workers × cap`, or boots are OOM-killed rather than
-capped (which is what made the killed/OOM classifier guard necessary). Worth putting in `README.md` §5 as explicit
-guidance rather than leaving operators to infer it.
-
 ## Existing TODO markers in the codebase (recorded 2026-07-31)
 
 Every `TODO` presently in SPC's sources, so they are tracked somewhere other than a grep. (A fourth apparent hit,
