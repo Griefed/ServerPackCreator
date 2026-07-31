@@ -1,251 +1,179 @@
-# Refactor Audit — `claude-grinder-catalog-cursor`
+# Refactor Audit — unpushed `develop` (`origin/develop..HEAD`)
 
-**Range audited:** `develop..HEAD` (38 commits, `2babcb443` … `797ed40c3`)
-**Base:** `develop` — verified ancestor of HEAD, clean linear range
+**Range audited:** `origin/develop..HEAD` — **102 commits**
+**Base:** `origin/develop` (local `develop` is 0 behind it, 102 ahead)
+**Head:** `a09138a9b`
 **Mode:** READ-ONLY. No source modified.
-**Suite at HEAD:** api ✅ · clientside ✅ · grinder ✅ · app ✅
+**Suite at HEAD:** api ✅ · clientside ✅ · grinder ✅ · app ✅ · frontend ✅ (31)
+— verified after `b28d131ea`; the only commit since (`a09138a9b`) touches `claude-docs/BACKLOG.md` alone.
 
-> Supersedes the previous report at this path (`claude-module-readmes`, 0 HIGH / 3 MEDIUM / 3 LOW). All three
-> of its findings are **closed on `develop`**: the scanning snippet now uses `scan(jarFiles) → ScanResult`
-> (M1), `ReadmeExamplesTest` pins §2/§3/§4/§5 and *executes* §8 (M2), and the clientside README documents the
-> headless-browser dependencies (M3). Its subject commit `c08d786b1` is on no branch. Ask if you want that
-> text restored.
+> Third report at this path. Supersedes the 81-commit version (1 HIGH / 1 MEDIUM / 2 LOW), whose findings are
+> **carried forward with updated status** rather than re-argued.
 
-**Summary: 2 HIGH · 6 MEDIUM · 3 LOW.** The branch's engineering outcomes are sound and the suite is green;
-the failures are almost entirely in *commit hygiene* — concerns bundled together — and in one case that
-bundling let a regression reach a live sweep.
+**Range composition** — audit effort was directed at the segment never examined before:
+
+| Segment | Commits | Status |
+|---|---|---|
+| `origin/develop..8be2913f8` — earlier sessions | 37 | Audited in report 2 |
+| `8be2913f8..bc2bfe7fa` — the merged branch | 44 | Audited in report 1 |
+| `bc2bfe7fa..HEAD` — the 2026-07-31 plan, Phases 1–6 | **21** | **Audited here for the first time** |
+
+**New findings: 1 HIGH · 2 MEDIUM · 1 LOW.** The 21 new commits are the best-disciplined segment in the range
+— small, single-purpose, no new `!!`, no stray debug, no cross-module sprawl except where noted. Every finding
+below is about *labelling and recording* a change, not about a change being wrong: nothing here is a defect in
+shipped behaviour, and one is fixed by adding a table row.
 
 ---
 
 ## HIGH
 
-### H1 — `aca721725` bundles a refactor with five behaviour changes across two modules
-**Commit:** `aca721725` *"fix(clientside): decide CRASHED from the console, and never boot without required dependencies"*
-**Rule broken:** *One concern per commit. Keep "add tests", "refactor (no behavior change)" and "change
-behavior" in separate commits. Never mix a refactor with a feature or bugfix.*
-**Severity:** HIGH — a behaviour change mixed into a refactor.
+### H-B — `7815d5960` changes what an exported API call returns, and it is not in the compatibility table
+**Commit:** `7815d5960` *"refactor(api): ship variables.txt as a template instead of a string literal"*
+**Files:** `serverpackcreator-api/src/main/kotlin/.../serverpack/ServerPackProvisioner.kt:56-63` (+27/−94),
+`settings/PathsConfig.kt:694`, `ApiProperties.kt:862`, new resource `server_files/variables.txt` (+91)
+**Rule broken:** *Changed plugin-API contract* (rubric HIGH), against the project's own policy:
+*"Source-compatible is not the same as behaviour-compatible… a change that keeps every signature but alters
+what an exported call returns is still a contract change for embedders, and belongs in the release notes."*
+(`CLAUDE.md:88-90`)
+**Severity:** HIGH — same class as the previous audit's **H2**, which was resolved by documenting it.
 
-One commit: 16 files, +489/−19, spanning `-api` and `-clientside`, containing:
+`ServerPackProvisioner.variables` is reachable from plugins and embedders as
+`apiWrapper.serverPackHandler.variables`. Before this commit it returned a compiled-in constant; now it reads
+`apiProperties.defaultVariablesTemplate` from disk, falling back to the bundled copy. Two new exported members
+land with it (`PathsConfig.defaultVariablesTemplate`, `ApiProperties.defaultVariablesTemplate`).
 
-| Concern | Where |
-|---|---|
-| Behaviour — start scripts propagate the server's exit status | `default_template.{sh,fish,ps1}` (`default_template.sh:592`, `:602`) |
-| Behaviour — a client-only-class console hit decides CRASHED | `BootLogClassifier.kt:181` |
-| Behaviour — dependency markers force INCONCLUSIVE | `BootLogClassifier.kt:185` |
-| Behaviour — staging refuses to boot without required deps | `BootVerifier.kt:352` (`refuseForMissingDependencies`) |
-| Behaviour — Quilt dependencies fall back to Fabric builds | `BootCandidateSelector.kt:61` |
-| Behaviour — boot detail now carries the exit status | `BootVerifier.outcomeFor` |
-| **Refactor** — `downloadWithDependencies` gains an `unsatisfied` out-parameter | `BootVerifier.kt:156` |
-| Docs | `CLAUDE.md`, `BACKLOG.md`, `REFACTOR-LOG.md`, `clientside/CLAUDE.md` |
+For a default installation the value is unchanged — the commit states the extracted resource is byte-identical
+to the literal, and `ServerPackHandlerTest.forgeTest` (which already generated and asserted `variables.txt`
+before the move) stayed green. But the observable contract is now different in kind: an operator who edits or
+deletes that file changes what every embedder's generation emits, which was previously impossible.
 
-The signature change to `downloadWithDependencies` is a pure refactor riding along with five behaviour
-changes — exactly what the rule forbids. A reviewer cannot separate *"did the plumbing change break
-anything?"* from *"is the new classification correct?"*.
+`CLAUDE.md:93-94` tables exactly two such changes (`PathsConfig.homeDirectory`, `resolvePreferencesNode`).
+This one is absent, so the policy that was written *for this situation* was not applied to it.
 
-**It also rewrote an existing assertion** (`BootVerifierOutcomeTest.kt:59`):
-```
--  assertEquals("Forge 1.0 / Minecraft 1.20.1 → CRASHED", outcome.detail)
-+  assertEquals("Forge 1.0 / Minecraft 1.20.1 → CRASHED (exit 1)", outcome.detail)
-```
-Legitimate in a behaviour-change commit — but it is the signal the convention says to *stop* on, and here it
-sat unremarked among five other concerns.
-
-**Consequence, realised.** This commit introduced a regression that reached a live sweep: making the exit
-status trustworthy promoted every never-launched boot (`Error: Unable to access jarfile forge.jar`) to a
-HIGH-confidence clientside verdict. **Ten of the next fifteen HIGH verdicts were false**, including the
-server-side libraries `balm`, `collective` and `geckolib`. Closed two commits later by `8ebb3bbcb`. Landed
-alone, the exit-status change would have invited the obvious review question — *"what else now returns
-non-zero?"* — before it ever ran.
-
-**Remediation:** none retroactively; do not rewrite landed history. Going forward, split.
-
-### H2 — `dd4fcc935` changes home resolution for every embedder, and hides its own fallout inside the same commit
-**Commit:** `dd4fcc935` *"fix(api): let a host pin its Preferences node and home directory"*
-**Files:** `ApiProperties.kt:1310-1345` (new public `DEFAULT_PREFERENCES_NODE`, `PREFERENCES_NODE_PROPERTY`,
-`PREFERENCES_NODE_ENV`, `resolvePreferencesNode`); `PathsConfig.kt:106`
-**Rule broken:** *changed plugin-API contract* · *one concern per commit*
-**Severity:** HIGH — the exported `-api` surface governs plugin compatibility.
-
-The `ApiProperties` additions are additive and source-compatible, so the compatibility policy itself holds.
-The contract change is `PathsConfig.kt:106`: a new **highest-precedence** branch in `homeDirectory`
-resolution, ahead of both the stored preference and the properties file. Every host embedding `-api` —
-including plugins reading `apiProperties.homeDirectory` — resolves its home differently when that property
-is set. That warranted its own commit and a line in the compatibility notes.
-
-The commit additionally carries the fix for a regression it created during development: isolating each test
-JVM onto its own Preferences node removed the stored home, so resolution fell through to the working
-directory and `ApiWrapper.setup()` wrote README/CHANGELOG/`server_files` **into the module source tree**,
-overwriting `serverpackcreator-clientside/README.md`'s CLI guide. Shipping cause and cure together beats
-shipping the cause alone — but it buries a load-bearing discovery in an unrelated-looking diff.
+**Remediation:** documentation only — one row in the compatibility table naming the new members and the
+"generation now reflects an on-disk file" effect. No code change is implied; the behaviour is wanted.
 
 ---
 
 ## MEDIUM
 
-### M1 — checked-in test resources are mutated by running the suite, and were committed seven times
-**Commits:** `defbded12`, `a44e4a700`, `b4b340254`, `d8b6cb157`, `1a55797df`, `aca721725`, `8ebb3bbcb`
-**Files:** `serverpackcreator-api/src/test/resources/serverpackcreator.properties`,
-`serverpackcreator-clientside/src/test/resources/serverpackcreator.properties`
-**Rule broken:** *Boy Scout rule — stay within the commit's stated scope; don't let churn sprawl.*
+### M-B — every code commit in the plan bundles its test with the production change
+**Commits:** `2a9a03473`, `30f6cbded`, `c571e2d7f`, `07a647f01`, `aa2d27f7f`, `91ac0e1a9`, `1f92f585c`,
+`5caa6833f` — **8 of 8** code commits in the segment
+**Rule broken:** *One concern per commit. Keep "add tests", "refactor (no behavior change)" and "change
+behavior" in separate commits.*
 
-Running any suite rewrites these checked-in files, and that churn was swept into seven unrelated commits. It
-is **not** merely a timestamp. At HEAD the committed content reads:
+Each commit contains the change and its guard together. `2a9a03473` is representative: three template files
+(+17/−4) plus `ScriptTemplateContentTest.kt` (+76/−0) in one commit. The approved plan was explicit for this
+phase — *"Test first (fails). … **Commit alone, test only.**"* — and that boundary was not kept in any of the eight.
 
-```
-…/serverpackcreator-api/src/test/resources/serverpackcreator.properties:27
-  server.tomcat.basedir=/Users/davidhengstmann/…/serverpackcreator-app/build/spc-test-home
-…/serverpackcreator-api/src/test/resources/serverpackcreator.properties:28
-  spring.data.mongodb.uri=mongodb\://localhost\:27017/serverpackcreatordb   (was: user\:password@localhost)
-```
+Two mitigations, stated because they change what this finding means:
 
-Two distinct problems: a **build-output path** is now checked in, **machine-specific** to this developer; and
-the MongoDB URI silently lost its `user:password@` credentials component. No commit message mentions either.
-(Line 11's `de.griefed.serverpackcreator.java=/Users/…/sdkman/…` is machine-specific too, but predates this
-branch.) The `build/spc-test-home` value is a direct consequence of **H2** — the Tomcat base directory follows
-the home directory — so this is H2 leaking into version control.
+- The tests **were** written first and observed failing in-session; only the commit boundary collapsed. This is
+  not the fix-then-pin pattern of M-A/M2, where no test existed at fix time.
+- `b28d131ea` then wrote the pin-first rule into `CLAUDE.md` — so the segment codified the discipline it was
+  simultaneously not following at the commit level.
 
-**Worth a deliberate decision:** either these files should not be writable by the suite, or they should not
-be checked in carrying absolute paths.
+The cost is real but narrow: the history cannot *demonstrate* any pin failing. Nobody can check out
+`2a9a03473^` and watch the guard go red, which is precisely the evidence the new rule asks for. Worth noting
+that in-session verification of teeth **silently passed twice** this session (a mis-indented edit meant the
+"broken" run was unmodified code), which is the argument for the separate commit rather than against it.
 
-### M2 — `28a786b58` changes parsing behaviour with no tests
-**Commit:** `28a786b58` *"fix: Correctly parse NeoForge to Minecraft version mappings"* — 2 files, **0 tests**
-**File:** `NeoForgeLoader.kt` — the `when` building each Minecraft version's pattern
-**Rule broken:** *Ensure characterization tests exist before changing a unit. Never refactor untested code blind.*
+### M-C — two behaviour changes are labelled `refactor:`
+**Commits:** `5f138ef8a` *"refactor(app): route the stored home directory through one place"*,
+`7815d5960` *"refactor(api): ship variables.txt as a template instead of a string literal"*
+**Rule broken:** *A pure refactor commit must keep the suite green with the existing assertions. If a test must
+change for a "refactor", that is a signal the change is NOT behavior-preserving — stop and flag it.*
 
-This is precisely the logic the rule protects: it fails **silently**, yielding empty or mis-assigned version
-lists rather than an error. The change was correct and valuable — measured against the real 1639-version
-manifest it removed **820 wrong attributions for Minecraft 1.21 alone** (985 builds claimed where 165 are
-right), plus 108 for `1.21.1` — but nothing in the commit demonstrated either the old defect or the new
-correctness. Characterization arrived only afterwards, in `5703b0340`.
+`5f138ef8a` is the clearer case. It changes four call-sites from a hard-coded `Preferences` node to the
+resolved one, so a host claiming its own node (the grinder daemon, every test JVM) now reads and writes a
+different location than before — the intended fix for B1, and a behaviour change. The signal fired exactly as
+the rule predicts: an **existing** test had to change (`CommandlineParserTest.kt` +15/−13, replacing a literal
+node lookup with `HomeDirectoryPreference.stored()`). Inspected — the assertion semantics are equivalent and
+the edit is plumbing, not a weakened guard — but under a `refactor:` label the rule says stop and flag, and it
+was neither stopped nor flagged.
 
-### M3 — `5703b0340` and `e9faf528c` are labelled `test(...)` but carry production extractions
-**Commits:** `5703b0340` (`NeoForgeLoader.kt`, + companion `neoForgeVersionPatternFor`); `e9faf528c`
-(`ForgeLoader.kt:136-149`, + companion `forgeVersionFrom`)
-**Rule broken:** *Keep "add tests" and "refactor (no behavior change)" in separate commits.*
+`7815d5960` additionally reaches outside its module: `serverpackcreator-app/.../ServerPackCreator.kt:355-359`
+gains a delete-watcher branch so a removed template is restored. That is app-side behaviour in a commit
+labelled `refactor(api)`.
 
-Both lift a pure decision out of a private parse loop so a test can reach it, then add the tests. The
-extractions are behaviour-preserving and the suites stayed green on existing assertions — the Strangler-Fig
-shape is right — but a commit labelled `test:` that edits `src/main` misleads the log, and it is the same
-mixing the convention forbids, in the other direction.
-
-### M4 — three commits are large enough to defeat review
-**Rule broken:** *One concern per commit* · *refactor incrementally; no big-bang.*
-
-| Commit | Subject | Scope |
-|---|---|---|
-| `a44e4a700` | live boot logs, a `/status` endpoint, per-candidate log lines | **11** main, 7 test, 2 modules |
-| `defbded12` | reuse cached loader builds, guarded by a crash re-check | 7 main, 4 test, **3** modules |
-| `1783eb7c8` | advance the crawl cursor on work done, not on hand-out | 7 main, 3 test, 6 docs |
-
-`a44e4a700` is three independently useful features sharing a theme but not a concern. `defbded12` spans app,
-clientside and grinder, adding the `LoaderVersionPolicy` seam, the cache-preferring policy **and** the crash
-re-check that makes the policy safe — that last piece carries the entire safety argument and deserved
-isolation.
-
-### M5 — `b4b340254` shipped a behaviour change on an unverified premise
-**Commits:** `b4b340254` *"stop re-paying for loader combinations that cannot boot"* → reverted by `d8b6cb157`
-**Rule broken:** *characterization before behaviour change.*
-
-`LoaderSupportMemory` treated the boot log's `"<Loader> is not available for Minecraft X"` as proof that a
-loader has no build for that version. It is not: the message is emitted when an HTTP probe fails, which under
-the grinder's `--network none` boots always means *"could not check"*. Within minutes of going live it marked
-Fabric unusable for **22 Minecraft versions**. The unit tests passed throughout — they encoded the same wrong
-premise.
-
-The revert is exemplary: prompt, total, and its message states the false premise plainly, which is what the
-"surface bugs explicitly" rule asks for. The finding is that **no test could have caught this** — the premise
-was never checked against a real boot log before the behaviour shipped.
-
-### M6 — a guard test stayed green while the behaviour it guarded was broken
-**Commits:** `1a55797df` → `e3296a7d2`
-**File:** `ScriptTemplateContentTest.allTemplatesUseAnAlreadyInstalledFabricLauncherBeforeCheckingTheNetwork`
-**Rule broken:** *tests must pin behaviour, not shape.*
-
-`1a55797df` made `setupFabric` prefer an on-disk launcher and pinned it with a test asserting only that the
-disk check appears *before* the network probe. The fix was half-complete — it `return 0`-ed past the closing
-`SERVER_RUN_COMMAND=` assignment, so packs launched `java … do_not_manually_edit` and died — and the ordering
-assertion stayed green the whole time. `e3296a7d2` fixed the fall-through and replaced the guard with one that
-**executes** the extracted function, verified to fail when the early return is reinstated. Recorded because
-"assert positions of substrings" is a test shape worth avoiding, not because the end state is wrong.
+Both are single-concern and both messages describe the behaviour change explicitly, so nothing is concealed
+from a reviewer — which is why this is MEDIUM, not HIGH: there is no independent refactor riding along to be
+confused with the behaviour change. `fix:` and `feat:` respectively would have been the honest labels.
 
 ---
 
 ## LOW
 
-### L1 — new `!!` in refactored code
-**Commit:** `defbded12` · **File:** `BootVerifier.kt:143`
+### L-C — `var` where every sibling is `val`, and nothing assigns it
+**Commit:** `7815d5960`
+**File:** `serverpackcreator-api/src/main/kotlin/.../settings/PathsConfig.kt:694`
+**Rule broken:** *Prefer `val` over `var`; immutable data by default.*
+
 ```kotlin
-return reconcileRecheck(outcome, second, first.loaderVersion, newest!!)
+var defaultVariablesTemplate: File = File(serverFilesDirectory, "variables.txt").absoluteFile   // :694
+val defaultShellScriptTemplate     = File(serverFilesDirectory, "default_template.sh")          // :586
+val defaultPowerShellScriptTemplate = File(serverFilesDirectory, "default_template.ps1")        // :603
 ```
-**Rule broken:** *No new `!!` in refactored code — handle nullability explicitly.*
-Provably safe (`shouldRecheckCrash` returns false when `newest == null`, and the early return above
-guarantees it) — but the guarantee lives in another function. `val newestVersion = newest ?: return outcome`
-would put it where the reader is. One occurrence in main sources; five in tests, where the convention is
-laxer.
 
-### L2 — twelve new class-scope `var`s in main sources
-**Rule broken:** *Prefer `val`; immutable data by default.*
-Most are legitimately mutable state (`GrinderStatus` counters, cursor and cache bookkeeping, `PathsConfig`'s
-recomputing getters). Flagged for a pass, not as defects — worth confirming none are `var` merely because it
-was convenient.
-
-### L3 — inconsistent placement of documentation
-Some behaviour commits carry their `CLAUDE.md` / `REFACTOR-LOG.md` updates (`aca721725`, `1783eb7c8`,
-`3c2bb2759`); others defer them to a following `docs:` commit (`0351f3c79`, `47df8086d`, `e2dd33ca3`,
-`85cc20b54`). Either is defensible; alternating makes the log harder to read and leaves `REFACTOR-LOG.md`
-occasionally describing a commit that is not yet in the branch.
+Verified across the whole tree: the only occurrence of `defaultVariablesTemplate =` is the declaration — no
+call-site assigns it. So this is newly *exported* mutable state that buys nothing, inconsistent with the three
+sibling template properties it was modelled on. The `ApiProperties` facade already exposes it correctly as
+`val` (`ApiProperties.kt:862`). One-word fix.
 
 ---
 
-## What the branch got right
+## Carried forward
 
-An audit listing only faults would misrepresent the work.
+Re-verified at this HEAD; not re-argued.
 
-- **Bugs were surfaced, never silently worked around.** Every mid-stream defect got an explicit record:
-  B8–B12 in `claude-docs/BACKLOG.md`, landmine sections in the clientside and grinder `CLAUDE.md`s, and a
-  correction paragraph in `REFACTOR-LOG.md` for each hypothesis that proved wrong — both the "missing
-  dependencies cause false HIGHs" theory and the NeoForge `21.1.247` theory were checked against the store
-  and retracted rather than quietly dropped.
-- **The revert (`d8b6cb157`) is textbook** — fast, total, honest about the premise.
-- **Guards were verified by breaking them.** The exit-status test, the killed/OOM guard, the Fabric
-  fall-through and the launch-failure guard were each confirmed to *fail* when the fix was reverted, rather
-  than merely observed passing.
-- **Extractions stayed behaviour-preserving** with existing suites green: `neoForgeVersionPatternFor`,
-  `forgeVersionFrom`, `refuseForMissingDependencies`, `BootWorkspaceReaper`.
-- **19 new mapping tests** now cover logic that previously had none, and the suite is green at HEAD across
-  all four modules.
-
----
-
-## One thing this audit could not settle
-
-`BootLogClassifier.classify` (`BootLogClassifier.kt:159-190`) is now **seven ordered guards** — ready-line →
-timeout → setup-abort → launch-failure → killed/OOM → client-only-class → dependency-failure → exit code —
-and its correctness rests entirely on that order. It accreted across four commits (`34b5cbb6e`, `aca721725`,
-`8ebb3bbcb`, and the original), each added in reaction to a live false positive. Every individual ordering
-constraint is tested, but **no test asserts the ordering as a whole**, and no single commit ever presented
-the finished decision table for review. It is the highest-risk unit on the branch and the one most deserving
-a hostile read by someone who did not write it.
-
----
-
-## Remediation — applied 2026-07-31 on Griefed's go-ahead
-
-| Finding | Status | Commit |
+| Finding | Severity | Status at this HEAD |
 |---|---|---|
-| **M1** checked-in test properties rewritten by the suite | **Fixed** — both files restored to `develop` content; all 37 call sites across 28 test files now read `build/resources/test/serverpackcreator.properties`, the copy `processTestResources` already produces, so writes land in build output. Proven by running all four suites and confirming no unstaged change to the source files. | `ef3280e4c` |
-| **L1** new `!!` in refactored code | **Fixed** — explicit `newest == null ||` in the same condition smart-casts it away; behaviour-preserving, existing assertions unchanged. No `!!` remains in `-clientside` main sources. | `60541158a` |
-| *Open item* — `classify`'s guard order untested as a whole | **Fixed** — each case pairs a higher-priority signal with a lower-priority one and asserts the higher wins, the only shape that makes a reorder fail. Verified by moving the client-class guard above the launch-failure guard: 2 tests fail. | `6ea977087` |
-| **H2** plugin-visible behaviour change unrecorded | **Documented** — the API compatibility policy in `CLAUDE.md` now states that source-compatible is not behaviour-compatible, and tables the two changes this branch made. | see below |
-| **L2** twelve new class-scope `var`s | **Reviewed, no change** — all are loop-local accumulators or deliberately mutable state (`GrinderStatus.pass` is `@Volatile`; the two `private var` lists in `CurseForgeCandidateSource` are lazily-populated caches). No `val` candidates. |  |
-| **H1** `aca721725` bundled a refactor with five behaviour changes | **Not remediable retroactively** — rewriting landed history would be worse than the finding. Its *consequence* was already closed by `8ebb3bbcb`. Process finding: split. |  |
-| **M2** `28a786b58` shipped untested | **Closed by follow-up** — characterization landed in `5703b0340`; 19 mapping tests now cover it. |  |
-| **M3** `test(...)` commits carrying extractions | **Historical** — labelling only; the extractions are behaviour-preserving and green. |  |
-| **M4** three oversized commits | **Historical** — process finding, nothing to change in the tree. |  |
-| **M5** `LoaderSupportMemory` on a false premise | **Already reverted** by `d8b6cb157`. |  |
-| **M6** guard test green while behaviour broken | **Already fixed** by `e3296a7d2`, which replaced the ordering assertion with one that executes the function. |  |
-| **L3** inconsistent doc placement | **Accepted** — both patterns are defensible; not worth churning history over. |  |
+| **H-A** `origin/develop` published with a failing `ConfigEditorViewModelTest` | HIGH | **STILL OPEN — the only action item that cannot be done locally.** Fix `34464832e` remains unpushed; the backlog behind it has grown from 81 to **102** commits. |
+| H1 `aca721725` bundled a refactor with five behaviour changes | HIGH | Open, not remediable — rewriting landed history would be worse. Consequence closed by `8ebb3bbcb`. |
+| H2 `dd4fcc935` changed home resolution for every embedder | HIGH | Documented in the compatibility table. **H-B is the same class and is *not* — that table is the remediation pattern.** |
+| M-A `2e16bf0c8` fix-then-pin on a template; third instance in two audits | MEDIUM | **Closed** by `b28d131ea` — pin-first for templates/manifests/version-parsing is now a binding rule in `CLAUDE.md`, carrying its evidence (24 wasted boots, 820 mis-attributed NeoForge versions). |
+| M1 checked-in test properties rewritten by the suite | MEDIUM | Fixed (`ef3280e4c`, `e7cce83fb`). Second half — the files still carry one machine's absolute paths — recorded as backlog **B16**. |
+| M2 `28a786b58` shipped untested | MEDIUM | Closed by `5703b0340`. |
+| M3 / M4 commit-shape findings | MEDIUM | Historical. |
+| M5 `LoaderSupportMemory` on a false premise | MEDIUM | Reverted (`d8b6cb157`). |
+| M6 guard test green while behaviour broken | MEDIUM | Fixed (`e3296a7d2`). |
+| L1 new `!!` in refactored code | LOW | Fixed (`60541158a`); **still none introduced** — verified across all 21 new commits. |
+| L2 / L3 / L-A / L-B | LOW | Reviewed, accepted, or historical. |
 
-**Suite after remediation:** api ✅ · clientside ✅ · grinder ✅ · app ✅
+---
 
-**Report complete.**
+## What the 21 new commits got right
+
+Recorded because it is the majority of the picture and the contrast with report 1 is the point.
+
+- **Not a blind refactor.** `7815d5960` moved an unpinned-looking literal, but `ServerPackHandlerTest.forgeTest`
+  already generated and asserted `variables.txt`, and the commit verified byte-identity — so the pre-existing
+  end-to-end pin stayed green across the move.
+- **A documented invariant was respected under pressure.** `91ac0e1a9` adds an installer-fallback that could
+  easily have redefined "newest"; instead it supplies `availableVersions` while `latestVersion` still delegates,
+  scoped to Forge/NeoForge only, with the reasoning recorded at the function.
+- **Clean Kotlin.** No new `!!`; the only new `var`s are loop-local deadline state in the suspend-gap fix
+  (legitimate) plus L-C. No `TODO`, `FIXME`, or `println` added anywhere in the segment.
+- **Correct separation where it counts.** `1c69fdc62` is test-only; the seven `docs:` commits are docs-only;
+  `aa2d27f7f` fixes a bug found *by* the previous commit's test rather than absorbing it.
+- **The audit's own process finding was closed** (`b28d131ea`, M-A) instead of being noted again.
+
+---
+
+## Recommended order of action
+
+1. **Push.** **H-A** is unchanged and now 102 commits deep. Every other finding in this report is either
+   historical, already closed, or documentation.
+2. **H-B — add the compatibility-table row** for `variables.txt` / `defaultVariablesTemplate`. Cheap, and it is
+   the project's own stated policy for exactly this kind of change.
+3. **L-C — `var` → `val`** at `PathsConfig.kt:694`. One word.
+4. **M-B is a boundary habit, not a correctness gap.** The pin-first rule now exists; what the eight commits
+   show is that "written first" and "committed first" drifted apart. If the failing-guard evidence matters
+   (and the two silently-passing teeth checks argue it does), the rule needs the commit boundary spelled out,
+   not just the ordering.
+5. **M-C — label behaviour changes `fix:`/`feat:`.** Both commits were honest in the body; only the type was wrong.
+
+---
+
+**Report only — no source modified. Awaiting go-ahead.**
