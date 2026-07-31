@@ -316,6 +316,91 @@ internal class BootLogClassifierTest {
         }
     }
 
+    /**
+     * Pins the guard order **as a whole**, which no other test in this file does.
+     *
+     * `classify` is seven ordered guards, and its correctness rests entirely on that order. They accreted one at a
+     * time, each in reaction to a live false positive, so every constraint is individually covered while the decision
+     * table as a unit never was — reordering two guards could leave every other test in this file green. Each case
+     * below puts a **higher-priority** signal in the same console as a **lower-priority** one and asserts the higher
+     * wins, which is the only way a swap shows up as a failure.
+     *
+     * The ladder, highest first: ready-line → timeout → setup-abort → launch-failure → killed/OOM →
+     * client-only-class → dependency-failure → exit code.
+     */
+    @Test
+    fun theGuardOrderIsPinnedAsAWhole() {
+        val ready = "[Server thread/INFO]: Done (4.2s)! For help, type \"help\""
+        val setupAbort = "Fabric is not available for Minecraft 26.2, Fabric 0.19.3."
+        val launchFailure = "Error: Unable to access jarfile forge.jar"
+        val outOfMemory = "java.lang.OutOfMemoryError: Java heap space"
+        val clientClass = "java.lang.NoClassDefFoundError: net/minecraft/client/Minecraft"
+        val dependency = "[main/ERROR] [ne.ne.fm.lo.ModSorter/]: Missing or unsupported mandatory dependencies:"
+
+        // The ready-line outranks every other signal, including a decisive-looking crash and a killed exit.
+        Assertions.assertEquals(
+            BootResult.SURVIVED,
+            BootLogClassifier.classify(listOf(ready, clientClass, dependency), exitCode = 137, timedOut = true),
+            "a server that reported ready survived, whatever followed"
+        )
+
+        // Everything that means "the mod never got a fair run" outranks the crash signal below it.
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(listOf(clientClass), exitCode = 1, timedOut = true),
+            "timeout outranks the client-class crash"
+        )
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(listOf(setupAbort, clientClass), exitCode = 1, timedOut = false),
+            "setup-abort outranks the client-class crash"
+        )
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(listOf(launchFailure, clientClass), exitCode = 1, timedOut = false),
+            "a JVM that never launched outranks the client-class crash"
+        )
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(listOf(outOfMemory, clientClass), exitCode = 1, timedOut = false),
+            "memory exhaustion outranks the client-class crash"
+        )
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(listOf(clientClass), exitCode = 137, timedOut = false),
+            "a killed exit outranks the client-class crash"
+        )
+
+        // The crash signal in turn outranks everything below it, including a loader that reports success.
+        Assertions.assertEquals(
+            BootResult.CRASHED,
+            BootLogClassifier.classify(listOf(dependency, clientClass), exitCode = 1, timedOut = false),
+            "the client-class crash outranks a dependency complaint"
+        )
+        Assertions.assertEquals(
+            BootResult.CRASHED,
+            BootLogClassifier.classify(listOf(clientClass), exitCode = 0, timedOut = false),
+            "the client-class crash outranks a zero exit"
+        )
+
+        // And the dependency guard outranks the bare exit code.
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(listOf(dependency), exitCode = 1, timedOut = false),
+            "a dependency complaint outranks a non-zero exit"
+        )
+
+        // The floor: nothing recognisable, decided by the exit status alone.
+        Assertions.assertEquals(
+            BootResult.CRASHED,
+            BootLogClassifier.classify(listOf("something unrecognised"), exitCode = 1, timedOut = false)
+        )
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(listOf("something unrecognised"), exitCode = 0, timedOut = false)
+        )
+    }
+
     /** A boot that reached the ready-line and was then killed stays SURVIVED — the ready-line still wins outright. */
     @Test
     fun aReadyServerKilledAfterwardsStillSurvived() {
