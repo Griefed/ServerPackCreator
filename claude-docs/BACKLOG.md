@@ -71,3 +71,50 @@ versions. It is no longer *dangerous* (these now classify INCONCLUSIVE via `laun
 promoted to a false clientside HIGH), which is why it is backlog and not an emergency, but it is the largest remaining
 waste and the biggest blind spot in the deliverable. Reproduce with a one-shot on any of the mods above and read
 `work/verify/boot/<slug>-Forge/boot.log`.
+
+### B9 — boot deadlines are wall-clock, so a host suspend writes off good boots
+`BootVerifier`'s `bootTimeout` (12 min in the grinder) is measured against wall-clock, not against time the boot was
+actually allowed to run. A host that suspends mid-boot therefore blows the deadline while the server is frozen, and the
+run is recorded INCONCLUSIVE even though it succeeded. Measured 2026-07-31: the dev box idle-slept in a repeating
+~16-minute cycle overnight, and **19 of 153 verdicts** came back `timed out` — including several reading
+`SURVIVED (timed out)`, whose console shows the server reaching `Done (6.572s)!` seconds after launch. The wake times
+in `pmset -g log` line up with the grinder's log gaps to the second.
+
+Mitigated operationally by launching under `caffeinate -ims` (assertions are held by a child of the grinder JVM, so
+they expire with it) — note `PreventSystemSleep` only binds on AC, and closing the lid sleeps regardless. Irrelevant on
+the ~80 GB production host, which does not suspend, which is why this is backlog rather than a fix. If it is ever worth
+closing properly: measure the deadline against a monotonic clock **and** detect a suspend (a jump between successive
+log-line timestamps far larger than the poll interval) so the boot can be re-run rather than scored, since a frozen JVM
+resumes into a world where its own timers already expired.
+
+## Existing TODO markers in the codebase (recorded 2026-07-31)
+
+Every `TODO` presently in SPC's sources, so they are tracked somewhere other than a grep. (A fourth apparent hit,
+`Translations_pt_BR.properties:636`, is a false positive — `TODO` is Portuguese for "all".)
+
+### B10 — `ServerPackProvisioner`'s `variables.txt` content is a Kotlin string literal
+`serverpackcreator-api/.../serverpack/ServerPackProvisioner.kt:53` — *"move to template file, just like the scripts."*
+The whole `variables.txt` body, comments and escaping guidance included, is a multi-line string constant in Kotlin, so
+changing operator-facing documentation means editing and recompiling the API. The start scripts already live in
+`src/main/resources/de/griefed/resources/server_files/` and are copied into SPC's home for users to adjust; this should
+follow the same route. **Worth knowing before touching it:** those templates are copied into the SPC home directory and
+are then read from *there*, not from the jar — a change to the shipped file does not reach an installation whose home
+already exists (see `serverpackcreator-grinder/CLAUDE.md`). Any move must decide what happens to an existing
+`variables.txt` on upgrade.
+
+### B11 — `installCorepackLatest` is a workaround for an upstream Corepack bug
+`buildSrc/.../serverpackcreator.quasar-conventions.gradle.kts:31` — *"Remove once the error, which caused this task to
+exist in the first place, is fixed in NodeJS/Corepack."* Tracks
+[nodejs/corepack#612](https://github.com/nodejs/corepack/issues/612#issuecomment-2631491212). The task globally
+installs `corepack@latest` before `installQuasar`, adding a network round-trip to every frontend build. Re-check the
+upstream issue periodically; when fixed, drop the task and the `dependsOn`.
+
+### B12 — `ForgeLoader.forgeVersionFrom` has no length guard
+`serverpackcreator-api/.../versionmeta/forge/ForgeLoader.kt:147`. Low priority and **not** the obvious fix — see the
+TODO itself. Measured against the real manifest, all 5025 entries across 77 Minecraft keys carry their own key as a
+prefix, so the only unhandled shape is an entry equal to its key with nothing after it, which throws
+`StringIndexOutOfBoundsException`; `update()` catches only `MalformedURLException` and `NoSuchElementException`, so it
+would abort the whole Forge load rather than cost one version. A length check closes it. Do **not** use
+`startsWith("$minecraftVersion-")`: entries carry the raw manifest key while the Minecraft version may be reconciled
+(`1.7.10_pre4` → `1.7.10-pre4`), so that guard would reject a legitimate entry. Behaviour is pinned by
+`ForgeVersionMappingTest`, which must be updated alongside any fix.
