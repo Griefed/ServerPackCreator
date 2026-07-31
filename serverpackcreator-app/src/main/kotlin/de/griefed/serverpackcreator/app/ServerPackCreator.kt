@@ -352,6 +352,12 @@ class ServerPackCreator(private val args: Array<String>) {
                         } else if (check(file, apiWrapper.apiProperties.defaultJavaPowerShellScriptTemplate)) {
                             apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultJavaPowerShellScriptTemplate)
                             log.info("Restored default_Java_template.ps1.")
+                        } else if (check(file, apiWrapper.apiProperties.defaultVariablesTemplate)) {
+                            // Generation reads this template, so a deleted one would otherwise fall back to the copy in
+                            // the jar silently — restoring it keeps what the operator edits and what generation uses the
+                            // same file.
+                            apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultVariablesTemplate)
+                            log.info("Restored variables.txt.")
                         }
                     }
                 }

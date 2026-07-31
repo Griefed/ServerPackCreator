@@ -685,6 +685,20 @@ class PathsConfig(
         private set
 
     /**
+     * The `variables.txt` template shipped with SPC, in the `server_files`-directory inside its home-directory.
+     *
+     * Generation reads this file and substitutes its `SPC_..._SPC` placeholders per server pack, so the text an
+     * operator sees — the comments explaining every setting — is editable without rebuilding the API. It sits
+     * alongside the start-script templates because it is the same kind of thing: shipped content the user may adjust.
+     */
+    var defaultVariablesTemplate: File = File(serverFilesDirectory, "variables.txt").absoluteFile
+        get() {
+            field = File(serverFilesDirectory, "variables.txt").absoluteFile
+            return field
+        }
+        private set
+
+    /**
      * Directory in which plugins for ServerPackCreator are to be placed in.
      *
      * This directory not only holds any potential plugins for ServerPackCreator, but also contains the
