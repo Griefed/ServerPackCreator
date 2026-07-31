@@ -50,6 +50,13 @@
   required-Java from `MinecraftMeta.requiredJavaVersion` (Mojang's own declaration), and
   `LoaderVersionResolver` delegates to the manifests. Derive from metadata or compare all components; never
   hand-roll an era heuristic.
+- **LANDMINE — `-Djava.security.manager=allow` is fatal from Java 24 on.** JEP 486 removed Security Manager
+  support, so the VM *refuses to start* rather than ignoring the flag. `PackConfig.spcSSJArgsKeyDefaultValue`
+  still defaults `SSJ_FORGE_ARGS` to it, because Forge's ServerStarterJar needs it on older Java — the
+  templates therefore pass it **only below Java 24**. Minecraft 26.x requires Java 25, so before that guard
+  every modern Forge pack died before Forge loaded; NeoForge/Fabric/Quilt never pass the flag, which is why
+  only Forge was affected. Pinned by `ScriptTemplateContentTest`. Do not "simplify" by dropping the default —
+  old packs still need it — and do not pass it unconditionally.
 - **`PackConfig.modloader` setter silently ignores unrecognized values**; unknown loaders default
   to **Forge**. Most-specific loader names must be matched first (LegacyFabric before Fabric, etc.).
 - **`PackConfig.save(destination, apiProperties)`** is the primary (injection-required) overload;

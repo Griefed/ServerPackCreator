@@ -952,3 +952,21 @@ compares component-wise (and correctly ranks `26.2` above `1.21.1`, which is pre
 broken branch), `ImageJavaRuntimes` sources required-Java from `MinecraftMeta.requiredJavaVersion`, and
 `LoaderVersionResolver` delegates to the manifests. The rule is recorded as a landmine in
 `serverpackcreator-api/CLAUDE.md` so the next scheme change has one place to check.
+
+**The era fix uncovered the actual blocker.** With Forge finally reaching its ServerStarterJar path, the boot
+failed differently: `-Djava.security.manager=allow` — SPC's default `SSJ_FORGE_ARGS` — makes a Java 24+ VM refuse
+to start outright (JEP 486 removed Security Manager support). Minecraft 26.x requires Java 25, so **every modern
+Forge pack SPC generates died before Forge loaded**, and this is user-facing rather than grinder-specific. NeoForge,
+Fabric and Quilt never pass the flag, which is exactly why only Forge was ever affected. All three templates now
+pass it only below Java 24, guarded against the non-numeric `JAVA_VERSION` that `SKIP_JAVA_CHECK` leaves behind; the
+default is unchanged because older Java still needs it.
+
+**A second consequence worth knowing: the pre-bake cache had to be invalidated by hand.** The install boot runs the
+same templates, so the cached Forge layers for 26.x had been produced by the legacy branch — no `server.jar`, and a
+success marker that made `ensureInstalled` serve them anyway. Deleting the two affected tuples let them reinstall
+correctly. **A template change that alters what an install produces requires invalidating the affected cache
+tuples**, because the marker records success without recording which template produced it.
+
+Verified end-to-end: `balm` on Minecraft 26.1.2 now reports `Fabric=LOW(boot:SURVIVED), Forge=LOW(boot:SURVIVED),
+NeoForge=LOW(boot:SURVIVED)` — the first successful Forge boot on current Minecraft — with `server.jar` and
+`libraries` present in the reinstalled cache entry.
