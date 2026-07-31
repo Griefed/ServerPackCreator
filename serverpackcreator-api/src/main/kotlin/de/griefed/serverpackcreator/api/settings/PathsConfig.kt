@@ -103,13 +103,20 @@ class PathsConfig(
      */
     var homeDirectory: File = home.absoluteFile
         get() {
-            val systemPropertyHome = System.getProperty(HOME_DIRECTORY_KEY)?.takeIf { it.isNotBlank() }
-            val setting = if (systemPropertyHome != null) {
-                // An explicit `-D` wins outright. This is what lets a host that must not touch the shared state --
-                // above all a test JVM, whose working directory is the module's own source tree -- pin its home,
-                // because `ApiWrapper.setup()` *writes* into the home directory (README, CHANGELOG, server_files).
-                systemPropertyHome
-            } else if (getPreference(HOME_DIRECTORY_KEY).isPresent) {
+            // An explicit `-D` wins outright, and is deliberately **not persisted**. It is what lets a host that must
+            // not touch shared state pin its home -- above all a test JVM, whose working directory is the module's own
+            // source tree, because `ApiWrapper.setup()` *writes* into the home directory (README, CHANGELOG,
+            // server_files). Writing it into the preference as well would let a one-off override quietly replace the
+            // user's durable setting, and every later read (including from another process) would inherit it.
+            System.getProperty(HOME_DIRECTORY_KEY)?.takeIf { it.isNotBlank() }?.let { overridden ->
+                field = File(overridden).absoluteFile
+                if (!field.isDirectory) {
+                    field.create(createFileOrDir = true, asDirectory = true)
+                }
+                return field
+            }
+
+            val setting = if (getPreference(HOME_DIRECTORY_KEY).isPresent) {
                 getPreference(HOME_DIRECTORY_KEY).get()
             } else if (store.properties.containsKey(HOME_DIRECTORY_KEY) && store.properties.getProperty(HOME_DIRECTORY_KEY).isNotBlank()) {
                 store.properties.getProperty(HOME_DIRECTORY_KEY)

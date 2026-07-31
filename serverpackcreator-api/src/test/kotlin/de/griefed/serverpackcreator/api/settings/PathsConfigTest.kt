@@ -254,6 +254,34 @@ internal class PathsConfigTest {
         )
     }
 
+    /**
+     * The `-D` override must **not** be written into the stored preference.
+     *
+     * The getter persists whatever it resolves, so without this an override — which is by nature temporary, and which
+     * the build sets for every test JVM — would quietly replace the user's durable home directory, and every later
+     * read, including from another process sharing the node, would inherit it. Found when the app's `--home` test
+     * started failing: `CommandlineParser` stored a home, and the next `ApiProperties` read overwrote it with the
+     * build's override.
+     */
+    @Test
+    fun aSystemPropertyOverrideIsNotPersistedIntoThePreference(@TempDir tempDir: File) {
+        val storedHome = File(tempDir, "storedByTheUser").apply { mkdirs() }
+        val overriddenHome = File(tempDir, "temporaryOverride")
+        scratchPreferences.put(PathsConfig.HOME_DIRECTORY_KEY, storedHome.absolutePath)
+        System.setProperty(PathsConfig.HOME_DIRECTORY_KEY, overriddenHome.absolutePath)
+
+        Assertions.assertEquals(overriddenHome.absoluteFile, pathsConfig().homeDirectory, "the override must be used")
+        Assertions.assertEquals(
+            storedHome.absolutePath,
+            scratchPreferences.get(PathsConfig.HOME_DIRECTORY_KEY, null),
+            "the durable preference must still hold what the user set, not the override"
+        )
+
+        // And with the override gone, the stored preference is what resolves again.
+        System.clearProperty(PathsConfig.HOME_DIRECTORY_KEY)
+        Assertions.assertEquals(storedHome.absoluteFile, pathsConfig().homeDirectory)
+    }
+
     /** A blank override is a misconfiguration and must not be taken for "use the filesystem root". */
     @Test
     fun aBlankSystemPropertyIsIgnored() {
