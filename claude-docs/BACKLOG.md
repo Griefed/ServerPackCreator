@@ -121,3 +121,26 @@ and all three loaders became valid. A silent N/A on the newest Minecraft version
 the run still reports green while skipping exactly the new-scheme branch the templates were fixed for. At minimum the IT
 should distinguish "loader genuinely has no build" from "this Minecraft version's Java requirement is unknown" and be
 loud about the second; the swallow in `javaVersion()` should also not hide a failed download.
+
+### B21 — eight template paths are captured at construction and do not follow a changed home directory
+Found while withdrawing audit finding L-C (2026-07-31). `PathsConfig` resolves 31 of its properties through a
+re-deriving getter (`var x = …; get() { field = …; return field }; private set`) precisely so they track a home
+directory that changes at runtime — `serverFilesDirectory` (`:573-578`) does this on top of `homeDirectory`,
+which **this branch made re-resolve on every access**.
+
+The eight script-template properties do not (`PathsConfig.kt:586`, `:594`, `:603`, `:611`, `:619`, `:627`,
+`:635`, `:643`):
+
+```kotlin
+val defaultShellScriptTemplate = File(serverFilesDirectory, "default_template.sh")   // evaluated once
+```
+
+They are plain `val`s evaluated at construction, so after a home change (`--home`, the `-D` override, or the
+GUI's settings panel) they still point into the **old** home while everything around them has moved. These feed
+`defaultStartScriptTemplates()` / `defaultJavaScriptTemplates()`, so the consequence is generation reading
+templates from a directory the user has left behind — silent, and it looks like "my template edits do nothing".
+
+Not fixed with the audit finding because it predates this range, spans eight properties, and needs its own pin:
+a test that changes the home mid-instance and asserts the template paths follow. The fix is either the
+re-deriving getter the other 31 use, or a computed `val … get() =`, which is the cleaner Kotlin and behaviour-
+identical (the field write in that pattern is dead — the getter recomputes unconditionally).

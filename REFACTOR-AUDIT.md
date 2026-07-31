@@ -18,7 +18,7 @@
 | `8be2913f8..bc2bfe7fa` — the merged branch | 44 | Audited in report 1 |
 | `bc2bfe7fa..HEAD` — the 2026-07-31 plan, Phases 1–6 | **21** | **Audited here for the first time** |
 
-**New findings: 1 HIGH · 2 MEDIUM · 1 LOW.** The 21 new commits are the best-disciplined segment in the range
+**New findings: 1 HIGH · 2 MEDIUM · 0 LOW** (L-C withdrawn on inspection — see below). The 21 new commits are the best-disciplined segment in the range
 — small, single-purpose, no new `!!`, no stray debug, no cross-module sprawl except where noted. Every finding
 below is about *labelling and recording* a change, not about a change being wrong: nothing here is a defect in
 shipped behaviour, and one is fixed by adding a table row.
@@ -105,21 +105,32 @@ confused with the behaviour change. `fix:` and `feat:` respectively would have b
 
 ## LOW
 
-### L-C — `var` where every sibling is `val`, and nothing assigns it
+### L-C — ~~`var` where every sibling is `val`, and nothing assigns it~~ **WITHDRAWN — the finding was wrong**
 **Commit:** `7815d5960`
-**File:** `serverpackcreator-api/src/main/kotlin/.../settings/PathsConfig.kt:694`
-**Rule broken:** *Prefer `val` over `var`; immutable data by default.*
+**File:** `serverpackcreator-api/src/main/kotlin/.../settings/PathsConfig.kt:694-699`
+
+Retracted on inspection before the change was made. The declaration continues past the line the audit quoted:
 
 ```kotlin
 var defaultVariablesTemplate: File = File(serverFilesDirectory, "variables.txt").absoluteFile   // :694
-val defaultShellScriptTemplate     = File(serverFilesDirectory, "default_template.sh")          // :586
-val defaultPowerShellScriptTemplate = File(serverFilesDirectory, "default_template.ps1")        // :603
+    get() {
+        field = File(serverFilesDirectory, "variables.txt").absoluteFile                        // re-derives
+        return field
+    }
+    private set                                                                                 // :699
 ```
 
-Verified across the whole tree: the only occurrence of `defaultVariablesTemplate =` is the declaration — no
-call-site assigns it. So this is newly *exported* mutable state that buys nothing, inconsistent with the three
-sibling template properties it was modelled on. The `ApiProperties` facade already exposes it correctly as
-`val` (`ApiProperties.kt:862`). One-word fix.
+Two things the original finding missed. The setter is **`private`**, so this is not exported mutable state and
+`val` would not narrow the public surface. And the `var` is **load-bearing**: the getter assigns the backing
+field so the path re-derives on every access, which is how it tracks a home directory that changed — and
+`serverFilesDirectory` (`:573-578`) does exactly the same on top of `homeDirectory`, which this very branch
+made re-resolve per access. **31** properties in this file use that pattern; `defaultVariablesTemplate`
+follows it correctly.
+
+The two plain `val`s the audit held up as the standard (`:586`, `:603`) are the exception, not the rule — and
+they are the ones with the latent problem: captured once at construction, they do **not** follow a home that
+changes afterwards. Recorded as backlog **B21** rather than fixed here, since it predates this range and needs
+its own pin.
 
 ---
 
@@ -167,12 +178,11 @@ Recorded because it is the majority of the picture and the contrast with report 
    historical, already closed, or documentation.
 2. **H-B — add the compatibility-table row** for `variables.txt` / `defaultVariablesTemplate`. Cheap, and it is
    the project's own stated policy for exactly this kind of change.
-3. **L-C — `var` → `val`** at `PathsConfig.kt:694`. One word.
-4. **M-B is a boundary habit, not a correctness gap.** The pin-first rule now exists; what the eight commits
+3. **M-B is a boundary habit, not a correctness gap.** The pin-first rule now exists; what the eight commits
    show is that "written first" and "committed first" drifted apart. If the failing-guard evidence matters
    (and the two silently-passing teeth checks argue it does), the rule needs the commit boundary spelled out,
    not just the ordering.
-5. **M-C — label behaviour changes `fix:`/`feat:`.** Both commits were honest in the body; only the type was wrong.
+4. **M-C — label behaviour changes `fix:`/`feat:`.** Both commits were honest in the body; only the type was wrong.
 
 ---
 
