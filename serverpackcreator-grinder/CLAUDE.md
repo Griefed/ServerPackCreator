@@ -316,8 +316,13 @@ Remaining:
    (Forge/1.20.6 and NeoForge/26.2, both booting offline). The module's oldest open item is closed. What is
    *still* unproven is a **full sweep**: weeks of wall-clock and a large slice of an API key's quota, so nobody
    has watched the crawl walk all 135 versions to the end.
-2. **Store dedup is slug+platform, not project-identity** — good enough today; a mod that changes slug on a
-   platform would be re-ground as a new project.
+2. **Store dedup is project-identity — DONE 2026-07-31.** `GrindCandidate`/`GrindVerdict` carry the platform's
+   immutable `projectId` (Modrinth `project_id`, CurseForge numeric `id`), and `verdictKey` uses it in place of the
+   slug when present, so a renamed project replaces its own verdict and still counts as ground. The id is
+   **nullable** and dedup falls back to the slug, because ~870 verdicts predate it — and recording an identified
+   verdict *supersedes* the id-less row for that slug, so a live store converges as projects are re-ground with no
+   schema step. Pinned by `ProjectIdentityDedupTest`, including the legacy fallback. Both stores derive the key from
+   the shared `identityKey()` so they cannot drift.
 3. **The API key lives in the macOS Keychain on Griefed's machine** (`security find-generic-password -w -s
    spc-curseforge-key`), deliberately not in a file or in any transcript. The grinder itself only reads
    `CURSEFORGE_API_KEY` from the environment — there is no dotenv support anywhere in the build — so pass it in

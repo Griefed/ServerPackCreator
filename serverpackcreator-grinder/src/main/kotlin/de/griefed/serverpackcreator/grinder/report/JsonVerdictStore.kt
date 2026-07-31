@@ -58,7 +58,10 @@ class JsonVerdictStore(private val file: File) : VerdictStore {
 
     @Synchronized
     override fun record(verdict: GrindVerdict) {
-        verdicts[verdictKey(verdict.platform, verdict.slug, verdict.loader)] = verdict
+        // Drop the id-less row for this project first, so an identified verdict replaces it rather than
+        // sitting beside it. Without this a project ground before ids existed would hold two rows for good.
+        supersededLegacyKey(verdict)?.let { verdicts.remove(it) }
+        verdicts[verdict.identityKey()] = verdict
         persist()
     }
 
@@ -71,7 +74,7 @@ class JsonVerdictStore(private val file: File) : VerdictStore {
             return
         }
         runCatching { mapper.readValue<List<GrindVerdict>>(file) }
-            .onSuccess { stored -> stored.forEach { verdicts[verdictKey(it.platform, it.slug, it.loader)] = it } }
+            .onSuccess { stored -> stored.forEach { verdicts[it.identityKey()] = it } }
             .onFailure { log.warn("Could not read verdict store ${file.absolutePath}; starting empty: ${it.message}") }
     }
 

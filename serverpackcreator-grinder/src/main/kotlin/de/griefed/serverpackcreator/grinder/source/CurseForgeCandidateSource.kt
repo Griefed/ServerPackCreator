@@ -358,7 +358,9 @@ class CurseForgeCandidateSource(
             projectUrl = website ?: "https://www.curseforge.com/minecraft/mc-mods/$slug",
             slug = slug,
             popularity = node.path("downloadCount").asLong(0),
-            platform = platform
+            platform = platform,
+            // CurseForge's numeric project id, stringified. The slug is a display name and does change.
+            projectId = node.path("id").takeIf { it.isNumber }?.asLong()?.toString()
         )
     }
 

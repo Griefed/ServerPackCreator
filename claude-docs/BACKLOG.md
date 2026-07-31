@@ -9,10 +9,6 @@ When an item lands, delete it here and record it in `REFACTOR-LOG.md`.
 These were ranked below sweep-output quality: none of them change what the grinder produces, which is why they
 waited. Griefed asked for them to be recorded and tackled afterwards.
 
-### B5 — Verdict store dedup is `slug` + `platform`, not project identity
-A project that changes its slug on a platform is re-ground as a new project and its old verdicts linger. Fine today;
-would want a stable project id if the store is ever published as a long-lived dataset.
-
 ## Existing TODO markers in the codebase (recorded 2026-07-31)
 
 Every `TODO` presently in SPC's sources, so they are tracked somewhere other than a grep. (A fourth apparent hit,
