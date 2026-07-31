@@ -11,7 +11,7 @@ repositories {
 frontend {
     packageJsonDirectory.set(project.layout.projectDirectory.asFile)
 
-    nodeVersion.set("20.18.3")
+    nodeVersion.set("24.18.1")
     nodeInstallDirectory.set(project.layout.projectDirectory.dir("node"))
 
     assembleScript.set("run build")
@@ -23,7 +23,7 @@ frontend {
 }
 
 tasks.register("installQuasar", RunNpmTaskType::class) {
-    dependsOn("installCorepackLatest")
+    //dependsOn("installCorepackLatest")
     args.set("install -g @quasar/cli")
 }
 
