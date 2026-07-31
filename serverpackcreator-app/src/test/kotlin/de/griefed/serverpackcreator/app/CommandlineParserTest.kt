@@ -189,26 +189,28 @@ internal class CommandlineParserTest {
     }
 
     /**
-     * Pins the --home side-effect: a valid home-directory is stored both on the parser and in
-     * the ServerPackCreator-preferences node. The preference is saved and restored so the
-     * developer-machine's real home-directory setting is left untouched.
+     * Pins the --home side-effect: a valid home-directory is stored both on the parser and in the `Preferences` node
+     * that `-api` will read it back from.
+     *
+     * Read through `HomeDirectoryPreference` rather than a hard-coded node name, because which node holds the home is
+     * resolved (`ApiProperties.resolvePreferencesNode`) — a host claiming its own node, as the grinder and every test
+     * JVM do, must see its own value. Asserting against the literal `ServerPackCreator` node would pass only when the
+     * default happened to be in play, and would read a stale value otherwise. The preference is saved and restored so
+     * the developer machine's real setting is left untouched.
      */
     @Test
     fun homeArgumentStoresHomeDirectoryPreference(@TempDir tempDir: File) {
-        val preferences = Preferences.userRoot().node("ServerPackCreator")
-        val homeKey = "de.griefed.serverpackcreator.home"
-        val previous = preferences.get(homeKey, null)
+        val previous = HomeDirectoryPreference.stored()
         try {
             val parser = parse("--home", tempDir.absolutePath, "-cli")
             Assertions.assertEquals(tempDir.absoluteFile, parser.homeDir.get())
-            Assertions.assertEquals(tempDir.absolutePath, preferences.get(homeKey, null))
+            Assertions.assertEquals(
+                tempDir.absolutePath,
+                HomeDirectoryPreference.stored(),
+                "--home must land in the node -api resolves, not in whichever node was hard-coded"
+            )
         } finally {
-            if (previous == null) {
-                preferences.remove(homeKey)
-            } else {
-                preferences.put(homeKey, previous)
-            }
-            preferences.sync()
+            previous?.let { HomeDirectoryPreference.store(it) }
         }
     }
 }

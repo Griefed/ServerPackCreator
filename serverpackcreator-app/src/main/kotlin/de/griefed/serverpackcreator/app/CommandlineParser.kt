@@ -25,7 +25,6 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.GraphicsEnvironment
 import java.io.File
 import java.util.*
-import java.util.prefs.Preferences
 
 /**
  * The Commandline Parser checks the passed commandline arguments to determine the mode to run in.
@@ -95,7 +94,7 @@ open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
                 homeDir = Optional.of(setupFile)
             }
             if (homeDir.isPresent) {
-                Preferences.userRoot().node("ServerPackCreator").put("de.griefed.serverpackcreator.home",homeDir.get().absolutePath)
+                HomeDirectoryPreference.store(homeDir.get().absolutePath)
                 log.info("Home-directory overwritten: ${homeDir.get().absolutePath}")
             }
         }

@@ -42,7 +42,6 @@ import java.awt.GraphicsEnvironment
 import java.io.File
 import java.util.*
 import java.util.concurrent.Executors
-import java.util.prefs.Preferences
 import javax.swing.JFileChooser
 import javax.swing.JOptionPane
 import kotlin.jvm.optionals.getOrNull
@@ -68,9 +67,7 @@ class ServerPackCreator(private val args: Array<String>) {
     val commandlineParser: CommandlineParser = CommandlineParser(args, appInfo)
 
     init {
-        val prefs = Optional.ofNullable(
-            Preferences.userRoot().node("ServerPackCreator").get("de.griefed.serverpackcreator.home", null)
-        )
+        val prefs = Optional.ofNullable(HomeDirectoryPreference.stored())
         if (commandlineParser.mode == Mode.GUI && prefs.isEmpty && commandlineParser.homeDir.isEmpty) {
 
             FlatJetBrainsMonoFont.install()
@@ -96,10 +93,7 @@ class ServerPackCreator(private val args: Array<String>) {
                 chooser.dialogTitle = "Pick a home-directory for ServerPackCreator"
                 val result = chooser.showOpenDialog(null)
                 if (result == JFileChooser.APPROVE_OPTION) {
-                    Preferences.userRoot().node("ServerPackCreator").put(
-                        "de.griefed.serverpackcreator.home",
-                        chooser.selectedFile.absolutePath
-                    )
+                    HomeDirectoryPreference.store(chooser.selectedFile.absolutePath)
                 }
             }
         }

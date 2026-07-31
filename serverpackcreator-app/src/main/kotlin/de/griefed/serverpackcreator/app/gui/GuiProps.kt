@@ -501,6 +501,14 @@ class GuiProps(private val apiProperties: ApiProperties) {
             storeGuiProperty(allowManualEditingProp,field.toString())
         }
 
+    /**
+     * GUI state (window geometry, layout, last-used paths) lives on the **default** node on purpose, and deliberately
+     * does *not* go through `ApiProperties.resolvePreferencesNode` the way the home directory does
+     * (`HomeDirectoryPreference`). What a user sees belongs to the installation in front of them, not to whichever
+     * process resolved a home directory — and routing it through the resolver would reset every existing user's saved
+     * layout the first time a custom node was in play. Decided 2026-07-31; do not "align" this with the resolver
+     * without a migration for the keys already stored here.
+     */
     private val spcPreferences = Preferences.userRoot().node("ServerPackCreator")
 
     /**
