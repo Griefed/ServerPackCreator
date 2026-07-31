@@ -1,193 +1,187 @@
-# Refactor Audit — unpushed `develop` (`origin/develop..HEAD`)
+# Refactor Audit — `claude-audit-backlog-cleanup` (`develop..HEAD`)
 
-**Range audited:** `origin/develop..HEAD` — **102 commits**
-**Base:** `origin/develop` (local `develop` is 0 behind it, 102 ahead)
-**Head:** `a09138a9b`
+**Range audited:** `develop..HEAD` — **22 commits**, `fce7e610a` … `2d9dfe62d`
+**Base:** `develop` — verified ancestor, clean linear range
 **Mode:** READ-ONLY. No source modified.
-**Suite at HEAD:** api ✅ · clientside ✅ · grinder ✅ · app ✅ · frontend ✅ (31)
-— verified after `b28d131ea`; the only commit since (`a09138a9b`) touches `claude-docs/BACKLOG.md` alone.
+**Suite at HEAD:** api 272 (1 skip) · clientside 87 · grinder 224 (19 skip) · app 76 — all green on `--rerun-tasks`
 
-> Third report at this path. Supersedes the 81-commit version (1 HIGH / 1 MEDIUM / 2 LOW), whose findings are
-> **carried forward with updated status** rather than re-argued.
+> Fourth report at this path. Supersedes the 102-commit audit of unpushed `develop` (1 HIGH / 2 MEDIUM / 0 LOW,
+> L-C withdrawn), whose text is in git at `f1368b30d`. Its findings are resolved or carried forward below.
+>
+> **This audit's subject is the work that closed the previous audit's findings** — so it is deliberately harder on
+> itself than on inherited history. Two of the four MEDIUMs below are about rules written *on this branch*.
 
-**Range composition** — audit effort was directed at the segment never examined before:
+**Findings: 0 HIGH · 4 MEDIUM · 3 LOW.**
 
-| Segment | Commits | Status |
-|---|---|---|
-| `origin/develop..8be2913f8` — earlier sessions | 37 | Audited in report 2 |
-| `8be2913f8..bc2bfe7fa` — the merged branch | 44 | Audited in report 1 |
-| `bc2bfe7fa..HEAD` — the 2026-07-31 plan, Phases 1–6 | **21** | **Audited here for the first time** |
+**Status 2026-07-31 — remediated on this branch.** M-2 (`bb6115ade`), M-3 (`c8a8f7e66`), M-4 (`4767786c9`), L-1 and
+L-3 (`8693ff3c6`) are **closed**; M-1 and L-2 are historical and not remediable without rewriting
+landed history. Fixing M-3 additionally uncovered a live bug — three build scripts were rewriting the **shared**
+`ServerPackCreator` Preferences node, relocating the developer's own GUI home into the repository on every `test` or
+`clean` — fixed in `4f53aa889`, which also answers the open question `grinder/CLAUDE.md` had recorded and explains
+B20's disappearing metadata (recorded as B24).
 
-**New findings: 1 HIGH · 2 MEDIUM · 0 LOW** (L-C withdrawn on inspection — see below). The 21 new commits are the best-disciplined segment in the range
-— small, single-purpose, no new `!!`, no stray debug, no cross-module sprawl except where noted. Every finding
-below is about *labelling and recording* a change, not about a change being wrong: nothing here is a defect in
-shipped behaviour, and one is fixed by adding a table row.
-
----
-
-## HIGH
-
-### H-B — `7815d5960` changes what an exported API call returns, and it is not in the compatibility table
-**Commit:** `7815d5960` *"refactor(api): ship variables.txt as a template instead of a string literal"*
-**Files:** `serverpackcreator-api/src/main/kotlin/.../serverpack/ServerPackProvisioner.kt:56-63` (+27/−94),
-`settings/PathsConfig.kt:694`, `ApiProperties.kt:862`, new resource `server_files/variables.txt` (+91)
-**Rule broken:** *Changed plugin-API contract* (rubric HIGH), against the project's own policy:
-*"Source-compatible is not the same as behaviour-compatible… a change that keeps every signature but alters
-what an exported call returns is still a contract change for embedders, and belongs in the release notes."*
-(`CLAUDE.md:88-90`)
-**Severity:** HIGH — same class as the previous audit's **H2**, which was resolved by documenting it.
-
-`ServerPackProvisioner.variables` is reachable from plugins and embedders as
-`apiWrapper.serverPackHandler.variables`. Before this commit it returned a compiled-in constant; now it reads
-`apiProperties.defaultVariablesTemplate` from disk, falling back to the bundled copy. Two new exported members
-land with it (`PathsConfig.defaultVariablesTemplate`, `ApiProperties.defaultVariablesTemplate`).
-
-For a default installation the value is unchanged — the commit states the extracted resource is byte-identical
-to the literal, and `ServerPackHandlerTest.forgeTest` (which already generated and asserted `variables.txt`
-before the move) stayed green. But the observable contract is now different in kind: an operator who edits or
-deletes that file changes what every embedder's generation emits, which was previously impossible.
-
-`CLAUDE.md:93-94` tables exactly two such changes (`PathsConfig.homeDirectory`, `resolvePreferencesNode`).
-This one is absent, so the policy that was written *for this situation* was not applied to it.
-
-**Remediation:** **DONE** (`70cfe7fd9`) — the compatibility table now carries the row, naming both new members and
-the "generation reflects an on-disk file" effect. No code change was needed; the behaviour is wanted.
+The structural discipline held. Every one of the six code changes landed as a **red `test(...)` commit followed by
+its fix** — the M-B rule this branch introduced, applied to itself: `203a32534`→`f6c23e972`,
+`b00ba1ea8`→`bee9e3187`, `3fe798fd7`→`b6b778b82`→`b6ed10227`, `4c941c7a5`→`32bfc2ae3`,
+`9a797824a`→`5aa12dbfc`, `cd07859bb`→`2a2a2df10`. Each red state is recorded in its commit message with the actual
+failure text. No new `!!`, no stray debug, no module-boundary violation, and **no HIGH** — every `refactor:` label
+was checked against its diff rather than taken on trust.
 
 ---
 
 ## MEDIUM
 
-### M-B — every code commit in the plan bundles its test with the production change
-**Commits:** `2a9a03473`, `30f6cbded`, `c571e2d7f`, `07a647f01`, `aa2d27f7f`, `91ac0e1a9`, `1f92f585c`,
-`5caa6833f` — **8 of 8** code commits in the segment
-**Rule broken:** *One concern per commit. Keep "add tests", "refactor (no behavior change)" and "change
-behavior" in separate commits.*
+### M-1 — `bee9e3187` bundles three concerns across two modules
+**Commit:** `bee9e3187` *"fix(grinder,api): tell a metadata gap apart from an unsupported Minecraft version"*
+**Files:** `grinder/loader/ImageJavaRuntimes.kt` (new enum + `supportFor`), `api/.../MinecraftServer.kt` (logging),
+`grinder/.../ScriptTemplateMatrixIT.kt` (consumer change **and** a default-dimension change)
+**Rule broken:** *One concern per commit.*
 
-Each commit contains the change and its guard together. `2a9a03473` is representative: three template files
-(+17/−4) plus `ScriptTemplateContentTest.kt` (+76/−0) in one commit. The approved plan was explicit for this
-phase — *"Test first (fails). … **Commit alone, test only.**"* — and that boundary was not kept in any of the eight.
+Three separable changes in one commit:
 
-Two mitigations, stated because they change what this finding means:
+| Concern | Where | Could have shipped alone? |
+|---|---|---|
+| Tri-state support API + its consumer | `ImageJavaRuntimes.kt`, `ScriptTemplateMatrixIT.kt:173-198` | yes — this is what the red pin covered |
+| Logging the swallowed metadata failure | `MinecraftServer.kt:79`, `:116` (`-api`) | yes — different module, different defect, no test |
+| `26.2` added to the IT's default Minecraft axis | `ScriptTemplateMatrixIT.kt:77` | yes — pure test-scope coverage change |
 
-- The tests **were** written first and observed failing in-session; only the commit boundary collapsed. This is
-  not the fix-then-pin pattern of M-A/M2, where no test existed at fix time.
-- `b28d131ea` then wrote the pin-first rule into `CLAUDE.md` — so the segment codified the discipline it was
-  simultaneously not following at the commit level.
+The third is the clearest: putting a new Minecraft version into the default axis is a coverage decision with nothing
+to do with the tri-state, and it is the one change here that alters what a *future* run does by default. The second
+is in a different module and carries no test at all (see **M-2**). The red pin (`b00ba1ea8`) covered only the first,
+so two of the three arrived unpinned inside a commit whose message claims the guard turned green.
 
-The cost is real but narrow: the history cannot *demonstrate* any pin failing. Nobody can check out
-`2a9a03473^` and watch the guard go red, which is precisely the evidence the new rule asks for. Worth noting
-that in-session verification of teeth **silently passed twice** this session (a mis-indented edit meant the
-"broken" run was unmodified code), which is the argument for the separate commit rather than against it.
+### M-2 — `bee9e3187` adds embedder-visible logging to an exported `-api` path, uncached and unrecorded
+**Commit:** `bee9e3187`
+**File:** `serverpackcreator-api/src/main/kotlin/.../versionmeta/minecraft/MinecraftServer.kt:79`, `:116`
+**Rule broken:** *If you find a bug while refactoring, surface it explicitly* — and the project's own policy that
+behaviour-visible changes to exported calls belong in the compatibility table (`CLAUDE.md:87-95`).
 
-### M-C — two behaviour changes are labelled `refactor:`
-**Commits:** `5f138ef8a` *"refactor(app): route the stored home directory through one place"*,
-`7815d5960` *"refactor(api): ship variables.txt as a template instead of a string literal"*
-**Rule broken:** *A pure refactor commit must keep the suite green with the existing assertions. If a test must
-change for a "refactor", that is a signal the change is NOT behavior-preserving — stop and flag it.*
+The change is right in intent: a swallowed exception became indistinguishable from "declares no required Java", and
+that is what produced the benign `[N/A] SKIPPED`. But three properties of the surrounding code were not considered:
 
-`5f138ef8a` is the clearer case. It changes four call-sites from a hard-coded `Preferences` node to the
-resolved one, so a host claiming its own node (the grinder daemon, every test JVM) now reads and writes a
-different location than before — the intended fix for B1, and a behaviour change. The signal fired exactly as
-the rule predicts: an **existing** test had to change (`CommandlineParserTest.kt` +15/−13, replacing a literal
-node lookup with `HomeDirectoryPreference.stored()`). Inspected — the assertion semantics are equivalent and
-the edit is plumbing, not a weakened guard — but under a `refactor:` label the rule says stop and flag, and it
-was neither stopped nor flagged.
+- **The failure is never cached.** `setServerJson()` re-downloads whenever `manifestFile` is absent, and on failure
+  `serverJson` stays `null`, so every subsequent call retries.
+- **One lookup costs two attempts.** `MinecraftMeta.getServer` (`:166`) evaluates `server.url().isPresent &&
+  server.javaVersion().isPresent`, and both call `setServerJson()`. So a single `requiredJavaVersion` on a broken
+  version now emits **up to two `log.warn` calls with full stack traces**.
+- **That path is hot.** `ImageJavaRuntimes.requiredJavaMajor` is reached from `supportFor`, `javaPath` *and*
+  `installerJavaPathFor` — per candidate in `ContainerCandidateVerifier`, per cell in the matrix IT, and from the
+  GUI on version selection (`ConfigEditor.kt:681`). A sweep hitting one unfetchable manifest can therefore log the
+  same warning, with a stack trace, once per candidate.
 
-`7815d5960` additionally reaches outside its module: `serverpackcreator-app/.../ServerPackCreator.kt:355-359`
-gains a delete-watcher branch so a removed template is restored. That is app-side behaviour in a commit
-labelled `refactor(api)`.
+Same *class* as the previous audit's **H-B** (embedder-visible behaviour changed on an exported call, not recorded in
+the compatibility table) at lower severity, since nothing a caller *returns* changed — only log volume. That it
+recurred one commit after H-B was closed is the point worth recording. **Options:** log at `debug`, drop the stack
+trace, or cache the failure per version so the retry storm goes with it.
 
-Both are single-concern and both messages describe the behaviour change explicitly, so nothing is concealed
-from a reviewer — which is why this is MEDIUM, not HIGH: there is no independent refactor riding along to be
-confused with the behaviour change. `fix:` and `feat:` respectively would have been the honest labels.
+### M-3 — `8f1b3a76f` changes ignore behaviour with no automated guard, and the repo has precedent for one
+**Commit:** `8f1b3a76f` *"fix: stop .gitignore hiding the shipped server_files resources"*
+**File:** `.gitignore:365-371`
+**Rule broken:** *Ensure characterization tests exist … never refactor untested code blind.*
+
+Verified by hand — thoroughly, including the `--no-index` correction that showed the first reading was wrong — but
+nothing pins it. The failure mode is silent and exactly the one being fixed: someone re-broadens the rule, a shipped
+resource stops being tracked, and it surfaces as a file missing from a release. The repo already does this kind of
+config pinning (`ReadmeConfigurationTest` pins the documented env vars), so a test asserting `git check-ignore
+--no-index` on the shipped resource path **and** on `<module>/tests/server_files` is both feasible and consistent
+with existing practice.
+
+### M-4 — the `refactor:` rule written in `70cfe7fd9` is too absolute, and `b6b778b82` is the counter-example
+**Commits:** `70cfe7fd9` (the rule), `b6b778b82` (the commit it misjudges)
+**File:** `CLAUDE.md` — *"If an **existing** test has to change, the label is already wrong — that is the
+stop-and-flag signal, not a formality."*
+
+`b6b778b82` is labelled `refactor:` and modifies an existing test, which by that rule's letter makes it mislabelled.
+It is not. The whole diff to `SuspendGapTest.kt` is the receiver symbol moving module:
+
+```
+- DockerJavaContainerEngine.isSuspendGap(gap, poll),
++ SuspendAwareDeadline.isSuspendGap(gap, poll),
+```
+
+Every assertion, argument, and message is byte-identical, and the production change was verified line by line as
+behaviour-preserving (`!deadline.hasTimeLeft()` ≡ `System.currentTimeMillis() >= deadline`, same initial
+`lastTick`). A Strangler-Fig move across a module boundary *necessarily* updates references, tests included — so as
+written the rule forbids the very refactor the conventions ask for, and the honest response to it would be to
+mislabel a clean move as `fix:`.
+
+**The rule needs the carve-out it lacks:** a reference-only update (imports, receivers, renames) with unchanged
+assertions is not the signal; a changed *assertion, argument or expected value* is. Worth fixing in `CLAUDE.md`
+before it misfires on someone else — a convention that cries wolf gets ignored wholesale.
 
 ---
 
 ## LOW
 
-### L-C — ~~`var` where every sibling is `val`, and nothing assigns it~~ **WITHDRAWN — the finding was wrong**
-**Commit:** `7815d5960`
-**File:** `serverpackcreator-api/src/main/kotlin/.../settings/PathsConfig.kt:694-699`
+### L-1 — `escapeForProperties` is public in a precompiled script plugin
+**Commit:** `2a2a2df10` · **File:** `buildSrc/src/main/kotlin/serverpackcreator.java-conventions.gradle.kts` (last line)
 
-Retracted on inspection before the change was made. The declaration continues past the line the audit quoted:
+Declared as a top-level `fun`, so it enters the scope of every build script applying this convention plugin — a
+name nobody outside the file needs. `private fun` keeps it local. Also sits after the `signing` block at the very
+end, physically distant from its only caller in `processTestResources`.
 
-```kotlin
-var defaultVariablesTemplate: File = File(serverFilesDirectory, "variables.txt").absoluteFile   // :694
-    get() {
-        field = File(serverFilesDirectory, "variables.txt").absoluteFile                        // re-derives
-        return field
-    }
-    private set                                                                                 // :699
-```
+### L-2 — `cd07859bb`'s pin was only one-third red at commit time
+**Commit:** `cd07859bb` · **File:** `serverpackcreator-api/src/test/kotlin/.../TestPropertiesTest.kt`
 
-Two things the original finding missed. The setter is **`private`**, so this is not exported mutable state and
-`val` would not narrow the public surface. And the `var` is **load-bearing**: the getter assigns the backing
-field so the path re-derives on every access, which is how it tracks a home directory that changed — and
-`serverFilesDirectory` (`:573-578`) does exactly the same on top of `homeDirectory`, which this very branch
-made re-resolve per access. **31** properties in this file use that pattern; `defaultVariablesTemplate`
-follows it correctly.
+Of its three guards, only `theCommittedTestPropertiesNameNoHost` failed. The other two passed **because this is the
+machine whose paths were committed** — they only become load-bearing once the committed values are blanked. It was
+disclosed in the commit message at the time, which is why this is LOW rather than a missing-pin finding, but a guard
+that passes for an accidental reason is not yet evidence of anything.
 
-The two plain `val`s the audit held up as the standard (`:586`, `:603`) are the exception, not the rule — and
-they are the ones with the latent problem: captured once at construction, they do **not** follow a home that
-changes afterwards. Recorded as backlog **B21** rather than fixed here, since it predates this range and needs
-its own pin.
+### L-3 — `TestPropertiesTest` depends on the working directory being the module root
+**Commit:** `cd07859bb` · **File:** same, the `committed` / `generated` fields
+
+Both paths are relative (`src/test/resources/…`, `build/resources/test/…`). Correct under Gradle, whose test
+working directory is the project directory, but a runner that starts from the repository root — some IDE
+configurations do — fails the test on a path that does not exist rather than on the property it checks. Resolving
+against a system property the build already injects would remove the assumption.
 
 ---
 
 ## Carried forward
 
-Re-verified at this HEAD; not re-argued.
-
 | Finding | Severity | Status at this HEAD |
 |---|---|---|
-| **H-A** `origin/develop` published with a failing `ConfigEditorViewModelTest` | HIGH | **STILL OPEN — the only action item that cannot be done locally.** Fix `34464832e` remains unpushed; the backlog behind it has grown from 81 to **102** commits. |
-| H1 `aca721725` bundled a refactor with five behaviour changes | HIGH | Open, not remediable — rewriting landed history would be worse. Consequence closed by `8ebb3bbcb`. |
-| H2 `dd4fcc935` changed home resolution for every embedder | HIGH | Documented in the compatibility table. **H-B is the same class and is *not* — that table is the remediation pattern.** |
-| M-A `2e16bf0c8` fix-then-pin on a template; third instance in two audits | MEDIUM | **Closed** by `b28d131ea` — pin-first for templates/manifests/version-parsing is now a binding rule in `CLAUDE.md`, carrying its evidence (24 wasted boots, 820 mis-attributed NeoForge versions). |
-| M1 checked-in test properties rewritten by the suite | MEDIUM | Fixed (`ef3280e4c`, `e7cce83fb`). Second half — the files still carry one machine's absolute paths — recorded as backlog **B16**. |
-| M2 `28a786b58` shipped untested | MEDIUM | Closed by `5703b0340`. |
-| M3 / M4 commit-shape findings | MEDIUM | Historical. |
-| M5 `LoaderSupportMemory` on a false premise | MEDIUM | Reverted (`d8b6cb157`). |
-| M6 guard test green while behaviour broken | MEDIUM | Fixed (`e3296a7d2`). |
-| L1 new `!!` in refactored code | LOW | Fixed (`60541158a`); **still none introduced** — verified across all 21 new commits. |
-| L2 / L3 / L-A / L-B | LOW | Reviewed, accepted, or historical. |
+| **H-A** `origin/develop` published with a failing `ConfigEditorViewModelTest` | HIGH | **STILL OPEN, and deeper: 102 + 22 = 124 commits now sit behind the unpushed fix `34464832e`.** The only item across four audits that cannot be closed locally. |
+| H-B `variables.txt` contract change untabled | HIGH | **Closed** (`70cfe7fd9`). See **M-2** — the same class recurred immediately, milder. |
+| M-B tests bundled with production changes | MEDIUM | **Closed** as a rule and **followed** by all six changes here. |
+| M-C `refactor:` used for behaviour changes | MEDIUM | **Closed** as a rule; see **M-4**, the rule as written over-fires. |
+| L-C `var` in `PathsConfig` | LOW | **Withdrawn** (`b9777ddf9`); inverse defect recorded as backlog B21. |
+| H1, M3, M4, L-A, L-B (landed history) | — | Historical; rewriting would be worse than the finding. |
 
 ---
 
-## What the 21 new commits got right
+## What this branch got right
 
-Recorded because it is the majority of the picture and the contrast with report 1 is the point.
-
-- **Not a blind refactor.** `7815d5960` moved an unpinned-looking literal, but `ServerPackHandlerTest.forgeTest`
-  already generated and asserted `variables.txt`, and the commit verified byte-identity — so the pre-existing
-  end-to-end pin stayed green across the move.
-- **A documented invariant was respected under pressure.** `91ac0e1a9` adds an installer-fallback that could
-  easily have redefined "newest"; instead it supplies `availableVersions` while `latestVersion` still delegates,
-  scoped to Forge/NeoForge only, with the reasoning recorded at the function.
-- **Clean Kotlin.** No new `!!`; the only new `var`s are loop-local deadline state in the suspend-gap fix
-  (legitimate) plus L-C. No `TODO`, `FIXME`, or `println` added anywhere in the segment.
-- **Correct separation where it counts.** `1c69fdc62` is test-only; the seven `docs:` commits are docs-only;
-  `aa2d27f7f` fixes a bug found *by* the previous commit's test rather than absorbing it.
-- **The audit's own process finding was closed** (`b28d131ea`, M-A) instead of being noted again.
+- **The red pin is real, not ceremonial.** Each `test(...)` commit records the observed failure verbatim — e.g.
+  *"on Java 24 SSJ cannot trap the Forge installer's System.exit … expected: `<false>` but was: `<true>`"*. Two
+  guards were additionally verified by *inverting the fix* and watching the count fall (`ImageJavaRuntimes`,
+  `LoaderCache`), which is the check that silently passed twice in the previous session.
+- **A finding was withdrawn rather than defended.** `b9777ddf9` retracts L-C after reading the whole declaration:
+  the setter was `private` and the `var` load-bearing. The inverse defect it pointed at became B21.
+- **Dependency direction drove a design decision.** `SuspendAwareDeadline` went into `-clientside`, not the grinder,
+  because grinder depends on clientside — and the shared arithmetic is now injectable-clock testable where both
+  callers are integration-shaped.
+- **An expensive default was chosen on evidence.** B15 tolerates absent provenance instead of invalidating, because
+  Phase 2's cached Forge tuples were *checked* and found still bootable — the alternative would have re-installed 74
+  tuples for nothing.
+- **Two measurement artifacts were caught before they became conclusions:** `git check-ignore` masking tracked
+  paths without `--no-index`, and `ImageJavaRuntimes`' own "before" reading being suppressed the same way.
 
 ---
 
 ## Recommended order of action
 
-**Status 2026-07-31, branch `claude-audit-backlog-cleanup`:** H-B, M-B and M-C are **closed** (`70cfe7fd9`);
-**L-C is withdrawn** (`b9777ddf9`) — see its section. **H-A remains the only open action and cannot be done
-locally.**
+1. **Push.** **H-A** is four audits old and now 124 commits deep.
+2. **M-4 — fix the `refactor:` rule's wording** before it misfires: exempt reference-only updates, keep the signal
+   on changed assertions. Cheapest item here and it protects the rule's credibility.
+3. **M-2 — decide the logging volume** (`debug`, no stack trace, or cache the failure) and table the change if it
+   stays at `warn`.
+4. **M-3 — pin the `.gitignore` behaviour** alongside `ReadmeConfigurationTest`.
+5. **L-1 → `private`**, then L-2/L-3 as tidy-ups if the test is touched again.
 
-1. **Push.** **H-A** is unchanged and now 102 commits deep. Every other finding in this report is either
-   historical, already closed, or documentation.
-2. **H-B — add the compatibility-table row** for `variables.txt` / `defaultVariablesTemplate`. Cheap, and it is
-   the project's own stated policy for exactly this kind of change.
-3. **DONE — M-B and M-C are now binding rules** in the root `CLAUDE.md`, and this branch follows them: every code
-   change landed as a red `test(...)` commit followed by its fix. **M-B is a boundary habit, not a correctness gap.** The pin-first rule now exists; what the eight commits
-   show is that "written first" and "committed first" drifted apart. If the failing-guard evidence matters
-   (and the two silently-passing teeth checks argue it does), the rule needs the commit boundary spelled out,
-   not just the ordering.
-4. **M-C — label behaviour changes `fix:`/`feat:`.** Both commits were honest in the body; only the type was wrong.
+**M-1 is not remediable** without rewriting landed history; recorded so the next change to `MinecraftServer` knows
+its logging arrived unpinned.
 
 ---
 
