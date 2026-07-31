@@ -29,29 +29,6 @@ upstream issue periodically; when fixed, drop the task and the `dependsOn`.
 
 Each of these was observed and verified during the plan's phases but fell outside their scope. Newest concern first.
 
-### B21 — eight template paths are captured at construction and do not follow a changed home directory
-Found while withdrawing audit finding L-C (2026-07-31). `PathsConfig` resolves 31 of its properties through a
-re-deriving getter (`var x = …; get() { field = …; return field }; private set`) precisely so they track a home
-directory that changes at runtime — `serverFilesDirectory` (`:573-578`) does this on top of `homeDirectory`,
-which **this branch made re-resolve on every access**.
-
-The eight script-template properties do not (`PathsConfig.kt:586`, `:594`, `:603`, `:611`, `:619`, `:627`,
-`:635`, `:643`):
-
-```kotlin
-val defaultShellScriptTemplate = File(serverFilesDirectory, "default_template.sh")   // evaluated once
-```
-
-They are plain `val`s evaluated at construction, so after a home change (`--home`, the `-D` override, or the
-GUI's settings panel) they still point into the **old** home while everything around them has moved. These feed
-`defaultStartScriptTemplates()` / `defaultJavaScriptTemplates()`, so the consequence is generation reading
-templates from a directory the user has left behind — silent, and it looks like "my template edits do nothing".
-
-Not fixed with the audit finding because it predates this range, spans eight properties, and needs its own pin:
-a test that changes the home mid-instance and asserts the template paths follow. The fix is either the
-re-deriving getter the other 31 use, or a computed `val … get() =`, which is the cleaner Kotlin and behaviour-
-identical (the field write in that pattern is dead — the getter recomputes unconditionally).
-
 ### B22 — the grinder writes `serverpackcreator.properties` and `log4j2.xml` into the repository root on every start
 Observed 2026-07-31 while restoring the sweep. Both files appear untracked in the repo root seconds after the
 daemon starts, and stay gone when it is stopped — verified by stopping it, deleting them, and waiting: nothing

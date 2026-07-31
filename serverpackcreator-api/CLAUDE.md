@@ -74,6 +74,17 @@
   **The grinder cannot catch this class of bug** — it pre-bakes the install and boots offline from cache, so it
   only ever exercises the launch of an already-installed tuple. Cached tuples stay valid across this change:
   their `unix_args.txt` is what the new path launches, and `downloadIfNotExist` short-circuits on it offline.
+- **LANDMINE — a path derived from the home directory must be computed on access, never captured.**
+  `PathsConfig.homeDirectory` re-reads on every access (and now honours `-Dde.griefed.serverpackcreator.home`
+  first), so `serverFilesDirectory` and friends move when the home moves — `--home`, the `-D` override, or the GUI
+  settings panel. A plain `val x = File(serverFilesDirectory, …)` freezes the *old* home at construction. The eight
+  shipped script-template properties did exactly that until 2026-07-31: they feed `defaultStartScriptTemplates()` /
+  `defaultJavaScriptTemplates()`, so generation read templates out of a directory the user had left behind — their
+  edits silently did nothing, with no error anywhere. All eight are now `val … get() = …`, pinned by
+  `PathsConfigTest.defaultTemplatePathsFollowAHomeDirectoryChangedAfterConstruction`, which changes the home
+  underneath a *live* instance (the older test built the config afterwards, so a captured value still looked right).
+  The file's other 31 path properties use an equivalent field-assigning getter; either shape is fine, a bare
+  initialiser is not.
 - **`PackConfig.modloader` setter silently ignores unrecognized values**; unknown loaders default
   to **Forge**. Most-specific loader names must be matched first (LegacyFabric before Fabric, etc.).
 - **`PackConfig.save(destination, apiProperties)`** is the primary (injection-required) overload;
