@@ -457,6 +457,97 @@ internal class ScriptTemplateContentTest {
     }
 
     /**
+     * **Executes** the bash template's `setupForge` and asserts *who* installs Forge, by Java version.
+     *
+     * ServerStarterJar runs the Forge installer **in its own JVM** and relies on a `SecurityManager`
+     * (`SecurityAccess.wrapNoForceExit`) to swallow the `System.exit(0)` the installer calls when it finishes.
+     * JEP 486 removed Security Manager support in Java 24, and SSJ catches the resulting
+     * `UnsupportedOperationException` *silently* — so from Java 24 on, the installer's exit terminates the whole
+     * process. Measured on Minecraft 26.2 (Java 25): the pack installs, prints "The server installed
+     * successfully", exits **0**, and never launches the server — no world, no ready-line. Booting the same pack a
+     * second time works, because the install is then already there and SSJ only has to launch.
+     *
+     * Exit code 0 is what makes this dangerous: nothing downstream can tell it from a clean shutdown, and the
+     * grinder never sees it at all because it pre-bakes the install and boots from cache. Only a user starting a
+     * fresh Forge pack hits it, and to them the server simply does nothing.
+     *
+     * So on Java that cannot trap the exit, the template must install Forge itself and launch through the
+     * argfile the installer produces, never handing the install to SSJ. Below Java 24 the SSJ path is left exactly
+     * as it was — that combination demonstrably works.
+     */
+    @Test
+    fun theBashTemplateInstallsForgeItselfWhenSSJCannotTrapTheInstallersExit() {
+        val bash = which("bash") ?: Assumptions.abort("bash not installed — Forge install-ownership check skipped")
+
+        // Java major to whether SSJ may be trusted with the install (it can trap System.exit below 24).
+        val expectations = mapOf(17 to true, 21 to true, 24 to false, 25 to false)
+
+        for ((javaVersion, ssjMayInstall) in expectations) {
+            val packDir = File.createTempFile("spc-forge-install-", "-pack").apply { delete(); mkdirs() }
+            val harness = File(packDir, "harness.sh")
+            harness.writeText(
+                """
+                # "true" == the artifact was absent and has been downloaded, which is what triggers an install.
+                downloadIfNotExist() { echo "true"; }
+                runJavaCommand() { echo "JAVACMD=${'$'}1"; }
+                refreshServerJar() { echo "REFRESH_SSJ"; }
+                crashServer() { echo "CRASHED: ${'$'}1"; exit 3; }
+                JAVA_ARGS="-Xmx4G"
+                USE_SSJ="true"
+                SSJ_FORGE_ARGS="-Djava.security.manager=allow"
+                JAVA_VERSION="$javaVersion"
+                MINECRAFT_VERSION="26.2"
+                MODLOADER_VERSION="65.1.0"
+                SERVER_RUN_COMMAND="do_not_manually_edit"
+                IFS="." read -ra SEMANTICS <<<"${'$'}{MINECRAFT_VERSION}"
+                ${extractShellFunction("default_template.sh", "setupForge")}
+                setupForge
+                echo "RESULT=${'$'}{SERVER_RUN_COMMAND}"
+                """.trimIndent()
+            )
+
+            val process = ProcessBuilder(bash.absolutePath, harness.absolutePath)
+                .directory(packDir)
+                .redirectErrorStream(true)
+                .start()
+            val output = process.inputStream.bufferedReader().use { it.readText() }
+            val exit = process.waitFor()
+            packDir.deleteRecursively()
+
+            Assertions.assertEquals(0, exit, "setupForge failed on Java $javaVersion:\n$output")
+            val runCommand = output.lines().firstOrNull { it.startsWith("RESULT=") }
+                ?: Assertions.fail("no run command produced on Java $javaVersion:\n$output")
+            val installedUpFront = output.lines().any { it.contains("JAVACMD=") && it.contains("--installServer") }
+            val handsInstallToSsj = runCommand.contains("--installer")
+
+            if (ssjMayInstall) {
+                Assertions.assertTrue(
+                    handsInstallToSsj,
+                    "on Java $javaVersion SSJ can trap the installer's exit, so the install must stay with it — " +
+                        "this path works today and must not change. Run command: $runCommand"
+                )
+            } else {
+                Assertions.assertFalse(
+                    handsInstallToSsj,
+                    "on Java $javaVersion SSJ cannot trap the Forge installer's System.exit, so handing it the " +
+                        "install means the pack installs and then exits 0 without ever launching. " +
+                        "Run command: $runCommand"
+                )
+                Assertions.assertTrue(
+                    installedUpFront,
+                    "on Java $javaVersion the template must run the Forge installer itself before launching; " +
+                        "nothing invoked --installServer:\n$output"
+                )
+                Assertions.assertTrue(
+                    runCommand.contains("unix_args.txt"),
+                    "on Java $javaVersion the launch must go through the argfile the installer produced. " +
+                        "Run command: $runCommand"
+                )
+            }
+        }
+    }
+
+    /**
      * Cut a block out of a shell template, from the line equal to [startsWith] to the next line equal to [endsWith]
      * at column 0. Used for the run-loop, which is top-level script text rather than a function.
      */
