@@ -109,7 +109,7 @@ internal class ForgeLoader(
                  * substring of length of Minecraft version plus 1, so entries like "1.18.2-40.0.17" get their
                  * Minecraft version portion removed and result in "40.0.17". The +1 removes the "-", too. :)
                  */
-                val forgeVersion = forge.asText().substring(mcVersion.length + 1)
+                val forgeVersion = forgeVersionFrom(forge.asText(), mcVersion)
                 forgeVersions.add(forgeVersion)
                 forgeVersionsForMCVer.add(forgeVersion)
                 try {
@@ -132,4 +132,20 @@ internal class ForgeLoader(
             versionMeta[mcVersion] = forgeVersionsForMCVer.asReversed()
         }
     }
+
+    internal companion object {
+        /**
+         * Strip the Minecraft portion off a Forge manifest entry, leaving the Forge version:
+         * `1.18.2-40.0.17` with Minecraft `1.18.2` yields `40.0.17`. The `+ 1` also removes the `-` separator.
+         *
+         * **Load-bearing assumption:** the entry always begins with the manifest's own Minecraft key, and the key is
+         * only ever reconciled by swapping `_` for `-` (Forge writes `1.7.10_pre4` where Mojang writes
+         * `1.7.10-pre4`). That swap is length-preserving, which is the *only* reason cutting by
+         * `minecraftVersion.length` stays correct for those versions — a reconciliation that changed the length would
+         * silently slice the version in the wrong place instead of failing.
+         */
+        internal fun forgeVersionFrom(manifestEntry: String, minecraftVersion: String): String =
+            manifestEntry.substring(minecraftVersion.length + 1)
+    }
+
 }
