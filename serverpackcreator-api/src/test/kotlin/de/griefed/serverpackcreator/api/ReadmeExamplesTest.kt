@@ -44,7 +44,7 @@ import java.io.File
  */
 internal class ReadmeExamplesTest {
 
-    private val api = ApiWrapper.api(File("src/test/resources/serverpackcreator.properties"))
+    private val api = ApiWrapper.api(File("build/resources/test/serverpackcreator.properties"))
 
     /**
      * README §2 *Quickstart* — compile-only: it would create a home directory and generate a server pack.

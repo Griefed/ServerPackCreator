@@ -33,7 +33,7 @@ import java.io.File
  * without ever booting a server. The boot/verdict half is covered by `BootVerifierRunPreparedTest`.
  */
 internal class BootVerifierSelectionTest {
-    private val apiWrapper = ApiWrapper.api(File("src/test/resources/serverpackcreator.properties"))
+    private val apiWrapper = ApiWrapper.api(File("build/resources/test/serverpackcreator.properties"))
     private val resolver = LoaderVersionResolver(apiWrapper.versionMeta)
 
     /** A real Forge-capable server release from the cached metadata, so the test stays version-agnostic. */
@@ -56,7 +56,7 @@ internal class BootVerifierSelectionTest {
         platform = unusedPlatform,
         httpDownloader = noNetworkDownloader,
         browserDownloader = noNetworkDownloader,
-        loaderVersionResolver = resolver,
+        loaderVersionPolicy = resolver,
         workDirectory = workDir,
         minecraftAcceptable = minecraftAcceptable
     )

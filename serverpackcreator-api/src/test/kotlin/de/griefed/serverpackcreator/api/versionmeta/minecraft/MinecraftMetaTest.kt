@@ -32,7 +32,7 @@ import java.io.File
  */
 internal class MinecraftMetaTest {
     private val minecraft =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).versionMeta.minecraft
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).versionMeta.minecraft
 
     /**
      * Pins Mojang's declared `javaVersion.majorVersion` (stringified) for a spread of known releases.

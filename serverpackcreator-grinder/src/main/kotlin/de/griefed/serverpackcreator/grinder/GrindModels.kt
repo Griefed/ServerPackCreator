@@ -58,6 +58,9 @@ object ModPlatforms {
     /** Fallback for a hand-passed project URL whose host matches no known platform. */
     const val UNKNOWN = "Unknown"
 
+    /** The platforms a crawl can have a position for — the order the status document lists them in. */
+    val known = listOf(MODRINTH, CURSEFORGE)
+
     /** Best-effort platform for an arbitrary project [url] — used for URLs passed on the command line. */
     fun ofUrl(url: String): String = when {
         url.contains("modrinth.com", ignoreCase = true) -> MODRINTH

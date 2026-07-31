@@ -472,52 +472,68 @@ Function global:SetupFabric
     $FabricInstallerUrl = "https://maven.fabricmc.net/net/fabricmc/fabric-installer/${FabricInstallerVersion}/fabric-installer-${FabricInstallerVersion}.jar"
     $ImprovedFabricLauncherUrl = "https://meta.fabricmc.net/v2/versions/loader/${MinecraftVersion}/${ModLoaderVersion}/${FabricInstallerVersion}/server/jar"
     $ErrorActionPreference = "SilentlyContinue";
-    $script:ImprovedFabricLauncherAvailable = [int][System.Net.WebRequest]::Create("${ImprovedFabricLauncherUrl}").GetResponse().StatusCode
-    $ErrorActionPreference = "Continue";
-    if ("${ImprovedFabricLauncherAvailable}" -eq "200")
+    # An already-installed launcher needs neither a check nor a download. This must come FIRST: the checks below
+    # ask the network, and a failed request is indistinguishable from "Fabric does not support this version" —
+    # which made a complete, ready-to-run pack refuse to start whenever it had no internet.
+    if (Test-Path -Path 'fabric-server-launcher.jar' -PathType Leaf)
     {
-        "Improved Fabric Server Launcher available..."
-        "The improved launcher will be used to run this Fabric server."
+        Write-Host "fabric-server-launcher.jar present. Moving on..."
         $script:LauncherJarLocation = "fabric-server-launcher.jar"
-        (DownloadIfNotExists "${script:LauncherJarLocation}" "${script:LauncherJarLocation}" "${ImprovedFabricLauncherUrl}") > $null
+    }
+    elseif (Test-Path -Path 'fabric-server-launch.jar' -PathType Leaf)
+    {
+        Write-Host "fabric-server-launch.jar present. Moving on..."
+        $script:LauncherJarLocation = "fabric-server-launch.jar"
     }
     else
     {
-        try
+        $script:ImprovedFabricLauncherAvailable = [int][System.Net.WebRequest]::Create("${ImprovedFabricLauncherUrl}").GetResponse().StatusCode
+        $ErrorActionPreference = "Continue";
+        if ("${ImprovedFabricLauncherAvailable}" -eq "200")
         {
-            $ErrorActionPreference = "SilentlyContinue";
-            $FabricAvailable = [int][System.Net.WebRequest]::Create("https://meta.fabricmc.net/v2/versions/loader/${MinecraftVersion}/${ModLoaderVersion}/server/json").GetResponse().StatusCode
-            $ErrorActionPreference = "Continue";
-        }
-        catch
-        {
-            $FabricAvailable = "400"
-        }
-        if ("${FabricAvailable}" -ne "200")
-        {
-            CrashServer "Fabric is not available for Minecraft ${MinecraftVersion}, Fabric ${ModLoaderVersion}."
-        }
-        if ((DownloadIfNotExists "fabric-server-launch.jar" "fabric-installer.jar" "${FabricInstallerUrl}"))
-        {
-            "Installer downloaded..."
-            $script:LauncherJarLocation = "fabric-server-launch.jar"
-            RunJavaCommand "-jar fabric-installer.jar server -mcversion ${MinecraftVersion} -loader ${ModLoaderVersion} -downloadMinecraft"
-            if ((Test-Path -Path 'fabric-server-launch.jar' -PathType Leaf))
-            {
-                DeleteFileSilently '.fabric-installer' -Recurse
-                DeleteFileSilently 'fabric-installer.jar'
-                "Installation complete. fabric-installer.jar deleted."
-            }
-            else
-            {
-                DeleteFileSilently  'fabric-installer.jar'
-                CrashServer "fabric-server-launch.jar not found. Maybe the Fabric servers are having trouble. Please try again in a couple of minutes and check your internet connection."
-            }
+            "Improved Fabric Server Launcher available..."
+            "The improved launcher will be used to run this Fabric server."
+            $script:LauncherJarLocation = "fabric-server-launcher.jar"
+            (DownloadIfNotExists "${script:LauncherJarLocation}" "${script:LauncherJarLocation}" "${ImprovedFabricLauncherUrl}") > $null
         }
         else
         {
-            "fabric-server-launch.jar present. Moving on..."
-            $script:LauncherJarLocation = "fabric-server-launch.jar"
+            try
+            {
+                $ErrorActionPreference = "SilentlyContinue";
+                $FabricAvailable = [int][System.Net.WebRequest]::Create("https://meta.fabricmc.net/v2/versions/loader/${MinecraftVersion}/${ModLoaderVersion}/server/json").GetResponse().StatusCode
+                $ErrorActionPreference = "Continue";
+            }
+            catch
+            {
+                $FabricAvailable = "400"
+            }
+            if ("${FabricAvailable}" -ne "200")
+            {
+                CrashServer "Fabric is not available for Minecraft ${MinecraftVersion}, Fabric ${ModLoaderVersion}."
+            }
+            if ((DownloadIfNotExists "fabric-server-launch.jar" "fabric-installer.jar" "${FabricInstallerUrl}"))
+            {
+                "Installer downloaded..."
+                $script:LauncherJarLocation = "fabric-server-launch.jar"
+                RunJavaCommand "-jar fabric-installer.jar server -mcversion ${MinecraftVersion} -loader ${ModLoaderVersion} -downloadMinecraft"
+                if ((Test-Path -Path 'fabric-server-launch.jar' -PathType Leaf))
+                {
+                    DeleteFileSilently '.fabric-installer' -Recurse
+                    DeleteFileSilently 'fabric-installer.jar'
+                    "Installation complete. fabric-installer.jar deleted."
+                }
+                else
+                {
+                    DeleteFileSilently  'fabric-installer.jar'
+                    CrashServer "fabric-server-launch.jar not found. Maybe the Fabric servers are having trouble. Please try again in a couple of minutes and check your internet connection."
+                }
+            }
+            else
+            {
+                "fabric-server-launch.jar present. Moving on..."
+                $script:LauncherJarLocation = "fabric-server-launch.jar"
+            }
         }
     }
     $script:ServerRunCommand = "${script:JavaArgs} -jar ${script:LauncherJarLocation} nogui"
@@ -823,6 +839,10 @@ RunJavaCommand "-version"
 while ($true)
 {
     RunJavaCommand "${AdditionalArgs} ${ServerRunCommand}"
+    # Captured immediately: the checks below run their own commands and would overwrite $LASTEXITCODE. The script
+    # exits with this status, so a crashed server is distinguishable from a clean shutdown by anything reading the
+    # exit code -- service wrappers, scheduled tasks and CI.
+    $ServerExitCode = if ($null -eq $LASTEXITCODE) { 0 } else { $LASTEXITCODE }
     if ("${SkipJavaCheck}" -eq "true")
     {
         "Java version check was skipped. Did the server stop or crash because of a Java version mismatch?"
@@ -835,7 +855,7 @@ while ($true)
         {
             PauseScript
         }
-        exit 0
+        exit $ServerExitCode
     }
     "Automatically restarting server in 5 seconds. Press CTRL + C to abort and exit."
     Start-Sleep -Seconds 5

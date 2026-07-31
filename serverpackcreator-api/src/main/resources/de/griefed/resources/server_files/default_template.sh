@@ -297,42 +297,53 @@ setupFabric() {
   FABRIC_CHECK_URL="https://meta.fabricmc.net/v2/versions/loader/${MINECRAFT_VERSION}/${MODLOADER_VERSION}/server/json"
   IMPROVED_FABRIC_LAUNCHER_URL="https://meta.fabricmc.net/v2/versions/loader/${MINECRAFT_VERSION}/${MODLOADER_VERSION}/${FABRIC_INSTALLER_VERSION}/server/jar"
 
-  if commandAvailable curl ; then
-    FABRIC_AVAILABLE="$(curl -LI ${FABRIC_CHECK_URL} -o /dev/null -w '%{http_code}\n' -s)"
-  elif commandAvailable wget ; then
-    FABRIC_AVAILABLE="$(wget --spider --server-response ${FABRIC_CHECK_URL}  2>&1 | awk '/^  HTTP/{print $2}')"
-  fi
-  if commandAvailable curl ; then
-    IMPROVED_FABRIC_LAUNCHER_AVAILABLE="$(curl -LI ${IMPROVED_FABRIC_LAUNCHER_URL} -o /dev/null -w '%{http_code}\n' -s)"
-  elif commandAvailable wget ; then
-    IMPROVED_FABRIC_LAUNCHER_AVAILABLE="$(wget --spider --server-response ${IMPROVED_FABRIC_LAUNCHER_URL}  2>&1 | awk '/^  HTTP/{print $2}')"
-  fi
-
-  if [[ "$IMPROVED_FABRIC_LAUNCHER_AVAILABLE" == "200" ]]; then
-    echo "Improved Fabric Server Launcher available..."
-    echo "The improved launcher will be used to run this Fabric server."
+  # An already-installed launcher needs neither a check nor a download. This must come FIRST: the checks below
+  # ask the network, and a failed request is indistinguishable from "Fabric does not support this version" —
+  # which made a complete, ready-to-run pack refuse to start whenever it had no internet.
+  if [[ -s "fabric-server-launcher.jar" ]]; then
+    echo "fabric-server-launcher.jar present. Moving on..."
     LAUNCHER_JAR_LOCATION="fabric-server-launcher.jar"
-    downloadIfNotExist "fabric-server-launcher.jar" "fabric-server-launcher.jar" "${IMPROVED_FABRIC_LAUNCHER_URL}" >/dev/null
-  elif [[ "${FABRIC_AVAILABLE}" != "200" ]]; then
-    crashServer "Fabric is not available for Minecraft ${MINECRAFT_VERSION}, Fabric ${MODLOADER_VERSION}."
-  elif [[ $(downloadIfNotExist "fabric-server-launch.jar" "fabric-installer.jar" "${FABRIC_INSTALLER_URL}") == "true" ]]; then
-
-    echo "Installer downloaded..."
-    LAUNCHER_JAR_LOCATION="fabric-server-launch.jar"
-    runJavaCommand "-jar fabric-installer.jar server -mcversion ${MINECRAFT_VERSION} -loader ${MODLOADER_VERSION} -downloadMinecraft"
-
-    if [[ -s "fabric-server-launch.jar" ]]; then
-      rm -rf .fabric-installer
-      rm -f fabric-installer.jar
-      echo "Installation complete. fabric-installer.jar deleted."
-    else
-      rm -f fabric-installer.jar
-      crashServer "fabric-server-launch.jar not found. Maybe the Fabric servers are having trouble. Please try again in a couple of minutes and check your internet connection."
-    fi
-
-  else
+  elif [[ -s "fabric-server-launch.jar" ]]; then
     echo "fabric-server-launch.jar present. Moving on..."
     LAUNCHER_JAR_LOCATION="fabric-server-launch.jar"
+  else
+    if commandAvailable curl ; then
+      FABRIC_AVAILABLE="$(curl -LI ${FABRIC_CHECK_URL} -o /dev/null -w '%{http_code}\n' -s)"
+    elif commandAvailable wget ; then
+      FABRIC_AVAILABLE="$(wget --spider --server-response ${FABRIC_CHECK_URL}  2>&1 | awk '/^  HTTP/{print $2}')"
+    fi
+    if commandAvailable curl ; then
+      IMPROVED_FABRIC_LAUNCHER_AVAILABLE="$(curl -LI ${IMPROVED_FABRIC_LAUNCHER_URL} -o /dev/null -w '%{http_code}\n' -s)"
+    elif commandAvailable wget ; then
+      IMPROVED_FABRIC_LAUNCHER_AVAILABLE="$(wget --spider --server-response ${IMPROVED_FABRIC_LAUNCHER_URL}  2>&1 | awk '/^  HTTP/{print $2}')"
+    fi
+
+    if [[ "$IMPROVED_FABRIC_LAUNCHER_AVAILABLE" == "200" ]]; then
+      echo "Improved Fabric Server Launcher available..."
+      echo "The improved launcher will be used to run this Fabric server."
+      LAUNCHER_JAR_LOCATION="fabric-server-launcher.jar"
+      downloadIfNotExist "fabric-server-launcher.jar" "fabric-server-launcher.jar" "${IMPROVED_FABRIC_LAUNCHER_URL}" >/dev/null
+    elif [[ "${FABRIC_AVAILABLE}" != "200" ]]; then
+      crashServer "Fabric is not available for Minecraft ${MINECRAFT_VERSION}, Fabric ${MODLOADER_VERSION}."
+    elif [[ $(downloadIfNotExist "fabric-server-launch.jar" "fabric-installer.jar" "${FABRIC_INSTALLER_URL}") == "true" ]]; then
+
+      echo "Installer downloaded..."
+      LAUNCHER_JAR_LOCATION="fabric-server-launch.jar"
+      runJavaCommand "-jar fabric-installer.jar server -mcversion ${MINECRAFT_VERSION} -loader ${MODLOADER_VERSION} -downloadMinecraft"
+
+      if [[ -s "fabric-server-launch.jar" ]]; then
+        rm -rf .fabric-installer
+        rm -f fabric-installer.jar
+        echo "Installation complete. fabric-installer.jar deleted."
+      else
+        rm -f fabric-installer.jar
+        crashServer "fabric-server-launch.jar not found. Maybe the Fabric servers are having trouble. Please try again in a couple of minutes and check your internet connection."
+      fi
+
+    else
+      echo "fabric-server-launch.jar present. Moving on..."
+      LAUNCHER_JAR_LOCATION="fabric-server-launch.jar"
+    fi
   fi
 
   SERVER_RUN_COMMAND="${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"
@@ -574,6 +585,11 @@ echo ""
 while true
 do
   runJavaCommand "${ADDITIONAL_ARGS} ${SERVER_RUN_COMMAND}"
+  # Captured immediately: the checks below run their own commands and would overwrite $?. The script exits with this
+  # status, so a crashed server is distinguishable from a clean shutdown by anything reading the exit code --
+  # systemd, Docker restart policies, CI, and the grinder's boot classifier (for which a swallowed status meant a
+  # mod crash could never be told apart from a clean stop).
+  SERVER_EXIT_CODE=$?
   if [[ "${SKIP_JAVA_CHECK}" == "true" ]]; then
     echo "Java version check was skipped. Did the server stop or crash because of a Java version mismatch?"
     echo "Detected ${SEMANTICS[0]}.${SEMANTICS[1]}.${SEMANTICS[2]} - Java ${JAVA_VERSION}, recommended $RECOMMENDED_JAVA_VERSION."
@@ -583,7 +599,7 @@ do
       if [[ "${WAIT_FOR_USER_INPUT}" == "true" ]]; then
         pause
       fi
-    exit 0
+    exit ${SERVER_EXIT_CODE}
   fi
   echo "Automatically restarting server in 5 seconds. Press CTRL + C to abort and exit."
   sleep 5

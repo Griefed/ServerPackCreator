@@ -15,7 +15,7 @@ import java.io.File
 internal class ValidatorsTest {
 
     private val versionMeta =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).versionMeta
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).versionMeta
 
     /**
      * Pins that empty inclusions fail, an existing modpack-relative source passes, and a

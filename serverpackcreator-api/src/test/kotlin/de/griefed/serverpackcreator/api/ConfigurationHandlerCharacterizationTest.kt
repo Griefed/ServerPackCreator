@@ -15,9 +15,9 @@ import java.io.File
  */
 internal class ConfigurationHandlerCharacterizationTest {
     private val configurationHandler =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).configurationHandler
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).configurationHandler
     private val apiProperties =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).apiProperties
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).apiProperties
 
     /**
      * Pins that a destination which exists neither plain nor as `_0`-suffixed directory is

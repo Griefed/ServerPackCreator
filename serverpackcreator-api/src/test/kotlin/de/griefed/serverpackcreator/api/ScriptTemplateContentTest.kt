@@ -112,6 +112,162 @@ internal class ScriptTemplateContentTest {
         }
     }
 
+    /**
+     * Every template must settle the Fabric launcher from **what is on disk** before it asks the network.
+     *
+     * The checks that follow ask `meta.fabricmc.net` whether Fabric supports this Minecraft version, and Fabric's
+     * branch crashes on the *negative* form (`!= 200`) — so a request that simply could not be made reads as
+     * "Fabric does not support this version". A complete, ready-to-run pack therefore refused to start with no
+     * internet, and in the grinder (whose mod-boots run `--network none` by design) *every* Fabric boot aborted
+     * before the mod was ever loaded: 103 wasted boots in one morning, and 22 Minecraft versions wrongly
+     * concluded to be unsupported. Quilt and LegacyFabric were never affected because they crash on the positive
+     * form (`== "[]"`), which an unreachable network cannot produce.
+     */
+    @Test
+    fun allTemplatesUseAnAlreadyInstalledFabricLauncherBeforeCheckingTheNetwork() {
+        val expectations = mapOf(
+            "default_template.sh" to listOf("""if [[ -s "fabric-server-launcher.jar" ]]; then""", "FABRIC_AVAILABLE=\"\$(curl"),
+            "default_template.fish" to listOf("""if test -s "fabric-server-launcher.jar"""", "set -g FABRIC_AVAILABLE (curl"),
+            "default_template.ps1" to listOf("""if (Test-Path -Path 'fabric-server-launcher.jar' -PathType Leaf)""", "ImprovedFabricLauncherAvailable = [int]")
+        )
+        expectations.forEach { (name, markers) ->
+            val text = template(name)
+            val (presentCheck, networkProbe) = markers
+            val presentAt = text.indexOf(presentCheck)
+            val probeAt = text.indexOf(networkProbe)
+            Assertions.assertTrue(presentAt >= 0, "$name does not check for an existing fabric-server-launcher.jar")
+            Assertions.assertTrue(probeAt >= 0, "$name: the network probe marker is stale, update this test")
+            Assertions.assertTrue(
+                presentAt < probeAt,
+                "$name asks the network before looking at the launcher jar it already has — an offline pack cannot boot"
+            )
+        }
+    }
+
+    /**
+     * **Executes** the bash template's `setupFabric` on an offline pack that already has its launcher jar, and
+     * asserts the function still produces a runnable command. Ordering alone is not enough: the first version of
+     * the offline short-circuit above `return`ed as soon as it found the jar — jumping over the
+     * `SERVER_RUN_COMMAND=...` assignment at the end of the function. The pack then launched
+     * `java -Dlog4j2... do_not_manually_edit` (the placeholder) and died with "Could not find or load main class",
+     * *past* every ordering assertion. Only running the function catches that, so this test runs it.
+     *
+     * The stubs make network use fatal rather than merely unnecessary: `commandAvailable` denies curl/wget and any
+     * download or install call exits non-zero, so an offline pack that reaches for the network fails loudly here.
+     */
+    @Test
+    fun theBashTemplateStillBuildsARunCommandWhenTheFabricLauncherIsAlreadyInstalled() {
+        val bash = which("bash") ?: Assumptions.abort("bash not installed — offline Fabric execution check skipped")
+        val packDir = File.createTempFile("spc-fabric-offline-", "-pack").apply { delete(); mkdirs() }
+        // A non-empty jar: the template's `-s` test requires size, not mere existence.
+        File(packDir, "fabric-server-launcher.jar").writeBytes(ByteArray(64))
+
+        val harness = File(packDir, "harness.sh")
+        harness.writeText(
+            """
+            commandAvailable() { return 1; }
+            crashServer() { echo "CRASHED: ${'$'}1"; exit 3; }
+            downloadIfNotExist() { echo "NETWORK: download attempted"; exit 4; }
+            runJavaCommand() { echo "NETWORK: installer run"; exit 5; }
+            JAVA_ARGS="-Xmx4G"
+            MINECRAFT_VERSION="1.20.1"
+            MODLOADER_VERSION="0.16.9"
+            FABRIC_INSTALLER_VERSION="1.0.1"
+            LAUNCHER_JAR_LOCATION="do_not_manually_edit"
+            SERVER_RUN_COMMAND="do_not_manually_edit"
+            ${extractShellFunction("default_template.sh", "setupFabric")}
+            setupFabric
+            echo "RESULT=${'$'}{SERVER_RUN_COMMAND}"
+            """.trimIndent()
+        )
+
+        val process = ProcessBuilder(bash.absolutePath, harness.absolutePath)
+            .directory(packDir)
+            .redirectErrorStream(true)
+            .start()
+        val output = process.inputStream.bufferedReader().use { it.readText() }
+        val exit = process.waitFor()
+
+        Assertions.assertEquals(0, exit, "setupFabric failed on an offline pack that has its launcher:\n$output")
+        Assertions.assertTrue(
+            output.contains("RESULT=-Xmx4G -jar fabric-server-launcher.jar nogui"),
+            "the offline path must still assemble the run command, was:\n$output"
+        )
+        Assertions.assertFalse(
+            output.contains("do_not_manually_edit"),
+            "an unset placeholder reached the run command — the offline branch skipped the assignment:\n$output"
+        )
+        packDir.deleteRecursively()
+    }
+
+    /**
+     * **Executes** the bash template's run-loop and asserts it exits with the *server's* status.
+     *
+     * The loop used to end in an unconditional `exit 0`, throwing the server's exit status away — so a modded server
+     * that crashed on startup looked, to anything reading the script's exit code, exactly like a clean shutdown.
+     * For the grinder that erased the single decisive signal in its whole confidence model: `BootLogClassifier` maps
+     * a `0` exit without a ready-line to INCONCLUSIVE, so **CRASHED could never be observed and no verdict could
+     * ever reach HIGH**. Measured 2026-07-30: 517 verdicts over 3.5 h, zero HIGH, while a boot log sat there with
+     * `NoClassDefFoundError: net/minecraft/client/Minecraft` in it. It matters for ordinary users too — `systemd`,
+     * Docker restart policies and CI all read the exit code to decide whether the server failed.
+     */
+    @Test
+    fun theBashTemplatesRunLoopExitsWithTheServersStatus() {
+        val bash = which("bash") ?: Assumptions.abort("bash not installed — run-loop execution check skipped")
+
+        for (serverStatus in listOf(0, 1, 137)) {
+            val harness = File.createTempFile("spc-runloop-", ".sh").apply { deleteOnExit() }
+            harness.writeText(
+                """
+                runJavaCommand() { return $serverStatus; }
+                pause() { :; }
+                SKIP_JAVA_CHECK="false"
+                RESTART="false"
+                WAIT_FOR_USER_INPUT="false"
+                ADDITIONAL_ARGS=""
+                SERVER_RUN_COMMAND="-jar server.jar nogui"
+                ${extractShellBlock("default_template.sh", "while true", "done")}
+                """.trimIndent()
+            )
+
+            val process = ProcessBuilder(bash.absolutePath, harness.absolutePath).redirectErrorStream(true).start()
+            val output = process.inputStream.bufferedReader().use { it.readText() }
+            val exit = process.waitFor()
+
+            Assertions.assertEquals(
+                serverStatus,
+                exit,
+                "the run loop must exit with the server's status ($serverStatus), not swallow it. Output:\n$output"
+            )
+        }
+    }
+
+    /**
+     * Cut a block out of a shell template, from the line equal to [startsWith] to the next line equal to [endsWith]
+     * at column 0. Used for the run-loop, which is top-level script text rather than a function.
+     */
+    private fun extractShellBlock(template: String, startsWith: String, endsWith: String): String {
+        val lines = template(template).lines()
+        val start = lines.indexOfFirst { it == startsWith }
+        Assertions.assertTrue(start >= 0, "template $template has no line `$startsWith` — update this test")
+        val end = lines.drop(start + 1).indexOfFirst { it == endsWith }
+        Assertions.assertTrue(end >= 0, "block starting at `$startsWith` in $template is not closed by `$endsWith`")
+        return lines.subList(start, start + end + 2).joinToString("\n")
+    }
+
+    /**
+     * Cut one `name() { ... }` function out of a shell template so it can be sourced in isolation. Matches the
+     * closing brace in column 0, which is how the shipped templates format their function bodies.
+     */
+    private fun extractShellFunction(template: String, name: String): String {
+        val lines = template(template).lines()
+        val start = lines.indexOfFirst { it.startsWith("$name()") }
+        Assertions.assertTrue(start >= 0, "template $template has no function `$name` — update this test")
+        val end = lines.drop(start + 1).indexOfFirst { it == "}" }
+        Assertions.assertTrue(end >= 0, "function `$name` in $template is not closed by a brace in column 0")
+        return lines.subList(start, start + end + 2).joinToString("\n")
+    }
+
     /** Locate an executable on `PATH`, or `null` when it is not installed. */
     private fun which(executable: String): File? =
         System.getenv("PATH")?.split(File.pathSeparator)

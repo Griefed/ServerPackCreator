@@ -4,6 +4,7 @@ import de.griefed.serverpackcreator.api.PropertyStore
 import de.griefed.serverpackcreator.api.utilities.common.JarInformation
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -26,13 +27,37 @@ internal class PathsConfigTest {
     private fun pathsConfig(store: PropertyStore = PropertyStore()): PathsConfig =
         PathsConfig(store, scratchPreferences, JarInformation(PathsConfigTest::class.java), devBuild = true)
 
+    /** Saved so [restoreHomeDirectoryProperty] can put the build's value back. */
+    private var homeDirectoryProperty: String? = null
+
     /**
-     * Wipes the scratch Preferences-node so each test starts without a stored home-directory.
+     * Detaches from the build's scratch-home `-D`. The build sets `de.griefed.serverpackcreator.home` for every test
+     * JVM (so a suite cannot write into the source tree), but *this* class exists to exercise the other resolution
+     * layers — stored preference, properties-file, dev-environment fallback — none of which are reachable while an
+     * explicit override outranks them. Tests that want the override set it themselves.
+     */
+    @BeforeEach
+    fun detachFromTheBuildsScratchHome() {
+        homeDirectoryProperty = System.getProperty(PathsConfig.HOME_DIRECTORY_KEY)
+        System.clearProperty(PathsConfig.HOME_DIRECTORY_KEY)
+    }
+
+    /**
+     * Wipes the scratch Preferences-node so each test starts without a stored home-directory, and restores the
+     * build's home `-D` so later test classes in this JVM are unaffected.
      */
     @AfterEach
     fun clearScratchPreferences() {
         scratchPreferences.clear()
         scratchPreferences.sync()
+        restoreHomeDirectoryProperty()
+    }
+
+    /** Puts the build's home `-D` back, or removes ours when the build had not set one. */
+    private fun restoreHomeDirectoryProperty() {
+        homeDirectoryProperty
+            ?.let { System.setProperty(PathsConfig.HOME_DIRECTORY_KEY, it) }
+            ?: System.clearProperty(PathsConfig.HOME_DIRECTORY_KEY)
     }
 
     /**
@@ -196,5 +221,44 @@ internal class PathsConfigTest {
         store.define(PathsConfig.TOMCAT_LOGS_DIRECTORY_KEY, writableLogs.absolutePath)
         Assertions.assertEquals(writableLogs.absoluteFile, paths.tomcatLogsDirectory)
         Assertions.assertEquals(File(tempDir.absoluteFile, "logs"), paths.defaultTomcatLogsDirectory())
+    }
+
+    /**
+     * A `-D` override must win over the dev-environment fallback.
+     *
+     * Without it, a host with no stored preference lands on `File("").absolutePath` — the working directory — and
+     * `ApiWrapper.setup()` then *writes* into it (it copies README.md, CHANGELOG.md and the `server_files` templates
+     * into the home directory). For a Gradle test JVM the working directory is the module's own source directory, so
+     * a suite overwrote checked-in files: `serverpackcreator-clientside/README.md`'s 186-line CLI guide was replaced
+     * by the bundled root README, which then failed `ClientsideReadmeFlagsTest` (measured 2026-07-30, while isolating
+     * the suites onto their own Preferences nodes — the isolated node removed the stored home that had been masking
+     * this). The build now points every test JVM at a scratch home under `build/`, which only works if the override
+     * is honoured here.
+     */
+    @Test
+    fun aSystemPropertyOverridesTheDevEnvironmentWorkingDirectory(@TempDir tempDir: File) {
+        val scratchHome = File(tempDir, "spc-test-home")
+        System.setProperty(PathsConfig.HOME_DIRECTORY_KEY, scratchHome.absolutePath)
+
+        val paths = pathsConfig()
+
+        Assertions.assertEquals(
+            scratchHome.absoluteFile,
+            paths.homeDirectory,
+            "the -D override must beat the working-directory fallback, or a test JVM writes into the source tree"
+        )
+        Assertions.assertEquals(
+            File(scratchHome.absoluteFile, "server_files"),
+            paths.serverFilesDirectory,
+            "derived directories must follow the overridden home"
+        )
+    }
+
+    /** A blank override is a misconfiguration and must not be taken for "use the filesystem root". */
+    @Test
+    fun aBlankSystemPropertyIsIgnored() {
+        System.setProperty(PathsConfig.HOME_DIRECTORY_KEY, "   ")
+
+        Assertions.assertEquals(File("").absoluteFile, pathsConfig().homeDirectory)
     }
 }

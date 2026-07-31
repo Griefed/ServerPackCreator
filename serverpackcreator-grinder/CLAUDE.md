@@ -25,35 +25,27 @@ base package's orchestration, only its domain models).
   `ImageJavaRuntimes`. Depends on `grinder.container`.
 - **`grinder.report`** — verdict persistence + web/CSV output: `VerdictStore` (+ `InMemoryVerdictStore`),
   `JsonVerdictStore`, `VerdictCsvExporter`, `VerdictReportRenderer`, `ReportServer`.
-- **`grinder.source`** — candidate discovery: the `CandidateSource` interface + `ModrinthCandidateSource`
-  and `CurseForgeCandidateSource`.
+- **`grinder.source`** — candidate discovery **and the crawl position**: the `CandidateSource` interface
+  (`page(offset, limit, partition)` → `CandidatePage`) + `ModrinthCandidateSource` /
+  `CurseForgeCandidateSource` (+ `CurseForgePartition` / `CurseForgePartitions`, its partitioned-crawl plan),
+  plus `CatalogCrawler` (hands out the next slice per pass) and `CursorStore` / `InMemoryCursorStore` /
+  `JsonCursorStore` (`CatalogCursor` = offset + completed sweeps + the source's opaque partition token).
 
-## Current state — the boot seam (container ServerRunner)
+## Subsystem detail lives next to the code
 
-The reuse hinge is the clientside module's `ServerRunner` interface. The grinder implements it for
-containers:
+Each subpackage has its own `CLAUDE.md`, loaded only when you work in that directory — that is what keeps this
+file small enough to stay useful. Read the one for the subsystem you are touching:
 
-- **`ContainerServerRunner`** implements `clientside.ServerRunner` — boots a prepared pack in a
-  container instead of a host process, so it slots into `BootVerifier` unchanged and feeds the same
-  `BootLogClassifier` via `BootVerifier.outcomeFor`. Host-side staging (start-script check, write
-  `eula.txt`, assemble the `ContainerSpec`) + mapping the engine's raw output onto `RunResult` live
-  here, so it is unit-tested with a fake engine.
-- **`ContainerEngine`** is the thin docker boundary (`ContainerSpec` → `ContainerRunOutput`), the same
-  injectable-seam pattern as clientside's `HttpFetcher`. **`ContainerSpec` carries the untrusted-mod
-  hardening as defaults**: `networkMode=none`, `readonlyRootfs`, `dropAllCapabilities`,
-  `noNewPrivileges`, non-root `user`, tmpfs for `/tmp`, plus memory/cpu/pids caps. **Never mount the
-  Docker socket into a boot container.**
-- **`DockerJavaContainerEngine`** is the real docker-java impl (create → start → follow logs → stop →
-  inspect exit → force-remove). **Not unit-tested** (needs a live daemon) — that is the whole reason
-  the testable orchestration sits in `ContainerServerRunner` behind the seam. If you change it, verify
-  against a real Docker daemon.
-- **`LoaderCache`** — the pre-bake cache (the `--network none` enabler). `ensureInstalled(loader,
-  loaderVersion, minecraftVersion)` returns a cached installed-server base, running a one-off
-  `LoaderInstaller` (with network) only on a **miss**; **marker-gated** (`.spc-installed` written only
-  after success, so a crash mid-install is redone, never served half-baked) and **serialized per
-  tuple** so parallel workers share a single install. `LoaderInstaller` is the seam — its real impl (a
-  setup container *with* network that snapshots the ServerStarterJar's self-install) is
-  integration-only; everything else here is pure and unit-tested.
+| Subsystem | Detail file |
+|---|---|
+| container runtime, docker glue, hardening | `src/main/kotlin/de/griefed/serverpackcreator/grinder/container/CLAUDE.md` |
+| loader install, cache, eviction, Java/image bound | `.../grinder/loader/CLAUDE.md` |
+| candidate sources, CurseForge partitions, crawl cursor | `.../grinder/source/CLAUDE.md` |
+| verdict store, report server, CSV | `.../grinder/report/CLAUDE.md` |
+
+**The base package's own orchestration** (`Grinder`, `GrindPool`, `GrindPacing`, `ContainerCandidateVerifier`,
+`GrinderApplication`) is documented here, since it is what wires the four together.
+
 - **Orchestration** (`Grinder`, `GrindPool`, `VerdictStore`, `VerdictCsvExporter`): `Grinder.grind`
   verifies one candidate (skipping already-ground projects, *swallowing* a thrown boot so a bad mod
   can't sink a worker) via the `CandidateVerifier` seam and records one `GrindVerdict` per loader.
@@ -63,48 +55,90 @@ containers:
   renders RFC-4180 CSV (`Name, Project, NamePattern, Confidence, Loader, Detail`, highest-confidence
   first). **`CandidateVerifier` is the seam that collapses the integration-bound boot pipeline**, so
   the whole orchestration is unit-tested with fakes.
-- **Persistence + web interface**: `JsonVerdictStore` (file-backed, loads on start, whole-file
-  temp-then-atomic-move write, corrupt-file → empty) makes a multi-day run restart-safe.
-  `VerdictReportRenderer` renders a **self-contained** HTML page — click-to-sort columns, an
-  embedded-CSV download button, HTML-escaped cells **and** `\uXXXX`-escaped CSV-in-`<script>` so a
-  mod-supplied `</script>` can't break out. `ReportServer` serves the table (`/`) and CSV
-  (`/export.csv`) live off the store via the **JDK's built-in `com.sun.net.httpserver.HttpServer`** —
-  **no Spring, no new dependency**. *Deliberately standalone:* the report is self-contained rather than
-  rendered through the app's Quasar frontend, because the grinder must not depend on `-app` (that would
-  drag in Spring/Mongo/Swing and break its standalone nature).
-- **Candidate sources** (`CandidateSource` interface — `candidates(limit): List<GrindCandidate>`,
-  most-downloaded first): `ModrinthCandidateSource` (keyless Modrinth search) and
-  `CurseForgeCandidateSource` (CF `/mods/search` sorted by `sortField=6` TotalDownloads, `x-api-key`,
-  `index`/`pageSize≤50` pagination capped at `index<10000`; project link = `links.websiteUrl`). Both
-  paginate behind the clientside `HttpFetcher` seam (unit-tested with canned JSON). `GrinderApplication`
-  wires Modrinth always and CurseForge **only when `CURSEFORGE_API_KEY` is set**; `GrindPool` re-sorts
-  the union by popularity so the platforms interleave. Store dedup is by `slug`, so a mod on both
-  platforms is treated as one project (accepted for now).
-- **Loader install (the `LoaderCache` `LoaderInstaller`)**: `DockerLoaderInstaller` generates a
-  **mod-less** pack (`VanillaPackGenerator` → `ApiVanillaPackGenerator` over `ApiWrapper`), boots it
-  **once with network** (`networkMode="bridge"` — the *only* networked boot) so `start.sh` installs the
-  loader + MC server + libraries, then snapshots the install layer into the cache. The error-prone
-  pieces are pure + unit-tested: **`InstallLayerSnapshot`** (denylist diff/copy — snapshots added
-  non-runtime files, the spike-derived design), **`PackVariables`** (the unattended-boot levers:
-  eula + `WAIT_FOR_USER_INPUT=false` + a resolved `JAVA` path + `SERVERSTARTERJAR_FORCE_FETCH=false`
-  *only* for offline boots), and **`ImageJavaRuntimes`** (MC→bundled-JDK + the supported-Java gate,
-  required-Java sourced authoritatively from `MinecraftMeta.requiredJavaVersion`). `DockerLoaderInstaller` /
-  `ApiVanillaPackGenerator` themselves are integration-only (daemon + image + real `ApiWrapper`).
-  **Operational note:** the bind-mounted pack must be writable by the container's uid 1000 (the install
-  writes `libraries/` etc. into it) — align uids or `--user root` (Docker Desktop maps automatically).
 
-**Landmine — network vs. install:** the hardening default is `--network none`, but the *first* boot of
-a given loader/MC needs network for the ServerStarterJar to download the loader + libraries. The plan
-is to **pre-bake that once per `(loader, loaderVersion, minecraftVersion)`** into a cached, read-only
-base tree (network only on the cache-miss), then every actual mod-boot mounts it and runs offline.
-Don't wire the candidate-mod boot to run with network — that defeats the isolation.
+- **Pacing** (`GrindPacing.pauseAfterPass`, pure + unit-tested): work found → no pause; nothing due but
+  catalog remains → short `SPC_GRINDER_SCAN_DELAY`; sweep completed with nothing due → `SPC_GRINDER_INTERVAL`.
+  **A fixed per-pass sleep is what made coverage impossible** (25 projects/6 h vs. ~71 000 Modrinth mods).
+  **Failed verifications deliberately don't count as work** — with a broken host every candidate fails, and
+  counting that as progress would race the cursor through the catalog leaving thousands unverified.
 
-**Loader / Java facts (durable — drive the runtime image):** SPC's generated `start.sh` is
-*self-contained* — it installs the modloader + Minecraft server itself at first boot, so the image is
-**loader-agnostic** (no per-loader logic). The **`ServerStarterJar` (neoforged) is Forge/NeoForge
-only**; Fabric uses `fabric-installer`/`fabric-server-launch(er).jar`, Quilt the `quilt-installer`,
-LegacyFabric its own installer. A single JDK can't boot every Minecraft version (8 for the oldest,
-through 21 for 1.20.5+ and **25** for the current release 26.2), so the image bundles Temurin 8/17/21/25
+## Operator-facing logging (three surfaces, all live)
+
+*Operator-facing documentation for these lives in `README.md` §7 — keep the two in step.*
+
+- **`/status` on the report server** (`GrinderStatus` → `StatusSnapshot`, Jackson-serialized): uptime, current
+  pass, per-worker candidate + `busySeconds`, crawl cursor per platform, installed-tuple count. Written from the
+  worker threads, read from HTTP threads — `snapshot()` is a point-in-time **copy**, not a live view, so a
+  serializing reader never observes mutation. Optional collaborators (`status`/`cursors`/`cacheRoot`): absent ones
+  render `null` instead of failing, because a monitoring endpoint that 500s is worse than a thin one. Slugs are
+  internet-supplied, so the document is *serialized*, never string-built.
+- **One INFO line per candidate** in `Grinder.grind` (`Grinding <platform>/<slug>` … `Done … → Forge=LOW`), with
+  the fresh-skip deliberately at DEBUG — a pass can skip dozens in microseconds and would bury the real line.
+- **Live per-boot console.** `ServerRunner.run` takes an `onLine` sink (defaulted, so callers that don't care are
+  unaffected); `BootVerifier.runPrepared` appends+flushes each line into the attempt's `boot.log` *during* the
+  boot, and `DockerLoaderInstaller` does the same into `<tuple>/.spc-install.log`. **Why it matters:** output used
+  to be buffered in memory and written only on completion, so a hung boot was undiagnosable until its 12-minute
+  timeout fired and a killed boot left nothing at all. **Landmine:** every write is wrapped — a failing sink or an
+  unwritable log must never fail a boot (a test pins that; `outcomeFor`'s final write was unguarded and *did*
+  propagate before this).
+
+## Cross-cutting landmines (do not let these load lazily)
+
+These bite regardless of which subsystem you are in, so they stay in this always-loaded-for-the-module file even
+though their detail lives deeper:
+
+- **Never mount the Docker socket into a boot container.** A candidate mod is untrusted code; the socket is
+  root-equivalent host access. (Also why there is no containerised grinder *daemon* image — see the README.)
+- **Never wire the candidate-mod boot with network.** `--network none` is the whole isolation guarantee; only
+  the one-off loader install per tuple gets network. Detail: `grinder/loader/CLAUDE.md`.
+- **A mod must never be mis-scored as a clientside crash.** Two independent guards exist (selection-time loader
+  availability + Java support, and the classifier's pre-launch setup-abort mapping), plus clientside's crash
+  re-check when an older cached loader build was booted. See `serverpackcreator-clientside/CLAUDE.md`.
+- **`installDist` is not rebuilt by `test`** — always rebuild before a live run, or you will draw conclusions
+  from a stale jar (this has happened: a run reported the unfiltered 7 339-version axis because of it).
+
+- **The daemon owns its own `Preferences` node — do not "simplify" that away.** SPC resolves its home directory
+  through a `Preferences` node (`PathsConfig.homeDirectory`), historically the hard-coded, **machine-wide per-user**
+  `ServerPackCreator` shared by the GUI, the web backend, every test suite *and* the grinder — and the getter
+  **re-reads it on every access**, storing whatever it resolved. A test suite booting an `ApiWrapper` therefore
+  relocated the *running* daemon's home to its own scratch dir and then deleted it. Measured 2026-07-30: a
+  `:serverpackcreator-api:test` run mid-session moved the live daemon's home into the repo, and every subsequent boot
+  failed with `.../serverpackcreator-api/tests/server_files/server-icon.png: The source file doesn't exist` —
+  surfacing as **`boot:none` metadata-only verdicts**, i.e. looking exactly like "these mods were never bootable"
+  rather than like a broken host. 30+ candidates were recorded that way before it was caught, and the store had to be
+  archived. `GrinderApplication` now claims **`ServerPackCreator-grinder`** (via
+  `ApiProperties.PREFERENCES_NODE_PROPERTY`, set before any `ApiProperties` exists, and only when the operator has
+  not chosen a node themselves) and logs which node it used. Verified: a full api suite run *concurrently* with a
+  live daemon left it untouched.
+  - The node override is `-Dde.griefed.serverpackcreator.preferences.node` / `SPC_PREFERENCES_NODE`; the home
+    override is `-Dde.griefed.serverpackcreator.home`, which now beats the dev-build working-directory fallback.
+  - The preference is consulted **before** cwd and `serverpackcreator.properties`, so `SPC_GRINDER_SPC_PROPERTIES`
+    alone never protected against this — the node claim is what does.
+  - Editing a template under the grinder home is pointless while the home resolves elsewhere; generation reads
+    `server_files` from the *then-current* home. Check the daemon's own startup lines (`Using Preferences node …`,
+    `Home directory set to: …`) rather than guessing.
+  - **Measuring this from outside is unreliable:** Java's macOS `Preferences` backing store
+    (`~/Library/Preferences/com.apple.java.util.prefs.plist`) is cached per process and flushed on a ~30 s timer, so
+    concurrent JVMs clobber each other's view and an external `defaults read` can show a value that a still-running
+    JVM is about to overwrite. Trust in-process logs and same-JVM tests, not cross-process snapshots. (A per-module
+    loop appearing to show "every suite writes the shared node" was exactly this artifact.)
+  - **Still open:** whether anything continues to write the *shared* `ServerPackCreator` node during a build. It
+    holds a repo test path on this machine, which only affects a GUI/dev instance, not the grinder. The five
+    remaining hard-coded `Preferences.userRoot().node("ServerPackCreator")` call sites all live in **`-app`**
+    (`CommandlineParser`, `ServerPackCreator.kt` ×2, `HomeDirCommand`, `GuiProps`) and are the obvious next
+    candidates if it turns out to matter.
+
+- **Staging is reclaimed, not accumulated** (`BootWorkspaceReaper`). Each attempt stages a full server pack with the
+  overlaid loader libraries under `<work>/verify/boot/<slug>-<loader>` plus downloaded jars under
+  `<work>/verify/verify/<slug>-<loader>`, and staging only ever deleted a directory when that *same* `(slug, loader)`
+  was retried — which during a catalog sweep is never. Measured 2026-07-30: **98 GB across 1750 attempt directories,
+  ~23 GB/h**, enough to fill the host inside a day. The reaper strips each finished candidate's staging down to its
+  `boot.log` (the verdict detail is read from it; the packs are reproducible), runs in a `finally` so a *thrown*
+  verification is reclaimed too, and sweeps orphans at startup — first live startup reclaimed 8 897 MiB, taking the
+  work tree from 8.7 GB to 155 MB. **Landmine:** it is scoped to one slug on purpose, matching `<slug>-<loader>` by
+  cutting the loader suffix rather than prefix-matching the slug — workers run in parallel, and a prefix match
+  (`jei` vs `jei-extras`) would delete the pack out from under a container that is still booting it.
+
 and the grinder sets `$JAVA` per MC version (via the pack's `variables.txt`) from SPC's declared
 required-Java — **no Java download**, which is what keeps mod-boots runnable under `--network none`.
 The template needs `bash`, `curl`/`wget`, `gawk`, `tar`/`gzip`. See
@@ -123,143 +157,44 @@ container, so the box running the grinder needs:
   **both**. Wire the `BootVerifier` with a `BrowserDownloader()` (disposed via `use {}`) exactly as
   `VerifyClientsideCommand` does — locked-file support is then inherited, not reimplemented.
 
-## Loader-install spike findings (2026-06-27 — drive the `LoaderCache` + cache-overlay)
-
-Generated + booted real packs (Forge 1.20.6 & 1.12.2, NeoForge 1.21, Fabric 1.20.6, Quilt 1.20.6) and
-diffed each booted dir against its pre-boot baseline. Conclusions:
-
-- **The install layer is mod-independent but loader-specific.** Per loader, the boot adds (besides the
-  always-present **`libraries/`**, the dominant cost — ~40 MB Fabric/Quilt/old-Forge to ~180 MB
-  NeoForge/Forge-1.20):
-  - **SSJ (Forge ≥1.17, NeoForge):** `server.jar` + `<loader>-<ver>-installer.jar`(+`.log`) +
-    `*-shim.jar` (Forge) + `run.sh` + `run.bat` + `user_jvm_args.txt`.
-  - **Old Forge (<1.17, e.g. 1.12.2):** `forge.jar` + `minecraft_server.<mc>.jar` +
-    `forge-installer.jar.log` — **no** `server.jar`/run-scripts (the SSJ path is not taken).
-  - **Fabric:** `fabric-server-launcher.jar` + `.fabric/` + `versions/`.
-  - **Quilt:** `quilt-server-launch.jar` + `quilt-server-launcher.properties` + `server.jar` (vanilla MC)
-    + `.cache/` + `versions/`.
-- **The `CLEANUP` variable is an *incomplete* snapshot manifest — do not use it as the include-list.**
-  It lists `libraries, run.sh, run.bat, *installer.jar(.log), server.jar, fabric-server-launch(er).jar,
-  …` but misses `forge.jar`, `minecraft_server.*.jar`, `*-shim.jar`, `quilt-server-launch.jar`,
-  `versions/`, `.fabric/`, `.cache/`, `user_jvm_args.txt`.
-- **Snapshot strategy = DENYLIST, not includelist.** `LoaderInstaller` boots a *vanilla* (empty-mods)
-  pack once per tuple **with** network, then snapshots `(post-boot files) − (pre-boot pack files) −
-  runtime-state`. The **runtime-state denylist** (created at boot, never cached): `world*/`, `logs/`,
-  `crash-reports/`, `ops.json`, `whitelist.json`, `banned-ips.json`, `banned-players.json`,
-  `usercache.json`, `eula.txt`, `.previousrun`, `hs_err_pid*.log`, `README.txt`, `.DS_Store`.
-- **Offline-boot levers (set in `variables.txt` before every cached `--network none` boot; confirmed in
-  `default_template.sh`):** `WAIT_FOR_USER_INPUT=false` (else it blocks on a `read`),
-  `SERVERSTARTERJAR_FORCE_FETCH=false` (else Forge/NeoForge *re-download* `server.jar` → needs network),
-  and pre-write `eula.txt` = `eula=true` (else an interactive EULA prompt). Also set `JAVA` to the
-  bundled per-MC JDK (`/opt/java-{8,17,21,25}`).
-- **Cache-overlay seam — RESOLVED (no deep `BootVerifier` change needed).** The install layer never
-  name-collides with pack files (`libraries/`, `server.jar`, run-scripts vs. `start.sh`/`mods/`/`config/`),
-  so the overlay is a plain recursive copy. Plan: add an optional `packPostProcessor:
-  ((Prepared.Ready) -> Unit)? = null` hook to `BootVerifier.verify`, invoked **after** `prepareBootPack`
-  and **before** `serverRunner.run` (it receives `loader`/`loaderVersion`/`minecraftVersion`). The
-  grinder's post-processor does `loaderCache.ensureInstalled(tuple)` → copy the install layer in → set
-  the offline levers + write `eula.txt`. Default `null` keeps the host runner's behavior unchanged.
-
-Spike workspace (not committed): `~/spc-grinder-spike/{configs,packs,baselines}` + the
-`serverpackcreator-app-dev.jar` generation command. Reusable by the `LoaderInstaller` work.
-
 ## Testing
 
-- `ContainerServerRunnerTest` uses a fake `ContainerEngine`: no-start.sh → `NotStarted` (engine never
-  called), raw output → `RunResult.Completed`, and the assembled spec carries the hardening + pack
-  mount + written eula. All offline.
-- `LoaderCacheTest` uses a fake `LoaderInstaller`: miss-installs-once-then-hits, failed/throwing
-  install → `null` + nothing left installed, concurrent requests for one tuple install once, distinct
-  tuples cached independently. All offline.
-- `VerdictStoreTest`, `VerdictCsvExporterTest`, `GrinderTest` cover the orchestration with a fake
-  `CandidateVerifier` (shared builders in `GrindTestFixtures.kt`): replace-not-duplicate, CSV
-  escaping + confidence ordering + name-pattern column, per-loader recording, skip-already-done,
-  swallow-throw, pool drains every candidate + most-popular-first. All offline.
-- `JsonVerdictStoreTest` (survive-reopen, replace-across-reopen, corrupt→empty, creates-file+parents),
-  `VerdictReportRendererTest` (sortable headers, embedded CSV, HTML/script escaping), `ReportServerTest`
-  (real **loopback** HTTP on an ephemeral port: `/` HTML + `/export.csv`, live store, content-types).
-- `ModrinthCandidateSourceTest` (canned search JSON via a fake `HttpFetcher`): download-order
-  preserved, pagination + catalog-exhaustion + over-limit trim, failed-page returns partial, limit-0
-  fetches nothing.
-- `InstallLayerSnapshotTest` (added-non-runtime files copied, pre-boot + runtime excluded),
-  `PackVariablesTest` (in-place key replace not touching `JAVA_ARGS`, append-if-absent, offline
-  force-fetch toggle, eula), `ImageJavaRuntimesTest` (the bundled-JDK resolution + supported-Java gate:
-  a version whose required Java isn't bundled is unsupported, not booted on the wrong JDK). The
-  `LoaderInstaller`/`VanillaPackGenerator` impls are integration-only.
-- docker-java and the real installer have no offline doubles; `DockerJavaContainerEngine` and the
-  production `LoaderInstaller` are integration-only.
-- **`DockerJavaContainerEngineIT`** is the live-daemon integration test for the docker glue, **gated
-  behind `GRINDER_DOCKER_IT=1`** (`@EnabledIfEnvironmentVariable`) so it is skipped on a normal /
-  daemon-less CI run. Run it with a daemon + the `busybox:latest` image present:
-  `docker pull busybox && GRINDER_DOCKER_IT=1 ./gradlew :serverpackcreator-grinder:test --tests "*DockerJavaContainerEngineIT"`.
-  It verifies the full path (create → start → stream → ready-detect/stop → exit code → **force-remove**,
-  no leaked containers) under the production hardening defaults. **Verified passing** against Docker
-  29.5 on 2026-06-26.
+The per-test-class inventory that used to live here is derivable — `ls serverpackcreator-grinder/src/test` and
+read the files; it also drifted (it listed 8 of the 30 test files). What is *not* derivable is kept here:
 
-## End-to-end verification & the Java limitation
+- **Everything offline by default.** Orchestration, sources, crawl/cursor, partition plan, pacing, report and
+  the pure loader pieces are unit-tested with fakes (`GrindTestFixtures.kt` holds the shared builders).
+- **Integration-only, no offline double exists:** `DockerJavaContainerEngine`, the production
+  `LoaderInstaller` (`DockerLoaderInstaller`) and `ApiVanillaPackGenerator` — they need a live daemon, the
+  runtime image, and a real `ApiWrapper`. If you change them, verify against Docker; the unit-testable
+  orchestration deliberately sits *behind* their seams for exactly this reason.
+- **Gated integration tests** (skipped on a normal run — each needs something CI has not got):
 
-**Full-loop verification on current Minecraft (2026-07-28).** `GrinderApplication` grinding
-`modrinth.com/mod/modmenu` against the **JDK-25 image** produced two verdicts on **MC 26.2** and proved
-the complete chain on current Minecraft:
-- **Quilt / 26.2 → SURVIVED (MEDIUM): a genuine full success.** The cached loader install ran (network,
-  102 jars snapshotted), then the mod-boot ran **offline** (`--network none`, confirmed by
-  `UnknownHostException` for Mojang hosts) on `/opt/java-25` (`Compatibility level set to JAVA_25`) and
-  reached **`Done (5.744s)! For help`** — MC 26.2 server fully started → correctly SURVIVED (a clean
-  boot proves nothing for a clientside mod, hence MEDIUM). This validates container install → offline
-  boot → classify → verdict → store on current MC with the new image.
-- **Fabric / 26.2 → was a false HIGH, now fixed.** Fabric has no build for 26.2 yet, so start.sh
-  aborted "Fabric is not available for Minecraft 26.2" *before loading the mod*; the classifier scored
-  the exit-1 as CRASHED → HIGH. Fixed in `-clientside`: `BootLogClassifier.setupAbortMarkers` maps all
-  pre-launch `crashServer` failures (loader-unavailable, install/download failure, Java/EULA/variables
-  setup) to **INCONCLUSIVE** — the mod was never tested. See `serverpackcreator-clientside/CLAUDE.md`.
+  | Test | Gate | Also needs | Last verified |
+  |---|---|---|---|
+  | `DockerJavaContainerEngineIT` | `GRINDER_DOCKER_IT=1` | a daemon + `docker pull busybox` | Docker 29.5, 2026-06-26 |
+  | `ScriptTemplateMatrixIT` | `GRINDER_TEMPLATE_IT=1` | the `spc-grinder-templates` image | 2026-07-29 |
+  | `CatalogCrawlLiveIT` | `GRINDER_LIVE_IT=1` | network (Modrinth) | 2026-07-29 |
+  | `CurseForgeCrawlLiveIT` | `GRINDER_CF_IT=1` | **plus** `CURSEFORGE_API_KEY` | 2026-07-30 |
 
-**Earlier run (2026-06-28)** verified the visible half (resolve → download → generate → verdict →
-`JsonVerdictStore` → CSV → `ReportServer`) on live data and the hardened install on a Java-21 Minecraft
-(1.20.6 → 38 library files), and **found + fixed** the boot-pack `inclusions` bug (boot had never
-actually worked) plus the release-only MC gate and install diagnostics.
-
-**Java/image bound (RESOLVED 2026-06-28).** The grinder picks the *newest* Minecraft release; in this
-environment that is **26.2**, which requires **Java 25** (`java-runtime-epsilon`). Originally the image
-bundled only 8/17/21, so `start.sh` aborted at a Jabba Java-install prompt. The fix is
-**`ImageJavaRuntimes`**: it sources the required Java major **authoritatively** from
-`MinecraftMeta.requiredJavaVersion(mc)` (Mojang's declared `javaVersion.majorVersion`, scheme-proof — no
-hand-rolled heuristic) and exposes (a) `supports(mc)` — required-Java known *and* in `bundledMajors`
-(default **8/17/21/25**, **must mirror the Dockerfile**), and (b) `javaPath(mc)` → the bundled JDK path
-or null. `BootVerifier` now takes an injected `minecraftAcceptable` predicate (default accept-all for the
-host CLI; `ContainerCandidateVerifier` passes `imageJava::supports`), AND-ed into candidate selection, so
-a version whose JDK the image lacks is **never selected** — never booted on the wrong JDK and **never
-mis-scored as a clientside crash (false HIGH)**. This is deliberately *not* `SKIP_JAVA_CHECK`.
-**Image now ships Temurin 25** (verified: `25.0.3` LTS, image ~2.08 GB), so the current release 26.2 boots.
-Java-**26** is intentionally *not* bundled: it only appears on snapshots (e.g. 26.3-snapshot), which the
-release-gate already skips. **To extend coverage** to a future release: add its JDK to the Dockerfile
-*and* to `ImageJavaRuntimes.bundledMajors` — the two are the single coupled source of truth.
+  e.g. `docker pull busybox && GRINDER_DOCKER_IT=1 ./gradlew :serverpackcreator-grinder:test --tests "*DockerJavaContainerEngineIT"`
+- **The live ITs are the source of the platform facts quoted in this file.** Each prints `[live]` lines with
+  its measured numbers (catalog sizes, slice sizes, saturation, ordering) — read those rather than trusting a
+  number written down here, and re-run them after touching paging, the cursor, or the partition plan.
 
 ## Status & what remains
 
-**The core loop is built and e2e-verified** (see the verification section above). The full chain —
-candidate source → `Grinder`/`GrindPool` → `ContainerCandidateVerifier` (`ClientsideVerifier` +
-container `BootVerifier` + `packPostProcessor` doing `loaderCache.ensureInstalled` → install-layer
-overlay → offline boot) → `JsonVerdictStore` → `ReportServer`/CSV — runs end-to-end via
-`GrinderApplication`, seeded by `ModrinthCandidateSource`.
-
-**Continuous operation — DONE.** With no project-URL args, `GrinderApplication` loops fire-and-forget:
-each pass re-pulls the popularity-ranked candidates and grinds them; `Grinder` skips a project whose
-verdict is still *fresh* (younger than `reverifyTtl`, via `VerdictStore.newestVerification`) and
-re-verifies stale ones, so evolving mods, new loader versions and newly-supported Minecraft releases get
-picked up over successive passes. Verdicts persist after every record, so a restart resumes. A JVM
-shutdown hook stops the loop. Passing explicit project URLs keeps the **one-shot** path (verification).
-Config (env): `SPC_GRINDER_INTERVAL` (seconds between passes, default 21600 = 6h),
-`SPC_GRINDER_REVERIFY_TTL_DAYS` (verdict staleness, default 30). There is still **no queue cursor** —
-each pass re-fetches the source fresh (cheap; the store's freshness check does the skipping).
-
+**Continuous mode + crawl cursor.** With no project-URL args `GrinderApplication` loops: each pass takes
+the next catalog slice from `CatalogCrawler`, grinds what is stale, and persists verdicts *and* the crawl
+position after every step, so a restart resumes mid-catalog. Env vars and their defaults are documented in
+`README.md` §5 (pinned by `ReadmeConfigurationTest`); the implementation history is in `REFACTOR-LOG.md`.
+**Sizing gotcha:** a sweep is `catalog ÷ batch × pass-duration`, so `SPC_GRINDER_REVERIFY_TTL_DAYS` must be
+**longer than a sweep takes** — otherwise verdicts go stale faster than the crawl advances and the tail is
+never reached.
 **Loader-availability at selection — DONE.** `LoaderVersionResolver.latest` now returns `null` for a
 Minecraft a loader doesn't support (Fabric/Quilt/LegacyFabric gated on `Meta.isMinecraftSupported`;
 Forge/NeoForge already MC-specific), so an unsupported combo is dropped from selection instead of spun
 up and aborted. The classifier's setup-abort INCONCLUSIVE mapping remains the backstop.
-
-**CurseForge candidate source — DONE.** `CurseForgeCandidateSource` enumerates CF most-downloaded-first
-behind the `CandidateSource` interface; wired when `CURSEFORGE_API_KEY` is set (see the candidate-sources
-bullet above).
 
 **Script-template matrix — DONE.** `ScriptTemplateMatrixIT` (gated `GRINDER_TEMPLATE_IT=1`) boots the
 generated `start.{sh,fish,ps1}` across `{MC} × {loader} × {bash,fish,pwsh}` cells in the
@@ -293,21 +228,9 @@ PowerShell is covered by **`powerShellTemplatesParse`**, which runs PowerShell's
 regressions these tests exist for. Don't "fix" the matrix by adding a `pwsh` boot cell; `scriptFor`
 rejects it with the reason.
 
-**Full matrix (2026-07-29) — 5 Minecraft versions × 5 loaders × {bash, fish}, plus the `.ps1` parse check.
-bash ≡ fish in every single cell, and every runnable cell is green:**
-
-| Loader | 1.12.2 | 1.16.1 | 1.20.1 | 1.21.1 | 1.21.11 |
-|---|---|---|---|---|---|
-| Forge | ✅ ✅ | ✅ ✅ | ✅ ✅ | ✅ ✅ | ✅ ✅ |
-| NeoForge | N/A | N/A | ✅ ✅ | ✅ ✅ | ✅ ✅ |
-| Fabric | N/A | ✅ ✅ | ✅ ✅ | ✅ ✅ | ✅ ✅ |
-| Quilt | N/A | ✅ ✅ *(after the JAVA_INSTALLER fix)* | ✅ ✅ | ✅ ✅ | ✅ ✅ |
-| LegacyFabric | ✅ ✅ | N/A | N/A | N/A | N/A |
-
-(`✅ ✅` = bash, fish. N/A = the loader genuinely has no build for that Minecraft — `LoaderVersionResolver`'s
-support gate filtering correctly, incl. LegacyFabric's pre-1.14 era and Fabric/Quilt's need for an
-intermediary. `.ps1` parse ✅.)
-
+**Matrix results are point-in-time** — the last full run (5 Minecraft × 5 loaders × {bash, fish}, bash ≡
+fish everywhere, `.ps1` parse ✅) is recorded in `claude-docs/REFACTOR-LOG.md`. Re-run it, don't trust a
+table here. `N/A` cells are `LoaderVersionResolver`'s support gate filtering correctly, not failures.
 **Fixed — Quilt could not install on old Minecraft (found here, in all shells).** `Quilt Installer requires
 Java 17 or greater to run.` → `quilt-server-launch.jar not found`, because the templates ran *every*
 installer with `$JAVA`, which for 1.16.1 is Java 8 (Mojang's declared requirement) — one JDK cannot satisfy
@@ -334,24 +257,44 @@ Minecraft server capped at 3 GB, so parallel cells starve the host: at 3 workers
 spurious failures** (`start.sh: line 144: Killed "$JAVA"` — SIGKILL mid "Preparing level"), *all* of which
 passed when re-run serially. Judge no cell from a parallel run.
 
-**Continuous mode — verified live (2026-07-29).** With a pre-seeded *fresh* verdict and `interval=40s`:
-two passes ran 40s apart, both skipping the fresh project (no boots), the report server answered
-`HTTP 200` + CSV throughout, and `SIGTERM` fired the shutdown hook mid-sleep ("Grinder stopped after 2
-pass(es)"). With `SPC_GRINDER_REVERIFY_TTL_DAYS=0` the same verdict became stale and re-verification
-**actually ran** (resolve → mod scan → boot-pack *and* install-pack generation for 26.2/Fabric), proving
-both sides of the TTL boundary outside the unit tests.
+**Landmine — `installDist` is not rebuilt by `test`.** A live run launched from
+`build/install/serverpackcreator-grinder/bin/…` uses whatever jar was last built, and a stale one lies
+convincingly: on 2026-07-30 a supervised run reported `crawl covers 7339 game version(s), newest first (65.1.0)`
+— the *unfiltered* axis with a Forge version at its head — purely because the dist predated the version-type
+filter by one commit. **Always `./gradlew :serverpackcreator-grinder:installDist` immediately before a live
+run**, and sanity-check the axis log line (135 versions, newest a real Minecraft version) before trusting
+anything the run says.
 
-**Shutdown drain — DONE.** `DockerJavaContainerEngine` tracks the containers it owns and is `AutoCloseable`;
-`close()` force-removes whatever is still in flight, because `run`'s per-run `finally` never executes when
-the JVM is torn down mid-boot (a `SIGTERM` used to leave a Minecraft server running — observed once, removed
-by hand). `GrinderApplication` registers that cleanup as a shutdown hook immediately after building the
-engine, so it covers the one-shot path too, and `GrindPool.requestStop()` makes workers abandon the queue
-after their current candidate instead of draining a whole batch. Verified against a live daemon by
-`closeRemovesAContainerLeftRunningByAnAbandonedRun`.
+**Shutdown — `SIGTERM` mid-pass used to kill the JVM with a bare `Exception in thread "main"`** (found
+2026-07-29 while verifying the crawl loop): the hook interrupts the main thread, which is normally parked in
+`GrindPool.grindAll`'s `Thread.join()`, and the `InterruptedException` escaped `main`. `grindAll` now catches
+it, `requestStop()`s and restores the interrupt flag, returning the count so far — pinned by
+`anInterruptedPassStopsInsteadOfThrowing`. (The JVM often halts before `main` can log "Grinder stopped": once
+the hooks finish it exits, so a missing final line on `SIGTERM` is normal, not a hang.) **The one-shot path had
+the same hole** — its `CountDownLatch.await()` that holds the report server open threw the interrupt straight
+out of `main`; both paths now swallow it. Any new park/join in `main` must do likewise.
 
+**Shutdown drain.** `DockerJavaContainerEngine` is `AutoCloseable` and force-removes the containers it
+still owns, because `run`'s per-run `finally` never executes when the JVM is torn down mid-boot;
+`GrinderApplication` registers that as a shutdown hook (covers the one-shot path too) and
+`GrindPool.requestStop()` makes workers abandon the queue after their current candidate.
 Remaining:
 
-1. **`CurseForgeCandidateSource` has never made a real API call** (no `CURSEFORGE_API_KEY` available). Its
-   contract is docs-verified and defended by `warnIfNotDescending`, which is not the same as observed.
+1. **CurseForge is now live-verified end to end** (2026-07-30): discovery by `CurseForgeCrawlLiveIT`, and the
+   *grind* path by a supervised one-shot that produced real verdicts for a CurseForge project on two loaders
+   (Forge/1.20.6 and NeoForge/26.2, both booting offline). The module's oldest open item is closed. What is
+   *still* unproven is a **full sweep**: weeks of wall-clock and a large slice of an API key's quota, so nobody
+   has watched the crawl walk all 135 versions to the end.
 2. **Store dedup is slug+platform, not project-identity** — good enough today; a mod that changes slug on a
    platform would be re-ground as a new project.
+3. **The API key lives in the macOS Keychain on Griefed's machine** (`security find-generic-password -w -s
+   spc-curseforge-key`), deliberately not in a file or in any transcript. The grinder itself only reads
+   `CURSEFORGE_API_KEY` from the environment — there is no dotenv support anywhere in the build — so pass it in
+   per command. The key rides in the `x-api-key` **header** and `JdkHttpFetcher` logs nothing, so it cannot leak
+   into grinder logs or a failing test's output.
+4. **Residual CF gap by design** — a (version, category, loader) slice >20 000 mods loses its middle (logged
+   with a count; no narrower filter exists), and a mod with *neither* a loader tag nor a category is
+   unreachable beyond its version's cap (undetectable from outside).
+5. **Modrinth's offset ceiling is 99 999** (measured) vs. ~71 000 mod projects today, so the whole catalog is
+   reachable — but **if it ever exceeds 100 000 the tail silently looks like the end of the catalog** and the
+   crawl would wrap early.

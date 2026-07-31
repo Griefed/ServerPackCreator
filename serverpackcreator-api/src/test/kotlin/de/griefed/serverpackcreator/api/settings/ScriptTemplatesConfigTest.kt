@@ -4,6 +4,7 @@ import de.griefed.serverpackcreator.api.PropertyStore
 import de.griefed.serverpackcreator.api.utilities.common.JarInformation
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -31,10 +32,26 @@ internal class ScriptTemplatesConfigTest {
     /**
      * Wipes the scratch Preferences-node so each test starts without a stored home-directory.
      */
+    /** Saved so the build's scratch-home `-D` can be put back after each test. */
+    private var homeDirectoryProperty: String? = null
+
+    /**
+     * Detaches from the build's scratch-home `-D`. This class drives the home directory through the scratch
+     * Preferences-node, which an explicit override would outrank -- see `PathsConfigTest` for why the build sets it.
+     */
+    @BeforeEach
+    fun detachFromTheBuildsScratchHome() {
+        homeDirectoryProperty = System.getProperty(PathsConfig.HOME_DIRECTORY_KEY)
+        System.clearProperty(PathsConfig.HOME_DIRECTORY_KEY)
+    }
+
     @AfterEach
     fun clearScratchPreferences() {
         scratchPreferences.clear()
         scratchPreferences.sync()
+        homeDirectoryProperty
+            ?.let { System.setProperty(PathsConfig.HOME_DIRECTORY_KEY, it) }
+            ?: System.clearProperty(PathsConfig.HOME_DIRECTORY_KEY)
     }
 
     /**

@@ -77,4 +77,58 @@ internal class BootCandidateSelectorTest {
         Assertions.assertEquals("dep-1.19.2.jar", BootCandidateSelector.pickDependencyFile(files, "Forge", "1.21")?.fileName)
         Assertions.assertNull(BootCandidateSelector.pickDependencyFile(files, "Fabric", "1.20.1"))
     }
+
+    /**
+     * A Quilt boot must accept a **Fabric**-tagged dependency file, because Quilt deliberately runs Fabric mods —
+     * which is why the canonical dependency of a Quilt mod is Fabric API, a project that publishes only Fabric files.
+     *
+     * Measured live on 2026-07-30: strict loader matching silently dropped **210** dependencies, 210 of them on
+     * Quilt, and the single most-dropped ref was `P7dR8mSH` — Fabric API (CurseForge `306612`) — 27 times in one
+     * sweep. The mod then hard-failed with "requires fabric-api" and the whole boot was wasted, which is the largest
+     * failure class in the kept boot logs.
+     */
+    @Test
+    fun aQuiltDependencyFallsBackToTheFabricBuild() {
+        val fabricApi = listOf(
+            file("fabric-api-0.100.0+1.20.1.jar", setOf("Fabric"), setOf("1.20.1")),
+            file("fabric-api-0.92.0+1.19.2.jar", setOf("Fabric"), setOf("1.19.2"))
+        )
+
+        Assertions.assertEquals(
+            "fabric-api-0.100.0+1.20.1.jar",
+            BootCandidateSelector.pickDependencyFile(fabricApi, "Quilt", "1.20.1")?.fileName,
+            "Quilt loads Fabric mods; refusing the Fabric build leaves the mod without its required dependency"
+        )
+    }
+
+    /** A real Quilt build is still preferred over the Fabric fallback when the dependency publishes both. */
+    @Test
+    fun aQuiltBuildWinsOverTheFabricFallback() {
+        val files = listOf(
+            file("dep-fabric.jar", setOf("Fabric"), setOf("1.20.1")),
+            file("dep-quilt.jar", setOf("Quilt"), setOf("1.20.1"))
+        )
+
+        Assertions.assertEquals("dep-quilt.jar", BootCandidateSelector.pickDependencyFile(files, "Quilt", "1.20.1")?.fileName)
+    }
+
+    /**
+     * The fallback is Quilt-only and deliberately not symmetric. Fabric cannot load Quilt mods, and NeoForge only
+     * loads Forge mods for a narrow range of Minecraft versions — guessing there would stage a jar the loader cannot
+     * use and turn a clean signal into noise.
+     */
+    @Test
+    fun theFallbackDoesNotApplyToOtherLoaders() {
+        val quiltOnly = listOf(file("dep-quilt.jar", setOf("Quilt"), setOf("1.20.1")))
+        val forgeOnly = listOf(file("dep-forge.jar", setOf("Forge"), setOf("1.20.1")))
+
+        Assertions.assertNull(
+            BootCandidateSelector.pickDependencyFile(quiltOnly, "Fabric", "1.20.1"),
+            "Fabric cannot load a Quilt mod"
+        )
+        Assertions.assertNull(
+            BootCandidateSelector.pickDependencyFile(forgeOnly, "NeoForge", "1.21.1"),
+            "NeoForge/Forge cross-loading is version-dependent — do not guess"
+        )
+    }
 }

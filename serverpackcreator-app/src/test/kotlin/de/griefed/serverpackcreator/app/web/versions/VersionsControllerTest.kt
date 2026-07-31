@@ -18,7 +18,7 @@ internal class VersionsControllerTest {
     private val apiWrapper = ApiWrapper.api(
         File(
             File("").absoluteFile.parent,
-            "serverpackcreator-api/src/test/resources/serverpackcreator.properties"
+            "serverpackcreator-api/build/resources/test/serverpackcreator.properties"
         )
     )
     private val mockMvc: MockMvc = MockMvcBuilders

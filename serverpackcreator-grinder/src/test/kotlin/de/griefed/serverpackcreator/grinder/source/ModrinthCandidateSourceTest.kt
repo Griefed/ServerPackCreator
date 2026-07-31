@@ -20,14 +20,17 @@
 package de.griefed.serverpackcreator.grinder.source
 
 import de.griefed.serverpackcreator.clientside.HttpFetcher
+import de.griefed.serverpackcreator.grinder.ModPlatforms
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.io.IOException
 
 /**
  * Pins the Modrinth candidate source against canned search JSON (no network): hits map to candidates
- * preserving the API's download order, pagination spans pages and stops when the catalog is exhausted,
- * a failed page returns what was already gathered, and `limit = 0` fetches nothing.
+ * preserving the API's download order, one slice may span several API pages, a slice starts at the
+ * requested offset and reports where to continue, and — the crawl-critical part — a *short* page reports
+ * `endOfCatalog` while a *failed* page does not.
  */
 internal class ModrinthCandidateSourceTest {
 
@@ -52,51 +55,92 @@ internal class ModrinthCandidateSourceTest {
     @Test
     fun mapsHitsToCandidatesPreservingDownloadOrder() {
         val fetcher = CannedSearch(mapOf(0 to searchJson("sodium" to 50_000_000, "jei" to 40_000_000, "create" to 30_000_000)))
-        val candidates = ModrinthCandidateSource(fetcher).candidates(limit = 3)
+        val page = ModrinthCandidateSource(fetcher).page(offset = 0, limit = 3)
 
-        Assertions.assertEquals(listOf("sodium", "jei", "create"), candidates.map { it.slug })
-        Assertions.assertEquals(listOf(50_000_000L, 40_000_000L, 30_000_000L), candidates.map { it.popularity })
-        Assertions.assertEquals("https://modrinth.com/mod/sodium", candidates.first().projectUrl)
+        Assertions.assertEquals(listOf("sodium", "jei", "create"), page.candidates.map { it.slug })
+        Assertions.assertEquals(listOf(50_000_000L, 40_000_000L, 30_000_000L), page.candidates.map { it.popularity })
+        Assertions.assertEquals("https://modrinth.com/mod/sodium", page.candidates.first().projectUrl)
+        Assertions.assertEquals(ModPlatforms.MODRINTH, page.candidates.first().platform)
     }
 
     @Test
-    fun paginatesAcrossPagesUpToTheLimit() {
+    fun fillsOneSliceFromSeveralApiPages() {
         val fetcher = CannedSearch(
             mapOf(
                 0 to searchJson("a" to 9, "b" to 8),
                 2 to searchJson("c" to 7, "d" to 6)
             )
         )
-        val candidates = ModrinthCandidateSource(fetcher, pageSize = 2).candidates(limit = 3)
+        val page = ModrinthCandidateSource(fetcher, pageSize = 2).page(offset = 0, limit = 3)
 
-        Assertions.assertEquals(listOf("a", "b", "c"), candidates.map { it.slug })
+        Assertions.assertEquals(listOf("a", "b", "c"), page.candidates.map { it.slug })
         Assertions.assertEquals(listOf(0, 2), fetcher.requestedOffsets)
+        Assertions.assertEquals(3, page.nextOffset, "only what was handed out counts as consumed")
+        Assertions.assertFalse(page.endOfCatalog)
+    }
+
+    /** The crawl case: a slice deep in the catalog starts where it was told to, not at the top. */
+    @Test
+    fun startsAtTheRequestedOffsetAndReportsWhereToContinue() {
+        val fetcher = CannedSearch(mapOf(500 to searchJson("deep" to 3, "deeper" to 2)))
+        val page = ModrinthCandidateSource(fetcher, pageSize = 2).page(offset = 500, limit = 2)
+
+        Assertions.assertEquals(listOf(500), fetcher.requestedOffsets, "must not restart at offset 0")
+        Assertions.assertEquals(listOf("deep", "deeper"), page.candidates.map { it.slug })
+        Assertions.assertEquals(502, page.nextOffset)
     }
 
     @Test
-    fun stopsWhenTheCatalogIsExhausted() {
+    fun aShortPageMeansTheCatalogEnded() {
         val fetcher = CannedSearch(mapOf(0 to searchJson("a" to 9, "b" to 8)))
-        // Asks for 100 but only two exist; the short page ends pagination without a wasted extra call.
-        val candidates = ModrinthCandidateSource(fetcher, pageSize = 100).candidates(limit = 100)
+        // Asks for 100 but only two exist; the short page ends the slice without a wasted extra call.
+        val page = ModrinthCandidateSource(fetcher, pageSize = 100).page(offset = 0, limit = 100)
 
-        Assertions.assertEquals(2, candidates.size)
+        Assertions.assertEquals(2, page.candidates.size)
         Assertions.assertEquals(listOf(0), fetcher.requestedOffsets)
+        Assertions.assertTrue(page.endOfCatalog, "fewer hits than asked for is the end of the catalog")
     }
 
     @Test
-    fun aFailedPageReturnsWhatWasAlreadyGathered() {
-        val fetcher = CannedSearch(mapOf(0 to searchJson("a" to 9, "b" to 8)), throwAtOffset = 2)
-        val candidates = ModrinthCandidateSource(fetcher, pageSize = 2).candidates(limit = 10)
+    fun anEmptyPagePastTheEndMeansTheCatalogEnded() {
+        val fetcher = CannedSearch(emptyMap()) // every offset answers with zero hits
+        val page = ModrinthCandidateSource(fetcher, pageSize = 100).page(offset = 90_000, limit = 100)
 
-        Assertions.assertEquals(listOf("a", "b"), candidates.map { it.slug })
+        Assertions.assertTrue(page.candidates.isEmpty())
+        Assertions.assertTrue(page.endOfCatalog)
+        Assertions.assertEquals(90_000, page.nextOffset, "nothing consumed, so the offset stands")
+    }
+
+    /**
+     * A failed request must **not** look like the end of the catalog: the crawler wraps around to offset 0
+     * on `endOfCatalog`, so a transient 503 deep in the catalog would otherwise throw away the whole crawl
+     * position and restart at the most-downloaded mods.
+     */
+    @Test
+    fun aFailedPageReturnsWhatWasGatheredWithoutClaimingTheCatalogEnded() {
+        val fetcher = CannedSearch(mapOf(0 to searchJson("a" to 9, "b" to 8)), throwAtOffset = 2)
+        val page = ModrinthCandidateSource(fetcher, pageSize = 2).page(offset = 0, limit = 10)
+
+        Assertions.assertEquals(listOf("a", "b"), page.candidates.map { it.slug })
+        Assertions.assertEquals(2, page.nextOffset, "resume after what did arrive")
+        Assertions.assertFalse(page.endOfCatalog, "a failed request is not the end of the catalog")
     }
 
     @Test
     fun limitZeroFetchesNothing() {
         val fetcher = CannedSearch(emptyMap())
-        val candidates = ModrinthCandidateSource(fetcher).candidates(limit = 0)
+        val page = ModrinthCandidateSource(fetcher).page(offset = 40, limit = 0)
 
-        Assertions.assertTrue(candidates.isEmpty())
+        Assertions.assertTrue(page.candidates.isEmpty())
         Assertions.assertTrue(fetcher.requestedOffsets.isEmpty(), "limit 0 must not hit the API")
+        Assertions.assertEquals(40, page.nextOffset)
+        Assertions.assertFalse(page.endOfCatalog, "asking for nothing proves nothing about the catalog")
+    }
+
+    @Test
+    fun rejectsANegativeOffsetOrLimit() {
+        val source = ModrinthCandidateSource(CannedSearch(emptyMap()))
+        assertThrows<IllegalArgumentException> { source.page(offset = -1, limit = 10) }
+        assertThrows<IllegalArgumentException> { source.page(offset = 0, limit = -1) }
     }
 }

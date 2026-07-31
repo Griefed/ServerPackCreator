@@ -53,7 +53,7 @@ class ContainerServerRunner(
      * container's raw output onto a [RunResult]. A pack without a start-script is [RunResult.NotStarted]
      * (never launched), matching the host runner so both report the same "cannot launch" contract.
      */
-    override fun run(serverPack: File, timeout: Duration): RunResult {
+    override fun run(serverPack: File, timeout: Duration, onLine: (String) -> Unit): RunResult {
         val startScript = File(serverPack, "start.sh")
         if (!startScript.isFile) {
             return RunResult.NotStarted("No start.sh in the generated server pack.")
@@ -67,7 +67,7 @@ class ContainerServerRunner(
             mounts = listOf(BindMount(serverPack.absolutePath, PACK_MOUNT, readOnly = false)),
             resources = resources
         )
-        val output = engine.run(spec, readyLine, timeout)
+        val output = engine.run(spec, readyLine, timeout, onLine)
         return RunResult.Completed(output.lines, output.exitCode, output.timedOut)
     }
 }

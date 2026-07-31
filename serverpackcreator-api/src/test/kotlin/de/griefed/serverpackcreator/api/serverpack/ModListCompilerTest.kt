@@ -42,7 +42,7 @@ import java.io.File
  */
 internal class ModListCompilerTest {
 
-    private val api = ApiWrapper.api(File("src/test/resources/serverpackcreator.properties"))
+    private val api = ApiWrapper.api(File("build/resources/test/serverpackcreator.properties"))
     private val apiProperties = api.apiProperties
     private val modListCompiler = ModListCompiler(apiProperties, api.modScanner)
 

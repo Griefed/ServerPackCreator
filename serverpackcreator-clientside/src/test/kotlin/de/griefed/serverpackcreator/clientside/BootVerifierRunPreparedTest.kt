@@ -40,7 +40,7 @@ internal class BootVerifierRunPreparedTest {
         val pack = preparedPack(dir)
         val order = mutableListOf<String>()
         val handed = mutableListOf<BootVerifier.Prepared.Ready>()
-        val runner = ServerRunner { _, _ ->
+        val runner = ServerRunner { _, _, _ ->
             order.add("run")
             RunResult.Completed(listOf("[Server thread/INFO]: Done (1.0s)! For help"), 0, false)
         }
@@ -55,7 +55,7 @@ internal class BootVerifierRunPreparedTest {
     @Test
     fun aThrownPostProcessorIsInconclusiveAndSkipsTheBoot(@TempDir dir: File) {
         var booted = false
-        val runner = ServerRunner { _, _ -> booted = true; RunResult.Completed(emptyList(), 0, false) }
+        val runner = ServerRunner { _, _, _ -> booted = true; RunResult.Completed(emptyList(), 0, false) }
 
         val outcome = BootVerifier.runPrepared(preparedPack(dir), runner, { throw IllegalStateException("overlay failed") }, Duration.ofMinutes(1))
 
@@ -66,7 +66,7 @@ internal class BootVerifierRunPreparedTest {
 
     @Test
     fun nullPostProcessorBootsDirectly(@TempDir dir: File) {
-        val runner = ServerRunner { _, _ ->
+        val runner = ServerRunner { _, _, _ ->
             RunResult.Completed(listOf("java.lang.NoClassDefFoundError: net/minecraft/client/Foo"), 1, false)
         }
 

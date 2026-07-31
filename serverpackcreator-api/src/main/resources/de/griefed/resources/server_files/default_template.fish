@@ -338,41 +338,52 @@ function setupFabric
     set -g FABRIC_CHECK_URL "https://meta.fabricmc.net/v2/versions/loader/$MINECRAFT_VERSION/$MODLOADER_VERSION/server/json"
     set -g IMPROVED_FABRIC_LAUNCHER_URL "https://meta.fabricmc.net/v2/versions/loader/$MINECRAFT_VERSION/$MODLOADER_VERSION/$FABRIC_INSTALLER_VERSION/server/jar"
 
-    if commandAvailable curl
-        set -g FABRIC_AVAILABLE (curl -LI "$FABRIC_CHECK_URL" -o /dev/null -w '%{http_code}\n' -s)
-    else if commandAvailable wget
-        set -g FABRIC_AVAILABLE (wget --spider --server-response "$FABRIC_CHECK_URL" 2>&1 | awk '/^  HTTP/{print $2}')
-    end
-
-    if commandAvailable curl
-        set -g IMPROVED_FABRIC_LAUNCHER_AVAILABLE (curl -LI "$IMPROVED_FABRIC_LAUNCHER_URL" -o /dev/null -w '%{http_code}\n' -s)
-    else if commandAvailable wget
-        set -g IMPROVED_FABRIC_LAUNCHER_AVAILABLE (wget --spider --server-response "$IMPROVED_FABRIC_LAUNCHER_URL" 2>&1 | awk '/^  HTTP/{print $2}')
-    end
-
-    if test "$IMPROVED_FABRIC_LAUNCHER_AVAILABLE" = "200"
-        echo "Improved Fabric Server Launcher available..."
-        echo "The improved launcher will be used to run this Fabric server."
+    # An already-installed launcher needs neither a check nor a download. This must come FIRST: the checks below
+    # ask the network, and a failed request is indistinguishable from "Fabric does not support this version" —
+    # which made a complete, ready-to-run pack refuse to start whenever it had no internet.
+    if test -s "fabric-server-launcher.jar"
+        echo "fabric-server-launcher.jar present. Moving on..."
         set -g LAUNCHER_JAR_LOCATION "fabric-server-launcher.jar"
-        downloadIfNotExist "fabric-server-launcher.jar" "fabric-server-launcher.jar" "$IMPROVED_FABRIC_LAUNCHER_URL" >/dev/null
-    else if test "$FABRIC_AVAILABLE" != "200"
-        crashServer "Fabric is not available for Minecraft $MINECRAFT_VERSION, Fabric $MODLOADER_VERSION."
-    else if test (downloadIfNotExist "fabric-server-launch.jar" "fabric-installer.jar" "$FABRIC_INSTALLER_URL") = "true"
-        echo "Installer downloaded..."
-        set -g LAUNCHER_JAR_LOCATION "fabric-server-launch.jar"
-        runJavaCommand "-jar fabric-installer.jar server -mcversion $MINECRAFT_VERSION -loader $MODLOADER_VERSION -downloadMinecraft"
-
-        if test -s "fabric-server-launch.jar"
-            rm -rf .fabric-installer
-            rm -f fabric-installer.jar
-            echo "Installation complete. fabric-installer.jar deleted."
-        else
-            rm -f fabric-installer.jar
-            crashServer "fabric-server-launch.jar not found. Maybe the Fabric servers are having trouble. Please try again in a couple of minutes and check your internet connection."
-        end
-    else
+    else if test -s "fabric-server-launch.jar"
         echo "fabric-server-launch.jar present. Moving on..."
         set -g LAUNCHER_JAR_LOCATION "fabric-server-launch.jar"
+    else
+        if commandAvailable curl
+            set -g FABRIC_AVAILABLE (curl -LI "$FABRIC_CHECK_URL" -o /dev/null -w '%{http_code}\n' -s)
+        else if commandAvailable wget
+            set -g FABRIC_AVAILABLE (wget --spider --server-response "$FABRIC_CHECK_URL" 2>&1 | awk '/^  HTTP/{print $2}')
+        end
+
+        if commandAvailable curl
+            set -g IMPROVED_FABRIC_LAUNCHER_AVAILABLE (curl -LI "$IMPROVED_FABRIC_LAUNCHER_URL" -o /dev/null -w '%{http_code}\n' -s)
+        else if commandAvailable wget
+            set -g IMPROVED_FABRIC_LAUNCHER_AVAILABLE (wget --spider --server-response "$IMPROVED_FABRIC_LAUNCHER_URL" 2>&1 | awk '/^  HTTP/{print $2}')
+        end
+
+        if test "$IMPROVED_FABRIC_LAUNCHER_AVAILABLE" = "200"
+            echo "Improved Fabric Server Launcher available..."
+            echo "The improved launcher will be used to run this Fabric server."
+            set -g LAUNCHER_JAR_LOCATION "fabric-server-launcher.jar"
+            downloadIfNotExist "fabric-server-launcher.jar" "fabric-server-launcher.jar" "$IMPROVED_FABRIC_LAUNCHER_URL" >/dev/null
+        else if test "$FABRIC_AVAILABLE" != "200"
+            crashServer "Fabric is not available for Minecraft $MINECRAFT_VERSION, Fabric $MODLOADER_VERSION."
+        else if test (downloadIfNotExist "fabric-server-launch.jar" "fabric-installer.jar" "$FABRIC_INSTALLER_URL") = "true"
+            echo "Installer downloaded..."
+            set -g LAUNCHER_JAR_LOCATION "fabric-server-launch.jar"
+            runJavaCommand "-jar fabric-installer.jar server -mcversion $MINECRAFT_VERSION -loader $MODLOADER_VERSION -downloadMinecraft"
+
+            if test -s "fabric-server-launch.jar"
+                rm -rf .fabric-installer
+                rm -f fabric-installer.jar
+                echo "Installation complete. fabric-installer.jar deleted."
+            else
+                rm -f fabric-installer.jar
+                crashServer "fabric-server-launch.jar not found. Maybe the Fabric servers are having trouble. Please try again in a couple of minutes and check your internet connection."
+            end
+        else
+            echo "fabric-server-launch.jar present. Moving on..."
+            set -g LAUNCHER_JAR_LOCATION "fabric-server-launch.jar"
+        end
     end
 
     set -g SERVER_RUN_COMMAND "$JAVA_ARGS -jar $LAUNCHER_JAR_LOCATION nogui"
@@ -603,6 +614,9 @@ echo ""
 # Depending on $RESTART the server runs in a loop, to make sure it comes right back up after crashing.
 while true
     runJavaCommand "$ADDITIONAL_ARGS $SERVER_RUN_COMMAND"
+    # Captured immediately: the checks below run their own commands and would overwrite $status. The script exits with
+    # this status, so a crashed server is distinguishable from a clean shutdown by anything reading the exit code.
+    set -l server_exit_code $status
     if test "$SKIP_JAVA_CHECK" = "true"
         echo "Java version check was skipped. Did the server stop or crash because of a Java version mismatch?"
         echo "Detected $SEMANTICS[1].$SEMANTICS[2].$SEMANTICS[3] - Java $JAVA_VERSION, recommended $RECOMMENDED_JAVA_VERSION."
@@ -612,7 +626,7 @@ while true
         if test "$WAIT_FOR_USER_INPUT" = "true"
             pause
         end
-        exit 0
+        exit $server_exit_code
     end
     echo "Automatically restarting server in 5 seconds. Press CTRL + C to abort and exit."
     sleep 5

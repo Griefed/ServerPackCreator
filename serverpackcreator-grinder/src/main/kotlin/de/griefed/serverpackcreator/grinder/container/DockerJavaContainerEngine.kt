@@ -61,7 +61,7 @@ class DockerJavaContainerEngine(
      */
     private val liveContainers: MutableSet<String> = Collections.newSetFromMap(ConcurrentHashMap())
 
-    override fun run(spec: ContainerSpec, readyPattern: Regex, timeout: Duration): ContainerRunOutput {
+    override fun run(spec: ContainerSpec, readyPattern: Regex, timeout: Duration, onLine: (String) -> Unit): ContainerRunOutput {
         val containerId = client.createContainerCmd(spec.image)
             .withHostConfig(hostConfigFor(spec))
             .withCmd(spec.command)
@@ -85,6 +85,8 @@ class DockerJavaContainerEngine(
                         for (line in String(frame.payload, Charsets.UTF_8).split("\n")) {
                             if (line.isEmpty()) continue
                             lines.add(line)
+                            // Hand the line on at once; a throwing sink must never break the boot stream.
+                            runCatching { onLine(line) }
                             if (readyPattern.containsMatchIn(line)) {
                                 ready.set(true)
                             }

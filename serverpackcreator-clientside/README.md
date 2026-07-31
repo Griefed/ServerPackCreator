@@ -19,13 +19,13 @@ because the author implemented their clientside code wrong.
 
 ## 1. Prerequisites
 
-| Requirement | Needed for | Notes |
-|---|---|---|
-| Java 21+ | everything | The installers ship their own Java runtime |
-| The ServerPackCreator jar | everything | From the [latest release](https://github.com/Griefed/ServerPackCreator/releases) |
-| `CURSEFORGE_API_KEY` | CurseForge links only | Modrinth needs no key. CurseForge's API refuses requests without one |
-| Network | everything | Resolving projects, downloading jars |
-| Browser system libraries | locked CurseForge files, **on Linux** | See below — a headless Chromium needs OS libraries that a bare server usually lacks |
+| Requirement               | Needed for                            | Notes                                                                               |
+|---------------------------|---------------------------------------|-------------------------------------------------------------------------------------|
+| Java 21+                  | everything                            | The installers ship their own Java runtime                                          |
+| The ServerPackCreator jar | everything                            | From the [latest release](https://github.com/Griefed/ServerPackCreator/releases)    |
+| `CURSEFORGE_API_KEY`      | CurseForge links only                 | Modrinth needs no key. CurseForge's API refuses requests without one                |
+| Network                   | everything                            | Resolving projects, downloading jars                                                |
+| Browser system libraries  | locked CurseForge files, **on Linux** | See below — a headless Chromium needs OS libraries that a bare server usually lacks |
 
 ```bash
 export CURSEFORGE_API_KEY="your-key"      # only if you pass curseforge.com links
@@ -60,11 +60,11 @@ Use this when you already have the jars on disk and just want to know what their
 java -jar serverpackcreator.jar -scan /path/to/mods --loader Fabric --minecraft 1.20.1
 ```
 
-| Argument | Short | Required | Meaning |
-|---|---|---|---|
-| `-scan <dir>` | | yes | Directory containing the mod jars |
-| `--loader <name>` | `-l` | yes | `Forge`, `NeoForge`, `Fabric`, `Quilt` or `LegacyFabric` |
-| `--minecraft <ver>` | `-m` | yes | Minecraft version, e.g. `1.20.1` |
+| Argument            | Short | Required | Meaning                                                  |
+|---------------------|-------|----------|----------------------------------------------------------|
+| `-scan <dir>`       |       | yes      | Directory containing the mod jars                        |
+| `--loader <name>`   | `-l`  | yes      | `Forge`, `NeoForge`, `Fabric`, `Quilt` or `LegacyFabric` |
+| `--minecraft <ver>` | `-m`  | yes      | Minecraft version, e.g. `1.20.1`                         |
 
 Prints **JSON** to stdout — one entry per jar with the sideness it declares. No network, no boot.
 
@@ -82,10 +82,10 @@ java -jar serverpackcreator.jar -clientsidereport https://modrinth.com/mod/modme
 java -jar serverpackcreator.jar -clientsidereport https://modrinth.com/mod/modmenu --output report.md
 ```
 
-| Argument | Short | Required | Meaning |
-|---|---|---|---|
-| `-clientsidereport <url>` | | yes | CurseForge or Modrinth project link |
-| `--output <file>` | `-o` | no | Write the report here instead of stdout |
+| Argument                  | Short | Required | Meaning                                 |
+|---------------------------|-------|----------|-----------------------------------------|
+| `-clientsidereport <url>` |       | yes      | CurseForge or Modrinth project link     |
+| `--output <file>`         | `-o`  | no       | Write the report here instead of stdout |
 
 ---
 
@@ -103,11 +103,11 @@ traffic and a few hundred MB of disk.
 
 **How to read the verdict:**
 
-| Result | Meaning |
-|---|---|
-| `CRASHED` → **HIGH** | Decisive. The server died with the mod in place — it is clientside-only, whatever it declares |
-| `SURVIVED` → **MEDIUM** | The server booted fine. This is *not* proof of server-safety, only absence of a crash |
-| `INCONCLUSIVE` | Nothing was learned: no bootable loader/Minecraft combination, a download failed, or the boot aborted *before* the mod loaded (e.g. the loader has no build for that Minecraft) |
+| Result                  | Meaning                                                                                                                                                                         |
+|-------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `CRASHED` → **HIGH**    | Decisive. The server died with the mod in place — it is clientside-only, whatever it declares                                                                                   |
+| `SURVIVED` → **MEDIUM** | The server booted fine. This is *not* proof of server-safety, only absence of a crash                                                                                           |
+| `INCONCLUSIVE`          | Nothing was learned: no bootable loader/Minecraft combination, a download failed, or the boot aborted *before* the mod loaded (e.g. the loader has no build for that Minecraft) |
 
 The asymmetry is deliberate. Only a crash proves anything.
 
@@ -122,11 +122,11 @@ fallback list — no manual editing, no staging.
 java -jar serverpackcreator.jar -clientsideapply --report report.json
 ```
 
-| Argument | Short | Required | Meaning |
-|---|---|---|---|
-| `--report <file>` | `-r` | yes | The clientside-report **JSON** to read entries from |
-| `--generation-config <file>` | | no | Path to `GenerationConfig.kt`; defaults to the in-repo location |
-| `--properties <file>` | | no | Path to the `serverpackcreator.properties` holding `fallbackmodslist` |
+| Argument                     | Short | Required | Meaning                                                               |
+|------------------------------|-------|----------|-----------------------------------------------------------------------|
+| `--report <file>`            | `-r`  | yes      | The clientside-report **JSON** to read entries from                   |
+| `--generation-config <file>` |       | no       | Path to `GenerationConfig.kt`; defaults to the in-repo location       |
+| `--properties <file>`        |       | no       | Path to the `serverpackcreator.properties` holding `fallbackmodslist` |
 
 The JSON comes from the report verbs: their Markdown embeds a hidden
 `<!-- clientside-report-data … -->` block that the accept step reads back.
@@ -151,16 +151,16 @@ clientsideapply -r report.json
 
 Every short flag has a long form, so the above can also be written out in full:
 
-| Short | Long | Used by |
-|---|---|---|
-| `-d` | `--directory` | `scan` |
-| `-l` | `--loader` | `scan` |
-| `-m` | `--minecraft` | `scan` |
-| `-u` | `--url` | `clientsidereport`, `verifyclientside` |
-| `-o` | `--output` | `clientsidereport`, `verifyclientside` |
-| `-r` | `--report` | `clientsideapply` |
-| | `--generation-config` | `clientsideapply` |
-| | `--properties` | `clientsideapply` |
+| Short | Long                  | Used by                                |
+|-------|-----------------------|----------------------------------------|
+| `-d`  | `--directory`         | `scan`                                 |
+| `-l`  | `--loader`            | `scan`                                 |
+| `-m`  | `--minecraft`         | `scan`                                 |
+| `-u`  | `--url`               | `clientsidereport`, `verifyclientside` |
+| `-o`  | `--output`            | `clientsidereport`, `verifyclientside` |
+| `-r`  | `--report`            | `clientsideapply`                      |
+|       | `--generation-config` | `clientsideapply`                      |
+|       | `--properties`        | `clientsideapply`                      |
 
 Each command accepts `--help`.
 
@@ -168,14 +168,14 @@ Each command accepts `--help`.
 
 ## 7. Troubleshooting
 
-| Symptom | Cause & fix |
-|---|---|
-| CurseForge link fails to resolve | `CURSEFORGE_API_KEY` unset or invalid — Modrinth links are unaffected |
-| A file won't download | The author disabled third-party distribution, so the headless browser takes over. On first use it needs network for the browser binary, and on Linux the system libraries from `npx --yes playwright install-deps chromium` |
-| Chromium fails to launch | Missing OS libraries on a headless host — run `npx --yes playwright install-deps chromium`. Only locked files are affected |
-| Everything comes back `INCONCLUSIVE` | Usually no bootable combination: the mod's newest file may target a Minecraft version its loader has no build for, or only pre-releases. Check the report's detail line |
-| Boot takes very long | Expected on a cold run — the first boot downloads the Minecraft server plus the loader |
-| I need this at catalogue scale | Use [`serverpackcreator-grinder`](../serverpackcreator-grinder/README.md), which runs these boots in parallel, isolated Docker containers |
+| Symptom                              | Cause & fix                                                                                                                                                                                                                 |
+|--------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| CurseForge link fails to resolve     | `CURSEFORGE_API_KEY` unset or invalid — Modrinth links are unaffected                                                                                                                                                       |
+| A file won't download                | The author disabled third-party distribution, so the headless browser takes over. On first use it needs network for the browser binary, and on Linux the system libraries from `npx --yes playwright install-deps chromium` |
+| Chromium fails to launch             | Missing OS libraries on a headless host — run `npx --yes playwright install-deps chromium`. Only locked files are affected                                                                                                  |
+| Everything comes back `INCONCLUSIVE` | Usually no bootable combination: the mod's newest file may target a Minecraft version its loader has no build for, or only pre-releases. Check the report's detail line                                                     |
+| Boot takes very long                 | Expected on a cold run — the first boot downloads the Minecraft server plus the loader                                                                                                                                      |
+| I need this at catalogue scale       | Use [`serverpackcreator-grinder`](../serverpackcreator-grinder/README.md), which runs these boots in parallel, isolated Docker containers                                                                                   |
 
 ---
 

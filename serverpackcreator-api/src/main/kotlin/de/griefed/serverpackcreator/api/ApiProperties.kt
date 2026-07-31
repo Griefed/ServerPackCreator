@@ -65,7 +65,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      */
     private val store = PropertyStore()
     private val internalProps = store.properties
-    private val spcPreferences = Preferences.userRoot().node("ServerPackCreator")
+    private val spcPreferences = Preferences.userRoot().node(resolvePreferencesNode())
     private val serverPackCreatorProperties = "serverpackcreator.properties"
     private val jarInformation: JarInformation = JarInformation(this.javaClass)
     private val jarFolderProperties: File = File(jarInformation.jarFolder.absoluteFile, serverPackCreatorProperties)
@@ -1304,6 +1304,43 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         fun getSeparator(): String {
             return File.separator
         }
+
+        /**
+         * The `Preferences` node ServerPackCreator stores its settings — most importantly the home directory — in,
+         * unless overridden. Kept as-is so existing installations keep finding their settings.
+         */
+        const val DEFAULT_PREFERENCES_NODE = "ServerPackCreator"
+
+        /** System property naming the `Preferences` node to use, for hosts that can set it in-process. */
+        const val PREFERENCES_NODE_PROPERTY = "de.griefed.serverpackcreator.preferences.node"
+
+        /** Environment variable naming the `Preferences` node to use, for launchers that cannot set a property. */
+        const val PREFERENCES_NODE_ENV = "SPC_PREFERENCES_NODE"
+
+        /**
+         * Decide which `Preferences` node to store settings in: the [PREFERENCES_NODE_PROPERTY] system property
+         * first, then the [PREFERENCES_NODE_ENV] environment variable, else [DEFAULT_PREFERENCES_NODE].
+         *
+         * **Why this is overridable at all:** the node is per-user and machine-wide, and
+         * `PathsConfig.homeDirectory` re-reads it on every access while writing back what it resolved. With a single
+         * hard-coded node, any SPC process could relocate any other running process's home directory — a test suite
+         * moved a live grinder daemon's home into its own scratch directory and then deleted it, and equally, running
+         * the suites moved the developer's own GUI home. Giving each host its own node makes that impossible.
+         *
+         * A blank override falls back to the default rather than being honoured: `userRoot().node("")` is the *root*
+         * node, shared with every other Java application on the account.
+         *
+         * @param property    The system-property value (injectable for tests).
+         * @param environment The environment-variable value (injectable for tests).
+         */
+        @JvmStatic
+        @JvmOverloads
+        fun resolvePreferencesNode(
+            property: String? = System.getProperty(PREFERENCES_NODE_PROPERTY),
+            environment: String? = System.getenv(PREFERENCES_NODE_ENV)
+        ): String = property?.takeIf { it.isNotBlank() }
+            ?: environment?.takeIf { it.isNotBlank() }
+            ?: DEFAULT_PREFERENCES_NODE
     }
 
     override fun getSupportedTypes(): Array<String> = suffixes

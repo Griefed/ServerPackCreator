@@ -12,13 +12,13 @@ import java.util.*
 
 internal class ServerPackHandlerTest {
     private val configurationHandler =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).configurationHandler
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).configurationHandler
     private val serverPackHandler =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).serverPackHandler
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).serverPackHandler
     private val versionMeta =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).versionMeta
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).versionMeta
     private val apiProperties =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).apiProperties
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).apiProperties
 
     init {
         File("src/test/resources/custom_template.ps1").copyTo(

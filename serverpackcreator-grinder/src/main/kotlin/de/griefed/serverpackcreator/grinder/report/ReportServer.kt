@@ -19,7 +19,13 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.sun.net.httpserver.HttpExchange
+import de.griefed.serverpackcreator.grinder.GrinderStatus
+import de.griefed.serverpackcreator.grinder.ModPlatforms
+import de.griefed.serverpackcreator.grinder.loader.LoaderCache
+import de.griefed.serverpackcreator.grinder.source.CursorStore
+import java.io.File
 import com.sun.net.httpserver.HttpServer
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.net.InetSocketAddress
@@ -41,11 +47,15 @@ import java.util.concurrent.Executors
 class ReportServer(
     private val store: VerdictStore,
     requestedPort: Int = 8757,
-    host: String = "127.0.0.1"
+    host: String = "127.0.0.1",
+    private val status: GrinderStatus? = null,
+    private val cursors: CursorStore? = null,
+    private val cacheRoot: File? = null
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val server: HttpServer = HttpServer.create(InetSocketAddress(host, requestedPort), 0)
     private var pool: ExecutorService? = null
+    private val mapper = jacksonObjectMapper()
 
     /** The actually-bound port (meaningful after [start], especially when an ephemeral `0` was asked). */
     val port: Int get() = server.address.port
@@ -55,6 +65,9 @@ class ReportServer(
         // Longest-prefix match means /export.csv wins for that path; everything else renders the table.
         server.createContext("/export.csv") { exchange ->
             respond(exchange, "text/csv; charset=utf-8", VerdictCsvExporter.toCsv(store.all()))
+        }
+        server.createContext("/status") { exchange ->
+            respond(exchange, "application/json; charset=utf-8", statusJson())
         }
         server.createContext("/") { exchange ->
             respond(exchange, "text/html; charset=utf-8", VerdictReportRenderer.toHtml(store.all()))
@@ -69,6 +82,36 @@ class ReportServer(
     fun stop() {
         server.stop(0)
         pool?.shutdownNow()
+    }
+
+    /**
+     * The live activity document: what the daemon is doing *now*, as opposed to what it has found. Answers the
+     * operator question the verdict table cannot — which pass, which candidate each worker holds and for how
+     * long, where the crawl stands per platform, and how big the install cache has grown.
+     *
+     * Serialized with Jackson rather than hand-built, so a mod slug containing quotes or braces cannot break the
+     * document. Anything unavailable (no status/cursors/cache wired, or an unreadable cache dir) is reported as
+     * `null`/absent rather than failing the request — a monitoring endpoint that 500s is worse than a thin one.
+     */
+    private fun statusJson(): String {
+        val document = linkedMapOf<String, Any?>(
+            "verdicts" to store.all().size,
+            "activity" to status?.snapshot(),
+            "crawl" to cursors?.let { store ->
+                ModPlatforms.known.associateWith { platform ->
+                    val cursor = store.cursor(platform)
+                    linkedMapOf("offset" to cursor.offset, "sweeps" to cursor.sweeps, "partition" to cursor.partition)
+                }
+            },
+            "loaderCache" to cacheRoot?.let { root ->
+                runCatching {
+                    val tuples = root.walkTopDown().maxDepth(4).count { it.name == LoaderCache.MARKER }
+                    linkedMapOf("installedTuples" to tuples, "path" to root.absolutePath)
+                }.getOrNull()
+            }
+        )
+        return runCatching { mapper.writerWithDefaultPrettyPrinter().writeValueAsString(document) }
+            .getOrElse { "{\"error\":\"status unavailable\"}" }
     }
 
     /** Write [body] as a 200 response with the given [contentType], closing the exchange. */

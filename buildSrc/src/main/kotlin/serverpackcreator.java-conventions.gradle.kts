@@ -29,6 +29,19 @@ java {
 
 tasks.test {
     useJUnitPlatform()
+    // Keep test runs off the shared Preferences node. SPC's home directory lives in a per-user, machine-wide node
+    // that PathsConfig re-reads on every access and writes back to, so a suite booting an ApiWrapper would relocate
+    // the home of every other SPC process on the account — it moved a live grinder daemon's home into a test
+    // scratch dir (which the suite then deleted), and equally moves a developer's own GUI home. One node per
+    // module, so the suites cannot collide with each other either. Pinned by `PreferencesNodeTest`.
+    systemProperty("de.griefed.serverpackcreator.preferences.node", "ServerPackCreator-test-${project.name}")
+    // And an isolated home to go with it: `<module>/tests`, the directory the project already reserves for exactly
+    // this (gitignored bar its .gitkeep, and what `server.tomcat.basedir` has always pointed at). ApiWrapper.setup()
+    // *writes* into the home directory -- README.md, CHANGELOG.md, the server_files templates, manifests, logs -- and
+    // with no stored home a dev build falls back to the working directory, which for a test JVM is the module's own
+    // source tree; that is how a suite once overwrote serverpackcreator-clientside/README.md's CLI guide with the
+    // bundled root README. Pinned by `PathsConfigTest`.
+    systemProperty("de.griefed.serverpackcreator.home", layout.projectDirectory.dir("tests").asFile.absolutePath)
     testLogging {
         events = setOf(
             TestLogEvent.PASSED,
