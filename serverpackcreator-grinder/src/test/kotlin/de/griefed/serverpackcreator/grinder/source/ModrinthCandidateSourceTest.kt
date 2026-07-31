@@ -143,4 +143,37 @@ internal class ModrinthCandidateSourceTest {
         assertThrows<IllegalArgumentException> { source.page(offset = -1, limit = 10) }
         assertThrows<IllegalArgumentException> { source.page(offset = 0, limit = -1) }
     }
+
+    /**
+     * Pins the offset-ceiling boundary that decides whether a truncated crawl can be told apart from a finished one.
+     *
+     * Measured 2026-07-29: Modrinth serves deep offsets (40 000 returns real hits) but clamps at 99 999, answering
+     * with **zero hits** past it rather than an error — which `page` cannot distinguish from an exhausted catalog. At
+     * ~71 000 `project_type:mod` projects there is headroom today, so this is a guard against a future silent
+     * truncation: if the catalog outgrows the ceiling, the sweep would wrap early and report itself complete.
+     */
+    @Test
+    fun theOffsetCeilingBoundaryIsPinned() {
+        // One page short of the ceiling: still safe, no warning warranted.
+        Assertions.assertFalse(ModrinthCandidateSource.approachingOffsetCeiling(offset = 99_000, pageSize = 100))
+        // The next page would reach it.
+        Assertions.assertTrue(ModrinthCandidateSource.approachingOffsetCeiling(offset = 99_899, pageSize = 100))
+        Assertions.assertTrue(ModrinthCandidateSource.approachingOffsetCeiling(offset = 120_000, pageSize = 100))
+
+        // An empty page below the ceiling really is the end of the catalog.
+        Assertions.assertFalse(ModrinthCandidateSource.ceilingMayMasqueradeAsEnd(offset = 71_000))
+        // At or past it, "empty" is ambiguous and must be called out.
+        Assertions.assertTrue(ModrinthCandidateSource.ceilingMayMasqueradeAsEnd(offset = ModrinthCandidateSource.OFFSET_CEILING))
+        Assertions.assertTrue(ModrinthCandidateSource.ceilingMayMasqueradeAsEnd(offset = 150_000))
+    }
+
+    /** Today's catalog size must stay clear of the ceiling; if this ever inverts, the crawl needs facet-partitioning. */
+    @Test
+    fun todaysCatalogFitsBelowTheCeiling() {
+        val measuredModProjects = 71_000
+        Assertions.assertTrue(
+            measuredModProjects < ModrinthCandidateSource.OFFSET_CEILING,
+            "Modrinth's mod catalog has outgrown the offset ceiling — the tail is unreachable and the crawl wraps early"
+        )
+    }
 }
