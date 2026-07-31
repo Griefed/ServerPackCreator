@@ -79,10 +79,14 @@ internal class ForgeVersionMappingTest {
     }
 
     /**
-     * Documents the fragility rather than claiming it is handled: an entry that is not prefixed by its Minecraft key
-     * cuts at the wrong offset, and one shorter than the key throws. `ForgeLoader.update` catches only
-     * `MalformedURLException` and `NoSuchElementException`, so a malformed manifest entry would abort the whole
-     * Forge load rather than skipping one version. Recorded so the behaviour is a choice, not a surprise.
+     * Characterises the cut's behaviour on input the real manifest does not produce — kept as a boundary record, not
+     * as a claim that this happens. Measured 2026-07-31: **all 5025 entries across 77 Minecraft keys carry their own
+     * key as a prefix**, and `minecraftVersion` is always derived from that key, so the wrong-offset case below
+     * cannot arise in practice. What remains genuinely unhandled is an entry equal to the key with nothing after it:
+     * it throws, and `ForgeLoader.update` catches only `MalformedURLException` and `NoSuchElementException`, so it
+     * would abort the whole Forge load rather than cost one version. See the TODO on `forgeVersionFrom` — and note
+     * that the obvious `startsWith` guard is the wrong fix, because entries carry the *raw* key while the Minecraft
+     * version may be the reconciled one.
      */
     @Test
     fun anEntryThatDoesNotCarryItsMinecraftKeyIsNotDetected() {

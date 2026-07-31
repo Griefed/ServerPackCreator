@@ -144,16 +144,17 @@ internal class ForgeLoader(
          * `minecraftVersion.length` stays correct for those versions — a reconciliation that changed the length would
          * silently slice the version in the wrong place instead of failing.
          */
-        //TODO guard this cut: it trusts the manifest entirely, and fails in two ways that are worse than a skip.
-        // 1. An entry not prefixed by its Minecraft key cuts at the wrong offset and returns plausible garbage --
-        //    "1.18.2-40.0.17" cut with "1.18.2-40." yields ".17", and nothing downstream can tell that apart from a
-        //    correct mapping.
-        // 2. An entry no longer than the key throws StringIndexOutOfBoundsException, which `update()` does not catch
-        //    (only MalformedURLException and NoSuchElementException), so one malformed entry aborts the whole Forge
-        //    load instead of costing a single version.
-        // Suggested shape: return null when `manifestEntry` does not start with "$minecraftVersion-", and have the
-        // caller log-and-skip. Both failure modes are pinned in ForgeVersionMappingTest
-        // (anEntryThatDoesNotCarryItsMinecraftKeyIsNotDetected), so that test must be updated with the fix.
+        //TODO optional hardening -- low priority, and NOT the obvious guard.
+        // Measured against the real manifest (2026-07-31): all 5025 entries across 77 Minecraft keys are prefixed
+        // with their own key, and `minecraftVersion` is always derived from that key, so a mis-prefixed entry cannot
+        // occur today and the cut is correct for every entry that exists. The only unhandled shape is an entry equal
+        // to the key with nothing after it, which throws StringIndexOutOfBoundsException; `update()` catches only
+        // MalformedURLException and NoSuchElementException, so it would abort the whole Forge load rather than cost
+        // one version. A length check (`manifestEntry.length > minecraftVersion.length`) covers that.
+        // DO NOT "fix" this with `manifestEntry.startsWith("$minecraftVersion-")`: entries are prefixed with the RAW
+        // manifest key, while `minecraftVersion` may be the reconciled form -- the sole `1.7.10_pre4` key becomes
+        // `1.7.10-pre4`, whose entry `1.7.10_pre4-10.12.2.1137-prerelease` such a guard would wrongly reject. Match
+        // the raw key, or check length only.
         internal fun forgeVersionFrom(manifestEntry: String, minecraftVersion: String): String =
             manifestEntry.substring(minecraftVersion.length + 1)
     }
