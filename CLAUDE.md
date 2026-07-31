@@ -123,6 +123,19 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   "refactor", that's a signal the change is **not** behavior-preserving — stop and flag it.
 - Boy-Scout rule: leave touched files cleaner than you found them, but stay within the commit's
   stated scope; don't let cleanup sprawl into unrelated files.
+- **Shell templates, manifests and version parsing get their test written and observed failing FIRST.**
+  Not because the rule is different there, but because these fail *silently* — a wrong branch or a
+  mis-sliced version produces a plausible value, not an error — so they get verified by hand and pinned
+  afterwards, if at all. Two audits found three instances (`28a786b58` NeoForge mapping, no test;
+  `2e16bf0c8` fish `--no-empty`, test five commits later; `1a55797df` Fabric fall-through, whose guard
+  asserted *ordering* and stayed green while the behaviour was still broken). The cost is measurable:
+  the Forge launcher-era bug wasted **24 boots** before anything noticed, and 820 NeoForge versions were
+  mis-attributed to one Minecraft release.
+- **A test that only asserts shape is not a pin.** Prefer *executing* the unit — `ScriptTemplateContentTest`
+  extracts a shell function and runs it — over asserting substring positions or that a symbol exists. And
+  **confirm the test fails before the fix**: a guard whose teeth were never checked has repeatedly turned
+  out to assert nothing (twice in one session, when a mis-indented edit meant the "broken" run was
+  actually unmodified code).
 
 ### Kotlin idioms
 

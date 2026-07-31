@@ -1064,3 +1064,27 @@ Two harness facts cost time and are now recorded in the module's `CLAUDE.md`: `s
 the two download pages, so importing it drags in `boot/axios` → `#q-app/wrappers` and needs `vi.mock('boot/axios')`;
 and **QPage refuses to render outside a QLayout**, so a page test must stub it as a passthrough or the page's children
 never mount — which is why the existing download-page tests assert through `vm` rather than the DOM.
+
+### 2026-07-31 — Phase 6: the convention the session kept paying for (audit M-A)
+
+The audit's M-A finding was that template and parsing fixes get verified by hand and pinned afterwards — a *habit*, not
+an incident, found across two audits in three instances (`28a786b58` NeoForge mapping with no test; `2e16bf0c8` fish
+`--no-empty` pinned five commits later; `1a55797df` Fabric fall-through, whose guard asserted ordering and stayed green
+while the behaviour was broken). Phase 1 then supplied two more data points in the other direction: writing the test
+first and *watching it fail* is what proved both the Forge launcher-era bug and its latent NeoForge sibling.
+
+Two lines are now in the root `CLAUDE.md`'s **Refactor discipline**:
+
+1. Shell templates, manifests and version parsing get their test written and observed failing first — with the reason
+   (these fail silently, producing a plausible value rather than an error) and the measured cost (24 wasted boots; 820
+   mis-attributed NeoForge versions).
+2. A test that only asserts *shape* is not a pin — prefer executing the unit, and confirm the test fails before the fix.
+   That second half is not theoretical: a teeth-check silently passed **twice in this session** because a mis-indented
+   edit meant the supposedly-broken run was unmodified code. A guard whose teeth were never checked has repeatedly
+   turned out to assert nothing.
+
+**Also recorded (B13–B18):** six items observed while executing the plan but outside its phases — the unverified
+fish/`.ps1` template changes (the gated matrix IT has not run since), `HostProcessServerRunner` sharing the wall-clock
+deadline B9 fixed only in the container engine, the loader-cache marker not recording which template produced an
+install, the checked-in test properties still carrying machine-specific absolute paths (M1's other half), `.gitignore`
+hiding new `server_files` resources, and an install failure's console being wiped by the next attempt on that tuple.
