@@ -30,6 +30,19 @@ import java.io.File
  * * the list of clientside-only mods
  * * the list of files and folders to include or exclude
  * and more.
+ *
+ * **What every accessor here reads and writes is the tab's *live* state — what the user currently sees — not the
+ * last saved configuration.** That is the contract the individual methods rely on rather than repeating:
+ *
+ * * a getter reflects unsaved edits, so two calls around a user interaction can legitimately differ;
+ * * a setter mutates the tab exactly as typing into it would, which means SPC's own validation and status icons
+ *   react to it — call [validateInputFields] if you need that to happen at a point of your choosing;
+ * * nothing here persists anything. [getCurrentConfiguration] builds a `PackConfig` from the live state on demand,
+ *   and [saveCurrentConfiguration] is the only method that reaches disk.
+ *
+ * The paired `getX`/`getXList` accessors are the same data in two shapes: the string as it appears in the field,
+ * and the parsed entries. Prefer the list form for logic — the string form's delimiters are a UI detail.
+ *
  * @author Griefed
  */
 @Suppress("unused")
@@ -91,7 +104,10 @@ interface ServerPackConfigTab {
     /** The whitelist parsed into entries — the list form of [getWhitelist]. */
     fun getWhitelistList(): MutableList<String>
 
-    /** The inclusion specifications currently configured in the tab. */
+    /**
+     * The inclusion specifications currently configured. Order is meaningful: entries are applied in sequence, so a
+     * later one can copy over what an earlier one placed.
+     */
     fun getInclusions(): List<InclusionSpecification>
 
     /**
@@ -103,28 +119,31 @@ interface ServerPackConfigTab {
     /** Write the tab's current configuration to disk and return the file it was written to. */
     fun saveCurrentConfiguration(): File
 
-    /** The JVM arguments currently configured. */
+    /** The JVM arguments currently configured, as written into the generated start scripts. */
     fun getJavaArguments(): String
 
-    /** The selected Minecraft version. */
+    /** The selected Minecraft version, which determines loader-version validity and the required Java. */
     fun getMinecraftVersion(): String
 
-    /** The selected modloader, in SPC's canonical spelling. */
+    /** The selected modloader in SPC's canonical spelling (`Forge`, `NeoForge`, `Fabric`, `Quilt`, `LegacyFabric`). */
     fun getModloader(): String
 
-    /** The selected modloader version. */
+    /** The selected modloader version. Only meaningful together with [getModloader] and [getMinecraftVersion]. */
     fun getModloaderVersion(): String
 
-    /** The configured modpack directory. */
+    /** The configured modpack directory — the source the server pack is generated from. */
     fun getModpackDirectory(): String
 
-    /** The start-script placeholder values, keyed by their `SPC_..._SPC` marker. */
+    /**
+     * The start-script placeholder values, keyed by their `SPC_..._SPC` marker. Keys absent here fall back to
+     * `PackConfig.defaultScriptValues`, so an empty map is normal rather than a missing configuration.
+     */
     fun getScriptSettings(): HashMap<String, String>
 
     /** The configured server-icon path, or empty when the shipped default is used. */
     fun getServerIconPath(): String
 
-    /** The configured server-pack suffix. */
+    /** The configured suffix, appended to the generated directory's name so variants of one modpack can coexist. */
     fun getServerPackSuffix(): String
 
     /** The configured `server.properties` path, or empty when the shipped default is used. */
@@ -142,7 +161,7 @@ interface ServerPackConfigTab {
     /** Whether "include server.properties" is ticked. */
     fun isServerPropertiesInclusionTicked(): Boolean
 
-    /** Whether "also create a ZIP archive" is ticked. */
+    /** Whether "also create a ZIP archive" is ticked — the archive is what a web-frontend user downloads. */
     fun isZipArchiveCreationTicked(): Boolean
 
     /** Empty the start-script placeholder table, leaving generation to fall back on the shipped defaults. */
