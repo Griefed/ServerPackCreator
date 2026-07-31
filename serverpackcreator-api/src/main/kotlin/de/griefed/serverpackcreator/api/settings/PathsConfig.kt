@@ -103,7 +103,13 @@ class PathsConfig(
      */
     var homeDirectory: File = home.absoluteFile
         get() {
-            val setting = if (getPreference(HOME_DIRECTORY_KEY).isPresent) {
+            val systemPropertyHome = System.getProperty(HOME_DIRECTORY_KEY)?.takeIf { it.isNotBlank() }
+            val setting = if (systemPropertyHome != null) {
+                // An explicit `-D` wins outright. This is what lets a host that must not touch the shared state --
+                // above all a test JVM, whose working directory is the module's own source tree -- pin its home,
+                // because `ApiWrapper.setup()` *writes* into the home directory (README, CHANGELOG, server_files).
+                systemPropertyHome
+            } else if (getPreference(HOME_DIRECTORY_KEY).isPresent) {
                 getPreference(HOME_DIRECTORY_KEY).get()
             } else if (store.properties.containsKey(HOME_DIRECTORY_KEY) && store.properties.getProperty(HOME_DIRECTORY_KEY).isNotBlank()) {
                 store.properties.getProperty(HOME_DIRECTORY_KEY)

@@ -31,7 +31,33 @@ import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
  * @param versionMeta SPC's cached version manifests (from [de.griefed.serverpackcreator.api.ApiWrapper]).
  * @author Griefed
  */
-class LoaderVersionResolver(private val versionMeta: VersionMeta) {
+interface LoaderVersionPolicy {
+    /**
+     * The loader-version to actually boot for this pair, or `null` when none is usable. A caller with a warm
+     * install cache may deliberately return an *older* build here to avoid paying for a fresh install of a
+     * version that behaves identically — [BootVerifier] guards that choice by re-checking any crash against
+     * [latestVersion] before letting it stand.
+     */
+    fun preferredVersion(loader: String, minecraftVersion: String): String?
+
+    /**
+     * The authoritative newest loader-version, independent of any caching preference. Used for two things a
+     * preference must never weaken: the support gate that decides whether the loader/Minecraft combination is
+     * bootable at all, and the crash re-check.
+     */
+    fun latestVersion(loader: String, minecraftVersion: String): String?
+}
+
+/**
+ * The default [LoaderVersionPolicy]: always boot the newest known build, so `preferredVersion` and
+ * `latestVersion` are the same answer and [BootVerifier]'s crash re-check never has anything to re-check.
+ */
+class LoaderVersionResolver(private val versionMeta: VersionMeta) : LoaderVersionPolicy {
+
+    override fun preferredVersion(loader: String, minecraftVersion: String): String? = latest(loader, minecraftVersion)
+
+    override fun latestVersion(loader: String, minecraftVersion: String): String? = latest(loader, minecraftVersion)
+
 
     /**
      * Newest loader-version for the [loader]/[minecraftVersion] pair, or `null` when none is known —

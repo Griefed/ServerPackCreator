@@ -78,6 +78,74 @@ object BootLogClassifier {
     )
 
     /**
+     * Console evidence that the run died for lack of memory rather than because of the mod — the JVM's own
+     * out-of-memory reports and the shell's message when the kernel's OOM killer takes the server.
+     *
+     * A mod *can* be memory-hungry, but running out of memory is not evidence that it needs a client, and the
+     * confidence model only claims [BootResult.CRASHED] when it is sure. Measured 2026-07-30: the grinder caps a boot
+     * at 3 GiB while the host's Docker VM held 1.93 GiB, so the cap could not be honoured and fat mods were killed by
+     * the VM — which, without this, scored as a HIGH-confidence clientside crash.
+     */
+    private val outOfMemoryMarkers = Regex(
+        "(java\\.lang\\.OutOfMemoryError" +
+            "|insufficient memory for the Java Runtime Environment" +
+            "|Cannot allocate memory" +
+            "|Killed\\s+\"?\\\$?JAVA)",
+        RegexOption.IGNORE_CASE
+    )
+
+    /**
+     * The JVM never started: it could not open or identify the jar it was told to run. The server therefore never
+     * loaded the mod, so the run says nothing about sideness.
+     *
+     * Found live on 2026-07-30 immediately after exit-status propagation began working: consoles consisting of
+     * `Error: Unable to access jarfile forge.jar` (an incomplete cached Forge install layer) exited non-zero and were
+     * promoted to HIGH-confidence clientside — ten of the sweep's first fifteen HIGH verdicts, including the
+     * definitely-server-side libraries `balm`, `collective` and `geckolib`. Trusting the exit status is what made this
+     * class visible, which is why it needs the same pre-launch treatment as [setupAbortMarkers].
+     */
+    private val launchFailureMarkers = Regex(
+        "(Unable to access jarfile" +
+            "|Could not find or load main class" +
+            "|Invalid or corrupt jarfile)",
+        RegexOption.IGNORE_CASE
+    )
+
+    /**
+     * A mod whose **required dependencies** were not satisfied never got a fair test: it was refused before its own
+     * code ran, so its failure says nothing about client-vs-server.
+     *
+     * Staging force-includes the mod plus its recursively-resolved required deps, but resolution is imperfect —
+     * transitive requirements, version ranges and distribution-locked CurseForge files leak through. Measured
+     * 2026-07-30 across 112 kept boot logs: **36** failed exactly here, the largest single failure class. Kept
+     * deliberately narrow, and always subordinate to [clientOnlyClassMarker] below.
+     */
+    private val dependencyFailureMarkers = Regex(
+        "(Missing or unsupported mandatory dependencies" +
+            "|Unmet dependency listing" +
+            "|Incompatible mods found" +
+            "|requires .{1,80} or above" +
+            "|requires any version of)",
+        RegexOption.IGNORE_CASE
+    )
+
+    /**
+     * The decisive clientside signal: the server loaded the mod and then died reaching for a client-only class. This
+     * is the one thing the expensive boot exists to catch, so it outranks the dependency excuse above — an
+     * informational "Found 2 dependencies" line must never suppress it.
+     */
+    private val clientOnlyClassMarker = Regex(
+        "(NoClassDefFoundError: net/minecraft/client|ClassNotFoundException: net\\.minecraft\\.client)"
+    )
+
+    /**
+     * Exit codes meaning "terminated from outside" (POSIX `128 + signal`): `SIGKILL` — what Docker reports for an
+     * OOM-killed container — and `SIGTERM`. Neither says anything about the mod, so neither may count as a crash.
+     * `SIGABRT` (134) is deliberately **not** here: a fatal JVM abort is a real failure of the running server.
+     */
+    private val killedExitCodes = setOf(137, 143)
+
+    /**
      * Classify a boot from its [consoleLines], the process [exitCode] (`null` if it was killed/never
      * exited) and whether the time-budget was exceeded ([timedOut]).
      *
@@ -95,6 +163,26 @@ object BootLogClassifier {
             return BootResult.INCONCLUSIVE
         }
         if (consoleLines.any { setupAbortMarkers.containsMatchIn(it) }) {
+            return BootResult.INCONCLUSIVE
+        }
+        // The JVM never got as far as running the server, so nothing about the mod was exercised.
+        if (consoleLines.any { launchFailureMarkers.containsMatchIn(it) }) {
+            return BootResult.INCONCLUSIVE
+        }
+        // Killed from outside, or killed for memory: the mod never got the chance to fail on its own merits.
+        if (exitCode in killedExitCodes || consoleLines.any { outOfMemoryMarkers.containsMatchIn(it) }) {
+            return BootResult.INCONCLUSIVE
+        }
+        // A server that died reaching for a client-only class is decisive on the console alone, and must be, because
+        // the exit status cannot be trusted here: measured 2026-07-30, NeoForge's ServerStarterJar reports the crash
+        // in full and then exits **0**, so `modelfix` -- textbook `NoClassDefFoundError: net/minecraft/client/
+        // Minecraft` -- was scored INCONCLUSIVE and no verdict in a 517-strong store ever reached HIGH. Environment
+        // failures cannot fake this marker, which is what makes it safe to trust over the exit code.
+        if (consoleLines.any { clientOnlyClassMarker.containsMatchIn(it) }) {
+            return BootResult.CRASHED
+        }
+        // Dependencies our staging failed to supply mean the mod was never fairly tested.
+        if (consoleLines.any { dependencyFailureMarkers.containsMatchIn(it) }) {
             return BootResult.INCONCLUSIVE
         }
         return when (exitCode) {

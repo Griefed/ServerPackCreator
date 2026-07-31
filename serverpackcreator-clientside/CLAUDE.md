@@ -37,6 +37,67 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   not available, launcher-jar/install download failure, Java/EULA/`variables.txt` setup failure,
   unknown modloader) exit non-zero *before the mod is loaded*; `BootLogClassifier` maps those
   (`setupAbortMarkers`) to **INCONCLUSIVE**, not CRASHED. Both found via a grinder e2e on MC 26.2.
+  **(3) Killed-from-outside backstop** — `killedExitCodes` (137 `SIGKILL`, 143 `SIGTERM`) and `outOfMemoryMarkers`
+  (`java.lang.OutOfMemoryError`, `insufficient memory for the Java Runtime Environment`, `Cannot allocate memory`,
+  the shell's `Killed "$JAVA"`) also map to **INCONCLUSIVE**. Found 2026-07-30 while sizing a catalog sweep: the
+  grinder caps a boot at 3 GiB but the host's Docker VM held **1.93 GiB**, so the cap cannot be honoured and a fat
+  mod is OOM-killed by the VM — exit 137, no ready-line, and `Killed "$JAVA"` deliberately doesn't match the
+  setup-abort markers, leaving `CRASHED` as the only outcome, i.e. **a HIGH-confidence "clientside" produced purely
+  by host memory pressure**, systematically, for the biggest mods. `SIGABRT` (134) is deliberately *not* excused: a
+  fatal JVM abort is a real failure of the running server. Keep the guard narrow — a genuine mod-load crash
+  (`NoClassDefFoundError: net/minecraft/client/…`) must still read CRASHED, and a test pins that.
+- **`LoaderVersionPolicy` (seam) + crash re-check.** `BootVerifier` takes a *policy*, not the concrete
+  `LoaderVersionResolver`: `preferredVersion` is what gets booted, `latestVersion` is the authoritative newest.
+  The default resolver answers both identically. A caller may prefer an **older** build it already has installed
+  (the grinder's `CachedLoaderVersions` does, to avoid a ~150 MB install per loader release) — which is only safe
+  because of the guard: **`latestVersion` alone drives the support gate**, and a CRASHED outcome on a
+  non-newest build is re-booted on the newest one before it may stand (`recheckCrashOnNewestVersion`).
+  **Why it must exist:** a mod needing a newer loader than the cached build fails to load, exits non-zero, and
+  the classifier reads CRASHED → a server-safe mod published as a **HIGH-confidence clientside mod**. The two
+  decisions are pure and unit-tested (`shouldRecheckCrash`, `reconcileRecheck`) because `verify` itself needs an
+  `ApiWrapper` + real generation + a running server — same split as `outcomeFor`. **Landmine:** an INCONCLUSIVE
+  re-check must never clear the crash (a flaky second boot is not evidence); only a clean boot on the newest may.
+- **LANDMINE — `"<Loader> is not available for Minecraft X"` in a boot log does NOT mean the loader lacks a
+  build.** `default_template.sh:316` raises it when `FABRIC_AVAILABLE != 200`, and that variable is an HTTP status
+  from a `curl`/`wget` probe — which cannot succeed in the grinder's `--network none` boot container. The message
+  therefore means *"I could not check"*, not *"unsupported"*. Measured 2026-07-30: a `LoaderSupportMemory` that
+  treated it as unsupported marked Fabric unusable for **22 Minecraft versions** (1.19.2 through 26.2 — i.e. all
+  of them) within minutes, and was reverted. `0.19.3` is a genuine current Fabric *loader* version, so SPC's
+  version plumbing is fine; Fabric installer versions (`1.1.2`…) are a separate series and are not what is passed.
+  **FIXED 2026-07-30 in the templates (all three shells):** `setupFabric` now settles the launcher from disk
+  (`fabric-server-launcher.jar` / `fabric-server-launch.jar`) *before* probing, so an offline pack that already has
+  its launcher never asks the network. **Landmine — the fix has two halves, and the first attempt only had one:**
+  the disk branch must **fall through** to the `SERVER_RUN_COMMAND="${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION}
+  nogui"` assignment at the end of the function. The first cut `return 0`-ed as soon as it found the jar, jumping
+  over that assignment, so the pack launched `java -Dlog4j2... do_not_manually_edit` (the untouched placeholder)
+  and died with `Could not find or load main class do_not_manually_edit` — *past* every ordering assertion the
+  guard test made. `-api`'s `ScriptTemplateContentTest` now **executes** the extracted bash `setupFabric` against a
+  staged launcher jar with network calls stubbed to fail, which is the only assertion that catches this; verified
+  to fail when the `return 0` is reinstated.
+- **LANDMINE — the exit code is NOT a reliable crash signal; the console decides.** Measured 2026-07-30: NeoForge's
+  **ServerStarterJar prints a mod-loading crash in full and then exits `0`**. Because `classify` keyed CRASHED on a
+  non-zero exit, `modelfix` — whose console holds a textbook `NoClassDefFoundError: net/minecraft/client/Minecraft` —
+  came out INCONCLUSIVE, and **no verdict in a 517-verdict store ever reached HIGH**: the expensive boot was running,
+  crashing correctly, and being discarded. `clientOnlyClassMarker` now returns **CRASHED from the console alone**,
+  ahead of the exit-code logic, and that is what finally produced the engine's first `HIGH(boot:CRASHED)`. It is safe
+  to trust over the exit code precisely because no environment failure can fabricate it — but it stays **subordinate
+  to the timeout and killed/OOM guards**, so host trouble can never manufacture a HIGH (tests pin both directions).
+  A separate fix propagates the server's real status through the start scripts (`SERVER_EXIT_CODE`, all three
+  templates), which is correct and useful for users' service wrappers — it just cannot rescue a loader that reports
+  success for a crash, so **never make CRASHED depend on the exit code alone again**.
+- **Missing dependencies must not reach a boot at all.** `downloadWithDependencies` collects every required dependency
+  it could not stage (unresolvable ref, no usable file, failed download — the first of which used to be a *silent*
+  `continue`), and `refuseForMissingDependencies` then aborts staging with a named reason instead of booting. A loader
+  that rejects a mod for missing dependencies never runs the mod's code, so the run cannot speak to sideness; it just
+  produces a failure that looks like a crash. Measured across 112 kept boot logs: **36** failed exactly that way, the
+  largest single failure class, each burning ~70 s to learn nothing. `BootLogClassifier` keeps a matching backstop
+  (`dependencyFailureMarkers` → INCONCLUSIVE) for deps that go missing despite staging.
+- **Quilt dependencies fall back to the Fabric build** (`BootCandidateSelector.fallbackLoaders`). Quilt deliberately
+  runs Fabric mods, which is why the canonical dependency of a Quilt mod is **Fabric API — a project publishing only
+  Fabric-tagged files**. Strict loader matching dropped it silently: measured 2026-07-30, **210** dropped
+  dependencies, all but 44 on Quilt, `P7dR8mSH`/`306612` (Fabric API) the most-dropped ref. The map is deliberately
+  one-way and minimal — Fabric cannot load Quilt mods, and NeoForge/Forge cross-loading is version-dependent, so
+  guessing there would stage a jar the loader cannot use.
 - **`allowModDistribution=false`** CurseForge files arrive with `downloadUrl=null` (`ModFile.locked`);
   routed (`selectDownloader`) to the **Playwright** headless-browser `BrowserDownloader` (lazy; only
   launched for locked files), everything else to `HttpJarDownloader`. Playwright is declared in **this**

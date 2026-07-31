@@ -58,8 +58,25 @@ object BootCandidateSelector {
      * Pick a dependency-file from [files] for the same [loader], preferring an exact
      * [minecraftVersion] match and falling back to any file for that loader.
      */
-    fun pickDependencyFile(files: List<ModFile>, loader: String, minecraftVersion: String): ModFile? {
+    fun pickDependencyFile(files: List<ModFile>, loader: String, minecraftVersion: String): ModFile? =
+        pickForLoader(files, loader, minecraftVersion)
+            ?: fallbackLoaders[loader]?.let { pickForLoader(files, it, minecraftVersion) }
+
+    /** Newest file carrying [loader], preferring one that also lists [minecraftVersion]. */
+    private fun pickForLoader(files: List<ModFile>, loader: String, minecraftVersion: String): ModFile? {
         val forLoader = files.filter { loader in it.loaders }
         return forLoader.firstOrNull { minecraftVersion in it.minecraftVersions } ?: forLoader.firstOrNull()
     }
+
+    /**
+     * Loaders that can run another loader's mods, used **only** when a dependency publishes nothing for the loader
+     * being booted. Quilt deliberately runs Fabric mods — which is precisely why the canonical dependency of a Quilt
+     * mod is Fabric API, a project that ships only Fabric-tagged files. Without this, every such dependency was
+     * silently dropped and the mod hard-failed with "requires fabric-api", wasting the whole boot: measured
+     * 2026-07-30, 210 dropped dependencies, all but 44 of them on Quilt.
+     *
+     * Deliberately not symmetric and deliberately minimal: Fabric cannot load Quilt mods, and NeoForge only loads
+     * Forge mods for a narrow band of Minecraft versions, so guessing there would stage a jar the loader cannot use.
+     */
+    private val fallbackLoaders = mapOf("Quilt" to "Fabric")
 }

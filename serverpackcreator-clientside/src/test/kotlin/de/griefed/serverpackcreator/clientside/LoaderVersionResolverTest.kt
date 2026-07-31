@@ -33,7 +33,7 @@ import java.io.File
  */
 internal class LoaderVersionResolverTest {
     private val resolver = LoaderVersionResolver(
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).versionMeta
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).versionMeta
     )
 
     @Test

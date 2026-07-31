@@ -58,8 +58,14 @@ fun interface ServerRunner {
      * Boot [serverPack], stopping once the server is ready or [timeout] elapses. Returns the *raw*
      * console lines + exit status; persisting and classifying them is the caller's concern
      * ([BootVerifier.outcomeFor]).
+     *
+     * [onLine] is invoked for **every console line as it arrives**, so a caller can persist the boot log while
+     * the boot is still running. Without it the output only becomes visible once the run finishes, which makes a
+     * hung boot undiagnosable until its timeout fires — the whole point is that an operator can `tail -f` a boot
+     * in progress. Implementations must still return the complete line list; the sink is an addition, not a
+     * replacement, and must never be allowed to fail the boot (see the callers, which swallow sink errors).
      */
-    fun run(serverPack: File, timeout: Duration): RunResult
+    fun run(serverPack: File, timeout: Duration, onLine: (String) -> Unit): RunResult
 }
 
 /**
@@ -76,7 +82,7 @@ class HostProcessServerRunner : ServerRunner {
     /** The vanilla server's ready-line, watched while streaming the boot to stop early. */
     private val readyLine = Regex("""Done \([^)]*\)! For help""")
 
-    override fun run(serverPack: File, timeout: Duration): RunResult {
+    override fun run(serverPack: File, timeout: Duration, onLine: (String) -> Unit): RunResult {
         val startScript = File(serverPack, "start.sh")
         if (!startScript.isFile) {
             return RunResult.NotStarted("No start.sh in the generated server pack.")
@@ -97,6 +103,7 @@ class HostProcessServerRunner : ServerRunner {
             process.inputStream.bufferedReader().useLines { sequence ->
                 for (line in sequence) {
                     synchronized(lines) { lines.add(line) }
+                    onLine(line)
                     if (readyLine.containsMatchIn(line)) {
                         ready.set(true)
                     }

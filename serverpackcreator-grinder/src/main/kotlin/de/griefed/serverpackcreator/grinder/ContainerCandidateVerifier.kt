@@ -31,6 +31,7 @@ import de.griefed.serverpackcreator.clientside.BrowserDownloader
 import de.griefed.serverpackcreator.clientside.ClientsideReport
 import de.griefed.serverpackcreator.clientside.ClientsideVerifier
 import de.griefed.serverpackcreator.clientside.HttpJarDownloader
+import de.griefed.serverpackcreator.grinder.loader.CachedLoaderVersions
 import de.griefed.serverpackcreator.clientside.LoaderVersionResolver
 import de.griefed.serverpackcreator.clientside.MetadataScanner
 import de.griefed.serverpackcreator.clientside.supportedPlatforms
@@ -72,7 +73,21 @@ class ContainerCandidateVerifier(
 ) : CandidateVerifier {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
+    /** Reclaims each candidate's staging once its verdicts are in; without it the work tree grows without bound. */
+    private val reaper = BootWorkspaceReaper(workDirectory)
+
     override fun verify(candidate: GrindCandidate): ClientsideReport {
+        try {
+            return verifyStaged(candidate)
+        } finally {
+            // In a `finally` because a *thrown* verification is exactly when staging is most likely to be left
+            // behind, and the reaper keeps the boot logs the failure will have to be diagnosed from.
+            reaper.reap(candidate.slug)
+        }
+    }
+
+    /** Run the actual verification, leaving the staging cleanup to [verify]. */
+    private fun verifyStaged(candidate: GrindCandidate): ClientsideReport {
         val httpDownloader = HttpJarDownloader(apiWrapper.webUtilities)
         // The browser is only launched for distribution-locked CurseForge files; disposed after the run.
         return BrowserDownloader().use { browserDownloader ->
@@ -87,7 +102,10 @@ class ContainerCandidateVerifier(
                         platform = platform,
                         httpDownloader = httpDownloader,
                         browserDownloader = browserDownloader,
-                        loaderVersionResolver = LoaderVersionResolver(apiWrapper.versionMeta),
+                        // Reuse an installed loader build rather than installing every fresh release; the
+                        // policy still reports the newest truthfully, so the support gate and BootVerifier's
+                        // crash re-check are unaffected (see CachedLoaderVersions).
+                        loaderVersionPolicy = CachedLoaderVersions(LoaderVersionResolver(apiWrapper.versionMeta), loaderCache),
                         workDirectory = File(workDirectory, "boot"),
                         serverRunner = ContainerServerRunner(containerEngine, runtimeImage, resources),
                         packPostProcessor = ::overlayLoaderInstall,

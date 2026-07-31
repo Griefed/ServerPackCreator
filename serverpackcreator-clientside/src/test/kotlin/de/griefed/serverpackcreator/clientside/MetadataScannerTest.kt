@@ -34,7 +34,7 @@ import java.util.jar.JarOutputStream
 internal class MetadataScannerTest {
 
     private val scanner = MetadataScanner(
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).modScanner
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).modScanner
     )
 
     /** Write a minimal Fabric mod-jar containing only the given `fabric.mod.json` body. */

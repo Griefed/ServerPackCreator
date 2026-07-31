@@ -547,3 +547,384 @@ constructor injection), 2 app (web tests + MVC layering, GUI view-models), 3 plu
   so the seam's own "always removes it" contract is enforceable and any engine can be drained (L1); two
   shutdown hooks collapsed into one with defined ordering (L4); a stray cross-subject assertion dropped
   (L2); the drain IT tidied — `DockerClient` imported, no shadowed `engine` (L3). Idioms were already clean.
+
+- **Catalog crawl cursor on `claude-grinder-catalog-cursor` (2026-07-29):** answered "left alone long enough,
+  will the grinder check *every* mod on CurseForge and Modrinth?" — it would not. Both sources restarted at
+  offset 0 on every call (`candidates(limit)`), so the continuous loop re-fetched the *same* top-25 per
+  platform forever: ~50 projects ground for the lifetime of the service, rank 26 unreachable, and after the
+  first pass every pass was a no-op until the 30-day TTL. Fixed in four concern-separated commits:
+  **(1) offset paging** — `CandidateSource` becomes `platform` + `page(offset, limit): CandidatePage`
+  (candidates + `nextOffset` + `endOfCatalog`). `endOfCatalog` is the load-bearing bit: true only when the
+  platform genuinely ran out (or CF hit its index cap), **never** on a failed request, because the crawler
+  wraps to 0 on it and a transient 503 deep in the catalog would otherwise reset the whole crawl to the
+  popular head. **(2) the cursor** — `CatalogCursor` (offset + completed sweeps), `CursorStore` with an
+  in-memory double and a `JsonCursorStore` (temp-then-atomic-move like the verdict store, corrupt → start),
+  and `CatalogCrawler` handing out the next slice per source per pass: advance by what was handed out, wrap +
+  count a sweep at the end, keep the position on a failed page, skip a *throwing* source, and on a
+  past-the-end position wrap **and** take the head slice in the same pass (guarded by `offset > 0` so an
+  empty catalog can't spin). **(3) work-driven pacing** — `Grinder.grind` returns a `GrindOutcome`
+  (VERIFIED/FAILED/SKIPPED_FRESH) and `GrindPool.grindAll` returns the verified count, feeding the pure
+  `GrindPacing.pauseAfterPass`: no pause while work keeps turning up, a short `SPC_GRINDER_SCAN_DELAY` while
+  only scanning past fresh verdicts, the long `SPC_GRINDER_INTERVAL` once a full sweep found nothing due. A
+  fixed per-pass sleep was the second ceiling — 25 projects per 6 h cannot cover 71 000. Failures deliberately
+  don't count as work, so a broken host throttles instead of racing the cursor past thousands of unverified
+  projects. **(4) wiring + docs** — `SPC_GRINDER_BATCH` (replacing the two per-platform `*_LIMIT` knobs, whose
+  "top N" meaning no longer existed), `SPC_GRINDER_CURSORS`, `SPC_GRINDER_SCAN_DELAY`; README gained the
+  sweep-time arithmetic and the coverage ceilings.
+  **Measured, not assumed:** probed the live Modrinth API — `total_hits` 71 267 for `project_type:mod`,
+  offset 40 000 serves real projects, offset clamps at 99 999 — and kept it as `CatalogCrawlLiveIT` (gated
+  `GRINDER_LIVE_IT=1`): consecutive live batches return different projects, a fresh crawler over the same
+  cursor file resumes, deep offset works. **Honest limit:** CurseForge's `/mods/search` refuses
+  `index >= 10 000`, so CF coverage is capped at its 10 000 most-downloaded mods however long the service
+  runs; the cursor cannot fix that (it needs a partitioned search) and the cap is now logged, tested and
+  documented rather than silent. Suite: grinder 93 run + 8 gated, green.
+  **Bug found by that verification, fixed here:** `SIGTERM` mid-pass killed the JVM with a bare
+  `Exception in thread "main"` — the shutdown hook interrupts the main thread, which is parked in
+  `GrindPool.grindAll`'s `Thread.join()`, and the `InterruptedException` escaped `main`. Pre-existing (the
+  hook and the join were both already there), reproduced as a failing test first, then fixed: `grindAll`
+  catches it, requests stop, restores the interrupt flag and returns the count so far. Re-verified live —
+  clean shutdown, no leaked containers.
+
+- **CurseForge partitioned crawl on `claude-grinder-catalog-cursor` (2026-07-29):** closed the coverage hole the
+  cursor work had left explicit — CF's `/mods/search` refuses `index + pageSize > 10 000`, so *one* query can
+  never expose more than the 10 000 most-downloaded mods no matter how long the service runs. **Researched
+  before designing** (no API key here, so the contract had to come from documentation): `docs.curseforge.com`
+  confirmed the `index + pageSize ≤ 10 000` cap, `pageSize ≤ 50`, the `gameVersion` / `modLoaderType` /
+  `categoryId` filters, `sortOrder` asc|desc, `pagination.totalCount`, and the
+  `/games/{gameId}/versions` → `data: [{type, versions[]}]` shape; PrismLauncher's Flame integration corroborated
+  the namelessly-documented `ModLoaderType` enum (Forge 1, Cauldron 2, LiteLoader 3, Fabric 4, Quilt 5,
+  NeoForge 6) — the same source already cited for `sortField=6`.
+  **Design:** the catalog is walked as a *sequence* of bounded queries — unfiltered catalog first (its top
+  10 000, i.e. exactly what the crawl did before), then every game version newest-first, a version whose
+  `totalCount` exceeds the cap re-crawled per modloader (the part that actually reaches past 10 000), and a
+  loader slice still over the cap crawled ascending too (bottom 10 000 → ≤20 000 per slice fully covered).
+  Splitting only where a *reported* count demands it keeps a sweep at ~1 request per version instead of per
+  version×loader, and `totalCount` rides along on every response so sizing costs nothing (the one probe case is a
+  slice resuming exactly at the cap). All six loaders are crawled, legacy ones included — one request each versus
+  making their mods unreachable.
+  **Plumbing:** traversal state travels as an *opaque, source-defined* token (`CatalogCursor.partition` /
+  `CandidatePage.nextPartition`) that the crawler persists and replays verbatim, so the crawler never learns what
+  a game version is and a partitioned crawl is restart-safe. `CurseForgePartition.parse` falls back to the start
+  of the sweep for any unreadable token, and a `cursors.json` from before this change (no `partition` key) still
+  loads — both pinned by tests.
+  **Kept honest rather than optimistic:** the version list refresh happens at sweep start and *degrades* to the
+  unfiltered top 10 000 when unavailable; a failed request or probe keeps its position; and the two residual gaps
+  (a >20 000 (version, loader) slice losing its middle, a loader-less mod beyond its version's cap) are logged
+  with counts. Caught while implementing: the existing `warnIfNotDescending` would have cried wolf on every
+  ascending slice — it now follows the partition's direction (`warnIfMisordered`).
+  **Verification status — explicitly incomplete:** the traversal is a pure function with 14 unit tests and the
+  source has 18 canned-JSON tests, but **nothing here has ever touched the real CurseForge API** (no key, the
+  module's oldest open item). The README and module CLAUDE.md say so, and name the log lines to watch on a first
+  keyed run. Suite: grinder 120 run + 8 gated, green; the Modrinth live IT still passes.
+  **Third axis (`categoryId`) added the same day.** The loader split left two holes: a mod with no modloader tag
+  was unreachable past its version's top 10 000 (it appears in no loader slice), and a (version, loader) slice
+  above 20 000 lost its middle. Researched first: `/categories?gameId=&classId=` is documented with `isClass`
+  separating the class from its categories — but CF's own support docs **disagree** on whether a category is
+  mandatory (the submission guide calls the main category required; the project-creation page lists only the
+  class as required). So the axis is added *alongside* the loader stage rather than replacing it: an over-cap
+  version is crawled per loader **and** per category, which makes a mod reachable if it carries *either* tag —
+  ~6 extra requests per over-cap version to remove a silent hole. A category slice past both sort directions is
+  narrowed by loader (version × category × loader, the deepest the API expresses). Every category is crawled,
+  children included, because "does a parent category include its children" is undocumented. Residual gap is now
+  a single deepest slice above 20 000 (logged with a count) plus mods with neither tag (undetectable).
+  **Bug found by the new tests, and it was a real one:** the axis lists were read only when `partition == null`,
+  i.e. at sweep start. A daemon restarting *mid-sweep* resumes with a partition token and an empty in-memory
+  list, so the plan found no next partition, reported the catalog finished and **wrapped — discarding exactly
+  the position the cursor exists to preserve**. Introduced by the partitioning commit earlier the same day;
+  fixed by also re-reading a list whenever it is missing, and pinned by
+  `resumingMidSweepFetchesTheAxisListsItHasNotGotYet`. Kept in the same commit as the category axis because the
+  category-stage test that exposed it cannot pass without the fix. Suite: grinder 133 run + 8 gated, green;
+  Modrinth live IT still passes.
+  **Live-verified with a real API key (2026-07-30) — and the docs turned out to be badly insufficient.** Griefed
+  supplied a `CURSEFORGE_API_KEY` via the macOS Keychain (no file, no transcript). Probing the real API before
+  touching code found **two silent design-killers** in the partitioning that had been derived from
+  documentation:
+  1. **`pagination.totalCount` saturates at the paging cap.** The whole catalog, `gameVersion=1.12.2` and any
+     slice above 10 000 all report exactly `10 000`; only genuinely smaller slices report a true size. Every
+     split condition had been written as `> CAP` (and `> 2 × CAP` for the category→loader narrowing), so **not
+     one of them could ever fire** — the "partitioned" crawl would have covered the top 10 000 of each version
+     and nothing more, silently, and `warnIfSliceIsUnreachable` was dead for the same reason. All rules now key
+     off `>= CAP` ("saturated ⇒ at least this many, possibly far more"), which is the only signal the API gives.
+  2. **The version axis was 98 % junk.** `/games/432/versions` returns **7 339** strings over 36 version types,
+     including Forge version families (`47.0.42`) and types named `Server Side`, `Shader Loader`, `Addons`,
+     `DO NOT USE - Grouped MC Versions`. Filtering to types whose name starts with `Minecraft ` (via
+     `/games/432/version-types`) leaves **135** real versions — a 54× smaller axis; unfiltered, a sweep would
+     have burned 7 200 requests on partitions that can hold no mods.
+  A third fix came from the live data too: `sortOrder=desc` only *trends* by downloads (one adjacent inversion in
+  a 10-mod page) and `asc` is not ordered at all, so `warnIfMisordered` would have cried wolf on ordinary pages;
+  it now checks the descending **trend** (first vs last) and skips ascending, which does reach the tail and is
+  what makes the both-ends crawl worth an extra ~10 000 mods per slice.
+  **Assumptions that held:** the cap applies to `index + pageSize` (9 950+50 served, 9 951+50 refused); the
+  modloader filter is honoured and maps as PrismLauncher documents (1.16.5 → Forge 10 000 / Fabric 3 344 /
+  Quilt 377 / NeoForge 238, and `sodium` appears under Fabric but not Forge); 0 of 100 sampled mods lack a
+  category. One assumption was *disproved in the safe direction*: a parent category does **not** reliably include
+  its children (3 of 6 sampled child mods invisible under the parent), which is exactly why the crawl already
+  visited all 52 categories rather than the 23 parents.
+  All of it is now pinned by **`CurseForgeCrawlLiveIT`** (gated `GRINDER_CF_IT=1` + a present key, ~40 small
+  calls), including the saturation fix end-to-end: `1.12.2` paged out at 10 000 continues into `1.12.2|*|1|desc`
+  with real candidates instead of declaring the catalog finished, and consecutive batches advance and survive a
+  restart (jei/mouse-tweaks → geckolib/cloth-config → placebo/waystones). Suite: grinder 134 offline + 18 gated
+  (12 of them live-API), all green. Still unproven: a full sweep, which is weeks of wall-clock and a large slice
+  of the key's quota.
+  **Supervised live run (2026-07-30) — the CurseForge *grind* path proven, plus one more interrupt bug.** Two
+  runs. (a) Continuous mode with both sources wired for the first time: `Modrinth + CurseForge`, 135-version and
+  52-category axes reported correctly, 12 candidates/pass popularity-interleaved across platforms, `cursors.json`
+  carrying both platforms (CF partition `*|*|*|desc`), report server 200 on `/` and `/export.csv`, clean
+  `SIGTERM`, no leaked containers. **Caught a self-inflicted trap first:** the initial attempt logged
+  `covers 7339 game version(s), newest first (65.1.0)` — the *unfiltered* axis with a Forge version at its head —
+  because the run used a `installDist` jar one commit older than the version-type filter. `test` does not rebuild
+  the dist; recorded as a landmine. (b) One-shot grind of `curseforge.com/minecraft/mc-mods/curios`: resolve →
+  download → mod scan → containerised loader install (network, 174 MB for 1.20.6/Forge + 161 MB for
+  26.2/NeoForge, both `.spc-installed`-marked) → **offline** mod boot (7 × `UnknownHostException`, `/opt/java-25`,
+  `Compatibility level set to JAVA_25`) → ready-line `Done (4.684s)! For help` on NeoForge/26.2 and
+  `Done (7.161s)!` on Forge/1.20.6 → two `LOW` verdicts (correct: `curios` declares server/both and did not
+  crash, so `metadataServer -> Confidence.LOW`) → store → CSV. Ran inside Docker's 1.93 GiB VM despite the 3 GiB
+  cgroup cap, peaking ~770 MiB.
+  **Bug found and fixed:** `SIGTERM` on the one-shot path printed `Exception in thread "main"
+  java.lang.InterruptedException` — the `CountDownLatch.await()` holding the report server open let the shutdown
+  hook's interrupt escape `main`, the same defect fixed earlier inside `GrindPool.grindAll` for the continuous
+  path. Now caught and logged as "Report server stopped"; re-verified by SIGTERM against a rebuilt dist.
+
+- **Loader-install reuse + crash re-check (2026-07-30):** Griefed spotted that the install cache, while keyed
+  uniquely on `(Minecraft, loader, loaderVersion)`, churns — `BootVerifier` always booted
+  `LoaderVersionResolver.latest`, so every loader release minted another ~150 MB install for a server that boots
+  mods identically. Two changes, deliberately paired. **(1)** Extracted `LoaderVersionPolicy` in `-clientside`
+  (`preferredVersion` = what to boot, `latestVersion` = authoritative newest; `LoaderVersionResolver` answers both
+  the same, so the default path is unchanged) and gave the grinder `CachedLoaderVersions`, which prefers the
+  most-recently-used installed build for the pair — most-recently-used so the sweep stays on one build and keeps it
+  warm against the new eviction instead of rotating. Raw versions are recovered from the completion marker, not the
+  sanitized directory name. **(2)** The safeguard that makes (1) admissible: `BootVerifier` now re-boots a CRASHED
+  outcome on the **newest** build whenever the crash happened on an older one. Without it, a mod merely needing a
+  newer loader fails to load, exits non-zero, classifies as CRASHED, and is published as a HIGH-confidence
+  clientside mod — precisely the false HIGH this module is built to avoid. `latestVersion` also still drives the
+  support gate, so a cached build can never revive an unsupported loader/Minecraft combination.
+  Decisions kept pure and unit-tested (`shouldRecheckCrash`, `reconcileRecheck`) since `verify` needs an
+  `ApiWrapper` + generation + a live server: crash-then-survive takes the newest verdict and says why,
+  crash-then-crash keeps CRASHED with the newest evidence, and an **INCONCLUSIVE re-check leaves the crash
+  standing** (a flaky second boot is not evidence). Suites: api / clientside (63) / grinder (147+18 gated) / app
+  all green, no new warnings.
+
+- **Crawl cursor advances on work done, not hand-out (2026-07-30):** the live sweep exposed that
+  `CatalogCrawler.nextBatch()` committed each source's position the moment candidates were handed out. Restarting
+  the daemon mid-pass — which happened twice that day, to pick up new builds — abandoned the remainder of the
+  in-flight batch while both cursors had already moved past it, so those projects were silently deferred to the
+  *next full sweep* (~7 weeks at the measured 60 projects/hour). Griefed asked for the correct fix rather than the
+  cheap round-robin one. Split into two phases: `nextBatch()` moves nothing and returns the batch plus a
+  `CrawledPage` per source (its cursor-at-start, candidates, end-of-catalog flag, continuation), and
+  `commit(batch, reached)` advances each source only past pages whose candidates were **all** reached, stopping at
+  the first that was not. `GrindPool.grindAll` now returns `GrindPass(reached, verified)`; *reached* deliberately
+  includes fresh-skips and failures (a poison candidate must not stall the sweep) but only after `grind` returns,
+  so a candidate still being ground during teardown comes back next pass. Commit granularity is per **page**, not
+  per candidate, because a partitioned source can cross partitions inside one page — re-handing a page costs a
+  fresh-verdict skip, while per-candidate positions aren't recoverable from outside the source. A sweep counts
+  only when the page that ended the catalog was itself fully ground. Nine new tests pin it, incl. the
+  wrap-with-un-ground-head case. Suites: clientside + grinder (156 run, 18 gated) green, no warnings.
+  **Process note:** a scripted edit computed its slice boundaries backwards (`grindAll` lives *after* the enum),
+  so `str.replace("", …)` inflated `Grinder.kt` to 18 MB; restored from HEAD and redone with anchored edits.
+  **Round-robin ordering across platforms (2026-07-30, follow-up):** the hour-later check on the live sweep showed
+  the fairness half of the same problem — `GrindPool` sorted each batch by `popularity`, and CurseForge's counts
+  run several times Modrinth's for equivalent mods (`jei` 602 M vs `fabric-api` 218 M), so *every* CF candidate
+  outranked *every* Modrinth one. Measured: 65 min of grinding produced 108 CurseForge projects and **zero**
+  Modrinth ones, and with a ~2-hour pass any shorter interruption meant Modrinth never progressed at all. The
+  two-phase commit prevents *loss* but not starvation. `GrindPool.interleaveByPlatform` now rotates one candidate
+  per platform per turn, keeping each platform's own most-downloaded-first order and dropping a platform out of the
+  rotation when it runs out. The deeper justification: the two counts are not comparable in the first place (CF
+  counts file downloads across every version, Modrinth counts differently), so ranking them against each other was
+  a category error that silently promoted one platform for the whole run. Four tests, incl. the one that states the
+  goal — an interrupted pass must have reached both platforms. Every doc claiming a global popularity sort was
+  corrected in the same commit. Grinder suite 160 run + 18 gated, green.
+
+- **Operator-facing logging (2026-07-30):** Griefed asked whether an admin can see what the grinder and its
+  workers are doing. Audit: the daemon *did* have a live rolling log (`~/.spc-grinder/logs/serverpackcreator.log`,
+  log4j `ApplicationLogger`, worker thread in every line), but the boot containers had **nothing** — the engine
+  streamed with `withFollowStream(true)` yet only did `lines.add(line)`, and the per-attempt `boot.log` was written
+  by `outcomeFor` *after* the run, so a hung boot was undiagnosable until its 12-minute timeout and a killed boot
+  left no output at all. The report server exposed only `/` and `/export.csv` — results, never activity. Three
+  additions:
+  **(1) Live per-boot console.** `ServerRunner.run` gained an `onLine` sink (defaulted, so indifferent callers are
+  untouched; `ServerRunner` stopped being a `fun interface` briefly for that and was reverted — a functional
+  interface may not default its abstract method's parameters, so the sink is explicit and the three SAM fakes took
+  a third `_`). `BootVerifier.runPrepared` appends+flushes each line into the attempt's `boot.log` while the boot
+  runs; `DockerLoaderInstaller` does the same into `<tuple>/.spc-install.log` (the slow cold-cache phase).
+  **(2) `/status`** — `GrinderStatus`/`StatusSnapshot` served as Jackson JSON: uptime, current pass, each busy
+  worker with its candidate and `busySeconds`, crawl cursor per platform, installed-tuple count. Snapshot is a
+  copy, absent collaborators render `null` rather than 500, and slugs are serialized rather than string-built.
+  **(3) One INFO line per candidate** (`Grinding <platform>/<slug>` … `Done … → Forge=LOW`), fresh-skips at DEBUG
+  so they cannot bury it.
+  **Bug found by the new tests:** `outcomeFor`'s final `logFile.writeText` was unguarded, so an unwritable boot log
+  propagated out and failed a verification that had already run — pre-existing, now wrapped, pinned by
+  `anUnwritableLogFileDoesNotFailTheBoot`. Suites: clientside 67, grinder 170 run + 18 gated, app — all green,
+  no warnings.
+
+- **Diagnosing the "465 projects/hour" sweep, and four fixes (2026-07-30):** the hourly check showed throughput
+  jumping 10× while the loader cache stayed frozen at 44 tuples — the tell that verdicts were being produced
+  *without booting*. In the log window: 10 candidates ground, 18 boots attempted, **every one INCONCLUSIVE**. The
+  new logging paid for itself: `DockerLoaderInstaller`'s failure dump showed NeoForge `21.1.247`'s
+  `-installer.jar` returning 404 (the version *is* in maven metadata — verified by hand), and the new per-boot
+  consoles showed `Fabric is not available for Minecraft 26.1.2 / 26.2` across **103** boot directories.
+  **Griefed's question — did the grinder boot a version the mod never listed? — answered: no.** CurseForge's own
+  `latestFilesIndexes` matrix lists `26.1.2 modLoader=4` (Fabric) for Croptopia, so the mod does claim it;
+  `BootCandidateSelector` pairs each file with *its own* declared versions and was correct. The wrong party was the
+  loader-support gate: Fabric's meta lists 26.1.2 and returns a **placeholder `0.0.0` intermediary**, so
+  `Meta.isMinecraftSupported` says yes and `start.sh` then aborts. Layer 2 (setup-abort → INCONCLUSIVE) caught it
+  every time, so no false HIGH — but each occurrence wasted a boot.
+  Fixes: **(1)** `LoaderCache.failureCooldown` (1h, in memory) so a broken tuple is not re-installed per candidate;
+  **(2)** the live install console moved out of the cache dir, which `LoaderCache` wipes on failure — deleting the
+  evidence exactly when needed (a defect in the logging shipped an hour earlier); **(3)** `BootVerifier` logs *why*
+  a boot was inconclusive, at the source, instead of leaving only `boot:INCONCLUSIVE`; **(4)** `LoaderSupportMemory`
+  — learn from the abort: a `(loader, Minecraft)` combination whose console says the loader has no build is
+  recorded and dropped from candidate selection (24h expiry so upstream can catch up), keyed off a deliberately
+  narrow `BootLogClassifier.loaderUnavailable` so the Java/EULA/variables aborts cannot poison good combinations.
+  Suites: clientside 75, grinder 175 run + 18 gated, app — green, no warnings.
+  **Fix (4) reverted the same hour, on evidence.** Within minutes of deploying, `LoaderSupportMemory` had marked
+  Fabric unusable for **22 Minecraft versions** — 1.19.2, 1.20.x, 1.21.x through 26.2, i.e. every version Fabric
+  actually supports. The marker was wrong, not the data: `default_template.sh:316` raises
+  `"Fabric is not available for Minecraft X"` when `FABRIC_AVAILABLE != 200`, and that variable holds an HTTP
+  status from a `curl`/`wget` probe that **cannot succeed under `--network none`**. The message means "I could not
+  check", not "unsupported". Left running, the fix would have deleted Fabric from the sweep — trading wasted boots
+  for a silent coverage hole, a strictly worse outcome. Reverted: the gate, the recording, the class, its tests and
+  the misleading `BootLogClassifier.loaderUnavailable` predicate are all gone; the *finding* is kept as a landmine
+  in `serverpackcreator-clientside/CLAUDE.md`. Fixes (1)-(3) stand and were verified firing in the live daemon
+  (cooldown on NeoForge 21.1.247, install logs beside the pack, 38 inconclusive-reason lines).
+  **The real open issue this exposed:** Fabric's offline path in the pre-baked install layer is incomplete —
+  Forge/NeoForge/Quilt reach the ready line under `--network none`, Fabric aborts on an online availability probe.
+  That is what needs fixing; suppressing the symptom was the wrong instinct. Also note the store now holds
+  metadata-only verdicts for Fabric candidates that are "fresh" for a year (`SPC_GRINDER_REVERIFY_TTL_DAYS=365`),
+  so they must be invalidated once the offline path works, or they will never be re-ground with a real boot.
+  **Root cause fixed in the templates (2026-07-30).** `setupFabric` settled the launcher from the *network* before
+  looking at disk: `default_template.sh:311-317` took the improved-launcher branch only on an HTTP `200`, and
+  otherwise crashed on `FABRIC_AVAILABLE != "200"` — the **negative** form, which an unreachable network satisfies
+  trivially. Quilt and LegacyFabric crash on the *positive* form (`== "[]"`), which is exactly why they booted
+  offline and Fabric never did. All three templates now check for an existing `fabric-server-launcher.jar` /
+  `fabric-server-launch.jar` **first** and return immediately when one is there — which is also correct for any
+  user with a complete pack and no internet, not just the grinder. The pre-baked cache already contained
+  `fabric-server-launcher.jar` (verified in `cache/1.14/Fabric/0.19.3/`), so no change to the install layer was
+  needed. Pinned at source level by `ScriptTemplateContentTest.allTemplatesUseAnAlreadyInstalledFabricLauncher-
+  BeforeCheckingTheNetwork`, which asserts the disk check *precedes* the probe in each template — a check that
+  works without fish or pwsh installed.
+
+### 2026-07-30 — the Fabric offline fix needed a second half, plus two bugs it exposed
+
+**The offline short-circuit was only half a fix.** The disk-first check landed correctly, but it `return 0`-ed as
+soon as it found the launcher — jumping over `setupFabric`'s closing
+`SERVER_RUN_COMMAND="${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"`. Every Fabric boot then ran
+`java -Dlog4j2.formatMsgNoLookups=true do_not_manually_edit` and died with
+`Could not find or load main class do_not_manually_edit`, i.e. still INCONCLUSIVE — and *every* assertion in
+`allTemplatesUseAnAlreadyInstalledFabricLauncherBeforeCheckingTheNetwork` stayed green, because ordering was all it
+checked. All three templates now fall through into the assignment (the network path moved into an `else`).
+**New test with actual teeth:** `theBashTemplateStillBuildsARunCommandWhenTheFabricLauncherIsAlreadyInstalled`
+extracts the bash `setupFabric`, sources it with `commandAvailable` denying curl/wget and every download/install
+stub exiting non-zero, stages a launcher jar, runs it, and asserts the assembled command — verified to fail when
+the `return 0` is reinstated. **Live confirmation:** `Modrinth/simple-voice-chat → Fabric=LOW(boot:SURVIVED)`,
+whose `boot.log` shows `fabric-server-launcher.jar present. Moving on...`,
+`-jar fabric-server-launcher.jar nogui`, and `Done (7.277s)! For help` under `--network none`.
+
+**Bug found while verifying: the work tree grew without bound.** Staging keeps a full server pack (with the
+overlaid loader libraries) per `(slug, loader)` and only deleted it when that same pair was retried — never, during
+a catalog sweep. Measured: **98 GB across 1750 attempt directories, ~23 GB/h**. New `BootWorkspaceReaper` strips a
+finished candidate's staging to its `boot.log`, in a `finally` (a thrown verification is exactly when garbage is
+left), scoped to one slug by cutting the `-<loader>` suffix rather than prefix-matching (workers run in parallel;
+`jei` must not reap `jei-extras`), plus a startup sweep for what a killed run left behind. First live startup
+reclaimed **8 897 MiB, 8.7 GB → 155 MB**; per-candidate reclamation is ~700 MiB. 10 unit tests.
+
+**Bug found while diagnosing: the test suites hijack a live daemon's home directory.** SPC resolves
+`PathsConfig.homeDirectory` through `Preferences.userRoot().node("ServerPackCreator")` — one machine-wide per-user
+node shared by GUI, web backend, test suites and grinder — and re-reads it on **every access**. A
+`:serverpackcreator-api:test` run mid-session moved the *running* daemon's home to `serverpackcreator-api/tests`
+and then deleted it, after which every boot failed on `server_files/server-icon.png: The source file doesn't exist`
+and was recorded as a **metadata-only `boot:none` verdict** — indistinguishable, in the report, from "this mod was
+never bootable". 30+ candidates were polluted before it was caught; the store was archived and the run restarted.
+The preference wins over both cwd and `serverpackcreator.properties`, so `SPC_GRINDER_SPC_PROPERTIES` is no
+defence. It cuts both ways: running the suites also relocates a developer's own GUI installation.
+
+**OPEN QUESTION (needs Griefed's call):** the real fix is to make the preferences node name injectable so tests and
+the grinder each get their own node — `ServerPackCreatorPathsConfigTest` and `ServerPackCreatorScriptTemplatesConfigTest`
+already do exactly that, so the pattern exists and is simply not applied suite-wide. It is an *additive* API change
+(optional ctor param / env var), but it touches published `-api` surface and changes where a test-suite run stores
+state, so it was **not** implemented unilaterally. Until then: never run a test suite while a grinder run is live.
+
+**Resolved (same day, Griefed's call: make the node injectable).** `ApiProperties.resolvePreferencesNode()` now picks
+the `Preferences` node from `-Dde.griefed.serverpackcreator.preferences.node`, else `SPC_PREFERENCES_NODE`, else the
+unchanged default `ServerPackCreator` (blank overrides fall back, since `userRoot().node("")` is the *root* node).
+`GrinderApplication` claims `ServerPackCreator-grinder` before any `ApiProperties` exists and logs it; the build gives
+every test JVM `ServerPackCreator-test-<module>`.
+
+**The isolated node immediately exposed a second, worse fault — one this change introduced.** With no *stored* home in
+a fresh node, `homeDirectory` fell through to the dev-build branch `File("").absolutePath`, i.e. the test JVM's working
+directory = **the module's own source directory** — and `ApiWrapper.setup()` *writes* into the home (README.md,
+CHANGELOG.md, `server_files`, `log4j2.xml`, `manifests/`). The clientside module's checked-in 186-line CLI guide was
+overwritten by the bundled root README, which is what `ClientsideReadmeFlagsTest` then failed on: `--setup` documented
+but unaccepted, nine real flags undocumented. `PathsConfig` therefore also honours
+`-Dde.griefed.serverpackcreator.home` ahead of that fallback, and the build points every test JVM at
+`<module>/build/spc-test-home`. `PathsConfigTest` and `ScriptTemplatesConfigTest` clear the property per test (they
+exist to exercise the preference/properties/fallback layers, which an explicit override outranks).
+
+**Verified:** all four suites green; a full api suite run *concurrently with a live daemon* left it untouched
+(`Using Preferences node 'ServerPackCreator-grinder'`, `Home directory set to: ~/.spc-grinder`, zero references to the
+repo test home); no README/LICENSE/manifests churn in `git status` after a full run.
+
+**Correction to an earlier claim in this log's session:** the first "all four suites pass" reading counted the app
+module as passing when Gradle had reported it up-to-date without executing anything. The two
+`ClientsideReadmeFlagsTest` failures were real and pre-existing at that moment.
+
+**Method note:** Java's macOS `Preferences` store is per-process cached and flushed on a ~30 s timer, so concurrent
+JVMs clobber each other's view. Cross-process `defaults read` snapshots taken while Gradle JVMs are alive are not
+evidence — an apparent "every suite writes the shared node" result was this artifact. Use in-process logs and
+same-JVM tests.
+
+**Still open:** whether anything writes the *shared* `ServerPackCreator` node during a build (it holds a repo test
+path on this machine, affecting only a GUI/dev instance). The five remaining hard-coded call sites are all in `-app`.
+
+### 2026-07-30 — sizing the real sweep surfaced a systematic false-HIGH source
+
+Before starting the catalog sweep, the host was measured: 48 GiB RAM, 16 CPUs — but **Docker Desktop's VM held
+1.93 GiB**, while `ContainerResources` caps each boot at **3 GiB**. The cap therefore cannot be honoured, and a fat
+modpack mod is OOM-killed by the VM. Docker reports that as exit **137**, there is no ready-line, and the template's
+`Killed "$JAVA"` line deliberately does not match `setupAbortMarkers` — which left `BootLogClassifier.classify` exactly
+one outcome: `CRASHED`, promoted by `ClientsideVerifier.aggregate` to **HIGH confidence "this mod is clientside"**.
+Purely from host memory pressure, and biased towards the *largest* mods. Over a months-long sweep whose entire
+deliverable is the suspected-clientside list, that is a systematic poison, so it was fixed before the sweep ran:
+`killedExitCodes` (137/143) and `outOfMemoryMarkers` now map to INCONCLUSIVE. `SIGABRT` (134) is deliberately still
+CRASHED (a fatal JVM abort is a real failure), and a test pins that a genuine
+`NoClassDefFoundError: net/minecraft/client/…` still reads CRASHED — verified to fail with the guard removed.
+
+**Sweep sizing at one worker** (`WORKERS=1` is forced by the 1.93 GiB VM): ~60–90 s per candidate including boots, so
+Modrinth's ~71 000 mod projects alone are ~2 months of wall-clock, both platforms interleaved considerably more.
+`REVERIFY_TTL_DAYS=365` comfortably exceeds that (the sizing rule: TTL must be longer than a sweep takes).
+**Raising Docker Desktop's memory is by far the biggest throughput lever available** — at 16 GiB the host could run
+4 concurrent 3 GiB boots, roughly quartering the sweep. That is a Docker Desktop UI change (Settings → Resources)
+which restarts the daemon, so it wants doing between sweeps, with `SPC_GRINDER_WORKERS` raised to match.
+
+### 2026-07-30 — the grinder had never produced a single HIGH verdict, and why
+
+Classifying the 26 % INCONCLUSIVE rate turned up something much worse than an efficiency problem: the store held
+**131 MEDIUM, 387 LOW, 0 HIGH** after 3.5 h and 517 verdicts, while a kept boot log sat there containing
+`java.lang.NoClassDefFoundError: net/minecraft/client/Minecraft` — a textbook clientside crash. The one decisive
+signal in the whole confidence model was being produced and then thrown away. Three causes, in the order found:
+
+1. **The start scripts swallowed the server's exit status.** `default_template.sh`'s run loop ended in an
+   unconditional `exit 0`, so `BootLogClassifier` saw `0` for every boot and took its `null, 0 -> INCONCLUSIVE`
+   branch. Fixed in all three templates (`SERVER_EXIT_CODE`, captured immediately because the following checks
+   overwrite `$?`). Correct for users too — systemd, Docker restart policies and CI all read that code — and pinned by
+   a test that **executes** the extracted run loop for statuses 0/1/137, verified to fail with `exit 0` reinstated.
+2. **The exit code is not trustworthy anyway.** With the template fixed, the reproducer *still* read INCONCLUSIVE. The
+   new exit status in the boot detail gave the answer: **`exit 0`** — NeoForge's ServerStarterJar reports the crash in
+   full and exits successfully. So `clientOnlyClassMarker` now decides **CRASHED from the console alone**, ahead of
+   the exit-code logic, while staying subordinate to the timeout and killed/OOM guards so host trouble can never
+   manufacture a HIGH. That produced the engine's first ever `NeoForge=HIGH(boot:CRASHED)` on `modelfix`.
+3. **Missing dependencies were wasting boots** (Griefed: "the required dependencies should be downloaded as well in
+   order to prevent exactly that"). Two causes: `pickDependencyFile` matched loaders strictly, so a Quilt boot dropped
+   **Fabric API** — the canonical Quilt dependency, published only as Fabric files — 210 dropped deps overall, all but
+   44 on Quilt; and an unresolvable ref was a **silent** `continue`. Now Quilt falls back to the Fabric build
+   (one-way, deliberately not extended to Fabric→Quilt or NeoForge→Forge), every unstageable required dependency is
+   collected and logged, and `refuseForMissingDependencies` **aborts staging instead of booting** — a mod the loader
+   rejects for missing deps never runs its own code, so the boot cannot speak to sideness. 36 of 112 kept boot logs
+   had failed exactly that way, ~70 s each.
+
+**Corrections recorded:** the "missing dependencies become false HIGHs" hypothesis was **wrong** — they were already
+INCONCLUSIVE, because cause 1 made *everything* INCONCLUSIVE; and the NeoForge `21.1.247` 404 was **not** the dominant
+inconclusive cause (that build still produced 17 SURVIVED verdicts). Both were checked against the store before being
+acted on, which is what redirected the work to the real fault.
+
+**Consequence for the store:** all 517 verdicts predate the crash signal working, so none of them can contain a HIGH
+and every one is fresh for 365 days — they would never be re-ground. Archived rather than kept.

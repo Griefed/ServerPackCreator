@@ -4,6 +4,7 @@
 > ServerPackCreator. Read it before touching code.
 >
 > - Per-sprint **narrative** history → `git log` and `claude-docs/REFACTOR-LOG.md`.
+> - **Deferred-but-agreed work** → `claude-docs/BACKLOG.md` (why it waited + context to pick it up cold).
 > - Module-specific facts, patterns and landmines → each module's own `CLAUDE.md`
 >   (lazy-loaded by Claude Code when you work in that module).
 > - Personal working preferences (general approach, organization, no-shortcuts ethos,
@@ -83,6 +84,14 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 - Refactors keep old entry points as thin deprecated facades (`@Deprecated` with `ReplaceWith`)
   for at least one major release before removal.
 - Internal-only types may move/change freely once they are no longer exported.
+- **Source-compatible is not the same as behaviour-compatible.** A change that keeps every signature but
+  alters what an exported call *returns* is still a contract change for embedders, and belongs in the
+  release notes even though nothing fails to compile. Recorded because this branch made one:
+
+| Change | Effect on an embedder |
+|---|---|
+| `PathsConfig.homeDirectory` consults `-Dde.griefed.serverpackcreator.home` **before** the stored preference and the properties file (`PathsConfig.kt:106`) | A host that sets that property now resolves a different home than the same code did before. Additive and opt-in — nothing changes unless the property is set — but every plugin reading `apiProperties.homeDirectory` follows it. |
+| `ApiProperties.resolvePreferencesNode` + `PREFERENCES_NODE_PROPERTY` / `PREFERENCES_NODE_ENV` / `DEFAULT_PREFERENCES_NODE` | New exported surface; the default node name is unchanged, so existing installations keep reading their own settings. |
 
 ---
 
@@ -152,12 +161,12 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 
 | Module         | Tests         | Notes                                                                                |
 |----------------|---------------|--------------------------------------------------------------------------------------|
-| api            | 229 (1 skip)  | Phase 1 **complete**; + `MinecraftMetaTest` (`requiredJavaVersion`) and `ScriptTemplateContentTest` (non-gated guard for the shipped fish templates; its `fish -n` case skips where fish is absent). *Count measured 2026-07-29 — the previous "163" here was stale, not a regression.* |
-| clientside     | 56            | Extracted from `-app`; `BootVerifier` split + `packPostProcessor` hook; selection (MC-support gate) + setup-abort classification pinned |
-| app            | 71            | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay             |
+| api            | 233 (1 skip)  | Phase 1 **complete**; + `MinecraftMetaTest` (`requiredJavaVersion`) and `ScriptTemplateContentTest` (non-gated guard for the shipped templates; skips its `fish -n` case where fish is absent, and **executes** the bash `setupFabric` to pin the offline launcher path). |
+| clientside     | 67            | Extracted from `-app`; `BootVerifier` split + `packPostProcessor` hook; selection (MC-support gate) + setup-abort classification pinned |
+| app            | 73            | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay             |
 | plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |
 | web-frontend   | 23 (from 0)   | Phase 4a–4e done: Vitest, `$q` decoupling, **full TS migration**, component coverage  |
-| grinder        | 68 (4 gated)  | Core loop **e2e-verified on current MC** (26.2/Quilt boots offline on JDK 25); **continuous fire-and-forget** with stale re-verification; Modrinth + CurseForge sources; **script-template matrix IT** (bash/fish/pwsh — caught + fixed a real `.fish` bug); container/loader/report/source subpackages; MC selection bounded to image-supported Java. 64 run + 4 daemon-gated (3 engine IT, 1 template matrix). Template matrix fully green: 5 MC x 5 loaders x bash/fish, bash == fish everywhere |
+| grinder        | 203 (19 skip) | + `BootWorkspaceReaper` — staging reclamation; the work tree grew unbounded at ~23 GB/h (98 GB measured) before it. Core loop **e2e-verified on current MC** (26.2/Quilt boots offline on JDK 25); **continuous fire-and-forget** with a **persisted catalog crawl cursor** (each pass takes the next slice, so coverage accumulates instead of re-checking the top N) + work-driven pacing; Modrinth + CurseForge sources; **script-template matrix IT** (bash/fish/pwsh — caught + fixed a real `.fish` bug); container/loader/report/source subpackages; MC selection bounded to image-supported Java. 94 run + 8 gated (3 engine IT, 3 live-crawl IT, 2 template-matrix). Template matrix fully green: 5 MC x 5 loaders x bash/fish, bash == fish everywhere. CurseForge is crawled **in partitions** (135 Minecraft versions × modloader × category, both sort directions) to get past its 10 000-result API cap — **now live-verified with a real API key** (`CurseForgeCrawlLiveIT`), which caught two silent design-killers the docs had hidden: `totalCount` saturates at the cap (so no split could ever fire) and the version list is 98 % non-Minecraft strings |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.

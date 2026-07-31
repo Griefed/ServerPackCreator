@@ -30,14 +30,16 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 /**
- * Seeds the grind queue from Modrinth, **most-downloaded first**. Modrinth's search API needs no key
+ * Enumerates the Modrinth mod catalog, **most-downloaded first**. Modrinth's search API needs no key
  * and returns the download count, so the popularity ranking that decides what to grind first is free
- * (and the mods most likely to land in a modpack get verified first). Paginates until [candidates]'
- * `limit` is met or the catalog is exhausted; behind an [HttpFetcher] so it is unit-tested against
+ * (and the mods most likely to land in a modpack get verified first). One [page] call fills a whole
+ * slice, requesting as many API pages as it takes; behind an [HttpFetcher] so it is unit-tested against
  * canned JSON without touching the network.
  *
- * CurseForge is the natural sibling (a `CurseForgeCandidateSource`) but needs the API key and has no
- * declared sideness — added later; Modrinth is the cheap, keyless start.
+ * **Offset ceiling (measured, 2026-07-29):** the API serves deep offsets happily (40 000 returns real
+ * hits) but clamps `offset` at 99 999, answering with zero hits beyond it. `project_type:mod` currently
+ * counts ~71 000 projects, so the whole catalog is reachable today; should it ever pass 100 000, the tail
+ * becomes unreachable and looks exactly like the end of the catalog — the crawl would silently wrap early.
  *
  * @param httpFetcher  HTTP boundary, swapped for canned JSON in tests.
  * @param objectMapper Jackson mapper for the JSON responses.
@@ -56,29 +58,41 @@ class ModrinthCandidateSource(
         "Accept" to "application/json"
     )
 
+    override val platform = ModPlatforms.MODRINTH
+
     /**
-     * Up to [limit] mod projects, most-downloaded first, as queue candidates. A failed page stops
-     * pagination and returns what was gathered so far (the grind proceeds with a partial catalog rather
-     * than aborting).
+     * Up to [limit] mod projects starting at [offset], most-downloaded first. A short or empty page ends
+     * the catalog (`endOfCatalog`); a *failed* request only ends this slice, returning what was gathered
+     * with `endOfCatalog = false` so the crawler retries the same region instead of wrapping to the top.
+     *
+     * `partition` is ignored and never handed back: Modrinth's whole mod catalog is one offset sequence (its
+     * offset ceiling of 99 999 sits comfortably above today's ~71 000 projects), so there is nothing to
+     * partition — unlike CurseForge, whose paging cap forces a partitioned crawl.
      */
-    override fun candidates(limit: Int): List<GrindCandidate> {
+    override fun page(offset: Int, limit: Int, partition: String?): CandidatePage {
+        require(offset >= 0) { "offset must be >= 0, was $offset" }
         require(limit >= 0) { "limit must be >= 0, was $limit" }
         val gathered = ArrayList<GrindCandidate>(minOf(limit, 1024))
-        var offset = 0
+        var cursor = offset
+        var endOfCatalog = false
         while (gathered.size < limit) {
             val batch = pageSize.coerceAtMost(limit - gathered.size)
-            val hits = searchPage(offset, batch) ?: break
+            val hits = searchPage(cursor, batch) ?: break // request failed: partial slice, catalog unknown
             if (hits.isEmpty()) {
+                endOfCatalog = true
                 break
             }
             hits.forEach { gathered.add(it) }
+            cursor += hits.size
             if (hits.size < batch) {
-                break // fewer than asked for ⇒ catalog exhausted
+                endOfCatalog = true // fewer than asked for ⇒ catalog exhausted
+                break
             }
-            offset += hits.size
         }
-        // Trim defensively: a page may hand back more than the slots left in this final batch.
-        return gathered.take(limit)
+        // Trim defensively (a page may hand back more than the slots left) and treat only what is handed
+        // out as consumed, so nothing is skipped when that happens.
+        val slice = gathered.take(limit)
+        return CandidatePage(slice, offset + slice.size, endOfCatalog)
     }
 
     /** One page of mod hits ordered by downloads, or `null` when the request failed. */
@@ -100,7 +114,7 @@ class ModrinthCandidateSource(
             projectUrl = "https://modrinth.com/mod/$slug",
             slug = slug,
             popularity = hit.path("downloads").asLong(0),
-            platform = ModPlatforms.MODRINTH
+            platform = platform
         )
     }
 }

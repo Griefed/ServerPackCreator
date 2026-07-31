@@ -35,9 +35,9 @@ import java.io.File
  */
 internal class ConfigurationHandlerNegativeTest {
     private val apiProperties =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).apiProperties
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).apiProperties
     private val configurationHandler =
-        ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).configurationHandler
+        ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).configurationHandler
 
     /**
      * When the configuration carries no clientside-only mods and no whitelist, the handler must

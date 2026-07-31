@@ -21,6 +21,8 @@ package de.griefed.serverpackcreator.grinder.loader
 
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
+import java.time.Duration
+import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -47,18 +49,37 @@ fun interface LoaderInstaller {
  * crash mid-install is redone rather than served half-baked; installs of the same tuple are serialized
  * so concurrent workers can't install it twice.
  *
- * @param cacheRoot Root directory under which per-tuple base trees live.
- * @param installer Performs the one-off, network-using install on a cache miss.
+ * The cache is **bounded by time, not size**: [evictUnusedSince] drops tuples nothing has booted for a while
+ * (see [ensureInstalled], which stamps a tuple as used on every hit), because each one costs ~150 MB and a
+ * long sweep keeps minting new ones as loaders ship builds.
+ *
+ * @param cacheRoot       Root directory under which per-tuple base trees live.
+ * @param installer       Performs the one-off, network-using install on a cache miss.
+ * @param failureCooldown How long a *failed* tuple is left alone before another install is attempted. Without
+ *                        this, an upstream artefact that 404s costs a full download-and-boot for every candidate
+ *                        that wants it, for the rest of the sweep.
+ * @param clock           Supplies "now" for the cooldown (injectable for tests).
  * @author Griefed
  */
 class LoaderCache(
     private val cacheRoot: File,
-    private val installer: LoaderInstaller
+    private val installer: LoaderInstaller,
+    private val failureCooldown: Duration = Duration.ofHours(1),
+    private val clock: () -> Instant = Instant::now
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /** Per-tuple locks so an install serializes by tuple without blocking unrelated tuples. */
     private val installLocks = ConcurrentHashMap<String, Any>()
+
+    /**
+     * When each tuple's install last failed, so a broken one is not re-attempted for every candidate that wants
+     * it. Observed live: NeoForge 21.1.247's installer jar 404s upstream, and 1.21.1+NeoForge is one of the most
+     * common combinations in the catalogue — without this, every such candidate paid a full download-and-boot
+     * before failing, and turned a decisive boot into INCONCLUSIVE while doing so. In memory on purpose: a
+     * restart is a reasonable moment to find out whether upstream has been fixed.
+     */
+    private val recentFailures = ConcurrentHashMap<String, Instant>()
 
     /** The cache directory for a version-tuple, whether or not it has been installed yet. */
     fun baseDirFor(loader: String, loaderVersion: String, minecraftVersion: String): File =
@@ -75,13 +96,21 @@ class LoaderCache(
      */
     fun ensureInstalled(loader: String, loaderVersion: String, minecraftVersion: String): File? {
         val baseDir = baseDirFor(loader, loaderVersion, minecraftVersion)
-        if (File(baseDir, MARKER).isFile) {
+        if (markUsed(baseDir)) {
             return baseDir
         }
-        synchronized(lockFor(loader, loaderVersion, minecraftVersion)) {
+        synchronized(lockFor(baseDir)) {
             // Re-check under the lock: another worker may have installed it while we waited.
-            if (File(baseDir, MARKER).isFile) {
+            if (markUsed(baseDir)) {
                 return baseDir
+            }
+            val failedAt = recentFailures[baseDir.path]
+            if (failedAt != null && Duration.between(failedAt, clock()) < failureCooldown) {
+                log.debug(
+                    "Not re-attempting $loader $loaderVersion / Minecraft $minecraftVersion — its install failed " +
+                        "${Duration.between(failedAt, clock()).toMinutes()}m ago and is on cooldown."
+                )
+                return null
             }
             baseDir.deleteRecursively()
             baseDir.mkdirs()
@@ -90,16 +119,107 @@ class LoaderCache(
                 .getOrDefault(false)
             if (!installed) {
                 baseDir.deleteRecursively()
+                // Remember the failure so the next candidate wanting this tuple fails fast instead of repeating a
+                // full install; the reason was logged once, by whoever failed.
+                if (recentFailures.put(baseDir.path, clock()) == null) {
+                    log.warn(
+                        "Install of $loader $loaderVersion / Minecraft $minecraftVersion failed — not retrying it " +
+                            "for ${failureCooldown.toMinutes()}m. Candidates needing this combination will be " +
+                            "reported INCONCLUSIVE until then."
+                    )
+                }
                 return null
             }
+            recentFailures.remove(baseDir.path)
             File(baseDir, MARKER).writeText("loader=$loader\nloaderVersion=$loaderVersion\nminecraftVersion=$minecraftVersion\n")
             return baseDir
         }
     }
 
-    /** Intern a per-tuple lock; the map is bounded by the finite loader/version combination space. */
-    private fun lockFor(loader: String, loaderVersion: String, minecraftVersion: String): Any =
-        installLocks.computeIfAbsent("$loader/$loaderVersion/$minecraftVersion") { Any() }
+    /**
+     * Every loader-version installed for the `(loader, minecraftVersion)` pair, **most recently used first**.
+     *
+     * Versions are read back from each tuple's [MARKER], not from the directory name: [baseDirFor] sanitizes
+     * path segments, so a version string containing anything unusual would come back mangled and be handed to
+     * pack generation as a version that does not exist. Incomplete installs (no marker) are skipped — they
+     * cannot be booted. Used by [CachedLoaderVersions] to reuse an install instead of fetching a fresh one.
+     */
+    fun installedVersions(loader: String, minecraftVersion: String): List<String> {
+        val loaderDir = File(cacheRoot, "${sanitize(minecraftVersion)}/${sanitize(loader)}")
+        val versionDirs = loaderDir.listFiles()?.filter { it.isDirectory } ?: return emptyList()
+        return versionDirs
+            .mapNotNull { dir -> File(dir, MARKER).takeIf { it.isFile }?.let { marker -> marker to recordedVersion(marker) } }
+            .filter { (_, version) -> version != null }
+            .sortedByDescending { (marker, _) -> marker.lastModified() }
+            .mapNotNull { (_, version) -> version }
+    }
+
+    /** The raw `loaderVersion` a completion marker recorded, or `null` when it is unreadable. */
+    private fun recordedVersion(marker: File): String? = runCatching {
+        marker.readLines().firstOrNull { it.startsWith("loaderVersion=") }?.removePrefix("loaderVersion=")
+    }.getOrNull()
+
+    /**
+     * Delete every cached tuple that has not been *used* within [retention], returning how many went. A
+     * `zero`/negative retention disables eviction entirely (nothing is deleted), which is the opt-out.
+     *
+     * Without this the cache only grows: each tuple costs on the order of 150 MB, and loaders keep shipping
+     * builds, so a months-long sweep mints new tuples indefinitely and eventually fills the disk. Eviction is
+     * keyed on **last use** — [ensureInstalled] stamps the marker on every hit — so a tuple the sweep still
+     * boots is never dropped however old its install is; only genuinely idle ones go, and a re-install costs
+     * one networked setup boot if it comes back.
+     *
+     * Directories without a completion [MARKER] are swept regardless of age: an install that never finished
+     * can never be served, so keeping it only leaks disk. Each candidate is examined under the same per-tuple
+     * lock that installs take, so eviction can never delete a tree a worker is installing into.
+     */
+    fun evictUnusedSince(retention: Duration): Int {
+        if (retention.isZero || retention.isNegative) {
+            return 0
+        }
+        val cutoff = System.currentTimeMillis() - retention.toMillis()
+        var evicted = 0
+        for (baseDir in cachedTupleDirs()) {
+            synchronized(lockFor(baseDir)) {
+                val marker = File(baseDir, MARKER)
+                val idle = if (marker.isFile) marker.lastModified() < cutoff else true
+                if (idle && baseDir.deleteRecursively()) {
+                    evicted++
+                    log.info("Evicted cached loader install ${baseDir.name} (${baseDir.parentFile?.name}) — unused for longer than ${retention.toDays()}d.")
+                }
+            }
+        }
+        return evicted
+    }
+
+    /**
+     * Every `<minecraft>/<loader>/<loaderVersion>` directory currently under [cacheRoot]. Walked from disk
+     * rather than from a registry so a cache left behind by an earlier run (or a crashed one) is covered too.
+     */
+    private fun cachedTupleDirs(): List<File> =
+        (cacheRoot.listFiles()?.filter { it.isDirectory } ?: emptyList())
+            .flatMap { minecraft -> minecraft.listFiles()?.filter { it.isDirectory } ?: emptyList() }
+            .flatMap { loader -> loader.listFiles()?.filter { it.isDirectory } ?: emptyList() }
+
+    /**
+     * Whether [baseDir] holds a completed install, refreshing its last-use stamp when it does. The stamp is
+     * what [evictUnusedSince] reads, so *asking* for a tuple is what keeps it alive.
+     */
+    private fun markUsed(baseDir: File): Boolean {
+        val marker = File(baseDir, MARKER)
+        if (!marker.isFile) {
+            return false
+        }
+        marker.setLastModified(System.currentTimeMillis())
+        return true
+    }
+
+    /**
+     * Intern a lock per cache *directory* — deliberately keyed on the sanitized path rather than the raw
+     * tuple, so installs and eviction agree on the same monitor (and two raw tuples that sanitize onto one
+     * directory serialize, since they share its contents). Bounded by the finite tuple space.
+     */
+    private fun lockFor(baseDir: File): Any = installLocks.computeIfAbsent(baseDir.path) { Any() }
 
     /** Make a token safe to use as a path segment, collapsing anything unusual to an underscore. */
     private fun sanitize(token: String): String = token.replace(Regex("[^A-Za-z0-9._-]"), "_")

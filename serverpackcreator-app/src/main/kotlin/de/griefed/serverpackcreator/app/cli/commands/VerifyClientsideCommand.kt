@@ -91,7 +91,7 @@ class VerifyClientsideCommand(private val apiWrapper: ApiWrapper = ApiWrapper.ap
                             platform = platform,
                             httpDownloader = httpDownloader,
                             browserDownloader = browserDownloader,
-                            loaderVersionResolver = LoaderVersionResolver(apiWrapper.versionMeta),
+                            loaderVersionPolicy = LoaderVersionResolver(apiWrapper.versionMeta),
                             workDirectory = File(workDirectory, "boot")
                         )
                     }
