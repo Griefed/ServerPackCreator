@@ -53,8 +53,13 @@ class ApiVanillaPackGenerator(
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     override fun generate(loader: String, loaderVersion: String, minecraftVersion: String): File? {
-        val tupleDir = File(workDirectory, sanitize("$minecraftVersion-$loader-$loaderVersion")).apply { deleteRecursively() }
+        val tupleDir = File(workDirectory, sanitize("$minecraftVersion-$loader-$loaderVersion"))
+        // The wipe below is what destroyed the previous attempt's install console, which is the only record of why
+        // that attempt failed. Carry one generation across it before the directory goes.
+        val previousInstallConsole = InstallLogRetention.preserve(tupleDir)
+        tupleDir.deleteRecursively()
         val modpack = File(tupleDir, "modpack").apply { File(this, "mods").mkdirs() }
+        InstallLogRetention.writePrevious(tupleDir, previousInstallConsole)
         // SPC refuses to generate an "empty" pack, so give the (mod-less) modpack a minimal includable
         // directory. The install only needs start.sh + the loader; this placeholder is harmless and is
         // excluded from the install-layer snapshot (it's a pre-boot file).
