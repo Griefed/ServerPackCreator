@@ -142,6 +142,10 @@ tasks.test {
     dependsOn(tasks.getByName("fixMissingResources"))
     Preferences.userRoot().node("ServerPackCreator").clear()
     Preferences.userRoot().node("ServerPackCreator").sync()
+    // `ShippedResourceTrackingTest` asserts on the repository's ignore rules, which are not otherwise an input to
+    // anything -- without this the task reports UP-TO-DATE after a .gitignore change and the guard silently does
+    // not run, which is exactly how its own first teeth-check appeared to pass.
+    inputs.file(rootProject.file(".gitignore")).withPropertyName("rootGitignore")
 }
 
 tasks.build {
