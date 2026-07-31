@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.grinder.container
 
+import de.griefed.serverpackcreator.clientside.SuspendAwareDeadline
+
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.time.Duration
@@ -44,7 +46,7 @@ internal class SuspendGapTest {
     fun normalPollingIsNotMistakenForASuspend() {
         for (gap in listOf(0L, poll, poll * 2, 5_000L, 30_000L, 59_999L)) {
             Assertions.assertFalse(
-                DockerJavaContainerEngine.isSuspendGap(gap, poll),
+                SuspendAwareDeadline.isSuspendGap(gap, poll),
                 "a ${gap}ms gap between polls is load or jitter, not a suspend — treating it as one would hand a " +
                     "genuinely slow boot extra budget it should not get"
             )
@@ -54,10 +56,10 @@ internal class SuspendGapTest {
     /** A real standby cycle is minutes long and unmistakable. */
     @Test
     fun aStandbyCycleIsDetected() {
-        Assertions.assertTrue(DockerJavaContainerEngine.isSuspendGap(60_000L, poll), "one minute is the floor")
+        Assertions.assertTrue(SuspendAwareDeadline.isSuspendGap(60_000L, poll), "one minute is the floor")
         // The measured overnight cycle: ~16 minutes asleep between wakes.
-        Assertions.assertTrue(DockerJavaContainerEngine.isSuspendGap(Duration.ofMinutes(16).toMillis(), poll))
-        Assertions.assertTrue(DockerJavaContainerEngine.isSuspendGap(Duration.ofHours(8).toMillis(), poll))
+        Assertions.assertTrue(SuspendAwareDeadline.isSuspendGap(Duration.ofMinutes(16).toMillis(), poll))
+        Assertions.assertTrue(SuspendAwareDeadline.isSuspendGap(Duration.ofHours(8).toMillis(), poll))
     }
 
     /**
@@ -67,12 +69,12 @@ internal class SuspendGapTest {
     @Test
     fun theThresholdNeverFallsBelowItsFloor() {
         // A tiny poll interval must not lower the bar: 30 x 10ms is 300ms, far too little to mean "asleep".
-        Assertions.assertFalse(DockerJavaContainerEngine.isSuspendGap(1_000L, pollIntervalMillis = 10L))
-        Assertions.assertTrue(DockerJavaContainerEngine.isSuspendGap(60_000L, pollIntervalMillis = 10L))
+        Assertions.assertFalse(SuspendAwareDeadline.isSuspendGap(1_000L, pollIntervalMillis = 10L))
+        Assertions.assertTrue(SuspendAwareDeadline.isSuspendGap(60_000L, pollIntervalMillis = 10L))
 
         // A very large poll interval scales the bar up rather than down.
-        Assertions.assertFalse(DockerJavaContainerEngine.isSuspendGap(60_000L, pollIntervalMillis = 10_000L))
-        Assertions.assertTrue(DockerJavaContainerEngine.isSuspendGap(300_000L, pollIntervalMillis = 10_000L))
+        Assertions.assertFalse(SuspendAwareDeadline.isSuspendGap(60_000L, pollIntervalMillis = 10_000L))
+        Assertions.assertTrue(SuspendAwareDeadline.isSuspendGap(300_000L, pollIntervalMillis = 10_000L))
     }
 
     /**
@@ -82,7 +84,7 @@ internal class SuspendGapTest {
     @Test
     fun theFloorSitsWellAboveAnyPlausibleStall() {
         Assertions.assertTrue(
-            DockerJavaContainerEngine.SUSPEND_GAP_FLOOR_MILLIS >= 60_000L,
+            SuspendAwareDeadline.SUSPEND_GAP_FLOOR_MILLIS >= 60_000L,
             "a floor below a minute risks calling a starved host's stall a suspend"
         )
     }

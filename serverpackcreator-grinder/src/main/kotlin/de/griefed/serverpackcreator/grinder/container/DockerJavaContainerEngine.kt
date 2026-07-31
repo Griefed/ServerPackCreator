@@ -31,6 +31,7 @@ import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientImpl
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
+import de.griefed.serverpackcreator.clientside.SuspendAwareDeadline
 import java.time.Duration
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
@@ -100,23 +101,18 @@ class DockerJavaContainerEngine(
             // `SURVIVED (timed out)` whose console showed the server reaching ready seconds after launch. Each
             // suspended interval is added back to the deadline, so the timeout means "the boot had this long and did
             // not make it" rather than "this much clock passed".
-            var deadline = System.currentTimeMillis() + timeout.toMillis()
-            var lastTick = System.currentTimeMillis()
-            while (isRunning(containerId) && !ready.get() && System.currentTimeMillis() < deadline) {
-                Thread.sleep(POLL_INTERVAL_MILLIS)
-                val now = System.currentTimeMillis()
-                val gap = now - lastTick
-                if (isSuspendGap(gap, POLL_INTERVAL_MILLIS)) {
-                    deadline += gap
-                    log.warn(
-                        "The host appears to have suspended for ~${gap / 1000}s while booting; that time is not counted " +
-                            "against the boot's ${timeout.toMinutes()}-minute budget. Keep the machine awake for a sweep " +
-                            "(e.g. `caffeinate -ims`) — a boot interrupted this way learns nothing either way."
-                    )
-                }
-                lastTick = now
+            val deadline = SuspendAwareDeadline(timeout, POLL_INTERVAL_MILLIS) { gapMillis ->
+                log.warn(
+                    "The host appears to have suspended for ~${gapMillis / 1000}s while booting; that time is not counted " +
+                        "against the boot's ${timeout.toMinutes()}-minute budget. Keep the machine awake for a sweep " +
+                        "(e.g. `caffeinate -ims`) — a boot interrupted this way learns nothing either way."
+                )
             }
-            val timedOut = !ready.get() && System.currentTimeMillis() >= deadline
+            while (isRunning(containerId) && !ready.get() && deadline.hasTimeLeft()) {
+                Thread.sleep(POLL_INTERVAL_MILLIS)
+                deadline.tick()
+            }
+            val timedOut = !ready.get() && !deadline.hasTimeLeft()
 
             // A server that became ready stays up by design, so stop it; classification keys on the
             // captured lines + exit code, never on liveness. Kill if a graceful stop fails.
@@ -184,21 +180,6 @@ class DockerJavaContainerEngine(
     companion object {
         /** How often the boot's liveness and ready-state are polled. */
         internal const val POLL_INTERVAL_MILLIS = 500L
-
-        /**
-         * Smallest wall-clock gap between two polls that is read as the host having suspended rather than merely
-         * being busy. Generous on purpose: scheduling jitter, a starved container host or a long GC pause can cost
-         * seconds, but nothing short of a suspend costs a minute between two 500 ms polls. Under-detecting is the safe
-         * direction — it only means a suspended boot still times out, which is the behaviour this replaces.
-         */
-        internal const val SUSPEND_GAP_FLOOR_MILLIS = 60_000L
-
-        /**
-         * True when [gapMillis] between two polls is too large to be anything but the host having been asleep.
-         * Pure so the threshold is testable without a Docker daemon — the surrounding engine is integration-only.
-         */
-        internal fun isSuspendGap(gapMillis: Long, pollIntervalMillis: Long): Boolean =
-            gapMillis >= maxOf(SUSPEND_GAP_FLOOR_MILLIS, pollIntervalMillis * 30)
 
         /** Build a [DockerClient] from the ambient Docker environment (DOCKER_HOST, TLS settings, …). */
         fun defaultClient(): DockerClient {
