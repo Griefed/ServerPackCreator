@@ -26,6 +26,12 @@ java {
     withJavadocJar()
 }
 
+/**
+ * Escape a filesystem path for a `.properties` value: backslashes and colons are separators there, so a Windows
+ * path written verbatim would be read back mangled (`C:\dir` becomes `C` + a value starting at `dir`).
+ */
+private fun escapeForProperties(path: String): String = path.replace("\\", "\\\\").replace(":", "\\:")
+
 // The suite boots an ApiWrapper from build/resources/test/serverpackcreator.properties in dozens of places, and two
 // of its values are inherently per-machine: the JDK path SPC writes into generated packs, and the tomcat basedir.
 // Committing resolved values means committing one developer's filesystem, so the committed file leaves them blank and
@@ -235,8 +241,3 @@ signing {
     useInMemoryPgpKeys(signingKey, signingPassword)
     sign(publishing.publications)
 }
-/**
- * Escape a filesystem path for a `.properties` value: backslashes and colons are separators there, so a Windows
- * path written verbatim would be read back mangled (`C:\dir` becomes `C` + a value starting at `dir`).
- */
-fun escapeForProperties(path: String): String = path.replace("\\", "\\\\").replace(":", "\\:")

@@ -38,11 +38,20 @@ import java.util.Properties
  */
 internal class TestPropertiesTest {
 
+    /**
+     * The module directory, derived from the isolated test home the build injects rather than from the working
+     * directory. Gradle runs tests with the module as CWD, but an IDE run configuration may start from the
+     * repository root, which would fail these tests on a missing path instead of on the property they check.
+     */
+    private val moduleDirectory: File = System.getProperty("de.griefed.serverpackcreator.home")
+        ?.let { File(it).parentFile }
+        ?: File("").absoluteFile
+
     /** The committed template — machine-independent by contract. */
-    private val committed = File("src/test/resources/serverpackcreator.properties")
+    private val committed = File(moduleDirectory, "src/test/resources/serverpackcreator.properties")
 
     /** What the suite actually reads, filled in by `processTestResources`. */
-    private val generated = File("build/resources/test/serverpackcreator.properties")
+    private val generated = File(moduleDirectory, "build/resources/test/serverpackcreator.properties")
 
     /** Read a properties file, unescaping as the `Properties` loader does — the paths contain escaped colons. */
     private fun read(file: File): Properties = Properties().apply {
@@ -88,7 +97,7 @@ internal class TestPropertiesTest {
 
         Assertions.assertFalse(basedir.isNullOrBlank(), "the build must fill server.tomcat.basedir in")
         Assertions.assertEquals(
-            File("tests").absoluteFile.canonicalFile,
+            File(moduleDirectory, "tests").canonicalFile,
             File(basedir).canonicalFile,
             "server.tomcat.basedir must be this module's own tests directory, the same home the build injects"
         )
