@@ -356,7 +356,11 @@ Function global:SetupForge
     "Running Forge checks and setup..."
     $ForgeInstallerUrl = "https://files.minecraftforge.net/maven/net/minecraftforge/forge/${MinecraftVersion}-${ModLoaderVersion}/forge-${MinecraftVersion}-${ModLoaderVersion}-installer.jar"
     $ForgeJarLocation = "do_not_manually_edit"
-    if ([int]$Semantics[1] -le 16)
+    # Forge changed how a server is launched: up to Minecraft 1.16 the installer produced a runnable forge.jar, from
+    # 1.17 it produces libraries/.../win_args.txt instead. The major must be checked too, because the minor alone only
+    # carries that meaning under the 1.x scheme -- Minecraft 26.2 has minor 2, which would otherwise read as the 1.2
+    # era and take the legacy path, where the server cannot find forge.jar at all.
+    if ([int]$Semantics[0] -eq 1 -And [int]$Semantics[1] -le 16)
     {
         $ForgeJarLocation = "forge.jar"
         $script:LauncherJarLocation = "forge.jar"

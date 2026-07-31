@@ -199,7 +199,11 @@ setupForge() {
   FORGE_INSTALLER_URL="https://files.minecraftforge.net/maven/net/minecraftforge/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}-installer.jar"
   FORGE_JAR_LOCATION="do_not_manually_edit"
 
-  if [[ ${SEMANTICS[1]} -le 16 ]]; then
+  # Forge changed how a server is launched: up to Minecraft 1.16 the installer produced a runnable forge.jar, from
+  # 1.17 it produces libraries/.../unix_args.txt instead. The major must be checked too, because the minor alone only
+  # carries that meaning under the 1.x scheme -- Minecraft 26.2 has minor 2, which would otherwise read as the 1.2 era
+  # and take the legacy path, where the server dies with "Unable to access jarfile forge.jar" before loading any mod.
+  if [[ ${SEMANTICS[0]} -eq 1 ]] && [[ ${SEMANTICS[1]} -le 16 ]]; then
     FORGE_JAR_LOCATION="forge.jar"
     LAUNCHER_JAR_LOCATION="forge.jar"
     SERVER_RUN_COMMAND="${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"

@@ -243,6 +243,82 @@ internal class ScriptTemplateContentTest {
     }
 
     /**
+     * **Executes** the bash template's `setupForge` across both Minecraft versioning schemes and asserts each one
+     * picks the right launcher era.
+     *
+     * Forge changed how a server is launched: up to Minecraft 1.16 the installer produced a runnable `forge.jar`,
+     * from 1.17 onwards it produces `libraries/…/unix_args.txt` consumed via `@user_jvm_args.txt`. The template
+     * chooses between them, and choosing wrong is not a subtle failure — the legacy path on a modern Minecraft dies
+     * with `Error: Unable to access jarfile forge.jar` before the server starts, so the mod under test is never
+     * exercised at all.
+     *
+     * **The versions below are the point.** The era test may not read the Minecraft *minor* component in isolation,
+     * because that is only meaningful under the `1.x` scheme: `26.2` has minor `2`, which looks like the 1.2 era.
+     * Measured 2026-07-30 in the grinder: **24 boot logs, every one of them Forge**, never started the server for
+     * exactly this reason, making Forge coverage on current Minecraft effectively zero.
+     */
+    @Test
+    fun theBashTemplateChoosesTheForgeLauncherEraForBothVersioningSchemes() {
+        val bash = which("bash") ?: Assumptions.abort("bash not installed — Forge era execution check skipped")
+
+        // Minecraft version to whether the *legacy* runnable forge.jar is the correct launcher.
+        val expectations = mapOf(
+            "1.12.2" to true,
+            "1.16.5" to true,
+            "1.17.1" to false,
+            "1.20.1" to false,
+            "1.21.1" to false,
+            // The newer YY.x scheme: these are modern Forge, whatever their minor component looks like.
+            "26.1.2" to false,
+            "26.2" to false
+        )
+
+        for ((minecraftVersion, legacyExpected) in expectations) {
+            val packDir = File.createTempFile("spc-forge-era-", "-pack").apply { delete(); mkdirs() }
+            val harness = File(packDir, "harness.sh")
+            harness.writeText(
+                """
+                downloadIfNotExist() { echo "false"; }
+                runJavaCommand() { :; }
+                refreshServerJar() { :; }
+                crashServer() { echo "CRASHED: ${'$'}1"; exit 3; }
+                JAVA_ARGS="-Xmx4G"
+                USE_SSJ="true"
+                SSJ_FORGE_ARGS=""
+                MINECRAFT_VERSION="$minecraftVersion"
+                MODLOADER_VERSION="47.4.22"
+                LAUNCHER_JAR_LOCATION="do_not_manually_edit"
+                SERVER_RUN_COMMAND="do_not_manually_edit"
+                IFS="." read -ra SEMANTICS <<<"${'$'}{MINECRAFT_VERSION}"
+                ${extractShellFunction("default_template.sh", "setupForge")}
+                setupForge
+                echo "RESULT=${'$'}{SERVER_RUN_COMMAND}"
+                """.trimIndent()
+            )
+
+            val process = ProcessBuilder(bash.absolutePath, harness.absolutePath)
+                .directory(packDir)
+                .redirectErrorStream(true)
+                .start()
+            val output = process.inputStream.bufferedReader().use { it.readText() }
+            val exit = process.waitFor()
+            packDir.deleteRecursively()
+
+            Assertions.assertEquals(0, exit, "setupForge failed for Minecraft $minecraftVersion:\n$output")
+            val runCommand = output.lines().firstOrNull { it.startsWith("RESULT=") }
+                ?: Assertions.fail("no run command produced for Minecraft $minecraftVersion:\n$output")
+            val choseLegacy = runCommand.contains("-jar forge.jar")
+
+            Assertions.assertEquals(
+                legacyExpected,
+                choseLegacy,
+                "Minecraft $minecraftVersion picked the ${if (choseLegacy) "legacy forge.jar" else "modern @user_jvm_args"} " +
+                    "launcher; expected the ${if (legacyExpected) "legacy" else "modern"} one. Run command: $runCommand"
+            )
+        }
+    }
+
+    /**
      * Cut a block out of a shell template, from the line equal to [startsWith] to the next line equal to [endsWith]
      * at column 0. Used for the run-loop, which is top-level script text rather than a function.
      */

@@ -238,8 +238,13 @@ function setupForge
     set -g FORGE_INSTALLER_URL "https://files.minecraftforge.net/maven/net/minecraftforge/forge/$MINECRAFT_VERSION-$MODLOADER_VERSION/forge-$MINECRAFT_VERSION-$MODLOADER_VERSION-installer.jar"
     set -g FORGE_JAR_LOCATION "do_not_manually_edit"
 
-    # NOTE: fish arrays are 1-indexed. Bash's ${SEMANTICS[1]} (minor version) is $SEMANTICS[2] here.
-    if test $SEMANTICS[2] -le 16
+    # NOTE: fish arrays are 1-indexed. Bash's ${SEMANTICS[0]} (major) is $SEMANTICS[1] here, and its
+    # ${SEMANTICS[1]} (minor) is $SEMANTICS[2].
+    # Forge changed how a server is launched: up to Minecraft 1.16 the installer produced a runnable forge.jar, from
+    # 1.17 it produces libraries/.../unix_args.txt instead. The major must be checked too, because the minor alone only
+    # carries that meaning under the 1.x scheme -- Minecraft 26.2 has minor 2, which would otherwise read as the 1.2
+    # era and take the legacy path, where the server dies with "Unable to access jarfile forge.jar".
+    if test $SEMANTICS[1] -eq 1; and test $SEMANTICS[2] -le 16
         set -g FORGE_JAR_LOCATION "forge.jar"
         set -g LAUNCHER_JAR_LOCATION "forge.jar"
         set -g SERVER_RUN_COMMAND "$JAVA_ARGS -jar $LAUNCHER_JAR_LOCATION nogui"
