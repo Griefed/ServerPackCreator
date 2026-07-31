@@ -9,11 +9,6 @@ When an item lands, delete it here and record it in `REFACTOR-LOG.md`.
 These were ranked below sweep-output quality: none of them change what the grinder produces, which is why they
 waited. Griefed asked for them to be recorded and tackled afterwards.
 
-### B4 — `LarsonScanner.kt` (2,217 lines)
-Self-contained Swing widget, no dependants beyond the GUI, no known defects. Left alone deliberately: splitting it
-buys nothing a reader needs today. `ConfigEditor.kt` (1,369) was assessed and closed — its two pure pieces are
-already extracted and the rest is legitimate view code.
-
 ### B5 — Verdict store dedup is `slug` + `platform`, not project identity
 A project that changes its slug on a platform is re-ground as a new project and its old verdicts linger. Fine today;
 would want a stable project id if the store is ever published as a long-lived dataset.
