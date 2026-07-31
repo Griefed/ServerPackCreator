@@ -70,6 +70,10 @@
   args), `ServerPackCard` (fetched-field wiring + size-MB). Suite 12→23 (the 4a-relative figure;
   6→23 since 4d). Surfaced + fixed a real bug in its own commit: `DrawerLink` used a misspelled
   `colour="accent"` (QIcon prop is `color`), so those icons rendered in the default color.
+  **Tables left untested by design** (`ModpacksTable`/`ServerPacksTable`/`HistoryTable`): their
+  only non-presentational logic is trivial column `format` lambdas (`.length`, `date.formatDate`);
+  pinning them means mounting the full QTable with mocked rows and asserting slot-rendered cells —
+  high brittleness, near-zero logic density. Not worth it (same call as `LarsonScanner`).
 - 4f (done): **MainLayout + AboutPage**, suite 23→31. `MainLayout` holds the last real uncovered logic: its
   drawer `linksList` is compared against `src/router/routes` **in both directions** (a page with no link is
   unreachable; a link with no route goes nowhere) rather than against a copy of itself, and `drawerClick` is
@@ -83,7 +87,3 @@
   children never mount — which is why the download-page tests use `shallowMount` + `vm` assertions instead.
   **Still untested by design:** `SubmissionPage` (two scrollbar style objects), `DownloadsPage`, `HistoryPage`,
   `ErrorPage` — pure composition — alongside the three tables.
-    **Tables left untested by design** (`ModpacksTable`/`ServerPacksTable`/`HistoryTable`): their
-  only non-presentational logic is trivial column `format` lambdas (`.length`, `date.formatDate`);
-  pinning them means mounting the full QTable with mocked rows and asserting slot-rendered cells —
-  high brittleness, near-zero logic density. Not worth it (same call as `LarsonScanner`).
