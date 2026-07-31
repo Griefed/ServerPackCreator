@@ -110,6 +110,13 @@ internal class ForgeLoader(
                  * Minecraft version portion removed and result in "40.0.17". The +1 removes the "-", too. :)
                  */
                 val forgeVersion = forgeVersionFrom(forge.asText(), mcVersion)
+                if (forgeVersion == null) {
+                    // One malformed entry costs one version, not the whole Forge load: `update()` catches only
+                    // MalformedURLException and NoSuchElementException, so an uncaught slice error here would abort
+                    // the parse for every remaining Minecraft version too.
+                    log.warn("Skipping malformed Forge manifest entry '${forge.asText()}' under Minecraft $mcVersion.")
+                    continue
+                }
                 forgeVersions.add(forgeVersion)
                 forgeVersionsForMCVer.add(forgeVersion)
                 try {
@@ -143,20 +150,15 @@ internal class ForgeLoader(
          * `1.7.10-pre4`). That swap is length-preserving, which is the *only* reason cutting by
          * `minecraftVersion.length` stays correct for those versions — a reconciliation that changed the length would
          * silently slice the version in the wrong place instead of failing.
+         *
+         * Returns `null` for an entry with nothing after the key, which the caller logs and skips. A length check is
+         * the only guard that fits: `startsWith("$minecraftVersion-")` would reject the legitimate `1.7.10_pre4`
+         * entry, since entries carry the **raw** manifest key while the Minecraft version may be the reconciled form.
          */
-        //TODO optional hardening -- low priority, and NOT the obvious guard.
-        // Measured against the real manifest (2026-07-31): all 5025 entries across 77 Minecraft keys are prefixed
-        // with their own key, and `minecraftVersion` is always derived from that key, so a mis-prefixed entry cannot
-        // occur today and the cut is correct for every entry that exists. The only unhandled shape is an entry equal
-        // to the key with nothing after it, which throws StringIndexOutOfBoundsException; `update()` catches only
-        // MalformedURLException and NoSuchElementException, so it would abort the whole Forge load rather than cost
-        // one version. A length check (`manifestEntry.length > minecraftVersion.length`) covers that.
-        // DO NOT "fix" this with `manifestEntry.startsWith("$minecraftVersion-")`: entries are prefixed with the RAW
-        // manifest key, while `minecraftVersion` may be the reconciled form -- the sole `1.7.10_pre4` key becomes
-        // `1.7.10-pre4`, whose entry `1.7.10_pre4-10.12.2.1137-prerelease` such a guard would wrongly reject. Match
-        // the raw key, or check length only.
-        internal fun forgeVersionFrom(manifestEntry: String, minecraftVersion: String): String =
-            manifestEntry.substring(minecraftVersion.length + 1)
+        internal fun forgeVersionFrom(manifestEntry: String, minecraftVersion: String): String? =
+            manifestEntry
+                .takeIf { it.length > minecraftVersion.length + 1 }
+                ?.substring(minecraftVersion.length + 1)
     }
 
 }

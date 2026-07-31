@@ -82,19 +82,23 @@ internal class ForgeVersionMappingTest {
      * Characterises the cut's behaviour on input the real manifest does not produce — kept as a boundary record, not
      * as a claim that this happens. Measured 2026-07-31: **all 5025 entries across 77 Minecraft keys carry their own
      * key as a prefix**, and `minecraftVersion` is always derived from that key, so the wrong-offset case below
-     * cannot arise in practice. What remains genuinely unhandled is an entry equal to the key with nothing after it:
-     * it throws, and `ForgeLoader.update` catches only `MalformedURLException` and `NoSuchElementException`, so it
-     * would abort the whole Forge load rather than cost one version. See the hardening note on `forgeVersionFrom`
-     * (and B12 in `claude-docs/BACKLOG.md`) — in particular that the obvious `startsWith` guard is the wrong fix,
+     * cannot arise in practice; it is pinned only to show that the function cannot detect it.
+     *
+     * An entry with nothing after its key **is** handled: it yields `null`, and `ForgeLoader.update` logs and skips it,
+     * so one malformed entry costs one version instead of aborting the whole Forge load — `update` catches only
+     * `MalformedURLException` and `NoSuchElementException`, so a slice error would have escaped it. The guard is a
+     * length check on purpose: `startsWith("$minecraftVersion-")` would reject the legitimate `1.7.10_pre4` entry,
      * because entries carry the *raw* manifest key while the Minecraft version may be the reconciled one.
      */
     @Test
-    fun anEntryThatDoesNotCarryItsMinecraftKeyIsNotDetected() {
+    fun anEntryWithNothingAfterItsKeyIsRejectedRatherThanThrowing() {
         // Wrong offset, no error: the caller cannot tell this apart from a good mapping.
         Assertions.assertEquals(".17", ForgeLoader.forgeVersionFrom("1.18.2-40.0.17", "1.18.2-40."))
 
-        Assertions.assertThrows(StringIndexOutOfBoundsException::class.java) {
-            ForgeLoader.forgeVersionFrom("1.18.2", "1.18.2")
-        }
+        // Nothing after the key, and nothing after the separator: rejected, and neither throws.
+        Assertions.assertNull(ForgeLoader.forgeVersionFrom("1.18.2", "1.18.2"))
+        Assertions.assertNull(ForgeLoader.forgeVersionFrom("1.18.2-", "1.18.2"))
+        // The shortest legitimate entry still maps.
+        Assertions.assertEquals("4", ForgeLoader.forgeVersionFrom("1.18.2-4", "1.18.2"))
     }
 }
