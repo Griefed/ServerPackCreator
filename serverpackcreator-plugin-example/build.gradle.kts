@@ -40,7 +40,7 @@ dependencies {
     implementation(project(":serverpackcreator-api"))
 
     // Testing
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.21")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.4.10")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.0")
     testImplementation("io.mockk:mockk:1.14.6")
 }
