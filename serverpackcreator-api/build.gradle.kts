@@ -1,4 +1,3 @@
-import java.util.prefs.Preferences
 
 plugins {
     id("serverpackcreator.kotlin-conventions")
@@ -34,6 +33,10 @@ dependencies {
     //api("dev.kosmx.needle:jneedle:1.0.1")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.21")
+    // MockK lets the unit tests stub network-bound collaborators (WebUtilities, VersionMeta) so
+    // provisioner/manifest branches can be exercised offline. Version pinned to the same 1.14.6 the
+    // app module already resolves transitively via springmockk, keeping the build's mockk single-versioned.
+    testImplementation("io.mockk:mockk:1.14.6")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.0")
 }
 
@@ -128,16 +131,25 @@ tasks.jar {
     dependsOn(tasks.getByName("fixMissingResources"))
 }
 
+// Refreshes the shipped manifest snapshot from a test home that has just been populated. Sources *this* module's
+// test home, not the app's: the api suite is what exercises `MinecraftMeta`, so it is the one that fetches the
+// per-version `mcserver/<id>.json` files -- pointing at `serverpackcreator-app/tests` made this a no-op for them
+// (measured: app 643 files, api 659, the difference being exactly the 16 releases that were missing from the
+// shipped set). Since `cleanup()` stopped wiping `manifests/`, that home accumulates rather than resetting each
+// run, so a plain `test` followed by this task genuinely advances the snapshot.
+// Pinned by `ShippedManifestSnapshotTest`, which fails when the shipped set falls behind its own parent manifest.
 tasks.register<Copy>("updateManifests") {
     dependsOn(tasks.test)
-    from(rootDir.resolve("serverpackcreator-app/tests/manifests"))
+    from(projectDir.resolve("tests/manifests"))
     into(projectDir.resolve("src/main/resources/de/griefed/resources/manifests"))
 }
 
 tasks.test {
     dependsOn(tasks.getByName("fixMissingResources"))
-    Preferences.userRoot().node("ServerPackCreator").clear()
-    Preferences.userRoot().node("ServerPackCreator").sync()
+    // `ShippedResourceTrackingTest` asserts on the repository's ignore rules, which are not otherwise an input to
+    // anything -- without this the task reports UP-TO-DATE after a .gitignore change and the guard silently does
+    // not run, which is exactly how its own first teeth-check appeared to pass.
+    inputs.file(rootProject.file(".gitignore")).withPropertyName("rootGitignore")
 }
 
 tasks.build {

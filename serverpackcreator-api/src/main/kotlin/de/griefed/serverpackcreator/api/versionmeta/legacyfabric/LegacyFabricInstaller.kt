@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.api.versionmeta.legacyfabric
 
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import org.w3c.dom.Document
 import org.xml.sax.SAXException
 import java.io.File
@@ -42,17 +43,21 @@ class LegacyFabricInstaller(
     private val installerManifest: File,
     private val utilities: Utilities
 ) {
+    /** Every LegacyFabric *installer* version, newest first. A separate series from the loader versions. */
     val allVersions: MutableList<String> = ArrayList(100)
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val installerUrlTemplate = "https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/%s/fabric-installer-%s.jar" // TODO Move URL to property
+    /** URL template the installer download is built from, with the version substituted in. */
+    val installerUrlTemplate = VersionMetaConfig.LEGACYFABRIC_INSTALLER_TEMPLATE
+    /** Newest installer version the manifest advertises, or `null` before the manifest has been read. */
     var latest: String? = null
         private set
+    /** Newest *stable* installer version, or `null` before the manifest has been read. */
     var release: String? = null
         private set
-    private val latestElement = "latest" // TODO Move tagName to property
-    private val releaseElement = "release" // TODO Move tagName to property
-    private val version = "version" // TODO Move tagName to property
+    private val latestElement = VersionMetaConfig.TAG_LATEST
+    private val releaseElement = VersionMetaConfig.TAG_RELEASE
+    private val version = VersionMetaConfig.TAG_VERSION
 
     /**
      * Update all lists of available versions with new information gathered from the manifest.

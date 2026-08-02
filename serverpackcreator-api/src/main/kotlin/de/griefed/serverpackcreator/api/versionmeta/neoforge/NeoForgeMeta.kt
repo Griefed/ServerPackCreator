@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -64,6 +64,7 @@ class NeoForgeMeta(
         }
     }
 
+    /** Every supported NeoForge build keyed by Minecraft version, merged across the legacy and current manifests. */
     fun getNeoForgeMeta(): HashMap<String, List<String>> {
         return neoForgeLoader!!.versionMeta
     }

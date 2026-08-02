@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -506,6 +506,7 @@ class MigrationManager(
             val previousSetting = apiProperties.scriptTemplates.joinToString(",")
             val currentFiles = apiProperties.serverFilesDirectory.walk().maxDepth(1).filter {
                 it.name.endsWith("sh",ignoreCase = true) ||
+                        it.name.endsWith("fish",ignoreCase = true) ||
                         it.name.endsWith("ps1",ignoreCase = true) ||
                         it.name.endsWith("bat",ignoreCase = true)
             }.filter { !it.name.contains("default_template",ignoreCase = true)}.toList()

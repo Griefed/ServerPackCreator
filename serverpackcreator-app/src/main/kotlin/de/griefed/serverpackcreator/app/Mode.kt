@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -65,6 +65,30 @@ enum class Mode(private val argument: String) {
      * Runs generations for all configurations present in ServerPackCreator's configs-directory.
      */
     WITHALLINCONFIGDIR("-withallinconfigdir"),
+
+    /**
+     * Scan the mods in a directory for the sideness they declare in their metadata and print the
+     * result as JSON. Requires a directory, a modloader and a Minecraft version.
+     */
+    SCAN("-scan"),
+
+    /**
+     * Assess whether the mod behind a CurseForge/Modrinth project-link is clientside-only and print a
+     * Markdown report. Requires the project-link.
+     */
+    CLIENTSIDE_REPORT("-clientsidereport"),
+
+    /**
+     * Like [CLIENTSIDE_REPORT] but also boots a server with the mod force-included to detect crashes.
+     * Requires the project-link.
+     */
+    VERIFY_CLIENTSIDE("-verifyclientside"),
+
+    /**
+     * Apply the suggested entries from a clientside-report JSON to the official fallback-list files.
+     * Requires the report-JSON path.
+     */
+    CLIENTSIDE_APPLY("-clientsideapply"),
 
     /**
      *

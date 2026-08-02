@@ -3,6 +3,7 @@ import java.util.*
 
 plugins {
     id("serverpackcreator.kotlin-conventions")
+    id("serverpackcreator.dokka-conventions")
     id("de.comahe.i18n4k") version "0.11.2"
     kotlin("kapt")
 }
@@ -41,6 +42,7 @@ dependencies {
     // Testing
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.21")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.0")
+    testImplementation("io.mockk:mockk:1.14.6")
 }
 
 tasks.processResources {

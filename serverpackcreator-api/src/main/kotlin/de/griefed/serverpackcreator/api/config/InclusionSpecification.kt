@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -39,9 +39,13 @@ package de.griefed.serverpackcreator.api.config
  * @author Griefed
  */
 class InclusionSpecification(
+    /** What to copy, relative to the modpack directory. */
     var source: String,
+    /** Where it lands in the server pack, or `null` to keep the source's own name. */
     var destination: String? = null,
+    /** Regex narrowing which files under [source] are copied, or `null` for all of them. */
     var inclusionFilter: String? = null,
+    /** Regex removing files that [inclusionFilter] would otherwise have kept, or `null` for none. */
     var exclusionFilter: String? = null
 ) {
 
@@ -84,5 +88,29 @@ class InclusionSpecification(
         map["inclusionFilter"] = inclusionFilter ?: ""
         map["exclusionFilter"] = exclusionFilter ?: ""
         return map
+    }
+
+    /**
+     * Value-equality across source, destination and both filters, so two inclusions describing
+     * the same files compare equal — enabling list-deduplication and the editor's dirty-check.
+     */
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is InclusionSpecification) return false
+        return source == other.source
+                && destination == other.destination
+                && inclusionFilter == other.inclusionFilter
+                && exclusionFilter == other.exclusionFilter
+    }
+
+    /**
+     * Hash-code consistent with [equals], derived from source, destination and both filters.
+     */
+    override fun hashCode(): Int {
+        var result = source.hashCode()
+        result = 31 * result + (destination?.hashCode() ?: 0)
+        result = 31 * result + (inclusionFilter?.hashCode() ?: 0)
+        result = 31 * result + (exclusionFilter?.hashCode() ?: 0)
+        return result
     }
 }

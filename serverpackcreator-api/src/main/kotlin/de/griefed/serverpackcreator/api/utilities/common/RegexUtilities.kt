@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,4 +32,18 @@ fun List<Regex>.matchAll(string: String): Boolean {
         }
     }
     return found
+}
+
+/**
+ * Turn this string into a regex in which every `.` matches a literal dot instead of any character.
+ *
+ * Intended for building patterns out of dotted version numbers, where an unescaped `.` silently makes a pattern too
+ * permissive — `1.21` would otherwise also match `1x21`.
+ *
+ * @return This string as a [Regex], with every dot escaped.
+ * @author Griefed
+ */
+fun String.toDotEscapedRegex(): Regex {
+    val escaped = this.replace(".", "\\.")
+    return escaped.toRegex()
 }

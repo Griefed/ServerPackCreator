@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -39,6 +39,7 @@ class FabricIntermediaries(
     private val objectMapper: ObjectMapper
 ) {
     @Suppress("MemberVisibilityCanBePrivate")
+    /** Intermediary mappings by Minecraft version — the authority on whether Fabric supports a version. */
     val intermediaries = HashMap<String?, FabricIntermediary>(100)
 
     /**

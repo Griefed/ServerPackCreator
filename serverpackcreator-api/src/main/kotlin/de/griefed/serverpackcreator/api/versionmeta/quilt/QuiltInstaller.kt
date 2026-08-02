@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.api.versionmeta.quilt
 
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import org.w3c.dom.Document
 import org.xml.sax.SAXException
 import java.io.File
@@ -42,8 +43,7 @@ internal class QuiltInstaller(
     private val utilities: Utilities
 ) {
     @Suppress("MemberVisibilityCanBePrivate")
-    val installerUrlTemplate =
-        "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/%s/quilt-installer-%s.jar" // TODO Move URL to property
+    val installerUrlTemplate = VersionMetaConfig.QUILT_INSTALLER_TEMPLATE
     val installers: MutableList<String> = ArrayList(100)
     val installerUrlMeta = HashMap<String, URL>(100)
     var latestInstaller: String? = null
@@ -54,9 +54,9 @@ internal class QuiltInstaller(
         private set
     var releaseInstallerUrl: URL? = null
         private set
-    private val latest = "latest" // TODO Move tagName to property
-    private val release = "release" // TODO Move tagName to property
-    private val version = "version" // TODO Move tagName to property
+    private val latest = VersionMetaConfig.TAG_LATEST
+    private val release = VersionMetaConfig.TAG_RELEASE
+    private val version = VersionMetaConfig.TAG_VERSION
 
     /**
      * Update the Quilt installer versions by parsing the Fabric loader manifest.
@@ -81,11 +81,13 @@ internal class QuiltInstaller(
         try {
             latestInstallerUrl = URI(latestUrl).toURL()
         } catch (ignored: MalformedURLException) {
+            // The latest-installer URL couldn't be parsed -> latestInstallerUrl stays unset.
         }
         val releaseUrl = installerUrlTemplate.format(releaseInstaller, releaseInstaller)
         try {
             releaseInstallerUrl = URI(releaseUrl).toURL()
         } catch (ignored: MalformedURLException) {
+            // The release-installer URL couldn't be parsed -> releaseInstallerUrl stays unset.
         }
         installers.clear()
         val elements = document.getElementsByTagName(version)
@@ -100,6 +102,7 @@ internal class QuiltInstaller(
             try {
                 installerUrlMeta[version] = installerUrl(version)
             } catch (ignored: MalformedURLException) {
+                // A version whose installer URL can't be parsed is omitted from the URL map.
             }
         }
     }

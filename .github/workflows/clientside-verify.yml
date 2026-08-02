@@ -1,0 +1,36 @@
+name: Clientside-mod verification
+
+# Phase 1 goal: on every "[Clientside-mod Addition Request]" issue, post the candidate clientside-list
+# entries and a per-loader metadata-confidence as a single (updated-in-place) comment. Cheap and
+# read-only — the actual pipeline lives in the reusable clientside-report workflow.
+
+on:
+  issues:
+    types: [opened, edited]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue number to run the metadata verification for"
+        required: true
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: clientside-verify-${{ github.event.issue.number || github.event.inputs.issue_number }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify clientside-mod request
+    # A manual dispatch always runs (the operator picked the issue on purpose); the issue trigger
+    # stays gated on the addition-request title so unrelated issues don't fire the pipeline.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.issue.title, '[Clientside-mod Addition Request]')
+    uses: ./.github/workflows/clientside-report-reusable.yml
+    with:
+      issue_number: ${{ github.event.issue.number || github.event.inputs.issue_number }}
+      boot: false
+    secrets: inherit

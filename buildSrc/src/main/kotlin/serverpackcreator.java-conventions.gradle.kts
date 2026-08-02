@@ -4,7 +4,6 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.prefs.Preferences
 
 repositories {
     mavenCentral()
@@ -27,8 +26,50 @@ java {
     withJavadocJar()
 }
 
+/**
+ * Escape a filesystem path for a `.properties` value: backslashes and colons are separators there, so a Windows
+ * path written verbatim would be read back mangled (`C:\dir` becomes `C` + a value starting at `dir`).
+ */
+private fun escapeForProperties(path: String): String = path.replace("\\", "\\\\").replace(":", "\\:")
+
+// The suite boots an ApiWrapper from build/resources/test/serverpackcreator.properties in dozens of places, and two
+// of its values are inherently per-machine: the JDK path SPC writes into generated packs, and the tomcat basedir.
+// Committing resolved values means committing one developer's filesystem, so the committed file leaves them blank and
+// the build fills them in on the way to build/resources/test. Pinned by `TestPropertiesTest`.
+tasks.processTestResources {
+    val moduleTestHome = layout.projectDirectory.dir("tests").asFile.absolutePath
+    val testJavaExecutable = javaToolchains.launcherFor(java.toolchain).get().executablePath.asFile.absolutePath
+    // Declared as inputs so a changed toolchain or module path re-runs the copy instead of serving a stale one.
+    inputs.property("spcTestJavaExecutable", testJavaExecutable)
+    inputs.property("spcTestModuleHome", moduleTestHome)
+    filesMatching("serverpackcreator.properties") {
+        filter { line: String ->
+            when {
+                line.startsWith("de.griefed.serverpackcreator.java=") ->
+                    "de.griefed.serverpackcreator.java=${escapeForProperties(testJavaExecutable)}"
+                line.startsWith("server.tomcat.basedir=") ->
+                    "server.tomcat.basedir=${escapeForProperties(moduleTestHome)}"
+                else -> line
+            }
+        }
+    }
+}
+
 tasks.test {
     useJUnitPlatform()
+    // Keep test runs off the shared Preferences node. SPC's home directory lives in a per-user, machine-wide node
+    // that PathsConfig re-reads on every access and writes back to, so a suite booting an ApiWrapper would relocate
+    // the home of every other SPC process on the account — it moved a live grinder daemon's home into a test
+    // scratch dir (which the suite then deleted), and equally moves a developer's own GUI home. One node per
+    // module, so the suites cannot collide with each other either. Pinned by `PreferencesNodeTest`.
+    systemProperty("de.griefed.serverpackcreator.preferences.node", "ServerPackCreator-test-${project.name}")
+    // And an isolated home to go with it: `<module>/tests`, the directory the project already reserves for exactly
+    // this (gitignored bar its .gitkeep, and what `server.tomcat.basedir` has always pointed at). ApiWrapper.setup()
+    // *writes* into the home directory -- README.md, CHANGELOG.md, the server_files templates, manifests, logs -- and
+    // with no stored home a dev build falls back to the working directory, which for a test JVM is the module's own
+    // source tree; that is how a suite once overwrote serverpackcreator-clientside/README.md's CLI guide with the
+    // bundled root README. Pinned by `PathsConfigTest`.
+    systemProperty("de.griefed.serverpackcreator.home", layout.projectDirectory.dir("tests").asFile.absolutePath)
     testLogging {
         events = setOf(
             TestLogEvent.PASSED,
@@ -88,17 +129,26 @@ fun cleanup() {
     if (!gitkeep.exists()) {
         File(tests,".gitkeep").writeText("Hi")
     }
+    // Everything in the test home is disposable *except* the version manifests. Those are a cache of immutable
+    // upstream data -- SPC seeds them from the jar and fetches a per-version `mcserver/<version>.json` on demand --
+    // so deleting them makes every run re-download, which contradicts the module's documented "no live network
+    // needed" and quietly eats any newly-fetched version. Measured 2026-07-31: a single test task took the cache
+    // from 643 files to 0, and that is what kept deleting the hand-seeded Minecraft 26.2 metadata during the Forge
+    // work, and what left the newest versions resolving as "required Java unknown" in the template matrix.
+    // `updateManifests` benefits too: it copies this directory into the shipped resources, so preserving it lets
+    // the snapshot accumulate versions released since the last refresh instead of being capped at the seeded set.
     projectDir.resolve("tests")
         .listFiles()
-        .filter { !it.name.endsWith("gitkeep") }
+        .filter { !it.name.endsWith("gitkeep") && it.name != "manifests" }
         .forEach {
             it.deleteRecursively()
         }
-    Preferences.userRoot().node("ServerPackCreator").removeNode()
-    Preferences.userRoot().node("ServerPackCreator").put(
-        "de.griefed.serverpackcreator.home",
-        projectDir.resolve("tests").absolutePath
-    )
+    // Deliberately does NOT touch the Preferences store any more. This used to `removeNode()` the shared,
+    // machine-wide `ServerPackCreator` node and write the module's test directory into it as the home -- so every
+    // `test` or `clean` invocation relocated the home of the developer's own GUI, and of any running daemon, into
+    // the repository. The isolated per-module node and `-Dde.griefed.serverpackcreator.home` injected on the test
+    // task above replace it completely; SPC prefers that property over the stored preference, so nothing needs a
+    // stored value. Verified: the shared node held a repo test path from this mechanism.
 }
 
 tasks.jar {

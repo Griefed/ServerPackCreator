@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -55,6 +55,10 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
     val runHeadlessCommand = RunHeadlessCommand(apiWrapper)
     val setupCommand = SetupCommand(apiWrapper)
     val updateCommand = UpdateCommand(updateChecker)
+    val scanCommand = ScanCommand(apiWrapper)
+    val clientsideReportCommand = ClientsideReportCommand(apiWrapper)
+    val verifyClientsideCommand = VerifyClientsideCommand(apiWrapper)
+    val clientsideApplyCommand = ClientsideApplyCommand()
 
     @CommandLine.Command(
         name = "",
@@ -67,6 +71,10 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
             RunHeadlessCommand::class,
             SetupCommand::class,
             UpdateCommand::class,
+            ScanCommand::class,
+            ClientsideReportCommand::class,
+            VerifyClientsideCommand::class,
+            ClientsideApplyCommand::class,
             ClearScreen::class,
             CommandLine.HelpCommand::class
         ]
@@ -115,7 +123,7 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
                 val packConfig = apiWrapper.configurationHandler.generateConfigFromModpack(modpack)
                 packConfig.customDestination = Optional.ofNullable(destination?.let { File(it) })
                 val check = apiWrapper.configurationHandler.checkConfiguration(packConfig)
-                packConfig.save(File(apiWrapper.apiProperties.configsDirectory, packConfig.name ?: modpack.name))
+                packConfig.save(File(apiWrapper.apiProperties.configsDirectory, packConfig.name ?: modpack.name), apiWrapper.apiProperties)
                 if (!check.allChecksPassed) {
                     println("Encountered the following errors/problems with the config:")
                     for (error in check.encounteredErrors) {

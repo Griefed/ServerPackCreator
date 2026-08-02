@@ -1,5 +1,5 @@
 ###############################################################################################
-# Copyright (C) 2025 Griefed
+# Copyright (C) 2026 Griefed
 #
 # This script is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -237,6 +237,25 @@ Function global:RunJavaCommand
     #>
 }
 
+Function global:RunInstallerJavaCommand
+{
+    param ($CommandToRun)
+    $InstallerJava = if ([string]::IsNullOrWhiteSpace($JavaInstaller)) { $Java } else { $JavaInstaller }
+    CMD /C "`"${InstallerJava}`" ${CommandToRun}"
+
+    <#
+    .SYNOPSIS
+
+    Runs a modloader *installer* with the Java installation set in $JavaInstaller when that is present in
+    the variables.txt, otherwise with $Java. Some installers require a newer Java than the server they
+    install: the Quilt installer needs Java 17+, while e.g. Minecraft 1.16.1 must run on Java 8 - one JDK
+    cannot satisfy both. Leave JAVA_INSTALLER unset and behaviour is unchanged.
+
+    .PARAMETER CommandToRun
+    The command to run as a Java command.
+    #>
+}
+
 Function DownloadIfNotExists
 {
     param ($FileToCheck, $FileToDownload, $DownloadURL)
@@ -337,7 +356,11 @@ Function global:SetupForge
     "Running Forge checks and setup..."
     $ForgeInstallerUrl = "https://files.minecraftforge.net/maven/net/minecraftforge/forge/${MinecraftVersion}-${ModLoaderVersion}/forge-${MinecraftVersion}-${ModLoaderVersion}-installer.jar"
     $ForgeJarLocation = "do_not_manually_edit"
-    if ([int]$Semantics[1] -le 16)
+    # Forge changed how a server is launched: up to Minecraft 1.16 the installer produced a runnable forge.jar, from
+    # 1.17 it produces libraries/.../win_args.txt instead. The major must be checked too, because the minor alone only
+    # carries that meaning under the 1.x scheme -- Minecraft 26.2 has minor 2, which would otherwise read as the 1.2
+    # era and take the legacy path, where the server cannot find forge.jar at all.
+    if ([int]$Semantics[0] -eq 1 -And [int]$Semantics[1] -le 16)
     {
         $ForgeJarLocation = "forge.jar"
         $script:LauncherJarLocation = "forge.jar"
@@ -378,9 +401,33 @@ Function global:SetupForge
         }
         else
         {
-            $script:ServerRunCommand = "@user_jvm_args.txt ${SSJForgeArgs} -jar server.jar --installer-force --installer ${ForgeInstallerUrl} nogui"
-            # Download ServerStarterJar to server.jar
-            RefreshServerJar
+            # SSJForgeArgs defaults to -Djava.security.manager=allow, which JEP 486 made fatal from Java 24 on: the
+            # VM refuses to start rather than ignoring it. Minecraft 26.x requires Java 25, so passing it there
+            # breaks every modern Forge pack before Forge loads. Keep it where needed, drop it where it kills.
+            #
+            # That flag is not cosmetic to SSJ: it runs the Forge installer inside its own JVM and needs a
+            # SecurityManager to swallow the System.exit(0) the installer calls when it is done. Without it the
+            # installer's exit ends the whole process -- the pack installs, reports success, exits 0, and never
+            # launches the server. So on Java that cannot trap the exit we do not hand SSJ the install at all:
+            # install here, then launch from the argfile the installer produces, as the UseSSJ=false path does.
+            if (("${JavaVersion}" -match '^\d+$') -And ([int]${JavaVersion} -ge 24))
+            {
+                Write-Host "Java ${JavaVersion} cannot grant ServerStarterJar the Security Manager it needs to run the"
+                Write-Host "Forge installer, so this pack installs Forge directly and starts it from its argfile instead."
+                $ForgeArgsFile = "libraries/net/minecraftforge/forge/${MinecraftVersion}-${ModLoaderVersion}/win_args.txt"
+                $script:ServerRunCommand = "@user_jvm_args.txt @${ForgeArgsFile} nogui"
+                if ((DownloadIfNotExists "${ForgeArgsFile}" "forge-installer.jar" "${ForgeInstallerUrl}"))
+                {
+                    Write-Host "Forge Installer downloaded. Installing..."
+                    RunJavaCommand "-jar forge-installer.jar --installServer"
+                }
+            }
+            else
+            {
+                $script:ServerRunCommand = "@user_jvm_args.txt ${SSJForgeArgs} -jar server.jar --installer-force --installer ${ForgeInstallerUrl} nogui"
+                # Download ServerStarterJar to server.jar
+                RefreshServerJar
+            }
         }
 
         Write-Host "Generating user_jvm_args.txt from variables..."
@@ -427,7 +474,9 @@ Function global:SetupNeoForge
             "${script:JavaArgs}"
     WriteFileUTF8NoBom "user_jvm_args.txt" $Content
 
-    if ([int]$Semantics[1] -eq 20 -And ($Semantics.count -eq 2 -Or [int]$Semantics[2] -eq 1))
+    # The major is part of the test because "minor is 20" only means the 1.20 era under the 1.x scheme: a future
+    # Minecraft 26.20 would otherwise be sent at a 1.20-era URL that does not exist for it.
+    if ([int]$Semantics[0] -eq 1 -And [int]$Semantics[1] -eq 20 -And ($Semantics.count -eq 2 -Or [int]$Semantics[2] -eq 1))
     {
         $script:ServerRunCommand = "@user_jvm_args.txt -jar server.jar --installer-force --installer https://maven.neoforged.net/releases/net/neoforged/forge/${MinecraftVersion}-${ModLoaderVersion}/forge-${MinecraftVersion}-${ModLoaderVersion}-installer.jar nogui"
     }
@@ -453,52 +502,68 @@ Function global:SetupFabric
     $FabricInstallerUrl = "https://maven.fabricmc.net/net/fabricmc/fabric-installer/${FabricInstallerVersion}/fabric-installer-${FabricInstallerVersion}.jar"
     $ImprovedFabricLauncherUrl = "https://meta.fabricmc.net/v2/versions/loader/${MinecraftVersion}/${ModLoaderVersion}/${FabricInstallerVersion}/server/jar"
     $ErrorActionPreference = "SilentlyContinue";
-    $script:ImprovedFabricLauncherAvailable = [int][System.Net.WebRequest]::Create("${ImprovedFabricLauncherUrl}").GetResponse().StatusCode
-    $ErrorActionPreference = "Continue";
-    if ("${ImprovedFabricLauncherAvailable}" -eq "200")
+    # An already-installed launcher needs neither a check nor a download. This must come FIRST: the checks below
+    # ask the network, and a failed request is indistinguishable from "Fabric does not support this version" —
+    # which made a complete, ready-to-run pack refuse to start whenever it had no internet.
+    if (Test-Path -Path 'fabric-server-launcher.jar' -PathType Leaf)
     {
-        "Improved Fabric Server Launcher available..."
-        "The improved launcher will be used to run this Fabric server."
+        Write-Host "fabric-server-launcher.jar present. Moving on..."
         $script:LauncherJarLocation = "fabric-server-launcher.jar"
-        (DownloadIfNotExists "${script:LauncherJarLocation}" "${script:LauncherJarLocation}" "${ImprovedFabricLauncherUrl}") > $null
+    }
+    elseif (Test-Path -Path 'fabric-server-launch.jar' -PathType Leaf)
+    {
+        Write-Host "fabric-server-launch.jar present. Moving on..."
+        $script:LauncherJarLocation = "fabric-server-launch.jar"
     }
     else
     {
-        try
+        $script:ImprovedFabricLauncherAvailable = [int][System.Net.WebRequest]::Create("${ImprovedFabricLauncherUrl}").GetResponse().StatusCode
+        $ErrorActionPreference = "Continue";
+        if ("${ImprovedFabricLauncherAvailable}" -eq "200")
         {
-            $ErrorActionPreference = "SilentlyContinue";
-            $FabricAvailable = [int][System.Net.WebRequest]::Create("https://meta.fabricmc.net/v2/versions/loader/${MinecraftVersion}/${ModLoaderVersion}/server/json").GetResponse().StatusCode
-            $ErrorActionPreference = "Continue";
-        }
-        catch
-        {
-            $FabricAvailable = "400"
-        }
-        if ("${FabricAvailable}" -ne "200")
-        {
-            CrashServer "Fabric is not available for Minecraft ${MinecraftVersion}, Fabric ${ModLoaderVersion}."
-        }
-        if ((DownloadIfNotExists "fabric-server-launch.jar" "fabric-installer.jar" "${FabricInstallerUrl}"))
-        {
-            "Installer downloaded..."
-            $script:LauncherJarLocation = "fabric-server-launch.jar"
-            RunJavaCommand "-jar fabric-installer.jar server -mcversion ${MinecraftVersion} -loader ${ModLoaderVersion} -downloadMinecraft"
-            if ((Test-Path -Path 'fabric-server-launch.jar' -PathType Leaf))
-            {
-                DeleteFileSilently '.fabric-installer' -Recurse
-                DeleteFileSilently 'fabric-installer.jar'
-                "Installation complete. fabric-installer.jar deleted."
-            }
-            else
-            {
-                DeleteFileSilently  'fabric-installer.jar'
-                CrashServer "fabric-server-launch.jar not found. Maybe the Fabric servers are having trouble. Please try again in a couple of minutes and check your internet connection."
-            }
+            "Improved Fabric Server Launcher available..."
+            "The improved launcher will be used to run this Fabric server."
+            $script:LauncherJarLocation = "fabric-server-launcher.jar"
+            (DownloadIfNotExists "${script:LauncherJarLocation}" "${script:LauncherJarLocation}" "${ImprovedFabricLauncherUrl}") > $null
         }
         else
         {
-            "fabric-server-launch.jar present. Moving on..."
-            $script:LauncherJarLocation = "fabric-server-launch.jar"
+            try
+            {
+                $ErrorActionPreference = "SilentlyContinue";
+                $FabricAvailable = [int][System.Net.WebRequest]::Create("https://meta.fabricmc.net/v2/versions/loader/${MinecraftVersion}/${ModLoaderVersion}/server/json").GetResponse().StatusCode
+                $ErrorActionPreference = "Continue";
+            }
+            catch
+            {
+                $FabricAvailable = "400"
+            }
+            if ("${FabricAvailable}" -ne "200")
+            {
+                CrashServer "Fabric is not available for Minecraft ${MinecraftVersion}, Fabric ${ModLoaderVersion}."
+            }
+            if ((DownloadIfNotExists "fabric-server-launch.jar" "fabric-installer.jar" "${FabricInstallerUrl}"))
+            {
+                "Installer downloaded..."
+                $script:LauncherJarLocation = "fabric-server-launch.jar"
+                RunJavaCommand "-jar fabric-installer.jar server -mcversion ${MinecraftVersion} -loader ${ModLoaderVersion} -downloadMinecraft"
+                if ((Test-Path -Path 'fabric-server-launch.jar' -PathType Leaf))
+                {
+                    DeleteFileSilently '.fabric-installer' -Recurse
+                    DeleteFileSilently 'fabric-installer.jar'
+                    "Installation complete. fabric-installer.jar deleted."
+                }
+                else
+                {
+                    DeleteFileSilently  'fabric-installer.jar'
+                    CrashServer "fabric-server-launch.jar not found. Maybe the Fabric servers are having trouble. Please try again in a couple of minutes and check your internet connection."
+                }
+            }
+            else
+            {
+                "fabric-server-launch.jar present. Moving on..."
+                $script:LauncherJarLocation = "fabric-server-launch.jar"
+            }
         }
     }
     $script:ServerRunCommand = "${script:JavaArgs} -jar ${script:LauncherJarLocation} nogui"
@@ -524,7 +589,8 @@ Function global:SetupQuilt
     elseif ((DownloadIfNotExists "quilt-server-launch.jar" "quilt-installer.jar" "${QuiltInstallerUrl}"))
     {
         "Installer downloaded. Installing..."
-        RunJavaCommand "-jar quilt-installer.jar install server ${MinecraftVersion} --download-server --install-dir=."
+        # The Quilt installer itself requires Java 17+, even when the server will run on an older Java.
+        RunInstallerJavaCommand "-jar quilt-installer.jar install server ${MinecraftVersion} --download-server --install-dir=."
         if ((Test-Path -Path 'quilt-server-launch.jar' -PathType Leaf))
         {
             DeleteFileSilently 'quilt-installer.jar'
@@ -533,7 +599,7 @@ Function global:SetupQuilt
         else
         {
             DeleteFileSilently 'quilt-installer.jar'
-            CrashServer "quilt-server-launch.jar not found. Maybe the Quilt servers are having trouble. Please try again in a couple of minutes and check your internet connection."
+            CrashServer "quilt-server-launch.jar not found. The Quilt installer requires Java 17 or newer: if the message above says so, set JAVA_INSTALLER in your variables.txt to a Java 17+ binary (your server keeps running on JAVA). Otherwise the Quilt servers may be having trouble - try again in a couple of minutes and check your internet connection."
         }
     }
     $script:LauncherJarLocation = "quilt-server-launch.jar"
@@ -627,6 +693,9 @@ $LegacyFabricInstallerVersion = $ExternalVariables['LEGACYFABRIC_INSTALLER_VERSI
 $FabricInstallerVersion = $ExternalVariables['FABRIC_INSTALLER_VERSION']
 $QuiltInstallerVersion = $ExternalVariables['QUILT_INSTALLER_VERSION']
 $Java = $ExternalVariables['JAVA']
+# Optional: a Java 17+ binary used only for modloader installers that need one (the Quilt installer does,
+# even when the server runs on an older Java). Absent from variables.txt -> $null -> installers use $Java.
+$JavaInstaller = $ExternalVariables['JAVA_INSTALLER']
 $WaitForUserInput = $ExternalVariables['WAIT_FOR_USER_INPUT']
 $JavaArgs = $ExternalVariables['JAVA_ARGS']
 $AdditionalArgs = $ExternalVariables['ADDITIONAL_ARGS']
@@ -800,6 +869,10 @@ RunJavaCommand "-version"
 while ($true)
 {
     RunJavaCommand "${AdditionalArgs} ${ServerRunCommand}"
+    # Captured immediately: the checks below run their own commands and would overwrite $LASTEXITCODE. The script
+    # exits with this status, so a crashed server is distinguishable from a clean shutdown by anything reading the
+    # exit code -- service wrappers, scheduled tasks and CI.
+    $ServerExitCode = if ($null -eq $LASTEXITCODE) { 0 } else { $LASTEXITCODE }
     if ("${SkipJavaCheck}" -eq "true")
     {
         "Java version check was skipped. Did the server stop or crash because of a Java version mismatch?"
@@ -812,7 +885,7 @@ while ($true)
         {
             PauseScript
         }
-        exit 0
+        exit $ServerExitCode
     }
     "Automatically restarting server in 5 seconds. Press CTRL + C to abort and exit."
     Start-Sleep -Seconds 5

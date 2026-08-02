@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -265,6 +265,7 @@ class ForgeMeta(
             Optional.empty()
         }
 
+    /** Every supported Forge version keyed by Minecraft version — the shape the GUI's combo boxes need. */
     fun getForgeMeta(): HashMap<String,List<String>> {
         return forgeLoader!!.versionMeta
     }
