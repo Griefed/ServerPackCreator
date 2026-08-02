@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,6 +35,5 @@ class HomeDirChooser(apiProperties: ApiProperties, title: String) : BaseFileChoo
         isAcceptAllFileFilterUsed = false
         isMultiSelectionEnabled = false
         dialogType = SAVE_DIALOG
-        fileFilter = WritableDirectoryFilter()
     }
 }

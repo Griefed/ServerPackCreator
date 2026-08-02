@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -36,6 +36,7 @@ import kotlin.io.path.toPath
  */
 @Suppress("unused")
 class JarUtilities {
+    /** Extraction of files and folders out of the running jar, used to seed the home directory. */
     companion object {
         private val log by lazy { cachedLoggerOf(JarUtilities::class.java) }
 
@@ -277,6 +278,7 @@ class JarUtilities {
             try {
                 File(destination).create()
             } catch (ignored: FileAlreadyExistsException) {
+                // The language directory already exists, which is exactly the desired state.
             } catch (ex: IOException) {
                 log.error("Error creating language directory.", ex)
             }

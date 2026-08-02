@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -39,7 +39,7 @@ import java.util.*
 class ForgeAnnotationScanner(
     private val objectMapper: ObjectMapper,
     private val utilities: Utilities
-) : JsonBasedScanner(), Scanner<Pair<Collection<File>, Collection<Pair<String,String>>>, Collection<File>> {
+) : JsonBasedScanner(), Scanner<ScanResult, Collection<File>> {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val additionalDependencyRegex = "(@.*|\\[.*)".toRegex()
     private val caches = "META-INF/fml_cache_annotation.json"
@@ -51,8 +51,10 @@ class ForgeAnnotationScanner(
     private val clientSideOnly = "clientSideOnly"
     private val dependencies = "dependencies"
 
+    /** Matches a dependency entry worth recording, filtering out the malformed ones older packs contain. */
     val dependencyCheck: Regex
         get() = "(before:.*|after:.*|required-after:.*|)".toRegex()
+    /** Strips the version range off a dependency entry, leaving the mod id the scanner matches on. */
     val dependencyReplace: Regex
         get() = "(@.*|\\[.*)".toRegex()
 
@@ -66,7 +68,7 @@ class ForgeAnnotationScanner(
      * @return List of mods not to include in server pack based on fml-cache-annotation.json-content.
      * @author Griefed
      */
-    override fun scan(jarFiles: Collection<File>):  Pair<Collection<File>, Collection<Pair<String,String>>> {
+    override fun scan(jarFiles: Collection<File>): ScanResult {
         log.info("Scanning Minecraft 1.12.x and older mods for sideness...")
         val modDependencies = ArrayList<Pair<String, Pair<String, String>>>()
         val clientMods = TreeSet<String>()
@@ -85,14 +87,10 @@ class ForgeAnnotationScanner(
          * any of the remaining clientmods is available in our list of files. The resulting set is the
          * set of mods we can safely exclude from our server pack.
          */
-        return Pair(
+        return ScanResult(
             getModsDelta(jarFiles, clientMods),
-            modDependencies.map { entry ->
-                Pair(
-                    entry.first,
-                    "${entry.second.first} (${entry.second.second})"
-                )
-            })
+            modDependencies.map { entry -> Dependency(entry.first, entry.second.first, entry.second.second)}
+        )
     }
 
     override fun checkForClientModsAndDeps(
@@ -126,7 +124,10 @@ class ForgeAnnotationScanner(
                                     // Add mod to list of clientmods if clientSideOnly is true
                                     checkForClientSide(child, modId, clientMods)
                                 } catch (ignored: NullPointerException) {
+                                    // This annotation child carries no modId/clientside annotation
+                                    // -> skip it; another child in the same cache may provide one.
                                 } catch (ignored: JsonException) {
+                                    // Malformed annotation entry -> skip it.
                                 }
 
                                 // We already received a modId, perform additional checks to prevent false
@@ -136,6 +137,7 @@ class ForgeAnnotationScanner(
                                     // Get the additional modID
                                     checkAdditionalId(child, modId, clientMods, additionalMods)
                                 } catch (ignored: NullPointerException) {
+                                    // This child declares no additional modId -> nothing to add.
                                 }
                             }
 
@@ -143,6 +145,8 @@ class ForgeAnnotationScanner(
                             checkDependencies(child, modDependencies, mod.name, modId!!)
                         }
                     } catch (ignored: NullPointerException) {
+                        // This node has no "annotations" array -> skip it and continue with the
+                        // next node in the cache.
                     }
                 }
                 if (!additionalMods.isEmpty()) {
@@ -224,7 +228,9 @@ class ForgeAnnotationScanner(
                         log.debug("Added clientMod: $modId")
                     }
                 } catch (ignored: NullPointerException) {
+                    // No "clientSideOnly" flag on this annotation -> treat as not client-only.
                 } catch (ignored: JsonException) {
+                    // Malformed "clientSideOnly" value -> treat as not client-only.
                 }
 
                 // ModIDs are different, possibly two mods in one JAR-file.......
@@ -282,6 +288,8 @@ class ForgeAnnotationScanner(
                 }
             }
         } catch (ignored: NullPointerException) {
+            // This annotation declares no "dependencies" value -> the mod has no dependencies to
+            // record.
         }
     }
 
@@ -345,6 +353,8 @@ class ForgeAnnotationScanner(
                                 }
                             }
                         } catch (ignored: NullPointerException) {
+                            // This child carries no modId/dependencies value -> it can't establish a
+                            // dependency on the first mod, so leave additionalModDependsOnFirst false.
                         }
 
                         /*
@@ -367,6 +377,8 @@ class ForgeAnnotationScanner(
                         }
                     }
                 } catch (ignored: NullPointerException) {
+                    // This node has no "annotations" array -> skip it and continue with the next
+                    // node while resolving additional mods.
                 }
             }
         }
@@ -402,10 +414,14 @@ class ForgeAnnotationScanner(
                             }
                         }
                     } catch (ignored: NullPointerException) {
+                        // This child has no modId / no clientSideOnly flag -> it can't mark the mod
+                        // for the delta, so skip it.
                     } catch (ignored: JsonException) {
+                        // Malformed annotation entry -> skip it.
                     }
                 }
             } catch (ignored: NullPointerException) {
+                // This node has no "annotations" array -> skip it and continue with the next node.
             }
         }
         return addToDelta
@@ -530,24 +546,57 @@ class ForgeAnnotationScanner(
                         clientSide = true
                     }
                 } catch (ignored: NullPointerException) {
+                    // This annotation has no matching modId / no clientSideOnly flag -> it does not
+                    // mark the additional mod client-side, so leave clientSide false.
                 } catch (ignored: JsonException) {
+                    // Malformed annotation entry -> leave clientSide false.
                 }
             }
         } catch (ignored: NullPointerException) {
+            // This node has no "annotations" array -> nothing to inspect, leave clientSide false.
         }
         return clientSide
     }
 
-    override fun getModsDelta(filesInModsDir: Collection<File>, clientMods: TreeSet<String>): TreeSet<File> {
+    override fun getModsDelta(filesInModsDir: Collection<File>, clientMods: TreeSet<String>): List<Exclusion> {
         val modsDelta = TreeSet<File>()
+        val exclusions = ArrayList<Exclusion>()
         for (mod in filesInModsDir) {
             try {
                 if (addToDelta(mod, clientMods)) {
                     modsDelta.add(mod)
                 }
             } catch (ignored: Exception) {
+                // A mod without a readable fml_cache_annotation.json can't be evaluated for the
+                // delta, so it is skipped rather than aborting the scan of the remaining mods.
             }
         }
-        return modsDelta
+        for (mod in modsDelta) {
+            var modID: String? = null
+            val modJson: JsonNode = getJarJson(mod, caches, objectMapper)
+            for (node in modJson) {
+                try {
+                    // iterate though annotations
+                    val cacheAnnotations = node.get(annotations)
+                    for (child in cacheAnnotations) {
+
+                        // Get the modId
+                        try {
+                            modID = getModId(child)
+                        } catch (ignored: NullPointerException) {
+                            // This child has no modId / no clientSideOnly flag -> it can't mark the mod
+                            // for the delta, so skip it.
+                        } catch (ignored: JsonException) {
+                            // Malformed annotation entry -> skip it.
+                        }
+                    }
+                } catch (ignored: NullPointerException) {
+                    // This node has no "annotations" array -> skip it and continue with the next node.
+                }
+            }
+
+            exclusions.add(Exclusion(modID?: "N/A", mod))
+        }
+        return exclusions
     }
 }

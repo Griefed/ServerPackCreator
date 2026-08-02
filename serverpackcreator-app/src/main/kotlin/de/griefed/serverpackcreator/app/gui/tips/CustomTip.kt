@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,7 @@ class CustomTip(name: String, tip: Any, private val imageResource: String): Defa
         return try {
             ImageIcon(this.javaClass.getResource(imageResource))
         } catch (_: Exception) {
+            // The image resource is missing or unreadable -> no icon for this tip.
             null
         }
     }

@@ -3,8 +3,8 @@
   <groupId>net.neoforged</groupId>
   <artifactId>neoforge</artifactId>
   <versioning>
-    <latest>26.1.2.43-beta</latest>
-    <release>26.1.2.43-beta</release>
+    <latest>26.2.0.41-beta</latest>
+    <release>26.2.0.41-beta</release>
     <versions>
       <version>20.2.12-beta</version>
       <version>20.2.13-beta</version>
@@ -1542,7 +1542,111 @@
       <version>26.1.2.41-beta</version>
       <version>26.1.2.42-beta</version>
       <version>26.1.2.43-beta</version>
+      <version>26.1.2.44-beta</version>
+      <version>21.1.229</version>
+      <version>26.1.2.45-beta</version>
+      <version>26.1.2.46-beta</version>
+      <version>26.1.2.47-beta</version>
+      <version>26.1.2.48-beta</version>
+      <version>26.1.2.49-beta</version>
+      <version>26.1.2.50-beta</version>
+      <version>26.1.2.51-beta</version>
+      <version>26.1.2.52-beta</version>
+      <version>26.1.2.53-beta</version>
+      <version>21.1.230</version>
+      <version>26.1.2.54-beta</version>
+      <version>26.1.2.55-beta</version>
+      <version>26.1.2.56-beta</version>
+      <version>26.1.2.57-beta</version>
+      <version>26.1.2.58-beta</version>
+      <version>26.1.2.59-beta</version>
+      <version>26.1.2.60-beta</version>
+      <version>26.1.2.61-beta</version>
+      <version>26.1.2.62-beta</version>
+      <version>26.1.2.63-beta</version>
+      <version>26.1.2.64-beta</version>
+      <version>26.1.2.65-beta</version>
+      <version>26.1.2.66-beta</version>
+      <version>21.1.231</version>
+      <version>26.1.2.67-beta</version>
+      <version>21.1.232</version>
+      <version>26.1.2.68-beta</version>
+      <version>21.1.233</version>
+      <version>26.1.2.69-beta</version>
+      <version>26.1.2.70-beta</version>
+      <version>26.1.2.71</version>
+      <version>26.1.2.72</version>
+      <version>26.1.2.73</version>
+      <version>26.1.2.74</version>
+      <version>26.1.2.75</version>
+      <version>26.1.2.76</version>
+      <version>26.2.0.0-beta</version>
+      <version>26.2.0.1-beta</version>
+      <version>26.2.0.2-beta</version>
+      <version>26.2.0.3-beta</version>
+      <version>26.2.0.6-beta</version>
+      <version>21.1.234</version>
+      <version>26.2.0.7-beta</version>
+      <version>21.1.235</version>
+      <version>21.1.236</version>
+      <version>26.1.2.77</version>
+      <version>26.2.0.8-beta</version>
+      <version>26.1.2.78</version>
+      <version>26.2.0.9-beta</version>
+      <version>26.2.0.10-beta</version>
+      <version>26.2.0.11-beta</version>
+      <version>26.2.0.12-beta</version>
+      <version>26.2.0.13-beta</version>
+      <version>26.1.2.79</version>
+      <version>26.2.0.15-beta</version>
+      <version>26.1.2.80</version>
+      <version>26.2.0.16-beta</version>
+      <version>26.2.0.17-beta</version>
+      <version>26.2.0.18-beta</version>
+      <version>26.1.2.81</version>
+      <version>21.11.44</version>
+      <version>21.5.98</version>
+      <version>21.3.97</version>
+      <version>21.1.238</version>
+      <version>21.8.54</version>
+      <version>26.2.0.19-beta</version>
+      <version>26.2.0.20-beta</version>
+      <version>26.2.0.21-beta</version>
+      <version>26.1.2.82</version>
+      <version>26.2.0.22-beta</version>
+      <version>26.2.0.23-beta</version>
+      <version>26.2.0.24-beta</version>
+      <version>26.2.0.25-beta</version>
+      <version>21.1.240</version>
+      <version>21.1.241</version>
+      <version>26.1.2.84</version>
+      <version>26.2.0.26-beta</version>
+      <version>21.1.242</version>
+      <version>26.2.0.28-beta</version>
+      <version>21.1.243</version>
+      <version>26.2.0.29-beta</version>
+      <version>26.2.0.30-beta</version>
+      <version>26.2.0.31-beta</version>
+      <version>26.2.0.32-beta</version>
+      <version>26.1.2.86</version>
+      <version>26.1.2.87</version>
+      <version>21.1.244</version>
+      <version>26.2.0.33-beta</version>
+      <version>26.2.0.34-beta</version>
+      <version>26.2.0.35-beta</version>
+      <version>26.2.0.36-beta</version>
+      <version>26.2.0.37-beta</version>
+      <version>26.1.2.88</version>
+      <version>26.1.2.89</version>
+      <version>26.1.2.90</version>
+      <version>21.11.45</version>
+      <version>26.1.2.92</version>
+      <version>26.2.0.38-beta</version>
+      <version>26.1.2.93</version>
+      <version>26.2.0.40-beta</version>
+      <version>21.1.247</version>
+      <version>26.2.0.41-beta</version>
     </versions>
-    <lastUpdated>20260507144208</lastUpdated>
+    <lastUpdated>20260731144053</lastUpdated>
   </versioning>
 </metadata>

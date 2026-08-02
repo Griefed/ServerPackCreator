@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.app.gui.components
 import Translations
 import de.griefed.serverpackcreator.api.utilities.common.regexReplace
 import de.griefed.serverpackcreator.app.gui.GuiProps
+import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import de.griefed.serverpackcreator.app.gui.window.configs.components.ResizeIndicatorScrollPane
 import de.griefed.serverpackcreator.app.gui.window.configs.components.SuggestionProvider
 import kotlinx.coroutines.*
@@ -63,6 +64,10 @@ class ScrollTextArea(
     ) : this(text, areaName, guiProps) {
         this.addDocumentListener(documentChangeListener)
     }
+
+    /** Owns the focus/search/replace coroutines this textarea starts, so they are cancelled when
+     * the component is removed ([removeNotify]) rather than leaking on [GlobalScope]. */
+    private val componentScope = ComponentCoroutineScope()
 
     private val undoManager = UndoManager()
     private val searchFor = JTextField(100)
@@ -166,9 +171,8 @@ class ScrollTextArea(
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     private fun requestFocus(component: JComponent) {
-        GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
+        componentScope.scope().launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
             delay(250)
             component.requestFocus()
             component.grabFocus()
@@ -178,7 +182,6 @@ class ScrollTextArea(
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     private fun searchDialog() {
         requestFocus(searchFor)
         if (JOptionPane.showConfirmDialog(
@@ -191,7 +194,7 @@ class ScrollTextArea(
             ) == JOptionPane.OK_OPTION
         ) {
             textArea.isEnabled = false
-            GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
+            componentScope.scope().launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
                 var i = 0
                 while (i < text.length) {
                     val end = i + searchFor.text.length
@@ -214,7 +217,6 @@ class ScrollTextArea(
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     private fun searchRegexDialog() {
         requestFocus(searchFor)
         if (JOptionPane.showConfirmDialog(
@@ -227,7 +229,7 @@ class ScrollTextArea(
             ) == JOptionPane.OK_OPTION
         ) {
             textArea.isEnabled = false
-            GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
+            componentScope.scope().launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
                 val regex = searchFor.text.toRegex()
                 var i = 0
                 while (i < text.length) {
@@ -271,7 +273,6 @@ class ScrollTextArea(
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     private fun searchRegexAndReplace() {
         requestFocus(searchFor)
         if (JOptionPane.showConfirmDialog(
@@ -284,10 +285,19 @@ class ScrollTextArea(
             ) == JOptionPane.OK_OPTION
         ) {
             textArea.isEnabled = false
-            GlobalScope.launch(Dispatchers.Swing) {
+            componentScope.scope().launch(Dispatchers.Swing) {
                 text = text.regexReplace(searchFor.text.toRegex(), replaceWith.text)
                 textArea.isEnabled = true
             }
         }
+    }
+
+    /**
+     * Cancel this textarea's focus/search/replace coroutines when it is removed from the screen, so
+     * none of them run on a discarded component.
+     */
+    override fun removeNotify() {
+        componentScope.cancel()
+        super.removeNotify()
     }
 }

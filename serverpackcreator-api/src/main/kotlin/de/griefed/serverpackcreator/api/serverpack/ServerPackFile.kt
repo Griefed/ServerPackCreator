@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -36,9 +36,13 @@ import java.nio.file.Path
 @Suppress("MemberVisibilityCanBePrivate")
 class ServerPackFile {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+    /** The file being copied, in the modpack. */
     val sourceFile: File
+    /** [sourceFile] as a [Path], kept alongside it because the copy helpers want each form. */
     val sourcePath: Path
+    /** Where it lands in the server pack. */
     val destinationFile: File
+    /** [destinationFile] as a [Path]. */
     val destinationPath: Path
 
     /**

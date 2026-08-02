@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,22 +22,34 @@ package de.griefed.serverpackcreator.app.gui.window.configs.components
 import Translations
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.app.gui.GuiProps
+import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import de.griefed.serverpackcreator.app.gui.window.configs.ConfigEditor
 import de.griefed.serverpackcreator.app.gui.window.configs.TabbedConfigsTab
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.awt.event.ActionListener
 import java.io.File
 import javax.swing.Timer
+import javax.swing.event.AncestorEvent
+import javax.swing.event.AncestorListener
 
 /**
  * Timer responsible for starting configuration checks and comparisons.
  *
  * @author Griefed
  */
-@OptIn(DelicateCoroutinesApi::class)
-class ConfigCheckTimer(delay: Int, guiProps: GuiProps, apiWrapper: ApiWrapper, tabbedConfigsTab: TabbedConfigsTab) : Timer(delay,
-    ActionListener {
-        GlobalScope.launch(guiProps.configDispatcher, CoroutineStart.UNDISPATCHED) {
+class ConfigCheckTimer(delay: Int, guiProps: GuiProps, apiWrapper: ApiWrapper, tabbedConfigsTab: TabbedConfigsTab) : Timer(delay, null) {
+
+    /** Owns the periodic config-check coroutine; cancelled when the configs tab leaves the screen
+     * (ancestor-listener in `init`). The check is idempotent, so cancel-on-tab-switch + the
+     * helper's lazy re-create is harmless. */
+    private val componentScope = ComponentCoroutineScope()
+
+    /** The check, kept as a property (not passed to the Timer super-constructor) so it can launch
+     * on [componentScope] — `this` is unavailable in a super-constructor argument. */
+    private val checkListener = ActionListener {
+        componentScope.scope().launch(guiProps.configDispatcher, CoroutineStart.UNDISPATCHED) {
             var errorsEncountered = false
             tabbedConfigsTab.allTabs.parallelStream().forEach { component ->
                 val errors = mutableListOf<String>()
@@ -72,7 +84,11 @@ class ConfigCheckTimer(delay: Int, guiProps: GuiProps, apiWrapper: ApiWrapper, t
                     launch {
                         try {
                             errors.addAll(editor.validateServerIcon())
-                        } catch (_: OutOfMemoryError) {}
+                        } catch (_: OutOfMemoryError) {
+                            // Reading a pathologically large server-icon can exhaust the heap;
+                            // swallow it so the periodic validation coroutine doesn't take down the
+                            // GUI — the icon simply isn't validated on this tick.
+                        }
                     }
                     launch {
                         errors.addAll(editor.validateServerProperties())
@@ -121,9 +137,20 @@ class ConfigCheckTimer(delay: Int, guiProps: GuiProps, apiWrapper: ApiWrapper, t
             }
             errorsEncountered = false
         }
-    }) {
+    }
+
     init {
         stop()
         isRepeats = false
+        addActionListener(checkListener)
+        tabbedConfigsTab.panel.addAncestorListener(object : AncestorListener {
+            override fun ancestorRemoved(event: AncestorEvent?) {
+                componentScope.cancel()
+            }
+
+            override fun ancestorAdded(event: AncestorEvent?) {}
+
+            override fun ancestorMoved(event: AncestorEvent?) {}
+        })
     }
 }

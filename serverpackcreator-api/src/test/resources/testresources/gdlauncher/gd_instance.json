@@ -1,0 +1,19 @@
+{
+  "name": "GDLauncher Test Pack",
+  "game_configuration": {
+    "version": {
+      "release": "1.20.1",
+      "modloaders": [
+        {
+          "type": "forge",
+          "version": "1.20.1-47.2.0"
+        }
+      ]
+    }
+  },
+  "modpack": {
+    "project_id": 123456,
+    "file_id": 654321,
+    "platform": "Curseforge"
+  }
+}
