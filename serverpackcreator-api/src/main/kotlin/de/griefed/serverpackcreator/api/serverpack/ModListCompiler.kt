@@ -51,8 +51,8 @@ class ModListCompiler(
      * Extensions treated as mod files. `disabled` is included deliberately: a launcher marks a mod off by
      * renaming it, and such a file must still be recognised so it can be excluded rather than copied blindly.
      *
-     * Visible so the value generation actually walks with can be read from outside, rather than inferred
-     * from a second copy of the same literal.
+     * The single source of truth: [ServerPackHandler.modFileEndings] reads this rather than holding its
+     * own copy, so the published constant and the list generation walks with cannot drift apart.
      */
     val modFileEndings = listOf("jar", "disabled")
 

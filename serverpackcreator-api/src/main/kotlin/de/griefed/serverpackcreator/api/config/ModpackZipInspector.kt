@@ -42,8 +42,8 @@ class ModpackZipInspector {
     /**
      * Matches a ZIP entry that is a bare top-level directory — how a modpack export's nesting is detected.
      *
-     * Visible so the pattern inspection actually uses can be read from outside, rather than inferred from
-     * a second copy of the same literal.
+     * The single source of truth: [ConfigurationHandler.zipCheck] reads this rather than holding its own
+     * copy, so the published constant and the pattern inspection uses cannot drift apart.
      */
     val zipCheck = "^\\w+[/\\\\]$".toRegex()
 
