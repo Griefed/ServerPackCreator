@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.api.versionmeta.forge
 
+import de.griefed.serverpackcreator.api.versionmeta.VersionMetaConfig
 import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftMeta
 import java.net.URI
 import java.net.URL
@@ -41,8 +42,9 @@ class ForgeInstance(
     val forgeVersion: String,
     private val minecraftMeta: MinecraftMeta
 ) {
+    /** Where this Forge build's installer is downloaded from. */
     val installerUrl: URL =
-        URI("https://files.minecraftforge.net/maven/net/minecraftforge/forge/$minecraftVersion-$forgeVersion/forge-$minecraftVersion-$forgeVersion-installer.jar").toURL() // TODO Move URL to property
+        URI(VersionMetaConfig.forgeInstallerUrl(minecraftVersion, forgeVersion)).toURL()
 
     /**
      * Get this Forge instances corresponding Minecraft client instance, wrapped in an

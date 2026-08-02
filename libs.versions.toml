@@ -21,6 +21,9 @@ dokka = "2.1.0"
 # https://github.com/jk1/Gradle-License-Report
 licenseReport = "3.0.1"
 
+# https://github.com/Kotlin/kotlinx-kover
+kover = "0.9.1"
+
 # https://plugins.gradle.org/plugin/org.siouan.frontend-jdk11
 frontendPlugin = "10.0.0"
 
@@ -39,5 +42,6 @@ springDependencyMan = { module = "io.spring.gradle:dependency-management-plugin"
 dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 dokkaJavaDoc = { module = "org.jetbrains.dokka:javadoc-plugin", version.ref = "dokka" }
 licenseReport = { module = "com.github.jk1:gradle-license-report", version.ref = "licenseReport" }
+koverGradlePlugin = { module = "org.jetbrains.kotlinx:kover-gradle-plugin", version.ref = "kover" }
 frontendPlugin = { module = "org.siouan:frontend-jdk21", version.ref = "frontendPlugin" }
 install4j = { module = "com.install4j:install4j-gradle", version.ref = "install4j" }

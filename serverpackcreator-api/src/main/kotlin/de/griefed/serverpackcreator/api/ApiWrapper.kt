@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -47,7 +47,9 @@ class ApiWrapper private constructor(
     val properties: File = File("serverpackcreator.properties"),
     runSetup: Boolean = true
 ) {
+    /** Matches the manifest files seeded from the jar, so setup can copy exactly those and nothing else. */
     val xmlJsonRegex = ".*\\.(xml|json)".toRegex()
+    /** Whether [setup] has already run, so repeated calls are cheap. `setup(force = true)` clears it. */
     var setupWasRun: Boolean = false
 
     private val log by lazy { cachedLoggerOf(this.javaClass) }
@@ -318,6 +320,7 @@ class ApiWrapper private constructor(
         }
     }
 
+    /** The singleton accessor and the `api()` factory that builds and optionally sets up the collaborator graph. */
     companion object {
         @Volatile
         private var api: ApiWrapper? = null
@@ -453,10 +456,15 @@ class ApiWrapper private constructor(
         val serverIcon = checkServerFilesFile(
             apiProperties.defaultServerIcon
         )
+        // Created when absent rather than overwritten like the script templates: an operator may have adjusted the
+        // wording, and generation only needs the placeholders, which their edit keeps.
+        checkServerFilesFile(apiProperties.defaultVariablesTemplate)
         overwriteServerFilesFile(apiProperties.defaultShellScriptTemplate)
+        overwriteServerFilesFile(apiProperties.defaultFishScriptTemplate)
         overwriteServerFilesFile(apiProperties.defaultPowerShellScriptTemplate)
         overwriteServerFilesFile(apiProperties.defaultBatchScriptTemplate)
         overwriteServerFilesFile(apiProperties.defaultJavaShellScriptTemplate)
+        overwriteServerFilesFile(apiProperties.defaultJavaFishScriptTemplate)
         overwriteServerFilesFile(apiProperties.defaultJavaPowerShellScriptTemplate)
         overwriteServerFilesFile(apiProperties.defaultJavaBatchScriptTemplate)
         if (serverProperties || serverIcon) {

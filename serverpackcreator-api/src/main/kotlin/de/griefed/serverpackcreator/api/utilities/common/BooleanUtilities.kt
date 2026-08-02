@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,6 +28,7 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
  */
 @Suppress("unused", "KDocUnresolvedReference")
 class BooleanUtilities {
+    /** The strings accepted as true or false when reading a boolean property. */
     companion object {
         private val log by lazy { cachedLoggerOf(BooleanUtilities::class.java) }
 

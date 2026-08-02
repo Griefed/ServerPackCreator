@@ -11,6 +11,9 @@ on:
         required: false
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   build-jar:
     name: Build JAR
@@ -21,12 +24,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
         with:
           fetch-depth: 0
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
         with:
           distribution: 'zulu'
           java-version: '21'
@@ -35,17 +38,23 @@ jobs:
 
       - name: Determine version
         id: version
+        # Untrusted-ish dispatch input is passed via env (never interpolated into the script) to
+        # avoid shell injection; github.* contexts below are controlled by the runner.
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.version }}" ]; then
-            VERSION="${{ inputs.version }}"
-          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ -n "$INPUT_VERSION" ]; then
+            VERSION="$INPUT_VERSION"
+          elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             VERSION="${GITHUB_REF#refs/tags/v}"
-          elif [ "${{ github.ref_name }}" = "main" ]; then
+          elif [ "$REF_NAME" = "main" ]; then
             VERSION="$(git describe --tags --always)"
           else
-            VERSION="${{ github.ref_name }}-$(git rev-parse --short HEAD)"
+            VERSION="${REF_NAME}-$(git rev-parse --short HEAD)"
           fi
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Building version: ${VERSION}"
 
       - name: Set Permissions
@@ -58,7 +67,7 @@ jobs:
             -x :serverpackcreator-api:test -x :serverpackcreator-app:test
 
       - name: Upload JARs
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: gradle-jars
           path: |
@@ -74,18 +83,18 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
         with:
           fetch-depth: 0
 
       - name: Download JARs
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: gradle-jars
           path: .
 
       - name: Cache JDK download
-        uses: actions/cache@v5
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: jdk-21-x86_64
           key: jdk-21-x86_64
@@ -114,7 +123,7 @@ jobs:
           cat "$APPIMAGE.sha256"
 
       - name: Upload AppImage artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: appimage-x86_64
           path: ServerPackCreator-${{ needs.build-jar.outputs.version }}-x86_64.AppImage
@@ -122,7 +131,7 @@ jobs:
           retention-days: 1
 
       - name: Upload checksums
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: appimage-x86_64-checksum
           path: "*.sha256"
@@ -136,18 +145,18 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
         with:
           fetch-depth: 0
 
       - name: Download JARs
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: gradle-jars
           path: .
 
       - name: Cache JDK download
-        uses: actions/cache@v5
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: jdk-21-aarch64
           key: jdk-21-aarch64
@@ -176,7 +185,7 @@ jobs:
           cat "$APPIMAGE.sha256"
 
       - name: Upload AppImage artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: appimage-aarch64
           path: ServerPackCreator-${{ needs.build-jar.outputs.version }}-aarch64.AppImage
@@ -184,7 +193,7 @@ jobs:
           retention-days: 1
 
       - name: Upload checksums
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: appimage-aarch64-checksum
           path: "*.sha256"
@@ -197,23 +206,23 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
         with:
           fetch-depth: 0
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
         with:
           distribution: 'zulu'
           java-version: '21'
           check-latest: true
           cache: 'gradle'
 
-      - uses: gradle/actions/setup-gradle@v6
+      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
         with:
           gradle-version: wrapper
 
-      - uses: luangong/setup-install4j@v1
+      - uses: luangong/setup-install4j@2afa9cd876188382ea8249f56b898a93587e5f2a # v1
         with:
           version: '12.0.2'
           license: ${{ secrets.INSTALL4J_LICENSE }}
@@ -222,7 +231,7 @@ jobs:
         run: rm install4j_linux-x64_*.sh
 
       - name: Download JARs
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: gradle-jars
           path: .
@@ -234,7 +243,7 @@ jobs:
         run: ./gradlew media --info --full-stacktrace
 
       - name: Upload Media
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: install4j-media
           path: media/*
@@ -249,15 +258,17 @@ jobs:
       build-media
     ]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout latest code
-        uses: actions/checkout@v6
+        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
         with:
           fetch-depth: 0
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           path: artifacts
 
@@ -288,7 +299,7 @@ jobs:
           ls -lh continuous/
 
       - name: Generate checksum
-        uses: jmgilman/actions-generate-checksum@v1
+        uses: jmgilman/actions-generate-checksum@238073f4c02f2810adb91c96bdd1e276a5ae9ed6 # v1
         with:
           patterns: |
             continuous/*
@@ -297,7 +308,7 @@ jobs:
         run: cp checksum.txt continuous/
 
       - name: Update develop tag
-        uses: richardsimko/update-tag@v2
+        uses: richardsimko/update-tag@d43d3236a342abd387f0ba5d6a7bc93b77e0e718 # v2
         with:
           tag_name: continuous
         env:
@@ -308,7 +319,7 @@ jobs:
         run: echo "timestamp=$(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
 
       - name: Create/Update Release
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1
         with:
           allowUpdates: 'true'
           artifacts: "continuous/*"
@@ -338,7 +349,7 @@ jobs:
           wget -O continuous/source.tar.gz https://github.com/Griefed/ServerPackCreator/archive/refs/tags/continuous.tar.gz
 
       - name: Cleanup continuous on server
-        uses: tiyee/action-ssh@v1.0.1
+        uses: tiyee/action-ssh@b2d48d44e978ff09e0c37479a429a8374da6bb63 # v1.0.1
         with:
           host: ${{ secrets.SPCUPLOAD_HOST }}
           username: ${{ secrets.SPCUPLOAD_USERNAME }}
@@ -346,7 +357,7 @@ jobs:
           command: 'rm -rf ~/spc/continuous'
 
       - name: Upload to server
-        uses: nogsantos/scp-deploy@master
+        uses: nogsantos/scp-deploy@48b9ca0b1adcb229b1568eebda8e16e06436495a # v1.3.0
         with:
           src: ./continuous
           host: ${{ secrets.SPCUPLOAD_HOST }}

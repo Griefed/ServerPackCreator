@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ############################################LICENSE#################################################
-# Copyright (C) 2025 Griefed
+# Copyright (C) 2026 Griefed
 #
 # This script is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -69,6 +69,16 @@
 #       You may acquire a Java 21 install here: https://adoptium.net/temurin/releases/?variant=openjdk21&version=21&package=jdk&arch=x64&os=linux
 #     macOS:
 #       You may acquire a Java 21 install here: https://adoptium.net/temurin/releases/?variant=openjdk21&version=21&package=jdk&arch=x64&os=mac
+
+# https://github.com/fish-shell/fish-shell/issues/12824#issuecomment-5152165903
+# Use this block when you know that the script is not 100% compatible with
+# Fish syntax and you want to print a custom message when opened in Fish.
+# It works if this is the topmost error, so put it at the top of your script.
+_=" ⚠️ This script must be used with Bash shell
+#   (You're using a different incompatible shell)
+#   WIKI: https://simple.wikipedia.org/wiki/Bash
+" #_____________________________________________
+unset _
 
 # pause
 # Pause script execution. User input in the form of any keyboard key-press is required to continue execution.
@@ -146,6 +156,16 @@ runJavaCommand() {
   "$JAVA" ${1}
 }
 
+# runInstallerJavaCommand(command)
+# Runs a modloader *installer* with $JAVA_INSTALLER when that is set in the variables.txt, otherwise with
+# $JAVA. Some installers need a newer Java than the server they install: the Quilt installer requires
+# Java 17+, while e.g. Minecraft 1.16.1 must run on Java 8 — one JDK cannot satisfy both. Leave
+# JAVA_INSTALLER unset and nothing changes; set it to a Java 17+ binary to install such a loader.
+runInstallerJavaCommand() {
+  # shellcheck disable=SC2086
+  "${JAVA_INSTALLER:-$JAVA}" ${1}
+}
+
 # refreshServerJar
 # Refresh the ServerStarterJar used for running Forge and NeoForge servers.
 # Depending on the value of SERVERSTARTERJAR_FORCE_FETCH in the variables.txt the server.jar is force-refreshed.
@@ -174,9 +194,9 @@ cleanServerFiles() {
 
   for FILE_TO_REMOVE in "${FILES_TO_REMOVE[@]}"
   do
-    rm -r -v \
-      "$FILE_TO_REMOVE" 2> /dev/null \
-      && echo "Deleted $FILE_TO_REMOVE"
+    while IFS= read -r MATCH; do
+      rm -r -v "$MATCH" 2> /dev/null && echo "Deleted $MATCH"
+    done < <(find . -maxdepth 1 -mindepth 1 -name "$FILE_TO_REMOVE")
   done
 }
 
@@ -189,7 +209,11 @@ setupForge() {
   FORGE_INSTALLER_URL="https://files.minecraftforge.net/maven/net/minecraftforge/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}-installer.jar"
   FORGE_JAR_LOCATION="do_not_manually_edit"
 
-  if [[ ${SEMANTICS[1]} -le 16 ]]; then
+  # Forge changed how a server is launched: up to Minecraft 1.16 the installer produced a runnable forge.jar, from
+  # 1.17 it produces libraries/.../unix_args.txt instead. The major must be checked too, because the minor alone only
+  # carries that meaning under the 1.x scheme -- Minecraft 26.2 has minor 2, which would otherwise read as the 1.2 era
+  # and take the legacy path, where the server dies with "Unable to access jarfile forge.jar" before loading any mod.
+  if [[ ${SEMANTICS[0]} -eq 1 ]] && [[ ${SEMANTICS[1]} -le 16 ]]; then
     FORGE_JAR_LOCATION="forge.jar"
     LAUNCHER_JAR_LOCATION="forge.jar"
     SERVER_RUN_COMMAND="${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"
@@ -221,9 +245,31 @@ setupForge() {
         runJavaCommand "-jar forge-installer.jar --installServer"
       fi
     else
-      SERVER_RUN_COMMAND="@user_jvm_args.txt ${SSJ_FORGE_ARGS} -jar server.jar --installer-force --installer ${FORGE_INSTALLER_URL} nogui"
-      # Download ServerStarterJar to server.jar
-      refreshServerJar
+      # SSJ_FORGE_ARGS defaults to -Djava.security.manager=allow, which Forge's ServerStarterJar needed on older
+      # Java. JEP 486 removed Security Manager support in Java 24, so from that release the flag is not merely
+      # useless -- the VM refuses to start ("A command line option has attempted to allow or enable the Security
+      # Manager"). Minecraft 26.x requires Java 25, so passing it there breaks every modern Forge pack before Forge
+      # loads. Keep it where it is still needed, drop it where it is fatal.
+      #
+      # That flag is not cosmetic to SSJ: it runs the Forge installer inside its own JVM and needs a SecurityManager
+      # to swallow the System.exit(0) the installer calls when it is done. Without it the installer's exit ends the
+      # whole process -- the pack installs, reports success, exits 0, and never launches the server. So on Java that
+      # cannot trap the exit we do not hand SSJ the install at all: install here, then launch through the argfile the
+      # installer produces, exactly as the USE_SSJ=false path does. Below Java 24 nothing changes.
+      if [[ "${JAVA_VERSION}" =~ ^[0-9]+$ ]] && [[ ${JAVA_VERSION} -ge 24 ]]; then
+        echo "Java ${JAVA_VERSION} cannot grant ServerStarterJar the Security Manager it needs to run the Forge"
+        echo "installer, so this pack installs Forge directly and starts it from its argfile instead."
+        FORGE_ARGS_FILE="libraries/net/minecraftforge/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/unix_args.txt"
+        SERVER_RUN_COMMAND="@user_jvm_args.txt @${FORGE_ARGS_FILE} nogui"
+        if [[ $(downloadIfNotExist "${FORGE_ARGS_FILE}" "forge-installer.jar" "${FORGE_INSTALLER_URL}") == "true" ]]; then
+          echo "Forge Installer downloaded. Installing..."
+          runJavaCommand "-jar forge-installer.jar --installServer"
+        fi
+      else
+        SERVER_RUN_COMMAND="@user_jvm_args.txt ${SSJ_FORGE_ARGS} -jar server.jar --installer-force --installer ${FORGE_INSTALLER_URL} nogui"
+        # Download ServerStarterJar to server.jar
+        refreshServerJar
+      fi
     fi
 
     echo "Generating user_jvm_args.txt from variables..."
@@ -266,7 +312,11 @@ setupNeoForge() {
     echo "${JAVA_ARGS}"
   } >>user_jvm_args.txt
 
-  if [[ ${SEMANTICS[1]} -eq 20 ]] && [[ ${#SEMANTICS[@]} -eq 2 || ${SEMANTICS[2]} -eq 1 ]]; then
+  # NeoForge's first releases -- Minecraft 1.20 and 1.20.1 only -- live under the legacy net/neoforged/forge/ artifact
+  # group and must be installed by URL; everything later installs by bare version. The major is part of the test
+  # because "minor is 20" only means the 1.20 era under the 1.x scheme: a future Minecraft 26.20 would otherwise be
+  # sent at a 1.20-era URL that does not exist for it.
+  if [[ ${SEMANTICS[0]} -eq 1 ]] && [[ ${SEMANTICS[1]} -eq 20 ]] && [[ ${#SEMANTICS[@]} -eq 2 || ${SEMANTICS[2]} -eq 1 ]]; then
     SERVER_RUN_COMMAND="@user_jvm_args.txt -jar server.jar --installer-force --installer https://maven.neoforged.net/releases/net/neoforged/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}-installer.jar nogui"
   else
     SERVER_RUN_COMMAND="@user_jvm_args.txt -jar server.jar --installer-force --installer ${MODLOADER_VERSION} nogui"
@@ -287,42 +337,53 @@ setupFabric() {
   FABRIC_CHECK_URL="https://meta.fabricmc.net/v2/versions/loader/${MINECRAFT_VERSION}/${MODLOADER_VERSION}/server/json"
   IMPROVED_FABRIC_LAUNCHER_URL="https://meta.fabricmc.net/v2/versions/loader/${MINECRAFT_VERSION}/${MODLOADER_VERSION}/${FABRIC_INSTALLER_VERSION}/server/jar"
 
-  if commandAvailable curl ; then
-    FABRIC_AVAILABLE="$(curl -LI ${FABRIC_CHECK_URL} -o /dev/null -w '%{http_code}\n' -s)"
-  elif commandAvailable wget ; then
-    FABRIC_AVAILABLE="$(wget --server-response ${FABRIC_CHECK_URL}  2>&1 | awk '/^  HTTP/{print $2}')"
-  fi
-  if commandAvailable curl ; then
-    IMPROVED_FABRIC_LAUNCHER_AVAILABLE="$(curl -LI ${IMPROVED_FABRIC_LAUNCHER_URL} -o /dev/null -w '%{http_code}\n' -s)"
-  elif commandAvailable wget ; then
-    IMPROVED_FABRIC_LAUNCHER_AVAILABLE="$(wget --server-response ${IMPROVED_FABRIC_LAUNCHER_URL}  2>&1 | awk '/^  HTTP/{print $2}')"
-  fi
-
-  if [[ "$IMPROVED_FABRIC_LAUNCHER_AVAILABLE" == "200" ]]; then
-    echo "Improved Fabric Server Launcher available..."
-    echo "The improved launcher will be used to run this Fabric server."
+  # An already-installed launcher needs neither a check nor a download. This must come FIRST: the checks below
+  # ask the network, and a failed request is indistinguishable from "Fabric does not support this version" —
+  # which made a complete, ready-to-run pack refuse to start whenever it had no internet.
+  if [[ -s "fabric-server-launcher.jar" ]]; then
+    echo "fabric-server-launcher.jar present. Moving on..."
     LAUNCHER_JAR_LOCATION="fabric-server-launcher.jar"
-    downloadIfNotExist "fabric-server-launcher.jar" "fabric-server-launcher.jar" "${IMPROVED_FABRIC_LAUNCHER_URL}" >/dev/null
-  elif [[ "${FABRIC_AVAILABLE}" != "200" ]]; then
-    crashServer "Fabric is not available for Minecraft ${MINECRAFT_VERSION}, Fabric ${MODLOADER_VERSION}."
-  elif [[ $(downloadIfNotExist "fabric-server-launch.jar" "fabric-installer.jar" "${FABRIC_INSTALLER_URL}") == "true" ]]; then
-
-    echo "Installer downloaded..."
-    LAUNCHER_JAR_LOCATION="fabric-server-launch.jar"
-    runJavaCommand "-jar fabric-installer.jar server -mcversion ${MINECRAFT_VERSION} -loader ${MODLOADER_VERSION} -downloadMinecraft"
-
-    if [[ -s "fabric-server-launch.jar" ]]; then
-      rm -rf .fabric-installer
-      rm -f fabric-installer.jar
-      echo "Installation complete. fabric-installer.jar deleted."
-    else
-      rm -f fabric-installer.jar
-      crashServer "fabric-server-launch.jar not found. Maybe the Fabric servers are having trouble. Please try again in a couple of minutes and check your internet connection."
-    fi
-
-  else
+  elif [[ -s "fabric-server-launch.jar" ]]; then
     echo "fabric-server-launch.jar present. Moving on..."
     LAUNCHER_JAR_LOCATION="fabric-server-launch.jar"
+  else
+    if commandAvailable curl ; then
+      FABRIC_AVAILABLE="$(curl -LI ${FABRIC_CHECK_URL} -o /dev/null -w '%{http_code}\n' -s)"
+    elif commandAvailable wget ; then
+      FABRIC_AVAILABLE="$(wget --spider --server-response ${FABRIC_CHECK_URL}  2>&1 | awk '/^  HTTP/{print $2}')"
+    fi
+    if commandAvailable curl ; then
+      IMPROVED_FABRIC_LAUNCHER_AVAILABLE="$(curl -LI ${IMPROVED_FABRIC_LAUNCHER_URL} -o /dev/null -w '%{http_code}\n' -s)"
+    elif commandAvailable wget ; then
+      IMPROVED_FABRIC_LAUNCHER_AVAILABLE="$(wget --spider --server-response ${IMPROVED_FABRIC_LAUNCHER_URL}  2>&1 | awk '/^  HTTP/{print $2}')"
+    fi
+
+    if [[ "$IMPROVED_FABRIC_LAUNCHER_AVAILABLE" == "200" ]]; then
+      echo "Improved Fabric Server Launcher available..."
+      echo "The improved launcher will be used to run this Fabric server."
+      LAUNCHER_JAR_LOCATION="fabric-server-launcher.jar"
+      downloadIfNotExist "fabric-server-launcher.jar" "fabric-server-launcher.jar" "${IMPROVED_FABRIC_LAUNCHER_URL}" >/dev/null
+    elif [[ "${FABRIC_AVAILABLE}" != "200" ]]; then
+      crashServer "Fabric is not available for Minecraft ${MINECRAFT_VERSION}, Fabric ${MODLOADER_VERSION}."
+    elif [[ $(downloadIfNotExist "fabric-server-launch.jar" "fabric-installer.jar" "${FABRIC_INSTALLER_URL}") == "true" ]]; then
+
+      echo "Installer downloaded..."
+      LAUNCHER_JAR_LOCATION="fabric-server-launch.jar"
+      runJavaCommand "-jar fabric-installer.jar server -mcversion ${MINECRAFT_VERSION} -loader ${MODLOADER_VERSION} -downloadMinecraft"
+
+      if [[ -s "fabric-server-launch.jar" ]]; then
+        rm -rf .fabric-installer
+        rm -f fabric-installer.jar
+        echo "Installation complete. fabric-installer.jar deleted."
+      else
+        rm -f fabric-installer.jar
+        crashServer "fabric-server-launch.jar not found. Maybe the Fabric servers are having trouble. Please try again in a couple of minutes and check your internet connection."
+      fi
+
+    else
+      echo "fabric-server-launch.jar present. Moving on..."
+      LAUNCHER_JAR_LOCATION="fabric-server-launch.jar"
+    fi
   fi
 
   SERVER_RUN_COMMAND="${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"
@@ -338,23 +399,24 @@ setupQuilt() {
   QUILT_INSTALLER_URL="https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/${QUILT_INSTALLER_VERSION}/quilt-installer-${QUILT_INSTALLER_VERSION}.jar"
   QUILT_CHECK_URL="https://meta.fabricmc.net/v2/versions/intermediary/${MINECRAFT_VERSION}"
   if commandAvailable curl ; then
-    QUILT_AVAILABLE="$(curl -LI ${QUILT_CHECK_URL} -o /dev/null -w '%{http_code}\n' -s)"
+    QUILT_AVAILABLE="$(curl -sL "${QUILT_CHECK_URL}")"
   elif commandAvailable wget ; then
-    QUILT_AVAILABLE="$(wget --server-response ${QUILT_CHECK_URL}  2>&1 | awk '/^  HTTP/{print $2}')"
+    QUILT_AVAILABLE="$(wget -qO- "${QUILT_CHECK_URL}")"
   fi
 
-  if [[ "${#QUILT_AVAILABLE}" -eq "2" ]]; then
+  if [[ "${QUILT_AVAILABLE}" == "[]" ]]; then
     crashServer "Quilt is not available for Minecraft ${MINECRAFT_VERSION}, Quilt ${MODLOADER_VERSION}."
   elif [[ $(downloadIfNotExist "quilt-server-launch.jar" "quilt-installer.jar" "${QUILT_INSTALLER_URL}") == "true" ]]; then
     echo "Installer downloaded. Installing..."
-    runJavaCommand "-jar quilt-installer.jar install server ${MINECRAFT_VERSION} --download-server --install-dir=."
+    # The Quilt installer itself requires Java 17+, even when the server will run on an older Java.
+    runInstallerJavaCommand "-jar quilt-installer.jar install server ${MINECRAFT_VERSION} --download-server --install-dir=."
 
     if [[ -s "quilt-server-launch.jar" ]]; then
       rm quilt-installer.jar
       echo "Installation complete. quilt-installer.jar deleted."
     else
       rm -f quilt-installer.jar
-      crashServer "quilt-server-launch.jar not found. Maybe the Quilt servers are having trouble. Please try again in a couple of minutes and check your internet connection."
+      crashServer "quilt-server-launch.jar not found. The Quilt installer requires Java 17 or newer: if the message above says so, set JAVA_INSTALLER in your variables.txt to a Java 17+ binary (your server keeps running on JAVA). Otherwise the Quilt servers may be having trouble - try again in a couple of minutes and check your internet connection."
     fi
 
   fi
@@ -373,12 +435,12 @@ setupLegacyFabric() {
   LEGACYFABRIC_INSTALLER_URL="https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/${LEGACYFABRIC_INSTALLER_VERSION}/fabric-installer-${LEGACYFABRIC_INSTALLER_VERSION}.jar"
   LEGACYFABRIC_CHECK_URL="https://meta.legacyfabric.net/v2/versions/loader/${MINECRAFT_VERSION}"
   if commandAvailable curl ; then
-    LEGACYFABRIC_AVAILABLE="$(curl -LI ${LEGACYFABRIC_CHECK_URL} -o /dev/null -w '%{http_code}\n' -s)"
+    LEGACYFABRIC_AVAILABLE="$(curl -sL "${LEGACYFABRIC_CHECK_URL}")"
   elif commandAvailable wget ; then
-    IMPROVED_FABRIC_LAUNCHER_AVAILABLE="$(wget --server-response ${LEGACYFABRIC_CHECK_URL}  2>&1 | awk '/^  HTTP/{print $2}')"
+    LEGACYFABRIC_AVAILABLE="$(wget -qO- "${LEGACYFABRIC_CHECK_URL}")"
   fi
 
-  if [[ "${#LEGACYFABRIC_AVAILABLE}" -eq "2" ]]; then
+  if [[ "${LEGACYFABRIC_AVAILABLE}" == "[]" ]]; then
     crashServer "LegacyFabric is not available for Minecraft ${MINECRAFT_VERSION}, LegacyFabric ${MODLOADER_VERSION}."
   elif [[ $(downloadIfNotExist "fabric-server-launch.jar" "legacyfabric-installer.jar" "${LEGACYFABRIC_INSTALLER_URL}") == "true" ]]; then
     echo "Installer downloaded. Installing..."
@@ -563,6 +625,11 @@ echo ""
 while true
 do
   runJavaCommand "${ADDITIONAL_ARGS} ${SERVER_RUN_COMMAND}"
+  # Captured immediately: the checks below run their own commands and would overwrite $?. The script exits with this
+  # status, so a crashed server is distinguishable from a clean shutdown by anything reading the exit code --
+  # systemd, Docker restart policies, CI, and the grinder's boot classifier (for which a swallowed status meant a
+  # mod crash could never be told apart from a clean stop).
+  SERVER_EXIT_CODE=$?
   if [[ "${SKIP_JAVA_CHECK}" == "true" ]]; then
     echo "Java version check was skipped. Did the server stop or crash because of a Java version mismatch?"
     echo "Detected ${SEMANTICS[0]}.${SEMANTICS[1]}.${SEMANTICS[2]} - Java ${JAVA_VERSION}, recommended $RECOMMENDED_JAVA_VERSION."
@@ -572,7 +639,7 @@ do
       if [[ "${WAIT_FOR_USER_INPUT}" == "true" ]]; then
         pause
       fi
-    exit 0
+    exit ${SERVER_EXIT_CODE}
   fi
   echo "Automatically restarting server in 5 seconds. Press CTRL + C to abort and exit."
   sleep 5

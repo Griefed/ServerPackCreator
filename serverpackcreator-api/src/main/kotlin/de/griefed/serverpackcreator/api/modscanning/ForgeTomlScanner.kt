@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,7 +35,7 @@ import java.util.jar.JarFile
  * @Griefed
  */
 open class ForgeTomlScanner(private val tomlParser: TomlParser) :
-    Scanner<Pair<Collection<File>, Collection<Pair<String,String>>>, Collection<File>> {
+    Scanner<ScanResult, Collection<File>> {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val mods = "mods"
     private val modId = "modId"
@@ -46,10 +46,19 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
     private val mandatory = "mandatory"
     private val requiredAsDep = "REQUIRED"
 
+    /** Path of the descriptor inside a Forge jar. `open` because NeoForge moved it, and that subclass overrides it. */
     open val modsToml = "META-INF/mods.toml"
 
+    /**
+     * Dependency ids that are the platform itself rather than another mod. A mod declaring these is not depending on
+     * anything the server pack has to keep, so they must not pull a jar into the dependency list.
+     */
     val neoForgeMinecraft: Regex
         get() = "^(neoforge|forge|minecraft)$".toRegex()
+    /**
+     * Sides that mean a mod belongs on a server. Matched against the descriptor's declared side — a self-report, and
+     * an unreliable one, which is why a boot test exists at all rather than trusting it.
+     */
     val bothServer: Regex
         get() = "^(BOTH|SERVER)$".toRegex()
 
@@ -67,19 +76,19 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
      * @return Mods not to include in server pack based on mods.toml-configuration.
      * @author Griefed
      */
-    override fun scan(jarFiles: Collection<File>): Pair<Collection<File>, Collection<Pair<String,String>>> {
+    override fun scan(jarFiles: Collection<File>): ScanResult {
         val serverMods = TreeSet<File>()
-        val dependencies = ArrayList<Pair<String,String>>()
         var modConfig: CommentedConfig
+        val scanResult = ScanResult()
         for (modJar in jarFiles) {
             try {
                 modConfig = getConfig(modJar)
 
                 // get all [[dependencies.n]] which are minecraft|forge, to determine the sideness of the mod itself
-                dependencies.addAll(getModDependencyIdsRequiredOnServer(modConfig, modJar.name))
+                scanResult.dependencies.addAll(getModDependencyIdsRequiredOnServer(modConfig, modJar.name))
 
                 // get all mods required on the server
-                dependencies.addAll(getModIdsRequiredOnServer(modConfig, modJar.name))
+                scanResult.dependencies.addAll(getModIdsRequiredOnServer(modConfig, modJar.name))
             } catch (e: Exception) {
                 log.error("Could not scan ${modJar.name}. Consider reporting this: ${e.cause}: ${e.message}")
                 serverMods.add(modJar)
@@ -90,7 +99,7 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
                 modConfig = getConfig(modJar)
                 val idsInMod = getModIdsInJar(modConfig)
                 for (id in idsInMod) {
-                    if (dependencies.map{ it.first }.contains(id)) {
+                    if (scanResult.dependencies.map{ it.dependencyID }.contains(id)) {
                         serverMods.add(modJar)
                     }
                 }
@@ -101,7 +110,13 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
         }
         val excluded = TreeSet(jarFiles)
         excluded.removeAll(serverMods)
-        return Pair(excluded,dependencies)
+        for (exclusion in excluded) {
+            modConfig = getConfig(exclusion)
+            val modId = getModId(modConfig)
+            scanResult.exclusions.add(Exclusion(modId, exclusion))
+        }
+        return scanResult
+        //return Pair(excluded,dependencies)
     }
 
     /**
@@ -112,9 +127,9 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
      * @throws ScanningException if the mod specifies no mods.
      */
     @Throws(ScanningException::class)
-    private fun getModIdsRequiredOnServer(modConfig: CommentedConfig, fileName: String): ArrayList<Pair<String,String>> {
+    private fun getModIdsRequiredOnServer(modConfig: CommentedConfig, fileName: String): ArrayList<Dependency> {
         val modConfigs = ArrayList<Map<String, Any>>(100)
-        val entries = ArrayList<Pair<String, String>>()
+        val entries = ArrayList<Dependency>()
         if (modConfig.valueMap()[mods] == null) {
             throw ScanningException("No mods specified.")
         } else {
@@ -139,25 +154,25 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
                             try {
                                 val side = getSide(dependency)
                                 if (side.matches(bothServer)) {
-                                    entries.add(Pair(modId, fileName))
+                                    entries.add(Dependency(modId, fileName))
                                 }
                             } catch (_: NullPointerException) {
                                 // no side specified....assuming both|server
-                                entries.add(Pair(modId, fileName))
+                                entries.add(Dependency(modId, fileName))
                             }
                         }
                     } catch (_: NullPointerException) {
                         // no modId specified in dependency...assuming forge|minecraft and both|server
                         containedForgeOrMinecraft = true
-                        entries.add(Pair(modId,"$fileName ($modId)"))
+                        entries.add(Dependency(modId,fileName, modId))
                     }
                 }
             } else {
                 // contains no self referencing dependency...
-                entries.add(Pair(modId, fileName))
+                entries.add(Dependency(modId, fileName))
             }
             if (!containedForgeOrMinecraft) {
-                entries.add(Pair(modId, fileName))
+                entries.add(Dependency(modId, fileName))
             }
         }
         return entries
@@ -175,10 +190,10 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
      * @throws ScanningException if the mod has invalid dependency declarations or specifies no mods.
      */
     @Throws(ScanningException::class)
-    private fun getModDependencyIdsRequiredOnServer(modConfig: CommentedConfig, fileName: String): ArrayList<Pair<String,String>> {
+    private fun getModDependencyIdsRequiredOnServer(modConfig: CommentedConfig, fileName: String): ArrayList<Dependency> {
         val dependencies: Map<String, ArrayList<CommentedConfig>> = getMapOfDependencyLists(modConfig)
         val idsInMod = getModIdsInJar(modConfig)
-        val entries = ArrayList<Pair<String, String>>()
+        val entries = ArrayList<Dependency>()
         try {
             var confidentOnClientSide = true
             for (modId in idsInMod) {
@@ -204,6 +219,8 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
                 return entries
             }
         } catch (_: NullPointerException) {
+            // A dependency was missing a modId/side mid-evaluation, so we can't conclude the mod is
+            // confidently client-side. Fall through to the conservative per-dependency pass below.
         }
         for ((key, value) in dependencies) {
             for (commentedConfig in value) {
@@ -218,13 +235,13 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
                             val required = getRequired(commentedConfig)
                             if (side.matches(bothServer) && required.equals(requiredAsDep,true)) {
                                 for (modID in idsInMod) {
-                                    entries.add(Pair(dependencyID,"$fileName ($modID)"))
+                                    entries.add(Dependency(dependencyID, fileName, modId))
                                 }
                             }
                         } catch (_: NullPointerException) {
                             // dependency specifies no side
                             for (modID in idsInMod) {
-                                entries.add(Pair(dependencyID,"$fileName ($modID)"))
+                                entries.add(Dependency(dependencyID, fileName, modId))
                             }
                         }
                     }
@@ -233,7 +250,7 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
                     val lowerKey = key.lowercase()
                     if (!lowerKey.matches(neoForgeMinecraft)) {
                         for (modID in idsInMod) {
-                            entries.add(Pair(key,"$fileName ($modID)"))
+                            entries.add(Dependency(key, fileName, modId))
                         }
                     }
                 }

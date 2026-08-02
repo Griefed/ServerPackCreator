@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -204,10 +204,10 @@ class WebUtilities(private val apiProperties: ApiProperties) {
         }
         if (response!!.contains("\"key\"")) {
             response = (requestURL.replace("/documents", "/")
-                    + response!!.substring(response!!.indexOf(":") + 2, response!!.length - 2))
+                    + response.substring(response.indexOf(":") + 2, response.length - 2))
         }
-        return if (response!!.contains(requestURL.replace("/documents", ""))) {
-            response!!
+        return if (response.contains(requestURL.replace("/documents", ""))) {
+            response
         } else {
             "Error encountered when acquiring response from URL."
         }

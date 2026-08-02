@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,8 +24,14 @@ import java.net.URL
 import java.util.*
 
 interface NeoForgeInstance {
+    /** The Minecraft version this NeoForge build targets. */
     val minecraftVersion: String
+    /** The NeoForge build, meaningful only together with [minecraftVersion]. */
     val neoForgeVersion: String
+    /**
+     * Where this build's installer is downloaded from. **Landmine:** maven metadata can list a version whose
+     * installer 404s, so a failure here means "upstream is incomplete", not "the version does not exist".
+     */
     val installerUrl: URL
 
     /**

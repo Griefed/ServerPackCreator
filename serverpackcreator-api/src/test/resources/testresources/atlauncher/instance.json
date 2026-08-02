@@ -1,0 +1,16 @@
+{
+  "id": "1.19.2",
+  "launcher": {
+    "name": "ATLauncher Test Pack",
+    "loaderVersion": {
+      "type": "Forge",
+      "version": "43.2.0"
+    },
+    "curseForgeProject": {
+      "id": 999111
+    }
+  },
+  "curseForgeFile": {
+    "id": 888222
+  }
+}

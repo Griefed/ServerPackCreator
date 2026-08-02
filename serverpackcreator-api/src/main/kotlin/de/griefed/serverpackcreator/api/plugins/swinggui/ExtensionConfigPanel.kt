@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -58,6 +58,7 @@ abstract class ExtensionConfigPanel protected constructor(
 ) : JPanel() {
     protected val log by lazy { cachedLoggerOf(this.javaClass) }
     protected val pluginsLog: Logger = LogManager.getLogger("AddonsLogger")
+    /** The panel's current configuration, which SPC stores under the plugin's id in the pack config. */
     val serverPackExtensionConfig: ArrayList<CommentedConfig> = ArrayList(100)
 
     /**

@@ -24,14 +24,15 @@
   </q-card>
 </template>
 
-<script >
-import {defineComponent} from 'vue';
+<script lang="ts">
+import {defineComponent, type PropType} from 'vue';
+import type {ErrorItem} from 'src/types/api';
 
 export default defineComponent({
   name: 'ErrorsCard',
   props: {
     errors: {
-      type: Array,
+      type: Array as PropType<ErrorItem[]>,
       required: true
     }
   },
@@ -42,7 +43,7 @@ export default defineComponent({
         borderRadius: '5px',
         backgroundColor: '#6A1A78',
         width: '5px',
-        opacity: 0.75
+        opacity: '0.75'
       },
 
       barStyle: {
@@ -50,12 +51,12 @@ export default defineComponent({
         borderRadius: '9px',
         backgroundColor: '#6A1A78',
         width: '9px',
-        opacity: 0.2
+        opacity: '0.2'
       }
     };
   },
   methods: {
-    copyToClipboard(text) {
+    copyToClipboard(text: string) {
       navigator.clipboard.writeText(text);
       this.$q.notify({
         timeout: 5000,

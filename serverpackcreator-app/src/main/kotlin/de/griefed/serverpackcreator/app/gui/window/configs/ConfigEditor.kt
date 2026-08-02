@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,6 +33,7 @@ import de.griefed.serverpackcreator.api.utilities.common.ListUtilities
 import de.griefed.serverpackcreator.api.utilities.common.StringUtilities
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.components.*
+import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import de.griefed.serverpackcreator.app.gui.window.configs.components.*
 import de.griefed.serverpackcreator.app.gui.window.configs.components.advanced.AdvancedSettingsPanel
 import de.griefed.serverpackcreator.app.gui.window.configs.components.advanced.ScriptKVPairs
@@ -62,6 +63,12 @@ class ConfigEditor(
 ) : JScrollPane(), ServerPackConfigTab {
 
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+
+    /** Owns the coroutines this editor starts, so they are cancelled when the tab is closed
+     * ([removeNotify]) instead of leaking on [GlobalScope] and outliving the disposed editor. */
+    private val componentScope = ComponentCoroutineScope()
+
+    private val viewModel = ConfigEditorViewModel(apiWrapper.versionMeta)
     private val panel = JPanel(
         MigLayout(
             "left,wrap",
@@ -529,7 +536,7 @@ class ConfigEditor(
         } else {
             File(apiWrapper.apiProperties.configsDirectory, modpackName)
         }
-        lastConfig = getCurrentConfiguration().save(config)
+        lastConfig = getCurrentConfiguration().save(config, apiWrapper.apiProperties)
         configFile = config
         title.hideWarningIcon()
         saveSuggestions()
@@ -670,48 +677,17 @@ class ConfigEditor(
         tabbedConfigsTab.checkAll()
     }
 
-    override fun acquireRequiredJavaVersion(): String {
-        val server = apiWrapper.versionMeta.minecraft.getServer(getMinecraftVersion())
-        return if (server.isPresent && server.get().javaVersion().isPresent) {
-            server.get().javaVersion().get().toString()
-        } else {
-            "?"
-        }
-    }
+    override fun acquireRequiredJavaVersion(): String =
+        viewModel.requiredJavaVersion(getMinecraftVersion())
 
     /**
      * @author Griefed
      */
     fun compareSettings() {
-        if (lastConfig == null) {
+        if (viewModel.hasUnsavedChanges(getCurrentConfiguration(), lastConfig)) {
             title.showWarningIcon()
-            return
-        }
-
-        val currentConfig = getCurrentConfiguration()
-
-        when {
-            currentConfig.clientMods != lastConfig!!.clientMods
-                    || currentConfig.modsWhitelist != lastConfig!!.modsWhitelist
-                    || currentConfig.inclusions != lastConfig!!.inclusions
-                    || currentConfig.javaArgs != lastConfig!!.javaArgs
-                    || currentConfig.minecraftVersion != lastConfig!!.minecraftVersion
-                    || currentConfig.modloader != lastConfig!!.modloader
-                    || currentConfig.modloaderVersion != lastConfig!!.modloaderVersion
-                    || currentConfig.modpackDir != lastConfig!!.modpackDir
-                    || currentConfig.scriptSettings != lastConfig!!.scriptSettings
-                    || currentConfig.serverIconPath != lastConfig!!.serverIconPath
-                    || currentConfig.serverPropertiesPath != lastConfig!!.serverPropertiesPath
-                    || currentConfig.serverPackSuffix != lastConfig!!.serverPackSuffix
-                    || currentConfig.isServerIconInclusionDesired != lastConfig!!.isServerIconInclusionDesired
-                    || currentConfig.isServerPropertiesInclusionDesired != lastConfig!!.isServerPropertiesInclusionDesired
-                    || currentConfig.isZipCreationDesired != lastConfig!!.isZipCreationDesired -> {
-                title.showWarningIcon()
-            }
-
-            else -> {
-                title.hideWarningIcon()
-            }
+        } else {
+            title.hideWarningIcon()
         }
     }
 
@@ -721,9 +697,11 @@ class ConfigEditor(
      *
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
+    // CoroutineStart.ATOMIC is itself a delicate API (the load must not be cancellable before it
+    // starts); the opt-in is for that, not for the now-removed GlobalScope.
+    @OptIn(DelicateCoroutinesApi::class)
     fun loadConfiguration(packConfig: PackConfig, confFile: File) {
-        GlobalScope.launch(guiProps.configDispatcher, CoroutineStart.ATOMIC) {
+        componentScope.scope().launch(guiProps.configDispatcher, CoroutineStart.ATOMIC) {
             try {
                 setModpackDirectory(packConfig.modpackDir)
                 if (packConfig.clientMods.isEmpty()) {
@@ -1062,9 +1040,8 @@ class ConfigEditor(
      *
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     fun updateGuiFromSelectedModpack() {
-        GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
+        componentScope.scope().launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
             val modpack = File(getModpackDirectory()).absoluteFile
             if (modpack.isDirectory) {
                 try {
@@ -1210,7 +1187,6 @@ class ConfigEditor(
      *
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     fun checkServer(): Boolean {
         var okay = true
         if (modloaderVersionSetting.selectedItem == Translations.createserverpack_gui_createserverpack_forge_none.toString()) {
@@ -1232,7 +1208,7 @@ class ConfigEditor(
                 modloader,
                 modloaderVersion
             )
-            GlobalScope.launch(Dispatchers.Swing) {
+            componentScope.scope().launch(Dispatchers.Swing) {
                 JOptionPane.showMessageDialog(
                     tabbedConfigsTab.panel,
                     message,
@@ -1352,9 +1328,8 @@ class ConfigEditor(
      *
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     fun stepByStepGuide() {
-        GlobalScope.launch(Dispatchers.Swing) {
+        componentScope.scope().launch(Dispatchers.Swing) {
             Thread.sleep(500)
             modpackGuide.isVisible = false
             inclusionsGuide.isVisible = false
@@ -1365,5 +1340,15 @@ class ConfigEditor(
             modpackSetting.highlight()
             modpackGuide.isVisible = true
         }
+    }
+
+    /**
+     * Cancel this editor's coroutines when the tab is closed (Swing removes the component from its
+     * container), so any in-flight config load or modpack scan stops instead of touching a disposed
+     * editor.
+     */
+    override fun removeNotify() {
+        componentScope.cancel()
+        super.removeNotify()
     }
 }

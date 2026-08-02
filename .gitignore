@@ -353,12 +353,26 @@ yarn.lock
 *.asc
 
 ### ServerPackCreator ###
+# These ignore ServerPackCreator's generated runtime home-directory output (dev runs at the
+# repo root; tests under serverpackcreator-*/tests/ and src/test/resources/). They are
+# unanchored, so they also match identically-named SOURCE directories — most importantly the
+# app's gui/window/configs/ and the API's api/plugins/ packages. The negations below re-include
+# the Kotlin source directories (test-resource output stays ignored).
 configs
 modpacks
 plugins
 server-packs
 server_files
 work
+# The *shipped* templates live under src/main/resources and must stay tracked: the bare `server_files`
+# rule above is for the home directory SPC creates when it runs (including each module's `tests/` home),
+# and it silently hid new resources -- `variables.txt` needed `git add -f`, and the next one would have
+# gone untracked into a release. Same re-include idiom as the `configs` lines below.
+!**/src/main/resources/**/server_files/
+!**/src/main/kotlin/**/configs/
+!**/src/test/kotlin/**/configs/
+!**/src/main/kotlin/**/plugins/
+!**/src/test/kotlin/**/plugins/
 licenses/*
 !licenses/.gitkeep
 
@@ -400,6 +414,14 @@ node_modules
 # ServerPackCreator App
 serverpackcreator-app/tests/*
 !serverpackcreator-app/tests/.gitkeep
+
+# ServerPackCreator Clientside
+serverpackcreator-clientside/tests/*
+!serverpackcreator-clientside/tests/.gitkeep
+
+# ServerPackCreator Grinder
+serverpackcreator-grinder/tests/*
+!serverpackcreator-grinder/tests/.gitkeep
 serverpackcreator-app/src/main/resources/static/*
 !serverpackcreator-app/src/main/resources/static/.gitkeep
 

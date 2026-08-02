@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -138,7 +138,7 @@ class StatsController @Autowired constructor(
         )
     }
 
-    @GetMapping("/downloads/modpacks/{serverPackID}")
+    @GetMapping("/downloads/serverpacks/{serverPackID}")
     @ResponseBody
     fun allDownloadsForServerPack(@PathVariable serverPackID: String): ResponseEntity<List<ServerPackDownload>> {
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE).body(

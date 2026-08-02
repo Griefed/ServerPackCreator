@@ -114,17 +114,20 @@
   </q-table>
 </template>
 
-<script >
+<script lang="ts">
 import {defineComponent, ref} from 'vue';
 import {modpacks, serverpacks} from 'boot/axios';
-import {date} from 'quasar';
+import {date, type QTableColumn} from 'quasar';
 import RunConfigurationCard from 'components/RunConfigurationCard.vue';
 
-const columns = [
+// `field` is required on QTableColumn; the 'download' column renders via a body-cell slot, so its
+// field is inert (kept only to satisfy the type). Typing the array fixes the `align` literals,
+// which would otherwise widen to `string` and fail the QTable `columns` prop type.
+const columns: QTableColumn[] = [
   {name: 'id', label: 'ServerPack ID', field: 'id', sortable: true, align: 'left'},
   {name: 'size', label: 'Size', field: 'size', sortable: false, align: 'left'},
   {name: 'fileID', label: 'File ID', field: 'fileID', sortable: false, align: 'left'},
-  {name: 'download', label: 'Download', sortable: false, align: 'center'},
+  {name: 'download', label: 'Download', field: 'download', sortable: false, align: 'center'},
   {name: 'downloads', label: 'Downloads', field: 'downloads', sortable: true, align: 'left'},
   {name: 'confirmedWorking', label: 'Confirmed Working', field: 'confirmedWorking', sortable: true, align: 'left'},
   {name: 'sha256', label: 'SHA256 Hash', field: 'sha256', sortable: false, align: 'left'},
@@ -184,7 +187,7 @@ export default defineComponent({
     };
   },
   methods: {
-    voteServerPack(id, decision) {
+    voteServerPack(id: string, decision: string) {
       serverpacks.get('vote/' + id + '&' + decision).then(() => {
         this.$q.notify({
           timeout: 5000,

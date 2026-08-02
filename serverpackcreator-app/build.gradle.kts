@@ -1,4 +1,3 @@
-import java.util.prefs.Preferences
 
 plugins {
     id("serverpackcreator.dokka-conventions")
@@ -31,6 +30,9 @@ configurations {
 
 dependencies {
     api(project(":serverpackcreator-api"))
+    // Clientside-mod verification engine (platforms, metadata/boot signals, list editing). The CLI
+    // verbs in this module are thin wrappers over it; Playwright arrives transitively from here.
+    api(project(":serverpackcreator-clientside"))
     api("org.jetbrains.kotlin:kotlin-reflect:2.3.21")
     api("commons-io:commons-io:2.22.0")
     api("com.cronutils:cron-utils:9.2.1")
@@ -119,8 +121,6 @@ tasks.test {
             File(tests,".gitkeep").writeText("Hi")
         }
     }
-    Preferences.userRoot().node("ServerPackCreator").clear()
-    Preferences.userRoot().node("ServerPackCreator").sync()
 }
 
 tasks.signMavenJavaPublication {

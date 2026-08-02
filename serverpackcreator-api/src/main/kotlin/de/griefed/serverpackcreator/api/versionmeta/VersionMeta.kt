@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -84,55 +84,69 @@ class VersionMeta(
     apiProperties: ApiProperties
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
-    private val legacyFabricUrlBase = "https://meta.legacyfabric.net"
-
+    /** Upstream list of Minecraft versions LegacyFabric supports. Separate from the loader list below: LegacyFabric
+     * publishes the two independently, and a version needs an entry in *both* to be usable. */
     @Suppress("MemberVisibilityCanBePrivate")
     val legacyFabricUrlGame: URL =
-        URI("$legacyFabricUrlBase/v2/versions/game").toURL() // TODO Move URL to property
+        URI(VersionMetaConfig.LEGACYFABRIC_GAME_MANIFEST).toURL()
 
+    /** Upstream LegacyFabric loader versions. */
     @Suppress("MemberVisibilityCanBePrivate")
     val legacyFabricUrlLoader: URL =
-        URI("$legacyFabricUrlBase/v2/versions/loader").toURL() // TODO Move URL to property
+        URI(VersionMetaConfig.LEGACYFABRIC_LOADER_MANIFEST).toURL()
 
+    /** Upstream LegacyFabric *installer* versions — a different series from the loader versions, and not interchangeable. */
     @Suppress("MemberVisibilityCanBePrivate")
     val legacyfabricUrlManifest: URL =
-        URI("https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/maven-metadata.xml").toURL() // TODO Move URL to property
+        URI(VersionMetaConfig.LEGACYFABRIC_INSTALLER_MANIFEST).toURL()
 
+    /** Mojang's version manifest: the authority for which Minecraft versions exist, their type, and where each
+     * version's own JSON lives (which is what declares the required Java). */
     @Suppress("MemberVisibilityCanBePrivate")
     val minecraftUrlManifest: URL =
-        URI("https://launchermeta.mojang.com/mc/game/version_manifest.json").toURL() // TODO Move URL to property
+        URI(VersionMetaConfig.MINECRAFT_MANIFEST).toURL()
 
+    /** Upstream Forge versions, keyed by Minecraft version. */
     @Suppress("MemberVisibilityCanBePrivate")
     val forgeUrlManifest: URL =
-        URI("https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json").toURL() // TODO Move URL to property
+        URI(VersionMetaConfig.FORGE_MANIFEST).toURL()
 
+    /** NeoForge's *legacy* maven metadata, covering its first releases under the `net/neoforged/forge` artifact —
+     * Minecraft 1.20 and 1.20.1 only. Kept because those versions exist nowhere else. */
     @Suppress("MemberVisibilityCanBePrivate")
     val oldNeoForgeUrlManifest: URL =
-        URI("https://maven.neoforged.net/releases/net/neoforged/forge/maven-metadata.xml").toURL() // TODO Move URL to property
+        URI(VersionMetaConfig.NEOFORGE_OLD_MANIFEST).toURL()
 
+    /** NeoForge's current maven metadata, covering everything after the 1.20.1 era. */
     @Suppress("MemberVisibilityCanBePrivate")
     val newNeoForgeUrlManifest: URL =
-        URI("https://maven.neoforged.net/releases/net/neoforged/neoforge/maven-metadata.xml").toURL() // TODO Move URL to property
+        URI(VersionMetaConfig.NEOFORGE_NEW_MANIFEST).toURL()
 
+    /** Upstream Fabric loader versions. Minecraft-independent: one loader line serves every supported version. */
     @Suppress("MemberVisibilityCanBePrivate")
     val fabricUrlManifest: URL =
-        URI("https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml").toURL() // TODO Move URL to property
+        URI(VersionMetaConfig.FABRIC_LOADER_MANIFEST).toURL()
 
+    /** Fabric's intermediary mappings, which is what actually says whether Fabric supports a given Minecraft
+     * version — the loader list alone cannot answer that. */
     @Suppress("MemberVisibilityCanBePrivate")
     val fabricUrlIntermediariesManifest: URL =
-        URI("https://meta.fabricmc.net/v2/versions/intermediary").toURL() // TODO Move URL to property
+        URI(VersionMetaConfig.FABRIC_INTERMEDIARIES_MANIFEST).toURL()
 
+    /** Upstream Fabric *installer* versions, a separate series from the loader versions. */
     @Suppress("MemberVisibilityCanBePrivate")
     val fabricUrlInstallerManifest: URL =
-        URI("https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml").toURL() // TODO Move URL to property
+        URI(VersionMetaConfig.FABRIC_INSTALLER_MANIFEST).toURL()
 
+    /** Upstream Quilt loader versions. Minecraft-independent, like Fabric's. */
     @Suppress("MemberVisibilityCanBePrivate")
     val quiltUrlManifest: URL =
-        URI("https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-loader/maven-metadata.xml").toURL() // TODO Move URL to property
+        URI(VersionMetaConfig.QUILT_LOADER_MANIFEST).toURL()
 
+    /** Upstream Quilt *installer* versions. The installer needs Java 17+ even when the server it installs runs on 8. */
     @Suppress("MemberVisibilityCanBePrivate")
     val quiltUrlInstallerManifest: URL =
-        URI("https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/maven-metadata.xml").toURL() // TODO Move URL to property
+        URI(VersionMetaConfig.QUILT_INSTALLER_MANIFEST).toURL()
 
     /**
      * The MinecraftMeta instance for working with Minecraft versions and information about them.
@@ -170,6 +184,10 @@ class VersionMeta(
     @Suppress("MemberVisibilityCanBePrivate")
     val legacyFabric: LegacyFabricMeta
 
+    /**
+     * Fabric's intermediary mappings. Consulted to answer whether Fabric (or Quilt, which runs Fabric mods)
+     * supports a given Minecraft version — the loader versions alone cannot, since one loader line serves them all.
+     */
     @Suppress("MemberVisibilityCanBePrivate")
     val fabricIntermediaries: FabricIntermediaries
 
@@ -314,8 +332,8 @@ class VersionMeta(
                         val newContent: String = newManifest.readText()
                         when (manifestType) {
                             Type.MINECRAFT -> {
-                                countOldFile = utilities.jsonUtilities.getJson(oldContent).get("versions").size() // TODO Move tagName to property
-                                countNewFile = utilities.jsonUtilities.getJson(newContent).get("versions").size() // TODO Move tagName to property
+                                countOldFile = utilities.jsonUtilities.getJson(oldContent).get(VersionMetaConfig.TAG_VERSIONS).size()
+                                countNewFile = utilities.jsonUtilities.getJson(newContent).get(VersionMetaConfig.TAG_VERSIONS).size()
                             }
 
                             Type.FORGE -> {
@@ -334,9 +352,9 @@ class VersionMeta(
 
                             Type.FABRIC, Type.FABRIC_INSTALLER, Type.QUILT, Type.QUILT_INSTALLER, Type.NEO_FORGE -> {
                                 countOldFile = utilities.xmlUtilities.getXml(oldContent)
-                                    .getElementsByTagName("version").length // TODO Move tagName to property
+                                    .getElementsByTagName(VersionMetaConfig.TAG_VERSION).length
                                 countNewFile = utilities.xmlUtilities.getXml(newContent)
-                                    .getElementsByTagName("version").length // TODO Move tagName to property
+                                    .getElementsByTagName(VersionMetaConfig.TAG_VERSION).length
                             }
 
                             Type.LEGACY_FABRIC -> if (manifestToCheck.name.endsWith(".json")) {
@@ -345,11 +363,11 @@ class VersionMeta(
                             } else {
                                 val oldXML: Document = utilities.xmlUtilities.getXml(oldContent)
                                 val newXML: Document = utilities.xmlUtilities.getXml(newContent)
-                                countOldFile = oldXML.getElementsByTagName("version").length // TODO Move tagName to property
-                                countNewFile = newXML.getElementsByTagName("version").length // TODO Move tagName to property
+                                countOldFile = oldXML.getElementsByTagName(VersionMetaConfig.TAG_VERSION).length
+                                countNewFile = newXML.getElementsByTagName(VersionMetaConfig.TAG_VERSION).length
                                 if (countOldFile == countNewFile) {
-                                    if (oldXML.getElementsByTagName("version").item(0).childNodes.item(0) // TODO Move tagName to property
-                                            .nodeValue != newXML.getElementsByTagName("version").item(0).childNodes // TODO Move tagName to property
+                                    if (oldXML.getElementsByTagName(VersionMetaConfig.TAG_VERSION).item(0).childNodes.item(0)
+                                            .nodeValue != newXML.getElementsByTagName(VersionMetaConfig.TAG_VERSION).item(0).childNodes
                                             .item(0)
                                             .nodeValue
                                     ) {

@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -44,6 +44,7 @@ import kotlin.streams.asStream
  * @author Griefed
  */
 class FileUtilities {
+    /** File-type detection and the platform's path separator. */
     companion object {
         private val log by lazy { cachedLoggerOf(FileUtilities::class.java) }
         private val windowsDrivers = "^[A-Za-z]:.*".toRegex()
@@ -432,12 +433,14 @@ fun File.deleteQuietly(): Boolean =
         try {
             this.delete()
         } catch (ignored: Exception) {
+            // Quiet by contract (see KDoc): any failure to delete is reported as `false`.
             false
         }
     } else {
         try {
             this.deleteRecursively()
         } catch (ignored: Exception) {
+            // Quiet by contract (see KDoc): any failure to delete is reported as `false`.
             false
         }
     }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,9 +21,8 @@ package de.griefed.serverpackcreator.app.gui.window.configs.components
 
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.components.DocumentChangeListener
-import kotlinx.coroutines.DelicateCoroutinesApi
+import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
@@ -35,6 +34,8 @@ import java.util.stream.Collectors
 import javax.swing.DefaultListModel
 import javax.swing.JList
 import javax.swing.JPopupMenu
+import javax.swing.event.AncestorEvent
+import javax.swing.event.AncestorListener
 import javax.swing.event.DocumentEvent
 import javax.swing.text.BadLocationException
 import javax.swing.text.JTextComponent
@@ -57,6 +58,11 @@ class SuggestionProvider(
     private val identifier: String
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+
+    /** Owns the suggestion-popup coroutine. Cancelled when [sourceComponent] leaves the screen (see
+     * the ancestor-listener in `init`), since this provider is not itself a Swing component. */
+    private val componentScope = ComponentCoroutineScope()
+
     private val suggestionMenu = JPopupMenu()
     private var suggestionListModel = DefaultListModel<String>()
     private var suggestionList = JList(suggestionListModel)
@@ -104,7 +110,6 @@ class SuggestionProvider(
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     private val documentListener = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
             if (disableTextEvent) {
@@ -113,7 +118,7 @@ class SuggestionProvider(
             if (!sourceComponent.isFocusOwner) {
                 return
             }
-            GlobalScope.launch(Dispatchers.Swing) {
+            componentScope.scope().launch(Dispatchers.Swing) {
                 val suggestions = getSuggestions(sourceComponent)
                 if (suggestions.isNotEmpty()) {
                     showPopup(suggestions)
@@ -130,6 +135,18 @@ class SuggestionProvider(
         suggestionMenu.add(suggestionList)
         sourceComponent.document.addDocumentListener(documentListener)
         sourceComponent.addKeyListener(keyAdapter)
+        // Tie the suggestion coroutine's lifetime to the text component: when it (or its tab) leaves
+        // the screen, cancel in-flight work. The scope lazily re-creates on the next keystroke, so a
+        // tab-switch (which also fires ancestorRemoved) is harmless.
+        sourceComponent.addAncestorListener(object : AncestorListener {
+            override fun ancestorRemoved(event: AncestorEvent?) {
+                componentScope.cancel()
+            }
+
+            override fun ancestorAdded(event: AncestorEvent?) {}
+
+            override fun ancestorMoved(event: AncestorEvent?) {}
+        })
     }
 
     /**
@@ -212,6 +229,8 @@ class SuggestionProvider(
             }
             return truncatedSuggestions(text.trim { it <= ' ' })
         } catch (_: BadLocationException) {
+            // The caret position no longer maps to a valid document offset (text changed under us)
+            // -> offer no suggestions.
         }
         return listOf()
     }

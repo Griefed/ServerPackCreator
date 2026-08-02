@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 Griefed
+/* Copyright (C) 2026 Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,7 +24,12 @@ import de.comahe.i18n4k.config.I18n4kConfigDefault
 import de.comahe.i18n4k.i18n4k
 import de.comahe.i18n4k.toTag
 import de.griefed.serverpackcreator.api.config.ExclusionFilter
-import de.griefed.serverpackcreator.api.utilities.common.*
+import de.griefed.serverpackcreator.api.config.SupportedModloaders
+import de.griefed.serverpackcreator.api.settings.*
+import de.griefed.serverpackcreator.api.utilities.common.JarInformation
+import de.griefed.serverpackcreator.api.utilities.common.ListUtilities
+import de.griefed.serverpackcreator.api.utilities.common.create
+import de.griefed.serverpackcreator.api.utilities.common.readText
 import org.apache.logging.log4j.core.Core
 import org.apache.logging.log4j.core.LoggerContext
 import org.apache.logging.log4j.core.config.Configuration
@@ -34,8 +39,8 @@ import org.apache.logging.log4j.core.config.Order
 import org.apache.logging.log4j.core.config.plugins.Plugin
 import org.apache.logging.log4j.core.config.xml.XmlConfiguration
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import java.io.*
-import java.net.URI
+import java.io.File
+import java.io.IOException
 import java.net.URL
 import java.util.*
 import java.util.prefs.Preferences
@@ -53,18 +58,18 @@ import java.util.prefs.Preferences
 @Order(50)
 class ApiProperties(propertiesFile: File = File("serverpackcreator.properties")) : ConfigurationFactory() {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
-    private val internalProps = Properties()
-    private val spcPreferences = Preferences.userRoot().node("ServerPackCreator")
+
+    /**
+     * Property-storage core handling file-loading, typed accessors and saving. ApiProperties
+     * orchestrates load-ordering and domain-semantics on top of it (refactor Phase 1b).
+     */
+    private val store = PropertyStore()
+    private val internalProps = store.properties
+    private val spcPreferences = Preferences.userRoot().node(resolvePreferencesNode())
     private val serverPackCreatorProperties = "serverpackcreator.properties"
     private val jarInformation: JarInformation = JarInformation(this.javaClass)
     private val jarFolderProperties: File = File(jarInformation.jarFolder.absoluteFile, serverPackCreatorProperties)
 
-    private val pVersionCheckPreRelease =
-        "de.griefed.serverpackcreator.versioncheck.prerelease"
-    private val pLanguage =
-        "de.griefed.serverpackcreator.language"
-    private val pConfigurationFallbackUpdateURL =
-        "de.griefed.serverpackcreator.configuration.fallback.updateurl"
     private val pConfigurationFallbackModsList =
         "de.griefed.serverpackcreator.configuration.fallbackmodslist"
     private val pConfigurationFallbackModsListRegex =
@@ -73,66 +78,11 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         "de.griefed.serverpackcreator.configuration.modswhitelist"
     private val pConfigurationHasteBinServerUrl =
         "de.griefed.serverpackcreator.configuration.hastebinserver"
-    private val pConfigurationAikarsFlags =
-        "de.griefed.serverpackcreator.configuration.aikar"
-    private val pServerPackAutoDiscoveryEnabled =
-        "de.griefed.serverpackcreator.serverpack.autodiscovery.enabled"
-    private val pServerPackAutoDiscoveryEnabledLegacy =
-        "de.griefed.serverpackcreator.serverpack.autodiscoverenabled"
     private val pConfigurationDirectoriesServerPacks =
         "de.griefed.serverpackcreator.configuration.directories.serverpacks"
-    private val pServerPackCleanupEnabled =
-        "de.griefed.serverpackcreator.serverpack.cleanup.enabled"
-    private val pServerPackOverwriteEnabled =
-        "de.griefed.serverpackcreator.serverpack.overwrite.enabled"
-    private val pConfigurationDirectoriesShouldExclude =
-        "de.griefed.serverpackcreator.configuration.directories.shouldexclude"
-    private val pConfigurationDirectoriesMustInclude =
-        "de.griefed.serverpackcreator.configuration.directories.mustinclude"
-    private val pServerPackZipExclusions =
-        "de.griefed.serverpackcreator.serverpack.zip.exclude"
-    private val pServerPackZipExclusionEnabled =
-        "de.griefed.serverpackcreator.serverpack.zip.exclude.enabled"
-    private val pServerPackStartScriptTemplatesPrefix =
-        "de.griefed.serverpackcreator.serverpack.script.template."
-    private val pServerPackJavaScriptTemplatesPrefix =
-        "de.griefed.serverpackcreator.serverpack.java.template."
-    private val pPostInstallCleanupFiles =
-        "de.griefed.serverpackcreator.install.post.files"
-    private val pPreInstallCleanupFiles =
-        "de.griefed.serverpackcreator.install.pre.files"
-    private val pAllowUseMinecraftSnapshots =
-        "de.griefed.serverpackcreator.minecraft.snapshots"
-    private val pServerPackAutoDiscoveryFilterMethod =
-        "de.griefed.serverpackcreator.serverpack.autodiscovery.filter"
-    private val pJavaForServerInstall =
-        "de.griefed.serverpackcreator.java"
-    private val pScriptVariablesJavaPaths =
-        "de.griefed.serverpackcreator.script.java"
-    private val pScriptVariablesAutoUpdateJavaPathsEnabled =
-        "de.griefed.serverpackcreator.script.java.autoupdate"
-    private val pHomeDirectory =
-        "de.griefed.serverpackcreator.home"
-    private val pOldVersion =
-        "de.griefed.serverpackcreator.version.old"
-    private val customPropertyPrefix =
-        "custom.property."
-    private val pTomcatBaseDirectory =
-        "server.tomcat.basedir"
-    private val pTomcatLogsDirectory =
-        "server.tomcat.accesslog.directory"
-    private val pSpringDatasourceUrl =
-        "spring.data.mongodb.uri"
-    private val pUpdateServerPack = "de.griefed.serverpackcreator.serverpack.update"
-    private val pLogLevel = "de.griefed.serverpackcreator.loglevel"
 
-    @Deprecated("Deprecated as of 6.0.0")
-    private val pServerPackScriptTemplates =
-        "de.griefed.serverpackcreator.serverpack.script.template"
 
     private val suffixes = arrayOf(".xml")
-
-    private val propertyFiles: MutableList<File> = mutableListOf()
 
     /**
      * Default home-directory for ServerPackCreator. The directory containing the
@@ -142,700 +92,127 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      */
     val home: File = jarInformation.jarFolder.absoluteFile
 
-    private var fallbackModsWhitelist = TreeSet(
-        listOf(
-            "Ping-Wheel-",
-            "appleskin-",
-            "thulium-"
-        )
-    )
+    /**
+     * Settings-group for server pack generation: mod-lists, directory in-/exclusions,
+     * cleanup-files, ZIP-exclusions, exclusion-filter, generation-flags and Aikar's flags.
+     * Prefer accessing these values through this group; the individual properties on
+     * ApiProperties remain as facade.
+     */
+    val generationConfig = GenerationConfig(store)
 
-    @Suppress("SpellCheckingInspection")
-    private var fallbackMods = TreeSet(
-        listOf(
-            "[1.8.9] Lunar Block Overlay v1",//https://www.curseforge.com/minecraft/mc-mods/lunar-block-overlay
-            "[1.8.9] Lunar Block Overlay-2.0.0",//https://www.curseforge.com/minecraft/mc-mods/lunar-block-overlay
-            "3dskinlayers-",                //https://www.curseforge.com/minecraft/mc-mods/skin-layers-3d
-            "Absolutely-Not-A-Zoom-Mod-",   //https://www.curseforge.com/minecraft/mc-mods/absolutely-not-a-zoom-mod
-            "AdaptiveTooltips-",            //https://www.curseforge.com/minecraft/mc-mods/adaptive-tooltips
-            "AdvancedChat-",                //https://www.curseforge.com/minecraft/mc-mods/advancedchat
-            "AdvancedChatCore-",            //https://www.curseforge.com/minecraft/mc-mods/advancedchatcore
-            "AdvancedChatHUD-",             //https://www.curseforge.com/minecraft/mc-mods/advancedchathud
-            "AdvancedCompas-",              //https://www.curseforge.com/minecraft/mc-mods/advanced-compass
-            "Ambience",                     //https://www.curseforge.com/minecraft/mc-mods/ambience-music-mod
-            "AmbientEnvironment-",          //https://www.curseforge.com/minecraft/mc-mods/ambient-environment
-            "AmbientSounds_",               //https://www.curseforge.com/minecraft/mc-mods/ambientsounds
-            "AnimaticaReforged-",           //https://www.curseforge.com/minecraft/mc-mods/animaticareforged
-            "AreYouBlind-",                 //https://www.curseforge.com/minecraft/mc-mods/are-you-blind
-            "Armor Status HUD-",            //https://www.curseforge.com/minecraft/mc-mods/armorstatushud
-            "ArmorSoundTweak-",             //https://www.curseforge.com/minecraft/mc-mods/armor-sound-tweak
-            "Audio Improvements ",          //https://www.curseforge.com/minecraft/mc-mods/audio-improvements
-            "BH-Menu-",                     //https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-forge & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-fabric & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-neoforge
-            "Batty's Coordinates PLUS Mod", //https://www.curseforge.com/minecraft/mc-mods/batty-ui & https://www.curseforge.com/minecraft/mc-mods/battys-ui-mod-forge
-            "BetterAdvancements-",          //https://www.curseforge.com/minecraft/mc-mods/better-advancements
-            "BetterAnimationsCollection-",  //https://www.curseforge.com/minecraft/mc-mods/better-animations-collection
-            "BetterModsButton-",            //https://www.curseforge.com/minecraft/mc-mods/better-mods-button
-            "BetterDarkMode-",              //https://www.curseforge.com/minecraft/mc-mods/betterdarkmode
-            "BetterF3-",                    //https://www.curseforge.com/minecraft/mc-mods/betterf3
-            "BetterFog-",                   //https://www.curseforge.com/minecraft/mc-mods/better-fog
-            "BetterFoliage-",               //https://www.curseforge.com/minecraft/mc-mods/better-foliage
-            "BetterPingDisplay-",           //https://www.curseforge.com/minecraft/mc-mods/better-ping-display
-            "BetterPlacement-",             //https://www.curseforge.com/minecraft/mc-mods/better-placement
-            "BetterThanBunnies-",           //https://www.curseforge.com/minecraft/mc-mods/better-than-bunnies
-            "BetterTaskbar-",               //https://www.curseforge.com/minecraft/mc-mods/better-taskbar
-            "BetterThirdPerson",            //https://www.curseforge.com/minecraft/mc-mods/better-third-person
-            "BetterTitleScreen-",           //https://www.curseforge.com/minecraft/mc-mods/better-title-screen
-            "Blur-",                        //https://www.curseforge.com/minecraft/mc-mods/blur
-            "BoccHUD-",                     //https://modrinth.com/mod/bocchud/
-            "BorderlessWindow-",            //https://www.curseforge.com/minecraft/mc-mods/borderless
-            "CTM-",                         //https://www.curseforge.com/minecraft/mc-mods/ctm
-            "Chat Ping ",                   //https://www.curseforge.com/minecraft/mc-mods/chatping
-            "ChunkAnimator-",               //https://www.curseforge.com/minecraft/mc-mods/chunk-animator
-            "Clear-Water-",                 //https://www.curseforge.com/minecraft/mc-mods/clear-water
-            "ClientTweaks_",                //https://www.curseforge.com/minecraft/mc-mods/client-tweaks
-            "Cobbleit-",                    //https://www.curseforge.com/minecraft/mc-mods/cobblemon-cobble-it
-            "CobblemonMoveInspector-",      //https://www.curseforge.com/minecraft/mc-mods/cobblemon-move-inspector
-            "CompletionistsIndex-",         //https://www.curseforge.com/minecraft/mc-mods/completionists-index
-            "Controller Support-",          //https://www.curseforge.com/minecraft/mc-mods/controller-mod
-            "Controlling-",                 //https://www.curseforge.com/minecraft/mc-mods/controlling
-            "CraftPresence-",               //https://www.curseforge.com/minecraft/mc-mods/craftpresence
-            "CullLessLeaves-",              //https://www.curseforge.com/minecraft/mc-mods/cull-less-leaves & https://www.curseforge.com/minecraft/mc-mods/culllessleaves-reforged
-            "CustomCursorMod-",             //https://www.curseforge.com/minecraft/mc-mods/custom-cursor
-            "CustomMainMenu-",              //https://www.curseforge.com/minecraft/mc-mods/custom-main-menu
-            "CutThrough-",                  //https://www.curseforge.com/minecraft/mc-mods/cut-through
-            "DefaultOptions_",              //https://www.curseforge.com/minecraft/mc-mods/default-options
-            "DefaultSettings-",             //https://www.curseforge.com/minecraft/mc-mods/defaultsettings
-            "DeleteWorldsToTrash-",         //https://www.curseforge.com/minecraft/mc-mods/delete-worlds-to-trash-forge
-            "DetailArmorBar-",              //https://www.curseforge.com/minecraft/mc-mods/detail-armor-bar-forge
-            "Ding-",                        //https://www.curseforge.com/minecraft/mc-mods/ding
-            "DripSounds-",                  //https://www.curseforge.com/minecraft/mc-mods/waterdripsound
-            "Durability101-",               //https://www.curseforge.com/minecraft/mc-mods/durability101
-            "DurabilityNotifier-",          //https://www.curseforge.com/minecraft/mc-mods/durability-notifier
-            "DynamicSurroundings-",         //https://www.curseforge.com/minecraft/mc-mods/dynamic-surroundings
-            "DynamicSurroundingsHuds-",     //https://www.curseforge.com/minecraft/mc-mods/dynamic-surroundings-huds
-            "EasyLAN-",                     //https://www.curseforge.com/minecraft/mc-mods/easylan
-            "EffectInsights-",              //https://www.curseforge.com/minecraft/mc-mods/effect-insights
-            "EffectsLeft-",                 //https://www.curseforge.com/minecraft/mc-mods/effectsleft
-            "EiraMoticons_",                //no longer available, legacy entry
-            "EnchantmentDescriptions-",     //https://www.curseforge.com/minecraft/mc-mods/enchantment-descriptions
-            "EnhancedTooltips-",            //https://www.curseforge.com/minecraft/mc-mods/enhancedtooltips
-            "EnhancedVisuals_",             //https://www.curseforge.com/minecraft/mc-mods/enhancedvisuals
-            "EquipmentCompare-",            //https://www.curseforge.com/minecraft/mc-mods/equipment-compare
-            "EuphoriaPatcher-",             //https://www.curseforge.com/minecraft/mc-mods/euphoria-patches
-            "FPS-Monitor-",                 //https://www.curseforge.com/minecraft/mc-mods/fps-monitor
-            "Fabric-cobblemon_vocalized-",  //https://www.curseforge.com/minecraft/mc-mods/cobblemon-vocalized
-            "FabricCustomCursorMod-",       //https://www.curseforge.com/minecraft/mc-mods/cursor-mod
-            "FadingNightVision-",           //https://www.curseforge.com/minecraft/mc-mods/fading-night-vision
-            "Fallingleaves-",               //https://www.curseforge.com/minecraft/mc-mods/falling-leaves-forge
-            "FancySpawnEggs",               //https://www.curseforge.com/minecraft/mc-mods/fancy-spawn-eggs
-            "FancyBlockParticles-",         //https://www.curseforge.com/minecraft/mc-mods/fbp-renewed
-            "FancyVideo-API-",              //https://www.curseforge.com/minecraft/mc-mods/fancyvideo-api
-            "farsight-",                    //https://www.curseforge.com/minecraft/modpacks/farsight
-            "FirstPersonMod",               //https://www.curseforge.com/minecraft/mc-mods/first-person-model
-            "FogTweaker-",                  //https://www.curseforge.com/minecraft/mc-mods/fog-tweaker
-            "ForgeCustomCursorMod-",        //https://www.curseforge.com/minecraft/mc-mods/cursor-mod
-            "Forgematica-",                 //https://www.curseforge.com/minecraft/mc-mods/forgematica
-            "FpsReducer-",                  //https://www.curseforge.com/minecraft/mc-mods/fps-reducer
-            "FpsReducer2-",                 //https://www.curseforge.com/minecraft/mc-mods/fps-reducer
-            "FullscreenWindowed-",          //https://www.curseforge.com/minecraft/mc-mods/fullscreen-windowed-borderless-for-minecraft
-            "GameMenuModOption-",           //https://www.curseforge.com/minecraft/mc-mods/gamemenumodoption
-            "GpuTape-",                     //https://www.curseforge.com/minecraft/mc-mods/gputape
-            "GPUTape-",                     //https://www.curseforge.com/minecraft/mc-mods/gputape
-            "HealthOverlay-",               //https://www.curseforge.com/minecraft/mc-mods/health-overlay
-            "HeldItemTooltips-",            //https://www.curseforge.com/minecraft/mc-mods/held-item-tooltips
-            "HorseStatsMod-",               //https://www.curseforge.com/minecraft/bukkit-plugins/horsestats
-            "ImmediatelyFast-",             //https://www.curseforge.com/minecraft/mc-mods/immediatelyfast
-            "ImmediatelyFastReforged-",     //https://www.curseforge.com/minecraft/mc-mods/immediatelyfast-reforged
-            "InventoryEssentials_",         //https://www.curseforge.com/minecraft/mc-mods/inventory-essentials
-            "InventoryHud_",                //https://www.curseforge.com/minecraft/mc-mods/inventory-hud-forge
-            "InventorySpam-",               //https://www.curseforge.com/minecraft/mc-mods/inventory-spam
-            "InventoryTweaks-",             //https://www.curseforge.com/minecraft/mc-mods/inventorytweak
-            "ItemBorders-",                 //https://www.curseforge.com/minecraft/mc-mods/item-borders
-            "ItemLocks-",                   //https://www.curseforge.com/minecraft/mc-mods/itemlocks
-            "ItemPhysicLite_",              //https://www.curseforge.com/minecraft/mc-mods/itemphysic-lite
-            "ItemStitchingFix-",            //https://www.curseforge.com/minecraft/mc-mods/item-stitching-fix
-            "JBRA-Client-",                 //https://www.curseforge.com/minecraft/mc-mods/jingames-jbra-client
-            "JustEnoughCalculation-",       //https://www.curseforge.com/minecraft/mc-mods/just-enough-calculation
-            "JustEnoughEffects-",           //https://www.curseforge.com/minecraft/mc-mods/just-enough-effects
-            "JustEnoughProfessions-",       //https://www.curseforge.com/minecraft/mc-mods/just-enough-professions-jep
-            "KeybindsPurger-",              //https://www.curseforge.com/minecraft/mc-mods/keybindspurger
-            "KeepTheResourcePack-",         //https://www.curseforge.com/minecraft/mc-mods/keep-the-resourcepack
-            "KeybindsPurger-",              //https://www.curseforge.com/minecraft/mc-mods/keybindspurger/
-            "LeaveMyBarsAlone-",            //https://www.curseforge.com/minecraft/mc-mods/leave-my-bars-alone
-            "LLOverlayReloaded-",           //https://www.curseforge.com/minecraft/mc-mods/light-level-overlay-reloaded
-            "LongerChatHistory-",           //https://www.curseforge.com/minecraft/mc-mods/longer-chat-history
-            "LOTRDRP-",                     //https://www.curseforge.com/minecraft/mc-mods/lotr-drp
-            "LegendaryTooltips",            //https://www.curseforge.com/minecraft/mc-mods/legendary-tooltips
-            "LegendaryTooltips-",           //https://www.curseforge.com/minecraft/mc-mods/legendary-tooltips
-            "LightOverlay-",                //https://www.curseforge.com/minecraft/mc-mods/light-level-overlay-display
-            "MaFgLib-",                     //https://modrinth.com/mod/mafglib
-            "MinecraftCapes ",              //https://www.curseforge.com/minecraft/mc-mods/minecraftcapes-mod
-            "MineMenu-",                    //https://www.curseforge.com/minecraft/mc-mods/minemenu
-            "MoBends",                      //https://www.curseforge.com/minecraft/mc-mods/mo-bends
-            "Mocap-",                       //https://www.curseforge.com/minecraft/mc-mods/motion-capture-mod-mocap
-            "ModernUI-",                    //Gone? Reduces to atoms?
-            "MoreCobblemonTweaks-",         //https://www.curseforge.com/minecraft/mc-mods/morecobblemontweaks
-            "MouseTweaks-",                 //https://www.curseforge.com/minecraft/mc-mods/mouse-tweaks
-            "MovingSlots-",                 //https://www.curseforge.com/minecraft/mc-mods/moving-slots
-            "MyServerIsCompatible-",        //https://www.curseforge.com/minecraft/mc-mods/my-server-is-compatible
-            "Neat ",                        //https://www.curseforge.com/minecraft/mc-mods/neat
-            "Neat-",                        //https://www.curseforge.com/minecraft/mc-mods/neat
-            "NekosEnchantedBooks-",         //https://www.curseforge.com/minecraft/mc-mods/nekos-enchanted-books
-            "NeoForge-cobblemon_vocalized-",//https://www.curseforge.com/minecraft/mc-mods/cobblemon-vocalized
-            "NoAutoJump-",                  //https://www.curseforge.com/minecraft/mc-mods/no-autojump
-            "NoFog-",                       //https://www.curseforge.com/minecraft/mc-mods/nofog
-            "Notes-",                       //https://www.curseforge.com/minecraft/mc-mods/notes
-            "NotifMod-",                    //https://www.curseforge.com/minecraft/mc-mods/notifmod
-            "OldJavaWarning-",              //https://www.curseforge.com/minecraft/mc-mods/oldjavawarning
-            "OptiFine",                     //https://optifine.net/home
-            "OptiFine_",                    //https://optifine.net/home
-            "OptiForge",                    //https://www.curseforge.com/minecraft/mc-mods/optiforge
-            "OptiForge-",                   //https://www.curseforge.com/minecraft/mc-mods/optiforge
-            "OverflowingBars-",             //https://www.curseforge.com/minecraft/mc-mods/overflowing-bars
-            "PackMenu-",                    //https://www.curseforge.com/minecraft/mc-mods/packmenu
-            "PackModeMenu-",                //https://www.curseforge.com/minecraft/mc-mods/packmodemenu,
-            "ParticleEffects-",             //https://www.curseforge.com/minecraft/mc-mods/particle-effects
-            "Particle Effects-",            //https://www.curseforge.com/minecraft/mc-mods/particle-effects
-            "Perception-",                  //https://www.curseforge.com/minecraft/mc-mods/perception
-            "PickUpNotifier-",              //https://www.curseforge.com/minecraft/mc-mods/pick-up-notifier
-            "Ping-",                        //https://www.curseforge.com/minecraft/mc-mods/ping
-            "PingHUD-",                     //https://www.curseforge.com/minecraft/mc-mods/pinghud
-            "PlayerListHeads-",             //https://www.curseforge.com/minecraft/mc-mods/player-list-heads
-            "PresenceFootsteps-",           //https://www.curseforge.com/minecraft/mc-mods/presence-footsteps
-            "RPG-HUD-",                     //https://www.curseforge.com/minecraft/mc-mods/rpg-hud
-            "RPRenames-",                   //https://modrinth.com/mod/rp-renames
-            "ReAuth-",                      //https://www.curseforge.com/minecraft/mc-mods/reauth
-            "Redstone Sound Slider-",       //https://www.curseforge.com/minecraft/mc-mods/redstone-sound-slider
-            "Reforgium-",                   //https://www.curseforge.com/minecraft/mc-mods/reforgium
-            "ResourceLoader-",              //https://www.curseforge.com/minecraft/mc-mods/resource-reloader
-            "ResourcePackOrganizer",        //https://www.curseforge.com/minecraft/mc-mods/resource-pack-organizer
-            "ResourcePackOverrides-",       //https://www.curseforge.com/minecraft/mc-mods/resource-pack-overrides
-            "RocknRoller-",                 //https://www.curseforge.com/minecraft/mc-mods/rockn-roller
-            "Ryoamiclights-",               //https://www.curseforge.com/minecraft/mc-mods/ryoamiclights
-            "RyoamicLights-",               //https://www.curseforge.com/minecraft/mc-mods/ryoamiclights
-            "ShoulderSurfing-",             //https://www.curseforge.com/minecraft/mc-mods/shoulder-surfing-reloaded
-            "ShulkerTooltip-",              //https://www.curseforge.com/minecraft/mc-mods/shulkerboxtooltip
-            "SimpleDiscordRichPresence-",   //https://www.curseforge.com/minecraft/mc-mods/simple-discord-rich-presence
-            "SimpleWorldTimer-",            //https://www.curseforge.com/minecraft/mc-mods/simple-world-timer
-            "SoundFilters-",                //https://www.curseforge.com/minecraft/mc-mods/sound-filters
-            "Sounds-",                      //https://www.curseforge.com/minecraft/mc-mods/sound
-            "SourceHop-",                   //https://www.curseforge.com/minecraft/mc-mods/sourcehop
-            "SpawnerFix-",                  //https://www.curseforge.com/minecraft/mc-mods/spawner-fix
-            "StylishEffects-",              //https://www.curseforge.com/minecraft/mc-mods/stylish-effects
-            "TextruesRubidiumOptions-",     //https://www.curseforge.com/minecraft/mc-mods/textrues-rubidium-options
-            "TRansliterationLib-",          //https://www.curseforge.com/minecraft/mc-mods/transliterationlib
-            "TipTheScales-",                //https://www.curseforge.com/minecraft/mc-mods/tipthescales
-            "Tips-",                        //https://www.curseforge.com/minecraft/mc-mods/tips
-            "Toast Control-",               //https://www.curseforge.com/minecraft/mc-mods/toast-control
-            "Toast-Control-",               //https://www.curseforge.com/minecraft/mc-mods/toast-control
-            "ToastControl-",                //https://www.curseforge.com/minecraft/mc-mods/toast-control
-            "TravelersTitles-",             //https://www.curseforge.com/minecraft/mc-mods/travelers-titles
-            "VoidFog-",                     //https://www.curseforge.com/minecraft/mc-mods/void-fog
-            "VR-Combat_",                   //https://www.curseforge.com/minecraft/mc-mods/vr-combat
-            "Vramo21-",                     //https://www.curseforge.com/minecraft/mc-mods/vramo
-            "Vramo-",                       //https://www.curseforge.com/minecraft/mc-mods/vramo
-            "vramo-",                       //https://www.curseforge.com/minecraft/mc-mods/vramo
-            "WindowedFullscreen-",          //https://www.curseforge.com/minecraft/mc-mods/windowed-fullscreen
-            "WorldNameRandomizer-",         //https://www.curseforge.com/minecraft/mc-mods/world-name-randomizer
-            "YeetusExperimentus-",          //https://www.curseforge.com/minecraft/mc-mods/yeetusexperimentus
-            "YungsMenuTweaks-",             //https://www.curseforge.com/minecraft/mc-mods/yungs-menu-tweaks
-            "[1.12.2]DamageIndicatorsMod-", //https://www.curseforge.com/minecraft/mc-mods/damage-indicators-mod
-            "[1.12.2]bspkrscore-",          //https://www.curseforge.com/minecraft/mc-mods/bspkrscore
-            "advancementscreenshot-",       //https://www.curseforge.com/minecraft/mc-mods/advancement-screenshot
-            "ae_pattern_improve-",          //https://www.curseforge.com/minecraft/mc-mods/ae2-pattern-qol-improving
-            "ahznbstools-",                 //https://www.curseforge.com/minecraft/mc-mods/ahznbs-tools/
-            "aiftbtranslator-",             //https://www.curseforge.com/minecraft/mc-mods/ai-ftb-translator
-            "antighost-",                   //https://www.curseforge.com/minecraft/mc-mods/antighost
-            "anviltooltipmod-",             //https://www.curseforge.com/minecraft/mc-mods/anvil-tooltip-mod
-            "appliedsorting-",              //https://www.curseforge.com/minecraft/mc-mods/applied-sorting
-            "armorchroma-",                 //https://www.curseforge.com/minecraft/mc-mods/armor-chroma
-            "armorhud",                     //https://www.curseforge.com/minecraft/mc-mods/armor-durability-hud
-            "armorpointspp-",               //https://www.curseforge.com/minecraft/mc-mods/armorpoints
-            "auditory-",                    //https://www.curseforge.com/minecraft/mc-mods/auditory
-            "authme-",                      //Gone? Reduces to atoms?
-            "auto-reconnect-",              //https://www.curseforge.com/minecraft/mc-mods/auto-reconnect
-            "autojoin-",                    //https://www.curseforge.com/minecraft/mc-mods/autojoin
-            "autoreconnect-",               //https://www.curseforge.com/minecraft/mc-mods/autoreconnect
-            "autoswap-",                    //https://www.curseforge.com/minecraft/mc-mods/auto-swap
-            "axolotl-item-fix-",            //Gone? Reduces to atoms?
-            "backtools-",                   //https://www.curseforge.com/minecraft/mc-mods/backtools
-            "bannerunlimited-",             //https://www.curseforge.com/minecraft/mc-mods/banner-unlimited
-            "bbs-",                         //https://www.curseforge.com/minecraft/mc-mods/bbs-mod
-            "beddium-",                     //https://www.curseforge.com/minecraft/mc-mods/beddium
-            "beenfo-",                      //https://www.curseforge.com/minecraft/mc-mods/beenfo
-            "better_client",                //https://www.curseforge.com/minecraft/mc-mods/better-client
-            "better_tooltips-",             //https://www.curseforge.com/minecraft/mc-mods/better-tooltips-neoforge
-            "better-clouds-",               //Gone? Reduces to atoms?
-            "better_hp-",                   //https://www.curseforge.com/minecraft/mc-mods/better-hp
-            "better-hp-",                   //https://www.curseforge.com/minecraft/mc-mods/better-hp
-            "betterHP_",                    //https://www.curseforge.com/minecraft/mc-mods/better-hp
-            "better-recipe-book-",          //Gone? Reduces to atoms?
-            "betterbiomeblend-",            //https://www.curseforge.com/minecraft/mc-mods/better-biome-blend
-            "bhmenu-",                      //https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-forge & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-fabric & https://www.curseforge.com/minecraft/mc-mods/bisecthosting-server-integration-menu-neoforge
-            "biomemusic-",                  //https://www.curseforge.com/minecraft/mc-mods/biome-music
-            "blinkload-",                   //https://www.curseforge.com/minecraft/mc-mods/blinkload
-            "block-counter-",               //https://www.curseforge.com/minecraft/mc-mods/block-counter
-            "blur-",                        //https://www.curseforge.com/minecraft/mc-mods/blur
-            "borderless-",                  //https://www.curseforge.com/minecraft/mc-mods/borderless
-            "cat_jam-",                     //https://www.curseforge.com/minecraft/mc-mods/cat_jam
-            "catalogue-",                   //https://www.curseforge.com/minecraft/mc-mods/catalogue
-            "catchindicator-",              //https://www.curseforge.com/minecraft/mc-mods/catch-indicator
-            "catchrate-display-",           //https://www.curseforge.com/minecraft/mc-mods/cobblemon-catch-rate-display
-            "cave_dust-",                   //https://www.curseforge.com/minecraft/mc-mods/cave-dust
-            "certain_questing_additions-",  //https://www.curseforge.com/minecraft/mc-mods/certain-questing-additions
-            "cfwinfo-",                     //https://www.curseforge.com/minecraft/mc-mods/create-fuel-and-water-information
-            "chestsearchbar-",              //https://www.curseforge.com/minecraft/mc-mods/chest-search-bar
-            "charmonium-",                  //https://www.curseforge.com/minecraft/mc-mods/charmonium
-            "chatnotify-",                  //https://www.curseforge.com/minecraft/mc-mods/chatnotify
-            "chat_heads-",                  //https://www.curseforge.com/minecraft/mc-mods/chat-heads
-            "cherishedworlds-",             //https://www.curseforge.com/minecraft/mc-mods/cherished-worlds
-            "cirback-1.0-",                 //Gone? Reduces to atoms?
-            "citresewn-",                   //https://www.curseforge.com/minecraft/mc-mods/forge-cit
-            "classicbar-",                  //https://www.curseforge.com/minecraft/mc-mods/classic-bars
-            "cleanview",                    //https://www.curseforge.com/minecraft/mc-mods/clean-view
-            "clientcrafting-",              //https://www.curseforge.com/minecraft/mc-mods/client-crafting
-            "clienttweaks-",                //https://www.curseforge.com/minecraft/mc-mods/client-tweaks
-            "cobeffectiveness-",            //https://www.curseforge.com/minecraft/mc-mods/cobblemon-effectiveness
-            "cobbledex-rei-emi-jei-",       //https://www.curseforge.com/minecraft/mc-mods/cobbledex-rei-emi-jei
-            "cobbleit-",                    //https://www.curseforge.com/minecraft/mc-mods/cobblemon-cobble-it
-            "cobblemonbattletypes-",        //https://www.curseforge.com/minecraft/mc-mods/cobblemon-in-battle-type-icons
-            "cobblemontypechart-",          //https://www.curseforge.com/minecraft/mc-mods/pokemon-type-table-cobblemon-pixelmon
-            "cobblemon_emi_compat-",        //https://www.curseforge.com/minecraft/mc-mods/cobblemon-emi-compat
-            "cobblemon_iwa-",               //https://www.curseforge.com/minecraft/mc-mods/cobblemon-iwa
-            "cobblemon-ui-tweaks-",         //https://modrinth.com/mod/cobblemon-ui-tweaks
-            "combat_music-",                //https://www.curseforge.com/minecraft/mc-mods/combat-music
-            "configured-",                  //https://www.curseforge.com/minecraft/mc-mods/configured
-            "connectedness-",               //https://www.curseforge.com/minecraft/mc-mods/connectedness
-            "controllable-",                //https://www.curseforge.com/minecraft/mc-mods/controllable
-            "coolrain-",                    //https://www.curseforge.com/minecraft/mc-mods/cool-rain
-            "crash_assistant-",             //https://www.curseforge.com/minecraft/mc-mods/crash-assistant
-            "colorwheel-",                  //https://www.curseforge.com/minecraft/mc-mods/colorwheel
-            "colorwheel_patcher-",          //https://www.curseforge.com/minecraft/mc-mods/colorwheel-patcher
-            "cubium-",                      //https://www.curseforge.com/minecraft/mc-mods/cubium
-            "cullleaves-",                  //https://www.curseforge.com/minecraft/mc-mods/cull-leaves
-            "cullparticles-",               //https://www.curseforge.com/minecraft/mc-mods/cull-particles
-            "currentgamemusictrack-",       //https://www.curseforge.com/minecraft/mc-mods/current-game-music-track
-            "custom-crosshair-mod-",        //https://www.curseforge.com/minecraft/mc-mods/custom-crosshair-mod
-            "customcursor-",                //https://www.curseforge.com/minecraft/mc-mods/custom-cursor
-            "customdiscordrpc-",            //https://www.curseforge.com/minecraft/mc-mods/custom-discordrpc
-            "cwb-",                         //https://www.curseforge.com/minecraft/mc-mods/cubes-without-borders
-            "darkness-",                    //Gone? Reduces to atoms?
-            "dashloader-",                  //https://www.curseforge.com/minecraft/mc-mods/dashloader
-            "defaultoptions-",              //https://www.curseforge.com/minecraft/mc-mods/default-options
-            "desiredservers-",              //https://www.curseforge.com/minecraft/mc-mods/desired-servers
-            "discordrpc-",                  //https://www.curseforge.com/minecraft/mc-mods/discordrpc
-            "distraction_free_recipes-",    //https://www.curseforge.com/minecraft/mc-mods/distraction-free-recipes
-            "drippyloadingscreen-",         //https://www.curseforge.com/minecraft/mc-mods/drippy-loading-screen
-            "drippyloadingscreen_",         //https://www.curseforge.com/minecraft/mc-mods/drippy-loading-screen
-            "drop-confirm-",                //
-            "durabilitytooltip-",           //https://www.curseforge.com/minecraft/mc-mods/durability-tooltip
-            "dynamic-fps-",                 //https://www.curseforge.com/minecraft/mc-mods/dynamic-fps
-            "dynamic-music-",               //https://www.curseforge.com/minecraft/mc-mods/dynamic-music
-            "dynamiccrosshair-",            //https://www.curseforge.com/minecraft/mc-mods/dynamic-crosshair
-            "dynamiclights-",               //https://www.curseforge.com/minecraft/mc-mods/dynamic-lights
-            "dynamiclightsreforged-",       //https://www.curseforge.com/minecraft/mc-mods/dynamiclights-reforged
-            "dynmus-",                      //Gone? Reduces to atoms?
-            "e4mc-",                        //https://www.curseforge.com/minecraft/mc-mods/e4mc
-            "easymt-",                      //https://www.curseforge.com/minecraft/mc-mods/easy-melee-tempo
-            "effective-",                   //https://www.curseforge.com/minecraft/mc-mods/effective
-            "eggtab-",                      //https://www.curseforge.com/minecraft/mc-mods/eggtab-fabric
-            "eguilib-",                     //https://www.curseforge.com/minecraft/mc-mods/eguilib
-            "eiramoticons-",                //Gone? Reduces to atoms?
-            "embeddium-",                   //https://www.curseforge.com/minecraft/mc-mods/embeddium
-            "enchantment-lore-",            //https://www.curseforge.com/minecraft/mc-mods/enchantment-lore
-            "enhanced_boss_bars-",          //https://www.curseforge.com/minecraft/mc-mods/enhanced-boss-bars
-            "entity-texture-features-",     //https://www.curseforge.com/minecraft/mc-mods/entity-texture-features-fabric
-            "entity_texture_features-",     //https://www.curseforge.com/minecraft/mc-mods/entity-texture-features-fabric
-            "entity_model_features_",       //https://www.curseforge.com/minecraft/mc-mods/entity-model-features
-            "entityculling-",               //https://www.curseforge.com/minecraft/mc-mods/entity-culling
-            "essential_",                   //Gone? Reduces to atoms?
-            "evonotify-",                   //https://www.curseforge.com/minecraft/mc-mods/cobblemon-evonotify
-            "exhaustedstamina-",            //https://www.curseforge.com/minecraft/mc-mods/exhausted-stamina
-            "extendedhitbox-",              //https://www.curseforge.com/minecraft/mc-mods/extended-hitbox
-            "extremesoundmuffler-",         //https://www.curseforge.com/minecraft/mc-mods/extreme-sound-muffler
-            "fabricemotes-",                //https://www.curseforge.com/minecraft/mc-mods/fabric-emotes
-            "fall_damage_preview-",         //https://www.curseforge.com/minecraft/mc-mods/fall-damage-preview
-            "fancymenu_",                   //https://www.curseforge.com/minecraft/mc-mods/fancymenu
-            "fancymenu_video_extension",    //https://www.curseforge.com/minecraft/mc-mods/video-extension-for-fancymenu-forge
-            "fast-ip-ping-",                //https://www.curseforge.com/minecraft/mc-mods/fast-ip-ping
-            "fastquit-",                    //https://www.curseforge.com/minecraft/mc-mods/fastquit-forge
-            "firstperson-",                 //https://www.curseforge.com/minecraft/mc-mods/first-person-model
-            "flerovium-",                   //https://www.curseforge.com/minecraft/mc-mods/flerovium
-            "flickerfix-",                  //https://www.curseforge.com/minecraft/mc-mods/flickerfix
-            "fm_audio_extension_",          //https://www.curseforge.com/minecraft/mc-mods/audio-extension-for-fancymenu-forge
-            "fabricmod_VoxelMap-",          //https://www.curseforge.com/minecraft/mc-mods/voxelmap
-            "floppyhud-",                   //https://www.curseforge.com/minecraft/mc-mods/floppy-hud
-            "forestryworktabledisplay-",    //https://www.curseforge.com/minecraft/mc-mods/forestry-worktable-display
-            "forgemod_VoxelMap-",           //https://www.curseforge.com/minecraft/mc-mods/voxelmap
-            "forgeshot-",                   //https://www.curseforge.com/minecraft/mc-mods/forgeshot
-            "freecam-",                     //https://www.curseforge.com/minecraft/mc-mods/free-cam
-            "freelook-",                    //https://www.curseforge.com/minecraft/mc-mods/freelook
-            "ftbpromoter-",                 //https://www.curseforge.com/minecraft/mc-mods/ftb-promoter/
-            "fullbrightnesstoggle-",        //https://www.curseforge.com/minecraft/mc-mods/full-brightness-toggle
-            "fwa+",                         //https://www.curseforge.com/minecraft/mc-mods/fwa
-            "galacticraft-rpc-",            //https://www.curseforge.com/minecraft/mc-mods/galacticraft-rpc
-            "gamestagesviewer-",            //https://www.curseforge.com/minecraft/mc-mods/game-stages-viewer
-            "gpushift-",                    //https://www.curseforge.com/minecraft/mc-mods/gpushift
-            "gpumemleakfix-",               //https://www.curseforge.com/minecraft/mc-mods/fix-gpu-memory-leak
-            "grid-",                        //https://www.curseforge.com/minecraft/mc-mods/grid
-            "guiclock-",                    //https://www.curseforge.com/minecraft/mc-mods/gui-clock
-            "guicompass-",                  //https://www.curseforge.com/minecraft/mc-mods/gui-compass
-            "guideme-",                     //https://www.curseforge.com/minecraft/mc-mods/guideme
-            "guifollowers-",                //https://www.curseforge.com/minecraft/mc-mods/gui-followers
-            "helium-",                      //Gone? Reduces to atoms?
-            "hennyfullbright-",             //https://www.curseforge.com/minecraft/mc-mods/henny-fullbright
-            "hiddenrecipebook_",            //https://www.curseforge.com/minecraft/mc-mods/hidden-recipe-book
-            "hiddenrecipebook-",            //https://www.curseforge.com/minecraft/mc-mods/hidden-recipe-book
-            "hidehands-",                   //https://www.curseforge.com/minecraft/mc-mods/hide-hands
-            "idle_boost-",                  //https://www.curseforge.com/minecraft/mc-mods/idle-boost
-            "ijmtweaks-",                   //https://www.curseforge.com/minecraft/mc-mods/ijm-tweaks
-            "immersivearmorhud-",           //https://www.curseforge.com/minecraft/mc-mods/immersive-armor-hud
-            "immersivelanterns-",           //https://www.curseforge.com/minecraft/mc-mods/immersive-lanterns
-            "immersivemessages-",           //https://www.curseforge.com/minecraft/mc-mods/immersive-messages-api
-            "immersivetips-",               //https://www.curseforge.com/minecraft/mc-mods/immersive-tips
-            "improvedsignediting-",         //https://www.curseforge.com/minecraft/mc-mods/improved-sign-editing
-            "infinitemusic-",               //https://www.curseforge.com/minecraft/mc-mods/infinite-music
-            "inline_tooltips-",             //https://www.curseforge.com/minecraft/mc-mods/inline-tooltips
-            "inventoryhud.",                //https://www.curseforge.com/minecraft/mc-mods/inventory-hud-forge
-            "inventoryprofiles",            //https://www.curseforge.com/minecraft/mc-mods/inventory-profiles
-            "irisblockcompat-",             //https://www.curseforge.com/minecraft/mc-mods/iris-block-compat
-            "itemzoom",                     //https://www.curseforge.com/minecraft/mc-mods/itemzoom
-            "itlt-",                        //https://www.curseforge.com/minecraft/mc-mods/its-the-little-things
-            "jeed-",                        //https://www.curseforge.com/minecraft/mc-mods/just-enough-effect-descriptions-jeed
-            "jehc-",                        //https://www.curseforge.com/minecraft/mc-mods/just-enough-harvestcraft
-            "jei_hover_search-",            //https://www.curseforge.com/minecraft/mc-mods/jei-hover-search
-            "jei_trim_hider-",              //https://www.curseforge.com/minecraft/mc-mods/jei-trim-hider
-            "jeiintegration_",              //https://www.curseforge.com/minecraft/mc-mods/jei-integration
-            "jerintegration-",              //https://www.curseforge.com/minecraft/mc-mods/jer-integration
-            "jmi-",                         //https://www.curseforge.com/minecraft/mc-mods/journeymap-integration
-            "jumpoverfences-",              //https://www.curseforge.com/minecraft/mc-mods/jumpoverfences
-            "just-enough-harvestcraft-",    //https://www.curseforge.com/minecraft/mc-mods/just-enough-harvestcraft
-            "justenoughbeacons-",           //https://www.curseforge.com/minecraft/mc-mods/just-enough-beacons
-            "justenoughdrags-",             //https://www.curseforge.com/minecraft/mc-mods/just-enough-drags
-            "justzoom_",                    //https://www.curseforge.com/minecraft/mc-mods/just-zoom
-            "keybindspurger-",              //https://www.curseforge.com/minecraft/mc-mods/keybindspurger
-            "keymap-",                      //https://www.curseforge.com/minecraft/mc-mods/keymap
-            "keywizard-",                   //https://www.curseforge.com/minecraft/mc-mods/keyboard-wizard
-            "lazurite-",                    //https://www.curseforge.com/minecraft/mc-mods/lazurite
-            "lazydfu-",                     //https://www.curseforge.com/minecraft/mc-mods/lazydfu
-            "lib39-",                       //https://www.curseforge.com/minecraft/mc-mods/lib39
-            "light-overlay-",               //https://www.curseforge.com/minecraft/mc-mods/light-overlay
-            "lightfallclient-",             //https://www.curseforge.com/minecraft/mc-mods/lightfallclient-updated
-            "lightspeed-",                  //https://www.curseforge.com/minecraft/mc-mods/lightspeedmod
-            "litematica-",                  //https://www.curseforge.com/minecraft/mc-mods/litematica-update-port
-            "loadmyresources_",             //https://www.curseforge.com/minecraft/mc-mods/load-my-resources-forge
-            "lock_minecart_view-",          //Gone? Reduces to atoms?
-            "lootbeams-",                   //https://www.curseforge.com/minecraft/mc-mods/lootbeams
-            "lwl-",                         //Gone? Reduces to atoms?
-            "macos-input-fixes-",           //https://www.curseforge.com/minecraft/mc-mods/macos-input-fixes
-            "magnesium_extras-",            //Gone? Reduces to atoms?
-            "maptooltip-",                  //https://www.curseforge.com/minecraft/mc-mods/map-tooltip
-            "massunbind",                   //https://www.curseforge.com/minecraft/mc-mods/mass-key-unbinder
-            "mcbindtype-",                  //https://www.curseforge.com/minecraft/mc-mods/mcbindtype
-            "mcqoy-",                       //https://modrinth.com/mod/mcqoy
-            "mcwifipnp-",                   //https://www.curseforge.com/minecraft/mc-mods/mcwifipnp
-            "medievalmusic-",               //https://www.curseforge.com/minecraft/mc-mods/medieval-music
-            "mekalus-",                     //https://www.curseforge.com/minecraft/mc-mods/mekalus-oculus-fork-with-fixed-mekanism-mekasuit
-            "memoryusagescreen-",           //https://www.curseforge.com/minecraft/mc-mods/memory-usage-screen
-            "mightyarchitect-",             //https://www.curseforge.com/minecraft/mc-mods/the-mighty-architect
-            "mindful-eating-",              //https://www.curseforge.com/minecraft/mc-mods/mindful-eating
-            "minetogether-",                //https://www.curseforge.com/minecraft/mc-mods/creeperhost-minetogether
-            "minihud-",                     //https://www.curseforge.com/minecraft/mc-mods/minihud-update-port
-            "miningspeedtooltips-",         //https://www.curseforge.com/minecraft/mc-mods/mining-speed-tooltips
-            "moremmog'scheats",             //https://www.curseforge.com/minecraft/mc-mods/mmogs-cheat-menu
-            "mmog'scheats3.6kdownloadsplusmorecheats",//https://www.curseforge.com/minecraft/mc-mods/mmogs-cheat-menu
-            "mobplusplus-",                 //Gone? Reduces to atoms?
-            "modcredits-",                  //https://www.curseforge.com/minecraft/mc-mods/mod-credits
-            "modernworldcreation_",         //https://www.curseforge.com/minecraft/mc-mods/modernworldcreation
-            "modnametooltip-",              //https://www.curseforge.com/minecraft/mc-mods/mod-name-tooltip
-            "modnametooltip_",              //https://www.curseforge.com/minecraft/mc-mods/mod-name-tooltip
-            "modtabs-",                     //https://www.curseforge.com/minecraft/mc-mods/mod-tabs
-            "moreoverlays-",                //https://www.curseforge.com/minecraft/mc-mods/more-overlays
-            "mousewheelie-",                //https://www.curseforge.com/minecraft/mc-mods/mouse-wheelie
-            "movement-vision-",             //https://www.curseforge.com/minecraft/mc-mods/movement-vision
-            "multihotbar-",                 //https://www.curseforge.com/minecraft/mc-mods/multi-hotbar
-            "music_delay_reducer-",         //https://www.curseforge.com/minecraft/mc-mods/music-delay-reducer/
-            "music-duration-reducer-",      //https://www.curseforge.com/minecraft/mc-mods/music-duration-reducer
-            "musicdr-",                     //Gone? Reduces to atoms?
-            "neoculus-",                    //https://www.curseforge.com/minecraft/mc-mods/neoculus
-            "nbt_glint-",                   //https://www.curseforge.com/minecraft/mc-mods/nbt-glint
-            "neiRecipeHandlers-",           //Gone? Reduces to atoms?
-            "ngrok-lan-expose-mod-",        //Gone? Reduces to atoms?
-            "no_nv_flash-",                 //https://www.curseforge.com/minecraft/mc-mods/no-nv-flash
-            "nopotionshift_",               //https://www.curseforge.com/minecraft/mc-mods/no-potion-shift
-            "nostartupmessages-",           //https://www.curseforge.com/minecraft/mc-mods/no-startup-messages-please
-            "notenoughanimations-",         //https://www.curseforge.com/minecraft/mc-mods/not-enough-animations
-            "obscure_tooltips_fix-",        //https://www.curseforge.com/minecraft/mc-mods/obscure-tooltips-fix
-            "oculus-",                      //https://www.curseforge.com/minecraft/mc-mods/oculus
-            "omegamute-",                   //https://www.curseforge.com/minecraft/mc-mods/omega-mute
-            "optigui-",                     //https://www.curseforge.com/minecraft/mc-mods/optigui
-            "ornaments-",                   //https://www.curseforge.com/minecraft/mc-mods/ornaments
-            "overlaytweaks-",               //https://www.curseforge.com/minecraft/mc-mods/overlay-tweaks
-            "overloadedarmorbar-",          //https://www.curseforge.com/minecraft/mc-mods/overloaded-armor-bar
-            "panorama-",                    //https://www.curseforge.com/minecraft/mc-mods/panorama
-            "paperdoll-",                   //https://www.curseforge.com/minecraft/mc-mods/paperdoll
-            "particle-rain-",               //https://www.curseforge.com/minecraft/mc-mods/particle-rain
-            "perdimensionbrightness-",      //https://www.curseforge.com/minecraft/mc-mods/per-dimension-brightness
-            "persistentinventorysearch-",   //https://www.curseforge.com/minecraft/mc-mods/persistent-inventory-search
-            "physics-mod-",                 //https://www.curseforge.com/minecraft/mc-mods/physics-mod
-            "phosphor-",                    //https://www.curseforge.com/minecraft/mc-mods/phosphor
-            "portraitcraft-",               //https://www.curseforge.com/minecraft/mc-mods/portraitcraft
-            "preciseblockplacing-",         //Gone? Reduces to atoms?
-            "radon-",                       //https://www.curseforge.com/minecraft/mc-mods/radon
-            "rcgameshark-client-",          //https://www.curseforge.com/minecraft/mc-mods/rc-gameshark
-            "realm-of-lost-souls-",         //https://www.curseforge.com/minecraft/mc-mods/bobs-realm-of-lost-souls
-            "rebind_narrator-",             //https://www.curseforge.com/minecraft/mc-mods/rebind-narrator
-            "rebind-narrator-",             //https://www.curseforge.com/minecraft/mc-mods/rebind-narrator
-            "rebindnarrator-",              //https://www.curseforge.com/minecraft/mc-mods/rebind-narrator
-            "rebrand-",                     //https://www.curseforge.com/minecraft/mc-mods/rebrand
-            "reforgium-",                   //https://www.curseforge.com/minecraft/mc-mods/reforgium
-            "relictium-",                   //https://www.curseforge.com/minecraft/mc-mods/relictium
-            "replanter-",                   //https://www.curseforge.com/minecraft/mc-mods/replanter
-            "resource_gamma_util-",         //https://www.curseforge.com/minecraft/mc-mods/resource-gamma-utils
-            "rrls-",                        //https://www.curseforge.com/minecraft/mc-mods/rrls
-            "rubidium-",                    //https://www.curseforge.com/minecraft/mc-mods/rubidium
-            "rubidium_extras-",             //https://www.curseforge.com/minecraft/mc-mods/rubidium-extra
-            "screenshot-to-clipboard-",     //https://www.curseforge.com/minecraft/mc-mods/screenshot-to-clipboard
-            "seasonhud-",                   //https://www.curseforge.com/minecraft/mc-mods/seasonhud
-            "servercountryflags-",          //https://www.curseforge.com/minecraft/mc-mods/server-country-flags
-            "shut_up_gl_error-",            //https://www.curseforge.com/minecraft/mc-mods/shut-up-gl-error
-            "shutupexperimentalsettings-",  //https://www.curseforge.com/minecraft/mc-mods/shutup-experimental-settings
-            "shutupmodelloader-",           //https://www.curseforge.com/minecraft/mc-mods/shut-up-model-loader
-            "signtools-",                   //https://www.curseforge.com/minecraft/bukkit-plugins/signtools
-            "simple-rpc-",                  //https://www.curseforge.com/minecraft/mc-mods/simple-discord-rpc
-            "simpleautorun-",               //Gone? Reduces to atoms?
-            "simplefog-",                   //https://www.curseforge.com/minecraft/mc-mods/simplefog
-            "smartcursor-",                 //https://www.curseforge.com/minecraft/mc-mods/smartcursor
-            "smarthud-",                    //https://www.curseforge.com/minecraft/mc-mods/smart-hud
-            "smoke-suppression-",           //https://www.curseforge.com/minecraft/mc-mods/smoke-suppression
-            "smoothboot-",                  //https://www.curseforge.com/minecraft/mc-mods/smoothboot
-            "smoothfocus-",                 //https://www.curseforge.com/minecraft/mc-mods/smoothfocus
-            "smoothswapping-",              //https://www.curseforge.com/minecraft/mc-mods/smooth-swapping
-            "sodium-fabric-",               //https://www.curseforge.com/minecraft/mc-mods/sodium
-            "sodium-shader-support-",       //https://modrinth.com/mod/sodium-shader-support/
-            "sodiumcoreshadersupport-",     //https://www.curseforge.com/minecraft/mc-mods/sodium-core-shader-support
-            "sodiumdynamiclights-",         //https://www.curseforge.com/minecraft/mc-mods/dynamiclights-reforged
-            "sodiumextras-",                //https://www.curseforge.com/minecraft/mc-mods/magnesium-extras
-            "sodiumleafculling-",           //https://www.curseforge.com/minecraft/mc-mods/sodium-leaf-culling
-            "sodiumoptionsapi-",            //https://www.curseforge.com/minecraft/mc-mods/sodium-options-api
-            "sodiumoptionsmodcompat-",      //https://www.curseforge.com/minecraft/mc-mods/sodium-embeddium-options-mod-compat
-            "sounddeviceoptions-",          //https://www.curseforge.com/minecraft/mc-mods/more-sound-config
-            "soundreloader-",               //https://www.curseforge.com/minecraft/mc-mods/sound-reloader
-            "sounds-",                      //https://www.curseforge.com/minecraft/mc-mods/sound
-            "spoticraft-",                  //https://www.curseforge.com/minecraft/mc-mods/spoticraft-inactive and https://www.curseforge.com/minecraft/mc-mods/spoticraft-2
-            "status-effect-bars-",          //https://www.curseforge.com/minecraft/mc-mods/status-effect-bars
-            "stop_rendering-",              //https://www.curseforge.com/minecraft/mc-mods/stoprendering
-            "skinlayers3d-",                //https://www.curseforge.com/minecraft/mc-mods/skin-layers-3d
-            "talkingheads-",                //https://www.curseforge.com/minecraft/mc-mods/talkingheads
-            "tconjei-",                     //https://www.curseforge.com/minecraft/mc-mods/tconjei
-            "tconplanner-",                 //https://www.curseforge.com/minecraft/mc-mods/tinkers-planner
-            "textrues_embeddium_options-",  //https://www.curseforge.com/minecraft/mc-mods/textrues-embeddium-options
-            "timestamp-chat-",              //https://www.curseforge.com/minecraft/mc-mods/timestamp-chat
-            "timestamps-",                  //https://www.curseforge.com/minecraft/mc-mods/timestamps
-            "tooltipscroller-",             //https://www.curseforge.com/minecraft/mc-mods/tooltip-scroller
-            "torchoptimizer-",              //https://www.curseforge.com/minecraft/mc-mods/torch-optimizer
-            "torohealth-",                  //https://www.curseforge.com/minecraft/mc-mods/torohealth-damage-indicators
-            "totaldarkness",                //https://www.curseforge.com/minecraft/mc-mods/total-darkness
-            "toughnessbar-",                //https://www.curseforge.com/minecraft/mc-mods/armor-toughness-bar
-            "translucent-window-",          //https://www.curseforge.com/minecraft/mc-mods/translucent-window
-            "tweakeroo-",                   //https://www.curseforge.com/minecraft/mc-mods/tweakeroo-update-port
-            "twitchchat-",                  //https://www.curseforge.com/minecraft/mc-mods/twitch-chat-for-streamer
-            "vanillazoom-",                 //https://www.curseforge.com/minecraft/mc-mods/vanilla-zoom
-            "viaforge-",                    //https://www.curseforge.com/minecraft/mc-mods/viaforge
-            "wakes-",                       //https://www.curseforge.com/minecraft/mc-mods/wakes
-            "watermedia-",                  //https://www.curseforge.com/minecraft/mc-mods/watermedia
-            "whats-that-slot-",             //https://www.curseforge.com/minecraft/mc-mods/whats-that-slot
-            "wheredididie-",                //https://www.curseforge.com/minecraft/mc-mods/where-did-i-die
-            "wisla-",                       //https://www.curseforge.com/minecraft/mc-mods/wisla
-            "xenon-",                       //https://www.curseforge.com/minecraft/mc-mods/xenon
-            "xanders-sodium-options-",      //https://www.curseforge.com/minecraft/mc-mods/xanders-sodium-options
-            "xlifeheartcolors-",            //https://www.curseforge.com/minecraft/mc-mods/x-life-heart-colors
-            "yisthereautojump-"             //https://www.curseforge.com/minecraft/mc-mods/y-is-there-autojump-forge
-        )
-    )
+    /**
+     * Fallback-list of directories to include in a server pack.
+     */
+    val fallbackDirectoriesInclusion: TreeSet<String> get() = generationConfig.fallbackDirectoriesInclusion
 
-    val fallbackDirectoriesInclusion = TreeSet(
-        listOf(
-            "addonpacks",
-            "blueprints",
-            "config",
-            "configs",
-            "customnpcs",
-            "datapacks",
-            "defaultconfigs",
-            "global_data_packs",
-            "global_packs",
-            "kubejs",
-            "maps",
-            "modernfix",
-            "mods",
-            "openloader",
-            "scripts",
-            "schematics",
-            "shrines-saves",
-            "structures",
-            "structurize",
-            "worldshape",
-            "Zoestria"
-        )
-    )
+    /**
+     * Fallback-list of directories to exclude from a server pack.
+     */
+    val fallbackDirectoriesExclusion: TreeSet<String> get() = generationConfig.fallbackDirectoriesExclusion
 
-    @Suppress("MemberVisibilityCanBePrivate")
-    val fallbackDirectoriesExclusion = TreeSet(
-        listOf(
-            "animation",
-            "asm",
-            "cache",
-            "changelogs",
-            "craftpresence",
-            "crash-reports",
-            "downloads",
-            "icons",
-            "libraries",
-            "local",
-            "logs",
-            "overrides",
-            "packmenu",
-            "profileImage",
-            "profileImage",
-            "resourcepacks",
-            "screenshots",
-            "server_pack",
-            "shaderpacks",
-            "simple-rpc",
-            "tv-cache"
-        )
-    )
+    /**
+     * Fallback-list of files to exclude from the server pack ZIP-archive.
+     */
+    val fallbackZipExclusions: TreeSet<String> get() = generationConfig.fallbackZipExclusions
 
-    val fallbackZipExclusions = TreeSet(
-        listOf(
-            "minecraft_server.MINECRAFT_VERSION.jar",
-            "server.jar",
-            "libraries/net/minecraft/server/MINECRAFT_VERSION/server-MINECRAFT_VERSION.jar"
-        )
-    )
+    /**
+     * Fallback-list of files to delete after a modloader-server installation.
+     */
+    val fallbackPostInstallCleanupFiles: TreeSet<String> get() = generationConfig.fallbackPostInstallCleanupFiles
 
-    val fallbackPostInstallCleanupFiles = TreeSet(
-        listOf(
-            "fabric-installer.jar",
-            "forge-installer.jar",
-            "quilt-installer.jar",
-            "installer.log",
-            "forge-installer.jar.log",
-            "legacyfabric-installer.jar",
-            "run.bat",
-            "run.sh",
-            "user_jvm_args.txt"
-        )
-    )
+    /**
+     * Fallback-list of files to delete before a modloader-server installation.
+     */
+    val fallbackPreInstallCleanupFiles: TreeSet<String> get() = generationConfig.fallbackPreInstallCleanupFiles
 
-    val fallbackPreInstallCleanupFiles = TreeSet(
-        listOf(
-            "libraries",
-            "server.jar",
-            "forge-installer.jar",
-            "quilt-installer.jar",
-            "installer.log",
-            "forge-installer.jar.log",
-            "legacyfabric-installer.jar",
-            "run.bat",
-            "run.sh",
-            "user_jvm_args.txt",
-            "quilt-server-launch.jar",
-            "minecraft_server.1.16.5.jar",
-            "forge.jar"
-        )
-    )
+    /**
+     * Fallback Aikar's flags for the generated start-scripts.
+     */
+    val fallbackAikarsFlags: String get() = generationConfig.fallbackAikarsFlags
 
-    val fallbackAikarsFlags = "-Xms4G" +
-            " -Xmx4G" +
-            " -XX:+UseG1GC" +
-            " -XX:+ParallelRefProcEnabled" +
-            " -XX:MaxGCPauseMillis=200" +
-            " -XX:+UnlockExperimentalVMOptions" +
-            " -XX:+DisableExplicitGC" +
-            " -XX:+AlwaysPreTouch" +
-            " -XX:G1NewSizePercent=30" +
-            " -XX:G1MaxNewSizePercent=40" +
-            " -XX:G1HeapRegionSize=8M" +
-            " -XX:G1ReservePercent=20" +
-            " -XX:G1HeapWastePercent=5" +
-            " -XX:G1MixedGCCountTarget=4" +
-            " -XX:InitiatingHeapOccupancyPercent=15" +
-            " -XX:G1MixedGCLiveThresholdPercent=90" +
-            " -XX:G1RSetUpdatingPauseTimePercent=5" +
-            " -XX:SurvivorRatio=32" +
-            " -XX:+PerfDisableSharedMem" +
-            " -XX:MaxTenuringThreshold=1" +
-            " -Dusing.aikars.flags=https://mcflags.emc.gs" +
-            " -Daikars.new.flags=true"
-    val fallbackUpdateURL =
-        "https://raw.githubusercontent.com/Griefed/ServerPackCreator/main/serverpackcreator-api/src/main/resources/serverpackcreator.properties"
-    val fallbackExclusionFilter = ExclusionFilter.START
-    val fallbackOverwriteEnabled = true
-    val fallbackJavaScriptAutoupdateEnabled = true
-    val fallbackCheckingForPreReleasesEnabled = false
-    val fallbackZipFileExclusionEnabled = true
-    val fallbackServerPackCleanupEnabled = true
-    val fallbackMinecraftPreReleasesAvailabilityEnabled = false
-    val fallbackAutoExcludingModsEnabled = true
-    val fallbackArtemisQueueMaxDiskUsage = 90
-    val fallbackCleanupSchedule = "0 0 0 * * *"
-    val fallbackVersionSchedule = "0 0 0 * * *"
-    val fallbackDatabaseCleanupSchedule = "0 0 0 * * *"
-    val fallbackUpdateServerPack = false
-    private val checkedJavas = hashMapOf<String, Boolean>()
+    /**
+     * Shipped default for the update-check URL, used when no property overrides it.
+     *
+     * Every `fallback*` member below is the same idea: the value SPC falls back on when the corresponding property is
+     * unset or invalid, delegated to whichever settings group owns it. They exist so a broken or missing
+     * `serverpackcreator.properties` still yields a working configuration rather than an error.
+     */
+    val fallbackUpdateURL: String get() = UpdateConfig.FALLBACK_UPDATE_URL
+    /** Default matching mode for clientside-mod exclusions (start/end/contains/regex). */
+    val fallbackExclusionFilter: ExclusionFilter get() = generationConfig.fallbackExclusionFilter
+    /** Whether an existing server pack is overwritten instead of the run aborting. */
+    val fallbackOverwriteEnabled: Boolean get() = generationConfig.fallbackOverwriteEnabled
+    /** Whether the generated Java-install helper scripts are refreshed on each generation. */
+    val fallbackJavaScriptAutoupdateEnabled: Boolean get() = javaConfig.fallbackJavaScriptAutoupdateEnabled
+    /** Whether update checks consider alpha/beta releases as well as stable ones. */
+    val fallbackCheckingForPreReleasesEnabled: Boolean get() = updateConfig.fallbackCheckingForPreReleasesEnabled
+    /** Whether the ZIP-exclusion list is applied when archiving a finished pack. */
+    val fallbackZipFileExclusionEnabled: Boolean get() = generationConfig.fallbackZipFileExclusionEnabled
+    /** Whether post-install cleanup runs, deleting installer leftovers from the finished pack. */
+    val fallbackServerPackCleanupEnabled: Boolean get() = generationConfig.fallbackServerPackCleanupEnabled
+    /** Whether Minecraft snapshots and pre-releases are offered alongside releases. */
+    val fallbackMinecraftPreReleasesAvailabilityEnabled: Boolean get() = generationConfig.fallbackMinecraftPreReleasesAvailabilityEnabled
+    /** Whether the mod scanners exclude clientside mods automatically, on top of the configured list. */
+    val fallbackAutoExcludingModsEnabled: Boolean get() = generationConfig.fallbackAutoExcludingModsEnabled
+    /** Cron expression for the web backend's generic cleanup job. */
+    val fallbackCleanupSchedule: String get() = webserviceConfig.fallbackCleanupSchedule
+    /** Cron expression for refreshing the cached version manifests. */
+    val fallbackVersionSchedule: String get() = webserviceConfig.fallbackVersionSchedule
+    /** Cron expression for pruning old records from the web backend's database. */
+    val fallbackDatabaseCleanupSchedule: String get() = webserviceConfig.fallbackDatabaseCleanupSchedule
+    /** Whether regenerating a pack updates the existing directory instead of creating a new one. */
+    val fallbackUpdateServerPack: Boolean get() = generationConfig.fallbackUpdateServerPack
     private val trueFalseRegex = "^(true|false)$".toRegex()
     private val alphaBetaRegex = "^(.*alpha.*|.*beta.*)$".toRegex()
-    private val serverPacksRegex = "^(?:\\./)?server-packs$".toRegex()
+    /** i18n4k's mutable configuration, held here because the locale setting is applied through it. */
     val i18n4kConfig = I18n4kConfigDefault()
+
+    /**
+     * Settings-group for update- and release-tracking. Prefer accessing these values through
+     * this group; the individual properties on ApiProperties remain as facade.
+     */
+    val updateConfig = UpdateConfig(store, generationConfig) { saveProperties(serverPackCreatorPropertiesFile) }
+
+    /**
+     * Settings-group for ServerPackCreators language. Prefer accessing these values through
+     * this group; the individual properties on ApiProperties remain as facade.
+     */
+    val i18nConfig = I18nConfig(store, i18n4kConfig) { saveProperties(serverPackCreatorPropertiesFile) }
+
+    /**
+     * Settings-group for ServerPackCreators log-level. The log4j-XML machinery stays with
+     * ApiProperties, which acts as log4j's ConfigurationFactory.
+     */
+    val loggingConfig = LoggingConfig(store) { level -> setLoggingLevel(level) }
 
     /**
      * String-list of clientside-only mods to exclude from server packs.
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    var clientsideMods = fallbackMods
-        private set
+    val clientsideMods: TreeSet<String> get() = generationConfig.clientsideMods
 
     /**
      * String-list of mods to include if present, regardless whether a match was found through [clientsideMods].
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    var modsWhitelist = fallbackModsWhitelist
-        private set
+    val modsWhitelist: TreeSet<String> get() = generationConfig.modsWhitelist
 
     /**
      * Regex-list of clientside-only mods to exclude from server packs.
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    var clientsideModsRegex: TreeSet<String> = TreeSet()
-        get() {
-            field.clear()
-            for (mod in clientsideMods) {
-                field.add("^$mod.*$")
-            }
-            return field
-        }
-        private set
+    val clientsideModsRegex: TreeSet<String> get() = generationConfig.clientsideModsRegex
 
     /**
      * Regex-list of mods to include if present, regardless whether a match was found throug [clientsideModsRegex].
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    var modsWhitelistRegex: TreeSet<String> = TreeSet()
-        get() {
-            field.clear()
-            for (mod in modsWhitelist) {
-                field.add("^$mod.*$")
-            }
-            return field
-        }
-        private set
+    val modsWhitelistRegex: TreeSet<String> get() = generationConfig.modsWhitelistRegex
 
     /**
      * Modloaders supported by ServerPackCreator.
      */
-    val supportedModloaders = arrayOf("Fabric", "Forge", "Quilt", "LegacyFabric", "NeoForge")
+    val supportedModloaders = SupportedModloaders.names
 
     /**
      * The folder containing the ServerPackCreator.exe or JAR-file.
@@ -904,18 +281,25 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * The version of the ServerPackCreator API.
      */
+    /** This build's version from the jar manifest, or `dev` when running from a source build. */
     val apiVersion: String = javaClass.getPackage().implementationVersion ?: "dev"
 
+    /**
+     * Whether this is a source build. Widely consequential, not cosmetic: it turns on DEBUG logging, rewrites
+     * `log4j2.xml` on every start, and makes the home directory fall back to the working directory.
+     */
     val devBuild: Boolean
         get() {
             return apiVersion == "dev"
         }
 
+    /** Whether this build is an alpha or beta, which relaxes the same behaviours as [devBuild]. */
     val preRelease: Boolean
         get() {
             return apiVersion.matches(alphaBetaRegex)
         }
 
+    /** Config-format version stamped into generated `.conf` files, so migrations know what they are reading. */
     val configVersion: String = if (preRelease || devBuild) {
         "TEST"
     } else {
@@ -930,87 +314,47 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      */
     val firstRun: Boolean
 
-    var logLevel = "INFO"
-        get() {
-            field = acquireProperty(pLogLevel, "INFO").uppercase()
-            return field
-        }
+    /** Log level SPC runs at. Setting it rewrites [log4jXml], so it takes effect without a restart. */
+    var logLevel: String
+        get() = loggingConfig.logLevel
         set(value) {
-            field = value.uppercase()
-            defineProperty(pLogLevel, field)
-            setLoggingLevel(field)
+            loggingConfig.logLevel = value
         }
 
     /**
      * Directories to include in a server pack.
      */
-    var directoriesToInclude = fallbackDirectoriesInclusion
-        get() {
-            val entries =
-                getListProperty(pConfigurationDirectoriesMustInclude, fallbackDirectoriesInclusion.joinToString(","))
-            field.addAll(entries)
-            return field
-        }
+    var directoriesToInclude: TreeSet<String>
+        get() = generationConfig.directoriesToInclude
         set(value) {
-            setListProperty(pConfigurationDirectoriesMustInclude, value.toList(), ",")
-            field.clear()
-            field.addAll(value)
-            log.info("Directories which must always be included set to: $value")
+            generationConfig.directoriesToInclude = value
         }
 
     /**
      * Directories to exclude from a server pack.
      */
-    var directoriesToExclude = fallbackDirectoriesExclusion
-        get() {
-            val prop =
-                getListProperty(pConfigurationDirectoriesShouldExclude, fallbackDirectoriesExclusion.joinToString(","))
-            val use = TreeSet(prop)
-            use.removeIf { n -> directoriesToInclude.contains(n) }
-            field.clear()
-            field.addAll(use)
-            return field
-        }
+    var directoriesToExclude: TreeSet<String>
+        get() = generationConfig.directoriesToExclude
         set(value) {
-            val use = TreeSet<String>()
-            use.addAll(value)
-            use.removeIf { n -> directoriesToInclude.contains(n) }
-            setListProperty(pConfigurationDirectoriesShouldExclude, use.toList(), ",")
-            field.clear()
-            field.addAll(use)
-            log.info("Directories which must always be excluded set to: $field")
+            generationConfig.directoriesToExclude = value
         }
 
     /**
      * List of files to delete after a server pack server installation.
      */
-    var postInstallCleanupFiles = fallbackPostInstallCleanupFiles
-        get() {
-            val entries = getListProperty(pPostInstallCleanupFiles, fallbackPostInstallCleanupFiles.joinToString(","))
-            field.addAll(entries)
-            return field
-        }
+    var postInstallCleanupFiles: TreeSet<String>
+        get() = generationConfig.postInstallCleanupFiles
         set(value) {
-            setListProperty(pPostInstallCleanupFiles, value.toList(), ",")
-            field.clear()
-            field.addAll(value)
-            log.info("Files to cleanup after server installation set to: $value")
+            generationConfig.postInstallCleanupFiles = value
         }
 
     /**
      * List of files to delete before a server pack server installation.
      */
-    var preInstallCleanupFiles = fallbackPreInstallCleanupFiles
-        get() {
-            val entries = getListProperty(pPreInstallCleanupFiles, fallbackPreInstallCleanupFiles.joinToString(","))
-            field.addAll(entries)
-            return field
-        }
+    var preInstallCleanupFiles: TreeSet<String>
+        get() = generationConfig.preInstallCleanupFiles
         set(value) {
-            setListProperty(pPreInstallCleanupFiles, value.toList(), ",")
-            field.clear()
-            field.addAll(value)
-            log.info("Files to cleanup before server installation set to: $value")
+            generationConfig.preInstallCleanupFiles = value
         }
 
     /**
@@ -1022,74 +366,41 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      *
      * Should you want these filters to be expanded, open an issue on [GitHub](https://github.com/Griefed/ServerPackCreator/issues)
      */
-    var zipArchiveExclusions = fallbackZipExclusions
-        get() {
-            val entries = getListProperty(pServerPackZipExclusions, fallbackZipExclusions.joinToString(","))
-            field.addAll(entries)
-            return field
-        }
+    var zipArchiveExclusions: TreeSet<String>
+        get() = generationConfig.zipArchiveExclusions
         set(value) {
-            setListProperty(pServerPackZipExclusions, value.toList(), ",")
-            field.clear()
-            field.addAll(value)
-            log.info("Files which must be excluded from ZIP-archives set to: $value")
+            generationConfig.zipArchiveExclusions = value
         }
 
     /**
-     * Paths to Java installations available to SPC for automatically updating the script variables of a given server pack
-     * configuration.
-     * * key: Java version
-     * * value: Path to the Java .exe or binary
-     *
-     * If you plan on overwriting this property, make sure to format they key-value-pairs as follows:
-     * * key: `de.griefed.serverpackcreator.script.java` followed by the number representing the Java version
-     * * value: Valid path to a Java installation corresponding to the number used in the key
+     * Settings-group for Java-installations: the Java used for modloader-server installs, the
+     * per-version java-paths for script-variables, path-validation and the script-autoupdate
+     * flag. Prefer accessing these values through this group; the individual properties on
+     * ApiProperties remain as facade.
      */
-    var javaPaths = HashMap<String, String>(256)
-        get() {
-            val paths = HashMap<String, String>(256)
-            var path: String
-            var position: String
-            for (i in 8..255) {
-                position = pScriptVariablesJavaPaths + i
-                path = internalProps.getProperty(position, "")
-                if (checkJavaPath(path)) {
-                    paths[i.toString()] = path
-                    internalProps.setProperty(position, path)
-                }
-            }
-            field = paths
-            return paths
-        }
-        set(values) {
-            var position: Int?
-            var newKey: String
-            val paths = HashMap<String, String>(256)
-            for (i in 8..255) {
-                internalProps.remove(pScriptVariablesJavaPaths + i)
-            }
-            for ((key, value) in values) {
-                if (!checkJavaPath(value)) {
-                    continue
-                }
-                position = key.replace(pScriptVariablesJavaPaths, "").toIntOrNull()
-                newKey = pScriptVariablesJavaPaths + position
-                if (position != null && 8 <= position!! && position!! < 256) {
-                    internalProps.setProperty(newKey, value)
-                    paths[newKey] = value
-                }
-            }
-            field = paths
-            log.info("Available Java paths for scripts:")
-            for ((key, value) in field) {
-                log.info("Java $key path: $value")
-            }
+    val javaConfig = JavaConfig(store)
+
+    /**
+     * Paths to Java installations available to SPC for automatically updating the script
+     * variables of a given server pack configuration. Key: Java version, value: path.
+     */
+    var javaPaths: HashMap<String, String>
+        get() = javaConfig.javaPaths
+        set(value) {
+            javaConfig.javaPaths = value
         }
 
+    /**
+     * Read one value from SPC's `Preferences` node, or [def] when unset.
+     *
+     * **Landmine:** which node that is depends on `resolvePreferencesNode` — a host claiming its own node (the
+     * grinder daemon, every test JVM) reads and writes a different store than the default installation, deliberately.
+     */
     fun getPreference(pref: String, def: String? = null) : Optional<String> {
         return Optional.ofNullable(spcPreferences.get(pref, def))
     }
 
+    /** Write one value into SPC's `Preferences` node. Same node caveat as [getPreference]. */
     fun storePreference(pref: String, value: String) {
         spcPreferences.put(pref, value)
         spcPreferences.sync()
@@ -1097,195 +408,61 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
 
     /**
      * Default list of script templates used by ServerPackCreator.
-     *
-     * @author Griefed
      */
-    @Deprecated("Deprecated as of 6.0.0", ReplaceWith("defaultScriptTemplateMap"))
-    fun defaultScriptTemplates(): List<File> {
-        // See whether we have custom files.
-        val currentFiles = serverFilesDirectory.walk().maxDepth(1).filter {
-            it.name.endsWith("sh", ignoreCase = true) ||
-                    it.name.endsWith("ps1", ignoreCase = true) ||
-                    it.name.endsWith("bat", ignoreCase = true)
-        }.toList()
-        val customTemplates = currentFiles.filter {
-            !it.name.contains("default_template", ignoreCase = true)
-        }
+    @Deprecated("Deprecated as of 6.0.0", ReplaceWith("defaultStartScriptTemplates()"))
+    @Suppress("DEPRECATION")
+    fun defaultScriptTemplates(): List<File> = scriptTemplatesConfig.defaultScriptTemplates()
 
-        val newTemplates = mutableListOf<File>()
-        var shellPresent = false
-        var powershellPresent = false
-        var batchPresent = false
-        for (customTemplate in customTemplates) {
-            when {
-                customTemplate.name.endsWith("sh", ignoreCase = true) && !shellPresent -> {
-                    newTemplates.add(customTemplate.absoluteFile)
-                    shellPresent = true
-                }
-
-                customTemplate.name.endsWith("ps1", ignoreCase = true) && !powershellPresent -> {
-                    newTemplates.add(customTemplate.absoluteFile)
-                    powershellPresent = true
-                }
-
-                customTemplate.name.endsWith("bat", ignoreCase = true) && !batchPresent -> {
-                    newTemplates.add(customTemplate.absoluteFile)
-                    batchPresent = true
-                }
-
-                else -> {
-                    newTemplates.add(customTemplate.absoluteFile)
-                }
-            }
-        }
-
-        if (!shellPresent) {
-            newTemplates.add(File(serverFilesDirectory.absolutePath, defaultShellScriptTemplate.name).absoluteFile)
-        }
-        if (!powershellPresent) {
-            newTemplates.add(File(serverFilesDirectory.absolutePath, defaultPowerShellScriptTemplate.name).absoluteFile)
-        }
-        if (!batchPresent) {
-            newTemplates.add(File(serverFilesDirectory.absolutePath, defaultBatchScriptTemplate.name).absoluteFile)
-        }
-
-        return newTemplates.toList()
-    }
-
+    /**
+     * Deprecated list-based script-templates.
+     */
     @Deprecated("Deprecated as of 6.0.0", ReplaceWith("startScriptTemplates"))
-    var scriptTemplates: TreeSet<File> = TreeSet()
-        get() {
-            val scriptSetting = internalProps.getProperty(pServerPackScriptTemplates)
-            val entries =
-                if (scriptSetting != null && scriptSetting == "default_template.ps1,default_template.sh,default_template.bat") {
-                    defaultScriptTemplates()
-                } else {
-                    getListProperty(
-                        pServerPackScriptTemplates,
-                        defaultScriptTemplates().joinToString(",") { it.absolutePath }
-                    ).map { File(it).absoluteFile }
-                }
-            field.clear()
-            field.addAll(entries)
-            return field
-        }
+    @Suppress("DEPRECATION")
+    var scriptTemplates: TreeSet<File>
+        get() = scriptTemplatesConfig.scriptTemplates
         set(value) {
-            val entries = value.map { it.absolutePath }
-            setListProperty(pServerPackScriptTemplates, entries, ",")
-            field.clear()
-            field.addAll(value.map { it.absoluteFile })
-            log.info("Using script templates:")
-            for (template in field) {
-                log.info("    " + template.path)
-            }
+            scriptTemplatesConfig.scriptTemplates = value
         }
 
     /**
      * Default map of start-script templates: sh, ps1, bat.
      */
-    fun defaultStartScriptTemplates(): HashMap<String, String> {
-        return hashMapOf(
-            Pair("sh", File(serverFilesDirectory.absolutePath, defaultShellScriptTemplate.name).absolutePath),
-            Pair("ps1", File(serverFilesDirectory.absolutePath, defaultPowerShellScriptTemplate.name).absolutePath),
-            Pair("bat", File(serverFilesDirectory.absolutePath, defaultBatchScriptTemplate.name).absolutePath)
-        )
-    }
+    fun defaultStartScriptTemplates(): HashMap<String, String> =
+        scriptTemplatesConfig.defaultStartScriptTemplates()
 
     /**
-     * Start-script templates to use during server pack generation.
-     * Each key represents a different template and script-type.
+     * Start-script templates to use during server pack generation, one entry per script-type.
      */
-    var startScriptTemplates: HashMap<String, String> = hashMapOf()
-        get() {
-            val templateProps = internalProps.keys
-                .filter { entry -> (entry as String).startsWith(pServerPackStartScriptTemplatesPrefix) }
-                .map { entry -> entry as String }
-            var type: String
-            if (templateProps.isEmpty() || templateProps.any { entry ->
-                    entry.replace(pServerPackStartScriptTemplatesPrefix, "").isBlank()
-                }) {
-                log.warn("Found empty definitions for start script templates. Using defaults.")
-                field = defaultStartScriptTemplates()
-            } else {
-                for (templateProp in templateProps) {
-                    type = templateProp.replace(pServerPackStartScriptTemplatesPrefix, "")
-                    field[type] = File(internalProps[templateProp] as String).absolutePath
-                }
-            }
-            if (field.isEmpty()) {
-                log.error("No start script templates defined. Using defaults.")
-                field = defaultStartScriptTemplates()
-            }
-            return field
-        }
-        set(map) {
-            for ((key, value) in map) {
-                defineProperty("$pServerPackStartScriptTemplatesPrefix$key", value)
-                log.info("Set $pServerPackStartScriptTemplatesPrefix$key to $value")
-            }
-            field = map
-        }
-
-    /**
-     * Default map of start-script templates: sh, ps1, bat.
-     */
-    fun defaultJavaScriptTemplates(): HashMap<String, String> {
-        return hashMapOf(
-            Pair("sh", File(serverFilesDirectory.absolutePath, defaultJavaShellScriptTemplate.name).absolutePath),
-            Pair("ps1", File(serverFilesDirectory.absolutePath, defaultJavaPowerShellScriptTemplate.name).absolutePath)
-        )
-    }
-
-    /**
-     * Start-script templates to use during server pack generation.
-     * Each key represents a different template and script-type.
-     */
-    var javaScriptTemplates: HashMap<String, String> = hashMapOf()
-        get() {
-            val templateProps = internalProps.keys
-                .filter { entry -> (entry as String).startsWith(pServerPackJavaScriptTemplatesPrefix) }
-                .map { entry -> entry as String }
-            var type: String
-            if (templateProps.isEmpty() || templateProps.any { entry ->
-                    entry.replace(
-                        pServerPackJavaScriptTemplatesPrefix,
-                        ""
-                    ).isBlank()
-                }) {
-                log.warn("Found empty definitions for java script templates. Using defaults.")
-                field = defaultJavaScriptTemplates()
-            } else {
-                for (templateProp in templateProps) {
-                    type = templateProp.replace(pServerPackJavaScriptTemplatesPrefix, "")
-                    field[type] = File(internalProps[templateProp] as String).absolutePath
-                }
-            }
-            if (field.isEmpty()) {
-                log.error("No java script templates defined. Using defaults.")
-                field = defaultJavaScriptTemplates()
-            }
-            return field
-        }
-        set(map) {
-            for ((key, value) in map) {
-                defineProperty("$pServerPackJavaScriptTemplatesPrefix$key", value)
-                log.info("Set $pServerPackJavaScriptTemplatesPrefix$key to $value")
-            }
-            field = map
-        }
-
-    /**
-     * The URL from which a .properties-file is read during updating of the fallback clientside-mods list.
-     * The default can be found in [fallbackUpdateURL].
-     */
-    var updateUrl: URL = URI(fallbackUpdateURL).toURL()
-        get() {
-            field = URI(acquireProperty(pConfigurationFallbackUpdateURL, fallbackUpdateURL)).toURL()
-            return field
-        }
+    var startScriptTemplates: HashMap<String, String>
+        get() = scriptTemplatesConfig.startScriptTemplates
         set(value) {
-            defineProperty(pConfigurationFallbackUpdateURL, value.toString())
-            field = value
+            scriptTemplatesConfig.startScriptTemplates = value
+        }
+
+    /**
+     * Default map of java-install-script templates: sh, ps1.
+     */
+    fun defaultJavaScriptTemplates(): HashMap<String, String> =
+        scriptTemplatesConfig.defaultJavaScriptTemplates()
+
+    /**
+     * Java-install-script templates to use during server pack generation, one entry per
+     * script-type.
+     */
+    var javaScriptTemplates: HashMap<String, String>
+        get() = scriptTemplatesConfig.javaScriptTemplates
+        set(value) {
+            scriptTemplatesConfig.javaScriptTemplates = value
+        }
+
+    /**
+     * The URL from which a .properties-file is read during updating of the fallback
+     * clientside-mods list.
+     */
+    var updateUrl: URL
+        get() = updateConfig.updateUrl
+        set(value) {
+            updateConfig.updateUrl = value
         }
 
     /**
@@ -1298,31 +475,10 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      *  * [ExclusionFilter.REGEX]
      *  * [ExclusionFilter.EITHER]
      */
-    var exclusionFilter = fallbackExclusionFilter
-        get() {
-            val prop = acquireProperty(pServerPackAutoDiscoveryFilterMethod, "START")
-            field = try {
-                when (prop) {
-                    "END" -> ExclusionFilter.END
-                    "CONTAIN" -> ExclusionFilter.CONTAIN
-                    "REGEX" -> ExclusionFilter.REGEX
-                    "EITHER" -> ExclusionFilter.EITHER
-                    "START" -> ExclusionFilter.START
-                    else -> {
-                        log.error("Invalid filter specified. Defaulting to START.")
-                        fallbackExclusionFilter
-                    }
-                }
-            } catch (ex: NullPointerException) {
-                log.error("No filter specified. Defaulting to START.")
-                fallbackExclusionFilter
-            }
-            return field
-        }
+    var exclusionFilter: ExclusionFilter
+        get() = generationConfig.exclusionFilter
         set(value) {
-            internalProps.setProperty(pServerPackAutoDiscoveryFilterMethod, value.toString())
-            field = value
-            log.info("User specified clientside-only mod exclusion filter set to: $field")
+            generationConfig.exclusionFilter = value
         }
 
     /**
@@ -1330,198 +486,107 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * `de.griefed.serverpackcreator.versioncheck.prerelease`, returns `true` if checks for available PreReleases are
      * enabled, `false` if no checks for available PreReleases should be made.
      */
-    var isCheckingForPreReleasesEnabled = fallbackCheckingForPreReleasesEnabled
-        get() {
-            field = getBoolProperty(pVersionCheckPreRelease, fallbackCheckingForPreReleasesEnabled)
-            return field
-        }
+    var isCheckingForPreReleasesEnabled: Boolean
+        get() = updateConfig.isCheckingForPreReleasesEnabled
         set(value) {
-            setBoolProperty(pVersionCheckPreRelease, value)
-            field = value
-            log.info("Checking for pre-releases set to $field.")
+            updateConfig.isCheckingForPreReleasesEnabled = value
         }
 
     /**
      * Whether the exclusion of files from the ZIP-archive of the server pack is enabled.
      */
-    var isZipFileExclusionEnabled = fallbackZipFileExclusionEnabled
-        get() {
-            field = getBoolProperty(pServerPackZipExclusionEnabled, fallbackZipFileExclusionEnabled)
-            return field
-        }
+    var isZipFileExclusionEnabled: Boolean
+        get() = generationConfig.isZipFileExclusionEnabled
         set(value) {
-            setBoolProperty(pServerPackZipExclusionEnabled, value)
-            field = value
-            log.info("Zip-file exclusion enabled set to: $field")
+            generationConfig.isZipFileExclusionEnabled = value
         }
 
     /**
      * Is auto excluding of clientside-only mods enabled.
      */
-    var isAutoExcludingModsEnabled = fallbackAutoExcludingModsEnabled
-        get() {
-            var value = getBoolProperty(pServerPackAutoDiscoveryEnabled, fallbackAutoExcludingModsEnabled)
-            try {
-                val legacyProp = internalProps.getProperty(pServerPackAutoDiscoveryEnabledLegacy)
-                if (legacyProp.matches(trueFalseRegex)) {
-                    value = java.lang.Boolean.parseBoolean(legacyProp)
-                    internalProps.setProperty(pServerPackAutoDiscoveryEnabled, value.toString())
-                    internalProps.remove(pServerPackAutoDiscoveryEnabledLegacy)
-                    log.info(
-                        "Migrated '$pServerPackAutoDiscoveryEnabledLegacy' to '$pServerPackAutoDiscoveryEnabled'."
-                    )
-                }
-            } catch (ignored: Exception) {
-                // No legacy declaration present, so we can safely ignore any exception.
-            }
-            field = value
-            return field
-        }
+    var isAutoExcludingModsEnabled: Boolean
+        get() = generationConfig.isAutoExcludingModsEnabled
         set(value) {
-            setBoolProperty(pServerPackAutoDiscoveryEnabled, value)
-            field = value
-            log.info("Auto-discovery of clientside-only mods set to: $field")
+            generationConfig.isAutoExcludingModsEnabled = value
         }
 
     /**
      * Whether overwriting of already existing server packs is enabled.
      */
-    var isServerPacksOverwriteEnabled = fallbackOverwriteEnabled
-        get() {
-            field = getBoolProperty(pServerPackOverwriteEnabled, fallbackOverwriteEnabled)
-            return field
-        }
+    var isServerPacksOverwriteEnabled: Boolean
+        get() = generationConfig.isServerPacksOverwriteEnabled
         set(value) {
-            setBoolProperty(pServerPackOverwriteEnabled, value)
-            field = value
-            log.info("Overwriting of already existing server packs set to: $field")
+            generationConfig.isServerPacksOverwriteEnabled = value
         }
 
     /**
      * Whether cleanup procedures after server pack generation are enabled.
      */
-    var isServerPackCleanupEnabled = fallbackServerPackCleanupEnabled
-        get() {
-            field = getBoolProperty(pServerPackCleanupEnabled, fallbackServerPackCleanupEnabled)
-            return field
-        }
+    var isServerPackCleanupEnabled: Boolean
+        get() = generationConfig.isServerPackCleanupEnabled
         set(value) {
-            setBoolProperty(pServerPackCleanupEnabled, value)
-            field = value
-            log.info("Cleanup of already existing server packs set to: $field")
+            generationConfig.isServerPackCleanupEnabled = value
         }
 
     /**
      * Whether Minecraft pre-releases and snapshots are available to the user in, for example, the GUI.
      */
-    var isMinecraftPreReleasesAvailabilityEnabled = fallbackMinecraftPreReleasesAvailabilityEnabled
-        get() {
-            field = getBoolProperty(pAllowUseMinecraftSnapshots, fallbackMinecraftPreReleasesAvailabilityEnabled)
-            return field
-        }
+    var isMinecraftPreReleasesAvailabilityEnabled: Boolean
+        get() = generationConfig.isMinecraftPreReleasesAvailabilityEnabled
         set(value) {
-            setBoolProperty(pAllowUseMinecraftSnapshots, value)
-            field = value
-            log.info("Minecraft pre-releases and snapshots available set to: $field")
+            generationConfig.isMinecraftPreReleasesAvailabilityEnabled = value
         }
 
     /**
      * Whether a server pack should be updated instead of cleanly generated.
      */
-    var isUpdatingServerPacksEnabled = false
-        get() {
-            field = getBoolProperty(pUpdateServerPack, fallbackUpdateServerPack)
-            return field
-        }
+    var isUpdatingServerPacksEnabled: Boolean
+        get() = generationConfig.isUpdatingServerPacksEnabled
         set(value) {
-            setBoolProperty(pUpdateServerPack, value)
-            field = value
-            log.info("Server pack updating set to: $field")
+            generationConfig.isUpdatingServerPacksEnabled = value
         }
 
     /**
-     * Whether to automatically update the `SPC_JAVA_SPC`-placeholder in the script variables
+     * Whether to automatically update the SPC_JAVA_SPC-placeholder in the script variables
      * table with a Java path matching the required Java version for the Minecraft server.
      */
-    var isJavaScriptAutoupdateEnabled = fallbackJavaScriptAutoupdateEnabled
-        get() {
-            field = getBoolProperty(pScriptVariablesAutoUpdateJavaPathsEnabled, fallbackJavaScriptAutoupdateEnabled)
-            return field
-        }
+    var isJavaScriptAutoupdateEnabled: Boolean
+        get() = javaConfig.isJavaScriptAutoupdateEnabled
         set(value) {
-            setBoolProperty(pScriptVariablesAutoUpdateJavaPathsEnabled, value)
-            field = value
-            log.info("Automatically update SPC_JAVA_SPC-placeholder in script variables table set to: $field")
+            javaConfig.isJavaScriptAutoupdateEnabled = value
         }
 
     /**
      * Aikars Flags commonly used for Minecraft servers to improve performance in various places.
      */
-    var aikarsFlags: String = fallbackAikarsFlags
-        get() {
-            field = acquireProperty(pConfigurationAikarsFlags, fallbackAikarsFlags)
-            return field
-        }
+    var aikarsFlags: String
+        get() = generationConfig.aikarsFlags
         set(value) {
-            defineProperty(pConfigurationAikarsFlags, value)
-            field = value
-            log.info("Set Aikars flags to: $field.")
+            generationConfig.aikarsFlags = value
         }
+
+    /**
+     * Web-service settings-group: database-URI and webservice-schedules. Prefer accessing these
+     * through this group; the individual properties on ApiProperties remain as facade.
+     */
+    val webserviceConfig = WebserviceConfig(store)
 
     /**
      * Path to the database used by the webservice-side of ServerPackCreator.
      */
-    var databaseUri: String = "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb"
-        get() {
-            var dbPath =
-                internalProps.getProperty(pSpringDatasourceUrl, "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb")
-            if (dbPath.isEmpty() ||
-                dbPath.contains("sqlite") ||
-                dbPath.contains("postgresql") ||
-                !dbPath.startsWith("mongodb") ) {
-                log.warn("Your spring.data.mongodb.uri-property didn't match a MongoDB-URL: $dbPath. It has been migrated to mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb.")
-                dbPath = "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb"
-            }
-            internalProps.setProperty(pSpringDatasourceUrl, dbPath)
-            field = dbPath
-            return field
-        }
+    var databaseUri: String
+        get() = webserviceConfig.databaseUri
         set(value) {
-            if (!value.startsWith("mongodb://")) {
-                internalProps.setProperty(pSpringDatasourceUrl, "mongodb://$value")
-            } else {
-                internalProps.setProperty(pSpringDatasourceUrl, value)
-            }
-            field = internalProps.getProperty(pSpringDatasourceUrl)
-            log.info("Set database url to: $field.")
-            log.warn("Restart ServerPackCreator for this change to take effect.")
+            webserviceConfig.databaseUri = value
         }
 
     /**
      * Language used by ServerPackCreator.
      */
-    var language = Locale("en", "GB")
-        get() {
-            val prop = internalProps.getProperty(pLanguage)
-            val lang = if (prop.contains("_")) {
-                val split = prop.split("_")
-                if (split.size == 3) {
-                    Locale(split[0], split[1], split[2])
-                } else {
-                    Locale(split[0], split[1])
-                }
-            } else {
-                Locale(prop)
-            }
-            field = lang
-            i18n4kConfig.locale = field
-            return field
-        }
+    var language: Locale
+        get() = i18nConfig.language
         set(value) {
-            internalProps.setProperty(pLanguage, value.toTag())
-            i18n4kConfig.locale = value
-            field = value
-            log.info("Language set to: ${field.displayLanguage} (${field.toTag()}).")
+            i18nConfig.language = value
         }
 
     /**
@@ -1541,705 +606,319 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     /**
      * Java installation used for installing the modloader server during server pack creation.
      */
-    var javaPath = "java"
-        get() {
-            val prop = internalProps.getProperty(pJavaForServerInstall, null)
-            field = if (checkJavaPath(prop)) {
-                prop
-            } else {
-                val acquired = acquireJavaPath()
-                internalProps.setProperty(pJavaForServerInstall, acquired)
-                acquired
-            }
-            return field
-        }
+    var javaPath: String
+        get() = javaConfig.javaPath
         set(value) {
-            if (checkJavaPath(value)) {
-                internalProps.setProperty(pJavaForServerInstall, value)
-                field = value
-                log.info("Java path set to: $field")
-            } else {
-                log.error("Invalid Java path specified: $value")
-            }
+            javaConfig.javaPath = value
         }
 
+    /**
+     * Cron-schedule of the webservice's cleanup-job. Facade for [WebserviceConfig.cleanupSchedule].
+     */
     var webserviceCleanupSchedule: String
-        get() {
-            return internalProps.getProperty("de.griefed.serverpackcreator.spring.schedules.database.cleanup")
-        }
+        get() = webserviceConfig.cleanupSchedule
         set(value) {
-            internalProps.setProperty("de.griefed.serverpackcreator.spring.schedules.database.cleanup", value)
+            webserviceConfig.cleanupSchedule = value
         }
 
+    /**
+     * Cron-schedule of the webservice's version-refresh-job. Facade for
+     * [WebserviceConfig.versionSchedule].
+     */
     var webserviceVersionSchedule: String
-        get() {
-            return internalProps.getProperty("de.griefed.serverpackcreator.spring.schedules.versions.refresh")
-        }
+        get() = webserviceConfig.versionSchedule
         set(value) {
-            internalProps.setProperty("de.griefed.serverpackcreator.spring.schedules.versions.refresh", value)
+            webserviceConfig.versionSchedule = value
         }
 
+    /**
+     * Cron-schedule of the webservice's file-cleanup-job. Facade for
+     * [WebserviceConfig.databaseCleanupSchedule].
+     */
     var webserviceDatabaseCleanupSchedule: String
-        get() {
-            return internalProps.getProperty("de.griefed.serverpackcreator.spring.schedules.files.cleanup")
-        }
+        get() = webserviceConfig.databaseCleanupSchedule
         set(value) {
-            internalProps.setProperty("de.griefed.serverpackcreator.spring.schedules.files.cleanup", value)
+            webserviceConfig.databaseCleanupSchedule = value
         }
-
-    fun defaultWebserviceDatabase(): String {
-        return "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb"
-    }
 
     /**
-     * ServerPackCreators home directory, in which all important files and folders are stored in.
-     *
-     * Changes made to this variable are stored in an overrides.properties inside the installation directory of the
-     * ServerPackCreator application.
-     *
-     * Every operation is based on this home-directory, with the exception being the
-     * [serverPacksDirectory], which can be configured independently of ServerPackCreators
-     * home-directory.
+     * The default webservice database-URI, for resetting the configuration to factory-state.
      */
-    var homeDirectory: File = home.absoluteFile
-        get() {
-            val setting = if (getPreference(pHomeDirectory).isPresent) {
-                getPreference(pHomeDirectory).get()
-            } else if (internalProps.containsKey(pHomeDirectory) && internalProps.getProperty(pHomeDirectory).isNotBlank()) {
-                internalProps.getProperty(pHomeDirectory)
-            } else if (jarInformation.jarPath.toFile().isDirectory || devBuild) {
-                // Dev environment
-                File("").absolutePath
-            } else if (File(System.getProperty("user.home")).isDirectory) {
-                File(System.getProperty("user.home"),"ServerPackCreator").absolutePath
-            } else {
-                home.absolutePath
-            }
+    fun defaultWebserviceDatabase(): String = webserviceConfig.defaultDatabase()
 
-            internalProps.remove(pHomeDirectory)
-            storePreference(pHomeDirectory, setting)
-            field = File(getPreference(pHomeDirectory).get()).absoluteFile
+    /**
+     * Settings-group for ServerPackCreators home-directory and every directory and file derived
+     * from it. Prefer accessing these values through this group; the individual properties on
+     * ApiProperties remain as facade.
+     */
+    val pathsConfig = PathsConfig(store, spcPreferences, jarInformation, devBuild)
 
-            if (!field.isDirectory) {
-                field.create(createFileOrDir = true, asDirectory = true)
-            }
+    /**
+     * Settings-group for the start- and java-script-templates. Prefer accessing these values
+     * through this group; the individual properties on ApiProperties remain as facade.
+     */
+    val scriptTemplatesConfig = ScriptTemplatesConfig(store, pathsConfig)
 
-            return field
-        }
+    /**
+     * ServerPackCreators home-directory, in which all important files and folders are stored in.
+     */
+    var homeDirectory: File
+        get() = pathsConfig.homeDirectory
         set(value) {
-            storePreference(pHomeDirectory, value.absolutePath)
-            field = value.absoluteFile
-            log.info("Home-directory set to: $field")
-            log.warn("Restart ServerPackCreator for this change to take full effect.")
+            pathsConfig.homeDirectory = value
         }
 
     /**
-     * The `serverpackcreator.properties`-file which both resulted from starting
-     * ServerPackCreator and provided the settings, properties and configurations for the currently
-     * running instance.
+     * The serverpackcreator.properties-file of the currently running instance.
      */
-    var serverPackCreatorPropertiesFile: File = File(homeDirectory, serverPackCreatorProperties).absoluteFile
-        get() {
-            field = File(homeDirectory, serverPackCreatorProperties).absoluteFile
-            return field
-        }
-        private set
+    val serverPackCreatorPropertiesFile: File get() = pathsConfig.serverPackCreatorPropertiesFile
 
     /**
-     * Overrides which, well, override, any property which may be set in the regular [serverPackCreatorPropertiesFile].
+     * Overrides-file which overrides any property set in the regular properties-file.
      */
-    var overridesPropertiesFile: File = File(homeDirectory, "overrides.properties")
-        get() {
-            field = File(homeDirectory, "overrides.properties")
-            return field
-        }
-        private set
+    val overridesPropertiesFile: File get() = pathsConfig.overridesPropertiesFile
 
     /**
-     * Default configuration-file for a server pack generation inside ServerPackCreators
-     * home-directory.
+     * Default configuration-file for a server pack generation in the home-directory.
      */
-    var defaultConfig: File = File(homeDirectory, "serverpackcreator.conf").absoluteFile
-        get() {
-            field = File(homeDirectory, "serverpackcreator.conf").absoluteFile
-            return field
-        }
-        private set
+    val defaultConfig: File get() = pathsConfig.defaultConfig
 
     /**
-     * Directory in which ServerPackCreator configurations from the GUI get saved in by default.
+     * Directory in which GUI-created configurations are saved by default.
      */
-    var configsDirectory: File = File(homeDirectory, "configs").absoluteFile
-        get() {
-            field = File(homeDirectory, "configs").absoluteFile
-            return field
-        }
-        private set
+    val configsDirectory: File get() = pathsConfig.configsDirectory
 
     /**
      * Base-directory for Tomcat, used by the webservice-side of ServerPackCreator.
      */
-    var tomcatBaseDirectory: File = homeDirectory
-        get() {
-            val prop = internalProps.getProperty(pTomcatBaseDirectory, homeDirectory.absolutePath)
-            val dir = if (prop != homeDirectory.absolutePath) {
-                internalProps.setProperty(pTomcatBaseDirectory, homeDirectory.absolutePath)
-                homeDirectory.absolutePath
-            } else {
-                internalProps.getProperty(pTomcatBaseDirectory, homeDirectory.absolutePath)
-            }
-            field = File(dir).absoluteFile
-            return field
-        }
+    var tomcatBaseDirectory: File
+        get() = pathsConfig.tomcatBaseDirectory
         set(value) {
-            internalProps.setProperty(pTomcatBaseDirectory, value.absolutePath)
-            field = value.absoluteFile
-            log.info("Set Tomcat base-directory to: $field")
-        }
-
-    fun defaultTomcatBaseDirectory(): File {
-        return homeDirectory.absoluteFile
-    }
-
-    fun defaultServerPacksDirectory(): File {
-        return File(homeDirectory, "server-packs").absoluteFile
-    }
-
-    /**
-     * Directory in which generated server packs, or server packs being generated, are stored in, as
-     * well as their ZIP-archives, if created.
-     *
-     * By default, this directory will be the `server-packs`-directory in the home-directory of
-     * ServerPackCreator, but it can be configured using the property
-     * `de.griefed.serverpackcreator.configuration.directories.serverpacks` and can even be
-     * configured to be completely independent of ServerPackCreators home-directory.
-     */
-    var serverPacksDirectory: File = File(homeDirectory, "server-packs")
-        get() {
-            val prop = internalProps.getProperty(pConfigurationDirectoriesServerPacks)
-            val directory: File = if (prop.isNullOrBlank() || prop.matches(serverPacksRegex)) {
-                defaultServerPacksDirectory()
-            } else {
-                File(internalProps.getProperty(pConfigurationDirectoriesServerPacks))
-            }
-            if (field.absolutePath != directory.absolutePath) {
-                field = directory
-            }
-            return field
-        }
-        set(value) {
-            internalProps.setProperty(pConfigurationDirectoriesServerPacks, value.absolutePath)
-            field = value.absoluteFile
-            log.info("Server packs directory set to: $field")
+            pathsConfig.tomcatBaseDirectory = value
         }
 
     /**
-     * Storage location for logs created by ServerPackCreator. This is the `logs`-directory
-     * inside ServerPackCreators home-directory.
+     * The default Tomcat base-directory: the home-directory.
      */
-    var logsDirectory: File = File(homeDirectory, "logs").absoluteFile
-        get() {
-            field = File(homeDirectory, "logs").absoluteFile
-            return field
+    fun defaultTomcatBaseDirectory(): File = pathsConfig.defaultTomcatBaseDirectory()
+
+    /**
+     * The default server-packs directory: server-packs inside the home-directory.
+     */
+    fun defaultServerPacksDirectory(): File = pathsConfig.defaultServerPacksDirectory()
+
+    /**
+     * Directory in which generated server packs and their ZIP-archives are stored.
+     */
+    var serverPacksDirectory: File
+        get() = pathsConfig.serverPacksDirectory
+        set(value) {
+            pathsConfig.serverPacksDirectory = value
         }
-        private set
+
+    /**
+     * Storage-location for logs created by ServerPackCreator.
+     */
+    val logsDirectory: File get() = pathsConfig.logsDirectory
 
     /**
      * Logs-directory for Tomcat, used by the webservice-side of ServerPackCreator.
      */
-    var tomcatLogsDirectory: File = logsDirectory
-        get() {
-            val default = logsDirectory.absolutePath
-            val prop = internalProps.getProperty(pTomcatLogsDirectory, default)
-            val dir = if (File(prop).canWrite()) {
-                internalProps.getProperty(pTomcatLogsDirectory, default)
-            } else {
-                default
-            }
-            field = File(dir).absoluteFile
-            return field
-        }
+    var tomcatLogsDirectory: File
+        get() = pathsConfig.tomcatLogsDirectory
         set(value) {
-            internalProps.setProperty(pTomcatLogsDirectory, value.absolutePath)
-            field = value.absoluteFile
-            log.info("Set Tomcat logs-directory to: $field")
+            pathsConfig.tomcatLogsDirectory = value
         }
-
-    fun defaultTomcatLogsDirectory(): File {
-        return File(homeDirectory, "logs").absoluteFile
-    }
 
     /**
-     * Directory to which default/fallback manifests are copied to during the startup of
-     * ServerPackCreator.
-     *
-     * When the [de.griefed.serverpackcreator.api.versionmeta.VersionMeta] is initialized, the
-     * manifests copied to this directory will provide ServerPackCreator with the information required
-     * to check and create your server packs.
-     *
-     * By default, this is the `manifests`-directory inside ServerPackCreators home-directory.
+     * The default Tomcat logs-directory: logs inside the home-directory.
      */
-    var manifestsDirectory: File = File(homeDirectory, "manifests").absoluteFile
-        get() {
-            field = File(homeDirectory, "manifests").absoluteFile
-            return field
-        }
-        private set
+    fun defaultTomcatLogsDirectory(): File = pathsConfig.defaultTomcatLogsDirectory()
 
     /**
-     * The Fabric intermediaries manifest containing all required information about Fabrics
-     * intermediaries. These intermediaries are used by Quilt, Fabric and LegacyFabric.
-     *
-     *
-     * By default, the `fabric-intermediaries-manifest.json`-file resides in the
-     * `manifests`-directory inside ServerPackCreators home-directory.
+     * Directory to which default/fallback version-manifests are copied during startup.
      */
-    var fabricIntermediariesManifest: File =
-        File(manifestsDirectory, "fabric-intermediaries-manifest.json").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "fabric-intermediaries-manifest.json").absoluteFile
-            return field
-        }
-        private set
+    val manifestsDirectory: File get() = pathsConfig.manifestsDirectory
 
     /**
-     * The LegacyFabric game version manifest containing information about which Minecraft version
-     * LegacyFabric is available for.
-     *
-     *
-     * By default, the `legacy-fabric-game-manifest.json`-file resides in the
-     * `manifests`-directory inside ServerPackCreators home-directory.
+     * The Fabric intermediaries-manifest, used by Quilt, Fabric and LegacyFabric.
      */
-    var legacyFabricGameManifest: File = File(manifestsDirectory, "legacy-fabric-game-manifest.json").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "legacy-fabric-game-manifest.json").absoluteFile
-            return field
-        }
-        private set
+    val fabricIntermediariesManifest: File get() = pathsConfig.fabricIntermediariesManifest
 
     /**
-     * LegacyFabric loader manifest containing information about Fabric loader maven versions.
-     *
-     * By default, the `legacy-fabric-loader-manifest.json`-file resides in the
-     * `manifests`-directory inside ServerPackCreators home-directory.
+     * The LegacyFabric game-version manifest.
      */
-    var legacyFabricLoaderManifest: File = File(manifestsDirectory, "legacy-fabric-loader-manifest.json").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "legacy-fabric-loader-manifest.json").absoluteFile
-            return field
-        }
-        private set
+    val legacyFabricGameManifest: File get() = pathsConfig.legacyFabricGameManifest
 
     /**
-     * LegacyFabric installer manifest containing information about available LegacyFabric installers
-     * with which to install a server.
-     *
-     * By default, the `legacy-fabric-installer-manifest.xml`-file resides in the
-     * `manifests`-directory inside ServerPackCreators home-directory.
+     * The LegacyFabric loader-manifest.
      */
-    var legacyFabricInstallerManifest: File =
-        File(manifestsDirectory, "legacy-fabric-installer-manifest.xml").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "legacy-fabric-installer-manifest.xml").absoluteFile
-            return field
-        }
-        private set
+    val legacyFabricLoaderManifest: File get() = pathsConfig.legacyFabricLoaderManifest
 
     /**
-     * Fabric installer manifest containing information about available Fabric installers with which
-     * to install a server.
-     *
-     * By default, the `fabric-installer-manifest.xml`-file resides in the
-     * `manifests`-directory inside ServerPackCreators home-directory.
+     * The LegacyFabric installer-manifest.
      */
-    var fabricInstallerManifest: File = File(manifestsDirectory, "fabric-installer-manifest.xml").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "fabric-installer-manifest.xml").absoluteFile
-            return field
-        }
-        private set
+    val legacyFabricInstallerManifest: File get() = pathsConfig.legacyFabricInstallerManifest
 
     /**
-     * Quilt version manifest containing information about available Quilt loader versions.
-     *
-     * By default, the `quilt-manifest.xml`-file resides in the `manifests`-directory
-     * inside ServerPackCreators home-directory.
+     * The Fabric installer-manifest.
      */
-    var quiltVersionManifest: File = File(manifestsDirectory, "quilt-manifest.xml").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "quilt-manifest.xml").absoluteFile
-            return field
-        }
-        private set
+    val fabricInstallerManifest: File get() = pathsConfig.fabricInstallerManifest
 
     /**
-     * Quilt installer manifest containing information about available Quilt installers with which to
-     * install a server.
-     *
-     * By default, the `quilt-installer-manifest.xml`-file resides in the
-     * `manifests`-directory inside ServerPackCreators home-directory.
+     * The Quilt version-manifest.
      */
-    var quiltInstallerManifest: File = File(manifestsDirectory, "quilt-installer-manifest.xml").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "quilt-installer-manifest.xml").absoluteFile
-            return field
-        }
-        private set
+    val quiltVersionManifest: File get() = pathsConfig.quiltVersionManifest
 
     /**
-     * Forge version manifest containing information about available Forge loader versions.
-     *
-     *
-     * By default, the `forge-manifest.json`-file resides in the `manifests`-directory
-     * inside ServerPackCreators home-directory.
+     * The Quilt installer-manifest.
      */
-    var forgeVersionManifest: File = File(manifestsDirectory, "forge-manifest.json").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "forge-manifest.json").absoluteFile
-            return field
-        }
-        private set
+    val quiltInstallerManifest: File get() = pathsConfig.quiltInstallerManifest
 
     /**
-     * Old NeoForge version manifest containing information about available NeoForge loader versions.
-     * This manifest only contains versions for Minecraft 1.20.1.
-     *
-     *
-     * By default, the `neoforge-manifest.xml`-file resides in the `manifests`-directory
-     * inside ServerPackCreators home-directory.
+     * The Forge version-manifest.
      */
-    var oldNeoForgeVersionManifest: File = File(manifestsDirectory, "neoforge-manifest.xml").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "neoforge-manifest.xml").absoluteFile
-            return field
-        }
-        private set
+    val forgeVersionManifest: File get() = pathsConfig.forgeVersionManifest
 
     /**
-     * New NeoForge version manifest containing information about available NeoForge loader versions.
-     * This manifest contains versions for Minecraft 1.20.2 and up.
-     *
-     *
-     * By default, the `neoforge-manifest-new.xml`-file resides in the `manifests`-directory
-     * inside ServerPackCreators home-directory.
+     * The old NeoForge version-manifest, covering Minecraft 1.20.1 only.
      */
-    var newNeoForgeVersionManifest: File = File(manifestsDirectory, "neoforge-manifest-new.xml").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "neoforge-manifest-new.xml").absoluteFile
-            return field
-        }
-        private set
+    val oldNeoForgeVersionManifest: File get() = pathsConfig.oldNeoForgeVersionManifest
 
     /**
-     * Fabric version manifest containing information about available Fabric loader versions.
-     *
-     *
-     * By default, the `fabric-manifest.xml`-file resides in the `manifests`-directory
-     * inside ServerPackCreators home-directory.
+     * The new NeoForge version-manifest.
      */
-    var fabricVersionManifest: File = File(manifestsDirectory, "fabric-manifest.xml").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "fabric-manifest.xml").absoluteFile
-            return field
-        }
-        private set
+    val newNeoForgeVersionManifest: File get() = pathsConfig.newNeoForgeVersionManifest
 
     /**
-     * Directory to which Minecraft server manifests are copied during the startup of
-     * ServerPackCreator.
-     *
-     * When the [de.griefed.serverpackcreator.api.versionmeta.VersionMeta] is initialized, the
-     * manifests copied to this directory will provide ServerPackCreator with the information required
-     * to check and create your server packs.
-     *
-     * The Minecraft server manifests contain information about the Java version required, the
-     * download-URL of the server-JAR and much more.
-     *
-     * By default, this is the `mcserver`-directory inside the `manifests`-directory
-     * inside ServerPackCreators home-directory.
+     * The Fabric version-manifest.
      */
-    var minecraftServerManifestsDirectory: File = File(manifestsDirectory, "mcserver").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "mcserver").absoluteFile
-            return field
-        }
-        private set
+    val fabricVersionManifest: File get() = pathsConfig.fabricVersionManifest
 
     /**
-     * Minecraft version manifest containing information about available Minecraft versions.
-     *
-     * By default, the `minecraft-manifest.json`-file resides in the `manifests`-directory
-     * inside ServerPackCreators home-directory.
+     * Directory in which Minecraft-server manifests are stored.
      */
-    var minecraftVersionManifest: File = File(manifestsDirectory, "minecraft-manifest.json").absoluteFile
-        get() {
-            field = File(manifestsDirectory, "minecraft-manifest.json").absoluteFile
-            return field
-        }
-        private set
+    val minecraftServerManifestsDirectory: File get() = pathsConfig.minecraftServerManifestsDirectory
 
     /**
-     * Work-directory for storing temporary, non-critical, files and directories.
-     *
-     * Any file and/or directory inside the work-directory is considered `safe-to-delete`,
-     * meaning that it can safely be emptied when ServerPackCreator is not running, without running
-     * the risk of corrupting anything. It is not recommended to empty this directory whilst
-     * ServerPackCreator is running, as in that case, it may interfere with any currently running
-     * operation.
-     *
-     * By default, this is the `work`-directory inside ServerPackCreators home-directory.
+     * The Minecraft version-manifest.
      */
-    var workDirectory: File = File(homeDirectory, "work").absoluteFile
-        get() {
-            field = File(homeDirectory, "work").absoluteFile
-            return field
-        }
-        private set
+    val minecraftVersionManifest: File get() = pathsConfig.minecraftVersionManifest
 
     /**
-     * Caching directory for various types of installers. Mainly used by the version-meta for caching modloaders
-     * server installers, but also used as the ServerPackCreator installer cache-directory in certain scenarios.
-     *
-     * @author Griefed
+     * Work-directory for storage of files and folders required temporarily during any operation.
      */
-    var installerCacheDirectory: File = File(workDirectory, "installers").absoluteFile
-        get() {
-            field = File(workDirectory, "installers").absoluteFile
-            return field
-        }
-        private set
+    val workDirectory: File get() = pathsConfig.workDirectory
 
     /**
-     * Temp-directory storing files and folders required temporarily during the run of a server pack
-     * generation or other operations.
-     *
-     * One example would be when running ServerPackCreator as a webservice and uploading a zipped
-     * modpack for the automatic creation of a server pack from said modpack.
-     *
-     * Any file and/or directory inside the work-directory is considered `safe-to-delete`,
-     * meaning that it can safely be emptied when ServerPackCreator is not running, without running
-     * the risk of corrupting anything. It is not recommended to empty this directory whilst
-     * ServerPackCreator is running, as in that case, it may interfere with any currently running
-     * operation.
-     *
-     *
-     * By default, this directory is `work/temp` inside ServerPackCreators home-directory.
+     * Caching-directory for various types of installers.
      */
-    var tempDirectory: File = File(workDirectory, "temp").absoluteFile
-        get() {
-            field = File(workDirectory, "temp").absoluteFile
-            return field
-        }
-        private set
+    val installerCacheDirectory: File get() = pathsConfig.installerCacheDirectory
 
     /**
-     * Modpacks directory in which uploaded modpack ZIP-archives and extracted modpacks are stored.
-     *
-     * By default, this is the `modpacks`-directory inside the `temp`-directory inside
-     * ServerPackCreators home-directory.
+     * Temp-directory storing files and folders required temporarily during a run.
      */
-    var modpacksDirectory: File = File(homeDirectory, "modpacks").absoluteFile
-        get() {
-            field = File(homeDirectory, "modpacks").absoluteFile
-            return field
-        }
-        private set
+    val tempDirectory: File get() = pathsConfig.tempDirectory
+
+    /**
+     * Modpacks-directory in which uploaded modpack-archives and extracted modpacks are stored.
+     */
+    val modpacksDirectory: File get() = pathsConfig.modpacksDirectory
 
     /**
      * Directory in which default server-files are stored in.
-     *
-     * Default server-files are, for example, the `server.properties`, `server-icon.png`,
-     * `default_template.sh` and `default_template.ps1`.
-     *
-     * The properties and icon are placeholders and/or templates for the user to change to their
-     * liking, should they so desire. The script-templates serve as a one-size-fits-all template for
-     * supporting `Forge`, `Fabric`, `LegacyFabric` and `Quilt`.
-     *
-     * By default, this directory is `server_files` inside ServerPackCreators home-directory.
      */
-    var serverFilesDirectory: File = File(homeDirectory, "server_files").absoluteFile
-        get() {
-            field = File(homeDirectory, "server_files").absoluteFile
-            return field
-        }
-        private set
+    val serverFilesDirectory: File get() = pathsConfig.serverFilesDirectory
 
     /**
-     * The default shell-template for the modded server start scripts. The file returned by this
-     * method does not represent the script-template in the `server_files`-directory. If you
-     * wish access the configured script templates inside the `server_files`-directory, use
-     * [startScriptTemplates].
+     * The default shell-template for the modded server start-scripts.
      */
-    val defaultShellScriptTemplate = File(serverFilesDirectory, "default_template.sh")
+    val defaultShellScriptTemplate: File get() = pathsConfig.defaultShellScriptTemplate
 
     /**
-     * The default PowerShell-template for the modded server start scripts. The file returned by this
-     * method does not represent the script-template in the `server_files`-directory. If you
-     * wish access the configured script templates inside the `server_files`-directory, use
-     * [startScriptTemplates].
+     * The default fish-template for the modded server start-scripts.
      */
-    val defaultPowerShellScriptTemplate = File(serverFilesDirectory, "default_template.ps1")
+    val defaultFishScriptTemplate: File get() = pathsConfig.defaultFishScriptTemplate
 
     /**
-     * The default Batch-template for the modded server start scripts. The file returned by this
-     * method does not represent the script-template in the `server_files`-directory. If you
-     * wish access the configured script templates inside the `server_files`-directory, use
-     * [startScriptTemplates].
+     * The default PowerShell-template for the modded server start-scripts.
      */
-    val defaultBatchScriptTemplate = File(serverFilesDirectory, "default_template.bat")
+    val defaultPowerShellScriptTemplate: File get() = pathsConfig.defaultPowerShellScriptTemplate
 
     /**
-     * The default shell-template for the java-install scripts. The file returned by this
-     * method does not represent the script-template in the `server_files`-directory. If you
-     * wish access the configured script templates inside the `server_files`-directory, use
-     * [javaScriptTemplates].
+     * The default Batch-template for the modded server start-scripts.
      */
-    val defaultJavaShellScriptTemplate = File(serverFilesDirectory, "default_java_template.sh")
+    val defaultBatchScriptTemplate: File get() = pathsConfig.defaultBatchScriptTemplate
 
     /**
-     * The default PowerShell-template for the java-install scripts. The file returned by this
-     * method does not represent the script-template in the `server_files`-directory. If you
-     * wish access the configured script templates inside the `server_files`-directory, use
-     * [javaScriptTemplates].
+     * The default shell-template for the java-install scripts.
      */
-    val defaultJavaPowerShellScriptTemplate = File(serverFilesDirectory, "default_java_template.ps1")
+    val defaultJavaShellScriptTemplate: File get() = pathsConfig.defaultJavaShellScriptTemplate
 
     /**
-     * The default Batch-template for the java-install scripts. The file returned by this
-     * method does not represent the script-template in the `server_files`-directory. If you
-     * wish access the configured script templates inside the `server_files`-directory, use
-     * [javaScriptTemplates].
+     * The default fish-template for the java-install scripts.
      */
-    val defaultJavaBatchScriptTemplate = File(serverFilesDirectory, "default_java_template.bat")
+    val defaultJavaFishScriptTemplate: File get() = pathsConfig.defaultJavaFishScriptTemplate
 
     /**
-     * Directory in which the properties for quick selection are to be stored in and retrieved from.
+     * The default PowerShell-template for the java-install scripts.
      */
-    var propertiesDirectory: File = File(serverFilesDirectory, "properties").absoluteFile
-        get() {
-            field = File(serverFilesDirectory, "properties").absoluteFile
-            return field
-        }
-        private set
+    val defaultJavaPowerShellScriptTemplate: File get() = pathsConfig.defaultJavaPowerShellScriptTemplate
 
     /**
-     * Directory in which the icons for quick selection are to be stored in and retrieved from.
+     * The default Batch-template for the java-install scripts.
      */
-    var iconsDirectory: File = File(serverFilesDirectory, "icons").absoluteFile
-        get() {
-            field = File(serverFilesDirectory, "icons").absoluteFile
-            return field
-        }
-        private set
+    val defaultJavaBatchScriptTemplate: File get() = pathsConfig.defaultJavaBatchScriptTemplate
 
     /**
-     * Default server.properties-file used by Minecraft servers. This file resides in the
-     * `server_files`-directory inside ServerPackCreators home-directory.
+     * Directory in which properties for quick selection are stored and retrieved.
      */
-    var defaultServerProperties: File = File(serverFilesDirectory, "server.properties").absoluteFile
-        get() {
-            field = File(serverFilesDirectory, "server.properties").absoluteFile
-            return field
-        }
-        private set
+    val propertiesDirectory: File get() = pathsConfig.propertiesDirectory
 
     /**
-     * Default server-icon.png-file used by Minecraft servers. This file resides in the
-     * `server_files`-directory inside ServerPackCreators home-directory.
+     * Directory in which icons for quick selection are stored and retrieved.
      */
-    var defaultServerIcon: File = File(serverFilesDirectory, "server-icon.png").absoluteFile
-        get() {
-            field = File(serverFilesDirectory, "server-icon.png").absoluteFile
-            return field
-        }
-        private set
+    val iconsDirectory: File get() = pathsConfig.iconsDirectory
+
+    /**
+     * Default server.properties-file used by Minecraft servers.
+     */
+    val defaultServerProperties: File get() = pathsConfig.defaultServerProperties
+
+    /**
+     * Default server-icon.png-file used by Minecraft servers.
+     */
+    val defaultServerIcon: File get() = pathsConfig.defaultServerIcon
+
+    /**
+     * The shipped `variables.txt` template that server-pack generation fills in. Lives in the `server_files`-directory
+     * inside ServerPackCreator's home-directory, like the start-script templates.
+     */
+    val defaultVariablesTemplate: File get() = pathsConfig.defaultVariablesTemplate
 
     /**
      * Directory in which plugins for ServerPackCreator are to be placed in.
-     *
-     * This directory not only holds any potential plugins for ServerPackCreator, but also contains the
-     * directory in which plugin-specific config-files are stored in, as well as the
-     * `disabled.txt`-file, which allows a user to disable any installed plugin.
-     *
-     *
-     * By default, this is the `plugins`-directory inside the ServerPackCreator home-directory.
      */
-    var pluginsDirectory: File = File(homeDirectory, "plugins").absoluteFile
-        get() {
-            field = File(homeDirectory, "plugins").absoluteFile
-            return field
-        }
-        private set
+    val pluginsDirectory: File get() = pathsConfig.pluginsDirectory
 
     /**
      * Directory in which plugin-specific configurations are stored in.
-     *
-     * When ServerPackCreator starts and loads all available plugins, it will also extract a plugins
-     * config-file, if available. This file will be stored inside the config-directory using the ID of
-     * the plugin as its name, with `.toml` appended to it. Think of this like the
-     * config-directory in a modded Minecraft server. Do the names of the config-files there look
-     * familiar to the mods they belong to? Well, they should!
-     *
-     * By default, this is the `config`-directory inside the `plugins`-directory inside
-     * ServerPackCreators home-directory.
      */
-    var pluginsConfigsDirectory: File = File(pluginsDirectory, "config").absoluteFile
-        get() {
-            field = File(pluginsDirectory, "config").absoluteFile
-            return field
-        }
-        private set
+    val pluginsConfigsDirectory: File get() = pathsConfig.pluginsConfigsDirectory
 
     /**
-     * Load the [propertiesFile] into the provided [props]
-     *
-     * @author Griefed
+     * Loads the given properties-file into [props] via the [store], dropping blank values and
+     * tracking the file for later saving.
      */
     private fun loadFile(propertiesFile: File, props: Properties) {
-        if (!propertiesFile.isFile) {
-            log.warn("Properties-file does not exist: ${propertiesFile.absolutePath}.")
-            return
-        }
-
-        try {
-            //Temp props to load the ones from the specified file into
-            val tempProps = Properties()
-            propertiesFile.inputStream().use {
-                tempProps.load(it)
-            }
-
-            tempProps.entries.removeIf { entry -> entry.value.toString().isBlank() }
-
-            //Write temp props into passed props
-            for ((key, value) in tempProps.entries) {
-                props[key] = value
-            }
-
-            props.entries.removeIf { entry -> entry.value.toString().isBlank() }
-            propertyFiles.add(propertiesFile)
-            log.info("Loaded properties from ${propertiesFile.absolutePath}.")
-        } catch (ex: Exception) {
-            log.error("Couldn't read properties from ${propertiesFile.absolutePath}.", ex)
-        }
+        store.loadInto(propertiesFile, props)
     }
 
+    /**
+     * Loads the overrides-properties directly into the store, replacing already-loaded values.
+     */
     fun loadOverrides(properties: File = overridesPropertiesFile) {
-        val tempProps = Properties()
-        if (properties.isFile) {
-            properties.inputStream().use {
-                tempProps.load(it)
-            }
-        }
-        for ((key, value) in tempProps) {
-            log.warn("Overriding:")
-            log.warn("  $key")
-            if (key.toString().contains("(username|password)")) {
-                log.warn("  ************************************")
-            } else {
-                log.warn("  $value")
-            }
-        }
-        internalProps.putAll(tempProps)
+        store.loadOverrides(properties)
     }
 
     /**
@@ -2294,9 +973,9 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         loadFile(serverPackCreatorPropertiesFile, props)
         internalProps.putAll(props)
 
-        internalProps.setProperty(pTomcatBaseDirectory, homeDirectory.absolutePath)
-        if (internalProps.getProperty(pLanguage) != "en_GB") {
-            changeLocale(Locale(internalProps.getProperty(pLanguage)))
+        internalProps.setProperty(PathsConfig.TOMCAT_BASE_DIRECTORY_KEY, homeDirectory.absolutePath)
+        if (internalProps.getProperty(I18nConfig.LANGUAGE_KEY) != "en_GB") {
+            changeLocale(Locale(internalProps.getProperty(I18nConfig.LANGUAGE_KEY)))
         }
 
         // Load all values from the overrides-properties
@@ -2320,17 +999,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @author Griefed
      */
     private fun setFallbackModsList() {
-        // Regular list
-        clientsideMods.addAll(
-            getListProperty(
-                pConfigurationFallbackModsList,
-                fallbackMods.joinToString(",")
-            )
-        )
-        internalProps.setProperty(
-            pConfigurationFallbackModsList,
-            clientsideMods.joinToString(",")
-        )
+        generationConfig.loadFallbackModsList()
     }
 
     /**
@@ -2339,17 +1008,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @author Griefed
      */
     private fun setFallbackWhitelist() {
-        // Regular list
-        modsWhitelist.addAll(
-            getListProperty(
-                pConfigurationFallbackModsWhiteList,
-                fallbackModsWhitelist.joinToString(",")
-            )
-        )
-        internalProps.setProperty(
-            pConfigurationFallbackModsWhiteList,
-            fallbackModsWhitelist.joinToString(",")
-        )
+        generationConfig.loadFallbackWhitelist()
     }
 
     /**
@@ -2363,11 +1022,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @author Griefed
      */
     private fun acquireProperty(key: String, defaultValue: String) =
-        if (internalProps.getProperty(key).isNullOrBlank()) {
-            defineProperty(key, defaultValue)
-        } else {
-            internalProps.getProperty(key, defaultValue)
-        }
+        store.acquire(key, defaultValue)
 
     /**
      * Set a property in our ApplicationProperties.
@@ -2377,10 +1032,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @return The [value] to which the [key] was set to.
      * @author Griefed
      */
-    private fun defineProperty(key: String, value: String): String {
-        internalProps.setProperty(key, value)
-        return value
-    }
+    private fun defineProperty(key: String, value: String): String =
+        store.define(key, value)
 
     /**
      * Get a list from our properties.
@@ -2393,13 +1046,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     private fun getListProperty(
         key: String,
         defaultValue: String
-    ) = if (acquireProperty(key, defaultValue).contains(",")) {
-        acquireProperty(key, defaultValue)
-            .split(",")
-            .dropLastWhile { it.isEmpty() }
-    } else {
-        listOf(acquireProperty(key, defaultValue))
-    }
+    ) = store.getList(key, defaultValue)
 
     /**
      * Join the [value] via usage of the [separator] and overwrite the [key].
@@ -2407,7 +1054,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      */
     @Suppress("SameParameterValue")
     private fun setListProperty(key: String, value: List<String>, separator: String) {
-        internalProps.setProperty(key, value.joinToString(separator))
+        store.setList(key, value, separator)
     }
 
     /**
@@ -2420,12 +1067,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      */
     @Suppress("SameParameterValue")
     private fun getIntProperty(key: String, defaultValue: Int) =
-        try {
-            acquireProperty(key, defaultValue.toString()).toInt()
-        } catch (ex: NumberFormatException) {
-            defineProperty(key, defaultValue.toString())
-            defaultValue
-        }
+        store.getInt(key, defaultValue)
 
     /**
      * Set the integer property with the given [key] to the given [value].
@@ -2433,7 +1075,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @author Griefed
      */
     @Suppress("SameParameterValue")
-    private fun setIntProperty(key: String, value: Int) = defineProperty(key, value.toString())
+    private fun setIntProperty(key: String, value: Int) = store.setInt(key, value)
 
     /**
      * Get a list of files from our properties, with each file having a specific prefix.
@@ -2445,14 +1087,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @author Griefed
      */
     @Suppress("SameParameterValue")
-    private fun getFileListProperty(key: String, defaultValue: String, filePrefix: String): List<File> {
-        val files: MutableList<File> = ArrayList(4)
-        val entries = getListProperty(key, defaultValue)
-        for (entry in entries) {
-            files.add(File(filePrefix + entry))
-        }
-        return files
-    }
+    private fun getFileListProperty(key: String, defaultValue: String, filePrefix: String): List<File> =
+        store.getFileList(key, defaultValue, filePrefix)
 
     /**
      * Get a boolean from our properties.
@@ -2463,68 +1099,21 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @author Griefed
      */
     private fun getBoolProperty(key: String, defaultValue: Boolean) =
-        acquireProperty(key, defaultValue.toString()).toBoolean()
+        store.getBool(key, defaultValue)
 
     /**
      * Set the integer property with the given [key] to the given [value].
      *
      * @author Griefed
      */
-    private fun setBoolProperty(key: String, value: Boolean) = defineProperty(key, value.toString())
+    private fun setBoolProperty(key: String, value: Boolean) = store.setBool(key, value)
+
 
     /**
-     * Adder for the list of directories to exclude from server packs.
-     *
-     * @param entry The directory to add to the list of directories to exclude from server packs.
-     * @author Griefed
+     * Check the given path to a Java installation for validity and return it, if it is valid.
+     * Invalid paths yield the automatically acquired system-Java.
      */
-    private fun addDirectoryToExclude(entry: String) {
-        if (!directoriesToInclude.contains(entry) && directoriesToExclude.add(entry)) {
-            log.debug("Adding $entry to list of files or directories to exclude.")
-        }
-    }
-
-    /**
-     * Check the given path to a Java installation for validity and return it, if it is valid. If the
-     * passed path is a UNIX symlink or Windows lnk, it is resolved, then returned. If the passed path
-     * is considered invalid, the system default is acquired and returned.
-     *
-     * @param pathToJava The path to check for whether it is a valid Java installation.
-     * @return Returns the path to the Java installation. If user input was incorrect, SPC will try to
-     * acquire the path automatically.
-     * @author Griefed
-     */
-    fun acquireJavaPath(pathToJava: String? = null): String {
-        var checkedJavaPath: String
-        try {
-            if (!pathToJava.isNullOrBlank()) {
-                if (checkJavaPath(pathToJava)) {
-                    return pathToJava
-                }
-                if (checkJavaPath("$pathToJava.exe")) {
-                    return "$pathToJava.exe"
-                }
-                if (checkJavaPath("$pathToJava.lnk")) {
-                    return FileUtilities.resolveLink(File("$pathToJava.lnk"))
-                }
-            }
-            checkedJavaPath = SystemUtilities.acquireJavaPathFromSystem()
-            log.debug("Acquired path to Java installation: $checkedJavaPath")
-        } catch (ex: NullPointerException) {
-            log.info("Java setting invalid or otherwise not usable. Using system default.")
-            checkedJavaPath = SystemUtilities.acquireJavaPathFromSystem()
-            log.debug("Automatically acquired path to Java installation: $checkedJavaPath", ex)
-        } catch (ex: InvalidFileTypeException) {
-            log.info("Java setting invalid or otherwise not usable. Using system default.")
-            checkedJavaPath = SystemUtilities.acquireJavaPathFromSystem()
-            log.debug("Automatically acquired path to Java installation: $checkedJavaPath", ex)
-        } catch (ex: IOException) {
-            log.info("Java setting invalid or otherwise not usable. Using system default.")
-            checkedJavaPath = SystemUtilities.acquireJavaPathFromSystem()
-            log.debug("Automatically acquired path to Java installation: $checkedJavaPath", ex)
-        }
-        return checkedJavaPath
-    }
+    fun acquireJavaPath(pathToJava: String? = null): String = javaConfig.acquireJavaPath(pathToJava)
 
     /**
      * Store the ApplicationProperties to disk, overwriting the existing one.
@@ -2533,119 +1122,18 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @author Griefed
      */
     fun saveProperties(propertiesFile: File) {
-        cleanupInternalProps()
-        val toSave = TreeSet<File>()
-        toSave.addAll(propertyFiles)
-        toSave.add(propertiesFile)
-
-        for (props in toSave) {
-            if (!props.isFile && props != serverPackCreatorPropertiesFile) {
-                //Skip if the file no longer exists
-                continue
-            }
-            try {
-                props.outputStream().use {
-                    internalProps.store(
-                        it,
-                        "For details about each property, see https://help.serverpackcreator.de/settings-and-configs.html"
-                    )
-                }
-                log.info("Saved properties to: $propertiesFile")
-            } catch (ex: FileNotFoundException) {
-                log.error("Couldn't write properties-file ${props.absolutePath}. File either doesn't exist or we don't have write-permission.")
-            } catch (ex: IOException) {
-                log.error("Couldn't write properties-file ${props.absolutePath}.", ex)
-            }
-        }
-    }
-
-    /**
-     * Removes unwanted properties. Called during the save-operation, to ensure that legacy-properties are removed.
-     *
-     * @author Griefed
-     */
-    private fun cleanupInternalProps() {
-        internalProps.remove(pConfigurationFallbackModsListRegex)
-    }
-
-    /**
-     * Check whether the given path is a valid Java specification.
-     *
-     * @param pathToJava Path to the Java executable
-     * @return `true` if the path is valid.
-     * @author Griefed
-     */
-    private fun checkJavaPath(pathToJava: String?): Boolean {
-        if (pathToJava.isNullOrBlank()) {
-            return false
-        }
-        if (checkedJavas.containsKey(pathToJava)) {
-            return checkedJavas[pathToJava]!!
-        }
-        val result: Boolean
-        when (FileUtilities.checkFileType(pathToJava)) {
-            FileType.FILE -> {
-                result = testJava(pathToJava)
-            }
-
-            FileType.LINK, FileType.SYMLINK -> {
-                result = try {
-                    testJava(FileUtilities.resolveLink(File(pathToJava)))
-                } catch (ex: InvalidFileTypeException) {
-                    log.error("Could not read Java link/symlink.", ex)
-                    false
-                } catch (ex: IOException) {
-                    log.error("Could not read Java link/symlink.", ex)
-                    false
-                }
-            }
-
-            FileType.DIRECTORY -> {
-                log.error("Directory specified. Path to Java must lead to a lnk, symlink or file.")
-                result = false
-            }
-
-            FileType.INVALID -> result = false
-        }
-        checkedJavas[pathToJava] = result
-        return result
-    }
-
-    /**
-     * Test for a valid Java specification by trying to run `java -version`. If the command goes
-     * through without errors, it is considered a correct specification.
-     *
-     * @param pathToJava Path to the java executable/binary.
-     * @return `true` if the specified file is a valid Java executable/binary.
-     * @author Griefed
-     */
-    private fun testJava(pathToJava: String): Boolean {
-        val testSuccessful: Boolean = try {
-            val processBuilder = ProcessBuilder(listOf(pathToJava, "-version"))
-            processBuilder.redirectErrorStream(true)
-            val process = processBuilder.start()
-            val bufferedReader = BufferedReader(InputStreamReader(process.inputStream))
-            while (bufferedReader.readLine() != null && bufferedReader.readLine() != "null") {
-                println(bufferedReader.readLine())
-            }
-            bufferedReader.close()
-            process.destroyForcibly()
-            true
-        } catch (e: IOException) {
-            log.error("Invalid Java specified.")
-            false
-        }
-        return testSuccessful
+        store.save(
+            propertiesFile,
+            alwaysWrite = serverPackCreatorPropertiesFile,
+            removeKeys = listOf(pConfigurationFallbackModsListRegex)
+        )
     }
 
     /**
      * Whether a viable path to a Java executable or binary has been configured for
      * ServerPackCreator.
-     *
-     * @return `true` if a viable path has been set.
-     * @author Griefed
      */
-    fun javaAvailable() = checkJavaPath(javaPath)
+    fun javaAvailable() = javaConfig.javaAvailable()
 
     /**
      * Writes the specified locale from -lang your_locale to a lang.properties file to ensure every
@@ -2655,11 +1143,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * -your_locale.
      * @author Griefed
      */
-    fun changeLocale(locale: Locale) {
-        language = locale
-        saveProperties(serverPackCreatorPropertiesFile)
-        log.info("Changed locale to $language")
-    }
+    fun changeLocale(locale: Locale) = i18nConfig.changeLocale(locale)
 
     /**
      * Acquire the default fallback list of clientside-only mods. If
@@ -2669,12 +1153,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @return The fallback list of clientside-only mods.
      * @author Griefed
      */
-    fun clientSideMods() =
-        if (exclusionFilter == ExclusionFilter.REGEX) {
-            clientsideModsRegex.toList()
-        } else {
-            clientsideMods.toList()
-        }
+    fun clientSideMods() = generationConfig.clientSideMods()
 
     /**
      * Acquire the default fallback list of whitelisted mods. If
@@ -2684,67 +1163,21 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @return The fallback list of whitelisted mods.
      * @author Griefed
      */
-    fun whitelistedMods() =
-        if (exclusionFilter == ExclusionFilter.REGEX) {
-            modsWhitelistRegex.toList()
-        } else {
-            modsWhitelist.toList()
-        }
+    fun whitelistedMods() = generationConfig.whitelistedMods()
 
     /**
      * Whether the fallback lists for clientside-mods and whitelisted mods have been updated.
      *
      * `true` if either was updated.
      */
-    var fallbackUpdated: Boolean = false
-        private set
+    val fallbackUpdated: Boolean get() = updateConfig.fallbackUpdated
 
     /**
-     * Update the fallback clientside-only mod-list of our `serverpackcreator.properties` from
-     * the main-repository or one of its mirrors.
+     * Update the fallback clientside-only mod-list and whitelist from the configured update-URL.
      *
-     * @return `true` if the fallback-property was updated.
-     * @author Griefed
+     * @return `true` if either fallback-list was updated.
      */
-    fun updateFallback(): Boolean {
-        var properties: Properties? = null
-        try {
-            URI(
-                acquireProperty(pConfigurationFallbackUpdateURL, fallbackUpdateURL)
-            ).toURL().openStream().use {
-                properties = Properties()
-                properties!!.load(it)
-            }
-        } catch (e: IOException) {
-            log.debug("GitHub could not be reached.", e)
-        }
-        fallbackUpdated = false
-        if (properties != null) {
-            val newBlacklist = properties!!.getProperty(pConfigurationFallbackModsList)
-            val currentBlacklist = internalProps.getProperty(pConfigurationFallbackModsList)
-            if (newBlacklist != null && currentBlacklist != newBlacklist) {
-                internalProps.setProperty(pConfigurationFallbackModsList, newBlacklist)
-                clientsideMods.clear()
-                clientsideMods.addAll(internalProps.getProperty(pConfigurationFallbackModsList).split(","))
-                log.info("The fallback-list for clientside only mods has been updated to: $clientsideMods")
-                fallbackUpdated = true
-            }
-
-            val newWhitelist = properties!!.getProperty(pConfigurationFallbackModsWhiteList)
-            val currentWhitelist = internalProps.getProperty(pConfigurationFallbackModsWhiteList)
-            if (newWhitelist != null && currentWhitelist != newWhitelist) {
-                internalProps.setProperty(pConfigurationFallbackModsWhiteList, newWhitelist)
-                modsWhitelist.clear()
-                modsWhitelist.addAll(internalProps.getProperty(pConfigurationFallbackModsWhiteList).split(","))
-                log.info("The fallback-list for whitelisted mods has been updated to: $modsWhitelist")
-                fallbackUpdated = true
-            }
-        }
-        if (fallbackUpdated) {
-            saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
-        }
-        return fallbackUpdated
-    }
+    fun updateFallback(): Boolean = updateConfig.updateFallback()
 
     /**
      * Store a custom property in the serverpackcreator.properties-file. Beware that every property you add
@@ -2758,10 +1191,8 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      *
      * @author Griefed
      */
-    fun storeCustomProperty(property: String, value: String): String {
-        val customProp = "$customPropertyPrefix$property"
-        return defineProperty(customProp, value)
-    }
+    fun storeCustomProperty(property: String, value: String): String =
+        store.storeCustomProperty(property, value)
 
     /**
      * Retrieve a custom property in the serverpackcreator.properties-file. Beware that every property you retrieve this
@@ -2774,37 +1205,20 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      *
      * @author Griefed
      */
-    fun retrieveCustomProperty(property: String): String? {
-        val customProp = "$customPropertyPrefix$property"
-        return internalProps.getProperty(customProp)
-    }
+    fun retrieveCustomProperty(property: String): String? =
+        store.retrieveCustomProperty(property)
 
     /**
      * Get the path to the specified Java executable/binary, wrapped in an [Optional] for your
      * convenience.
-     *
-     * @param javaVersion The Java version to acquire the path for.
-     * @return The path to the Java executable/binary, if available.
-     * @author Griefed
      */
-    fun javaPath(javaVersion: Int) =
-        if (javaPaths.containsKey(javaVersion.toString())
-            && javaPaths[javaVersion.toString()]?.let { File(it).isFile } == true
-        ) {
-            Optional.ofNullable(javaPaths[javaVersion.toString()])
-        } else {
-            Optional.empty()
-        }
+    fun javaPath(javaVersion: Int): Optional<String> = javaConfig.javaPath(javaVersion)
 
     /**
      * Get the path to the specified Java executable/binary, wrapped in an [Optional] for your
      * convenience.
-     *
-     * @param javaVersion The Java version to acquire the path for.
-     * @return The path to the Java executable/binary, if available.
-     * @author Griefed
      */
-    fun javaPath(javaVersion: String) = javaPath(javaVersion.toInt())
+    fun javaPath(javaVersion: String): Optional<String> = javaConfig.javaPath(javaVersion)
 
     /**
      * Set the old version of ServerPackCreator used to perform necessary migrations between the old
@@ -2813,10 +1227,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * @param version Old version used before upgrading to the current version.
      * @author Griefed
      */
-    fun setOldVersion(version: String) {
-        internalProps.setProperty(pOldVersion, version)
-        saveProperties(serverPackCreatorPropertiesFile)
-    }
+    fun setOldVersion(version: String) = updateConfig.setOldVersion(version)
 
     /**
      * Get the old version of ServerPackCreator used to perform necessary migrations between the old
@@ -2824,10 +1235,17 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      *
      * @return Old version used before updating. Empty if this is the first run of ServerPackCreator.
      */
-    fun oldVersion(): String = internalProps.getProperty(pOldVersion, "")
+    fun oldVersion(): String = updateConfig.oldVersion()
 
+    /**
+     * Forget every properties file the store has loaded from.
+     *
+     * `PropertyStore` writes to **all** tracked files on every save, so a file loaded once keeps being rewritten for
+     * the life of the process — which is how a daemon started from a checkout dropped a settings file into the
+     * repository root. Call this when a host wants its saves confined to the file it just pointed SPC at.
+     */
     fun clearPropertyFileList() {
-        propertyFiles.clear()
+        store.clearTrackedFiles()
     }
 
     private fun printSettings() {
@@ -2867,7 +1285,12 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         log.info("============================== PROPERTIES ==============================")
     }
 
+    /**
+     * `log4j2.xml` beside the jar rather than in the home directory — [home] is the *jar folder*, not SPC's home.
+     * Legacy install-location copy; [log4jXml] is the one logging actually reads.
+     */
     val installLocationXml: File = File(home, "log4j2.xml")
+    /** The `log4j2.xml` in SPC's home that logging is configured from; rewritten on a dev or pre-release build. */
     val log4jXml: File
 
     init {
@@ -2926,6 +1349,10 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         log4jXml.writeText(loggingConfig)
     }
 
+    /**
+     * The preferences-node resolution used before any instance exists, the singleton accessor, and the
+     * regex that identifies a pre-release version.
+     */
     companion object {
         /**
          * @author Griefed
@@ -2934,6 +1361,43 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         fun getSeparator(): String {
             return File.separator
         }
+
+        /**
+         * The `Preferences` node ServerPackCreator stores its settings — most importantly the home directory — in,
+         * unless overridden. Kept as-is so existing installations keep finding their settings.
+         */
+        const val DEFAULT_PREFERENCES_NODE = "ServerPackCreator"
+
+        /** System property naming the `Preferences` node to use, for hosts that can set it in-process. */
+        const val PREFERENCES_NODE_PROPERTY = "de.griefed.serverpackcreator.preferences.node"
+
+        /** Environment variable naming the `Preferences` node to use, for launchers that cannot set a property. */
+        const val PREFERENCES_NODE_ENV = "SPC_PREFERENCES_NODE"
+
+        /**
+         * Decide which `Preferences` node to store settings in: the [PREFERENCES_NODE_PROPERTY] system property
+         * first, then the [PREFERENCES_NODE_ENV] environment variable, else [DEFAULT_PREFERENCES_NODE].
+         *
+         * **Why this is overridable at all:** the node is per-user and machine-wide, and
+         * `PathsConfig.homeDirectory` re-reads it on every access while writing back what it resolved. With a single
+         * hard-coded node, any SPC process could relocate any other running process's home directory — a test suite
+         * moved a live grinder daemon's home into its own scratch directory and then deleted it, and equally, running
+         * the suites moved the developer's own GUI home. Giving each host its own node makes that impossible.
+         *
+         * A blank override falls back to the default rather than being honoured: `userRoot().node("")` is the *root*
+         * node, shared with every other Java application on the account.
+         *
+         * @param property    The system-property value (injectable for tests).
+         * @param environment The environment-variable value (injectable for tests).
+         */
+        @JvmStatic
+        @JvmOverloads
+        fun resolvePreferencesNode(
+            property: String? = System.getProperty(PREFERENCES_NODE_PROPERTY),
+            environment: String? = System.getenv(PREFERENCES_NODE_ENV)
+        ): String = property?.takeIf { it.isNotBlank() }
+            ?: environment?.takeIf { it.isNotBlank() }
+            ?: DEFAULT_PREFERENCES_NODE
     }
 
     override fun getSupportedTypes(): Array<String> = suffixes
