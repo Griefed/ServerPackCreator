@@ -35,7 +35,6 @@ import de.griefed.serverpackcreator.grinder.loader.CachedLoaderVersions
 import de.griefed.serverpackcreator.clientside.LoaderVersionResolver
 import de.griefed.serverpackcreator.clientside.MetadataScanner
 import de.griefed.serverpackcreator.clientside.supportedPlatforms
-import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.time.Duration
 
@@ -71,8 +70,6 @@ class ContainerCandidateVerifier(
     private val resources: ContainerResources = ContainerResources(),
     private val curseForgeApiKey: String? = System.getenv("CURSEFORGE_API_KEY")
 ) : CandidateVerifier {
-    private val log by lazy { cachedLoggerOf(this.javaClass) }
-
     /** Reclaims each candidate's staging once its verdicts are in; without it the work tree grows without bound. */
     private val reaper = BootWorkspaceReaper(workDirectory)
 
