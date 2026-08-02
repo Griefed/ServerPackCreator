@@ -70,6 +70,16 @@
 #     macOS:
 #       You may acquire a Java 21 install here: https://adoptium.net/temurin/releases/?variant=openjdk21&version=21&package=jdk&arch=x64&os=mac
 
+# https://github.com/fish-shell/fish-shell/issues/12824#issuecomment-5152165903
+# Use this block when you know that the script is not 100% compatible with
+# Fish syntax and you want to print a custom message when opened in Fish.
+# It works if this is the topmost error, so put it at the top of your script.
+_=" ⚠️ This script must be used with Bash shell
+#   (You're using a different incompatible shell)
+#   WIKI: https://simple.wikipedia.org/wiki/Bash
+" #_____________________________________________
+unset _
+
 # pause
 # Pause script execution. User input in the form of any keyboard key-press is required to continue execution.
 pause() {
