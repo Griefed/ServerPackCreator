@@ -106,8 +106,9 @@ data class ContainerRunOutput(
 
 /**
  * Thin, mockable boundary over the container runtime. An implementation creates + starts a container
- * from a [ContainerSpec], streams its combined console while watching for [readyPattern], stops it once
- * ready or [timeout] elapses, and **always removes it** — returning the captured lines + exit status.
+ * from a [ContainerSpec], streams its combined console while watching for [run]'s ready pattern, stops
+ * it once ready or that call's timeout elapses, and **always removes it** — returning the captured
+ * lines + exit status.
  *
  * Keeping the runtime behind this seam (the same pattern as the clientside module's `HttpFetcher`) lets
  * [ContainerServerRunner]'s orchestration be unit-tested with a fake, while the real

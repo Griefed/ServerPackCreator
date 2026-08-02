@@ -35,6 +35,5 @@ class TomcatBaseDirChooser(apiProperties: ApiProperties, title: String) : BaseFi
         isAcceptAllFileFilterUsed = false
         isMultiSelectionEnabled = false
         dialogType = SAVE_DIALOG
-        fileFilter = WritableDirectoryFilter()
     }
 }

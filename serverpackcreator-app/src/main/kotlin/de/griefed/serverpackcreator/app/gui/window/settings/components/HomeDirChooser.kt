@@ -35,6 +35,5 @@ class HomeDirChooser(apiProperties: ApiProperties, title: String) : BaseFileChoo
         isAcceptAllFileFilterUsed = false
         isMultiSelectionEnabled = false
         dialogType = SAVE_DIALOG
-        fileFilter = WritableDirectoryFilter()
     }
 }

@@ -64,6 +64,20 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
 
 ## Landmines & verified quirks (durable)
 
+- **LANDMINE — FlatLaf's `SystemFileChooser` has no per-file `accept` callback; do not write a
+  `FileFilter` subclass expecting one.** `SystemFileChooser.FileFilter` declares **only**
+  `getDescription()` (verified with `javap` against flatlaf 3.7.1), because the chooser drives a
+  *native* OS dialog that cannot call back into Java per file. Its only real filters,
+  `FileNameExtensionFilter` and `PatternFilter`, are `final` and purely declarative. A subclass that
+  adds `accept(File)` therefore overrides nothing, compiles **without** an `override` modifier — the
+  tell — and is never invoked. `WritableDirectoryFilter` was exactly that on four directory choosers
+  (home, server packs, tomcat base, tomcat logs) until 2026-08-02, apparently left over from a
+  `javax.swing.JFileChooser` migration. **Nothing was actually broken**, because every call site
+  validates *after* the dialog returns via `File.testFileWrite()` plus a `settings_directory_error`
+  dialog (`GlobalSettings.kt:63,96`, `WebserviceSettings.kt:70,89`) — that is where the rule lives, so
+  keep it there. The filter was deleted rather than repaired; a `DIRECTORIES_ONLY` chooser has no
+  files to filter anyway, and `getFiltersForDialog` null-checks the field on every read. If a real
+  restriction is ever needed *inside* the dialog, the mechanism is `setApproveCallback`, not a filter.
 - **`@get:JsonProperty` on Boolean settings fields:** Jackson drops the `is` prefix otherwise, so
   the frontend (`setting-store.js`) reads `undefined`. Keep the annotation on Boolean web-entity
   getters.

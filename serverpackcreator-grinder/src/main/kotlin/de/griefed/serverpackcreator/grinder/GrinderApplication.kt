@@ -221,7 +221,6 @@ object GrinderApplication {
         log.info("Grinder stopped after $pass pass(es).")
     }
 
-    /** Read [key] from the environment, falling back to [default] when unset or blank. */
     /**
      * Where the daemon's SPC settings file lives: [explicitPath] when the operator named one, otherwise
      * `serverpackcreator.properties` inside the daemon's own [home]. Always absolute.
@@ -237,6 +236,7 @@ object GrinderApplication {
         explicitPath?.takeIf { it.isNotBlank() }?.let { File(it).absoluteFile }
             ?: File(home, "serverpackcreator.properties").absoluteFile
 
+    /** Read [key] from the environment, falling back to [default] when unset or blank. */
     private fun env(key: String, default: String): String = System.getenv(key)?.takeIf { it.isNotBlank() } ?: default
 
     /** Best-effort project-slug from a URL (last path segment) — used only for the skip-already-done check. */
