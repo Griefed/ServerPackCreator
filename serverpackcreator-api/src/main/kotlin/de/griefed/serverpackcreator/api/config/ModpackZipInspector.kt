@@ -38,7 +38,14 @@ import java.util.*
  */
 class ModpackZipInspector {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
-    private val zipCheck = "^\\w+[/\\\\]$".toRegex()
+
+    /**
+     * Matches a ZIP entry that is a bare top-level directory — how a modpack export's nesting is detected.
+     *
+     * Visible so the pattern inspection actually uses can be read from outside, rather than inferred from
+     * a second copy of the same literal.
+     */
+    val zipCheck = "^\\w+[/\\\\]$".toRegex()
 
     /**
      * Check a given ZIP-archives contents. If the ZIP-archive only contains one directory, or if it
