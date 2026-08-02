@@ -30,8 +30,11 @@ import javax.xml.parsers.DocumentBuilderFactory
  */
 @Suppress("unused")
 class Utilities {
+    /** Download and link-opening helpers. Deliberately in `-api` so plugins get them too. */
     val webUtilities: WebUtilities
+    /** JSON reading/parsing helpers, injected wherever a manifest has to be understood. */
     val jsonUtilities: JsonUtilities
+    /** XML reading helpers, used for the maven-metadata manifests Forge and Fabric publish. */
     val xmlUtilities: XmlUtilities
 
     /**

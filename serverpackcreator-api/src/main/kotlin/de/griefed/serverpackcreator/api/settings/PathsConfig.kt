@@ -44,6 +44,7 @@ class PathsConfig(
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val serverPacksRegex = "^(?:\\./)?server-packs$".toRegex()
 
+    /** Property keys for the paths this group owns, plus the home-directory override key. */
     companion object {
         /**
          * Property- and preference-key holding ServerPackCreators home-directory.
@@ -210,10 +211,17 @@ class PathsConfig(
             log.info("Set Tomcat base-directory to: $field")
         }
 
+    /**
+     * Where the web backend's Tomcat keeps its working files: always the home directory.
+     *
+     * **Landmine:** the `tomcatBaseDirectory` *getter* resets a deviating stored value to this on read, so the GUI's
+     * dirty-check compares a raw widget against a normalised value and needs a reload after saving.
+     */
     fun defaultTomcatBaseDirectory(): File {
         return homeDirectory.absoluteFile
     }
 
+    /** Where generated packs go unless a configuration overrides the destination. */
     fun defaultServerPacksDirectory(): File {
         return File(homeDirectory, "server-packs").absoluteFile
     }
@@ -278,6 +286,7 @@ class PathsConfig(
             log.info("Set Tomcat logs-directory to: $field")
         }
 
+    /** Where the web backend logs, falling back when the configured location is not writable. */
     fun defaultTomcatLogsDirectory(): File {
         return File(homeDirectory, "logs").absoluteFile
     }
@@ -583,7 +592,7 @@ class PathsConfig(
      * wish access the configured script templates inside the `server_files`-directory, use
      * `startScriptTemplates`.
      */
-    val defaultShellScriptTemplate = File(serverFilesDirectory, "default_template.sh")
+    val defaultShellScriptTemplate: File get() = File(serverFilesDirectory, "default_template.sh")
 
     /**
      * The default fish-template for the modded server start scripts. The file returned by this
@@ -591,7 +600,7 @@ class PathsConfig(
      * wish access the configured script templates inside the `server_files`-directory, use
      * `startScriptTemplates`.
      */
-    val defaultFishScriptTemplate = File(serverFilesDirectory, "default_template.fish")
+    val defaultFishScriptTemplate: File get() = File(serverFilesDirectory, "default_template.fish")
 
 
     /**
@@ -600,7 +609,7 @@ class PathsConfig(
      * wish access the configured script templates inside the `server_files`-directory, use
      * `startScriptTemplates`.
      */
-    val defaultPowerShellScriptTemplate = File(serverFilesDirectory, "default_template.ps1")
+    val defaultPowerShellScriptTemplate: File get() = File(serverFilesDirectory, "default_template.ps1")
 
     /**
      * The default Batch-template for the modded server start scripts. The file returned by this
@@ -608,7 +617,7 @@ class PathsConfig(
      * wish access the configured script templates inside the `server_files`-directory, use
      * `startScriptTemplates`.
      */
-    val defaultBatchScriptTemplate = File(serverFilesDirectory, "default_template.bat")
+    val defaultBatchScriptTemplate: File get() = File(serverFilesDirectory, "default_template.bat")
 
     /**
      * The default shell-template for the java-install scripts. The file returned by this
@@ -616,7 +625,7 @@ class PathsConfig(
      * wish access the configured script templates inside the `server_files`-directory, use
      * `javaScriptTemplates`.
      */
-    val defaultJavaShellScriptTemplate = File(serverFilesDirectory, "default_java_template.sh")
+    val defaultJavaShellScriptTemplate: File get() = File(serverFilesDirectory, "default_java_template.sh")
 
     /**
      * The default fish-template for the java-install scripts. The file returned by this
@@ -624,7 +633,7 @@ class PathsConfig(
      * wish access the configured script templates inside the `server_files`-directory, use
      * `javaScriptTemplates`.
      */
-    val defaultJavaFishScriptTemplate = File(serverFilesDirectory, "default_java_template.fish")
+    val defaultJavaFishScriptTemplate: File get() = File(serverFilesDirectory, "default_java_template.fish")
 
     /**
      * The default PowerShell-template for the java-install scripts. The file returned by this
@@ -632,7 +641,7 @@ class PathsConfig(
      * wish access the configured script templates inside the `server_files`-directory, use
      * `javaScriptTemplates`.
      */
-    val defaultJavaPowerShellScriptTemplate = File(serverFilesDirectory, "default_java_template.ps1")
+    val defaultJavaPowerShellScriptTemplate: File get() = File(serverFilesDirectory, "default_java_template.ps1")
 
     /**
      * The default Batch-template for the java-install scripts. The file returned by this
@@ -640,7 +649,7 @@ class PathsConfig(
      * wish access the configured script templates inside the `server_files`-directory, use
      * `javaScriptTemplates`.
      */
-    val defaultJavaBatchScriptTemplate = File(serverFilesDirectory, "default_java_template.bat")
+    val defaultJavaBatchScriptTemplate: File get() = File(serverFilesDirectory, "default_java_template.bat")
 
     /**
      * Directory in which the properties for quick selection are to be stored in and retrieved from.

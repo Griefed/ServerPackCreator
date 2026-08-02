@@ -39,9 +39,13 @@ package de.griefed.serverpackcreator.api.config
  * @author Griefed
  */
 class InclusionSpecification(
+    /** What to copy, relative to the modpack directory. */
     var source: String,
+    /** Where it lands in the server pack, or `null` to keep the source's own name. */
     var destination: String? = null,
+    /** Regex narrowing which files under [source] are copied, or `null` for all of them. */
     var inclusionFilter: String? = null,
+    /** Regex removing files that [inclusionFilter] would otherwise have kept, or `null` for none. */
     var exclusionFilter: String? = null
 ) {
 

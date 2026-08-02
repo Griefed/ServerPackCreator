@@ -95,12 +95,20 @@ data class ContainerSpec(
  *
  * @author Griefed
  */
-data class ContainerRunOutput(val lines: List<String>, val exitCode: Int?, val timedOut: Boolean)
+data class ContainerRunOutput(
+    /** The container's combined stdout+stderr, in order. What the classifier reads — the console decides, not the exit code. */
+    val lines: List<String>,
+    /** The container's exit status, or `null` when it could not be determined (killed, or inspect failed). */
+    val exitCode: Int?,
+    /** Whether the boot ran out of its budget rather than finishing. Suspended host time is excluded; see `SuspendAwareDeadline`. */
+    val timedOut: Boolean
+)
 
 /**
  * Thin, mockable boundary over the container runtime. An implementation creates + starts a container
- * from a [ContainerSpec], streams its combined console while watching for [readyPattern], stops it once
- * ready or [timeout] elapses, and **always removes it** — returning the captured lines + exit status.
+ * from a [ContainerSpec], streams its combined console while watching for [run]'s ready pattern, stops
+ * it once ready or that call's timeout elapses, and **always removes it** — returning the captured
+ * lines + exit status.
  *
  * Keeping the runtime behind this seam (the same pattern as the clientside module's `HttpFetcher`) lets
  * [ContainerServerRunner]'s orchestration be unit-tested with a fake, while the real

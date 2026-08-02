@@ -12,8 +12,11 @@
 - `ApiWrapper` is the composition root — a thin, lazy, constructor-injected collaborator graph.
   Leave it thin.
 - Tests: JUnit 5; real fixture modpacks under `tests/` and `src/test/resources/testresources/`.
-  "Tested" = unit tests per class **plus** generation end-to-end. No live network (version
-  manifests are cached).
+  "Tested" = unit tests per class **plus** generation end-to-end. **Offline for versions in the shipped manifest
+  snapshot** (`src/main/resources/de/griefed/resources/manifests`, seeded into the home by `ApiWrapper.setup()`); a
+  newer version costs one `mcserver/<version>.json` fetch, and the snapshot lags its own parent manifest (B25).
+  `cleanup()` in the java-conventions plugin wipes the test home before every run but **spares `manifests/`** —
+  before 2026-07-31 it did not, taking that cache from 643 files to 0 on every single run.
 
 ## Established patterns
 
@@ -33,6 +36,18 @@
   stays there; moving it risks breaking log4j plugin-discovery.
 - **Loader regexes have a single source of truth:** `config.SupportedModloaders` (5 exact-match
   regexes + canonical `names`). Do **not** reintroduce `"^forge$"`-style literals anywhere else.
+- **A constant kept on an extraction facade must *read* its owner, never re-declare the literal.**
+  `ServerPackHandler.modFileEndings` and `ConfigurationHandler.zipCheck` are getters delegating to
+  `ModListCompiler.modFileEndings` / `ModpackZipInspector.zipCheck`, pinned by
+  `FacadeConstantDelegationTest` — which asserts **identity**, because a value comparison passes
+  against a re-introduced equal-valued copy, i.e. exactly the state being guarded. Until 2026-08-02
+  both existed twice: Phase 1c/1d moved each constant's sole call site into the new class along with a
+  *private copy*, leaving the public declaration behind. Nothing regressed — the copies agreed — but
+  **the explanation lived on the dead copy while the consulted one had none**, so an edit aimed at the
+  documented constant would have changed nothing at all. Same rule as `SupportedModloaders` above.
+  **Use a getter, not `val x = collaborator.y`:** both facades are declared *before* their
+  collaborator (`ServerPackHandler:92` vs `:98`, `ConfigurationHandler:88` vs `:109`), so an
+  initialiser would read it before it exists — the declaration-order landmine directly above.
 - **LANDMINE — Minecraft has two versioning schemes; never read a component in isolation.** Releases are
   either `1.x[.y]` or the newer `YY.x[.y]` (`26.1.2`, `26.2`). Any test on the *minor* component alone is
   therefore wrong: `26.2`'s minor is `2`, which reads as the 1.2 era. Two live instances were found and fixed
@@ -74,6 +89,17 @@
   **The grinder cannot catch this class of bug** — it pre-bakes the install and boots offline from cache, so it
   only ever exercises the launch of an already-installed tuple. Cached tuples stay valid across this change:
   their `unix_args.txt` is what the new path launches, and `downloadIfNotExist` short-circuits on it offline.
+- **LANDMINE — a path derived from the home directory must be computed on access, never captured.**
+  `PathsConfig.homeDirectory` re-reads on every access (and now honours `-Dde.griefed.serverpackcreator.home`
+  first), so `serverFilesDirectory` and friends move when the home moves — `--home`, the `-D` override, or the GUI
+  settings panel. A plain `val x = File(serverFilesDirectory, …)` freezes the *old* home at construction. The eight
+  shipped script-template properties did exactly that until 2026-07-31: they feed `defaultStartScriptTemplates()` /
+  `defaultJavaScriptTemplates()`, so generation read templates out of a directory the user had left behind — their
+  edits silently did nothing, with no error anywhere. All eight are now `val … get() = …`, pinned by
+  `PathsConfigTest.defaultTemplatePathsFollowAHomeDirectoryChangedAfterConstruction`, which changes the home
+  underneath a *live* instance (the older test built the config afterwards, so a captured value still looked right).
+  The file's other 31 path properties use an equivalent field-assigning getter; either shape is fine, a bare
+  initialiser is not.
 - **`PackConfig.modloader` setter silently ignores unrecognized values**; unknown loaders default
   to **Forge**. Most-specific loader names must be matched first (LegacyFabric before Fabric, etc.).
 - **`PackConfig.save(destination, apiProperties)`** is the primary (injection-required) overload;

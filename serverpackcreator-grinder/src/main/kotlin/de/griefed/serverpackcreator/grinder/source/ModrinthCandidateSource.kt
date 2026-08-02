@@ -132,7 +132,9 @@ class ModrinthCandidateSource(
             projectUrl = "https://modrinth.com/mod/$slug",
             slug = slug,
             popularity = hit.path("downloads").asLong(0),
-            platform = platform
+            platform = platform,
+            // Modrinth's immutable project id. The slug above is a display name the author can change.
+            projectId = hit.path("project_id").takeIf { it.isTextual }?.asText()?.takeIf { it.isNotBlank() }
         )
     }
 

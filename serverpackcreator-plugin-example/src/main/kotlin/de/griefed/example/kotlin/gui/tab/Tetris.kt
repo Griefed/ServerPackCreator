@@ -145,22 +145,11 @@ object Tetris {
  * @version 1.2
  */
 internal class SquareBoard(
+    /** The board width in squares, i.e. the number of horizontal squares that fit on the board. */
     val boardWidth: Int,
+    /** The board height in squares, i.e. the number of vertical squares that fit on the board. */
     val boardHeight: Int
 ) {
-    /**
-     * Returns the board width (in squares). This method returns, i.e, the number of horizontal
-     * squares that fit on the board.
-     *
-     * @return the board width in squares
-     */
-    /**
-     * Returns the board height (in squares). This method returns, i.e, the number of vertical squares
-     * that fit on the board.
-     *
-     * @return the board height in squares
-     */
-
     /**
      * The graphical sqare board component. This graphical representation is created upon the first
      * call to getComponent().
@@ -179,13 +168,8 @@ internal class SquareBoard(
      */
     private var message: String? = null
     /**
-     * Returns the number of lines removed since the last clear().
-     *
-     * @return the number of lines removed since the last clear call
-     */
-    /**
-     * The number of lines removed. This counter is increased each time a line is removed from the
-     * board.
+     * The number of lines removed since the last [clear]. Increased each time a line is removed
+     * from the board.
      */
     var removedLines = 0
         private set
@@ -747,6 +731,8 @@ internal class SquareBoard(
  * game is started through user interaction with the graphical game component provided by this
  * class.
  *
+ * @param width  the width of the square board (in positions); defaults to 10
+ * @param height the height of the square board (in positions); defaults to 20
  * @author Per Cederberg, per@percederberg.net
  * @version 1.2
  */
@@ -787,12 +773,7 @@ internal class Game @JvmOverloads constructor(width: Int = 10, height: Int = 20)
         Figure(Figure.TRIANGLE_FIGURE)
     )
     /**
-     * Gets the current level.
-     *
-     * @return the current level.
-     */
-    /**
-     * The game level. The level will be increased for every 20 lines removed from the square board.
+     * The current game level. Increased for every 20 lines removed from the square board.
      */
     var level = 1
         private set
@@ -841,13 +822,9 @@ internal class Game @JvmOverloads constructor(width: Int = 10, height: Int = 20)
     private var state = 0
 
     /**
-     * Creates a new Tetris game. The square board will be given the specified size.
-     *
-     * @param width  the width of the square board (in positions)
-     * @param height the height of the square board (in positions)
-     */
-    /**
-     * Creates a new Tetris game. The square board will be given the default size of 10x20.
+     * Bring the new game up in its get-ready state: start the game thread, then make the board
+     * component focusable and route its key presses into [handleKeyEvent] so the game is playable
+     * as soon as it is shown.
      */
     init {
         thread = GameThread()

@@ -41,6 +41,8 @@ class JavaConfig(private val store: PropertyStore) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val checkedJavas = hashMapOf<String, Boolean>()
 
+    /** Property keys for the Java paths and the auto-update toggle. */
+
     companion object {
         /**
          * Property-key holding the Java used for modloader-server installations.
@@ -103,7 +105,7 @@ class JavaConfig(private val store: PropertyStore) {
                 }
                 position = key.replace(SCRIPT_JAVA_PATHS_PREFIX, "").toIntOrNull()
                 newKey = SCRIPT_JAVA_PATHS_PREFIX + position
-                if (position != null && 8 <= position!! && position!! < 256) {
+                if (position != null && 8 <= position && position < 256) {
                     store.properties.setProperty(newKey, value)
                     paths[newKey] = value
                 }

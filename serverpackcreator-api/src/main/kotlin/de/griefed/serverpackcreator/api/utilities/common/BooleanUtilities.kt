@@ -28,6 +28,7 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
  */
 @Suppress("unused", "KDocUnresolvedReference")
 class BooleanUtilities {
+    /** The strings accepted as true or false when reading a boolean property. */
     companion object {
         private val log by lazy { cachedLoggerOf(BooleanUtilities::class.java) }
 

@@ -35,6 +35,5 @@ class TomcatLogDirChooser(apiProperties: ApiProperties, title: String) : BaseFil
         isAcceptAllFileFilterUsed = false
         isMultiSelectionEnabled = false
         dialogType = SAVE_DIALOG
-        fileFilter = WritableDirectoryFilter()
     }
 }

@@ -265,6 +265,7 @@ class ForgeMeta(
             Optional.empty()
         }
 
+    /** Every supported Forge version keyed by Minecraft version — the shape the GUI's combo boxes need. */
     fun getForgeMeta(): HashMap<String,List<String>> {
         return forgeLoader!!.versionMeta
     }

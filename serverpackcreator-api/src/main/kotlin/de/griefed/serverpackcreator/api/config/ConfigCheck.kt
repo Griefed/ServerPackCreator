@@ -150,6 +150,7 @@ class ConfigCheck {
      * List of errors which didn't fit any of the other categories.
      */
     val otherErrors: MutableList<String> = mutableListOf()
+    /** Whether every check outside the named categories passed — the catch-all a host can test without listing them. */
     val otherChecksPassed: Boolean
         get() {
             return otherErrors.isEmpty()

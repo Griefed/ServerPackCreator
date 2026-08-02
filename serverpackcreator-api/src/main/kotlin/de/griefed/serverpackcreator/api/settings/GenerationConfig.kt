@@ -37,6 +37,7 @@ class GenerationConfig(private val store: PropertyStore) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val trueFalseRegex = "^(true|false)$".toRegex()
 
+    /** Property keys and the shipped defaults every new configuration starts from. */
     companion object {
         /**
          * Property-key holding the fallback-list of clientside-only mods.
@@ -679,6 +680,11 @@ class GenerationConfig(private val store: PropertyStore) {
         )
     )
 
+    /**
+     * Shipped default for what a new configuration copies out of a modpack. Sorted, so the config file it is
+     * written into stays diff-friendly. Every `fallback*` here is what SPC uses when the property is unset or
+     * unreadable, which is what keeps a damaged properties file from being fatal.
+     */
     val fallbackDirectoriesInclusion = TreeSet(
         listOf(
             "addonpacks",
@@ -706,6 +712,7 @@ class GenerationConfig(private val store: PropertyStore) {
     )
 
     @Suppress("MemberVisibilityCanBePrivate")
+    /** Shipped default for directories never copied, even when an inclusion would otherwise match them. */
     val fallbackDirectoriesExclusion = TreeSet(
         listOf(
             "animation",
@@ -732,6 +739,7 @@ class GenerationConfig(private val store: PropertyStore) {
         )
     )
 
+    /** Shipped default for what is left out of the ZIP — chiefly the files a user must supply themselves. */
     val fallbackZipExclusions = TreeSet(
         listOf(
             "minecraft_server.MINECRAFT_VERSION.jar",
@@ -740,6 +748,7 @@ class GenerationConfig(private val store: PropertyStore) {
         )
     )
 
+    /** Files deleted after the loader installer has run — its leftovers, which no server needs. */
     val fallbackPostInstallCleanupFiles = TreeSet(
         listOf(
             "fabric-installer.jar",
@@ -754,6 +763,7 @@ class GenerationConfig(private val store: PropertyStore) {
         )
     )
 
+    /** Files deleted before the installer runs, so a stale artifact cannot be mistaken for a fresh install. */
     val fallbackPreInstallCleanupFiles = TreeSet(
         listOf(
             "libraries",
@@ -772,6 +782,7 @@ class GenerationConfig(private val store: PropertyStore) {
         )
     )
 
+    /** Aikar's recommended JVM flags, offered as one click in the GUI rather than typed out by a user. */
     val fallbackAikarsFlags = "-Xms4G" +
             " -Xmx4G" +
             " -XX:+UseG1GC" +

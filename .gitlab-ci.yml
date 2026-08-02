@@ -84,13 +84,13 @@ Qodana:
       artifacts: true
       optional: false
   image:
-    name: jetbrains/qodana-jvm-community:2025.1
+    name: jetbrains/qodana-jvm-community:2026.2
     entrypoint: [""]
   cache:
-    - key: qodana-2025.1-$CI_DEFAULT_BRANCH-$CI_COMMIT_REF_SLUG
+    - key: qodana-2026.2-$CI_DEFAULT_BRANCH-$CI_COMMIT_REF_SLUG
       fallback_keys:
-        - qodana-2025.1-$CI_DEFAULT_BRANCH-
-        - qodana-2025.1-
+        - qodana-2026.2-$CI_DEFAULT_BRANCH-
+        - qodana-2026.2-
       paths:
         - qodana/cache
   script:

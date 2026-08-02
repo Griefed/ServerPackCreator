@@ -177,6 +177,8 @@ class DockerJavaContainerEngine(
     private fun exitCodeOf(containerId: String): Int? =
         runCatching { client.inspectContainerCmd(containerId).exec().state.exitCodeLong?.toInt() }.getOrNull()
 
+    /** Poll interval, the suspend-gap threshold and the ambient-environment Docker client factory. */
+
     companion object {
         /** How often the boot's liveness and ready-state are polled. */
         internal const val POLL_INTERVAL_MILLIS = 500L

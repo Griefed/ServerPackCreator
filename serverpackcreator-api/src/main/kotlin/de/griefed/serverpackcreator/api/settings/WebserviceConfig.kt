@@ -35,6 +35,8 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 class WebserviceConfig(private val store: PropertyStore) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
+    /** Property keys for the web backend: database URI and the cleanup schedules. */
+
     companion object {
         /**
          * Database-URI used when none is configured or a legacy non-MongoDB URI is encountered.

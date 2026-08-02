@@ -40,7 +40,7 @@ import javax.swing.JTextPane
 class ThirdPartyNoticesItem(private val mainFrame: MainFrame, private val guiProps: GuiProps) :
     JMenuItem(Translations.menubar_gui_menuitem_licensereport.toString()) {
     /** Owns the dialog-display coroutine; cancelled on [removeNotify] rather than leaking on
-     * [GlobalScope]. */
+     * [kotlinx.coroutines.GlobalScope]. */
     private val componentScope = ComponentCoroutineScope()
 
     private val thirdPartyNoticesWindowTextPane: JTextPane = JTextPane()

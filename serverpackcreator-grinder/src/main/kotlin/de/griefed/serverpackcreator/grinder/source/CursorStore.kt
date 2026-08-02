@@ -35,12 +35,20 @@ import java.util.concurrent.ConcurrentHashMap
  *
  * @author Griefed
  */
-data class CatalogCursor(val offset: Int, val sweeps: Int, val partition: String? = null) {
+data class CatalogCursor(
+    /** How far into the catalogue the next pass starts. Persisted, so coverage accumulates instead of re-checking the top N. */
+    val offset: Int,
+    /** Completed passes over the whole catalogue. Rises only when a source reports it ran off the end. */
+    val sweeps: Int,
+    /** The source's opaque partition token (CurseForge's version/loader/category slice), or `null` for a flat crawl. */
+    val partition: String? = null
+) {
     init {
         require(offset >= 0) { "offset must be >= 0, was $offset" }
         require(sweeps >= 0) { "sweeps must be >= 0, was $sweeps" }
     }
 
+    /** The starting position a source reports before it has ever been crawled. */
     companion object {
         /** The start of a catalog — what an unseen source reports. */
         val START = CatalogCursor(offset = 0, sweeps = 0, partition = null)

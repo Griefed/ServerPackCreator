@@ -64,6 +64,7 @@ class NeoForgeMeta(
         }
     }
 
+    /** Every supported NeoForge build keyed by Minecraft version, merged across the legacy and current manifests. */
     fun getNeoForgeMeta(): HashMap<String, List<String>> {
         return neoForgeLoader!!.versionMeta
     }

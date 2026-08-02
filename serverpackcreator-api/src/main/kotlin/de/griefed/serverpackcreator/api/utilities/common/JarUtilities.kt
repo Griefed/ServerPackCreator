@@ -36,6 +36,7 @@ import kotlin.io.path.toPath
  */
 @Suppress("unused")
 class JarUtilities {
+    /** Extraction of files and folders out of the running jar, used to seed the home directory. */
     companion object {
         private val log by lazy { cachedLoggerOf(JarUtilities::class.java) }
 

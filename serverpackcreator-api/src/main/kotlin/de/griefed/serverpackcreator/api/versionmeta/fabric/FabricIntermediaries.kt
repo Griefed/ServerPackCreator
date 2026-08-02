@@ -39,6 +39,7 @@ class FabricIntermediaries(
     private val objectMapper: ObjectMapper
 ) {
     @Suppress("MemberVisibilityCanBePrivate")
+    /** Intermediary mappings by Minecraft version — the authority on whether Fabric supports a version. */
     val intermediaries = HashMap<String?, FabricIntermediary>(100)
 
     /**

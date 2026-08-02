@@ -31,6 +31,7 @@ import java.util.*
 @Suppress("unused")
 class SystemUtilities {
 
+    /** Which operating system SPC is running on, decided once from `os.name`. */
     companion object {
         private val log by lazy { cachedLoggerOf(SystemUtilities::class.java) }
         private val windowsDriveRegex = "^[a-zA-Z]:\\\\.*".toRegex()
@@ -38,9 +39,13 @@ class SystemUtilities {
         private val javaHome = System.getProperty("java.home")
 
         private val OS: String = System.getProperty("os.name").lowercase(Locale.getDefault())
+        /** Whether SPC runs on Windows, which decides `.ps1`/`.bat` over `.sh`/`.fish` and path separators. */
         val IS_WINDOWS: Boolean = (OS.indexOf("win") >= 0)
+        /** Whether SPC runs on macOS. */
         val IS_MAC: Boolean = (OS.indexOf("mac") >= 0)
+        /** Whether SPC runs on a Unix-like OS — Linux and AIX included, which is the common server case. */
         val IS_UNIX: Boolean = (OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0 || OS.indexOf("aix") > 0)
+        /** Whether SPC runs on Solaris. Kept for completeness; no code path treats it specially. */
         val IS_SOLARIS: Boolean = (OS.indexOf("sunos") >= 0)
 
         /**

@@ -26,6 +26,7 @@ package de.griefed.serverpackcreator.api.utilities.common
  * @author Griefed
  */
 class SemanticVersionComparator {
+    /** Semantic-version comparison, used to decide whether an update is newer. */
     companion object {
 
         /**

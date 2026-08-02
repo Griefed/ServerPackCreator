@@ -44,6 +44,7 @@ import kotlin.streams.asStream
  * @author Griefed
  */
 class FileUtilities {
+    /** File-type detection and the platform's path separator. */
     companion object {
         private val log by lazy { cachedLoggerOf(FileUtilities::class.java) }
         private val windowsDrivers = "^[A-Za-z]:.*".toRegex()

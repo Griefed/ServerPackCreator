@@ -1176,3 +1176,101 @@ green. Every guard in these phases was verified by breaking it and watching it f
 
 **Audit outcome.** H-B, M-B and M-C closed; **L-C withdrawn** as wrong on inspection, with the inverse defect it
 pointed at recorded as B21. Backlog now holds only B4, B5, B11 (deliberate deferrals) plus B21 and B22.
+
+## 2026-08-02 — Qodana report audit and its fallout (`claude-qodana-audit-fixes`)
+
+Audit of the Qodana report for job 37392 (revision `89305a8e8`, i.e. `develop`'s head at the time): **54 problems,
+46 High / 8 Moderate**. Verified one by one against the code rather than taken at face value. Outcome: **15 real,
+22 false positives, 14 by-design, 3 cosmetic** — and the false-positive rate turned out to be the most important
+finding in the report.
+
+**The 18-finding phantom cluster, and the version skew behind it.** Every `KotlinUnreachableCode` hit — all 18, in
+`CurseForgeCandidateSource.kt`, i.e. **39 % of the report's High severity** — is not real. Established three
+independent ways before touching anything: (1) `kotlinc` 2.3.20 compiles the module with zero warnings and never
+emits `UNREACHABLE_CODE`; (2) `CurseForgeCandidateSourceTest` passes 15 tests that *require* the supposedly dead
+lines to execute — line 199 sets the version axis, 251 the categories, 307 returns every mapped page; (3) the root
+cause, measured straight out of the images:
+
+    docker run --rm --entrypoint sh jetbrains/qodana-jvm-community:<tag> \
+      -c 'cat /opt/idea/plugins/Kotlin/kotlinc/build.txt'
+      2025.1 -> 2.1.10-release-473
+      2026.2 -> 2.3.20-release-208
+
+The project builds with Kotlin 2.3.20, so the pinned linter analysed 2.3 source with a **2.1 frontend**, two minor
+versions behind. Every phantom hit sits after a `runCatching {}.getOrElse { …; return }`, whose type parameter the
+older frontend infers as `Nothing`, making everything below look dead. Bumped to 2026.2 (current stable, `latest`,
+published 2026-07-27) in `qodana.yaml` and `.gitlab-ci.yml`, cache keys moved with it. **Not verified by a local
+full run:** Qodana OOM-killed at exit 137 during Gradle import, because the dev machine's Docker VM is capped at
+**1.93 GiB** against 48 GiB of host RAM — the same cap already recorded as a grinder landmine. The image and its
+compiler version are measured; the resulting problem count is not, and wants confirming against the next CI report.
+
+**`WritableDirectoryFilter` was inert — and the report undersold it as an unused function.** FlatLaf's
+`SystemFileChooser.FileFilter` declares **only** `getDescription()` (checked with `javap` against flatlaf 3.7.1), so
+`accept(File)` overrode nothing — which is exactly why it compiled without an `override` modifier. FlatLaf drives a
+*native* OS dialog that cannot call back into Java per file; its only real filters (`FileNameExtensionFilter`,
+`PatternFilter`) are `final` and declarative. **No behaviour was lost**, and the first reading of this finding —
+"the writability restriction silently vanished" — was wrong: all four call sites already validate after the dialog
+returns, via `File.testFileWrite()` plus a `settings_directory_error` dialog (`GlobalSettings.kt:63,96`,
+`WebserviceSettings.kt:70,89`). So the fix is deletion, not repair. Dropping the assignment is safe because
+`getFiltersForDialog` null-checks the field on every read (bytecode offsets 41/56/77) and the choosers are
+`DIRECTORIES_ONLY` anyway, leaving a *file* filter nothing to act on. The class's sole translation key went with it.
+
+**Three functions had silently lost their documentation.** A doc comment immediately followed by another attaches to
+nothing: the first documents no declaration and the function it was written for ends up bare. Seven such blocks
+existed. `BootVerifier` had the docs for `outcomeFor` *and* `shouldRecheckCrash` both drifted above
+`refuseForMissingDependencies`, stacked three deep — the verdict seam every runner shares, and the guard that stops
+a stale loader build being published as a HIGH-confidence clientside mod, each undocumented at its definition.
+`GrinderApplication`'s `env` doc sat above `resolveSpcPropertiesFile`. Four more in `Tetris.kt`, stranded by the
+Java→Kotlin conversion where getter pairs became properties and two constructor overloads became one primary
+constructor with defaults. **Dokka cannot catch this class of defect** — an unattached block yields no declaration
+to warn about — which is why it took Qodana's `KDocUnresolvedReference` on the dangling `[logFile]`, `[label]`,
+`[key]` and `[default]` references to surface them at all.
+
+**Five KDoc links that resolved to nothing**, each for a different reason: `[renderMarkdown]` lives on
+`ClientsideReportRenderer`, not on the report; `ContainerEngine`'s interface doc linked `[readyPattern]`/`[timeout]`,
+which are `run`'s parameters; `LoaderVersionPolicy` carried an `@param versionMeta` although an interface has no
+parameters (it documents `LoaderVersionResolver`'s constructor); and `[GlobalScope]` ×2 survived the GlobalScope
+removal that took the import with it. Measured by Dokka: `Couldn't resolve link` across api/clientside/grinder/app
+goes **12 → 0**. Dokka only inspects Public/Protected/Package, so the `internal`/`private` sites were confirmed with
+`documentedVisibilities` temporarily widened, then reverted.
+
+**Dead code**, all four inert: an unused `ScanResult()` local in `FabricScanner.scan`; `fileNamesForLoader` with no
+caller anywhere (and `-clientside` is unpublished, so no compatibility claim protects it); an unused logger in
+`ContainerCandidateVerifier`; and `InclusionsEditor.removeSelectedEntry`'s `selected++` … `--selected`, which cancel
+exactly — the post-increment compares the old value and the pre-decrement restores it before use.
+
+**`modFileEndings` and `zipCheck` — rewired, not deprecated.** Both were reported unused, and the first instinct was
+to deprecate them. Tracing them first showed that would have been wrong. Each had exactly one call site before its
+extraction, and each extraction (`a35f3cda6` Phase 1c, `b0dc98131` Phase 1d) moved that call site into the new class
+along with a *private copy* of the constant; the moved code is byte-identical and both public facades still
+delegate. **So it was never a bug that they fell out of use, and no third site should be reusing them** — checked:
+`"disabled"` appears in only one other production place (`ServerPackFileGatherer:199`, renaming a disabled mod's
+destination, a different concern), and the only other `filteredWalk` call site filters the *plugins* directory.
+
+What was wrong is subtler and worth stating: two unlinked copies of each literal, with **the reasoning stranded on
+the copy that does nothing**. `ModListCompiler:57` and `ModpackZipInspector:48` — the values generation actually
+consults — carried no documentation, while the dead `ServerPackHandler:90` and `ConfigurationHandler:83` (pre-change line numbers) explained
+why `disabled` counts and what the pattern detects. An edit aimed at the documented copy would have changed nothing
+at all. The project's own `SupportedModloaders` rule already names this failure mode, so the fix is a single source
+of truth, not a deprecation: the facades became getters reading their owner, and the docs moved to the live copies.
+
+- **Getters, not initialisers, on purpose.** `modFileEndings` is declared at `ServerPackHandler:92` but
+  `modListCompiler` only at `:98`; `zipCheck` at `ConfigurationHandler:88`, `zipInspector` at `:109`. Kotlin
+  initialises properties in declaration order, so `val x = collaborator.y` would read the collaborator before it
+  exists — the ordering landmine already recorded for `ApiProperties`' setting groups.
+- **The pin asserts identity, not value**, because a value comparison passes against a re-introduced duplicate that
+  happens to agree — precisely the state being guarded. Committed red (`c59b11318`), failing on assertion rather
+  than compilation, with the failure output stating the hazard exactly: `expected: …ArrayList@61f97194<[jar,
+  disabled]> but was: …ArrayList@6afc2700<[jar, disabled]>`. Two objects, identical contents, nothing linking them.
+  Promoting the two owned constants from `private` to public is folded into that commit as the enabling change —
+  without it the guard cannot be *expressed*, and a non-compiling commit would be a broken build, not a red test.
+
+**Suites at the end of the branch:** api 280 (1 skipped) · clientside 87 · app 76 · grinder 233 (19 skipped) ·
+plugin-example 3 — all green, no existing assertion changed anywhere.
+
+**Left deliberately unfixed.** The five api `UnusedSymbol` hits on published facades stay: they are compatibility
+surface, and Qodana's scope excludes test sources — `compileModList(packConfig)` is called by
+`ServerPackHandlerCharacterizationTest:177` and was flagged regardless, so every `UnusedSymbol` hit reads as "unused
+in main", not "unused". Also rejected: `CanBeParameter` on `Dependency.modID` (dropping `val` removes a published
+property), the five `CanUnescapeDollarLiteral` and three `RemoveRedundantQualifierName` (explicit is more readable;
+the latter is only "redundant" under Kotlin 2.2+ context-sensitive resolution).

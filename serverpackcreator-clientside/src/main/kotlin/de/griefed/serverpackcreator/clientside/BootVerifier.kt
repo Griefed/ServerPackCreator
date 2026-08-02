@@ -332,16 +332,6 @@ class BootVerifier(
         }
 
         /**
-         * Turn a [RunResult] into the reported [BootOutcome]: a [RunResult.NotStarted] is INCONCLUSIVE
-         * with no log; a [RunResult.Completed] is written to [logFile], classified by
-         * [BootLogClassifier], and — only on a crash — given a [BootLogExcerpt]. [label] prefixes the
-         * human-readable detail. This is the verdict seam every runner (host or container) shares.
-         */
-        /**
-         * Whether a crash deserves a second boot on the newest loader build: only a CRASHED outcome, only when
-         * a newest build is known, and only when it differs from the one that actually crashed.
-         */
-        /**
          * Refuse to boot when a required dependency could not be staged, returning the reason — or `null` when
          * everything needed is present and the boot may proceed.
          *
@@ -366,6 +356,10 @@ class BootVerifier(
                 )
             }
 
+        /**
+         * Whether a crash deserves a second boot on the newest loader build: only a CRASHED outcome, only when
+         * a newest build is known, and only when it differs from the one that actually crashed.
+         */
         internal fun shouldRecheckCrash(outcome: BootOutcome, bootedVersion: String, latestVersion: String?): Boolean =
             outcome.result == BootResult.CRASHED && latestVersion != null && latestVersion != bootedVersion
 
@@ -393,6 +387,12 @@ class BootVerifier(
             )
         }
 
+        /**
+         * Turn a [RunResult] into the reported [BootOutcome]: a [RunResult.NotStarted] is INCONCLUSIVE
+         * with no log; a [RunResult.Completed] is written to [logFile], classified by
+         * [BootLogClassifier], and — only on a crash — given a [BootLogExcerpt]. [label] prefixes the
+         * human-readable detail. This is the verdict seam every runner (host or container) shares.
+         */
         internal fun outcomeFor(runResult: RunResult, logFile: File, label: String): BootOutcome = when (runResult) {
             is RunResult.NotStarted -> BootOutcome(BootResult.INCONCLUSIVE, null, runResult.detail)
             is RunResult.Completed -> {

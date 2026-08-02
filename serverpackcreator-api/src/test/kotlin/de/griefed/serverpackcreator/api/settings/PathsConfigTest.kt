@@ -61,6 +61,64 @@ internal class PathsConfigTest {
     }
 
     /**
+     * Pins that the shipped-template paths follow a home-directory that changes **after** construction.
+     *
+     * `homeDirectory` is re-read on every access and `serverFilesDirectory` re-derives from it, so a home change at
+     * runtime — `--home`, the `-D` override, or the GUI's settings panel — moves everything SPC reads and writes.
+     * The template paths must move with it. They are handed out by `defaultStartScriptTemplates()` /
+     * `defaultJavaScriptTemplates()`, so a stale one means generation reads a template out of a directory the user
+     * has left behind: their edits appear to do nothing, and nothing reports an error.
+     *
+     * The existing `defaultScriptTemplatesResideInServerFilesDirectory` cannot catch this — it builds the config
+     * *after* setting the home, so a value captured once at construction still looks correct. This one changes the
+     * home underneath a live instance, which is the case that matters.
+     */
+    @Test
+    fun defaultTemplatePathsFollowAHomeDirectoryChangedAfterConstruction(@TempDir tempDir: File) {
+        val firstHome = File(tempDir, "first-home").apply { mkdirs() }
+        val secondHome = File(tempDir, "second-home").apply { mkdirs() }
+        scratchPreferences.put(PathsConfig.HOME_DIRECTORY_KEY, firstHome.absolutePath)
+        val config = pathsConfig()
+
+        // Reading them first is the point: it is what lets a captured-once value go stale.
+        Assertions.assertEquals(firstHome.canonicalFile, config.serverFilesDirectory.parentFile.canonicalFile)
+        val before = templatePaths(config)
+        for ((name, path) in before) {
+            Assertions.assertTrue(
+                path.canonicalPath.startsWith(firstHome.canonicalPath),
+                "$name should start under the first home, was $path"
+            )
+        }
+
+        scratchPreferences.put(PathsConfig.HOME_DIRECTORY_KEY, secondHome.absolutePath)
+
+        Assertions.assertEquals(
+            secondHome.canonicalFile,
+            config.serverFilesDirectory.parentFile.canonicalFile,
+            "precondition: serverFilesDirectory itself must follow the new home"
+        )
+        for ((name, path) in templatePaths(config)) {
+            Assertions.assertTrue(
+                path.canonicalPath.startsWith(secondHome.canonicalPath),
+                "$name still points into the old home ($path) after it changed — generation would read a template " +
+                    "from a directory the user has left, so their edits silently do nothing"
+            )
+        }
+    }
+
+    /** The eight shipped script templates, by property name, for asserting on all of them at once. */
+    private fun templatePaths(config: PathsConfig): Map<String, File> = mapOf(
+        "defaultShellScriptTemplate" to config.defaultShellScriptTemplate,
+        "defaultFishScriptTemplate" to config.defaultFishScriptTemplate,
+        "defaultPowerShellScriptTemplate" to config.defaultPowerShellScriptTemplate,
+        "defaultBatchScriptTemplate" to config.defaultBatchScriptTemplate,
+        "defaultJavaShellScriptTemplate" to config.defaultJavaShellScriptTemplate,
+        "defaultJavaFishScriptTemplate" to config.defaultJavaFishScriptTemplate,
+        "defaultJavaPowerShellScriptTemplate" to config.defaultJavaPowerShellScriptTemplate,
+        "defaultJavaBatchScriptTemplate" to config.defaultJavaBatchScriptTemplate
+    )
+
+    /**
      * Pins that in a dev-environment without stored preference the home-directory resolves to
      * the current working-directory and is persisted as preference.
      */

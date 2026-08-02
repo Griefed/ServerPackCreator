@@ -46,7 +46,7 @@ class MigrationInfoItem(
     private val mainFrame: MainFrame
 ) : JMenuItem(Translations.menubar_gui_migration.toString()) {
     /** Owns the dialog-display coroutine; cancelled on [removeNotify] (menu teardown / window
-     * close) rather than leaking on [GlobalScope]. */
+     * close) rather than leaking on [kotlinx.coroutines.GlobalScope]. */
     private val componentScope = ComponentCoroutineScope()
 
     private val migrationWindowTextPane: JTextPane = JTextPane()

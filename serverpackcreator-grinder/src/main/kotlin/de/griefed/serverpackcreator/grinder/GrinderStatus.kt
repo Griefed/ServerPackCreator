@@ -120,14 +120,26 @@ class GrinderStatus(private val clock: () -> Instant = Instant::now) {
  * @author Griefed
  */
 data class StatusSnapshot(
+    /** Seconds since the daemon started, so "is it alive?" is answerable without reading a log. */
     val uptimeSeconds: Long,
+    /** When the daemon started, ISO-8601. A string rather than an `Instant` so the JSON needs no date module. */
     val startedAt: String,
+    /** Which crawl pass is running, counting from 1. Rising while `verified` does not means work is failing. */
     val pass: Int,
+    /** How many candidates this pass took from the crawler — the slice size, not the catalogue size. */
     val passCandidates: Int,
+    /** Seconds the current pass has been running. Read with [passCandidates] to judge whether it is progressing. */
     val passRunningSeconds: Long,
+    /** Candidates this pass carried to a verdict. The one number that means the sweep is doing its job. */
     val verified: Int,
+    /**
+     * Verifications that failed this pass. Deliberately *not* counted as work by `GrindPacing`: on a broken host
+     * every candidate fails, and pacing on that would race the cursor through the catalogue verifying nothing.
+     */
     val failed: Int,
+    /** Candidates skipped because their verdict is still inside the re-verify TTL — expected, not a problem. */
     val skippedFresh: Int,
+    /** The workers currently holding a candidate. Shorter than the pool means the rest are idle or the pass ended. */
     val workers: List<WorkerSnapshot>
 )
 
@@ -138,9 +150,17 @@ data class StatusSnapshot(
  * @author Griefed
  */
 data class WorkerSnapshot(
+    /** Thread name, e.g. `grind-worker-1`, matching the thread field in the log pattern so the two can be lined up. */
     val worker: String,
+    /** Which platform the held candidate came from — `jei` exists on both, so this disambiguates it. */
     val platform: String,
+    /** The held candidate's project slug. */
     val slug: String,
+    /** Link to the held candidate, so an operator can look at what is being booted without decoding a pack path. */
     val projectUrl: String,
+    /**
+     * Seconds this worker has held its candidate. The number that exposes a hung boot: a value far above a normal
+     * boot's duration means the container is stuck rather than the pass being slow.
+     */
     val busySeconds: Long
 )

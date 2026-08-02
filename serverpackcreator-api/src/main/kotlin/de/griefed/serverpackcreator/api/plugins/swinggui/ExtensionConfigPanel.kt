@@ -58,6 +58,7 @@ abstract class ExtensionConfigPanel protected constructor(
 ) : JPanel() {
     protected val log by lazy { cachedLoggerOf(this.javaClass) }
     protected val pluginsLog: Logger = LogManager.getLogger("AddonsLogger")
+    /** The panel's current configuration, which SPC stores under the plugin's id in the pack config. */
     val serverPackExtensionConfig: ArrayList<CommentedConfig> = ArrayList(100)
 
     /**

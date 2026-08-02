@@ -37,6 +37,8 @@ class ScriptTemplatesConfig(
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
+    /** Property keys for the start-script and Java-helper template paths. */
+
     companion object {
         /**
          * Property-key prefix under which the start-script templates are stored per script-type.
@@ -123,6 +125,7 @@ class ScriptTemplatesConfig(
     }
 
     @Deprecated("Deprecated as of 6.0.0", ReplaceWith("startScriptTemplates"))
+    /** The start-script templates generation will use. Sorted, so generated packs are reproducible. */
     var scriptTemplates: TreeSet<File> = TreeSet()
         get() {
             val scriptSetting = store.properties.getProperty(LEGACY_SCRIPT_TEMPLATES_KEY)

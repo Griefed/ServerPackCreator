@@ -11,7 +11,7 @@ repositories {
 frontend {
     packageJsonDirectory.set(project.layout.projectDirectory.asFile)
 
-    nodeVersion.set("20.18.3")
+    nodeVersion.set("24.18.1")
     nodeInstallDirectory.set(project.layout.projectDirectory.dir("node"))
 
     assembleScript.set("run build")
@@ -23,14 +23,7 @@ frontend {
 }
 
 tasks.register("installQuasar", RunNpmTaskType::class) {
-    dependsOn("installCorepackLatest")
     args.set("install -g @quasar/cli")
-}
-
-//Temporary intermediate task to prevent https://github.com/nodejs/corepack/issues/612#issuecomment-2631491212
-//TODO Remove once the error, which caused this task to exist in the first place, is fixed in NodeJS/Corepack
-tasks.register("installCorepackLatest", RunNpmTaskType::class) {
-    args.set("install --global corepack@latest")
 }
 
 tasks.getByName("installNode").finalizedBy(

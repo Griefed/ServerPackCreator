@@ -549,16 +549,17 @@ class InclusionsEditor(
     }
 
     /**
+     * Remove the currently selected inclusion and keep the selection where it was, so the entry that
+     * shifted up into the freed slot becomes selected. Removing the last entry has nothing to shift up,
+     * so the selection falls back to the new final row.
+     *
      * @author Griefed
      */
     private fun removeSelectedEntry() {
-        var selected = inclusionList.selectedIndex
-        removeEntry(inclusionList.selectedIndex)
-        if (selected++ < inclusionList.lastVisibleIndex) {
-            inclusionList.selectedIndex = --selected
-        } else {
-            inclusionList.selectedIndex = inclusionList.lastVisibleIndex
-        }
+        val selected = inclusionList.selectedIndex
+        removeEntry(selected)
+        inclusionList.selectedIndex =
+            if (selected < inclusionList.lastVisibleIndex) selected else inclusionList.lastVisibleIndex
     }
 
     /**

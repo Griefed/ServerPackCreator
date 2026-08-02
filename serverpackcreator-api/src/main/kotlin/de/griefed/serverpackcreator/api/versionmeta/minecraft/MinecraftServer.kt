@@ -28,6 +28,8 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.net.URI
 import java.net.URL
+import java.time.Duration
+import java.time.Instant
 import java.util.*
 
 /**
@@ -47,11 +49,20 @@ class MinecraftServer internal constructor(
     val releaseType: Type,
     @Suppress("MemberVisibilityCanBePrivate") val serverUrl: URL,
     private val utilities: Utilities,
-    apiProperties: ApiProperties
+    apiProperties: ApiProperties,
+    private val downloadCooldown: Duration = Duration.ofHours(1),
+    private val clock: () -> Instant = Instant::now
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val manifestFile: File = File(apiProperties.minecraftServerManifestsDirectory, "$minecraftVersion.json")
     private var serverJson: JsonNode? = null
+
+    /**
+     * When this version's manifest download was last attempted, or `null` if never. A failed
+     * [Utilities.webUtilities] download deletes the partial file, so without this every lookup re-attempts -- and
+     * each attempt logs an ERROR with a stack trace. Gates the *download* only; see [readServerJson].
+     */
+    private var lastDownloadAttempt: Instant? = null
     private val downloads = VersionMetaConfig.TAG_DOWNLOADS
     private val server = VersionMetaConfig.TAG_SERVER
     private val url = VersionMetaConfig.TAG_URL
@@ -88,7 +99,30 @@ class MinecraftServer internal constructor(
      * @author Griefed
      */
     private fun setServerJson() {
+        readServerJson()
+    }
+
+    /**
+     * Resolve this version's manifest, caching it once read. A manifest already on disk is always read -- that costs
+     * nothing and cannot fail for the reason a download does. A **download** is attempted only when the file is
+     * absent *and* the last attempt is older than [downloadCooldown], because a failed download deletes the file and
+     * would otherwise be retried by every single lookup: `getServer` consults both [url] and [javaVersion], and that
+     * pair runs per candidate in the grinder, per cell in the template matrix and per GUI version selection.
+     *
+     * A cooldown rather than a permanent memory on purpose -- the grinder runs for days, and a transient network
+     * failure must not write a version off for the life of the process. Same shape as `LoaderCache.failureCooldown`.
+     */
+    private fun readServerJson() {
         if (!manifestFile.exists()) {
+            val lastAttempt = lastDownloadAttempt
+            if (lastAttempt != null && Duration.between(lastAttempt, clock()) < downloadCooldown) {
+                log.debug(
+                    "Not re-attempting the manifest download for Minecraft $minecraftVersion: the last attempt " +
+                        "failed less than $downloadCooldown ago."
+                )
+                return
+            }
+            lastDownloadAttempt = clock()
             utilities.webUtilities.downloadFile(manifestFile, serverUrl)
         }
         serverJson = utilities.jsonUtilities.getJson(manifestFile)

@@ -63,7 +63,6 @@ class FabricScanner(
         log.info("Scanning Fabric mods for sideness...")
         val modDependencies = ArrayList<Pair<String, Pair<String, String>>>()
         val clientMods = TreeSet<String>()
-        val scanResult = ScanResult()
         /*
         * Go through all mods in our list and acquire a list of clientside-only mods as well as any
         * dependencies of the mods.

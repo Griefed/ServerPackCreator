@@ -51,6 +51,8 @@ data class CurseForgePartition(
             if (ascending) ASCENDING else DESCENDING
         ).joinToString("|")
 
+    /** Parsing and formatting of the opaque partition token persisted in the cursor. */
+
     companion object {
         private const val NONE = "*"
         private const val ASCENDING = "asc"
@@ -145,10 +147,20 @@ object CurseForgePartitions {
      * [CurseForgeCandidateSource.SORT_FIELD_TOTAL_DOWNLOADS]. `0` means "any" and is expressed as `null` here.
      */
     const val FORGE = 1
+
+    /** Cauldron — a long-dead Forge/Bukkit hybrid. Present so the numbering matches CurseForge's enum, not because it is crawled. */
     const val CAULDRON = 2
+
+    /** LiteLoader — legacy, same reason as [CAULDRON]: it keeps the offsets honest. */
     const val LITELOADER = 3
+
+    /** Fabric. */
     const val FABRIC = 4
+
+    /** Quilt. Crawled separately from Fabric even though Quilt runs Fabric mods, because the tag is what the API filters on. */
     const val QUILT = 5
+
+    /** NeoForge. */
     const val NEOFORGE = 6
 
     /**

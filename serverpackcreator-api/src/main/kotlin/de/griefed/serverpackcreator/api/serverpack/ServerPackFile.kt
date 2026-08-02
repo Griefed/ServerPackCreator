@@ -36,9 +36,13 @@ import java.nio.file.Path
 @Suppress("MemberVisibilityCanBePrivate")
 class ServerPackFile {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+    /** The file being copied, in the modpack. */
     val sourceFile: File
+    /** [sourceFile] as a [Path], kept alongside it because the copy helpers want each form. */
     val sourcePath: Path
+    /** Where it lands in the server pack. */
     val destinationFile: File
+    /** [destinationFile] as a [Path]. */
     val destinationPath: Path
 
     /**

@@ -55,15 +55,38 @@ class ConfigurationHandler(
     private val apiPlugins: ApiPlugins
 ) {
     private val zipRegex = "\\.[Zz][Ii][Pp]".toRegex()
+    /** Logger for check results, exposed because the checks report through it rather than returning text. */
     val log by lazy { cachedLoggerOf(this.javaClass) }
+
+    /** Loader-name matcher for Forge, from the single source of truth in `SupportedModloaders`. */
     val forge = SupportedModloaders.forge
+
+    /** Loader-name matcher for NeoForge. Tested before [forge], whose pattern also matches `neoforge`. */
     val neoForge = SupportedModloaders.neoForge
+
+    /** Loader-name matcher for Fabric. */
     val fabric = SupportedModloaders.fabric
+
+    /** Loader-name matcher for Quilt. */
     val quilt = SupportedModloaders.quilt
+
+    /** Loader-name matcher for LegacyFabric. Tested before [fabric], which would otherwise swallow it. */
     val legacyFabric = SupportedModloaders.legacyFabric
+
+    /** Matches a string that is only whitespace, so a blank-but-not-empty value is rejected as unset. */
     val whitespace = "^\\s+$".toRegex()
+
+    /** Matches a server pack directory that already carries a numeric suffix, so the next one increments. */
     val previous = ".*_\\d".toRegex()
-    val zipCheck = "^\\w+[/\\\\]$".toRegex()
+
+    /**
+     * Matches a ZIP entry that is a bare top-level directory — see [ModpackZipInspector.zipCheck], which
+     * owns the pattern. Read through rather than copied, so this published constant cannot drift from the
+     * one inspection actually uses. Computed on access because [zipInspector] is declared after this
+     * property, and a plain initialiser would read it before it exists.
+     */
+    val zipCheck: Regex
+        get() = zipInspector.zipCheck
 
     /**
      * Validator for modloader-names and modloader-versions.
@@ -93,10 +116,12 @@ class ConfigurationHandler(
     private val spcGenericEventListeners: ArrayList<SPCGenericListener> = ArrayList(0)
     private val spcConfigEventListeners: ArrayList<SPCConfigCheckListener> = ArrayList(0)
 
+    /** Register a listener notified when a configuration check finishes, regardless of outcome. */
     fun addEventListener(genericEventListener: SPCGenericListener) {
         spcGenericEventListeners.add(genericEventListener)
     }
 
+    /** Register a listener that receives the check's [ConfigCheck] result, so a host can react to the details. */
     fun addEventListener(configEventListener: SPCConfigCheckListener) {
         spcConfigEventListeners.add(configEventListener)
     }

@@ -31,6 +31,7 @@ import de.griefed.serverpackcreator.api.utilities.ReticulatingSplines.Companion.
  * @author Griefed
  */
 class ReticulatingSplines {
+    /** The splash texts. An intentional just-for-fun API endpoint -- do not move or deprecate it. */
     companion object {
         /**
          * The list of messages as they were available in SimCity, plus Reticulating Splines added by

@@ -56,6 +56,7 @@ abstract class ServerPackCreatorPlugin(val context: PluginContext) : Plugin(), B
     final override val description: String
     final override val author: String
     final override val version: String
+    /** The plugin's id. Used as the key its configuration is stored under, so it must be stable across releases. */
     val id: String
 
     protected val pluginsLog = logger("PluginsLogger")

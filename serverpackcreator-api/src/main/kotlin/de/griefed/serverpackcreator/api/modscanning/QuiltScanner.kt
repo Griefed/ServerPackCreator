@@ -48,6 +48,7 @@ class QuiltScanner(
     private val depends = "depends"
     private val jar = "jar"
 
+    /** Dependency ids that are the platform rather than a mod, so they never pull a jar into the keep-list. */
     val dependencyExclusions: Regex
         get() = "(quilt_loader|quilt_base|quilted_fabric_api|java|minecraft)".toRegex()
 

@@ -33,6 +33,8 @@ class LoggingConfig(
     private val applyLogLevel: (String) -> Unit
 ) {
 
+    /** Property key for the log level. */
+
     companion object {
         /**
          * Property-key holding ServerPackCreators log-level.

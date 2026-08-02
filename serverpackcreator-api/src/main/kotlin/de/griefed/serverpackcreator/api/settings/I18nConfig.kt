@@ -38,6 +38,8 @@ class I18nConfig(
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
+    /** Property key for the configured locale. */
+
     companion object {
         /**
          * Property-key holding the language-tag used by ServerPackCreator.

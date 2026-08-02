@@ -1,12 +1,12 @@
 {
   "name": "serverpackcreator-web-frontend",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Frontend for the webservice of ServerPackCreator",
   "productName": "ServerPackCreator",
   "author": "Griefed <griefed@griefed.de>",
   "private": true,
   "type": "module",
-  "packageManager": "npm@11.4.2",
+  "packageManager": "npm@11.16.0",
   "scripts": {
     "lint": "eslint -c ./eslint.config.js \"./src*/**/*.{ts,js,cjs,mjs,vue}\"",
     "format": "prettier --write \"**/*.{ts,js,vue,html,md,json}\" --ignore-path .gitignore",
@@ -46,8 +46,8 @@
     "vue-tsc": "~3.3.5"
   },
   "engines": {
-    "node": ">= 22",
-    "npm": ">= 10",
+    "node": ">= 24",
+    "npm": ">= 11",
     "yarn": ">= 4"
   }
 }

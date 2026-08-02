@@ -59,7 +59,7 @@ class Grinder(
      */
     fun grind(candidate: GrindCandidate): GrindOutcome {
         // Freshness is per (platform, slug): the same slug on Modrinth and CurseForge is two projects.
-        val lastVerified = store.newestVerification(candidate.platform, candidate.slug)
+        val lastVerified = store.newestVerification(candidate.platform, candidate.slug, candidate.projectId)
         if (lastVerified != null && Duration.between(lastVerified, clock()) < reverifyTtl) {
             // Deliberately not INFO: a pass can skip dozens of fresh projects in microseconds, and logging each
             // would bury the one line that matters — the candidate actually being worked on.
@@ -99,7 +99,10 @@ class Grinder(
                     suggestedEntry = verdict.suggestedEntry,
                     confidence = verdict.confidence,
                     detail = verdict.note ?: "",
-                    verifiedAt = now
+                    verifiedAt = now,
+                    // Identity comes from the candidate, not the report: the report echoes the slug, which is the
+                    // mutable name this exists to stop depending on.
+                    projectId = candidate.projectId
                 )
             )
         }
@@ -248,6 +251,8 @@ class GrindPool(
  * @author Griefed
  */
 data class GrindPass(
+    /** Every candidate this pass actually reached, used to commit each source's cursor no further than the work done. */
     val reached: Set<GrindCandidate>,
+    /** How many reached a verdict. Failures are excluded deliberately — pacing on failures races the cursor. */
     val verified: Int
 )

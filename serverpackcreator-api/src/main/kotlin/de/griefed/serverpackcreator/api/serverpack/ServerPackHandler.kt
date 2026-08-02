@@ -81,8 +81,16 @@ class ServerPackHandler(
     private val modScanner: ModScanner
 ) {
 
+    /** Logger for generation progress, which is the only running commentary a CLI user gets. */
     val log by lazy { cachedLoggerOf(this.javaClass) }
-    val modFileEndings = listOf("jar", "disabled")
+    /**
+     * Extensions treated as mod files — see [ModListCompiler.modFileEndings], which owns the value and
+     * explains why `disabled` is among them. Read through rather than copied, so this published constant
+     * cannot drift from the list generation actually walks. Computed on access because [modListCompiler]
+     * is declared after this property, and a plain initialiser would read it before it exists.
+     */
+    val modFileEndings: List<String>
+        get() = modListCompiler.modFileEndings
 
     /**
      * Compiler of the mod-list, excluding clientside-only mods and honoring the whitelist.
@@ -109,18 +117,22 @@ class ServerPackHandler(
     private val spcPreServerPackZipListener: ArrayList<SPCPreServerPackZipListener> = ArrayList(0)
     private val spcPostGenListener: ArrayList<SPCPostGenListener> = ArrayList(0)
 
+    /** Register a listener notified when generation finishes, regardless of outcome. */
     fun addEventListener(genericEventListener: SPCGenericListener) {
         spcGenericEventListeners.add(genericEventListener)
     }
 
+    /** Register a listener invoked before generation begins — the hook for preparing or vetoing a run. */
     fun addEventListener(preServerPackGenerationListener: SPCPreServerPackGenerationListener) {
         spcPreServerPackGenerationListener.add(preServerPackGenerationListener)
     }
 
+    /** Register a listener invoked after the pack is assembled but before it is zipped, to amend its contents. */
     fun addEventListener(preServerPackZipListener: SPCPreServerPackZipListener) {
         spcPreServerPackZipListener.add(preServerPackZipListener)
     }
 
+    /** Register a listener invoked once everything, zip included, is finished. */
     fun addEventListener(postGenListener: SPCPostGenListener) {
         spcPostGenListener.add(postGenListener)
     }
