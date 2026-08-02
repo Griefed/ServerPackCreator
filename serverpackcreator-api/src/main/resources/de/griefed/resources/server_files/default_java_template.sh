@@ -46,6 +46,16 @@
 # ATTENTION:
 #   This script will NOT modify the JAVA_HOME variable for your user.
 
+# https://github.com/fish-shell/fish-shell/issues/12824#issuecomment-5152165903
+# Use this block when you know that the script is not 100% compatible with
+# Fish syntax and you want to print a custom message when opened in Fish.
+# It works if this is the topmost error, so put it at the top of your script.
+_=" ⚠️ This script must be used with Bash shell
+#   (You're using a different incompatible shell)
+#   WIKI: https://simple.wikipedia.org/wiki/Bash
+" #_____________________________________________
+unset _
+
 # commandAvailable(command)
 # Check whether the command $1 is available for execution. Can be used in if-statements.
 commandAvailable() {

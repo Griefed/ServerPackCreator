@@ -46,7 +46,15 @@ class ModListCompiler(
     private val modScanner: ModScanner
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
-    private val modFileEndings = listOf("jar", "disabled")
+
+    /**
+     * Extensions treated as mod files. `disabled` is included deliberately: a launcher marks a mod off by
+     * renaming it, and such a file must still be recognised so it can be excluded rather than copied blindly.
+     *
+     * The single source of truth: [ServerPackHandler.modFileEndings] reads this rather than holding its
+     * own copy, so the published constant and the list generation walks with cannot drift apart.
+     */
+    val modFileEndings = listOf("jar", "disabled")
 
     /**
      * Generates a list of all mods to include in the server pack. If the user specified

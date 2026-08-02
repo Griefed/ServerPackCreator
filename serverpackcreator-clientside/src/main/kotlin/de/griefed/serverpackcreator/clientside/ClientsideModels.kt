@@ -105,8 +105,4 @@ data class ProjectFiles(
     /** Every distinct file-name of the project. */
     val fileNames: List<String>
         get() = files.map { it.fileName }.distinct()
-
-    /** The file-names of this project that target the given canonical [loader]. */
-    fun fileNamesForLoader(loader: String): List<String> =
-        files.filter { loader in it.loaders }.map { it.fileName }.distinct()
 }

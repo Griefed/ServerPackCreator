@@ -79,8 +79,8 @@ data class LoaderVerdict(
 
 /**
  * Machine-readable report a maintainer reviews before accepting a clientside-mod request. Rendered to
- * Markdown by [renderMarkdown] for the issue-comment, with the raw data embedded as JSON for the
- * acceptance-workflow to read back.
+ * Markdown by [ClientsideReportRenderer.renderMarkdown] for the issue-comment, with the raw data
+ * embedded as JSON for the acceptance-workflow to read back.
  *
  * @param platform         "Modrinth" or "CurseForge".
  * @param slug             Project-slug.

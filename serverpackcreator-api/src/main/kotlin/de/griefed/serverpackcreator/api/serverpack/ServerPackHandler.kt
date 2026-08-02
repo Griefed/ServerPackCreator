@@ -84,10 +84,13 @@ class ServerPackHandler(
     /** Logger for generation progress, which is the only running commentary a CLI user gets. */
     val log by lazy { cachedLoggerOf(this.javaClass) }
     /**
-     * Extensions treated as mod files. `disabled` is included deliberately: a launcher marks a mod off by
-     * renaming it, and such a file must still be recognised so it can be excluded rather than copied blindly.
+     * Extensions treated as mod files — see [ModListCompiler.modFileEndings], which owns the value and
+     * explains why `disabled` is among them. Read through rather than copied, so this published constant
+     * cannot drift from the list generation actually walks. Computed on access because [modListCompiler]
+     * is declared after this property, and a plain initialiser would read it before it exists.
      */
-    val modFileEndings = listOf("jar", "disabled")
+    val modFileEndings: List<String>
+        get() = modListCompiler.modFileEndings
 
     /**
      * Compiler of the mod-list, excluding clientside-only mods and honoring the whitelist.

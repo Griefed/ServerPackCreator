@@ -79,8 +79,14 @@ class ConfigurationHandler(
     /** Matches a server pack directory that already carries a numeric suffix, so the next one increments. */
     val previous = ".*_\\d".toRegex()
 
-    /** Matches a ZIP entry that is a bare top-level directory — how a modpack export's nesting is detected. */
-    val zipCheck = "^\\w+[/\\\\]$".toRegex()
+    /**
+     * Matches a ZIP entry that is a bare top-level directory — see [ModpackZipInspector.zipCheck], which
+     * owns the pattern. Read through rather than copied, so this published constant cannot drift from the
+     * one inspection actually uses. Computed on access because [zipInspector] is declared after this
+     * property, and a plain initialiser would read it before it exists.
+     */
+    val zipCheck: Regex
+        get() = zipInspector.zipCheck
 
     /**
      * Validator for modloader-names and modloader-versions.
