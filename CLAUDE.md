@@ -28,10 +28,6 @@ It is a Kotlin application and API: the API lives in `serverpackcreator-api`, th
 
 ## Module map
 
-Gradle multi-project build (`settings.gradle.kts`), Kotlin 2.3.x, JVM 21, version catalog in
-`libs.versions.toml`, convention plugins in
-`buildSrc/src/main/kotlin/serverpackcreator.*-conventions.gradle.kts`.
-
 Each in-build module has its own `CLAUDE.md` with the details — the entries below are the map only.
 
 - **serverpackcreator-api** — core library, published to Maven Central. Packages: `config`,
