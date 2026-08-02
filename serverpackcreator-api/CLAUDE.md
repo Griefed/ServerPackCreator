@@ -36,6 +36,18 @@
   stays there; moving it risks breaking log4j plugin-discovery.
 - **Loader regexes have a single source of truth:** `config.SupportedModloaders` (5 exact-match
   regexes + canonical `names`). Do **not** reintroduce `"^forge$"`-style literals anywhere else.
+- **A constant kept on an extraction facade must *read* its owner, never re-declare the literal.**
+  `ServerPackHandler.modFileEndings` and `ConfigurationHandler.zipCheck` are getters delegating to
+  `ModListCompiler.modFileEndings` / `ModpackZipInspector.zipCheck`, pinned by
+  `FacadeConstantDelegationTest` — which asserts **identity**, because a value comparison passes
+  against a re-introduced equal-valued copy, i.e. exactly the state being guarded. Until 2026-08-02
+  both existed twice: Phase 1c/1d moved each constant's sole call site into the new class along with a
+  *private copy*, leaving the public declaration behind. Nothing regressed — the copies agreed — but
+  **the explanation lived on the dead copy while the consulted one had none**, so an edit aimed at the
+  documented constant would have changed nothing at all. Same rule as `SupportedModloaders` above.
+  **Use a getter, not `val x = collaborator.y`:** both facades are declared *before* their
+  collaborator (`ServerPackHandler:92` vs `:98`, `ConfigurationHandler:88` vs `:109`), so an
+  initialiser would read it before it exists — the declaration-order landmine directly above.
 - **LANDMINE — Minecraft has two versioning schemes; never read a component in isolation.** Releases are
   either `1.x[.y]` or the newer `YY.x[.y]` (`26.1.2`, `26.2`). Any test on the *minor* component alone is
   therefore wrong: `26.2`'s minor is `2`, which reads as the 1.2 era. Two live instances were found and fixed
