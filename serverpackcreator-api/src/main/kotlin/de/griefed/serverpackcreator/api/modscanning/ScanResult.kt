@@ -42,12 +42,14 @@ class Dependency(
     /** Id of the dependency that is required. */
     val dependencyID: String,
     /** Filename of the jar providing it. */
-    val fileName: String,
+    val file: File,
     /** Id of the mod that declares the requirement, or `N/A` when it could not be read. */
     val modID: String = "N/A"
 ) {
     /** `filename (modId)`, the form used in logs and reports so a reader can find the jar. */
     val identifier: String = "$fileName ($modID)"
+
+    val fileName: String get() = file.name
 
     override fun toString(): String {
         return "Dependency(dependencyID='$dependencyID', fileName='$fileName', modID='$modID', identifier='$identifier')"
