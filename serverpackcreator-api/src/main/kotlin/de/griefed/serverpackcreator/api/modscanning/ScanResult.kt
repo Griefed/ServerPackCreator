@@ -48,4 +48,8 @@ class Dependency(
 ) {
     /** `filename (modId)`, the form used in logs and reports so a reader can find the jar. */
     val identifier: String = "$fileName ($modID)"
+
+    override fun toString(): String {
+        return "Dependency(dependencyID='$dependencyID', fileName='$fileName', modID='$modID', identifier='$identifier')"
+    }
 }
