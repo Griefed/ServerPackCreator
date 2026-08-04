@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.grinder.loader
 
-import de.griefed.serverpackcreator.grinder.loader.LoaderCache.Companion.MARKER
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.time.Duration
