@@ -13,11 +13,13 @@ services:
       - SPC_SCHEDULE_DATABASE_CLEANUP=0 0 0 * * * #CRON expression
       - SPC_SCHEDULE_FILES_CLEANUP=0 0 0 * * * #CRON expression
       - SPC_SCHEDULE_VERSIONS_REFRESH=0 0 0 * * * #CRON expression
-      - SPC_DATABASE_USERNAME=<DB_USERNAME> # $ : / ? # [ ] @ those characters must be converted using https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
-      - SPC_DATABASE_PASSWORD=<DB_PASSWORD> # $ : / ? # [ ] @ those characters must be converted using https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
+      # init-mongo.js creates exactly one user, from the db service's MONGO_INITDB_ROOT_* below, so these
+      # two must be those same values. Leave both out entirely if your MongoDB has no authentication.
+      - SPC_DATABASE_USERNAME=<DB_ROOT_USERNAME> # $ : / ? # [ ] @ those characters must be converted using https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
+      - SPC_DATABASE_PASSWORD=<DB_ROOT_PASSWORD> # $ : / ? # [ ] @ those characters must be converted using https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
       - SPC_DATABASE_HOST=serverpackcreatordb
       - SPC_DATABASE_PORT=27017
-      - SPC_DATABASE_DB=serverpackcreator
+      - SPC_DATABASE_DB=serverpackcreatordb # Must match MONGO_INITDB_DATABASE below: init-mongo.js creates the user inside that database, and a connection-string's path is also its authSource.
       - SPC_MAX_UPLOAD_SIZE=1000 #In MB
       - SPC_CONFIGURATION_AIKAR=-Xms4G -Xmx4G -XX\:+UseG1GC -XX\:+ParallelRefProcEnabled -XX\:MaxGCPauseMillis\=200 -XX\:+UnlockExperimentalVMOptions -XX\:+DisableExplicitGC -XX\:+AlwaysPreTouch -XX\:G1NewSizePercent\=30 -XX\:G1MaxNewSizePercent\=40 -XX\:G1HeapRegionSize\=8M -XX\:G1ReservePercent\=20 -XX\:G1HeapWastePercent\=5 -XX\:G1MixedGCCountTarget\=4 -XX\:InitiatingHeapOccupancyPercent\=15 -XX\:G1MixedGCLiveThresholdPercent\=90 -XX\:G1RSetUpdatingPauseTimePercent\=5 -XX\:SurvivorRatio\=32 -XX\:+PerfDisableSharedMem -XX\:MaxTenuringThreshold\=1 -Dusing.aikars.flags\=https\://mcflags.emc.gs -Daikars.new.flags\=true #Keep an eye out for proper escaping!
       - SPC_CONFIGURATION_DIRECTORIES_MUSTINCLUDE=addonpacks,blueprints,config,configs,customnpcs,defaultconfigs,global_data_packs,global_packs,kubejs,maps,mods,openloader,scripts,shrines-saves,structures,structurize,worldshape,Zoestria
