@@ -20,6 +20,8 @@
 package de.griefed.serverpackcreator.grinder.loader
 
 import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftMeta
+import de.griefed.serverpackcreator.grinder.loader.ImageSupport.JDK_NOT_BUNDLED
+import de.griefed.serverpackcreator.grinder.loader.ImageSupport.REQUIREMENT_UNKNOWN
 
 /**
  * Whether the runtime image can boot a given Minecraft version, and when it cannot, **why**.

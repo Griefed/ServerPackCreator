@@ -19,10 +19,10 @@
  */
 package de.griefed.serverpackcreator.grinder
 
+import de.griefed.serverpackcreator.grinder.container.ContainerResources
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.io.File
-import de.griefed.serverpackcreator.grinder.container.ContainerResources
 
 /**
  * Keeps the README's configuration table in step with [GrinderApplication].

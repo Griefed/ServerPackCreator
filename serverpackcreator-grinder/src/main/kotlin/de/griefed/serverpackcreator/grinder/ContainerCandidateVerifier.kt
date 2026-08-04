@@ -20,21 +20,14 @@
 package de.griefed.serverpackcreator.grinder
 
 import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.clientside.*
 import de.griefed.serverpackcreator.grinder.container.ContainerEngine
 import de.griefed.serverpackcreator.grinder.container.ContainerResources
 import de.griefed.serverpackcreator.grinder.container.ContainerServerRunner
+import de.griefed.serverpackcreator.grinder.loader.CachedLoaderVersions
 import de.griefed.serverpackcreator.grinder.loader.ImageJavaRuntimes
 import de.griefed.serverpackcreator.grinder.loader.LoaderCache
 import de.griefed.serverpackcreator.grinder.loader.PackVariables
-import de.griefed.serverpackcreator.clientside.BootVerifier
-import de.griefed.serverpackcreator.clientside.BrowserDownloader
-import de.griefed.serverpackcreator.clientside.ClientsideReport
-import de.griefed.serverpackcreator.clientside.ClientsideVerifier
-import de.griefed.serverpackcreator.clientside.HttpJarDownloader
-import de.griefed.serverpackcreator.grinder.loader.CachedLoaderVersions
-import de.griefed.serverpackcreator.clientside.LoaderVersionResolver
-import de.griefed.serverpackcreator.clientside.MetadataScanner
-import de.griefed.serverpackcreator.clientside.supportedPlatforms
 import java.io.File
 import java.time.Duration
 

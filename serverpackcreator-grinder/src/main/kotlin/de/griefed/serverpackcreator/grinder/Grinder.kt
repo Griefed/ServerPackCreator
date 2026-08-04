@@ -19,10 +19,11 @@
  */
 package de.griefed.serverpackcreator.grinder
 
+import de.griefed.serverpackcreator.grinder.GrindOutcome.VERIFIED
 import de.griefed.serverpackcreator.grinder.report.VerdictStore
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import java.time.Instant
 import java.time.Duration
+import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean

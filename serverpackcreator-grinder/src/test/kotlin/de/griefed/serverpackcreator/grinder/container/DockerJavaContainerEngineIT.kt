@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
 import java.time.Duration
-import kotlin.test.assertEquals
 
 /**
  * Integration test for the one piece no unit test can cover: [DockerJavaContainerEngine] against a
