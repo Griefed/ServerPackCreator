@@ -21,9 +21,6 @@
 
 package de.griefed.serverpackcreator.api.utilities.common
 
-import de.griefed.serverpackcreator.api.utilities.common.StringUtilities.Companion.pathSecureText
-
-
 /**
  * Utility-class revolving around Strings.
  *

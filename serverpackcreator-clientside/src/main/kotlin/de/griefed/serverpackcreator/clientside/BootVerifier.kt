@@ -21,7 +21,6 @@ package de.griefed.serverpackcreator.clientside
 
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.config.PackConfig
-import de.griefed.serverpackcreator.clientside.BootVerifier.Companion.refuseForMissingDependencies
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.time.Duration
