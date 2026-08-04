@@ -89,7 +89,7 @@ fi
 
 if [[ -n ${SPC_LOG_LEVEL} ]];then
   echo "Overriding de.griefed.serverpackcreator.loglevel..."
-  echo "de.griefed.serverpackcreator.loglevel={SPC_LOG_LEVEL}" >> ${OVERRIDES}
+  echo "de.griefed.serverpackcreator.loglevel=${SPC_LOG_LEVEL}" >> ${OVERRIDES}
 fi
 
 echo "server.tomcat.basedir=/app/serverpackcreator" >> ${OVERRIDES}
