@@ -37,6 +37,7 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
 import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Tip to display files included via a selected inclusion-specification.
@@ -180,7 +181,7 @@ class SelectedInclusionDetails(
      */
     private fun requestFocus(component: JComponent) {
         componentScope.scope().launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
-            delay(250)
+            delay(250.milliseconds)
             component.requestFocus()
             component.grabFocus()
         }

@@ -452,6 +452,7 @@ class ServerPackHandler(
     /**
      * Generate the list of mods to include in the server pack, excluding clientside-only mods.
      */
+    @Suppress("unused")
     fun compileModList(
         modsDir: String,
         clientsideModsList: List<String>,
@@ -463,11 +464,13 @@ class ServerPackHandler(
     /**
      * Recursively gather all files of the given directory as source-destination-pairs.
      */
+    @Suppress("unused")
     fun getDirectoryFiles(source: String, destination: String): List<ServerPackFile> =
         fileGatherer.getDirectoryFiles(source, destination)
     /**
      * Whether the given file or directory matches any of the given exclusion-regexes.
      */
+    @Suppress("unused")
     fun excludeFileOrDirectory(modpackDir: String, fileToCheckFor: File, exclusions: List<Regex>): Boolean =
         fileGatherer.excludeFileOrDirectory(modpackDir, fileToCheckFor, exclusions)
     /**

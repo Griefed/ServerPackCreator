@@ -25,6 +25,8 @@ import de.griefed.serverpackcreator.clientside.HttpFetcher
 import de.griefed.serverpackcreator.clientside.JdkHttpFetcher
 import de.griefed.serverpackcreator.grinder.GrindCandidate
 import de.griefed.serverpackcreator.grinder.ModPlatforms
+import de.griefed.serverpackcreator.grinder.source.CurseForgeCandidateSource.Companion.MAX_INDEX
+import de.griefed.serverpackcreator.grinder.source.CurseForgeCandidateSource.Companion.SORT_FIELD_TOTAL_DOWNLOADS
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets

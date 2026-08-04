@@ -19,11 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder
 
-import de.griefed.serverpackcreator.clientside.ClientsideReport
-import de.griefed.serverpackcreator.clientside.Confidence
-import de.griefed.serverpackcreator.clientside.JarScan
-import de.griefed.serverpackcreator.clientside.LoaderVerdict
-import de.griefed.serverpackcreator.clientside.Sideness
+import de.griefed.serverpackcreator.clientside.*
 import java.time.Instant
 
 /** Build a minimal [LoaderVerdict] for tests, defaulting the signals not under test. */

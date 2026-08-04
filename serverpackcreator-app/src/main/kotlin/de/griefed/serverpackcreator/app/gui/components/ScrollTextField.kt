@@ -133,16 +133,15 @@ open class ScrollTextField(
     override fun keyTyped(e: KeyEvent) {}
 
     override fun keyPressed(e: KeyEvent) {
-        when {
-            e.keyCode == KeyEvent.VK_Z && e.isControlDown -> {
+        when (e.keyCode) {
+            e.keyCode if e.isControlDown -> {
                 try {
                     undoManager.undo()
                 } catch (cue: CannotUndoException) {
                     Toolkit.getDefaultToolkit().beep()
                 }
             }
-
-            e.keyCode == KeyEvent.VK_Y && e.isControlDown -> {
+            e.keyCode if e.isControlDown -> {
                 try {
                     undoManager.redo()
                 } catch (cue: CannotRedoException) {

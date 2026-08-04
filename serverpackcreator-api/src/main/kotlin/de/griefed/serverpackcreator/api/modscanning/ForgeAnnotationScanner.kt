@@ -250,7 +250,7 @@ class ForgeAnnotationScanner(
      *
      * @param child           JSON node containing information about our dependencies.
      * @param modDependencies Set containing our dependency ids.
-     * @param modFileName     The filename of the mod being checked.
+     * @param modFile         The filename of the mod being checked.
      * @author Griefed
      */
     private fun checkDependencies(child: JsonNode, modDependencies: ArrayList<Pair<String, Pair<File, String>>>, modFile: File, modId: String) {
@@ -446,7 +446,7 @@ class ForgeAnnotationScanner(
      * @param dependency      The dependency to add
      * @param child           The JSON node containing information about dependencies and ids.
      * @param modDependencies The set of dependencies to add the new dependency to.
-     * @param modFileName     The filename of the mod being checked.
+     * @param modFile         The filename of the mod being checked.
      * @author Griefed
      */
     private fun addDependency(

@@ -19,6 +19,12 @@
  */
 package de.griefed.serverpackcreator.grinder.source
 
+import de.griefed.serverpackcreator.grinder.source.CurseForgePartition.Companion.optionalNumber
+import de.griefed.serverpackcreator.grinder.source.CurseForgePartitions.CAULDRON
+import de.griefed.serverpackcreator.grinder.source.CurseForgePartitions.next
+import de.griefed.serverpackcreator.grinder.source.CurseForgePartitions.orderVersions
+
+
 /**
  * One bounded slice of the CurseForge catalog: a `/mods/search` query narrowed by game version, category and
  * modloader, walked in one sort direction. Partitions exist because CurseForge refuses

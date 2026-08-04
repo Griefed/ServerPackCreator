@@ -94,9 +94,9 @@ class ServerPack {
     }
 
     override fun hashCode(): Int {
-        var result = fileID?.hashCode() ?: 0
-        result = 31 * result + (sha256?.hashCode() ?: 0)
-        result = 31 * result + (runConfiguration?.hashCode() ?: 0)
+        var result = fileID.hashCode()
+        result = 31 * result + (sha256.hashCode())
+        result = 31 * result + (runConfiguration.hashCode())
         return result
     }
 

@@ -115,7 +115,7 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
         }
 
         scanResult.dependencies
-            .filter { it -> it.dependencyID.matches(neoForgeMinecraft) }
+            .filter { it.dependencyID.matches(neoForgeMinecraft) }
             .forEach { serverMods.add(it.file) }
 
         val excluded = TreeSet(jarFiles)

@@ -111,16 +111,37 @@ Qodana:
     # here names itself.
     - |
       jbr="$CI_PROJECT_DIR/qodana/cache/qodana-jbr"
-      java_bin="$(find "$jbr" -type f -path '*/bin/java' 2>/dev/null | head -n1 || true)"
-      if [ -z "$java_bin" ]; then
-        echo "**** No cached JBR in $jbr - Qodana will download one ****"
+      if [ ! -d "$jbr" ]; then
+        echo "**** No cached JBR directory ($jbr) - Qodana will download one ****"
       else
         echo "**** Cached JBR before chmod ****"
-        ls -l "$java_bin"
+        find "$jbr" -type f -path '*/bin/java' -exec ls -l {} +
         chmod -R +x "$jbr"
-        echo "**** Cached JBR after chmod ****"
-        ls -l "$java_bin"
-        "$java_bin" -version
+        java_bins="$(find "$jbr" -type f -path '*/bin/java')"
+        if [ -z "$java_bins" ]; then
+          echo "**** WARNING: $jbr holds no bin/java - the restore was incomplete ****"
+        else
+          echo "**** Cached JBR after chmod ****"
+          echo "$java_bins" | while read -r java_bin; do
+            ls -l "$java_bin"
+            # Running it is the only real test. A bind mount can report a mode that execve then
+            # refuses - measured on Docker Desktop, which shows 0755 for a host-side 0644 file and
+            # answers [ -x ] with "executable" while the exec still fails - so neither ls nor a -x
+            # test proves the bit took. EACCES is the one failure this guard owns, so fail the job
+            # on it. Anything else means a stale or truncated tree, which Qodana may not even use:
+            # warn and let Qodana report it precisely a second later instead of blocking here.
+            if probe="$("$java_bin" -version 2>&1)"; then
+              echo "$probe"
+            else
+              echo "$probe"
+              if echo "$probe" | grep -qi 'permission denied'; then
+                echo "**** $java_bin still cannot be executed - the chmod did not take effect ****"
+                exit 1
+              fi
+              echo "**** WARNING: $java_bin is executable but did not run ****"
+            fi
+          done
+        fi
       fi
   script:
     - qodana --save-report --results-dir=$CI_PROJECT_DIR/qodana --report-dir=$CI_PROJECT_DIR/qodana/report --cache-dir=$CI_PROJECT_DIR/qodana/cache

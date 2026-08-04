@@ -23,6 +23,9 @@ import de.comahe.i18n4k.Locale
 import de.comahe.i18n4k.config.I18n4kConfigDefault
 import de.comahe.i18n4k.i18n4k
 import de.comahe.i18n4k.toTag
+import de.griefed.serverpackcreator.api.ApiProperties.Companion.DEFAULT_PREFERENCES_NODE
+import de.griefed.serverpackcreator.api.ApiProperties.Companion.PREFERENCES_NODE_ENV
+import de.griefed.serverpackcreator.api.ApiProperties.Companion.PREFERENCES_NODE_PROPERTY
 import de.griefed.serverpackcreator.api.config.ExclusionFilter
 import de.griefed.serverpackcreator.api.config.SupportedModloaders
 import de.griefed.serverpackcreator.api.settings.*
@@ -1467,6 +1470,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * [ApiProperties.getConfiguration].
      * @author Griefed
      */
-    inner class CustomXMLConfiguration(loggerContext: LoggerContext?, configSource: ConfigurationSource?) :
+    class CustomXMLConfiguration(loggerContext: LoggerContext?, configSource: ConfigurationSource?) :
         XmlConfiguration(loggerContext, configSource)
 }

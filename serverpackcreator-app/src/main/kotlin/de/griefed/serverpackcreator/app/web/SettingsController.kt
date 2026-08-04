@@ -64,7 +64,7 @@ class SettingsController @Autowired constructor(
     }
 
     @Suppress("unused")
-    inner class Settings(
+    class Settings(
         val clientsideMods: List<String>,
         val whitelistMods: List<String>,
         val supportedModloaders: List<String>,

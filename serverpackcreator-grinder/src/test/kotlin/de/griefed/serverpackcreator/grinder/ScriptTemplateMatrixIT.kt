@@ -29,11 +29,7 @@ import de.griefed.serverpackcreator.grinder.loader.ApiVanillaPackGenerator
 import de.griefed.serverpackcreator.grinder.loader.ImageJavaRuntimes
 import de.griefed.serverpackcreator.grinder.loader.ImageSupport
 import de.griefed.serverpackcreator.grinder.loader.PackVariables
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assumptions
-import org.junit.jupiter.api.DynamicTest
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestFactory
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
 import java.io.File
 import java.time.Duration

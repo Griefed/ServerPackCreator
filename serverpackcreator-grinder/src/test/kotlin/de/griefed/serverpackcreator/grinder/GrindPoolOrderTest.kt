@@ -23,7 +23,7 @@ import de.griefed.serverpackcreator.clientside.Confidence
 import de.griefed.serverpackcreator.grinder.report.InMemoryVerdictStore
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import java.util.Collections
+import java.util.*
 
 /**
  * Pins the order the pool grinds a batch in: **round-robin across platforms**, each platform in its own

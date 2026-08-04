@@ -37,7 +37,7 @@ class WebService(private val api: ApiWrapper) {
 
     fun start(args: Array<String>): ConfigurableApplicationContext {
         val userHome = System.getProperty("user.home")
-        val lastIndex = "--spring.config.location=classpath:/application.properties," +
+        val configLocationArgument = "--spring.config.location=classpath:/application.properties," +
                 "classpath:/serverpackcreator.properties," +
                 "optional:file:${api.apiProperties.serverPackCreatorPropertiesFile.absolutePath},"+
                 "optional:file:${File(userHome,"serverpackcreator.properties").absolutePath}," +
@@ -45,13 +45,7 @@ class WebService(private val api: ApiWrapper) {
                 "optional:file:${api.apiProperties.overridesPropertiesFile.absolutePath}," +
                 "optional:file:${File(userHome,"overrides.properties").absolutePath}," +
                 "optional:file:./overrides.properties"
-        val springArgs = if (args.isEmpty()) {
-            arrayOf(lastIndex)
-        } else {
-            val temp = args.toList().toTypedArray()
-            temp[temp.lastIndex] = lastIndex
-            temp.toList().toTypedArray()
-        }
+        val springArgs = springArguments(args, configLocationArgument)
         log.debug("Running webservice with args:${springArgs.contentToString()}")
         log.debug("Application name: ${getSpringBootApplicationContext(springArgs).applicationName}")
         log.debug("Property sources:")
@@ -72,6 +66,15 @@ class WebService(private val api: ApiWrapper) {
     companion object {
         private val log by lazy { cachedLoggerOf(this.javaClass) }
 
+        /**
+         * Combines the applications own commandline arguments with the `--spring.config.location`
+         * argument that tells Spring Boot which property-files to read, producing the array handed to
+         * [SpringApplication.run]. Extracted from [start] so the composition can be tested without
+         * booting a Spring context.
+         */
+        fun springArguments(args: Array<String>, configLocationArgument: String): Array<String> =
+            args + configLocationArgument
+
         @Volatile
         private var springBootApplicationContext: ConfigurableApplicationContext? = null
 
@@ -89,7 +92,7 @@ class WebService(private val api: ApiWrapper) {
             if (springBootApplicationContext == null) {
                 synchronized(this) {
                     if (springBootApplicationContext == null) {
-                        log.debug("Running webservice with ars: $args")
+                        log.debug("Running webservice with ars: ${args.joinToString(" ")}")
                         springBootApplicationContext = SpringApplication.run(WebService::class.java, *args)
                     }
                 }

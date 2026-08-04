@@ -53,7 +53,7 @@ class SettingsCheckTimer(
         addActionListener {
             componentScope.scope().launch(guiProps.configDispatcher, CoroutineStart.UNDISPATCHED) {
                 val errors = mutableListOf<String>()
-                runBlocking {
+                run {
                     launch {
                         for (editor in settingsEditor.allTabs) {
                             errors.addAll((editor as Editor).validateSettings())

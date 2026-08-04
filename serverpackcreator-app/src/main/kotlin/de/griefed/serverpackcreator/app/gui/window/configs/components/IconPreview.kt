@@ -94,7 +94,6 @@ class IconPreview(private val guiProps: GuiProps) : JLabel(guiProps.serverIcon) 
      */
     // CoroutineStart.ATOMIC is itself a delicate API (the load must not be cancellable before it
     // starts); the opt-in is for that, not for the now-removed GlobalScope.
-    @OptIn(DelicateCoroutinesApi::class)
     fun updateIcon(newIcon: File) {
         if (lastLoadedIcon != null && lastLoadedIcon!!.absolutePath == newIcon.absolutePath) {
             return
@@ -110,7 +109,6 @@ class IconPreview(private val guiProps: GuiProps) : JLabel(guiProps.serverIcon) 
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     fun updateIcon(newIcon: ImageIcon, reset: Boolean = false) {
         componentScope.scope().launch(guiProps.miscDispatcher, CoroutineStart.ATOMIC) {
             run {

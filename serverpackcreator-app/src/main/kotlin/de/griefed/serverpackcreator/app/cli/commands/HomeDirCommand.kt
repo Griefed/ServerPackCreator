@@ -20,11 +20,11 @@
 package de.griefed.serverpackcreator.app.cli.commands
 
 import de.griefed.serverpackcreator.api.utilities.common.SystemUtilities
+import de.griefed.serverpackcreator.app.HomeDirectoryPreference
 import picocli.CommandLine
 import picocli.shell.jline3.PicocliCommands.ClearScreen
 import java.io.File
 import java.util.*
-import de.griefed.serverpackcreator.app.HomeDirectoryPreference
 
 @Suppress("DuplicatedCode")
 @CommandLine.Command(
