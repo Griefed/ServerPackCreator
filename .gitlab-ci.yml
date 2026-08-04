@@ -11,11 +11,18 @@ variables:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
 
-services:
-  - name: ghcr.io/griefed/gitlab-ci-cd:2.8.0
-    alias: docker
-
 image: ghcr.io/griefed/gitlab-ci-cd:2.8.0
+
+# Docker-in-Docker, for the jobs that actually shell out to `docker`. This was a top-level
+# `services:` block, so all 20 jobs started a dind container - including the ones that
+# bring their own image and never touch Docker (Qodana, the Gradle jobs, Writerside). Each paid the
+# full 30s service health-check timeout for something it did not use. No Gradle job needs a daemon
+# either: every Docker-dependent test in the repo is gated behind GRINDER_DOCKER_IT /
+# GRINDER_TEMPLATE_IT, which CI does not set.
+.dockerized:
+  services:
+    - name: ghcr.io/griefed/gitlab-ci-cd:2.8.0
+      alias: docker
 
 workflow:
   rules:
@@ -93,6 +100,28 @@ Qodana:
         - qodana-2026.2-
       paths:
         - qodana/cache
+  before_script:
+    # Qodana 2026.2 runs libs/config-loader-cli in a separate JVM and downloads its own runtime into
+    # <cache-dir>/qodana-jbr for it - a path derived from --cache-dir, with no flag or env var to
+    # redirect it or to reuse the JBR the linter image already ships at /opt/idea/jbr. So an
+    # executable lives inside the cached directory, and GitLab's cache round-trip does not preserve
+    # the executable bit (gitlab-runner#27496, #1782): a restored cache makes that exec fail with
+    # EACCES, surfacing as the unhelpful "Failed to create effective configuration". Log the mode as
+    # evidence of the mechanism, put the bit back, and prove it with -version so any future failure
+    # here names itself.
+    - |
+      jbr="$CI_PROJECT_DIR/qodana/cache/qodana-jbr"
+      java_bin="$(find "$jbr" -type f -path '*/bin/java' 2>/dev/null | head -n1 || true)"
+      if [ -z "$java_bin" ]; then
+        echo "**** No cached JBR in $jbr - Qodana will download one ****"
+      else
+        echo "**** Cached JBR before chmod ****"
+        ls -l "$java_bin"
+        chmod -R +x "$jbr"
+        echo "**** Cached JBR after chmod ****"
+        ls -l "$java_bin"
+        "$java_bin" -version
+      fi
   script:
     - qodana --save-report --results-dir=$CI_PROJECT_DIR/qodana --report-dir=$CI_PROJECT_DIR/qodana/report --cache-dir=$CI_PROJECT_DIR/qodana/cache
     - touch qodana/report/qodana_id && echo "${CI_JOB_ID}" > qodana/report/qodana_id
@@ -129,8 +158,20 @@ Qodana Post:
     - if: '$CI_SERVER_HOST == "git.griefed.de"'
 
 Docker Test:
+  extends: .dockerized
   stage: Tests
   before_script:
+    # One-off diagnostic: the dind service declared by .dockerized never starts ("can't create unix
+    # socket /var/run/docker.sock: device or resource busy"), yet this job builds and pushes fine -
+    # so it is reaching some other daemon. An unset DOCKER_HOST plus a live socket means the host
+    # daemon, and the service can be dropped everywhere. A DOCKER_HOST of tcp://docker:2375|2376
+    # means the service is the intended endpoint and the socket collision is the real bug. Remove
+    # this block once the answer is recorded.
+    - echo "**** Docker endpoint in use ****"
+    - 'echo "DOCKER_HOST=${DOCKER_HOST:-<unset>} DOCKER_TLS_CERTDIR=${DOCKER_TLS_CERTDIR:-<unset>}"'
+    - ls -l /var/run/docker.sock || true
+    - docker context ls || true
+    - docker info --format 'Name={{.Name}} ServerVersion={{.ServerVersion}}' || true
     - echo "$DOCKERHUB_TOKEN" | docker login docker.io -u "$DOCKERHUB_USER" --password-stdin
     - echo "$GITHUB_TOKEN"    | docker login ghcr.io   -u "$DOCKERHUB_USER" --password-stdin
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
@@ -286,6 +327,7 @@ Publish OSSRH:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
 Build Docker Release:
+  extends: .dockerized
   stage: Build Release
   needs:
     - job: Build Test
@@ -308,6 +350,7 @@ Build Docker Release:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
 Build Docker PreRelease:
+  extends: .dockerized
   stage: Build Release
   needs:
     - job: Build Test
@@ -360,6 +403,7 @@ Writerside Build:
     - if: '$CI_SERVER_HOST == "git.griefed.de"'
 
 Writerside Docker:
+  extends: .dockerized
   stage: Documentation
   needs:
     - job: Writerside Build
@@ -381,6 +425,7 @@ Writerside Docker:
     - if: '$CI_COMMIT_TAG !~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
 Writerside Docker Latest:
+  extends: .dockerized
   stage: Documentation
   needs:
     - job: Writerside Build
@@ -403,6 +448,7 @@ Writerside Docker Latest:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
 Writerside Docker Prerelease:
+  extends: .dockerized
   stage: Documentation
   needs:
     - job: Writerside Build
@@ -440,6 +486,8 @@ pages:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
 Update README:on-schedule:
+  # `act` runs the GitHub workflow in a container, so this one needs a daemon too.
+  extends: .dockerized
   stage: Other
   only:
     - schedules
