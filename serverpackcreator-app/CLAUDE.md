@@ -45,6 +45,23 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
 
 - **Persistence is MongoDB** (`spring-boot-starter-data-mongodb`), **not JPA.** Full-context tests
   would need a live Mongo instance — don't assume JPA anywhere.
+- **LANDMINE — `spring.data.mongodb.uri` is used verbatim, with no validation and no fallback.**
+  Measured with `javap` against the pinned `spring-boot-mongodb-4.0.2` and `mongodb-driver-core-5.6.2`
+  (no sources jar is published for the autoconfigure module):
+  `PropertiesMongoConnectionDetails.getConnectionString()` is
+  `if (properties.getUri() != null) return new ConnectionString(properties.getUri())`, and
+  `ConnectionString` accepts **only** `mongodb://` or `mongodb+srv://`. Consequences: a malformed URI
+  is a hard startup failure, never a degraded connection; the `host`/`port`/`username`/`password`
+  properties are **silently ignored** whenever a `uri` is set (the `"localhost"` default lives only in
+  that unreachable else-branch, as does `MongoProperties.DEFAULT_URI = "mongodb://localhost/test"`); and
+  a log line naming `localhost:27017` therefore means the property was **absent everywhere**, not
+  wrong. `determineUri()` exists and returns `uri ?: DEFAULT_URI`, but the connection path never calls
+  it — don't reason from it.
+- **The docker override chain feeds that property, and it is long.** `WebService.springArguments`
+  appends `--spring.config.location=` with eight locations, `overrides.properties` **last** (later
+  locations win). The s6 script `init-spc-config/run` composes `SPC_DATABASE_*` into that file; it is
+  pinned by `docker/tests/init-spc-config-test.sh`, which runs the real script in the production base
+  image. See `claude-docs/DOCKER-MONGO-INVESTIGATION.md`.
 - **Already MVC-layered:** controllers delegate to services (`ModPackService`, `ServerPackService`,
   `RunConfigurationService`, `EventService`, the stats services); no controller is bloated;
   scheduling isolated in `web/scheduling`. No restructuring warranted here.
@@ -58,6 +75,9 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   stats).
 - **Web-entity IDs are `private set`** (Spring Data `PersistenceCreator`); tests assign them via the
   `assignEntityId` reflection helper.
+- `WebServiceArgumentsTest` covers `WebService.springArguments` — pure argument composition, no context.
+  It exists because `start()` boots Spring, so the composition had to be extracted to be assertable;
+  the old context-only `WebServiceTest` is still the one CLAUDE.md says to replace rather than extend.
 - GUI: view-model unit tests; Swing views stay dumb. CLI/entry-point logic pinned by
   `CommandlineParserTest` (headless-independent branches only) and `MigrationManagerTest`
   (mockk-mocked `ApiProperties`, version ranges chosen to never hit a real migration method).
