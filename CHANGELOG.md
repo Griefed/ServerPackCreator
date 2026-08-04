@@ -1,3 +1,19 @@
+## [9.0.0-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.0.0-alpha.1...9.0.0-alpha.2) (2026-08-04)
+
+### :scissors: Refactor
+
+* Print debug dependency info via override toString ([102be3e](https://git.griefed.de/Griefed/ServerPackCreator/commit/102be3e25798cd89888cc8d92e5178a7877874f3))
+* **ci:** scope the dind service to the jobs that use Docker ([358675f](https://git.griefed.de/Griefed/ServerPackCreator/commit/358675fbf73dfbc3cda024c7f85319b927848a9f))
+
+### 🦊 CI/CD
+
+* log which Docker endpoint the Docker jobs actually use ([f3a60df](https://git.griefed.de/Griefed/ServerPackCreator/commit/f3a60df80d4e9702a10221bc3bf3e900898804d7))
+
+### 🛠 Fixes
+
+* Hopefully fix NeoForge EdgeCase preventing mod exclusions. Thanks to @ModernGamingWorld for the report and help. ([255af9e](https://git.griefed.de/Griefed/ServerPackCreator/commit/255af9eeb349262cb0c046398f16873967306406))
+* **ci:** restore the executable bit on the cached Qodana JBR ([fd81712](https://git.griefed.de/Griefed/ServerPackCreator/commit/fd8171288d06759e568aae56f72bf966387b85e6)), closes [gitlab-runner#27496](https://git.griefed.de/Griefed/gitlab-runner/issues/27496) [#1782](https://git.griefed.de/Griefed/ServerPackCreator/issues/1782)
+
 ## [9.0.0-alpha.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/8.1.2...9.0.0-alpha.1) (2026-08-02)
 
 ### :scissors: Refactor
