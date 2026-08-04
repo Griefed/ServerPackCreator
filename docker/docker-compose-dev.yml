@@ -59,7 +59,7 @@ services:
     ports:
       - 8081:8081
     depends_on:
-      - mongodb
+      - serverpackcreatordb
     environment:
       - ME_CONFIG_MONGODB_SERVER=serverpackcreatordb
       - ME_CONFIG_MONGODB_PORT=27017
