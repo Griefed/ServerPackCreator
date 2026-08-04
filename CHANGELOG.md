@@ -1,3 +1,37 @@
+## [9.0.0-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.0.0-alpha.2...9.0.0-alpha.3) (2026-08-04)
+
+### :scissors: Refactor
+
+* Optimize imports ([416a809](https://git.griefed.de/Griefed/ServerPackCreator/commit/416a809fe44a4393d2bbf32fbd4858d68e2775ea))
+* Qodana findings. Removes deprecated usages, simplifies code, evens out formatting. ([6b1e155](https://git.griefed.de/Griefed/ServerPackCreator/commit/6b1e1559584ab8593d3226c34aee96d0cd8f6d89))
+* Use kotlin.time.Clock instead ([b8a846e](https://git.griefed.de/Griefed/ServerPackCreator/commit/b8a846e6cf6940d8dcf4d74ed8a1d81aaf4f5647))
+* **app:** extract WebService's Spring-argument composition ([d8df621](https://git.griefed.de/Griefed/ServerPackCreator/commit/d8df62115453b6395967cb3540ed42cf80ff68d2))
+
+### 👀 Reverts
+
+* Reintroduce inner to allow test access ([d40d9cc](https://git.griefed.de/Griefed/ServerPackCreator/commit/d40d9ccb5b7a96cdddb790d13ffdf63830d9107b))
+
+### 📔 Docs
+
+* investigation plan for the docker MongoDB/localhost report ([dc9e97c](https://git.griefed.de/Griefed/ServerPackCreator/commit/dc9e97c1752944c86c05a239991e37d20d7bf6ae))
+* record the CI/dind work, its audit, and the four follow-ups it left ([e3a720c](https://git.griefed.de/Griefed/ServerPackCreator/commit/e3a720c6435abfa3cff84e3516ce992159a9578c))
+* record the Spring Boot 4 MongoDB finding and re-rank the investigation ([3077923](https://git.griefed.de/Griefed/ServerPackCreator/commit/30779232fdab92e4dd3e1d490c85cf1e1552691d))
+
+### 🧪 Tests
+
+* **app:** pin that WebService keeps every commandline argument - RED ([73f7cd3](https://git.griefed.de/Griefed/ServerPackCreator/commit/73f7cd359158952594f0098d6b1e7546b272fa1a))
+* **docker:** pin the s6 init script's overrides.properties output - RED ([82a8486](https://git.griefed.de/Griefed/ServerPackCreator/commit/82a8486d3345d27e0cf22d9529ce844e35222b9a))
+
+### 🛠 Fixes
+
+* **app:** stop discarding the last commandline argument ([c1ce997](https://git.griefed.de/Griefed/ServerPackCreator/commit/c1ce997ebebffc7d142f54bca969d146ec351b30))
+* **ci:** guard the whole cached JBR tree, and classify why the probe failed ([afadcb9](https://git.griefed.de/Griefed/ServerPackCreator/commit/afadcb90f8393dae5a4af84dad2746889100f346))
+* **docker:** make docker-compose-dev.yml a valid compose project again ([4222d48](https://git.griefed.de/Griefed/ServerPackCreator/commit/4222d48e0264aed238cb86740aff7e9bf39eb8d5))
+* **docker:** make SPC_LOG_LEVEL actually do something ([391ccb0](https://git.griefed.de/Griefed/ServerPackCreator/commit/391ccb060e42057db098c21eb9b88b740e946fa2))
+* **docker:** point SPC at the database and user that init-mongo.js actually creates ([681b6e2](https://git.griefed.de/Griefed/ServerPackCreator/commit/681b6e285b07300d445a2eb4be084f5a9cb22cc8))
+* **docker:** stop wrapping the zip-exclude overrides in literal braces ([801407b](https://git.griefed.de/Griefed/ServerPackCreator/commit/801407b468ac015a01cee2792b543ec1bb2c2cde))
+* **docker:** stop writing an unparseable database-URI when auth is not configured ([4ca0f2c](https://git.griefed.de/Griefed/ServerPackCreator/commit/4ca0f2cf9ae52b135db85d57e4ef2f46c240b199))
+
 ## [9.0.0-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.0.0-alpha.1...9.0.0-alpha.2) (2026-08-04)
 
 ### :scissors: Refactor
