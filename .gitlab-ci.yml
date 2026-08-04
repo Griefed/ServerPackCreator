@@ -93,6 +93,28 @@ Qodana:
         - qodana-2026.2-
       paths:
         - qodana/cache
+  before_script:
+    # Qodana 2026.2 runs libs/config-loader-cli in a separate JVM and downloads its own runtime into
+    # <cache-dir>/qodana-jbr for it - a path derived from --cache-dir, with no flag or env var to
+    # redirect it or to reuse the JBR the linter image already ships at /opt/idea/jbr. So an
+    # executable lives inside the cached directory, and GitLab's cache round-trip does not preserve
+    # the executable bit (gitlab-runner#27496, #1782): a restored cache makes that exec fail with
+    # EACCES, surfacing as the unhelpful "Failed to create effective configuration". Log the mode as
+    # evidence of the mechanism, put the bit back, and prove it with -version so any future failure
+    # here names itself.
+    - |
+      jbr="$CI_PROJECT_DIR/qodana/cache/qodana-jbr"
+      java_bin="$(find "$jbr" -type f -path '*/bin/java' 2>/dev/null | head -n1 || true)"
+      if [ -z "$java_bin" ]; then
+        echo "**** No cached JBR in $jbr - Qodana will download one ****"
+      else
+        echo "**** Cached JBR before chmod ****"
+        ls -l "$java_bin"
+        chmod -R +x "$jbr"
+        echo "**** Cached JBR after chmod ****"
+        ls -l "$java_bin"
+        "$java_bin" -version
+      fi
   script:
     - qodana --save-report --results-dir=$CI_PROJECT_DIR/qodana --report-dir=$CI_PROJECT_DIR/qodana/report --cache-dir=$CI_PROJECT_DIR/qodana/cache
     - touch qodana/report/qodana_id && echo "${CI_JOB_ID}" > qodana/report/qodana_id
