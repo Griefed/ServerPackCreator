@@ -64,7 +64,7 @@ class QuiltScanner(
      */
     override fun scan(jarFiles: Collection<File>): ScanResult {
         log.info("Scanning Quilt mods for sideness...")
-        val modDependencies = ArrayList<Pair<String, Pair<String, String>>>()
+        val modDependencies = ArrayList<Pair<String, Pair<File, String>>>()
         val clientMods = TreeSet<String>()
 
         /*
@@ -90,7 +90,7 @@ class QuiltScanner(
     override fun checkForClientModsAndDeps(
         filesInModsDir: Collection<File>,
         clientMods: TreeSet<String>,
-        modDependencies: ArrayList<Pair<String, Pair<String, String>>>
+        modDependencies: ArrayList<Pair<String, Pair<File, String>>>
     ) {
         for (mod in filesInModsDir) {
             if (!mod.name.endsWith(jar)) {
@@ -120,7 +120,7 @@ class QuiltScanner(
                         if (dependency.isContainerNode) {
                             try {
                                 val dependencyId = utilities.jsonUtilities.getNestedText(dependency, id)
-                                if (!dependencyId.matches(dependencyExclusions) && modDependencies.add(Pair(dependencyId, Pair(mod.name, modId)))) {
+                                if (!dependencyId.matches(dependencyExclusions) && modDependencies.add(Pair(dependencyId, Pair(mod, modId)))) {
                                     log.debug("Added dependency $dependencyId for $modId (${mod.name}).")
                                 }
                             } catch (ex: NullPointerException) {
@@ -129,7 +129,7 @@ class QuiltScanner(
                         } else {
                             try {
                                 val dependencyText = dependency.asText()
-                                if (!dependencyText.matches(dependencyExclusions) && modDependencies.add(Pair(dependencyText, Pair(mod.name, modId)))) {
+                                if (!dependencyText.matches(dependencyExclusions) && modDependencies.add(Pair(dependencyText, Pair(mod, modId)))) {
                                     log.debug("Added dependency ${dependency.asText()} for $modId (${mod.name}).")
                                 }
                             } catch (ex: NullPointerException) {
