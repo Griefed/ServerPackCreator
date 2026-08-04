@@ -11,11 +11,18 @@ variables:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
 
-services:
-  - name: ghcr.io/griefed/gitlab-ci-cd:2.8.0
-    alias: docker
-
 image: ghcr.io/griefed/gitlab-ci-cd:2.8.0
+
+# Docker-in-Docker, for the jobs that actually shell out to `docker`. This was a top-level
+# `services:` block, so all 20 jobs started a dind container - including the ones that
+# bring their own image and never touch Docker (Qodana, the Gradle jobs, Writerside). Each paid the
+# full 30s service health-check timeout for something it did not use. No Gradle job needs a daemon
+# either: every Docker-dependent test in the repo is gated behind GRINDER_DOCKER_IT /
+# GRINDER_TEMPLATE_IT, which CI does not set.
+.dockerized:
+  services:
+    - name: ghcr.io/griefed/gitlab-ci-cd:2.8.0
+      alias: docker
 
 workflow:
   rules:
@@ -151,6 +158,7 @@ Qodana Post:
     - if: '$CI_SERVER_HOST == "git.griefed.de"'
 
 Docker Test:
+  extends: .dockerized
   stage: Tests
   before_script:
     - echo "$DOCKERHUB_TOKEN" | docker login docker.io -u "$DOCKERHUB_USER" --password-stdin
@@ -308,6 +316,7 @@ Publish OSSRH:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
 Build Docker Release:
+  extends: .dockerized
   stage: Build Release
   needs:
     - job: Build Test
@@ -330,6 +339,7 @@ Build Docker Release:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
 Build Docker PreRelease:
+  extends: .dockerized
   stage: Build Release
   needs:
     - job: Build Test
@@ -382,6 +392,7 @@ Writerside Build:
     - if: '$CI_SERVER_HOST == "git.griefed.de"'
 
 Writerside Docker:
+  extends: .dockerized
   stage: Documentation
   needs:
     - job: Writerside Build
@@ -403,6 +414,7 @@ Writerside Docker:
     - if: '$CI_COMMIT_TAG !~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
 Writerside Docker Latest:
+  extends: .dockerized
   stage: Documentation
   needs:
     - job: Writerside Build
@@ -425,6 +437,7 @@ Writerside Docker Latest:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
 Writerside Docker Prerelease:
+  extends: .dockerized
   stage: Documentation
   needs:
     - job: Writerside Build
@@ -462,6 +475,8 @@ pages:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
 Update README:on-schedule:
+  # `act` runs the GitHub workflow in a container, so this one needs a daemon too.
+  extends: .dockerized
   stage: Other
   only:
     - schedules
