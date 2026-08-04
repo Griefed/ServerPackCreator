@@ -368,7 +368,7 @@ class MigrationManager(
      *
      * @author Griefed
      */
-    class MigrationMessage(
+    inner class MigrationMessage(
         private val fromVersion: String, private val toVersion: String, private val changes: MutableList<String> = ArrayList(20)
     ) {
 
