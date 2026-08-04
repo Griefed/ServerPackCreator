@@ -1,3 +1,13 @@
+## [9.0.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.0.0-alpha.3...9.0.0-alpha.4) (2026-08-04)
+
+### :scissors: Refactor
+
+* Remove unused and unnecessary imports ([cfd0362](https://git.griefed.de/Griefed/ServerPackCreator/commit/cfd0362de926d87d20474b78870587d2531adc9a))
+
+### 🛠 Fixes
+
+* Correctly check range ([7e1f1cb](https://git.griefed.de/Griefed/ServerPackCreator/commit/7e1f1cb5968f69517a862730572a334e8d77e103))
+
 ## [9.0.0-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.0.0-alpha.2...9.0.0-alpha.3) (2026-08-04)
 
 ### :scissors: Refactor
