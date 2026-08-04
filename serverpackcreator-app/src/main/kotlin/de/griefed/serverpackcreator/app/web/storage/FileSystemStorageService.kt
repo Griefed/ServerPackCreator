@@ -54,9 +54,8 @@ class FileSystemStorageService(val rootLocation: Path, private val messageDigest
     @Throws(StorageException::class)
     fun store(file: File, objectId: String): Optional<SavedFile> {
         try {
-            val id = objectId
             val originalName = determineFilename(file.name)
-            val destinationFilePath: Path = rootLocation.resolve("${id}.zip").normalize().toAbsolutePath()
+            val destinationFilePath: Path = rootLocation.resolve("${objectId}.zip").normalize().toAbsolutePath()
             if (!destinationFilePath.parent.equals(rootLocation.toAbsolutePath())) {
                 // This is a security check
                 throw StorageException("Cannot store file outside current directory.")
@@ -66,7 +65,7 @@ class FileSystemStorageService(val rootLocation: Path, private val messageDigest
             val sha256 = String(Hex.encode(messageDigestInstance.digest(destinationFilePath.toFile().readBytes())))
             return Optional.of(
                 SavedFile(
-                    id = id,
+                    id = objectId,
                     sha256 = sha256,
                     file = destinationFilePath,
                     originalName = originalName,

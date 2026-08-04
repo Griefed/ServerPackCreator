@@ -47,6 +47,7 @@ import javax.swing.event.DocumentEvent
 import javax.swing.event.ListDataEvent
 import javax.swing.event.ListDataListener
 import javax.swing.event.ListSelectionEvent
+import kotlin.time.Duration.Companion.milliseconds
 
 
 /**
@@ -359,7 +360,7 @@ class InclusionsEditor(
      */
     fun sourceWasEdited() {
         componentScope.scope().launch(Dispatchers.Swing) {
-            delay(200)
+            delay(200.milliseconds)
             if (inclusionList.model.size > 0 && !inclusionList.isSelectionEmpty && !inclusionList.valueIsAdjusting) {
                 if (File(configEditor.getModpackDirectory(), source.text).exists() || File(source.text).exists()) {
                     inclusionList.selectedValue.source = source.text
@@ -662,10 +663,11 @@ class InclusionsEditor(
 
     class InclusionsListHandler(private val editor: InclusionsEditor): TransferHandler() {
         override fun canImport(support: TransferSupport): Boolean {
-            if (!support.isDrop) {
-                return false
+            return if (!support.isDrop) {
+                false
+            } else {
+                support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)
             }
-            return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)
         }
 
         override fun importData(support: TransferSupport): Boolean {

@@ -61,7 +61,7 @@ class FabricScanner(
      */
     override fun scan(jarFiles: Collection<File>): ScanResult {
         log.info("Scanning Fabric mods for sideness...")
-        val modDependencies = ArrayList<Pair<String, Pair<String, String>>>()
+        val modDependencies = ArrayList<Pair<String, Pair<File, String>>>()
         val clientMods = TreeSet<String>()
         /*
         * Go through all mods in our list and acquire a list of clientside-only mods as well as any
@@ -87,7 +87,7 @@ class FabricScanner(
         filesInModsDir: Collection<File>,
         clientMods: TreeSet<String>,
         //Pair of detected dependency and its dependant (mod-name and mod-ID)
-        modDependencies: ArrayList<Pair<String, Pair<String, String>>>
+        modDependencies: ArrayList<Pair<String, Pair<File, String>>>
     ) {
         for (mod in filesInModsDir) {
             if (!mod.name.endsWith(jar)) {
@@ -119,7 +119,7 @@ class FabricScanner(
                         if (!dependency.matches(dependencyExclusions)) {
                             try {
                                 log.debug("Added dependency $dependency for $modId (${mod.name}).")
-                                modDependencies.add(Pair(dependency, Pair(mod.name, modId)))
+                                modDependencies.add(Pair(dependency, Pair(mod, modId)))
                             } catch (ex: NullPointerException) {
                                 log.debug("No dependencies for $modId (${mod.name}).")
                             }

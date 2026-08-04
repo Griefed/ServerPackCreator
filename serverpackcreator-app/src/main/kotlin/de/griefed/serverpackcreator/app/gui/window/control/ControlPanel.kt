@@ -32,7 +32,6 @@ import de.griefed.serverpackcreator.app.gui.window.control.components.Generation
 import de.griefed.serverpackcreator.app.gui.window.control.components.LarsonScanner
 import de.griefed.serverpackcreator.app.gui.window.control.components.ServerPacksButton
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.launch
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
@@ -101,7 +100,6 @@ class ControlPanel(
      */
     // CoroutineStart.ATOMIC is itself a delicate API (a started generation must not be cancellable
     // before its first suspension); the opt-in is for that, not for the now-removed GlobalScope.
-    @OptIn(DelicateCoroutinesApi::class)
     fun generate() {
         componentScope.scope().launch(guiProps.generationDispatcher, CoroutineStart.ATOMIC) {
             launchGeneration()

@@ -19,8 +19,8 @@
  */
 package de.griefed.serverpackcreator.clientside
 
-import de.griefed.serverpackcreator.clientside.BootResult.CRASHED
-import de.griefed.serverpackcreator.clientside.BootResult.SURVIVED
+import de.griefed.serverpackcreator.clientside.BootLogClassifier.clientOnlyClassMarker
+import de.griefed.serverpackcreator.clientside.BootLogClassifier.setupAbortMarkers
 
 
 /**

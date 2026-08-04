@@ -44,7 +44,6 @@ class BooleanUtilities {
          * or `FALSE`. This prevents any non-boolean values from being written to the new
          * configuration file.
          *
-         * @param scanner Used for reading the users input.
          * @return True or False, depending on user input.
          * @author Griefed
          */

@@ -19,10 +19,6 @@
  */
 package de.griefed.serverpackcreator.clientside
 
-import de.griefed.serverpackcreator.clientside.Confidence.HIGH
-import de.griefed.serverpackcreator.clientside.Confidence.MEDIUM
-
-
 /**
  * How strongly the evidence supports "this mod is clientside-only". Phase 1 (metadata only) reaches
  * at most [MEDIUM]; the boot-test (Phase 2) is what promotes a crashing mod to [HIGH].

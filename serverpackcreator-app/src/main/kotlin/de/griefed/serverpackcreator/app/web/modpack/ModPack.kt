@@ -100,7 +100,7 @@ class ModPack() {
         result = 31 * result + versionID.hashCode()
         result = 31 * result + name.hashCode()
         result = 31 * result + source.hashCode()
-        result = 31 * result + (sha256?.hashCode() ?: 0)
+        result = 31 * result + (sha256.hashCode())
         return result
     }
 

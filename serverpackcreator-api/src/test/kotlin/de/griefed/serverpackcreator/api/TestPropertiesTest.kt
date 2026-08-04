@@ -22,7 +22,7 @@ package de.griefed.serverpackcreator.api
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.io.File
-import java.util.Properties
+import java.util.*
 
 /**
  * Pins that the suite's own configuration is machine-independent.

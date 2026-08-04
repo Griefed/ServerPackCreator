@@ -23,7 +23,6 @@ import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import de.griefed.serverpackcreator.app.gui.utilities.getScaledInstance
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.launch
 import net.java.balloontip.BalloonTip
 import java.awt.Image
@@ -94,7 +93,6 @@ class IconPreview(private val guiProps: GuiProps) : JLabel(guiProps.serverIcon) 
      */
     // CoroutineStart.ATOMIC is itself a delicate API (the load must not be cancellable before it
     // starts); the opt-in is for that, not for the now-removed GlobalScope.
-    @OptIn(DelicateCoroutinesApi::class)
     fun updateIcon(newIcon: File) {
         if (lastLoadedIcon != null && lastLoadedIcon!!.absolutePath == newIcon.absolutePath) {
             return
@@ -110,7 +108,6 @@ class IconPreview(private val guiProps: GuiProps) : JLabel(guiProps.serverIcon) 
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
     fun updateIcon(newIcon: ImageIcon, reset: Boolean = false) {
         componentScope.scope().launch(guiProps.miscDispatcher, CoroutineStart.ATOMIC) {
             run {

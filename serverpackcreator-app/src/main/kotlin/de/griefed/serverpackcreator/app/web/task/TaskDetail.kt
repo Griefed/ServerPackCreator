@@ -50,9 +50,9 @@ class TaskDetail(val modpack: ModPack) {
 
     override fun hashCode(): Int {
         var result = modpack.hashCode()
-        result = 31 * result + (serverPack?.hashCode() ?: 0)
-        result = 31 * result + (packConfig?.hashCode() ?: 0)
-        result = 31 * result + (runConfiguration?.hashCode() ?: 0)
+        result = 31 * result + (serverPack.hashCode())
+        result = 31 * result + (packConfig.hashCode())
+        result = 31 * result + (runConfiguration.hashCode())
         return result
     }
 

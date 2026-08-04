@@ -127,7 +127,7 @@ class VersionsController @Autowired constructor(private val versionMeta: Version
     fun availableNeoForgeVersionsForMinecraftVersion(@PathVariable("minecraftversion") minecraftVersion: String): ResponseEntity<List<String>> {
         val versions = versionMeta.neoForge.supportedNeoForgeVersions(minecraftVersion)
         return if (versions.isPresent) {
-            return ResponseEntity.ok()
+            ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON_VALUE)
                 .body(versions.get())
         } else {

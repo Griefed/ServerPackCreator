@@ -19,10 +19,10 @@
  */
 package de.griefed.serverpackcreator.api.utilities
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
+import kotlin.time.Instant
 
 /**
  * Minimalistic stopwatch to measure the elapsed time between operations.

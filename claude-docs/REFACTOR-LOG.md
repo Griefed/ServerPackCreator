@@ -1274,3 +1274,64 @@ surface, and Qodana's scope excludes test sources — `compileModList(packConfig
 in main", not "unused". Also rejected: `CanBeParameter` on `Dependency.modID` (dropping `val` removes a published
 property), the five `CanUnescapeDollarLiteral` and three `RemoveRedundantQualifierName` (explicit is more readable;
 the latter is only "redundant" under Kotlin 2.2+ context-sensitive resolution).
+
+---
+
+## 2026-08-04 — CI: the Qodana 2026.2 bump could not run, and the dind service never could
+
+Two branches: `claude-ci-qodana-jbr-cache` (merged into `develop` as `f16dff7ff`, and present in `alpha`) and
+`claude-ci-audit-fixes` (the audit remediation). Only `.gitlab-ci.yml` and docs; no Kotlin, so no suite moved.
+
+**The failure.** The `2026.2` bump (`b14d30d45`) left the job failing one second into `step_script` on
+`fork/exec …/qodana/cache/qodana-jbr/qodana-jbrsdk-25.0.2-linux-x64-b329.72/…/bin/java: permission denied`.
+
+**Root cause, measured against the pinned image rather than guessed.** 2026.2 builds its "effective configuration"
+by running `libs/config-loader-cli-0.0.38.jar` in a **separate JVM**, and downloads its own runtime for it into
+`<cache-dir>/qodana-jbr`. That path is derived from `--cache-dir`, and there is no way to redirect it or to reuse
+the JBR the image already ships at `/opt/idea/jbr`: `docker image inspect` gives `JAVA_HOME=/opt/idea/jbr` and
+`USER=0`, `qodana scan --help` offers only `--cache-dir` / `--clear-cache`, and `grep -a -oE "QODANA_[A-Z0-9_]+"`
+over the Go binary (the image has no `strings`) shows no JBR or JAVA override. So an executable necessarily lives
+inside the directory the job caches, and **GitLab's cache round-trip does not preserve the executable bit**
+(gitlab-runner#27496/#1782, both open). The container runs as root, which bypasses ownership but still needs one
+`x` bit to `execve`. 2025.1 never hit it: no `config-loader-cli`, nothing executable in the cache.
+
+`noexec` on `/builds` was ruled out without access to the runner: `cache:when` defaults to `on_success`, so the
+restored key can only have been written by an earlier **successful** 2026.2 run that exec'd that same path.
+
+**Reproduced locally before fixing**, against a minimal fixture rather than this repo — the failure happens before
+any analysis, so the 1.93 GiB Docker VM never approached the OOM that killed the earlier local attempt. Empty cache
+→ `bin/java` is `-rwxr-xr-x`, config loads; x bits stripped from files only → the byte-identical CI error, exit 1;
+`chmod -R +x` → `openjdk version "25.0.2"` and `Loaded Qodana Configuration`.
+
+- **6 of 133** files in the JBR carry an x bit — `bin/{java,keytool,jrunscript,rmiregistry}` and
+  `lib/{jexec,jspawnhelper}`. Two are outside `bin/`, which is why the repair is `-R` and not a `bin/` predicate.
+- **No other file anywhere else in the cache** is executable — `config-loader-cli-0.0.38.jar` is cached too but is
+  run *by* java. Hence the chmod is scoped to `qodana-jbr/` instead of the whole cache, so the next instance
+  surfaces rather than being masked.
+
+**Exec is the only reliable test of that bit.** Measured while fixing audit finding L-1: on a Docker Desktop bind
+mount a host-side `0644` file is **reported** as `-rwxr-xr-x` inside the container and `[ -x ]` answers
+"executable", while `execve` still fails with EACCES. An intermediate version of the guard asserted `[ -x ]` and was
+therefore unsound; the probe now runs the binary and **classifies the failure** — "permission denied" fails the job,
+anything else warns, because a stale or truncated JBR tree that Qodana may not even use must not take the pipeline
+down (measured: a tree holding only `bin/java` exits 127 on `libjli.so: cannot open shared object file`). The same
+attribute-caching quirk explains a discrepancy in the first session's evidence: previously mounted paths report a
+stale 0755, freshly created ones report the truth. The exec result was faithful throughout.
+
+**Second finding, from the same log: the dind service has never worked.** `dockerd` dies at startup on
+`can't create unix socket /var/run/docker.sock: device or resource busy` — something is already mounted at that path
+in the service container, which is runner config, outside this repo. It was declared top-level, so **20 of 20 jobs**
+started it and each paid the health-check wait (34 s, measured 20:19:41 → 20:20:15) for nothing. Narrowed to the
+**7** jobs that genuinely need a daemon, verified by parsing every job body against the `extends:` list:
+`Update README:on-schedule` needs one (it runs `act` against `catthehacker/ubuntu:act-*`) despite containing no
+literal `docker` token, `Generate Release` does not (every `@semantic-release/exec` block is commented out), and no
+Gradle job does (the Docker-dependent grinder tests are gated behind `GRINDER_DOCKER_IT` / `GRINDER_TEMPLATE_IT`).
+Deliberately conservative rather than deleting it outright — B26/B27/B28 carry the rest.
+
+**Griefed confirmed a full green pipeline on 2026-08-04**, which validates both changes in CI.
+
+**The audit's own finding worth keeping.** `358675fbf` was labelled `refactor(ci)` while stopping 13 jobs from
+starting a container — a behaviour change, and the third commit in this project to get that label wrong. It was
+audited **after** being merged into `develop` and `alpha`, so the honest remedy was a record in `CLAUDE.md` rather
+than force-pushing two shared branches. That asymmetry is now written into the convention itself: cheap before the
+merge, unfixable after it.

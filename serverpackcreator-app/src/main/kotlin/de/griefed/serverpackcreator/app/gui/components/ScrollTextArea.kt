@@ -38,6 +38,7 @@ import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter
 import javax.swing.undo.CannotRedoException
 import javax.swing.undo.CannotUndoException
 import javax.swing.undo.UndoManager
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Scrollable textarea with an [UndoManager] providing up to ten undos. By default, the vertical scrollbar is
@@ -139,30 +140,25 @@ class ScrollTextArea(
 
     override fun keyPressed(e: KeyEvent) {
         textArea.highlighter.removeAllHighlights()
-        when {
-            e.keyCode == KeyEvent.VK_Z && e.isControlDown -> {
+        when (e.keyCode) {
+            e.keyCode if e.isControlDown -> {
                 try {
                     undoManager.undo()
                 } catch (cue: CannotUndoException) {
                     Toolkit.getDefaultToolkit().beep()
                 }
             }
-
-            e.keyCode == KeyEvent.VK_Y && e.isControlDown -> {
+            e.keyCode if e.isControlDown -> {
                 try {
                     undoManager.redo()
                 } catch (cue: CannotRedoException) {
                     Toolkit.getDefaultToolkit().beep()
                 }
             }
-
-            e.keyCode == KeyEvent.VK_F && e.isControlDown && !e.isShiftDown -> searchDialog()
-
-            e.keyCode == KeyEvent.VK_F && e.isControlDown && e.isShiftDown -> searchRegexDialog()
-
-            e.keyCode == KeyEvent.VK_R && e.isControlDown && !e.isShiftDown -> searchAndReplace()
-
-            e.keyCode == KeyEvent.VK_R && e.isControlDown && e.isShiftDown -> searchRegexAndReplace()
+            e.keyCode if e.isControlDown && !e.isShiftDown -> searchDialog()
+            e.keyCode if e.isControlDown && e.isShiftDown -> searchRegexDialog()
+            e.keyCode if e.isControlDown && !e.isShiftDown -> searchAndReplace()
+            e.keyCode if e.isControlDown && e.isShiftDown -> searchRegexAndReplace()
         }
     }
 
@@ -173,7 +169,7 @@ class ScrollTextArea(
      */
     private fun requestFocus(component: JComponent) {
         componentScope.scope().launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
-            delay(250)
+            delay(250.milliseconds)
             component.requestFocus()
             component.grabFocus()
         }

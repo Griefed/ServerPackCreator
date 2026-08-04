@@ -25,7 +25,6 @@ import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import de.griefed.serverpackcreator.app.gui.window.settings.SettingsEditorsTab
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import javax.swing.Timer
 import javax.swing.event.AncestorEvent
 import javax.swing.event.AncestorListener
@@ -53,7 +52,7 @@ class SettingsCheckTimer(
         addActionListener {
             componentScope.scope().launch(guiProps.configDispatcher, CoroutineStart.UNDISPATCHED) {
                 val errors = mutableListOf<String>()
-                runBlocking {
+                run {
                     launch {
                         for (editor in settingsEditor.allTabs) {
                             errors.addAll((editor as Editor).validateSettings())

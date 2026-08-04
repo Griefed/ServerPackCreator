@@ -24,9 +24,6 @@
  */
 package de.griefed.serverpackcreator.app.gui.window.control.components
 
-import de.griefed.serverpackcreator.app.gui.window.control.components.LarsonScanner.ScannerConfig.Companion.HIGH
-import de.griefed.serverpackcreator.app.gui.window.control.components.LarsonScanner.ScannerConfig.Companion.LOW
-import de.griefed.serverpackcreator.app.gui.window.control.components.LarsonScanner.ScannerConfig.Companion.MEDIUM
 import java.awt.*
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -864,7 +861,7 @@ class LarsonScanner : JPanel {
         @set:Throws(IllegalArgumentException::class)
         var qualitySetting = LOW
             set(qualitySetting) {
-                field = if (qualitySetting < 0 || qualitySetting > 2) {
+                field = if (qualitySetting !in 0..2) {
                     throw IllegalArgumentException(
                         "Quality setting must be 0, 1 or 2. Specified $qualitySetting"
                     )
@@ -2094,7 +2091,7 @@ class LarsonScanner : JPanel {
          */
         @Throws(IllegalArgumentException::class)
         private fun colourWithAlpha(alpha: Short, color: Color): Color {
-            require(!(alpha < 0 || alpha > 255)) { "Alpha must be 0 to 255. Specified $alpha" }
+            require(alpha in 0..255) { "Alpha must be 0 to 255. Specified $alpha" }
             return Color(color.red, color.green, color.blue, alpha.toInt())
         }
 

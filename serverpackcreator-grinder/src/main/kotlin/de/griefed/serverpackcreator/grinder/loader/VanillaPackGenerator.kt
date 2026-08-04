@@ -23,7 +23,7 @@ import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.config.PackConfig
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
-import java.util.Optional
+import java.util.*
 
 /**
  * Generates a **mod-less** server pack for a `(loader, loaderVersion, minecraftVersion)` tuple — the

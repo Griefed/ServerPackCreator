@@ -24,10 +24,10 @@ import de.griefed.serverpackcreator.clientside.Confidence
 import de.griefed.serverpackcreator.grinder.GrindCandidate
 import de.griefed.serverpackcreator.grinder.GrinderStatus
 import de.griefed.serverpackcreator.grinder.ModPlatforms
+import de.griefed.serverpackcreator.grinder.grindVerdict
 import de.griefed.serverpackcreator.grinder.loader.LoaderCache
 import de.griefed.serverpackcreator.grinder.source.CatalogCursor
 import de.griefed.serverpackcreator.grinder.source.InMemoryCursorStore
-import de.griefed.serverpackcreator.grinder.grindVerdict
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir

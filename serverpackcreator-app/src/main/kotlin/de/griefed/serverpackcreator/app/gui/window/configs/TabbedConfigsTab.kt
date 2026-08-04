@@ -114,7 +114,7 @@ class TabbedConfigsTab(
 
         tabs.dropTarget = object : DropTarget() {
             override fun drop(event: DropTargetDropEvent) {
-                val transferable = event?.transferable ?: return
+                val transferable = event.transferable ?: return
                 if (!event.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
                     return
                 }

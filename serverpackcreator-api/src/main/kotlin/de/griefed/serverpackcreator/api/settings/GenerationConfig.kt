@@ -21,7 +21,6 @@ package de.griefed.serverpackcreator.api.settings
 
 import de.griefed.serverpackcreator.api.PropertyStore
 import de.griefed.serverpackcreator.api.config.ExclusionFilter
-import de.griefed.serverpackcreator.api.settings.GenerationConfig.Companion.AUTO_DISCOVERY_ENABLED_KEY
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.util.*
 

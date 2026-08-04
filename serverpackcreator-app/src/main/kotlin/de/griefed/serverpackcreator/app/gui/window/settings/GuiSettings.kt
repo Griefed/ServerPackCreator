@@ -194,7 +194,7 @@ class GuiSettings(
 
     override fun validateSettings(): List<String> {
         val errors = mutableListOf<String>()
-        if (fontSizeSetting.value < 8 || fontSizeSetting.value > 76) {
+        if (fontSizeSetting.value !in 8..76) {
             fontSizeIcon.error(Translations.settings_gui_font_error.toString())
             errors.add(Translations.settings_gui_font_error.toString())
         } else {

@@ -1467,6 +1467,6 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      * [ApiProperties.getConfiguration].
      * @author Griefed
      */
-    inner class CustomXMLConfiguration(loggerContext: LoggerContext?, configSource: ConfigurationSource?) :
+    class CustomXMLConfiguration(loggerContext: LoggerContext?, configSource: ConfigurationSource?) :
         XmlConfiguration(loggerContext, configSource)
 }

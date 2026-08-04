@@ -165,11 +165,15 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   `- Old.isSuspendGap(gap, poll)` / `+ New.isSuspendGap(gap, poll)`, with every assertion byte-identical, stays a
   `refactor:`. Judge the diff, not the file list: if no expectation changed, the test did not change in the sense
   this rule means. (Written after the rule's first draft flagged `b6b778b82`, a clean cross-module move, as
-  mislabelled — a convention that cries wolf on legitimate refactors gets ignored wholesale.) Two commits got this
-  wrong: `5f138ef8a` (`refactor(app)`) moved four call-sites onto a *resolved* Preferences node, changing where
+  mislabelled — a convention that cries wolf on legitimate refactors gets ignored wholesale.) Three commits got
+  this wrong: `5f138ef8a` (`refactor(app)`) moved four call-sites onto a *resolved* Preferences node, changing where
   any host with its own node reads and writes, and had to edit `CommandlineParserTest`; `7815d5960`
-  (`refactor(api)`) added an operator-editable template path plus a delete-watcher branch in `-app`. Both
-  described the change honestly in the body — only the type lied.
+  (`refactor(api)`) added an operator-editable template path plus a delete-watcher branch in `-app`; `358675fbf`
+  (`refactor(ci)`) stopped 13 of the pipeline's 20 jobs from starting a dind service, cutting ~34 s off each. All
+  three described the change honestly in the body — only the type lied. **`358675fbf` also shows why the label is
+  worth getting right the first time:** it was audited only after being merged into `develop` and `alpha`, at which
+  point the honest remedy is this entry, because the alternative is force-pushing two shared branches. The rule is
+  cheap before the merge and unfixable after it.
 
 ### Kotlin idioms
 
@@ -259,6 +263,20 @@ rather than deprecated** to a single source of truth (see `serverpackcreator-api
 severity — are phantom, because the pinned `qodana-jvm-community:2025.1` bundles **kotlinc 2.1.10** against this
 project's **2.3.20**. Bumped to `2026.2` (bundles 2.3.20 exactly). **Unverified locally:** Qodana OOM-killed
 (exit 137) because this machine's Docker VM is capped at 1.93 GiB — confirm the new problem count against CI.
+
+**2026-08-04 — the 2026.2 bump needed a second fix before CI could run it at all
+(`claude-ci-qodana-jbr-cache`).** The bumped job failed one second in, on `fork/exec … qodana-jbr/… /bin/java:
+permission denied`. **2026.2 runs `libs/config-loader-cli` in a separate JVM and downloads its own runtime into
+`<cache-dir>/qodana-jbr`** — a path derived from `--cache-dir`, with no flag or env var to redirect it or to reuse
+the JBR the linter image already ships at `/opt/idea/jbr` (measured against the image: `qodana scan --help` and the
+binary's whole `QODANA_*` table). So an executable necessarily lives inside the GitLab-cached directory, and **the
+cache round-trip does not preserve the executable bit** (gitlab-runner#27496/#1782). 2025.1 never hit it: no
+`config-loader-cli`, no executable in the cache. The job's `before_script` now repairs the mode and probes it.
+Two things worth keeping: exec is the *only* reliable test of that bit — a Docker Desktop bind mount reports 0755
+for a host-side 0644 file and answers `[ -x ]` with "executable" while `execve` still fails — and the probe must
+classify, because a stale JBR tree that Qodana never uses will fail `-version` for unrelated reasons and must not
+take the pipeline down. **Griefed confirmed a full green pipeline on 2026-08-04**, so the 2026.2 problem count is
+now readable off the report (still to be recorded here).
 
 **Current phase — 4 (frontend) complete; GUI structured-concurrency done.** Frontend 4a–4e: Vitest,
 settings-store `$q` decoupling, full TypeScript migration (all `src/` is TS, verified by

@@ -55,8 +55,8 @@ class DatabaseStorageService(
     fun store(file: File): ObjectId {
         val originalName = determineFilename(file.name)
         val metaData = BasicDBObject()
-        metaData.put("type", "zip")
-        metaData.put("title", originalName)
+        metaData["type"] = "zip"
+        metaData["title"] = originalName
         val objectId = gridFsTemplate.store(
             FileInputStream(file),
             originalName,
@@ -67,14 +67,11 @@ class DatabaseStorageService(
 
     fun load(id: String): Optional<Pair<GridFSFile, GridFsResource>> {
         val result = gridFsTemplate.findOne(query(id))
-        if (result != null) {
-            return Optional.of(
-                Pair(
-                    result,
-                    gridFsOperations.getResource(result)
-                )
+        return Optional.of(
+            Pair(
+                result,
+                gridFsOperations.getResource(result)
             )
-        }
-        return Optional.empty()
+        )
     }
 }
