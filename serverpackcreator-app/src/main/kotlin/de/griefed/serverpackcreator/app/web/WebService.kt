@@ -72,15 +72,8 @@ class WebService(private val api: ApiWrapper) {
          * [SpringApplication.run]. Extracted from [start] so the composition can be tested without
          * booting a Spring context.
          */
-        fun springArguments(args: Array<String>, configLocationArgument: String): Array<String> {
-            return if (args.isEmpty()) {
-                arrayOf(configLocationArgument)
-            } else {
-                val temp = args.toList().toTypedArray()
-                temp[temp.lastIndex] = configLocationArgument
-                temp.toList().toTypedArray()
-            }
-        }
+        fun springArguments(args: Array<String>, configLocationArgument: String): Array<String> =
+            args + configLocationArgument
 
         @Volatile
         private var springBootApplicationContext: ConfigurableApplicationContext? = null
