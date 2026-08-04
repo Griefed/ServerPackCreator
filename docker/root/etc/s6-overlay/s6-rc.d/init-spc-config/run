@@ -79,12 +79,12 @@ fi
 
 if [[ -n ${SPC_SERVERPACK_ZIP_EXCLUDE} ]];then
   echo "Overriding de.griefed.serverpackcreator.serverpack.zip.exclude..."
-  echo "de.griefed.serverpackcreator.serverpack.zip.exclude={$SPC_SERVERPACK_ZIP_EXCLUDE}" >> ${OVERRIDES}
+  echo "de.griefed.serverpackcreator.serverpack.zip.exclude=${SPC_SERVERPACK_ZIP_EXCLUDE}" >> ${OVERRIDES}
 fi
 
 if [[ -n ${SPC_SERVERPACK_ZIP_EXCLUDE_ENABLED} ]];then
   echo "Overriding de.griefed.serverpackcreator.serverpack.zip.exclude.enabled..."
-  echo "de.griefed.serverpackcreator.serverpack.zip.exclude.enabled={$SPC_SERVERPACK_ZIP_EXCLUDE_ENABLED}" >> ${OVERRIDES}
+  echo "de.griefed.serverpackcreator.serverpack.zip.exclude.enabled=${SPC_SERVERPACK_ZIP_EXCLUDE_ENABLED}" >> ${OVERRIDES}
 fi
 
 if [[ -n ${SPC_LOG_LEVEL} ]];then
