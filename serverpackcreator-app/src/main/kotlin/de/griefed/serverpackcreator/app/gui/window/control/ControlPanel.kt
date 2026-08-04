@@ -101,7 +101,6 @@ class ControlPanel(
      */
     // CoroutineStart.ATOMIC is itself a delicate API (a started generation must not be cancellable
     // before its first suspension); the opt-in is for that, not for the now-removed GlobalScope.
-    @OptIn(DelicateCoroutinesApi::class)
     fun generate() {
         componentScope.scope().launch(guiProps.generationDispatcher, CoroutineStart.ATOMIC) {
             launchGeneration()

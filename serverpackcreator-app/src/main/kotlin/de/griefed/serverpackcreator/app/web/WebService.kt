@@ -89,7 +89,7 @@ class WebService(private val api: ApiWrapper) {
             if (springBootApplicationContext == null) {
                 synchronized(this) {
                     if (springBootApplicationContext == null) {
-                        log.debug("Running webservice with ars: $args")
+                        log.debug("Running webservice with ars: ${args.joinToString(" ")}")
                         springBootApplicationContext = SpringApplication.run(WebService::class.java, *args)
                     }
                 }

@@ -108,9 +108,9 @@ class InclusionSpecification(
      */
     override fun hashCode(): Int {
         var result = source.hashCode()
-        result = 31 * result + (destination?.hashCode() ?: 0)
-        result = 31 * result + (inclusionFilter?.hashCode() ?: 0)
-        result = 31 * result + (exclusionFilter?.hashCode() ?: 0)
+        result = 31 * result + (destination.hashCode())
+        result = 31 * result + (inclusionFilter.hashCode())
+        result = 31 * result + (exclusionFilter.hashCode())
         return result
     }
 }

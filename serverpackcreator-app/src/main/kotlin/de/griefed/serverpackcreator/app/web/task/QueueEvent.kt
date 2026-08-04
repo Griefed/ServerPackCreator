@@ -80,8 +80,8 @@ class QueueEvent() {
 
     override fun hashCode(): Int {
         var result = modPackId.hashCode()
-        result = 31 * result + (serverPackId?.hashCode() ?: 0)
-        result = 31 * result + (status?.hashCode() ?: 0)
+        result = 31 * result + (serverPackId.hashCode())
+        result = 31 * result + (status.hashCode())
         result = 31 * result + message.hashCode()
         result = 31 * result + timestamp.hashCode()
         result = 31 * result + errors.hashCode()

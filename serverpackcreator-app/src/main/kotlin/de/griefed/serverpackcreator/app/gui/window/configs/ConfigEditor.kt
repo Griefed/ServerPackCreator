@@ -47,6 +47,7 @@ import java.io.File
 import java.io.IOException
 import javax.swing.*
 import javax.swing.event.DocumentEvent
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Panel to edit a server pack configuration. This panel contains any and all elements required to fully configure
@@ -699,7 +700,6 @@ class ConfigEditor(
      */
     // CoroutineStart.ATOMIC is itself a delicate API (the load must not be cancellable before it
     // starts); the opt-in is for that, not for the now-removed GlobalScope.
-    @OptIn(DelicateCoroutinesApi::class)
     fun loadConfiguration(packConfig: PackConfig, confFile: File) {
         componentScope.scope().launch(guiProps.configDispatcher, CoroutineStart.ATOMIC) {
             try {
@@ -1070,7 +1070,7 @@ class ConfigEditor(
                     }
                     if (packConfig.inclusions.isNotEmpty()) {
                         setInclusions(ArrayList(packConfig.inclusions))
-                        delay(100)
+                        delay(100.milliseconds)
                         updateMessage.append(
                             Translations.createserverpack_gui_modpack_scan_directories(
                                 packConfig.inclusions.joinToString(", ") { inclusion -> inclusion.source }
