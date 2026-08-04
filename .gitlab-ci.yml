@@ -161,6 +161,17 @@ Docker Test:
   extends: .dockerized
   stage: Tests
   before_script:
+    # One-off diagnostic: the dind service declared by .dockerized never starts ("can't create unix
+    # socket /var/run/docker.sock: device or resource busy"), yet this job builds and pushes fine -
+    # so it is reaching some other daemon. An unset DOCKER_HOST plus a live socket means the host
+    # daemon, and the service can be dropped everywhere. A DOCKER_HOST of tcp://docker:2375|2376
+    # means the service is the intended endpoint and the socket collision is the real bug. Remove
+    # this block once the answer is recorded.
+    - echo "**** Docker endpoint in use ****"
+    - 'echo "DOCKER_HOST=${DOCKER_HOST:-<unset>} DOCKER_TLS_CERTDIR=${DOCKER_TLS_CERTDIR:-<unset>}"'
+    - ls -l /var/run/docker.sock || true
+    - docker context ls || true
+    - docker info --format 'Name={{.Name}} ServerVersion={{.ServerVersion}}' || true
     - echo "$DOCKERHUB_TOKEN" | docker login docker.io -u "$DOCKERHUB_USER" --password-stdin
     - echo "$GITHUB_TOKEN"    | docker login ghcr.io   -u "$DOCKERHUB_USER" --password-stdin
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
