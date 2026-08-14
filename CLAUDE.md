@@ -224,7 +224,7 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 
 | Module         | Tests         | Notes                                                                                |
 |----------------|---------------|--------------------------------------------------------------------------------------|
-| api            | 292 (1 skip)  | Phase 1 **complete**; + `FacadeConstantDelegationTest` (the published `modFileEndings`/`zipCheck` facades must *read* their owner, asserted on identity so a re-introduced equal-valued copy still fails); + `MinecraftMetaTest` (`requiredJavaVersion`) and `ScriptTemplateContentTest` (non-gated guard for the shipped templates; skips its `fish -n` case where fish is absent, and **executes** the bash `setupFabric` to pin the offline launcher path); + `ModScannerSidenessTest` and the `ModListCompilerTest` additions (modscanning hardening, 2026-08-14 — see below). |
+| api            | 294 (1 skip)  | Phase 1 **complete**; + `FacadeConstantDelegationTest` (the published `modFileEndings`/`zipCheck` facades must *read* their owner, asserted on identity so a re-introduced equal-valued copy still fails); + `MinecraftMetaTest` (`requiredJavaVersion`) and `ScriptTemplateContentTest` (non-gated guard for the shipped templates; skips its `fish -n` case where fish is absent, and **executes** the bash `setupFabric` to pin the offline launcher path); + `ModScannerSidenessTest` and the `ModListCompilerTest` additions (modscanning hardening, 2026-08-14 — see below). |
 | clientside     | 87            | Extracted from `-app`; `BootVerifier` split + `packPostProcessor` hook; selection (MC-support gate) + setup-abort classification pinned |
 | app            | 76            | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay             |
 | plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |
@@ -307,6 +307,13 @@ include-list is built solely from what a scanner returned — so an unrecognised
 server pack** where the pre-rewrite code returned every jar. Reachable from an ordinary `PackConfig`, because
 `PackConfig.modloader`'s setter silently ignores a value it does not recognise and leaves the field at `""`.
 The `else` now warns and includes everything.
+
+And (audit I-6) the dependency rescue additionally required the **disabled** mod to be `Sideness.SERVER` — but a
+mod auto-disabled by a scanner is `CLIENT` by construction, so *"don't exclude something's dependency"* only ever
+reached mods the scanner had called server-side and the user had excluded by name, never the auto-detected ones it
+exists for. Clause dropped; pinned in both the direct and the **transitive** case (`servermod → midlib → deeplib`,
+middle and leaf both clientside), because a single-pass rescue keeps the leaf excluded and still looks like it
+worked — which is what the surrounding `while` is for.
 
 **Current phase — 4 (frontend) complete; GUI structured-concurrency done.** Frontend 4a–4e: Vitest,
 settings-store `$q` decoupling, full TypeScript migration (all `src/` is TS, verified by

@@ -5,8 +5,8 @@
 follow up on. Not itself in range; its surviving conditions are reported separately below.
 **Mode:** READ-ONLY at audit time. No source was modified while auditing.
 
-**Remediation:** branch `claude-modscan-test-hardening`, **7 commits**, `7279962bd` … `1f93755d2`.
-API suite **280 → 292 tests**, 1 skip (the `fish`-absent skip in `ScriptTemplateContentTest`,
+**Remediation:** branch `claude-modscan-test-hardening`, **11 commits**, `7279962bd` … `35c5787ad`.
+API suite **280 → 294 tests**, 1 skip (the `fish`-absent skip in `ScriptTemplateContentTest`,
 unchanged), 0 failures. `:serverpackcreator-app:test` 80 tests, green.
 
 ### Status
@@ -22,7 +22,8 @@ unchanged), 0 failures. `:serverpackcreator-app:test` 80 tests, green.
 | L-1 | Unused `SupportedModloaders.quilt` import | LOW | Open |
 | L-2 | Value identity hand-rolled at six call sites | LOW | Open |
 | L-3 | Log statement reads the value it just overwrote | LOW | Open |
-| I-1…I-8 | Inherited from `0a12d41d0` | mixed | Open |
+| I-6 | Dependency rescue could not fire for clientside mods | MEDIUM | **Fixed** + pinned |
+| I-1…I-5, I-7, I-8 | Inherited from `0a12d41d0` | mixed | Open |
 
 ---
 
@@ -102,6 +103,28 @@ the prior contract while making the situation visible. Pinned by
 **A documentation error fell out of this.** `serverpackcreator-api/CLAUDE.md` claimed unknown
 modloaders "default to **Forge**". They do not — the field keeps whatever it held, starting at `""`.
 Corrected in `1f93755d2`. The wrong claim is what made the missing `else` look unreachable.
+
+### I-6 — Dependency rescue could not fire for clientside mods → fixed
+
+Excluding a mod something else depends on produces a pack that installs and then dies on load, which
+is worse than shipping one mod too many — so a dependency has to win over a clientside verdict. The
+rescue could never do that: it additionally required the *disabled* mod to be `Sideness.SERVER`, but a
+mod auto-disabled by a scanner is `CLIENT` by construction, so the protection only ever reached mods
+the scanner had judged server-side and the user had excluded by name.
+
+Griefed dropped the clause from both the `while` guard and the `removeIf` predicate (`35c5787ad`).
+Pinned by two cases in `ModListCompilerTest`, committed red in `d8dfeb4ac`:
+
+- `aClientsideModDependedOnByAServerModIsRescued` — `servermod` (`environment: "*"`) depends on
+  `clientlib` (`environment: "client"`); `clientlib` must be kept.
+- `theDependencyRescueFollowsAChain` — `servermod → midlib → deeplib`, middle and leaf both
+  clientside. This is what the surrounding `while` exists for: rescuing one mod puts *its*
+  dependencies in play. Observed red as `expected: <[servermod.jar, midlib.jar, deeplib.jar]> but
+  was: <[servermod.jar]>`, i.e. a single-pass rescue would have kept `deeplib` excluded and still
+  looked like it worked.
+
+Termination is unchanged: each iteration whose guard holds removes at least one entry from
+`disabledMods`, and nothing is ever added back to it.
 
 ### M-2 — Exported `modID` default → pinned, still undocumented
 
@@ -184,9 +207,10 @@ single named helper comparing `file` instead, and identity stays explicit.
 by accident of the predicate directly above it guaranteeing the two names are equal. Read
 `match.file.name`, or log before assigning.
 
-### I-1…I-8 — Inherited from `0a12d41d0`
+### I-1…I-5, I-7, I-8 — Inherited from `0a12d41d0`
 
-Out of the audited range; untouched by the follow-ups and by the remediation branch.
+Out of the audited range; untouched by the follow-ups and by the remediation branch. (I-6 is fixed —
+see above.)
 
 | # | Condition | Location |
 |---|---|---|
@@ -195,7 +219,6 @@ Out of the audited range; untouched by the follow-ups and by the remediation bra
 | I-3 | 7 exported declarations carry zero KDoc, including the two load-bearing defaults now pinned by tests | `modscanning/ScanResult.kt:5-23` |
 | I-4 | `var` in value types, populated by assignment after construction | `ScanResult.kt:7-8,17` |
 | I-5 | File still named `ScanResult.kt` after `ScanResult` was deleted | `modscanning/ScanResult.kt` |
-| I-6 | Dependency rescue requires `sideness == SERVER`, but an auto-disabled mod is `CLIENT` by construction — the branch cannot fire for the population it was written for | `ModListCompiler.kt:261,268` |
 | I-7 | The four-branch `when (exclusionFilter)` is written 3 times in one function; the whitelist `while` re-evaluates a predicate `removeIf` has already exhausted | `ModListCompiler.kt:214-249` |
 | I-8 | `ReadmeExamplesTest` KDoc and test name still describe the deleted `ScanResult` contract; `README.md` untouched | `ReadmeExamplesTest.kt:36,43,118,123` |
 
@@ -222,14 +245,16 @@ Out of the audited range; untouched by the follow-ups and by the remediation bra
 | HIGH | 1 | — | 1 | — | 0 |
 | MEDIUM | 4 | 3 | — | 1 | 0 |
 | LOW | 4 | — | — | — | 4 |
-| Inherited | 8 | — | — | — | 8 |
+| Inherited | 8 | 1 | — | — | 7 |
 
 Every finding in the audited range is closed. The behaviour the modscan work changed is now pinned by
 tests observed red against the commit before each fix, so the next regression fails the build instead
 of skipping a test and writing an INFO log.
 
-What remains is cosmetic or inherited from the base commit: one unused import, one unreachable loop,
-one log statement reading a stale local, and the eight `0a12d41d0` conditions — of which **I-6 is the
-only one with a behavioural consequence** (the dependency rescue cannot fire for auto-detected
-clientside mods, i.e. "taking care of dependencies" does not reach the population it was written for).
-That is the one worth scheduling; the rest are a tidy-up branch.
+I-6 — the one inherited condition with a behavioural consequence — is fixed and pinned too, so
+"taking care of dependencies" now reaches the population it was written for.
+
+What remains is cosmetic: one unused import, one unreachable loop, one log statement reading a stale
+local, and seven inherited conditions (the `!!`s, mutable scanner state, missing KDoc, the
+`ScanResult.kt` filename, and the duplicated `when` blocks). None changes behaviour; they are a
+tidy-up branch whenever it suits.
