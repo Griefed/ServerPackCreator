@@ -139,16 +139,16 @@ class ModListCompiler(
                 val quiltScan = modScanner.quiltScanner.scan(filesInModsDir).toMutableList()
                 val fabricScan = modScanner.fabricScanner.scan(filesInModsDir)
                 for (i in quiltScan.indices) {
-                    val match = fabricScan.find { fabric -> fabric.modID == quiltScan[i].modID }
+                    val match = fabricScan.find { fabric -> fabric.file.name == quiltScan[i].file.name }
                     if (match == null) { continue }
                     if (quiltScan[i].sideness == Sideness.SERVER && match.sideness == Sideness.CLIENT) {
                         quiltScan[i] = match
-                        log.info("${quiltScan[i].modID} Quilt-scan yielded sideness SERVER, but Fabric-scan yielded CLIENT. Using Fabric-scan result instead.")
+                        log.info("${quiltScan[i].file.name} Quilt-scan yielded sideness SERVER, but Fabric-scan yielded CLIENT. Using Fabric-scan result instead.")
                     }
                 }
                 for (fabric in fabricScan) {
-                    if (quiltScan.find { quilt -> quilt.modID == fabric.modID } == null) {
-                        log.info("Quilt-scan did not have a scan for ${fabric.modID}, Fabric-scan did, though. Copying entry. ")
+                    if (quiltScan.find { quilt -> quilt.file.name == fabric.file.name } == null) {
+                        log.info("Quilt-scan did not have a scan for ${fabric.file.name}, Fabric-scan did, though. Copying entry. ")
                         quiltScan.add(fabric)
                     }
                 }
@@ -201,13 +201,18 @@ class ModListCompiler(
             }
 
             if (foundExclusionMatch) {
-                disabledMods.add(mod)
-                serverMods.remove(mod)
+                if (disabledMods.find { it.file.name == mod.file.name } == null) {
+                    disabledMods.add(mod)
+                }
+                serverMods.removeIf { it.file.name == mod.file.name }
                 log.info("Disabling ${mod.file.name}. It matched clientside-mod: $exclusionMatch")
+            } else  if (disabledMods.find { it.file.name == mod.file.name } == null) {
+                if (serverMods.find { it.file.name == mod.file.name } == null) {
+                    serverMods.add(mod)
+                    log.debug("No clientside-match, no whitelist-match. Keeping ${mod.file.name} enabled.")
+                }
             } else {
-                serverMods.add(mod)
-                disabledMods.remove(mod)
-                log.debug("No clientside-match, no whitelist-match. Keeping ${mod.file.name} enabled.")
+                log.debug("${mod.file.name} already disabled.")
             }
         }
 
