@@ -4,7 +4,7 @@ import java.io.File
 
 class ScannedMod(val file: File) {
 
-    var modID: String = "N/A"
+    var modID: String = file.nameWithoutExtension
     var sideness: Sideness = Sideness.SERVER
     val dependencies: MutableList<ModDependency> = mutableListOf()
 
