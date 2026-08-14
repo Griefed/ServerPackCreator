@@ -22,7 +22,6 @@ package de.griefed.serverpackcreator.api.serverpack
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.config.ExclusionFilter
 import de.griefed.serverpackcreator.api.config.PackConfig
-import de.griefed.serverpackcreator.api.config.SupportedModloaders.quilt
 import de.griefed.serverpackcreator.api.modscanning.ModScanner
 import de.griefed.serverpackcreator.api.modscanning.ScannedMod
 import de.griefed.serverpackcreator.api.modscanning.Sideness
