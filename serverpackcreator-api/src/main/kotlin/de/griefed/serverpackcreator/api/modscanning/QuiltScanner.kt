@@ -105,8 +105,8 @@ class QuiltScanner(
                 sidesForModloader.add(Sideness.SERVER)
             }
         } catch (_: NullPointerException) {
-            // No "environment" entry in this fabric.mod.json -> the mod is not declared
-            // client-only.
+            // No "environment" entry in this fabric.mod.json -> the mod is not declared client-only.
+            sidesForModloader.add(Sideness.SERVER)
         }
 
         // Get this mods dependencies
