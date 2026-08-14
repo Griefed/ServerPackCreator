@@ -23,15 +23,17 @@ import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.config.ExclusionFilter
 import de.griefed.serverpackcreator.api.config.PackConfig
 import de.griefed.serverpackcreator.api.modscanning.Dependency
-import de.griefed.serverpackcreator.api.modscanning.Exclusion
 import de.griefed.serverpackcreator.api.modscanning.ModScanner
-import de.griefed.serverpackcreator.api.modscanning.ScanResult
+import de.griefed.serverpackcreator.api.modscanning.ScannedMod
+import de.griefed.serverpackcreator.api.modscanning.Sideness
 import de.griefed.serverpackcreator.api.utilities.SimpleStopWatch
 import de.griefed.serverpackcreator.api.utilities.common.Comparison
 import de.griefed.serverpackcreator.api.utilities.common.FilterType
+import de.griefed.serverpackcreator.api.utilities.common.ListUtilities
 import de.griefed.serverpackcreator.api.utilities.common.SemanticVersionComparator
 import de.griefed.serverpackcreator.api.utilities.common.filteredWalk
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
+import sun.util.calendar.CalendarUtils.mod
 import java.io.File
 import java.util.*
 
@@ -100,186 +102,171 @@ class ModListCompiler(
     ): Pair<List<File>,List<File>> {
         log.info("Preparing a list of mods to include in server pack...")
         val filesInModsDir: Collection<File> = File(modsDir).filteredWalk(modFileEndings, FilterType.ENDS_WITH, FileWalkDirection.TOP_DOWN, recursive = false)
-        val modsForServerPack = TreeSet(filesInModsDir)
-        val disabledMods = TreeSet<File>()
-        val autoDiscoveredClientMods: MutableList<Exclusion> = ArrayList(100)
-        val modDependencies: MutableList<Dependency> = ArrayList(100)
-        var scanResults: ScanResult
+        val serverMods: MutableList<ScannedMod> = mutableListOf()
+        val disabledMods: MutableList<ScannedMod> = mutableListOf()
+        val scannedMods: MutableList<ScannedMod> = mutableListOf()
+        val scanningStopWatch = SimpleStopWatch().start()
 
-        // Check whether scanning mods for sideness is activated.
+        when (modloader) {
+            "LegacyFabric", "Fabric" -> {
+                scannedMods.addAll(modScanner.fabricScanner.scan(filesInModsDir))
+            }
+
+            "Forge" -> {
+                val mcVersions = minecraftVersion.split(".").dropLastWhile { it.isEmpty() }.toTypedArray()
+                if (mcVersions[1].toInt() > 12) {
+                    scannedMods.addAll(modScanner.forgeTomlScanner.scan(filesInModsDir))
+                } else {
+                    scannedMods.addAll(modScanner.forgeAnnotationScanner.scan(filesInModsDir))
+                }
+            }
+
+            "NeoForge" -> {
+                if (SemanticVersionComparator.compareSemantics(
+                        "1.20.5",
+                        minecraftVersion,
+                        Comparison.EQUAL_OR_NEW
+                    )
+                ) {
+                    log.debug("Scanning using NeoForge scanner.")
+                    scannedMods.addAll(modScanner.neoForgeTomlScanner.scan(filesInModsDir))
+                } else {
+                    log.debug("Scanning using Forge scanner.")
+                    scannedMods.addAll(modScanner.forgeTomlScanner.scan(filesInModsDir))
+                }
+            }
+
+            "Quilt" -> {
+                scannedMods.addAll(modScanner.fabricScanner.scan(filesInModsDir))
+                scannedMods.addAll(modScanner.quiltScanner.scan(filesInModsDir))
+            }
+        }
+
+
+        log.info("Scanned mods: ${scannedMods.size}")
+        log.debug("Scanning of ${filesInModsDir.size} mods took ${scanningStopWatch.stop().getTime()}")
+
         if (apiProperties.isAutoExcludingModsEnabled) {
-            val scanningStopWatch = SimpleStopWatch().start()
-            when (modloader) {
-                "LegacyFabric", "Fabric" -> {
-                    scanResults = modScanner.fabricScanner.scan(filesInModsDir)
-                    autoDiscoveredClientMods.addAll(scanResults.exclusions)
-                    modDependencies.addAll(scanResults.dependencies)
-                }
-
-                "Forge" -> {
-                    val mcVersions = minecraftVersion.split(".").dropLastWhile { it.isEmpty() }.toTypedArray()
-                    if (mcVersions[1].toInt() > 12) {
-                        scanResults = modScanner.forgeTomlScanner.scan(filesInModsDir)
-                        autoDiscoveredClientMods.addAll(scanResults.exclusions)
-                        modDependencies.addAll(scanResults.dependencies)
-                    } else {
-                        scanResults = modScanner.forgeAnnotationScanner.scan(filesInModsDir)
-                        autoDiscoveredClientMods.addAll(scanResults.exclusions)
-                        modDependencies.addAll(scanResults.dependencies)
-                    }
-                }
-
-                "NeoForge" -> {
-                    if (SemanticVersionComparator.compareSemantics("1.20.5", minecraftVersion, Comparison.EQUAL_OR_NEW)) {
-                        log.debug("Scanning using NeoForge scanner.")
-                        scanResults = modScanner.neoForgeTomlScanner.scan(filesInModsDir)
-                        autoDiscoveredClientMods.addAll(scanResults.exclusions)
-                        modDependencies.addAll(scanResults.dependencies)
-                    } else {
-                        log.debug("Scanning using Forge scanner.")
-                        scanResults = modScanner.forgeTomlScanner.scan(filesInModsDir)
-                        autoDiscoveredClientMods.addAll(scanResults.exclusions)
-                        modDependencies.addAll(scanResults.dependencies)
-                    }
-                }
-
-                "Quilt" -> {
-                    scanResults = modScanner.fabricScanner.scan(filesInModsDir)
-                    autoDiscoveredClientMods.addAll(scanResults.exclusions)
-                    modDependencies.addAll(scanResults.dependencies)
-
-                    scanResults = modScanner.quiltScanner.scan(filesInModsDir)
-                    autoDiscoveredClientMods.addAll(scanResults.exclusions)
-                    modDependencies.addAll(scanResults.dependencies)
+            for (mod in scannedMods) {
+                val modName = mod.file.name
+                if (mod.sideness == Sideness.CLIENT) {
+                    log.warn("Automatically disabling mod: $modName")
+                    disabledMods.add(mod)
+                } else {
+                    serverMods.add(mod)
                 }
             }
-
-            // Exclude scanned mods from copying
-            if (autoDiscoveredClientMods.isNotEmpty()) {
-                log.info("Automatically detected mods: ${autoDiscoveredClientMods.size}")
-                for (discoveredMod in autoDiscoveredClientMods) {
-                    @Suppress("VariableInitializerIsRedundant")
-                    var whitelistMatch = "N/A"
-                    val modName = discoveredMod.excludedMod.name
-                    val isWhitelistedMod = modWhitelist.any { whitelistEntry ->
-                        if (when (apiProperties.exclusionFilter) {
-                                ExclusionFilter.START -> modName.startsWith(whitelistEntry)
-                                ExclusionFilter.END -> modName.endsWith(whitelistEntry)
-                                ExclusionFilter.CONTAIN -> modName.contains(whitelistEntry)
-                                ExclusionFilter.REGEX -> modName.matches(whitelistEntry.toRegex())
-                                ExclusionFilter.EITHER -> (
-                                        modName.startsWith(whitelistEntry) ||
-                                                modName.endsWith(whitelistEntry) ||
-                                                modName.contains(whitelistEntry) ||
-                                                modName.matches(whitelistEntry.toRegex()))
-                            }) {
-                            whitelistMatch = whitelistEntry
-                            log.warn("Prevented automated exclusion of $modName. It's whitelisted with entry: $whitelistMatch")
-                            true
-                        } else {
-                            false
-                        }
-                    }
-
-                    modsForServerPack.removeIf {
-                        if (it.name.contains(modName) && !isWhitelistedMod) {
-                            log.warn("Automatically excluding mod: $modName")
-                            disabledMods.add(it)
-                            return@removeIf true
-                        } else {
-                            return@removeIf false
-                        }
-                    }
-                }
-            } else {
-                log.info("No clientside-only mods detected.")
-            }
-
-            log.debug(
-                "Scanning and excluding of ${filesInModsDir.size} mods took ${scanningStopWatch.stop().getTime()}"
-            )
         } else {
             log.info("Automatic clientside-only mod detection disabled.")
         }
 
-        // Exclude user-specified mods from copying.
-        if (clientsideModsList.isNotEmpty()) {
-            log.info("Performing ${apiProperties.exclusionFilter}-type checks for user-specified clientside-only mod exclusion.")
+        log.info("Performing ${apiProperties.exclusionFilter}-type checks for user-specified clientside-only mod exclusion.")
+        for (mod in scannedMods) {
+            log.debug("Checking ${mod.file.name} (${mod.modID})")
+            val modName = mod.file.name
+            var foundExclusionMatch: Boolean = false
+            var exclusionMatch = "N/A"
 
-            modsForServerPack.removeIf { modToCheck ->
-                var excludeMod = false
-                val isDependencyMod: Boolean
-                var isWhitelistedMod: Boolean
-                var exclusionMatch = "N/A"
-                var whitelistMatch = "N/A"
-                var dependant: Dependency? = null
-                val modName = modToCheck.name
-                for (userSpecifiedExclusion in clientsideModsList) {
-                    excludeMod = when (apiProperties.exclusionFilter) {
-                        ExclusionFilter.START -> modName.startsWith(userSpecifiedExclusion)
-                        ExclusionFilter.END -> modName.endsWith(userSpecifiedExclusion)
-                        ExclusionFilter.CONTAIN -> modName.contains(userSpecifiedExclusion)
-                        ExclusionFilter.REGEX -> modName.matches(userSpecifiedExclusion.toRegex())
-                        ExclusionFilter.EITHER -> (
-                                (modName.startsWith(userSpecifiedExclusion)) ||
-                                        (modName.endsWith(userSpecifiedExclusion)) ||
-                                        (modName.contains(userSpecifiedExclusion)) ||
-                                        (modName.matches(userSpecifiedExclusion.toRegex())))
-                    }
-                    if (excludeMod) {
-                        exclusionMatch = userSpecifiedExclusion
-                        break
-                    }
+            //Perform exclusions based on clientside-mods list
+            for (userSpecifiedExclusion in clientsideModsList) {
+                foundExclusionMatch = when (apiProperties.exclusionFilter) {
+                    ExclusionFilter.START -> modName.startsWith(userSpecifiedExclusion)
+                    ExclusionFilter.END -> modName.endsWith(userSpecifiedExclusion)
+                    ExclusionFilter.CONTAIN -> modName.contains(userSpecifiedExclusion)
+                    ExclusionFilter.REGEX -> modName.matches(userSpecifiedExclusion.toRegex())
+                    ExclusionFilter.EITHER -> (
+                            (modName.startsWith(userSpecifiedExclusion)) ||
+                                    (modName.endsWith(userSpecifiedExclusion)) ||
+                                    (modName.contains(userSpecifiedExclusion)) ||
+                                    (modName.matches(userSpecifiedExclusion.toRegex())))
                 }
-                if (excludeMod) {
-                    isDependencyMod = modDependencies.any { dependency ->
-                        if (modName.startsWith(dependency.dependencyID, ignoreCase = true)) {
-                            dependant = dependency
-                            true
-                        } else {
-                            false
-                        }
-                    }
-
-                    isWhitelistedMod = modWhitelist.any { whitelistEntry ->
-                        if (when (apiProperties.exclusionFilter) {
-                                ExclusionFilter.START -> modName.startsWith(whitelistEntry)
-                                ExclusionFilter.END -> modName.endsWith(whitelistEntry)
-                                ExclusionFilter.CONTAIN -> modName.contains(whitelistEntry)
-                                ExclusionFilter.REGEX -> modName.matches(whitelistEntry.toRegex())
-                                ExclusionFilter.EITHER -> (
-                                        modName.startsWith(whitelistEntry) ||
-                                                modName.endsWith(whitelistEntry) ||
-                                                modName.contains(whitelistEntry) ||
-                                                modName.matches(whitelistEntry.toRegex()))
-                            }) {
-                            whitelistMatch = whitelistEntry
-                            true
-                        } else {
-                            false
-                        }
-                    }
-                    if (isDependencyMod &&
-                        disabledMods.none { entry -> dependant!!.dependencyID.contains(entry.name,ignoreCase = true) } &&
-                        !dependant!!.dependencyID.contains(modToCheck.name,ignoreCase = true) ) {
-                        log.info("Not excluding $exclusionMatch. It's a dependency for ${dependant.fileName}.")
-                        log.debug("$dependant")
-                        excludeMod = false
-                    } else if (isWhitelistedMod) {
-                        log.info("Not excluding $modToCheck. It's whitelisted with entry: $whitelistMatch")
-                        excludeMod = false
-                    } else {
-                        log.info("Excluding ${modToCheck.name}. It matched clientside-mod entry: $exclusionMatch")
-                        disabledMods.add(modToCheck)
-                    }
+                if (foundExclusionMatch) {
+                    exclusionMatch = userSpecifiedExclusion
+                    break
                 }
-                excludeMod
             }
 
-        } else {
-            log.warn("User specified no clientside-only mods.")
+            if (foundExclusionMatch) {
+                disabledMods.add(mod)
+                serverMods.remove(mod)
+                log.info("Disabling ${mod.file.name}. It matched clientside-mod: $exclusionMatch")
+            } else {
+                serverMods.add(mod)
+                disabledMods.remove(mod)
+                log.debug("No clientside-match, no whitelist-match. Keeping ${mod.file.name} enabled.")
+            }
         }
-        return Pair(modsForServerPack.toList(), disabledMods.toList())
+
+        while (disabledMods.any { disabledMod ->
+                modWhitelist.any { entry ->
+                    when (apiProperties.exclusionFilter) {
+                        ExclusionFilter.START -> disabledMod.file.name.startsWith(entry)
+                        ExclusionFilter.END -> disabledMod.file.name.endsWith(entry)
+                        ExclusionFilter.CONTAIN -> disabledMod.file.name.contains(entry)
+                        ExclusionFilter.REGEX -> disabledMod.file.name.matches(entry.toRegex())
+                        ExclusionFilter.EITHER -> (
+                                disabledMod.file.name.startsWith(entry) ||
+                                        disabledMod.file.name.endsWith(entry) ||
+                                        disabledMod.file.name.contains(entry) ||
+                                        disabledMod.file.name.matches(entry.toRegex()))
+                    }}}) {
+
+            disabledMods.removeIf { disabledMod ->
+                val match = modWhitelist.find { entry ->
+                    when (apiProperties.exclusionFilter) {
+                        ExclusionFilter.START -> disabledMod.file.name.startsWith(entry)
+                        ExclusionFilter.END -> disabledMod.file.name.endsWith(entry)
+                        ExclusionFilter.CONTAIN -> disabledMod.file.name.contains(entry)
+                        ExclusionFilter.REGEX -> disabledMod.file.name.matches(entry.toRegex())
+                        ExclusionFilter.EITHER -> (
+                                disabledMod.file.name.startsWith(entry) ||
+                                        disabledMod.file.name.endsWith(entry) ||
+                                        disabledMod.file.name.contains(entry) ||
+                                        disabledMod.file.name.matches(entry.toRegex()))
+                    }
+                }
+                return@removeIf if (match != null) {
+                    log.info("Disabled mod ${disabledMod.file.name} is whitelisted by $match. Not disabling.")
+                    serverMods.add(disabledMod)
+                    true
+                } else {
+                    false
+                }
+            }
+        }
+
+        while (disabledMods.any { disabledMod ->
+                serverMods.find { serverMod -> serverMod.dependencies
+                    .filter { dependency -> dependency.sideness == Sideness.SERVER }
+                    .map { dep -> dep.modID }.contains(disabledMod.modID)
+                        && disabledMod.sideness == Sideness.SERVER
+                } != null}) {
+
+            disabledMods.removeIf { disabledMod ->
+                val match = serverMods.find { serverMod -> serverMod.dependencies
+                    .filter { dependency -> dependency.sideness == Sideness.SERVER }
+                    .map { dep -> dep.modID }.contains(disabledMod.modID)
+                        && disabledMod.sideness == Sideness.SERVER
+                }
+                return@removeIf if (match != null) {
+                    log.info("Disabled mod ${disabledMod.file.name} is a dependency for ${match.file.name}. Not disabling.")
+                    serverMods.add(disabledMod)
+                    true
+                } else {
+                    false
+                }
+            }
+        }
+
+        log.info("Mods included:")
+        ListUtilities.printListToLogChunked(serverMods.map { it.file.name }, 5, "    ", true)
+        log.info("Mods disabled:")
+        ListUtilities.printListToLogChunked(disabledMods.map { it.file.name }, 5, "    ", true)
+
+        return Pair(
+            TreeSet<File>(serverMods.map { it.file }).toList(),
+            TreeSet<File>(disabledMods.map { it.file }).toList()
+        )
     }
 
 }

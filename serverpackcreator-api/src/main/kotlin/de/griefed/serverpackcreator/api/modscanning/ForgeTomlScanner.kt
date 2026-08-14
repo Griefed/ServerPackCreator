@@ -34,17 +34,13 @@ import java.util.jar.JarFile
  * @param tomlParser To parse .toml-files.
  * @Griefed
  */
-open class ForgeTomlScanner(private val tomlParser: TomlParser) :
-    Scanner<ScanResult, Collection<File>> {
+open class ForgeTomlScanner(private val tomlParser: TomlParser): Scanner<List<ScannedMod>, Collection<File>> {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val mods = "mods"
     private val modId = "modId"
     private val dependencies = "dependencies"
     private val side = "side"
     private val both = "BOTH"
-    private val type = "type"
-    private val mandatory = "mandatory"
-    private val requiredAsDep = "REQUIRED"
 
     /** Path of the descriptor inside a Forge jar. `open` because NeoForge moved it, and that subclass overrides it. */
     open val modsToml = "META-INF/mods.toml"
@@ -55,14 +51,11 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
      */
     val neoForgeMinecraft: Regex
         get() = "^(neoforge|forge|minecraft)$".toRegex()
-    /**
-     * Sides that mean a mod belongs on a server. Matched against the descriptor's declared side — a self-report, and
-     * an unreliable one, which is why a boot test exists at all rather than trusting it.
-     */
-    val bothServer: Regex
-        get() = "^(BOTH|SERVER)$".toRegex()
 
-    var currentModID: String? = null
+    val client: Regex
+        get() = "^CLIENT$".toRegex()
+
+    private var currentModID: String? = null
 
     /**
      * Scan the `mods.toml`-files in mod JAR-files of a given directory for their sideness.
@@ -78,218 +71,76 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
      * @return Mods not to include in server pack based on mods.toml-configuration.
      * @author Griefed
      */
-    override fun scan(jarFiles: Collection<File>): ScanResult {
-        val serverMods = TreeSet<File>()
-        var modConfig: CommentedConfig
-        val scanResult = ScanResult()
+    override fun scan(jarFiles: Collection<File>): List<ScannedMod> {
+
+        val scannedMods = mutableListOf<ScannedMod>()
+
         for (modJar in jarFiles) {
             try {
-                modConfig = getConfig(modJar)
+                currentModID = null
+                val modConfig: CommentedConfig = getConfig(modJar)
                 currentModID = getModId((modConfig.valueMap()[mods] as ArrayList<*>)[0] as CommentedConfig)
 
-                // get all [[dependencies.n]] which are minecraft|forge, to determine the sideness of the mod itself
-                //scanResult.dependencies.addAll(getModDependencyIdsRequiredOnServer(modConfig, modJar))
-                scanResult.dependencies.addAll(getModDependencyIdsRequiredOnServer(modConfig, modJar))
+                val scannedMod = ScannedMod(modJar)
+                scannedMod.modID = currentModID!!
 
-                // get all mods required on the server
-                scanResult.dependencies.addAll(getModIdsRequiredOnServer(modConfig, modJar))
-            } catch (e: Exception) {
-                log.error("Could not scan ${modJar.name}. Consider reporting this: ${e.cause}: ${e.message}")
-                serverMods.add(modJar)
-            }
-        }
-        for (modJar in jarFiles) {
-            try {
-                modConfig = getConfig(modJar)
-                val idsInMod = getModIdsInJar(modConfig)
-                for (id in idsInMod) {
-                    if (scanResult.dependencies.map{ it.dependencyID }.contains(id)) {
-                        serverMods.add(modJar)
-                    }
+                val sidesAndDeps = getSidenessesAndDependencies(modConfig)
+
+                scannedMod.sideness = if (sidesAndDeps.first.any { it == Sideness.SERVER }) {
+                    Sideness.SERVER
+                } else {
+                    Sideness.CLIENT
                 }
 
+                scannedMod.dependencies.addAll(sidesAndDeps.second)
+                scannedMods.add(scannedMod)
             } catch (e: Exception) {
                 log.error("Could not scan ${modJar.name}. Consider reporting this: ${e.cause}: ${e.message}")
-                serverMods.add(modJar)
+                scannedMods.add(ScannedMod(modJar))
             }
         }
 
-        scanResult.dependencies
-            .filter { it.dependencyID.matches(neoForgeMinecraft) }
-            .forEach { serverMods.add(it.file) }
-
-        val excluded = TreeSet(jarFiles)
-        excluded.removeAll(serverMods)
-        for (exclusion in excluded) {
-            modConfig = getConfig(exclusion)
-            val modId = getModId(modConfig)
-            scanResult.exclusions.add(Exclusion(modId, exclusion))
-        }
-        return scanResult
-        //return Pair(excluded,dependencies)
+        return scannedMods
     }
 
-    /**
-     * Get all ids of mods required for running the server.
-     *
-     * @param modConfig Base-config toml of the mod which contains all information.
-     * @return Set of ids of mods required.
-     * @throws ScanningException if the mod specifies no mods.
-     */
     @Throws(ScanningException::class)
-    private fun getModIdsRequiredOnServer(modConfig: CommentedConfig, file: File): ArrayList<Dependency> {
-        val modConfigs = ArrayList<Map<String, Any>>(100)
-        val entries = ArrayList<Dependency>()
-        if (modConfig.valueMap()[mods] == null) {
-            throw ScanningException("No mods specified.")
-        } else {
-            val mods = modConfig.valueMap()[mods] as ArrayList<*>
-            for (mod in mods) {
-                val config = mod as CommentedConfig
-                val extracted = config.valueMap()
-                modConfigs.add(extracted)
-            }
-        }
+    private fun getSidenessesAndDependencies(modConfig: CommentedConfig): Pair<List<Sideness>, List<ModDependency>> {
         val dependencies: Map<String, ArrayList<CommentedConfig>> = getMapOfDependencyLists(modConfig)
-        var containedForgeOrMinecraft = false
-        for (config in modConfigs) {
-            val modId = config[modId].toString()
-            if (dependencies.containsKey(modId)) {
-                val modDependencies = dependencies[modId]!!
-                for (dependency in modDependencies) {
-                    try {
-                        val dependencyModId = getModId(dependency)
-                        if (dependencyModId.matches(neoForgeMinecraft)) {
-                            containedForgeOrMinecraft = true
-                            try {
-                                val side = getSide(dependency)
-                                if (side.matches(bothServer)) {
-                                    entries.add(Dependency(dependencyModId, file, currentModID ?: "N/A"))
-                                }
-                            } catch (_: NullPointerException) {
-                                // no side specified....assuming both|server
-                                entries.add(Dependency(dependencyModId, file, currentModID ?: "N/A"))
-                            }
+        val sidesForModloader = mutableListOf<Sideness>()
+        val modDependencies = mutableListOf<ModDependency>()
+        try {
+            if (dependencies.containsKey(currentModID)) {
+                val modIdDependencies = dependencies[currentModID]!!
+                //check all dependencies in mod
+                for (dependency in modIdDependencies) {
+                    val dependencyModId = getModId(dependency)
+                    val side = getSide(dependency)
+                    if (dependencyModId.matches(neoForgeMinecraft)) {
+                        if (side.uppercase().matches(client)) {
+                            sidesForModloader.add(Sideness.CLIENT)
+                        } else {
+                            sidesForModloader.add(Sideness.SERVER)
                         }
-                    } catch (_: NullPointerException) {
-                        // no modId specified in dependency...assuming forge|minecraft and both|server
-                        containedForgeOrMinecraft = true
-                        entries.add(Dependency(modId,file, currentModID ?: "N/A"))
+
+                    } else {
+                        val dependency = ModDependency(dependencyModId)
+                        if (side.uppercase().matches(client)) {
+                            dependency.sideness = Sideness.CLIENT
+                        }
+                        modDependencies.add(dependency)
                     }
                 }
             } else {
-                // contains no self referencing dependency...
-                entries.add(Dependency(modId, file, currentModID ?: "N/A"))
+                //no dependencies specified, assume required
+                sidesForModloader.add(Sideness.SERVER)
             }
-            if (!containedForgeOrMinecraft) {
-                entries.add(Dependency(modId, file, currentModID ?: "N/A"))
-            }
-        }
-        return entries
-    }
 
-    /**
-     * Acquire an id-list of dependencies required by the passed mod to run on a modded
-     * server. Only if all dependencies in this mod specify `CLIENT` for either `forge `
-     * or `minecraft` is a dependency not added to the list of required dependencies. Otherwise,
-     * all modIds mentioned in the dependencies of this mod, which are neither `forge` nor
-     * `minecraft` get added to the list.
-     *
-     * @param modConfig Base-config toml of the mod which contains all information.
-     * @return Set of ids of mods required as dependencies.
-     * @throws ScanningException if the mod has invalid dependency declarations or specifies no mods.
-     */
-    @Throws(ScanningException::class)
-    private fun getModDependencyIdsRequiredOnServer(modConfig: CommentedConfig, file: File): ArrayList<Dependency> {
-        val dependencies: Map<String, ArrayList<CommentedConfig>> = getMapOfDependencyLists(modConfig)
-        val idsInMod = getModIdsInJar(modConfig)
-        val entries = ArrayList<Dependency>()
-        try {
-            var confidentOnClientSide = true
-            for (modId in idsInMod) {
-                if (dependencies.containsKey(modId)) {
-                    val modIdDependencies = dependencies[modId]!!
-                    //check all dependencies in mod
-                    for (dependency in modIdDependencies) {
-                        val dependencyModId = getModId(dependency)
-                        val side = getSide(dependency)
-                        //val required = getRequired(dependency)
-                        if (dependencyModId.matches(neoForgeMinecraft) && side.matches(bothServer)) { // && required.equals(requiredAsDep,true)
-                            confidentOnClientSide = false
-                        }
-                    }
-                } else {
-                    //no dependencies specified, assume required
-                    confidentOnClientSide = false
-                    break
-                }
-            }
-            //if not a single id said server/both, stop and return list of ids
-            if (confidentOnClientSide) {
-                return entries
-            }
         } catch (_: NullPointerException) {
             // A dependency was missing a modId/side mid-evaluation, so we can't conclude the mod is
-            // confidently client-side. Fall through to the conservative per-dependency pass below.
+            // confidently client-side. Assume SERVER.
+            sidesForModloader.add(Sideness.SERVER)
         }
-        for ((key, value) in dependencies) {
-            for (commentedConfig in value) {
-                try {
-                    val dependencyID = getModId(commentedConfig)
-                    // dependency forge|minecraft?
-                    if (!dependencyID.matches(neoForgeMinecraft)) {
-                        try {
-                            // dependency required on the server?
-                            val side = getSide(commentedConfig)
-                            // Mandatory dependency?
-                            val required = getRequired(commentedConfig)
-                            if (side.matches(bothServer) && required.equals(requiredAsDep,true)) {
-                                for (modID in idsInMod) {
-                                    entries.add(Dependency(dependencyID, file, modID))
-                                }
-                            }
-                        } catch (_: NullPointerException) {
-                            // dependency specifies no side
-                            for (modID in idsInMod) {
-                                entries.add(Dependency(dependencyID, file, modID))
-                            }
-                        }
-                    }
-                } catch (_: NullPointerException) {
-                    // dependency specifies no modId, so use parent.
-                    val lowerKey = key.lowercase()
-                    if (!lowerKey.matches(neoForgeMinecraft)) {
-                        for (modID in idsInMod) {
-                            entries.add(Dependency(key, file, modID))
-                        }
-                    }
-                }
-            }
-        }
-        return entries
-    }
-
-    /**
-     * Acquire a set of ids of mods required for running the server.
-     *
-     * @param config Base-config toml of the mod which contains all information.
-     * @return Set of ids of mods required.
-     * @throws ScanningException if the mod specifies no...well...mods.
-     */
-    @Throws(ScanningException::class)
-    private fun getModIdsInJar(config: CommentedConfig): TreeSet<String> {
-        val ids = TreeSet<String>()
-        if (config.valueMap()[mods] == null) {
-            throw ScanningException("No mods specified.")
-        } else {
-            val commentedConfigs = config.valueMap()[mods] as ArrayList<*>
-            for (entry in commentedConfigs) {
-                val commentedConfig = entry as CommentedConfig
-                val modId = getModId(commentedConfig)
-                ids.add(modId)
-            }
-        }
-        return ids
+        return Pair(sidesForModloader,modDependencies)
     }
 
     /**
@@ -362,26 +213,6 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) :
             config.valueMap()[side].toString().uppercase()
         } else {
             both
-        }
-    }
-
-    /**
-     * Acquire the side of the passed dependency.
-     *
-     * @param config Mod- or dependency-config which contains the modId.
-     * @return `side` from the passed config, in upper-case letters.
-     */
-    private fun getRequired(config: CommentedConfig): String {
-        return if (config.valueMap()[type] != null) {
-            config.valueMap()[type].toString().uppercase()
-        } else if (config.valueMap()[mandatory] != null) {
-            if (config.valueMap()[mandatory].toString() == "true") {
-                requiredAsDep
-            } else {
-                config.valueMap()[mandatory].toString().uppercase()
-            }
-        } else {
-            requiredAsDep
         }
     }
 }

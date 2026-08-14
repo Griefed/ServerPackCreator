@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.clientside
 
 import de.griefed.serverpackcreator.api.modscanning.ModScanner
+import de.griefed.serverpackcreator.api.modscanning.Sideness
 import de.griefed.serverpackcreator.api.utilities.common.Comparison
 import de.griefed.serverpackcreator.api.utilities.common.SemanticVersionComparator
 import java.io.File
@@ -56,21 +57,21 @@ class MetadataScanner(private val modScanner: ModScanner) {
         val files = listOf(jar)
         return try {
             val clientside: Collection<File> = when (loader) {
-                "Fabric", "LegacyFabric" -> modScanner.fabricScanner.scan(files).exclusions.map { entry -> entry.excludedMod }
+                "Fabric", "LegacyFabric" -> modScanner.fabricScanner.scan(files).filter { it.sideness == Sideness.CLIENT }.map { entry -> entry.file }
 
-                "Quilt" -> modScanner.fabricScanner.scan(files).exclusions.map { entry -> entry.excludedMod } +
-                        modScanner.quiltScanner.scan(files).exclusions.map { entry -> entry.excludedMod }
+                "Quilt" -> modScanner.fabricScanner.scan(files).filter { it.sideness == Sideness.CLIENT }.map { entry -> entry.file } +
+                        modScanner.quiltScanner.scan(files).filter { it.sideness == Sideness.CLIENT }.map { entry -> entry.file }
 
                 "Forge" -> if (forgeUsesToml(minecraftVersion)) {
-                    modScanner.forgeTomlScanner.scan(files).exclusions.map { entry -> entry.excludedMod }
+                    modScanner.forgeTomlScanner.scan(files).filter { it.sideness == Sideness.CLIENT }.map { entry -> entry.file }
                 } else {
-                    modScanner.forgeAnnotationScanner.scan(files).exclusions.map { entry -> entry.excludedMod }
+                    modScanner.forgeAnnotationScanner.scan(files).filter { it.sideness == Sideness.CLIENT }.map { entry -> entry.file }
                 }
 
                 "NeoForge" -> if (neoForgeUsesNeoToml(minecraftVersion)) {
-                    modScanner.neoForgeTomlScanner.scan(files).exclusions.map { entry -> entry.excludedMod }
+                    modScanner.neoForgeTomlScanner.scan(files).filter { it.sideness == Sideness.CLIENT }.map { entry -> entry.file }
                 } else {
-                    modScanner.forgeTomlScanner.scan(files).exclusions.map { entry -> entry.excludedMod }
+                    modScanner.forgeTomlScanner.scan(files).filter { it.sideness == Sideness.CLIENT }.map { entry -> entry.file }
                 }
 
                 else -> emptyList()

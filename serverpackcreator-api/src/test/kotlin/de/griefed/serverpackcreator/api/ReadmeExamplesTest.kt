@@ -21,9 +21,11 @@ package de.griefed.serverpackcreator.api
 
 import de.griefed.serverpackcreator.api.config.InclusionSpecification
 import de.griefed.serverpackcreator.api.config.PackConfig
+import de.griefed.serverpackcreator.api.modscanning.Sideness
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.io.File
+import kotlin.collections.filter
 
 /**
  * Keeps [README.md](../../../../../../../README.md)'s code examples honest.
@@ -121,12 +123,12 @@ internal class ReadmeExamplesTest {
     fun scanReturnsAScanResultWithExclusionsAndDependencies() {
         val result = api.modScanner.fabricScanner.scan(emptyList())
 
-        Assertions.assertTrue(result.exclusions.isEmpty(), "nothing to exclude from an empty scan")
-        Assertions.assertTrue(result.dependencies.isEmpty(), "nothing depends on anything in an empty scan")
+        Assertions.assertTrue(result.none { it.sideness == Sideness.CLIENT }, "nothing to exclude from an empty scan")
+        Assertions.assertTrue(result.map { it.dependencies }.isEmpty(), "nothing depends on anything in an empty scan")
 
         // The README's usage — kept compiling *and* running.
-        result.exclusions.forEach { println("${it.modId} -> ${it.excludedMod.name}") }
-        result.dependencies.forEach { println("needed: ${it.identifier}") }
+        result.filter { it.sideness == Sideness.CLIENT }.forEach { println("${it.modID} -> ${it.file.name}") }
+        result.map { it.dependencies }.forEach { println("needed: ${it}") }
     }
 
     /**
