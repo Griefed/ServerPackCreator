@@ -135,20 +135,17 @@ class ModListCompiler(
             }
 
             "Quilt" -> {
+                // A Quilt pack mixes both descriptor formats, and a mod may carry either or both, so the
+                // directory is scanned twice and the two verdicts merged per jar. CLIENT wins: the scan
+                // that could not read a jar falls back to SERVER, so a SERVER verdict is only meaningful
+                // when it comes from a descriptor the scanner actually read.
                 val quiltScan = modScanner.quiltScanner.scan(filesInModsDir).toMutableList()
                 val fabricScan = modScanner.fabricScanner.scan(filesInModsDir)
                 for (i in quiltScan.indices) {
-                    val match = fabricScan.find { fabric -> fabric.file.name == quiltScan[i].file.name }
-                    if (match == null) { continue }
+                    val match = fabricScan.find { fabric -> fabric.file.name == quiltScan[i].file.name } ?: continue
                     if (quiltScan[i].sideness == Sideness.SERVER && match.sideness == Sideness.CLIENT) {
                         log.info("${match.file.name} Quilt-scan yielded sideness SERVER, but Fabric-scan yielded CLIENT. Using Fabric-scan result instead.")
                         quiltScan[i] = match
-                    }
-                }
-                for (fabric in fabricScan) {
-                    if (quiltScan.find { quilt -> quilt.file.name == fabric.file.name } == null) {
-                        log.info("Quilt-scan did not have a scan for ${fabric.file.name}, Fabric-scan did, though. Copying entry. ")
-                        quiltScan.add(fabric)
                     }
                 }
                 scannedMods.addAll(quiltScan)
