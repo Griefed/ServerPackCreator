@@ -135,6 +135,106 @@ internal class ModScannerSidenessTest {
     }
 
     /**
+     * Declared Fabric dependencies must be recorded, and the platform itself must not be: the loader,
+     * Java and Minecraft are always present on a server, so treating them as mod dependencies would
+     * make every mod look like it depends on something that needs keeping.
+     *
+     * `fabric-api-base` is included on purpose. The exclusion regex is an exact match, not a prefix,
+     * so a real mod whose id merely *starts with* `fabric` must survive it — pinned here because a
+     * regex loosened to `fabric.*` would silently drop genuine dependencies and still look right.
+     */
+    @Test
+    fun fabricDependenciesAreRecordedWithoutThePlatform(@TempDir tempDir: File) {
+        val descriptor = """
+            {"schemaVersion":1,"id":"withdeps","version":"1.0.0","environment":"*",
+             "depends":{"creativecore":"*","fabricloader":">=0.14","minecraft":"1.20.1",
+                        "java":">=17","fabric":"*","fabric-api-base":"*"}}
+        """.trimIndent()
+        val jar = jarContaining(tempDir, "withdeps.jar", "fabric.mod.json", descriptor)
+
+        val dependencies = modScanner.fabricScanner.scan(listOf(jar)).single().dependencies.map { it.modID }
+
+        Assertions.assertEquals(
+            listOf("creativecore", "fabric-api-base"), dependencies,
+            "Only non-platform dependencies must be recorded; got $dependencies"
+        )
+    }
+
+    /**
+     * The Quilt counterpart. A `quilt_loader.depends` entry is either a bare string or an object
+     * carrying an `id`, and both forms must be read — the fixture only exercises one of them.
+     */
+    @Test
+    fun quiltDependenciesAreRecordedInBothDeclarationForms(@TempDir tempDir: File) {
+        val descriptor = """
+            {"schema_version":1,
+             "quilt_loader":{"id":"quiltdeps","version":"1.0.0",
+               "depends":["cloth-config2",{"id":"jei","versions":"*"},"quilt_base","minecraft","java"]},
+             "minecraft":{"environment":"*"}}
+        """.trimIndent()
+        val jar = jarContaining(tempDir, "quiltdeps.jar", "quilt.mod.json", descriptor)
+
+        val dependencies = modScanner.quiltScanner.scan(listOf(jar)).single().dependencies.map { it.modID }
+
+        Assertions.assertEquals(
+            listOf("cloth-config2", "jei"), dependencies,
+            "Both the string and the object form must be read, minus the platform; got $dependencies"
+        )
+    }
+
+    /**
+     * Forge declares no sideness of its own — a mod's side is inferred from the `side` it demands of
+     * the *platform* dependency (`minecraft`/`forge`/`neoforge`). A mod that asks for `minecraft` on
+     * `CLIENT` is a client mod; anything else keeps it on the server. Non-platform dependencies are
+     * recorded instead of consumed.
+     *
+     * This inference is the least obvious rule in the scanners and had no direct test: the fixture
+     * assertions only state which jars come out clientside, not why.
+     */
+    @Test
+    fun forgeSidenessComesFromThePlatformDependencySide(@TempDir tempDir: File) {
+        fun modsToml(modId: String, minecraftSide: String) = """
+            modLoader="javafml"
+            loaderVersion="[40,)"
+            license="MIT"
+
+            [[mods]]
+            modId="$modId"
+            version="1.0.0"
+
+            [[dependencies.$modId]]
+            modId="minecraft"
+            mandatory=true
+            versionRange="[1.19,)"
+            side="$minecraftSide"
+
+            [[dependencies.$modId]]
+            modId="jei"
+            mandatory=true
+            versionRange="[1.0,)"
+            side="BOTH"
+        """.trimIndent()
+
+        val clientJar = jarContaining(tempDir, "clientside.jar", "META-INF/mods.toml", modsToml("clientmod", "CLIENT"))
+        val bothJar = jarContaining(tempDir, "bothside.jar", "META-INF/mods.toml", modsToml("bothmod", "BOTH"))
+
+        val scanned = modScanner.forgeTomlScanner.scan(listOf(clientJar, bothJar)).associateBy { it.modID }
+
+        Assertions.assertEquals(
+            Sideness.CLIENT, scanned.getValue("clientmod").sideness,
+            "A mod demanding minecraft on CLIENT must be clientside"
+        )
+        Assertions.assertEquals(
+            Sideness.SERVER, scanned.getValue("bothmod").sideness,
+            "A mod demanding minecraft on BOTH must be kept on the server"
+        )
+        Assertions.assertEquals(
+            listOf("jei"), scanned.getValue("bothmod").dependencies.map { it.modID },
+            "The non-platform dependency must be recorded rather than consumed as a sideness signal"
+        )
+    }
+
+    /**
      * A jar the scanner cannot read at all — a truncated download, a non-archive with a `.jar` name —
      * must still come back as SERVER, so an unreadable file is kept rather than silently dropped from
      * the pack, and must carry the filename as its id.
