@@ -133,4 +133,52 @@ internal class ModScannerSidenessTest {
         Assertions.assertEquals(Sideness.CLIENT, scanned.getValue("quiltclient").sideness, "environment=client must be CLIENT")
         Assertions.assertEquals(Sideness.SERVER, scanned.getValue("quiltboth").sideness, "environment=* must be SERVER")
     }
+
+    /**
+     * A jar the scanner cannot read at all — a truncated download, a non-archive with a `.jar` name —
+     * must still come back as SERVER, so an unreadable file is kept rather than silently dropped from
+     * the pack, and must carry the filename as its id.
+     *
+     * The id matters beyond diagnostics: it is what downstream matching joins on. It was `"N/A"` for
+     * every unreadable jar until 2ec5ff202, which meant any two of them compared equal and matched
+     * each other in the dependency lookup. The filename is not a real mod id, and nothing in the type
+     * says so, which is why it is pinned here.
+     */
+    @Test
+    fun anUnreadableJarIsServerSideAndCarriesItsFilenameAsId(@TempDir tempDir: File) {
+        val notAnArchive = File(tempDir, "brokenmod.jar").apply { writeText("this is not a zip") }
+
+        val scanned = modScanner.fabricScanner.scan(listOf(notAnArchive)).single()
+
+        Assertions.assertEquals(Sideness.SERVER, scanned.sideness, "An unreadable jar must be kept, i.e. SERVER")
+        Assertions.assertEquals(
+            "brokenmod", scanned.modID,
+            "An unreadable jar must fall back to its filename as id, not to a shared placeholder"
+        )
+    }
+
+    /**
+     * A scan must return one entry per input file, whatever the outcome. The compiler builds its
+     * include-list solely from what the scanners hand back, so a jar dropped mid-scan is a jar
+     * missing from the server pack — and a jar entered twice is one that can land in both the
+     * included and the disabled list.
+     */
+    @Test
+    fun everyJarYieldsExactlyOneEntryWhateverTheOutcome(@TempDir tempDir: File) {
+        val readable = jarContaining(tempDir, "readable.jar", "fabric.mod.json", fabricDescriptor("readable", "*"))
+        val noDescriptor = jarContaining(tempDir, "nodescriptor.jar", "META-INF/MANIFEST.MF", "Manifest-Version: 1.0\n")
+        val unreadable = File(tempDir, "unreadable.jar").apply { writeText("not a zip") }
+        val input = listOf(readable, noDescriptor, unreadable)
+
+        val scanned = modScanner.fabricScanner.scan(input)
+
+        Assertions.assertEquals(
+            input.map { it.name }.sorted(), scanned.map { it.file.name }.sorted(),
+            "The scan must return exactly one entry per input jar"
+        )
+        Assertions.assertEquals(
+            Sideness.SERVER, scanned.single { it.file.name == "nodescriptor.jar" }.sideness,
+            "A readable jar carrying no fabric.mod.json must be kept, i.e. SERVER"
+        )
+    }
 }
