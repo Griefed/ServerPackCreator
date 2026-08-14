@@ -224,7 +224,7 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 
 | Module         | Tests         | Notes                                                                                |
 |----------------|---------------|--------------------------------------------------------------------------------------|
-| api            | 280 (1 skip)  | Phase 1 **complete**; + `FacadeConstantDelegationTest` (the published `modFileEndings`/`zipCheck` facades must *read* their owner, asserted on identity so a re-introduced equal-valued copy still fails); + `MinecraftMetaTest` (`requiredJavaVersion`) and `ScriptTemplateContentTest` (non-gated guard for the shipped templates; skips its `fish -n` case where fish is absent, and **executes** the bash `setupFabric` to pin the offline launcher path). |
+| api            | 292 (1 skip)  | Phase 1 **complete**; + `FacadeConstantDelegationTest` (the published `modFileEndings`/`zipCheck` facades must *read* their owner, asserted on identity so a re-introduced equal-valued copy still fails); + `MinecraftMetaTest` (`requiredJavaVersion`) and `ScriptTemplateContentTest` (non-gated guard for the shipped templates; skips its `fish -n` case where fish is absent, and **executes** the bash `setupFabric` to pin the offline launcher path); + `ModScannerSidenessTest` and the `ModListCompilerTest` additions (modscanning hardening, 2026-08-14 — see below). |
 | clientside     | 87            | Extracted from `-app`; `BootVerifier` split + `packPostProcessor` hook; selection (MC-support gate) + setup-abort classification pinned |
 | app            | 76            | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay             |
 | plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |
@@ -277,6 +277,36 @@ for a host-side 0644 file and answers `[ -x ]` with "executable" while `execve` 
 classify, because a stale JBR tree that Qodana never uses will fail `-version` for unrelated reasons and must not
 take the pipeline down. **Griefed confirmed a full green pipeline on 2026-08-04**, so the 2026.2 problem count is
 now readable off the report (still to be recorded here).
+
+**2026-08-14 — modscanning hardening (`claude-modscan-test-hardening`), api 280 → 292.** The modscan rewrite
+(`0a12d41d0`) and its six follow-ups changed behaviour four times without adding a single test case; two
+regressions shipped and **neither turned the suite red**. Auto-exclusion was dead for a day — the user-exclusion
+pass re-walked every scanned mod and re-enabled anything it had not itself matched — and its only coverage
+guarded on `Assumptions.assumeTrue`, so an empty result **skipped** instead of failing (the B13–B20 lesson,
+regressed). The Quilt merge keyed on `modID`, which is mismatched by construction in exactly the entries it
+merges: `quilt_tests/aaaaa.jar` declares `ok_zoomer` in one descriptor and `ok_zoomer-pmw` in the other, and
+`bbbbb.jar` has no `fabric.mod.json` at all, so the failed scan falls back to the filename — 5 jars in, 7 entries
+out, each duplication announced in an INFO log as though it were a repair. Both are fixed and now pinned, each
+**observed red against the commit before its fix** (`7004f3c88^`, `bf226c2ac^`, `2ec5ff202^`), with the
+observed failure text in the commit body.
+
+Three things worth keeping. **The fixtures cannot express an absent field** — every committed `fabric.mod.json`
+and `quilt.mod.json` declares an `environment`, so the SERVER-when-undeclared default (a decision: an
+undeclared mod must never be dropped from a pack) had *no* coverage, which is how `bf226c2ac`'s defect got in.
+New cases build a real jar in a `@TempDir` from JSON written inline, so the descriptor under test is visible in
+the diff and no binary enters the repo. **The committed jars stay as they are** — they are real-world captures
+and that messiness is the point (`fabric_tests/fffff.jar` carries a literal newline inside a JSON string, invalid
+strict JSON that the scanner handles anyway), they are consumed by eight test classes across `-api` *and* `-app`,
+and `forge_old/aaaaa.jar` holds a genuine 1 MB `fml_cache_annotation.json`; 776 KB total is not worth
+regenerating. **A green characterization test proves nothing until you try to break it** — the new
+exact-match-not-prefix assertion on `dependencyExclusions` was confirmed by mutating the regex to `fabric.*` and
+watching it fail, because `fabric-api-base` must survive a filter that drops `fabric`.
+
+Also fixed here (audit M-4): the scanner-selection `when` had **no `else`**, and since the rewrite the
+include-list is built solely from what a scanner returned — so an unrecognised loader produced a **silently empty
+server pack** where the pre-rewrite code returned every jar. Reachable from an ordinary `PackConfig`, because
+`PackConfig.modloader`'s setter silently ignores a value it does not recognise and leaves the field at `""`.
+The `else` now warns and includes everything.
 
 **Current phase — 4 (frontend) complete; GUI structured-concurrency done.** Frontend 4a–4e: Vitest,
 settings-store `$q` decoupling, full TypeScript migration (all `src/` is TS, verified by
