@@ -5,9 +5,11 @@
 follow up on. Not itself in range; its surviving conditions are reported separately below.
 **Mode:** READ-ONLY at audit time. No source was modified while auditing.
 
-**Remediation:** branch `claude-modscan-test-hardening`, **11 commits**, `7279962bd` … `35c5787ad`.
-API suite **280 → 294 tests**, 1 skip (the `fish`-absent skip in `ScriptTemplateContentTest`,
-unchanged), 0 failures. `:serverpackcreator-app:test` 80 tests, green.
+**Remediation:** branches `claude-modscan-test-hardening` (12 commits) and `claude-modscan-tidyup`
+(10 commits), `7279962bd` … `3fabed7cc`. API suite **280 → 295 tests**, 1 skip (the `fish`-absent skip
+in `ScriptTemplateContentTest`, unchanged), 0 failures. `:serverpackcreator-app:test` 80 tests, green.
+
+**All findings are closed.**
 
 ### Status
 
@@ -18,12 +20,13 @@ unchanged), 0 failures. `:serverpackcreator-app:test` 80 tests, green.
 | M-2 | Exported `modID` default changed silently, unpinned | MEDIUM | **Pinned**; still undocumented (→ I-3) |
 | M-3 | Fixture cannot reach the Quilt fabric-fallback branch | MEDIUM | **Moot** — superseded by N-1 |
 | M-4 | Unrecognised modloader yields an empty server pack | MEDIUM | **Fixed** + pinned |
-| N-1 | The Quilt copy-loop is now unreachable dead code | LOW | **New**, open |
-| L-1 | Unused `SupportedModloaders.quilt` import | LOW | Open |
-| L-2 | Value identity hand-rolled at six call sites | LOW | Open |
-| L-3 | Log statement reads the value it just overwrote | LOW | Open |
+| N-1 | The Quilt copy-loop is now unreachable dead code | LOW | **Fixed** — removed, guarded |
+| L-1 | Unused `SupportedModloaders.quilt` import | LOW | **Fixed** |
+| L-2 | Value identity hand-rolled at six call sites | LOW | **Fixed** — helper, not `equals` |
+| L-3 | Log statement reads the value it just overwrote | LOW | **Fixed** |
 | I-6 | Dependency rescue could not fire for clientside mods | MEDIUM | **Fixed** + pinned |
-| I-1…I-5, I-7, I-8 | Inherited from `0a12d41d0` | mixed | Open |
+| I-1…I-5, I-7, I-8 | Inherited from `0a12d41d0` | mixed | **Fixed** on the tidy-up branch |
+| N-2 | `ReadmeExamplesTest` cited seven README sections that do not exist | LOW | **New**, fixed |
 
 ---
 
@@ -244,17 +247,20 @@ see above.)
 |---|---|---|---|---|---|
 | HIGH | 1 | — | 1 | — | 0 |
 | MEDIUM | 4 | 3 | — | 1 | 0 |
-| LOW | 4 | — | — | — | 4 |
-| Inherited | 8 | 1 | — | — | 7 |
+| LOW | 5 | 5 | — | — | 0 |
+| Inherited | 8 | 8 | — | — | 0 |
 
 Every finding in the audited range is closed. The behaviour the modscan work changed is now pinned by
 tests observed red against the commit before each fix, so the next regression fails the build instead
 of skipping a test and writing an INFO log.
 
-I-6 — the one inherited condition with a behavioural consequence — is fixed and pinned too, so
-"taking care of dependencies" now reaches the population it was written for.
+The tidy-up branch closed the rest. Worth noting from it: `ScannedMod` is now immutable and built
+through its constructor, which removed **all 8** `!!` assertions and **all 4** mutable `currentModID`
+fields — those fields were shared state on scanners `ApiWrapper` holds as singletons. The four-branch
+exclusion-filter `when`, written out three times, is now read once. And a second fabricated-reference
+problem surfaced (**N-2**): `ReadmeExamplesTest` cited seven README sections that do not exist and
+claimed the guide "teaches roughly a dozen snippets" — `README.md` carries exactly two Kotlin API
+snippets. That mattered because being the compiler-gate for the README is the file's entire
+justification.
 
-What remains is cosmetic: one unused import, one unreachable loop, one log statement reading a stale
-local, and seven inherited conditions (the `!!`s, mutable scanner state, missing KDoc, the
-`ScanResult.kt` filename, and the duplicated `when` blocks). None changes behaviour; they are a
-tidy-up branch whenever it suits.
+The only outstanding action is the 9.x release-note line for H-1.

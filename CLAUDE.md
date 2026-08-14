@@ -224,7 +224,7 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 
 | Module         | Tests         | Notes                                                                                |
 |----------------|---------------|--------------------------------------------------------------------------------------|
-| api            | 294 (1 skip)  | Phase 1 **complete**; + `FacadeConstantDelegationTest` (the published `modFileEndings`/`zipCheck` facades must *read* their owner, asserted on identity so a re-introduced equal-valued copy still fails); + `MinecraftMetaTest` (`requiredJavaVersion`) and `ScriptTemplateContentTest` (non-gated guard for the shipped templates; skips its `fish -n` case where fish is absent, and **executes** the bash `setupFabric` to pin the offline launcher path); + `ModScannerSidenessTest` and the `ModListCompilerTest` additions (modscanning hardening, 2026-08-14 — see below). |
+| api            | 295 (1 skip)  | Phase 1 **complete**; + `FacadeConstantDelegationTest` (the published `modFileEndings`/`zipCheck` facades must *read* their owner, asserted on identity so a re-introduced equal-valued copy still fails); + `MinecraftMetaTest` (`requiredJavaVersion`) and `ScriptTemplateContentTest` (non-gated guard for the shipped templates; skips its `fish -n` case where fish is absent, and **executes** the bash `setupFabric` to pin the offline launcher path); + `ModScannerSidenessTest` and the `ModListCompilerTest` additions (modscanning hardening, 2026-08-14 — see below). |
 | clientside     | 87            | Extracted from `-app`; `BootVerifier` split + `packPostProcessor` hook; selection (MC-support gate) + setup-abort classification pinned |
 | app            | 76            | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay             |
 | plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |
@@ -307,6 +307,29 @@ include-list is built solely from what a scanner returned — so an unrecognised
 server pack** where the pre-rewrite code returned every jar. Reachable from an ordinary `PackConfig`, because
 `PackConfig.modloader`'s setter silently ignores a value it does not recognise and leaves the field at `""`.
 The `else` now warns and includes everything.
+
+**Tidy-up (`claude-modscan-tidyup`).** `ScannedMod`/`ModDependency` are immutable and built through their
+constructors, which removed **all 8** `!!` assertions and **all 4** mutable `currentModID` fields — those were
+shared state on scanners `ApiWrapper` holds as **singletons**, so two concurrent `scan()` calls interleaved
+through them. `ForgeAnnotationScanner` needed the id returned rather than passed in, because there it is a
+*result*: whichever annotation first carries one, with every later annotation read relative to it. The
+four-branch exclusion-filter `when` — written out **three** times, already drifted in formatting — is read once;
+the whitelist `while(any{}) { removeIf{} }` collapses to one `removeIf` (the predicate reads only the mod and
+the whitelist, so nothing a removal does can make a remaining entry start matching), while the dependency
+rescue keeps its loop because each rescue adds to `serverMods` and puts further dependencies in play. The Quilt
+copy-loop was **unreachable** and is gone: both scanners return one entry per input file, so its lookup never
+missed — it fired only under the old `modID` key, where it was the duplicate-producing mechanism rather than a
+fallback. **Do not "fix" `ScannedMod` with a `data class`:** two entries for one jar can disagree on
+`sideness`, and value-equality would let a `Set`/`distinct()` keep whichever landed first and drop the other
+verdict, which is the merge the Quilt arm makes deliberately. Compare on `file`.
+
+**A second fabricated-reference problem, worth the same suspicion as the `PackConfig` one below.**
+`ReadmeExamplesTest` cited **seven** README sections that do not exist (`§2 Quickstart`, `§3 Composition root`,
+`§4 PackConfig`, `§5 Validating`, `§7 Version metadata`, `§8 Scanning mods`, `§9 Settings`) and claimed the
+guide "teaches roughly a dozen snippets". `README.md` carries exactly **two** Kotlin API snippets, both under
+*6. API → Example*. That file's entire justification is being the compiler-gate for the README, so a reader
+trusting its citations would hunt for prose that was never written. Cases that genuinely mirror a snippet now
+cite it; the rest say plainly that they guard adjacent surface.
 
 And (audit I-6) the dependency rescue additionally required the **disabled** mod to be `Sideness.SERVER` — but a
 mod auto-disabled by a scanner is `CLIENT` by construction, so *"don't exclude something's dependency"* only ever
