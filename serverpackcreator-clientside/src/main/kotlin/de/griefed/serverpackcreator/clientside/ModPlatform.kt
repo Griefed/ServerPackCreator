@@ -58,8 +58,8 @@ interface ModPlatform {
 
     /**
      * Resolve a required-dependency reference (a Modrinth `project_id` or a CurseForge `modId`) into
-     * its files, or `null` when it cannot be resolved. Sideness is irrelevant for a dependency and is
-     * left [Sideness.UNKNOWN]; the caller picks a file matching the dependent's loader and Minecraft
+     * its files, or `null` when it cannot be resolved. DeclaredSupport is irrelevant for a dependency and is
+     * left [DeclaredSupport.UNKNOWN]; the caller picks a file matching the dependent's loader and Minecraft
      * version.
      */
     fun resolveDependency(nativeRef: String): ProjectFiles?

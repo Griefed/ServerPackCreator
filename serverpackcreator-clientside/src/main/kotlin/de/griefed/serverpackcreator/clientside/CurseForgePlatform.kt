@@ -26,7 +26,7 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 /**
  * Resolves `curseforge.com` mod-links via the CurseForge REST API (requires an `x-api-key`).
  * CurseForge exposes no sideness-field, so [ProjectFiles.clientSide]/[ProjectFiles.serverSide] are
- * always [Sideness.UNKNOWN] here and confidence must come from the jar-scan and the boot-test. Files
+ * always [DeclaredSupport.UNKNOWN] here and confidence must come from the jar-scan and the boot-test. Files
  * whose author forbade third-party distribution arrive with a `null` download-URL and are flagged
  * [ModFile.locked] for the browser-downloader.
  *
@@ -73,8 +73,8 @@ class CurseForgePlatform(
             platform = "CurseForge",
             slug = slug,
             projectUrl = projectUrl,
-            clientSide = Sideness.UNKNOWN,
-            serverSide = Sideness.UNKNOWN,
+            clientSide = DeclaredSupport.UNKNOWN,
+            serverSide = DeclaredSupport.UNKNOWN,
             files = files
         )
     }
@@ -85,7 +85,7 @@ class CurseForgePlatform(
         val webBase = modNode.path("links").textOrNull("websiteUrl") ?: "https://www.curseforge.com"
         val files = objectMapper.readTree(httpFetcher.get("$apiBase/mods/$modId/files?pageSize=50", headers))
             .path("data").map { toModFile(it, webBase) }
-        ProjectFiles("CurseForge", nativeRef, webBase, Sideness.UNKNOWN, Sideness.UNKNOWN, files)
+        ProjectFiles("CurseForge", nativeRef, webBase, DeclaredSupport.UNKNOWN, DeclaredSupport.UNKNOWN, files)
     } catch (ex: Exception) {
         log.warn("Could not resolve CurseForge dependency '$nativeRef': ${ex.message}")
         null

@@ -81,8 +81,8 @@ internal class ModrinthPlatformTest {
 
         Assertions.assertEquals("Modrinth", project.platform)
         Assertions.assertEquals("jei", project.slug)
-        Assertions.assertEquals(Sideness.REQUIRED, project.clientSide)
-        Assertions.assertEquals(Sideness.UNSUPPORTED, project.serverSide)
+        Assertions.assertEquals(DeclaredSupport.REQUIRED, project.clientSide)
+        Assertions.assertEquals(DeclaredSupport.UNSUPPORTED, project.serverSide)
         Assertions.assertEquals(setOf("Fabric", "Forge"), project.loaders)
         Assertions.assertEquals(2, project.files.size)
     }
