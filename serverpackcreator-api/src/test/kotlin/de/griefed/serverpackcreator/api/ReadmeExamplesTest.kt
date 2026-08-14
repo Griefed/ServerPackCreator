@@ -124,11 +124,11 @@ internal class ReadmeExamplesTest {
         val result = api.modScanner.fabricScanner.scan(emptyList())
 
         Assertions.assertTrue(result.none { it.sideness == Sideness.CLIENT }, "nothing to exclude from an empty scan")
-        Assertions.assertTrue(result.map { it.dependencies }.isEmpty(), "nothing depends on anything in an empty scan")
+        Assertions.assertTrue(result.map { it.dependencies }.flatten().isEmpty(), "nothing depends on anything in an empty scan")
 
         // The README's usage — kept compiling *and* running.
         result.filter { it.sideness == Sideness.CLIENT }.forEach { println("${it.modID} -> ${it.file.name}") }
-        result.map { it.dependencies }.forEach { println("needed: ${it}") }
+        result.map { it.dependencies }.flatten().forEach { println("needed: ${it.modID}") }
     }
 
     /**
