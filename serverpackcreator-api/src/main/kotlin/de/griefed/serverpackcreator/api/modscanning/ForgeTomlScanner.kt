@@ -25,7 +25,6 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
-import java.util.*
 import java.util.jar.JarFile
 
 /**

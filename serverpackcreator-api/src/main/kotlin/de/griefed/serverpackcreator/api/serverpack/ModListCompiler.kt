@@ -22,7 +22,6 @@ package de.griefed.serverpackcreator.api.serverpack
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.config.ExclusionFilter
 import de.griefed.serverpackcreator.api.config.PackConfig
-import de.griefed.serverpackcreator.api.modscanning.Dependency
 import de.griefed.serverpackcreator.api.modscanning.ModScanner
 import de.griefed.serverpackcreator.api.modscanning.ScannedMod
 import de.griefed.serverpackcreator.api.modscanning.Sideness
@@ -33,7 +32,6 @@ import de.griefed.serverpackcreator.api.utilities.common.ListUtilities
 import de.griefed.serverpackcreator.api.utilities.common.SemanticVersionComparator
 import de.griefed.serverpackcreator.api.utilities.common.filteredWalk
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import sun.util.calendar.CalendarUtils.mod
 import java.io.File
 import java.util.*
 
