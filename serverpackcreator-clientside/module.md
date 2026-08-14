@@ -59,7 +59,8 @@ issue link ──▶ pick platform ──▶ resolve to ProjectFiles ──▶ d
 
 **The shared vocabulary (plain data, no logic):**
 - [ClientsideModels][de.griefed.serverpackcreator.clientside.ModFile] —
-  `Sideness` (REQUIRED/OPTIONAL/UNSUPPORTED/UNKNOWN), `ModFile` (one downloadable file, normalized
+  `DeclaredSupport` (REQUIRED/OPTIONAL/UNSUPPORTED/UNKNOWN — the platform's self-report about one side,
+  deliberately *not* the API's `Sideness` verdict), `ModFile` (one downloadable file, normalized
   across platforms; `locked` = author forbade direct download), and `ProjectFiles` (a whole resolved
   project: its files + declared sideness). This is the platform-agnostic shape everything else
   speaks.
