@@ -25,7 +25,6 @@ import de.griefed.serverpackcreator.api.utilities.common.JsonException
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
-import java.io.IOException
 import java.util.*
 
 /**
@@ -36,15 +35,11 @@ import java.util.*
  *
  * @author Griefed
  */
-class ForgeAnnotationScanner(
-    private val objectMapper: ObjectMapper,
-    private val utilities: Utilities
-) : JsonBasedScanner(), Scanner<ScanResult, Collection<File>> {
+class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val utilities: Utilities) : JsonBasedScanner(), Scanner<List<ScannedMod>, Collection<File>> {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val additionalDependencyRegex = "(@.*|\\[.*)".toRegex()
     private val caches = "META-INF/fml_cache_annotation.json"
     private val annotations = "annotations"
-    private val jar = "jar"
     private val values = "values"
     private val modid = "modid"
     private val value = "value"
@@ -68,97 +63,213 @@ class ForgeAnnotationScanner(
      * @return List of mods not to include in server pack based on fml-cache-annotation.json-content.
      * @author Griefed
      */
-    override fun scan(jarFiles: Collection<File>): ScanResult {
+    override fun scan(jarFiles: Collection<File>): List<ScannedMod> {
         log.info("Scanning Minecraft 1.12.x and older mods for sideness...")
-        val modDependencies = ArrayList<Pair<String, Pair<File, String>>>()
-        val clientMods = TreeSet<String>()
 
-        /*
-         * Go through all mods in our list and acquire a list of clientside-only mods as well as any
-         * dependencies of the mods.
-         */
-        checkForClientModsAndDeps(jarFiles, clientMods, modDependencies)
+        val scannedMods = mutableListOf<ScannedMod>()
 
-        //Remove any dependency from our list of clientside-only mods, so we do not exclude any dependency.
-        cleanupClientMods(modDependencies, clientMods)
+        for (modJar in jarFiles) {
+            try {
+                val modConfig: JsonNode = getJarJson(modJar, caches, objectMapper)
+                val (modId, sidenesses, dependencies) = getSidenessesAndDependencies(modConfig)
 
-        /*
-         * After removing dependencies from the list of potential clientside mods, we can check whether
-         * any of the remaining clientmods is available in our list of files. The resulting set is the
-         * set of mods we can safely exclude from our server pack.
-         */
-        return ScanResult(
-            getModsDelta(jarFiles, clientMods),
-            modDependencies.map { entry -> Dependency(entry.first, entry.second.first, entry.second.second)}
-        )
+                if (modId == null) {
+                    // No annotation in the cache carried a modId, so nothing read here can be attributed.
+                    // Fall back to the defaults, as an unreadable jar does.
+                    log.error("Could not scan ${modJar.name}. Consider reporting this: no modId in the annotation cache.")
+                    scannedMods.add(ScannedMod(modJar))
+                } else {
+                    scannedMods.add(ScannedMod(modJar, modId, sidenessOf(sidenesses), dependencies))
+                }
+            } catch (e: Exception) {
+                log.error("Could not scan ${modJar.name}. Consider reporting this:", e)
+                scannedMods.add(ScannedMod(modJar))
+            }
+        }
+
+        return scannedMods
     }
 
-    override fun checkForClientModsAndDeps(
-        filesInModsDir: Collection<File>,
-        clientMods: TreeSet<String>,
-        modDependencies: ArrayList<Pair<String, Pair<File, String>>>
-    ) {
-        for (mod in filesInModsDir) {
-            if (!mod.name.endsWith(jar)) {
-                continue
-            }
-            var modId: String? = null
-            val additionalMods = TreeSet<String>()
+    /**
+     * Reads one annotation cache into the mod id it declares, the sidenesses it signalled, and the
+     * dependencies it named. The id is a *result* here rather than an input: it is whichever the first
+     * annotation carrying one declares, and every later annotation is interpreted relative to it, so it is
+     * returned instead of being parked in a field where a second concurrent scan could see it.
+     */
+    @Throws(Exception::class)
+    private fun getSidenessesAndDependencies(modConfig: JsonNode): Triple<String?, List<Sideness>, List<ModDependency>> {
+        val additionalMods = TreeSet<String>()
+        val sidesForModloader = mutableListOf<Sideness>()
+        val modDependencies = mutableListOf<ModDependency>()
+        var currentModID: String? = null
+        // base of json
+        for (node in modConfig) {
             try {
-                val modJson: JsonNode = getJarJson(mod, caches, objectMapper)
+                // iterate though annotations
+                val cacheAnnotations = node.get(annotations)
+                for (child in cacheAnnotations) {
 
-                // base of json
-                for (node in modJson) {
-                    try {
-                        // iterate though annotations
-                        val cacheAnnotations = node.get(annotations)
-                        for (child in cacheAnnotations) {
-
-                            // Get the mod ID and check for clientside only, if we have not yet received a
-                            // modID
-                            if (modId == null) {
-                                try {
-                                    modId = getModId(child)
-                                    // Get the modId
-
-                                    // Add mod to list of clientmods if clientSideOnly is true
-                                    checkForClientSide(child, modId, clientMods)
-                                } catch (ignored: NullPointerException) {
-                                    // This annotation child carries no modId/clientside annotation
-                                    // -> skip it; another child in the same cache may provide one.
-                                } catch (ignored: JsonException) {
-                                    // Malformed annotation entry -> skip it.
-                                }
-
-                                // We already received a modId, perform additional checks to prevent false
-                                // positives
-                            } else {
-                                try {
-                                    // Get the additional modID
-                                    checkAdditionalId(child, modId, clientMods, additionalMods)
-                                } catch (ignored: NullPointerException) {
-                                    // This child declares no additional modId -> nothing to add.
-                                }
-                            }
-
-                            // Get dependency modIds
-                            checkDependencies(child, modDependencies, mod, modId!!)
+                    if (currentModID == null) {
+                        // Get the mod ID and check for clientside only, if we have not yet received a
+                        // modID
+                        try {
+                            currentModID = getModId(child)
+                            sidesForModloader.add(getSide(child))
+                        } catch (_: NullPointerException) {
+                            // This annotation child carries no modId/clientside annotation
+                            // -> skip it; another child in the same cache may provide one.
+                        } catch (_: JsonException) {
+                            // Malformed annotation entry -> skip it.
                         }
-                    } catch (ignored: NullPointerException) {
-                        // This node has no "annotations" array -> skip it and continue with the
-                        // next node in the cache.
+
+                        try {
+                            // Get dependency modIds
+                            modDependencies.addAll(getDependencies(child))
+                        } catch (_: Exception) {
+                            log.warn("No dependencies for mod ")
+                        }
+                    } else {
+                        try {
+                            // Get the additional modID
+                            val idsAndSidenesses = getAdditionalModIDsAndSidenesses(child, currentModID)
+                            additionalMods.addAll(idsAndSidenesses.first)
+                            sidesForModloader.addAll(idsAndSidenesses.second)
+                        } catch (_: NullPointerException) {
+                            // This child declares no additional modId -> nothing to add.
+                        }
                     }
                 }
-                if (!additionalMods.isEmpty()) {
-                    checkAdditionalMods(modId!!, additionalMods, modJson, clientMods)
-                }
-            } catch (ex: NullPointerException) {
-                log.warn("Couldn't scan $mod as it contains no fml_cache_annotation.json.")
-            } catch (ex: Exception) {
-                log.error("Couldn't scan $mod", ex)
+            } catch (_: NullPointerException) {
+                // This node has no "annotations" array -> skip it and continue with the
+                // next node in the cache.
             }
-
         }
+        val resolvedModID = currentModID
+        if (additionalMods.isNotEmpty() && resolvedModID != null) {
+            // additionalMods only fills once a modId is known, so resolvedModID is non-null whenever
+            // there is anything to resolve — the check keeps that provable rather than asserted.
+            sidesForModloader.addAll(getNestedModsSides(additionalMods, modConfig, resolvedModID))
+        }
+
+        return Triple(resolvedModID, sidesForModloader, modDependencies)
+    }
+
+    private fun getNestedModsSides(additionalMods: TreeSet<String>, modJson: JsonNode, modID: String): List<Sideness> {
+        val sides = mutableListOf<Sideness>()
+        for (additionalModId in additionalMods) {
+            // base of json
+            for (node in modJson) {
+                try {
+                    // iterate though annotations again but this time for the modID of the second mod
+                    for (child in node.get(annotations)) {
+                        var additionalModDependsOnFirst = false
+
+                        // check if second mod depends on first
+                        try {
+                            /*
+                            * if the modId is that of our additional mod, check the dependencies whether the
+                            * first modId is present
+                            */
+                            if (utilities.jsonUtilities.nestedTextEqualsIgnoreCase(child,additionalModId,values, modid, value)
+                                && !utilities.jsonUtilities.nestedTextIsEmpty(child,values, dependencies, value)) {
+                                if (utilities.jsonUtilities.nestedTextContains(child, ";", values, dependencies, value)) {
+                                    if (additionalDependenciesDepend(child, modID)) {
+                                        additionalModDependsOnFirst = true
+                                    }
+                                } else {
+                                    if (additionalDependencyDepends(child, modID)) {
+                                        additionalModDependsOnFirst = true
+                                    }
+                                }
+                            }
+                        } catch (_: NullPointerException) {
+                            // This child carries no modId/dependencies value -> it can't establish a
+                            // dependency on the first mod, so leave additionalModDependsOnFirst false.
+                        }
+
+                        /*
+                        * If the additional mod depends on the first one, check if the additional one is
+                        * clientside-only
+                        */
+                        if (additionalModDependsOnFirst) {
+                            /*
+                            * if the additional mod is NOT clientside-only, we have to remove this mod from the
+                            * list of clientside-only mods
+                            */
+                            if (isAdditionalModClientSide(node, additionalModId)) {
+                                sides.add(Sideness.CLIENT)
+                            } else {
+                                sides.add(Sideness.SERVER)
+                            }
+                        }
+                    }
+                } catch (_: NullPointerException) {
+                    // This node has no "annotations" array -> skip it and continue with the next
+                    // node while resolving additional mods.
+                }
+            }
+        }
+        return sides
+    }
+
+    @Throws(NullPointerException::class)
+    private fun getAdditionalModIDsAndSidenesses(child: JsonNode, modID: String): Pair<List<String>, List<Sideness>> {
+        val ids = ArrayList<String>()
+        val sidenessses = ArrayList<Sideness>()
+        if (!utilities.jsonUtilities.nestedTextIsEmpty(child, values, modid, value)) {
+
+            // ModIDs are the same, so check for clientside-only
+            if (utilities.jsonUtilities.nestedTextEqualsIgnoreCase(child, modID, values, modid, value)
+            ) {
+                try {
+                    // Add mod to list of clientmods if clientSideOnly is true
+                    if (utilities.jsonUtilities.getNestedBoolean(child, values, clientSideOnly, value)) {
+                        sidenessses.add(Sideness.CLIENT)
+                    } else {
+                        sidenessses.add(Sideness.SERVER)
+                    }
+                } catch (_: NullPointerException) {
+                    // No "clientSideOnly" flag on this annotation -> treat as not client-only.
+                } catch (_: JsonException) {
+                    // Malformed "clientSideOnly" value -> treat as not client-only.
+                }
+            } else {
+                // ModIDs are different, possibly two mods in one JAR-file.......
+                // Add additional modId to list, so we can check those later
+                ids.add(utilities.jsonUtilities.getNestedText(child, values, modid, value))
+            }
+        }
+        return Pair(ids, sidenessses)
+    }
+
+    private fun getDependencies(child: JsonNode) : List<ModDependency> {
+        val modDependencies = mutableListOf<ModDependency>()
+        try {
+            if (!utilities.jsonUtilities.nestedTextIsEmpty(child, values, dependencies, value)) {
+
+                // There are multiple dependencies for this mod
+                if (utilities.jsonUtilities.nestedTextContains(child, ";", values, dependencies, value)) {
+                    val dependencies: Array<String> = utilities.jsonUtilities.getNestedTexts(child, ";", values, dependencies,value)
+                    for (dependency in dependencies) {
+                        if (dependency.matches(dependencyCheck)) {
+                            modDependencies.add(ModDependency(getDependency(dependency)))
+                        }
+                    }
+
+                    // There is only one dependency, or it is a regular minecraft/forge dependency.
+                } else {
+                    if (utilities.jsonUtilities.nestedTextMatches(child,dependencyCheck,values, dependencies, value)
+                    ) {
+                        val dependencies: String = utilities.jsonUtilities.getNestedText(child, values, dependencies, value)
+                        modDependencies.add(ModDependency(getDependency(dependencies)))
+                    }
+                }
+            }
+        } catch (_: NullPointerException) {
+            // This annotation declares no "dependencies" value -> the mod has no dependencies to
+            // record.
+        }
+        return modDependencies
     }
 
     /**
@@ -177,254 +288,16 @@ class ForgeAnnotationScanner(
             throw NullPointerException("No modId present.")
         }
 
-    /**
-     * Check whether the mod is clientside only.
-     *
-     * @param jsonNode   The JSON node containing information about the sideness.
-     * @param modId      The id of the mod.
-     * @param clientMods Set to the `modId` if the mod is clientside-only.
-     * @throws NullPointerException if the JSON node does not contain sideness information.
-     * @throws JsonException        if the text in the boolean-field is neither `true` nor
-     * `false`.
-     * @author Griefed
-     */
-    @Throws(NullPointerException::class, JsonException::class)
-    private fun checkForClientSide(jsonNode: JsonNode, modId: String, clientMods: TreeSet<String>) {
-        if (utilities.jsonUtilities.getNestedBoolean(jsonNode, values, clientSideOnly, value)) {
-            clientMods.add(modId)
-            log.debug("Added clientMod: $modId")
-        }
-    }
-
-    /**
-     * Compare the additional id in a JSON node for match with the parent modId. If the additional id
-     * is the same as the parent id, check for sideness and add it to our set of clientMods, otherwise
-     * add the id to our set of additionalMods.
-     *
-     * @param child          JSON node containing information about the additional id.
-     * @param modId          The id of the parent mod.
-     * @param clientMods     Set containing our clientside-only mod ids.
-     * @param additionalMods Set containing our additional mod ids.
-     * @throws NullPointerException if the JSON node contains no additional mod id.
-     * @author Griefed
-     */
-    @Throws(NullPointerException::class)
-    private fun checkAdditionalId(
-        child: JsonNode,
-        modId: String,
-        clientMods: TreeSet<String>,
-        additionalMods: TreeSet<String>
-    ) {
-        if (!utilities.jsonUtilities.nestedTextIsEmpty(child, values, modid, value)) {
-
-            // ModIDs are the same, so check for clientside-only
-            if (utilities.jsonUtilities.nestedTextEqualsIgnoreCase(child, modId, values, modid, value)
-            ) {
-                try {
-                    // Add mod to list of clientmods if clientSideOnly is true
-                    if (utilities.jsonUtilities.getNestedBoolean(child, values, clientSideOnly, value)
-                    ) {
-                        clientMods.add(modId)
-                        log.debug("Added clientMod: $modId")
-                    }
-                } catch (ignored: NullPointerException) {
-                    // No "clientSideOnly" flag on this annotation -> treat as not client-only.
-                } catch (ignored: JsonException) {
-                    // Malformed "clientSideOnly" value -> treat as not client-only.
-                }
-
-                // ModIDs are different, possibly two mods in one JAR-file.......
+    private fun getSide(jsonNode: JsonNode): Sideness {
+        return try {
+            if (utilities.jsonUtilities.getNestedBoolean(jsonNode, values, clientSideOnly, value)) {
+                Sideness.CLIENT
             } else {
-
-                // Add additional modId to list, so we can check those later
-                additionalMods.add(
-                    utilities.jsonUtilities.getNestedText(child, values, modid, value)
-                )
+                Sideness.SERVER
             }
+        } catch (_: NullPointerException) {
+            Sideness.SERVER
         }
-    }
-
-    /**
-     * Check the dependencies of our mod for sideness. Any dependency that is not `forge`, and
-     * whose sideness is clientside-only, gets added to the list of required dependencies.
-     *
-     * @param child           JSON node containing information about our dependencies.
-     * @param modDependencies Set containing our dependency ids.
-     * @param modFile         The filename of the mod being checked.
-     * @author Griefed
-     */
-    private fun checkDependencies(child: JsonNode, modDependencies: ArrayList<Pair<String, Pair<File, String>>>, modFile: File, modId: String) {
-        try {
-            if (!utilities.jsonUtilities.nestedTextIsEmpty(child, values, dependencies, value)) {
-
-                // There are multiple dependencies for this mod
-                if (utilities.jsonUtilities
-                        .nestedTextContains(child, ";", values, dependencies, value)
-                ) {
-                    val dependencies: Array<String> = utilities.jsonUtilities
-                        .getNestedTexts(
-                            child, ";", values, dependencies,
-                            value
-                        )
-                    for (dependency in dependencies) {
-                        if (dependency.matches(dependencyCheck)) {
-                            addDependency(getDependency(dependency), child, modDependencies, modFile, modId)
-                        }
-                    }
-
-                    // There is only one dependency, or it is a regular minecraft/forge dependency.
-                } else {
-                    if (utilities.jsonUtilities.nestedTextMatches(
-                            child,
-                            dependencyCheck,
-                            values, dependencies, value
-                        )
-                    ) {
-                        val dependencies: String = utilities.jsonUtilities
-                            .getNestedText(child, values, dependencies, value)
-                        val dependency = getDependency(dependencies)
-                        addDependency(dependency, child, modDependencies, modFile, modId)
-                    }
-                }
-            }
-        } catch (ignored: NullPointerException) {
-            // This annotation declares no "dependencies" value -> the mod has no dependencies to
-            // record.
-        }
-    }
-
-    /**
-     * Check for additional mods in the mod-jar. Sometimes, a single mod-jar can contain multiple mods
-     * at once.
-     *
-     * @param modId          The id of the parent mod.
-     * @param additionalMods A set of additional mod ids found so far, to which any additional mod
-     * will be added to.
-     * @param modJson        The JsonNode containing all relevant information about any additional
-     * mods.
-     * @param clientMods     A set of already discovered clientside-only mods, to which any additional
-     * mod will be added to.
-     * @author Griefed
-     */
-    private fun checkAdditionalMods(
-        modId: String,
-        additionalMods: TreeSet<String>,
-        modJson: JsonNode,
-        clientMods: TreeSet<String>
-    ) {
-        for (additionalModId in additionalMods) {
-
-            // base of json
-            for (node in modJson) {
-                try {
-                    // iterate though annotations again but this time for the modID of the second mod
-                    for (child in node.get(annotations)) {
-                        var additionalModDependsOnFirst = false
-
-                        // check if second mod depends on first
-                        try {
-                            /*
-                            * if the modId is that of our additional mod, check the dependencies whether the
-                            * first modId is present
-                            */
-                            if (utilities.jsonUtilities
-                                    .nestedTextEqualsIgnoreCase(
-                                        child,
-                                        additionalModId,
-                                        values, modid, value
-                                    )
-                                &&
-                                !utilities.jsonUtilities
-                                    .nestedTextIsEmpty(
-                                        child,
-                                        values, dependencies, value
-                                    )
-                            ) {
-                                if (utilities.jsonUtilities
-                                        .nestedTextContains(child, ";", values, dependencies, value)
-                                ) {
-                                    if (additionalDependenciesDepend(child, modId)) {
-                                        additionalModDependsOnFirst = true
-                                    }
-                                } else {
-                                    if (additionalDependencyDepends(child, modId)) {
-                                        additionalModDependsOnFirst = true
-                                    }
-                                }
-                            }
-                        } catch (ignored: NullPointerException) {
-                            // This child carries no modId/dependencies value -> it can't establish a
-                            // dependency on the first mod, so leave additionalModDependsOnFirst false.
-                        }
-
-                        /*
-                        * If the additional mod depends on the first one, check if the additional one is
-                        * clientside-only
-                        */
-                        if (additionalModDependsOnFirst) {
-
-                            /*
-                            * if the additional mod is NOT clientside-only, we have to remove this mod from the
-                            * list of clientside-only mods
-                            */
-                            if (!isAdditionalModClientSide(node, additionalModId)) {
-                                if (clientMods.removeIf { n: String -> n == modId }) {
-                                    log.info(
-                                        "Removing $modId from list of clientside-only mods. It contains multiple mods at once, and one of them is NOT clientside-only."
-                                    )
-                                }
-                            }
-                        }
-                    }
-                } catch (ignored: NullPointerException) {
-                    // This node has no "annotations" array -> skip it and continue with the next
-                    // node while resolving additional mods.
-                }
-            }
-        }
-    }
-
-    /**
-     * Check whether the mod-jar should be added to the modsDelta list.
-     *
-     * @param file       The mod-jar to check.
-     * @param clientMods A set of modIds of clientside-only mods already discovered previously..
-     * @return `true` if the modJar can be added to the modsDelta set.
-     * @throws IOException if the fml_cache_annotation could not be read.
-     * @author Griefed
-     */
-    @Throws(IOException::class)
-    private fun addToDelta(file: File, clientMods: TreeSet<String>): Boolean {
-        val modJson: JsonNode = getJarJson(file, caches, objectMapper)
-        var addToDelta = false
-        for (node in modJson) {
-            try {
-                // iterate though annotations
-                val cacheAnnotations = node.get(annotations)
-                for (child in cacheAnnotations) {
-
-                    // Get the modId
-                    try {
-                        val modIdToCheck = getModId(child)
-
-                        // Add mod to list of clientmods if clientSideOnly is true
-                        if (utilities.jsonUtilities.getNestedBoolean(child, values, clientSideOnly, value)) {
-                            if (clientMods.contains(modIdToCheck)) {
-                                addToDelta = true
-                            }
-                        }
-                    } catch (ignored: NullPointerException) {
-                        // This child has no modId / no clientSideOnly flag -> it can't mark the mod
-                        // for the delta, so skip it.
-                    } catch (ignored: JsonException) {
-                        // Malformed annotation entry -> skip it.
-                    }
-                }
-            } catch (ignored: NullPointerException) {
-                // This node has no "annotations" array -> skip it and continue with the next node.
-            }
-        }
-        return addToDelta
     }
 
     /**
@@ -438,36 +311,6 @@ class ForgeAnnotationScanner(
         val dependencyIndex = dependency.lastIndexOf(":") + 1
         val dependencySubstring = dependency.substring(dependencyIndex)
         return dependencySubstring.replace(dependencyReplace, "")
-    }
-
-    /**
-     * Add a dependency to our set of dependencies.
-     *
-     * @param dependency      The dependency to add
-     * @param child           The JSON node containing information about dependencies and ids.
-     * @param modDependencies The set of dependencies to add the new dependency to.
-     * @param modFile         The filename of the mod being checked.
-     * @author Griefed
-     */
-    private fun addDependency(
-        dependency: String,
-        child: JsonNode,
-        modDependencies: ArrayList<Pair<String, Pair<File, String>>>,
-        modFile: File,
-        modId: String
-    ) {
-        val pair: Pair<String, Pair<File, String>>
-        if (!dependency.equals("forge", ignoreCase = true) && dependency != "*") {
-            pair = Pair(dependency, Pair(modFile, modId))
-            if (modDependencies.add(pair)) {
-                try {
-                    val addedFor = utilities.jsonUtilities.getNestedText(child, values, modid, value)
-                    log.debug("Added dependency ${pair.first} for $addedFor (${pair.second.first}).")
-                } catch (ex: NullPointerException) {
-                    log.debug("Added dependency ${pair.first} (${pair.second.first}).")
-                }
-            }
-        }
     }
 
     /**
@@ -545,58 +388,16 @@ class ForgeAnnotationScanner(
                     ) {
                         clientSide = true
                     }
-                } catch (ignored: NullPointerException) {
+                } catch (_: NullPointerException) {
                     // This annotation has no matching modId / no clientSideOnly flag -> it does not
                     // mark the additional mod client-side, so leave clientSide false.
-                } catch (ignored: JsonException) {
+                } catch (_: JsonException) {
                     // Malformed annotation entry -> leave clientSide false.
                 }
             }
-        } catch (ignored: NullPointerException) {
+        } catch (_: NullPointerException) {
             // This node has no "annotations" array -> nothing to inspect, leave clientSide false.
         }
         return clientSide
-    }
-
-    override fun getModsDelta(filesInModsDir: Collection<File>, clientMods: TreeSet<String>): List<Exclusion> {
-        val modsDelta = TreeSet<File>()
-        val exclusions = ArrayList<Exclusion>()
-        for (mod in filesInModsDir) {
-            try {
-                if (addToDelta(mod, clientMods)) {
-                    modsDelta.add(mod)
-                }
-            } catch (ignored: Exception) {
-                // A mod without a readable fml_cache_annotation.json can't be evaluated for the
-                // delta, so it is skipped rather than aborting the scan of the remaining mods.
-            }
-        }
-        for (mod in modsDelta) {
-            var modID: String? = null
-            val modJson: JsonNode = getJarJson(mod, caches, objectMapper)
-            for (node in modJson) {
-                try {
-                    // iterate though annotations
-                    val cacheAnnotations = node.get(annotations)
-                    for (child in cacheAnnotations) {
-
-                        // Get the modId
-                        try {
-                            modID = getModId(child)
-                        } catch (ignored: NullPointerException) {
-                            // This child has no modId / no clientSideOnly flag -> it can't mark the mod
-                            // for the delta, so skip it.
-                        } catch (ignored: JsonException) {
-                            // Malformed annotation entry -> skip it.
-                        }
-                    }
-                } catch (ignored: NullPointerException) {
-                    // This node has no "annotations" array -> skip it and continue with the next node.
-                }
-            }
-
-            exclusions.add(Exclusion(modID?: "N/A", mod))
-        }
-        return exclusions
     }
 }

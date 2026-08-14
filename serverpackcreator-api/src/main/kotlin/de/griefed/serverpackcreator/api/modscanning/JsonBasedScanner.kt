@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.io.IOException
-import java.util.*
 import java.util.jar.JarFile
 
 /**
@@ -61,51 +60,4 @@ abstract class JsonBasedScanner {
         }
         return jsonNode
     }
-
-    /**
-     * Remove any dependency from the list of clientside-only mods to prevent excluding dependencies
-     * of other mods, resulting in a potentially broken server pack.
-     *
-     * @param modDependencies A set of modIds of dependencies.
-     * @param clientMods      A set of modIds of clientside-only mods.
-     * @author Griefed
-     */
-    fun cleanupClientMods(modDependencies: ArrayList<Pair<String, Pair<File, String>>>, clientMods: TreeSet<String>) {
-        for (dependency in modDependencies) {
-            clientMods.removeIf { clientMod: String ->
-                if (clientMod == dependency.first && !clientMods.contains(dependency.second.second)) {
-                    log.info("$clientMod is a dependency for ${dependency.second.first.name} (${dependency.second.second}), therefor it was not automatically removed.")
-                    true
-                } else {
-                    false
-                }
-            }
-        }
-    }
-
-    /**
-     * Check every file and fill the `clientMods` and `modDependencies` sets with ids of
-     * mods which are clientside-only or dependencies of a mod.
-     *
-     * @param filesInModsDir  Collection of files to check.
-     * @param clientMods      Set of clientside-only mod-ids.
-     * @param modDependencies Set dependencies of other mods.
-     * @author Griefed
-     */
-    abstract fun checkForClientModsAndDeps(
-        filesInModsDir: Collection<File>,
-        clientMods: TreeSet<String>,
-        modDependencies: ArrayList<Pair<String, Pair<File, String>>>
-    )
-
-    /**
-     * Get a list of mod-jars which can safely be excluded from the server pack.
-     *
-     * @param filesInModsDir A collection of files from which to exclude mods.
-     * @param clientMods     A set of modIds which are clientside-only.
-     * @return A set of all files from the passed collection which can safely be excluded from the
-     * server pack.
-     * @author Griefed
-     */
-    abstract fun getModsDelta(filesInModsDir: Collection<File>, clientMods: TreeSet<String>): List<Exclusion>
 }

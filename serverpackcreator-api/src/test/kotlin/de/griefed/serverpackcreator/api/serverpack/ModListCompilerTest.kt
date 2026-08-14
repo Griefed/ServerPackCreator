@@ -27,6 +27,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 /**
  * Direct unit tests for [ModListCompiler]. The class is the most branch-dense, least-covered unit
@@ -75,6 +77,44 @@ internal class ModListCompilerTest {
             File(modsDir, name).writeText("dummy")
         }
         return modsDir
+    }
+
+    /**
+     * Writes a real (openable) jar holding a single `fabric.mod.json` into [modsDir], so the scanner
+     * has something to read. [dependencies] become the descriptor's `depends` block.
+     */
+    private fun fabricJar(
+        modsDir: File,
+        jarName: String,
+        modId: String,
+        environment: String,
+        vararg dependencies: String
+    ): File {
+        val depends = dependencies.joinToString(",") { """"$it":"*"""" }
+        return jarContaining(
+            modsDir, jarName, "fabric.mod.json",
+            """{"schemaVersion":1,"id":"$modId","version":"1.0.0",""" +
+                    """"environment":"$environment","depends":{$depends}}"""
+        )
+    }
+
+    /** The Quilt counterpart of [fabricJar]: a real jar holding a single `quilt.mod.json`. */
+    private fun quiltJar(modsDir: File, jarName: String, modId: String, environment: String): File =
+        jarContaining(
+            modsDir, jarName, "quilt.mod.json",
+            """{"schema_version":1,"quilt_loader":{"id":"$modId","version":"1.0.0"},""" +
+                    """"minecraft":{"environment":"$environment"}}"""
+        )
+
+    /** Writes a real (openable) jar into [modsDir] holding exactly [entryPath] with [content]. */
+    private fun jarContaining(modsDir: File, jarName: String, entryPath: String, content: String): File {
+        val jar = File(modsDir, jarName)
+        ZipOutputStream(jar.outputStream()).use { zip ->
+            zip.putNextEntry(ZipEntry(entryPath))
+            zip.write(content.toByteArray())
+            zip.closeEntry()
+        }
+        return jar
     }
 
     /**
@@ -218,8 +258,10 @@ internal class ModListCompilerTest {
         val modsDir = File("src/test/resources/forge_tests/mods").absolutePath
 
         val (_, autoExcluded) = modListCompiler.compileModList(modsDir, emptyList(), emptyList(), "1.16.5", "Forge")
-        org.junit.jupiter.api.Assumptions.assumeTrue(
-            autoExcluded.isNotEmpty(), "Fixture must auto-detect at least one clientside mod for this test to be meaningful"
+        Assertions.assertTrue(
+            autoExcluded.isNotEmpty(),
+            "Auto-discovery must detect at least one clientside mod in forge_tests for this test to mean anything. " +
+                    "An empty list here means auto-exclusion stopped working, not that the fixture is unsuitable."
         )
         val rescuedName = autoExcluded.first().name
 
@@ -233,5 +275,206 @@ internal class ModListCompilerTest {
             disabled.any { mod -> mod.name == rescuedName },
             "Whitelisted mod '$rescuedName' must not be reported as disabled"
         )
+    }
+
+    /**
+     * With auto-discovery on and **no** user-specified clientside mods, a mod the scanner judged
+     * clientside must stay disabled. This is the case auto-detection exists for, and the one the
+     * user-exclusion pass is most likely to undo: that pass walks every scanned mod again, so an
+     * `else` branch that re-enables everything it did not itself match silently defeats the whole
+     * feature while leaving the suite green.
+     *
+     * `aaaaa.jar` is asserted clientside at the scanner level by
+     * [de.griefed.serverpackcreator.api.modscanning.ModScannerTest.tomlTest]; `ddddd.jar` is
+     * asserted not clientside there. Pinning both directions keeps this honest if the fixture changes.
+     */
+    @Test
+    fun autoDetectedClientsideModsStayDisabledWithoutUserExclusions() {
+        apiProperties.isAutoExcludingModsEnabled = true
+        apiProperties.exclusionFilter = ExclusionFilter.CONTAIN
+        val modsDir = File("src/test/resources/forge_tests/mods").absolutePath
+
+        val (included, disabled) = modListCompiler.compileModList(
+            modsDir, emptyList(), emptyList(), "1.16.5", "Forge"
+        )
+        val includedNames = included.map { mod -> mod.name }
+        val disabledNames = disabled.map { mod -> mod.name }
+
+        Assertions.assertTrue(
+            disabledNames.contains("aaaaa.jar"),
+            "Scanner-detected clientside mod must remain disabled with no user exclusions; disabled=$disabledNames"
+        )
+        Assertions.assertFalse(
+            includedNames.contains("aaaaa.jar"),
+            "Scanner-detected clientside mod must not be included; included=$includedNames"
+        )
+        Assertions.assertTrue(
+            includedNames.contains("ddddd.jar"),
+            "A mod the scanner judged server-side must still be included; included=$includedNames"
+        )
+    }
+
+    /**
+     * The Quilt arm scans the same directory twice — once per descriptor format — and merges the two
+     * result sets. The merge must be keyed on the jar, not on the declared mod id: a jar can declare
+     * *different* ids in `quilt.mod.json` and `fabric.mod.json` (the fixture's `aaaaa.jar` declares
+     * `ok_zoomer` and `ok_zoomer-pmw`), and a jar carrying only one descriptor falls back to a
+     * synthesised id for the scan that failed. Keying on the id therefore fails to match exactly the
+     * entries being merged, yielding two entries for one file.
+     *
+     * Two entries for one file can carry different sideness, which puts the same jar in *both*
+     * returned lists. The partition check in [autoDiscoveryReachesScannerBranchPerLoader] cannot
+     * catch that — each list is de-duplicated separately before being returned — so disjointness is
+     * asserted explicitly here.
+     */
+    @Test
+    fun quiltArmReturnsEachJarExactlyOnce() {
+        apiProperties.isAutoExcludingModsEnabled = true
+        apiProperties.exclusionFilter = ExclusionFilter.CONTAIN
+        val modsDir = File("src/test/resources/quilt_tests/mods")
+
+        val (included, disabled) = modListCompiler.compileModList(
+            modsDir.absolutePath, emptyList(), emptyList(), "1.20.1", "Quilt"
+        )
+        val includedNames = included.map { mod -> mod.name }
+        val disabledNames = disabled.map { mod -> mod.name }
+
+        val inBoth = includedNames.intersect(disabledNames.toSet())
+        Assertions.assertTrue(
+            inBoth.isEmpty(),
+            "A jar must not be both included and disabled; both=$inBoth, included=$includedNames, disabled=$disabledNames"
+        )
+        Assertions.assertEquals(
+            includedNames.size, includedNames.distinct().size,
+            "Included list must hold no duplicate jar; got $includedNames"
+        )
+        Assertions.assertEquals(
+            disabledNames.size, disabledNames.distinct().size,
+            "Disabled list must hold no duplicate jar; got $disabledNames"
+        )
+        Assertions.assertEquals(
+            modsDir.listFiles { file -> file.extension == "jar" }!!.size,
+            includedNames.size + disabledNames.size,
+            "Every jar must appear exactly once across the two lists"
+        )
+    }
+
+    /**
+     * An unrecognised modloader must still yield every mod, not an empty pack.
+     *
+     * The scanner-selection `when` has an arm per supported loader and no `else`, and the
+     * include-list is built solely from what a scanner returned — so a loader string matching no arm
+     * leaves nothing scanned and returns two empty lists. Before the modscan rewrite the list was
+     * seeded with every file and exclusions were removed from it, so the same input returned every
+     * jar.
+     *
+     * This is reachable without any embedder doing something exotic: [PackConfig.modloader]'s setter
+     * silently ignores a value it does not recognise, leaving the field at its initial empty string,
+     * and that empty string reaches this `when`. An over-full pack is something a user can fix; a
+     * silently empty one looks like the tool did nothing.
+     */
+    @Test
+    fun unrecognisedModloaderStillYieldsEveryMod(@TempDir tempDir: File) {
+        apiProperties.isAutoExcludingModsEnabled = true
+        val modsDir = modsDirWith(tempDir, "alpha.jar", "beta.jar", "gamma.jar")
+
+        val (included, disabled) = modListCompiler.compileModList(
+            modsDir.absolutePath, emptyList(), emptyList(), "1.20.1", "NotAModloader"
+        )
+
+        Assertions.assertEquals(
+            setOf("alpha.jar", "beta.jar", "gamma.jar"), included.map { mod -> mod.name }.toSet(),
+            "An unrecognised modloader must fall back to including every mod, not to an empty pack"
+        )
+        Assertions.assertTrue(
+            disabled.isEmpty(),
+            "Nothing can be judged clientside without a scanner; got ${disabled.map { it.name }}"
+        )
+    }
+
+    /**
+     * A mod the scanner judged clientside must be rescued when something kept on the server depends
+     * on it. Excluding a dependency produces a pack that installs and then dies on load, which is
+     * worse than shipping one mod too many — so a dependency wins over a clientside verdict.
+     *
+     * This could not fire until now: the rescue additionally required the *disabled* mod to be
+     * `Sideness.SERVER`, but a mod auto-disabled by a scanner is `CLIENT` by construction, so the
+     * protection never reached the population it was written for. Removing that clause is what this
+     * pins.
+     */
+    @Test
+    fun aClientsideModDependedOnByAServerModIsRescued(@TempDir tempDir: File) {
+        apiProperties.isAutoExcludingModsEnabled = true
+        val modsDir = File(tempDir, "mods").apply { mkdirs() }
+        fabricJar(modsDir, "servermod.jar", "servermod", "*", "clientlib")
+        fabricJar(modsDir, "clientlib.jar", "clientlib", "client")
+
+        val (included, disabled) = modListCompiler.compileModList(
+            modsDir.absolutePath, emptyList(), emptyList(), "1.20.1", "Fabric"
+        )
+
+        Assertions.assertTrue(
+            included.map { mod -> mod.name }.contains("clientlib.jar"),
+            "A clientside mod that a server mod depends on must be kept; included=${included.map { it.name }}"
+        )
+        Assertions.assertTrue(
+            disabled.isEmpty(),
+            "The rescued dependency must not also be reported as disabled; got ${disabled.map { it.name }}"
+        )
+    }
+
+    /**
+     * The majority of a real Quilt pack is Fabric mods carrying no `quilt.mod.json`, and the
+     * committed `quilt_tests` fixture contains no such jar. This covers it: a fabric-only mod must
+     * get the verdict from the Fabric scan — the Quilt scan cannot read it and falls back to SERVER —
+     * and must still appear exactly once.
+     *
+     * Guards the removal of the copy-loop that used to sit at the end of the Quilt arm. That loop
+     * cannot fire (both scanners return one entry per input file, so the lookup always matches), and
+     * the case it looks like it handles is this one, which the sideness-merge above it covers.
+     */
+    @Test
+    fun theQuiltArmTakesTheFabricVerdictForAFabricOnlyJar(@TempDir tempDir: File) {
+        apiProperties.isAutoExcludingModsEnabled = true
+        val modsDir = File(tempDir, "mods").apply { mkdirs() }
+        quiltJar(modsDir, "quiltmod.jar", "quiltmod", "*")
+        fabricJar(modsDir, "fabriconly.jar", "fabriconly", "client")
+
+        val (included, disabled) = modListCompiler.compileModList(
+            modsDir.absolutePath, emptyList(), emptyList(), "1.20.1", "Quilt"
+        )
+
+        Assertions.assertEquals(
+            listOf("fabriconly.jar"), disabled.map { mod -> mod.name },
+            "A fabric-only clientside mod must be disabled on the Quilt arm"
+        )
+        Assertions.assertEquals(
+            listOf("quiltmod.jar"), included.map { mod -> mod.name },
+            "The quilt-only server mod must be kept"
+        )
+    }
+
+    /**
+     * The rescue is transitive, which is what the surrounding `while` loop exists for: rescuing one
+     * mod puts its own dependencies in play, and those may themselves sit in the disabled list. A
+     * single pass would keep `deeplib` excluded and still look like it had done its job.
+     */
+    @Test
+    fun theDependencyRescueFollowsAChain(@TempDir tempDir: File) {
+        apiProperties.isAutoExcludingModsEnabled = true
+        val modsDir = File(tempDir, "mods").apply { mkdirs() }
+        fabricJar(modsDir, "servermod.jar", "servermod", "*", "midlib")
+        fabricJar(modsDir, "midlib.jar", "midlib", "client", "deeplib")
+        fabricJar(modsDir, "deeplib.jar", "deeplib", "client")
+
+        val (included, disabled) = modListCompiler.compileModList(
+            modsDir.absolutePath, emptyList(), emptyList(), "1.20.1", "Fabric"
+        )
+
+        Assertions.assertEquals(
+            setOf("servermod.jar", "midlib.jar", "deeplib.jar"), included.map { mod -> mod.name }.toSet(),
+            "The whole dependency chain must be rescued, not just its first link"
+        )
+        Assertions.assertTrue(disabled.isEmpty(), "Nothing in the chain may stay disabled; got ${disabled.map { it.name }}")
     }
 }

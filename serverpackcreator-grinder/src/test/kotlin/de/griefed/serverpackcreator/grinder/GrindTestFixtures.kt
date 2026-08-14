@@ -31,8 +31,8 @@ internal fun loaderVerdict(
 ) = LoaderVerdict(
     loader = loader,
     suggestedEntry = suggestedEntry,
-    declaredClientSide = Sideness.UNKNOWN,
-    declaredServerSide = Sideness.UNKNOWN,
+    declaredClientSide = DeclaredSupport.UNKNOWN,
+    declaredServerSide = DeclaredSupport.UNKNOWN,
     jarScan = JarScan.ERROR,
     bootResult = null,
     bootCrashExcerpt = null,

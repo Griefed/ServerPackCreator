@@ -1,174 +1,266 @@
-# Refactor Audit — `claude-ci-qodana-jbr-cache` (`develop..HEAD`)
+# Refactor Audit — modscanning follow-ups (`0a12d41d0..HEAD`)
 
-**Range audited:** `develop..HEAD` — **3 commits**, `fd8171288` … `f3a60df80`
-**Base:** `develop` (`255af9eeb`) — verified ancestor (`git merge-base --is-ancestor`), clean linear range
-**Files touched:** `.gitlab-ci.yml` only (52 insertions, 4 deletions). No Kotlin, no build script, no resources.
-**Mode:** READ-ONLY. No source modified.
-**Suites:** not re-run and not affected — no source, `buildSrc`, or resource file is in the range.
+**Range audited:** `0a12d41d0..HEAD` — **6 commits**, `bf226c2ac` … `7004f3c88` (2026-08-14)
+**Base:** `0a12d41d0` *("fix: Vastly improve automated modscanning…")* — the rewrite these six commits
+follow up on. Not itself in range; its surviving conditions are reported separately below.
+**Mode:** READ-ONLY at audit time. No source was modified while auditing.
 
-> Seventh report at this path. Supersedes the `claude-kdoc-coverage` audit (0 HIGH / 1 MEDIUM / 3 LOW, all
-> remediated), whose text remains in git history at this path.
+**Remediation:** branches `claude-modscan-test-hardening` (12 commits) and `claude-modscan-tidyup`
+(10 commits), `7279962bd` … `3fabed7cc`. API suite **280 → 295 tests**, 1 skip (the `fish`-absent skip
+in `ScriptTemplateContentTest`, unchanged), 0 failures. `:serverpackcreator-app:test` 80 tests, green.
 
-**Findings: 1 HIGH · 1 MEDIUM · 3 LOW.**
+**All findings are closed.**
 
-**Status 2026-08-04 — all five addressed, on `claude-ci-audit-fixes`.** **H-1 could not be fixed as recommended:**
-between the audit and the remediation the three commits were merged into `origin/develop` (`f16dff7ff`) and
-`origin/alpha`, so amending the label would mean force-pushing two shared branches. Recorded in `CLAUDE.md`'s
-mislabelled-commit list instead — the same remedy this project already applied to `5f138ef8a` and `7815d5960` — with
-the added lesson that the rule is cheap before a merge and unfixable after it. **M-1** closed by
-`claude-docs/BACKLOG.md` §2026-08-04 (B26–B29; numbering continues from B25 because IDs still cited from the
-`CLAUDE.md` files were not carried over when that file was emptied, which the new section now says out loud).
-**L-1 and L-2** fixed in `afadcb90f`, which also found and fixed a **third defect introduced by the first attempt at
-L-1**: probing every JBR with a hard `-version` let a stale tree fail the pipeline, and the `[ -x ]` assert written
-to replace it was unsound — a Docker Desktop mount reports `0755` for a host-side `0644` file and answers `[ -x ]`
-"executable" while `execve` still fails. The probe now classifies EACCES (fail) from anything else (warn); all five
-paths verified against the block extracted from the YAML itself. **L-3** closed by the `REFACTOR-LOG.md` entry for
-2026-08-04, now that Griefed has confirmed a green pipeline. The out-of-range note below is partly closed too: B25
-and B4/B5/B11/B21/B22 are documented as dangling citations in `BACKLOG.md`.
+### Status
 
-Rules checked and **not** applicable, stated so they are not re-flagged: module boundaries, plugin-API
-contract, Kotlin idioms (`val`/`!!`/Java-isms), Strangler-Fig incrementality, big-bang rewrite — the range
-contains no Kotlin and no exported surface. Characterization tests: `CLAUDE.md` sets the ceiling for CI and
-build-logic changes at *measurement recorded in the commit message*, deliberately, and two of the three
-commits carry one (`fd8171288`: a three-step local reproduction; `358675fbf`: 20/20 → 7/20 jobs). `f3a60df80`
-adds a diagnostic that produces a measurement and so has nothing to measure itself. That is the documented
-ceiling, not a gap.
+| # | Finding | Severity | Status |
+|---|---|---|---|
+| H-1 | Exported types deleted under a `refactor:` label | HIGH | **Withdrawn** — see below |
+| M-1 | No characterization test in any of the six commits | MEDIUM | **Fixed** — 5 test commits, +12 tests |
+| M-2 | Exported `modID` default changed silently, unpinned | MEDIUM | **Pinned**; still undocumented (→ I-3) |
+| M-3 | Fixture cannot reach the Quilt fabric-fallback branch | MEDIUM | **Moot** — superseded by N-1 |
+| M-4 | Unrecognised modloader yields an empty server pack | MEDIUM | **Fixed** + pinned |
+| N-1 | The Quilt copy-loop is now unreachable dead code | LOW | **Fixed** — removed, guarded |
+| L-1 | Unused `SupportedModloaders.quilt` import | LOW | **Fixed** |
+| L-2 | Value identity hand-rolled at six call sites | LOW | **Fixed** — helper, not `equals` |
+| L-3 | Log statement reads the value it just overwrote | LOW | **Fixed** |
+| I-6 | Dependency rescue could not fire for clientside mods | MEDIUM | **Fixed** + pinned |
+| I-1…I-5, I-7, I-8 | Inherited from `0a12d41d0` | mixed | **Fixed** on the tidy-up branch |
+| N-2 | `ReadmeExamplesTest` cited seven README sections that do not exist | LOW | **New**, fixed |
 
 ---
 
-## HIGH
+## Withdrawn
 
-### H-1 · `358675fbf` — labelled `refactor(ci)`, but it changes behaviour
+### H-1 — Exported types deleted under a `refactor:` label
 
-`.gitlab-ci.yml:16-25` (`.dockerized` template) plus the seven `extends:` sites.
+`0df7b2835` deleted `ScanResult`, `Exclusion` and `Dependency` from a module published to Maven
+Central, labelled `refactor:`.
 
-**Rule broken:** *"`refactor:` is a claim about behaviour, not about intent. Use it only when behaviour is
-preserved; label a behaviour change `fix:` or `feat:` however tidy it looks."* (`CLAUDE.md`, Refactor
-discipline.)
+**Withdrawn on Griefed's call:** the removed types were already unused and break in 9.x regardless.
+The API compatibility policy governs source-compatibility *within* a major version, so removal at a
+major boundary is exactly what it permits — the finding mistook a deliberate major-version break for
+an accidental one. The `refactor:` label remains imprecise for a change that is not
+behaviour-preserving for an embedder, but that is not worth rewriting shared history for.
 
-Thirteen of the twenty jobs no longer start a container that they previously started, and each stops paying
-the ~34 s service health-check wait measured in the 2026-08-03 log. The commit message **quantifies that
-delta itself** — "before: 20/20, after: 7/20" — so the commit both claims behaviour preservation in its type
-and reports a behavioural change in its body. `CLAUDE.md` already records two commits with exactly this
-defect (`5f138ef8a`, `7815d5960`: *"Both described the change honestly in the body — only the type lied"*),
-which makes this a repeat, not a first offence.
-
-**The strongest defence, and why it does not hold.** The removed service was provably non-functional —
-`dockerd` exits at startup (`can't create unix socket /var/run/docker.sock: device or resource busy`) — so
-arguably nothing that *worked* was removed and the pipeline's outputs are byte-identical. Two things defeat
-this. First, the rule is about the observable behaviour of what was changed, and a job that stops launching a
-container and finishes 34 s sooner has changed. Second, the commit is internally inconsistent with its own
-defence: it *retains* `.dockerized` on seven jobs precisely to avoid changing their behaviour. If service
-presence is behaviour worth preserving for those seven, it was behaviour for the other thirteen too.
-
-**Not a code defect.** The job selection is correct (verified below) and the commit is single-concern and
-well-scoped. Only the type is wrong. Remedy: re-word to `fix(ci)` or `perf(ci)`; no code change.
-
-**Job selection verified, so it is not re-flagged.** Every job body was parsed and cross-checked against the
-`extends:` list. Exactly seven need a daemon and exactly seven have it. `Update README:on-schedule` contains
-no literal `docker` token and trips a naive grep as a false positive — it runs `act -v` against
-`catthehacker/ubuntu:act-*` images written into `~/.actrc` (`.gitlab-ci.yml:447-463`), so it does need one and
-correctly has it. `Generate Release` runs `npx semantic-release` with every `@semantic-release/exec` block
-commented out (`.releaserc.yml:129-134`), so it needs none. No Gradle job needs one: the Docker-dependent
-grinder tests are gated behind `GRINDER_DOCKER_IT` / `GRINDER_TEMPLATE_IT`, unset in CI.
+Worth one line in the 9.x release notes so plugin authors meet it in the changelog rather than in a
+compiler error. That is the only outstanding action.
 
 ---
 
-## MEDIUM
+## Fixed
 
-### M-1 · Branch-wide — three follow-ups created, none recorded in `claude-docs/BACKLOG.md`
+### M-1 — No characterization test in any of the six commits → fixed
 
-`claude-docs/BACKLOG.md` currently reads **"## Empty — every recorded item has landed"**, and its own
-instruction is *"Add the next item under a dated section, with the reason it waited and enough context to pick
-it up cold."* This branch creates deferred work and records none of it there:
+Four of the six commits changed behaviour and none shipped a pin. Two regressions reached `develop`
+and **neither turned the suite red**; both were found by inspection.
 
-1. **Remove the diagnostic** added by `f3a60df80` (`.gitlab-ci.yml:164-174`). It is self-documented as
-   temporary — *"Remove this block once the answer is recorded"* — which is honest, but a comment in a release
-   pipeline is not a tracked item. Nothing outside this session's memory will surface it.
-2. **Decide `.dockerized`'s fate** once that diagnostic answers host-socket vs. `tcp://docker`. Until then
-   seven jobs keep launching a service that demonstrably cannot start.
-3. **Fix or accept the dind socket collision itself.** `358675fbf` surfaces it explicitly rather than working
-   around it silently — which satisfies the "surface bugs you find" rule — but its root cause is the runner's
-   volume config, outside this repo, and there is no record of that anywhere a future session would look.
+Five test commits now pin every behaviour the modscan work changed. **Each was observed red against
+the commit before its fix** — not written-then-asserted — with the observed failure text recorded in
+the commit body:
 
-The `CLAUDE.md` "Refactor state" snapshot is likewise untouched. That is defensible for a CI fix (it is not an
-architectural step, which is the condition the Definition of Done attaches) — see L-3.
+| Pin | Reverted to | Observed failure |
+|---|---|---|
+| `autoDetectedClientsideModsStayDisabledWithoutUserExclusions` | `7004f3c88^` | `…must remain disabled with no user exclusions; disabled=[]` |
+| `whitelistRescuesAutoDiscoveredClientsideMod` (was `assumeTrue`) | `7004f3c88^` | now FAILS where it previously **skipped** |
+| `quiltArmReturnsEachJarExactlyOnce` | aggregation re-keyed to `modID` | `A jar must not be both included and disabled; both=[bbbbb.jar]` |
+| `quiltModWithoutAnEnvironmentIsServerSide` | `bf226c2ac^` | `expected: <SERVER> but was: <CLIENT>` |
+| `anUnreadableJarIsServerSideAndCarriesItsFilenameAsId` | `2ec5ff202^` | `expected: <brokenmod> but was: <N/A>` |
+
+Three things the remediation established that are worth keeping:
+
+**The two defects mask each other.** `quiltArmReturnsEachJarExactlyOnce` does *not* go red against
+`7004f3c88^`; it had to be isolated by re-keying the aggregation on `modID` while leaving the
+auto-exclusion fix in place. With auto-exclusion broken, everything lands in `serverMods`, the
+disabled list is empty, and disjointness holds trivially. The second defect only becomes observable
+once the first is fixed — which is why one commit fixing both left no test able to see either.
+
+**The fixtures cannot express an absent field.** Every committed `fabric.mod.json` and
+`quilt.mod.json` declares an `environment`, so the SERVER-when-undeclared default had *no* coverage —
+which is how `bf226c2ac`'s defect got in. New cases build a real jar in a `@TempDir` from JSON written
+inline, so the descriptor under test is visible in the diff and no binary enters the repository.
+
+**A green characterization test proves nothing until you try to break it.** The new
+exact-match-not-prefix assertion on `dependencyExclusions` was confirmed by mutating the regex to
+`fabric.*` and watching `fabricDependenciesAreRecordedWithoutThePlatform` fail — `fabric-api-base`
+must survive a filter that drops `fabric`.
+
+**The commit boundary was verified, not asserted.** `b8f809ff8` was committed **red** and then checked
+out and re-run to confirm it fails there. `CLAUDE.md` records eight commits where that boundary
+collapsed; this one holds.
+
+### M-4 — Unrecognised modloader yields an empty server pack → fixed
+
+The scanner-selection `when` had no `else`, and since the rewrite the include-list is built solely
+from what a scanner returned — so a loader string matching no arm returned two empty lists: a pack
+with no mods and no warning, where the pre-rewrite code returned every jar.
+
+Reachable from an ordinary `PackConfig`, not just an embedder passing something odd:
+`PackConfig.modloader`'s setter assigns only on a match (`PackConfig.kt:328-341`), so an unrecognised
+value leaves the field at its initial `""`, and that empty string reached the `when`.
+
+Fixed in `2eafe1b34` — the `else` warns and enters every file as an unscanned SERVER mod, restoring
+the prior contract while making the situation visible. Pinned by
+`ModListCompilerTest.unrecognisedModloaderStillYieldsEveryMod`, committed red in `b8f809ff8`.
+
+**A documentation error fell out of this.** `serverpackcreator-api/CLAUDE.md` claimed unknown
+modloaders "default to **Forge**". They do not — the field keeps whatever it held, starting at `""`.
+Corrected in `1f93755d2`. The wrong claim is what made the missing `else` look unreachable.
+
+### I-6 — Dependency rescue could not fire for clientside mods → fixed
+
+Excluding a mod something else depends on produces a pack that installs and then dies on load, which
+is worse than shipping one mod too many — so a dependency has to win over a clientside verdict. The
+rescue could never do that: it additionally required the *disabled* mod to be `Sideness.SERVER`, but a
+mod auto-disabled by a scanner is `CLIENT` by construction, so the protection only ever reached mods
+the scanner had judged server-side and the user had excluded by name.
+
+Griefed dropped the clause from both the `while` guard and the `removeIf` predicate (`35c5787ad`).
+Pinned by two cases in `ModListCompilerTest`, committed red in `d8dfeb4ac`:
+
+- `aClientsideModDependedOnByAServerModIsRescued` — `servermod` (`environment: "*"`) depends on
+  `clientlib` (`environment: "client"`); `clientlib` must be kept.
+- `theDependencyRescueFollowsAChain` — `servermod → midlib → deeplib`, middle and leaf both
+  clientside. This is what the surrounding `while` exists for: rescuing one mod puts *its*
+  dependencies in play. Observed red as `expected: <[servermod.jar, midlib.jar, deeplib.jar]> but
+  was: <[servermod.jar]>`, i.e. a single-pass rescue would have kept `deeplib` excluded and still
+  looked like it worked.
+
+Termination is unchanged: each iteration whose guard holds removes at least one entry from
+`disabledMods`, and nothing is ever added back to it.
+
+### M-2 — Exported `modID` default → pinned, still undocumented
+
+`ScannedMod.modID` defaults to `file.nameWithoutExtension` for any jar the scanner cannot read. That
+value is not a mod id, and nothing in the type says so. Now pinned by
+`anUnreadableJarIsServerSideAndCarriesItsFilenameAsId`, which also pins that an unreadable jar stays
+SERVER rather than being dropped.
+
+The test now serves as the documentation. The KDoc gap itself is I-3 and remains open.
 
 ---
 
-## LOW
+## Moot
 
-### L-1 · `fd8171288` — the evidence probe takes the *first* JBR, the chmod takes all of them
+### M-3 — Fixture cannot reach the Quilt fabric-fallback branch
 
-`.gitlab-ci.yml:114`
+Superseded by **N-1**: that branch cannot fire at all any more, so the missing fixture is no longer
+the reason it is untested.
 
+---
+
+## New — found during remediation
+
+### N-1 — The Quilt copy-loop is unreachable dead code
+
+- **Commit:** `7004f3c88`
+- **File:** `ModListCompiler.kt:149-154`
+
+```kotlin
+for (fabric in fabricScan) {
+    if (quiltScan.find { quilt -> quilt.file.name == fabric.file.name } == null) {
+        log.info("Quilt-scan did not have a scan for ${fabric.file.name}, Fabric-scan did, though. Copying entry. ")
+        quiltScan.add(fabric)
+    }
+}
 ```
-java_bin="$(find "$jbr" -type f -path '*/bin/java' 2>/dev/null | head -n1 || true)"
-```
 
-`chmod -R +x "$jbr"` (`:120`) repairs every cached JBR, so the **fix** is correct regardless. The `ls -l` and
-`-version` lines, however, describe whichever copy `find` happened to return first. If a future Qodana bump
-leaves two JBR trees in the cache, the log's "before/after" evidence — the whole reason those lines exist, per
-the commit message — may describe a tree Qodana never execs, while the one it does exec goes unreported.
-Cosmetic today (one tree, verified locally: `qodana-jbrsdk-25.0.2-…`), and it degrades the diagnostic rather
-than the repair.
+Both scanners return **exactly one entry per input file** whatever the outcome — each `scan` loop's
+`catch` adds a bare `ScannedMod(modJar)` (`FabricScanner.kt:83-86`, `QuiltScanner.kt:88-91`) — and both
+are called with the same `filesInModsDir`. So every `fabric.file.name` is always present in
+`quiltScan`, the `find` never returns null, and the body never executes. Confirmed empirically: the
+log line occurs **0 times** across the fixture.
 
-### L-2 · `fd8171288` — a JBR tree with no `bin/java` skips the chmod and prints a misleading message
+This became dead when `7004f3c88` re-keyed the join from `modID` to `file.name`. Under the old key it
+*did* fire — that firing is precisely what produced the duplicate entries the commit set out to stop.
 
-`.gitlab-ci.yml:114-116`
-
-The guard keys on the *java binary*, not on the JBR *tree*. If `qodana-jbr/` is restored but incomplete — no
-`bin/java` — `java_bin` is empty, the `chmod` is skipped entirely, and the log states `**** No cached JBR in
-$jbr - Qodana will download one ****`. That claim is only true if Qodana re-downloads on a partial tree, which
-was not verified; if it instead accepts the directory as present, the original EACCES returns underneath a
-message asserting the opposite. Low likelihood, but this is precisely a cache that already loses file
-metadata, so a partial restore is not far-fetched. A tree-level guard (`[ -d "$jbr" ]`) with the binary lookup
-inside it would report honestly in both cases.
-
-### L-3 · Branch-wide — no `claude-docs/REFACTOR-LOG.md` entry
-
-`CLAUDE.md`'s Definition of Done ties both the "Refactor state" update and the `REFACTOR-LOG.md` append to
-*"when an architectural step lands."* A CI fix is not one, so this may be correctly *premature* rather than
-missing — the natural moment is when the branch's follow-ups close after the next pipeline. Recorded because
-the branch does produce durable, non-derivable knowledge that currently lives only in commit messages: that
-Qodana ≥ 2026.2 necessarily places an executable inside the GitLab-cached directory with no opt-out, and that
-the dind service in this pipeline has never worked. The first is captured well at the call site
-(`.gitlab-ci.yml:104-111`); the second is not captured anywhere durable (see M-1.3).
+Not a defect: the invariant it defends against is now guaranteed upstream, and that invariant is
+itself pinned by `everyJarYieldsExactlyOneEntryWhateverTheOutcome`. But it is unreachable code that
+reads as a live fallback, and the first loop above it already handles the only case that can occur.
+Removing it (or reducing the arm to a single merge keyed on the file) would make the Quilt arm say
+what it actually does.
 
 ---
 
-## Verified clean — recorded so the next audit does not re-derive it
+## Still open
 
-- **The fix is not inert.** `before_script` runs in `step_script`, which GitLab starts *after* `restore_cache`
-  and `download_artifacts` — confirmed against the failing log's own section markers (`restore_cache` ends
-  20:23:18, `step_script` begins 20:23:35). Had the chmod run before the restore it would have done nothing.
-- **One concern per commit, in the right order.** `fd8171288` fix → `358675fbf` service scoping →
-  `f3a60df80` diagnostic. No commit mixes them; the second and third touch disjoint regions of the file.
-- **No scope sprawl.** `358675fbf` edits eight job definitions, every one of them forced by removing the
-  top-level `services:` block. Nothing unrelated was tidied along the way.
-- **No secret exposure in the new diagnostic** (`f3a60df80`), which matters because it was inserted into the
-  one job that handles `DOCKERHUB_TOKEN` and `GITHUB_TOKEN`. It prints two named variables, an `ls -l`, and
-  `docker info --format 'Name=… ServerVersion=…'` — no `env`, no unfiltered `docker info`, no credential
-  path. Every line ends in `|| true`, so it cannot fail the job it diagnoses.
-- **The `refactor:`/behaviour rule's carve-out was considered and rejected** for H-1: the exemption covers
-  reference-only updates (moving a symbol, imports following), not the removal of a runtime component.
-- **`chmod -R +x` breadth is deliberate, not sloppy.** Measured: 6 of 133 files in the JBR carry an x bit, two
-  of them (`lib/jexec`, `lib/jspawnhelper`) outside `bin/`, which is why a `bin/`-only predicate was rejected.
-  No file anywhere else in the cache directory is executable, which is why the chmod is scoped to
-  `qodana-jbr/` rather than the whole cache.
+### L-1 — Unused import
 
-## Out of range — noted, not counted
+`ModListCompiler.kt:25` — `import de.griefed.serverpackcreator.api.config.SupportedModloaders.quilt`.
+The `when` arm still matches the string literal `"Quilt"`; `quilt` is referenced nowhere. A
+build-level unused-import gate would close the category rather than the instance — this range also
+contained a stray `import sun.util.calendar.CalendarUtils.mod`.
 
-`CLAUDE.md`'s 2026-07-31 paragraph ends *"Remaining backlog: B4, B5, B11 (deliberate) plus B21, B22"*, while
-`claude-docs/BACKLOG.md` records every item as landed. The sentence sits inside an explicitly dated paragraph,
-so it reads as a statement of that date rather than of now — not flagged as a defect. It does mean a reader
-looking for open backlog items gets contradictory answers from the two files, and the shorter fix is a
-present-tense pointer in `CLAUDE.md` to whatever `BACKLOG.md` currently says. Pre-existing on `develop`;
-outside this range.
+### L-2 — Value identity hand-rolled at six call sites
+
+`ScannedMod` declares no `equals`/`hashCode`, so `remove`/`find` match by identity and cannot see a
+sibling instance describing the same jar. Six `it.file.name == mod.file.name` comparisons work around
+this. Correct today only because `filteredWalk` is called with `recursive = false` 40 lines away.
+
+**Not to be fixed with a `data class`.** Equality by file would make two entries with conflicting
+`sideness` silently interchangeable — exactly the merge the Quilt arm performs deliberately, where
+which entry survives would then depend on insertion order. (A `data class` over `file` alone would
+*not* produce a false negative for a jar declaring two different ids, since body properties are
+excluded from the generated members — but the conflicting-verdict problem is the real one.) Extract a
+single named helper comparing `file` instead, and identity stays explicit.
+
+### L-3 — Log statement reads the value it just overwrote
+
+`ModListCompiler.kt:145-146` logs `quiltScan[i].file.name` *after* `quiltScan[i] = match`. Correct only
+by accident of the predicate directly above it guaranteeing the two names are equal. Read
+`match.file.name`, or log before assigning.
+
+### I-1…I-5, I-7, I-8 — Inherited from `0a12d41d0`
+
+Out of the audited range; untouched by the follow-ups and by the remediation branch. (I-6 is fixed —
+see above.)
+
+| # | Condition | Location |
+|---|---|---|
+| I-1 | 8 `!!` non-null assertions introduced by the rewrite | `ForgeAnnotationScanner.kt` (4), `ForgeTomlScanner.kt` (2), `FabricScanner.kt` (1), `QuiltScanner.kt` (1) |
+| I-2 | Per-scan state as mutable instance fields (`private var currentModID`) on scanners `ApiWrapper` holds as singletons, so concurrent `scan()` calls interleave | all four scanners |
+| I-3 | 7 exported declarations carry zero KDoc, including the two load-bearing defaults now pinned by tests | `modscanning/ScanResult.kt:5-23` |
+| I-4 | `var` in value types, populated by assignment after construction | `ScanResult.kt:7-8,17` |
+| I-5 | File still named `ScanResult.kt` after `ScanResult` was deleted | `modscanning/ScanResult.kt` |
+| I-7 | The four-branch `when (exclusionFilter)` is written 3 times in one function; the whitelist `while` re-evaluates a predicate `removeIf` has already exhausted | `ModListCompiler.kt:214-249` |
+| I-8 | `ReadmeExamplesTest` KDoc and test name still describe the deleted `ScanResult` contract; `README.md` untouched | `ReadmeExamplesTest.kt:36,43,118,123` |
 
 ---
 
-**Recommendation.** H-1 is a one-word commit-message change (`refactor(ci)` → `fix(ci)`) and, since nothing is
-pushed, can be amended in place. M-1 wants a dated `BACKLOG.md` section with the three follow-ups. L-1 and L-2
-are a small edit to the same guard and could ride one `fix(ci)` commit. L-3 is best left until the pipeline has
-run. Awaiting go-ahead — no source modified.
+## Rules checked and found clean
+
+- **Module boundaries.** No commit in range or in the remediation adds a Swing, Spring-web or frontend
+  dependency to `-api`. All touch `-api` only.
+- **Scope sprawl / Boy Scout.** Each follow-up touches 1–3 files, all reachable from its stated
+  concern. The remediation touches two test files, one production file (M-4) and two `CLAUDE.md`s.
+- **Commit labelling.** The four behaviour commits in range are correctly `fix:`; `d185fd74c` is
+  correctly `test:`. `0df7b2835`'s `refactor:` is imprecise but withdrawn with H-1. The remediation
+  keeps `test:`, `fix:` and `docs:` in separate commits, with the pin landing red before its fix.
+- **Scanner correctness.** All four scanners pass `ModScannerTest` and the nine new
+  `ModScannerSidenessTest` cases.
+
+---
+
+## Summary
+
+| Severity | Total | Fixed | Withdrawn | Moot | Open |
+|---|---|---|---|---|---|
+| HIGH | 1 | — | 1 | — | 0 |
+| MEDIUM | 4 | 3 | — | 1 | 0 |
+| LOW | 5 | 5 | — | — | 0 |
+| Inherited | 8 | 8 | — | — | 0 |
+
+Every finding in the audited range is closed. The behaviour the modscan work changed is now pinned by
+tests observed red against the commit before each fix, so the next regression fails the build instead
+of skipping a test and writing an INFO log.
+
+The tidy-up branch closed the rest. Worth noting from it: `ScannedMod` is now immutable and built
+through its constructor, which removed **all 8** `!!` assertions and **all 4** mutable `currentModID`
+fields — those fields were shared state on scanners `ApiWrapper` holds as singletons. The four-branch
+exclusion-filter `when`, written out three times, is now read once. And a second fabricated-reference
+problem surfaced (**N-2**): `ReadmeExamplesTest` cited seven README sections that do not exist and
+claimed the guide "teaches roughly a dozen snippets" — `README.md` carries exactly two Kotlin API
+snippets. That mattered because being the compiler-gate for the README is the file's entire
+justification.
+
+The only outstanding action is the 9.x release-note line for H-1.

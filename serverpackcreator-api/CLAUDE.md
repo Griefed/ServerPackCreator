@@ -100,8 +100,14 @@
   underneath a *live* instance (the older test built the config afterwards, so a captured value still looked right).
   The file's other 31 path properties use an equivalent field-assigning getter; either shape is fine, a bare
   initialiser is not.
-- **`PackConfig.modloader` setter silently ignores unrecognized values**; unknown loaders default
-  to **Forge**. Most-specific loader names must be matched first (LegacyFabric before Fabric, etc.).
+- **`PackConfig.modloader` setter silently ignores unrecognized values** — it does *not* fall back to
+  Forge, as this file claimed until 2026-08-14. The setter assigns only on a match (`PackConfig.kt:328-341`),
+  so an unrecognised value leaves the field at whatever it already held, which starts as `""`. A config whose
+  loader never matched therefore reaches generation with an **empty** modloader. That empty string used to
+  reach `ModListCompiler`'s scanner-selection `when`, which had no `else`, and produced a silently empty
+  server pack; the `else` now warns and includes every mod, pinned by
+  `ModListCompilerTest.unrecognisedModloaderStillYieldsEveryMod`. Most-specific loader names must still be
+  matched first (LegacyFabric before Fabric, etc.).
 - **`PackConfig.save(destination, apiProperties)`** is the primary (injection-required) overload;
   `save(destination)` is a `@Deprecated` facade resolving `ApiProperties` via the singleton — don't
   build new call-sites on the deprecated one.

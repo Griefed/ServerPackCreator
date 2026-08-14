@@ -55,7 +55,10 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 
 ## Build & test commands
 
-- `./gradlew build` — full build. The app build depends on the frontend build and license report.
+- `./gradlew build` — full build. The app build depends on the frontend build and license report, and
+  since 2026-08-14 it also **runs the frontend's Vitest suite** (`checkFrontend` → `npm run test`). Before
+  that, `checkScript` was unset, so the plugin SKIPped `checkFrontend` and a green `build` had executed
+  zero frontend tests while still compiling and bundling the SPA.
 - `./gradlew :serverpackcreator-api:test` — API suite (runs against fixture modpacks in
   `serverpackcreator-api/tests/` and `src/test/resources/testresources/`). **Offline for every Minecraft version in
   the shipped manifest snapshot**, which `ApiWrapper.setup()` seeds from the jar; a version newer than that snapshot
@@ -220,15 +223,15 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 **Goal:** KISS/MVC/TDD/SOLID across api → app → plugin-example → web-frontend.
 **Phases:** 0 baseline · 1 API · 2 app · 3 plugin-example · 4 frontend.
 
-**Current status (2026-08-02):**
+**Current status (2026-08-14):**
 
 | Module         | Tests         | Notes                                                                                |
 |----------------|---------------|--------------------------------------------------------------------------------------|
-| api            | 280 (1 skip)  | Phase 1 **complete**; + `FacadeConstantDelegationTest` (the published `modFileEndings`/`zipCheck` facades must *read* their owner, asserted on identity so a re-introduced equal-valued copy still fails); + `MinecraftMetaTest` (`requiredJavaVersion`) and `ScriptTemplateContentTest` (non-gated guard for the shipped templates; skips its `fish -n` case where fish is absent, and **executes** the bash `setupFabric` to pin the offline launcher path). |
+| api            | 295 (1 skip)  | Phase 1 **complete**; + `FacadeConstantDelegationTest` (the published `modFileEndings`/`zipCheck` facades must *read* their owner, asserted on identity so a re-introduced equal-valued copy still fails); + `MinecraftMetaTest` (`requiredJavaVersion`) and `ScriptTemplateContentTest` (non-gated guard for the shipped templates; skips its `fish -n` case where fish is absent, and **executes** the bash `setupFabric` to pin the offline launcher path); + `ModScannerSidenessTest` and the `ModListCompilerTest` additions (modscanning hardening, 2026-08-14 — see `claude-docs/REFACTOR-LOG.md`). |
 | clientside     | 87            | Extracted from `-app`; `BootVerifier` split + `packPostProcessor` hook; selection (MC-support gate) + setup-abort classification pinned |
-| app            | 76            | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay             |
+| app            | 80            | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay             |
 | plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |
-| web-frontend   | 23 (from 0)   | Phase 4a–4e done: Vitest, `$q` decoupling, **full TS migration**, component coverage  |
+| web-frontend   | 31 (from 0)   | Phase 4a–4e done: Vitest, `$q` decoupling, **full TS migration**, component coverage  |
 | grinder        | 233 (19 skip) | + `BootWorkspaceReaper` — staging reclamation; the work tree grew unbounded at ~23 GB/h (98 GB measured) before it. Core loop **e2e-verified on current MC** (26.2/Quilt boots offline on JDK 25); **continuous fire-and-forget** with a **persisted catalog crawl cursor** (each pass takes the next slice, so coverage accumulates instead of re-checking the top N) + work-driven pacing; Modrinth + CurseForge sources; **script-template matrix IT** (bash/fish/pwsh — caught + fixed a real `.fish` bug); container/loader/report/source subpackages; MC selection bounded to image-supported Java. 94 run + 8 gated (3 engine IT, 3 live-crawl IT, 2 template-matrix). Template matrix fully green: 5 MC x 5 loaders x bash/fish, bash == fish everywhere. CurseForge is crawled **in partitions** (135 Minecraft versions × modloader × category, both sort directions) to get past its 10 000-result API cap — **now live-verified with a real API key** (`CurseForgeCrawlLiveIT`), which caught two silent design-killers the docs had hidden: `totalCount` saturates at the cap (so no split could ever fire) and the version list is 98 % non-Minecraft strings |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
@@ -243,44 +246,9 @@ The GUI `GlobalScope.launch` anti-pattern (app) is **resolved** — all 26 sites
 `gui.utilities.ComponentCoroutineScope` (lifecycle-cancelled), GUI-verified. The frontend's
 settings-store `$q` coupling (4b) and `jsconfig.json`/TS gap (4c) are **resolved**.
 
-**2026-07-31 — audit + backlog cleanup (`claude-audit-backlog-cleanup`).** Three audit findings closed (the
-`variables.txt` contract row, and pin-first/`refactor:`-labelling as binding rules); one **withdrawn** as wrong on
-inspection, its inverse recorded as backlog B21. Backlog B13–B20 closed: a fresh Forge pack on Minecraft 26.x
-installed and exited **0** without launching (ServerStarterJar needs a `SecurityManager` to swallow the Forge
-installer's `System.exit`, which JEP 486 removed in Java 24 — so from 24 the templates install Forge themselves and
-launch from the installer's argfile); the "not applicable" skip that hid it now fails loudly; both boot paths share
-one suspend-aware deadline; the loader cache records which templates produced an install; test properties are
-generated rather than committed with one machine's paths; and `.gitignore` no longer hides shipped `server_files`
-resources. Remaining backlog: B4, B5, B11 (deliberate) plus B21, B22.
-
-**2026-08-02 — Qodana report audit (`claude-qodana-audit-fixes`).** 54 reported problems verified one by one:
-**15 real, 22 false positives, 14 by-design, 3 cosmetic**. Fixed: the inert `WritableDirectoryFilter` (FlatLaf's
-`SystemFileChooser.FileFilter` has no `accept` to override — see `serverpackcreator-app/CLAUDE.md`); seven orphaned
-KDoc blocks that had left `outcomeFor`, `shouldRecheckCrash` and `env` undocumented; five KDoc links resolving to
-nothing (Dokka `Couldn't resolve link` 12 → 0); four pieces of dead code; and `modFileEndings`/`zipCheck` **rewired
-rather than deprecated** to a single source of truth (see `serverpackcreator-api/CLAUDE.md`).
-**The report's own reliability was the biggest finding:** all 18 `KotlinUnreachableCode` hits — 39 % of its High
-severity — are phantom, because the pinned `qodana-jvm-community:2025.1` bundles **kotlinc 2.1.10** against this
-project's **2.3.20**. Bumped to `2026.2` (bundles 2.3.20 exactly). **Unverified locally:** Qodana OOM-killed
-(exit 137) because this machine's Docker VM is capped at 1.93 GiB — confirm the new problem count against CI.
-
-**2026-08-04 — the 2026.2 bump needed a second fix before CI could run it at all
-(`claude-ci-qodana-jbr-cache`).** The bumped job failed one second in, on `fork/exec … qodana-jbr/… /bin/java:
-permission denied`. **2026.2 runs `libs/config-loader-cli` in a separate JVM and downloads its own runtime into
-`<cache-dir>/qodana-jbr`** — a path derived from `--cache-dir`, with no flag or env var to redirect it or to reuse
-the JBR the linter image already ships at `/opt/idea/jbr` (measured against the image: `qodana scan --help` and the
-binary's whole `QODANA_*` table). So an executable necessarily lives inside the GitLab-cached directory, and **the
-cache round-trip does not preserve the executable bit** (gitlab-runner#27496/#1782). 2025.1 never hit it: no
-`config-loader-cli`, no executable in the cache. The job's `before_script` now repairs the mode and probes it.
-Two things worth keeping: exec is the *only* reliable test of that bit — a Docker Desktop bind mount reports 0755
-for a host-side 0644 file and answers `[ -x ]` with "executable" while `execve` still fails — and the probe must
-classify, because a stale JBR tree that Qodana never uses will fail `-version` for unrelated reasons and must not
-take the pipeline down. **Griefed confirmed a full green pipeline on 2026-08-04**, so the 2026.2 problem count is
-now readable off the report (still to be recorded here).
-
 **Current phase — 4 (frontend) complete; GUI structured-concurrency done.** Frontend 4a–4e: Vitest,
 settings-store `$q` decoupling, full TypeScript migration (all `src/` is TS, verified by
 `quasar build`), a Quasar component test harness (Vue Test Utils), and broadened component coverage
-(all cards + nav SFCs; suite at 23; tables left untested by design — trivial format-lambda logic vs.
+(all cards + nav SFCs; suite at 31 across 14 files; tables left untested by design — trivial format-lambda logic vs.
 brittle QTable rendering). The GUI `GlobalScope.launch` anti-pattern is resolved (see Open issues),
 GUI-verified. **Next (optional):** broaden component-test coverage further.

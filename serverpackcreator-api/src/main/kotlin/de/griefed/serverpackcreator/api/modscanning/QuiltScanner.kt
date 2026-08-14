@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
-import java.util.*
 
 /**
  * `quilt.mod.json`-based scanning of Fabric-Minecraft mods.
@@ -37,7 +36,7 @@ import java.util.*
 class QuiltScanner(
     private val objectMapper: ObjectMapper,
     private val utilities: Utilities
-) : JsonBasedScanner(), Scanner<ScanResult, Collection<File>> {
+) : JsonBasedScanner(), Scanner<List<ScannedMod>, Collection<File>> {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val quiltModJson = "quilt.mod.json"
     private val quiltLoader = "quilt_loader"
@@ -46,7 +45,6 @@ class QuiltScanner(
     private val minecraft = "minecraft"
     private val environment = "environment"
     private val depends = "depends"
-    private val jar = "jar"
 
     /** Dependency ids that are the platform rather than a mod, so they never pull a jar into the keep-list. */
     val dependencyExclusions: Regex
@@ -62,138 +60,73 @@ class QuiltScanner(
      * @return List of mods not to include in server pack based on fabric.mod.json-content.
      * @author Griefed
      */
-    override fun scan(jarFiles: Collection<File>): ScanResult {
+    override fun scan(jarFiles: Collection<File>): List<ScannedMod> {
         log.info("Scanning Quilt mods for sideness...")
-        val modDependencies = ArrayList<Pair<String, Pair<File, String>>>()
-        val clientMods = TreeSet<String>()
 
-        /*
-        * Go through all mods in our list and acquire a list of clientside-only mods as well as any
-        * dependencies of the mods.
-        */
-        checkForClientModsAndDeps(jarFiles, clientMods, modDependencies)
+        val scannedMods = mutableListOf<ScannedMod>()
 
-        //Remove any dependency from our list of clientside-only mods, so we do not exclude any dependency.
-        cleanupClientMods(modDependencies, clientMods)
+        for (modJar in jarFiles) {
+            try {
+                val modConfig: JsonNode = getJarJson(modJar, quiltModJson, objectMapper)
+                val modId = utilities.jsonUtilities.getNestedText(modConfig, quiltLoader, id)
+                val (sidenesses, dependencies) = getSidenessesAndDependencies(modConfig, modId)
 
-        /*
-        * After removing dependencies from the list of potential clientside mods, we can check whether
-        * any of the remaining clientmods is available in our list of files. The resulting set is the
-        * set of mods we can safely exclude from our server pack.
-        */
-        return ScanResult(
-            getModsDelta(jarFiles, clientMods),
-            modDependencies.map { entry -> Dependency(entry.first, entry.second.first, entry.second.second)}
-        )
+                scannedMods.add(ScannedMod(modJar, modId, sidenessOf(sidenesses), dependencies))
+            } catch (e: Exception) {
+                log.error("Could not scan ${modJar.name}. Consider reporting this: ${e.cause}: ${e.message}")
+                scannedMods.add(ScannedMod(modJar))
+            }
+        }
+
+        return scannedMods
     }
 
-    override fun checkForClientModsAndDeps(
-        filesInModsDir: Collection<File>,
-        clientMods: TreeSet<String>,
-        modDependencies: ArrayList<Pair<String, Pair<File, String>>>
-    ) {
-        for (mod in filesInModsDir) {
-            if (!mod.name.endsWith(jar)) {
-                continue
+    private fun getSidenessesAndDependencies(modConfig: JsonNode, modId: String): Pair<List<Sideness>, List<ModDependency>> {
+        val sidesForModloader = mutableListOf<Sideness>()
+        val modDependencies = mutableListOf<ModDependency>()
+
+        try {
+            if (utilities.jsonUtilities.nestedTextEqualsIgnoreCase(modConfig, client, minecraft,  environment)) {
+                sidesForModloader.add(Sideness.CLIENT)
+            } else {
+                sidesForModloader.add(Sideness.SERVER)
             }
+        } catch (_: NullPointerException) {
+            // No "environment" entry in this fabric.mod.json -> the mod is not declared client-only.
+            sidesForModloader.add(Sideness.SERVER)
+        }
 
-            var modId: String
-            try {
-                val modJson: JsonNode = getJarJson(mod, quiltModJson, objectMapper)
-                modId = utilities.jsonUtilities.getNestedText(modJson, quiltLoader, id)
-
-                // Get this mods' id/name
-                try {
-                    if (utilities.jsonUtilities.nestedTextEqualsIgnoreCase(modJson, client, minecraft, environment)) {
-                        clientMods.add(modId)
-                        log.debug("Added clientMod: $modId")
-                    }
-                } catch (ignored: NullPointerException) {
-                    // No "minecraft/environment" entry in this quilt.mod.json -> the mod is not
-                    // declared client-only, so there is nothing to add to the client-mods list.
-                }
-
-                // Get this mods dependencies
-                try {
-                    val dependencies = utilities.jsonUtilities.getNestedElement(modJson, quiltLoader, depends)
-                    for (dependency in dependencies) {
-                        if (dependency.isContainerNode) {
-                            try {
-                                val dependencyId = utilities.jsonUtilities.getNestedText(dependency, id)
-                                if (!dependencyId.matches(dependencyExclusions) && modDependencies.add(Pair(dependencyId, Pair(mod, modId)))) {
-                                    log.debug("Added dependency $dependencyId for $modId (${mod.name}).")
-                                }
-                            } catch (ex: NullPointerException) {
-                                log.debug("No dependencies for $modId (${mod.name}).")
-                            }
-                        } else {
-                            try {
-                                val dependencyText = dependency.asText()
-                                if (!dependencyText.matches(dependencyExclusions) && modDependencies.add(Pair(dependencyText, Pair(mod, modId)))) {
-                                    log.debug("Added dependency ${dependency.asText()} for $modId (${mod.name}).")
-                                }
-                            } catch (ex: NullPointerException) {
-                                log.debug("No dependencies for $modId (${mod.name}).")
-                            }
+        // Get this mods dependencies
+        try {
+            val dependencies = utilities.jsonUtilities.getNestedElement(modConfig, quiltLoader, depends)
+            for (dependency in dependencies) {
+                if (dependency.isContainerNode) {
+                    try {
+                        val dependencyId = utilities.jsonUtilities.getNestedText(dependency, id)
+                        if (!dependencyId.matches(dependencyExclusions)) {
+                            log.debug("Added dependency $dependencyId for $modId.")
+                            modDependencies.add(ModDependency(dependencyId))
                         }
+                    } catch (_: NullPointerException) {
+                        log.debug("No dependencies for $modId.")
                     }
-                } catch (ignored: NullPointerException) {
-                    // No "quilt_loader/depends" block in this quilt.mod.json -> the mod declares no
-                    // dependencies, so there is nothing to record.
-                }
-            } catch (ex: NullPointerException) {
-                log.warn("Couldn't scan $mod as it contains no quilt.mod.json.")
-            } catch (ex: Exception) {
-                log.error("Couldn't scan $mod", ex)
-            }
-        }
-    }
-
-    override fun getModsDelta(filesInModsDir: Collection<File>, clientMods: TreeSet<String>): List<Exclusion> {
-        val modsDelta = TreeSet<File>()
-        val exclusions = ArrayList<Exclusion>()
-        // After removing dependencies from the list of potential clientside mods, we can remove any mod
-        // that says it is clientside-only.
-        for (mod in filesInModsDir) {
-            var modIdToCheck: String
-            var addToDelta = false
-            try {
-                val modJson: JsonNode = getJarJson(mod, quiltModJson, objectMapper)
-
-                // Get the modId
-                modIdToCheck = utilities.jsonUtilities.getNestedText(modJson, quiltLoader, id)
-                try {
-                    if (utilities.jsonUtilities.nestedTextEqualsIgnoreCase(
-                            modJson,
-                            client,
-                            minecraft,
-                            environment
-                        ) && clientMods.contains(modIdToCheck)
-                    ) {
-                        addToDelta = true
+                } else {
+                    try {
+                        val dependencyText = dependency.asText()
+                        if (!dependencyText.matches(dependencyExclusions)) {
+                            log.debug("Added dependency $dependencyText for $modId.")
+                            modDependencies.add(ModDependency(dependencyText))
+                        }
+                    } catch (_: NullPointerException) {
+                        log.debug("No dependencies for $modId.")
                     }
-                } catch (ignored: NullPointerException) {
-                    // No "minecraft/environment" entry -> the mod can't be a client-only mod, so it
-                    // is left out of the delta (addToDelta stays false).
                 }
-                if (addToDelta) {
-                    modsDelta.add(mod)
-                }
-            } catch (ignored: Exception) {
-                // A mod without a readable quilt.mod.json (missing file, malformed JSON, absent
-                // modId) can't be matched against the client-mods list, so it is left out of the
-                // delta rather than aborting the scan of the remaining mods.
             }
+        } catch (_: NullPointerException) {
+            // No "depends" block in this fabric.mod.json -> the mod declares no
+            // dependencies, so there is nothing to record.
         }
-        for (mod in modsDelta) {
-            var modID: String
-            val modJson: JsonNode = getJarJson(mod, quiltModJson, objectMapper)
 
-            // Get the modId
-            modID = utilities.jsonUtilities.getNestedText(modJson, quiltLoader, id)
-
-            exclusions.add(Exclusion(modID, mod))
-        }
-        return exclusions
+        return Pair(sidesForModloader, modDependencies)
     }
 }

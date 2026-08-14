@@ -20,24 +20,44 @@
 package de.griefed.serverpackcreator.clientside
 
 /**
- * Platform-declared support-level of a mod for a given side (client or server). Mirrors Modrinth's
- * `client_side`/`server_side` values; CurseForge exposes no such field and therefore always reports
- * [UNKNOWN].
+ * How strongly a hosting platform says a mod supports **one** side. Mirrors Modrinth's
+ * `client_side`/`server_side` values verbatim; CurseForge exposes no such field and therefore always
+ * reports [UNKNOWN].
+ *
+ * Read as a pair — a project carries one of these for the client and another for the server
+ * ([Project.clientSide] / [Project.serverSide]) — so a single value answers "how much does it want
+ * *this* side", never "which side does it belong on".
+ *
+ * **Not to be merged with `api.modscanning.Sideness`, despite the name this type used to carry.**
+ * That enum is SPC's own *verdict* (`SERVER`/`CLIENT`, one value = the whole answer, defaulting to
+ * `SERVER` so nothing is dropped). This one is a third party's *self-report* about one side, and the
+ * confidence model is built on keeping the two apart: `ClientsideVerifier.aggregate` folds this,
+ * `JarScan` (where SPC's own verdict arrives) and `BootResult` into a [Confidence] precisely because
+ * the platform's claim is unreliable — which is the entire reason the expensive boot-test exists.
+ * The translation between the two domains is deliberate and lives at that call-site, taking *two* of
+ * these values to derive one client/server leaning.
  *
  * @author Griefed
  */
-enum class Sideness {
+enum class DeclaredSupport {
+    /** The mod needs this side to run. */
     REQUIRED,
+
+    /** The mod runs with or without this side. */
     OPTIONAL,
+
+    /** The mod does not work on this side — the one value that leans clientside when read of the server. */
     UNSUPPORTED,
+
+    /** The platform said nothing. Always the case on CurseForge, which has no such field. */
     UNKNOWN;
 
     companion object {
         /**
-         * Parse a platform-provided sideness-string into a [Sideness], defaulting to [UNKNOWN] for
+         * Parse a platform-provided support-string into a [DeclaredSupport], defaulting to [UNKNOWN] for
          * anything unrecognized or absent so callers never have to null-check.
          */
-        fun fromString(value: String?): Sideness = when (value?.lowercase()) {
+        fun fromString(value: String?): DeclaredSupport = when (value?.lowercase()) {
             "required" -> REQUIRED
             "optional" -> OPTIONAL
             "unsupported" -> UNSUPPORTED
@@ -82,8 +102,8 @@ data class ModFile(
  * @param platform    Human-readable platform name ("Modrinth" or "CurseForge").
  * @param slug        The project-slug taken from the issue-link.
  * @param projectUrl  The original project-link from the issue.
- * @param clientSide  Platform-declared client support; [Sideness.UNKNOWN] for CurseForge.
- * @param serverSide  Platform-declared server support; [Sideness.UNKNOWN] for CurseForge.
+ * @param clientSide  Platform-declared client support; [DeclaredSupport.UNKNOWN] for CurseForge.
+ * @param serverSide  Platform-declared server support; [DeclaredSupport.UNKNOWN] for CurseForge.
  * @param files       Every published file of the project.
  * @author Griefed
  */
@@ -91,8 +111,8 @@ data class ProjectFiles(
     val platform: String,
     val slug: String,
     val projectUrl: String,
-    val clientSide: Sideness,
-    val serverSide: Sideness,
+    val clientSide: DeclaredSupport,
+    val serverSide: DeclaredSupport,
     val files: List<ModFile>
 ) {
     /** All distinct canonical loader-names this project ships for. */

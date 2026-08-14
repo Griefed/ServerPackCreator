@@ -78,8 +78,8 @@ internal class CurseForgePlatformTest {
         val project = platform.resolve("https://www.curseforge.com/minecraft/mc-mods/jei/files/all")
 
         Assertions.assertEquals("CurseForge", project.platform)
-        Assertions.assertEquals(Sideness.UNKNOWN, project.clientSide)
-        Assertions.assertEquals(Sideness.UNKNOWN, project.serverSide)
+        Assertions.assertEquals(DeclaredSupport.UNKNOWN, project.clientSide)
+        Assertions.assertEquals(DeclaredSupport.UNKNOWN, project.serverSide)
         Assertions.assertEquals(setOf("Fabric", "Forge"), project.loaders)
 
         val forgeFile = project.files.first { "Forge" in it.loaders }
