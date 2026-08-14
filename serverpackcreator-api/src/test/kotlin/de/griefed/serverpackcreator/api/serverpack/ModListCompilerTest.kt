@@ -91,12 +91,27 @@ internal class ModListCompilerTest {
         vararg dependencies: String
     ): File {
         val depends = dependencies.joinToString(",") { """"$it":"*"""" }
-        val descriptor = """{"schemaVersion":1,"id":"$modId","version":"1.0.0",""" +
-                """"environment":"$environment","depends":{$depends}}"""
+        return jarContaining(
+            modsDir, jarName, "fabric.mod.json",
+            """{"schemaVersion":1,"id":"$modId","version":"1.0.0",""" +
+                    """"environment":"$environment","depends":{$depends}}"""
+        )
+    }
+
+    /** The Quilt counterpart of [fabricJar]: a real jar holding a single `quilt.mod.json`. */
+    private fun quiltJar(modsDir: File, jarName: String, modId: String, environment: String): File =
+        jarContaining(
+            modsDir, jarName, "quilt.mod.json",
+            """{"schema_version":1,"quilt_loader":{"id":"$modId","version":"1.0.0"},""" +
+                    """"minecraft":{"environment":"$environment"}}"""
+        )
+
+    /** Writes a real (openable) jar into [modsDir] holding exactly [entryPath] with [content]. */
+    private fun jarContaining(modsDir: File, jarName: String, entryPath: String, content: String): File {
         val jar = File(modsDir, jarName)
         ZipOutputStream(jar.outputStream()).use { zip ->
-            zip.putNextEntry(ZipEntry("fabric.mod.json"))
-            zip.write(descriptor.toByteArray())
+            zip.putNextEntry(ZipEntry(entryPath))
+            zip.write(content.toByteArray())
             zip.closeEntry()
         }
         return jar
@@ -405,6 +420,37 @@ internal class ModListCompilerTest {
         Assertions.assertTrue(
             disabled.isEmpty(),
             "The rescued dependency must not also be reported as disabled; got ${disabled.map { it.name }}"
+        )
+    }
+
+    /**
+     * The majority of a real Quilt pack is Fabric mods carrying no `quilt.mod.json`, and the
+     * committed `quilt_tests` fixture contains no such jar. This covers it: a fabric-only mod must
+     * get the verdict from the Fabric scan — the Quilt scan cannot read it and falls back to SERVER —
+     * and must still appear exactly once.
+     *
+     * Guards the removal of the copy-loop that used to sit at the end of the Quilt arm. That loop
+     * cannot fire (both scanners return one entry per input file, so the lookup always matches), and
+     * the case it looks like it handles is this one, which the sideness-merge above it covers.
+     */
+    @Test
+    fun theQuiltArmTakesTheFabricVerdictForAFabricOnlyJar(@TempDir tempDir: File) {
+        apiProperties.isAutoExcludingModsEnabled = true
+        val modsDir = File(tempDir, "mods").apply { mkdirs() }
+        quiltJar(modsDir, "quiltmod.jar", "quiltmod", "*")
+        fabricJar(modsDir, "fabriconly.jar", "fabriconly", "client")
+
+        val (included, disabled) = modListCompiler.compileModList(
+            modsDir.absolutePath, emptyList(), emptyList(), "1.20.1", "Quilt"
+        )
+
+        Assertions.assertEquals(
+            listOf("fabriconly.jar"), disabled.map { mod -> mod.name },
+            "A fabric-only clientside mod must be disabled on the Quilt arm"
+        )
+        Assertions.assertEquals(
+            listOf("quiltmod.jar"), included.map { mod -> mod.name },
+            "The quilt-only server mod must be kept"
         )
     }
 
