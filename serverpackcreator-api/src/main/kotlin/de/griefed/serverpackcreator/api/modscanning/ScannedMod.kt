@@ -2,10 +2,37 @@ package de.griefed.serverpackcreator.api.modscanning
 
 import java.io.File
 
+/**
+ * What one scanner made of one mod jar: which side it belongs on, and what it declared it needs.
+ *
+ * A scanner returns one of these per jar it was handed, whatever the outcome — a jar it could not open, or
+ * one carrying no descriptor it understands, comes back with the defaults rather than being dropped. The
+ * include-list is built solely from what the scanners return, so an omission here is a mod missing from the
+ * finished server pack.
+ *
+ * There is deliberately no `equals`/`hashCode`. Scanning a directory with two scanners yields two instances
+ * for one jar which may disagree on [sideness], and value-equality would let a `Set` or `distinct()` keep
+ * whichever landed first and silently drop the other verdict. Merging those verdicts is a decision the caller
+ * makes explicitly; compare on [file] when identifying the same jar across two scans.
+ */
 class ScannedMod(
+    /** The jar this was read from. The only identity that holds across two scans of the same directory. */
     val file: File,
+    /**
+     * The id the mod declares, or the filename when none could be read.
+     *
+     * The fallback is **not** a real mod id, and anything joining on this field should expect that: an
+     * unreadable jar will not match a dependency naming the mod it actually contains. It is a filename rather
+     * than a shared placeholder so that two unreadable jars do not compare equal to each other.
+     */
     val modID: String = file.nameWithoutExtension,
+    /**
+     * Which side this mod belongs on. Defaults to [Sideness.SERVER] so a jar nothing could be determined
+     * about is kept: dropping a mod that does belong on the server breaks the pack, while keeping a
+     * superfluous one costs a few megabytes.
+     */
     val sideness: Sideness = Sideness.SERVER,
+    /** The non-platform mods this one declared it needs. The loader, Java and Minecraft are not recorded. */
     val dependencies: List<ModDependency> = emptyList()
 ) {
     override fun toString(): String {
@@ -13,14 +40,32 @@ class ScannedMod(
     }
 }
 
-class ModDependency(val modID: String, val sideness: Sideness = Sideness.SERVER) {
+/**
+ * A mod named as a dependency by another, and the side that dependency is needed on.
+ *
+ * Only the id is known — the declaring descriptor names a mod, not a file — so matching this back to a jar
+ * happens against [ScannedMod.modID].
+ */
+class ModDependency(
+    /** Id of the mod being depended on, as the declaring descriptor spells it. */
+    val modID: String,
+    /**
+     * The side this dependency is needed on. Defaults to [Sideness.SERVER]: only Forge-style descriptors
+     * state a side per dependency, so for the others every recorded dependency is one the server may need.
+     */
+    val sideness: Sideness = Sideness.SERVER
+) {
     override fun toString(): String {
         return "ModDependency(modID='$modID', sideness=$sideness)"
     }
 }
 
+/** Which side of a Minecraft install a mod belongs on. */
 enum class Sideness {
+    /** Belongs in the server pack — including "both sides", and everything undetermined. */
     SERVER,
+
+    /** Client-only, and therefore excludable from the server pack. */
     CLIENT
 }
 
