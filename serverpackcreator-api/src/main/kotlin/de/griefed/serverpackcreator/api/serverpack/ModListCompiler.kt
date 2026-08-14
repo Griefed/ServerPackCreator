@@ -262,19 +262,18 @@ class ModListCompiler(
             }
         }
 
-        while (disabledMods.any { disabledMod ->
-                serverMods.find { serverMod -> serverMod.dependencies
-                    .filter { dependency -> dependency.sideness == Sideness.SERVER }
-                    .map { dep -> dep.modID }.contains(disabledMod.modID)
-                        && disabledMod.sideness == Sideness.SERVER
-                } != null}) {
+        while (disabledMods.any { disabledMod ->                                    // Rip and tear until it is done.
+                serverMods.find { serverMod ->                                      // There mustn't be a single dependency
+                    serverMod.dependencies.filter { dependency ->                   // of a server mod left in the list of
+                        dependency.sideness == Sideness.SERVER }.map { dep ->       // disabled mods.
+                            dep.modID }.contains(disabledMod.modID)} != null}) {
 
             disabledMods.removeIf { disabledMod ->
-                val match = serverMods.find { serverMod -> serverMod.dependencies
-                    .filter { dependency -> dependency.sideness == Sideness.SERVER }
-                    .map { dep -> dep.modID }.contains(disabledMod.modID)
-                        && disabledMod.sideness == Sideness.SERVER
-                }
+                val match = serverMods.find { serverMod ->
+                    serverMod.dependencies.filter { dependency ->
+                        dependency.sideness == Sideness.SERVER }.map { dep ->
+                            dep.modID }.contains(disabledMod.modID)}
+
                 return@removeIf if (match != null) {
                     log.info("Disabled mod ${disabledMod.file.name} is a dependency for ${match.file.name}. Not disabling.")
                     serverMods.add(disabledMod)
