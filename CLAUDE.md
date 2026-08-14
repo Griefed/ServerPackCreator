@@ -55,7 +55,10 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 
 ## Build & test commands
 
-- `./gradlew build` — full build. The app build depends on the frontend build and license report.
+- `./gradlew build` — full build. The app build depends on the frontend build and license report, and
+  since 2026-08-14 it also **runs the frontend's Vitest suite** (`checkFrontend` → `npm run test`). Before
+  that, `checkScript` was unset, so the plugin SKIPped `checkFrontend` and a green `build` had executed
+  zero frontend tests while still compiling and bundling the SPA.
 - `./gradlew :serverpackcreator-api:test` — API suite (runs against fixture modpacks in
   `serverpackcreator-api/tests/` and `src/test/resources/testresources/`). **Offline for every Minecraft version in
   the shipped manifest snapshot**, which `ApiWrapper.setup()` seeds from the jar; a version newer than that snapshot

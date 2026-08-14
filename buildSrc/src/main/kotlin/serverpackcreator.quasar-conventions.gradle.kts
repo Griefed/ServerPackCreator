@@ -16,6 +16,11 @@ frontend {
 
     assembleScript.set("run build")
 
+    // Without this the plugin SKIPs checkFrontend entirely, so `./gradlew build` compiled and bundled the
+    // SPA while never running its test suite — green builds that had not executed a single frontend test.
+    // Maps to `npm run test` -> `vitest run` (package.json).
+    checkScript.set("run test")
+
     // Print the architecture we are running on.
     println(String.format("I am running on: %s", System.getProperty("os.arch")))
 
