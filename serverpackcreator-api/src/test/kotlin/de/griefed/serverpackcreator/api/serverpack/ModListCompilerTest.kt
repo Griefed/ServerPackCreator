@@ -27,6 +27,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 /**
  * Direct unit tests for [ModListCompiler]. The class is the most branch-dense, least-covered unit
@@ -75,6 +77,29 @@ internal class ModListCompilerTest {
             File(modsDir, name).writeText("dummy")
         }
         return modsDir
+    }
+
+    /**
+     * Writes a real (openable) jar holding a single `fabric.mod.json` into [modsDir], so the scanner
+     * has something to read. [dependencies] become the descriptor's `depends` block.
+     */
+    private fun fabricJar(
+        modsDir: File,
+        jarName: String,
+        modId: String,
+        environment: String,
+        vararg dependencies: String
+    ): File {
+        val depends = dependencies.joinToString(",") { """"$it":"*"""" }
+        val descriptor = """{"schemaVersion":1,"id":"$modId","version":"1.0.0",""" +
+                """"environment":"$environment","depends":{$depends}}"""
+        val jar = File(modsDir, jarName)
+        ZipOutputStream(jar.outputStream()).use { zip ->
+            zip.putNextEntry(ZipEntry("fabric.mod.json"))
+            zip.write(descriptor.toByteArray())
+            zip.closeEntry()
+        }
+        return jar
     }
 
     /**
@@ -350,5 +375,60 @@ internal class ModListCompilerTest {
             disabled.isEmpty(),
             "Nothing can be judged clientside without a scanner; got ${disabled.map { it.name }}"
         )
+    }
+
+    /**
+     * A mod the scanner judged clientside must be rescued when something kept on the server depends
+     * on it. Excluding a dependency produces a pack that installs and then dies on load, which is
+     * worse than shipping one mod too many — so a dependency wins over a clientside verdict.
+     *
+     * This could not fire until now: the rescue additionally required the *disabled* mod to be
+     * `Sideness.SERVER`, but a mod auto-disabled by a scanner is `CLIENT` by construction, so the
+     * protection never reached the population it was written for. Removing that clause is what this
+     * pins.
+     */
+    @Test
+    fun aClientsideModDependedOnByAServerModIsRescued(@TempDir tempDir: File) {
+        apiProperties.isAutoExcludingModsEnabled = true
+        val modsDir = File(tempDir, "mods").apply { mkdirs() }
+        fabricJar(modsDir, "servermod.jar", "servermod", "*", "clientlib")
+        fabricJar(modsDir, "clientlib.jar", "clientlib", "client")
+
+        val (included, disabled) = modListCompiler.compileModList(
+            modsDir.absolutePath, emptyList(), emptyList(), "1.20.1", "Fabric"
+        )
+
+        Assertions.assertTrue(
+            included.map { mod -> mod.name }.contains("clientlib.jar"),
+            "A clientside mod that a server mod depends on must be kept; included=${included.map { it.name }}"
+        )
+        Assertions.assertTrue(
+            disabled.isEmpty(),
+            "The rescued dependency must not also be reported as disabled; got ${disabled.map { it.name }}"
+        )
+    }
+
+    /**
+     * The rescue is transitive, which is what the surrounding `while` loop exists for: rescuing one
+     * mod puts its own dependencies in play, and those may themselves sit in the disabled list. A
+     * single pass would keep `deeplib` excluded and still look like it had done its job.
+     */
+    @Test
+    fun theDependencyRescueFollowsAChain(@TempDir tempDir: File) {
+        apiProperties.isAutoExcludingModsEnabled = true
+        val modsDir = File(tempDir, "mods").apply { mkdirs() }
+        fabricJar(modsDir, "servermod.jar", "servermod", "*", "midlib")
+        fabricJar(modsDir, "midlib.jar", "midlib", "client", "deeplib")
+        fabricJar(modsDir, "deeplib.jar", "deeplib", "client")
+
+        val (included, disabled) = modListCompiler.compileModList(
+            modsDir.absolutePath, emptyList(), emptyList(), "1.20.1", "Fabric"
+        )
+
+        Assertions.assertEquals(
+            setOf("servermod.jar", "midlib.jar", "deeplib.jar"), included.map { mod -> mod.name }.toSet(),
+            "The whole dependency chain must be rescued, not just its first link"
+        )
+        Assertions.assertTrue(disabled.isEmpty(), "Nothing in the chain may stay disabled; got ${disabled.map { it.name }}")
     }
 }
