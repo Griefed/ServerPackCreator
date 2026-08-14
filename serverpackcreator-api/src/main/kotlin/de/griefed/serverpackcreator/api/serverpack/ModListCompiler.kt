@@ -141,8 +141,8 @@ class ModListCompiler(
                     val match = fabricScan.find { fabric -> fabric.file.name == quiltScan[i].file.name }
                     if (match == null) { continue }
                     if (quiltScan[i].sideness == Sideness.SERVER && match.sideness == Sideness.CLIENT) {
+                        log.info("${match.file.name} Quilt-scan yielded sideness SERVER, but Fabric-scan yielded CLIENT. Using Fabric-scan result instead.")
                         quiltScan[i] = match
-                        log.info("${quiltScan[i].file.name} Quilt-scan yielded sideness SERVER, but Fabric-scan yielded CLIENT. Using Fabric-scan result instead.")
                     }
                 }
                 for (fabric in fabricScan) {
