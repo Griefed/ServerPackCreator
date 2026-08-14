@@ -28,29 +28,33 @@ import java.io.File
 import kotlin.collections.filter
 
 /**
- * Keeps [README.md](../../../../../../../README.md)'s code examples honest.
+ * Keeps [README.md](../../../../../../../README.md)'s code examples honest, and pins the shape of the
+ * neighbouring API surface an embedder reaches for next.
  *
- * The guide teaches roughly a dozen snippets. Prose cannot be compiled, so the same calls live here and the
- * **Kotlin compiler is the gate**: rename a member, change a return type or a parameter list, and this file
- * stops building — which is exactly what did *not* happen when `ModScanner.scan` began returning a
- * `ScanResult` instead of a file list, leaving the README teaching code that could never compile.
+ * Prose cannot be compiled, so the README's calls live here too and the **Kotlin compiler is the gate**:
+ * rename a member, change a return type or a parameter list, and this file stops building — which is exactly
+ * what did *not* happen when `ModScanner.scan` began returning a scan result instead of a file list, leaving
+ * the README teaching code that could never compile.
  *
- * Two deliberate design points:
+ * Three deliberate design points:
  *  - The expensive, side-effecting snippets (`ApiWrapper.api()`, `serverPackHandler.run`) sit in functions
  *    that are **never invoked**. Compiling them is the whole point; running them would boot the API, write
  *    to the home directory and generate a pack, which is not this test's job.
- *  - Everything cheap and side-effect-free is additionally *executed* below, so the shapes the README
- *    describes (a `ScanResult` with two lists, an `Optional` required-Java) are checked, not just typed.
- *
- * When you change the README's Kotlin, change it here too — and vice versa.
+ *  - Everything cheap and side-effect-free is additionally *executed* below, so the shapes are checked, not
+ *    just typed.
+ *  - The README currently carries only two Kotlin snippets, both under *§6 API → Example*: initialising
+ *    `ApiWrapper`, and check-then-generate. The mod-scanning and version-metadata cases below are **not** in
+ *    the README; they guard the adjacent surface those snippets lead an embedder into, and are marked as such
+ *    rather than pretending to mirror a section. If the README grows a snippet, add it here too.
  */
 internal class ReadmeExamplesTest {
 
     private val api = ApiWrapper.api(File("build/resources/test/serverpackcreator.properties"))
 
     /**
-     * README §2 *Quickstart* — compile-only: it would create a home directory and generate a server pack.
-     * Mirrors the snippet call-for-call so a signature change breaks the build.
+     * README *§6 API → Example* — compile-only: it would create a home directory and generate a server pack.
+     * Follows the README's check-then-generate snippet, with the config built inline rather than read from a
+     * file, so a signature change on any call it makes breaks the build.
      */
     @Suppress("unused")
     private fun quickstartCompiles() {
@@ -79,7 +83,10 @@ internal class ReadmeExamplesTest {
         }
     }
 
-    /** README §3 *Composition root* + §9 *Settings* — compile-only: `api()` would initialise the API. */
+    /**
+     * The `ApiWrapper.api(...)` overloads — the README's first snippet — plus the settings an embedder reads
+     * next, which the README does not show. Compile-only: `api()` would initialise the API.
+     */
     @Suppress("unused")
     private fun apiWrapperAndSettingsCompile() {
         ApiWrapper.api()
@@ -96,7 +103,10 @@ internal class ReadmeExamplesTest {
         props.defaultStartScriptTemplates()
     }
 
-    /** README §4 *PackConfig* + §5 *Validating* — compile-only: it reads and writes config files. */
+    /**
+     * `PackConfig` construction, saving and validation. Not a README snippet; it guards the surface the
+     * README's example depends on. Compile-only: it reads and writes config files.
+     */
     @Suppress("unused")
     private fun packConfigAndValidationCompile() {
         val config = PackConfig(File("serverpackcreator.conf"))
@@ -114,26 +124,28 @@ internal class ReadmeExamplesTest {
     }
 
     /**
-     * README §8 *Scanning mods* — executed, because it is cheap and needs no network. Pins the shape the
-     * README documents: `scan` takes a `Collection<File>` and returns a `ScanResult` carrying `exclusions`
-     * and `dependencies`. An empty input is enough to hold the contract; the scanners themselves are covered
-     * by `ModScannerTest`.
+     * Mod scanning — not a README snippet; this guards the exported shape of `scan`, which an embedder
+     * reaches for straight after the README's two examples. Executed, because it is cheap and needs no
+     * network: `scan` takes a `Collection<File>` and returns one [ScannedMod] per input, each carrying a
+     * [Sideness] and its dependencies. An empty input is enough to hold the contract; the scanners
+     * themselves are covered by `ModScannerTest` and `ModScannerSidenessTest`.
      */
     @Test
-    fun scanReturnsAScanResultWithExclusionsAndDependencies() {
+    fun scanReturnsScannedModsCarryingSidenessAndDependencies() {
         val result = api.modScanner.fabricScanner.scan(emptyList())
 
         Assertions.assertTrue(result.none { it.sideness == Sideness.CLIENT }, "nothing to exclude from an empty scan")
         Assertions.assertTrue(result.map { it.dependencies }.flatten().isEmpty(), "nothing depends on anything in an empty scan")
 
-        // The README's usage — kept compiling *and* running.
+        // Typical embedder usage — kept compiling *and* running.
         result.filter { it.sideness == Sideness.CLIENT }.forEach { println("${it.modID} -> ${it.file.name}") }
         result.map { it.dependencies }.flatten().forEach { println("needed: ${it.modID}") }
     }
 
     /**
-     * README §7 *Version metadata* — executed against the cached manifests, so it is offline. Pins the
-     * accessor names and, for Fabric/Quilt/LegacyFabric, the point the README makes: `latestLoader()` always
+     * Version metadata — not a README snippet either; same rationale as the scanning case above.
+     * Executed against the cached manifests, so it is offline. Pins the
+     * accessor names and, for Fabric/Quilt/LegacyFabric, that `latestLoader()` always
      * answers, so support is a *separate* question.
      */
     @Test
