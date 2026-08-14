@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.api.serverpack
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.config.ExclusionFilter
 import de.griefed.serverpackcreator.api.config.PackConfig
+import de.griefed.serverpackcreator.api.config.SupportedModloaders.quilt
 import de.griefed.serverpackcreator.api.modscanning.ModScanner
 import de.griefed.serverpackcreator.api.modscanning.ScannedMod
 import de.griefed.serverpackcreator.api.modscanning.Sideness
@@ -135,8 +136,23 @@ class ModListCompiler(
             }
 
             "Quilt" -> {
-                scannedMods.addAll(modScanner.fabricScanner.scan(filesInModsDir))
-                scannedMods.addAll(modScanner.quiltScanner.scan(filesInModsDir))
+                val quiltScan = modScanner.quiltScanner.scan(filesInModsDir).toMutableList()
+                val fabricScan = modScanner.fabricScanner.scan(filesInModsDir)
+                for (i in quiltScan.indices) {
+                    val match = fabricScan.find { fabric -> fabric.modID == quiltScan[i].modID }
+                    if (match == null) { continue }
+                    if (quiltScan[i].sideness == Sideness.SERVER && match.sideness == Sideness.CLIENT) {
+                        quiltScan[i] = match
+                        log.info("${quiltScan[i].modID} Quilt-scan yielded sideness SERVER, but Fabric-scan yielded CLIENT. Using Fabric-scan result instead.")
+                    }
+                }
+                for (fabric in fabricScan) {
+                    if (quiltScan.find { quilt -> quilt.modID == fabric.modID } == null) {
+                        log.info("Quilt-scan did not have a scan for ${fabric.modID}, Fabric-scan did, though. Copying entry. ")
+                        quiltScan.add(fabric)
+                    }
+                }
+                scannedMods.addAll(quiltScan)
             }
         }
 
