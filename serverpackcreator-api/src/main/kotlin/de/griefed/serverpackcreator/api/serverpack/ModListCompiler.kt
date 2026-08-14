@@ -57,6 +57,23 @@ class ModListCompiler(
     val modFileEndings = listOf("jar", "disabled")
 
     /**
+     * The entry in this list describing the same jar as [mod], or `null`. Scanning a directory twice —
+     * or re-walking one result set against another — yields distinct [ScannedMod] instances for one
+     * file, and they may disagree on mod id, so the jar is the only identity that holds across them.
+     *
+     * [ScannedMod] deliberately has no `equals`: two entries for one jar can carry different
+     * [Sideness], and value-equality would let a `Set` or `distinct()` silently keep whichever landed
+     * first and drop the other verdict. The merge those verdicts feed is a decision, not a de-duplication.
+     */
+    private fun List<ScannedMod>.forJarOf(mod: ScannedMod): ScannedMod? = find { it.file == mod.file }
+
+    /** Whether this list already holds an entry for [mod]'s jar. */
+    private fun List<ScannedMod>.holds(mod: ScannedMod): Boolean = forJarOf(mod) != null
+
+    /** Drops every entry describing [mod]'s jar. */
+    private fun MutableList<ScannedMod>.removeJar(mod: ScannedMod) = removeIf { it.file == mod.file }
+
+    /**
      * Generates a list of all mods to include in the server pack. If the user specified
      * clientside-mods to exclude, and/or if the automatic exclusion of clientside-only mods is
      * active, they will be excluded, too.
@@ -142,7 +159,7 @@ class ModListCompiler(
                 val quiltScan = modScanner.quiltScanner.scan(filesInModsDir).toMutableList()
                 val fabricScan = modScanner.fabricScanner.scan(filesInModsDir)
                 for (i in quiltScan.indices) {
-                    val match = fabricScan.find { fabric -> fabric.file.name == quiltScan[i].file.name } ?: continue
+                    val match = fabricScan.forJarOf(quiltScan[i]) ?: continue
                     if (quiltScan[i].sideness == Sideness.SERVER && match.sideness == Sideness.CLIENT) {
                         log.info("${match.file.name} Quilt-scan yielded sideness SERVER, but Fabric-scan yielded CLIENT. Using Fabric-scan result instead.")
                         quiltScan[i] = match
@@ -205,18 +222,16 @@ class ModListCompiler(
             }
 
             if (foundExclusionMatch) {
-                if (disabledMods.find { it.file.name == mod.file.name } == null) {
+                if (!disabledMods.holds(mod)) {
                     disabledMods.add(mod)
                 }
-                serverMods.removeIf { it.file.name == mod.file.name }
+                serverMods.removeJar(mod)
                 log.info("Disabling ${mod.file.name}. It matched clientside-mod: $exclusionMatch")
-            } else  if (disabledMods.find { it.file.name == mod.file.name } == null) {
-                if (serverMods.find { it.file.name == mod.file.name } == null) {
-                    serverMods.add(mod)
-                    log.debug("No clientside-match, no whitelist-match. Keeping ${mod.file.name} enabled.")
-                }
-            } else {
+            } else if (disabledMods.holds(mod)) {
                 log.debug("${mod.file.name} already disabled.")
+            } else if (!serverMods.holds(mod)) {
+                serverMods.add(mod)
+                log.debug("No clientside-match, no whitelist-match. Keeping ${mod.file.name} enabled.")
             }
         }
 
