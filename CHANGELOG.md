@@ -1,3 +1,61 @@
+## [9.0.0-alpha.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.0.0-alpha.4...9.0.0-alpha.5) (2026-08-14)
+
+### :scissors: Refactor
+
+* Remove dead code after modscan-rewrite ([0df7b28](https://git.griefed.de/Griefed/ServerPackCreator/commit/0df7b2835fae346f6f037877ed9bf91e84579bd5))
+* **api:** build ScannedMod complete instead of assigning into it ([7a37426](https://git.griefed.de/Griefed/ServerPackCreator/commit/7a37426d2ed6bbfb0b6e2554226a47ee3e34a7fd))
+* **api:** compare scanned mods by jar, not by filename ([8d0022c](https://git.griefed.de/Griefed/ServerPackCreator/commit/8d0022c82dd4d048724c36e7dfb9320b40b54487))
+* **api:** read the exclusion filter once instead of three times ([198ff2b](https://git.griefed.de/Griefed/ServerPackCreator/commit/198ff2ba673e94b7d6e2bc2fe6e660eefb326336))
+* **api:** remove the unreachable copy-loop from the Quilt arm ([9459b0c](https://git.griefed.de/Griefed/ServerPackCreator/commit/9459b0c14980c59dbb1529b058b7b82ff43a5fc6))
+* **api:** rename ScanResult.kt to ScannedMod.kt ([4793620](https://git.griefed.de/Griefed/ServerPackCreator/commit/47936208e2214fdedb061960b5eac65185de02e6))
+* **clientside:** rename Sideness to DeclaredSupport ([90fed95](https://git.griefed.de/Griefed/ServerPackCreator/commit/90fed953e92e831f7a2fb6308778b9c671a1b4d6))
+
+### 📔 Docs
+
+* close out the audit after the tidy-up branch ([6a88369](https://git.griefed.de/Griefed/ServerPackCreator/commit/6a88369e64dca13191405e62c68d5f252de985e5))
+* correct the stale app and web-frontend test counts ([13d63a9](https://git.griefed.de/Griefed/ServerPackCreator/commit/13d63a9112a842db3027a05b2278e8afa8063274))
+* move the dated narrative history out of CLAUDE.md into REFACTOR-LOG.md ([0e31fd2](https://git.griefed.de/Griefed/ServerPackCreator/commit/0e31fd2966e48b2a64044c04830cebf1c7ba1453)), closes [gitlab-runner#27496](https://git.griefed.de/Griefed/gitlab-runner/issues/27496)
+* record the I-6 fix and correct the suite count ([39a285c](https://git.griefed.de/Griefed/ServerPackCreator/commit/39a285c7b793859e7f7c1c17bc3de470f91cc40f))
+* record the modscanning hardening and correct the modloader-fallback claim ([1f93755](https://git.griefed.de/Griefed/ServerPackCreator/commit/1f93755d29f358a21002bd49954d20331d6cab6b))
+* update the refactor audit to reflect the remediation ([51a8db3](https://git.griefed.de/Griefed/ServerPackCreator/commit/51a8db37a8efbb63d464f31f335739b8b69f8b23))
+* **api:** correct ReadmeExamplesTest's stale and invented references ([3fabed7](https://git.griefed.de/Griefed/ServerPackCreator/commit/3fabed7ccc27a59d2c4bd59f7ae91190fe59e7e7))
+* **api:** document the scanned-mod types ([d6b86ee](https://git.griefed.de/Griefed/ServerPackCreator/commit/d6b86ee2a80c5cb1834abfafac03b6dd000bbe7e))
+* **clientside:** record why DeclaredSupport and Sideness stay separate ([6fc8c26](https://git.griefed.de/Griefed/ServerPackCreator/commit/6fc8c26d16b43990bd8e0bccbcf17cefe28bd7e5))
+* **grinder:** add a clone-to-results quickstart ([385532b](https://git.griefed.de/Griefed/ServerPackCreator/commit/385532bb4d377fa03bbd6704ef5bea5d1cc5f243))
+
+### 📦 Other
+
+* Add clientside-only mods to the list. Thanks to @ModernGamingWorld [@szszabi2002](https://git.griefed.de/szszabi2002) @Joly0 for the reports! ([5a03123](https://git.griefed.de/Griefed/ServerPackCreator/commit/5a031238d0c48a9ce9b8538b4936b79729575592))
+* **api:** drop the unused SupportedModloaders.quilt import ([d9a9778](https://git.griefed.de/Griefed/ServerPackCreator/commit/d9a9778303a70ddd4e6c9bf0fa1969dd11e8820a))
+
+### 🦊 CI/CD
+
+* run the frontend Vitest suite as part of `check` ([33a6361](https://git.griefed.de/Griefed/ServerPackCreator/commit/33a636177f4f33c2b6869e67f57b08cf7e3c8755))
+* **deps:** bump org.jetbrains.kotlin:kotlin-test-junit5 ([f4e4e20](https://git.griefed.de/Griefed/ServerPackCreator/commit/f4e4e20b19563c09a73ec8636e0b6651491ba865))
+* **deps:** bump org.junit.platform:junit-platform-launcher ([3b17c1f](https://git.griefed.de/Griefed/ServerPackCreator/commit/3b17c1f2f0e3067acde7d8e925a5bb4d754b57cc))
+
+### 🧪 Tests
+
+* Use correct syntax to test contents ([d185fd7](https://git.griefed.de/Griefed/ServerPackCreator/commit/d185fd74c8b88dc7fe4931af9553ba974536584a))
+* **api:** pin auto-exclusion and Quilt de-duplication in ModListCompiler ([7279962](https://git.griefed.de/Griefed/ServerPackCreator/commit/7279962bd72a79dc3a36382c334d8a2c837a8b72))
+* **api:** pin dependency extraction and Forge platform-side inference ([5eb1edd](https://git.griefed.de/Griefed/ServerPackCreator/commit/5eb1edd278547558414c29dee61d9cb13af28a5c))
+* **api:** pin that an unrecognised modloader still yields every mod - RED ([b8f809f](https://git.griefed.de/Griefed/ServerPackCreator/commit/b8f809ff8656c57be50d5dd7d02af5d683a5b010))
+* **api:** pin that the dependency rescue reaches clientside mods - RED ([d8dfeb4](https://git.griefed.de/Griefed/ServerPackCreator/commit/d8dfeb4ac48cf1d81bc356af09d6e8232e160ac4))
+* **api:** pin the Quilt arm against a fabric-only jar ([581ca46](https://git.griefed.de/Griefed/ServerPackCreator/commit/581ca466dfd461f59d3bae4a2768d54ec317aeba))
+* **api:** pin the SERVER default for a descriptor without an environment ([793b8fc](https://git.griefed.de/Griefed/ServerPackCreator/commit/793b8fcadee125df45ae5a0ae804a6f3a8b95301))
+* **api:** pin the unreadable-jar sideness and modID fallback ([010db69](https://git.griefed.de/Griefed/ServerPackCreator/commit/010db696e6f087702ce580b55047dc050627709b))
+
+### 🛠 Fixes
+
+* Aggregate Quilt-scan results to prevent double-entries ([35cb727](https://git.griefed.de/Griefed/ServerPackCreator/commit/35cb7278f03ab5930069af3dbace3fba06044335))
+* Prevent duplicate entries ([7004f3c](https://git.griefed.de/Griefed/ServerPackCreator/commit/7004f3c885a85fe7bb5a5f549f89dde41f7213a5))
+* Prevent the modID being the same by acquiring it from the mod-file ([2ec5ff2](https://git.griefed.de/Griefed/ServerPackCreator/commit/2ec5ff2027242377164c28adeb6b3dc545bf9488))
+* Quilt mod with no env is not treated as SERVER ([bf226c2](https://git.griefed.de/Griefed/ServerPackCreator/commit/bf226c2ace8656b30e702467a6e2ca445479c6f0))
+* Vastly improve automated modscanning to catch and process sideness more reliably, as well as taking care of dependencies ([0a12d41](https://git.griefed.de/Griefed/ServerPackCreator/commit/0a12d41d0edb242e89c3335d4d9a6af8f7c31f45))
+* **api:** include every mod when the modloader is unrecognised ([2eafe1b](https://git.griefed.de/Griefed/ServerPackCreator/commit/2eafe1b34a891aa035f9e07c260ec73468c14882))
+* **api:** let the dependency rescue reach clientside mods ([35c5787](https://git.griefed.de/Griefed/ServerPackCreator/commit/35c5787ad7d3b7a15b563fefee84a2ace9a32470))
+* **api:** log the Quilt entry being replaced, not its replacement ([b855873](https://git.griefed.de/Griefed/ServerPackCreator/commit/b8558733da60cc5289427eac2d77967d10b163f4))
+
 ## [9.0.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.0.0-alpha.3...9.0.0-alpha.4) (2026-08-04)
 
 ### :scissors: Refactor
