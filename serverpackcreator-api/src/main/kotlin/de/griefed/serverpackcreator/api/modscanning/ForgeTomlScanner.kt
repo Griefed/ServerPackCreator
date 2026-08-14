@@ -54,8 +54,6 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser): Scanner<List<Sc
     val client: Regex
         get() = "^CLIENT$".toRegex()
 
-    private var currentModID: String? = null
-
     /**
      * Scan the `mods.toml`-files in mod JAR-files of a given directory for their sideness.
      *
@@ -76,23 +74,11 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser): Scanner<List<Sc
 
         for (modJar in jarFiles) {
             try {
-                currentModID = null
                 val modConfig: CommentedConfig = getConfig(modJar)
-                currentModID = getModId((modConfig.valueMap()[mods] as ArrayList<*>)[0] as CommentedConfig)
+                val modId = getModId((modConfig.valueMap()[mods] as ArrayList<*>)[0] as CommentedConfig)
+                val (sidenesses, dependencies) = getSidenessesAndDependencies(modConfig, modId)
 
-                val scannedMod = ScannedMod(modJar)
-                scannedMod.modID = currentModID!!
-
-                val sidesAndDeps = getSidenessesAndDependencies(modConfig)
-
-                scannedMod.sideness = if (sidesAndDeps.first.any { it == Sideness.SERVER }) {
-                    Sideness.SERVER
-                } else {
-                    Sideness.CLIENT
-                }
-
-                scannedMod.dependencies.addAll(sidesAndDeps.second)
-                scannedMods.add(scannedMod)
+                scannedMods.add(ScannedMod(modJar, modId, sidenessOf(sidenesses), dependencies))
             } catch (e: Exception) {
                 log.error("Could not scan ${modJar.name}. Consider reporting this: ${e.cause}: ${e.message}")
                 scannedMods.add(ScannedMod(modJar))
@@ -103,30 +89,25 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser): Scanner<List<Sc
     }
 
     @Throws(ScanningException::class)
-    private fun getSidenessesAndDependencies(modConfig: CommentedConfig): Pair<List<Sideness>, List<ModDependency>> {
+    private fun getSidenessesAndDependencies(modConfig: CommentedConfig, modId: String): Pair<List<Sideness>, List<ModDependency>> {
         val dependencies: Map<String, ArrayList<CommentedConfig>> = getMapOfDependencyLists(modConfig)
         val sidesForModloader = mutableListOf<Sideness>()
         val modDependencies = mutableListOf<ModDependency>()
         try {
-            if (dependencies.containsKey(currentModID)) {
-                val modIdDependencies = dependencies[currentModID]!!
+            val declaredDependencies = dependencies[modId]
+            if (declaredDependencies != null) {
                 //check all dependencies in mod
-                for (dependency in modIdDependencies) {
-                    val dependencyModId = getModId(dependency)
-                    val side = getSide(dependency)
-                    if (dependencyModId.matches(neoForgeMinecraft)) {
-                        if (side.uppercase().matches(client)) {
-                            sidesForModloader.add(Sideness.CLIENT)
-                        } else {
-                            sidesForModloader.add(Sideness.SERVER)
-                        }
+                for (declared in declaredDependencies) {
+                    val dependencyModId = getModId(declared)
+                    val side = getSide(declared)
+                    val dependencySideness =
+                        if (side.uppercase().matches(client)) Sideness.CLIENT else Sideness.SERVER
 
+                    if (dependencyModId.matches(neoForgeMinecraft)) {
+                        // The platform itself. What side this mod demands of Minecraft/Forge IS its sideness.
+                        sidesForModloader.add(dependencySideness)
                     } else {
-                        val dependency = ModDependency(dependencyModId)
-                        if (side.uppercase().matches(client)) {
-                            dependency.sideness = Sideness.CLIENT
-                        }
-                        modDependencies.add(dependency)
+                        modDependencies.add(ModDependency(dependencyModId, dependencySideness))
                     }
                 }
             } else {

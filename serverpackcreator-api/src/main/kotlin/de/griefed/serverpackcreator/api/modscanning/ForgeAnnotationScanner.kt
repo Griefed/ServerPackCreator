@@ -53,8 +53,6 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
     val dependencyReplace: Regex
         get() = "(@.*|\\[.*)".toRegex()
 
-    private var currentModID: String? = null
-
     /**
      * Scan the `fml-cache-annotation.json`-files in mod JAR-files of a given directory for their sideness.
      *
@@ -72,21 +70,17 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
 
         for (modJar in jarFiles) {
             try {
-                currentModID = null
                 val modConfig: JsonNode = getJarJson(modJar, caches, objectMapper)
-                val scannedMod = ScannedMod(modJar)
+                val (modId, sidenesses, dependencies) = getSidenessesAndDependencies(modConfig)
 
-                val sidesAndDeps = getSidenessesAndDependencies(modConfig)
-                scannedMod.modID = currentModID!!
-
-                scannedMod.sideness = if (sidesAndDeps.first.any { it == Sideness.SERVER }) {
-                    Sideness.SERVER
+                if (modId == null) {
+                    // No annotation in the cache carried a modId, so nothing read here can be attributed.
+                    // Fall back to the defaults, as an unreadable jar does.
+                    log.error("Could not scan ${modJar.name}. Consider reporting this: no modId in the annotation cache.")
+                    scannedMods.add(ScannedMod(modJar))
                 } else {
-                    Sideness.CLIENT
+                    scannedMods.add(ScannedMod(modJar, modId, sidenessOf(sidenesses), dependencies))
                 }
-
-                scannedMod.dependencies.addAll(sidesAndDeps.second)
-                scannedMods.add(scannedMod)
             } catch (e: Exception) {
                 log.error("Could not scan ${modJar.name}. Consider reporting this:", e)
                 scannedMods.add(ScannedMod(modJar))
@@ -96,11 +90,18 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
         return scannedMods
     }
 
+    /**
+     * Reads one annotation cache into the mod id it declares, the sidenesses it signalled, and the
+     * dependencies it named. The id is a *result* here rather than an input: it is whichever the first
+     * annotation carrying one declares, and every later annotation is interpreted relative to it, so it is
+     * returned instead of being parked in a field where a second concurrent scan could see it.
+     */
     @Throws(Exception::class)
-    private fun getSidenessesAndDependencies(modConfig: JsonNode): Pair<List<Sideness>, List<ModDependency>> {
+    private fun getSidenessesAndDependencies(modConfig: JsonNode): Triple<String?, List<Sideness>, List<ModDependency>> {
         val additionalMods = TreeSet<String>()
         val sidesForModloader = mutableListOf<Sideness>()
         val modDependencies = mutableListOf<ModDependency>()
+        var currentModID: String? = null
         // base of json
         for (node in modConfig) {
             try {
@@ -130,7 +131,7 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
                     } else {
                         try {
                             // Get the additional modID
-                            val idsAndSidenesses = getAdditionalModIDsAndSidenesses(child)
+                            val idsAndSidenesses = getAdditionalModIDsAndSidenesses(child, currentModID)
                             additionalMods.addAll(idsAndSidenesses.first)
                             sidesForModloader.addAll(idsAndSidenesses.second)
                         } catch (_: NullPointerException) {
@@ -143,14 +144,17 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
                 // next node in the cache.
             }
         }
-        if (!additionalMods.isEmpty()) {
-            sidesForModloader.addAll(getNestedModsSides(additionalMods, modConfig))
+        val resolvedModID = currentModID
+        if (additionalMods.isNotEmpty() && resolvedModID != null) {
+            // additionalMods only fills once a modId is known, so resolvedModID is non-null whenever
+            // there is anything to resolve — the check keeps that provable rather than asserted.
+            sidesForModloader.addAll(getNestedModsSides(additionalMods, modConfig, resolvedModID))
         }
 
-        return Pair(sidesForModloader, modDependencies)
+        return Triple(resolvedModID, sidesForModloader, modDependencies)
     }
 
-    private fun getNestedModsSides(additionalMods: TreeSet<String>,modJson: JsonNode): List<Sideness> {
+    private fun getNestedModsSides(additionalMods: TreeSet<String>, modJson: JsonNode, modID: String): List<Sideness> {
         val sides = mutableListOf<Sideness>()
         for (additionalModId in additionalMods) {
             // base of json
@@ -169,11 +173,11 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
                             if (utilities.jsonUtilities.nestedTextEqualsIgnoreCase(child,additionalModId,values, modid, value)
                                 && !utilities.jsonUtilities.nestedTextIsEmpty(child,values, dependencies, value)) {
                                 if (utilities.jsonUtilities.nestedTextContains(child, ";", values, dependencies, value)) {
-                                    if (additionalDependenciesDepend(child, currentModID!!)) {
+                                    if (additionalDependenciesDepend(child, modID)) {
                                         additionalModDependsOnFirst = true
                                     }
                                 } else {
-                                    if (additionalDependencyDepends(child, currentModID!!)) {
+                                    if (additionalDependencyDepends(child, modID)) {
                                         additionalModDependsOnFirst = true
                                     }
                                 }
@@ -209,13 +213,13 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
     }
 
     @Throws(NullPointerException::class)
-    private fun getAdditionalModIDsAndSidenesses(child: JsonNode): Pair<List<String>, List<Sideness>> {
+    private fun getAdditionalModIDsAndSidenesses(child: JsonNode, modID: String): Pair<List<String>, List<Sideness>> {
         val ids = ArrayList<String>()
         val sidenessses = ArrayList<Sideness>()
         if (!utilities.jsonUtilities.nestedTextIsEmpty(child, values, modid, value)) {
 
             // ModIDs are the same, so check for clientside-only
-            if (utilities.jsonUtilities.nestedTextEqualsIgnoreCase(child, currentModID!!, values, modid, value)
+            if (utilities.jsonUtilities.nestedTextEqualsIgnoreCase(child, modID, values, modid, value)
             ) {
                 try {
                     // Add mod to list of clientmods if clientSideOnly is true

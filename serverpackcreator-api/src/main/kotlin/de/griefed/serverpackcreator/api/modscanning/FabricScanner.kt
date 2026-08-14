@@ -44,8 +44,6 @@ class FabricScanner(private val objectMapper: ObjectMapper, private val utilitie
     private val dependencyExclusions: Regex
         get() = "(fabric|fabricloader|java|minecraft)".toRegex()
 
-    private var currentModID: String? = null
-
     /**
      * Scan the `fabric.mod.json`-files in mod JAR-files of a given directory for their
      * sideness.
@@ -64,22 +62,11 @@ class FabricScanner(private val objectMapper: ObjectMapper, private val utilitie
 
         for (modJar in jarFiles) {
             try {
-                currentModID = null
                 val modConfig: JsonNode = getJarJson(modJar, fabricModJson, objectMapper)
-                currentModID = utilities.jsonUtilities.getNestedText(modConfig, id)
-                val scannedMod = ScannedMod(modJar)
+                val modId = utilities.jsonUtilities.getNestedText(modConfig, id)
+                val (sidenesses, dependencies) = getSidenessesAndDependencies(modConfig, modId)
 
-                val sidesAndDeps = getSidenessesAndDependencies(modConfig)
-                scannedMod.modID = currentModID!!
-
-                scannedMod.sideness = if (sidesAndDeps.first.any { it == Sideness.SERVER }) {
-                    Sideness.SERVER
-                } else {
-                    Sideness.CLIENT
-                }
-
-                scannedMod.dependencies.addAll(sidesAndDeps.second)
-                scannedMods.add(scannedMod)
+                scannedMods.add(ScannedMod(modJar, modId, sidenessOf(sidenesses), dependencies))
             } catch (e: Exception) {
                 log.error("Could not scan ${modJar.name}. Consider reporting this: ${e.cause}: ${e.message}")
                 scannedMods.add(ScannedMod(modJar))
@@ -89,7 +76,7 @@ class FabricScanner(private val objectMapper: ObjectMapper, private val utilitie
         return scannedMods
     }
 
-    private fun getSidenessesAndDependencies(modConfig: JsonNode): Pair<List<Sideness>, List<ModDependency>> {
+    private fun getSidenessesAndDependencies(modConfig: JsonNode, modId: String): Pair<List<Sideness>, List<ModDependency>> {
         val sidesForModloader = mutableListOf<Sideness>()
         val modDependencies = mutableListOf<ModDependency>()
 
@@ -109,13 +96,13 @@ class FabricScanner(private val objectMapper: ObjectMapper, private val utilitie
         try {
             val dependencies = utilities.jsonUtilities.getFieldNames(modConfig, depends)
             for (dependency in dependencies) {
-                log.debug("Checking dependency $dependency for $currentModID.")
+                log.debug("Checking dependency $dependency for $modId.")
                 if (!dependency.matches(dependencyExclusions)) {
                     try {
-                        log.debug("Added dependency $dependency for $currentModID.")
+                        log.debug("Added dependency $dependency for $modId.")
                         modDependencies.add(ModDependency(dependency))
                     } catch (_: NullPointerException) {
-                        log.debug("No dependencies for $currentModID.")
+                        log.debug("No dependencies for $modId.")
                     }
                 }
             }

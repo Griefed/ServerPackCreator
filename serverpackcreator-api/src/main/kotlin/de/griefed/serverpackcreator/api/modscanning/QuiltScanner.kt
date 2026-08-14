@@ -50,8 +50,6 @@ class QuiltScanner(
     val dependencyExclusions: Regex
         get() = "(quilt_loader|quilt_base|quilted_fabric_api|java|minecraft)".toRegex()
 
-    private var currentModID: String? = null
-
     /**
      * Scan the `quilt.mod.json`-files in mod JAR-files of a given directory for their sideness.
      *
@@ -69,22 +67,11 @@ class QuiltScanner(
 
         for (modJar in jarFiles) {
             try {
-                currentModID = null
                 val modConfig: JsonNode = getJarJson(modJar, quiltModJson, objectMapper)
-                currentModID = utilities.jsonUtilities.getNestedText(modConfig, quiltLoader, id)
-                val scannedMod = ScannedMod(modJar)
+                val modId = utilities.jsonUtilities.getNestedText(modConfig, quiltLoader, id)
+                val (sidenesses, dependencies) = getSidenessesAndDependencies(modConfig, modId)
 
-                val sidesAndDeps = getSidenessesAndDependencies(modConfig)
-                scannedMod.modID = currentModID!!
-
-                scannedMod.sideness = if (sidesAndDeps.first.any { it == Sideness.SERVER }) {
-                    Sideness.SERVER
-                } else {
-                    Sideness.CLIENT
-                }
-
-                scannedMod.dependencies.addAll(sidesAndDeps.second)
-                scannedMods.add(scannedMod)
+                scannedMods.add(ScannedMod(modJar, modId, sidenessOf(sidenesses), dependencies))
             } catch (e: Exception) {
                 log.error("Could not scan ${modJar.name}. Consider reporting this: ${e.cause}: ${e.message}")
                 scannedMods.add(ScannedMod(modJar))
@@ -94,7 +81,7 @@ class QuiltScanner(
         return scannedMods
     }
 
-    private fun getSidenessesAndDependencies(modConfig: JsonNode): Pair<List<Sideness>, List<ModDependency>> {
+    private fun getSidenessesAndDependencies(modConfig: JsonNode, modId: String): Pair<List<Sideness>, List<ModDependency>> {
         val sidesForModloader = mutableListOf<Sideness>()
         val modDependencies = mutableListOf<ModDependency>()
 
@@ -117,21 +104,21 @@ class QuiltScanner(
                     try {
                         val dependencyId = utilities.jsonUtilities.getNestedText(dependency, id)
                         if (!dependencyId.matches(dependencyExclusions)) {
-                            log.debug("Added dependency $dependencyId for $currentModID.")
+                            log.debug("Added dependency $dependencyId for $modId.")
                             modDependencies.add(ModDependency(dependencyId))
                         }
                     } catch (_: NullPointerException) {
-                        log.debug("No dependencies for $currentModID.")
+                        log.debug("No dependencies for $modId.")
                     }
                 } else {
                     try {
                         val dependencyText = dependency.asText()
                         if (!dependencyText.matches(dependencyExclusions)) {
-                            log.debug("Added dependency $dependencyText for $currentModID.")
+                            log.debug("Added dependency $dependencyText for $modId.")
                             modDependencies.add(ModDependency(dependencyText))
                         }
                     } catch (_: NullPointerException) {
-                        log.debug("No dependencies for $currentModID.")
+                        log.debug("No dependencies for $modId.")
                     }
                 }
             }
