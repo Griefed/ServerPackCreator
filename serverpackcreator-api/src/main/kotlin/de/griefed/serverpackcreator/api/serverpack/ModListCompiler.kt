@@ -154,6 +154,14 @@ class ModListCompiler(
                 }
                 scannedMods.addAll(quiltScan)
             }
+
+            else -> {
+                // No scanner knows this loader, so nothing can be judged clientside. Keeping every mod
+                // leaves a pack the user can trim; returning none would look like a successful run that
+                // silently produced nothing.
+                log.warn("Unrecognised modloader '$modloader'. Skipping sideness detection and including every mod.")
+                scannedMods.addAll(filesInModsDir.map { ScannedMod(it) })
+            }
         }
 
 
