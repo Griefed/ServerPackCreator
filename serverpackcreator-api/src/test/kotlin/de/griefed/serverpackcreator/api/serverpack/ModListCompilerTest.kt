@@ -318,4 +318,37 @@ internal class ModListCompilerTest {
             "Every jar must appear exactly once across the two lists"
         )
     }
+
+    /**
+     * An unrecognised modloader must still yield every mod, not an empty pack.
+     *
+     * The scanner-selection `when` has an arm per supported loader and no `else`, and the
+     * include-list is built solely from what a scanner returned — so a loader string matching no arm
+     * leaves nothing scanned and returns two empty lists. Before the modscan rewrite the list was
+     * seeded with every file and exclusions were removed from it, so the same input returned every
+     * jar.
+     *
+     * This is reachable without any embedder doing something exotic: [PackConfig.modloader]'s setter
+     * silently ignores a value it does not recognise, leaving the field at its initial empty string,
+     * and that empty string reaches this `when`. An over-full pack is something a user can fix; a
+     * silently empty one looks like the tool did nothing.
+     */
+    @Test
+    fun unrecognisedModloaderStillYieldsEveryMod(@TempDir tempDir: File) {
+        apiProperties.isAutoExcludingModsEnabled = true
+        val modsDir = modsDirWith(tempDir, "alpha.jar", "beta.jar", "gamma.jar")
+
+        val (included, disabled) = modListCompiler.compileModList(
+            modsDir.absolutePath, emptyList(), emptyList(), "1.20.1", "NotAModloader"
+        )
+
+        Assertions.assertEquals(
+            setOf("alpha.jar", "beta.jar", "gamma.jar"), included.map { mod -> mod.name }.toSet(),
+            "An unrecognised modloader must fall back to including every mod, not to an empty pack"
+        )
+        Assertions.assertTrue(
+            disabled.isEmpty(),
+            "Nothing can be judged clientside without a scanner; got ${disabled.map { it.name }}"
+        )
+    }
 }
