@@ -1335,3 +1335,64 @@ starting a container — a behaviour change, and the third commit in this projec
 audited **after** being merged into `develop` and `alpha`, so the honest remedy was a record in `CLAUDE.md` rather
 than force-pushing two shared branches. That asymmetry is now written into the convention itself: cheap before the
 merge, unfixable after it.
+
+## 2026-08-14 — modscanning hardening (`claude-modscan-test-hardening`, `claude-modscan-tidyup`), api 280 → 295
+
+The modscan rewrite (`0a12d41d0`) and its six follow-ups changed behaviour four times without adding a single test case; two
+regressions shipped and **neither turned the suite red**. Auto-exclusion was dead for a day — the user-exclusion
+pass re-walked every scanned mod and re-enabled anything it had not itself matched — and its only coverage
+guarded on `Assumptions.assumeTrue`, so an empty result **skipped** instead of failing (the B13–B20 lesson,
+regressed). The Quilt merge keyed on `modID`, which is mismatched by construction in exactly the entries it
+merges: `quilt_tests/aaaaa.jar` declares `ok_zoomer` in one descriptor and `ok_zoomer-pmw` in the other, and
+`bbbbb.jar` has no `fabric.mod.json` at all, so the failed scan falls back to the filename — 5 jars in, 7 entries
+out, each duplication announced in an INFO log as though it were a repair. Both are fixed and now pinned, each
+**observed red against the commit before its fix** (`7004f3c88^`, `bf226c2ac^`, `2ec5ff202^`), with the
+observed failure text in the commit body.
+
+Three things worth keeping. **The fixtures cannot express an absent field** — every committed `fabric.mod.json`
+and `quilt.mod.json` declares an `environment`, so the SERVER-when-undeclared default (a decision: an
+undeclared mod must never be dropped from a pack) had *no* coverage, which is how `bf226c2ac`'s defect got in.
+New cases build a real jar in a `@TempDir` from JSON written inline, so the descriptor under test is visible in
+the diff and no binary enters the repo. **The committed jars stay as they are** — they are real-world captures
+and that messiness is the point (`fabric_tests/fffff.jar` carries a literal newline inside a JSON string, invalid
+strict JSON that the scanner handles anyway), they are consumed by eight test classes across `-api` *and* `-app`,
+and `forge_old/aaaaa.jar` holds a genuine 1 MB `fml_cache_annotation.json`; 776 KB total is not worth
+regenerating. **A green characterization test proves nothing until you try to break it** — the new
+exact-match-not-prefix assertion on `dependencyExclusions` was confirmed by mutating the regex to `fabric.*` and
+watching it fail, because `fabric-api-base` must survive a filter that drops `fabric`.
+
+Also fixed here (audit M-4): the scanner-selection `when` had **no `else`**, and since the rewrite the
+include-list is built solely from what a scanner returned — so an unrecognised loader produced a **silently empty
+server pack** where the pre-rewrite code returned every jar. Reachable from an ordinary `PackConfig`, because
+`PackConfig.modloader`'s setter silently ignores a value it does not recognise and leaves the field at `""`.
+The `else` now warns and includes everything.
+
+**Tidy-up (`claude-modscan-tidyup`).** `ScannedMod`/`ModDependency` are immutable and built through their
+constructors, which removed **all 8** `!!` assertions and **all 4** mutable `currentModID` fields — those were
+shared state on scanners `ApiWrapper` holds as **singletons**, so two concurrent `scan()` calls interleaved
+through them. `ForgeAnnotationScanner` needed the id returned rather than passed in, because there it is a
+*result*: whichever annotation first carries one, with every later annotation read relative to it. The
+four-branch exclusion-filter `when` — written out **three** times, already drifted in formatting — is read once;
+the whitelist `while(any{}) { removeIf{} }` collapses to one `removeIf` (the predicate reads only the mod and
+the whitelist, so nothing a removal does can make a remaining entry start matching), while the dependency
+rescue keeps its loop because each rescue adds to `serverMods` and puts further dependencies in play. The Quilt
+copy-loop was **unreachable** and is gone: both scanners return one entry per input file, so its lookup never
+missed — it fired only under the old `modID` key, where it was the duplicate-producing mechanism rather than a
+fallback. **Do not "fix" `ScannedMod` with a `data class`:** two entries for one jar can disagree on
+`sideness`, and value-equality would let a `Set`/`distinct()` keep whichever landed first and drop the other
+verdict, which is the merge the Quilt arm makes deliberately. Compare on `file`.
+
+**A second fabricated-reference problem, worth the same suspicion as the `PackConfig` one below.**
+`ReadmeExamplesTest` cited **seven** README sections that do not exist (`§2 Quickstart`, `§3 Composition root`,
+`§4 PackConfig`, `§5 Validating`, `§7 Version metadata`, `§8 Scanning mods`, `§9 Settings`) and claimed the
+guide "teaches roughly a dozen snippets". `README.md` carries exactly **two** Kotlin API snippets, both under
+*6. API → Example*. That file's entire justification is being the compiler-gate for the README, so a reader
+trusting its citations would hunt for prose that was never written. Cases that genuinely mirror a snippet now
+cite it; the rest say plainly that they guard adjacent surface.
+
+And (audit I-6) the dependency rescue additionally required the **disabled** mod to be `Sideness.SERVER` — but a
+mod auto-disabled by a scanner is `CLIENT` by construction, so *"don't exclude something's dependency"* only ever
+reached mods the scanner had called server-side and the user had excluded by name, never the auto-detected ones it
+exists for. Clause dropped; pinned in both the direct and the **transitive** case (`servermod → midlib → deeplib`,
+middle and leaf both clientside), because a single-pass rescue keeps the leaf excluded and still looks like it
+worked — which is what the surrounding `while` is for.

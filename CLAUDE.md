@@ -220,11 +220,11 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 **Goal:** KISS/MVC/TDD/SOLID across api → app → plugin-example → web-frontend.
 **Phases:** 0 baseline · 1 API · 2 app · 3 plugin-example · 4 frontend.
 
-**Current status (2026-08-02):**
+**Current status (2026-08-14):**
 
 | Module         | Tests         | Notes                                                                                |
 |----------------|---------------|--------------------------------------------------------------------------------------|
-| api            | 295 (1 skip)  | Phase 1 **complete**; + `FacadeConstantDelegationTest` (the published `modFileEndings`/`zipCheck` facades must *read* their owner, asserted on identity so a re-introduced equal-valued copy still fails); + `MinecraftMetaTest` (`requiredJavaVersion`) and `ScriptTemplateContentTest` (non-gated guard for the shipped templates; skips its `fish -n` case where fish is absent, and **executes** the bash `setupFabric` to pin the offline launcher path); + `ModScannerSidenessTest` and the `ModListCompilerTest` additions (modscanning hardening, 2026-08-14 — see below). |
+| api            | 295 (1 skip)  | Phase 1 **complete**; + `FacadeConstantDelegationTest` (the published `modFileEndings`/`zipCheck` facades must *read* their owner, asserted on identity so a re-introduced equal-valued copy still fails); + `MinecraftMetaTest` (`requiredJavaVersion`) and `ScriptTemplateContentTest` (non-gated guard for the shipped templates; skips its `fish -n` case where fish is absent, and **executes** the bash `setupFabric` to pin the offline launcher path); + `ModScannerSidenessTest` and the `ModListCompilerTest` additions (modscanning hardening, 2026-08-14 — see `claude-docs/REFACTOR-LOG.md`). |
 | clientside     | 87            | Extracted from `-app`; `BootVerifier` split + `packPostProcessor` hook; selection (MC-support gate) + setup-abort classification pinned |
 | app            | 76            | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay             |
 | plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |
@@ -242,101 +242,6 @@ splitting. `LarsonScanner.kt` 2,217 — self-contained widget, low priority.
 The GUI `GlobalScope.launch` anti-pattern (app) is **resolved** — all 26 sites now use
 `gui.utilities.ComponentCoroutineScope` (lifecycle-cancelled), GUI-verified. The frontend's
 settings-store `$q` coupling (4b) and `jsconfig.json`/TS gap (4c) are **resolved**.
-
-**2026-07-31 — audit + backlog cleanup (`claude-audit-backlog-cleanup`).** Three audit findings closed (the
-`variables.txt` contract row, and pin-first/`refactor:`-labelling as binding rules); one **withdrawn** as wrong on
-inspection, its inverse recorded as backlog B21. Backlog B13–B20 closed: a fresh Forge pack on Minecraft 26.x
-installed and exited **0** without launching (ServerStarterJar needs a `SecurityManager` to swallow the Forge
-installer's `System.exit`, which JEP 486 removed in Java 24 — so from 24 the templates install Forge themselves and
-launch from the installer's argfile); the "not applicable" skip that hid it now fails loudly; both boot paths share
-one suspend-aware deadline; the loader cache records which templates produced an install; test properties are
-generated rather than committed with one machine's paths; and `.gitignore` no longer hides shipped `server_files`
-resources. Remaining backlog: B4, B5, B11 (deliberate) plus B21, B22.
-
-**2026-08-02 — Qodana report audit (`claude-qodana-audit-fixes`).** 54 reported problems verified one by one:
-**15 real, 22 false positives, 14 by-design, 3 cosmetic**. Fixed: the inert `WritableDirectoryFilter` (FlatLaf's
-`SystemFileChooser.FileFilter` has no `accept` to override — see `serverpackcreator-app/CLAUDE.md`); seven orphaned
-KDoc blocks that had left `outcomeFor`, `shouldRecheckCrash` and `env` undocumented; five KDoc links resolving to
-nothing (Dokka `Couldn't resolve link` 12 → 0); four pieces of dead code; and `modFileEndings`/`zipCheck` **rewired
-rather than deprecated** to a single source of truth (see `serverpackcreator-api/CLAUDE.md`).
-**The report's own reliability was the biggest finding:** all 18 `KotlinUnreachableCode` hits — 39 % of its High
-severity — are phantom, because the pinned `qodana-jvm-community:2025.1` bundles **kotlinc 2.1.10** against this
-project's **2.3.20**. Bumped to `2026.2` (bundles 2.3.20 exactly). **Unverified locally:** Qodana OOM-killed
-(exit 137) because this machine's Docker VM is capped at 1.93 GiB — confirm the new problem count against CI.
-
-**2026-08-04 — the 2026.2 bump needed a second fix before CI could run it at all
-(`claude-ci-qodana-jbr-cache`).** The bumped job failed one second in, on `fork/exec … qodana-jbr/… /bin/java:
-permission denied`. **2026.2 runs `libs/config-loader-cli` in a separate JVM and downloads its own runtime into
-`<cache-dir>/qodana-jbr`** — a path derived from `--cache-dir`, with no flag or env var to redirect it or to reuse
-the JBR the linter image already ships at `/opt/idea/jbr` (measured against the image: `qodana scan --help` and the
-binary's whole `QODANA_*` table). So an executable necessarily lives inside the GitLab-cached directory, and **the
-cache round-trip does not preserve the executable bit** (gitlab-runner#27496/#1782). 2025.1 never hit it: no
-`config-loader-cli`, no executable in the cache. The job's `before_script` now repairs the mode and probes it.
-Two things worth keeping: exec is the *only* reliable test of that bit — a Docker Desktop bind mount reports 0755
-for a host-side 0644 file and answers `[ -x ]` with "executable" while `execve` still fails — and the probe must
-classify, because a stale JBR tree that Qodana never uses will fail `-version` for unrelated reasons and must not
-take the pipeline down. **Griefed confirmed a full green pipeline on 2026-08-04**, so the 2026.2 problem count is
-now readable off the report (still to be recorded here).
-
-**2026-08-14 — modscanning hardening (`claude-modscan-test-hardening`), api 280 → 292.** The modscan rewrite
-(`0a12d41d0`) and its six follow-ups changed behaviour four times without adding a single test case; two
-regressions shipped and **neither turned the suite red**. Auto-exclusion was dead for a day — the user-exclusion
-pass re-walked every scanned mod and re-enabled anything it had not itself matched — and its only coverage
-guarded on `Assumptions.assumeTrue`, so an empty result **skipped** instead of failing (the B13–B20 lesson,
-regressed). The Quilt merge keyed on `modID`, which is mismatched by construction in exactly the entries it
-merges: `quilt_tests/aaaaa.jar` declares `ok_zoomer` in one descriptor and `ok_zoomer-pmw` in the other, and
-`bbbbb.jar` has no `fabric.mod.json` at all, so the failed scan falls back to the filename — 5 jars in, 7 entries
-out, each duplication announced in an INFO log as though it were a repair. Both are fixed and now pinned, each
-**observed red against the commit before its fix** (`7004f3c88^`, `bf226c2ac^`, `2ec5ff202^`), with the
-observed failure text in the commit body.
-
-Three things worth keeping. **The fixtures cannot express an absent field** — every committed `fabric.mod.json`
-and `quilt.mod.json` declares an `environment`, so the SERVER-when-undeclared default (a decision: an
-undeclared mod must never be dropped from a pack) had *no* coverage, which is how `bf226c2ac`'s defect got in.
-New cases build a real jar in a `@TempDir` from JSON written inline, so the descriptor under test is visible in
-the diff and no binary enters the repo. **The committed jars stay as they are** — they are real-world captures
-and that messiness is the point (`fabric_tests/fffff.jar` carries a literal newline inside a JSON string, invalid
-strict JSON that the scanner handles anyway), they are consumed by eight test classes across `-api` *and* `-app`,
-and `forge_old/aaaaa.jar` holds a genuine 1 MB `fml_cache_annotation.json`; 776 KB total is not worth
-regenerating. **A green characterization test proves nothing until you try to break it** — the new
-exact-match-not-prefix assertion on `dependencyExclusions` was confirmed by mutating the regex to `fabric.*` and
-watching it fail, because `fabric-api-base` must survive a filter that drops `fabric`.
-
-Also fixed here (audit M-4): the scanner-selection `when` had **no `else`**, and since the rewrite the
-include-list is built solely from what a scanner returned — so an unrecognised loader produced a **silently empty
-server pack** where the pre-rewrite code returned every jar. Reachable from an ordinary `PackConfig`, because
-`PackConfig.modloader`'s setter silently ignores a value it does not recognise and leaves the field at `""`.
-The `else` now warns and includes everything.
-
-**Tidy-up (`claude-modscan-tidyup`).** `ScannedMod`/`ModDependency` are immutable and built through their
-constructors, which removed **all 8** `!!` assertions and **all 4** mutable `currentModID` fields — those were
-shared state on scanners `ApiWrapper` holds as **singletons**, so two concurrent `scan()` calls interleaved
-through them. `ForgeAnnotationScanner` needed the id returned rather than passed in, because there it is a
-*result*: whichever annotation first carries one, with every later annotation read relative to it. The
-four-branch exclusion-filter `when` — written out **three** times, already drifted in formatting — is read once;
-the whitelist `while(any{}) { removeIf{} }` collapses to one `removeIf` (the predicate reads only the mod and
-the whitelist, so nothing a removal does can make a remaining entry start matching), while the dependency
-rescue keeps its loop because each rescue adds to `serverMods` and puts further dependencies in play. The Quilt
-copy-loop was **unreachable** and is gone: both scanners return one entry per input file, so its lookup never
-missed — it fired only under the old `modID` key, where it was the duplicate-producing mechanism rather than a
-fallback. **Do not "fix" `ScannedMod` with a `data class`:** two entries for one jar can disagree on
-`sideness`, and value-equality would let a `Set`/`distinct()` keep whichever landed first and drop the other
-verdict, which is the merge the Quilt arm makes deliberately. Compare on `file`.
-
-**A second fabricated-reference problem, worth the same suspicion as the `PackConfig` one below.**
-`ReadmeExamplesTest` cited **seven** README sections that do not exist (`§2 Quickstart`, `§3 Composition root`,
-`§4 PackConfig`, `§5 Validating`, `§7 Version metadata`, `§8 Scanning mods`, `§9 Settings`) and claimed the
-guide "teaches roughly a dozen snippets". `README.md` carries exactly **two** Kotlin API snippets, both under
-*6. API → Example*. That file's entire justification is being the compiler-gate for the README, so a reader
-trusting its citations would hunt for prose that was never written. Cases that genuinely mirror a snippet now
-cite it; the rest say plainly that they guard adjacent surface.
-
-And (audit I-6) the dependency rescue additionally required the **disabled** mod to be `Sideness.SERVER` — but a
-mod auto-disabled by a scanner is `CLIENT` by construction, so *"don't exclude something's dependency"* only ever
-reached mods the scanner had called server-side and the user had excluded by name, never the auto-detected ones it
-exists for. Clause dropped; pinned in both the direct and the **transitive** case (`servermod → midlib → deeplib`,
-middle and leaf both clientside), because a single-pass rescue keeps the leaf excluded and still looks like it
-worked — which is what the surrounding `while` is for.
 
 **Current phase — 4 (frontend) complete; GUI structured-concurrency done.** Frontend 4a–4e: Vitest,
 settings-store `$q` decoupling, full TypeScript migration (all `src/` is TS, verified by
