@@ -218,8 +218,10 @@ internal class ModListCompilerTest {
         val modsDir = File("src/test/resources/forge_tests/mods").absolutePath
 
         val (_, autoExcluded) = modListCompiler.compileModList(modsDir, emptyList(), emptyList(), "1.16.5", "Forge")
-        org.junit.jupiter.api.Assumptions.assumeTrue(
-            autoExcluded.isNotEmpty(), "Fixture must auto-detect at least one clientside mod for this test to be meaningful"
+        Assertions.assertTrue(
+            autoExcluded.isNotEmpty(),
+            "Auto-discovery must detect at least one clientside mod in forge_tests for this test to mean anything. " +
+                    "An empty list here means auto-exclusion stopped working, not that the fixture is unsuitable."
         )
         val rescuedName = autoExcluded.first().name
 
@@ -232,6 +234,88 @@ internal class ModListCompilerTest {
         Assertions.assertFalse(
             disabled.any { mod -> mod.name == rescuedName },
             "Whitelisted mod '$rescuedName' must not be reported as disabled"
+        )
+    }
+
+    /**
+     * With auto-discovery on and **no** user-specified clientside mods, a mod the scanner judged
+     * clientside must stay disabled. This is the case auto-detection exists for, and the one the
+     * user-exclusion pass is most likely to undo: that pass walks every scanned mod again, so an
+     * `else` branch that re-enables everything it did not itself match silently defeats the whole
+     * feature while leaving the suite green.
+     *
+     * `aaaaa.jar` is asserted clientside at the scanner level by
+     * [de.griefed.serverpackcreator.api.modscanning.ModScannerTest.tomlTest]; `ddddd.jar` is
+     * asserted not clientside there. Pinning both directions keeps this honest if the fixture changes.
+     */
+    @Test
+    fun autoDetectedClientsideModsStayDisabledWithoutUserExclusions() {
+        apiProperties.isAutoExcludingModsEnabled = true
+        apiProperties.exclusionFilter = ExclusionFilter.CONTAIN
+        val modsDir = File("src/test/resources/forge_tests/mods").absolutePath
+
+        val (included, disabled) = modListCompiler.compileModList(
+            modsDir, emptyList(), emptyList(), "1.16.5", "Forge"
+        )
+        val includedNames = included.map { mod -> mod.name }
+        val disabledNames = disabled.map { mod -> mod.name }
+
+        Assertions.assertTrue(
+            disabledNames.contains("aaaaa.jar"),
+            "Scanner-detected clientside mod must remain disabled with no user exclusions; disabled=$disabledNames"
+        )
+        Assertions.assertFalse(
+            includedNames.contains("aaaaa.jar"),
+            "Scanner-detected clientside mod must not be included; included=$includedNames"
+        )
+        Assertions.assertTrue(
+            includedNames.contains("ddddd.jar"),
+            "A mod the scanner judged server-side must still be included; included=$includedNames"
+        )
+    }
+
+    /**
+     * The Quilt arm scans the same directory twice — once per descriptor format — and merges the two
+     * result sets. The merge must be keyed on the jar, not on the declared mod id: a jar can declare
+     * *different* ids in `quilt.mod.json` and `fabric.mod.json` (the fixture's `aaaaa.jar` declares
+     * `ok_zoomer` and `ok_zoomer-pmw`), and a jar carrying only one descriptor falls back to a
+     * synthesised id for the scan that failed. Keying on the id therefore fails to match exactly the
+     * entries being merged, yielding two entries for one file.
+     *
+     * Two entries for one file can carry different sideness, which puts the same jar in *both*
+     * returned lists. The partition check in [autoDiscoveryReachesScannerBranchPerLoader] cannot
+     * catch that — each list is de-duplicated separately before being returned — so disjointness is
+     * asserted explicitly here.
+     */
+    @Test
+    fun quiltArmReturnsEachJarExactlyOnce() {
+        apiProperties.isAutoExcludingModsEnabled = true
+        apiProperties.exclusionFilter = ExclusionFilter.CONTAIN
+        val modsDir = File("src/test/resources/quilt_tests/mods")
+
+        val (included, disabled) = modListCompiler.compileModList(
+            modsDir.absolutePath, emptyList(), emptyList(), "1.20.1", "Quilt"
+        )
+        val includedNames = included.map { mod -> mod.name }
+        val disabledNames = disabled.map { mod -> mod.name }
+
+        val inBoth = includedNames.intersect(disabledNames.toSet())
+        Assertions.assertTrue(
+            inBoth.isEmpty(),
+            "A jar must not be both included and disabled; both=$inBoth, included=$includedNames, disabled=$disabledNames"
+        )
+        Assertions.assertEquals(
+            includedNames.size, includedNames.distinct().size,
+            "Included list must hold no duplicate jar; got $includedNames"
+        )
+        Assertions.assertEquals(
+            disabledNames.size, disabledNames.distinct().size,
+            "Disabled list must hold no duplicate jar; got $disabledNames"
+        )
+        Assertions.assertEquals(
+            modsDir.listFiles { file -> file.extension == "jar" }!!.size,
+            includedNames.size + disabledNames.size,
+            "Every jar must appear exactly once across the two lists"
         )
     }
 }
