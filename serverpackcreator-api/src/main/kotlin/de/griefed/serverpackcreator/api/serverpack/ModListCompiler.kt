@@ -74,6 +74,20 @@ class ModListCompiler(
     private fun MutableList<ScannedMod>.removeJar(mod: ScannedMod) = removeIf { it.file == mod.file }
 
     /**
+     * Whether [modName] matches [entry] under the configured [ExclusionFilter]. The same comparison decides
+     * both the clientside-mod list and the whitelist, so the filter is read once here rather than spelled out
+     * at each site — three copies of it had drifted apart in formatting already.
+     */
+    private fun matchesFilter(modName: String, entry: String): Boolean = when (apiProperties.exclusionFilter) {
+        ExclusionFilter.START -> modName.startsWith(entry)
+        ExclusionFilter.END -> modName.endsWith(entry)
+        ExclusionFilter.CONTAIN -> modName.contains(entry)
+        ExclusionFilter.REGEX -> modName.matches(entry.toRegex())
+        ExclusionFilter.EITHER -> modName.startsWith(entry) || modName.endsWith(entry) ||
+                modName.contains(entry) || modName.matches(entry.toRegex())
+    }
+
+    /**
      * Generates a list of all mods to include in the server pack. If the user specified
      * clientside-mods to exclude, and/or if the automatic exclusion of clientside-only mods is
      * active, they will be excluded, too.
@@ -199,29 +213,11 @@ class ModListCompiler(
         for (mod in scannedMods) {
             log.debug("Checking ${mod.file.name} (${mod.modID})")
             val modName = mod.file.name
-            var foundExclusionMatch: Boolean = false
-            var exclusionMatch = "N/A"
 
             //Perform exclusions based on clientside-mods list
-            for (userSpecifiedExclusion in clientsideModsList) {
-                foundExclusionMatch = when (apiProperties.exclusionFilter) {
-                    ExclusionFilter.START -> modName.startsWith(userSpecifiedExclusion)
-                    ExclusionFilter.END -> modName.endsWith(userSpecifiedExclusion)
-                    ExclusionFilter.CONTAIN -> modName.contains(userSpecifiedExclusion)
-                    ExclusionFilter.REGEX -> modName.matches(userSpecifiedExclusion.toRegex())
-                    ExclusionFilter.EITHER -> (
-                            (modName.startsWith(userSpecifiedExclusion)) ||
-                                    (modName.endsWith(userSpecifiedExclusion)) ||
-                                    (modName.contains(userSpecifiedExclusion)) ||
-                                    (modName.matches(userSpecifiedExclusion.toRegex())))
-                }
-                if (foundExclusionMatch) {
-                    exclusionMatch = userSpecifiedExclusion
-                    break
-                }
-            }
+            val exclusionMatch = clientsideModsList.find { entry -> matchesFilter(modName, entry) }
 
-            if (foundExclusionMatch) {
+            if (exclusionMatch != null) {
                 if (!disabledMods.holds(mod)) {
                     disabledMods.add(mod)
                 }
@@ -235,41 +231,17 @@ class ModListCompiler(
             }
         }
 
-        while (disabledMods.any { disabledMod ->
-                modWhitelist.any { entry ->
-                    when (apiProperties.exclusionFilter) {
-                        ExclusionFilter.START -> disabledMod.file.name.startsWith(entry)
-                        ExclusionFilter.END -> disabledMod.file.name.endsWith(entry)
-                        ExclusionFilter.CONTAIN -> disabledMod.file.name.contains(entry)
-                        ExclusionFilter.REGEX -> disabledMod.file.name.matches(entry.toRegex())
-                        ExclusionFilter.EITHER -> (
-                                disabledMod.file.name.startsWith(entry) ||
-                                        disabledMod.file.name.endsWith(entry) ||
-                                        disabledMod.file.name.contains(entry) ||
-                                        disabledMod.file.name.matches(entry.toRegex()))
-                    }}}) {
-
-            disabledMods.removeIf { disabledMod ->
-                val match = modWhitelist.find { entry ->
-                    when (apiProperties.exclusionFilter) {
-                        ExclusionFilter.START -> disabledMod.file.name.startsWith(entry)
-                        ExclusionFilter.END -> disabledMod.file.name.endsWith(entry)
-                        ExclusionFilter.CONTAIN -> disabledMod.file.name.contains(entry)
-                        ExclusionFilter.REGEX -> disabledMod.file.name.matches(entry.toRegex())
-                        ExclusionFilter.EITHER -> (
-                                disabledMod.file.name.startsWith(entry) ||
-                                        disabledMod.file.name.endsWith(entry) ||
-                                        disabledMod.file.name.contains(entry) ||
-                                        disabledMod.file.name.matches(entry.toRegex()))
-                    }
-                }
-                return@removeIf if (match != null) {
-                    log.info("Disabled mod ${disabledMod.file.name} is whitelisted by $match. Not disabling.")
-                    serverMods.add(disabledMod)
-                    true
-                } else {
-                    false
-                }
+        // A single pass suffices: the predicate reads only the mod and the whitelist, so nothing a removal
+        // does can make a remaining entry start matching. (The dependency rescue below is different — each
+        // rescue adds to serverMods and so can put further dependencies in play, hence the loop there.)
+        disabledMods.removeIf { disabledMod ->
+            val match = modWhitelist.find { entry -> matchesFilter(disabledMod.file.name, entry) }
+            return@removeIf if (match != null) {
+                log.info("Disabled mod ${disabledMod.file.name} is whitelisted by $match. Not disabling.")
+                serverMods.add(disabledMod)
+                true
+            } else {
+                false
             }
         }
 
