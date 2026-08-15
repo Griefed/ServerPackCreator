@@ -30,6 +30,48 @@ frontendPlugin = "10.0.0"
 # https://plugins.gradle.org/plugin/com.install4j.gradle
 install4j = "12.0.2"
 
+# ---- libraries ----
+# Kotlin runtime/test libraries. Separate from `kotlin` (the compiler plugin) on purpose — see the comment there.
+kotlinLibs = "2.3.21"
+coroutines = "1.10.2"
+kotlinxDatetime = "0.8.0-0.6.x-compat"
+junitPlatform = "6.1.0"
+# Matches what springmockk resolves transitively, keeping mockk single-versioned.
+mockk = "1.14.6"
+kotlinLogging = "3.0.5"
+ktorfit = "2.7.3"
+# Must match the de.comahe.i18n4k plugin version applied in -api and -plugin-example.
+i18n4k = "0.11.2"
+nightConfig = "3.8.4"
+jacksonDatabind = "2.21.1"
+jackson = "2.22.0"
+zip4j = "2.11.6"
+log4jApiKotlin = "1.5.0"
+log4j = "2.26.0"
+pf4j = "3.15.0"
+bouncycastle = "1.84"
+mslinks = "1.2"
+# Resolved from jitpack; published nowhere else.
+nekodetector = "Version-1.1-pre"
+playwright = "1.60.0"
+dockerJava = "3.7.1"
+commonsIo = "2.22.0"
+cronUtils = "9.2.1"
+install4jRuntime = "12.0.4"
+picocli = "4.7.7"
+flatlaf = "3.7.1"
+flatlafFontsJetbrainsMono = "2.304"
+flatlafFontsInter = "4.1"
+flatlafFontsRoboto = "2.137"
+flatlafFontsRobotoMono = "3.000"
+svgSalamander = "1.1.4"
+miglayout = "11.4.3"
+balloontip = "1.2.4.1"
+tipoftheday = "0.6.0"
+springBoot = "4.0.6"
+springmockk = "5.0.1"
+h2 = "2.4.240"
+
 [libraries]
 
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -45,3 +87,54 @@ licenseReport = { module = "com.github.jk1:gradle-license-report", version.ref =
 koverGradlePlugin = { module = "org.jetbrains.kotlinx:kover-gradle-plugin", version.ref = "kover" }
 frontendPlugin = { module = "org.siouan:frontend-jdk21", version.ref = "frontendPlugin" }
 install4j = { module = "com.install4j:install4j-gradle", version.ref = "install4j" }
+
+# ---- libraries ----
+kotlinTestJunit5 = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlinLibs" }
+junitPlatformLauncher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitPlatform" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+kotlinBom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlinLibs" }
+kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlinLibs" }
+kotlinReflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlinLibs" }
+kotlinxCoroutinesCore = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinxCoroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "coroutines" }
+kotlinxDatetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
+kotlinLogging = { module = "io.github.microutils:kotlin-logging", version.ref = "kotlinLogging" }
+ktorfit = { module = "de.jensklingenberg.ktorfit:ktorfit-lib", version.ref = "ktorfit" }
+i18n4kCore = { module = "de.comahe.i18n4k:i18n4k-core", version.ref = "i18n4k" }
+i18n4kCoreJvm = { module = "de.comahe.i18n4k:i18n4k-core-jvm", version.ref = "i18n4k" }
+nightConfigToml = { module = "com.electronwill.night-config:toml", version.ref = "nightConfig" }
+jacksonDatabind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jacksonDatabind" }
+jacksonModuleKotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+jacksonJsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
+zip4j = { module = "net.lingala.zip4j:zip4j", version.ref = "zip4j" }
+log4jApiKotlin = { module = "org.apache.logging.log4j:log4j-api-kotlin", version.ref = "log4jApiKotlin" }
+log4jCore = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
+pf4j = { module = "org.pf4j:pf4j", version.ref = "pf4j" }
+bouncycastle = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = "bouncycastle" }
+mslinks = { module = "org.jabref:mslinks", version.ref = "mslinks" }
+nekodetector = { module = "com.github.MCRcortex:nekodetector", version.ref = "nekodetector" }
+playwright = { module = "com.microsoft.playwright:playwright", version.ref = "playwright" }
+dockerJavaCore = { module = "com.github.docker-java:docker-java-core", version.ref = "dockerJava" }
+dockerJavaTransport = { module = "com.github.docker-java:docker-java-transport-zerodep", version.ref = "dockerJava" }
+commonsIo = { module = "commons-io:commons-io", version.ref = "commonsIo" }
+cronUtils = { module = "com.cronutils:cron-utils", version.ref = "cronUtils" }
+install4jRuntime = { module = "com.install4j:install4j-runtime", version.ref = "install4jRuntime" }
+picocli = { module = "info.picocli:picocli-shell-jline3", version.ref = "picocli" }
+flatlaf = { module = "com.formdev:flatlaf", version.ref = "flatlaf" }
+flatlafExtras = { module = "com.formdev:flatlaf-extras", version.ref = "flatlaf" }
+flatlafIntellijThemes = { module = "com.formdev:flatlaf-intellij-themes", version.ref = "flatlaf" }
+flatlafFontsJetbrainsMono = { module = "com.formdev:flatlaf-fonts-jetbrains-mono", version.ref = "flatlafFontsJetbrainsMono" }
+flatlafFontsInter = { module = "com.formdev:flatlaf-fonts-inter", version.ref = "flatlafFontsInter" }
+flatlafFontsRoboto = { module = "com.formdev:flatlaf-fonts-roboto", version.ref = "flatlafFontsRoboto" }
+flatlafFontsRobotoMono = { module = "com.formdev:flatlaf-fonts-roboto-mono", version.ref = "flatlafFontsRobotoMono" }
+svgSalamander = { module = "com.formdev:svgSalamander", version.ref = "svgSalamander" }
+miglayoutSwing = { module = "com.miglayout:miglayout-swing", version.ref = "miglayout" }
+balloontip = { module = "net.java.balloontip:balloontip", version.ref = "balloontip" }
+tipoftheday = { module = "tokyo.northside:tipoftheday", version.ref = "tipoftheday" }
+springBootStarterWeb = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "springBoot" }
+springBootStarterLog4j2 = { module = "org.springframework.boot:spring-boot-starter-log4j2", version.ref = "springBoot" }
+springBootStarterDataMongodb = { module = "org.springframework.boot:spring-boot-starter-data-mongodb", version.ref = "springBoot" }
+springBootStarterTest = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "springBoot" }
+springBootDevtools = { module = "org.springframework.boot:spring-boot-devtools", version.ref = "springBoot" }
+springmockk = { module = "com.ninja-squad:springmockk", version.ref = "springmockk" }
+h2 = { module = "com.h2database:h2", version.ref = "h2" }

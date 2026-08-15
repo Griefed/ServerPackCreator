@@ -7,33 +7,33 @@ plugins {
 
 
 dependencies {
-    api("io.github.microutils:kotlin-logging:3.0.5")
-    api("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0-0.6.x-compat")
-    implementation("org.jetbrains.kotlin:kotlin-bom:2.3.21")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.21")
-    api("de.jensklingenberg.ktorfit:ktorfit-lib:2.7.3")
-    api("de.comahe.i18n4k:i18n4k-core:0.11.2")
-    api("de.comahe.i18n4k:i18n4k-core-jvm:0.11.2")
+    api(libs.kotlinLogging)
+    api(libs.kotlinxDatetime)
+    implementation(libs.kotlinBom)
+    implementation(libs.kotlinStdlib)
+    api(libs.ktorfit)
+    api(libs.i18n4kCore)
+    api(libs.i18n4kCoreJvm)
     implementation(files("${layout.buildDirectory.asFile.get()}/resources/main"))
-    api("com.electronwill.night-config:toml:3.8.4")
-    api("com.fasterxml.jackson.core:jackson-databind:2.21.1")
-    api("net.lingala.zip4j:zip4j:2.11.6")
-    api("org.apache.logging.log4j:log4j-api-kotlin:1.5.0")
-    api("org.apache.logging.log4j:log4j-core:2.26.0")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
-    api("org.pf4j:pf4j:3.15.0")
-    api("org.bouncycastle:bcpkix-jdk18on:1.84")
+    api(libs.nightConfigToml)
+    api(libs.jacksonDatabind)
+    api(libs.zip4j)
+    api(libs.log4jApiKotlin)
+    api(libs.log4jCore)
+    api(libs.kotlinxCoroutinesCore)
+    api(libs.pf4j)
+    api(libs.bouncycastle)
 
-    api("org.jabref:mslinks:1.2")
+    api(libs.mslinks)
     api("com.github.MCRcortex:nekodetector:Version-1.1-pre")
     //api("dev.kosmx.needle:jneedle:1.0.1")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.21")
+    testImplementation(libs.kotlinTestJunit5)
     // MockK lets the unit tests stub network-bound collaborators (WebUtilities, VersionMeta) so
     // provisioner/manifest branches can be exercised offline. Version pinned to the same 1.14.6 the
     // app module already resolves transitively via springmockk, keeping the build's mockk single-versioned.
-    testImplementation("io.mockk:mockk:1.14.6")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.0")
+    testImplementation(libs.mockk)
+    testRuntimeOnly(libs.junitPlatformLauncher)
 }
 
 tasks.sourcesJar {

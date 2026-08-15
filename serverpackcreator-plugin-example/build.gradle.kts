@@ -28,8 +28,8 @@ val pluginDescription = "An example plugin for ServerPackCreator, written in Kot
 val pluginAuthor = "Griefed"
 
 dependencies {
-    annotationProcessor("org.pf4j:pf4j:3.15.0")
-    kapt("org.pf4j:pf4j:3.15.0")
+    annotationProcessor(libs.pf4j)
+    kapt(libs.pf4j)
     /*
      * CAUTION: When copying the code of the example plugin, make sure to change the dependency on
      * the API to implementation("de.griefed:serverpackcreator:serverpackcreator-api:$VERSION")
@@ -37,9 +37,9 @@ dependencies {
     implementation(project(":serverpackcreator-api"))
 
     // Testing
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.4.10")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.2")
-    testImplementation("io.mockk:mockk:1.14.6")
+    testImplementation(libs.kotlinTestJunit5)
+    testRuntimeOnly(libs.junitPlatformLauncher)
+    testImplementation(libs.mockk)
 }
 
 tasks.processResources {
