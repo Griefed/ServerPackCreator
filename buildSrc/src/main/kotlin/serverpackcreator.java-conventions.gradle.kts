@@ -1,19 +1,15 @@
 @file:Suppress("UnstableApiUsage")
 
+import de.griefed.common.gradle.TestHome
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import java.text.SimpleDateFormat
 import java.util.*
 
-repositories {
-    mavenCentral()
-}
 
 plugins {
     java
     `java-library`
-    `maven-publish`
-    signing
     idea
 }
 
@@ -22,8 +18,6 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(21))
     }
-    withSourcesJar()
-    withJavadocJar()
 }
 
 /**
@@ -42,13 +36,18 @@ tasks.processTestResources {
     // Declared as inputs so a changed toolchain or module path re-runs the copy instead of serving a stale one.
     inputs.property("spcTestJavaExecutable", testJavaExecutable)
     inputs.property("spcTestModuleHome", moduleTestHome)
+    // Escaped out here on purpose: the filter closure must capture only Strings. Calling the
+    // script-level escapeForProperties() from inside it would capture the build script itself, which
+    // the configuration cache cannot serialize.
+    val escapedJavaExecutable = escapeForProperties(testJavaExecutable)
+    val escapedModuleTestHome = escapeForProperties(moduleTestHome)
     filesMatching("serverpackcreator.properties") {
         filter { line: String ->
             when {
                 line.startsWith("de.griefed.serverpackcreator.java=") ->
-                    "de.griefed.serverpackcreator.java=${escapeForProperties(testJavaExecutable)}"
+                    "de.griefed.serverpackcreator.java=$escapedJavaExecutable"
                 line.startsWith("server.tomcat.basedir=") ->
-                    "server.tomcat.basedir=${escapeForProperties(moduleTestHome)}"
+                    "server.tomcat.basedir=$escapedModuleTestHome"
                 else -> line
             }
         }
@@ -57,6 +56,16 @@ tasks.processTestResources {
 
 tasks.test {
     useJUnitPlatform()
+    // Mockk/ByteBuddy attach an agent to the running JVM; without these the run warns on every start
+    // and will fail outright once self-attach is disabled by default.
+    jvmArgs("-XX:+EnableDynamicAgentLoading", "-Djdk.attach.allowAttachSelf=true")
+    // A fresh, isolated test home for every run. The directory is captured as a File so the action
+    // closes over that and nothing else; calling a script-level function here would capture the build
+    // script, which the configuration cache cannot serialize.
+    val testHome = layout.projectDirectory.dir("tests").asFile
+    doFirst {
+        TestHome.prepare(testHome)
+    }
     // Keep test runs off the shared Preferences node. SPC's home directory lives in a per-user, machine-wide node
     // that PathsConfig re-reads on every access and writes back to, so a suite booting an ApiWrapper would relocate
     // the home of every other SPC process on the account — it moved a live grinder daemon's home into a test
@@ -95,17 +104,14 @@ tasks.compileJava {
     options.encoding = "UTF-8"
 }
 
-tasks.getByName("sourcesJar",Jar::class) {
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
-}
-
 tasks.processResources {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 tasks.clean {
+    val testHome = layout.projectDirectory.dir("tests").asFile
     doFirst {
-        cleanup()
+        TestHome.prepare(testHome)
     }
     doLast {
         delete {
@@ -114,41 +120,6 @@ tasks.clean {
             }
         }
     }
-}
-
-tasks.test {
-    doFirst {
-        cleanup()
-    }
-}
-
-fun cleanup() {
-    val tests = File(projectDir,"tests").absoluteFile
-    mkdir(tests.absolutePath)
-    val gitkeep = File(tests,".gitkeep").absoluteFile
-    if (!gitkeep.exists()) {
-        File(tests,".gitkeep").writeText("Hi")
-    }
-    // Everything in the test home is disposable *except* the version manifests. Those are a cache of immutable
-    // upstream data -- SPC seeds them from the jar and fetches a per-version `mcserver/<version>.json` on demand --
-    // so deleting them makes every run re-download, which contradicts the module's documented "no live network
-    // needed" and quietly eats any newly-fetched version. Measured 2026-07-31: a single test task took the cache
-    // from 643 files to 0, and that is what kept deleting the hand-seeded Minecraft 26.2 metadata during the Forge
-    // work, and what left the newest versions resolving as "required Java unknown" in the template matrix.
-    // `updateManifests` benefits too: it copies this directory into the shipped resources, so preserving it lets
-    // the snapshot accumulate versions released since the last refresh instead of being capped at the seeded set.
-    projectDir.resolve("tests")
-        .listFiles()
-        .filter { !it.name.endsWith("gitkeep") && it.name != "manifests" }
-        .forEach {
-            it.deleteRecursively()
-        }
-    // Deliberately does NOT touch the Preferences store any more. This used to `removeNode()` the shared,
-    // machine-wide `ServerPackCreator` node and write the module's test directory into it as the home -- so every
-    // `test` or `clean` invocation relocated the home of the developer's own GUI, and of any running daemon, into
-    // the repository. The isolated per-module node and `-Dde.griefed.serverpackcreator.home` injected on the test
-    // task above replace it completely; SPC prefers that property over the stored preference, so nothing needs a
-    // stored value. Verified: the shared node held a repo test path from this mechanism.
 }
 
 tasks.jar {
@@ -171,81 +142,4 @@ tasks.jar {
             )
         )
     }
-}
-
-publishing {
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/Griefed/serverpackcreator")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
-            }
-        }
-        maven {
-            name = "GitGriefed"
-            url = uri("https://git.griefed.de/api/v4/projects/63/packages/maven")
-            credentials(HttpHeaderCredentials::class) {
-                name = "Private-Token"
-                value = System.getenv("GITLAB_TOKEN")
-            }
-            authentication {
-                create<HttpHeaderAuthentication>("header")
-            }
-        }
-        maven {
-            name = "GitLab"
-            url = uri("https://gitlab.com/api/v4/projects/32677538/packages/maven")
-            credentials(HttpHeaderCredentials::class) {
-                name = "Private-Token"
-                value = System.getenv("GITLABCOM_TOKEN")
-            }
-            authentication {
-                create<HttpHeaderAuthentication>("header")
-            }
-        }
-    }
-
-    publications {
-        register("mavenJava", MavenPublication::class) {
-            groupId = project.group.toString()
-            artifactId = project.name
-            version = project.version.toString()
-            artifact(tasks["javadocJar"])
-            pom {
-                name.set("ServerPackCreator")
-                description.set("ServerPackCreators API, to create server packs from Forge, Fabric, Quilt, LegacyFabric and NeoForge modpacks.")
-                url.set("https://git.griefed.de/Griefed/ServerPackCreator")
-
-                licenses {
-                    license {
-                        name.set("GNU Lesser General Public License v2.1")
-                        url.set("https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html")
-                    }
-                }
-
-                developers {
-                    developer {
-                        id.set("griefed")
-                        name.set("Griefed")
-                        email.set("griefed@griefed.de")
-                    }
-                }
-
-                scm {
-                    connection.set("scm:git:git:git.griefed.de/Griefed/ServerPackCreator.git")
-                    developerConnection.set("scm:git:ssh://git.griefed.de/Griefed/ServerPackCreator.git")
-                    url.set("https://git.griefed.de/Griefed/ServerPackCreator")
-                }
-            }
-        }
-    }
-}
-
-signing {
-    val signingKey = findProperty("signingKey").toString()
-    val signingPassword = findProperty("signingPassword").toString()
-    useInMemoryPgpKeys(signingKey, signingPassword)
-    sign(publishing.publications)
 }

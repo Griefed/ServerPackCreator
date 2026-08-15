@@ -3,9 +3,6 @@ plugins {
     id("serverpackcreator.dokka-conventions")
 }
 
-repositories {
-    mavenCentral()
-}
 
 dependencies {
     // The domain core: VersionMeta, ModScanner, ServerPackHandler, PackConfig, utilities.
@@ -13,13 +10,13 @@ dependencies {
 
     // The API ships jackson-databind, but not the Kotlin module the report-renderer needs for
     // jacksonObjectMapper(); log4j-api-kotlin comes transitively from the API.
-    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.22.0")
+    api(libs.jacksonModuleKotlin)
 
     // Headless-browser download of distribution-locked CurseForge files (locked = no direct URL).
-    api("com.microsoft.playwright:playwright:1.60.0")
+    api(libs.playwright)
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.21")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.0")
+    testImplementation(libs.kotlinTestJunit5)
+    testRuntimeOnly(libs.junitPlatformLauncher)
 }
 
 tasks.test {

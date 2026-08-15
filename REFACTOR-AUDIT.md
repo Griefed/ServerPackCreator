@@ -1,268 +1,112 @@
-# Refactor audit — `claude-modscanning-generification`
+# Refactor audit — `claude-build-docs`
 
-**Scope:** `git log develop..HEAD` — 16 commits (`f8cb89bff` … `94b6a8c1b`), audited against the
-Refactoring Conventions. **Read-only: no source was modified.**
+**Scope:** `git log develop..HEAD` — **1 commit**, `fd8d674be`.
+**Mode:** READ-ONLY. No source was modified while auditing.
+**Supersedes** the previous audit in this file (`claude-webservice-context-test` +
+`claude-config-cache`). That one's M-1 — a commit bundling three concerns — was acted on: the commit
+was split into three, one part was dropped entirely after measurement disproved its rationale, and all
+of it is now merged into `develop`.
 
-**Verdict:** one HIGH, six MEDIUM, three LOW. The HIGH is a staging error, not a logic error — the
-code at HEAD is correct and the full build is green, but one commit's contents do not match its
-message, which makes part of this branch's history untrustworthy for `git blame` and for anyone
-bisecting.
-
-**Remediation (2026-08-15, on Griefed's go-ahead): H-1 and M-3 are FIXED.** The branch was rebuilt
-from `d13252234`; the two rebuilt commits and the eight replayed ones are unchanged in content except
-as described below, and the final tree differs from the pre-remediation tip by exactly the two new
-test files. `./gradlew build` green; suites api 302 (1 skip), clientside 88, app **102** (was 88),
-grinder 233 (19 skip), plugin-example 3 — **728 total**. Superseded findings are marked inline; M-1,
-M-2, M-4 – M-6 and the LOWs are **open and accepted**.
+**Verdict: no HIGH, no MEDIUM, two LOW.** This is a single documentation commit that touches no
+source. Most of these conventions are written for code changes and simply do not apply; rather than
+stretch them to produce findings, this report says which ones were checked and what the two real
+observations are.
 
 ---
 
 ## HIGH
 
-### H-1 · ~~FIXED~~ · Four `-api` production refactors are committed inside a `test(app)` commit — and the `refactor:` commit that claims them contains none of them
-
-**Commits:** `73e16ba9c` (holds the code), `25b83e8e9` (claims it)
-**Rule broken:** *One concern per commit. Keep "add tests" and "refactor (no behavior change)" in
-separate commits.*
-
-`73e16ba9c` is labelled `test(app): characterize VersionChecker's pre-release comparison`. Its
-diffstat:
-
-```
-serverpackcreator-api/.../config/ConfigurationHandler.kt          |   7 +-
-serverpackcreator-api/.../utilities/common/BooleanUtilities.kt    |  29 ++---
-serverpackcreator-api/.../utilities/common/FileUtilities.kt       |  18 ++-
-serverpackcreator-api/.../utilities/common/JsonUtilities.kt       |  12 +-
-serverpackcreator-app/.../versionchecker/VersionCheckerTest.kt    | 137 +++++
-```
-
-Four `-api` production files — a different module from the commit's `(app)` scope, and a different
-concern from "add tests". They are the `RedundantIf` collapses:
-
-- `BooleanUtilities.convert` — `if/else if/else` → `when` (`BooleanUtilities.kt:91-107`)
-- `JsonUtilities.getNestedBoolean` — `if/else if/else` → `when` (`JsonUtilities.kt:136-142`)
-- `ConfigurationHandler.checkIconAndProperties` — collapsed to `||` (`ConfigurationHandler.kt:415`)
-- `FileUtilities.isLink` — collapsed to `||`, `catch (ex)` → `catch (_)` (`FileUtilities.kt:153-159`)
-
-The next commit, `25b83e8e9 refactor: collapse the redundant conditionals Qodana flagged`, names all
-four in its message and explains at length *why* `BooleanUtilities` and `JsonUtilities` became `when`
-rather than `||` (the `log.warn` side-effect; `toBooleanStrictOrNull` being case-sensitive). Verified
-against the actual trees:
-
-| file | in `25b83e8e9` | in `73e16ba9c` |
-|---|---|---|
-| `BooleanUtilities` | 0 | 1 |
-| `JsonUtilities` | 0 | 1 |
-| `FileUtilities` | 0 | 1 |
-| `ConfigurationHandler` | 0 | 1 |
-
-**Why this matters beyond tidiness.** This is the failure mode `serverpackcreator-api/CLAUDE.md`
-already records for the `modFileEndings`/`zipCheck` copies: *the explanation lives on one artifact
-while the code lives on another.* Someone running `git log -- BooleanUtilities.kt` to learn why that
-`when` has a comment about warning side-effects lands on a commit about `VersionChecker`, whose
-message says nothing about it. Additionally, `73e16ba9c` was committed after running only
-`:serverpackcreator-app:test --tests '*VersionCheckerTest*'` — the `-api` suite was **not** run
-against those four files until `25b83e8e9`, two commits later. It did pass there, so no defect
-shipped, but that commit was never verified green when it was made.
-
-**Cause:** `git add -A` staging without checking `git status` first.
-
-**FIXED.** The branch was rebuilt from `d13252234`: `ec79084bd` is the test commit carrying **only**
-`VersionCheckerTest.kt`, and `4e1669456` is the refactor commit carrying all ten files its message
-describes, the four `-api` ones included. Verified afterwards — each of the four now reports `1` in the
-refactor commit and `0` in the test commit, and the rebuilt tree is byte-identical to the original
-`25b83e8e9` tree at that point. Done before pushing, which is the window `CLAUDE.md` describes for
-`358675fbf`, where the same class of problem became unfixable after merge.
-
----
+None. The commit modifies three Markdown files and nothing else — verified, no `.kt`, `.kts`,
+`.properties` or `.toml` in the diff. No behaviour, no module boundary, no plugin API is involved.
 
 ## MEDIUM
 
-### M-1 · `d04a62a79` is a big-bang rewrite of `modscanning` in one commit
+None.
 
-**Rule broken:** *Refactor incrementally behind stable interfaces (Strangler Fig). No big-bang
-rewrite of a module in a single commit.*
+The characterization-test rule has no purchase on a docs commit, but its *spirit* — do not assert
+what you have not verified — is the one that matters here, and it was honoured. Every checkable claim
+in `BUILD.md` was run rather than recalled, which is what turned up the three errors the commit fixes
+(the missing `./gradlew`, the non-existent `Build All` task, and `:serverpackcreator-app:run`). Spot-
+checks during this audit:
 
-13 files, +506/−397, carrying **four** independent extractions that were each viable alone:
-
-1. replace `internal Scanner<T,U>` with public `ModJarScanner`
-2. add `DescriptorScanner` (the walk-the-jars template method) and move 5 scanners onto it
-3. add `FabricFamilyScanner` (Fabric/Quilt sharing)
-4. move loader→scanner dispatch onto `ModScanner.scannerFor` + add `QuiltPackScanner`, rewiring
-   `ModListCompiler` *and* `-clientside`'s `MetadataScanner`
-
-Each step keeps the suite green independently and (1)–(3) are invisible to callers, so there was no
-technical reason to land them together. A reviewer now has to hold all four in their head at once,
-and a bisect landing here cannot tell which extraction caused a regression.
-
-*Mitigating:* no existing test was touched (0 test files in the commit), and the commit message does
-enumerate the four steps.
-
-### M-2 · ~~FIXED~~ · `d04a62a79` changes logging behaviour inside a `refactor:` commit
-
-**File:** `ForgeAnnotationScanner.kt`, `ModListCompiler.kt`
-**Rule broken:** *Never mix a refactor with a behavior change.*
-
-Four log statements were removed or altered:
-
-```
-- log.error("Could not scan ${modJar.name}. Consider reporting this:", e)   // lost its stack trace
-- log.error("Could not scan ... no modId in the annotation cache.")          // moved, not lost
-- log.debug("Scanning using NeoForge scanner.")
-- log.debug("Scanning using Forge scanner.")
-```
-
-Log output is observable behaviour, and the stack trace is the one that matters: an unparseable
-1.12-era jar now reports `${e.cause}: ${e.message}` where it used to give a full trace. A strict
-reading of the rubric makes this HIGH ("behaviour change mixed into a refactor"); it is filed MEDIUM
-because no functional contract changed and the commit message discloses both changes explicitly.
-
-**FIXED by Griefed in `6026f3640`**, and more broadly than the finding asked: rather than restoring the
-two-arg form on `ForgeAnnotationScanner` alone, the shared `DescriptorScanner` catch now logs the
-exception object for **all five** scanners, and the wording moves from "Consider reporting this" to
-"Consider reporting this to the mod-author" — which is the correct address for a jar whose descriptor
-cannot be read. The four scanners that had only ever logged a message therefore *gain* the type and
-trace they never had.
-
-**Measured consequence, not an objection — one `:serverpackcreator-api:test` run emits 159 such lines:**
-80 `NullPointerException` (jar carries no descriptor for the scanner in use), 37 `ZipException`
-(unreadable archive), 28 `ScanningException` (`"No dependencies specified."`). The last group is an
-ordinary mod that declares no dependency block, and the Quilt arm scans every jar with *both* the Quilt
-and Fabric scanners by design, so a Quilt pack emits one trace per Fabric-only jar and vice versa. If
-that proves noisy in a real generation, the narrow follow-up is to keep the trace for genuinely
-unexpected failures and drop "descriptor absent" / "no dependencies declared" to DEBUG.
-
-### M-3 · ~~FIXED~~ · `4a30aa4d9` changes two units that have **zero** real test coverage
-
-**Files:** `EventService.kt:51-56`, `RunConfigurationService.kt:61-64, 76-79, 91-94`
-**Rule broken:** *Never refactor untested code blind. Write characterization tests first and commit
-them on their own.*
-
-Both loops went from two repository lookups per element to one:
-
-```kotlin
-- if (repo.findByX(item.x).isPresent) { list[i] = repo.findByX(item.x).get() } else { … }
-+ val stored = repo.findByX(item.x); list[i] = stored.orElseGet { repo.save(list[i]) }
-```
-
-Neither service has a test. `RunConfigurationControllerTest` and `EventControllerTest` exist but
-**mock the services** (`private val runConfigurationService: RunConfigurationService = mockk()`), so
-they exercise none of this. The change is almost certainly equivalent — but "almost certainly" is
-what characterization tests exist to replace, and the persistence layer is MongoDB, where a
-save-on-absent path is not trivially reasoned about from the source.
-
-**FIXED, and in the right place.** `d603378d9` adds `EventServiceTest` (5) and
-`RunConfigurationServiceTest` (8) and is inserted **before** `d37fc61cc` (the former `4a30aa4d9`), so
-the tests were written against, and verified green on, the two-lookup code they characterize — then
-stayed green when the change was replayed on top. That is what turns "almost certainly equivalent"
-into evidence. They pin the outcome (which entries the built object holds, which reach `save`) and
-deliberately **not** the lookup count, since pinning an implementation detail would have made them red
-for the very next commit.
-
-*Also:* halving the query count is a performance change riding in a `refactor:` commit. Disclosed in
-the message, but it is a second concern.
-
-### M-4 · `9a3736853` pins the dispatch **after** the refactor it guards
-
-**Rule broken:** *Before refactoring any unit, ensure characterization tests exist that pin its
-current behavior.*
-
-`ModScannerDispatchTest` (6 tests, identity-asserted) is exactly the right guard for
-`ModScanner.scannerFor` — but it lands one commit *after* `d04a62a79` created it. During the
-refactor itself, the dispatch was covered only by outcome (`autoDiscoveryReachesScannerBranchPerLoader`
-asserts jar partitioning, not which scanner ran), which is the weaker "asserts shape, not behaviour"
-form `CLAUDE.md` warns about.
-
-*Mitigating:* the units being restructured (the five scanners) *were* well covered beforehand by
-`ModScannerTest` / `ModScannerSidenessTest` / `ModListCompilerTest`, so this was not a blind refactor
-— only the new seam was unguarded, and briefly.
-
-### M-5 · `a5736776e` mixes three concerns
-
-**Rule broken:** *One concern per commit.*
-
-The commit contains (a) a refactor — hoisting the duplicated lambda-suffix regex into
-`MigrationManager.LAMBDA_SUFFIX`, (b) a **new test** for it (`MigrationManagerTest.kt`, +26), and
-(c) the behaviour-neutral multi-dollar literal conversions across five files in two modules.
-
-The message argues (a)+(b) belong together under the enabling-change carve-out `CLAUDE.md` records
-for per-parameter KDoc, and that is defensible — you cannot test a private literal. It does not cover
-(c), which is unrelated to the extraction and could have been its own commit.
-
-### M-6 · `694cb2120` mixes two unrelated concerns across two modules
-
-**Rule broken:** *One concern per commit; don't let cleanup sprawl across unrelated files.*
-
-- `-clientside`: `ClientsideModels.kt` — repair 4 dangling KDoc links (`Project` → `ProjectFiles`)
-- `-app`: `MigrationManager.kt` — drop a redundant `inner` modifier, plus the consequent
-  `MigrationManagerTest.kt` receiver change
-
-A documentation fix and a class-modifier change, in different modules, sharing only the fact that
-Qodana reported both. The `fix(docs)` type also understates it: the `inner` removal is a code change,
-not a docs change.
-
-*Note:* the test edit itself is fine — receiver-only, every assertion byte-identical, which is the
-carve-out `CLAUDE.md` grants for symbol moves.
+| Claim | Result |
+|---|---|
+| `build` runs the frontend Vitest suite | `checkScript.set("run test")` present in quasar-conventions ✓ |
+| configuration time ~4.75s → ~2.02s | re-measured 4.96s → 2.04s ✓ (within noise) |
+| `BUILD.md` is not in the shipped document set | 0 mentions in `-api`'s build file ✓ |
+| `bootRun` exists, `run` does not, for `-app` | verified against the task graph ✓ |
+| foojay resolver absent from root settings | verified ✓ |
 
 ---
 
 ## LOW
 
-### L-1 · `0bbc0234f` is typed `docs(...)` but modifies Kotlin source
+### L-1 · `fd8d674be` fixes a documentation bug found mid-task, in the same commit rather than its own
 
-Adds `@Suppress("DEPRECATION")` annotations to `ScriptTemplatesConfig.kt` and `MigrationManager.kt`.
-Annotations are code, not documentation. `chore(...)` or `refactor(...)` would be honest. Behaviour
-is unaffected, and the suppressions were verified effective (7 → 0 warnings).
+**File:** `CLAUDE.md:72-75`
+**Rule:** *If you find a bug while refactoring, surface it explicitly and propose a fix in its own
+commit.*
 
-### L-2 · `4dbf653cc` bundles two behaviour changes
+While verifying `BUILD.md`'s claims, `./gradlew :serverpackcreator-app:run` turned out not to exist —
+`-app` applies the Spring Boot plugin, so the task is `bootRun`. The root `CLAUDE.md` carried the same
+wrong command and is corrected in this commit rather than a separate one.
 
-The Forge era fix, plus a change of error posture — an unparseable Minecraft version now falls back
-to the modern scanner in `ModListCompiler` where it previously threw `IndexOutOfBoundsException` out
-of `compileModList`. The conventions permit grouping *related* behaviour changes, and unifying the
-two call-sites' posture genuinely was a precondition for the later shared dispatch. Disclosed in the
-message. Recorded only for completeness.
+It *is* surfaced explicitly — the commit body names it as one of three errors the verification caught,
+and the correction adds the reason (`-app` is not an `application` module) plus the contrast with
+`:serverpackcreator-grinder:run`, which does exist. So the "do not silently work around it" half of
+the rule is satisfied; only the "own commit" half is not.
 
-### L-3 · Untested view/demo units refactored without characterization tests
+Defensible as one concern — *the build documentation was wrong in three places, here are the three*.
+Recorded because the rule is written without that exception, and because the fix lands in a file that
+is not otherwise the subject of the commit.
 
-`ConfigEditor.checkJava` (guard-clause inversion), `InclusionsEditor.canImport` (collapsed to `&&`),
-`Tetris` (6 range-check conversions). None has a test. All are Swing view code or example-plugin
-demo code where the project has explicitly decided not to invest in tests, and all six Tetris changes
-are mechanical (`x < 0 || x >= n` → `x !in 0 until n`). Flagged for the record, not for action.
+### L-2 · ~~FIXED~~ · `fd8d674be` leaves a stated prerequisite gap unresolved by design
 
----
+**File:** `BUILD.md:49-53`
 
-## Conventions upheld (verified, not assumed)
+The commit documents that the foojay toolchain resolver is applied in `buildSrc/settings.gradle.kts`
+but not in the root, so a contributor without a local JDK 21 gets *"No matching toolchains found"*
+instead of an automatic download — and then explicitly declines to fix it, on the grounds that
+changing toolchain provisioning does not belong in a docs commit.
 
-- **Pin-first with observed red, in its own commit** — done correctly twice, and the failing output is
-  quoted in each commit body: `f8cb89bff` → `4dbf653cc` (Forge era) and `1c7804977` → `96eccff59`
-  (pre-release ordering). `1c7804977`'s message also records that the second pin took three attempts
-  before it failed for the right reason.
-- **No existing test assertion was changed by a `refactor:` commit** — verified: `d04a62a79`,
-  `25b83e8e9`, `4a30aa4d9`, `d13252234` touch **zero** test files; `a5736776e` only *adds* one.
-- **Bug found during refactor was surfaced and fixed in its own commit, not worked around** — the
-  Forge era defect was fixed before any restructuring began.
-- **No Kotlin idiom regressions** — `git diff develop..HEAD -- '*/src/main/*.kt'` introduces no new
-  `!!` and no new `var`.
-- **Documentation kept in separate commits** — `d76e2edad`, `a1d81990f`, `94b6a8c1b`.
-- **A stale claim in the module docs was corrected rather than deleted** — the `-api` versioning-scheme
-  landmine had asserted the Kotlin side was clean; `d76e2edad` records that it was not, and why the
-  earlier survey missed it.
+That is the right call under *one concern per commit*, and the trap is now written down where a
+newcomer will hit it. Flagged only so it does not disappear: **documenting a papercut is not the same
+as fixing it**, and the fix is one line in `settings.gradle.kts`. It should become a follow-up rather
+than remain permanently "documented".
 
-## Not a violation, but your call to confirm
-
-`d13252234` removes the published `JsonBasedScanner`, which the rubric would classify HIGH ("changed
-plugin-API contract"). It is excluded from the findings because it was **explicitly requested** after
-the alternative (a deprecated facade) was implemented and presented, and the break is recorded in the
-root `CLAUDE.md` compatibility table. Listed here so the decision stays visible rather than buried.
+**FIXED.** The resolver is now registered for the modules too. It took more than the predicted one
+line: the two builds need it declared *differently* (root with a version, buildSrc without), because
+buildSrc does not inherit the root's toolchain repositories yet its settings evaluate with the plugin
+already on the classpath. Both directions were verified by requesting an uninstalled JDK 11 and
+reading which error came back.
 
 ---
 
-## Suggested order of remediation
+## Checked and clean
 
-1. **H-1** — rebase the four `-api` files from `73e16ba9c` into `25b83e8e9`. Do it before pushing;
-   after that the honest remedy becomes a follow-up note instead of a fix.
-2. **M-3** — write characterization tests for `EventService` / `RunConfigurationService`, or revert
-   the double-lookup change until they exist.
-3. **M-1 / M-2** — history-only; fixable in the same rebase as H-1 by splitting `d04a62a79`, or
-   accept as-is with the rationale already in the message.
-4. **M-4 / M-5 / M-6 / L-1** — cosmetic history issues; no action needed unless you want the log clean.
+- **No source modified**: the diff is `BUILD.md` (new, 229 lines), `CONTRIBUTING.md` (+14/-6) and
+  `CLAUDE.md` (+6/-6).
+- **No test was touched or needed to change**, so the "a refactor that changes a test is not a
+  refactor" rule is trivially satisfied.
+- **Claims were verified rather than recalled**, and the verification is what produced the commit's
+  content — three documented errors, each named in the commit body with how it was found.
+- **The shipping decision is correct and was checked, not assumed.** `CONTRIBUTING.md` is one of the
+  seven documents copied into `-api`'s resources and mirrored into the Writerside topics; `BUILD.md`
+  is not, so the link between them is an absolute URL rather than a relative path that would dangle in
+  the shipped copies. Confirmed `BUILD.md` appears nowhere in `-api`'s `shippedDocuments` list.
+- **`BUILD.md`'s own links resolve**: no broken heading anchors, no broken file links. (An earlier
+  draft had two broken anchors; they were caught and fixed before the commit.)
+- **Scope did not sprawl.** Three files, all documentation, all about how to build the project.
+- **Branch follows the `claude-` naming rule** and has not been pushed.
+- `./gradlew build` green.
+
+## Follow-ups, not defects in this range
+
+- **Add the foojay resolver to the root `settings.gradle.kts`** and delete the trap from `BUILD.md`
+  (L-2). One line; removes the JDK-21 prerequisite entirely.
+- **`serverpackcreator-plugin-example/src/main/resources/CHANGELOG.md`** is a tracked 14 KB file that
+  nothing generates and nothing updates, shipped inside the example plugin's jar, whose source file at
+  the module root does not exist. Surfaced during the previous branch and deliberately left alone —
+  deleting a tracked file that reaches users is a product decision, not a build cleanup.
+- The configuration cache remains opt-in (`--configuration-cache`), blocked for `build` by the
+  third-party `:generateLicenseReport`. Documented in `BUILD.md` and `CLAUDE.md`.

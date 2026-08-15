@@ -36,15 +36,11 @@ import java.io.File
 class WebService(private val api: ApiWrapper) {
 
     fun start(args: Array<String>): ConfigurableApplicationContext {
-        val userHome = System.getProperty("user.home")
-        val configLocationArgument = "--spring.config.location=classpath:/application.properties," +
-                "classpath:/serverpackcreator.properties," +
-                "optional:file:${api.apiProperties.serverPackCreatorPropertiesFile.absolutePath},"+
-                "optional:file:${File(userHome,"serverpackcreator.properties").absolutePath}," +
-                "optional:file:./serverpackcreator.properties," +
-                "optional:file:${api.apiProperties.overridesPropertiesFile.absolutePath}," +
-                "optional:file:${File(userHome,"overrides.properties").absolutePath}," +
-                "optional:file:./overrides.properties"
+        val configLocationArgument = configLocationArgument(
+            api.apiProperties.serverPackCreatorPropertiesFile,
+            api.apiProperties.overridesPropertiesFile,
+            File(System.getProperty("user.home"))
+        )
         val springArgs = springArguments(args, configLocationArgument)
         log.debug("Running webservice with args:${springArgs.contentToString()}")
         log.debug("Application name: ${getSpringBootApplicationContext(springArgs).applicationName}")
@@ -74,6 +70,32 @@ class WebService(private val api: ApiWrapper) {
          */
         fun springArguments(args: Array<String>, configLocationArgument: String): Array<String> =
             args + configLocationArgument
+
+        /**
+         * The `--spring.config.location` argument: the eight property-file locations Spring reads, in
+         * the order it reads them. **Later locations win**, so the two `overrides.properties` entries
+         * come last on purpose — that is the file the docker image's `init-spc-config` script composes
+         * `SPC_DATABASE_*` into, and therefore where `spring.data.mongodb.uri` arrives from in a
+         * container deployment.
+         *
+         * Extracted from [start] for the same reason [springArguments] was: `start` hands the result
+         * straight to Spring Boot, so the composition could not otherwise be asserted. A location that
+         * silently goes missing here is a property-file that is never read, which for the database URI
+         * is a hard startup failure and for everything else is a setting that quietly does nothing.
+         *
+         * @param propertiesFile   ServerPackCreator's own properties file, from its home directory.
+         * @param overridesFile    The overrides file from that same home directory.
+         * @param userHome         The user's home directory, which contributes two more locations.
+         */
+        fun configLocationArgument(propertiesFile: File, overridesFile: File, userHome: File): String =
+            "--spring.config.location=classpath:/application.properties," +
+                    "classpath:/serverpackcreator.properties," +
+                    "optional:file:${propertiesFile.absolutePath}," +
+                    "optional:file:${File(userHome, "serverpackcreator.properties").absolutePath}," +
+                    "optional:file:./serverpackcreator.properties," +
+                    "optional:file:${overridesFile.absolutePath}," +
+                    "optional:file:${File(userHome, "overrides.properties").absolutePath}," +
+                    "optional:file:./overrides.properties"
 
         @Volatile
         private var springBootApplicationContext: ConfigurableApplicationContext? = null

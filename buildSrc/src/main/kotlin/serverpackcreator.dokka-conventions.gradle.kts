@@ -5,9 +5,6 @@ plugins {
     id("org.jetbrains.dokka-javadoc")
 }
 
-repositories {
-    mavenCentral()
-}
 
 dokka {
     moduleName = "ServerPackCreator"
@@ -52,7 +49,7 @@ dokka {
 }
 
 tasks.dokkaGeneratePublicationJavadoc {
-    dependsOn(tasks.getByName("compileJava"), tasks.getByName("compileTestJava"))
+    dependsOn(tasks.named("compileJava"), tasks.named("compileTestJava"))
 }
 
 tasks.register<Jar>("dokkaJavadocJar") {

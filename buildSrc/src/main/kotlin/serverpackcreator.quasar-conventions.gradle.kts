@@ -4,9 +4,6 @@ plugins {
     id("org.siouan.frontend-jdk21")
 }
 
-repositories {
-    mavenCentral()
-}
 
 frontend {
     packageJsonDirectory.set(project.layout.projectDirectory.asFile)
@@ -21,9 +18,6 @@ frontend {
     // Maps to `npm run test` -> `vitest run` (package.json).
     checkScript.set("run test")
 
-    // Print the architecture we are running on.
-    println(String.format("I am running on: %s", System.getProperty("os.arch")))
-
     verboseModeEnabled.set(true)
 }
 
@@ -31,7 +25,7 @@ tasks.register("installQuasar", RunNpmTaskType::class) {
     args.set("install -g @quasar/cli")
 }
 
-tasks.getByName("installNode").finalizedBy(
-    tasks.getByName("installQuasar")
-)
+tasks.named("installNode") {
+    finalizedBy(tasks.named("installQuasar"))
+}
 
