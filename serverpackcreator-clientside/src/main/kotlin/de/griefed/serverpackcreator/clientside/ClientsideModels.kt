@@ -25,8 +25,8 @@ package de.griefed.serverpackcreator.clientside
  * reports [UNKNOWN].
  *
  * Read as a pair — a project carries one of these for the client and another for the server
- * ([Project.clientSide] / [Project.serverSide]) — so a single value answers "how much does it want
- * *this* side", never "which side does it belong on".
+ * ([ProjectFiles.clientSide] / [ProjectFiles.serverSide]) — so a single value answers "how much does
+ * it want *this* side", never "which side does it belong on".
  *
  * **Not to be merged with `api.modscanning.Sideness`, despite the name this type used to carry.**
  * That enum is SPC's own *verdict* (`SERVER`/`CLIENT`, one value = the whole answer, defaulting to

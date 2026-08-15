@@ -93,8 +93,8 @@ internal class MigrationManagerTest {
      */
     @Test
     fun migrationMessageRendersChanges() {
-        val (manager, _) = managerFor(previousVersion = "5.0.0", currentVersion = "6.0.0")
-        val message = manager.MigrationMessage("5.0.0", "6.0.0", mutableListOf("Changed A", "Changed B"))
+        // No MigrationManager needed: MigrationMessage is a nested value-object, not an inner class.
+        val message = MigrationManager.MigrationMessage("5.0.0", "6.0.0", mutableListOf("Changed A", "Changed B"))
         Assertions.assertEquals("5.0.0", message.fromVersion())
         Assertions.assertEquals("6.0.0", message.toVersion())
         Assertions.assertEquals(2, message.count())
