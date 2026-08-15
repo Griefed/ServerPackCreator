@@ -13,12 +13,6 @@ dependencyResolutionManagement {
         maven("https://repo.spring.io/milestone")
         maven("https://maven.ej-technologies.com/repository")
     }
-
-    versionCatalogs {
-        create("libs") {
-            from(files("libs.versions.toml"))
-        }
-    }
 }
 
 include(":serverpackcreator-api")
