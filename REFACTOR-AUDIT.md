@@ -98,7 +98,7 @@ and a bisect landing here cannot tell which extraction caused a regression.
 *Mitigating:* no existing test was touched (0 test files in the commit), and the commit message does
 enumerate the four steps.
 
-### M-2 · `d04a62a79` changes logging behaviour inside a `refactor:` commit
+### M-2 · ~~FIXED~~ · `d04a62a79` changes logging behaviour inside a `refactor:` commit
 
 **File:** `ForgeAnnotationScanner.kt`, `ModListCompiler.kt`
 **Rule broken:** *Never mix a refactor with a behavior change.*
@@ -116,6 +116,21 @@ Log output is observable behaviour, and the stack trace is the one that matters:
 1.12-era jar now reports `${e.cause}: ${e.message}` where it used to give a full trace. A strict
 reading of the rubric makes this HIGH ("behaviour change mixed into a refactor"); it is filed MEDIUM
 because no functional contract changed and the commit message discloses both changes explicitly.
+
+**FIXED by Griefed in `6026f3640`**, and more broadly than the finding asked: rather than restoring the
+two-arg form on `ForgeAnnotationScanner` alone, the shared `DescriptorScanner` catch now logs the
+exception object for **all five** scanners, and the wording moves from "Consider reporting this" to
+"Consider reporting this to the mod-author" — which is the correct address for a jar whose descriptor
+cannot be read. The four scanners that had only ever logged a message therefore *gain* the type and
+trace they never had.
+
+**Measured consequence, not an objection — one `:serverpackcreator-api:test` run emits 159 such lines:**
+80 `NullPointerException` (jar carries no descriptor for the scanner in use), 37 `ZipException`
+(unreadable archive), 28 `ScanningException` (`"No dependencies specified."`). The last group is an
+ordinary mod that declares no dependency block, and the Quilt arm scans every jar with *both* the Quilt
+and Fabric scanners by design, so a Quilt pack emits one trace per Fabric-only jar and vice versa. If
+that proves noisy in a real generation, the narrow follow-up is to keep the trace for genuinely
+unexpected failures and drop "descriptor absent" / "no dependencies declared" to DEBUG.
 
 ### M-3 · ~~FIXED~~ · `4a30aa4d9` changes two units that have **zero** real test coverage
 
