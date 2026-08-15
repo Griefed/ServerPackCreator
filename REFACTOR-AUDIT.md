@@ -1,266 +1,268 @@
-# Refactor Audit — modscanning follow-ups (`0a12d41d0..HEAD`)
+# Refactor audit — `claude-modscanning-generification`
 
-**Range audited:** `0a12d41d0..HEAD` — **6 commits**, `bf226c2ac` … `7004f3c88` (2026-08-14)
-**Base:** `0a12d41d0` *("fix: Vastly improve automated modscanning…")* — the rewrite these six commits
-follow up on. Not itself in range; its surviving conditions are reported separately below.
-**Mode:** READ-ONLY at audit time. No source was modified while auditing.
+**Scope:** `git log develop..HEAD` — 16 commits (`f8cb89bff` … `94b6a8c1b`), audited against the
+Refactoring Conventions. **Read-only: no source was modified.**
 
-**Remediation:** branches `claude-modscan-test-hardening` (12 commits) and `claude-modscan-tidyup`
-(10 commits), `7279962bd` … `3fabed7cc`. API suite **280 → 295 tests**, 1 skip (the `fish`-absent skip
-in `ScriptTemplateContentTest`, unchanged), 0 failures. `:serverpackcreator-app:test` 80 tests, green.
+**Verdict:** one HIGH, six MEDIUM, three LOW. The HIGH is a staging error, not a logic error — the
+code at HEAD is correct and the full build is green, but one commit's contents do not match its
+message, which makes part of this branch's history untrustworthy for `git blame` and for anyone
+bisecting.
 
-**All findings are closed.**
-
-### Status
-
-| # | Finding | Severity | Status |
-|---|---|---|---|
-| H-1 | Exported types deleted under a `refactor:` label | HIGH | **Withdrawn** — see below |
-| M-1 | No characterization test in any of the six commits | MEDIUM | **Fixed** — 5 test commits, +12 tests |
-| M-2 | Exported `modID` default changed silently, unpinned | MEDIUM | **Pinned**; still undocumented (→ I-3) |
-| M-3 | Fixture cannot reach the Quilt fabric-fallback branch | MEDIUM | **Moot** — superseded by N-1 |
-| M-4 | Unrecognised modloader yields an empty server pack | MEDIUM | **Fixed** + pinned |
-| N-1 | The Quilt copy-loop is now unreachable dead code | LOW | **Fixed** — removed, guarded |
-| L-1 | Unused `SupportedModloaders.quilt` import | LOW | **Fixed** |
-| L-2 | Value identity hand-rolled at six call sites | LOW | **Fixed** — helper, not `equals` |
-| L-3 | Log statement reads the value it just overwrote | LOW | **Fixed** |
-| I-6 | Dependency rescue could not fire for clientside mods | MEDIUM | **Fixed** + pinned |
-| I-1…I-5, I-7, I-8 | Inherited from `0a12d41d0` | mixed | **Fixed** on the tidy-up branch |
-| N-2 | `ReadmeExamplesTest` cited seven README sections that do not exist | LOW | **New**, fixed |
+**Remediation (2026-08-15, on Griefed's go-ahead): H-1 and M-3 are FIXED.** The branch was rebuilt
+from `d13252234`; the two rebuilt commits and the eight replayed ones are unchanged in content except
+as described below, and the final tree differs from the pre-remediation tip by exactly the two new
+test files. `./gradlew build` green; suites api 302 (1 skip), clientside 88, app **102** (was 88),
+grinder 233 (19 skip), plugin-example 3 — **728 total**. Superseded findings are marked inline; M-1,
+M-2, M-4 – M-6 and the LOWs are **open and accepted**.
 
 ---
 
-## Withdrawn
+## HIGH
 
-### H-1 — Exported types deleted under a `refactor:` label
+### H-1 · ~~FIXED~~ · Four `-api` production refactors are committed inside a `test(app)` commit — and the `refactor:` commit that claims them contains none of them
 
-`0df7b2835` deleted `ScanResult`, `Exclusion` and `Dependency` from a module published to Maven
-Central, labelled `refactor:`.
+**Commits:** `73e16ba9c` (holds the code), `25b83e8e9` (claims it)
+**Rule broken:** *One concern per commit. Keep "add tests" and "refactor (no behavior change)" in
+separate commits.*
 
-**Withdrawn on Griefed's call:** the removed types were already unused and break in 9.x regardless.
-The API compatibility policy governs source-compatibility *within* a major version, so removal at a
-major boundary is exactly what it permits — the finding mistook a deliberate major-version break for
-an accidental one. The `refactor:` label remains imprecise for a change that is not
-behaviour-preserving for an embedder, but that is not worth rewriting shared history for.
+`73e16ba9c` is labelled `test(app): characterize VersionChecker's pre-release comparison`. Its
+diffstat:
 
-Worth one line in the 9.x release notes so plugin authors meet it in the changelog rather than in a
-compiler error. That is the only outstanding action.
-
----
-
-## Fixed
-
-### M-1 — No characterization test in any of the six commits → fixed
-
-Four of the six commits changed behaviour and none shipped a pin. Two regressions reached `develop`
-and **neither turned the suite red**; both were found by inspection.
-
-Five test commits now pin every behaviour the modscan work changed. **Each was observed red against
-the commit before its fix** — not written-then-asserted — with the observed failure text recorded in
-the commit body:
-
-| Pin | Reverted to | Observed failure |
-|---|---|---|
-| `autoDetectedClientsideModsStayDisabledWithoutUserExclusions` | `7004f3c88^` | `…must remain disabled with no user exclusions; disabled=[]` |
-| `whitelistRescuesAutoDiscoveredClientsideMod` (was `assumeTrue`) | `7004f3c88^` | now FAILS where it previously **skipped** |
-| `quiltArmReturnsEachJarExactlyOnce` | aggregation re-keyed to `modID` | `A jar must not be both included and disabled; both=[bbbbb.jar]` |
-| `quiltModWithoutAnEnvironmentIsServerSide` | `bf226c2ac^` | `expected: <SERVER> but was: <CLIENT>` |
-| `anUnreadableJarIsServerSideAndCarriesItsFilenameAsId` | `2ec5ff202^` | `expected: <brokenmod> but was: <N/A>` |
-
-Three things the remediation established that are worth keeping:
-
-**The two defects mask each other.** `quiltArmReturnsEachJarExactlyOnce` does *not* go red against
-`7004f3c88^`; it had to be isolated by re-keying the aggregation on `modID` while leaving the
-auto-exclusion fix in place. With auto-exclusion broken, everything lands in `serverMods`, the
-disabled list is empty, and disjointness holds trivially. The second defect only becomes observable
-once the first is fixed — which is why one commit fixing both left no test able to see either.
-
-**The fixtures cannot express an absent field.** Every committed `fabric.mod.json` and
-`quilt.mod.json` declares an `environment`, so the SERVER-when-undeclared default had *no* coverage —
-which is how `bf226c2ac`'s defect got in. New cases build a real jar in a `@TempDir` from JSON written
-inline, so the descriptor under test is visible in the diff and no binary enters the repository.
-
-**A green characterization test proves nothing until you try to break it.** The new
-exact-match-not-prefix assertion on `dependencyExclusions` was confirmed by mutating the regex to
-`fabric.*` and watching `fabricDependenciesAreRecordedWithoutThePlatform` fail — `fabric-api-base`
-must survive a filter that drops `fabric`.
-
-**The commit boundary was verified, not asserted.** `b8f809ff8` was committed **red** and then checked
-out and re-run to confirm it fails there. `CLAUDE.md` records eight commits where that boundary
-collapsed; this one holds.
-
-### M-4 — Unrecognised modloader yields an empty server pack → fixed
-
-The scanner-selection `when` had no `else`, and since the rewrite the include-list is built solely
-from what a scanner returned — so a loader string matching no arm returned two empty lists: a pack
-with no mods and no warning, where the pre-rewrite code returned every jar.
-
-Reachable from an ordinary `PackConfig`, not just an embedder passing something odd:
-`PackConfig.modloader`'s setter assigns only on a match (`PackConfig.kt:328-341`), so an unrecognised
-value leaves the field at its initial `""`, and that empty string reached the `when`.
-
-Fixed in `2eafe1b34` — the `else` warns and enters every file as an unscanned SERVER mod, restoring
-the prior contract while making the situation visible. Pinned by
-`ModListCompilerTest.unrecognisedModloaderStillYieldsEveryMod`, committed red in `b8f809ff8`.
-
-**A documentation error fell out of this.** `serverpackcreator-api/CLAUDE.md` claimed unknown
-modloaders "default to **Forge**". They do not — the field keeps whatever it held, starting at `""`.
-Corrected in `1f93755d2`. The wrong claim is what made the missing `else` look unreachable.
-
-### I-6 — Dependency rescue could not fire for clientside mods → fixed
-
-Excluding a mod something else depends on produces a pack that installs and then dies on load, which
-is worse than shipping one mod too many — so a dependency has to win over a clientside verdict. The
-rescue could never do that: it additionally required the *disabled* mod to be `Sideness.SERVER`, but a
-mod auto-disabled by a scanner is `CLIENT` by construction, so the protection only ever reached mods
-the scanner had judged server-side and the user had excluded by name.
-
-Griefed dropped the clause from both the `while` guard and the `removeIf` predicate (`35c5787ad`).
-Pinned by two cases in `ModListCompilerTest`, committed red in `d8dfeb4ac`:
-
-- `aClientsideModDependedOnByAServerModIsRescued` — `servermod` (`environment: "*"`) depends on
-  `clientlib` (`environment: "client"`); `clientlib` must be kept.
-- `theDependencyRescueFollowsAChain` — `servermod → midlib → deeplib`, middle and leaf both
-  clientside. This is what the surrounding `while` exists for: rescuing one mod puts *its*
-  dependencies in play. Observed red as `expected: <[servermod.jar, midlib.jar, deeplib.jar]> but
-  was: <[servermod.jar]>`, i.e. a single-pass rescue would have kept `deeplib` excluded and still
-  looked like it worked.
-
-Termination is unchanged: each iteration whose guard holds removes at least one entry from
-`disabledMods`, and nothing is ever added back to it.
-
-### M-2 — Exported `modID` default → pinned, still undocumented
-
-`ScannedMod.modID` defaults to `file.nameWithoutExtension` for any jar the scanner cannot read. That
-value is not a mod id, and nothing in the type says so. Now pinned by
-`anUnreadableJarIsServerSideAndCarriesItsFilenameAsId`, which also pins that an unreadable jar stays
-SERVER rather than being dropped.
-
-The test now serves as the documentation. The KDoc gap itself is I-3 and remains open.
-
----
-
-## Moot
-
-### M-3 — Fixture cannot reach the Quilt fabric-fallback branch
-
-Superseded by **N-1**: that branch cannot fire at all any more, so the missing fixture is no longer
-the reason it is untested.
-
----
-
-## New — found during remediation
-
-### N-1 — The Quilt copy-loop is unreachable dead code
-
-- **Commit:** `7004f3c88`
-- **File:** `ModListCompiler.kt:149-154`
-
-```kotlin
-for (fabric in fabricScan) {
-    if (quiltScan.find { quilt -> quilt.file.name == fabric.file.name } == null) {
-        log.info("Quilt-scan did not have a scan for ${fabric.file.name}, Fabric-scan did, though. Copying entry. ")
-        quiltScan.add(fabric)
-    }
-}
+```
+serverpackcreator-api/.../config/ConfigurationHandler.kt          |   7 +-
+serverpackcreator-api/.../utilities/common/BooleanUtilities.kt    |  29 ++---
+serverpackcreator-api/.../utilities/common/FileUtilities.kt       |  18 ++-
+serverpackcreator-api/.../utilities/common/JsonUtilities.kt       |  12 +-
+serverpackcreator-app/.../versionchecker/VersionCheckerTest.kt    | 137 +++++
 ```
 
-Both scanners return **exactly one entry per input file** whatever the outcome — each `scan` loop's
-`catch` adds a bare `ScannedMod(modJar)` (`FabricScanner.kt:83-86`, `QuiltScanner.kt:88-91`) — and both
-are called with the same `filesInModsDir`. So every `fabric.file.name` is always present in
-`quiltScan`, the `find` never returns null, and the body never executes. Confirmed empirically: the
-log line occurs **0 times** across the fixture.
+Four `-api` production files — a different module from the commit's `(app)` scope, and a different
+concern from "add tests". They are the `RedundantIf` collapses:
 
-This became dead when `7004f3c88` re-keyed the join from `modID` to `file.name`. Under the old key it
-*did* fire — that firing is precisely what produced the duplicate entries the commit set out to stop.
+- `BooleanUtilities.convert` — `if/else if/else` → `when` (`BooleanUtilities.kt:91-107`)
+- `JsonUtilities.getNestedBoolean` — `if/else if/else` → `when` (`JsonUtilities.kt:136-142`)
+- `ConfigurationHandler.checkIconAndProperties` — collapsed to `||` (`ConfigurationHandler.kt:415`)
+- `FileUtilities.isLink` — collapsed to `||`, `catch (ex)` → `catch (_)` (`FileUtilities.kt:153-159`)
 
-Not a defect: the invariant it defends against is now guaranteed upstream, and that invariant is
-itself pinned by `everyJarYieldsExactlyOneEntryWhateverTheOutcome`. But it is unreachable code that
-reads as a live fallback, and the first loop above it already handles the only case that can occur.
-Removing it (or reducing the arm to a single merge keyed on the file) would make the Quilt arm say
-what it actually does.
+The next commit, `25b83e8e9 refactor: collapse the redundant conditionals Qodana flagged`, names all
+four in its message and explains at length *why* `BooleanUtilities` and `JsonUtilities` became `when`
+rather than `||` (the `log.warn` side-effect; `toBooleanStrictOrNull` being case-sensitive). Verified
+against the actual trees:
 
----
-
-## Still open
-
-### L-1 — Unused import
-
-`ModListCompiler.kt:25` — `import de.griefed.serverpackcreator.api.config.SupportedModloaders.quilt`.
-The `when` arm still matches the string literal `"Quilt"`; `quilt` is referenced nowhere. A
-build-level unused-import gate would close the category rather than the instance — this range also
-contained a stray `import sun.util.calendar.CalendarUtils.mod`.
-
-### L-2 — Value identity hand-rolled at six call sites
-
-`ScannedMod` declares no `equals`/`hashCode`, so `remove`/`find` match by identity and cannot see a
-sibling instance describing the same jar. Six `it.file.name == mod.file.name` comparisons work around
-this. Correct today only because `filteredWalk` is called with `recursive = false` 40 lines away.
-
-**Not to be fixed with a `data class`.** Equality by file would make two entries with conflicting
-`sideness` silently interchangeable — exactly the merge the Quilt arm performs deliberately, where
-which entry survives would then depend on insertion order. (A `data class` over `file` alone would
-*not* produce a false negative for a jar declaring two different ids, since body properties are
-excluded from the generated members — but the conflicting-verdict problem is the real one.) Extract a
-single named helper comparing `file` instead, and identity stays explicit.
-
-### L-3 — Log statement reads the value it just overwrote
-
-`ModListCompiler.kt:145-146` logs `quiltScan[i].file.name` *after* `quiltScan[i] = match`. Correct only
-by accident of the predicate directly above it guaranteeing the two names are equal. Read
-`match.file.name`, or log before assigning.
-
-### I-1…I-5, I-7, I-8 — Inherited from `0a12d41d0`
-
-Out of the audited range; untouched by the follow-ups and by the remediation branch. (I-6 is fixed —
-see above.)
-
-| # | Condition | Location |
+| file | in `25b83e8e9` | in `73e16ba9c` |
 |---|---|---|
-| I-1 | 8 `!!` non-null assertions introduced by the rewrite | `ForgeAnnotationScanner.kt` (4), `ForgeTomlScanner.kt` (2), `FabricScanner.kt` (1), `QuiltScanner.kt` (1) |
-| I-2 | Per-scan state as mutable instance fields (`private var currentModID`) on scanners `ApiWrapper` holds as singletons, so concurrent `scan()` calls interleave | all four scanners |
-| I-3 | 7 exported declarations carry zero KDoc, including the two load-bearing defaults now pinned by tests | `modscanning/ScanResult.kt:5-23` |
-| I-4 | `var` in value types, populated by assignment after construction | `ScanResult.kt:7-8,17` |
-| I-5 | File still named `ScanResult.kt` after `ScanResult` was deleted | `modscanning/ScanResult.kt` |
-| I-7 | The four-branch `when (exclusionFilter)` is written 3 times in one function; the whitelist `while` re-evaluates a predicate `removeIf` has already exhausted | `ModListCompiler.kt:214-249` |
-| I-8 | `ReadmeExamplesTest` KDoc and test name still describe the deleted `ScanResult` contract; `README.md` untouched | `ReadmeExamplesTest.kt:36,43,118,123` |
+| `BooleanUtilities` | 0 | 1 |
+| `JsonUtilities` | 0 | 1 |
+| `FileUtilities` | 0 | 1 |
+| `ConfigurationHandler` | 0 | 1 |
+
+**Why this matters beyond tidiness.** This is the failure mode `serverpackcreator-api/CLAUDE.md`
+already records for the `modFileEndings`/`zipCheck` copies: *the explanation lives on one artifact
+while the code lives on another.* Someone running `git log -- BooleanUtilities.kt` to learn why that
+`when` has a comment about warning side-effects lands on a commit about `VersionChecker`, whose
+message says nothing about it. Additionally, `73e16ba9c` was committed after running only
+`:serverpackcreator-app:test --tests '*VersionCheckerTest*'` — the `-api` suite was **not** run
+against those four files until `25b83e8e9`, two commits later. It did pass there, so no defect
+shipped, but that commit was never verified green when it was made.
+
+**Cause:** `git add -A` staging without checking `git status` first.
+
+**FIXED.** The branch was rebuilt from `d13252234`: `ec79084bd` is the test commit carrying **only**
+`VersionCheckerTest.kt`, and `4e1669456` is the refactor commit carrying all ten files its message
+describes, the four `-api` ones included. Verified afterwards — each of the four now reports `1` in the
+refactor commit and `0` in the test commit, and the rebuilt tree is byte-identical to the original
+`25b83e8e9` tree at that point. Done before pushing, which is the window `CLAUDE.md` describes for
+`358675fbf`, where the same class of problem became unfixable after merge.
 
 ---
 
-## Rules checked and found clean
+## MEDIUM
 
-- **Module boundaries.** No commit in range or in the remediation adds a Swing, Spring-web or frontend
-  dependency to `-api`. All touch `-api` only.
-- **Scope sprawl / Boy Scout.** Each follow-up touches 1–3 files, all reachable from its stated
-  concern. The remediation touches two test files, one production file (M-4) and two `CLAUDE.md`s.
-- **Commit labelling.** The four behaviour commits in range are correctly `fix:`; `d185fd74c` is
-  correctly `test:`. `0df7b2835`'s `refactor:` is imprecise but withdrawn with H-1. The remediation
-  keeps `test:`, `fix:` and `docs:` in separate commits, with the pin landing red before its fix.
-- **Scanner correctness.** All four scanners pass `ModScannerTest` and the nine new
-  `ModScannerSidenessTest` cases.
+### M-1 · `d04a62a79` is a big-bang rewrite of `modscanning` in one commit
+
+**Rule broken:** *Refactor incrementally behind stable interfaces (Strangler Fig). No big-bang
+rewrite of a module in a single commit.*
+
+13 files, +506/−397, carrying **four** independent extractions that were each viable alone:
+
+1. replace `internal Scanner<T,U>` with public `ModJarScanner`
+2. add `DescriptorScanner` (the walk-the-jars template method) and move 5 scanners onto it
+3. add `FabricFamilyScanner` (Fabric/Quilt sharing)
+4. move loader→scanner dispatch onto `ModScanner.scannerFor` + add `QuiltPackScanner`, rewiring
+   `ModListCompiler` *and* `-clientside`'s `MetadataScanner`
+
+Each step keeps the suite green independently and (1)–(3) are invisible to callers, so there was no
+technical reason to land them together. A reviewer now has to hold all four in their head at once,
+and a bisect landing here cannot tell which extraction caused a regression.
+
+*Mitigating:* no existing test was touched (0 test files in the commit), and the commit message does
+enumerate the four steps.
+
+### M-2 · ~~FIXED~~ · `d04a62a79` changes logging behaviour inside a `refactor:` commit
+
+**File:** `ForgeAnnotationScanner.kt`, `ModListCompiler.kt`
+**Rule broken:** *Never mix a refactor with a behavior change.*
+
+Four log statements were removed or altered:
+
+```
+- log.error("Could not scan ${modJar.name}. Consider reporting this:", e)   // lost its stack trace
+- log.error("Could not scan ... no modId in the annotation cache.")          // moved, not lost
+- log.debug("Scanning using NeoForge scanner.")
+- log.debug("Scanning using Forge scanner.")
+```
+
+Log output is observable behaviour, and the stack trace is the one that matters: an unparseable
+1.12-era jar now reports `${e.cause}: ${e.message}` where it used to give a full trace. A strict
+reading of the rubric makes this HIGH ("behaviour change mixed into a refactor"); it is filed MEDIUM
+because no functional contract changed and the commit message discloses both changes explicitly.
+
+**FIXED by Griefed in `6026f3640`**, and more broadly than the finding asked: rather than restoring the
+two-arg form on `ForgeAnnotationScanner` alone, the shared `DescriptorScanner` catch now logs the
+exception object for **all five** scanners, and the wording moves from "Consider reporting this" to
+"Consider reporting this to the mod-author" — which is the correct address for a jar whose descriptor
+cannot be read. The four scanners that had only ever logged a message therefore *gain* the type and
+trace they never had.
+
+**Measured consequence, not an objection — one `:serverpackcreator-api:test` run emits 159 such lines:**
+80 `NullPointerException` (jar carries no descriptor for the scanner in use), 37 `ZipException`
+(unreadable archive), 28 `ScanningException` (`"No dependencies specified."`). The last group is an
+ordinary mod that declares no dependency block, and the Quilt arm scans every jar with *both* the Quilt
+and Fabric scanners by design, so a Quilt pack emits one trace per Fabric-only jar and vice versa. If
+that proves noisy in a real generation, the narrow follow-up is to keep the trace for genuinely
+unexpected failures and drop "descriptor absent" / "no dependencies declared" to DEBUG.
+
+### M-3 · ~~FIXED~~ · `4a30aa4d9` changes two units that have **zero** real test coverage
+
+**Files:** `EventService.kt:51-56`, `RunConfigurationService.kt:61-64, 76-79, 91-94`
+**Rule broken:** *Never refactor untested code blind. Write characterization tests first and commit
+them on their own.*
+
+Both loops went from two repository lookups per element to one:
+
+```kotlin
+- if (repo.findByX(item.x).isPresent) { list[i] = repo.findByX(item.x).get() } else { … }
++ val stored = repo.findByX(item.x); list[i] = stored.orElseGet { repo.save(list[i]) }
+```
+
+Neither service has a test. `RunConfigurationControllerTest` and `EventControllerTest` exist but
+**mock the services** (`private val runConfigurationService: RunConfigurationService = mockk()`), so
+they exercise none of this. The change is almost certainly equivalent — but "almost certainly" is
+what characterization tests exist to replace, and the persistence layer is MongoDB, where a
+save-on-absent path is not trivially reasoned about from the source.
+
+**FIXED, and in the right place.** `d603378d9` adds `EventServiceTest` (5) and
+`RunConfigurationServiceTest` (8) and is inserted **before** `d37fc61cc` (the former `4a30aa4d9`), so
+the tests were written against, and verified green on, the two-lookup code they characterize — then
+stayed green when the change was replayed on top. That is what turns "almost certainly equivalent"
+into evidence. They pin the outcome (which entries the built object holds, which reach `save`) and
+deliberately **not** the lookup count, since pinning an implementation detail would have made them red
+for the very next commit.
+
+*Also:* halving the query count is a performance change riding in a `refactor:` commit. Disclosed in
+the message, but it is a second concern.
+
+### M-4 · `9a3736853` pins the dispatch **after** the refactor it guards
+
+**Rule broken:** *Before refactoring any unit, ensure characterization tests exist that pin its
+current behavior.*
+
+`ModScannerDispatchTest` (6 tests, identity-asserted) is exactly the right guard for
+`ModScanner.scannerFor` — but it lands one commit *after* `d04a62a79` created it. During the
+refactor itself, the dispatch was covered only by outcome (`autoDiscoveryReachesScannerBranchPerLoader`
+asserts jar partitioning, not which scanner ran), which is the weaker "asserts shape, not behaviour"
+form `CLAUDE.md` warns about.
+
+*Mitigating:* the units being restructured (the five scanners) *were* well covered beforehand by
+`ModScannerTest` / `ModScannerSidenessTest` / `ModListCompilerTest`, so this was not a blind refactor
+— only the new seam was unguarded, and briefly.
+
+### M-5 · `a5736776e` mixes three concerns
+
+**Rule broken:** *One concern per commit.*
+
+The commit contains (a) a refactor — hoisting the duplicated lambda-suffix regex into
+`MigrationManager.LAMBDA_SUFFIX`, (b) a **new test** for it (`MigrationManagerTest.kt`, +26), and
+(c) the behaviour-neutral multi-dollar literal conversions across five files in two modules.
+
+The message argues (a)+(b) belong together under the enabling-change carve-out `CLAUDE.md` records
+for per-parameter KDoc, and that is defensible — you cannot test a private literal. It does not cover
+(c), which is unrelated to the extraction and could have been its own commit.
+
+### M-6 · `694cb2120` mixes two unrelated concerns across two modules
+
+**Rule broken:** *One concern per commit; don't let cleanup sprawl across unrelated files.*
+
+- `-clientside`: `ClientsideModels.kt` — repair 4 dangling KDoc links (`Project` → `ProjectFiles`)
+- `-app`: `MigrationManager.kt` — drop a redundant `inner` modifier, plus the consequent
+  `MigrationManagerTest.kt` receiver change
+
+A documentation fix and a class-modifier change, in different modules, sharing only the fact that
+Qodana reported both. The `fix(docs)` type also understates it: the `inner` removal is a code change,
+not a docs change.
+
+*Note:* the test edit itself is fine — receiver-only, every assertion byte-identical, which is the
+carve-out `CLAUDE.md` grants for symbol moves.
 
 ---
 
-## Summary
+## LOW
 
-| Severity | Total | Fixed | Withdrawn | Moot | Open |
-|---|---|---|---|---|---|
-| HIGH | 1 | — | 1 | — | 0 |
-| MEDIUM | 4 | 3 | — | 1 | 0 |
-| LOW | 5 | 5 | — | — | 0 |
-| Inherited | 8 | 8 | — | — | 0 |
+### L-1 · `0bbc0234f` is typed `docs(...)` but modifies Kotlin source
 
-Every finding in the audited range is closed. The behaviour the modscan work changed is now pinned by
-tests observed red against the commit before each fix, so the next regression fails the build instead
-of skipping a test and writing an INFO log.
+Adds `@Suppress("DEPRECATION")` annotations to `ScriptTemplatesConfig.kt` and `MigrationManager.kt`.
+Annotations are code, not documentation. `chore(...)` or `refactor(...)` would be honest. Behaviour
+is unaffected, and the suppressions were verified effective (7 → 0 warnings).
 
-The tidy-up branch closed the rest. Worth noting from it: `ScannedMod` is now immutable and built
-through its constructor, which removed **all 8** `!!` assertions and **all 4** mutable `currentModID`
-fields — those fields were shared state on scanners `ApiWrapper` holds as singletons. The four-branch
-exclusion-filter `when`, written out three times, is now read once. And a second fabricated-reference
-problem surfaced (**N-2**): `ReadmeExamplesTest` cited seven README sections that do not exist and
-claimed the guide "teaches roughly a dozen snippets" — `README.md` carries exactly two Kotlin API
-snippets. That mattered because being the compiler-gate for the README is the file's entire
-justification.
+### L-2 · `4dbf653cc` bundles two behaviour changes
 
-The only outstanding action is the 9.x release-note line for H-1.
+The Forge era fix, plus a change of error posture — an unparseable Minecraft version now falls back
+to the modern scanner in `ModListCompiler` where it previously threw `IndexOutOfBoundsException` out
+of `compileModList`. The conventions permit grouping *related* behaviour changes, and unifying the
+two call-sites' posture genuinely was a precondition for the later shared dispatch. Disclosed in the
+message. Recorded only for completeness.
+
+### L-3 · Untested view/demo units refactored without characterization tests
+
+`ConfigEditor.checkJava` (guard-clause inversion), `InclusionsEditor.canImport` (collapsed to `&&`),
+`Tetris` (6 range-check conversions). None has a test. All are Swing view code or example-plugin
+demo code where the project has explicitly decided not to invest in tests, and all six Tetris changes
+are mechanical (`x < 0 || x >= n` → `x !in 0 until n`). Flagged for the record, not for action.
+
+---
+
+## Conventions upheld (verified, not assumed)
+
+- **Pin-first with observed red, in its own commit** — done correctly twice, and the failing output is
+  quoted in each commit body: `f8cb89bff` → `4dbf653cc` (Forge era) and `1c7804977` → `96eccff59`
+  (pre-release ordering). `1c7804977`'s message also records that the second pin took three attempts
+  before it failed for the right reason.
+- **No existing test assertion was changed by a `refactor:` commit** — verified: `d04a62a79`,
+  `25b83e8e9`, `4a30aa4d9`, `d13252234` touch **zero** test files; `a5736776e` only *adds* one.
+- **Bug found during refactor was surfaced and fixed in its own commit, not worked around** — the
+  Forge era defect was fixed before any restructuring began.
+- **No Kotlin idiom regressions** — `git diff develop..HEAD -- '*/src/main/*.kt'` introduces no new
+  `!!` and no new `var`.
+- **Documentation kept in separate commits** — `d76e2edad`, `a1d81990f`, `94b6a8c1b`.
+- **A stale claim in the module docs was corrected rather than deleted** — the `-api` versioning-scheme
+  landmine had asserted the Kotlin side was clean; `d76e2edad` records that it was not, and why the
+  earlier survey missed it.
+
+## Not a violation, but your call to confirm
+
+`d13252234` removes the published `JsonBasedScanner`, which the rubric would classify HIGH ("changed
+plugin-API contract"). It is excluded from the findings because it was **explicitly requested** after
+the alternative (a deprecated facade) was implemented and presented, and the break is recorded in the
+root `CLAUDE.md` compatibility table. Listed here so the decision stays visible rather than buried.
+
+---
+
+## Suggested order of remediation
+
+1. **H-1** — rebase the four `-api` files from `73e16ba9c` into `25b83e8e9`. Do it before pushing;
+   after that the honest remedy becomes a follow-up note instead of a fix.
+2. **M-3** — write characterization tests for `EventService` / `RunConfigurationService`, or revert
+   the double-lookup change until they exist.
+3. **M-1 / M-2** — history-only; fixable in the same rebase as H-1 by splitting `d04a62a79`, or
+   accept as-is with the rationale already in the message.
+4. **M-4 / M-5 / M-6 / L-1** — cosmetic history issues; no action needed unless you want the log clean.

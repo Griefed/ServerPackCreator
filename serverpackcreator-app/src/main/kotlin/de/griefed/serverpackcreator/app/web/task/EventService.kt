@@ -48,12 +48,11 @@ class EventService @Autowired constructor(
             for (error in errors) {
                 event.errors.add(ErrorEntry(error))
             }
-            for (i in 0 until event.errors.size) {
-                if (errorRepository.findByError(event.errors[i].error).isPresent) {
-                    event.errors[i] = errorRepository.findByError(event.errors[i].error).get()
-                } else {
-                    event.errors[i] = errorRepository.save(event.errors[i])
-                }
+            for (i in event.errors.indices) {
+                // One lookup, reused: the stored entry when this error is already known, a freshly
+                // saved one otherwise.
+                val stored = errorRepository.findByError(event.errors[i].error)
+                event.errors[i] = stored.orElseGet { errorRepository.save(event.errors[i]) }
             }
         }
         queueEventRepository.save(event)

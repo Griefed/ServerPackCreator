@@ -21,32 +21,29 @@ package de.griefed.serverpackcreator.api.modscanning
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.io.IOException
 import java.util.jar.JarFile
 
 /**
- * Helper-class containing methods implemented and used by JSON-based scanners, like the
- * [ForgeAnnotationScanner], [FabricScanner] and [QuiltScanner].
+ * Base for scanners whose descriptor is JSON: adds Jackson reading to the per-jar failure handling
+ * of [DescriptorScanner], so subclasses implement [read] for a single jar and may throw freely.
  *
  * @author Griefed
  */
-abstract class JsonBasedScanner {
-    private val log by lazy { cachedLoggerOf(this.javaClass) }
+abstract class JsonDescriptorScanner : DescriptorScanner() {
 
     /**
-     * Acquire a JsonNode from the specified file in the specified file.
+     * Acquire a JsonNode from the specified entry in the specified jar.
      *
-     * @param file         The file from which to get the JsonNode from.
-     * @param entryInJar   The file in the jar from which to get the JsonNode form.
-     * @param objectMapper The ObjectMapper with which to parse the Json to a JsonNode.
-     * @return A JsonNode containing all information from the requested file in the specified jar.
-     * @throws IOException           if the file could not be opened or read from, if the file could
-     * not be read or if the json from the file could not be parsed into
-     * a JsonNode.
-     * @throws SecurityException     if an error occurs reading the file in the jar.
-     * @throws IllegalStateException if an error occurs reading the file in the jar.
+     * @param file         The jar from which to get the JsonNode.
+     * @param entryInJar   The entry in the jar from which to get the JsonNode.
+     * @param objectMapper The ObjectMapper with which to parse the JSON to a JsonNode.
+     * @return A JsonNode containing all information from the requested entry in the specified jar.
+     * @throws IOException           if the file could not be opened or read from, or if the JSON
+     * could not be parsed into a JsonNode.
+     * @throws SecurityException     if an error occurs reading the entry in the jar.
+     * @throws IllegalStateException if an error occurs reading the entry in the jar.
      * @throws NullPointerException  if the jar does not contain the specified entry.
      * @author Griefed
      */

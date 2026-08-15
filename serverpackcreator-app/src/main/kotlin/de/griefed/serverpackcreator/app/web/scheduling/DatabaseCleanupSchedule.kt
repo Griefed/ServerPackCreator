@@ -43,7 +43,7 @@ class DatabaseCleanupSchedule @Autowired constructor(
     private val modPackRoot: Path = apiProperties.modpacksDirectory.toPath()
     private val serverPackRoot: Path = apiProperties.serverPacksDirectory.toPath()
 
-    @Scheduled(cron = "\${de.griefed.serverpackcreator.spring.schedules.database.cleanup}")
+    @Scheduled(cron = $$"${de.griefed.serverpackcreator.spring.schedules.database.cleanup}")
     private fun cleanDatabase() {
         log.info("Cleaning database...")
         val modpackFiles = modPackRoot.listDirectoryEntries().map { it.toFile() }

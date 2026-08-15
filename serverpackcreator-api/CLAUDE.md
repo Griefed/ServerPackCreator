@@ -36,6 +36,23 @@
   stays there; moving it risks breaking log4j plugin-discovery.
 - **Loader regexes have a single source of truth:** `config.SupportedModloaders` (5 exact-match
   regexes + canonical `names`). Do **not** reintroduce `"^forge$"`-style literals anywhere else.
+- **So does loader→scanner selection: `ModScanner.scannerFor(modloader, minecraftVersion)`.** Every
+  consumer dispatches through it — `ModListCompiler` for a real generation, `-clientside`'s
+  `MetadataScanner` for the metadata signal — so the two cannot disagree about what a jar declared. Do
+  **not** re-add a `when (modloader)` over the concrete scanners; that duplication is what hid the Forge
+  era bug in two places at once (versioning-scheme landmine below). A `null` return means "no scanner
+  knows this loader" and each caller turns it into keep-every-mod. The Quilt arm returns
+  `QuiltPackScanner`, which owns the quilt+fabric merge — CLIENT wins, and the *Quilt* `ScannedMod` is
+  kept when both agree, because its id and dependency list feed the downstream dependency-rescue.
+- **Scanner hierarchy:** `ModJarScanner` (public contract) → `DescriptorScanner` (owns the walk-the-jars
+  loop and the **one-`ScannedMod`-per-input-jar** guarantee; `scan` is `final`, subclasses implement
+  `read(File)` and may throw) → `JsonDescriptorScanner` → `FabricFamilyScanner` (Fabric + Quilt share id
+  and environment reading, differing only in field *paths*; dependency blocks differ in *shape*, so they
+  stay abstract). `JsonBasedScanner`, the previous JSON helper, was **removed** rather than kept as a
+  deprecated facade — Griefed's call on 2026-08-15, overriding the adopted compatibility policy: scanners
+  are not a pf4j extension point, so a plugin could subclass it but never register the result, making the
+  facade cost with no reachable benefit. A subclass compiled against it will no longer compile; use
+  `JsonDescriptorScanner`.
 - **A constant kept on an extraction facade must *read* its owner, never re-declare the literal.**
   `ServerPackHandler.modFileEndings` and `ConfigurationHandler.zipCheck` are getters delegating to
   `ModListCompiler.modFileEndings` / `ModpackZipInspector.zipCheck`, pinned by
@@ -60,11 +77,24 @@
     1.20-era URL. Latent, fixed anyway.
 
   Both now require major `1` as well, pinned by `ScriptTemplateContentTest`, which **executes** the extracted
-  shell functions across both schemes. **The Kotlin side was surveyed and is clean by construction — keep it
-  that way:** `BootCandidateSelector.minecraftComparator` compares component-wise, `ImageJavaRuntimes` takes
+  shell functions across both schemes.
+
+  **The Kotlin side was NOT clean — this file claimed it was until 2026-08-15, and a third instance was
+  sitting in the generation path the whole time.** `ModListCompiler` chose Forge's scanner with
+  `mcVersions[1].toInt() > 12`, and `MetadataScanner` (in `-clientside`) with the same test, so Minecraft
+  `26.2` read as the 1.2 era and every modern Forge pack was scanned with `ForgeAnnotationScanner` — the
+  1.12-and-older one. No modern jar carries `fml_cache_annotation.json`, so every jar threw, every jar fell
+  back to the never-drop-a-jar `SERVER` default, and **auto-exclusion silently did nothing on Forge 26.x**
+  while logging one ERROR per mod. It fails safe (everything is included), which is why nobody noticed, and
+  the earlier survey looked only at the boot/selection code the grinder work had just touched. Both now
+  compare every component via `SemanticVersionComparator` against the version Forge actually switched at
+  (1.13), the choice lives once in `ModScanner.scannerFor`, and `ModScannerDispatchTest` pins both era
+  boundaries across both schemes.
+
+  Derive from metadata or compare all components; never hand-roll an era heuristic. What *is* clean, and was
+  re-checked: `BootCandidateSelector.minecraftComparator` compares component-wise, `ImageJavaRuntimes` takes
   required-Java from `MinecraftMeta.requiredJavaVersion` (Mojang's own declaration), and
-  `LoaderVersionResolver` delegates to the manifests. Derive from metadata or compare all components; never
-  hand-roll an era heuristic.
+  `LoaderVersionResolver` delegates to the manifests.
 - **LANDMINE — `-Djava.security.manager=allow` is fatal from Java 24 on.** JEP 486 removed Security Manager
   support, so the VM *refuses to start* rather than ignoring the flag. `PackConfig.spcSSJArgsKeyDefaultValue`
   still defaults `SSJ_FORGE_ARGS` to it, because Forge's ServerStarterJar needs it on older Java — the

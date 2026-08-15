@@ -93,8 +93,8 @@ internal class MigrationManagerTest {
      */
     @Test
     fun migrationMessageRendersChanges() {
-        val (manager, _) = managerFor(previousVersion = "5.0.0", currentVersion = "6.0.0")
-        val message = manager.MigrationMessage("5.0.0", "6.0.0", mutableListOf("Changed A", "Changed B"))
+        // No MigrationManager needed: MigrationMessage is a nested value-object, not an inner class.
+        val message = MigrationManager.MigrationMessage("5.0.0", "6.0.0", mutableListOf("Changed A", "Changed B"))
         Assertions.assertEquals("5.0.0", message.fromVersion())
         Assertions.assertEquals("6.0.0", message.toVersion())
         Assertions.assertEquals(2, message.count())
@@ -103,5 +103,31 @@ internal class MigrationManagerTest {
         Assertions.assertTrue(rendered.contains("From 5.0.0 to 6.0.0"))
         Assertions.assertTrue(rendered.contains("(1): Changed A"))
         Assertions.assertTrue(rendered.contains("(2): Changed B"))
+    }
+
+    /**
+     * Pins the regex that strips the Kotlin compiler's synthetic lambda suffix off a migration
+     * method's name. Both migration discovery and version parsing run every declared method name
+     * through it, so a name it fails to clean reaches `toInt()` as e.g. `0lambda` and takes the whole
+     * migration run down — or, worse, cleans too much and silently resolves to the wrong version.
+     *
+     * It had no coverage while being written out twice, in two escaping-heavy copies. Now one
+     * constant, pinned here.
+     */
+    @Test
+    fun theLambdaSuffixIsStrippedFromMethodNames() {
+        val strip = { name: String -> name.replace(MigrationManager.LAMBDA_SUFFIX, "") }
+
+        // The shapes the compiler actually emits.
+        Assertions.assertEquals("SixDotZeroDotZero", strip("SixDotZeroDotZero\$0lambda\$1"))
+        Assertions.assertEquals("SixDotZeroDotZero", strip("SixDotZeroDotZero\$lambda\$"))
+        Assertions.assertEquals("SixDotZeroDotZero", strip("SixDotZeroDotZero\$12lambda\$34"))
+
+        // A plain migration method must survive untouched.
+        Assertions.assertEquals("SixDotZeroDotZero", strip("SixDotZeroDotZero"))
+        Assertions.assertEquals("5.0.0", strip("5.0.0"))
+
+        // "lambda" without the dollar-delimiters is part of a name, not a suffix.
+        Assertions.assertEquals("lambda", strip("lambda"))
     }
 }

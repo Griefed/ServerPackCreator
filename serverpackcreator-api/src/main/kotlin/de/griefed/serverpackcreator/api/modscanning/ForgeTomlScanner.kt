@@ -21,7 +21,6 @@ package de.griefed.serverpackcreator.api.modscanning
 
 import com.electronwill.nightconfig.core.CommentedConfig
 import com.electronwill.nightconfig.toml.TomlParser
-import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -33,8 +32,7 @@ import java.util.jar.JarFile
  * @param tomlParser To parse .toml-files.
  * @Griefed
  */
-open class ForgeTomlScanner(private val tomlParser: TomlParser): Scanner<List<ScannedMod>, Collection<File>> {
-    private val log by lazy { cachedLoggerOf(this.javaClass) }
+open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScanner() {
     private val mods = "mods"
     private val modId = "modId"
     private val dependencies = "dependencies"
@@ -55,37 +53,22 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser): Scanner<List<Sc
         get() = "^CLIENT$".toRegex()
 
     /**
-     * Scan the `mods.toml`-files in mod JAR-files of a given directory for their sideness.
+     * Read one mod's `mods.toml` for its sideness.
      *
-     * If `mods` specifies `side=BOTH|SERVER`, it is added.
+     * The side a mod demands of the platform (`Forge`/`NeoForge`/`Minecraft`) is taken as its own:
+     * a mod requiring Minecraft `side=CLIENT` is clientside. Every other dependency is recorded as a
+     * dependency instead. A mod declaring no dependencies at all is treated as server-side, to
+     * prevent false positives.
      *
-     * If `dependencies.modId` for `Forge|Minecraft` specifies `side=BOTH|SERVER `, it is added.
-     *
-     * Any modId of a dependency specifying `side=BOTH|SERVER` is added.
-     *
-     * If no sideness can be found for a given mod, it is added to prevent false positives.
-     * @param jarFiles A list of files in which to check the `mods.toml`-files.
-     * @return Mods not to include in server pack based on mods.toml-configuration.
+     * @param modJar The jar whose `mods.toml` to read.
+     * @return What this mod declared.
      * @author Griefed
      */
-    override fun scan(jarFiles: Collection<File>): List<ScannedMod> {
-
-        val scannedMods = mutableListOf<ScannedMod>()
-
-        for (modJar in jarFiles) {
-            try {
-                val modConfig: CommentedConfig = getConfig(modJar)
-                val modId = getModId((modConfig.valueMap()[mods] as ArrayList<*>)[0] as CommentedConfig)
-                val (sidenesses, dependencies) = getSidenessesAndDependencies(modConfig, modId)
-
-                scannedMods.add(ScannedMod(modJar, modId, sidenessOf(sidenesses), dependencies))
-            } catch (e: Exception) {
-                log.error("Could not scan ${modJar.name}. Consider reporting this: ${e.cause}: ${e.message}")
-                scannedMods.add(ScannedMod(modJar))
-            }
-        }
-
-        return scannedMods
+    override fun read(modJar: File): ScannedMod {
+        val modConfig: CommentedConfig = getConfig(modJar)
+        val modId = getModId((modConfig.valueMap()[mods] as ArrayList<*>)[0] as CommentedConfig)
+        val (sidenesses, dependencies) = getSidenessesAndDependencies(modConfig, modId)
+        return ScannedMod(modJar, modId, sidenessOf(sidenesses), dependencies)
     }
 
     @Throws(ScanningException::class)

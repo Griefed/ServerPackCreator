@@ -1234,35 +1234,34 @@ class ConfigEditor(
      */
     @Suppress("unused")
     private fun checkJava(): Boolean {
-        return if (!apiWrapper.apiProperties.javaAvailable()) {
-            when (JOptionPane.showConfirmDialog(
-                this,
-                Translations.createserverpack_gui_createserverpack_checkboxserver_confirm_message.toString(),
-                Translations.createserverpack_gui_createserverpack_checkboxserver_confirm_title.toString(),
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE,
-                guiProps.warningIcon
-            )) {
-                0 -> {
-                    chooseJava()
-                    true
-                }
-
-                1 -> {
-                    JOptionPane.showMessageDialog(
-                        this,
-                        Translations.createserverpack_gui_createserverpack_checkboxserver_message_message.toString(),
-                        Translations.createserverpack_gui_createserverpack_checkboxserver_message_title.toString(),
-                        JOptionPane.ERROR_MESSAGE,
-                        guiProps.errorIcon
-                    )
-                    false
-                }
-
-                else -> false
+        if (apiWrapper.apiProperties.javaAvailable()) {
+            return true
+        }
+        return when (JOptionPane.showConfirmDialog(
+            this,
+            Translations.createserverpack_gui_createserverpack_checkboxserver_confirm_message.toString(),
+            Translations.createserverpack_gui_createserverpack_checkboxserver_confirm_title.toString(),
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE,
+            guiProps.warningIcon
+        )) {
+            0 -> {
+                chooseJava()
+                true
             }
-        } else {
-            true
+
+            1 -> {
+                JOptionPane.showMessageDialog(
+                    this,
+                    Translations.createserverpack_gui_createserverpack_checkboxserver_message_message.toString(),
+                    Translations.createserverpack_gui_createserverpack_checkboxserver_message_title.toString(),
+                    JOptionPane.ERROR_MESSAGE,
+                    guiProps.errorIcon
+                )
+                false
+            }
+
+            else -> false
         }
     }
 

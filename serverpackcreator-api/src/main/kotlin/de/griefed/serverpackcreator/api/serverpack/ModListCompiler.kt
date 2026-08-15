@@ -26,10 +26,8 @@ import de.griefed.serverpackcreator.api.modscanning.ModScanner
 import de.griefed.serverpackcreator.api.modscanning.ScannedMod
 import de.griefed.serverpackcreator.api.modscanning.Sideness
 import de.griefed.serverpackcreator.api.utilities.SimpleStopWatch
-import de.griefed.serverpackcreator.api.utilities.common.Comparison
 import de.griefed.serverpackcreator.api.utilities.common.FilterType
 import de.griefed.serverpackcreator.api.utilities.common.ListUtilities
-import de.griefed.serverpackcreator.api.utilities.common.SemanticVersionComparator
 import de.griefed.serverpackcreator.api.utilities.common.filteredWalk
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
@@ -136,59 +134,15 @@ class ModListCompiler(
         val scannedMods: MutableList<ScannedMod> = mutableListOf()
         val scanningStopWatch = SimpleStopWatch().start()
 
-        when (modloader) {
-            "LegacyFabric", "Fabric" -> {
-                scannedMods.addAll(modScanner.fabricScanner.scan(filesInModsDir))
-            }
-
-            "Forge" -> {
-                val mcVersions = minecraftVersion.split(".").dropLastWhile { it.isEmpty() }.toTypedArray()
-                if (mcVersions[1].toInt() > 12) {
-                    scannedMods.addAll(modScanner.forgeTomlScanner.scan(filesInModsDir))
-                } else {
-                    scannedMods.addAll(modScanner.forgeAnnotationScanner.scan(filesInModsDir))
-                }
-            }
-
-            "NeoForge" -> {
-                if (SemanticVersionComparator.compareSemantics(
-                        "1.20.5",
-                        minecraftVersion,
-                        Comparison.EQUAL_OR_NEW
-                    )
-                ) {
-                    log.debug("Scanning using NeoForge scanner.")
-                    scannedMods.addAll(modScanner.neoForgeTomlScanner.scan(filesInModsDir))
-                } else {
-                    log.debug("Scanning using Forge scanner.")
-                    scannedMods.addAll(modScanner.forgeTomlScanner.scan(filesInModsDir))
-                }
-            }
-
-            "Quilt" -> {
-                // A Quilt pack mixes both descriptor formats, and a mod may carry either or both, so the
-                // directory is scanned twice and the two verdicts merged per jar. CLIENT wins: the scan
-                // that could not read a jar falls back to SERVER, so a SERVER verdict is only meaningful
-                // when it comes from a descriptor the scanner actually read.
-                val quiltScan = modScanner.quiltScanner.scan(filesInModsDir).toMutableList()
-                val fabricScan = modScanner.fabricScanner.scan(filesInModsDir)
-                for (i in quiltScan.indices) {
-                    val match = fabricScan.forJarOf(quiltScan[i]) ?: continue
-                    if (quiltScan[i].sideness == Sideness.SERVER && match.sideness == Sideness.CLIENT) {
-                        log.info("${match.file.name} Quilt-scan yielded sideness SERVER, but Fabric-scan yielded CLIENT. Using Fabric-scan result instead.")
-                        quiltScan[i] = match
-                    }
-                }
-                scannedMods.addAll(quiltScan)
-            }
-
-            else -> {
-                // No scanner knows this loader, so nothing can be judged clientside. Keeping every mod
-                // leaves a pack the user can trim; returning none would look like a successful run that
-                // silently produced nothing.
-                log.warn("Unrecognised modloader '$modloader'. Skipping sideness detection and including every mod.")
-                scannedMods.addAll(filesInModsDir.map { ScannedMod(it) })
-            }
+        val scanner = modScanner.scannerFor(modloader, minecraftVersion)
+        if (scanner != null) {
+            scannedMods.addAll(scanner.scan(filesInModsDir))
+        } else {
+            // No scanner knows this loader, so nothing can be judged clientside. Keeping every mod
+            // leaves a pack the user can trim; returning none would look like a successful run that
+            // silently produced nothing.
+            log.warn("Unrecognised modloader '$modloader'. Skipping sideness detection and including every mod.")
+            scannedMods.addAll(filesInModsDir.map { ScannedMod(it) })
         }
 
 
