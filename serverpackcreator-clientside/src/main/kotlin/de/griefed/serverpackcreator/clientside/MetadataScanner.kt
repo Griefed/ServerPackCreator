@@ -82,13 +82,29 @@ class MetadataScanner(private val modScanner: ModScanner) {
         }
     }
 
-    /** Forge switched from annotation-cache to `mods.toml` after Minecraft 1.12. */
-    private fun forgeUsesToml(minecraftVersion: String): Boolean {
-        val minor = minecraftVersion.split(".").getOrNull(1)?.toIntOrNull() ?: return true
-        return minor > 12
-    }
+    /**
+     * Whether Forge on [minecraftVersion] carries a `mods.toml` rather than the annotation-cache the
+     * 1.12-and-older scanner reads. Forge switched with Minecraft 1.13.
+     *
+     * Compares every version component through [SemanticVersionComparator] rather than testing the
+     * minor on its own: Minecraft has two versioning schemes (`1.x.y` and the newer `YY.x.y`), so
+     * `26.2`'s minor of `2` reads as the 1.2 era and would pick the wrong scanner. An unparseable
+     * version keeps the previous fallback to the modern scanner.
+     */
+    private fun forgeUsesToml(minecraftVersion: String) = runCatching {
+        SemanticVersionComparator.compareSemantics(FORGE_TOML_MINIMUM_MINECRAFT, minecraftVersion, Comparison.EQUAL_OR_NEW)
+    }.getOrDefault(true)
 
     /** NeoForge renamed `mods.toml` to `neoforge.mods.toml` starting with Minecraft 1.20.5. */
     private fun neoForgeUsesNeoToml(minecraftVersion: String): Boolean =
-        SemanticVersionComparator.compareSemantics("1.20.5", minecraftVersion, Comparison.EQUAL_OR_NEW)
+        SemanticVersionComparator.compareSemantics(NEOFORGE_TOML_MINIMUM_MINECRAFT, minecraftVersion, Comparison.EQUAL_OR_NEW)
+
+    /** Minecraft versions at which a loader changed the descriptor its scanner has to read. */
+    private companion object {
+        /** Forge replaced the FML annotation-cache with `META-INF/mods.toml` in Minecraft 1.13. */
+        const val FORGE_TOML_MINIMUM_MINECRAFT = "1.13"
+
+        /** NeoForge renamed `mods.toml` to `META-INF/neoforge.mods.toml` in Minecraft 1.20.5. */
+        const val NEOFORGE_TOML_MINIMUM_MINECRAFT = "1.20.5"
+    }
 }

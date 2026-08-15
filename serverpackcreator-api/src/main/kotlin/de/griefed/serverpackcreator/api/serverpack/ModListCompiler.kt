@@ -67,6 +67,20 @@ class ModListCompiler(
      */
     private fun List<ScannedMod>.forJarOf(mod: ScannedMod): ScannedMod? = find { it.file == mod.file }
 
+    /**
+     * Whether Forge on [minecraftVersion] carries a `mods.toml` rather than the annotation-cache the
+     * 1.12-and-older scanner reads. Forge switched with Minecraft 1.13.
+     *
+     * Compares every version component through [SemanticVersionComparator] rather than testing the
+     * minor on its own: Minecraft has two versioning schemes (`1.x.y` and the newer `YY.x.y`), so
+     * `26.2`'s minor of `2` reads as the 1.2 era and would pick the wrong scanner. An unparseable
+     * version falls back to the modern scanner — the annotation cache exists only in jars a decade
+     * old, so it is never the safer guess.
+     */
+    private fun forgeUsesToml(minecraftVersion: String) = runCatching {
+        SemanticVersionComparator.compareSemantics(FORGE_TOML_MINIMUM_MINECRAFT, minecraftVersion, Comparison.EQUAL_OR_NEW)
+    }.getOrDefault(true)
+
     /** Whether this list already holds an entry for [mod]'s jar. */
     private fun List<ScannedMod>.holds(mod: ScannedMod): Boolean = forJarOf(mod) != null
 
@@ -142,8 +156,7 @@ class ModListCompiler(
             }
 
             "Forge" -> {
-                val mcVersions = minecraftVersion.split(".").dropLastWhile { it.isEmpty() }.toTypedArray()
-                if (mcVersions[1].toInt() > 12) {
+                if (forgeUsesToml(minecraftVersion)) {
                     scannedMods.addAll(modScanner.forgeTomlScanner.scan(filesInModsDir))
                 } else {
                     scannedMods.addAll(modScanner.forgeAnnotationScanner.scan(filesInModsDir))
@@ -152,7 +165,7 @@ class ModListCompiler(
 
             "NeoForge" -> {
                 if (SemanticVersionComparator.compareSemantics(
-                        "1.20.5",
+                        NEOFORGE_TOML_MINIMUM_MINECRAFT,
                         minecraftVersion,
                         Comparison.EQUAL_OR_NEW
                     )
@@ -278,4 +291,12 @@ class ModListCompiler(
         )
     }
 
+    /** Minecraft versions at which a loader changed the descriptor its scanner has to read. */
+    private companion object {
+        /** Forge replaced the FML annotation-cache with `META-INF/mods.toml` in Minecraft 1.13. */
+        const val FORGE_TOML_MINIMUM_MINECRAFT = "1.13"
+
+        /** NeoForge renamed `mods.toml` to `META-INF/neoforge.mods.toml` in Minecraft 1.20.5. */
+        const val NEOFORGE_TOML_MINIMUM_MINECRAFT = "1.20.5"
+    }
 }
