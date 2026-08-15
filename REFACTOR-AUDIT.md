@@ -1,150 +1,106 @@
-# Refactor audit — `claude-readme-refresh` + `claude-drop-jpa-relics`
+# Refactor audit — `claude-build-docs`
 
-**Scope:** `git log develop..HEAD` from `claude-drop-jpa-relics` — **2 commits**, `d1ece9bee` …
-`24390e3ba`. The two branches are stacked, so this range covers both.
+**Scope:** `git log develop..HEAD` — **1 commit**, `fd8d674be`.
 **Mode:** READ-ONLY. No source was modified while auditing.
-**Supersedes** the previous audit in this file (the modscanning one, merged into `develop`); its
-findings were all resolved or explicitly accepted and are recorded in that history.
+**Supersedes** the previous audit in this file (`claude-webservice-context-test` +
+`claude-config-cache`). That one's M-1 — a commit bundling three concerns — was acted on: the commit
+was split into three, one part was dropped entirely after measurement disproved its rationale, and all
+of it is now merged into `develop`.
 
-**Verdict: no HIGH findings. One MEDIUM, three LOW.**
-
-**Status (updated after the follow-up work):** **M-1 is resolved** — `WebServiceContextTest` now boots
-the real application context, so bean wiring across the controllers, services, repositories and
-scheduling is covered, and the finding's own suggested remedy is done. **L-1 and L-2 are accepted**:
-both are observations about commits that are already merged into `develop`, and the honest remedy for
-a merged label is a note like this one rather than rewriting shared history — the same call recorded
-for `358675fbf`. **L-3 is moot**: the trailing newline the diff noise came from is the correct state,
-and it is already there. Both commits are small, single-purpose and
-green. Neither is a refactor in the sense these conventions are written for — one is documentation,
-the other is dead-configuration removal — so several rules do not bite here, and this report says so
-rather than manufacturing findings to fill the sections.
+**Verdict: no HIGH, no MEDIUM, two LOW.** This is a single documentation commit that touches no
+source. Most of these conventions are written for code changes and simply do not apply; rather than
+stretch them to produce findings, this report says which ones were checked and what the two real
+observations are.
 
 ---
 
 ## HIGH
 
-None.
-
-- No behaviour change is mixed into a commit labelled `refactor:` — neither commit uses that label.
-- No module boundary is crossed. `-api` gains no dependency on Swing, Spring or the frontend.
-- No plugin-API contract changes. `24390e3ba` touches only `-app` runtime configuration, the build
-  file and the catalog; nothing `serverpackcreator-api` exports is affected.
-
----
+None. The commit modifies three Markdown files and nothing else — verified, no `.kt`, `.kts`,
+`.properties` or `.toml` in the diff. No behaviour, no module boundary, no plugin API is involved.
 
 ## MEDIUM
 
-### M-1 · `24390e3ba` removes main-source runtime configuration with nothing able to catch a mistake
+None.
 
-**Files:** `serverpackcreator-app/src/main/resources/application.properties` (4 lines removed),
-`serverpackcreator-app/src/test/resources/application.properties` (12 lines removed)
-**Rule:** *Before refactoring any unit, ensure characterization tests exist that pin its current
-behavior. Never refactor untested code blind.*
+The characterization-test rule has no purchase on a docs commit, but its *spirit* — do not assert
+what you have not verified — is the one that matters here, and it was honoured. Every checkable claim
+in `BUILD.md` was run rather than recalled, which is what turned up the three errors the commit fixes
+(the missing `./gradlew`, the non-existent `Build All` task, and `:serverpackcreator-app:run`). Spot-
+checks during this audit:
 
-The commit removes `spring.transaction.default-timeout` and three `spring.datasource.tomcat.*` pool
-settings from the **main** properties — live web-service configuration, not build logic — and no test
-in the repository asserts on any of them:
-
-```
-spring.jpa          test-source hits: 0
-spring.datasource   test-source hits: 0
-spring.jdbc         test-source hits: 0
-spring.transaction  test-source hits: 0
-```
-
-There is also no test that boots a real Spring context: `WebServiceTest` is
-`@SpringBootTest(classes = [WebServiceTest::class])`, a context of exactly one class, which this
-module's `CLAUDE.md` already describes as asserting nothing. So had one of these properties been
-load-bearing, the suite would have stayed green regardless.
-
-**Substantially mitigated, which is why this is MEDIUM and not HIGH.** The commit does not assert the
-properties were dead, it measures it, and records the measurement in the message:
-
-```
-@Transactional in main source                            0 files
-JPA / JDBC / DataSource types in main source             0 files
-hibernate, tomcat-jdbc or h2 on the runtime classpath    0 hits
-```
-
-Nothing on the runtime classpath can consume a `spring.datasource.*` or `spring.jpa.*` key, so the
-removal is inert by construction rather than by inspection. That is the same measure-don't-test
-standard the root `CLAUDE.md` sets for build logic — the gap is that these files are *application*
-configuration, where that carve-out was not written to apply.
-
-**Suggested remedy:** none for the removal itself. The real gap is the pre-existing one this commit's
-own documentation points at — `WebServiceTest` cannot catch anything. Replacing it with a context test
-that actually starts is the fix, and is now *possible* precisely because this commit removed the
-malformed Mongo URI that would have made such a test fail on startup. A follow-up, not a defect here.
+| Claim | Result |
+|---|---|
+| `build` runs the frontend Vitest suite | `checkScript.set("run test")` present in quasar-conventions ✓ |
+| configuration time ~4.75s → ~2.02s | re-measured 4.96s → 2.04s ✓ (within noise) |
+| `BUILD.md` is not in the shipped document set | 0 mentions in `-api`'s build file ✓ |
+| `bootRun` exists, `run` does not, for `-app` | verified against the task graph ✓ |
+| foojay resolver absent from root settings | verified ✓ |
 
 ---
 
 ## LOW
 
-### L-1 · ~~ACCEPTED~~ · `24390e3ba` bundles documentation with the change, against this session's own pattern
+### L-1 · `fd8d674be` fixes a documentation bug found mid-task, in the same commit rather than its own
 
-**File:** `serverpackcreator-app/CLAUDE.md` (+12)
-**Rule:** *One concern per commit.*
+**File:** `CLAUDE.md:72-75`
+**Rule:** *If you find a bug while refactoring, surface it explicitly and propose a fix in its own
+commit.*
 
-Every earlier documentation update across this session's branches landed as its own `docs(...)` commit
-(`d76e2edad`, `a1d81990f`, `94b6a8c1b`, `24e00c5c7`, `5fc3ca33d`). Here the `CLAUDE.md` entry rides
-along inside the `chore(web)` commit.
+While verifying `BUILD.md`'s claims, `./gradlew :serverpackcreator-app:run` turned out not to exist —
+`-app` applies the Spring Boot plugin, so the task is `bootRun`. The root `CLAUDE.md` carried the same
+wrong command and is corrected in this commit rather than a separate one.
 
-Defensible — the Definition of Done requires docs to move with the change, and 12 lines describing
-exactly what was removed is not sprawl. Flagged only because the branch is internally inconsistent
-about it, and consistency is what makes a log skimmable.
+It *is* surfaced explicitly — the commit body names it as one of three errors the verification caught,
+and the correction adds the reason (`-app` is not an `application` module) plus the contrast with
+`:serverpackcreator-grinder:run`, which does exist. So the "do not silently work around it" half of
+the rule is satisfied; only the "own commit" half is not.
 
-### L-2 · ~~ACCEPTED~~ · `24390e3ba` makes a latent behaviour change under a `chore:` label
+Defensible as one concern — *the build documentation was wrong in three places, here are the three*.
+Recorded because the rule is written without that exception, and because the fix lands in a file that
+is not otherwise the subject of the commit.
 
-**File:** `serverpackcreator-app/src/test/resources/application.properties`
+### L-2 · `fd8d674be` leaves a stated prerequisite gap unresolved by design
 
-Removing `spring.data.mongodb.uri=jdbc:h2:mem:testdb` changes what a future Spring context would
-resolve: previously a hard startup failure on a malformed connection string, now the Mongo
-autoconfiguration default (`localhost:27017`). Unreachable today — no test boots a context that runs
-that autoconfiguration — so nothing observable changes, and the new behaviour is strictly the better
-of the two.
+**File:** `BUILD.md:49-53`
 
-Recorded because "chore" reads as *no behaviour anywhere*, while the honest description is *no
-behaviour that anything currently reaches*. The commit body does explain this, which is most of what
-matters.
+The commit documents that the foojay toolchain resolver is applied in `buildSrc/settings.gradle.kts`
+but not in the root, so a contributor without a local JDK 21 gets *"No matching toolchains found"*
+instead of an automatic download — and then explicitly declines to fix it, on the grounds that
+changing toolchain provisioning does not belong in a docs commit.
 
-### L-3 · ~~MOOT~~ · `24390e3ba` carries a whitespace-only line in its diff
-
-**File:** `serverpackcreator-app/src/test/resources/application.properties`, last line
-
-The diff shows `spring.config.import=…` deleted and re-added identically. The file had no trailing
-newline; the rewrite added one, so git renders the last line as changed (confirmed: one
-`\ No newline at end of file` marker in the diff). Cosmetic, and arguably an improvement, but it makes
-the diff look like it touched a property it did not.
+That is the right call under *one concern per commit*, and the trap is now written down where a
+newcomer will hit it. Flagged only so it does not disappear: **documenting a papercut is not the same
+as fixing it**, and the fix is one line in `settings.gradle.kts`. It should become a follow-up rather
+than remain permanently "documented".
 
 ---
 
 ## Checked and clean
 
-- **`d1ece9bee` (README) is a clean single-concern commit.** One file, one concern — documentation
-  staleness. Its six sub-items are instances of that concern, not six separate ones.
-- **The compiler-gated snippets were not edited.** Verified by diff: no line touching `ApiWrapper`,
-  `PackConfig`, `configurationHandler` or `serverPackHandler` changed, so `ReadmeExamplesTest`'s
-  subject matter is untouched. It passes, as does `ShippedResourceTrackingTest`.
-- **The README's claims were verified against the code, not eyeballed** — 17 of 17 `Mode.kt` arguments
-  documented afterwards, all 16 internal links resolving, all 8 project-owned external links returning
-  200, and every `de.griefed.serverpackcreator.*` / `SPC_*` key still present in source.
-- **A bug found mid-task was surfaced and fixed in its own commit, not worked around.** The
-  `spring.data.mongodb.uri=jdbc:h2:mem:testdb` relic was found while checking a stale README line,
-  reported before being touched, and fixed separately from the README commit — exactly what the
-  convention asks for.
-- **No `refactor:` commit changed an existing test's assertions**, because neither commit is labelled
-  `refactor:` and neither touches a test file at all (0 test files across both).
-- **No Kotlin-idiom regressions**: neither commit modifies Kotlin source.
-- **Scope stayed inside each commit's stated subject.** `24390e3ba` reaches into
-  `gradle/libs.versions.toml` and `serverpackcreator-app/build.gradle.kts`, but only to drop the H2
-  dependency and its catalog entry — the same "JPA/H2/JDBC relics" concern the message names.
-- **Both branches follow the `claude-` naming rule**, and neither has been pushed.
-- `:serverpackcreator-app:test` and `./gradlew clean build` are green on the branch tip.
+- **No source modified**: the diff is `BUILD.md` (new, 229 lines), `CONTRIBUTING.md` (+14/-6) and
+  `CLAUDE.md` (+6/-6).
+- **No test was touched or needed to change**, so the "a refactor that changes a test is not a
+  refactor" rule is trivially satisfied.
+- **Claims were verified rather than recalled**, and the verification is what produced the commit's
+  content — three documented errors, each named in the commit body with how it was found.
+- **The shipping decision is correct and was checked, not assumed.** `CONTRIBUTING.md` is one of the
+  seven documents copied into `-api`'s resources and mirrored into the Writerside topics; `BUILD.md`
+  is not, so the link between them is an absolute URL rather than a relative path that would dangle in
+  the shipped copies. Confirmed `BUILD.md` appears nowhere in `-api`'s `shippedDocuments` list.
+- **`BUILD.md`'s own links resolve**: no broken heading anchors, no broken file links. (An earlier
+  draft had two broken anchors; they were caught and fixed before the commit.)
+- **Scope did not sprawl.** Three files, all documentation, all about how to build the project.
+- **Branch follows the `claude-` naming rule** and has not been pushed.
+- `./gradlew build` green.
 
-## Follow-ups already known, not defects in this range
+## Follow-ups, not defects in this range
 
-- `WebServiceTest` still boots a one-class context and asserts nothing. Both this module's `CLAUDE.md`
-  and M-1 point at it; replacing it is the highest-value test work left in `-app`.
-- The README's `-web` first-run wording was corrected to what could be verified, deliberately without
-  asserting a specific error message, since that failure was never reproduced. If anyone does run it,
-  the sentence can be sharpened.
+- **Add the foojay resolver to the root `settings.gradle.kts`** and delete the trap from `BUILD.md`
+  (L-2). One line; removes the JDK-21 prerequisite entirely.
+- **`serverpackcreator-plugin-example/src/main/resources/CHANGELOG.md`** is a tracked 14 KB file that
+  nothing generates and nothing updates, shipped inside the example plugin's jar, whose source file at
+  the module root does not exist. Surfaced during the previous branch and deliberately left alone —
+  deleting a tracked file that reaches users is a product decision, not a build cleanup.
+- The configuration cache remains opt-in (`--configuration-cache`), blocked for `build` by the
+  third-party `:generateLicenseReport`. Documented in `BUILD.md` and `CLAUDE.md`.
