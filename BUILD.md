@@ -44,13 +44,18 @@ Two tasks exist that you almost certainly do not want:
 
 ## Prerequisites
 
-**A JDK 21.** Every module targets Java 21 through a Gradle toolchain.
+**A JDK 21**, or nothing at all. Every module targets Java 21 through a Gradle toolchain.
 
-> **Trap:** the [foojay toolchain resolver](https://github.com/gradle/foojay-toolchains) is applied in
-> `buildSrc/settings.gradle.kts` but **not** in the root `settings.gradle.kts`. So Gradle can
-> auto-download a JDK for the build's *own* code, but not for the modules. If you do not have a JDK 21
-> installed, the main build fails with *"No matching toolchains found"* rather than fetching one.
-> Install a JDK 21 (Temurin is what CI uses) or add the resolver to the root settings.
+Gradle downloads one for you if you have none: the
+[foojay toolchain resolver](https://github.com/gradle/foojay-toolchains) is registered in
+`settings.gradle.kts` **and** in `buildSrc/settings.gradle.kts`.
+
+> Both are needed and they are declared differently — the root with `version "0.8.0"`, buildSrc
+> **without** a version. buildSrc is a separate build that does not inherit the root's toolchain
+> repositories (verified: it fails with *"Toolchain download repositories have not been configured"*),
+> but by the time its settings are evaluated the plugin is already on the classpath, so asking for a
+> version there fails with *"already on the classpath with an unknown version"*. If you touch either,
+> check both.
 
 **Nothing else.** Node.js is downloaded and managed by the build. Docker is only needed for the
 grinder's gated integration tests.

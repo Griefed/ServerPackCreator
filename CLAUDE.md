@@ -83,6 +83,12 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   its own because it is a **separate build** and cannot read the root settings; it deliberately does
   **not** list `mavenLocal()`, which used to be first there and let a stale `~/.m2` artifact shadow the
   real one.
+- **The foojay toolchain resolver is declared TWICE, differently, and both are required.**
+  `settings.gradle.kts` has it `version "0.8.0"`; `buildSrc/settings.gradle.kts` has it **without** a
+  version. buildSrc is a separate build and does **not** inherit the root's toolchain repositories
+  (verified — it fails with *"Toolchain download repositories have not been configured"*), yet by the
+  time its settings evaluate the plugin is already on the classpath, so requesting a version there
+  fails with *"already on the classpath with an unknown version"*. Don't "tidy" either one away.
 - **Versions live in `gradle/libs.versions.toml`** — plugins *and* the 50 libraries. Do not re-add a
   hardcoded coordinate to a module build file. `buildSrc/settings.gradle.kts` points at the same file
   explicitly: buildSrc does **not** inherit the root catalog (verified on Gradle 8.14.4 — removing the
