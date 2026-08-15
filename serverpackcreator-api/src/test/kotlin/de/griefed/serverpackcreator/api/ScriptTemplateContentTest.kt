@@ -388,6 +388,73 @@ internal class ScriptTemplateContentTest {
     }
 
     /**
+     * Every template must resolve the Java version **after** the Java-check block, and must fail safe when it
+     * cannot.
+     *
+     * The executing tests below cover bash only, because fish and PowerShell cannot be run on every machine — so
+     * these two properties are asserted at source level for all three, which is the same compromise
+     * [allTemplatesUseAnAlreadyInstalledFabricLauncherBeforeCheckingTheNetwork] makes.
+     *
+     * Both halves matter and they fail differently:
+     *
+     *  - **Ordering.** `JAVA_VERSION` starts as the literal `do_not_manually_edit` and only `getJavaVersion` fills
+     *    it in. No `installJava` call-site re-reads it and `install_java.sh` never sets it, so a pack that installs
+     *    its own Java reached `setupForge` with no version — which is exactly how
+     *    `-Djava.security.manager=allow` reached a Java 25 VM and stopped it from starting.
+     *  - **Fail-safe polarity.** The guard must be "not numeric **OR** >= 24", never "numeric **AND** >= 24". An
+     *    unresolved version cannot rule out Java 24+, so it must take the self-install path rather than the one
+     *    that passes a flag which is fatal there. A guard inverted the wrong way still parses, still runs, and
+     *    silently reinstates the crash — no syntax check can catch it, which is why it is pinned here.
+     */
+    @Test
+    fun allTemplatesResolveJavaAfterTheChecksAndFailSafeWhenItIsUnknown() {
+        val expectations = mapOf(
+            "default_template.sh" to Triple(
+                "# Check and warn the user if a 32bit Java-installation is used",
+                "getJavaVersion",
+                """if [[ ! "${'$'}{JAVA_VERSION}" =~ ^[0-9]+${'$'} ]] || [[ ${'$'}{JAVA_VERSION} -ge 24 ]]; then"""
+            ),
+            "default_template.fish" to Triple(
+                "# Check and warn the user if a 32bit Java-installation is used",
+                "getJavaVersion",
+                """if not string match -qr '^[0-9]+${'$'}' -- "${'$'}JAVA_VERSION"; or test "${'$'}JAVA_VERSION" -ge 24"""
+            ),
+            "default_template.ps1" to Triple(
+                "# Check and warn the user if a 32bit Java-installation is used",
+                "GetJavaVersion",
+                """if ((-Not ("${'$'}{JavaVersion}" -match '^\d+${'$'}')) -Or ([int]${'$'}{JavaVersion} -ge 24))"""
+            )
+        )
+
+        expectations.forEach { (name, markers) ->
+            val (afterChecksMarker, resolveCall, failSafeGuard) = markers
+            val installCall = if (name.endsWith(".ps1")) "InstallJava" else "installJava"
+            val text = template(name)
+
+            // The resolve call must sit AFTER the last installJava — every one of which is inside the
+            // Java-check block — and before the 32-bit warning that follows the block. Anchoring on the last
+            // install is what makes this bite: searching backwards from the 32-bit marker alone would happily
+            // match one of the calls *inside* the block and pass with the post-block call deleted.
+            val checksEndAt = text.indexOf(afterChecksMarker)
+            Assertions.assertTrue(checksEndAt >= 0, "$name: the end-of-Java-checks marker is stale, update this test")
+            val lastInstallAt = text.lastIndexOf(installCall, checksEndAt)
+            Assertions.assertTrue(lastInstallAt >= 0, "$name: the installJava marker is stale, update this test")
+            val resolveAt = text.indexOf(resolveCall, lastInstallAt + installCall.length)
+            Assertions.assertTrue(
+                resolveAt in 0..<checksEndAt,
+                "$name never calls $resolveCall after the Java-check block, so a pack that installs its own Java " +
+                    "reaches setupForge with JAVA_VERSION still unresolved"
+            )
+
+            Assertions.assertTrue(
+                text.contains(failSafeGuard),
+                "$name's Forge/SSJ guard is not the fail-safe form. It must treat an unreadable JAVA_VERSION as " +
+                    "'cannot rule out Java 24+' and take the self-install path. Expected to find:\n  $failSafeGuard"
+            )
+        }
+    }
+
+    /**
      * **Executes** `setupForge`'s ServerStarterJar path and asserts that `SSJ_FORGE_ARGS` is dropped on a Java that
      * cannot accept it.
      *
