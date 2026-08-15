@@ -23,30 +23,18 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.File
 import java.io.IOException
+import java.util.jar.JarFile
 
 /**
- * Helper-class containing methods implemented and used by JSON-based scanners.
- *
- * Superseded by [JsonDescriptorScanner], which is the same helper *plus* the scanning contract:
- * SPC's own JSON scanners moved there so the never-drop-a-jar loop they each used to carry a copy of
- * lives in one place. This class is kept because it is published API and a subclass compiled against
- * it must keep compiling — it deliberately does **not** extend [DescriptorScanner], since gaining an
- * abstract `read` would break exactly those subclasses.
+ * Base for scanners whose descriptor is JSON: adds Jackson reading to the per-jar failure handling
+ * of [DescriptorScanner], so subclasses implement [read] for a single jar and may throw freely.
  *
  * @author Griefed
  */
-@Deprecated(
-    "Superseded by JsonDescriptorScanner, which adds the ModJarScanner contract to the same helper.",
-    ReplaceWith("JsonDescriptorScanner"),
-    DeprecationLevel.WARNING
-)
-abstract class JsonBasedScanner {
+abstract class JsonDescriptorScanner : DescriptorScanner() {
 
     /**
      * Acquire a JsonNode from the specified entry in the specified jar.
-     *
-     * Delegates to the same implementation [JsonDescriptorScanner.getJarJson] uses, so this facade
-     * cannot drift from its replacement.
      *
      * @param file         The jar from which to get the JsonNode.
      * @param entryInJar   The entry in the jar from which to get the JsonNode.
@@ -62,4 +50,21 @@ abstract class JsonBasedScanner {
     @Throws(NullPointerException::class, IOException::class, SecurityException::class, IllegalStateException::class)
     fun getJarJson(file: File, entryInJar: String, objectMapper: ObjectMapper): JsonNode =
         readJarJson(file, entryInJar, objectMapper)
+}
+
+/**
+ * Reads one entry out of a jar and parses it as JSON.
+ *
+ * The single implementation behind both [JsonDescriptorScanner.getJarJson] and the deprecated
+ * [JsonBasedScanner.getJarJson], so the facade cannot drift from the class that replaced it.
+ */
+@Throws(NullPointerException::class, IOException::class, SecurityException::class, IllegalStateException::class)
+internal fun readJarJson(file: File, entryInJar: String, objectMapper: ObjectMapper): JsonNode {
+    val jsonNode: JsonNode
+    JarFile(file).use { jar ->
+        jar.getInputStream(jar.getJarEntry(entryInJar)).use {
+            jsonNode = objectMapper.readTree(it)
+        }
+    }
+    return jsonNode
 }

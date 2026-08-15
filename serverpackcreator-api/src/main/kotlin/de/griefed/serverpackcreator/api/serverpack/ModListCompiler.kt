@@ -26,10 +26,8 @@ import de.griefed.serverpackcreator.api.modscanning.ModScanner
 import de.griefed.serverpackcreator.api.modscanning.ScannedMod
 import de.griefed.serverpackcreator.api.modscanning.Sideness
 import de.griefed.serverpackcreator.api.utilities.SimpleStopWatch
-import de.griefed.serverpackcreator.api.utilities.common.Comparison
 import de.griefed.serverpackcreator.api.utilities.common.FilterType
 import de.griefed.serverpackcreator.api.utilities.common.ListUtilities
-import de.griefed.serverpackcreator.api.utilities.common.SemanticVersionComparator
 import de.griefed.serverpackcreator.api.utilities.common.filteredWalk
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
@@ -66,20 +64,6 @@ class ModListCompiler(
      * first and drop the other verdict. The merge those verdicts feed is a decision, not a de-duplication.
      */
     private fun List<ScannedMod>.forJarOf(mod: ScannedMod): ScannedMod? = find { it.file == mod.file }
-
-    /**
-     * Whether Forge on [minecraftVersion] carries a `mods.toml` rather than the annotation-cache the
-     * 1.12-and-older scanner reads. Forge switched with Minecraft 1.13.
-     *
-     * Compares every version component through [SemanticVersionComparator] rather than testing the
-     * minor on its own: Minecraft has two versioning schemes (`1.x.y` and the newer `YY.x.y`), so
-     * `26.2`'s minor of `2` reads as the 1.2 era and would pick the wrong scanner. An unparseable
-     * version falls back to the modern scanner — the annotation cache exists only in jars a decade
-     * old, so it is never the safer guess.
-     */
-    private fun forgeUsesToml(minecraftVersion: String) = runCatching {
-        SemanticVersionComparator.compareSemantics(FORGE_TOML_MINIMUM_MINECRAFT, minecraftVersion, Comparison.EQUAL_OR_NEW)
-    }.getOrDefault(true)
 
     /** Whether this list already holds an entry for [mod]'s jar. */
     private fun List<ScannedMod>.holds(mod: ScannedMod): Boolean = forJarOf(mod) != null
@@ -150,58 +134,15 @@ class ModListCompiler(
         val scannedMods: MutableList<ScannedMod> = mutableListOf()
         val scanningStopWatch = SimpleStopWatch().start()
 
-        when (modloader) {
-            "LegacyFabric", "Fabric" -> {
-                scannedMods.addAll(modScanner.fabricScanner.scan(filesInModsDir))
-            }
-
-            "Forge" -> {
-                if (forgeUsesToml(minecraftVersion)) {
-                    scannedMods.addAll(modScanner.forgeTomlScanner.scan(filesInModsDir))
-                } else {
-                    scannedMods.addAll(modScanner.forgeAnnotationScanner.scan(filesInModsDir))
-                }
-            }
-
-            "NeoForge" -> {
-                if (SemanticVersionComparator.compareSemantics(
-                        NEOFORGE_TOML_MINIMUM_MINECRAFT,
-                        minecraftVersion,
-                        Comparison.EQUAL_OR_NEW
-                    )
-                ) {
-                    log.debug("Scanning using NeoForge scanner.")
-                    scannedMods.addAll(modScanner.neoForgeTomlScanner.scan(filesInModsDir))
-                } else {
-                    log.debug("Scanning using Forge scanner.")
-                    scannedMods.addAll(modScanner.forgeTomlScanner.scan(filesInModsDir))
-                }
-            }
-
-            "Quilt" -> {
-                // A Quilt pack mixes both descriptor formats, and a mod may carry either or both, so the
-                // directory is scanned twice and the two verdicts merged per jar. CLIENT wins: the scan
-                // that could not read a jar falls back to SERVER, so a SERVER verdict is only meaningful
-                // when it comes from a descriptor the scanner actually read.
-                val quiltScan = modScanner.quiltScanner.scan(filesInModsDir).toMutableList()
-                val fabricScan = modScanner.fabricScanner.scan(filesInModsDir)
-                for (i in quiltScan.indices) {
-                    val match = fabricScan.forJarOf(quiltScan[i]) ?: continue
-                    if (quiltScan[i].sideness == Sideness.SERVER && match.sideness == Sideness.CLIENT) {
-                        log.info("${match.file.name} Quilt-scan yielded sideness SERVER, but Fabric-scan yielded CLIENT. Using Fabric-scan result instead.")
-                        quiltScan[i] = match
-                    }
-                }
-                scannedMods.addAll(quiltScan)
-            }
-
-            else -> {
-                // No scanner knows this loader, so nothing can be judged clientside. Keeping every mod
-                // leaves a pack the user can trim; returning none would look like a successful run that
-                // silently produced nothing.
-                log.warn("Unrecognised modloader '$modloader'. Skipping sideness detection and including every mod.")
-                scannedMods.addAll(filesInModsDir.map { ScannedMod(it) })
-            }
+        val scanner = modScanner.scannerFor(modloader, minecraftVersion)
+        if (scanner != null) {
+            scannedMods.addAll(scanner.scan(filesInModsDir))
+        } else {
+            // No scanner knows this loader, so nothing can be judged clientside. Keeping every mod
+            // leaves a pack the user can trim; returning none would look like a successful run that
+            // silently produced nothing.
+            log.warn("Unrecognised modloader '$modloader'. Skipping sideness detection and including every mod.")
+            scannedMods.addAll(filesInModsDir.map { ScannedMod(it) })
         }
 
 
@@ -291,12 +232,4 @@ class ModListCompiler(
         )
     }
 
-    /** Minecraft versions at which a loader changed the descriptor its scanner has to read. */
-    private companion object {
-        /** Forge replaced the FML annotation-cache with `META-INF/mods.toml` in Minecraft 1.13. */
-        const val FORGE_TOML_MINIMUM_MINECRAFT = "1.13"
-
-        /** NeoForge renamed `mods.toml` to `META-INF/neoforge.mods.toml` in Minecraft 1.20.5. */
-        const val NEOFORGE_TOML_MINIMUM_MINECRAFT = "1.20.5"
-    }
 }

@@ -35,7 +35,7 @@ import java.util.*
  *
  * @author Griefed
  */
-class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val utilities: Utilities) : JsonBasedScanner(), Scanner<List<ScannedMod>, Collection<File>> {
+class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val utilities: Utilities) : JsonDescriptorScanner() {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val additionalDependencyRegex = "(@.*|\\[.*)".toRegex()
     private val caches = "META-INF/fml_cache_annotation.json"
@@ -53,41 +53,29 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
     val dependencyReplace: Regex
         get() = "(@.*|\\[.*)".toRegex()
 
+    override val scanAnnouncement = "Scanning Minecraft 1.12.x and older mods for sideness..."
+
     /**
-     * Scan the `fml-cache-annotation.json`-files in mod JAR-files of a given directory for their sideness.
+     * Read one mod's `fml_cache_annotation.json` for its sideness.
      *
-     * If `clientSideOnly` specifies `"value": "true"`, and is not listed as a dependency for another mod, it is added
-     * and therefore later on excluded from the server pack.
+     * If `clientSideOnly` specifies `"value": "true"`, and the mod is not listed as a dependency of
+     * another mod, it is later excluded from the server pack.
      *
-     * @param jarFiles A list of files in which to check the `fml-cache-annotation.json `-files.
-     * @return List of mods not to include in server pack based on fml-cache-annotation.json-content.
+     * @param modJar The jar whose annotation cache to read.
+     * @return What this mod declared.
      * @author Griefed
      */
-    override fun scan(jarFiles: Collection<File>): List<ScannedMod> {
-        log.info("Scanning Minecraft 1.12.x and older mods for sideness...")
+    override fun read(modJar: File): ScannedMod {
+        val modConfig: JsonNode = getJarJson(modJar, caches, objectMapper)
+        val (modId, sidenesses, dependencies) = getSidenessesAndDependencies(modConfig)
 
-        val scannedMods = mutableListOf<ScannedMod>()
-
-        for (modJar in jarFiles) {
-            try {
-                val modConfig: JsonNode = getJarJson(modJar, caches, objectMapper)
-                val (modId, sidenesses, dependencies) = getSidenessesAndDependencies(modConfig)
-
-                if (modId == null) {
-                    // No annotation in the cache carried a modId, so nothing read here can be attributed.
-                    // Fall back to the defaults, as an unreadable jar does.
-                    log.error("Could not scan ${modJar.name}. Consider reporting this: no modId in the annotation cache.")
-                    scannedMods.add(ScannedMod(modJar))
-                } else {
-                    scannedMods.add(ScannedMod(modJar, modId, sidenessOf(sidenesses), dependencies))
-                }
-            } catch (e: Exception) {
-                log.error("Could not scan ${modJar.name}. Consider reporting this:", e)
-                scannedMods.add(ScannedMod(modJar))
-            }
+        if (modId == null) {
+            // No annotation in the cache carried a modId, so nothing read here can be attributed.
+            // Fall back to the defaults, as an unreadable jar does.
+            log.error("Could not scan ${modJar.name}. Consider reporting this: no modId in the annotation cache.")
+            return ScannedMod(modJar)
         }
-
-        return scannedMods
+        return ScannedMod(modJar, modId, sidenessOf(sidenesses), dependencies)
     }
 
     /**
