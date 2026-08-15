@@ -69,8 +69,10 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   `<module>/build/reports/kover/`.
 - Frontend: `npm install && npx quasar dev` in `serverpackcreator-web-frontend/` (dev server),
   `npx quasar build` for production build, `npm test` (Vitest).
-- Run the app locally: `./gradlew :serverpackcreator-app:run` (GUI by default; CLI/web via args,
-  see `Mode.kt` / `CommandlineParser.kt`).
+- Run the app locally: `./gradlew :serverpackcreator-app:bootRun` (GUI by default; CLI/web via args,
+  **not `:run`** — `-app` applies the Spring Boot plugin, not `application`, so `run` does not exist there;
+  `:serverpackcreator-grinder:run` does, because the grinder applies `application`; see `Mode.kt` /
+  `CommandlineParser.kt` for the arguments).
 - `media` task needs install4j installed locally — not part of regular dev loop.
 
 ### Build layout (durable — where things are declared)
