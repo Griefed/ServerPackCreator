@@ -77,7 +77,7 @@ abstract class DescriptorScanner : ModJarScanner {
             try {
                 read(modJar)
             } catch (e: Exception) {
-                log.error("Could not scan ${modJar.name}. Consider reporting this: ${e.cause}: ${e.message}")
+                log.error("Could not scan ${modJar.name}. Consider reporting this to the mod-author:",e)
                 ScannedMod(modJar)
             }
         }

@@ -72,7 +72,7 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
         if (modId == null) {
             // No annotation in the cache carried a modId, so nothing read here can be attributed.
             // Fall back to the defaults, as an unreadable jar does.
-            log.error("Could not scan ${modJar.name}. Consider reporting this: no modId in the annotation cache.")
+            log.error("Could not scan ${modJar.name}. Consider reporting this to the mod-author: no modId in the annotation cache.")
             return ScannedMod(modJar)
         }
         return ScannedMod(modJar, modId, sidenessOf(sidenesses), dependencies)
