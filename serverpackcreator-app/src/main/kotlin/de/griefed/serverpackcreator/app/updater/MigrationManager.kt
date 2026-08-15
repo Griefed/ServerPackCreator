@@ -498,6 +498,12 @@ class MigrationManager(
             }
         }
 
+        /**
+         * Reads and writes the deprecated flat `scriptTemplates` list deliberately: migrating a 5.0.0
+         * installation means touching the representation *that* version wrote. Pointing it at the
+         * replacement would migrate the wrong setting.
+         */
+        @Suppress("DEPRECATION")
         private fun FivePointZeroPointZero() {
             val changes: MutableList<String> = ArrayList(10)
             val previousSetting = apiProperties.scriptTemplates.joinToString(",")
@@ -529,6 +535,12 @@ class MigrationManager(
             }
         }
 
+        /**
+         * Reads the deprecated flat `scriptTemplates` list deliberately: this migration's whole job is
+         * to turn what a pre-6.0.0 installation stored into the per-type map 6.0.0 uses, so the old
+         * representation is its input by definition.
+         */
+        @Suppress("DEPRECATION")
         private fun SixPointZeroPointZero() {
             val changes: MutableList<String> = ArrayList(10)
             val previousSetting = apiProperties.scriptTemplates
