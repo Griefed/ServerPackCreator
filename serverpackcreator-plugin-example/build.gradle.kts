@@ -55,15 +55,19 @@ dependencies {
 }
 
 tasks.processResources {
+    // The expansion values are read into locals first: referencing the script's own properties from
+    // inside the closure would capture the build script, which the configuration cache cannot
+    // serialize.
+    val expansions = mapOf(
+        "version" to project.version,
+        "plugin_id" to pluginId,
+        "plugin_name" to pluginName,
+        "plugin_description" to pluginDescription,
+        "plugin_author" to pluginAuthor,
+        "plugin_class" to pluginClass
+    )
     filesMatching("plugin.toml") {
-        expand(
-            "version" to project.version,
-            "plugin_id" to pluginId,
-            "plugin_name" to pluginName,
-            "plugin_description" to pluginDescription,
-            "plugin_author" to pluginAuthor,
-            "plugin_class" to pluginClass
-        )
+        expand(expansions)
     }
     copy {
         from(layout.projectDirectory.file("LICENSE"))

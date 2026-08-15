@@ -105,12 +105,15 @@ tasks.test {
     dependsOn(":serverpackcreator-api:processTestResources")
     useJUnitPlatform()
     systemProperty("java.util.logging.manager","org.jboss.logmanager.LogManager")
+    // Captured as a File so the action closes over that alone. Reading projectDir or calling
+    // Project.mkdir inside a task action holds the project object, which the configuration cache
+    // cannot serialize.
+    val testHome = layout.projectDirectory.dir("tests").asFile
     doFirst {
-        val tests = File(projectDir,"tests").absoluteFile
-        mkdir(tests.absolutePath)
-        val gitkeep = File(tests,".gitkeep").absoluteFile
+        testHome.mkdirs()
+        val gitkeep = File(testHome, ".gitkeep")
         if (!gitkeep.exists()) {
-            File(tests,".gitkeep").writeText("Hi")
+            gitkeep.writeText("Hi")
         }
     }
 }
