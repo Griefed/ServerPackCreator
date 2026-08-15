@@ -92,9 +92,24 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   directly with mocked repositories, because the look-up-or-store loops in both had been executed by
   **no** test at all. They pin the *outcome* — which entries the built object holds and which reach
   `save` — deliberately **not** the number of repository lookups, which is an implementation detail.
-- `WebServiceArgumentsTest` covers `WebService.springArguments` — pure argument composition, no context.
-  It exists because `start()` boots Spring, so the composition had to be extracted to be assertable;
-  the old context-only `WebServiceTest` is still the one CLAUDE.md says to replace rather than extend.
+- `WebServiceArgumentsTest` covers `WebService.springArguments` **and** `configLocationArgument` — pure
+  composition, no context. Both were extracted from `start()` for the same reason: it hands them
+  straight to Spring Boot, so nothing welded to it can be asserted. The config-location tests pin the
+  **order** of the eight property-file locations, because later locations win and the two
+  `overrides.properties` entries must stay last — that is where a container's `spring.data.mongodb.uri`
+  arrives from (see the Mongo landmine below).
+- **`WebServiceContextTest` boots the real application context, and needs no database.** The MongoDB
+  driver connects lazily, so every bean is constructed and every injection point resolved without a
+  server being reachable — the driver logs a connection error in the background and startup continues.
+  That covers bean wiring across all controllers, services, repositories and scheduling, which is what
+  breaks when someone adds a constructor parameter or misplaces an annotation. Verified it can fail:
+  removing `@Service` from `EventService` fails it with `NoSuchBeanDefinitionException`. It replaces
+  the old `WebServiceTest`, which was `@SpringBootTest(classes = [WebServiceTest::class])` — a context
+  of one class, itself — with an empty test body, and so could not fail for any ServerPackCreator
+  reason. **Landmine:** the three schedules are disabled in it via Spring's `CRON_DISABLED` (`-`), not
+  left on their midnight crons — `FileCleanupSchedule` deletes modpack files whose IDs are absent from
+  the database, and a suite running at 00:30 against an unreachable database should not find out what
+  that does. Keep them disabled if you add cases.
 - GUI: view-model unit tests; Swing views stay dumb. CLI/entry-point logic pinned by
   `CommandlineParserTest` (headless-independent branches only) and `MigrationManagerTest`
   (mockk-mocked `ApiProperties`, version ranges chosen to never hit a real migration method, plus a
