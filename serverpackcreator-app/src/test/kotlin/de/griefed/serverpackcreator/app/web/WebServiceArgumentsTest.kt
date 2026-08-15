@@ -21,6 +21,8 @@ package de.griefed.serverpackcreator.app.web
 
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+import java.io.File
 
 /**
  * Tests for [WebService.springArguments], the composition of the argument array handed to Spring Boot.
@@ -88,5 +90,86 @@ internal class WebServiceArgumentsTest {
         Assertions.assertEquals(2, arguments.size, "Expected the argument and the config-location")
         Assertions.assertEquals("-web", arguments[0])
         Assertions.assertEquals(configLocation, arguments[1])
+    }
+
+    /**
+     * The `--spring.config.location` chain, pinned in full and **in order**.
+     *
+     * Order is the whole point: later locations win, so the two `overrides.properties` entries must
+     * stay last. That is the file the docker image's `init-spc-config` script composes
+     * `SPC_DATABASE_*` into, so it is where `spring.data.mongodb.uri` comes from in a container. If it
+     * stopped being last, a value from an earlier file would beat it; if it dropped out entirely, the
+     * URI would never be read at all — and per this module's landmine, a missing URI is not a degraded
+     * connection but a hard startup failure.
+     */
+    @Test
+    fun theConfigLocationChainListsAllEightLocationsInOrder(@TempDir tempDir: File) {
+        val propertiesFile = File(tempDir, "home/serverpackcreator.properties")
+        val overridesFile = File(tempDir, "home/overrides.properties")
+        val userHome = File(tempDir, "user")
+
+        val argument = WebService.configLocationArgument(propertiesFile, overridesFile, userHome)
+
+        Assertions.assertTrue(
+            argument.startsWith("--spring.config.location="),
+            "The argument must be the Spring config-location flag: $argument"
+        )
+        Assertions.assertEquals(
+            listOf(
+                "classpath:/application.properties",
+                "classpath:/serverpackcreator.properties",
+                "optional:file:${propertiesFile.absolutePath}",
+                "optional:file:${File(userHome, "serverpackcreator.properties").absolutePath}",
+                "optional:file:./serverpackcreator.properties",
+                "optional:file:${overridesFile.absolutePath}",
+                "optional:file:${File(userHome, "overrides.properties").absolutePath}",
+                "optional:file:./overrides.properties"
+            ),
+            argument.removePrefix("--spring.config.location=").split(","),
+            "The config-location chain changed. Order matters — later locations win."
+        )
+    }
+
+    /**
+     * The classpath defaults must never be `optional:`. They ship inside the jar, so a missing one is
+     * a broken build rather than a deployment choice, and Spring should say so loudly.
+     */
+    @Test
+    fun theClasspathDefaultsAreNotOptional(@TempDir tempDir: File) {
+        val locations = WebService.configLocationArgument(
+            File(tempDir, "a.properties"), File(tempDir, "b.properties"), tempDir
+        ).removePrefix("--spring.config.location=").split(",")
+
+        Assertions.assertTrue(
+            locations.filter { it.startsWith("classpath:") }.none { it.startsWith("optional:") },
+            "A classpath default became optional: $locations"
+        )
+        Assertions.assertEquals(
+            2, locations.count { it.startsWith("classpath:") },
+            "Expected exactly the two shipped classpath property-files"
+        )
+    }
+
+    /**
+     * The overrides file wins over ServerPackCreator's own properties file, which is the entire reason
+     * the docker deployment works: the container writes its database settings into overrides.
+     */
+    @Test
+    fun theOverridesFileIsReadAfterThePropertiesFile(@TempDir tempDir: File) {
+        val propertiesFile = File(tempDir, "serverpackcreator.properties")
+        val overridesFile = File(tempDir, "overrides.properties")
+
+        val locations = WebService.configLocationArgument(propertiesFile, overridesFile, tempDir)
+            .removePrefix("--spring.config.location=").split(",")
+
+        Assertions.assertTrue(
+            locations.indexOf("optional:file:${overridesFile.absolutePath}") >
+                    locations.indexOf("optional:file:${propertiesFile.absolutePath}"),
+            "overrides.properties must be read after serverpackcreator.properties: $locations"
+        )
+        Assertions.assertEquals(
+            "optional:file:./overrides.properties", locations.last(),
+            "The working-directory overrides file must have the last word"
+        )
     }
 }
