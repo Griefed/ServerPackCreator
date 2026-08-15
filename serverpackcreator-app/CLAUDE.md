@@ -80,7 +80,16 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   the old context-only `WebServiceTest` is still the one CLAUDE.md says to replace rather than extend.
 - GUI: view-model unit tests; Swing views stay dumb. CLI/entry-point logic pinned by
   `CommandlineParserTest` (headless-independent branches only) and `MigrationManagerTest`
-  (mockk-mocked `ApiProperties`, version ranges chosen to never hit a real migration method).
+  (mockk-mocked `ApiProperties`, version ranges chosen to never hit a real migration method, plus a
+  pin on `LAMBDA_SUFFIX` — the regex stripping the compiler's `$0lambda$1` off a migration method's
+  name, which both discovery and version parsing run every declared name through).
+- **`VersionCheckerTest`** covers the update-check comparison, which had **zero** tests until
+  2026-08-15. The class is abstract and `allVersions()` is its only data source, so a canned subclass
+  exercises the whole alpha/beta path offline — no repository, no network. **Quirk pinned there, not
+  fixed:** `isPreReleaseNewer` compares only the number after the dot and is blind to the channel,
+  while `isUpdateAvailable` consults beta before alpha — so `alpha.2` is offered `beta.3` (3 > 2) and
+  `alpha.5` is offered *nothing* (3 > 5 and 5 > 5 both fail) even with a newer alpha published.
+  Changing that is a product decision nobody has made; the pin exists so it cannot change by accident.
 
 ## Landmines & verified quirks (durable)
 

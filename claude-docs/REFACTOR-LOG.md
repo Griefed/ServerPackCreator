@@ -1475,3 +1475,49 @@ the selection itself, including that an unparseable version falls back to the mo
 throwing — `"26"` used to raise `IndexOutOfBoundsException` out of the bare-component parsing.
 
 Suites: api 302 (1 skip), clientside 88, app 80, grinder 233 — all green.
+
+### Qodana moderates (same branch, 2026-08-15)
+
+45 Moderate findings from the same report, cleared in three commits. Of them **41 applied, 4
+deliberately not** — an inspection is a suggestion, not a verdict:
+
+- **UsePropertyAccessSyntax** (LarsonScanner) does not compile. `Graphics2D.getRenderingHints()`
+  returns `RenderingHints` while `setRenderingHints` takes a `Map`, so Kotlin exposes the property
+  read-only; `g2d.renderingHints = …` fails with *"'val' cannot be reassigned"*. Tried, reverted,
+  and the call now carries a comment so nobody repeats it.
+- **DestructuringDeclaration** ×3 (`ClientsideReportRenderer` ×2, `Grinder`) are all
+  `for (verdict in report.perLoader)` over `LoaderVerdict`, a data class with eight-plus fields.
+  Positional destructuring costs every speaking name the loop bodies use, and `componentN` is
+  positional — a reordered property would silently *rebind* every variable rather than fail to
+  compile. Exactly the silent-failure class this codebase guards against.
+
+Two **RedundantIf** findings were applied as `when`, not as the `||` Qodana implies:
+`BooleanUtilities.convert`'s recognised-false branch and its fallback both return false, but only
+the fallback warns — a plain `||` would have fired *"couldn't parse boolean"* on every valid
+`"false"`/`"0"`/`"no"`. And `JsonUtilities.getNestedBoolean` keeps its three-way shape with the
+throw; `toBooleanStrictOrNull()` is **not** a drop-in there, it is case-sensitive and that method
+accepts `"True"`/`"FALSE"`. Both now say so in a comment.
+
+**Two untested things had to be pinned before they could be touched**, both in the version-parsing
+silent-failure category:
+
+1. `VersionChecker` had **zero** tests and Qodana wanted three of its boolean chains collapsed. A
+   canned subclass over `allVersions()` pins the whole alpha/beta path offline. Writing it surfaced
+   a genuine quirk — channel-blind pre-release comparison, documented in
+   `serverpackcreator-app/CLAUDE.md` — which is pinned **as-is** rather than fixed, because changing
+   it is a product decision this branch had no mandate to make.
+2. `MigrationManager`'s lambda-suffix regex was written out **twice** in two escaping-heavy copies
+   with no coverage. Hoisted to one documented `LAMBDA_SUFFIX` constant, converted, and pinned — and
+   the pin's **teeth were checked** (broken to `"[0-9]*lambda[0-9]*"` it fails with
+   `expected: <SixDotZeroDotZero> but was: <SixDotZeroDotZero$$1>`, green again on restore).
+
+The three Spring `@Scheduled(cron = …)` placeholders have no test that loads the scheduling context,
+so they were verified by **measurement** instead: `javap` on the compiled classes shows the
+constant-pool entry unchanged — `#106 = Utf8 ${de.griefed.serverpackcreator.spring.schedules.database.cleanup}`.
+
+Swept up in the four loops the `indices` fix already touched: each called its repository's finder
+**twice** per element (once for `isPresent`, once for `get()`). Now one lookup reused through
+`orElseGet`, halving the queries on every run-configuration save and every event carrying errors.
+
+Suites after: api 302 (1 skip), clientside 88, app 88, grinder 233 (19 skip), plugin-example 3 —
+**714 total**, full `./gradlew build` green.
