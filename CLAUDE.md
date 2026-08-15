@@ -73,6 +73,38 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   see `Mode.kt` / `CommandlineParser.kt`).
 - `media` task needs install4j installed locally — not part of regular dev loop.
 
+### Build layout (durable — where things are declared)
+
+- **Repositories are declared once**, in `settings.gradle.kts` under `dependencyResolutionManagement`,
+  with `RepositoriesMode.FAIL_ON_PROJECT_REPOS` — a project-level `repositories { }` is a build
+  failure, not a silent override. They were previously in 13 places. `buildSrc/build.gradle.kts` keeps
+  its own because it is a **separate build** and cannot read the root settings; it deliberately does
+  **not** list `mavenLocal()`, which used to be first there and let a stale `~/.m2` artifact shadow the
+  real one.
+- **Versions live in `gradle/libs.versions.toml`** — plugins *and* the 50 libraries. Do not re-add a
+  hardcoded coordinate to a module build file. `buildSrc/settings.gradle.kts` points at the same file
+  explicitly: buildSrc does **not** inherit the root catalog (verified on Gradle 8.14.4 — removing the
+  block fails with `Unresolved reference: libs`).
+  **The Kotlin version is deliberately two entries:** `kotlin` (the compiler plugin, 2.3.20) and
+  `kotlinLibs` (runtime/test libraries, 2.3.21). Bumping the compiler is a separate decision;
+  `kotlinAllOpen`/`kotlinJpa` still duplicate the compiler version and should be folded into a
+  `version.ref` when that bump happens.
+- **Only `-api` publishes.** `serverpackcreator.publishing-conventions` is applied by that module
+  alone, matching CI (`.gitlab-ci.yml` runs four `:serverpackcreator-api:publish...` invocations and
+  nothing else). Non-api modules produce no sources/javadoc jar and run no `signing`. Do not move this
+  back into `java-conventions`.
+- **Convention plugin graph:** `java-conventions` (toolchain, test isolation, jar manifest) ←
+  `kotlin-conventions` (Kotlin + Kover) ← `application-conventions` (= kotlin + spring);
+  `spring-conventions`, `dokka-conventions`, `quasar-conventions` and `publishing-conventions` are
+  applied on top as needed.
+- **LANDMINE — never do filesystem work in a task's configuration block.** `-api` shipped its
+  root-level documents with fifteen bare `copy { }` calls inside `tasks.processResources { }`, so they
+  ran when the task was *configured* — including on runs where `processResources` was UP-TO-DATE and did
+  nothing — with no inputs, no outputs and no caching, writing into two source trees. They are now the
+  `shipRootDocuments` / `shipWritersideDocuments` / `shipWritersideImages` Copy tasks. Making them
+  visible immediately surfaced a real undeclared dependency (`sourcesJar` packages what
+  `shipRootDocuments` writes), which had been ordering by luck.
+
 ## Branching & git workflow
 
 - PRs target **`develop`**; `main` is the release branch.

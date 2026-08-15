@@ -1,7 +1,3 @@
-repositories {
-    mavenCentral()
-}
-
 plugins {
     id("serverpackcreator.java-conventions")
 
@@ -16,11 +12,6 @@ plugins {
     kotlin("plugin.allopen")
     kotlin("plugin.jpa")
 }
-
-apply(plugin = "org.springframework.boot")
-apply(plugin = "io.spring.dependency-management")
-apply(plugin = "org.jetbrains.kotlin.plugin.allopen")
-apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")

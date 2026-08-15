@@ -5,9 +5,6 @@ plugins {
     id("org.jetbrains.dokka-javadoc")
 }
 
-repositories {
-    mavenCentral()
-}
 
 dokka {
     moduleName = "ServerPackCreator"

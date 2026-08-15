@@ -4,9 +4,6 @@ plugins {
     id("org.siouan.frontend-jdk21")
 }
 
-repositories {
-    mavenCentral()
-}
 
 frontend {
     packageJsonDirectory.set(project.layout.projectDirectory.asFile)
@@ -20,9 +17,6 @@ frontend {
     // SPA while never running its test suite — green builds that had not executed a single frontend test.
     // Maps to `npm run test` -> `vitest run` (package.json).
     checkScript.set("run test")
-
-    // Print the architecture we are running on.
-    println(String.format("I am running on: %s", System.getProperty("os.arch")))
 
     verboseModeEnabled.set(true)
 }
