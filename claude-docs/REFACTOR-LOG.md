@@ -1452,11 +1452,14 @@ iff either scanner did, so the composite reproduces `ModListCompiler`'s rule exa
 answer is unchanged. What the union had lost — *which* `ScannedMod`, and so which id and dependency list,
 survives — is preserved, and it matters for the downstream dependency-rescue.
 
-**`JsonBasedScanner` deliberately did not join the hierarchy.** It is published, so gaining the abstract `read`
-would break any plugin subclass compiled against it — a source-compatibility break the adopted policy forbids.
-It stays standalone, `@Deprecated(ReplaceWith("JsonDescriptorScanner"))`, delegating to the same internal
-`readJarJson` the new base uses so the facade cannot drift from its replacement. Same rule as the
-`modFileEndings`/`zipCheck` facades: a facade *reads* its owner, it does not re-declare the logic.
+**`JsonBasedScanner` was removed, not deprecated — Griefed's call, overriding the adopted policy.** The first
+cut kept it as a standalone `@Deprecated(ReplaceWith("JsonDescriptorScanner"))` facade, because it is published
+and gaining the abstract `read` would break any plugin subclass. Griefed overrode that the same day: scanners
+are **not** a pf4j extension point, so a plugin could subclass the helper but never register the result — the
+facade was compatibility cost with no reachable benefit. It is deleted, `getJarJson` lives on
+`JsonDescriptorScanner`, and the break is recorded in the root `CLAUDE.md` compatibility table rather than
+papered over. Worth remembering as the shape of a legitimate override: the policy protects *reachable* plugin
+surface, and this was not.
 
 Swept up along the way: the Qodana `UnusedSymbol` (`JsonBasedScanner`'s never-read `log`), the same in
 `ForgeTomlScanner` once its catch moved to the base, and a dead `NullPointerException` catch in `FabricScanner`

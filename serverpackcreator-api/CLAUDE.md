@@ -48,9 +48,11 @@
   loop and the **one-`ScannedMod`-per-input-jar** guarantee; `scan` is `final`, subclasses implement
   `read(File)` and may throw) → `JsonDescriptorScanner` → `FabricFamilyScanner` (Fabric + Quilt share id
   and environment reading, differing only in field *paths*; dependency blocks differ in *shape*, so they
-  stay abstract). `JsonBasedScanner` is the `@Deprecated` predecessor of `JsonDescriptorScanner`, kept
-  standalone **on purpose** — it is published, so it must not gain the abstract `read` a plugin subclass
-  would then fail to implement. It delegates to the same internal `readJarJson`.
+  stay abstract). `JsonBasedScanner`, the previous JSON helper, was **removed** rather than kept as a
+  deprecated facade — Griefed's call on 2026-08-15, overriding the adopted compatibility policy: scanners
+  are not a pf4j extension point, so a plugin could subclass it but never register the result, making the
+  facade cost with no reachable benefit. A subclass compiled against it will no longer compile; use
+  `JsonDescriptorScanner`.
 - **A constant kept on an extraction facade must *read* its owner, never re-declare the literal.**
   `ServerPackHandler.modFileEndings` and `ConfigurationHandler.zipCheck` are getters delegating to
   `ModListCompiler.modFileEndings` / `ModpackZipInspector.zipCheck`, pinned by

@@ -48,23 +48,13 @@ abstract class JsonDescriptorScanner : DescriptorScanner() {
      * @author Griefed
      */
     @Throws(NullPointerException::class, IOException::class, SecurityException::class, IllegalStateException::class)
-    fun getJarJson(file: File, entryInJar: String, objectMapper: ObjectMapper): JsonNode =
-        readJarJson(file, entryInJar, objectMapper)
-}
-
-/**
- * Reads one entry out of a jar and parses it as JSON.
- *
- * The single implementation behind both [JsonDescriptorScanner.getJarJson] and the deprecated
- * [JsonBasedScanner.getJarJson], so the facade cannot drift from the class that replaced it.
- */
-@Throws(NullPointerException::class, IOException::class, SecurityException::class, IllegalStateException::class)
-internal fun readJarJson(file: File, entryInJar: String, objectMapper: ObjectMapper): JsonNode {
-    val jsonNode: JsonNode
-    JarFile(file).use { jar ->
-        jar.getInputStream(jar.getJarEntry(entryInJar)).use {
-            jsonNode = objectMapper.readTree(it)
+    fun getJarJson(file: File, entryInJar: String, objectMapper: ObjectMapper): JsonNode {
+        val jsonNode: JsonNode
+        JarFile(file).use { jar ->
+            jar.getInputStream(jar.getJarEntry(entryInJar)).use {
+                jsonNode = objectMapper.readTree(it)
+            }
         }
+        return jsonNode
     }
-    return jsonNode
 }
