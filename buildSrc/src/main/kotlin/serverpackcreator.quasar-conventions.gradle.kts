@@ -4,9 +4,6 @@ plugins {
     id("org.siouan.frontend-jdk21")
 }
 
-repositories {
-    mavenCentral()
-}
 
 frontend {
     packageJsonDirectory.set(project.layout.projectDirectory.asFile)

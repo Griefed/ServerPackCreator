@@ -8,9 +8,6 @@ application {
     mainClass.set("de.griefed.serverpackcreator.grinder.GrinderApplication")
 }
 
-repositories {
-    mavenCentral()
-}
 
 dependencies {
     // The clientside verification engine — the grinder is a container-backed ServerRunner plus the

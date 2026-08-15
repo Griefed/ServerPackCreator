@@ -6,12 +6,12 @@ plugins {
     `kotlin-dsl`
 }
 
+// buildSrc is a separate build and cannot read the root settings' repositories, so it declares its own.
+// Deliberately NOT mavenLocal(): it was first in this list, so any stale artifact in ~/.m2 silently
+// shadowed the real one and the build stopped being reproducible between machines.
 repositories {
-    mavenLocal()
     gradlePluginPortal()
-    google()
     mavenCentral()
-    maven("https://plugins.gradle.org/m2/")
 }
 
 dependencies {

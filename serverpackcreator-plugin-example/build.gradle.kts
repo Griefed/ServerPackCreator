@@ -8,9 +8,6 @@ plugins {
     kotlin("kapt")
 }
 
-repositories {
-    mavenCentral()
-}
 
 i18n4k {
     generationTargetPlatform = de.comahe.i18n4k.generator.GenerationTargetPlatform.JVM

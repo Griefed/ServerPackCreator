@@ -11,9 +11,6 @@ plugins {
     id("org.jetbrains.kotlinx.kover")
 }
 
-repositories {
-    mavenCentral()
-}
 
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))

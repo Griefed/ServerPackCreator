@@ -5,9 +5,6 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 import java.text.SimpleDateFormat
 import java.util.*
 
-repositories {
-    mavenCentral()
-}
 
 plugins {
     java

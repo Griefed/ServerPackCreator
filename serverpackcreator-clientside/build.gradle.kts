@@ -3,9 +3,6 @@ plugins {
     id("serverpackcreator.dokka-conventions")
 }
 
-repositories {
-    mavenCentral()
-}
 
 dependencies {
     // The domain core: VersionMeta, ModScanner, ServerPackHandler, PackConfig, utilities.

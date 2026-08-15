@@ -5,12 +5,6 @@ plugins {
     id("serverpackcreator.application-conventions")
 }
 
-repositories {
-    mavenCentral()
-    maven { url = uri("https://repo.spring.io/milestone") }
-    maven { url = uri("https://maven.ej-technologies.com/repository") }
-}
-
 dependencyManagement {
     imports {
         mavenBom(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)

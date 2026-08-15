@@ -29,13 +29,6 @@ idea {
 }
 
 allprojects {
-    repositories {
-        gradlePluginPortal()
-        google()
-        mavenCentral()
-        maven(url = uri("https://jitpack.io"))
-    }
-
     tasks.withType<Test> {
         jvmArgs("-XX:+EnableDynamicAgentLoading", "-Djdk.attach.allowAttachSelf=true")
     }

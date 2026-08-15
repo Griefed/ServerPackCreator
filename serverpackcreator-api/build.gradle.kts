@@ -5,10 +5,6 @@ plugins {
     id("de.comahe.i18n4k") version "0.11.2"
 }
 
-repositories {
-    mavenCentral()
-    maven("https://jitpack.io")
-}
 
 dependencies {
     api("io.github.microutils:kotlin-logging:3.0.5")

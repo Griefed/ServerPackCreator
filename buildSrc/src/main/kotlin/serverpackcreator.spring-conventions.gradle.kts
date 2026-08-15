@@ -1,7 +1,3 @@
-repositories {
-    mavenCentral()
-}
-
 plugins {
     id("serverpackcreator.java-conventions")
 
