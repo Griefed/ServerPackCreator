@@ -50,6 +50,9 @@ tasks.processTestResources {
 
 tasks.test {
     useJUnitPlatform()
+    // Mockk/ByteBuddy attach an agent to the running JVM; without these the run warns on every start
+    // and will fail outright once self-attach is disabled by default.
+    jvmArgs("-XX:+EnableDynamicAgentLoading", "-Djdk.attach.allowAttachSelf=true")
     // A fresh, isolated test home for every run. See cleanup() for what it spares and why.
     doFirst {
         cleanup()

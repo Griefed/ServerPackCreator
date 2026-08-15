@@ -97,6 +97,26 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   `kotlin-conventions` (Kotlin + Kover) ← `application-conventions` (= kotlin + spring);
   `spring-conventions`, `dokka-conventions`, `quasar-conventions` and `publishing-conventions` are
   applied on top as needed.
+- **No cross-project configuration in the root build.** `allprojects { }`,
+  `evaluationDependsOnChildren()` and `project("x").tasks.y.get()` are gone. A module that needs to run
+  after another declares it itself, by task **path** (`-app`'s
+  `mustRunAfter(":generateLicenseReport", ":serverpackcreator-web-frontend:build")`) — a string path
+  resolves lazily, reaching into another project's task container forces it to be evaluated. The
+  example-plugin jar is consumed as an artifact (`pluginArtifact`, a consumable configuration on
+  `-plugin-example`) rather than dug out of `childProjects[...]`, which is what removed the build's last
+  `!!`. Do not re-introduce any of the four.
+- **Configuration cache is NOT enabled, and step 5 above is not what is blocking it** — measured, because
+  this was claimed and was wrong: `build --dry-run --configuration-cache` reported the *same* 20 problems
+  (13 unique) before and after the cross-project work, and configuration time was ~4.95 s either way.
+  Those constructs block project **isolation**, a different feature. The 20 problems are:
+  - `:generateLicenseReport` holds a `Project` reference — **third-party** (jk1 gradle-license-report),
+    not fixable here.
+  - every module's `test` and `processTestResources` "cannot serialize Gradle script object references" —
+    **ours**: the `filter { }` in `processTestResources` and the `doFirst { cleanup() }` in `test`, both in
+    `java-conventions`, capture the enclosing script; `-app`'s `test.doFirst` additionally captures
+    `projectDir`.
+  So the ceiling without excluding `generateLicenseReport` is "fewer problems", not zero. Fixing our own is
+  a real, separate piece of work; do not start it expecting the cache to switch on at the end of it.
 - **LANDMINE — never do filesystem work in a task's configuration block.** `-api` shipped its
   root-level documents with fifteen bare `copy { }` calls inside `tasks.processResources { }`, so they
   ran when the task was *configured* — including on runs where `processResources` was UP-TO-DATE and did

@@ -9,6 +9,18 @@ plugins {
 }
 
 
+// A consumable view of just this module's plugin jar, for the root build's copy tasks. Explicit
+// rather than the legacy `archives` configuration, which Gradle 9 removes, and it carries the task
+// dependency so the jar is built on demand.
+val pluginArtifact: Configuration by configurations.creating {
+    isCanBeConsumed = true
+    isCanBeResolved = false
+}
+
+artifacts {
+    add(pluginArtifact.name, tasks.jar)
+}
+
 i18n4k {
     generationTargetPlatform = de.comahe.i18n4k.generator.GenerationTargetPlatform.JVM
 }
