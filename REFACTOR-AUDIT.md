@@ -1,112 +1,145 @@
-# Refactor audit — `claude-build-docs`
+# Refactor audit — `claude-securitymanager-unknown-java` (second pass)
 
-**Scope:** `git log develop..HEAD` — **1 commit**, `fd8d674be`.
+**Scope:** `git log develop..HEAD` — **4 commits**, `0ff278423` … `d2d155927`.
 **Mode:** READ-ONLY. No source was modified while auditing.
-**Supersedes** the previous audit in this file (`claude-webservice-context-test` +
-`claude-config-cache`). That one's M-1 — a commit bundling three concerns — was acted on: the commit
-was split into three, one part was dropped entirely after measurement disproved its rationale, and all
-of it is now merged into `develop`.
+**Supersedes** the first pass over this branch, which covered the first two commits and raised M-1,
+M-2, L-1 and L-2. **M-1 and L-2 are fixed** by `28d95bf06` and `d2d155927` and are re-verified below.
+M-2 and the original L-1 stand — the commits were not rewritten.
 
-**Verdict: no HIGH, no MEDIUM, two LOW.** This is a single documentation commit that touches no
-source. Most of these conventions are written for code changes and simply do not apply; rather than
-stretch them to produce findings, this report says which ones were checked and what the two real
-observations are.
+**Verdict: no HIGH, two MEDIUM, two LOW.** The two remediation commits do what they claim, and the
+new tests were teeth-checked mutation by mutation. Both new findings are commit-hygiene, and **one is
+a repeat of a failure mode this project has already been bitten by twice.**
 
 ---
 
 ## HIGH
 
-None. The commit modifies three Markdown files and nothing else — verified, no `.kt`, `.kts`,
-`.properties` or `.toml` in the diff. No behaviour, no module boundary, no plugin API is involved.
+None. No Kotlin source is touched anywhere in the branch; the only production changes are the three
+shell templates and one shipped `variables.txt` comment block. No module boundary, no plugin API.
+
+---
 
 ## MEDIUM
 
-None.
+### M-1 · `28d95bf06` sweeps `REFACTOR-AUDIT.md` into a `test(api)` commit — the third instance of this exact mistake
 
-The characterization-test rule has no purchase on a docs commit, but its *spirit* — do not assert
-what you have not verified — is the one that matters here, and it was honoured. Every checkable claim
-in `BUILD.md` was run rather than recalled, which is what turned up the three errors the commit fixes
-(the missing `./gradlew`, the non-existent `Build All` task, and `:serverpackcreator-app:run`). Spot-
-checks during this audit:
+**File:** `REFACTOR-AUDIT.md` (+105/−79, the single largest change in the commit)
+**Rule:** *One concern per commit.*
 
-| Claim | Result |
-|---|---|
-| `build` runs the frontend Vitest suite | `checkScript.set("run test")` present in quasar-conventions ✓ |
-| configuration time ~4.75s → ~2.02s | re-measured 4.96s → 2.04s ✓ (within noise) |
-| `BUILD.md` is not in the shipped document set | 0 mentions in `-api`'s build file ✓ |
-| `bootRun` exists, `run` does not, for `-app` | verified against the task graph ✓ |
-| foojay resolver absent from root settings | verified ✓ |
+The commit is titled *"pin the Java-resolve and fail-safe guard in all three templates"* and its body
+describes only the new test. Its actual contents:
+
+```
+REFACTOR-AUDIT.md                          184 ++++++-------
+.../api/ScriptTemplateContentTest.kt        67 ++++++
+```
+
+The audit report — a *different* document, about the *previous* audit pass — is more than half the
+diff and is **not mentioned once** in the commit message.
+
+**This is a repeat.** The earlier `claude-modscanning-generification` audit raised exactly this as
+**H-1**: `git add -A` sweeping unrelated files into a commit whose message describes something else.
+That was severe enough to warrant rebuilding the branch. It happened again here, from the same cause:
+the audit report was sitting uncommitted in the working tree when the remediation was staged with
+`git add -A`.
+
+It is MEDIUM rather than HIGH only because the swept file is documentation with no bearing on the
+build, where H-1 buried four `-api` production refactors. The *habit* is identical and has now cost
+three findings across this session.
+
+**Remedy:** the branch is unpushed, so `REFACTOR-AUDIT.md` can be split out into its own `docs:`
+commit exactly as the earlier H-1 was. More usefully: stop using `git add -A` when an audit report is
+in flight.
+
+### M-2 · `5f4bce289` bundles two independent fixes *(carried from the first pass, unchanged)*
+
+The version-resolve and the guard inversion are separable, with separate rationales and separate
+failure modes — as that commit's own body argues in both directions. Still one commit.
 
 ---
 
 ## LOW
 
-### L-1 · `fd8d674be` fixes a documentation bug found mid-task, in the same commit rather than its own
+### L-1 · `d2d155927` is typed `docs(api)` but adds a test and edits a shipped template
 
-**File:** `CLAUDE.md:72-75`
-**Rule:** *If you find a bug while refactoring, surface it explicitly and propose a fix in its own
-commit.*
+**Files:** `ScriptTemplateContentTest.kt` (+81), `variables.txt` (+6), `CLAUDE.md` (+9)
 
-While verifying `BUILD.md`'s claims, `./gradlew :serverpackcreator-app:run` turned out not to exist —
-`-app` applies the Spring Boot plugin, so the task is `bootRun`. The root `CLAUDE.md` carried the same
-wrong command and is corrected in this commit rather than a separate one.
+The type badly understates the contents. 81 of its 96 added lines are a **new executing test** —
+`theBashTemplateResolvesTheJavaVersionEvenWhenChecksAreSkipped`, which extracts and runs the shipped
+Java-check block against a fake Java. That is a `test(api):` commit wearing a `docs:` label.
 
-It *is* surfaced explicitly — the commit body names it as one of three errors the verification caught,
-and the correction adds the reason (`-app` is not an `application` module) plus the contrast with
-`:serverpackcreator-grinder:run`, which does exist. So the "do not silently work around it" half of
-the rule is satisfied; only the "own commit" half is not.
+The `variables.txt` change is also not quite documentation in the ordinary sense: it is a **shipped
+template**, so those six comment lines land in the `variables.txt` of every server pack SPC generates
+from now on. Comment-only, so nothing functional changes, and `VariablesTemplateTest` (which asserts
+the placeholders generation substitutes, not prose) stays green — but "docs" reads as *repository
+documentation*, and this ships to users.
 
-Defensible as one concern — *the build documentation was wrong in three places, here are the three*.
-Recorded because the rule is written without that exception, and because the fix lands in a file that
-is not otherwise the subject of the commit.
+Splitting it into `test(api):` + `docs(api):` would have cost nothing, and this branch already
+demonstrates the split is natural — `28d95bf06` is a standalone test commit.
 
-### L-2 · ~~FIXED~~ · `fd8d674be` leaves a stated prerequisite gap unresolved by design
+### L-2 · The new cross-template assertions are whitespace-exact against template source
 
-**File:** `BUILD.md:49-53`
+**File:** `ScriptTemplateContentTest.kt:415,420,425`
 
-The commit documents that the foojay toolchain resolver is applied in `buildSrc/settings.gradle.kts`
-but not in the root, so a contributor without a local JDK 21 gets *"No matching toolchains found"*
-instead of an automatic download — and then explicitly declines to fix it, on the grounds that
-changing toolchain provisioning does not belong in a docs commit.
+The fail-safe guard is matched as an exact substring, e.g.
 
-That is the right call under *one concern per commit*, and the trap is now written down where a
-newcomer will hit it. Flagged only so it does not disappear: **documenting a papercut is not the same
-as fixing it**, and the fix is one line in `settings.gradle.kts`. It should become a follow-up rather
-than remain permanently "documented".
+```
+if [[ ! "${JAVA_VERSION}" =~ ^[0-9]+$ ]] || [[ ${JAVA_VERSION} -ge 24 ]]; then
+```
 
-**FIXED.** The resolver is now registered for the modules too. It took more than the predicted one
-line: the two builds need it declared *differently* (root with a version, buildSrc without), because
-buildSrc does not inherit the root's toolchain repositories yet its settings evaluate with the plugin
-already on the classpath. Both directions were verified by requesting an uninstalled JDK 11 and
-reading which error came back.
+So reformatting the condition — splitting it across lines, changing spacing, swapping `[[ ! x ]] || y`
+for an equivalent — fails the test even though behaviour is unchanged. A future maintainer tidying a
+shell template gets a red suite and no hint that the *behaviour* is fine.
+
+Accepted as the established trade-off rather than a defect: this is exactly what
+`allTemplatesUseAnAlreadyInstalledFabricLauncherBeforeCheckingTheNetwork` already does, and for the
+same reason — fish and PowerShell cannot be executed on every machine, so source-level matching is the
+only coverage available. The failure message does say what shape is expected, which is what makes a
+brittle assertion survivable. Recorded so the brittleness is a known cost, not a surprise.
 
 ---
 
+## Verified fixed since the first pass
+
+- **First-pass M-1 (fish and ps1 untested) — FIXED by `28d95bf06`.** Six mutations were run, one per
+  shell per property, and all six fail:
+
+  | | sh | fish | ps1 |
+  |---|---|---|---|
+  | guard un-inverted | FAILS | FAILS | FAILS |
+  | resolve call removed | FAILS | FAILS | FAILS |
+
+  The commit body records that the second row did **not** fail on the first attempt — the assertion
+  searched backwards from a marker and matched a `getJavaVersion` *inside* the check block. Anchoring
+  on the last `installJava` fixed it. Recording a failed teeth-check is what makes the second one
+  credible, and it is the difference between this pin and one that quietly asserts nothing.
+
+- **First-pass L-2 (undisclosed `SKIP_JAVA_CHECK` consequence) — FIXED by `d2d155927`**, and fixed the
+  right way round: the behaviour was checked against what `variables.txt` actually promises
+  ("compatibility check … as well as the automatic installation" — comparing and installing, not
+  reading) before being kept. The new test asserts *both* halves — the version resolves **and** the
+  install is still skipped — so the promise the setting makes is now guarded, not just the new
+  behaviour. Teeth verified by moving the call back inside the conditional.
+
 ## Checked and clean
 
-- **No source modified**: the diff is `BUILD.md` (new, 229 lines), `CONTRIBUTING.md` (+14/-6) and
-  `CLAUDE.md` (+6/-6).
-- **No test was touched or needed to change**, so the "a refactor that changes a test is not a
-  refactor" rule is trivially satisfied.
-- **Claims were verified rather than recalled**, and the verification is what produced the commit's
-  content — three documented errors, each named in the commit body with how it was found.
-- **The shipping decision is correct and was checked, not assumed.** `CONTRIBUTING.md` is one of the
-  seven documents copied into `-api`'s resources and mirrored into the Writerside topics; `BUILD.md`
-  is not, so the link between them is an absolute URL rather than a relative path that would dangle in
-  the shipped copies. Confirmed `BUILD.md` appears nowhere in `-api`'s `shippedDocuments` list.
-- **`BUILD.md`'s own links resolve**: no broken heading anchors, no broken file links. (An earlier
-  draft had two broken anchors; they were caught and fixed before the commit.)
-- **Scope did not sprawl.** Three files, all documentation, all about how to build the project.
-- **Branch follows the `claude-` naming rule** and has not been pushed.
-- `./gradlew build` green.
+- **Pin-first held for the original fix**: `0ff278423` is test-only, observed red, and quotes a failure
+  reproducing the reporter's run command line for line.
+- **No `refactor:` commit anywhere in the branch**, so the "a refactor that changes a test isn't a
+  refactor" rule cannot be violated.
+- **No existing assertion was weakened.** `theBashTemplateDropsTheSecurityManagerFlagOnJavaThatRejectsIt`
+  still requires 17/21 → flag passed, 24/25 → dropped, and passes after the inversion — which is what
+  proves the guard was inverted rather than loosened.
+- **A user's proposed fix was declined with a stated reason**, not silently ignored.
+- **A suspected second bug was confirmed with the reporter before being written down** (1.20.1 pulling
+  Java 25 turned out to be a hand-edited `RECOMMENDED_JAVA_VERSION`).
+- **The verification gap is still disclosed**: fish and pwsh are absent on this machine, and the commits
+  say so rather than implying execution.
+- `./gradlew clean build` green; api 307 (1 skip).
 
 ## Follow-ups, not defects in this range
 
-- **Add the foojay resolver to the root `settings.gradle.kts`** and delete the trap from `BUILD.md`
-  (L-2). One line; removes the JDK-21 prerequisite entirely.
-- **`serverpackcreator-plugin-example/src/main/resources/CHANGELOG.md`** is a tracked 14 KB file that
-  nothing generates and nothing updates, shipped inside the example plugin's jar, whose source file at
-  the module root does not exist. Surfaced during the previous branch and deliberately left alone —
-  deleting a tracked file that reaches users is a product decision, not a build cleanup.
-- The configuration cache remains opt-in (`--configuration-cache`), blocked for `build` by the
-  third-party `:generateLicenseReport`. Documented in `BUILD.md` and `CLAUDE.md`.
+- Split `REFACTOR-AUDIT.md` out of `28d95bf06` (M-1) while the branch is still unpushed.
+- Still open from earlier branches: the tracked
+  `serverpackcreator-plugin-example/src/main/resources/CHANGELOG.md` that nothing generates, and the
+  configuration cache remaining opt-in because of the third-party `:generateLicenseReport`.
