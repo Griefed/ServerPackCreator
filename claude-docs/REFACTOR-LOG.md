@@ -1503,9 +1503,8 @@ silent-failure category:
 
 1. `VersionChecker` had **zero** tests and Qodana wanted three of its boolean chains collapsed. A
    canned subclass over `allVersions()` pins the whole alpha/beta path offline. Writing it surfaced
-   a genuine quirk — channel-blind pre-release comparison, documented in
-   `serverpackcreator-app/CLAUDE.md` — which is pinned **as-is** rather than fixed, because changing
-   it is a product decision this branch had no mandate to make.
+   a genuine defect — channel-blind pre-release comparison — pinned as-is at first, then **fixed on
+   request later the same day** (see below).
 2. `MigrationManager`'s lambda-suffix regex was written out **twice** in two escaping-heavy copies
    with no coverage. Hoisted to one documented `LAMBDA_SUFFIX` constant, converted, and pinned — and
    the pin's **teeth were checked** (broken to `"[0-9]*lambda[0-9]*"` it fails with
@@ -1521,3 +1520,44 @@ Swept up in the four loops the `indices` fix already touched: each called its re
 
 Suites after: api 302 (1 skip), clientside 88, app 88, grinder 233 (19 skip), plugin-example 3 —
 **714 total**, full `./gradlew build` green.
+
+### VersionChecker pre-release ordering (same branch, 2026-08-15)
+
+The quirk the characterization tests had recorded, fixed on request — plus a second defect the first
+one was hiding. Both pinned **red in their own commit** before the fix.
+
+**1. Channel-blind comparison.** `isPreReleaseNewer` compared only the number after the dot, so a
+beta did not supersede an alpha of the same version: `alpha.5` vs `beta.3` reduced to `3 > 5`. What
+an alpha user was offered therefore depended on a numeric accident — `alpha.2` got `beta.3`,
+`alpha.5` got nothing at all with both published. Now channel first (`alpha < beta < release`) with
+the number as the tie-break.
+
+**2. Latest-of-channel ignored the version.** `latestBeta`/`latestAlpha` kept a candidate only if it
+was *both* semantically newer-or-equal **and** higher-numbered, so a version restarting its count —
+`3.2.0-beta.1` after `3.1.0-beta.3` — lost to the older one. Both scans now use `isVersionNewer`:
+semantic version first, pre-release ordering only within one version.
+
+**The second pin took three attempts to make honest, and that is the lesson worth keeping.** The
+first fixture passed against the broken code because it was newest-first, so `latestBeta`'s wrong
+answer never mattered. The second passed too: `isUpdateAvailable` **falls through to
+`latestVersion()`**, which masks a wrong `latestBeta` whenever the newest release is a newer *base*
+version. It only reaches a user when the beta branch itself fires and returns `latestBeta()`
+directly — needing an oldest-first list *and* a current version old enough to trigger that branch
+(`3.1.0-beta.1`). A pin that had been committed at either earlier stage would have looked like a
+guard while asserting nothing about the defect.
+
+Two consequences worth remembering:
+
+- The test fake's `latestVersion()` now **computes** the newest instead of taking the list head. The
+  real `allVersions()` comes from a repository API whose ordering nothing guarantees, and a fixture
+  that is silently newest-first cannot catch code that depends on that ordering.
+- `isNewAlphaAvailable`'s explicit *"a beta is never offered an alpha of the same version"* guard is
+  **gone**, subsumed by the channel ordering — verified by removing it and watching
+  `aBetaIsNotOfferedAnAlphaOfTheSameVersion` stay green, which makes the removal provable rather than
+  argued. Weaken the ordering and that rule vanishes with it; that one test is what will say so.
+
+`preReleaseNumber` also stopped throwing on a version with no pre-release suffix. The old
+split-and-index raised `IndexOutOfBoundsException`, which `checkForUpdate` does **not** catch — it
+catches `NumberFormatException` only.
+
+app 89, full build green.

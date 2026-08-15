@@ -85,11 +85,22 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   name, which both discovery and version parsing run every declared name through).
 - **`VersionCheckerTest`** covers the update-check comparison, which had **zero** tests until
   2026-08-15. The class is abstract and `allVersions()` is its only data source, so a canned subclass
-  exercises the whole alpha/beta path offline — no repository, no network. **Quirk pinned there, not
-  fixed:** `isPreReleaseNewer` compares only the number after the dot and is blind to the channel,
-  while `isUpdateAvailable` consults beta before alpha — so `alpha.2` is offered `beta.3` (3 > 2) and
-  `alpha.5` is offered *nothing* (3 > 5 and 5 > 5 both fail) even with a newer alpha published.
-  Changing that is a product decision nobody has made; the pin exists so it cannot change by accident.
+  exercises the whole alpha/beta path offline — no repository, no network. **The fake's
+  `latestVersion()` computes the newest rather than taking the list head, deliberately:** the real
+  `allVersions()` comes from a repository API whose ordering nothing guarantees, and a fixture that
+  is silently newest-first cannot catch code depending on that ordering — which is exactly the bug it
+  did hide on the first attempt.
+- **Pre-release ordering is channel-first, and both halves were broken until 2026-08-15.**
+  `isPreReleaseNewer` compared only the number after the dot, so a beta did not supersede an alpha of
+  the same version: `alpha.2` was offered `beta.3` (3 > 2) while `alpha.5` was offered **nothing**
+  (3 > 5) with the same two releases published. And `latestBeta`/`latestAlpha` required a candidate to
+  be *both* newer-or-equal **and** higher-numbered, so `3.2.0-beta.1` lost to `3.1.0-beta.3` — whether
+  that reached a user depended on repository ordering. Now `preReleaseChannel` (alpha < beta <
+  release) with the number as tie-break, and `isVersionNewer` (semantic version first) for
+  latest-of-channel. **Landmine:** `isNewAlphaAvailable`'s explicit "a beta is never offered an alpha"
+  guard was removed as dead once the channel ordering subsumed it — if you ever weaken that ordering,
+  that rule disappears with it, and only
+  `VersionCheckerTest.aBetaIsNotOfferedAnAlphaOfTheSameVersion` will say so.
 
 ## Landmines & verified quirks (durable)
 
