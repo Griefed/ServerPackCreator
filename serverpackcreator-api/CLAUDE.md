@@ -44,9 +44,23 @@
   knows this loader" and each caller turns it into keep-every-mod. The Quilt arm returns
   `QuiltPackScanner`, which owns the quilt+fabric merge — CLIENT wins, and the *Quilt* `ScannedMod` is
   kept when both agree, because its id and dependency list feed the downstream dependency-rescue.
+- **A jar carrying no descriptor is NOT a scan failure — do not log it as one.** Every scanner is handed
+  the whole mods-directory, and a Quilt pack is scanned by **both** the Quilt and Fabric scanner by
+  design, so one of the two finds nothing in every single-format jar. `MissingDescriptorException`
+  (raised by `getJarJson` / `ForgeTomlScanner.getConfig` when the entry is absent) exists purely so
+  `DescriptorScanner` can log that at DEBUG while everything else keeps an ERROR **with** its stack
+  trace. Measured over one api suite run, scan-failure ERROR lines went **159 → 51**; the survivors are
+  37 `ZipException` (corrupt archive) and 14 `ParsingException` (malformed TOML), both real defects in
+  a jar. Do not "simplify" the two catches back into one.
+- **`ForgeTomlScanner` treats an absent `[[dependencies]]` block as *no dependencies*, not an error.**
+  It used to raise `ScanningException`, which aborted `read()` mid-way and replaced the already-parsed
+  modId with the **filename**. The verdict was unaffected (no dependencies ⇒ no clientside signal ⇒
+  SERVER either way), which is why it never broke a pack — but it discarded good data and shouted about
+  an ordinary descriptor. `ScanningException` is gone; nothing threw it afterwards.
 - **Scanner hierarchy:** `ModJarScanner` (public contract) → `DescriptorScanner` (owns the walk-the-jars
   loop and the **one-`ScannedMod`-per-input-jar** guarantee; `scan` is `final`, subclasses implement
-  `read(File)` and may throw) → `JsonDescriptorScanner` → `FabricFamilyScanner` (Fabric + Quilt share id
+  `read(File)` — public, because *which* exception it throws is the meaningful part and `scan` flattens
+  both outcomes to a default entry — and may throw) → `JsonDescriptorScanner` → `FabricFamilyScanner` (Fabric + Quilt share id
   and environment reading, differing only in field *paths*; dependency blocks differ in *shape*, so they
   stay abstract). `JsonBasedScanner`, the previous JSON helper, was **removed** rather than kept as a
   deprecated facade — Griefed's call on 2026-08-15, overriding the adopted compatibility policy: scanners
