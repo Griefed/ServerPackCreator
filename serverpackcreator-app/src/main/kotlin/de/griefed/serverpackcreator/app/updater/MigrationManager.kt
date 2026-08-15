@@ -157,7 +157,7 @@ class MigrationManager(
         val methodMap = HashMap<String, Method>(100)
         val methodVersions = TreeSet<String>()
         for (method in methods) {
-            val methodVersion = toSemantic(method.name.replace("\\\$[0-9]*lambda\\\$[0-9]*".toRegex(),""))
+            val methodVersion = toSemantic(method.name.replace(LAMBDA_SUFFIX, ""))
             methodMap[methodVersion] = method
             methodVersions.add(methodVersion)
         }
@@ -237,7 +237,7 @@ class MigrationManager(
      * @author Griefed
      */
     private fun semantics(version: String): IntArray {
-        return version.replace("\\\$[0-9]*lambda\\\$[0-9]*".toRegex(),"").split(Regex("\\.")).map { it.toInt() }.toIntArray()
+        return version.replace(LAMBDA_SUFFIX, "").split(Regex("\\.")).map { it.toInt() }.toIntArray()
     }
 
     /**
@@ -541,5 +541,18 @@ class MigrationManager(
                 changes.add(Translations.migrationmanager_migration_sixpointzeropointzero_scripts_template("$type = ${template.absolutePath}"))
             }
         }
+    }
+
+    internal companion object {
+        /**
+         * Strips the synthetic suffix the Kotlin compiler appends to the name of a method that carries
+         * a lambda — `$0lambda$1`, or a bare `$lambda$` — so a migration method's declared name still
+         * reads as the version it migrates to.
+         *
+         * A single source of truth on purpose: the literal used to be written out twice, in method
+         * discovery and in version parsing, where the two escaping-heavy copies could silently drift
+         * apart and leave a migration undiscovered rather than failing.
+         */
+        internal val LAMBDA_SUFFIX = $$"\\$[0-9]*lambda\\$[0-9]*".toRegex()
     }
 }
