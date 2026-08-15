@@ -457,6 +457,77 @@ internal class ScriptTemplateContentTest {
     }
 
     /**
+     * **Executes** `setupForge` with `JAVA_VERSION` still at its placeholder, and asserts the flag is *not* passed.
+     *
+     * This is the case a real user hit, and it is the one the version-keyed guard misses. `JAVA_VERSION` starts life
+     * as the literal `do_not_manually_edit` and is only filled in by `getJavaVersion`. None of the three
+     * `installJava` call-sites re-read it afterwards, and `install_java.sh` never sets it either — so a pack that
+     * installs its own Java reaches `setupForge` with the placeholder still in place, the numeric guard does not
+     * match, and the fatal flag is passed anyway:
+     *
+     * ```
+     * Downloading and using Java temurin@25
+     * Run Command:  java ... -Djava.security.manager=allow -jar server.jar --installer-force ...
+     * Error occurred during initialization of VM
+     * java.lang.Error: A command line option has attempted to allow or enable the Security Manager.
+     * ```
+     *
+     * The guard therefore only ever protected users who *already had* the right Java — which is why neither the
+     * grinder (it pre-bakes Java and never takes the install path) nor `ScriptTemplateMatrixIT` (same) caught it.
+     *
+     * Pinned as **fail-safe**, not merely as "re-read the version": an unknown Java version must never take the
+     * branch that passes a flag which is fatal on the JVMs it cannot rule out.
+     */
+    @Test
+    fun theBashTemplateDropsTheSecurityManagerFlagWhenTheJavaVersionIsUnknown() {
+        val bash = which("bash") ?: Assumptions.abort("bash not installed — SSJ args check skipped")
+
+        // Every shape JAVA_VERSION can carry when nothing has resolved it.
+        for (unknownVersion in listOf("do_not_manually_edit", "", "unknown")) {
+            val packDir = File.createTempFile("spc-ssj-unknown-", "-pack").apply { delete(); mkdirs() }
+            val harness = File(packDir, "harness.sh")
+            harness.writeText(
+                """
+                downloadIfNotExist() { echo "false"; }
+                runJavaCommand() { :; }
+                refreshServerJar() { :; }
+                crashServer() { echo "CRASHED: ${'$'}1"; exit 3; }
+                JAVA_ARGS="-Xmx4G"
+                USE_SSJ="true"
+                SSJ_FORGE_ARGS="-Djava.security.manager=allow"
+                JAVA_VERSION="$unknownVersion"
+                MINECRAFT_VERSION="1.20.1"
+                MODLOADER_VERSION="47.4.22"
+                SERVER_RUN_COMMAND="do_not_manually_edit"
+                IFS="." read -ra SEMANTICS <<<"${'$'}{MINECRAFT_VERSION}"
+                ${extractShellFunction("default_template.sh", "setupForge")}
+                setupForge
+                echo "RESULT=${'$'}{SERVER_RUN_COMMAND}"
+                """.trimIndent()
+            )
+
+            val process = ProcessBuilder(bash.absolutePath, harness.absolutePath)
+                .directory(packDir)
+                .redirectErrorStream(true)
+                .start()
+            val output = process.inputStream.bufferedReader().use { it.readText() }
+            val exit = process.waitFor()
+            packDir.deleteRecursively()
+
+            Assertions.assertEquals(0, exit, "setupForge failed for JAVA_VERSION='$unknownVersion':\n$output")
+            val runCommand = output.lines().firstOrNull { it.startsWith("RESULT=") }
+                ?: Assertions.fail("no run command produced for JAVA_VERSION='$unknownVersion':\n$output")
+
+            Assertions.assertFalse(
+                runCommand.contains("-Djava.security.manager=allow"),
+                "with JAVA_VERSION='$unknownVersion' the security-manager flag was passed. An unresolved Java " +
+                    "version must fail safe — it cannot rule out Java 24+, where the flag stops the VM starting. " +
+                    "Run command: $runCommand"
+            )
+        }
+    }
+
+    /**
      * **Executes** the bash template's `setupForge` and asserts *who* installs Forge, by Java version.
      *
      * ServerStarterJar runs the Forge installer **in its own JVM** and relies on a `SecurityManager`
