@@ -410,7 +410,8 @@ Function global:SetupForge
             # installer's exit ends the whole process -- the pack installs, reports success, exits 0, and never
             # launches the server. So on Java that cannot trap the exit we do not hand SSJ the install at all:
             # install here, then launch from the argfile the installer produces, as the UseSSJ=false path does.
-            if (("${JavaVersion}" -match '^\d+$') -And ([int]${JavaVersion} -ge 24))
+            # Fail-safe: only a Java we can read AND that predates 24 may use the ServerStarterJar path.
+            if ((-Not ("${JavaVersion}" -match '^\d+$')) -Or ([int]${JavaVersion} -ge 24))
             {
                 Write-Host "Java ${JavaVersion} cannot grant ServerStarterJar the Security Manager it needs to run the"
                 Write-Host "Forge installer, so this pack installs Forge directly and starts it from its argfile instead."
@@ -759,6 +760,13 @@ else
         }
     }
 }
+
+# Resolve the version of the Java we are ACTUALLY going to use, whatever happened above -- checks skipped,
+# a suitable Java found, or one just installed. Until here JAVA_VERSION can still be the
+# do_not_manually_edit placeholder: installJava does not set it and neither does install_java.sh, so a pack
+# that installs its own Java used to reach setupForge with no version at all. That is what let
+# -Djava.security.manager=allow through to a Java 25 VM, which then refuses to start.
+GetJavaVersion
 
 # Check and warn the user if a 32bit Java-installation is used. Realistically, this should happen less and less, but
 # it does happen from time to time. Best to warn people about it.
