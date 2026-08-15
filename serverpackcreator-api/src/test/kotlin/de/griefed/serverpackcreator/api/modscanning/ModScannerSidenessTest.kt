@@ -281,4 +281,37 @@ internal class ModScannerSidenessTest {
             "A readable jar carrying no fabric.mod.json must be kept, i.e. SERVER"
         )
     }
+
+    /**
+     * A `mods.toml` may legitimately declare no `[[dependencies]]` block at all, and such a mod must
+     * still be read normally — its declared id kept, its verdict SERVER.
+     *
+     * The absent block used to be raised as a `ScanningException` from the middle of the read, which
+     * aborted the whole thing and fell back to the unreadable-jar defaults: the *filename* as the id.
+     * The verdict was unaffected (a mod with no dependencies has no clientside signal, so SERVER is
+     * the only possible answer either way), which is why nothing broke — but it discarded a mod id
+     * that had been read successfully, and it logged an ERROR for an entirely ordinary descriptor.
+     */
+    @Test
+    fun aForgeModWithoutADependenciesBlockKeepsItsDeclaredId(@TempDir tempDir: File) {
+        val modsToml = """
+            modLoader="javafml"
+            loaderVersion="[40,)"
+            license="MIT"
+
+            [[mods]]
+            modId="lonelymod"
+            version="1.0.0"
+        """.trimIndent()
+        val jar = jarContaining(tempDir, "lonelymod-1.0.0.jar", "META-INF/mods.toml", modsToml)
+
+        val scanned = modScanner.forgeTomlScanner.scan(listOf(jar)).single()
+
+        Assertions.assertEquals(
+            "lonelymod", scanned.modID,
+            "The declared modId must survive a descriptor that names no dependencies"
+        )
+        Assertions.assertEquals(Sideness.SERVER, scanned.sideness, "No dependencies means no clientside signal")
+        Assertions.assertTrue(scanned.dependencies.isEmpty(), "No dependencies were declared")
+    }
 }
