@@ -62,7 +62,7 @@ publishing {
             groupId = project.group.toString()
             artifactId = project.name
             version = project.version.toString()
-            artifact(tasks["javadocJar"])
+            artifact(tasks.named("javadocJar"))
             pom {
                 name.set("ServerPackCreator")
                 description.set("ServerPackCreators API, to create server packs from Forge, Fabric, Quilt, LegacyFabric and NeoForge modpacks.")

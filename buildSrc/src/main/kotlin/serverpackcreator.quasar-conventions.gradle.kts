@@ -25,7 +25,7 @@ tasks.register("installQuasar", RunNpmTaskType::class) {
     args.set("install -g @quasar/cli")
 }
 
-tasks.getByName("installNode").finalizedBy(
-    tasks.getByName("installQuasar")
-)
+tasks.named("installNode") {
+    finalizedBy(tasks.named("installQuasar"))
+}
 

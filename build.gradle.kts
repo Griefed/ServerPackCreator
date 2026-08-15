@@ -103,8 +103,8 @@ tasks.register<Copy>("copyLicenseReport") {
 }
 
 tasks.generateLicenseReport {
-    mustRunAfter(tasks.getByName("cleanLicenseReport"))
-    finalizedBy(tasks.getByName("copyLicenseReport"))
+    mustRunAfter(tasks.named("cleanLicenseReport"))
+    finalizedBy(tasks.named("copyLicenseReport"))
 }
 
 install4j {
