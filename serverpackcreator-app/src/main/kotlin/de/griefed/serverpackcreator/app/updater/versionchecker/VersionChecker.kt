@@ -123,19 +123,11 @@ abstract class VersionChecker {
         }
 
         // Check if the given version is older than the latest alpha version by checking semantically. (1.2.3, 2.3.4, 6.6.6)
-        return if (SemanticVersionComparator.compareSemantics(currentVersion, latestAlpha, Comparison.NEW)) {
-            true
-        } else if (SemanticVersionComparator.compareSemantics(
-                currentVersion,
-                latestAlpha,
-                Comparison.EQUAL_OR_NEW
-            ) && currentVersion.contains("-")
-        ) {
-            // If a new alpha, say alpha.5 for the given, say alpha.1, is available, return true.
-            isPreReleaseNewer(currentVersion, latestAlpha)
-        } else {
-            false
-        }
+        return SemanticVersionComparator.compareSemantics(currentVersion, latestAlpha, Comparison.NEW)
+                // Or, at the same version, if a new alpha — say alpha.5 for the given alpha.1 — is available.
+                || (SemanticVersionComparator.compareSemantics(currentVersion, latestAlpha, Comparison.EQUAL_OR_NEW)
+                && currentVersion.contains("-")
+                && isPreReleaseNewer(currentVersion, latestAlpha))
     }
 
     /**
@@ -156,20 +148,11 @@ abstract class VersionChecker {
         val latestBeta = latestBeta()
 
         // Check if the given version is older than the latest beta version by checking semantically. (1.2.3, 2.3.4, 6.6.6)
-        return if (SemanticVersionComparator.compareSemantics(currentVersion, latestBeta, Comparison.NEW)) {
-            true
-        } else if (SemanticVersionComparator.compareSemantics(
-                currentVersion,
-                latestBeta,
-                Comparison.EQUAL_OR_NEW
-            ) && currentVersion.contains("-")
-        ) {
-
-            // If a new beta, say beta.5 for the given, say beta.1, is available, return true.
-            isPreReleaseNewer(currentVersion, latestBeta)
-        } else {
-            false
-        }
+        return SemanticVersionComparator.compareSemantics(currentVersion, latestBeta, Comparison.NEW)
+                // Or, at the same version, if a new beta — say beta.5 for the given beta.1 — is available.
+                || (SemanticVersionComparator.compareSemantics(currentVersion, latestBeta, Comparison.EQUAL_OR_NEW)
+                && currentVersion.contains("-")
+                && isPreReleaseNewer(currentVersion, latestBeta))
     }
 
     /**

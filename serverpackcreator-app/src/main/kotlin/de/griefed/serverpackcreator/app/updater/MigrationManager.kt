@@ -222,12 +222,11 @@ class MigrationManager(
             return true
         }
 
-        // Current MAJOR version equal and current MINOR version smaller?
-        return if (checkAgainst[0] == old[0] && checkAgainst[1] < old[1]) {
-            true
-
-            // Current MAJOR version equal, current MINOR equal, current PATCH version smaller?
-        } else checkAgainst[0] == old[0] && checkAgainst[1] == old[1] && checkAgainst[2] < old[2]
+        return (
+                // Current MAJOR version equal and current MINOR version smaller?
+                checkAgainst[0] == old[0] && checkAgainst[1] < old[1])
+                // Current MAJOR version equal, current MINOR equal, current PATCH version smaller?
+                || (checkAgainst[0] == old[0] && checkAgainst[1] == old[1] && checkAgainst[2] < old[2])
     }
 
     /**
@@ -285,13 +284,11 @@ class MigrationManager(
             return true
         }
 
-        // Method MAJOR version equal and method MINOR bigger?
-        return if (checkAgainst[0] == old[0] && checkAgainst[1] > old[1]) {
-            true
-        } else {
-            // Method MAJOR equal, method MINOR equal, method PATCH bigger?
-            checkAgainst[0] == old[0] && checkAgainst[1] == old[1] && checkAgainst[2] > old[2]
-        }
+        return (
+                // Method MAJOR version equal and method MINOR bigger?
+                checkAgainst[0] == old[0] && checkAgainst[1] > old[1])
+                // Method MAJOR equal, method MINOR equal, method PATCH bigger?
+                || (checkAgainst[0] == old[0] && checkAgainst[1] == old[1] && checkAgainst[2] > old[2])
     }
 
     /**
