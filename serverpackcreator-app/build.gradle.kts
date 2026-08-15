@@ -55,7 +55,6 @@ dependencies {
     api(libs.springBootStarterWeb)
     api(libs.springBootStarterLog4j2)
     api(libs.springBootStarterDataMongodb)
-    testRuntimeOnly(libs.h2)
     testImplementation(libs.springBootStarterTest) {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
         exclude(group = "org.mockito", module = "mockito-core")

@@ -45,6 +45,18 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
 
 - **Persistence is MongoDB** (`spring-boot-starter-data-mongodb`), **not JPA.** Full-context tests
   would need a live Mongo instance — don't assume JPA anywhere.
+- **The JPA/H2 relics are gone (2026-08-15) — do not let them back in.** Both `application.properties`
+  carried settings for a stack this app has not used since the move to MongoDB: `spring.jpa.*`,
+  `spring.datasource.*`, `spring.jdbc.*`, `spring.transaction.default-timeout`, and — in the test one —
+  **`spring.data.mongodb.uri=jdbc:h2:mem:testdb`**, a Mongo URI holding a JDBC URL. Per the landmine
+  below, `ConnectionString` accepts only `mongodb://`/`mongodb+srv://`, so that value is a hard startup
+  failure the moment Mongo autoconfiguration runs. It never did, purely because `WebServiceTest` is
+  `@SpringBootTest(classes = [WebServiceTest::class])` and so boots a context of exactly one class — the
+  same test this file already says to replace rather than extend. **The trap:** the first real
+  `@SpringBootTest` anyone writes inherits that URI and fails with a message pointing nowhere near the
+  cause. Verified dead before removal: no `@Transactional`, no JPA/JDBC types in main source, and
+  neither hibernate, tomcat-jdbc nor h2 on the runtime classpath. The unused `testRuntimeOnly` H2
+  dependency went with them.
 - **LANDMINE — `spring.data.mongodb.uri` is used verbatim, with no validation and no fallback.**
   Measured with `javap` against the pinned `spring-boot-mongodb-4.0.2` and `mongodb-driver-core-5.6.2`
   (no sources jar is published for the autoconfigure module):
