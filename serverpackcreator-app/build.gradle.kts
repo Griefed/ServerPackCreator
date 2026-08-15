@@ -93,6 +93,12 @@ tasks.bootJar {
 
 tasks.build {
     dependsOn(":generateLicenseReport")
+    // This module bundles the license report and the built SPA, so both have to be finished first.
+    // Declared here, by task PATH, rather than from the root reaching in with
+    // `project("serverpackcreator-app").tasks.build.get()`: a string path is resolved lazily, whereas
+    // reaching into another project's task container forces it to be evaluated, which is what used to
+    // require evaluationDependsOnChildren() in the root build.
+    mustRunAfter(":generateLicenseReport", ":serverpackcreator-web-frontend:build")
     finalizedBy(tasks.dokkaJavadocJar)
 }
 

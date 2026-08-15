@@ -24,17 +24,6 @@ idea {
     }
 }
 
-allprojects {
-    tasks.withType<Test> {
-        jvmArgs("-XX:+EnableDynamicAgentLoading", "-Djdk.attach.allowAttachSelf=true")
-    }
-}
-evaluationDependsOnChildren()
-
-project("serverpackcreator-app").tasks.build.get().mustRunAfter(
-    tasks.getByName("generateLicenseReport"),
-    project("serverpackcreator-web-frontend").tasks.build.get()
-)
 
 nexusPublishing {
     repositories {
@@ -65,38 +54,42 @@ licenseReport {
     )
 }
 
-val appPlugins = File("serverpackcreator-app/tests/plugins")
-val apiPlugins = File("serverpackcreator-api/src/test/resources/testresources/plugins")
-val kotlinPlugin = project.childProjects["serverpackcreator-plugin-example"]?.tasks?.jar?.get()?.archiveFile?.get()?.asFile?.toPath()
-tasks.register<Delete>("cleanAppPlugins") {
-    delete(
-        fileTree(appPlugins) {
-            include("**/*.jar")
-        }
-    )
+// The example plugin's jar, consumed as an ARTIFACT rather than by reaching into the other project's
+// task container. `project.childProjects[...]?.tasks?.jar?.get()?.archiveFile?.get()` needed that
+// project to be evaluated already — which is what evaluationDependsOnChildren() was there for — and
+// still ended in a `!!` at both use sites because every link in the chain is nullable. A dependency on
+// the project resolves lazily and carries the task dependency with it, so the jar is built on demand.
+val examplePlugin: Configuration by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
 }
+
+dependencies {
+    examplePlugin(project(path = ":serverpackcreator-plugin-example", configuration = "pluginArtifact"))
+}
+
+val appPlugins = layout.projectDirectory.dir("serverpackcreator-app/tests/plugins")
+val apiPlugins = layout.projectDirectory.dir("serverpackcreator-api/src/test/resources/testresources/plugins")
+
+tasks.register<Delete>("cleanAppPlugins") {
+    delete(fileTree(appPlugins) { include("**/*.jar") })
+}
+
 tasks.register<Copy>("copyExamplePluginsToApp") {
-    dependsOn(
-        "cleanAppPlugins",
-        ":serverpackcreator-plugin-example:build"
-    )
-    appPlugins.mkdirs()
-    from(kotlinPlugin!!)
+    description = "Refreshes the example plugin in the app's manual-test plugins directory."
+    dependsOn("cleanAppPlugins")
+    from(examplePlugin)
     into(appPlugins)
 }
+
 tasks.register<Delete>("cleanApiUnitTestPlugins") {
-    delete(
-        fileTree(apiPlugins) {
-            include("**/*.jar")
-        }
-    )
+    delete(fileTree(apiPlugins) { include("**/*.jar") })
 }
+
 tasks.register<Copy>("copyPluginsApiUnitTests") {
-    dependsOn(
-        "cleanApiUnitTestPlugins",
-        ":serverpackcreator-plugin-example:build"
-    )
-    from(kotlinPlugin!!)
+    description = "Refreshes the example plugin ApiPluginsTest loads through pf4j."
+    dependsOn("cleanApiUnitTestPlugins")
+    from(examplePlugin)
     into(apiPlugins)
 }
 
