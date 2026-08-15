@@ -60,7 +60,7 @@ Defensible as one concern — *the build documentation was wrong in three places
 Recorded because the rule is written without that exception, and because the fix lands in a file that
 is not otherwise the subject of the commit.
 
-### L-2 · `fd8d674be` leaves a stated prerequisite gap unresolved by design
+### L-2 · ~~FIXED~~ · `fd8d674be` leaves a stated prerequisite gap unresolved by design
 
 **File:** `BUILD.md:49-53`
 
@@ -73,6 +73,12 @@ That is the right call under *one concern per commit*, and the trap is now writt
 newcomer will hit it. Flagged only so it does not disappear: **documenting a papercut is not the same
 as fixing it**, and the fix is one line in `settings.gradle.kts`. It should become a follow-up rather
 than remain permanently "documented".
+
+**FIXED.** The resolver is now registered for the modules too. It took more than the predicted one
+line: the two builds need it declared *differently* (root with a version, buildSrc without), because
+buildSrc does not inherit the root's toolchain repositories yet its settings evaluate with the plugin
+already on the classpath. Both directions were verified by requesting an uninstalled JDK 11 and
+reading which error came back.
 
 ---
 
