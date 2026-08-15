@@ -12,6 +12,48 @@ root filesystem, all capabilities dropped, no-new-privileges, as non-root, under
 
 ---
 
+## Quickstart
+
+From an empty directory to a browsable result table. Each step is expanded in the numbered sections below.
+
+```bash
+# 1. Clone. The grinder lives on `develop` — it is not in the `main` release branch.
+git clone -b develop https://github.com/Griefed/ServerPackCreator.git
+cd ServerPackCreator
+
+# 2. Check the two prerequisites: a Docker daemon you can talk to, and JDK 21+.
+docker info > /dev/null && java -version
+
+# 3. Build the image the packs boot in. Once only, ~2 GB, several minutes.
+docker build -t spc-grinder-runtime:latest serverpackcreator-grinder/docker
+
+# 4. Grind one known mod. This proves the whole chain end-to-end in a few minutes.
+./gradlew :serverpackcreator-grinder:run --args="https://modrinth.com/mod/modmenu"
+```
+
+**5. Read the results** while it is still running — step 4 keeps the report server up until you `Ctrl-C`:
+
+| | |
+|---|---|
+| Result table | <http://localhost:8757/> — sortable, highest confidence first |
+| CSV export | <http://localhost:8757/export.csv> |
+| What it is doing right now | `curl -s localhost:8757/status` |
+
+**6. Run it continuously.** Once step 4 works, drop the `--args` and the grinder crawls the catalogue on
+its own, keeping the same report live at `localhost:8757`:
+
+```bash
+./gradlew :serverpackcreator-grinder:run
+```
+
+Two things worth knowing before you act on the table. **Only `HIGH` confidence is decisive** — it means the
+server actually crashed with the mod in place; `MEDIUM` only means the server booted, which does not prove
+the mod is server-safe (§6). And **everything the grinder writes lives under `~/.spc-grinder`** —
+`verdicts.json` (results), `cache/` (loader installs), `work/` (staging). Nothing else on the host is
+touched, and no mod ever gets network access.
+
+---
+
 ## 1. Prerequisites
 
 | Requirement          | Notes                                                                        |

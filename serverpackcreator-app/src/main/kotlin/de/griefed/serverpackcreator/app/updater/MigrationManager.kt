@@ -157,7 +157,7 @@ class MigrationManager(
         val methodMap = HashMap<String, Method>(100)
         val methodVersions = TreeSet<String>()
         for (method in methods) {
-            val methodVersion = toSemantic(method.name.replace("\\\$[0-9]*lambda\\\$[0-9]*".toRegex(),""))
+            val methodVersion = toSemantic(method.name.replace(LAMBDA_SUFFIX, ""))
             methodMap[methodVersion] = method
             methodVersions.add(methodVersion)
         }
@@ -222,12 +222,11 @@ class MigrationManager(
             return true
         }
 
-        // Current MAJOR version equal and current MINOR version smaller?
-        return if (checkAgainst[0] == old[0] && checkAgainst[1] < old[1]) {
-            true
-
-            // Current MAJOR version equal, current MINOR equal, current PATCH version smaller?
-        } else checkAgainst[0] == old[0] && checkAgainst[1] == old[1] && checkAgainst[2] < old[2]
+        return (
+                // Current MAJOR version equal and current MINOR version smaller?
+                checkAgainst[0] == old[0] && checkAgainst[1] < old[1])
+                // Current MAJOR version equal, current MINOR equal, current PATCH version smaller?
+                || (checkAgainst[0] == old[0] && checkAgainst[1] == old[1] && checkAgainst[2] < old[2])
     }
 
     /**
@@ -238,7 +237,7 @@ class MigrationManager(
      * @author Griefed
      */
     private fun semantics(version: String): IntArray {
-        return version.replace("\\\$[0-9]*lambda\\\$[0-9]*".toRegex(),"").split(Regex("\\.")).map { it.toInt() }.toIntArray()
+        return version.replace(LAMBDA_SUFFIX, "").split(Regex("\\.")).map { it.toInt() }.toIntArray()
     }
 
     /**
@@ -285,13 +284,11 @@ class MigrationManager(
             return true
         }
 
-        // Method MAJOR version equal and method MINOR bigger?
-        return if (checkAgainst[0] == old[0] && checkAgainst[1] > old[1]) {
-            true
-        } else {
-            // Method MAJOR equal, method MINOR equal, method PATCH bigger?
-            checkAgainst[0] == old[0] && checkAgainst[1] == old[1] && checkAgainst[2] > old[2]
-        }
+        return (
+                // Method MAJOR version equal and method MINOR bigger?
+                checkAgainst[0] == old[0] && checkAgainst[1] > old[1])
+                // Method MAJOR equal, method MINOR equal, method PATCH bigger?
+                || (checkAgainst[0] == old[0] && checkAgainst[1] == old[1] && checkAgainst[2] > old[2])
     }
 
     /**
@@ -368,7 +365,7 @@ class MigrationManager(
      *
      * @author Griefed
      */
-    inner class MigrationMessage(
+    class MigrationMessage(
         private val fromVersion: String, private val toVersion: String, private val changes: MutableList<String> = ArrayList(20)
     ) {
 
@@ -501,6 +498,12 @@ class MigrationManager(
             }
         }
 
+        /**
+         * Reads and writes the deprecated flat `scriptTemplates` list deliberately: migrating a 5.0.0
+         * installation means touching the representation *that* version wrote. Pointing it at the
+         * replacement would migrate the wrong setting.
+         */
+        @Suppress("DEPRECATION")
         private fun FivePointZeroPointZero() {
             val changes: MutableList<String> = ArrayList(10)
             val previousSetting = apiProperties.scriptTemplates.joinToString(",")
@@ -532,6 +535,12 @@ class MigrationManager(
             }
         }
 
+        /**
+         * Reads the deprecated flat `scriptTemplates` list deliberately: this migration's whole job is
+         * to turn what a pre-6.0.0 installation stored into the per-type map 6.0.0 uses, so the old
+         * representation is its input by definition.
+         */
+        @Suppress("DEPRECATION")
         private fun SixPointZeroPointZero() {
             val changes: MutableList<String> = ArrayList(10)
             val previousSetting = apiProperties.scriptTemplates
@@ -544,5 +553,18 @@ class MigrationManager(
                 changes.add(Translations.migrationmanager_migration_sixpointzeropointzero_scripts_template("$type = ${template.absolutePath}"))
             }
         }
+    }
+
+    internal companion object {
+        /**
+         * Strips the synthetic suffix the Kotlin compiler appends to the name of a method that carries
+         * a lambda — `$0lambda$1`, or a bare `$lambda$` — so a migration method's declared name still
+         * reads as the version it migrates to.
+         *
+         * A single source of truth on purpose: the literal used to be written out twice, in method
+         * discovery and in version parsing, where the two escaping-heavy copies could silently drift
+         * apart and leave a migration undiscovered rather than failing.
+         */
+        internal val LAMBDA_SUFFIX = $$"\\$[0-9]*lambda\\$[0-9]*".toRegex()
     }
 }

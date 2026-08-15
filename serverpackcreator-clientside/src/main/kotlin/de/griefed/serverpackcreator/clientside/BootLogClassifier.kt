@@ -87,10 +87,10 @@ object BootLogClassifier {
      * the VM — which, without this, scored as a HIGH-confidence clientside crash.
      */
     private val outOfMemoryMarkers = Regex(
-        "(java\\.lang\\.OutOfMemoryError" +
+        $$"(java\\.lang\\.OutOfMemoryError" +
             "|insufficient memory for the Java Runtime Environment" +
             "|Cannot allocate memory" +
-            "|Killed\\s+\"?\\\$?JAVA)",
+            $$"|Killed\\s+\"?\\$?JAVA)",
         RegexOption.IGNORE_CASE
     )
 

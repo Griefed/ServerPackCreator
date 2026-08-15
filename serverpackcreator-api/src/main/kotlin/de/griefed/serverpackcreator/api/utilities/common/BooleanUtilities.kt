@@ -88,22 +88,23 @@ class BooleanUtilities {
          * @author Griefed
          */
         @Suppress("MemberVisibilityCanBePrivate")
-        fun convert(stringBoolean: String) =
-            if (stringBoolean.matches(one)
-                || stringBoolean.matches(yYeEsS)
-                || stringBoolean.matches(yY)
-                || stringBoolean.equals("true", ignoreCase = true)
-            ) {
-                true
-            } else if (stringBoolean.matches(zero)
-                || stringBoolean.matches(nNoO)
-                || stringBoolean.matches(nN)
-                || stringBoolean.equals("false", ignoreCase = true)
-            ) {
-                false
-            } else {
+        fun convert(stringBoolean: String) = when {
+            stringBoolean.matches(one)
+                    || stringBoolean.matches(yYeEsS)
+                    || stringBoolean.matches(yY)
+                    || stringBoolean.equals("true", ignoreCase = true) -> true
+
+            stringBoolean.matches(zero)
+                    || stringBoolean.matches(nNoO)
+                    || stringBoolean.matches(nN)
+                    || stringBoolean.equals("false", ignoreCase = true) -> false
+
+            else -> {
+                // Deliberately distinct from the recognised-false branch above: the warning marks a
+                // value nothing could be made of, not a value that said "no".
                 log.warn { "Warning. Couldn't parse boolean. Assuming false." }
                 false
             }
+        }
     }
 }

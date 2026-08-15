@@ -189,7 +189,7 @@ internal class SquareBoard(
      * @return true if the square is emtpy, or false otherwise
      */
     fun isSquareEmpty(x: Int, y: Int): Boolean {
-        return if (x < 0 || x >= boardWidth || y < 0 || y >= boardHeight) {
+        return if (x !in 0 until boardWidth || y !in 0 until boardHeight) {
             x in 0 until boardWidth && y < 0
         } else {
             matrix[y][x] == null
@@ -204,7 +204,7 @@ internal class SquareBoard(
      * @return true if the whole line is empty, or false otherwise
      */
     fun isLineEmpty(y: Int): Boolean {
-        if (y < 0 || y >= boardHeight) {
+        if (y !in 0 until boardHeight) {
             return false
         }
         for (x in 0 until boardWidth) {
@@ -223,7 +223,7 @@ internal class SquareBoard(
      * @return true if the whole line is full, or false otherwise
      */
     private fun isLineFull(y: Int): Boolean {
-        if (y < 0 || y >= boardHeight) {
+        if (y !in 0 until boardHeight) {
             return true
         }
         for (x in 0 until boardWidth) {
@@ -268,7 +268,7 @@ internal class SquareBoard(
      * @return the square color, or null for none
      */
     fun getSquareColor(x: Int, y: Int): Color? {
-        return if (x < 0 || x >= boardWidth || y < 0 || y >= boardHeight) {
+        return if (x !in 0 until boardWidth || y !in 0 until boardHeight) {
             null
         } else {
             matrix[y][x]
@@ -285,7 +285,7 @@ internal class SquareBoard(
      * @param color the new square color, or null for empty
      */
     fun setSquareColor(x: Int, y: Int, color: Color?) {
-        if (x < 0 || x >= boardWidth || y < 0 || y >= boardHeight) {
+        if (x !in 0 until boardWidth || y !in 0 until boardHeight) {
             return
         }
         matrix[y][x] = color
@@ -353,7 +353,7 @@ internal class SquareBoard(
      */
     private fun removeLine(y: Int) {
         var yAxis = y
-        if (yAxis < 0 || yAxis >= boardHeight) {
+        if (yAxis !in 0 until boardHeight) {
             return
         }
         while (yAxis > 0) {

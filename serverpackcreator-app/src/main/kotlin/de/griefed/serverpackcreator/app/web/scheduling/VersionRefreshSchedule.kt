@@ -38,7 +38,7 @@ import javax.xml.parsers.ParserConfigurationException
 class VersionRefreshSchedule @Autowired constructor(private val versionMeta: VersionMeta) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
-    @Scheduled(cron = "\${de.griefed.serverpackcreator.spring.schedules.versions.refresh}")
+    @Scheduled(cron = $$"${de.griefed.serverpackcreator.spring.schedules.versions.refresh}")
     private fun refreshVersionLister() {
         try {
             versionMeta.update()

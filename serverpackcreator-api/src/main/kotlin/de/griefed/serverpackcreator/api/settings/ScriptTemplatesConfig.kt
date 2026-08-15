@@ -124,8 +124,16 @@ class ScriptTemplatesConfig(
         return newTemplates.toList()
     }
 
+    /**
+     * The start-script templates generation will use. Sorted, so generated packs are reproducible.
+     *
+     * Reads the equally-deprecated [defaultScriptTemplates] on purpose: both belong to the pre-6.0.0
+     * flat-list representation, and this accessor exists to keep answering in *that* representation
+     * for callers who have not moved to [startScriptTemplates] yet. Delegating to the replacement
+     * instead would change what it returns, which is the one thing a deprecated facade must not do.
+     */
+    @Suppress("DEPRECATION")
     @Deprecated("Deprecated as of 6.0.0", ReplaceWith("startScriptTemplates"))
-    /** The start-script templates generation will use. Sorted, so generated packs are reproducible. */
     var scriptTemplates: TreeSet<File> = TreeSet()
         get() {
             val scriptSetting = store.properties.getProperty(LEGACY_SCRIPT_TEMPLATES_KEY)

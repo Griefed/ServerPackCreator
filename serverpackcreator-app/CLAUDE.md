@@ -75,12 +75,37 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   stats).
 - **Web-entity IDs are `private set`** (Spring Data `PersistenceCreator`); tests assign them via the
   `assignEntityId` reflection helper.
+- **The controller tests `mockk()` their service, so a green controller test says nothing about the
+  service.** `EventServiceTest` and `RunConfigurationServiceTest` (added 2026-08-15) test the services
+  directly with mocked repositories, because the look-up-or-store loops in both had been executed by
+  **no** test at all. They pin the *outcome* — which entries the built object holds and which reach
+  `save` — deliberately **not** the number of repository lookups, which is an implementation detail.
 - `WebServiceArgumentsTest` covers `WebService.springArguments` — pure argument composition, no context.
   It exists because `start()` boots Spring, so the composition had to be extracted to be assertable;
   the old context-only `WebServiceTest` is still the one CLAUDE.md says to replace rather than extend.
 - GUI: view-model unit tests; Swing views stay dumb. CLI/entry-point logic pinned by
   `CommandlineParserTest` (headless-independent branches only) and `MigrationManagerTest`
-  (mockk-mocked `ApiProperties`, version ranges chosen to never hit a real migration method).
+  (mockk-mocked `ApiProperties`, version ranges chosen to never hit a real migration method, plus a
+  pin on `LAMBDA_SUFFIX` — the regex stripping the compiler's `$0lambda$1` off a migration method's
+  name, which both discovery and version parsing run every declared name through).
+- **`VersionCheckerTest`** covers the update-check comparison, which had **zero** tests until
+  2026-08-15. The class is abstract and `allVersions()` is its only data source, so a canned subclass
+  exercises the whole alpha/beta path offline — no repository, no network. **The fake's
+  `latestVersion()` computes the newest rather than taking the list head, deliberately:** the real
+  `allVersions()` comes from a repository API whose ordering nothing guarantees, and a fixture that
+  is silently newest-first cannot catch code depending on that ordering — which is exactly the bug it
+  did hide on the first attempt.
+- **Pre-release ordering is channel-first, and both halves were broken until 2026-08-15.**
+  `isPreReleaseNewer` compared only the number after the dot, so a beta did not supersede an alpha of
+  the same version: `alpha.2` was offered `beta.3` (3 > 2) while `alpha.5` was offered **nothing**
+  (3 > 5) with the same two releases published. And `latestBeta`/`latestAlpha` required a candidate to
+  be *both* newer-or-equal **and** higher-numbered, so `3.2.0-beta.1` lost to `3.1.0-beta.3` — whether
+  that reached a user depended on repository ordering. Now `preReleaseChannel` (alpha < beta <
+  release) with the number as tie-break, and `isVersionNewer` (semantic version first) for
+  latest-of-channel. **Landmine:** `isNewAlphaAvailable`'s explicit "a beta is never offered an alpha"
+  guard was removed as dead once the channel ordering subsumed it — if you ever weaken that ordering,
+  that rule disappears with it, and only
+  `VersionCheckerTest.aBetaIsNotOfferedAnAlphaOfTheSameVersion` will say so.
 
 ## Landmines & verified quirks (durable)
 

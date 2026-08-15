@@ -36,6 +36,37 @@
   stays there; moving it risks breaking log4j plugin-discovery.
 - **Loader regexes have a single source of truth:** `config.SupportedModloaders` (5 exact-match
   regexes + canonical `names`). Do **not** reintroduce `"^forge$"`-style literals anywhere else.
+- **So does loader→scanner selection: `ModScanner.scannerFor(modloader, minecraftVersion)`.** Every
+  consumer dispatches through it — `ModListCompiler` for a real generation, `-clientside`'s
+  `MetadataScanner` for the metadata signal — so the two cannot disagree about what a jar declared. Do
+  **not** re-add a `when (modloader)` over the concrete scanners; that duplication is what hid the Forge
+  era bug in two places at once (versioning-scheme landmine below). A `null` return means "no scanner
+  knows this loader" and each caller turns it into keep-every-mod. The Quilt arm returns
+  `QuiltPackScanner`, which owns the quilt+fabric merge — CLIENT wins, and the *Quilt* `ScannedMod` is
+  kept when both agree, because its id and dependency list feed the downstream dependency-rescue.
+- **A jar carrying no descriptor is NOT a scan failure — do not log it as one.** Every scanner is handed
+  the whole mods-directory, and a Quilt pack is scanned by **both** the Quilt and Fabric scanner by
+  design, so one of the two finds nothing in every single-format jar. `MissingDescriptorException`
+  (raised by `getJarJson` / `ForgeTomlScanner.getConfig` when the entry is absent) exists purely so
+  `DescriptorScanner` can log that at DEBUG while everything else keeps an ERROR **with** its stack
+  trace. Measured over one api suite run, scan-failure ERROR lines went **159 → 51**; the survivors are
+  37 `ZipException` (corrupt archive) and 14 `ParsingException` (malformed TOML), both real defects in
+  a jar. Do not "simplify" the two catches back into one.
+- **`ForgeTomlScanner` treats an absent `[[dependencies]]` block as *no dependencies*, not an error.**
+  It used to raise `ScanningException`, which aborted `read()` mid-way and replaced the already-parsed
+  modId with the **filename**. The verdict was unaffected (no dependencies ⇒ no clientside signal ⇒
+  SERVER either way), which is why it never broke a pack — but it discarded good data and shouted about
+  an ordinary descriptor. `ScanningException` is gone; nothing threw it afterwards.
+- **Scanner hierarchy:** `ModJarScanner` (public contract) → `DescriptorScanner` (owns the walk-the-jars
+  loop and the **one-`ScannedMod`-per-input-jar** guarantee; `scan` is `final`, subclasses implement
+  `read(File)` — public, because *which* exception it throws is the meaningful part and `scan` flattens
+  both outcomes to a default entry — and may throw) → `JsonDescriptorScanner` → `FabricFamilyScanner` (Fabric + Quilt share id
+  and environment reading, differing only in field *paths*; dependency blocks differ in *shape*, so they
+  stay abstract). `JsonBasedScanner`, the previous JSON helper, was **removed** rather than kept as a
+  deprecated facade — Griefed's call on 2026-08-15, overriding the adopted compatibility policy: scanners
+  are not a pf4j extension point, so a plugin could subclass it but never register the result, making the
+  facade cost with no reachable benefit. A subclass compiled against it will no longer compile; use
+  `JsonDescriptorScanner`.
 - **A constant kept on an extraction facade must *read* its owner, never re-declare the literal.**
   `ServerPackHandler.modFileEndings` and `ConfigurationHandler.zipCheck` are getters delegating to
   `ModListCompiler.modFileEndings` / `ModpackZipInspector.zipCheck`, pinned by
@@ -60,11 +91,24 @@
     1.20-era URL. Latent, fixed anyway.
 
   Both now require major `1` as well, pinned by `ScriptTemplateContentTest`, which **executes** the extracted
-  shell functions across both schemes. **The Kotlin side was surveyed and is clean by construction — keep it
-  that way:** `BootCandidateSelector.minecraftComparator` compares component-wise, `ImageJavaRuntimes` takes
+  shell functions across both schemes.
+
+  **The Kotlin side was NOT clean — this file claimed it was until 2026-08-15, and a third instance was
+  sitting in the generation path the whole time.** `ModListCompiler` chose Forge's scanner with
+  `mcVersions[1].toInt() > 12`, and `MetadataScanner` (in `-clientside`) with the same test, so Minecraft
+  `26.2` read as the 1.2 era and every modern Forge pack was scanned with `ForgeAnnotationScanner` — the
+  1.12-and-older one. No modern jar carries `fml_cache_annotation.json`, so every jar threw, every jar fell
+  back to the never-drop-a-jar `SERVER` default, and **auto-exclusion silently did nothing on Forge 26.x**
+  while logging one ERROR per mod. It fails safe (everything is included), which is why nobody noticed, and
+  the earlier survey looked only at the boot/selection code the grinder work had just touched. Both now
+  compare every component via `SemanticVersionComparator` against the version Forge actually switched at
+  (1.13), the choice lives once in `ModScanner.scannerFor`, and `ModScannerDispatchTest` pins both era
+  boundaries across both schemes.
+
+  Derive from metadata or compare all components; never hand-roll an era heuristic. What *is* clean, and was
+  re-checked: `BootCandidateSelector.minecraftComparator` compares component-wise, `ImageJavaRuntimes` takes
   required-Java from `MinecraftMeta.requiredJavaVersion` (Mojang's own declaration), and
-  `LoaderVersionResolver` delegates to the manifests. Derive from metadata or compare all components; never
-  hand-roll an era heuristic.
+  `LoaderVersionResolver` delegates to the manifests.
 - **LANDMINE — `-Djava.security.manager=allow` is fatal from Java 24 on.** JEP 486 removed Security Manager
   support, so the VM *refuses to start* rather than ignoring the flag. `PackConfig.spcSSJArgsKeyDefaultValue`
   still defaults `SSJ_FORGE_ARGS` to it, because Forge's ServerStarterJar needs it on older Java — the
@@ -100,8 +144,14 @@
   underneath a *live* instance (the older test built the config afterwards, so a captured value still looked right).
   The file's other 31 path properties use an equivalent field-assigning getter; either shape is fine, a bare
   initialiser is not.
-- **`PackConfig.modloader` setter silently ignores unrecognized values**; unknown loaders default
-  to **Forge**. Most-specific loader names must be matched first (LegacyFabric before Fabric, etc.).
+- **`PackConfig.modloader` setter silently ignores unrecognized values** — it does *not* fall back to
+  Forge, as this file claimed until 2026-08-14. The setter assigns only on a match (`PackConfig.kt:328-341`),
+  so an unrecognised value leaves the field at whatever it already held, which starts as `""`. A config whose
+  loader never matched therefore reaches generation with an **empty** modloader. That empty string used to
+  reach `ModListCompiler`'s scanner-selection `when`, which had no `else`, and produced a silently empty
+  server pack; the `else` now warns and includes every mod, pinned by
+  `ModListCompilerTest.unrecognisedModloaderStillYieldsEveryMod`. Most-specific loader names must still be
+  matched first (LegacyFabric before Fabric, etc.).
 - **`PackConfig.save(destination, apiProperties)`** is the primary (injection-required) overload;
   `save(destination)` is a `@Deprecated` facade resolving `ApiProperties` via the singleton — don't
   build new call-sites on the deprecated one.

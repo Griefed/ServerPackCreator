@@ -150,17 +150,13 @@ class FileUtilities {
          * @return `true` if the given file is a UNIX symlink or Windows lnk.
          * @author Griefed
          */
-        fun isLink(file: File) =
-            if (file.name.endsWith(LNK)) {
-                true
-            } else {
-                try {
-                    !file.toString().matches(windowsDrivers)
-                            && file.toPath().isSymbolicLink()
-                } catch (ex: InvalidPathException) {
-                    false
-                }
-            }
+        fun isLink(file: File) = file.name.endsWith(LNK) || try {
+            !file.toString().matches(windowsDrivers)
+                    && file.toPath().isSymbolicLink()
+        } catch (_: InvalidPathException) {
+            // A path this platform cannot even represent is not a link we can follow.
+            false
+        }
 
         /**
          * Resolve a given link/symlink to its source.

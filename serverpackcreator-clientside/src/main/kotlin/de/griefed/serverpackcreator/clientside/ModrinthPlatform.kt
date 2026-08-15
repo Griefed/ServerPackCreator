@@ -58,8 +58,8 @@ class ModrinthPlatform(
             platform = "Modrinth",
             slug = slug,
             projectUrl = projectUrl,
-            clientSide = Sideness.fromString(project.textOrNull("client_side")),
-            serverSide = Sideness.fromString(project.textOrNull("server_side")),
+            clientSide = DeclaredSupport.fromString(project.textOrNull("client_side")),
+            serverSide = DeclaredSupport.fromString(project.textOrNull("server_side")),
             files = files
         )
     }
@@ -68,7 +68,7 @@ class ModrinthPlatform(
         val projectUrl = "https://modrinth.com/mod/$nativeRef"
         val versions = objectMapper.readTree(httpFetcher.get("$apiBase/project/$nativeRef/version", headers))
         val files = versions.flatMap { filesOf(it, projectUrl) }
-        ProjectFiles("Modrinth", nativeRef, projectUrl, Sideness.UNKNOWN, Sideness.UNKNOWN, files)
+        ProjectFiles("Modrinth", nativeRef, projectUrl, DeclaredSupport.UNKNOWN, DeclaredSupport.UNKNOWN, files)
     } catch (ex: Exception) {
         log.warn("Could not resolve Modrinth dependency '$nativeRef': ${ex.message}")
         null

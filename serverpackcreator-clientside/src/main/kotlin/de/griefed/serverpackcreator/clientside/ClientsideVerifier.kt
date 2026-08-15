@@ -125,9 +125,9 @@ class ClientsideVerifier(
      * catch. Without a crash, a client-leaning metadata signal is [Confidence.MEDIUM], a clear
      * server/both is [Confidence.LOW], and everything unknown/deferred is [Confidence.INCONCLUSIVE].
      */
-    private fun aggregate(serverSide: Sideness, jarScan: JarScan, bootResult: BootResult?): Pair<Confidence, String?> {
-        val declaresClient = serverSide == Sideness.UNSUPPORTED
-        val declaresServer = serverSide == Sideness.REQUIRED
+    private fun aggregate(serverSide: DeclaredSupport, jarScan: JarScan, bootResult: BootResult?): Pair<Confidence, String?> {
+        val declaresClient = serverSide == DeclaredSupport.UNSUPPORTED
+        val declaresServer = serverSide == DeclaredSupport.REQUIRED
         val jarClient = jarScan == JarScan.CLIENT
         val jarServer = jarScan == JarScan.SERVER_OR_BOTH
         val metadataClient = declaresClient || jarClient

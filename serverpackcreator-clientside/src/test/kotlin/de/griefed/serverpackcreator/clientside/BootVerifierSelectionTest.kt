@@ -66,8 +66,8 @@ internal class BootVerifierSelectionTest {
         platform = "Modrinth",
         slug = "testmod",
         projectUrl = "https://modrinth.com/mod/testmod",
-        clientSide = Sideness.UNKNOWN,
-        serverSide = Sideness.UNKNOWN,
+        clientSide = DeclaredSupport.UNKNOWN,
+        serverSide = DeclaredSupport.UNKNOWN,
         files = listOf(ModFile("testmod.jar", setOf("Forge"), minecraftVersions.toSet(), "https://cdn/testmod.jar", null, emptyList()))
     )
 

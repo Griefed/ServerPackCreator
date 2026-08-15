@@ -41,7 +41,7 @@ class FileCleanupSchedule @Autowired constructor(
     private val modPackRoot: Path = apiProperties.modpacksDirectory.toPath()
     private val serverPackRoot: Path = apiProperties.serverPacksDirectory.toPath()
 
-    @Scheduled(cron = "\${de.griefed.serverpackcreator.spring.schedules.files.cleanup}")
+    @Scheduled(cron = $$"${de.griefed.serverpackcreator.spring.schedules.files.cleanup}")
     private fun cleanFiles() {
         log.info("Cleaning files...")
         val modpackFiles = modPackRoot.listDirectoryEntries().map { it.toFile() }

@@ -1365,6 +1365,9 @@ class LarsonScanner : JPanel {
             updateValues()
             val g2d = g as Graphics2D
             val fillHeight = height.roundToInt() + 10
+            // Not g2d.renderingHints = ...: the getter returns RenderingHints but the setter takes a
+            // Map, so Kotlin exposes the property read-only. Qodana's UsePropertyAccessSyntax hint
+            // does not compile here.
             g2d.setRenderingHints(renderingHints)
             g2d.color = this.background
             g2d.fillRect(0, 0, width.roundToInt(), fillHeight)

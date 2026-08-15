@@ -217,6 +217,7 @@ class GenerationConfig(private val store: PropertyStore) {
             "FpsReducer2-",                 //https://www.curseforge.com/minecraft/mc-mods/fps-reducer
             "FullscreenWindowed-",          //https://www.curseforge.com/minecraft/mc-mods/fullscreen-windowed-borderless-for-minecraft
             "GameMenuModOption-",           //https://www.curseforge.com/minecraft/mc-mods/gamemenumodoption
+            "GeckoLib-Animation-Optimizer-", //https://www.curseforge.com/minecraft/mc-mods/geckolib-animation-optimizer
             "Gnetum-",                      //https://www.curseforge.com/minecraft/mc-mods/gnetum
             "GpuTape-",                     //https://www.curseforge.com/minecraft/mc-mods/gputape
             "GPUTape-",                     //https://www.curseforge.com/minecraft/mc-mods/gputape
@@ -406,6 +407,7 @@ class GenerationConfig(private val store: PropertyStore) {
             "controllable-",                //https://www.curseforge.com/minecraft/mc-mods/controllable
             "coolrain-",                    //https://www.curseforge.com/minecraft/mc-mods/cool-rain
             "crash_assistant-",             //https://www.curseforge.com/minecraft/mc-mods/crash-assistant
+            "collapsible_groups-",          //https://www.curseforge.com/minecraft/mc-mods/collapsible-groups
             "colorful_lighting-",           //https://www.curseforge.com/minecraft/mc-mods/colorful-lighting-sodium
             "colorwheel-",                  //https://www.curseforge.com/minecraft/mc-mods/colorwheel
             "colorwheel_patcher-",          //https://www.curseforge.com/minecraft/mc-mods/colorwheel-patcher
@@ -413,6 +415,7 @@ class GenerationConfig(private val store: PropertyStore) {
             "cullleaves-",                  //https://www.curseforge.com/minecraft/mc-mods/cull-leaves
             "cullparticles-",               //https://www.curseforge.com/minecraft/mc-mods/cull-particles
             "currentgamemusictrack-",       //https://www.curseforge.com/minecraft/mc-mods/current-game-music-track
+            "curios-performance-fix-",      //https://www.curseforge.com/minecraft/mc-mods/curios-performance-fix
             "custom-crosshair-mod-",        //https://www.curseforge.com/minecraft/mc-mods/custom-crosshair-mod
             "customcursor-",                //https://www.curseforge.com/minecraft/mc-mods/custom-cursor
             "customdiscordrpc-",            //https://www.curseforge.com/minecraft/mc-mods/custom-discordrpc
@@ -586,6 +589,7 @@ class GenerationConfig(private val store: PropertyStore) {
             "ornaments-",                   //https://www.curseforge.com/minecraft/mc-mods/ornaments
             "overlaytweaks-",               //https://www.curseforge.com/minecraft/mc-mods/overlay-tweaks
             "overloadedarmorbar-",          //https://www.curseforge.com/minecraft/mc-mods/overloaded-armor-bar
+            "packanalytics-",               //https://www.curseforge.com/minecraft/mc-mods/pack-analytics See https://github.com/Griefed/ServerPackCreator/issues/1234
             "panorama-",                    //https://www.curseforge.com/minecraft/mc-mods/panorama
             "paperdoll-",                   //https://www.curseforge.com/minecraft/mc-mods/paperdoll
             "particle-rain-",               //https://www.curseforge.com/minecraft/mc-mods/particle-rain

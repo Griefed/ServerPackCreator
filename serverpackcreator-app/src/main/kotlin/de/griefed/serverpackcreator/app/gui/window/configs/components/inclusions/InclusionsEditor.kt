@@ -662,13 +662,8 @@ class InclusionsEditor(
     }
 
     class InclusionsListHandler(private val editor: InclusionsEditor): TransferHandler() {
-        override fun canImport(support: TransferSupport): Boolean {
-            return if (!support.isDrop) {
-                false
-            } else {
-                support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)
-            }
-        }
+        override fun canImport(support: TransferSupport) =
+            support.isDrop && support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)
 
         override fun importData(support: TransferSupport): Boolean {
             if (!canImport(support)) {

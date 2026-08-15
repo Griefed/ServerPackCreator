@@ -53,7 +53,7 @@ enum class JarScan {
  * @param suggestedEntry    Derived clientside-list entry (file-name stem), or `null` if not derivable.
  * @param declaredClientSide Platform-declared client support (Modrinth; UNKNOWN for CurseForge).
  * @param declaredServerSide Platform-declared server support (Modrinth; UNKNOWN for CurseForge).
- * @param jarScan           Sideness read from the jar metadata via SPC's scanners.
+ * @param jarScan           DeclaredSupport read from the jar metadata via SPC's scanners.
  * @param bootResult        Outcome of the server-boot test, or `null` when boot was not run.
  * @param confidence        Aggregate confidence for this loader.
  * @param sampleFile        The file-name the jar-scan ran against (for traceability).
@@ -63,8 +63,8 @@ enum class JarScan {
 data class LoaderVerdict(
     val loader: String,
     val suggestedEntry: String?,
-    val declaredClientSide: Sideness,
-    val declaredServerSide: Sideness,
+    val declaredClientSide: DeclaredSupport,
+    val declaredServerSide: DeclaredSupport,
     val jarScan: JarScan,
     val bootResult: BootResult?,
     val bootCrashExcerpt: String?,

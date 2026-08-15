@@ -1335,3 +1335,264 @@ starting a container — a behaviour change, and the third commit in this projec
 audited **after** being merged into `develop` and `alpha`, so the honest remedy was a record in `CLAUDE.md` rather
 than force-pushing two shared branches. That asymmetry is now written into the convention itself: cheap before the
 merge, unfixable after it.
+
+## 2026-08-14 — modscanning hardening (`claude-modscan-test-hardening`, `claude-modscan-tidyup`), api 280 → 295
+
+The modscan rewrite (`0a12d41d0`) and its six follow-ups changed behaviour four times without adding a single test case; two
+regressions shipped and **neither turned the suite red**. Auto-exclusion was dead for a day — the user-exclusion
+pass re-walked every scanned mod and re-enabled anything it had not itself matched — and its only coverage
+guarded on `Assumptions.assumeTrue`, so an empty result **skipped** instead of failing (the B13–B20 lesson,
+regressed). The Quilt merge keyed on `modID`, which is mismatched by construction in exactly the entries it
+merges: `quilt_tests/aaaaa.jar` declares `ok_zoomer` in one descriptor and `ok_zoomer-pmw` in the other, and
+`bbbbb.jar` has no `fabric.mod.json` at all, so the failed scan falls back to the filename — 5 jars in, 7 entries
+out, each duplication announced in an INFO log as though it were a repair. Both are fixed and now pinned, each
+**observed red against the commit before its fix** (`7004f3c88^`, `bf226c2ac^`, `2ec5ff202^`), with the
+observed failure text in the commit body.
+
+Three things worth keeping. **The fixtures cannot express an absent field** — every committed `fabric.mod.json`
+and `quilt.mod.json` declares an `environment`, so the SERVER-when-undeclared default (a decision: an
+undeclared mod must never be dropped from a pack) had *no* coverage, which is how `bf226c2ac`'s defect got in.
+New cases build a real jar in a `@TempDir` from JSON written inline, so the descriptor under test is visible in
+the diff and no binary enters the repo. **The committed jars stay as they are** — they are real-world captures
+and that messiness is the point (`fabric_tests/fffff.jar` carries a literal newline inside a JSON string, invalid
+strict JSON that the scanner handles anyway), they are consumed by eight test classes across `-api` *and* `-app`,
+and `forge_old/aaaaa.jar` holds a genuine 1 MB `fml_cache_annotation.json`; 776 KB total is not worth
+regenerating. **A green characterization test proves nothing until you try to break it** — the new
+exact-match-not-prefix assertion on `dependencyExclusions` was confirmed by mutating the regex to `fabric.*` and
+watching it fail, because `fabric-api-base` must survive a filter that drops `fabric`.
+
+Also fixed here (audit M-4): the scanner-selection `when` had **no `else`**, and since the rewrite the
+include-list is built solely from what a scanner returned — so an unrecognised loader produced a **silently empty
+server pack** where the pre-rewrite code returned every jar. Reachable from an ordinary `PackConfig`, because
+`PackConfig.modloader`'s setter silently ignores a value it does not recognise and leaves the field at `""`.
+The `else` now warns and includes everything.
+
+**Tidy-up (`claude-modscan-tidyup`).** `ScannedMod`/`ModDependency` are immutable and built through their
+constructors, which removed **all 8** `!!` assertions and **all 4** mutable `currentModID` fields — those were
+shared state on scanners `ApiWrapper` holds as **singletons**, so two concurrent `scan()` calls interleaved
+through them. `ForgeAnnotationScanner` needed the id returned rather than passed in, because there it is a
+*result*: whichever annotation first carries one, with every later annotation read relative to it. The
+four-branch exclusion-filter `when` — written out **three** times, already drifted in formatting — is read once;
+the whitelist `while(any{}) { removeIf{} }` collapses to one `removeIf` (the predicate reads only the mod and
+the whitelist, so nothing a removal does can make a remaining entry start matching), while the dependency
+rescue keeps its loop because each rescue adds to `serverMods` and puts further dependencies in play. The Quilt
+copy-loop was **unreachable** and is gone: both scanners return one entry per input file, so its lookup never
+missed — it fired only under the old `modID` key, where it was the duplicate-producing mechanism rather than a
+fallback. **Do not "fix" `ScannedMod` with a `data class`:** two entries for one jar can disagree on
+`sideness`, and value-equality would let a `Set`/`distinct()` keep whichever landed first and drop the other
+verdict, which is the merge the Quilt arm makes deliberately. Compare on `file`.
+
+**A second fabricated-reference problem, worth the same suspicion as the `PackConfig` one below.**
+`ReadmeExamplesTest` cited **seven** README sections that do not exist (`§2 Quickstart`, `§3 Composition root`,
+`§4 PackConfig`, `§5 Validating`, `§7 Version metadata`, `§8 Scanning mods`, `§9 Settings`) and claimed the
+guide "teaches roughly a dozen snippets". `README.md` carries exactly **two** Kotlin API snippets, both under
+*6. API → Example*. That file's entire justification is being the compiler-gate for the README, so a reader
+trusting its citations would hunt for prose that was never written. Cases that genuinely mirror a snippet now
+cite it; the rest say plainly that they guard adjacent surface.
+
+And (audit I-6) the dependency rescue additionally required the **disabled** mod to be `Sideness.SERVER` — but a
+mod auto-disabled by a scanner is `CLIENT` by construction, so *"don't exclude something's dependency"* only ever
+reached mods the scanner had called server-side and the user had excluded by name, never the auto-detected ones it
+exists for. Clause dropped; pinned in both the direct and the **transitive** case (`servermod → midlib → deeplib`,
+middle and leaf both clientside), because a single-pass rescue keeps the leaf excluded and still looks like it
+worked — which is what the surrounding `while` is for.
+
+---
+
+## Modscanning generification (`claude-modscanning-generification`, 2026-08-15)
+
+Triggered by a Qodana report review (job 37558, rev `dc5aed6`: 58 problems, 13 High, no security or
+correctness inspections — 7 self-inflicted `KotlinDeprecation` on the 6.0.0 `scriptTemplates` facades, 4
+`KDocUnresolvedReference` in `ClientsideModels.kt`, one `RedundantInnerClassModifier`, and one
+`UnusedSymbol` that turned out to be in `modscanning`) plus the question of what in the scanners could be
+generified.
+
+**The bug the reading found, fixed before any restructuring.** `ModListCompiler` picked Forge's scanner with
+`mcVersions[1].toInt() > 12`, and `-clientside`'s `MetadataScanner` with the same test. Minecraft has two
+versioning schemes, so `26.2`'s minor of `2` read as the 1.2 era and sent every modern Forge pack to
+`ForgeAnnotationScanner` — the 1.12-and-older one. No modern jar carries `fml_cache_annotation.json`, so every
+jar threw, every jar fell back to the never-drop-a-jar `SERVER` default, and **auto-exclusion silently did
+nothing on Forge 26.x** while logging one ERROR per mod. It fails safe (everything included), which is why it
+had gone unnoticed; `autoDiscoveryReachesScannerBranchPerLoader` only ever covered 1.12.2 and 1.16.5.
+
+This is the versioning-scheme landmine's **third** instance and the first outside the shell templates — and
+`serverpackcreator-api/CLAUDE.md` had asserted *"the Kotlin side was surveyed and is clean by construction"*.
+It was not: the survey covered the boot/selection code the grinder work had just touched, not the generation
+path. That claim is now corrected in place rather than deleted, because the wrong-but-confident version is the
+part worth remembering.
+
+Pinned red first in its own commit (`f8cb89bff`), both tests looping 1.20.1 and 26.2 against a real jar with a
+modern `META-INF/mods.toml` and asserting the *outcome* (excluded / kept, CLIENT / SERVER_OR_BOTH) rather than
+which scanner was chosen. Observed failing for the right reason — the 1.20.1 iteration passed in both, so the
+fixtures were valid and only the era selection was wrong. Fixed in `4dbf653cc` by comparing every component
+through `SemanticVersionComparator` against 1.13, the version Forge actually switched at, which is the call the
+NeoForge branch three lines below had been making correctly all along.
+
+**Then the generification.** Four extractions, behaviour-preserving, no existing assertion touched:
+
+1. **`ModJarScanner`** (public) replaces the `internal Scanner<T, U>`, whose two type parameters had exactly
+   one instantiation across all five implementations. The real problem was `internal`: `-clientside` and
+   `-grinder` could not see it, which is *why* `MetadataScanner` hand-wrote dispatch over concrete types. A
+   plugin can now implement a scanner for the first time.
+2. **`DescriptorScanner`** owns the walk-the-jars loop and the one-`ScannedMod`-per-input-jar guarantee all
+   five repeated. `scan` is `final`; subclasses implement `read(File)` and may throw. That contract is the one
+   thing no scanner may get wrong — a dropped entry is a mod missing from the finished pack.
+3. **`FabricFamilyScanner`** absorbs what Fabric and Quilt genuinely share (id + environment reading, differing
+   only in field *paths*, including the subtle "no environment entry means SERVER" default). Dependencies stay
+   abstract: Fabric declares an object keyed by mod id, Quilt an array of either objects or bare strings, so
+   the block's *shape* differs, not its path.
+4. **`ModScanner.scannerFor(modloader, minecraftVersion)`** is now the single dispatch for both callers, and
+   **`QuiltPackScanner`** holds the two-descriptor merge that only `ModListCompiler` implemented. The
+   clientside `CLAUDE.md`'s *"kept in sync deliberately; it is not shared code"* is retired — that instruction
+   is exactly what let one bug live in two files.
+
+**Quilt merge equivalence**, since the two callers differed: `ModListCompiler` kept the Quilt entry unless
+Quilt said SERVER and Fabric said CLIENT; `MetadataScanner` unioned the two clientside sets. Both yield CLIENT
+iff either scanner did, so the composite reproduces `ModListCompiler`'s rule exactly and `MetadataScanner`'s
+answer is unchanged. What the union had lost — *which* `ScannedMod`, and so which id and dependency list,
+survives — is preserved, and it matters for the downstream dependency-rescue.
+
+**`JsonBasedScanner` was removed, not deprecated — Griefed's call, overriding the adopted policy.** The first
+cut kept it as a standalone `@Deprecated(ReplaceWith("JsonDescriptorScanner"))` facade, because it is published
+and gaining the abstract `read` would break any plugin subclass. Griefed overrode that the same day: scanners
+are **not** a pf4j extension point, so a plugin could subclass the helper but never register the result — the
+facade was compatibility cost with no reachable benefit. It is deleted, `getJarJson` lives on
+`JsonDescriptorScanner`, and the break is recorded in the root `CLAUDE.md` compatibility table rather than
+papered over. Worth remembering as the shape of a legitimate override: the policy protects *reachable* plugin
+surface, and this was not.
+
+Swept up along the way: the Qodana `UnusedSymbol` (`JsonBasedScanner`'s never-read `log`), the same in
+`ForgeTomlScanner` once its catch moved to the base, and a dead `NullPointerException` catch in `FabricScanner`
+around a `ModDependency` construction that cannot throw. Two logging changes are stated rather than hidden —
+`ForgeAnnotationScanner`'s per-jar failure loses its stack trace in favour of the message form the other four
+used, and `ModListCompiler`'s two NeoForge "Scanning using X scanner." debug lines go with the branch that
+emitted them.
+
+Code lines with comments and blanks stripped: `ModListCompiler` 169 → 131, `MetadataScanner` 43 → 21, the
+`modscanning` package 523 → 527 — i.e. the duplication became a shared, documented abstraction at roughly zero
+net cost, and the dispatch now exists once. `ModScannerDispatchTest` (6 tests, asserted on **identity**) pins
+the selection itself, including that an unparseable version falls back to the modern scanner instead of
+throwing — `"26"` used to raise `IndexOutOfBoundsException` out of the bare-component parsing.
+
+Suites: api 302 (1 skip), clientside 88, app 80, grinder 233 — all green.
+
+### Qodana moderates (same branch, 2026-08-15)
+
+45 Moderate findings from the same report, cleared in three commits. Of them **41 applied, 4
+deliberately not** — an inspection is a suggestion, not a verdict:
+
+- **UsePropertyAccessSyntax** (LarsonScanner) does not compile. `Graphics2D.getRenderingHints()`
+  returns `RenderingHints` while `setRenderingHints` takes a `Map`, so Kotlin exposes the property
+  read-only; `g2d.renderingHints = …` fails with *"'val' cannot be reassigned"*. Tried, reverted,
+  and the call now carries a comment so nobody repeats it.
+- **DestructuringDeclaration** ×3 (`ClientsideReportRenderer` ×2, `Grinder`) are all
+  `for (verdict in report.perLoader)` over `LoaderVerdict`, a data class with eight-plus fields.
+  Positional destructuring costs every speaking name the loop bodies use, and `componentN` is
+  positional — a reordered property would silently *rebind* every variable rather than fail to
+  compile. Exactly the silent-failure class this codebase guards against.
+
+Two **RedundantIf** findings were applied as `when`, not as the `||` Qodana implies:
+`BooleanUtilities.convert`'s recognised-false branch and its fallback both return false, but only
+the fallback warns — a plain `||` would have fired *"couldn't parse boolean"* on every valid
+`"false"`/`"0"`/`"no"`. And `JsonUtilities.getNestedBoolean` keeps its three-way shape with the
+throw; `toBooleanStrictOrNull()` is **not** a drop-in there, it is case-sensitive and that method
+accepts `"True"`/`"FALSE"`. Both now say so in a comment.
+
+**Two untested things had to be pinned before they could be touched**, both in the version-parsing
+silent-failure category:
+
+1. `VersionChecker` had **zero** tests and Qodana wanted three of its boolean chains collapsed. A
+   canned subclass over `allVersions()` pins the whole alpha/beta path offline. Writing it surfaced
+   a genuine defect — channel-blind pre-release comparison — pinned as-is at first, then **fixed on
+   request later the same day** (see below).
+2. `MigrationManager`'s lambda-suffix regex was written out **twice** in two escaping-heavy copies
+   with no coverage. Hoisted to one documented `LAMBDA_SUFFIX` constant, converted, and pinned — and
+   the pin's **teeth were checked** (broken to `"[0-9]*lambda[0-9]*"` it fails with
+   `expected: <SixDotZeroDotZero> but was: <SixDotZeroDotZero$$1>`, green again on restore).
+
+The three Spring `@Scheduled(cron = …)` placeholders have no test that loads the scheduling context,
+so they were verified by **measurement** instead: `javap` on the compiled classes shows the
+constant-pool entry unchanged — `#106 = Utf8 ${de.griefed.serverpackcreator.spring.schedules.database.cleanup}`.
+
+Swept up in the four loops the `indices` fix already touched: each called its repository's finder
+**twice** per element (once for `isPresent`, once for `get()`). Now one lookup reused through
+`orElseGet`, halving the queries on every run-configuration save and every event carrying errors.
+
+Suites after: api 302 (1 skip), clientside 88, app 88, grinder 233 (19 skip), plugin-example 3 —
+**714 total**, full `./gradlew build` green.
+
+### VersionChecker pre-release ordering (same branch, 2026-08-15)
+
+The quirk the characterization tests had recorded, fixed on request — plus a second defect the first
+one was hiding. Both pinned **red in their own commit** before the fix.
+
+**1. Channel-blind comparison.** `isPreReleaseNewer` compared only the number after the dot, so a
+beta did not supersede an alpha of the same version: `alpha.5` vs `beta.3` reduced to `3 > 5`. What
+an alpha user was offered therefore depended on a numeric accident — `alpha.2` got `beta.3`,
+`alpha.5` got nothing at all with both published. Now channel first (`alpha < beta < release`) with
+the number as the tie-break.
+
+**2. Latest-of-channel ignored the version.** `latestBeta`/`latestAlpha` kept a candidate only if it
+was *both* semantically newer-or-equal **and** higher-numbered, so a version restarting its count —
+`3.2.0-beta.1` after `3.1.0-beta.3` — lost to the older one. Both scans now use `isVersionNewer`:
+semantic version first, pre-release ordering only within one version.
+
+**The second pin took three attempts to make honest, and that is the lesson worth keeping.** The
+first fixture passed against the broken code because it was newest-first, so `latestBeta`'s wrong
+answer never mattered. The second passed too: `isUpdateAvailable` **falls through to
+`latestVersion()`**, which masks a wrong `latestBeta` whenever the newest release is a newer *base*
+version. It only reaches a user when the beta branch itself fires and returns `latestBeta()`
+directly — needing an oldest-first list *and* a current version old enough to trigger that branch
+(`3.1.0-beta.1`). A pin that had been committed at either earlier stage would have looked like a
+guard while asserting nothing about the defect.
+
+Two consequences worth remembering:
+
+- The test fake's `latestVersion()` now **computes** the newest instead of taking the list head. The
+  real `allVersions()` comes from a repository API whose ordering nothing guarantees, and a fixture
+  that is silently newest-first cannot catch code that depends on that ordering.
+- `isNewAlphaAvailable`'s explicit *"a beta is never offered an alpha of the same version"* guard is
+  **gone**, subsumed by the channel ordering — verified by removing it and watching
+  `aBetaIsNotOfferedAnAlphaOfTheSameVersion` stay green, which makes the removal provable rather than
+  argued. Weaken the ordering and that rule vanishes with it; that one test is what will say so.
+
+`preReleaseNumber` also stopped throwing on a version with no pre-release suffix. The old
+split-and-index raised `IndexOutOfBoundsException`, which `checkForUpdate` does **not** catch — it
+catches `NumberFormatException` only.
+
+app 89, full build green.
+
+### Scan-failure log levels (`claude-scan-log-levels`, 2026-08-15)
+
+Follow-up to `6026f3640`, which restored the exception + stack trace on the shared `DescriptorScanner`
+catch. That was right for real failures and wrong for the majority of what reached it: **159** ERROR
+lines with stack traces in a single api suite run, most describing nothing an operator or mod-author
+could act on. Two causes, both fixed at the source rather than muted.
+
+**1. "No dependencies specified." was never an error.** `ForgeTomlScanner.getMapOfDependencyLists`
+raised `ScanningException` when a `mods.toml` carried no `[[dependencies]]` block — an ordinary
+descriptor. The raise aborted `read()` mid-way, so the mod fell back to the unreadable-jar defaults and
+its **already-parsed modId was replaced by the filename** (`expected: <lonelymod> but was:
+<lonelymod-1.0.0>`, pinned red first). Traced before claiming a defect: the *verdict* is unaffected, since
+a mod declaring no dependencies has no clientside signal and comes out SERVER down either path, and the
+lost id is joined on only by the dependency rescue — which looks up *disabled* mods, and a mod on this
+path is never disabled. So: real data loss, no reachable consequence. Now returns an empty map;
+`ScanningException` had no other thrower and is deleted.
+
+**2. A jar with no descriptor is not this scanner's business.** Every scanner is handed the whole
+mods-directory, and a Quilt pack is deliberately scanned by *both* the Quilt and Fabric scanner, so one
+of the two finds nothing in every single-format jar. The absence used to surface as an NPE from
+`JarFile.getInputStream(null)` — indistinguishable from a genuine failure. It is now explicit
+(`MissingDescriptorException`, extending `IOException` so the readers' `@Throws` contract is unchanged)
+and logged at DEBUG.
+
+Measured over a full `:serverpackcreator-api:test` run:
+
+| | lines | breakdown |
+|---|---|---|
+| before | 159 | 80 `NullPointerException`, 37 `ZipException`, 28 `ScanningException` |
+| after | **51** | 37 `ZipException` (corrupt archive), 14 `ParsingException` (malformed TOML) |
+
+Both survivors are real defects in a jar and stay loud, with the stack trace. `DescriptorScanner.read`
+was promoted protected → public in the process: *which* exception it throws is the meaningful part and
+is only observable there, since `scan` flattens both outcomes to a default entry by design.

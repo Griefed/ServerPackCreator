@@ -38,10 +38,8 @@ class ConfigEditorViewModel(private val versionMeta: VersionMeta) {
      * project/version-IDs and extension-configs are deliberately excluded.
      */
     fun hasUnsavedChanges(current: PackConfig, lastSaved: PackConfig?): Boolean {
-        if (lastSaved == null) {
-            return true
-        }
-        return current.clientMods != lastSaved.clientMods
+        return lastSaved == null
+                || current.clientMods != lastSaved.clientMods
                 || current.modsWhitelist != lastSaved.modsWhitelist
                 || current.inclusions != lastSaved.inclusions
                 || current.javaArgs != lastSaved.javaArgs
@@ -62,12 +60,6 @@ class ConfigEditorViewModel(private val versionMeta: VersionMeta) {
      * The Java-version required to run a server for the given [minecraftVersion], or "?" when no
      * server or no Java-requirement is known for it.
      */
-    fun requiredJavaVersion(minecraftVersion: String): String {
-        val version = versionMeta.minecraft.requiredJavaVersion(minecraftVersion)
-        return if (version.isPresent) {
-            version.get()
-        } else {
-            "?"
-        }
-    }
+    fun requiredJavaVersion(minecraftVersion: String): String =
+        versionMeta.minecraft.requiredJavaVersion(minecraftVersion).orElse("?")
 }

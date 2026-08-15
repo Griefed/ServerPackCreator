@@ -17,7 +17,7 @@ class ModScannerTest internal constructor() {
         val files: Collection<File> =
             File("src/test/resources/forge_tests/mods").filteredWalk(listOf("jar"), FilterType.ENDS_WITH)
 
-        val excluded: List<File> = modScanner.forgeTomlScanner.scan(files).exclusions.map { entry -> entry.excludedMod } //Pair<Collection<File>, Collection<Pair<String,String>>>
+        val excluded: List<File> = modScanner.forgeTomlScanner.scan(files).filter { it.sideness == Sideness.CLIENT }.map { it.file }
         Assertions.assertTrue(
             excluded.contains(File("src/test/resources/forge_tests/mods/aaaaa.jar"))
         )
@@ -92,7 +92,7 @@ class ModScannerTest internal constructor() {
         val files: Collection<File> =
             File("src/test/resources/fabric_tests/mods").filteredWalk(listOf("jar"), FilterType.ENDS_WITH)
 
-        val excluded: List<File> = modScanner.fabricScanner.scan(files).exclusions.map { entry -> entry.excludedMod }
+        val excluded: List<File> = modScanner.fabricScanner.scan(files).filter { it.sideness == Sideness.CLIENT }.map { it.file }
         Assertions.assertTrue(
             excluded.contains(File("src/test/resources/fabric_tests/mods/aaaaa.jar"))
         )
@@ -155,7 +155,8 @@ class ModScannerTest internal constructor() {
         val files: Collection<File> =
             File("src/test/resources/quilt_tests/mods").filteredWalk(listOf("jar"), FilterType.ENDS_WITH)
 
-        val excluded: List<File> = modScanner.quiltScanner.scan(files).exclusions.map { entry -> entry.excludedMod }
+        val result = modScanner.quiltScanner.scan(files)
+        val excluded: List<File> = result.filter { it.sideness == Sideness.CLIENT }.map { it.file }
         Assertions.assertTrue(
             excluded.contains(File("src/test/resources/quilt_tests/mods/aaaaa.jar"))
         )
@@ -173,7 +174,9 @@ class ModScannerTest internal constructor() {
         val files: Collection<File> =
             File("src/test/resources/forge_old/mods").filteredWalk(listOf("jar"), FilterType.ENDS_WITH)
 
-        val excluded: List<File> = modScanner.forgeAnnotationScanner.scan(files).exclusions.map { entry -> entry.excludedMod }
+        val result = modScanner.forgeAnnotationScanner.scan(files)
+        val excluded: List<File> = result.filter { it.sideness == Sideness.CLIENT }.map { it.file }
+
         Assertions.assertTrue(
             excluded.contains(File("src/test/resources/forge_old/mods/aaaaa.jar"))
         )

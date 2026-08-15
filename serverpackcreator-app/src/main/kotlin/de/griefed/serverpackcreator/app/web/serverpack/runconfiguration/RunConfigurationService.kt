@@ -58,12 +58,9 @@ class RunConfigurationService @Autowired constructor(
         } else {
             config.startArgs.addAll(apiProperties.aikarsFlags.replace(spaces, space).split(space).map { StartArgument(it) })
         }
-        for (i in 0 until config.startArgs.size) {
-            if (startArgumentRepository.findByArgument(config.startArgs[i].argument).isPresent) {
-                config.startArgs[i] = startArgumentRepository.findByArgument(config.startArgs[i].argument).get()
-            } else {
-                config.startArgs[i] = startArgumentRepository.save(config.startArgs[i])
-            }
+        for (i in config.startArgs.indices) {
+            val stored = startArgumentRepository.findByArgument(config.startArgs[i].argument)
+            config.startArgs[i] = stored.orElseGet { startArgumentRepository.save(config.startArgs[i]) }
         }
 
         if (clientMods.isNotBlank()) {
@@ -73,12 +70,9 @@ class RunConfigurationService @Autowired constructor(
         } else {
             config.clientMods.addAll(apiProperties.clientSideMods().map { ClientMod(it) })
         }
-        for (i in 0 until config.clientMods.size) {
-            if (clientModRepository.findByMod(config.clientMods[i].mod).isPresent) {
-                config.clientMods[i] = clientModRepository.findByMod(config.clientMods[i].mod).get()
-            } else {
-                config.clientMods[i] = clientModRepository.save(config.clientMods[i])
-            }
+        for (i in config.clientMods.indices) {
+            val stored = clientModRepository.findByMod(config.clientMods[i].mod)
+            config.clientMods[i] = stored.orElseGet { clientModRepository.save(config.clientMods[i]) }
         }
 
         if (whitelistedMods.isNotBlank()) {
@@ -88,13 +82,9 @@ class RunConfigurationService @Autowired constructor(
         } else {
             config.whitelistedMods.addAll(apiProperties.whitelistedMods().map { WhitelistedMod(it) })
         }
-        for (i in 0 until config.whitelistedMods.size) {
-            if (whitelistedModRepository.findByMod(config.whitelistedMods[i].mod).isPresent) {
-                config.whitelistedMods[i] =
-                    whitelistedModRepository.findByMod(config.whitelistedMods[i].mod).get()
-            } else {
-                config.whitelistedMods[i] = whitelistedModRepository.save(config.whitelistedMods[i])
-            }
+        for (i in config.whitelistedMods.indices) {
+            val stored = whitelistedModRepository.findByMod(config.whitelistedMods[i].mod)
+            config.whitelistedMods[i] = stored.orElseGet { whitelistedModRepository.save(config.whitelistedMods[i]) }
         }
 
         return save(config)

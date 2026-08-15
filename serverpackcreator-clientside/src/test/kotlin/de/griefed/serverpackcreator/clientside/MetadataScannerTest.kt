@@ -65,4 +65,54 @@ internal class MetadataScannerTest {
             scanner.scan(jar, "Fabric", "1.20.1")
         )
     }
+
+    /** Write a minimal modern-Forge mod-jar declaring [side] on its `minecraft` dependency. */
+    private fun forgeTomlJar(directory: File, fileName: String, modId: String, side: String): File {
+        val jar = File(directory, fileName)
+        JarOutputStream(jar.outputStream()).use { jarStream ->
+            jarStream.putNextEntry(JarEntry("META-INF/mods.toml"))
+            jarStream.write(
+                """
+                modLoader="javafml"
+                loaderVersion="[40,)"
+                license="MIT"
+                [[mods]]
+                modId="$modId"
+                version="1.0.0"
+                [[dependencies.$modId]]
+                modId="minecraft"
+                mandatory=true
+                versionRange="[1.16.5,)"
+                ordering="NONE"
+                side="$side"
+                """.trimIndent().toByteArray()
+            )
+            jarStream.closeEntry()
+        }
+        return jar
+    }
+
+    /**
+     * Forge's scanner is chosen by Minecraft *era*, and Minecraft has two versioning schemes
+     * (`1.x.y` and the newer `YY.x.y`), so the choice must not be made from the minor component
+     * alone: `26.2`'s minor is `2`, which reads as the 1.2 era and would pick the annotation scanner
+     * meant for 1.12-and-older. That scanner finds nothing in a modern jar and the mod comes back
+     * SERVER_OR_BOTH, silently weakening the metadata signal the confidence model folds in.
+     */
+    @Test
+    fun forgeScannerSelectionSpansBothMinecraftVersioningSchemes(@TempDir tempDir: File) {
+        for (minecraftVersion in listOf("1.20.1", "26.2")) {
+            val directory = File(tempDir, minecraftVersion).also { it.mkdirs() }
+            Assertions.assertEquals(
+                MetadataScanner.Result.CLIENT,
+                scanner.scan(forgeTomlJar(directory, "clientmod-1.0.jar", "clientmod", "CLIENT"), "Forge", minecraftVersion),
+                "Minecraft $minecraftVersion: a CLIENT-declaring mods.toml must be read as CLIENT"
+            )
+            Assertions.assertEquals(
+                MetadataScanner.Result.SERVER_OR_BOTH,
+                scanner.scan(forgeTomlJar(directory, "bothmod-1.0.jar", "bothmod", "BOTH"), "Forge", minecraftVersion),
+                "Minecraft $minecraftVersion: a BOTH-declaring mods.toml must be read as SERVER_OR_BOTH"
+            )
+        }
+    }
 }

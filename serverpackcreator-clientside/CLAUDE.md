@@ -15,12 +15,37 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
 
 ## Engine details & landmines (durable)
 
-- **`MetadataScanner`** mirrors `ModListCompiler`'s loader→scanner dispatch (kept in sync deliberately;
-  it is *not* shared code — if you change one, check the other).
+- **`MetadataScanner` no longer mirrors `ModListCompiler` — since 2026-08-15 both dispatch through
+  `ModScanner.scannerFor(modloader, minecraftVersion)` in `-api`.** It *is* shared code now; do not
+  re-add a local `when (loader)` over the concrete scanners. The old "kept in sync deliberately" note
+  is why this entry exists: the two copies had already drifted, and both carried the same Forge
+  era bug (Minecraft's `YY.x.y` scheme read as `1.x` — see the versioning-scheme landmine in
+  `serverpackcreator-api/CLAUDE.md`), so the metadata signal was degraded on every modern Forge mod.
+  A loader `scannerFor` does not know yields `null`, which this class reads as `SERVER_OR_BOTH`:
+  nothing was read, so nothing declared the mod client-only.
 - **Platform layer**: `ModPlatform` (Modrinth/CurseForge) over an injectable `HttpFetcher` so tests use
-  canned JSON (no live network). **CurseForge has no sideness field** → `Sideness.UNKNOWN`; only
+  canned JSON (no live network). **CurseForge has no sideness field** → `DeclaredSupport.UNKNOWN`; only
   Modrinth declares `client_side`/`server_side`. Use `JsonNode.textOrNull` for nullable URL fields —
   `asText(null)` returns the literal `"null"` for a JSON-null and would defeat `ModFile.locked`.
+- **LANDMINE — `DeclaredSupport` and `api.modscanning.Sideness` are different concepts; do not merge them.**
+  This module's enum was itself called `Sideness` until 2026-08-14, which made them look like duplicates
+  of one idea. They are not, and the confidence model depends on the difference:
+
+  | | `api.modscanning.Sideness` | `clientside.DeclaredSupport` |
+  |---|---|---|
+  | Values | `SERVER`, `CLIENT` | `REQUIRED`, `OPTIONAL`, `UNSUPPORTED`, `UNKNOWN` |
+  | Is | SPC's own **verdict** — which side a mod belongs on | a platform's **self-report** about *one* side |
+  | Shape | one value = the whole answer | read as a **pair** (`clientSide` + `serverSide`) |
+  | Default | `SERVER` when undetermined, so nothing is dropped | `UNKNOWN` when absent (all of CurseForge) |
+
+  `ClientsideVerifier.aggregate` folds this, `JarScan` (where the API's verdict arrives) and `BootResult`
+  into a `Confidence` **precisely because the platform's claim is unreliable** — which is the whole reason
+  the expensive boot-test exists. The domains are bridged deliberately at that one call-site, and it takes
+  *two* `DeclaredSupport` values to derive one client/server leaning. Merging the enums would collapse the
+  distinction the model is built on, and would push a third party's field vocabulary into `-api`, which is
+  published to Maven and is a plugin-compatibility constraint. The rename removed a real hazard, not just
+  an aesthetic one: `MetadataScanner` sits in *this* package and imports the API's `Sideness`, which
+  silently shadowed the package-local type — so one file's `Sideness` meant the opposite of its neighbours'.
 - **Boot signal** (`BootVerifier`): force-includes the mod (auto-exclude off, empty clientside-list) +
   its recursively-resolved required deps, generates a server pack and boots it via the ServerStarterJar.
   `BootLogClassifier` reads the `Done (…)! For help` ready-line vs a non-zero exit (pure, unit-tested).
@@ -122,7 +147,7 @@ seam (writes the log, then `BootLogClassifier` + `BootLogExcerpt`). The default
 
 ## Testing patterns
 
-- 41 tests across 12 files, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
+- 88 tests, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
   JSON to a fake `HttpFetcher`; **`MetadataScannerTest` is the only one needing a resource** — it boots
   an offline `ApiWrapper` from `src/test/resources/serverpackcreator.properties` (whose `ModScanner`
   relies on the API's cached version-manifests, hence `test` `dependsOn :serverpackcreator-api:processTestResources`).

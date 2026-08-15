@@ -412,11 +412,8 @@ class ConfigurationHandler(
      * specified, but the file was not found.
      * @author Griefed
      */
-    fun checkIconAndProperties(iconOrPropertiesPath: String) = if (iconOrPropertiesPath.isEmpty()) {
-        true
-    } else {
-        File(iconOrPropertiesPath).isFile
-    }
+    fun checkIconAndProperties(iconOrPropertiesPath: String) =
+        iconOrPropertiesPath.isEmpty() || File(iconOrPropertiesPath).isFile
 
     /**
      * If the in the configuration specified modpack dir is an existing directory, checks are made for

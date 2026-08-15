@@ -246,7 +246,8 @@ class LoaderCache(
         for (baseDir in cachedTupleDirs()) {
             synchronized(lockFor(baseDir)) {
                 val marker = File(baseDir, MARKER)
-                val idle = if (marker.isFile) marker.lastModified() < cutoff else true
+                // No marker at all counts as idle: nothing has claimed the tuple since it was written.
+                val idle = !marker.isFile || marker.lastModified() < cutoff
                 if (idle && baseDir.deleteRecursively()) {
                     evicted++
                     log.info("Evicted cached loader install ${baseDir.name} (${baseDir.parentFile?.name}) — unused for longer than ${retention.toDays()}d.")
