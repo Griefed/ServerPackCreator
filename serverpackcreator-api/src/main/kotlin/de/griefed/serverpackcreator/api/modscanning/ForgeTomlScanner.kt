@@ -71,7 +71,6 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
         return ScannedMod(modJar, modId, sidenessOf(sidenesses), dependencies)
     }
 
-    @Throws(ScanningException::class)
     private fun getSidenessesAndDependencies(modConfig: CommentedConfig, modId: String): Pair<List<Sideness>, List<ModDependency>> {
         val dependencies: Map<String, ArrayList<CommentedConfig>> = getMapOfDependencyLists(modConfig)
         val sidesForModloader = mutableListOf<Sideness>()
@@ -111,31 +110,34 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
      *
      * @param file The file from which to acquire the toml config.
      * @return Config read from the toml in the mod.
-     * @throws IOException if the mods.toml file could not be read/found.
+     * @throws IOException if the mods.toml file could not be read.
+     * @throws MissingDescriptorException if the jar carries no mods.toml — a normal outcome for a
+     * jar belonging to another loader, not a failure.
      */
-    @Throws(IOException::class)
+    @Throws(IOException::class, MissingDescriptorException::class)
     private fun getConfig(file: File): CommentedConfig {
-        val jarFile = JarFile(file)
-        val jarEntry = jarFile.getJarEntry(modsToml)
-        val tomlStream: InputStream = jarFile.getInputStream(jarEntry)
-        val config: CommentedConfig = tomlParser.parse(tomlStream)
-        jarFile.close()
-        tomlStream.close()
-        return config
+        JarFile(file).use { jarFile ->
+            val jarEntry = jarFile.getJarEntry(modsToml) ?: throw MissingDescriptorException(modsToml, file)
+            jarFile.getInputStream(jarEntry).use { tomlStream ->
+                return tomlParser.parse(tomlStream)
+            }
+        }
     }
 
     /**
      * Acquire a map of all dependencies specified by a mod.
      *
+     * A descriptor with no `[[dependencies]]` block yields an **empty map** rather than raising: a
+     * mod is allowed to depend on nothing, and treating that as a failure aborted the read and threw
+     * away the mod id it had already parsed.
+     *
      * @param config Base-config toml of the mod which contains all * information.
      * @return Map of dependencies for the passed mod config, String keys are mapped to ArrayLists of
-     * CommentedConfigs.
-     * @throws ScanningException if the mod declares no dependencies.
+     * CommentedConfigs. Empty when the mod declares none.
      */
-    @Throws(ScanningException::class)
     private fun getMapOfDependencyLists(config: CommentedConfig): Map<String, ArrayList<CommentedConfig>> {
         if (config.valueMap()[dependencies] == null) {
-            throw ScanningException("No dependencies specified.")
+            return emptyMap()
         }
         val modDependencies = HashMap<String, ArrayList<CommentedConfig>>(100)
         val configValueMap = config.valueMap()

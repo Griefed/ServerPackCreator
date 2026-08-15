@@ -44,14 +44,16 @@ abstract class JsonDescriptorScanner : DescriptorScanner() {
      * could not be parsed into a JsonNode.
      * @throws SecurityException     if an error occurs reading the entry in the jar.
      * @throws IllegalStateException if an error occurs reading the entry in the jar.
-     * @throws NullPointerException  if the jar does not contain the specified entry.
+     * @throws MissingDescriptorException if the jar does not contain the specified entry — a normal
+     * outcome for a jar belonging to another loader, not a failure.
      * @author Griefed
      */
-    @Throws(NullPointerException::class, IOException::class, SecurityException::class, IllegalStateException::class)
+    @Throws(MissingDescriptorException::class, IOException::class, SecurityException::class, IllegalStateException::class)
     fun getJarJson(file: File, entryInJar: String, objectMapper: ObjectMapper): JsonNode {
         val jsonNode: JsonNode
         JarFile(file).use { jar ->
-            jar.getInputStream(jar.getJarEntry(entryInJar)).use {
+            val entry = jar.getJarEntry(entryInJar) ?: throw MissingDescriptorException(entryInJar, file)
+            jar.getInputStream(entry).use {
                 jsonNode = objectMapper.readTree(it)
             }
         }

@@ -1561,3 +1561,38 @@ split-and-index raised `IndexOutOfBoundsException`, which `checkForUpdate` does 
 catches `NumberFormatException` only.
 
 app 89, full build green.
+
+### Scan-failure log levels (`claude-scan-log-levels`, 2026-08-15)
+
+Follow-up to `6026f3640`, which restored the exception + stack trace on the shared `DescriptorScanner`
+catch. That was right for real failures and wrong for the majority of what reached it: **159** ERROR
+lines with stack traces in a single api suite run, most describing nothing an operator or mod-author
+could act on. Two causes, both fixed at the source rather than muted.
+
+**1. "No dependencies specified." was never an error.** `ForgeTomlScanner.getMapOfDependencyLists`
+raised `ScanningException` when a `mods.toml` carried no `[[dependencies]]` block — an ordinary
+descriptor. The raise aborted `read()` mid-way, so the mod fell back to the unreadable-jar defaults and
+its **already-parsed modId was replaced by the filename** (`expected: <lonelymod> but was:
+<lonelymod-1.0.0>`, pinned red first). Traced before claiming a defect: the *verdict* is unaffected, since
+a mod declaring no dependencies has no clientside signal and comes out SERVER down either path, and the
+lost id is joined on only by the dependency rescue — which looks up *disabled* mods, and a mod on this
+path is never disabled. So: real data loss, no reachable consequence. Now returns an empty map;
+`ScanningException` had no other thrower and is deleted.
+
+**2. A jar with no descriptor is not this scanner's business.** Every scanner is handed the whole
+mods-directory, and a Quilt pack is deliberately scanned by *both* the Quilt and Fabric scanner, so one
+of the two finds nothing in every single-format jar. The absence used to surface as an NPE from
+`JarFile.getInputStream(null)` — indistinguishable from a genuine failure. It is now explicit
+(`MissingDescriptorException`, extending `IOException` so the readers' `@Throws` contract is unchanged)
+and logged at DEBUG.
+
+Measured over a full `:serverpackcreator-api:test` run:
+
+| | lines | breakdown |
+|---|---|---|
+| before | 159 | 80 `NullPointerException`, 37 `ZipException`, 28 `ScanningException` |
+| after | **51** | 37 `ZipException` (corrupt archive), 14 `ParsingException` (malformed TOML) |
+
+Both survivors are real defects in a jar and stay loud, with the stack trace. `DescriptorScanner.read`
+was promoted protected → public in the process: *which* exception it throws is the meaningful part and
+is only observable there, since `scan` flattens both outcomes to a default entry by design.
