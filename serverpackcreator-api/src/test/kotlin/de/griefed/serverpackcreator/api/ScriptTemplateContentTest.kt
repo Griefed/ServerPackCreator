@@ -702,6 +702,87 @@ internal class ScriptTemplateContentTest {
      * Cut one `name() { ... }` function out of a shell template so it can be sourced in isolation. Matches the
      * closing brace in column 0, which is how the shipped templates format their function bodies.
      */
+    /**
+     * **Executes** the bash template's Java-check block with `SKIP_JAVA_CHECK=true`, and asserts the version is
+     * still *resolved*.
+     *
+     * Skipping the checks must not mean flying blind. `variables.txt` documents the setting as disabling "the
+     * compatibility check of your Minecraft version and the provided Java version, as well as the automatic
+     * installation" — it says nothing about *reading* the version, and reading it is what decides whether the
+     * Forge/SSJ path may pass `-Djava.security.manager=allow`.
+     *
+     * This matters most for the exact user the setting is aimed at. `variables.txt` tells anyone pointing `JAVA`
+     * at a custom path to set `SKIP_JAVA_CHECK=true`, so that user has a deliberately chosen, working Java —
+     * and resolving it is what lets them keep the ServerStarterJar path on Java 17 or 21 instead of being
+     * pushed onto the self-install path with everybody else.
+     *
+     * The unresolvable case is asserted too: it must yield a non-numeric version, which the fail-safe guard then
+     * routes away from the fatal flag.
+     */
+    @Test
+    fun theBashTemplateResolvesTheJavaVersionEvenWhenChecksAreSkipped() {
+        val bash = which("bash") ?: Assumptions.abort("bash not installed — Java-resolve check skipped")
+
+        val text = template("default_template.sh")
+        val blockStart = text.indexOf("# If Java checks are desired")
+        val blockEnd = text.indexOf("# Check and warn the user if a 32bit Java-installation is used")
+        Assertions.assertTrue(blockStart in 0..<blockEnd, "the Java-check block markers are stale, update this test")
+        val javaCheckBlock = text.substring(blockStart, blockEnd)
+
+        // A readable Java must be read; an unreadable one must come back non-numeric so the guard fails safe.
+        val cases = mapOf("17.0.1" to "17", null to "")
+
+        for ((fakeVersion, expected) in cases) {
+            val packDir = File.createTempFile("spc-skipcheck-", "-pack").apply { delete(); mkdirs() }
+            val fakeJava = File(packDir, "fake-java")
+            if (fakeVersion != null) {
+                fakeJava.writeText("#!/bin/sh\necho 'openjdk version \"$fakeVersion\" 2021-10-19' 1>&2\n")
+                fakeJava.setExecutable(true)
+            }
+
+            val harness = File(packDir, "harness.sh")
+            harness.writeText(
+                """
+                installJava() { echo "INSTALL CALLED"; }
+                crashServer() { echo "CRASHED: ${'$'}1"; exit 3; }
+                commandAvailable() { command -v "${'$'}1" > /dev/null 2>&1; }
+                ${extractShellFunction("default_template.sh", "getJavaVersion")}
+                JAVA="${fakeJava.absolutePath}"
+                SKIP_JAVA_CHECK="true"
+                RECOMMENDED_JAVA_VERSION="21"
+                MINECRAFT_VERSION="1.20.1"
+                JAVA_VERSION="do_not_manually_edit"
+                IFS="." read -ra SEMANTICS <<<"${'$'}{MINECRAFT_VERSION}"
+                $javaCheckBlock
+                echo "RESOLVED=${'$'}{JAVA_VERSION}"
+                """.trimIndent()
+            )
+
+            val process = ProcessBuilder(bash.absolutePath, harness.absolutePath)
+                .directory(packDir)
+                .redirectErrorStream(true)
+                .start()
+            val output = process.inputStream.bufferedReader().use { it.readText() }
+            val exit = process.waitFor()
+            packDir.deleteRecursively()
+
+            Assertions.assertEquals(0, exit, "the Java-check block failed for version '$fakeVersion':\n$output")
+            Assertions.assertFalse(
+                output.contains("INSTALL CALLED"),
+                "SKIP_JAVA_CHECK=true must still skip the automatic installation, which is what it promises:\n$output"
+            )
+            val resolved = output.lines().firstOrNull { it.startsWith("RESOLVED=") }?.removePrefix("RESOLVED=")
+                ?: Assertions.fail("the block produced no JAVA_VERSION for '$fakeVersion':\n$output")
+
+            Assertions.assertEquals(
+                expected, resolved,
+                "with SKIP_JAVA_CHECK=true and JAVA reporting '${fakeVersion ?: "nothing"}', JAVA_VERSION resolved " +
+                    "to '$resolved'. Skipping the compatibility check must not leave the version unread — it is " +
+                    "what decides whether the security-manager flag may be passed."
+            )
+        }
+    }
+
     private fun extractShellFunction(template: String, name: String): String {
         val lines = template(template).lines()
         val start = lines.indexOfFirst { it.startsWith("$name()") }

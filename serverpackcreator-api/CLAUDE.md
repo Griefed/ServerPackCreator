@@ -117,6 +117,15 @@
   only Forge was affected. Pinned by `ScriptTemplateContentTest`. Do not "simplify" by dropping the default —
   old packs still need it — and do not pass it unconditionally.
 
+  **`SKIP_JAVA_CHECK=true` still reads the Java version, deliberately.** The resolve call sits *outside*
+  that conditional, so skipping the checks skips comparing and installing — not looking. That is what the
+  setting promises in `variables.txt` ("the compatibility check … as well as the automatic installation"),
+  and it is what the setting's own documented use case needs: a user pointing `JAVA` at a custom path is
+  *told* to set it, so they have a deliberately chosen working Java, and reading it is what keeps them on
+  the ServerStarterJar path for Java 17/21 instead of being pushed onto the self-install path. Pinned by
+  `ScriptTemplateContentTest.theBashTemplateResolvesTheJavaVersionEvenWhenChecksAreSkipped`, which also
+  asserts the install is still skipped. Don't "tidy" the call back inside the conditional.
+
   **The version-keyed guard only protected users who already had a suitable Java — fixed 2026-08-15.**
   `JAVA_VERSION` starts as the literal `do_not_manually_edit` and is only filled in by `getJavaVersion`;
   none of the three `installJava` call-sites re-read it and `install_java.sh` never sets it. So a pack that
