@@ -178,15 +178,29 @@ run the JAR via double-click or other methods, or you *may* need to run it from 
 
 There are a couple of arguments which may or may not be helpful for you, depending on how you plan on using ServerPackCreator:
 
-| Argument  | Description                                                                                                                                                                                                             |
-|-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `-help`   | Print ServerPackCreators help to commandline.                                                                                                                                                                           |
-| `-update` | Check whether a newer version of ServerPackCreator is available.                                                                                                                                                        |
-| `-cgen`   | Run ServerPackCreators configuration generation.                                                                                                                                                                        |
-| `-cli`    | Run ServerPackCreator in commandline-mode. If **no** graphical environment is supported, this is the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.         |
-| `-web`    | Run ServerPackCreator as a webservice.                                                                                                                                                                                  |
-| `-gui`    | Run ServerPackCreator with our GUI. If a graphical environment is supported, this is the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.                     |
-| `--setup` | Set up and prepare the environment for subsequent runs of ServerPackCreator. This will create/copy all files needed for ServerPackCreator to function properly from inside its JAR-file and setup everything else, too. |
+| Argument              | Description                                                                                                                                                                                                                                                                                                                  |
+|-----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `-help`               | Print ServerPackCreators help to commandline.                                                                                                                                                                                                                                                                                |
+| `-update`             | Check whether a newer version of ServerPackCreator is available.                                                                                                                                                                                                                                                             |
+| `-gui`                | Run ServerPackCreator with our GUI. If a graphical environment is supported, this is the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.                                                                                                                          |
+| `-cli`                | Run ServerPackCreator in commandline-mode. If **no** graphical environment is supported, this is the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.                                                                                                              |
+| `-web`                | Run ServerPackCreator as a webservice.                                                                                                                                                                                                                                                                                       |
+| `-cgen`               | Run the generation of a basic server pack config from a given modpack.                                                                                                                                                                                                                                                       |
+| `-config`             | Generate a server pack from a specific server pack config, without a UI.                                                                                                                                                                                                                                                     |
+| `--destination`       | Generate the server pack from the config given to `-config` in a specific location. Requires `-config` or `-feelinglucky`.                                                                                                                                                                                                   |
+| `-feelinglucky`       | Generate a server pack config from a passed modpack-directory **and** generate the server pack in one go. No warranty, no guarantees. Combine with `--destination` to choose where it lands.                                                                                                                                 |
+| `-withallinconfigdir` | Run a generation for every configuration present in ServerPackCreator's configs-directory.                                                                                                                                                                                                                                   |
+| `-scan`               | Scan the mods in a directory for the sideness they declare in their metadata and print the result as JSON. Requires a directory, a modloader and a Minecraft version.                                                                                                                                                        |
+| `-clientsidereport`   | Assess whether the mod behind a CurseForge/Modrinth project-link is clientside-only and print a Markdown report. Requires the project-link.                                                                                                                                                                                  |
+| `-verifyclientside`   | Like `-clientsidereport`, but additionally boots a server with the mod force-included, to detect crashes. Requires the project-link.                                                                                                                                                                                         |
+| `-clientsideapply`    | Apply the suggested entries from a clientside-report JSON to the official fallback-list files. Requires the report-JSON path.                                                                                                                                                                                                |
+| `--setup`             | Set up and prepare the environment for subsequent runs of ServerPackCreator. Creates/copies all files needed for ServerPackCreator to function from inside its JAR. Optionally takes a `properties`-file whose values are loaded and then stored in the `serverpackcreator.properties` in ServerPackCreators home-directory. |
+| `--home`              | Override any and all configuration of ServerPackCreators home-directory. Usable on the initial run, or to move the home-directory later on.                                                                                                                                                                                  |
+| `-lang`               | Change the language ServerPackCreator uses.                                                                                                                                                                                                                                                                                  |
+
+The four clientside-verification arguments (`-scan`, `-clientsidereport`, `-verifyclientside`,
+`-clientsideapply`) are aimed at maintainers of the clientside-only mod list rather than at everyday
+use. `-verifyclientside` boots a real Minecraft server, so expect it to take a while.
 
 ### 5.1 Running ServerPackCreator as a webservice
 
@@ -202,7 +216,7 @@ If you want to open your webservice-instance to the public, make sure to properl
 #### 5.1.1 JAR
 
 1. Download the JAR-file from the latest release
-2. Run it once, using the `-web` argument. ServerPackCreator will crash, complaining about JDBC-related things. This is expected, don't worry.
+2. Run it once, using the `-web` argument. It will fail to reach a database — you have not configured one yet — but this first run is what creates the home-directory you need in the next step. This is expected, don't worry.
 3. Browser to the now generated ServerPackCreator home-directory
     1. Unsure where said home-directory is? Check the logs for `Home directory set to:`! 
 4. Install / setup / provide a MongoDB-database for ServerPackCreator. See [MongoDB Installation Tutorial](https://www.mongodb.com/docs/manual/installation/)
@@ -246,11 +260,10 @@ When setting up ServerPackCreator as a webservice for production, make sure to *
 
 You must replace `<DB_ROOT_USERNAME>` and `<DB_ROOT_PASSWORD>` accordingly.
 Do note the `- ./init-mongo.js:/docker-entrypoint-initdb.d/init.js:ro` in the **serverpackcreatorb**-service.
-An example for this file is available at [docker/docker/init-mongo.js](docker/init-mongo.js). This init-script initializes
+An example for this file is available at [docker/init-mongo.js](docker/init-mongo.js). This init-script initializes
 the MongoDB with the required user, database and collection.
 
 ```yaml
-version: '3'
 services:
   serverpackcreatordb:
     image: mongodb/mongodb-community-server:8.0.5-ubuntu2204
@@ -309,6 +322,8 @@ You may edit the following container-properties if you wish to change some parts
 | `SPC_SERVERPACK_AUTODISCOVERY_FILTER`         | Filter method used to exclude mods from the clientside-only list. Possible values are `START`, `END`, `CONTAIN`, `REGEX`, `EITHER`   |
 | `SPC_SERVERPACK_ZIP_EXCLUDE`                  | Files or directories which should be excluded from a server pack archive.                                                            |
 | `SPC_SERVERPACK_ZIP_EXCLUDE_ENABLED`          | Whether files should be excluded from a server pack archive.                                                                         |
+| `SPC_CONFIGURATION_AIKAR`                     | JVM flags offered as "Aikar's flags". Mind the escaping — see the example compose-file.                                              |
+| `SPC_LOG_LEVEL`                               | Log level of the containerised ServerPackCreator. `INFO` by default, `DEBUG` to troubleshoot.                                        |
 
 ## 6. API
 
@@ -332,7 +347,7 @@ Replace `$VERSION` with the version you want to use.
 
 #### Gradle
 
-```kotlin
+```groovy
 implementation 'de.griefed.serverpackcreator:serverpackcreator-api:$VERSION'
 ```
 
