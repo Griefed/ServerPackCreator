@@ -99,15 +99,15 @@ tasks.register<Copy>("fixMissingResources") {
 }
 
 tasks.dokkaGeneratePublicationHtml {
-    dependsOn(tasks.generateI18n4kFiles, tasks.getByName("fixMissingResources"))
+    dependsOn(tasks.generateI18n4kFiles, tasks.named("fixMissingResources"))
 }
 
 tasks.dokkaGeneratePublicationJavadoc {
-    dependsOn(tasks.generateI18n4kFiles, tasks.getByName("fixMissingResources"), tasks.processResources)
+    dependsOn(tasks.generateI18n4kFiles, tasks.named("fixMissingResources"), tasks.processResources)
 }
 
 tasks.jar {
-    dependsOn(tasks.getByName("fixMissingResources"))
+    dependsOn(tasks.named("fixMissingResources"))
 }
 
 // Refreshes the shipped manifest snapshot from a test home that has just been populated. Sources *this* module's
@@ -124,7 +124,7 @@ tasks.register<Copy>("updateManifests") {
 }
 
 tasks.test {
-    dependsOn(tasks.getByName("fixMissingResources"))
+    dependsOn(tasks.named("fixMissingResources"))
     // `ShippedResourceTrackingTest` asserts on the repository's ignore rules, which are not otherwise an input to
     // anything -- without this the task reports UP-TO-DATE after a .gitignore change and the guard silently does
     // not run, which is exactly how its own first teeth-check appeared to pass.
@@ -137,7 +137,7 @@ tasks.build {
 
 tasks.generatePomFileForMavenJavaPublication {
     dependsOn(
-        tasks.getByName("fixMissingResources"),
+        tasks.named("fixMissingResources"),
         tasks.processResources)
 }
 

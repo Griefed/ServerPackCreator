@@ -6,7 +6,15 @@
 **Supersedes** the previous audit in this file (the modscanning one, merged into `develop`); its
 findings were all resolved or explicitly accepted and are recorded in that history.
 
-**Verdict: no HIGH findings. One MEDIUM, three LOW.** Both commits are small, single-purpose and
+**Verdict: no HIGH findings. One MEDIUM, three LOW.**
+
+**Status (updated after the follow-up work):** **M-1 is resolved** — `WebServiceContextTest` now boots
+the real application context, so bean wiring across the controllers, services, repositories and
+scheduling is covered, and the finding's own suggested remedy is done. **L-1 and L-2 are accepted**:
+both are observations about commits that are already merged into `develop`, and the honest remedy for
+a merged label is a note like this one rather than rewriting shared history — the same call recorded
+for `358675fbf`. **L-3 is moot**: the trailing newline the diff noise came from is the correct state,
+and it is already there. Both commits are small, single-purpose and
 green. Neither is a refactor in the sense these conventions are written for — one is documentation,
 the other is dead-configuration removal — so several rules do not bite here, and this report says so
 rather than manufacturing findings to fill the sections.
@@ -72,7 +80,7 @@ malformed Mongo URI that would have made such a test fail on startup. A follow-u
 
 ## LOW
 
-### L-1 · `24390e3ba` bundles documentation with the change, against this session's own pattern
+### L-1 · ~~ACCEPTED~~ · `24390e3ba` bundles documentation with the change, against this session's own pattern
 
 **File:** `serverpackcreator-app/CLAUDE.md` (+12)
 **Rule:** *One concern per commit.*
@@ -85,7 +93,7 @@ Defensible — the Definition of Done requires docs to move with the change, and
 exactly what was removed is not sprawl. Flagged only because the branch is internally inconsistent
 about it, and consistency is what makes a log skimmable.
 
-### L-2 · `24390e3ba` makes a latent behaviour change under a `chore:` label
+### L-2 · ~~ACCEPTED~~ · `24390e3ba` makes a latent behaviour change under a `chore:` label
 
 **File:** `serverpackcreator-app/src/test/resources/application.properties`
 
@@ -99,7 +107,7 @@ Recorded because "chore" reads as *no behaviour anywhere*, while the honest desc
 behaviour that anything currently reaches*. The commit body does explain this, which is most of what
 matters.
 
-### L-3 · `24390e3ba` carries a whitespace-only line in its diff
+### L-3 · ~~MOOT~~ · `24390e3ba` carries a whitespace-only line in its diff
 
 **File:** `serverpackcreator-app/src/test/resources/application.properties`, last line
 

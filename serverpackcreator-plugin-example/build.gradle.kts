@@ -55,28 +55,38 @@ dependencies {
 }
 
 tasks.processResources {
+    dependsOn(tasks.named("shipPluginDocuments"))
+    // The expansion values are read into locals first: referencing the script's own properties from
+    // inside the closure would capture the build script, which the configuration cache cannot
+    // serialize.
+    val expansions = mapOf(
+        "version" to project.version,
+        "plugin_id" to pluginId,
+        "plugin_name" to pluginName,
+        "plugin_description" to pluginDescription,
+        "plugin_author" to pluginAuthor,
+        "plugin_class" to pluginClass
+    )
     filesMatching("plugin.toml") {
-        expand(
-            "version" to project.version,
-            "plugin_id" to pluginId,
-            "plugin_name" to pluginName,
-            "plugin_description" to pluginDescription,
-            "plugin_author" to pluginAuthor,
-            "plugin_class" to pluginClass
-        )
+        expand(expansions)
     }
-    copy {
-        from(layout.projectDirectory.file("LICENSE"))
-        into(layout.projectDirectory.dir("src/main/resources"))
+}
+
+// The documents this plugin ships inside its own jar. Previously three bare `copy { }` calls inside
+// the processResources CONFIGURATION block, so they ran whenever that task was configured — including
+// on runs where processResources itself was UP-TO-DATE and did nothing — with no inputs, no outputs
+// and no caching, writing into the source tree each time. Same fix as -api's shipRootDocuments.
+//
+// CHANGELOG.md is deliberately still listed even though this module has no such file at its root: the
+// old copy silently did nothing for it, and `include` behaves the same way, so the shipped
+// src/main/resources/CHANGELOG.md (which is tracked, and predates this) keeps whatever it holds. See
+// the commit message — that stale file is worth a separate look, not a silent deletion here.
+tasks.register<Copy>("shipPluginDocuments") {
+    description = "Copies this plugin's own LICENSE, README and CHANGELOG into its resources."
+    from(layout.projectDirectory) {
+        include("LICENSE", "README.md", "CHANGELOG.md")
     }
-    copy {
-        from(layout.projectDirectory.file("README.md"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
-    copy {
-        from(layout.projectDirectory.file("CHANGELOG.md"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
+    into(layout.projectDirectory.dir("src/main/resources"))
 }
 
 // Explicit dependency to remove Gradle 8 warning
