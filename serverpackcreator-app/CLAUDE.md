@@ -75,6 +75,11 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   stats).
 - **Web-entity IDs are `private set`** (Spring Data `PersistenceCreator`); tests assign them via the
   `assignEntityId` reflection helper.
+- **The controller tests `mockk()` their service, so a green controller test says nothing about the
+  service.** `EventServiceTest` and `RunConfigurationServiceTest` (added 2026-08-15) test the services
+  directly with mocked repositories, because the look-up-or-store loops in both had been executed by
+  **no** test at all. They pin the *outcome* — which entries the built object holds and which reach
+  `save` — deliberately **not** the number of repository lookups, which is an implementation detail.
 - `WebServiceArgumentsTest` covers `WebService.springArguments` — pure argument composition, no context.
   It exists because `start()` boots Spring, so the composition had to be extracted to be assertable;
   the old context-only `WebServiceTest` is still the one CLAUDE.md says to replace rather than extend.
