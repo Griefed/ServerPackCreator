@@ -283,6 +283,31 @@ internal class ModScannerSidenessTest {
     }
 
     /**
+     * A jar carrying nothing for this scanner must be distinguishable from a jar that failed to be
+     * read, because that distinction is what decides whether the operator sees a DEBUG line or an
+     * ERROR with a stack trace.
+     *
+     * It is the common case, not the exception: every scanner is handed the whole mods-directory, and
+     * a Quilt pack is deliberately scanned by both the Quilt and the Fabric scanner, so one of the two
+     * finds nothing in every single-format jar. A corrupt archive must still be loud.
+     */
+    @Test
+    fun anAbsentDescriptorIsDistinguishedFromAnUnreadableJar(@TempDir tempDir: File) {
+        val wrongLoader = jarContaining(tempDir, "fabriconly.jar", "fabric.mod.json", fabricDescriptor("fabriconly", "*"))
+        val corrupt = File(tempDir, "corrupt.jar").apply { writeText("not a zip") }
+
+        Assertions.assertThrows(MissingDescriptorException::class.java, {
+            modScanner.forgeTomlScanner.read(wrongLoader)
+        }, "A jar with no mods.toml must report the descriptor as missing, not as a failure")
+
+        Assertions.assertFalse(
+            runCatching { modScanner.forgeTomlScanner.read(corrupt) }
+                .exceptionOrNull() is MissingDescriptorException,
+            "A corrupt archive is a real failure and must NOT be classed as a missing descriptor"
+        )
+    }
+
+    /**
      * A `mods.toml` may legitimately declare no `[[dependencies]]` block at all, and such a mod must
      * still be read normally — its declared id kept, its verdict SERVER.
      *

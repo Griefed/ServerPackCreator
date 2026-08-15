@@ -110,17 +110,18 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
      *
      * @param file The file from which to acquire the toml config.
      * @return Config read from the toml in the mod.
-     * @throws IOException if the mods.toml file could not be read/found.
+     * @throws IOException if the mods.toml file could not be read.
+     * @throws MissingDescriptorException if the jar carries no mods.toml — a normal outcome for a
+     * jar belonging to another loader, not a failure.
      */
-    @Throws(IOException::class)
+    @Throws(IOException::class, MissingDescriptorException::class)
     private fun getConfig(file: File): CommentedConfig {
-        val jarFile = JarFile(file)
-        val jarEntry = jarFile.getJarEntry(modsToml)
-        val tomlStream: InputStream = jarFile.getInputStream(jarEntry)
-        val config: CommentedConfig = tomlParser.parse(tomlStream)
-        jarFile.close()
-        tomlStream.close()
-        return config
+        JarFile(file).use { jarFile ->
+            val jarEntry = jarFile.getJarEntry(modsToml) ?: throw MissingDescriptorException(modsToml, file)
+            jarFile.getInputStream(jarEntry).use { tomlStream ->
+                return tomlParser.parse(tomlStream)
+            }
+        }
     }
 
     /**

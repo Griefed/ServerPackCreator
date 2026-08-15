@@ -66,18 +66,29 @@ abstract class DescriptorScanner : ModJarScanner {
      * Read a single jar's descriptor into the verdict for that mod.
      *
      * Implementations are free to throw: [scan] catches everything and falls back to the defaults,
-     * so there is no need to guard the jar-level failure modes here.
+     * so there is no need to guard the jar-level failure modes here. It is public because the
+     * *distinction* between what it throws is meaningful — [MissingDescriptorException] means the jar
+     * simply belongs to another loader, anything else means the jar could not be read — and that
+     * distinction is only observable here; [scan] deliberately flattens both to a default entry.
+     *
+     * @throws MissingDescriptorException when the jar carries no descriptor this scanner reads.
      */
     @Throws(Exception::class)
-    protected abstract fun read(modJar: File): ScannedMod
+    abstract fun read(modJar: File): ScannedMod
 
     final override fun scan(jarFiles: Collection<File>): List<ScannedMod> {
         scanAnnouncement?.let { log.info(it) }
         return jarFiles.map { modJar ->
             try {
                 read(modJar)
+            } catch (e: MissingDescriptorException) {
+                // Not a failure: every scanner is handed the whole mods-directory, so most jars in a
+                // pack carry nothing this one can read. Shouting about it would bury the real errors
+                // below — a Quilt pack alone would log one line per Fabric-only jar and vice versa.
+                log.debug("Nothing to scan in ${modJar.name}: ${e.message}")
+                ScannedMod(modJar)
             } catch (e: Exception) {
-                log.error("Could not scan ${modJar.name}. Consider reporting this to the mod-author:",e)
+                log.error("Could not scan ${modJar.name}. Consider reporting this to the mod-author:", e)
                 ScannedMod(modJar)
             }
         }
