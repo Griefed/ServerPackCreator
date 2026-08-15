@@ -1396,3 +1396,79 @@ reached mods the scanner had called server-side and the user had excluded by nam
 exists for. Clause dropped; pinned in both the direct and the **transitive** case (`servermod → midlib → deeplib`,
 middle and leaf both clientside), because a single-pass rescue keeps the leaf excluded and still looks like it
 worked — which is what the surrounding `while` is for.
+
+---
+
+## Modscanning generification (`claude-modscanning-generification`, 2026-08-15)
+
+Triggered by a Qodana report review (job 37558, rev `dc5aed6`: 58 problems, 13 High, no security or
+correctness inspections — 7 self-inflicted `KotlinDeprecation` on the 6.0.0 `scriptTemplates` facades, 4
+`KDocUnresolvedReference` in `ClientsideModels.kt`, one `RedundantInnerClassModifier`, and one
+`UnusedSymbol` that turned out to be in `modscanning`) plus the question of what in the scanners could be
+generified.
+
+**The bug the reading found, fixed before any restructuring.** `ModListCompiler` picked Forge's scanner with
+`mcVersions[1].toInt() > 12`, and `-clientside`'s `MetadataScanner` with the same test. Minecraft has two
+versioning schemes, so `26.2`'s minor of `2` read as the 1.2 era and sent every modern Forge pack to
+`ForgeAnnotationScanner` — the 1.12-and-older one. No modern jar carries `fml_cache_annotation.json`, so every
+jar threw, every jar fell back to the never-drop-a-jar `SERVER` default, and **auto-exclusion silently did
+nothing on Forge 26.x** while logging one ERROR per mod. It fails safe (everything included), which is why it
+had gone unnoticed; `autoDiscoveryReachesScannerBranchPerLoader` only ever covered 1.12.2 and 1.16.5.
+
+This is the versioning-scheme landmine's **third** instance and the first outside the shell templates — and
+`serverpackcreator-api/CLAUDE.md` had asserted *"the Kotlin side was surveyed and is clean by construction"*.
+It was not: the survey covered the boot/selection code the grinder work had just touched, not the generation
+path. That claim is now corrected in place rather than deleted, because the wrong-but-confident version is the
+part worth remembering.
+
+Pinned red first in its own commit (`f8cb89bff`), both tests looping 1.20.1 and 26.2 against a real jar with a
+modern `META-INF/mods.toml` and asserting the *outcome* (excluded / kept, CLIENT / SERVER_OR_BOTH) rather than
+which scanner was chosen. Observed failing for the right reason — the 1.20.1 iteration passed in both, so the
+fixtures were valid and only the era selection was wrong. Fixed in `4dbf653cc` by comparing every component
+through `SemanticVersionComparator` against 1.13, the version Forge actually switched at, which is the call the
+NeoForge branch three lines below had been making correctly all along.
+
+**Then the generification.** Four extractions, behaviour-preserving, no existing assertion touched:
+
+1. **`ModJarScanner`** (public) replaces the `internal Scanner<T, U>`, whose two type parameters had exactly
+   one instantiation across all five implementations. The real problem was `internal`: `-clientside` and
+   `-grinder` could not see it, which is *why* `MetadataScanner` hand-wrote dispatch over concrete types. A
+   plugin can now implement a scanner for the first time.
+2. **`DescriptorScanner`** owns the walk-the-jars loop and the one-`ScannedMod`-per-input-jar guarantee all
+   five repeated. `scan` is `final`; subclasses implement `read(File)` and may throw. That contract is the one
+   thing no scanner may get wrong — a dropped entry is a mod missing from the finished pack.
+3. **`FabricFamilyScanner`** absorbs what Fabric and Quilt genuinely share (id + environment reading, differing
+   only in field *paths*, including the subtle "no environment entry means SERVER" default). Dependencies stay
+   abstract: Fabric declares an object keyed by mod id, Quilt an array of either objects or bare strings, so
+   the block's *shape* differs, not its path.
+4. **`ModScanner.scannerFor(modloader, minecraftVersion)`** is now the single dispatch for both callers, and
+   **`QuiltPackScanner`** holds the two-descriptor merge that only `ModListCompiler` implemented. The
+   clientside `CLAUDE.md`'s *"kept in sync deliberately; it is not shared code"* is retired — that instruction
+   is exactly what let one bug live in two files.
+
+**Quilt merge equivalence**, since the two callers differed: `ModListCompiler` kept the Quilt entry unless
+Quilt said SERVER and Fabric said CLIENT; `MetadataScanner` unioned the two clientside sets. Both yield CLIENT
+iff either scanner did, so the composite reproduces `ModListCompiler`'s rule exactly and `MetadataScanner`'s
+answer is unchanged. What the union had lost — *which* `ScannedMod`, and so which id and dependency list,
+survives — is preserved, and it matters for the downstream dependency-rescue.
+
+**`JsonBasedScanner` deliberately did not join the hierarchy.** It is published, so gaining the abstract `read`
+would break any plugin subclass compiled against it — a source-compatibility break the adopted policy forbids.
+It stays standalone, `@Deprecated(ReplaceWith("JsonDescriptorScanner"))`, delegating to the same internal
+`readJarJson` the new base uses so the facade cannot drift from its replacement. Same rule as the
+`modFileEndings`/`zipCheck` facades: a facade *reads* its owner, it does not re-declare the logic.
+
+Swept up along the way: the Qodana `UnusedSymbol` (`JsonBasedScanner`'s never-read `log`), the same in
+`ForgeTomlScanner` once its catch moved to the base, and a dead `NullPointerException` catch in `FabricScanner`
+around a `ModDependency` construction that cannot throw. Two logging changes are stated rather than hidden —
+`ForgeAnnotationScanner`'s per-jar failure loses its stack trace in favour of the message form the other four
+used, and `ModListCompiler`'s two NeoForge "Scanning using X scanner." debug lines go with the branch that
+emitted them.
+
+Code lines with comments and blanks stripped: `ModListCompiler` 169 → 131, `MetadataScanner` 43 → 21, the
+`modscanning` package 523 → 527 — i.e. the duplication became a shared, documented abstraction at roughly zero
+net cost, and the dispatch now exists once. `ModScannerDispatchTest` (6 tests, asserted on **identity**) pins
+the selection itself, including that an unparseable version falls back to the modern scanner instead of
+throwing — `"26"` used to raise `IndexOutOfBoundsException` out of the bare-component parsing.
+
+Suites: api 302 (1 skip), clientside 88, app 80, grinder 233 — all green.
