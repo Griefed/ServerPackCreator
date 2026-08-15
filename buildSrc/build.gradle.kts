@@ -1,6 +1,5 @@
 
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.plugin.getKotlinPluginVersion
 
 plugins {
     `kotlin-dsl`
@@ -28,18 +27,8 @@ dependencies {
     implementation(libs.install4j)
 }
 
-tasks.compileKotlin<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    logger.lifecycle("Configuring $name with version ${project.getKotlinPluginVersion()} in project ${project.name}")
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     compilerOptions {
-        allWarningsAsErrors = false
-        jvmTarget = JvmTarget.JVM_21
-    }
-}
-
-tasks.compileTestKotlin<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    logger.lifecycle("Configuring $name with version ${project.getKotlinPluginVersion()} in project ${project.name}")
-    compilerOptions {
-        allWarningsAsErrors = false
         jvmTarget = JvmTarget.JVM_21
     }
 }

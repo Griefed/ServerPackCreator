@@ -54,6 +54,10 @@ tasks.processTestResources {
 
 tasks.test {
     useJUnitPlatform()
+    // A fresh, isolated test home for every run. See cleanup() for what it spares and why.
+    doFirst {
+        cleanup()
+    }
     // Keep test runs off the shared Preferences node. SPC's home directory lives in a per-user, machine-wide node
     // that PathsConfig re-reads on every access and writes back to, so a suite booting an ApiWrapper would relocate
     // the home of every other SPC process on the account — it moved a live grinder daemon's home into a test
@@ -110,12 +114,6 @@ tasks.clean {
                 exclude(".gitkeep")
             }
         }
-    }
-}
-
-tasks.test {
-    doFirst {
-        cleanup()
     }
 }
 

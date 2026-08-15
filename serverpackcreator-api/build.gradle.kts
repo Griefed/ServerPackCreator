@@ -149,9 +149,6 @@ tasks.test {
 }
 
 tasks.build {
-    doLast {
-        tasks.dokkaGeneratePublicationJavadoc
-    }
     finalizedBy(tasks.dokkaGeneratePublicationJavadoc)
 }
 

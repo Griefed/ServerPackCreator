@@ -1,9 +1,6 @@
 import com.install4j.gradle.Install4jTask
 import de.griefed.common.gradle.LicenseAgreementRenderer
 import de.griefed.common.gradle.SubprojectLicenseFilter
-//import org.cyclonedx.model.AttachmentText
-//import org.cyclonedx.model.License
-//import org.cyclonedx.model.OrganizationalContact
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
 import java.time.LocalDate
@@ -14,7 +11,6 @@ plugins {
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("com.github.jk1.dependency-license-report")
     id("com.install4j.gradle")
-    //id("org.cyclonedx.bom") version "1.10.0"
 }
 
 idea {
@@ -51,37 +47,6 @@ nexusPublishing {
     }
 }
 
-/*
-tasks.cyclonedxBom {
-    setIncludeConfigs(listOf("runtimeClasspath"))
-    setSkipConfigs(listOf("compileClasspath", "testCompileClasspath"))
-    setProjectType("application")
-    setSchemaVersion("1.5")
-    setDestination(project.file("build/reports"))
-    setOutputName("bom")
-    //setOutputFormat("json")
-    setIncludeBomSerialNumber(true)
-
-    val organizationalContact = OrganizationalContact()
-    organizationalContact.name = "Griefed"
-    organizationalContact.email = "griefed@griefed.de"
-    setOrganizationalEntity { oe ->
-        oe.name = "Griefed"
-        oe.urls = listOf("griefed.de")
-        oe.addContact(organizationalContact)
-    }
-
-    val attachementText = AttachmentText()
-    attachementText.text = File(projectDir,"LICENSE").readText()
-    val license = License()
-    license.name = "LGPL-2.1"
-    license.setLicenseText(attachementText)
-    license.url = "https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE"
-    setLicenseChoice { lc ->
-        lc.addLicense(license)
-    }
-}
-*/
 
 licenseReport {
     outputDir = "$projectDir/licenses"
@@ -159,11 +124,9 @@ install4j {
     } else if (OperatingSystem.current().isMacOsX) {
         //Ensure your install4j installation is available under this location
         file("/Applications/install4j.app")
-    } else if (OperatingSystem.current().isLinux)  {
+    } else {
         //Ensure your install4j installation is available under this location
         file("/opt/install4j")
-    } else {
-        file(properties["install4jHomeDir"].toString())
     }
     verbose = true
 }

@@ -1,7 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.plugin.getKotlinPluginVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -18,27 +17,11 @@ dependencies {
     testImplementation(kotlin("test"))
 }
 
-tasks.compileKotlin<KotlinCompile> {
-    logger.lifecycle("Configuring $name with version ${project.getKotlinPluginVersion()} in project ${project.name}")
+// One block for main and test compilation; they only ever held identical settings.
+// The JVM target follows the toolchain that java-conventions already pins, so it is not repeated here.
+tasks.withType<KotlinCompile>().configureEach {
     compilerOptions {
-        allWarningsAsErrors = false
         jvmTarget = JvmTarget.JVM_21
-    }
-}
-
-tasks.compileTestKotlin<KotlinCompile> {
-    logger.lifecycle("Configuring $name with version ${project.getKotlinPluginVersion()} in project ${project.name}")
-    compilerOptions {
-        allWarningsAsErrors = false
-        jvmTarget = JvmTarget.JVM_21
-    }
-}
-
-kotlin {
-    jvmToolchain {
-        languageVersion.set(
-            JavaLanguageVersion.of(21)
-        )
     }
 }
 
