@@ -117,6 +117,28 @@
   only Forge was affected. Pinned by `ScriptTemplateContentTest`. Do not "simplify" by dropping the default —
   old packs still need it — and do not pass it unconditionally.
 
+  **`SKIP_JAVA_CHECK=true` still reads the Java version, deliberately.** The resolve call sits *outside*
+  that conditional, so skipping the checks skips comparing and installing — not looking. That is what the
+  setting promises in `variables.txt` ("the compatibility check … as well as the automatic installation"),
+  and it is what the setting's own documented use case needs: a user pointing `JAVA` at a custom path is
+  *told* to set it, so they have a deliberately chosen working Java, and reading it is what keeps them on
+  the ServerStarterJar path for Java 17/21 instead of being pushed onto the self-install path. Pinned by
+  `ScriptTemplateContentTest.theBashTemplateResolvesTheJavaVersionEvenWhenChecksAreSkipped`, which also
+  asserts the install is still skipped. Don't "tidy" the call back inside the conditional.
+
+  **The version-keyed guard only protected users who already had a suitable Java — fixed 2026-08-15.**
+  `JAVA_VERSION` starts as the literal `do_not_manually_edit` and is only filled in by `getJavaVersion`;
+  none of the three `installJava` call-sites re-read it and `install_java.sh` never sets it. So a pack that
+  **installs its own Java** reached `setupForge` with the placeholder, the numeric guard did not match, and
+  the fatal flag was passed anyway — reported from a real 1.20.1/Forge pack run on a hand-set
+  `RECOMMENDED_JAVA_VERSION=25`, dying with *"A command line option has attempted to allow or enable the
+  Security Manager"*. Two changes, both needed: all three templates now call `getJavaVersion` **after** the
+  whole Java-check block, and the guard is **inverted to fail safe** (`not numeric OR >= 24` takes the
+  self-install path) so an unresolvable version can never pick the branch that passes a fatal flag. Pinned by
+  `ScriptTemplateContentTest.theBashTemplateDropsTheSecurityManagerFlagWhenTheJavaVersionIsUnknown`.
+  **Neither the grinder nor `ScriptTemplateMatrixIT` can catch this class of bug** — both pre-bake Java and
+  never take the install path.
+
   **The flag is load-bearing, not cosmetic — dropping it exposed a second failure.** ServerStarterJar runs the
   Forge installer **inside its own JVM** and installs a `SecurityManager` (`SecurityAccess.wrapNoForceExit`)
   purely to swallow the `System.exit(0)` that installer calls on success. On Java 24+ that manager cannot be

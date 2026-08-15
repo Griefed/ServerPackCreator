@@ -388,6 +388,73 @@ internal class ScriptTemplateContentTest {
     }
 
     /**
+     * Every template must resolve the Java version **after** the Java-check block, and must fail safe when it
+     * cannot.
+     *
+     * The executing tests below cover bash only, because fish and PowerShell cannot be run on every machine — so
+     * these two properties are asserted at source level for all three, which is the same compromise
+     * [allTemplatesUseAnAlreadyInstalledFabricLauncherBeforeCheckingTheNetwork] makes.
+     *
+     * Both halves matter and they fail differently:
+     *
+     *  - **Ordering.** `JAVA_VERSION` starts as the literal `do_not_manually_edit` and only `getJavaVersion` fills
+     *    it in. No `installJava` call-site re-reads it and `install_java.sh` never sets it, so a pack that installs
+     *    its own Java reached `setupForge` with no version — which is exactly how
+     *    `-Djava.security.manager=allow` reached a Java 25 VM and stopped it from starting.
+     *  - **Fail-safe polarity.** The guard must be "not numeric **OR** >= 24", never "numeric **AND** >= 24". An
+     *    unresolved version cannot rule out Java 24+, so it must take the self-install path rather than the one
+     *    that passes a flag which is fatal there. A guard inverted the wrong way still parses, still runs, and
+     *    silently reinstates the crash — no syntax check can catch it, which is why it is pinned here.
+     */
+    @Test
+    fun allTemplatesResolveJavaAfterTheChecksAndFailSafeWhenItIsUnknown() {
+        val expectations = mapOf(
+            "default_template.sh" to Triple(
+                "# Check and warn the user if a 32bit Java-installation is used",
+                "getJavaVersion",
+                """if [[ ! "${'$'}{JAVA_VERSION}" =~ ^[0-9]+${'$'} ]] || [[ ${'$'}{JAVA_VERSION} -ge 24 ]]; then"""
+            ),
+            "default_template.fish" to Triple(
+                "# Check and warn the user if a 32bit Java-installation is used",
+                "getJavaVersion",
+                """if not string match -qr '^[0-9]+${'$'}' -- "${'$'}JAVA_VERSION"; or test "${'$'}JAVA_VERSION" -ge 24"""
+            ),
+            "default_template.ps1" to Triple(
+                "# Check and warn the user if a 32bit Java-installation is used",
+                "GetJavaVersion",
+                """if ((-Not ("${'$'}{JavaVersion}" -match '^\d+${'$'}')) -Or ([int]${'$'}{JavaVersion} -ge 24))"""
+            )
+        )
+
+        expectations.forEach { (name, markers) ->
+            val (afterChecksMarker, resolveCall, failSafeGuard) = markers
+            val installCall = if (name.endsWith(".ps1")) "InstallJava" else "installJava"
+            val text = template(name)
+
+            // The resolve call must sit AFTER the last installJava — every one of which is inside the
+            // Java-check block — and before the 32-bit warning that follows the block. Anchoring on the last
+            // install is what makes this bite: searching backwards from the 32-bit marker alone would happily
+            // match one of the calls *inside* the block and pass with the post-block call deleted.
+            val checksEndAt = text.indexOf(afterChecksMarker)
+            Assertions.assertTrue(checksEndAt >= 0, "$name: the end-of-Java-checks marker is stale, update this test")
+            val lastInstallAt = text.lastIndexOf(installCall, checksEndAt)
+            Assertions.assertTrue(lastInstallAt >= 0, "$name: the installJava marker is stale, update this test")
+            val resolveAt = text.indexOf(resolveCall, lastInstallAt + installCall.length)
+            Assertions.assertTrue(
+                resolveAt in 0..<checksEndAt,
+                "$name never calls $resolveCall after the Java-check block, so a pack that installs its own Java " +
+                    "reaches setupForge with JAVA_VERSION still unresolved"
+            )
+
+            Assertions.assertTrue(
+                text.contains(failSafeGuard),
+                "$name's Forge/SSJ guard is not the fail-safe form. It must treat an unreadable JAVA_VERSION as " +
+                    "'cannot rule out Java 24+' and take the self-install path. Expected to find:\n  $failSafeGuard"
+            )
+        }
+    }
+
+    /**
      * **Executes** `setupForge`'s ServerStarterJar path and asserts that `SSJ_FORGE_ARGS` is dropped on a Java that
      * cannot accept it.
      *
@@ -452,6 +519,77 @@ internal class ScriptTemplateContentTest {
                 passesFlag,
                 "on Java $javaVersion the security-manager flag was ${if (passesFlag) "passed" else "dropped"}; " +
                     "expected it to be ${if (flagAllowed) "passed" else "dropped"}. Run command: $runCommand"
+            )
+        }
+    }
+
+    /**
+     * **Executes** `setupForge` with `JAVA_VERSION` still at its placeholder, and asserts the flag is *not* passed.
+     *
+     * This is the case a real user hit, and it is the one the version-keyed guard misses. `JAVA_VERSION` starts life
+     * as the literal `do_not_manually_edit` and is only filled in by `getJavaVersion`. None of the three
+     * `installJava` call-sites re-read it afterwards, and `install_java.sh` never sets it either — so a pack that
+     * installs its own Java reaches `setupForge` with the placeholder still in place, the numeric guard does not
+     * match, and the fatal flag is passed anyway:
+     *
+     * ```
+     * Downloading and using Java temurin@25
+     * Run Command:  java ... -Djava.security.manager=allow -jar server.jar --installer-force ...
+     * Error occurred during initialization of VM
+     * java.lang.Error: A command line option has attempted to allow or enable the Security Manager.
+     * ```
+     *
+     * The guard therefore only ever protected users who *already had* the right Java — which is why neither the
+     * grinder (it pre-bakes Java and never takes the install path) nor `ScriptTemplateMatrixIT` (same) caught it.
+     *
+     * Pinned as **fail-safe**, not merely as "re-read the version": an unknown Java version must never take the
+     * branch that passes a flag which is fatal on the JVMs it cannot rule out.
+     */
+    @Test
+    fun theBashTemplateDropsTheSecurityManagerFlagWhenTheJavaVersionIsUnknown() {
+        val bash = which("bash") ?: Assumptions.abort("bash not installed — SSJ args check skipped")
+
+        // Every shape JAVA_VERSION can carry when nothing has resolved it.
+        for (unknownVersion in listOf("do_not_manually_edit", "", "unknown")) {
+            val packDir = File.createTempFile("spc-ssj-unknown-", "-pack").apply { delete(); mkdirs() }
+            val harness = File(packDir, "harness.sh")
+            harness.writeText(
+                """
+                downloadIfNotExist() { echo "false"; }
+                runJavaCommand() { :; }
+                refreshServerJar() { :; }
+                crashServer() { echo "CRASHED: ${'$'}1"; exit 3; }
+                JAVA_ARGS="-Xmx4G"
+                USE_SSJ="true"
+                SSJ_FORGE_ARGS="-Djava.security.manager=allow"
+                JAVA_VERSION="$unknownVersion"
+                MINECRAFT_VERSION="1.20.1"
+                MODLOADER_VERSION="47.4.22"
+                SERVER_RUN_COMMAND="do_not_manually_edit"
+                IFS="." read -ra SEMANTICS <<<"${'$'}{MINECRAFT_VERSION}"
+                ${extractShellFunction("default_template.sh", "setupForge")}
+                setupForge
+                echo "RESULT=${'$'}{SERVER_RUN_COMMAND}"
+                """.trimIndent()
+            )
+
+            val process = ProcessBuilder(bash.absolutePath, harness.absolutePath)
+                .directory(packDir)
+                .redirectErrorStream(true)
+                .start()
+            val output = process.inputStream.bufferedReader().use { it.readText() }
+            val exit = process.waitFor()
+            packDir.deleteRecursively()
+
+            Assertions.assertEquals(0, exit, "setupForge failed for JAVA_VERSION='$unknownVersion':\n$output")
+            val runCommand = output.lines().firstOrNull { it.startsWith("RESULT=") }
+                ?: Assertions.fail("no run command produced for JAVA_VERSION='$unknownVersion':\n$output")
+
+            Assertions.assertFalse(
+                runCommand.contains("-Djava.security.manager=allow"),
+                "with JAVA_VERSION='$unknownVersion' the security-manager flag was passed. An unresolved Java " +
+                    "version must fail safe — it cannot rule out Java 24+, where the flag stops the VM starting. " +
+                    "Run command: $runCommand"
             )
         }
     }
@@ -564,6 +702,87 @@ internal class ScriptTemplateContentTest {
      * Cut one `name() { ... }` function out of a shell template so it can be sourced in isolation. Matches the
      * closing brace in column 0, which is how the shipped templates format their function bodies.
      */
+    /**
+     * **Executes** the bash template's Java-check block with `SKIP_JAVA_CHECK=true`, and asserts the version is
+     * still *resolved*.
+     *
+     * Skipping the checks must not mean flying blind. `variables.txt` documents the setting as disabling "the
+     * compatibility check of your Minecraft version and the provided Java version, as well as the automatic
+     * installation" — it says nothing about *reading* the version, and reading it is what decides whether the
+     * Forge/SSJ path may pass `-Djava.security.manager=allow`.
+     *
+     * This matters most for the exact user the setting is aimed at. `variables.txt` tells anyone pointing `JAVA`
+     * at a custom path to set `SKIP_JAVA_CHECK=true`, so that user has a deliberately chosen, working Java —
+     * and resolving it is what lets them keep the ServerStarterJar path on Java 17 or 21 instead of being
+     * pushed onto the self-install path with everybody else.
+     *
+     * The unresolvable case is asserted too: it must yield a non-numeric version, which the fail-safe guard then
+     * routes away from the fatal flag.
+     */
+    @Test
+    fun theBashTemplateResolvesTheJavaVersionEvenWhenChecksAreSkipped() {
+        val bash = which("bash") ?: Assumptions.abort("bash not installed — Java-resolve check skipped")
+
+        val text = template("default_template.sh")
+        val blockStart = text.indexOf("# If Java checks are desired")
+        val blockEnd = text.indexOf("# Check and warn the user if a 32bit Java-installation is used")
+        Assertions.assertTrue(blockStart in 0..<blockEnd, "the Java-check block markers are stale, update this test")
+        val javaCheckBlock = text.substring(blockStart, blockEnd)
+
+        // A readable Java must be read; an unreadable one must come back non-numeric so the guard fails safe.
+        val cases = mapOf("17.0.1" to "17", null to "")
+
+        for ((fakeVersion, expected) in cases) {
+            val packDir = File.createTempFile("spc-skipcheck-", "-pack").apply { delete(); mkdirs() }
+            val fakeJava = File(packDir, "fake-java")
+            if (fakeVersion != null) {
+                fakeJava.writeText("#!/bin/sh\necho 'openjdk version \"$fakeVersion\" 2021-10-19' 1>&2\n")
+                fakeJava.setExecutable(true)
+            }
+
+            val harness = File(packDir, "harness.sh")
+            harness.writeText(
+                """
+                installJava() { echo "INSTALL CALLED"; }
+                crashServer() { echo "CRASHED: ${'$'}1"; exit 3; }
+                commandAvailable() { command -v "${'$'}1" > /dev/null 2>&1; }
+                ${extractShellFunction("default_template.sh", "getJavaVersion")}
+                JAVA="${fakeJava.absolutePath}"
+                SKIP_JAVA_CHECK="true"
+                RECOMMENDED_JAVA_VERSION="21"
+                MINECRAFT_VERSION="1.20.1"
+                JAVA_VERSION="do_not_manually_edit"
+                IFS="." read -ra SEMANTICS <<<"${'$'}{MINECRAFT_VERSION}"
+                $javaCheckBlock
+                echo "RESOLVED=${'$'}{JAVA_VERSION}"
+                """.trimIndent()
+            )
+
+            val process = ProcessBuilder(bash.absolutePath, harness.absolutePath)
+                .directory(packDir)
+                .redirectErrorStream(true)
+                .start()
+            val output = process.inputStream.bufferedReader().use { it.readText() }
+            val exit = process.waitFor()
+            packDir.deleteRecursively()
+
+            Assertions.assertEquals(0, exit, "the Java-check block failed for version '$fakeVersion':\n$output")
+            Assertions.assertFalse(
+                output.contains("INSTALL CALLED"),
+                "SKIP_JAVA_CHECK=true must still skip the automatic installation, which is what it promises:\n$output"
+            )
+            val resolved = output.lines().firstOrNull { it.startsWith("RESOLVED=") }?.removePrefix("RESOLVED=")
+                ?: Assertions.fail("the block produced no JAVA_VERSION for '$fakeVersion':\n$output")
+
+            Assertions.assertEquals(
+                expected, resolved,
+                "with SKIP_JAVA_CHECK=true and JAVA reporting '${fakeVersion ?: "nothing"}', JAVA_VERSION resolved " +
+                    "to '$resolved'. Skipping the compatibility check must not leave the version unread — it is " +
+                    "what decides whether the security-manager flag may be passed."
+            )
+        }
+    }
+
     private fun extractShellFunction(template: String, name: String): String {
         val lines = template(template).lines()
         val start = lines.indexOfFirst { it.startsWith("$name()") }
