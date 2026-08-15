@@ -70,7 +70,6 @@ balloontip = "1.2.4.1"
 tipoftheday = "0.6.0"
 springBoot = "4.0.6"
 springmockk = "5.0.1"
-h2 = "2.4.240"
 
 [libraries]
 
@@ -137,4 +136,3 @@ springBootStarterDataMongodb = { module = "org.springframework.boot:spring-boot-
 springBootStarterTest = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "springBoot" }
 springBootDevtools = { module = "org.springframework.boot:spring-boot-devtools", version.ref = "springBoot" }
 springmockk = { module = "com.ninja-squad:springmockk", version.ref = "springmockk" }
-h2 = { module = "com.h2database:h2", version.ref = "h2" }
