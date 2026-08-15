@@ -38,75 +38,57 @@ dependencies {
 }
 
 tasks.sourcesJar {
-    dependsOn(tasks.generateI18n4kFiles)
+    // shipRootDocuments writes into src/main/resources, which this task packages. Gradle can only see
+    // that coupling now that the copies are real tasks; as configuration-time copy{} calls the ordering
+    // was pure luck.
+    dependsOn(tasks.generateI18n4kFiles, tasks.named("shipRootDocuments"))
 }
 
 tasks.processResources {
-    dependsOn(tasks.generateI18n4kFiles)
-    //API
-    copy {
-        from(rootProject.layout.projectDirectory.file("CHANGELOG.md"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("CODE_OF_CONDUCT.md"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("CONTRIBUTING.md"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("HELP.md"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("LICENSE"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("README.md"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("SECURITY.md"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
+    dependsOn(tasks.generateI18n4kFiles, tasks.named("shipRootDocuments"))
+}
 
-    // Writerside
-    copy {
-        from(rootProject.layout.projectDirectory.file("CHANGELOG.md"))
-        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
+// The root-level documents SPC ships inside its own jar and reads back at runtime (ApiWrapper.setup()
+// writes them into the user's home), plus the copies Writerside builds the help site from.
+//
+// These used to be fifteen bare `copy { }` calls inside the `processResources` CONFIGURATION block, so
+// they ran whenever that task was configured -- including on runs where processResources itself was
+// UP-TO-DATE and did nothing. Measured before this change: a second, fully up-to-date
+// `:serverpackcreator-api:processResources` still rewrote both destinations. As real Copy tasks they
+// have declared inputs and outputs, so they are up-to-date checked, cacheable, and do not write into
+// two source trees on every build that happens to touch this project.
+val shippedDocuments = listOf(
+    "CHANGELOG.md", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", "HELP.md", "LICENSE", "README.md", "SECURITY.md"
+)
+
+tasks.register<Copy>("shipRootDocuments") {
+    description = "Copies the root-level documents SPC ships in its jar into this module's resources."
+    from(rootProject.layout.projectDirectory) {
+        include(shippedDocuments)
     }
-    copy {
-        from(rootProject.layout.projectDirectory.file("CODE_OF_CONDUCT.md"))
-        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
+    into(layout.projectDirectory.dir("src/main/resources"))
+}
+
+tasks.register<Copy>("shipWritersideDocuments") {
+    description = "Mirrors the root-level documents and images into the Writerside help sources."
+    // LICENSE has no extension; Writerside needs it as Markdown to render it as a topic.
+    from(rootProject.layout.projectDirectory) {
+        include(shippedDocuments)
+        rename("LICENSE", "LICENSE.md")
     }
-    copy {
-        from(rootProject.layout.projectDirectory.file("CONTRIBUTING.md"))
-        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("HELP.md"))
-        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("LICENSE"))
-        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
-        rename("LICENSE","LICENSE.md")
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("README.md"))
-        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("SECURITY.md"))
-        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.dir("img"))
-        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics/img"))
-    }
+    into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
+}
+
+tasks.register<Copy>("shipWritersideImages") {
+    description = "Mirrors the root img directory into the Writerside help sources."
+    from(rootProject.layout.projectDirectory.dir("img"))
+    into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics/img"))
+}
+
+// The help sources are a documentation artifact, not an input to any jar, so they refresh with the
+// build rather than blocking resource processing on them.
+tasks.named("build") {
+    dependsOn(tasks.named("shipWritersideDocuments"), tasks.named("shipWritersideImages"))
 }
 
 //Fix resources missing in multiplatform jvm inDev run https://youtrack.jetbrains.com/issue/KTIJ-16582/Consumer-Kotlin-JVM-library-cannot-access-a-Kotlin-Multiplatform-JVM-target-resources-in-multi-module-Gradle-project
