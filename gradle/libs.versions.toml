@@ -10,7 +10,10 @@ kotlinAllOpen = "2.3.20"
 kotlinJpa = "2.3.20"
 
 # https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-gradle-plugin
-springGradle = "4.0.2"
+# Keep in lockstep with `springBoot` below — the plugin and the libraries are the same product, and
+# letting them drift is what left `spring-boot` resolving 4.0.2 while `spring-boot-starter-web`
+# resolved 4.1.0. The BOM no longer comes from the plugin, but a mismatch is still a trap.
+springGradle = "4.1.0"
 
 # https://mvnrepository.com/artifact/io.spring.gradle/dependency-management-plugin
 springDependencyMan = "1.1.7"
