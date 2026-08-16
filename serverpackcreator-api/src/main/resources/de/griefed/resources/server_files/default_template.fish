@@ -283,7 +283,8 @@ function setupForge
             # installer's exit ends the whole process -- the pack installs, reports success, exits 0, and never
             # launches the server. So on Java that cannot trap the exit we do not hand SSJ the install at all:
             # install here, then launch from the argfile the installer produces, as the USE_SSJ=false path does.
-            if string match -qr '^[0-9]+$' -- "$JAVA_VERSION"; and test "$JAVA_VERSION" -ge 24
+            # Fail-safe: only a Java we can read AND that predates 24 may use the ServerStarterJar path.
+            if not string match -qr '^[0-9]+$' -- "$JAVA_VERSION"; or test "$JAVA_VERSION" -ge 24
                 echo "Java $JAVA_VERSION cannot grant ServerStarterJar the Security Manager it needs to run the Forge"
                 echo "installer, so this pack installs Forge directly and starts it from its argfile instead."
                 set -g FORGE_ARGS_FILE "libraries/net/minecraftforge/forge/$MINECRAFT_VERSION-$MODLOADER_VERSION/unix_args.txt"
@@ -564,6 +565,13 @@ else
         end
     end
 end
+
+# Resolve the version of the Java we are ACTUALLY going to use, whatever happened above -- checks skipped,
+# a suitable Java found, or one just installed. Until here JAVA_VERSION can still be the
+# do_not_manually_edit placeholder: installJava does not set it and neither does install_java.sh, so a pack
+# that installs its own Java used to reach setupForge with no version at all. That is what let
+# -Djava.security.manager=allow through to a Java 25 VM, which then refuses to start.
+getJavaVersion
 
 # Check and warn the user if a 32bit Java-installation is used.
 "$JAVA" "-version" 2>&1 | grep -i "32-Bit"

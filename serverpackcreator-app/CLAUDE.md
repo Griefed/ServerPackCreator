@@ -58,8 +58,10 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   neither hibernate, tomcat-jdbc nor h2 on the runtime classpath. The unused `testRuntimeOnly` H2
   dependency went with them.
 - **LANDMINE — `spring.data.mongodb.uri` is used verbatim, with no validation and no fallback.**
-  Measured with `javap` against the pinned `spring-boot-mongodb-4.0.2` and `mongodb-driver-core-5.6.2`
-  (no sources jar is published for the autoconfigure module):
+  Measured with `javap` against the pinned `spring-boot-mongodb-4.1.0` and `mongodb-driver-core-5.8.0`
+  (no sources jar is published for the autoconfigure module). **Re-verified at those versions on
+  2026-08-16** — the Boot 4.0.6 -> 4.1.0 bump moved the driver 5.6.2 -> 5.8.0 and the behaviour below
+  is byte-for-byte the same shape, so the landmine stands; only the version numbers had gone stale:
   `PropertiesMongoConnectionDetails.getConnectionString()` is
   `if (properties.getUri() != null) return new ConnectionString(properties.getUri())`, and
   `ConnectionString` accepts **only** `mongodb://` or `mongodb+srv://`. Consequences: a malformed URI

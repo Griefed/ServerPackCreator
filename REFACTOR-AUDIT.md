@@ -1,112 +1,164 @@
-# Refactor audit — `claude-build-docs`
+# Refactor audit — `claude-coroutines-1.11-fallout` (fourth pass, post-remediation)
 
-**Scope:** `git log develop..HEAD` — **1 commit**, `fd8d674be`.
-**Mode:** READ-ONLY. No source was modified while auditing.
-**Supersedes** the previous audit in this file (`claude-webservice-context-test` +
-`claude-config-cache`). That one's M-1 — a commit bundling three concerns — was acted on: the commit
-was split into three, one part was dropped entirely after measurement disproved its rationale, and all
-of it is now merged into `develop`.
+**Base:** `a7717e8a9` (`develop`) · **Head:** `57ba3f256` · **Commits:** 16 · **Date:** 2026-08-16
+**Supersedes** the third pass, which raised **4 MEDIUM, 2 LOW** against a 12-commit history. Those
+commits no longer exist; the three mixed build commits have been split. Prior history is preserved at
+`backup-pre-split` (`0b1589559`), `backup-pre-kover-fix` (`a9dbbf3d8`) and `backup-pre-rewrite`
+(`b1f831dad`).
 
-**Verdict: no HIGH, no MEDIUM, two LOW.** This is a single documentation commit that touches no
-source. Most of these conventions are written for code changes and simply do not apply; rather than
-stretch them to produce findings, this report says which ones were checked and what the two real
-observations are.
-
----
-
-## HIGH
-
-None. The commit modifies three Markdown files and nothing else — verified, no `.kt`, `.kts`,
-`.properties` or `.toml` in the diff. No behaviour, no module boundary, no plugin API is involved.
-
-## MEDIUM
-
-None.
-
-The characterization-test rule has no purchase on a docs commit, but its *spirit* — do not assert
-what you have not verified — is the one that matters here, and it was honoured. Every checkable claim
-in `BUILD.md` was run rather than recalled, which is what turned up the three errors the commit fixes
-(the missing `./gradlew`, the non-existent `Build All` task, and `:serverpackcreator-app:run`). Spot-
-checks during this audit:
-
-| Claim | Result |
-|---|---|
-| `build` runs the frontend Vitest suite | `checkScript.set("run test")` present in quasar-conventions ✓ |
-| configuration time ~4.75s → ~2.02s | re-measured 4.96s → 2.04s ✓ (within noise) |
-| `BUILD.md` is not in the shipped document set | 0 mentions in `-api`'s build file ✓ |
-| `bootRun` exists, `run` does not, for `-app` | verified against the task graph ✓ |
-| foojay resolver absent from root settings | verified ✓ |
+**Verdict: no HIGH, no MEDIUM, no LOW open.** The single LOW (L3, pre-existing) was fixed on this
+branch at Griefed's request — see below. Every
+commit builds under the full `./gradlew build` except the two that are deliberately red, each for a
+reason stated in its own message.
 
 ---
 
-## LOW
+## History
 
-### L-1 · `fd8d674be` fixes a documentation bug found mid-task, in the same commit rather than its own
+| # | Commit | Subject | Build |
+|---|---|---|---|
+| 1 | `e55ba8947` | `test(api): pin that parallelMap neither leaks a thread nor serialises` | **RED** (intentional) |
+| 2 | `ae18f5657` | `fix(api): stop parallelMap leaking a thread per call, and make it parallel` | green |
+| 3 | `e55ddfe8e` | `build: bump third-party library versions in the catalog` | **RED** (intentional) |
+| 4 | `3ab1abed6` | `fix(build): import Boot's BOM as a platform so the catalog wins` | green |
+| 5 | `e7320796a` | `fix(build): declare mockk explicitly in -app so it matches -api` | green |
+| 6 | `1cc6c4b1a` | `docs: record the parallelMap fix, the coroutines floor and the BOM landmine` | green |
+| 7 | `b33da601d` | `docs: audit the parallelMap/coroutines branch, post-remediation pass` | green |
+| 8 | `f4dec992f` | `build: align springGradle with springBoot at 4.1.0` | green |
+| 9 | `b4e6fe977` | `build: route nekodetector and the Boot BOM through the catalog` | green — **pure** |
+| 10 | `66c77c053` | `build: drop the orphaned io.spring.dependency-management plugin` | green — behaviour |
+| 11 | `a8f158865` | `build: add a [plugins] catalog section and alias it from the build scripts` | green — **pure** |
+| 12 | `6325735c9` | `build: consume plugin markers in buildSrc instead of implementation artifacts` | green — behaviour |
+| 13 | `96cb68461` | `build: bump Kover to 0.9.9` | green — behaviour |
+| 14 | `f0bf0034e` | `build: bump the Kotlin compiler to 2.4.10` | green — behaviour |
+| 15 | `2be03f8d0` | `build: collapse the four Kotlin entries onto one version ref` | green — **pure** |
+| 16 | `57ba3f256` | `docs: record the catalog, [plugins] and Kotlin-unification work` | green |
 
-**File:** `CLAUDE.md:72-75`
-**Rule:** *If you find a bug while refactoring, surface it explicitly and propose a fix in its own
-commit.*
-
-While verifying `BUILD.md`'s claims, `./gradlew :serverpackcreator-app:run` turned out not to exist —
-`-app` applies the Spring Boot plugin, so the task is `bootRun`. The root `CLAUDE.md` carried the same
-wrong command and is corrected in this commit rather than a separate one.
-
-It *is* surfaced explicitly — the commit body names it as one of three errors the verification caught,
-and the correction adds the reason (`-app` is not an `application` module) plus the contrast with
-`:serverpackcreator-grinder:run`, which does exist. So the "do not silently work around it" half of
-the rule is satisfied; only the "own commit" half is not.
-
-Defensible as one concern — *the build documentation was wrong in three places, here are the three*.
-Recorded because the rule is written without that exception, and because the fix lands in a file that
-is not otherwise the subject of the commit.
-
-### L-2 · ~~FIXED~~ · `fd8d674be` leaves a stated prerequisite gap unresolved by design
-
-**File:** `BUILD.md:49-53`
-
-The commit documents that the foojay toolchain resolver is applied in `buildSrc/settings.gradle.kts`
-but not in the root, so a contributor without a local JDK 21 gets *"No matching toolchains found"*
-instead of an automatic download — and then explicitly declines to fix it, on the grounds that
-changing toolchain provisioning does not belong in a docs commit.
-
-That is the right call under *one concern per commit*, and the trap is now written down where a
-newcomer will hit it. Flagged only so it does not disappear: **documenting a papercut is not the same
-as fixing it**, and the fix is one line in `settings.gradle.kts`. It should become a follow-up rather
-than remain permanently "documented".
-
-**FIXED.** The resolver is now registered for the modules too. It took more than the predicted one
-line: the two builds need it declared *differently* (root with a version, buildSrc without), because
-buildSrc does not inherit the root's toolchain repositories yet its settings evaluate with the plugin
-already on the classpath. Both directions were verified by requesting an uninstalled JDK 11 and
-reading which error came back.
+Commits 9–16 replace the former 9–12. The split is content-preserving: the tree at `2be03f8d0` is
+byte-identical to `backup-pre-split`, excluding only the two generated LICENSE artifacts and this
+document.
 
 ---
 
-## Checked and clean
+## Third-pass findings — disposition
 
-- **No source modified**: the diff is `BUILD.md` (new, 229 lines), `CONTRIBUTING.md` (+14/-6) and
-  `CLAUDE.md` (+6/-6).
-- **No test was touched or needed to change**, so the "a refactor that changes a test is not a
-  refactor" rule is trivially satisfied.
-- **Claims were verified rather than recalled**, and the verification is what produced the commit's
-  content — three documented errors, each named in the commit body with how it was found.
-- **The shipping decision is correct and was checked, not assumed.** `CONTRIBUTING.md` is one of the
-  seven documents copied into `-api`'s resources and mirrored into the Writerside topics; `BUILD.md`
-  is not, so the link between them is an absolute URL rather than a relative path that would dangle in
-  the shipped copies. Confirmed `BUILD.md` appears nowhere in `-api`'s `shippedDocuments` list.
-- **`BUILD.md`'s own links resolve**: no broken heading anchors, no broken file links. (An earlier
-  draft had two broken anchors; they were caught and fixed before the commit.)
-- **Scope did not sprawl.** Three files, all documentation, all about how to build the project.
-- **Branch follows the `claude-` naming rule** and has not been pushed.
-- `./gradlew build` green.
+| ID | Sev | Finding | Status |
+|---|---|---|---|
+| M1 | MED | Kotlin commit mixed a compiler upgrade with a pure ref collapse | **FIXED** — `f0bf0034e` (bump) + `2be03f8d0` (collapse) |
+| M2 | MED | `[plugins]` commit mixed alias conversion with a buildSrc classpath change | **FIXED** — `a8f158865` (pure) + `6325735c9` (behaviour) |
+| M3 | MED | "Three leftovers" bundled two pure changes with one behavioural | **FIXED** — `b4e6fe977` (pure) + `66c77c053` (behaviour) |
+| M4 | MED | Committed audit was stale | **FIXED** — this pass, committed alongside the history it describes |
+| L1 | LOW | Documentation bundling inconsistent | **FIXED** — documentation for 9–15 collected into `57ba3f256`, matching commits 6–7 |
+| L2 | LOW | Frontend/Kover never exercised; `./gradlew build` never run | **FIXED — and it had already bitten** (below) |
 
-## Follow-ups, not defects in this range
+### On M1–M3: what the split actually bought
 
-- **Add the foojay resolver to the root `settings.gradle.kts`** and delete the trap from `BUILD.md`
-  (L-2). One line; removes the JDK-21 prerequisite entirely.
-- **`serverpackcreator-plugin-example/src/main/resources/CHANGELOG.md`** is a tracked 14 KB file that
-  nothing generates and nothing updates, shipped inside the example plugin's jar, whose source file at
-  the module root does not exist. Surfaced during the previous branch and deliberately left alone —
-  deleting a tracked file that reaches users is a product decision, not a build cleanup.
-- The configuration cache remains opt-in (`--configuration-cache`), blocked for `build` by the
-  third-party `:generateLicenseReport`. Documented in `BUILD.md` and `CLAUDE.md`.
+Each pair isolates the risky half, which is concrete rather than cosmetic:
+
+- `6325735c9` alone carries the buildSrc classpath move (23 → 31 modules, dropping
+  `org.jetbrains.dokka:javadoc-plugin`). A bisect landing on a dokka problem now lands on the single
+  commit that touched dokka's classpath, not one that also renamed three plugin references.
+- `f0bf0034e` alone carries the compiler upgrade. `2be03f8d0` is provably inert: every version value
+  unchanged, only the number of places declaring it, with `kotlin-stdlib` still resolving 2.4.10.
+- `66c77c053` alone carries the `dependency-management` removal, so "it was applied nowhere" is
+  checkable against one diff.
+
+All eight rebuilt commits were verified with a **full `./gradlew build`** — 91 tasks — not a subset.
+
+### On L2: the finding that proved itself within the hour
+
+Filed in pass three as a LOW coverage gap. Griefed then ran `./gradlew build` and it failed at
+task-graph time, before anything compiled:
+
+```
+Could not determine the dependencies of task ':serverpackcreator-api:koverGenerateArtifactJvm'.
+> Could not get unknown property 'compileKotlinTask' for compilation 'main' (target  (jvm))
+```
+
+Kover 0.9.1 reads `compileKotlinTask` by reflection; KGP 2.4.10 no longer exposes it, and
+`kotlin-conventions` applies Kover to every module — so the Kotlin bump broke the whole build while
+every task in the curated verification list still passed. Fixed by `96cb68461`, deliberately placed
+*before* the compiler bump, because Kover 0.9.9 supports both compilers and that keeps each commit
+green.
+
+**The reusable lesson:** task-level verification systematically under-tests build-plugin
+interactions, because a plugin that fails at *configuration* time is invisible to any task list that
+omits it. On the Kotlin/Gradle-plugin axis, `./gradlew build` is the minimum bar — not a curated set,
+however thorough it reads in a commit message.
+
+---
+
+## LOW (fixed)
+
+### L3 — `dokkaGeneratePublicationHtml` had an undeclared task dependency (PRE-EXISTING)
+
+Running `dokkaGeneratePublicationHtml` alongside the javadoc publication from a wiped `build/dokka`
+fails deterministically (3 of 3 attempts):
+
+```
+Task ':serverpackcreator-api:dokkaGeneratePublicationHtml' uses this output of task
+':serverpackcreator-api:compileJava' without declaring an explicit or implicit dependency.
+```
+
+`serverpackcreator-api/build.gradle.kts` declares `dependsOn(generateI18n4kFiles,
+fixMissingResources)` on that task, but not the Java compilations whose `build/generated` output it
+reads.
+
+**Confirmed pre-existing and unrelated to this branch:** the identical failure reproduces on
+untouched `develop` (`a7717e8a9`) in a clean worktree. It never surfaced in normal use because
+`build` runs only the javadoc publication (via `finalizedBy`), never the HTML one.
+
+**FIXED** at Griefed's request by `dbcb80caf`, in `dokka-conventions` so every module applying the
+convention benefits. The Javadoc publication already carried exactly this `dependsOn` — only the HTML
+half lacked it, making this the second occurrence of one bug, so the two are now configured together
+rather than side by side. Measured on the previously-failing command from a wiped `build/dokka`:
+**3 of 3 FAILED before, 3 of 3 SUCCESSFUL after**, 185 `index.html` generated.
+
+---
+
+## Clean — verified this pass
+
+- **One concern per commit.** Behaviour and pure-structure changes are separated throughout, and each
+  pure commit states what must not move and demonstrates it did not.
+- **No commit is labelled `refactor:`.** All 16 are `test:`, `build:`, `fix:` or `docs:`.
+- **No existing test's assertion, argument or expected value was modified.** The only test file
+  touched on the branch is `ListUtilitiesTest.kt`, additively.
+- **Every build commit carries its measurement**, re-measured on its own tree during the split rather
+  than copied forward.
+- **Bugs surfaced, not worked around** — six on the branch: the thread leak, the BOM downgrade, the
+  mockk split, the hardcoded nekodetector coordinate, the orphaned dependency-management plugin, and
+  the Kover/KGP incompatibility. Plus L3, reported rather than quietly patched.
+- **Module boundaries intact**; no Swing, Spring-web or frontend dependency reached `-api`.
+- **Catalog hygiene:** 49 libraries, 12 plugins, zero unused aliases, zero unreferenced `[versions]`
+  entries, zero `FAILED` markers across every configuration in every module.
+
+## Carried forward — accepted, unchanged
+
+- **Two commits are intentionally red** (`e55ba8947`, `e55ddfe8e`), so a failing guard and a breaking
+  bump are checkable from the commit that causes them. They are now 15 and 13 commits deep; a
+  `git bisect` hits a red commit twice, and a rebase-merge puts both on `develop`. A squash-merge does
+  not. Still Griefed's trade to make.
+- **`parallelMap`'s published behavioural contract change** — Griefed's explicit decision, recorded in
+  the API-compatibility table. An embedder whose lambda mutated shared state without synchronisation
+  was previously serialised by accident and can now race.
+
+---
+
+## Verification at `57ba3f256`
+
+`./gradlew build` — **BUILD SUCCESSFUL, 91 tasks.** That graph covers 741 JVM tests (api 309,
+clientside 88, app 108, plugin-example 3, grinder 233; 0 failures, 20 skipped), every Kover report,
+`bootJar`, both dokka publications, `sourcesJar`, `generateLicenseReport`, and the frontend —
+`installFrontend` / `assembleFrontend` / `checkFrontend`, the last running Vitest via `npm run test`.
+
+Only install4j's `media` task remains unexercised; it needs a local install4j installation and is
+documented as outside the development loop.
+
+---
+
+## Remaining decisions for Griefed
+
+1. **Merge strategy.** A squash-merge keeps the two deliberate red commits off `develop`; a
+   merge commit or rebase does not.
+
+Nothing else is outstanding, and no remediation is proposed for this branch.

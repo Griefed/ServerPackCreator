@@ -21,7 +21,10 @@
 
 package de.griefed.serverpackcreator.api.utilities.common
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import kotlin.coroutines.CoroutineContext
 
@@ -207,11 +210,18 @@ fun List<String>.startsWith(string: String): Boolean {
 /**
  * Compute all elements in the list in parallel and continue when every element was computed.
  *
+ * Defaults to [Dispatchers.Default], the shared pool sized to the available processors, so elements
+ * genuinely run in parallel and no thread outlives the call. Do **not** default this to
+ * `newSingleThreadContext`: that factory hands out a dedicated thread its creator has to `close()`,
+ * which a defaulted parameter can never do, so every invocation stranded one thread for the life of
+ * the JVM — and confined the whole list to a single thread besides. Pinned by
+ * `ListUtilitiesTest.parallelMapDoesNotLeakAThreadPerInvocation` and
+ * `ListUtilitiesTest.parallelMapRunsElementsOnMoreThanOneThread`.
+ *
  * @author Griefed
  */
-@OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
 inline fun <A, B> List<A>.parallelMap(
-    context: CoroutineContext = newSingleThreadContext("parallelMap"),
+    context: CoroutineContext = Dispatchers.Default,
     crossinline function: suspend (A) -> B
 ): List<B> = runBlocking(context) {
     map { return@map this.async { function(it) } }.awaitAll()

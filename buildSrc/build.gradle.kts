@@ -13,18 +13,28 @@ repositories {
     mavenCentral()
 }
 
+// Every plugin the convention plugins apply, put on this build's compile classpath so that a
+// versionless `id("...")` in `src/main/kotlin/*.gradle.kts` resolves. Those precompiled script
+// plugins CANNOT use `alias(libs.plugins.x)` — Gradle fails them with `Unresolved reference: libs`
+// (verified) — so this is the only place the version can come from, and taking it from the catalog's
+// [plugins] block keeps the id and the version declared exactly once.
+//
+// `pluginMarker` builds the artifact Gradle's plugin resolution would fetch: the marker POM
+// `<id>:<id>.gradle.plugin:<version>`, which depends on the plugin's real implementation artifact.
+fun Provider<PluginDependency>.marker(): Provider<String> =
+    map { "${it.pluginId}:${it.pluginId}.gradle.plugin:${it.version}" }
+
 dependencies {
-    implementation(libs.kotlinGradlePlugin)
-    implementation(libs.kotlinAllOpen)
-    implementation(libs.springGradlePlugin)
-    implementation(libs.springDependencyMan)
-    implementation(libs.kotlinJpa)
-    implementation(libs.dokka)
-    implementation(libs.dokkaJavaDoc)
-    implementation(libs.licenseReport)
-    implementation(libs.koverGradlePlugin)
-    implementation(libs.frontendPlugin)
-    implementation(libs.install4j)
+    implementation(libs.plugins.kotlinJvm.marker())
+    implementation(libs.plugins.kotlinAllOpen.marker())
+    implementation(libs.plugins.kotlinJpa.marker())
+    implementation(libs.plugins.springBoot.marker())
+    implementation(libs.plugins.dokka.marker())
+    implementation(libs.plugins.dokkaJavadoc.marker())
+    implementation(libs.plugins.licenseReport.marker())
+    implementation(libs.plugins.kover.marker())
+    implementation(libs.plugins.frontend.marker())
+    implementation(libs.plugins.install4j.marker())
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {

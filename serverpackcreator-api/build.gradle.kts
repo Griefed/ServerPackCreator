@@ -3,7 +3,7 @@ plugins {
     id("serverpackcreator.kotlin-conventions")
     id("serverpackcreator.publishing-conventions")
     id("serverpackcreator.dokka-conventions")
-    id("de.comahe.i18n4k") version "0.11.2"
+    alias(libs.plugins.i18n4k)
 }
 
 
@@ -26,13 +26,14 @@ dependencies {
     api(libs.bouncycastle)
 
     api(libs.mslinks)
-    api("com.github.MCRcortex:nekodetector:Version-1.1-pre")
+    api(libs.nekodetector)
     //api("dev.kosmx.needle:jneedle:1.0.1")
 
     testImplementation(libs.kotlinTestJunit5)
     // MockK lets the unit tests stub network-bound collaborators (WebUtilities, VersionMeta) so
-    // provisioner/manifest branches can be exercised offline. Version pinned to the same 1.14.6 the
-    // app module already resolves transitively via springmockk, keeping the build's mockk single-versioned.
+    // provisioner/manifest branches can be exercised offline. Single-versioned across the build via the
+    // catalog's `mockk` — springmockk drags in an older one transitively, so `-app` declares this same
+    // dependency explicitly to out-rank it. Bumping `mockk` without that would silently split the two.
     testImplementation(libs.mockk)
     testRuntimeOnly(libs.junitPlatformLauncher)
 }
