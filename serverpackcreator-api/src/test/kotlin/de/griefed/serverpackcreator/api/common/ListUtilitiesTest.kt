@@ -1,10 +1,77 @@
 package de.griefed.serverpackcreator.api.common
 
 import de.griefed.serverpackcreator.api.utilities.common.ListUtilities
+import de.griefed.serverpackcreator.api.utilities.common.parallelMap
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
+import java.util.concurrent.ConcurrentHashMap
 
 class ListUtilitiesTest internal constructor() {
+
+    /**
+     * How many live threads the default `parallelMap` context has spawned. The dispatcher built by
+     * `newSingleThreadContext("parallelMap")` names its threads after the context, so a survivor is a
+     * thread that was allocated and never released. Matched with `contains` rather than equality
+     * because kotlinx.coroutines' debug mode decorates a *running* thread's name with ` @coroutine#N`.
+     *
+     * Deliberately a **count**, not the names: every leaked thread carries the identical name, and
+     * `List - Set` drops all occurrences of a duplicate, so a name-difference version reports zero
+     * leaks whenever the baseline is already non-empty — i.e. it stops guarding exactly when a
+     * previous test in the same JVM has already leaked one.
+     */
+    private fun liveParallelMapThreadCount() =
+        Thread.getAllStackTraces().keys.count { it.name.contains("parallelMap") }
+
+    /**
+     * `parallelMap`'s defaulted context must not allocate a thread that outlives the call. A context
+     * from `newSingleThreadContext` owns a dedicated thread and has to be `close()`d by whoever
+     * created it — a defaulted parameter has no owner, so every invocation leaked one permanently.
+     */
+    @Test
+    fun parallelMapDoesNotLeakAThreadPerInvocation() {
+        val before = liveParallelMapThreadCount()
+
+        repeat(4) { invocation ->
+            val doubled = listOf(1, 2, 3).parallelMap { it * 2 }
+            Assertions.assertEquals(listOf(2, 4, 6), doubled, "invocation $invocation")
+        }
+
+        val leaked = liveParallelMapThreadCount() - before
+        Assertions.assertEquals(
+            0,
+            leaked,
+            "parallelMap leaked $leaked thread(s) still alive after 4 invocations"
+        )
+    }
+
+    /**
+     * A function called `parallelMap` has to actually run its elements in parallel. Pinned by giving
+     * every element blocking work and collecting the threads it landed on; a single-threaded context
+     * confines all of them to one. Skipped on a single-core machine, where no dispatcher can spread.
+     *
+     * Threads are identified by [Thread.threadId], never by name: Gradle enables assertions on test
+     * tasks, which flips kotlinx.coroutines' `auto` debug mode on, and that appends ` @coroutine#N`
+     * to the thread name. Collecting names therefore yields one entry per *coroutine* and passes
+     * against a single-threaded context — this test did exactly that before the switch.
+     */
+    @Test
+    fun parallelMapRunsElementsOnMoreThanOneThread() {
+        Assumptions.assumeTrue(Runtime.getRuntime().availableProcessors() > 1, "needs >1 core")
+        val threads = ConcurrentHashMap.newKeySet<Long>()
+
+        val results = (1..8).toList().parallelMap {
+            threads.add(Thread.currentThread().threadId())
+            Thread.sleep(50)
+            it
+        }
+
+        Assertions.assertEquals((1..8).toList(), results)
+        Assertions.assertTrue(
+            threads.size > 1,
+            "every element ran on one thread (ids=$threads); the default context is not parallel"
+        )
+    }
 
     @Suppress("SpellCheckingInspection")
     @Test
