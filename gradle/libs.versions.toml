@@ -15,9 +15,6 @@ kotlinJpa = "2.3.20"
 # resolved 4.1.0. The BOM no longer comes from the plugin, but a mismatch is still a trap.
 springGradle = "4.1.0"
 
-# https://mvnrepository.com/artifact/io.spring.gradle/dependency-management-plugin
-springDependencyMan = "1.1.7"
-
 # https://kotlinlang.org/docs/dokka-get-started.html
 dokka = "2.1.0"
 
@@ -80,7 +77,6 @@ kotlinAllOpen = { module = "org.jetbrains.kotlin:kotlin-allopen", version.ref = 
 kotlinJpa = { module = "org.jetbrains.kotlin.plugin.jpa:org.jetbrains.kotlin.plugin.jpa.gradle.plugin", version.ref = "kotlinJpa" }
 
 springGradlePlugin = { module = "org.springframework.boot:spring-boot-gradle-plugin", version.ref = "springGradle" }
-springDependencyMan = { module = "io.spring.gradle:dependency-management-plugin", version.ref = "springDependencyMan" }
 
 dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 dokkaJavaDoc = { module = "org.jetbrains.dokka:javadoc-plugin", version.ref = "dokka" }

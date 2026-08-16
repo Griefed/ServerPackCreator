@@ -17,7 +17,6 @@ dependencies {
     implementation(libs.kotlinGradlePlugin)
     implementation(libs.kotlinAllOpen)
     implementation(libs.springGradlePlugin)
-    implementation(libs.springDependencyMan)
     implementation(libs.kotlinJpa)
     implementation(libs.dokka)
     implementation(libs.dokkaJavaDoc)
