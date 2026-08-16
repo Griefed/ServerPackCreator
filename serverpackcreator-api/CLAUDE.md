@@ -174,6 +174,32 @@
   server pack; the `else` now warns and includes every mod, pinned by
   `ModListCompilerTest.unrecognisedModloaderStillYieldsEveryMod`. Most-specific loader names must still be
   matched first (LegacyFabric before Fabric, etc.).
+- **LANDMINE — never default a parameter to a dispatcher that owns a thread.** `newSingleThreadContext`
+  / `newFixedThreadPoolContext` return an `ExecutorCoroutineDispatcher` whose *creator* is responsible
+  for `close()`ing it. A defaulted parameter has no creator to do that, so the thread is stranded for
+  the life of the JVM — one per call. `ListUtilities.parallelMap` shipped exactly that
+  (`context: CoroutineContext = newSingleThreadContext("parallelMap")`) until 2026-08-16: 4 calls left
+  4 live threads named `parallelMap`, and because the context was *single*-threaded the function did
+  not do the one thing its name promises — all 8 elements of the guard ran on one thread id. It now
+  defaults to `Dispatchers.Default`, which is pool-backed and owns nothing. The `@OptIn(DelicateCoroutinesApi)`
+  it carried was the tell: that annotation was there **for** the leaking factory. If you find yourself
+  opting in to `DelicateCoroutinesApi` for a default value, that is the bug, not a formality.
+  Note this had **zero call sites in the repo** and still mattered — `parallelMap` is published API.
+- **A thread-identity assertion must use `Thread.threadId()`, never the thread name.** Gradle enables
+  assertions on test tasks, which flips kotlinx.coroutines' `auto` debug mode on, and that appends
+  ` @coroutine#N` to `Thread.currentThread().name`. A name-collecting set therefore counts *coroutines*
+  and reports N distinct "threads" while everything runs on one. The `parallelMap` parallelism guard was
+  written that way first and **passed green against the single-threaded context** — caught only because
+  the conventions require watching a new guard fail before the fix.
+  **Its sibling, the leak guard, had the mirror-image bug: it counts, and must.** Every thread
+  `newSingleThreadContext("parallelMap")` strands carries the *identical* name, and Kotlin's
+  `List - Set` drops **all** occurrences of a duplicate — so `after - before.toSet()` returns empty
+  whenever the baseline is already non-empty, i.e. the guard silently stops guarding exactly when an
+  earlier test in the same JVM has already leaked one, and JUnit guarantees no ordering between the two.
+  It passed only because the baseline happened to be empty. Compare **counts** for a population of
+  same-named threads; reserve identity comparison for distinguishing *which* thread ran something.
+  Both halves of this pair were found by auditing a guard that was already green — being red once is
+  necessary, not sufficient.
 - **`PackConfig.save(destination, apiProperties)`** is the primary (injection-required) overload;
   `save(destination)` is a `@Deprecated` facade resolving `ApiProperties` via the singleton — don't
   build new call-sites on the deprecated one.

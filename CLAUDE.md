@@ -94,9 +94,17 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   explicitly: buildSrc does **not** inherit the root catalog (verified on Gradle 8.14.4 — removing the
   block fails with `Unresolved reference: libs`).
   **The Kotlin version is deliberately two entries:** `kotlin` (the compiler plugin, 2.3.20) and
-  `kotlinLibs` (runtime/test libraries, 2.3.21). Bumping the compiler is a separate decision;
+  `kotlinLibs` (runtime/test libraries, 2.4.10). Bumping the compiler is a separate decision;
   `kotlinAllOpen`/`kotlinJpa` still duplicate the compiler version and should be folded into a
   `version.ref` when that bump happens.
+  **The gap is now a full minor (2.3.20 compiler vs 2.4.10 libraries), and it is verified to work,
+  not assumed.** stdlib 2.4.10 carries `kotlin.Metadata(mv=[2,4,0])` and coroutines 1.11.0 carries
+  `mv=[2,2,0]`; the 2.3.20 compiler reads both with no metadata-version error — checked with `javap
+  -v` on the cached jars plus a forced `:serverpackcreator-api:compileKotlin --rerun-tasks`. Widen
+  it further at your own risk: the failure mode is a hard *"binary version of its metadata is X,
+  expected Y"* compile error, not a warning. Note this only binds **Gradle**; IntelliJ analyses with
+  its own bundled Kotlin plugin, so an IDE older than the libraries can report metadata errors the
+  command line does not.
 - **Only `-api` publishes.** `serverpackcreator.publishing-conventions` is applied by that module
   alone, matching CI (`.gitlab-ci.yml` runs four `:serverpackcreator-api:publish...` invocations and
   nothing else). Non-api modules produce no sources/javadoc jar and run no `signing`. Do not move this
@@ -125,6 +133,34 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
     `projectDir`.
   So the ceiling without excluding `generateLicenseReport` is "fewer problems", not zero. Fixing our own is
   a real, separate piece of work; do not start it expecting the cache to switch on at the end of it.
+- **LANDMINE — Boot's BOM is a `platform()`, never `io.spring.dependency-management`. Do not "restore"
+  that plugin.** Boot's BOM manages far more than Spring — verified in 4.0.2's BOM: `kotlin.version`
+  2.2.21, `kotlin-coroutines.version` 1.10.2, `log4j2.version` 2.25.3, `jackson-2-bom.version` 2.20.2,
+  `jackson-bom.version` 3.0.4, `junit-jupiter.version` 6.0.2, `mongodb.version` 5.6.2, i.e. most of what
+  this project pins for itself. `io.spring.dependency-management` applies those as **forced** versions
+  that beat every transitive request, so each catalog bump upgraded the other modules and was silently
+  reverted in `-app`. That is not a warning and not a build failure — it surfaces as a
+  `NoSuchMethodError` the first time the newer API is *called*. It cost 16 app tests on the coroutines
+  1.11.0 bump (`BuildersKt.runBlockingK`, renamed in 1.11.0, absent from the 1.10.2 the BOM forced),
+  while `./gradlew compileKotlin` was green in every module.
+  Since 2026-08-16 `serverpackcreator.spring-conventions` imports the BOM as a Gradle `platform()`,
+  whose versions are ordinary constraints that lose to a higher request — the catalog wins, Boot still
+  versions everything we do not pin. Measured `-api` vs `-app` on shared coordinates:
+
+  | Configuration | Differing before | Differing after |
+  |---|---|---|
+  | `runtimeClasspath` | 13 of 79 | **0 of 79** |
+  | `testRuntimeClasspath` | 31 of 101 | **3 of 102** |
+
+  The three survivors are `-app` resolving *higher* (byte-buddy 1.18.10, asm 9.7.1) from test
+  dependencies `-api` lacks — correct conflict resolution, not drift. **Two related traps:**
+  - The BOM coordinate comes from the catalog's `springBoot`, **not** `SpringBootPlugin.BOM_COORDINATES`,
+    which is the *Gradle plugin's* version (`springGradle`). Those had drifted to 4.0.2 vs 4.1.0, leaving
+    Boot internally inconsistent — `spring-boot` at 4.0.2 while `spring-boot-starter-web` was 4.1.0.
+  - A platform only out-ranks what the module actually *requests*. `-app` got mockk only transitively
+    from springmockk (1.14.6), so the catalog's 1.14.11 never applied and `-api`'s comment claiming the
+    build is mockk-single-versioned was false. `-app` now declares `libs.mockk` explicitly. Bumping a
+    library that reaches a module **only transitively** still needs an explicit declaration there.
 - **LANDMINE — never do filesystem work in a task's configuration block.** `-api` shipped its
   root-level documents with fifteen bare `copy { }` calls inside `tasks.processResources { }`, so they
   ran when the task was *configured* — including on runs where `processResources` was UP-TO-DATE and did
@@ -160,6 +196,8 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 | `ServerPackHandler.modFileEndings` and `ConfigurationHandler.zipCheck` become getters reading `ModListCompiler.modFileEndings` / `ModpackZipInspector.zipCheck`, which are promoted from `private` to public (new exported surface) | Both facades return the identical value they always did, so nothing observable changes today — this is listed because they are no longer *constants*: each is now one object shared with its owner, where before the facade held a separate equal-valued copy. An embedder comparing either by identity (`===`) against the owner's now succeeds where it previously failed; one mutating a captured reference would affect both, though both values are immutable. |
 | `modscanning` gains `MissingDescriptorException`, and `DescriptorScanner.read` becomes public | Additive. The exception extends `IOException`, which the descriptor readers already declared, so an existing `catch (IOException)` is unaffected — what changes is that an absent descriptor is now *distinguishable* from a failed read, which is what lets the scanners log it at DEBUG instead of ERROR. An embedder calling `read` directly can act on that distinction; `scan` still flattens both to a default entry. **`ScanningException` is removed** — it was `internal`, so nothing outside `-api` could reference it. |
 | `modscanning` gains `ModJarScanner`, `DescriptorScanner`, `JsonDescriptorScanner`, `FabricFamilyScanner`, `QuiltPackScanner` and `ModScanner.scannerFor` / `ModScanner.quiltPackScanner`; the `internal` `Scanner<T, U>` and the published `JsonBasedScanner` are **removed** | Mostly additive: a plugin can implement a scanner for the first time, and `Scanner<T, U>` was `internal` so nothing outside `-api` could ever reference it. Every concrete scanner keeps its class name, its public members and its `scan(Collection<File>): List<ScannedMod>` signature. **The one break:** `JsonBasedScanner` is gone rather than deprecated — a subclass compiled against it will not compile, and must extend `JsonDescriptorScanner` instead (same `getJarJson`, plus the scanning contract). Griefed's explicit call on 2026-08-15 overriding the policy below, on the grounds that scanners are not a pf4j extension point: a plugin could subclass the helper but never register the result, so the facade was cost without reachable benefit. |
+| `ListUtilities.parallelMap` defaults its `context` to `Dispatchers.Default` instead of `newSingleThreadContext("parallelMap")` (`ListUtilities.kt:213`) | **Behaviour change on published API, and the second half of it is not just a repair.** The leak half is unambiguous: the old default handed out a dispatcher owning a dedicated thread that its creator must `close()`, which a defaulted parameter can never do, so every call stranded one thread for the life of the JVM (measured: 4 calls → 4 surviving threads named `parallelMap`). The half to actually read before upgrading: elements now run on the shared processor-sized pool rather than being confined to one thread, so an embedder whose lambda mutated shared state **without synchronisation was previously serialised by accident and can now race**. Signature unchanged, so a caller passing its own context sees nothing. Zero call sites inside this repo — the exposure is entirely embedders and plugins. Pinned by `ListUtilitiesTest.parallelMapDoesNotLeakAThreadPerInvocation` / `…RunsElementsOnMoreThanOneThread`. |
+| Building `-api` against kotlinx-coroutines **1.11.0** raises the *runtime* floor to coroutines ≥ 1.11.0 | **Not a source change at all — nothing fails to compile, and that is exactly why it belongs here.** 1.11.0 renames the Kotlin-facing `runBlocking` to JVM name `runBlockingK` (verified with `javap`: `BuildersKt.runBlockingK` exists in 1.11.0, is **absent** in 1.10.2; our compiled `VersionMeta.class` emits `invokestatic BuildersKt.runBlockingK`). An embedder whose resolution **pins** coroutines to 1.10.x — a strict constraint or a BOM — gets `NoSuchMethodError` at runtime, not a build failure. Normal resolution upgrades and hides this. The break is one-directional: old bytecode calling the old name still links against 1.11.0. Widened by `parallelMap` being `inline`, which bakes the call into every downstream caller's own bytecode. **This is not hypothetical — it hit our own `-app` first** (see the build-layout landmine below), so assume it will hit any embedder on a Spring Boot BOM. |
 | `ModListCompiler` / `MetadataScanner` pick Forge's scanner by comparing the whole Minecraft version instead of its minor component | **Behaviour change, and the point of the fix.** An embedder generating a pack for Forge on a `YY.x.y` Minecraft (26.x) previously got no clientside detection at all — every jar failed the annotation scan and was kept — and now gets the `mods.toml` scan that actually works. A pack that relied on "nothing is ever auto-excluded" will start excluding mods; that is the bug being fixed, not a regression. A version that cannot be parsed at all no longer throws out of `compileModList`, it falls back to the modern scanner. |
 
 ---
@@ -290,7 +328,7 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 
 | Module         | Tests         | Notes                                                                                |
 |----------------|---------------|--------------------------------------------------------------------------------------|
-| api            | 302 (1 skip)  | Phase 1 **complete**; + `FacadeConstantDelegationTest` (the published `modFileEndings`/`zipCheck` facades must *read* their owner, asserted on identity so a re-introduced equal-valued copy still fails); + `MinecraftMetaTest` (`requiredJavaVersion`) and `ScriptTemplateContentTest` (non-gated guard for the shipped templates; skips its `fish -n` case where fish is absent, and **executes** the bash `setupFabric` to pin the offline launcher path); + `ModScannerSidenessTest` and the `ModListCompilerTest` additions (modscanning hardening, 2026-08-14 — see `claude-docs/REFACTOR-LOG.md`); + `ModScannerDispatchTest` and the Forge-era pins (modscanning generification, 2026-08-15). |
+| api            | 309 (1 skip)  | Phase 1 **complete**; + `FacadeConstantDelegationTest` (the published `modFileEndings`/`zipCheck` facades must *read* their owner, asserted on identity so a re-introduced equal-valued copy still fails); + `MinecraftMetaTest` (`requiredJavaVersion`) and `ScriptTemplateContentTest` (non-gated guard for the shipped templates; skips its `fish -n` case where fish is absent, and **executes** the bash `setupFabric` to pin the offline launcher path); + `ModScannerSidenessTest` and the `ModListCompilerTest` additions (modscanning hardening, 2026-08-14 — see `claude-docs/REFACTOR-LOG.md`); + `ModScannerDispatchTest` and the Forge-era pins (modscanning generification, 2026-08-15); + the two `ListUtilitiesTest` `parallelMap` guards (thread-leak + real parallelism, 2026-08-16). |
 | clientside     | 88            | Extracted from `-app`; `BootVerifier` split + `packPostProcessor` hook; selection (MC-support gate) + setup-abort classification pinned; `MetadataScanner` now dispatches through `ModScanner.scannerFor` instead of its own copy |
 | app            | 102           | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay; + `VersionCheckerTest`, `EventServiceTest` and `RunConfigurationServiceTest` (all three previously untested) and a pin on `MigrationManager.LAMBDA_SUFFIX` |
 | plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |
