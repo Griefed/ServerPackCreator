@@ -1,13 +1,13 @@
 [versions]
 
 # https://kotlinlang.org/docs/releases.html#release-dbbbetails
-kotlin = "2.3.20"
+kotlin = "2.4.10"
 
 # https://kotlinlang.org/docs/all-open-plugin.html#gradle
-kotlinAllOpen = "2.3.20"
+kotlinAllOpen = "2.4.10"
 
 # https://mvnrepository.com/artifact/org.jetbrains.kotlin.plugin.jpa/org.jetbrains.kotlin.plugin.jpa.gradle.plugin
-kotlinJpa = "2.3.20"
+kotlinJpa = "2.4.10"
 
 # https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-gradle-plugin
 # Keep in lockstep with `springBoot` below — the plugin and the libraries are the same product, and
