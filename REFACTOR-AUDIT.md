@@ -6,7 +6,8 @@ commits no longer exist; the three mixed build commits have been split. Prior hi
 `backup-pre-split` (`0b1589559`), `backup-pre-kover-fix` (`a9dbbf3d8`) and `backup-pre-rewrite`
 (`b1f831dad`).
 
-**Verdict: no HIGH, no MEDIUM, one LOW — and that one is pre-existing, not from this branch.** Every
+**Verdict: no HIGH, no MEDIUM, no LOW open.** The single LOW (L3, pre-existing) was fixed on this
+branch at Griefed's request — see below. Every
 commit builds under the full `./gradlew build` except the two that are deliberately red, each for a
 reason stated in its own message.
 
@@ -87,9 +88,9 @@ however thorough it reads in a commit message.
 
 ---
 
-## LOW (open)
+## LOW (fixed)
 
-### L3 — `dokkaGeneratePublicationHtml` has an undeclared task dependency (PRE-EXISTING)
+### L3 — `dokkaGeneratePublicationHtml` had an undeclared task dependency (PRE-EXISTING)
 
 Running `dokkaGeneratePublicationHtml` alongside the javadoc publication from a wiped `build/dokka`
 fails deterministically (3 of 3 attempts):
@@ -104,10 +105,14 @@ fixMissingResources)` on that task, but not the Java compilations whose `build/g
 reads.
 
 **Confirmed pre-existing and unrelated to this branch:** the identical failure reproduces on
-untouched `develop` (`a7717e8a9`) in a clean worktree. It never surfaces in normal use because
-`build` runs only the javadoc publication (via `finalizedBy`), never the HTML one. Reported rather
-than fixed — it is outside this branch's scope and the remedy is a one-line `dependsOn` that deserves
-its own commit.
+untouched `develop` (`a7717e8a9`) in a clean worktree. It never surfaced in normal use because
+`build` runs only the javadoc publication (via `finalizedBy`), never the HTML one.
+
+**FIXED** at Griefed's request by `dbcb80caf`, in `dokka-conventions` so every module applying the
+convention benefits. The Javadoc publication already carried exactly this `dependsOn` — only the HTML
+half lacked it, making this the second occurrence of one bug, so the two are now configured together
+rather than side by side. Measured on the previously-failing command from a wiped `build/dokka`:
+**3 of 3 FAILED before, 3 of 3 SUCCESSFUL after**, 185 `index.html` generated.
 
 ---
 
@@ -154,7 +159,6 @@ documented as outside the development loop.
 ## Remaining decisions for Griefed
 
 1. **Merge strategy.** A squash-merge keeps the two deliberate red commits off `develop`; a
-   rebase-merge does not.
-2. **L3** — the pre-existing dokka `dependsOn` gap, if you want it fixed here rather than separately.
+   merge commit or rebase does not.
 
 Nothing else is outstanding, and no remediation is proposed for this branch.
