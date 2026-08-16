@@ -26,7 +26,7 @@ dependencies {
     api(libs.bouncycastle)
 
     api(libs.mslinks)
-    api("com.github.MCRcortex:nekodetector:Version-1.1-pre")
+    api(libs.nekodetector)
     //api("dev.kosmx.needle:jneedle:1.0.1")
 
     testImplementation(libs.kotlinTestJunit5)

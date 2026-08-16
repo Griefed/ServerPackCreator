@@ -24,15 +24,15 @@ plugins {
     kotlin("plugin.jpa")
 }
 
-// The catalog is not available as the `libs` accessor inside a precompiled script plugin, so it is
-// read explicitly. Keeps `springBoot` in `gradle/libs.versions.toml` the single source of truth for
-// the BOM as well as for the starters — before this, the BOM came from
+// The catalog is not available as the `libs` accessor inside a precompiled script plugin, so the
+// alias is looked up explicitly — but it IS the catalog's `springBootDependencies` entry, not a
+// coordinate string rebuilt from a version. Keeps `gradle/libs.versions.toml` the single source of
+// truth for the BOM as well as for the starters: before this, the BOM came from
 // `SpringBootPlugin.BOM_COORDINATES`, i.e. the *Gradle plugin's* version (`springGradle`), so a
 // `springBoot` bump left the BOM behind and `spring-boot` itself resolved 4.0.2 while
 // `spring-boot-starter-web` resolved 4.1.0.
-val springBootBom = "org.springframework.boot:spring-boot-dependencies:" +
-    extensions.getByType<VersionCatalogsExtension>()
-        .named("libs").findVersion("springBoot").get().requiredVersion
+val springBootBom = extensions.getByType<VersionCatalogsExtension>()
+    .named("libs").findLibrary("springBootDependencies").get()
 
 dependencies {
     // Applies to compileClasspath/runtimeClasspath/testRuntimeClasspath, which all extend
