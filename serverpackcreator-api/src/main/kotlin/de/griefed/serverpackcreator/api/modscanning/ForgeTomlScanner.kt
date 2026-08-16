@@ -23,7 +23,6 @@ import com.electronwill.nightconfig.core.CommentedConfig
 import com.electronwill.nightconfig.toml.TomlParser
 import java.io.File
 import java.io.IOException
-import java.io.InputStream
 import java.util.jar.JarFile
 
 /**
@@ -82,8 +81,11 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
                 for (declared in declaredDependencies) {
                     val dependencyModId = getModId(declared)
                     val side = getSide(declared)
-                    val dependencySideness =
-                        if (side.uppercase().matches(client)) Sideness.CLIENT else Sideness.SERVER
+                    val dependencySideness = if (side.uppercase().matches(client)) {
+                        Sideness.CLIENT
+                    } else {
+                        Sideness.SERVER
+                    }
 
                     if (dependencyModId.matches(neoForgeMinecraft)) {
                         // The platform itself. What side this mod demands of Minecraft/Forge IS its sideness.
@@ -92,6 +94,14 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
                         modDependencies.add(ModDependency(dependencyModId, dependencySideness))
                     }
                 }
+
+                if (declaredDependencies.none { dependency ->
+                        getModId(dependency).matches(neoForgeMinecraft)
+                    }) {
+                    //No side for either Forge, NeoForge, or Minecraft specified, assume SERVER.
+                    sidesForModloader.add(Sideness.SERVER)
+                }
+
             } else {
                 //no dependencies specified, assume required
                 sidesForModloader.add(Sideness.SERVER)
