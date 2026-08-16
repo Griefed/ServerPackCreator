@@ -1,145 +1,146 @@
-# Refactor audit — `claude-securitymanager-unknown-java` (second pass)
+# Refactor audit — `claude-parallelmap-thread-leak` (second pass, post-remediation)
 
-**Scope:** `git log develop..HEAD` — **4 commits**, `0ff278423` … `d2d155927`.
-**Mode:** READ-ONLY. No source was modified while auditing.
-**Supersedes** the first pass over this branch, which covered the first two commits and raised M-1,
-M-2, L-1 and L-2. **M-1 and L-2 are fixed** by `28d95bf06` and `d2d155927` and are re-verified below.
-M-2 and the original L-1 stand — the commits were not rewritten.
+**Base:** `a7717e8a9` (`develop`) · **Head:** `1cc6c4b1a` · **Commits:** 6 · **Date:** 2026-08-16
+**Supersedes** the first pass, which covered a 7-commit history and raised **2 HIGH, 4 MEDIUM,
+3 LOW**. That history has been rewritten; the first pass's commit hashes no longer exist.
+**Pre-rewrite history preserved at branch `backup-pre-rewrite` (`b1f831dad`).**
 
-**Verdict: no HIGH, two MEDIUM, two LOW.** The two remediation commits do what they claim, and the
-new tests were teeth-checked mutation by mutation. Both new findings are commit-hygiene, and **one is
-a repeat of a failure mode this project has already been bitten by twice.**
+**Verdict: no HIGH, no MEDIUM. Two deliberate deviations retained and justified below.**
 
 ---
 
-## HIGH
+## Rewritten history
 
-None. No Kotlin source is touched anywhere in the branch; the only production changes are the three
-shell templates and one shipped `variables.txt` comment block. No module boundary, no plugin API.
+| # | Commit | Subject | State |
+|---|---|---|---|
+| 1 | `e55ba8947` | `test(api): pin that parallelMap neither leaks a thread nor serialises` | **RED** (intentional) |
+| 2 | `ae18f5657` | `fix(api): stop parallelMap leaking a thread per call, and make it parallel` | green |
+| 3 | `e55ddfe8e` | `build: bump third-party library versions in the catalog` | **RED** (intentional) |
+| 4 | `3ab1abed6` | `fix(build): import Boot's BOM as a platform so the catalog wins` | green |
+| 5 | `e7320796a` | `fix(build): declare mockk explicitly in -app so it matches -api` | green |
+| 6 | `1cc6c4b1a` | `docs: record the parallelMap fix, the coroutines floor and the BOM landmine` | green |
 
----
-
-## MEDIUM
-
-### M-1 · `28d95bf06` sweeps `REFACTOR-AUDIT.md` into a `test(api)` commit — the third instance of this exact mistake
-
-**File:** `REFACTOR-AUDIT.md` (+105/−79, the single largest change in the commit)
-**Rule:** *One concern per commit.*
-
-The commit is titled *"pin the Java-resolve and fail-safe guard in all three templates"* and its body
-describes only the new test. Its actual contents:
-
-```
-REFACTOR-AUDIT.md                          184 ++++++-------
-.../api/ScriptTemplateContentTest.kt        67 ++++++
-```
-
-The audit report — a *different* document, about the *previous* audit pass — is more than half the
-diff and is **not mentioned once** in the commit message.
-
-**This is a repeat.** The earlier `claude-modscanning-generification` audit raised exactly this as
-**H-1**: `git add -A` sweeping unrelated files into a commit whose message describes something else.
-That was severe enough to warrant rebuilding the branch. It happened again here, from the same cause:
-the audit report was sitting uncommitted in the working tree when the remediation was staged with
-`git add -A`.
-
-It is MEDIUM rather than HIGH only because the swept file is documentation with no bearing on the
-build, where H-1 buried four `-api` production refactors. The *habit* is identical and has now cost
-three findings across this session.
-
-**Remedy:** the branch is unpushed, so `REFACTOR-AUDIT.md` can be split out into its own `docs:`
-commit exactly as the earlier H-1 was. More usefully: stop using `git add -A` when an audit report is
-in flight.
-
-### M-2 · `5f4bce289` bundles two independent fixes *(carried from the first pass, unchanged)*
-
-The version-resolve and the guard inversion are separable, with separate rationales and separate
-failure modes — as that commit's own body argues in both directions. Still one commit.
+The rewrite is content-preserving. `git diff backup-pre-rewrite HEAD` touches exactly three files —
+`ListUtilities.kt` (L3), `ListUtilitiesTest.kt` (M2) and `serverpackcreator-api/CLAUDE.md` (the M2
+lesson). Every other byte of the branch's work is identical; only the history was reorganised.
 
 ---
 
-## LOW
+## First-pass findings — disposition
 
-### L-1 · `d2d155927` is typed `docs(api)` but adds a test and edits a shipped template
+| ID | Sev | Finding | Status |
+|---|---|---|---|
+| H1 | HIGH | `58ba8ced8` bundled five concerns, two of them behaviour changes | **FIXED** — split into commits 3, 4, 5 and 6 |
+| H2 | HIGH | Branch not bisectable; catalog bump landed after its own fix | **FIXED** — catalog bump is now commit 3, its fix commit 4 |
+| M1 | MED | mockk bug fixed inline instead of its own commit | **FIXED** — commit 5 |
+| M2 | MED | Leak guard could silently stop guarding | **FIXED** — count-based, commit 1 |
+| M3 | MED | Two commits cancelled out; two more documented a dead state | **FIXED** — the `ext[]` attempt and its docs are gone |
+| M4 | MED | Published-API behaviour change without a prior-contract pin | **ACCEPTED** — see below |
+| L1 | LOW | Cross-module comment edit outside commit scope | **FIXED** — moved into commit 5, where it becomes true |
+| L2 | LOW | Unrelated test-count drift corrected in a scoped docs commit | **ACCEPTED** — disclosed in the commit body |
+| L3 | LOW | Wildcard `import kotlinx.coroutines.*` retained | **FIXED** — narrowed in commit 2 |
 
-**Files:** `ScriptTemplateContentTest.kt` (+81), `variables.txt` (+6), `CLAUDE.md` (+9)
+### H2 — how it was fixed, and the evidence
 
-The type badly understates the contents. 81 of its 96 added lines are a **new executing test** —
-`theBashTemplateResolvesTheJavaVersionEvenWhenChecksAreSkipped`, which extracts and runs the shipped
-Java-check block against a fake Java. That is a `test(api):` commit wearing a `docs:` label.
-
-The `variables.txt` change is also not quite documentation in the ordinary sense: it is a **shipped
-template**, so those six comment lines land in the `variables.txt` of every server pack SPC generates
-from now on. Comment-only, so nothing functional changes, and `VariablesTemplateTest` (which asserts
-the placeholders generation substitutes, not prose) stays green — but "docs" reads as *repository
-documentation*, and this ships to users.
-
-Splitting it into `test(api):` + `docs(api):` would have cost nothing, and this branch already
-demonstrates the split is natural — `28d95bf06` is a standalone test commit.
-
-### L-2 · The new cross-template assertions are whitespace-exact against template source
-
-**File:** `ScriptTemplateContentTest.kt:415,420,425`
-
-The fail-safe guard is matched as an exact substring, e.g.
+The whole point was that the failure had to be reproducible from the commit that causes it. It now
+is. Measured **at commit 3**, before its fix exists:
 
 ```
-if [[ ! "${JAVA_VERSION}" =~ ^[0-9]+$ ]] || [[ ${JAVA_VERSION} -ge 24 ]]; then
+:serverpackcreator-app:dependencyInsight --dependency kotlinx-coroutines-core
+  testRuntimeClasspath  1.10.2          (catalog asks for 1.11.0)
+:serverpackcreator-app:test             108 tests, 16 failed
+  java.lang.NoSuchMethodError: kotlinx.coroutines.BuildersKt.runBlockingK(...)
 ```
 
-So reformatting the condition — splitting it across lines, changing spacing, swapping `[[ ! x ]] || y`
-for an equivalent — fails the test even though behaviour is unchanged. A future maintainer tidying a
-shell template gets a red suite and no hint that the *behaviour* is fine.
+and **at commit 4**: `runtimeClasspath` differing coordinates `13 of 79` → **`0 of 79`**;
+`:serverpackcreator-app:test` `16 failed` → **`0 failed`**. Both commit messages carry the numbers
+measured on their own tree.
 
-Accepted as the established trade-off rather than a defect: this is exactly what
-`allTemplatesUseAnAlreadyInstalledFabricLauncherBeforeCheckingTheNetwork` already does, and for the
-same reason — fish and PowerShell cannot be executed on every machine, so source-level matching is the
-only coverage available. The failure message does say what shape is expected, which is what makes a
-brittle assertion survivable. Recorded so the brittleness is a known cost, not a surprise.
+### M4 — accepted, not fixed
+
+`parallelMap`'s behavioural contract changed on published API (single-thread confinement → shared
+pool). This is **Griefed's explicit decision**, taken before the work started: presented as a choice
+between fixing in place, deprecating with `ReplaceWith`, and deleting outright, and answered "fix in
+place, keep the signature". It is recorded in the root `CLAUDE.md` API-compatibility table per the
+project's own "source-compatible is not behaviour-compatible" policy, with the race exposure spelled
+out. Signature and source compatibility are unchanged; the function has zero in-repo callers.
+
+Left in the report rather than dropped because the risk itself does not go away by being approved:
+an embedder whose lambda mutated shared state without synchronisation was previously serialised by
+accident and can now race.
 
 ---
 
-## Verified fixed since the first pass
+## Deliberate deviations retained
 
-- **First-pass M-1 (fish and ps1 untested) — FIXED by `28d95bf06`.** Six mutations were run, one per
-  shell per property, and all six fail:
+### D1 — two commits are intentionally red
 
-  | | sh | fish | ps1 |
-  |---|---|---|---|
-  | guard un-inverted | FAILS | FAILS | FAILS |
-  | resolve call removed | FAILS | FAILS | FAILS |
+`e55ba8947` (failing guards) and `e55ddfe8e` (catalog bump) do not pass their suites.
 
-  The commit body records that the second row did **not** fail on the first attempt — the assertion
-  searched backwards from a marker and matched a `getJavaVersion` *inside* the check block. Anchoring
-  on the last `installJava` fixed it. Recording a failed teeth-check is what makes the second one
-  credible, and it is the difference between this pin and one that quietly asserts nothing.
+- The first is mandated by the project's own convention: *"Pin first means commit first… The failing
+  test lands in its own `test(...)` commit, red, and the fix follows in the next one."*
+- The second is the same discipline applied to a build change. The bump **cannot** be green — Boot's
+  BOM forces coroutines back to 1.10.2 while `-api` compiles against 1.11.0 — so the only
+  alternatives were to squash it into its fix (recreating H1) or to leave the fix's measurement
+  unreproducible (recreating H2).
 
-- **First-pass L-2 (undisclosed `SKIP_JAVA_CHECK` consequence) — FIXED by `d2d155927`**, and fixed the
-  right way round: the behaviour was checked against what `variables.txt` actually promises
-  ("compatibility check … as well as the automatic installation" — comparing and installing, not
-  reading) before being kept. The new test asserts *both* halves — the version resolves **and** the
-  install is still skipped — so the promise the setting makes is now guarded, not just the new
-  behaviour. Teeth verified by moving the call back inside the conditional.
+**Cost, stated plainly:** `git bisect` across this branch will land on a red commit twice, and a
+rebase-merge puts two red commits on `develop`. A squash-merge does not. If that trade is unwanted,
+the remedy is to squash 3 into 4 and 1 into 2 at merge time — which reintroduces H1/H2 in the
+history but keeps them out of `develop`.
 
-## Checked and clean
+### D2 — one commit spans two modules
 
-- **Pin-first held for the original fix**: `0ff278423` is test-only, observed red, and quotes a failure
-  reproducing the reporter's run command line for line.
-- **No `refactor:` commit anywhere in the branch**, so the "a refactor that changes a test isn't a
-  refactor" rule cannot be violated.
-- **No existing assertion was weakened.** `theBashTemplateDropsTheSecurityManagerFlagOnJavaThatRejectsIt`
-  still requires 17/21 → flag passed, 24/25 → dropped, and passes after the inversion — which is what
-  proves the guard was inverted rather than loosened.
-- **A user's proposed fix was declined with a stated reason**, not silently ignored.
-- **A suspected second bug was confirmed with the reporter before being written down** (1.20.1 pulling
-  Java 25 turned out to be a hand-edited `RECOMMENDED_JAVA_VERSION`).
-- **The verification gap is still disclosed**: fish and pwsh are absent on this machine, and the commits
-  say so rather than implying execution.
-- `./gradlew clean build` green; api 307 (1 skip).
+`e7320796a` edits both `serverpackcreator-app/build.gradle.kts` (the fix) and
+`serverpackcreator-api/build.gradle.kts` (a comment). The comment asserted that mockk is
+single-versioned across the build; that statement was false until this commit and true after it, so
+the two belong together. Splitting them would produce a commit whose only content is a comment that
+is wrong at the moment it is written.
 
-## Follow-ups, not defects in this range
+---
 
-- Split `REFACTOR-AUDIT.md` out of `28d95bf06` (M-1) while the branch is still unpushed.
-- Still open from earlier branches: the tracked
-  `serverpackcreator-plugin-example/src/main/resources/CHANGELOG.md` that nothing generates, and the
-  configuration cache remaining opt-in because of the third-party `:generateLicenseReport`.
+## Clean — verified this pass
+
+- **One concern per commit.** Version bumps, build mechanism, the mockk defect, the API fix and the
+  documentation are now five separate commits.
+- **No commit is mislabelled `refactor:`.** All are `test:`, `build:`, `fix:` or `docs:`; every
+  behaviour change is labelled `fix:` or `build:`.
+- **No existing test's assertion, argument or expected value was modified.** The only test change on
+  the branch is additive.
+- **Both guards were watched failing before their fix**, and the leak guard was then hardened after
+  an audit found it could pass while leaking — being red once is necessary, not sufficient, and that
+  lesson is now in `serverpackcreator-api/CLAUDE.md`.
+- **Bugs surfaced, not worked around.** Three were found and each got its own commit or an explicit
+  record: the thread leak, the BOM downgrade, the mockk split.
+- **Module boundaries intact.** No Swing, Spring-web or frontend dependency reached `-api`.
+- **Kotlin idioms.** No new `!!`, no `var` where `val` suffices; every new and changed declaration
+  carries a doc comment; the touched file's wildcard import was narrowed.
+
+---
+
+## Verification at `1cc6c4b1a`
+
+| Module | Tests | Failures | Skipped |
+|---|---|---|---|
+| api | 309 | 0 | 1 |
+| clientside | 88 | 0 | 0 |
+| app | 108 | 0 | 0 |
+| plugin-example | 3 | 0 | 0 |
+| grinder | 233 | 0 | 19 |
+| **Total** | **741** | **0** | **20** |
+
+`:serverpackcreator-app:bootJar` packages successfully. `-api` vs `-app` resolved
+`runtimeClasspath`: **0 of 79** shared coordinates differ. `testRuntimeClasspath`: 3 of 102 differ,
+all cases of `-app` resolving *higher* (byte-buddy 1.18.10, asm 9.7.1) from test dependencies `-api`
+does not have — correct conflict resolution, not drift.
+
+---
+
+## Outstanding — not addressed by this branch, no action taken
+
+- `springGradle` (4.0.2) still lags `springBoot` (4.1.0). Harmless now that the BOM comes from the
+  catalog rather than the plugin, but the two naming the same product at different versions is a
+  latent trap. Griefed's call.
+- The IDE's Gradle project model is stale — `.idea/libraries` is empty and three modules are absent
+  — which is what produced the phantom "unresolved `CoroutineContext`" errors that opened this work.
+  Not a repository problem; a Gradle reload in IntelliJ fixes it.
