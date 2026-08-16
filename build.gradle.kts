@@ -8,7 +8,7 @@ import java.time.LocalDate
 plugins {
     idea
     kotlin("jvm")
-    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
+    alias(libs.plugins.nexusPublish)
     id("com.github.jk1.dependency-license-report")
     id("com.install4j.gradle")
 }

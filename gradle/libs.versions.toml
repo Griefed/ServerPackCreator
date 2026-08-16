@@ -30,6 +30,9 @@ frontendPlugin = "10.0.0"
 # https://plugins.gradle.org/plugin/com.install4j.gradle
 install4j = "12.0.2"
 
+# https://github.com/gradle-nexus/publish-plugin
+nexusPublish = "2.0.0"
+
 # ---- libraries ----
 # Kotlin runtime/test libraries. Separate from `kotlin` (the compiler plugin) on purpose — see the comment there.
 kotlinLibs = "2.4.10"
@@ -40,7 +43,7 @@ junitPlatform = "6.1.3"
 mockk = "1.14.11"
 kotlinLogging = "3.0.5"
 ktorfit = "2.7.5"
-# Must match the de.comahe.i18n4k plugin version applied in -api and -plugin-example.
+# Drives both the i18n4k libraries and the `i18n4k` plugin alias in [plugins].
 i18n4k = "0.11.2"
 nightConfig = "3.9.0"
 jackson = "2.22.1"
@@ -138,3 +141,11 @@ springBootStarterDataMongodb = { module = "org.springframework.boot:spring-boot-
 springBootStarterTest = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "springBoot" }
 springBootDevtools = { module = "org.springframework.boot:spring-boot-devtools", version.ref = "springBoot" }
 springmockk = { module = "com.ninja-squad:springmockk", version.ref = "springmockk" }
+
+[plugins]
+
+# Applied by `alias(...)` from a real build script. Precompiled script plugins under
+# buildSrc/src/main/kotlin CANNOT use `alias(...)`; those still apply a versionless
+# `id("...")` and take their version from buildSrc's own compile classpath.
+i18n4k = { id = "de.comahe.i18n4k", version.ref = "i18n4k" }
+nexusPublish = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "nexusPublish" }
