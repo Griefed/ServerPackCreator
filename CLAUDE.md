@@ -89,22 +89,43 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   (verified — it fails with *"Toolchain download repositories have not been configured"*), yet by the
   time its settings evaluate the plugin is already on the classpath, so requesting a version there
   fails with *"already on the classpath with an unknown version"*. Don't "tidy" either one away.
-- **Versions live in `gradle/libs.versions.toml`** — plugins *and* the 50 libraries. Do not re-add a
-  hardcoded coordinate to a module build file. `buildSrc/settings.gradle.kts` points at the same file
+- **Versions live in `gradle/libs.versions.toml`** — `[versions]`, `[libraries]` (49) and `[plugins]`
+  (12). Do not re-add a hardcoded coordinate to a module build file.
+  **Plugins are consumed by two different routes, and only one of them works everywhere:**
+  - a *real* build script (`build.gradle.kts`, a module's own) uses `plugins { alias(libs.plugins.x) }`;
+  - a **precompiled script plugin** (`buildSrc/src/main/kotlin/*.gradle.kts`) **cannot** — `alias(...)`
+    there fails at `:buildSrc:compilePluginsBlocks` with `Unresolved reference: libs`. Verified by
+    trying it, not assumed. Those apply a versionless `id("...")`, and the version arrives from the
+    plugin **marker** (`<id>:<id>.gradle.plugin:<version>`) that `buildSrc/build.gradle.kts` puts on
+    its own compile classpath via `libs.plugins.x.marker()`.
+
+    Either route reads this one file, so a plugin's id and version are declared exactly once. Before
+    2026-08-16 buildSrc depended on plugin *implementation* artifacts under `[libraries]`
+    (`kotlinGradlePlugin`, `dokka`, …) while the convention plugins named the plugin *id* — two
+    unlinked strings per plugin. Converting to markers is behaviour-preserving; measured, the
+    flattened buildSrc compile classpath gained only the marker POMs and **lost
+    `org.jetbrains.dokka:javadoc-plugin`**, which the `org.jetbrains.dokka-javadoc` marker does not
+    depend on. That artifact turned out to be unnecessary: a from-scratch `dokkaJavadocJar` still
+    produces 467 files / 356 HTML pages. Check that jar if you touch dokka wiring — `-api`'s javadoc
+    is **published to Maven Central**, and the task reports success either way.
+  - `settings.gradle.kts` cannot use the catalog in its own `plugins { }` block (it is evaluated
+    before the catalog exists), which is why the foojay resolver keeps a literal version there. `buildSrc/settings.gradle.kts` points at the same file
   explicitly: buildSrc does **not** inherit the root catalog (verified on Gradle 8.14.4 — removing the
   block fails with `Unresolved reference: libs`).
-  **The Kotlin version is deliberately two entries:** `kotlin` (the compiler plugin, 2.3.20) and
-  `kotlinLibs` (runtime/test libraries, 2.4.10). Bumping the compiler is a separate decision;
-  `kotlinAllOpen`/`kotlinJpa` still duplicate the compiler version and should be folded into a
-  `version.ref` when that bump happens.
-  **The gap is now a full minor (2.3.20 compiler vs 2.4.10 libraries), and it is verified to work,
-  not assumed.** stdlib 2.4.10 carries `kotlin.Metadata(mv=[2,4,0])` and coroutines 1.11.0 carries
-  `mv=[2,2,0]`; the 2.3.20 compiler reads both with no metadata-version error — checked with `javap
-  -v` on the cached jars plus a forced `:serverpackcreator-api:compileKotlin --rerun-tasks`. Widen
-  it further at your own risk: the failure mode is a hard *"binary version of its metadata is X,
-  expected Y"* compile error, not a warning. Note this only binds **Gradle**; IntelliJ analyses with
-  its own bundled Kotlin plugin, so an IDE older than the libraries can report metadata errors the
-  command line does not.
+  **Everything Kotlin is ONE `kotlin` entry (2.4.10) — keep it that way.** The compiler plugin, the
+  allopen/jpa/spring compiler plugins and the stdlib/reflect/test libraries all read `version.ref =
+  "kotlin"`. JetBrains versions these together, so a split only ever produces skew: until 2026-08-16
+  this was four entries (`kotlin`, `kotlinAllOpen`, `kotlinJpa` on 2.3.20; `kotlinLibs` on 2.4.10),
+  which meant `-api` compiled with a 2.3.20 compiler against a 2.4.10 stdlib. That combination did
+  work — but it is the same *shape* as the coroutines failure below: a compiler reading metadata from
+  a newer library fails hard with *"binary version of its metadata is X, expected Y"*, and nothing
+  warns you as the gap widens. Do not re-split it to bump libraries without the compiler.
+  Unifying was measured, not assumed: compiler warnings **243 before, 243 after**, the only delta
+  being one warning the newer compiler rewords in place (`ServerPackCreator.kt:164:95`, elvis
+  operator); 741 tests green; `bootJar`, `dokkaJavadocJar` (356 HTML pages), `sourcesJar` and
+  `generateLicenseReport` all still succeed. Note the compiler version binds **Gradle** only —
+  IntelliJ analyses with its own bundled Kotlin plugin, so an IDE older than the catalog can report
+  metadata errors the command line does not.
 - **Only `-api` publishes.** `serverpackcreator.publishing-conventions` is applied by that module
   alone, matching CI (`.gitlab-ci.yml` runs four `:serverpackcreator-api:publish...` invocations and
   nothing else). Non-api modules produce no sources/javadoc jar and run no `signing`. Do not move this
