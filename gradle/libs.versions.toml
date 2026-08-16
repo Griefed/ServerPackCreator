@@ -129,6 +129,10 @@ svgSalamander = { module = "com.formdev:svgSalamander", version.ref = "svgSalama
 miglayoutSwing = { module = "com.miglayout:miglayout-swing", version.ref = "miglayout" }
 balloontip = { module = "net.java.balloontip:balloontip", version.ref = "balloontip" }
 tipoftheday = { module = "tokyo.northside:tipoftheday", version.ref = "tipoftheday" }
+# Consumed as a Gradle `platform()`, NOT through io.spring.dependency-management. As a platform its
+# versions are ordinary constraints that lose to a higher request, so a library this project pins
+# itself in this catalog stays at the pinned version instead of being forced back to Boot's.
+springBootDependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springBoot" }
 springBootStarterWeb = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "springBoot" }
 springBootStarterLog4j2 = { module = "org.springframework.boot:spring-boot-starter-log4j2", version.ref = "springBoot" }
 springBootStarterDataMongodb = { module = "org.springframework.boot:spring-boot-starter-data-mongodb", version.ref = "springBoot" }

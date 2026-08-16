@@ -5,11 +5,11 @@ plugins {
     id("serverpackcreator.application-conventions")
 }
 
-dependencyManagement {
-    imports {
-        mavenBom(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
-    }
-}
+// Boot's BOM arrives as a Gradle `platform()` from `serverpackcreator.spring-conventions`; there is
+// deliberately no `dependencyManagement { imports { mavenBom(...) } }` here and no
+// `ext["<name>.version"]` overrides. See the comment in that convention plugin — the short version is
+// that the BOM must constrain, not force, or it silently reverts this module's half of every version
+// bump in `gradle/libs.versions.toml`.
 
 configurations {
     all {
