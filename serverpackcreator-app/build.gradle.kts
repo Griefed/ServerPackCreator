@@ -64,6 +64,10 @@ dependencies {
     testRuntimeOnly(libs.junitPlatformLauncher)
 
     testImplementation(libs.springmockk)
+    // springmockk pulls an older mockk transitively (1.14.6 against the catalog's 1.14.11). Declaring
+    // the catalog's version explicitly out-ranks it, so this module tests against the same mockk as
+    // -api instead of quietly running a different one. Without it the two drift on every mockk bump.
+    testImplementation(libs.mockk)
     developmentOnly(libs.springBootDevtools)
     //developmentOnly("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 }
