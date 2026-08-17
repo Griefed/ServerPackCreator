@@ -24,8 +24,13 @@
   against `PropertyStore`; (2) move get/set logic verbatim into the group class, keys as companion
   constants; (3) `ApiProperties` keeps thin facade properties delegating to the group; (4) run API
   + app suites. Large data blocks (e.g. fallback mod-lists) are moved by script, not retyped.
-- `ApiProperties` now delegates to `PropertyStore` + 8 `settings.*Config` groups and retains only
+- `ApiProperties` now delegates to `PropertyStore` + 9 `settings.*Config` groups and retains only
   orchestration, jar/OS info, version/firstRun, preferences, hasteBin and the log4j factory.
+- **`NetworkConfig` (2026-08-17) is the group to reach for when adding an HTTP call.** It owns the
+  connect/read/download-read timeouts, and `WebUtilities.openTimedConnection` / `openTimedStream` are
+  the *only* sanctioned way to open a connection — see the landmine below. It depends on nothing but
+  `PropertyStore`, and nothing inside `ApiProperties` reads it, so the declaration-order landmine
+  above does not apply to it: the sole consumer is `WebUtilities`, per call, long after construction.
 
 ## Landmines & verified quirks (durable — do not relearn)
 
@@ -200,6 +205,37 @@
   same-named threads; reserve identity comparison for distinguishing *which* thread ran something.
   Both halves of this pair were found by auditing a guard that was already green — being red once is
   necessary, not sufficient.
+- **LANDMINE — never open a connection outside `WebUtilities.openTimedConnection` / `openTimedStream`.**
+  The JDK's default connect- and read-timeout is *infinite*, so `url.openConnection()` or
+  `url.openStream()` written anywhere else is a hang waiting to happen — and until 2026-08-17 that was
+  every single call site. Twelve of them sit on the **blocking** GUI startup path
+  (`ServerPackCreator.kt:228` → `ApiWrapper.stageTwo()` → `versionMeta` → `VersionMeta.init` →
+  `checkManifests()`), so a host that DROPs rather than REJECTs left the splash screen stuck at 20 %
+  with no recovery but killing the process. Same single-source-of-truth rule as `SupportedModloaders`
+  and `ModScanner.scannerFor`, for the same reason: copies drift, and the copy without the timeout is
+  the one that strands a user. Two traps found while fixing it:
+  - **The opener returns `URLConnection` on purpose — do not narrow it.** The timeout setters are on
+    `URLConnection`, and `downloadFile` is published API taking any `URL`; a `file:` URL yields a
+    `FileURLConnection`, so casting throws `ClassCastException`, which is **not** an `IOException` and
+    sails past every caller's `catch`. `MinecraftServerManifestCooldownTest` downloads from a `file:`
+    URL and caught it; `WebUtilitiesTimeoutTest.aNonHttpUrlCanStillBeDownloaded` now pins it directly.
+  - **A `mockk(relaxed = true)` fixture silently defeats a timeout guard.** A relaxed mock answers `0`
+    for an `Int`, and `0` *is* the JDK's "wait forever" — both stall-guards still failed against the
+    *fixed* code until the timeouts were explicitly stubbed. Stub them; never rely on the relaxed default.
+- **`ManifestUpdater` owns the manifest refresh, and a check must cost exactly one request.**
+  Extracted from `VersionMeta` (2026-08-17) purely to create a testable seam — `VersionMeta` resolves
+  its twelve URLs from `VersionMetaConfig` constants inside its constructor, so request counts were
+  unreachable from a test. It sends `If-Modified-Since` and returns on `304` without reading or parsing
+  anything. **Do not re-add a reachability pre-check:** it cost a second full request whose body was
+  discarded, and because it `disconnect()`ed without draining, the *real* request then paid a fresh
+  TCP+TLS handshake. Pinned by `ManifestUpdaterTest.aManifestCheckCostsOneRequest` /
+  `anAbsentManifestIsDownloadedInOneRequest`. Also pinned, and easy to break: an unreachable host logs
+  one **WARN** per manifest, not an ERROR with a stack trace — twelve of those on every networkless
+  launch is how a genuine manifest failure gets buried, so connection failure and unparseable-manifest
+  are caught separately (`anUnreachableHostLeavesThePresentManifestIntact`).
+  Measured: startup 24 → 12 requests, 489,038 → 213,885 bytes, ~601 ms → ~392 ms median batch
+  wall-clock. Only 4 of 12 hosts honour `If-Modified-Since`; the remaining bytes and the reason not to
+  chase them with ETags are **B30**, and taking the refresh off the startup path entirely is **B31**.
 - **`PackConfig.save(destination, apiProperties)`** is the primary (injection-required) overload;
   `save(destination)` is a `@Deprecated` facade resolving `ApiProperties` via the singleton — don't
   build new call-sites on the deprecated one.

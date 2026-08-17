@@ -1596,3 +1596,76 @@ Measured over a full `:serverpackcreator-api:test` run:
 Both survivors are real defects in a jar and stay loud, with the stack trace. `DescriptorScanner.read`
 was promoted protected → public in the process: *which* exception it throws is the meaningful part and
 is only observable there, since `scan` flattens both outcomes to a default entry by design.
+
+## 2026-08-17 — network + startup performance (`claude-perf-network-startup`), api 309 → 326
+
+Opened by a read-only performance investigation of `-api` and `-app`. That survey produced fifteen
+findings; this branch takes the first two phases of the resulting plan (timeouts, then startup), and
+four of the original claims were **corrected on re-verification** before any code was written —
+recorded here because the wrong versions were stated out loud first:
+
+- `serverDownloadable` does **not** gate generation. Its only production caller is
+  `ConfigEditor.kt:1198`, the GUI check timer — so the risk of touching it is far lower than claimed,
+  but it also means an HTTP request per keystroke-pause exists purely to drive a warning label.
+- `exclusionFilter` defaults to `START` (`GenerationConfig.kt:815`), so the per-comparison
+  `entry.toRegex()` hits only users who chose `REGEX`/`EITHER`. The real hot-loop cost on the default
+  path is the *filter read itself* — `matchesFilter` reads `apiProperties.exclusionFilter` once per
+  (mod × list-entry) pair, and that getter does two `Properties.getProperty` calls, i.e. two
+  **synchronized** `Hashtable` lookups, ~330 k of them for a 300-mod pack.
+- Zip inspection is **not** on the GUI timer path — `checkModpackDir` only does a `listFiles`. It is
+  once per generation, not once per keystroke.
+- The `ModListCompiler` dependency-rescue loop, called a hotspot, is ~10–20 ms at realistic pack
+  sizes. A real smell, a negligible user win; demoted to opportunistic.
+
+**The finding that reframed the work:** nothing in the codebase set an HTTP connect- or read-timeout,
+so twelve calls on the *blocking* startup path could wait forever. Not a slow start — a hang at
+splash-screen 20 % with no recovery but killing the process.
+
+Phase 0, timeouts (`9fce124` red, `c124331` fix). Guards written against a loopback `ServerSocket`
+that accepts and never answers; both failed past 15 s, blocking in
+`sun.net.www.http.HttpClient.parseHTTPHeader`. Fixed with a `NetworkConfig` settings group (5 s
+connect / 15 s read / 60 s download-read, all tunable, `0` kept as the documented escape hatch to the
+old behaviour) and one sanctioned opener, `WebUtilities.openTimedConnection` / `openTimedStream`, with
+every call site routed through it. Two lessons, both now landmines in the module `CLAUDE.md`:
+the opener must return `URLConnection` — narrowing it to `HttpURLConnection` turned every `file:`
+download into a `ClassCastException`, which is not an `IOException` and so escaped `downloadFile`'s
+error handling entirely; and `mockk(relaxed = true)` answers `0` for an `Int`, which *is* the JDK's
+"wait forever", so the fixture silently reproduced the defect and both guards still failed against the
+fixed code until the values were explicitly stubbed.
+
+Phase 1, startup (`04c0e57` extract, `6b19148` red, `76dea65` fix). `ManifestUpdater` extracted from
+`VersionMeta` as a strict verbatim move — including the ugly `var countOldFile/countNewFile`
+accumulators and the LegacyFabric equal-count nudge — purely to create a seam, since `VersionMeta`
+resolves its twelve URLs from `VersionMetaConfig` constants inside its constructor and nothing about
+request counts was reachable from a test. Then both `isReachable` pre-checks dropped and
+`If-Modified-Since` added.
+
+Measured, and the measurement is the point — pinned by *request count* against a loopback
+`com.sun.net.httpserver.HttpServer`, never by wall-clock:
+
+| | Requests | Bytes | Batch wall-clock (median of 3) |
+|---|---|---|---|
+| before | 24 | 489,038 | ~601 ms |
+| after | 12 | 213,885 | ~392 ms |
+
+Only 4 of 12 hosts honour `If-Modified-Since` (Mojang 206,986 B, fabric-intermediaries 56,270 B,
+fabric-loader, fabric-installer). Deliberately no per-host special-casing: a host that ignores it
+answers `200` and the version-count comparison gates the replacement exactly as before.
+
+One behaviour preserved on purpose and pinned: an unreachable host still logs one **WARN** per
+manifest. Dropping the pre-check moved that case onto the `IOException` path, which would have printed
+twelve ERRORs with stack traces on every networkless launch — which is exactly how a genuine manifest
+failure gets buried.
+
+Two follow-ups deferred with numbers rather than opinions (**B30**, **B31**). B30, `If-None-Match` for
+the Forge manifest, was measured and **rejected for now**: it is another 121,492 B, 57 % of what still
+transfers, but ~0 ms of startup, because the twelve checks run concurrently and the critical path is
+LegacyFabric at ~330 ms for **498 bytes** — pure latency, while Forge finishes in ~234 ms, below the
+gate. It only matters below roughly 4 Mbit/s. B31 is the larger prize the same measurement exposed:
+`ApiWrapper.setup()` already seeds every manifest from the jar, so the refresh need not block startup
+at all (~392 ms → ~0), but that weakens `VersionMeta`'s construction contract and needs the grinder and
+the web version-schedule checked against it first.
+
+Doc note: the `app` row in the root `CLAUDE.md` refactor-state table said 102 tests; the suite actually
+runs **108**. Pre-existing drift, not caused by this branch — corrected to the measured number without
+attempting to reconstruct which six were added when.
