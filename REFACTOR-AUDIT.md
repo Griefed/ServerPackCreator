@@ -288,3 +288,95 @@ One code defect (**G1**, NUL bytes making a source file binary to git) and two p
 findings (**G2**, a red pin that asserted the wrong thing; **G3**, published API without its table row).
 Nothing behavioural is wrong: the caches are correct, EDT-confinement was verified rather than assumed, and
 the one clean red→green chain on this branch is exemplary.
+
+---
+
+# Refactor audit — `claude-perf-generation`
+
+**Range:** `claude-perf-gui..200588627` (8 commits) · **Date:** 2026-08-17 · **Mode:** READ-ONLY
+Both red→green chains verified by hybrid checkout (fix production + pin tests, unedited).
+
+| Commit | Type | Verdict |
+|---|---|---|
+| `004e345c6` | test(api) | red **verified** (3/3) |
+| `1bf414e41` | fix(api) | chain **verified clean** red→green, pin unedited |
+| `78eb879a2` | test(api) | contains **production code** (H1) |
+| `e7da71ade` | fix(api) | **three concerns in one commit** (H2); one undisclosed error-path change (H4) |
+| `c9d1b8b4b` | test(api) | red **verified** (1/12) |
+| `8426f8f98` | fix(api) | chain **verified clean** red→green, pin unedited |
+| `16f1a148c` | refactor(api) | published property changes shape, no compat row (H3) |
+| `200588627` | docs | accurate, including the corrected estimates |
+
+This is the strongest branch of the four on evidence: both pins were genuinely red on exactly the stated
+tests, and both go green with the pin **untouched**. It is the weakest on commit hygiene.
+
+## MEDIUM
+
+### H1 — A `test(api):` commit ships production code
+
+`78eb879a2` adds `ModpackZipInspector`'s defaulted `openZip: (File) -> ZipFile` constructor parameter
+(+18 lines of production) alongside its guard.
+
+The convention keeps "add tests" and "change production" apart. The message discloses it and the reasoning
+is real — open-counts are invisible from outside, so the guard cannot exist without the seam, and the
+parameter is inert until the next commit — but the label says `test` and the diff says otherwise. Either
+the seam belonged in its own `refactor(api):` commit first, or the commit should have been labelled for
+what it contained.
+
+### H2 — A `fix(api):` commit bundles three unrelated changes
+
+`e7da71ade` contains:
+
+1. `ModpackZipInspector` — one archive read per inspection (the actual fix, ~80 ms per site on a
+   10,000-entry archive);
+2. `ServerPackFileGatherer` — hoisting `File(source).absolutePath` out of the walk loop (3.0 → 0.5 ms at
+   50,000 files);
+3. `QuiltPackScanner` — replacing a nested `find` with a map (4.71 → 0.14 ms at 500 mods).
+
+Three files, three unrelated concerns, one commit. The message describes each honestly and labels 2 and 3
+as rounding errors, which is why this is MEDIUM rather than HIGH — but a reader bisecting a zip regression
+gets the scanner change too, and reverting one means reverting all three. They share only "I measured them
+in the same sitting".
+
+### H3 — A published property changed shape with no compatibility row
+
+`16f1a148c` turns `ForgeAnnotationScanner.dependencyCheck` / `dependencyReplace` from
+`val x: Regex get() = "…".toRegex()` into `val x: Regex = "…".toRegex()`.
+
+Source-compatible, and the right change — the getter recompiled the pattern on every read inside
+per-dependency loops. But these are **public** members of a published module, and the semantics change in
+exactly the way this project's compatibility table already records twice for other members: the value is
+no longer freshly created per read, so every caller now shares one instance. A caller comparing by identity
+sees different behaviour. `grep` finds no row for either property (0 hits in `CLAUDE.md`).
+
+The same omission as G3 on the previous branch, which suggests the reflex to record additive or
+shape-only API changes is not yet automatic.
+
+## LOW
+
+### H4 — An error-path behaviour change went undisclosed
+
+`e7da71ade` reduces `getAllFilesAndDirectoriesInModpackZip` from **two** `catch` blocks to **one**
+(verified: 2 occurrences of "Could not acquire file or directory" before, 1 after).
+
+Before, directories and files were fetched by separate calls, each with its own `try`/`catch`, so a failure
+in one still returned the other's results plus one logged error. Now a single failure loses both and logs
+once. The commit message describes the single-pass optimisation but not this consequence.
+
+Barely reachable in practice — both old calls opened the *same* archive, so a failure in one would almost
+certainly fail the other — which is why it is LOW rather than MEDIUM. Worth recording because "we now lose
+partial results on failure" is the kind of change that surprises someone reading the error log later.
+
+### H5 — Verified-correct, recorded so it is not re-litigated
+
+- Both chains verified by hybrid checkout: `004e345c6` red on exactly its three stated tests → all green
+  under `1bf414e41` with the pin unedited; `c9d1b8b4b` red on its one test → green under `8426f8f98`,
+  likewise unedited. This is the discipline the earlier branches' first pins lacked.
+- `e7da71ade` uses `putIfAbsent` rather than `associateBy` in the Quilt merge, preserving `find`'s
+  first-match-wins. Correct, and the message explains why — a real distinction, not pedantry.
+- `checkZipArchive`'s `val foldersInModpackZip` is assigned inside the `use` block and read after it;
+  definite-assignment holds because the early-return path precedes the assignment. Compiler-enforced,
+  checked rather than assumed.
+- The docs commit records that the branch's headline estimate was **wrong** (the `exclusionFilter` read is
+  worth ~3 ms, not a substantial win) rather than quietly dropping it. That is the behaviour the
+  conventions ask for.
