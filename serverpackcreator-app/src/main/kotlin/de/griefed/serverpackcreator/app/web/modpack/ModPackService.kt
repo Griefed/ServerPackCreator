@@ -78,6 +78,16 @@ class ModPackService @Autowired constructor(
     }
 
     /**
+     * The already-stored modpack whose contents hash to [sha256], if there is one.
+     *
+     * This is how a re-upload is recognised, so it runs on every upload. Extracted from
+     * [saveUploadedFile] to be testable on its own — that method also wants GridFS, a storage system
+     * and the API's ConfigurationHandler, none of which duplicate-detection depends on.
+     */
+    fun existingUploadOf(sha256: String?): Optional<ModPack> =
+        Optional.ofNullable(modpackRepository.findAll().find { available -> available.sha256 == sha256 })
+
+    /**
      * Store the multipart-file to disk. If a match in SHA256 hashes is found, a [StorageException] is thrown to prevent
      * duplicates and save storage.
      *
@@ -103,14 +113,13 @@ class ModPackService @Autowired constructor(
         modpack.sha256 = savedFile.sha256
         modpack.name = savedFile.originalName
         modpack.size = savedFile.size
-        val availableModpacks = modpackRepository.findAll()
-        for (available in availableModpacks) {
-            if (available.sha256 == modpack.sha256) {
-                throw StorageException(
-                    "Modpack already exists. Not storing. Match found with hash ${modpack.sha256} in ${available.name} (${available.id})",
-                    available.id
-                )
-            }
+        val duplicate = existingUploadOf(modpack.sha256)
+        if (duplicate.isPresent) {
+            val available = duplicate.get()
+            throw StorageException(
+                "Modpack already exists. Not storing. Match found with hash ${modpack.sha256} in ${available.name} (${available.id})",
+                available.id
+            )
         }
         return modpackRepository.save(modpack)
     }
