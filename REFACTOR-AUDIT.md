@@ -182,3 +182,109 @@ Recommended order, each in its own commit:
    plugin-facing (F4).
 
 Stopping here for go-ahead, as instructed. No source modified.
+
+---
+
+# Refactor audit — `claude-perf-gui`
+
+**Range:** `claude-perf-network-startup..8117ec0fa` (7 commits) · **Date:** 2026-08-17 · **Mode:** READ-ONLY
+Verified the same way: throwaway worktree, plus hybrid checkouts (fix-commit production + pin-commit
+tests, unedited) to test each red→green chain independently.
+
+| Commit | Type | Verdict |
+|---|---|---|
+| `1fad7db42` | refactor(app) | clean; behaviour-preserving move, dead param removed |
+| `a368be12d` | refactor(api) | adds **published API** with no compatibility-table row (G3) |
+| `71dac2b2f` | test(app) | red **verified** (3 of 13) |
+| `e6c529754` | fix(app) | chain **verified clean** red→green, pin unedited; but ships NUL bytes (G1) |
+| `7fa1bb39a` | test(app) | red, but the guard is **wrong** — it can never pass (G2) |
+| `5a1cbc315` | fix(app) | rewrote that guard's assertion; disclosed (G2) |
+| `8117ec0fa` | docs | accurate; figures are testimony, noted |
+
+## MEDIUM
+
+### G1 — A Kotlin source file contains NUL bytes, so git records it as binary
+
+**`serverpackcreator-app/.../configs/ConfigEditorViewModel.kt:107`**
+
+```
+val triple = "$minecraftVersion\x00$modloader\x00$modloaderVersion"
+```
+
+Two `0x00` bytes at offsets 5786 and 5797, where spaces were intended. `git show --stat` for
+`e6c529754` reports `Bin 5266 -> 8399 bytes` — the diff of that commit is **unreviewable**, and every
+future diff of this file will be too. The file is still valid UTF-8 and compiles.
+
+Not a runtime defect: the separator is used consistently when writing and reading the key, and NUL cannot
+appear in a version string, so lookups are correct and collision-proof. It is a hygiene and reviewability
+defect — an invisible control character in source that no one wrote deliberately, which will confuse the
+IDE, Qodana and any human reviewer.
+
+**Fix:** drop the string key entirely and use Kotlin's `Triple` as the map key — collision-free by
+construction, no separator to choose, and the intent is visible.
+
+### G2 — The autocomplete pin's *assertion* was rewritten by its own fix, so the committed guard can never pass
+
+`7fa1bb39a` commits `anUnchangedSuggestionListIsParsedOnce` asserting
+`verify(exactly = 1) { guiProps.getGuiProperty("autocomplete.clientmods") }`.
+
+`5a1cbc315` changes that same guard to `verify(exactly = 20)` and swaps `assertEquals(size)` for
+`assertSame(identity)`.
+
+This is the conventions' explicit stop-and-flag signal — a changed *expectation*, not a fixture tweak —
+and it is worse than the equivalent finding on the previous branch (F1). There, the pin was correct and
+merely defeated by its fixture. Here the pin was **incorrect**: it demanded that the property be read once
+per query, which the design deliberately does not do (the memo is *keyed* on the property value, so the
+cheap read must happen every time). Anyone checking out `7fa1bb39a` sees a guard that no correct
+implementation can satisfy.
+
+Mitigating, and the reason this is MEDIUM: `5a1cbc315`'s message states all of this plainly, and the
+replacement assertion was verified to have teeth by deliberately defeating the cache and observing it fail
+on identity while contents matched. The lesson is already recorded as a landmine. No code fix is needed —
+the guard is correct now — but the branch's red commit is a misleading artifact.
+
+### G3 — New published API added in a `refactor:` commit, with no compatibility-table row
+
+`a368be12d` adds two public methods to a module published to Maven Central:
+
+- `ModpackManifestParser.manifestCandidates(destination): List<File>` (`:67`)
+- `ConfigurationHandler.manifestCandidates(destination): List<File>` (`:682`)
+
+Neither appears in the root `CLAUDE.md` behaviour-change/compatibility table (`grep`: 0 hits); the only
+mention anywhere is in `serverpackcreator-app/CLAUDE.md`, i.e. the consumer's notes rather than the
+publisher's contract. The API compatibility policy makes the exported surface a stated constraint, so a
+new exported member belongs in that table even when nothing breaks.
+
+The `refactor:` label is defensible — behaviour genuinely is preserved, and `checkManifests` consumes the
+same list it now exposes — but "refactor" understates a commit that widens a published contract.
+
+**Fix:** add the row. (Label left alone: rewriting history for a type-label on an otherwise honest commit
+is not worth it, and the row is what a future reader actually needs.)
+
+## LOW
+
+### G4 — Verified-correct, recorded so it is not re-litigated
+
+- **The `SuggestionProvider` cache is EDT-confined, so its plain `var`s are safe.** Checked rather than
+  assumed: `allSuggestions()` is reached only from `ConfigEditor.saveCurrentConfiguration` (`:547`, a
+  user-initiated save) and `InclusionsEditor.saveSuggestions`; `parsedSuggestions()` only from the document
+  listener, which launches on `Dispatchers.Swing`. The `ConfigCheckTimer`'s `parallelStream` validate path
+  does **not** touch suggestions (`validateExclusions`/`validateWhitelist` contain no suggestion access).
+  Had it, this would have been a data race.
+- `ConfigEditorViewModel`'s two caches are correctly `ConcurrentHashMap`-backed, which *is* required — that
+  object is reached from the timer's `parallelStream`.
+- `1fad7db42` removes `ConfigCheckTimer`'s now-unused `apiWrapper` parameter and `java.io.File` import, and
+  the throwaway `PackConfig` per tick. Boy-Scout, within scope, no sprawl.
+- Chain `71dac2b2f` → `e6c529754` verified by hybrid checkout: 3 of 13 red before, all 13 green after with
+  the pin **unedited**. This is the pattern the other chains should follow.
+- The performance figures in `e6c529754` and `8117ec0fa` (4.70 ms vs 0.021 ms parse/fingerprint on the
+  2,715,835-byte fixture; popup `56x85` → `54x34` px) are measurements taken during the work and are not
+  reproducible from the repository alone. Testimony, not verifiable — flagged only so a reader knows which
+  is which.
+
+## Summary
+
+One code defect (**G1**, NUL bytes making a source file binary to git) and two process/documentation
+findings (**G2**, a red pin that asserted the wrong thing; **G3**, published API without its table row).
+Nothing behavioural is wrong: the caches are correct, EDT-confinement was verified rather than assumed, and
+the one clean red→green chain on this branch is exemplary.
