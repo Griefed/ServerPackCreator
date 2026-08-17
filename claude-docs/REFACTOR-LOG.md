@@ -1783,3 +1783,61 @@ Deliberately **not** done: the `ModListCompiler` dependency-rescue loop (`:202-2
 with two list allocations per pair is a genuine smell but ~10–20 ms at realistic sizes. Left alone rather
 than churn the most delicate logic in the file for a rounding error; it is described in the root
 `CLAUDE.md` hotspot notes if it ever matters.
+
+## 2026-08-17 — web query shapes and the DBRef flattening (`claude-perf-web`), app 118 → 127
+
+Phase 4, the only phase touching persisted data. Split deliberately: risk-free query fixes first, the
+schema change and its migration second.
+
+**4a, no schema change.** `AmountStatsService` did four full-collection loads to answer one
+`/api/v2/stats` request — one for the tally and three purely for `.size`; the three become `count()`
+(`3d25dd22` red, `84aa970a` fix). `ModPackService`'s upload duplicate-check loaded every modpack to
+compare one hash; extracted as `existingUploadOf` (`c67e021a`), then pinned and moved onto an indexed
+`findBySha256` (`3d25dd22`… see `549d7e30`). Each avoided load mattered more than its row count because
+of the eager `@DBRef` fan-out that 4b then removed at the root.
+
+That fix also surfaced a latent semantic bug: with the in-memory comparison, `available.sha256 == sha256`
+is true when **both** are null, so a hash-less upload would be called a duplicate of any stored modpack
+that also lacked one. Unreachable from the upload path (`SavedFile.sha256` is non-null), and guarded
+anyway because the parameter is nullable, stored documents genuinely carry null, and Mongo's own
+`{sha256: null}` query would match them too — so the fix has to say no explicitly.
+
+**4b, the flattening** (`7acc5fdc`). `startArgs`/`clientMods`/`whitelistedMods` become embedded
+`List<String>`; `ClientMod`, `WhitelistedMod`, `StartArgument`, their three repositories and
+`ModRepository` are deleted. Each was a `@Document` whose only field was its `@MongoId` — a `ClientMod`
+document is literally `{_id: "OptiFine"}` — so three collections and four repositories existed to store
+nothing, and the eager join resolved to the string it was already keyed by.
+
+Measured effect: creating a run-configuration went from ~550 sequential round-trips (one `findBy` per
+entry plus a `save` per miss, on the default clientside list) to **two** calls, pinned by
+`buildingAConfigurationCostsTwoRepositoryCalls`.
+
+Two things fell out of it:
+
+- **A real bug.** The duplicate lookup was `…AndStartArgsInAndClientModsInAndWhitelistedModsIn`, and
+  Spring Data's `In` means "contains any of", not "equals" — so a configuration could be matched and
+  reused because it shared a *single* mod with the one being created. Now an exact array match.
+- **Four tests were deleted rather than adapted**, which is normally the stop-and-flag signal and here
+  is the honest consequence: they described resolution against collections that no longer exist. The two
+  that *also* covered comma-splitting were replaced by tests keeping exactly that assertion, so no
+  coverage was lost. Everything else changed only by dropping `.map { it.mod }`.
+
+The frontend moved in the same commit, because it is one contract: `types/api.ts` → `string[]`, and the
+unwrapping in `RunConfigurationCard.vue` and `SubmitModPackForm.vue` (two sites) deleted. The Vitest
+fixtures moved to the new shape with **expectations untouched** — they failed first with
+`"[object Object], [object Object]"`, which is exactly the coupling being fixed.
+
+**The migration** (`16a3f399`) is what makes the flattening deployable. It is join-free: a DBRef's `$id`
+*is* the value, so `{$ref:"clientMod",$id:"OptiFine"}` → `"OptiFine"` reads nothing, and still works
+after the referenced collections are dropped. Element-wise so an interrupted run is completed rather
+than corrupting a half-rewritten document; idempotent so a restart costs one read and no writes; on
+`ApplicationReadyEvent` so an unreachable database delays it instead of blocking the boot; failures
+logged and swallowed; orphaned collections dropped only after a fully successful pass.
+
+Verified it costs the suite nothing: `WebServiceContextTest` fires the listener against an unreachable
+Mongo and still runs in 0.438 s, because localhost *refuses* rather than black-holes and server
+selection fails fast instead of waiting out the 30 s default. That would not hold for a remote host.
+
+Deliberately dropped from the plan: projections for `FileCleanupSchedule` / `DatabaseCleanupSchedule`.
+Their cost was the eager `@DBRef` fan-out on `findAll()`, which the flattening removed at the source, so
+the remaining work would have been machinery for a midnight cron with nothing left to win.

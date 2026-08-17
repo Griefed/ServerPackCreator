@@ -80,6 +80,39 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   `RunConfigurationService`, `EventService`, the stats services); no controller is bloated;
   scheduling isolated in `web/scheduling`. No restructuring warranted here.
 
+## The web module's mod-lists are embedded, not referenced (2026-08-17)
+
+- `RunConfiguration.startArgs` / `clientMods` / `whitelistedMods` are `MutableList<String>` **embedded
+  in the document**. They were `@DBRef` arrays pointing at `StartArgument` / `ClientMod` /
+  `WhitelistedMod` — each a `@Document` whose *only* field was its `@MongoId`, so a `ClientMod`
+  document was literally `{_id: "OptiFine"}` and the eager join resolved to the string it was already
+  keyed by. Three collections and four repositories stored nothing. **Do not reintroduce them.**
+- That removed ~550 sequential round-trips per created run-configuration (one `findBy` per entry plus a
+  `save` per miss, on the default clientside list) — now two calls total, pinned by
+  `RunConfigurationServiceTest.buildingAConfigurationCostsTwoRepositoryCalls`. It also removed an eager
+  join from every read reaching a RunConfiguration, which is what made `findAll()` on server packs or
+  modpacks fan out across four collections.
+- **LANDMINE — `In` in a derived query name means "contains any of", not "equals".** The duplicate
+  lookup was `…AndStartArgsInAndClientModsInAndWhitelistedModsIn`, so a configuration could be matched
+  and reused because it shared a *single* mod with the one being created. It is now
+  `…AndStartArgsAndClientModsAndWhitelistedMods`, an exact array match.
+- **The JSON shape is part of this contract.** `serverpackcreator-web-frontend/src/types/api.ts`
+  declares `string[]`; `RunConfigurationCard.vue` and `SubmitModPackForm.vue` (two sites) consume it
+  directly. Changing the entity means changing those in the same commit.
+- **`web/migration/` exists for the upgrade**, and is the pattern to copy if another shape ever changes:
+  `RunConfigurationListMigration` is the per-document rewrite (join-free — a DBRef's `$id` is the value,
+  so nothing needs reading, and it works even after the referenced collections are dropped), tested
+  without a database; `RunConfigurationListMigrationRunner` applies it on `ApplicationReadyEvent`, not
+  during context startup, so an unreachable database delays the migration instead of blocking the boot.
+  It is idempotent and element-wise, so an interrupted run is *completed* on the next start rather than
+  corrupting a half-rewritten document, and the orphaned collections are dropped only after a fully
+  successful pass. Failures are logged and swallowed on purpose.
+  Note it uses `MongoTemplate` rather than the repository, necessarily: the mapped type can no longer
+  read the old shape, which is the very problem being fixed.
+  It costs the suite nothing — `WebServiceContextTest` fires the listener against an unreachable Mongo
+  and still runs in 0.438 s, because localhost *refuses* rather than black-holes, so server selection
+  fails fast instead of waiting out the 30 s default. Do not assume that holds for a remote host.
+
 ## Testing patterns
 
 - **Standalone MockMvc per controller** (not `@SpringBootTest` full-context) is the established
