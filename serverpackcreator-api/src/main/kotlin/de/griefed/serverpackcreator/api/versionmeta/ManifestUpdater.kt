@@ -42,7 +42,7 @@ import javax.xml.parsers.ParserConfigurationException
  *
  * @param utilities Commonly used utilities across ServerPackCreator.
  */
-class ManifestUpdater(private val utilities: Utilities) {
+internal class ManifestUpdater(private val utilities: Utilities) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /**

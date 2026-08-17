@@ -205,15 +205,35 @@
   same-named threads; reserve identity comparison for distinguishing *which* thread ran something.
   Both halves of this pair were found by auditing a guard that was already green — being red once is
   necessary, not sufficient.
-- **LANDMINE — never open a connection outside `WebUtilities.openTimedConnection` / `openTimedStream`.**
+- **LANDMINE — every network call must carry a timeout, and only two ways of applying one exist.**
   The JDK's default connect- and read-timeout is *infinite*, so `url.openConnection()` or
-  `url.openStream()` written anywhere else is a hang waiting to happen — and until 2026-08-17 that was
-  every single call site. Twelve of them sit on the **blocking** GUI startup path
+  `url.openStream()` written anywhere else is a hang waiting to happen — and before 2026-08-17 that was
+  every call site. Twelve sat on the **blocking** GUI startup path
   (`ServerPackCreator.kt:228` → `ApiWrapper.stageTwo()` → `versionMeta` → `VersionMeta.init` →
   `checkManifests()`), so a host that DROPs rather than REJECTs left the splash screen stuck at 20 %
   with no recovery but killing the process. Same single-source-of-truth rule as `SupportedModloaders`
   and `ModScanner.scannerFor`, for the same reason: copies drift, and the copy without the timeout is
-  the one that strands a user. Two traps found while fixing it:
+  the one that strands a user.
+
+  **The two sanctioned routes, and why there are two:**
+  - `WebUtilities.openTimedConnection` / `openTimedStream` — for anything holding an `ApiProperties`.
+  - `URL.timedConnection(connectTimeout, readTimeout)` — the function *both* routes end in, for callers
+    that cannot reach `WebUtilities`. A settings group inside `ApiProperties` is one: `WebUtilities` is
+    constructed *from* `ApiProperties`, so depending on it from within would close a cycle
+    (`UpdateConfig` reads its own `NetworkConfig` instead). `-app`'s `VersionChecker` is another — it is
+    abstract with a no-argument constructor, so it takes the values as `var`s that `UpdateChecker` sets.
+
+  **Known exceptions, both benign — check before adding a third.** `plugins/ServerPackCreatorPlugin.kt:68`
+  and `utilities/common/ClassUtilities.kt:60` open a **`jar:` URL** to read a resource out of a jar, not a
+  socket, so no timeout applies. An audit on 2026-08-17 caught this landmine claiming *"that was every
+  single call site"* while two genuinely unbounded **network** calls were still live —
+  `UpdateConfig.updateFallback` (reached from `ApiProperties`' own `init`, so it blocked construction of
+  the API itself) and `VersionChecker.getResponse` (the GUI's startup update-check). Both are bounded now.
+  A landmine that overstates its coverage is worse than none: the next reader trusts it and stops looking.
+  If you add a call, grep for `openStream()`/`openConnection()` across `-api` and `-app` rather than
+  assuming this list is still complete.
+
+  Three traps found while fixing it:
   - **The opener returns `URLConnection` on purpose — do not narrow it.** The timeout setters are on
     `URLConnection`, and `downloadFile` is published API taking any `URL`; a `file:` URL yields a
     `FileURLConnection`, so casting throws `ClassCastException`, which is **not** an `IOException` and
@@ -222,6 +242,15 @@
   - **A `mockk(relaxed = true)` fixture silently defeats a timeout guard.** A relaxed mock answers `0`
     for an `Int`, and `0` *is* the JDK's "wait forever" — both stall-guards still failed against the
     *fixed* code until the timeouts were explicitly stubbed. Stub them; never rely on the relaxed default.
+    Consequence worth knowing before you trust that pair as an example: because the fixture had to change,
+    `checkout 9fce12419 && apply c124331b0` shows **red → red**, not red → green. The later timeout pins
+    (`UpdateConfigTimeoutTest`, `VersionCheckerTimeoutTest`) were written against the *existing*
+    signatures precisely so their fixes turn them green untouched — copy those, not the first one.
+  - **A hang guard's bound must not equal the timeout it is measuring.** `VersionCheckerTimeoutTest` uses
+    45 s against a 15 s default read-timeout, because a bound *equal* to the timeout races between "gave
+    up as configured" and "waited forever" and decides the outcome by scheduling. It also cannot shorten
+    what it measures — `VersionChecker` has no settable timeout until the code under test provides one,
+    and a guard may not depend on the thing it guards. That is why this one test costs ~15 s.
 - **`ManifestUpdater` owns the manifest refresh, and a check must cost exactly one request.**
   Extracted from `VersionMeta` (2026-08-17) purely to create a testable seam — `VersionMeta` resolves
   its twelve URLs from `VersionMetaConfig` constants inside its constructor, so request counts were
