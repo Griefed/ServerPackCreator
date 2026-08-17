@@ -29,6 +29,30 @@ import java.util.*
 import javax.net.ssl.HttpsURLConnection
 
 /**
+ * Opens a connection to this URL with [connectTimeout] and [readTimeout] applied, in milliseconds.
+ *
+ * The single place that knows *how* a timeout is applied. [WebUtilities.openTimedConnection] is the
+ * usual way in and supplies the configured values, but the settings groups cannot use it — `WebUtilities`
+ * is constructed *from* `ApiProperties`, so a group inside `ApiProperties` reaching for it would close a
+ * cycle. They call this directly with values from their own [de.griefed.serverpackcreator.api.settings.NetworkConfig]
+ * instead, which keeps the mechanism in one place even though the values arrive by two routes.
+ *
+ * Returns [URLConnection], not `HttpURLConnection`: the timeout setters live on `URLConnection`, and a
+ * `file:` URL yields a `FileURLConnection` whose cast would throw `ClassCastException` — which is not an
+ * `IOException`, and so escapes callers' error handling. Callers needing `responseCode` cast themselves.
+ *
+ * @param connectTimeout Milliseconds to wait for the connection. `0` is the JDK's "wait forever".
+ * @param readTimeout Milliseconds a single read may block. `0` is the JDK's "wait forever".
+ */
+@Throws(IOException::class)
+fun URL.timedConnection(connectTimeout: Int, readTimeout: Int): URLConnection {
+    val connection = this.openConnection()
+    connection.connectTimeout = connectTimeout
+    connection.readTimeout = readTimeout
+    return connection
+}
+
+/**
  * Utility-class revolving around interactions with web-resources.
  *
  * @param apiProperties API configuration of this instance.
@@ -63,12 +87,8 @@ class WebUtilities(private val apiProperties: ApiProperties) {
      * @return The opened, timeout-carrying connection.
      */
     @Throws(IOException::class)
-    fun openTimedConnection(url: URL, readTimeout: Int = apiProperties.networkReadTimeout): URLConnection {
-        val connection = url.openConnection()
-        connection.connectTimeout = apiProperties.networkConnectTimeout
-        connection.readTimeout = readTimeout
-        return connection
-    }
+    fun openTimedConnection(url: URL, readTimeout: Int = apiProperties.networkReadTimeout): URLConnection =
+        url.timedConnection(apiProperties.networkConnectTimeout, readTimeout)
 
     /**
      * Opens an input-stream on [url] with the configured timeouts applied — the timeout-carrying
