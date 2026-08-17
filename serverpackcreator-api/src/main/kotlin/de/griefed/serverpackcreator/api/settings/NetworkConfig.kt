@@ -60,6 +60,19 @@ class NetworkConfig(private val store: PropertyStore) {
          * Property-key holding the milliseconds a single read of a file-download may block.
          */
         const val DOWNLOAD_READ_TIMEOUT_KEY = "de.griefed.serverpackcreator.network.timeout.download.read"
+
+        /**
+         * Shipped default milliseconds to wait for a connection. A constant so callers which have no
+         * `PropertyStore` — `VersionChecker` in `-app` is one — can default to the same value instead of
+         * repeating the literal, which is how equal-valued copies start drifting.
+         */
+        const val DEFAULT_CONNECT_TIMEOUT = 5_000
+
+        /** Shipped default milliseconds a single read of a metadata response may block. */
+        const val DEFAULT_READ_TIMEOUT = 15_000
+
+        /** Shipped default milliseconds a single read of a file-download may block. */
+        const val DEFAULT_DOWNLOAD_READ_TIMEOUT = 60_000
     }
 
     /**
@@ -67,19 +80,19 @@ class NetworkConfig(private val store: PropertyStore) {
      * reachable host completes the handshake in well under this, so a longer value only prolongs
      * the wait on hosts which are not there.
      */
-    val fallbackConnectTimeout = 5_000
+    val fallbackConnectTimeout = DEFAULT_CONNECT_TIMEOUT
 
     /**
      * Fallback milliseconds a single read of a metadata response may block.
      */
-    val fallbackReadTimeout = 15_000
+    val fallbackReadTimeout = DEFAULT_READ_TIMEOUT
 
     /**
      * Fallback milliseconds a single read of a file-download may block. Larger than
      * [fallbackReadTimeout] because installers and mod jars are served by hosts which trickle bytes
      * under load, where a stalled metadata endpoint is simply broken.
      */
-    val fallbackDownloadReadTimeout = 60_000
+    val fallbackDownloadReadTimeout = DEFAULT_DOWNLOAD_READ_TIMEOUT
 
     /**
      * Milliseconds to wait for a connection to be established before giving up.
