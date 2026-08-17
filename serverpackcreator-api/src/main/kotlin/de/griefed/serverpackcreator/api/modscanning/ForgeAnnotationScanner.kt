@@ -37,7 +37,6 @@ import java.util.*
  */
 class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val utilities: Utilities) : JsonDescriptorScanner() {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
-    private val additionalDependencyRegex = "(@.*|\\[.*)".toRegex()
     private val caches = "META-INF/fml_cache_annotation.json"
     private val annotations = "annotations"
     private val values = "values"
@@ -46,12 +45,24 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
     private val clientSideOnly = "clientSideOnly"
     private val dependencies = "dependencies"
 
-    /** Matches a dependency entry worth recording, filtering out the malformed ones older packs contain. */
-    val dependencyCheck: Regex
-        get() = "(before:.*|after:.*|required-after:.*|)".toRegex()
-    /** Strips the version range off a dependency entry, leaving the mod id the scanner matches on. */
-    val dependencyReplace: Regex
-        get() = "(@.*|\\[.*)".toRegex()
+    /**
+     * Matches a dependency entry worth recording, filtering out the malformed ones older packs contain.
+     *
+     * A `val`, not a `get() = ...toRegex()`: this is read inside the per-dependency loops below, and a
+     * getter recompiled the pattern on every read. `Regex` is safe to share — matching creates its own
+     * matcher — so one instance per scanner is all that is needed.
+     */
+    val dependencyCheck: Regex = "(before:.*|after:.*|required-after:.*|)".toRegex()
+
+    /**
+     * Strips the version range off a dependency entry, leaving the mod id the scanner matches on.
+     *
+     * The single source of truth for that pattern: a private `additionalDependencyRegex` held the
+     * identical literal and was what the two `additionalDependency*` checks actually used, so the
+     * pattern existed twice with only one copy documented — the same equal-valued-copy trap this module
+     * records for `modFileEndings` and `zipCheck`.
+     */
+    val dependencyReplace: Regex = "(@.*|\\[.*)".toRegex()
 
     override val scanAnnouncement = "Scanning Minecraft 1.12.x and older mods for sideness..."
 
@@ -320,7 +331,7 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
             }
             val dependencyIndex = dependency.lastIndexOf(":") + 1
             val dependencySubstring = dependency.substring(dependencyIndex)
-            val checked = dependencySubstring.replace(additionalDependencyRegex, "")
+            val checked = dependencySubstring.replace(dependencyReplace, "")
             if (checked == modId) {
                 depends = true
             }
@@ -343,7 +354,7 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
             val dependencies: String = utilities.jsonUtilities.getNestedText(child, values, dependencies, value)
             val dependencyIndex = dependencies.lastIndexOf(":") + 1
             val dependencySubstring = dependencies.substring(dependencyIndex)
-            val dependency = dependencySubstring.replace(additionalDependencyRegex, "")
+            val dependency = dependencySubstring.replace(dependencyReplace, "")
             if (dependency == modId) {
                 depends = true
             }
