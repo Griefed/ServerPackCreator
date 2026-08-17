@@ -380,3 +380,179 @@ partial results on failure" is the kind of change that surprises someone reading
 - The docs commit records that the branch's headline estimate was **wrong** (the `exclusionFilter` read is
   worth ~3 ms, not a substantial win) rather than quietly dropping it. That is the behaviour the
   conventions ask for.
+
+---
+
+# Refactor audit — `claude-perf-web`
+
+**Range:** `claude-perf-generation..bf408b13a` (8 commits) · **Date:** 2026-08-17 · **Mode:** READ-ONLY
+Both red→green chains verified by hybrid checkout (fix production + pin tests, unedited).
+
+| Commit | Type | Verdict |
+|---|---|---|
+| `c51e582c2` | test(app) | red **verified** (1/2) |
+| `4c710c676` | fix(app) | chain **verified clean**, pin unedited |
+| `bff391a7e` | refactor(app) | clean, genuinely behaviour-preserving |
+| `99d9d01ec` | test(app) | ships **production code** (W2) |
+| `cf6fc1d35` | fix(app) | chain **verified clean** (3/3 red → 3/3 green), pin unedited |
+| `cb5d264d5` | fix(app) | 18 files, big-bang; **not deployable on its own** (W3, W4) |
+| `4ff94614a` | feat(app) | migration **runner is untested** (W1) |
+| `bf408b13a` | docs | accurate |
+
+## HIGH
+
+### W1 — The component that rewrites persisted data has no test
+
+**`serverpackcreator-app/.../web/migration/RunConfigurationListMigrationRunner.kt`** — `grep` across
+`src/test`: **no test references it at all.**
+
+`RunConfigurationListMigrationTest` covers only `RunConfigurationListMigration`, the pure per-document
+transformation. Every decision that makes the migration *safe* lives in the untested runner:
+
+| Line | Untested decision |
+|---|---|
+| `:77` | iterating `collection.find()` while writing inside the loop |
+| `:83` | `replaceOne` targeting `_id` |
+| `:86` | skip the drop when nothing was rewritten |
+| `:91` | drop the orphaned collections only after a fully successful pass |
+| `:92` | swallow every exception so startup continues |
+| `:104-111` | per-collection drop failures logged and skipped |
+
+This is the one component on all four branches that **mutates a user's persisted data**, and it is the
+only substantial one with no coverage. The convention is explicit: never refactor untested code blind, and
+missing characterization tests are a reportable defect. The transformation being well tested makes this
+easy to overlook, which is precisely why it is worth stating.
+
+Note the ordering rule is genuinely load-bearing: if the drop ran before the rewrite, the referenced ids
+would be gone and the configurations unrecoverable. Nothing verifies that ordering today.
+
+**Proposed fix:** test the runner against an in-memory Mongo double. The project has no such harness, so
+the cheapest honest option is to extract the loop's decisions behind a small seam the way
+`ModpackZipInspector`'s `openZip` was done — then the ordering, the skip and the swallow can be asserted
+without a database.
+
+## MEDIUM
+
+### W2 — A `test(app):` commit ships production code
+
+`99d9d01ec` adds `@Indexed` to `ModPack.sha256` (+3) and `findBySha256` to `ModPackRepository` (+9).
+Identical in kind to H1 on the previous branch, disclosed the same way, and wrong the same way: the label
+says `test`, the diff includes production. Twice on one stack means the pattern, not the slip, is the
+finding — when a guard needs new surface to exist, that surface belongs in a preceding
+`refactor:`/`feat:` commit.
+
+### W3 — `cb5d264d5` is a big-bang change across 18 files
+
+One commit deletes three `@Document` classes and four repositories, retypes three entity fields, rewrites
+a service, changes a derived query, rewrites a test (deleting four cases), and changes five frontend
+files including two Vitest fixtures.
+
+The convention asks for incremental change behind stable interfaces. The counter-argument is real and
+stated in the message: the field type *is* the change, so nothing compiles between the halves, and the
+frontend consumes the same JSON contract. But "it cannot be split" is not quite true — the frontend could
+have moved in its own commit after the backend, since the SPA is built and deployed from the same tree but
+is not compiled against Kotlin.
+
+### W4 — An intermediate commit leaves the application unable to read its own data
+
+`cb5d264d5` changes the persisted shape; the migration arrives only in `4ff94614a`. Deploying or bisecting
+to `cb5d264d5` gives an application whose mapped type cannot read existing `runConfiguration` documents.
+
+Disclosed in the message ("this one alone would leave a deployed instance unable to read its own
+run-configurations"), and harmless if the branch merges as a unit — but it means the branch has no
+bisectable-safe midpoint, which matters for exactly the kind of bug a data migration causes.
+
+## LOW
+
+### W5 — "The next start retries" is true of the rewrite, not the drop
+
+`RunConfigurationListMigrationRunner.kt:94-96` promises a retry on failure. Accurate for the rewrite, whose
+check is per document and idempotent. Not accurate for `dropOrphanedCollections`: it runs only when
+`rewritten > 0`, so if the rewrite succeeded and a drop failed, the next start rewrites nothing, returns
+early at `:86`, and never retries the drop. The collections linger.
+
+Consequence is nil — the code already documents leaving them as harmless — but the comment overstates its
+guarantee, which is the same species as F3 on the first branch.
+
+### W6 — Verified-correct, recorded so it is not re-litigated
+
+- Both chains verified by hybrid checkout: `c51e582c2` red on its one stated test → green under
+  `4c710c676`; `99d9d01ec` red on all three → green under `cf6fc1d35`. Pins unedited in both cases.
+- **Writing inside a `find()` cursor is safe here**, though only because the rewrite is idempotent: a
+  document returned twice by a moving cursor fails `needsRewrite` on the second visit and is skipped.
+  Worth recording, since the same loop would be unsafe if the transformation were not idempotent.
+- `replaceOne` is handed a `migrated` document that still carries its original `_id`, so the replace is a
+  true in-place update rather than an insert.
+- The `In`-means-contains-any bug fixed in `cb5d264d5` is real and was found while reading, not by a test —
+  surfaced explicitly in the message rather than silently corrected, which is what the conventions ask.
+- Four tests were **deleted** in `cb5d264d5` because the behaviour they pinned ceased to exist, and the
+  comma-splitting coverage two of them also carried was preserved under new names. Checked: no coverage was
+  silently dropped.
+
+---
+
+# Second pass — auditing the remediation
+
+The fixes above are themselves code, so they were audited the same way. Findings from this pass:
+
+### X1 — `createHasteBinFromString` was a third way of applying timeouts (fixed)
+
+`WebUtilities.kt:235` opened its connection with a bare `openConnection()` and then set the two timeouts by
+hand, because it needs `HttpsURLConnection` for its POST. Bounded, so not a hang — but the landmine had
+just been rewritten to say only **two** routes exist, and this was a third. It now goes through
+`openTimedConnection` and narrows the result, so the module contains exactly one `openConnection()` call:
+the shared opener itself.
+
+### X2 — Verified clean on the final tip
+
+- **NUL bytes:** 1,531 tracked source and documentation files scanned, **none** contain one. (The first
+  attempt at this check used `grep -qU $'\000'`, which degrades to an empty pattern and "found" 539
+  matches including every PNG — the scan was redone in python. Worth recording: a check that reports
+  everything is broken, not thorough.)
+- **Unbounded network calls:** none. The only surviving `openStream`/`openConnection` outside the opener
+  are `ServerPackCreatorPlugin.kt:68` and `ClassUtilities.kt:60`, both reading a `jar:` URL, both now
+  named in the landmine as deliberate exceptions.
+- **New guards have teeth**, verified by deliberately breaking the code rather than assumed:
+  dropping before the rewrite fails 4 of the 7 runner guards; dropping when nothing was rewritten fails 2.
+- **Stack integrity:** 12 / 8 / 8 / 8 commits per branch after rebasing, no duplicated subjects, and
+  `./gradlew build` green at the tip.
+
+### X3 — A mistake made during remediation, recorded because it nearly lost work
+
+Rebasing the stack, `git rebase --onto claude-perf-generation 72ad406a2^ claude-perf-web` used the wrong
+upstream and **dropped seven of web's eight commits**. Caught immediately by inspecting the branch, and
+recovered from the reflog. The correct form for a stacked rebase is `--onto <new-base> <old-base>`, where
+`<old-base>` is the parent branch's *pre-rebase* tip — not `HEAD^`.
+
+---
+
+## Status of every finding
+
+| # | Finding | Severity | Status |
+|---|---|---|---|
+| F1 | First timeout pin does not go red→green (fixture defeated it) | MEDIUM | Recorded as a landmine; later pins written to avoid it |
+| F2 | `UpdateConfig.updateFallback` unbounded, on the earliest startup path | **HIGH** | **Fixed** + pinned |
+| F3 | "Every outbound call" false; `VersionChecker` unbounded; landmine overstated | **HIGH** | **Fixed** + pinned + landmine corrected |
+| F4 | "Verbatim move" widened published API undisclosed | MEDIUM | **Fixed** — narrowed to `internal`, table row corrected |
+| F5 | Test added inside a `fix:` commit | MEDIUM | Recorded; history not rewritten |
+| F6/F7 | Testimony vs re-checkable figures; verified-correct claims | LOW | Recorded |
+| G1 | NUL bytes made a Kotlin file binary to git | MEDIUM | **Fixed** — keyed on `Triple` |
+| G2 | Autocomplete pin's assertion rewritten by its own fix | MEDIUM | Recorded; assertion in tree is correct and has teeth |
+| G3 | `manifestCandidates` published without a compat row | MEDIUM | **Fixed** — row added |
+| G4 | EDT-confinement verified, not assumed | LOW | Recorded |
+| H1 | `test(api):` commit shipped production code | MEDIUM | Recorded; pattern noted |
+| H2 | `fix(api):` bundled three concerns | MEDIUM | Recorded |
+| H3 | Published property changed shape, no compat row | MEDIUM | **Fixed** — row added |
+| H4 | Undisclosed error-path change in the zip rewrite | LOW | **Fixed** — row added |
+| H5 | Chains verified clean | LOW | Recorded |
+| W1 | Migration runner — mutates persisted data, **no test** | **HIGH** | **Fixed** — `MigrationStore` seam + 7 guards, teeth verified |
+| W2 | `test(app):` commit shipped production code | MEDIUM | Recorded (second instance of H1) |
+| W3 | 18-file big-bang commit | MEDIUM | Recorded |
+| W4 | Intermediate commit not deployable (schema without migration) | MEDIUM | Recorded; branch merges as a unit |
+| W5 | "Next start retries" true of the rewrite, not the drop | LOW | **Fixed** — comment and notes corrected |
+| W6 | Cursor-write safety, `In` bug, deleted tests | LOW | Recorded |
+| X1 | Third way of applying timeouts | LOW | **Fixed** |
+
+**Three HIGH findings, all fixed and pinned.** Every remaining open item is a property of the commit
+history — labels and commit boundaries — which cannot be corrected without rewriting shared history and is
+recorded here instead. No behavioural defect is left open.

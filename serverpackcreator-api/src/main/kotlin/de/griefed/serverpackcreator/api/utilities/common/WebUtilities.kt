@@ -232,11 +232,10 @@ class WebUtilities(private val apiProperties: ApiProperties) {
         val postDataLength = postData.size
 
         try {
-            conn = url.openConnection() as HttpsURLConnection
-            // Not openTimedConnection: this call needs the HttpsURLConnection type for its POST, so
-            // the timeouts are applied here rather than being skipped.
-            conn.connectTimeout = apiProperties.networkConnectTimeout
-            conn.readTimeout = apiProperties.networkReadTimeout
+            // Through the shared opener like everything else, then narrowed: this call needs the
+            // HttpsURLConnection type for its POST. Setting the two timeouts by hand here worked, but it
+            // was a third way of applying them, and the whole point of one opener is that there is not one.
+            conn = openTimedConnection(url) as HttpsURLConnection
         } catch (ex: IOException) {
             log.error("Error during opening of connection to URL.", ex)
         }
