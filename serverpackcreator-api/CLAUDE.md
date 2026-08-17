@@ -265,6 +265,31 @@
   Measured: startup 24 → 12 requests, 489,038 → 213,885 bytes, ~601 ms → ~392 ms median batch
   wall-clock. Only 4 of 12 hosts honour `If-Modified-Since`; the remaining bytes and the reason not to
   chase them with ETags are **B30**, and taking the refresh off the startup path entirely is **B31**.
+- **The clientside-exclusion loop runs mods x list-entries times — keep invariants out of it.**
+  `ModListCompiler` builds one `FilterMatcher` per `compileModList`: the exclusion-filter setting is read
+  once (its getter reaches `java.util.Properties`, a synchronized `Hashtable`, twice per read) and each
+  `REGEX`/`EITHER` entry is compiled once. **The real gain is not speed** — measured at 300 mods x 550
+  default entries the property reads cost ~3 ms and the `Pattern.compile`s ~20 ms, so do not oversell it.
+  It is that a malformed entry used to throw `PatternSyntaxException` out of `compileModList` and abort
+  generation; now it is logged once and skipped, and the rest of the list still applies. Pinned by
+  `ModListCompilerHotLoopTest`.
+- **Reading a modpack archive's central directory is the expensive part of inspecting one — do it once.**
+  Measured 79.9 ms for a 10,000-entry archive, scaling with the entry count. `checkZipArchive` shares one
+  open between its validity check and its base-directory scan (`baseDirectoriesOf` exists so the scan can
+  work from headers already in hand), and `getAllFilesAndDirectoriesInModpackZip` partitions a single
+  header pass. Both were two opens. `ModpackZipInspector` takes a **defaulted** `openZip: (File) -> ZipFile`
+  purely so `ModpackZipInspectorOpenCountTest` can count them — every method returns the same answer
+  whether it opened the archive once or four times, which is how the duplication survived unnoticed.
+  **Fixture landmine:** zip4j's `addFile` with a path-in-zip writes no explicit *directory* entries, so a
+  test archive built that way lists zero directories. Use `addFolder` from a real tree. (This also
+  explains why `checkZipArchive` works on archives without them: it derives `mods/` from a *file* entry's
+  name, not from a directory entry.)
+- **A getter must not hand out the config's own mutable state.** `GenerationConfig.clientsideModsRegex`
+  and `modsWhitelistRegex` used to `clear()` and refill one shared `TreeSet` field per read, so a held
+  result was emptied underneath its caller and — the clear-then-refill not being atomic — a concurrent
+  reader could observe the set part-way through. Both are published via `ApiProperties`, and the GUI reads
+  settings from a `parallelStream`. They now build a fresh set via `regexVariantOf`. Pinned by
+  `GenerationConfigTest.regexVariantListsAreNotSharedBetweenReads`.
 - **`PackConfig.save(destination, apiProperties)`** is the primary (injection-required) overload;
   `save(destination)` is a `@Deprecated` facade resolving `ApiProperties` via the singleton — don't
   build new call-sites on the deprecated one.

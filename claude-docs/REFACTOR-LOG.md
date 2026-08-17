@@ -1733,3 +1733,53 @@ while `screencapture` took stills. Result: the popup **resizes** with its conten
 `56x85 px at 5 matches → 54x34 px at 2` — correctly filtered, first row preselected, positioned at the
 caret. A first attempt looked like a failure until focus was re-asserted before each burst; the popup
 only shows while the component `isFocusOwner`. Harness deleted after use.
+
+## 2026-08-17 — generation throughput (`claude-perf-generation`), api 329 → 337
+
+Phase 3 of the performance plan, and the phase where **measuring first repeatedly contradicted the
+plan's own estimates**. Each candidate was benchmarked at realistic pack scale before being
+implemented, and the numbers reordered the work:
+
+| Candidate | Measured cost | Verdict |
+|---|---|---|
+| Archive central-directory re-parses | **79.9 ms** per read, 10,000-entry archive, at two sites | the only real win |
+| `Pattern.compile` per comparison (REGEX/EITHER) | 20 ms at 300 mods x 550 entries | small |
+| Quilt merge nested `find` | 4.71 ms at 500 mods | trivial |
+| `exclusionFilter` read per comparison | **3 ms** at 300 mods x 550 entries | negligible |
+| `File(source).absolutePath` per walked file | 3.0 ms at 50,000 files | negligible |
+
+**The `exclusionFilter` read was the plan's headline item for this phase and it is worth ~3 ms.** The
+reasoning behind the estimate was sound — 330,000 synchronized `Hashtable` lookups on the default path —
+but `Hashtable.get` is fast and its monitor uncontended, so the arithmetic simply does not translate into
+time. That correction is recorded in the commit message rather than quietly dropped, because the wrong
+version had already been stated twice (in the investigation and in the plan).
+
+What the phase actually delivered:
+
+- `41607582` **fix(api)** — one `FilterMatcher` per generation. Its value is a **bug fix**, not speed: a
+  single malformed clientside-list entry used to throw `PatternSyntaxException` out of `compileModList`
+  and abort generation, because `entry.toRegex()` ran per comparison. Now compiled up front, logged once,
+  skipped, and the rest of the list still applies.
+- `5d30890b` **fix(api)** — the archive is read once per inspection at both sites (~80 ms each, scaling
+  with the archive), plus the two negligible hoists, each labelled as such. `putIfAbsent` rather than
+  `associateBy` in the Quilt merge, because `find` returned the *first* match and `associateBy` keeps the
+  last — indistinguishable under the one-entry-per-jar contract, but first-wins is what was being replaced.
+- `350d7cb9` **fix(api)** — `clientsideModsRegex`/`modsWhitelistRegex` return a fresh set per read. Not a
+  performance change at all: the shared field was cleared and refilled per read, so a held result was
+  emptied underneath its caller and a concurrent reader could observe it part-way through. Published, and
+  the GUI reads settings from a `parallelStream`.
+- `f7fdcff3` **refactor(api)** — the Forge annotation-scanner's two `get() = "…".toRegex()` properties
+  become `val`s, and a private `additionalDependencyRegex` holding the *identical* literal is gone. That
+  duplicate was the real find: it was what the two `additionalDependency*` checks actually used, so an
+  edit to the documented copy would have changed nothing there. 1.12-and-older path only, so no
+  performance claim.
+
+Testing notes worth keeping: archive open-counts are unobservable from the outside — every method returns
+the same answer regardless — so `ModpackZipInspector` gained a defaulted `openZip` parameter purely to
+count them. And zip4j's `addFile` with a path-in-zip writes no directory entries, which made the first
+version of the open-count test fail for entirely the wrong reason.
+
+Deliberately **not** done: the `ModListCompiler` dependency-rescue loop (`:202-222`), whose O(n²·d) shape
+with two list allocations per pair is a genuine smell but ~10–20 ms at realistic sizes. Left alone rather
+than churn the most delicate logic in the file for a rounding error; it is described in the root
+`CLAUDE.md` hotspot notes if it ever matters.
