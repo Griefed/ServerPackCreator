@@ -2,6 +2,8 @@ package de.griefed.serverpackcreator.app.gui.window.configs
 
 import de.griefed.serverpackcreator.api.config.InclusionSpecification
 import de.griefed.serverpackcreator.api.config.PackConfig
+import de.griefed.serverpackcreator.api.config.ConfigurationHandler
+import de.griefed.serverpackcreator.api.serverpack.ServerPackHandler
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import io.mockk.every
 import io.mockk.mockk
@@ -16,7 +18,9 @@ import java.util.*
  */
 internal class ConfigEditorViewModelTest {
     private val versionMeta = mockk<VersionMeta>()
-    private val viewModel = ConfigEditorViewModel(versionMeta)
+    private val configurationHandler = mockk<ConfigurationHandler>()
+    private val serverPackHandler = mockk<ServerPackHandler>()
+    private val viewModel = ConfigEditorViewModel(versionMeta, configurationHandler, serverPackHandler)
 
     /**
      * Builds a fully-populated PackConfig, using the given [inclusions] instances so tests can

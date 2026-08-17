@@ -19,17 +19,28 @@
  */
 package de.griefed.serverpackcreator.app.gui.window.configs
 
+import de.griefed.serverpackcreator.api.config.ConfigurationHandler
 import de.griefed.serverpackcreator.api.config.PackConfig
+import de.griefed.serverpackcreator.api.serverpack.ServerPackHandler
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
+import java.io.File
 
 /**
  * Display-independent state-logic for the config-editor, extracted from the Swing-coupled
  * ConfigEditor (refactor Phase 2) so it can be unit-tested without a display. The Swing view
  * stays dumb: it reads the editor's field-values into a [PackConfig], asks this view-model
- * whether anything changed or which Java-version is required, and updates its widgets
- * accordingly.
+ * whether anything changed, which Java-version is required, whether a modloader-server can be
+ * downloaded or what the pack is called, and updates its widgets accordingly.
+ *
+ * @param versionMeta Minecraft/modloader version metadata.
+ * @param configurationHandler Used to read a modpack's launcher-manifest for its name.
+ * @param serverPackHandler Used to check whether a modloader-server installer is downloadable.
  */
-class ConfigEditorViewModel(private val versionMeta: VersionMeta) {
+class ConfigEditorViewModel(
+    private val versionMeta: VersionMeta,
+    private val configurationHandler: ConfigurationHandler,
+    private val serverPackHandler: ServerPackHandler
+) {
 
     /**
      * Whether the [current] configuration has unsaved changes relative to the [lastSaved] one.
@@ -62,4 +73,28 @@ class ConfigEditorViewModel(private val versionMeta: VersionMeta) {
      */
     fun requiredJavaVersion(minecraftVersion: String): String =
         versionMeta.minecraft.requiredJavaVersion(minecraftVersion).orElse("?")
+
+    /**
+     * Whether a modloader-server installer can be downloaded for this version-triple.
+     *
+     * Reached from the editor's periodic validation, which is why it lives here rather than being
+     * called inline: the answer depends on nothing but the three versions, so it is a pure question
+     * about a tuple even though answering it costs a network request.
+     */
+    fun isServerDownloadable(minecraftVersion: String, modloader: String, modloaderVersion: String): Boolean =
+        serverPackHandler.serverDownloadable(minecraftVersion, modloader, modloaderVersion)
+
+    /**
+     * The display-name for the modpack in [modpackDirectory]: whatever its launcher-manifest declares,
+     * falling back to the directory's own name.
+     *
+     * Resolves the same way the editor's title always did — the manifest read sets the name on the
+     * throwaway [PackConfig] it is handed, and either that or the returned name wins over the
+     * directory name.
+     */
+    fun packName(modpackDirectory: String): String {
+        val probe = PackConfig()
+        val declared = configurationHandler.checkManifests(modpackDirectory, probe)
+        return probe.name ?: declared ?: File(modpackDirectory).name
+    }
 }

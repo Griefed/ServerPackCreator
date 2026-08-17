@@ -69,7 +69,11 @@ class ConfigEditor(
      * ([removeNotify]) instead of leaking on [GlobalScope] and outliving the disposed editor. */
     private val componentScope = ComponentCoroutineScope()
 
-    private val viewModel = ConfigEditorViewModel(apiWrapper.versionMeta)
+    private val viewModel = ConfigEditorViewModel(
+        apiWrapper.versionMeta,
+        apiWrapper.configurationHandler,
+        apiWrapper.serverPackHandler
+    )
     private val panel = JPanel(
         MigLayout(
             "left,wrap",
@@ -682,6 +686,12 @@ class ConfigEditor(
         viewModel.requiredJavaVersion(getMinecraftVersion())
 
     /**
+     * The name to show on this editor's tab: what the modpack's launcher-manifest declares, or the
+     * modpack directory's own name. Delegates to the view-model, which owns the resolution.
+     */
+    fun resolvePackName(): String = viewModel.packName(getModpackDirectory())
+
+    /**
      * @author Griefed
      */
     fun compareSettings() {
@@ -1195,7 +1205,7 @@ class ConfigEditor(
         val mcVersion = mcVersionSetting.selectedItem!!.toString()
         val modloader = modloaderSetting.selectedItem!!.toString()
         val modloaderVersion = modloaderVersionSetting.selectedItem!!.toString()
-        if (!apiWrapper.serverPackHandler.serverDownloadable(mcVersion, modloader, modloaderVersion)) {
+        if (!viewModel.isServerDownloadable(mcVersion, modloader, modloaderVersion)) {
             val message = Translations.createserverpack_gui_createserverpack_checkboxserver_unavailable_message(
                 modloader,
                 mcVersion,
