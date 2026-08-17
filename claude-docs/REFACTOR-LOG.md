@@ -1669,3 +1669,67 @@ the web version-schedule checked against it first.
 Doc note: the `app` row in the root `CLAUDE.md` refactor-state table said 102 tests; the suite actually
 runs **108**. Pre-existing drift, not caused by this branch — corrected to the measured number without
 attempting to reconstruct which six were added when.
+
+## 2026-08-17 — GUI typing-path performance (`claude-perf-gui`), app 108 → 118
+
+Phase 2 of the performance plan. The config-check timer is a 500 ms debounce restarted by a document
+change in *any* field, running its whole validation pass for *every* open tab — so everything it does
+is paid each time a user pauses while typing, multiplied by their open configs. It was doing two
+things per tick from inputs that had not changed.
+
+Sequenced as refactor → red → fix, three times over:
+
+1. `b6a9d2c` **refactor(app)** — `ConfigEditorViewModel` gains `isServerDownloadable` and `packName`
+   as plain delegation, and the timer/editor call those instead of reaching into `ApiWrapper`. The
+   view-model now takes `ConfigurationHandler` and `ServerPackHandler` beside `VersionMeta`; all three
+   are `-api` types, so it stays unit-testable without a display. Fell out of the move: the timer no
+   longer builds a `PackConfig` per tick (it only read `.name` off a throwaway one), and
+   `ConfigCheckTimer`'s now-unused `apiWrapper` parameter went away.
+2. `6fac2ab` **refactor(api)** — `ModpackManifestParser.manifestCandidates` exposes the six launcher
+   manifests `checkManifests` consults, with a `ConfigurationHandler` facade, so the app can ask
+   whether they changed instead of hardcoding the paths. The alternative was a second source of truth
+   that drifts — the failure this repo already documents for `SupportedModloaders`. Pinned by
+   `ManifestCandidatesTest`, including that absent files are still reported (a memo must notice a
+   manifest about to be created).
+3. `b9cdfeb` **test(app)** red / `edd70d6` **fix(app)** — memoize both. The installer probe is cached
+   per version-triple, successes only: a published installer does not vanish, but a cached `false`
+   would leave the editor stuck on "server unavailable" until restart. The manifest read is keyed on a
+   six-`stat` fingerprint of the candidates.
+4. `cac00c8` **test(app)** red / `b2c1e43` **fix(app)** — `SuggestionProvider` parses its ~550-entry
+   autocomplete list once instead of per keystroke, drops the per-keystroke `updateUI()`, and hoists
+   its `\W` regex.
+
+Measured:
+
+| | before | after |
+|---|---|---|
+| installer probe per debounce tick, per tab | 1 HTTP request (~234 ms) | 1 per distinct version-triple |
+| manifest read per tick, per tab | 4.70 ms parse of 2,715,835 bytes | 0.021 ms, six `stat`s (221x) |
+| autocomplete parse per keystroke | split + 550 sorted inserts | once per property change |
+
+Three things worth keeping:
+
+- **`allSuggestions()` must keep returning a fresh set.** Every caller mutates it and persists the
+  result, so the *parse* is cached and copied on the way out. Caching the instance would have
+  corrupted the source and accumulated across calls — caught by reading the callers before writing the
+  cache, not after.
+- **A `tailSet(prefix)` prefix-walk is a trap, not an optimisation** — case-insensitive matching over a
+  case-sensitive ordering means matches are not contiguous (`tailSet("op")` skips `OptiFine`).
+  Recorded in a comment at the site.
+- **One guard was wrong on the first attempt and is worth remembering as a pattern.**
+  `anUnchangedSuggestionListIsParsedOnce` first verified the *property-read* count — a claim the design
+  deliberately does not make, so it stayed red against correct code. Rewritten to assert reuse by
+  identity. Because the corrected form had then only ever run green, the cache was temporarily defeated
+  to check it: it fails with two distinct `TreeSet` instances whose **contents are identical**, which is
+  exactly why identity is the right assertion and a value comparison would have guarded nothing. Same
+  lesson as the `parallelMap` guards in `-api`: being red once is necessary, not sufficient — and a
+  guard corrected after the fix must be re-broken deliberately.
+
+GUI-verified, and the method is reusable: `osascript` has no Accessibility permission on this machine,
+so no synthetic clicks or keystrokes are possible. A throwaway JUnit harness drove Swing from inside
+the test JVM instead (`-app` tests are not headless), showing a real provider on a real `JFrame`,
+inserting characters on the EDT, and logging every visible `JList`'s row count and `preferredSize`
+while `screencapture` took stills. Result: the popup **resizes** with its content —
+`56x85 px at 5 matches → 54x34 px at 2` — correctly filtered, first row preselected, positioned at the
+caret. A first attempt looked like a failure until focus was re-asserted before each burst; the popup
+only shows while the component `isFocusOwner`. Harness deleted after use.

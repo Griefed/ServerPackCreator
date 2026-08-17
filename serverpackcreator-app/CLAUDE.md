@@ -184,6 +184,63 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
 - The check timers register their `ActionListener` in `init` (not the `Timer` super-constructor,
   where `this` is unavailable) so they can launch on an instance scope.
 
+## The config-check timer is on the typing path — keep it cheap (2026-08-17)
+
+`ConfigCheckTimer` is a **500 ms debounce restarted by a document change in *any* field**
+(`ConfigEditor.kt:80` → `checkAll()` → `TabbedConfigsTab.kt:229`), and it runs its whole validation
+pass for **every open tab**. So anything it does, a user pays for each time they pause while typing,
+multiplied by their open configs. Two things it used to do per tick, now memoized in
+`ConfigEditorViewModel`:
+
+- **`isServerDownloadable`** — an HTTP request to the modloader's maven (~234 ms measured against
+  `files.minecraftforge.net`), existing only to drive a warning label. Cached per
+  `(minecraftVersion, modloader, modloaderVersion)`. **Successes are cached, failures are not**, and
+  the asymmetry is deliberate: a published installer does not vanish, but a `false` may only mean the
+  network blinked, and remembering it would leave the editor insisting "server unavailable" until
+  restart. Pinned both ways in `ConfigEditorViewModelTest`.
+- **`packName`** — `checkManifests` parses the launcher manifest into a Jackson tree. Re-read only
+  when the fingerprint (existence/size/mtime) of the six candidates changes. Measured against this
+  repo's own CurseForge fixture: **4.70 ms parse vs 0.021 ms fingerprint** on 2,715,835 bytes, 221x.
+  The latency saved is modest; the garbage avoided (a tree of a 2.7 MB document per keystroke-pause,
+  per tab) is the real gain.
+  **The fingerprint must read `ConfigurationHandler.manifestCandidates`**, never its own copy of the
+  paths — a drifted list makes the memo miss real edits. `ManifestCandidatesTest` in `-api` guards it.
+
+The timer no longer builds a `PackConfig` per tick either; it only ever read `.name` off a throwaway
+one. **Note the concurrency inside is illusory** and always was: the ten `launch { }` blocks sit inside
+`runBlocking { }`, whose dispatcher is the single blocked thread's event loop, so they run
+sequentially — which is also the only reason the shared `errors` `ArrayList` is safe. Making them
+genuinely concurrent would introduce a data race.
+
+## SuggestionProvider runs on every keystroke, on the EDT (2026-08-17)
+
+- The autocomplete set is parsed once and reused until the property changes, keyed on the **raw
+  property value** rather than a change-listener — saving suggestions writes it back via
+  `storeGuiProperty`, so comparing the string cannot miss an update. The property *read* stays
+  per-call on purpose (a map lookup); rebuilding a ~550-entry sorted set was the cost.
+- **`allSuggestions()` must keep returning a fresh `TreeSet`.** Every caller mutates it and persists
+  the result (`ConfigEditor.saveSuggestions` adds the field value, `InclusionsEditor.saveSuggestions`
+  adds and `removeIf`s), so caching the *instance* would corrupt the source and accumulate across
+  calls. Cache the parse, copy on the way out. Pinned by `eachCallerGetsItsOwnMutableSet`.
+- **LANDMINE — do not "optimise" the prefix filter into `TreeSet.tailSet(prefix)`.** The match is
+  case-**in**sensitive while the set's ordering is case-sensitive, so matches are not contiguous:
+  `tailSet("op")` skips `OptiFine`. Making the set case-insensitive instead silently deduplicates
+  entries differing only in case. A linear `startsWith` over a few hundred parsed strings is
+  microseconds.
+- `showPopup` uses `revalidate`/`pack`/`repaint`, **not `updateUI()`** — that re-installs the
+  look-and-feel delegate and is for a LAF *change*, and it ran per keystroke.
+
+**How the popup was GUI-verified, since `osascript` has no Accessibility permission on this machine
+(no synthetic clicks or keystrokes):** a throwaway JUnit "harness" test drove Swing from *inside* the
+test JVM — `-app` tests are not headless — showing a real `SuggestionProvider` on a real `JFrame`,
+inserting characters into the document on the EDT, and logging each visible `JList`'s row count and
+`preferredSize` while `screencapture` took stills. That produced the actual evidence the `updateUI()`
+removal needed: the popup **resizes** with its content, `56x85 px at 5 matches → 54x34 px at 2`,
+correctly filtered and positioned at the caret. Re-assert focus before each burst — the popup only
+shows while the component `isFocusOwner`, and anything stealing focus closes it, which made a first
+attempt look like a failure when it was only unfocused. The harness was deleted afterwards; it is a
+technique to repeat, not a test to keep.
+
 ## ConfigEditor status
 
 Extraction is essentially done: the two genuinely-pure pieces — `hasUnsavedChanges` (15-field
