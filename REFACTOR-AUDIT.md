@@ -1,166 +1,184 @@
-# Refactor audit — session work merged into `develop` (fifth pass)
+# Refactor audit — `claude-perf-network-startup`
 
-**Base:** `a7717e8a9` (pre-session `develop` tip) · **Head:** `c1c3430a2` · **Commits in range:** 23
-**Date:** 2026-08-16
+**Range:** `7abd7c85c..62c51e2d7` (6 commits) · **Branch:** `claude-perf-network-startup`
+**Date:** 2026-08-17 · **Mode:** READ-ONLY. No source modified. Verification used a throwaway git
+worktree under the scratchpad, plus hybrid checkouts (fix-commit production + pin-commit tests) to test
+the red→green chain independently rather than trusting commit messages.
 
-**Scope change from previous passes.** There is no feature branch left to audit —
-`claude-coroutines-1.11-fallout` and `claude-mongo-version-doc` are merged and deleted, and the three
-`backup-*` branches are deleted after verifying their content is fully superseded. This pass audits
-the merged range on `develop`, which includes two merge commits and one commit authored directly by
-Griefed.
+| Commit | Type | Verdict |
+|---|---|---|
+| `9fce12419` | test(api) | red claim **verified**; chain to its fix **broken** (F1) |
+| `c124331b0` | fix(api) | central claim **overstated** (F2, F3); everything else verified |
+| `04c0e571a` | refactor(api) | verbatim **verified**; visibility widened undisclosed (F4, F5) |
+| `6b191480a` | test(api) | red claims **verified exactly** |
+| `76dea6527` | fix(api) | red→green chain **verified clean**; figures internally consistent |
+| `62c51e2d7` | docs | one inaccurate completeness claim (F3) |
 
-> **The work is PUSHED.** `origin/develop` contains everything through the merge `3bcb62af7`. Every
-> earlier pass assumed history rewriting was free because nothing had left the machine; that is no
-> longer true. Findings below can only be fixed *forward*.
-
-**Verdict: no HIGH. One MEDIUM (new, already fixed by Griefed), one MEDIUM (recurring, fixed by this
-pass). All pass-four findings closed.**
+Commit scoping is clean throughout: test-only, fix, refactor, test-only, fix, docs. No refactor mixes a
+behaviour change, no `refactor:` label is misapplied, no module boundary is crossed, and no plugin-API
+contract is broken by signature change.
 
 ---
 
-## Range
+## HIGH
 
-| Commit | Subject | Note |
+### F2 — An unbounded network call survives on the startup path, in the same class the branch set out to fix
+
+**`serverpackcreator-api/src/main/kotlin/de/griefed/serverpackcreator/api/settings/UpdateConfig.kt:117`**
+
+```kotlin
+updateUrl.openStream().use {          // no connect-timeout, no read-timeout
+```
+
+Reached from `ApiProperties.updateFallback()` → `UpdateConfig.updateFallback()`, called at
+**`ApiProperties.kt:1025`** inside `loadProperties`, which **`ApiProperties`' own `init` block calls**
+(`ApiProperties.kt:1337-1340`). So constructing `ApiProperties` — the first thing `stageOne` does — makes
+an untimed HTTPS request to the configured update URL (GitHub).
+
+Not theoretical: the GUI run captured during this work logged it twice —
+`INFO (ApiProperties.kt:1026) - Fallback lists updated.`
+
+This is precisely the defect `9fce12419` was written to pin and `c124331b0` claims to have eliminated. A
+host that DROPs rather than REJECTs blocks here exactly as it did in `VersionMeta`, and it blocks
+*earlier* — before `stageTwo` is even reached, so before the manifest checks that were fixed.
+
+Rule broken: *"If you find a bug while refactoring, surface it explicitly and propose a fix in its own
+commit. Do not silently work around it or defer it as out of scope."* The branch neither fixed nor
+recorded it; the commit message asserts the opposite.
+
+**Proposed fix (own commit, `fix(api)`):** route it through `WebUtilities.openTimedStream`. `UpdateConfig`
+does not currently hold a `WebUtilities`, so this needs either injection or moving the fetch behind an
+existing collaborator — worth deciding deliberately rather than by reflex, since `UpdateConfig` is
+constructed early in `ApiProperties`' property-declaration order (see the declaration-order landmine).
+
+### F3 — "Every outbound call" is asserted in a commit message and in a durable landmine, and is false
+
+`c124331b0` states: *"Every outbound call now goes through one opener."*
+`serverpackcreator-api/CLAUDE.md:208-211` states the rule and adds: *"until 2026-08-17 that was every
+single call site."*
+
+Measured at `c124331b0` and still true at branch tip — sites **not** routed:
+
+| Site | Network? | Status |
 |---|---|---|
-| `e55ba8947` … `57ba3f256` | 16 commits | audited in pass four — all clean |
-| `9560ec0a0` | `docs: audit the coroutines/catalog branch, fourth pass` | docs |
-| `dbcb80caf` | `fix(build): declare the Java compilations on dokka's HTML publication too` | **clean** |
-| `8f3a51f0f` | `docs: close L3 in the audit after fixing it` | docs |
-| `3bcb62af7` | `Merge branch 'claude-coroutines-1.11-fallout' into develop` | `--no-ff`, matches repo convention |
-| `2611aed00` | `chore: Update-To-Date license agreement` | **Griefed's own — see M5** |
-| `e3289e3bf` | `docs(app): re-verify the Mongo URI landmine at the versions now resolved` | docs |
-| `c1c3430a2` | `Merge branch 'claude-mongo-version-doc' into develop` | `--no-ff` |
+| `settings/UpdateConfig.kt:117` | **yes**, GitHub | untimed — see F1/F2 above |
+| `serverpackcreator-app/.../updater/versionchecker/VersionChecker.kt:328` | **yes**, GitHub/GitLab | untimed `openConnection()` |
+| `plugins/ServerPackCreatorPlugin.kt:68` | no — `jar:` URL, reads `plugin.toml` from the plugin's own jar | benign, but contradicts the wording |
+| `utilities/common/ClassUtilities.kt:60` | no — `JarURLConnection` on a classpath resource | benign, same |
 
-**Merge integrity verified**, not assumed: `git diff 8f3a51f0f develop` over every branch-touched
-path is empty, and `git diff 2611aed00 develop` over both license artifacts is empty. Neither merge
-dropped a contribution from either parent.
+`VersionChecker.getResponse` is the update checker, and the captured GUI log shows it running at startup
+(`GitHubChecker` → `All versions: [...]`), so it is a second real unbounded call on a user-facing path.
+
+A durable landmine that overstates its own coverage is worse than none: the next reader will assume the
+invariant holds and will not check. Rule broken: documentation must stay truthful as code changes.
+
+**Proposed fix (own commit, `docs` + `fix`):** correct the landmine to state what is actually routed and
+name the two exceptions with the reason each is benign or outstanding; route `VersionChecker.getResponse`
+(it already builds its own `HttpURLConnection`, so this is two setter lines and needs no new dependency).
 
 ---
 
 ## MEDIUM
 
-### M5 (NEW) — the branch changed the dependency set but never regenerated the tracked license report
+### F1 — The first red pin does not go green under its own fix; the guard was strengthened mid-stream
 
-**Rule broken:** Boy Scout / completeness — a change is not finished while a tracked artifact it
-invalidates is left stale.
-**Files:** `licenses/LICENSE-AGREEMENT.txt`,
-`serverpackcreator-app/src/main/resources/de/griefed/resources/gui/LICENSE-AGREEMENT`
+Verified empirically, not inferred:
 
-This project **tracks the generated license report in VCS** and ships a copy inside the app's
-resources. The branch altered the resolved dependency set of every module — Spring Boot 4.0.6 →
-4.1.0, Kotlin 2.3.20/2.4.10 → 2.4.10 everywhere, coroutines 1.10.2 → 1.11.0, jackson, log4j, junit,
-mockk, the Mongo driver 5.6.2 → 5.8.0 — and **touched neither artifact in any of its 19 commits**:
+- At `9fce12419`: `WebUtilitiesTimeoutTest` — 2 tests, **both FAILED** ("did not return within 15s").
+  The red claim is genuine, and caused by the real defect (production consulted no timeout at all).
+- Hybrid (production from `c124331b0`, test file exactly as committed at `9fce12419`): **both still
+  FAILED**, same message.
 
-```
-git log a7717e8a9..8f3a51f0f -- licenses  …/gui/LICENSE-AGREEMENT   →  (empty)
-```
+Cause: the pin used `mockk<ApiProperties>(relaxed = true)`, which answers `0` for an `Int`, and `0` *is*
+the JDK's "wait forever". Once the fix made production read those properties, the fixture supplied the
+defect itself. `c124331b0` therefore had to edit the already-committed test (+`timedProperties()`, two
+call-site swaps) to turn it green.
 
-Griefed regenerated and committed them himself in `2611aed00`, whose diff is unambiguously the
-consequence of the catalog work (`kotlin-bom` and `kotlin-stdlib` entries dropped,
-`kotlinx-coroutines-*` and `kotlinx-datetime` reordered).
+So `git checkout 9fce12419 && <apply fix> ` shows **red → red**, not red → green. The assertions and the
+15s bound are unchanged — only the fixture — and `c124331b0`'s message discloses this in full ("both
+stall-guards failed against the *fixed* code until these stubs were added"), which is why this is MEDIUM
+and not HIGH. But the conventions' evidence chain is the point of committing the pin separately, and here
+it does not hold. The same trap is now documented as a landmine, which is the right outcome.
 
-**Why this is MEDIUM and not LOW:** the stale copy is *shipped to users* in the app resources. Had
-Griefed not caught it, the released application would have displayed a license agreement that
-misstates its own dependencies — a compliance-adjacent inaccuracy, not a tidiness one. The signal was
-visible throughout the session: `git status` showed both files dirty after every `./gradlew build`,
-and that was repeatedly dismissed as "regenerated build outputs" and discarded with `git checkout --`
-rather than recognised as *the branch's own output that needed committing*.
+For contrast, the second pair is clean and was verified the same way: `6b191480a` red on exactly the three
+stated tests (2 requests vs 1, twice; `If-Modified-Since` absent), and the **unedited** pin from
+`6b191480a` passes all six against `76dea6527`'s production code.
 
-**Status: FIXED by `2611aed00`** — by the maintainer, which is precisely the problem. Confirmed clean
-now: a full `./gradlew build` at `c1c3430a2` leaves the working tree spotless, because the committed
-report finally matches the resolved dependencies.
+### F4 — The "verbatim move" widened published API surface, and its own commit message does not say so
 
-**Preventive note for the next dependency change:** if a bump alters resolution anywhere, run
-`./gradlew generateLicenseReport` and commit both artifacts in the same change.
+`04c0e571a` moved `checkManifest` from `private fun` in `VersionMeta` to **`fun`** (public) in a **public**
+`class ManifestUpdater`. Diffed and normalised, the moved logic is otherwise byte-identical — including the
+`var countOldFile/countNewFile` accumulators, the LegacyFabric equal-count nudge, and both `updateManifest`
+overloads, which correctly stayed `private`.
 
-### M4 (RECURRING) — the committed audit was stale again
+`serverpackcreator-api` is published to Maven Central and its public surface is a stated
+plugin-compatibility constraint. A pure-refactor commit is the wrong place to add exported surface
+silently. The later docs commit does describe `versionmeta.ManifestUpdater` as "new exported", so it is
+disclosed on the branch — just not where the change happens.
 
-`REFACTOR-AUDIT.md` stated `Head: 57ba3f256 · Commits: 16` while `develop` stood at `c1c3430a2` with
-23 commits in range, omitting the L3 fix, both merges and Griefed's license chore.
+**Also:** `public` is broader than required. `ManifestUpdaterTest` is in the **same package and module**
+(`de.griefed.serverpackcreator.api.versionmeta`), so `internal` — or no modifier at all for the same
+package — would have satisfied the test without committing to a compatibility promise.
 
-This is the third pass in a row to raise it, and the cause is structural rather than careless: the
-file is a snapshot committed *into* the history it describes, so it is stale the moment anything
-lands after it. Fixed by this pass. If it keeps mattering, the durable answer is to stop pinning a
-`Head:` SHA in the document and describe the range instead.
+**Proposed fix:** decide whether `ManifestUpdater` is intended as plugin-facing. If not, narrow
+`checkManifest` (and consider the class) to `internal` in its own `refactor(api)` commit, and drop the
+"new exported" phrasing from the behaviour-change row.
 
----
+### F5 — A test was added inside a `fix:` commit
 
-## Closed since pass four
+`76dea6527` adds `anUnreachableHostLeavesThePresentManifestIntact` (+24 lines in
+`ManifestUpdaterTest.kt`) alongside the behaviour change.
 
-| ID | Finding | How |
-|---|---|---|
-| M1 | Kotlin commit mixed compiler bump with pure ref collapse | split into `f0bf0034e` + `2be03f8d0` |
-| M2 | `[plugins]` commit mixed alias conversion with buildSrc classpath change | split into `a8f158865` + `6325735c9` |
-| M3 | "Three leftovers" bundled pure and behavioural changes | split into `b4e6fe977` + `66c77c053` |
-| L1 | Documentation bundling inconsistent | consolidated into `57ba3f256` |
-| L2 | `./gradlew build` never run; Kover and frontend unexercised | now the standard; it caught the Kover/KGP break |
-| L3 | dokka HTML publication's undeclared task dependency | `dbcb80caf` — 3/3 FAILED → 3/3 SUCCESSFUL |
-
-### `dbcb80caf` reviewed on its own terms — clean
-
-One concern; a genuine `fix:` for a behaviour change; measured before and after (3 of 3 runs each
-way, 185 `index.html` produced); fixed in `dokka-conventions` so every consuming module benefits
-rather than patching `-api` alone; and it corrected an *asymmetry* — the Javadoc publication already
-carried the same `dependsOn`, so this was one bug fixed twice, half at a time. Configuring the two
-publications together is the right structural answer.
-
-Scope note: L3 was pre-existing and pass four explicitly placed it out of scope. It was pulled in at
-Griefed's direction, which is an authorised scope expansion, not sprawl.
+The convention keeps "add tests" and "change behaviour" in separate commits. The guard covers a behaviour
+the same commit deliberately *preserved* (offline stays a WARN, not twelve ERRORs), so bundling is
+defensible and the message explains it — but it is still a mix, and it means that guard has no red
+ancestor. Nothing verifies it would have failed had the WARN path been written differently.
 
 ---
 
-## Clean — verified this pass
+## LOW
 
-- **No commit is labelled `refactor:`.** All 23 are `test:`, `build:`, `fix:`, `docs:`, `chore:` or
-  merges; every behaviour change is labelled `fix:` or `build:`.
-- **No existing test's assertion, argument or expected value was modified** anywhere in the range. The
-  only test file touched is `ListUtilitiesTest.kt`, additively.
-- **Both merges are `--no-ff`**, matching the repo's existing convention
-  (`a7717e8a9 Merge branch 'claude-securitymanager-unknown-java' into develop`), and neither dropped
-  content.
-- **Branch hygiene:** no dangling work. Both feature branches were merged before deletion; all three
-  `backup-*` branches were verified content-superseded (every difference was `develop` being ahead —
-  the count-based leak guard, the narrowed imports, the L3 fix, the Mongo doc) before force-deletion.
-- **`main` is untouched and 567 commits behind `develop`** — the expected state for a release branch
-  sitting at `RELEASE: 8.1.1`.
-- **Catalog hygiene:** 49 libraries, 12 plugins, zero unused aliases, zero unreferenced `[versions]`.
+### F6 — `ModpackZipInspector`-style testability seam absent here, so one claim rests on the message alone
 
----
+`c124331b0` asserts warning counts ("21 before, 21 after") and suite counts. Counts were re-verified at
+branch tip (21 for `-api`), but per-commit warning counts are not reproducible from the repository alone.
+No action needed — noted only so a future reader knows which figures in these messages are re-checkable
+and which are testimony.
 
-## Carried forward — now permanent
+### F7 — Verified-correct claims, recorded so they are not re-litigated
 
-- **The two deliberately red commits are on `origin/develop`.** `e55ba8947` (parallelMap guards before
-  their fix) and `e55ddfe8e` (catalog bump before the platform switch) are pushed. A `git bisect`
-  across this range will land on a red commit twice, and that is no longer reversible without
-  rewriting published history. The squash-merge option discussed in passes two through four has
-  lapsed.
-- **`parallelMap`'s published behavioural contract change** — Griefed's explicit decision, recorded in
-  the API-compatibility table. An embedder whose lambda mutated shared state without synchronisation
-  was previously serialised by accident and can now race. Worth a release-note line.
-- **The Mongo driver moved 5.6.2 → 5.8.0** as a side effect of the Spring Boot bump. The
-  autoconfiguration contract was re-verified with `javap` (`e3289e3bf`); query and codec behaviour
-  were not, and this project runs Mongo in production containers.
+Checked and **holding**, each independently:
+
+- No `setConnectTimeout`/`setReadTimeout` anywhere before the branch (`git grep` at `9fce12419^`: 0 hits).
+- `URLConnection` (not `HttpURLConnection`) as the opener's return type is load-bearing: the 4-arg
+  `JarUtilities.copyFileFromJar` chain resolves `getResourceAsStream("/$fileToCopy")` — an **absolute**
+  path — so the `VersionMeta::class.java` → `ManifestUpdater::class.java` swap in `04c0e571a` is genuinely
+  equivalent (same classloader). Claim verified rather than assumed.
+- `NetworkConfig` defaults are 5 000 / 15 000 / 60 000 and match the root `CLAUDE.md` row; `0` is passed
+  through (`sanitise` rejects only `timeout < 0`), so the documented escape hatch exists.
+- `getResponseAsString` / `getResponseCode` genuinely had no callers in main source.
+- The byte figures are internally consistent: 206,986 + 56,270 + 9,381 + 2,516 = **275,153**, and
+  489,038 − 275,153 = **213,885**. B30 in `BACKLOG.md` repeats the same numbers without drift.
+- All three named test classes exist.
 
 ---
 
-## Verification at `c1c3430a2`
+## Summary
 
-`./gradlew build` — **BUILD SUCCESSFUL, 91 tasks**, working tree clean afterwards. 741 JVM tests
-(api 309, clientside 88, app 108, plugin-example 3, grinder 233; 0 failures, 20 skipped), every Kover
-report, `bootJar`, both dokka publications, `sourcesJar`, `generateLicenseReport`, and the frontend
-including the Vitest suite. `WebServiceContextTest` passes 4/4 — its `MongoSocketOpenException` trace
-is expected and documented; the driver connects lazily and startup continues.
+Two real defects of the branch's own stated kind survive it (**F2**, and the `VersionChecker` half of
+**F3**), and the branch asserts in a durable landmine that they do not. That is the finding worth acting
+on: the fix is sound as far as it reaches, but its claim of completeness is wrong, and the wrong claim is
+now written where future readers will trust it.
 
-Only install4j's `media` task remains unexercised; it needs a local install4j installation and is
-documented as outside the development loop.
+The process findings are smaller. The second red→green pair is exemplary and independently reproducible;
+the first is not, for a reason the author documented rather than hid. The extraction is a genuine verbatim
+move that quietly widened published surface.
 
----
+Recommended order, each in its own commit:
+1. `fix(api)` — bound `UpdateConfig.updateFallback`'s request (F2). Highest value: earliest startup path.
+2. `fix(app)` — bound `VersionChecker.getResponse` (F3).
+3. `docs` — correct the landmine's completeness claim; name the benign `jar:` exceptions (F3).
+4. `refactor(api)` — narrow `ManifestUpdater.checkManifest` to `internal` unless it is meant to be
+   plugin-facing (F4).
 
-## Remaining decisions for Griefed
-
-1. **`develop` → `main` is a release cut, not housekeeping.** `main` sits at `RELEASE: 8.1.1`, 567
-   commits behind. `.gitlab-ci.yml:221` fires on `main` when the commit title is not `RELEASE:…`, and
-   the publish jobs are tag-gated (`:270`, `:290`). Merging would start that pipeline. **Not done** —
-   it needs an explicit release decision.
-2. **Two commits remain unpushed** on `develop` (`e3289e3bf`, `c1c3430a2`).
-3. Nothing else outstanding. No remediation proposed.
+Stopping here for go-ahead, as instructed. No source modified.
