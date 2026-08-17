@@ -85,7 +85,14 @@ class ModPackService @Autowired constructor(
      * and the API's ConfigurationHandler, none of which duplicate-detection depends on.
      */
     fun existingUploadOf(sha256: String?): Optional<ModPack> =
-        Optional.ofNullable(modpackRepository.findAll().find { available -> available.sha256 == sha256 })
+        if (sha256 == null) {
+            // A hash-less upload is not a duplicate of anything. Said explicitly because neither the
+            // old in-memory comparison nor a `{sha256: null}` query would answer it that way: both
+            // match stored documents whose own sha256 is unset, and the non-ZIP sources leave it so.
+            Optional.empty()
+        } else {
+            modpackRepository.findBySha256(sha256)
+        }
 
     /**
      * Store the multipart-file to disk. If a match in SHA256 hashes is found, a [StorageException] is thrown to prevent
