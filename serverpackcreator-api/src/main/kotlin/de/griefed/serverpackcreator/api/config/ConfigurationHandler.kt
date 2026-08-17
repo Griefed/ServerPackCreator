@@ -675,6 +675,14 @@ class ConfigurationHandler(
         manifestParser.checkManifests(destination, packConfig, configCheck)
 
     /**
+     * Every launcher-manifest [checkManifests] looks for in [destination], existing or not. Reads
+     * [ModpackManifestParser.manifestCandidates] rather than holding its own copy, so the published
+     * facade and the list actually consulted cannot drift apart.
+     */
+    fun manifestCandidates(destination: String): List<File> =
+        manifestParser.manifestCandidates(destination)
+
+    /**
      * Prints all passed fields to the console and serverpackcreator.log. Used to show the user the
      * configuration before ServerPackCreator starts the generation of the server pack or, if checks
      * failed, to show the user their last configuration, so they can more easily identify problems
