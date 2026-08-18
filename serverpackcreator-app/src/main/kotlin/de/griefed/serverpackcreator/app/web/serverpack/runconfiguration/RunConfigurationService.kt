@@ -28,10 +28,7 @@ import java.util.*
 @Service
 class RunConfigurationService @Autowired constructor(
     private val runConfigurationRepository: RunConfigurationRepository,
-    private val apiProperties: ApiProperties,
-    private val clientModRepository: ClientModRepository,
-    private val whitelistedModRepository: WhitelistedModRepository,
-    private val startArgumentRepository: StartArgumentRepository
+    private val apiProperties: ApiProperties
 ) {
     private val spaces : Regex = "\\s+".toRegex()
     private val commaSpace: String = ", "
@@ -51,40 +48,25 @@ class RunConfigurationService @Autowired constructor(
         config.modloader = modloader
         config.modloaderVersion = modloaderVersion
 
+        // No per-entry lookup-or-store any more: these are plain strings embedded in the document, so
+        // there is nothing to resolve. Each list used to cost one findBy per entry plus a save per miss
+        // -- on the default clientside list that is ~550 sequential round-trips to build one config.
         if (startArgs.isNotBlank()) {
-            for (argument in startArgs.replace(spaces, space).split(space)) {
-                config.startArgs.add(StartArgument(argument))
-            }
+            config.startArgs.addAll(startArgs.replace(spaces, space).split(space))
         } else {
-            config.startArgs.addAll(apiProperties.aikarsFlags.replace(spaces, space).split(space).map { StartArgument(it) })
-        }
-        for (i in config.startArgs.indices) {
-            val stored = startArgumentRepository.findByArgument(config.startArgs[i].argument)
-            config.startArgs[i] = stored.orElseGet { startArgumentRepository.save(config.startArgs[i]) }
+            config.startArgs.addAll(apiProperties.aikarsFlags.replace(spaces, space).split(space))
         }
 
         if (clientMods.isNotBlank()) {
-            for (mod in clientMods.replace(commaSpace, comma).split(comma)) {
-                config.clientMods.add(ClientMod(mod))
-            }
+            config.clientMods.addAll(clientMods.replace(commaSpace, comma).split(comma))
         } else {
-            config.clientMods.addAll(apiProperties.clientSideMods().map { ClientMod(it) })
-        }
-        for (i in config.clientMods.indices) {
-            val stored = clientModRepository.findByMod(config.clientMods[i].mod)
-            config.clientMods[i] = stored.orElseGet { clientModRepository.save(config.clientMods[i]) }
+            config.clientMods.addAll(apiProperties.clientSideMods())
         }
 
         if (whitelistedMods.isNotBlank()) {
-            for (mod in whitelistedMods.replace(commaSpace, comma).split(comma)) {
-                config.whitelistedMods.add(WhitelistedMod(mod))
-            }
+            config.whitelistedMods.addAll(whitelistedMods.replace(commaSpace, comma).split(comma))
         } else {
-            config.whitelistedMods.addAll(apiProperties.whitelistedMods().map { WhitelistedMod(it) })
-        }
-        for (i in config.whitelistedMods.indices) {
-            val stored = whitelistedModRepository.findByMod(config.whitelistedMods[i].mod)
-            config.whitelistedMods[i] = stored.orElseGet { whitelistedModRepository.save(config.whitelistedMods[i]) }
+            config.whitelistedMods.addAll(apiProperties.whitelistedMods())
         }
 
         return save(config)
@@ -92,7 +74,7 @@ class RunConfigurationService @Autowired constructor(
 
     fun save(runConfiguration: RunConfiguration): RunConfiguration {
         val fromRepo =
-            runConfigurationRepository.findByMinecraftVersionAndModloaderAndModloaderVersionAndStartArgsInAndClientModsInAndWhitelistedModsIn(
+            runConfigurationRepository.findByMinecraftVersionAndModloaderAndModloaderVersionAndStartArgsAndClientModsAndWhitelistedMods(
                 minecraftVersion = runConfiguration.minecraftVersion,
                 modloader = runConfiguration.modloader,
                 modloaderVersion = runConfiguration.modloaderVersion,
@@ -111,9 +93,9 @@ class RunConfigurationService @Autowired constructor(
         minecraftVersion: String,
         modloader: String,
         modloaderVersion: String,
-        startArgs: MutableList<StartArgument>,
-        clientMods: MutableList<ClientMod>,
-        whitelistedMods: MutableList<WhitelistedMod>
+        startArgs: MutableList<String>,
+        clientMods: MutableList<String>,
+        whitelistedMods: MutableList<String>
     ): RunConfiguration {
         return save(
             RunConfiguration(
@@ -135,11 +117,11 @@ class RunConfigurationService @Autowired constructor(
         minecraftVersion: String,
         modloader: String,
         modloaderVersion: String,
-        startArgs: MutableList<StartArgument>,
-        clientMods: MutableList<ClientMod>,
-        whitelistedMods: MutableList<WhitelistedMod>
+        startArgs: MutableList<String>,
+        clientMods: MutableList<String>,
+        whitelistedMods: MutableList<String>
     ): Optional<RunConfiguration> {
-        return runConfigurationRepository.findByMinecraftVersionAndModloaderAndModloaderVersionAndStartArgsInAndClientModsInAndWhitelistedModsIn(
+        return runConfigurationRepository.findByMinecraftVersionAndModloaderAndModloaderVersionAndStartArgsAndClientModsAndWhitelistedMods(
             minecraftVersion = minecraftVersion,
             modloader = modloader,
             modloaderVersion = modloaderVersion,

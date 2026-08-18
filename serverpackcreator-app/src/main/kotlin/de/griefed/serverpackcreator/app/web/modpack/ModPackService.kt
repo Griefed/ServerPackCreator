@@ -168,15 +168,15 @@ class ModPackService @Autowired constructor(
     fun getPackConfigForModpack(modpack: ModPack, runConfiguration: RunConfiguration): PackConfig {
         val packConfig = PackConfig()
         packConfig.modpackDir = rootLocation.resolve("${modpack.fileID}.zip").normalize().toFile().absolutePath
-        packConfig.setClientMods(runConfiguration.clientMods.map { it.mod }.toMutableList())
-        packConfig.setModsWhitelist(runConfiguration.whitelistedMods.map { it.mod }.toMutableList())
+        packConfig.setClientMods(runConfiguration.clientMods.toMutableList())
+        packConfig.setModsWhitelist(runConfiguration.whitelistedMods.toMutableList())
         if (modpack.status == ModPackStatus.GENERATING) {
             packConfig.inclusions.addAll(configurationHandler.suggestInclusions(packConfig.modpackDir))
         }
         packConfig.minecraftVersion = runConfiguration.minecraftVersion
         packConfig.modloader = runConfiguration.modloader
         packConfig.modloaderVersion = runConfiguration.modloaderVersion
-        packConfig.javaArgs = runConfiguration.startArgs.joinToString(" ") { it.argument }
+        packConfig.javaArgs = runConfiguration.startArgs.joinToString(" ")
         packConfig.isZipCreationDesired = true
         return packConfig
     }

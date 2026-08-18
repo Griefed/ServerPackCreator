@@ -21,9 +21,9 @@ describe('RunConfigurationCard', () => {
     vi.clearAllMocks()
     runConfigPayload = {
       minecraftVersion: '1.20.1', modloader: 'Forge', modloaderVersion: '47.2.0',
-      startArgs: [{ argument: '-Xmx4G' }, { argument: '-Xms2G' }],
-      clientMods: [{ mod: 'optifine' }],
-      whitelistedMods: [{ mod: 'jei' }]
+      startArgs: ['-Xmx4G', '-Xms2G'],
+      clientMods: ['optifine'],
+      whitelistedMods: ['jei']
     }
   })
 
