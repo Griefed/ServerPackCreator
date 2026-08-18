@@ -252,7 +252,16 @@ class SuggestionProvider(
     /**
      * @author Griefed
      */
-    fun allSuggestions(): TreeSet<String> {
+    fun allSuggestions(): TreeSet<String> = TreeSet(parsedSuggestions())
+
+    /**
+     * The parsed suggestion-set for this identifier.
+     *
+     * Split out from [allSuggestions] because the two have different obligations: this is the read path,
+     * called once per keystroke, while [allSuggestions] owes its callers a set they may mutate and persist.
+     * `internal` so the module's tests can observe it.
+     */
+    internal fun parsedSuggestions(): Set<String> {
         val property = guiProps.getGuiProperty("autocomplete.$identifier").toString().trim { it <= ' ' }
         val entries = TreeSet<String>()
         if (property == "null") {
