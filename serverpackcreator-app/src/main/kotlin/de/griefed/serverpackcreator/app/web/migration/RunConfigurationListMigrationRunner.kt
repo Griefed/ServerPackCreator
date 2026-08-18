@@ -20,10 +20,8 @@
 package de.griefed.serverpackcreator.app.web.migration
 
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import org.bson.Document
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
-import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.stereotype.Component
 
 /**
@@ -41,13 +39,14 @@ import org.springframework.stereotype.Component
  * costs one collection read and nothing else. Failures are logged and swallowed for the same reason —
  * an instance that cannot migrate should still serve what it can rather than refuse to boot.
  *
- * @param mongoTemplate Used directly, because the mapped `RunConfiguration` type can no longer read the
- * old shape — that is precisely what is being fixed, so the repository is useless here.
+ * @param store The database operations, behind [MigrationStore] so this class's safety decisions —
+ * rewrite before dropping, never drop when nothing was rewritten, keep going when one drop fails — can be
+ * asserted without a database. They are the decisions that can lose data if wrong.
  * @param migration The per-document transformation.
  */
 @Component
 class RunConfigurationListMigrationRunner(
-    private val mongoTemplate: MongoTemplate,
+    private val store: MigrationStore,
     private val migration: RunConfigurationListMigration
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
@@ -71,18 +70,16 @@ class RunConfigurationListMigrationRunner(
     @EventListener(ApplicationReadyEvent::class)
     fun migrate() {
         try {
-            val collection = mongoTemplate.getCollection(COLLECTION)
+            val storedConfigs = store.findAll(COLLECTION)
             var rewritten = 0
-            var inspected = 0
-            for (storedConfig in collection.find()) {
-                inspected++
+            for (storedConfig in storedConfigs) {
                 if (!migration.needsRewrite(storedConfig)) {
                     continue
                 }
-                val migrated = migration.rewrite(storedConfig)
-                collection.replaceOne(Document("_id", storedConfig["_id"]), migrated)
+                store.replace(COLLECTION, storedConfig["_id"], migration.rewrite(storedConfig))
                 rewritten++
             }
+            val inspected = storedConfigs.size
             if (rewritten == 0) {
                 log.debug("No run-configurations needed migrating ($inspected inspected).")
                 return
@@ -91,9 +88,12 @@ class RunConfigurationListMigrationRunner(
             dropOrphanedCollections()
         } catch (ex: Exception) {
             // Deliberately broad and non-fatal: an unreachable or partially-migrated database must not
-            // stop the application from starting. The next start retries, because the check is per
-            // document and idempotent.
-            log.error("Could not migrate run-configuration mod-lists. Will retry on next start.", ex)
+            // stop the application from starting. The *rewrite* retries on the next start, because the
+            // check is per document and idempotent. The drop does not: it only runs when something was
+            // rewritten, so a pass that rewrote everything and then failed to drop leaves those
+            // collections behind for good. Harmless -- they are unreferenced -- but do not read this as a
+            // promise that they will eventually go.
+            log.error("Could not migrate run-configuration mod-lists. The rewrite retries on next start.", ex)
         }
     }
 
@@ -104,8 +104,8 @@ class RunConfigurationListMigrationRunner(
     private fun dropOrphanedCollections() {
         for (orphaned in ORPHANED_COLLECTIONS) {
             try {
-                if (mongoTemplate.collectionExists(orphaned)) {
-                    mongoTemplate.dropCollection(orphaned)
+                if (store.exists(orphaned)) {
+                    store.drop(orphaned)
                     log.info("Dropped now-unused collection '$orphaned'.")
                 }
             } catch (ex: Exception) {
