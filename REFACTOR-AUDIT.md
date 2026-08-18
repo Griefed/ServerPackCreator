@@ -1,18 +1,18 @@
 # Refactor audit — `claude-perf-network-startup`
 
-**Range:** `7abd7c85c..62c51e2d7` (6 commits) · **Branch:** `claude-perf-network-startup`
+**Range:** the 6 commits of `claude-perf-network-startup`, `7abd7c85c` to `docs: record the network/startup work and backlog its follow-ups`
 **Date:** 2026-08-17 · **Mode:** READ-ONLY. No source modified. Verification used a throwaway git
 worktree under the scratchpad, plus hybrid checkouts (fix-commit production + pin-commit tests) to test
 the red→green chain independently rather than trusting commit messages.
 
 | Commit | Type | Verdict |
 |---|---|---|
-| `9fce12419` | test(api) | red claim **verified**; chain to its fix **broken** (F1) |
-| `c124331b0` | fix(api) | central claim **overstated** (F2, F3); everything else verified |
-| `04c0e571a` | refactor(api) | verbatim **verified**; visibility widened undisclosed (F4, F5) |
-| `6b191480a` | test(api) | red claims **verified exactly** |
-| `76dea6527` | fix(api) | red→green chain **verified clean**; figures internally consistent |
-| `62c51e2d7` | docs | one inaccurate completeness claim (F3) |
+| `pin that HTTP calls give up instead of hanging forever` | test(api) | red claim **verified**; chain to its fix **broken** (F1) |
+| `bound every HTTP call with configurable timeouts` | fix(api) | central claim **overstated** (F2, F3); everything else verified |
+| `extract manifest refreshing into ManifestUpdater` | refactor(api) | verbatim **verified**; visibility widened undisclosed (F4, F5) |
+| `pin what a manifest check costs` | test(api) | red claims **verified exactly** |
+| `halve startup requests and skip unchanged manifests` | fix(api) | red→green chain **verified clean**; figures internally consistent |
+| `record the network/startup work and backlog its follow-ups` | docs | one inaccurate completeness claim (F3) |
 
 Commit scoping is clean throughout: test-only, fix, refactor, test-only, fix, docs. No refactor mixes a
 behaviour change, no `refactor:` label is misapplied, no module boundary is crossed, and no plugin-API
@@ -38,7 +38,7 @@ an untimed HTTPS request to the configured update URL (GitHub).
 Not theoretical: the GUI run captured during this work logged it twice —
 `INFO (ApiProperties.kt:1026) - Fallback lists updated.`
 
-This is precisely the defect `9fce12419` was written to pin and `c124331b0` claims to have eliminated. A
+This is precisely the defect `test(api): pin that HTTP calls give up instead of hanging forever` was written to pin and `fix(api): bound every HTTP call with configurable timeouts` claims to have eliminated. A
 host that DROPs rather than REJECTs blocks here exactly as it did in `VersionMeta`, and it blocks
 *earlier* — before `stageTwo` is even reached, so before the manifest checks that were fixed.
 
@@ -53,11 +53,11 @@ constructed early in `ApiProperties`' property-declaration order (see the declar
 
 ### F3 — "Every outbound call" is asserted in a commit message and in a durable landmine, and is false
 
-`c124331b0` states: *"Every outbound call now goes through one opener."*
+`fix(api): bound every HTTP call with configurable timeouts` states: *"Every outbound call now goes through one opener."*
 `serverpackcreator-api/CLAUDE.md:208-211` states the rule and adds: *"until 2026-08-17 that was every
 single call site."*
 
-Measured at `c124331b0` and still true at branch tip — sites **not** routed:
+Measured at `fix(api): bound every HTTP call with configurable timeouts` and still true at branch tip — sites **not** routed:
 
 | Site | Network? | Status |
 |---|---|---|
@@ -84,29 +84,29 @@ name the two exceptions with the reason each is benign or outstanding; route `Ve
 
 Verified empirically, not inferred:
 
-- At `9fce12419`: `WebUtilitiesTimeoutTest` — 2 tests, **both FAILED** ("did not return within 15s").
+- At `test(api): pin that HTTP calls give up instead of hanging forever`: `WebUtilitiesTimeoutTest` — 2 tests, **both FAILED** ("did not return within 15s").
   The red claim is genuine, and caused by the real defect (production consulted no timeout at all).
-- Hybrid (production from `c124331b0`, test file exactly as committed at `9fce12419`): **both still
+- Hybrid (production from `fix(api): bound every HTTP call with configurable timeouts`, test file exactly as committed at `test(api): pin that HTTP calls give up instead of hanging forever`): **both still
   FAILED**, same message.
 
 Cause: the pin used `mockk<ApiProperties>(relaxed = true)`, which answers `0` for an `Int`, and `0` *is*
 the JDK's "wait forever". Once the fix made production read those properties, the fixture supplied the
-defect itself. `c124331b0` therefore had to edit the already-committed test (+`timedProperties()`, two
+defect itself. `fix(api): bound every HTTP call with configurable timeouts` therefore had to edit the already-committed test (+`timedProperties()`, two
 call-site swaps) to turn it green.
 
-So `git checkout 9fce12419 && <apply fix> ` shows **red → red**, not red → green. The assertions and the
-15s bound are unchanged — only the fixture — and `c124331b0`'s message discloses this in full ("both
+So checking out `test(api): pin that HTTP calls give up instead of hanging forever` and applying the fix on top shows **red → red**, not red → green. The assertions and the
+15s bound are unchanged — only the fixture — and `fix(api): bound every HTTP call with configurable timeouts`'s message discloses this in full ("both
 stall-guards failed against the *fixed* code until these stubs were added"), which is why this is MEDIUM
 and not HIGH. But the conventions' evidence chain is the point of committing the pin separately, and here
 it does not hold. The same trap is now documented as a landmine, which is the right outcome.
 
-For contrast, the second pair is clean and was verified the same way: `6b191480a` red on exactly the three
+For contrast, the second pair is clean and was verified the same way: `test(api): pin what a manifest check costs` red on exactly the three
 stated tests (2 requests vs 1, twice; `If-Modified-Since` absent), and the **unedited** pin from
-`6b191480a` passes all six against `76dea6527`'s production code.
+`test(api): pin what a manifest check costs` passes all six against `fix(api): halve startup requests and skip unchanged manifests`'s production code.
 
 ### F4 — The "verbatim move" widened published API surface, and its own commit message does not say so
 
-`04c0e571a` moved `checkManifest` from `private fun` in `VersionMeta` to **`fun`** (public) in a **public**
+`refactor(api): extract manifest refreshing into ManifestUpdater` moved `checkManifest` from `private fun` in `VersionMeta` to **`fun`** (public) in a **public**
 `class ManifestUpdater`. Diffed and normalised, the moved logic is otherwise byte-identical — including the
 `var countOldFile/countNewFile` accumulators, the LegacyFabric equal-count nudge, and both `updateManifest`
 overloads, which correctly stayed `private`.
@@ -126,7 +126,7 @@ package — would have satisfied the test without committing to a compatibility 
 
 ### F5 — A test was added inside a `fix:` commit
 
-`76dea6527` adds `anUnreachableHostLeavesThePresentManifestIntact` (+24 lines in
+`fix(api): halve startup requests and skip unchanged manifests` adds `anUnreachableHostLeavesThePresentManifestIntact` (+24 lines in
 `ManifestUpdaterTest.kt`) alongside the behaviour change.
 
 The convention keeps "add tests" and "change behaviour" in separate commits. The guard covers a behaviour
@@ -140,7 +140,7 @@ ancestor. Nothing verifies it would have failed had the WARN path been written d
 
 ### F6 — `ModpackZipInspector`-style testability seam absent here, so one claim rests on the message alone
 
-`c124331b0` asserts warning counts ("21 before, 21 after") and suite counts. Counts were re-verified at
+`fix(api): bound every HTTP call with configurable timeouts` asserts warning counts ("21 before, 21 after") and suite counts. Counts were re-verified at
 branch tip (21 for `-api`), but per-commit warning counts are not reproducible from the repository alone.
 No action needed — noted only so a future reader knows which figures in these messages are re-checkable
 and which are testimony.
@@ -149,10 +149,10 @@ and which are testimony.
 
 Checked and **holding**, each independently:
 
-- No `setConnectTimeout`/`setReadTimeout` anywhere before the branch (`git grep` at `9fce12419^`: 0 hits).
+- No `setConnectTimeout`/`setReadTimeout` anywhere before the branch (`git grep` at the commit before `test(api): pin that HTTP calls give up instead of hanging forever`: 0 hits).
 - `URLConnection` (not `HttpURLConnection`) as the opener's return type is load-bearing: the 4-arg
   `JarUtilities.copyFileFromJar` chain resolves `getResourceAsStream("/$fileToCopy")` — an **absolute**
-  path — so the `VersionMeta::class.java` → `ManifestUpdater::class.java` swap in `04c0e571a` is genuinely
+  path — so the `VersionMeta::class.java` → `ManifestUpdater::class.java` swap in `refactor(api): extract manifest refreshing into ManifestUpdater` is genuinely
   equivalent (same classloader). Claim verified rather than assumed.
 - `NetworkConfig` defaults are 5 000 / 15 000 / 60 000 and match the root `CLAUDE.md` row; `0` is passed
   through (`sanitise` rejects only `timeout < 0`), so the documented escape hatch exists.
@@ -187,19 +187,19 @@ Stopping here for go-ahead, as instructed. No source modified.
 
 # Refactor audit — `claude-perf-gui`
 
-**Range:** `claude-perf-network-startup..8117ec0fa` (7 commits) · **Date:** 2026-08-17 · **Mode:** READ-ONLY
+**Range:** the 7 commits of `claude-perf-gui`, up to `docs: record the GUI typing-path work` (7 commits) · **Date:** 2026-08-17 · **Mode:** READ-ONLY
 Verified the same way: throwaway worktree, plus hybrid checkouts (fix-commit production + pin-commit
 tests, unedited) to test each red→green chain independently.
 
 | Commit | Type | Verdict |
 |---|---|---|
-| `1fad7db42` | refactor(app) | clean; behaviour-preserving move, dead param removed |
-| `a368be12d` | refactor(api) | adds **published API** with no compatibility-table row (G3) |
-| `71dac2b2f` | test(app) | red **verified** (3 of 13) |
-| `e6c529754` | fix(app) | chain **verified clean** red→green, pin unedited; but ships NUL bytes (G1) |
-| `7fa1bb39a` | test(app) | red, but the guard is **wrong** — it can never pass (G2) |
-| `5a1cbc315` | fix(app) | rewrote that guard's assertion; disclosed (G2) |
-| `8117ec0fa` | docs | accurate; figures are testimony, noted |
+| `move the check-timer's server probe and pack-name read behind the view model` | refactor(app) | clean; behaviour-preserving move, dead param removed |
+| `make the launcher-manifest candidates askable` | refactor(api) | adds **published API** with no compatibility-table row (G3) |
+| `pin how often the check-timer consults the network and the disk` | test(app) | red **verified** (3 of 13) |
+| `stop the check-timer re-probing the network and re-parsing the manifest` | fix(app) | chain **verified clean** red→green, pin unedited; but ships NUL bytes (G1) |
+| `pin that the autocomplete list is parsed once, not per keystroke` | test(app) | red, but the guard is **wrong** — it can never pass (G2) |
+| `parse the autocomplete list once, and stop reinstalling the LAF per keystroke` | fix(app) | rewrote that guard's assertion; disclosed (G2) |
+| `record the GUI typing-path work` | docs | accurate; figures are testimony, noted |
 
 ## MEDIUM
 
@@ -212,7 +212,7 @@ val triple = "$minecraftVersion\x00$modloader\x00$modloaderVersion"
 ```
 
 Two `0x00` bytes at offsets 5786 and 5797, where spaces were intended. `git show --stat` for
-`e6c529754` reports `Bin 5266 -> 8399 bytes` — the diff of that commit is **unreviewable**, and every
+`fix(app): stop the check-timer re-probing the network and re-parsing the manifest` reports `Bin 5266 -> 8399 bytes` — the diff of that commit is **unreviewable**, and every
 future diff of this file will be too. The file is still valid UTF-8 and compiles.
 
 Not a runtime defect: the separator is used consistently when writing and reading the key, and NUL cannot
@@ -225,27 +225,27 @@ construction, no separator to choose, and the intent is visible.
 
 ### G2 — The autocomplete pin's *assertion* was rewritten by its own fix, so the committed guard can never pass
 
-`7fa1bb39a` commits `anUnchangedSuggestionListIsParsedOnce` asserting
+`test(app): pin that the autocomplete list is parsed once, not per keystroke` commits `anUnchangedSuggestionListIsParsedOnce` asserting
 `verify(exactly = 1) { guiProps.getGuiProperty("autocomplete.clientmods") }`.
 
-`5a1cbc315` changes that same guard to `verify(exactly = 20)` and swaps `assertEquals(size)` for
+`fix(app): parse the autocomplete list once, and stop reinstalling the LAF per keystroke` changes that same guard to `verify(exactly = 20)` and swaps `assertEquals(size)` for
 `assertSame(identity)`.
 
 This is the conventions' explicit stop-and-flag signal — a changed *expectation*, not a fixture tweak —
 and it is worse than the equivalent finding on the previous branch (F1). There, the pin was correct and
 merely defeated by its fixture. Here the pin was **incorrect**: it demanded that the property be read once
 per query, which the design deliberately does not do (the memo is *keyed* on the property value, so the
-cheap read must happen every time). Anyone checking out `7fa1bb39a` sees a guard that no correct
+cheap read must happen every time). Anyone checking out `test(app): pin that the autocomplete list is parsed once, not per keystroke` sees a guard that no correct
 implementation can satisfy.
 
-Mitigating, and the reason this is MEDIUM: `5a1cbc315`'s message states all of this plainly, and the
+Mitigating, and the reason this is MEDIUM: `fix(app): parse the autocomplete list once, and stop reinstalling the LAF per keystroke`'s message states all of this plainly, and the
 replacement assertion was verified to have teeth by deliberately defeating the cache and observing it fail
 on identity while contents matched. The lesson is already recorded as a landmine. No code fix is needed —
 the guard is correct now — but the branch's red commit is a misleading artifact.
 
 ### G3 — New published API added in a `refactor:` commit, with no compatibility-table row
 
-`a368be12d` adds two public methods to a module published to Maven Central:
+`refactor(api): make the launcher-manifest candidates askable` adds two public methods to a module published to Maven Central:
 
 - `ModpackManifestParser.manifestCandidates(destination): List<File>` (`:67`)
 - `ConfigurationHandler.manifestCandidates(destination): List<File>` (`:682`)
@@ -273,11 +273,11 @@ is not worth it, and the row is what a future reader actually needs.)
   Had it, this would have been a data race.
 - `ConfigEditorViewModel`'s two caches are correctly `ConcurrentHashMap`-backed, which *is* required — that
   object is reached from the timer's `parallelStream`.
-- `1fad7db42` removes `ConfigCheckTimer`'s now-unused `apiWrapper` parameter and `java.io.File` import, and
+- `refactor(app): move the check-timer's server probe and pack-name read behind the view model` removes `ConfigCheckTimer`'s now-unused `apiWrapper` parameter and `java.io.File` import, and
   the throwaway `PackConfig` per tick. Boy-Scout, within scope, no sprawl.
-- Chain `71dac2b2f` → `e6c529754` verified by hybrid checkout: 3 of 13 red before, all 13 green after with
+- Chain `test(app): pin how often the check-timer consults the network and the disk` → `fix(app): stop the check-timer re-probing the network and re-parsing the manifest` verified by hybrid checkout: 3 of 13 red before, all 13 green after with
   the pin **unedited**. This is the pattern the other chains should follow.
-- The performance figures in `e6c529754` and `8117ec0fa` (4.70 ms vs 0.021 ms parse/fingerprint on the
+- The performance figures in `fix(app): stop the check-timer re-probing the network and re-parsing the manifest` and `docs: record the GUI typing-path work` (4.70 ms vs 0.021 ms parse/fingerprint on the
   2,715,835-byte fixture; popup `56x85` → `54x34` px) are measurements taken during the work and are not
   reproducible from the repository alone. Testimony, not verifiable — flagged only so a reader knows which
   is which.
@@ -293,19 +293,19 @@ the one clean red→green chain on this branch is exemplary.
 
 # Refactor audit — `claude-perf-generation`
 
-**Range:** `claude-perf-gui..200588627` (8 commits) · **Date:** 2026-08-17 · **Mode:** READ-ONLY
+**Range:** the 8 commits of `claude-perf-generation`, up to `docs: record the generation-throughput work, including the corrected estimates` (8 commits) · **Date:** 2026-08-17 · **Mode:** READ-ONLY
 Both red→green chains verified by hybrid checkout (fix production + pin tests, unedited).
 
 | Commit | Type | Verdict |
 |---|---|---|
-| `004e345c6` | test(api) | red **verified** (3/3) |
-| `1bf414e41` | fix(api) | chain **verified clean** red→green, pin unedited |
-| `78eb879a2` | test(api) | contains **production code** (H1) |
-| `e7da71ade` | fix(api) | **three concerns in one commit** (H2); one undisclosed error-path change (H4) |
-| `c9d1b8b4b` | test(api) | red **verified** (1/12) |
-| `8426f8f98` | fix(api) | chain **verified clean** red→green, pin unedited |
-| `16f1a148c` | refactor(api) | published property changes shape, no compat row (H3) |
-| `200588627` | docs | accurate, including the corrected estimates |
+| `pin the cost of the clientside-exclusion loop` | test(api) | red **verified** (3/3) |
+| `stop a bad regex aborting the mod-list, and hoist the loop invariants` | fix(api) | chain **verified clean** red→green, pin unedited |
+| `pin how often a modpack archive's central directory is read` | test(api) | contains **production code** (H1) |
+| `read a modpack archive once per inspection, and index the Quilt merge` | fix(api) | **three concerns in one commit** (H2); one undisclosed error-path change (H4) |
+| `pin that the regex mod-lists are not shared between reads` | test(api) | red **verified** (1/12) |
+| `hand out a fresh regex mod-list per read` | fix(api) | chain **verified clean** red→green, pin unedited |
+| `compile the Forge annotation-scanner's regexes once` | refactor(api) | published property changes shape, no compat row (H3) |
+| `record the generation-throughput work, including the corrected estimates` | docs | accurate, including the corrected estimates |
 
 This is the strongest branch of the four on evidence: both pins were genuinely red on exactly the stated
 tests, and both go green with the pin **untouched**. It is the weakest on commit hygiene.
@@ -314,7 +314,7 @@ tests, and both go green with the pin **untouched**. It is the weakest on commit
 
 ### H1 — A `test(api):` commit ships production code
 
-`78eb879a2` adds `ModpackZipInspector`'s defaulted `openZip: (File) -> ZipFile` constructor parameter
+`test(api): pin how often a modpack archive's central directory is read` adds `ModpackZipInspector`'s defaulted `openZip: (File) -> ZipFile` constructor parameter
 (+18 lines of production) alongside its guard.
 
 The convention keeps "add tests" and "change production" apart. The message discloses it and the reasoning
@@ -325,7 +325,7 @@ what it contained.
 
 ### H2 — A `fix(api):` commit bundles three unrelated changes
 
-`e7da71ade` contains:
+`fix(api): read a modpack archive once per inspection, and index the Quilt merge` contains:
 
 1. `ModpackZipInspector` — one archive read per inspection (the actual fix, ~80 ms per site on a
    10,000-entry archive);
@@ -340,7 +340,7 @@ in the same sitting".
 
 ### H3 — A published property changed shape with no compatibility row
 
-`16f1a148c` turns `ForgeAnnotationScanner.dependencyCheck` / `dependencyReplace` from
+`refactor(api): compile the Forge annotation-scanner's regexes once` turns `ForgeAnnotationScanner.dependencyCheck` / `dependencyReplace` from
 `val x: Regex get() = "…".toRegex()` into `val x: Regex = "…".toRegex()`.
 
 Source-compatible, and the right change — the getter recompiled the pattern on every read inside
@@ -356,7 +356,7 @@ shape-only API changes is not yet automatic.
 
 ### H4 — An error-path behaviour change went undisclosed
 
-`e7da71ade` reduces `getAllFilesAndDirectoriesInModpackZip` from **two** `catch` blocks to **one**
+`fix(api): read a modpack archive once per inspection, and index the Quilt merge` reduces `getAllFilesAndDirectoriesInModpackZip` from **two** `catch` blocks to **one**
 (verified: 2 occurrences of "Could not acquire file or directory" before, 1 after).
 
 Before, directories and files were fetched by separate calls, each with its own `try`/`catch`, so a failure
@@ -369,10 +369,10 @@ partial results on failure" is the kind of change that surprises someone reading
 
 ### H5 — Verified-correct, recorded so it is not re-litigated
 
-- Both chains verified by hybrid checkout: `004e345c6` red on exactly its three stated tests → all green
-  under `1bf414e41` with the pin unedited; `c9d1b8b4b` red on its one test → green under `8426f8f98`,
+- Both chains verified by hybrid checkout: `test(api): pin the cost of the clientside-exclusion loop` red on exactly its three stated tests → all green
+  under `fix(api): stop a bad regex aborting the mod-list, and hoist the loop invariants` with the pin unedited; `test(api): pin that the regex mod-lists are not shared between reads` red on its one test → green under `fix(api): hand out a fresh regex mod-list per read`,
   likewise unedited. This is the discipline the earlier branches' first pins lacked.
-- `e7da71ade` uses `putIfAbsent` rather than `associateBy` in the Quilt merge, preserving `find`'s
+- `fix(api): read a modpack archive once per inspection, and index the Quilt merge` uses `putIfAbsent` rather than `associateBy` in the Quilt merge, preserving `find`'s
   first-match-wins. Correct, and the message explains why — a real distinction, not pedantry.
 - `checkZipArchive`'s `val foldersInModpackZip` is assigned inside the `use` block and read after it;
   definite-assignment holds because the early-return path precedes the assignment. Compiler-enforced,
@@ -385,19 +385,19 @@ partial results on failure" is the kind of change that surprises someone reading
 
 # Refactor audit — `claude-perf-web`
 
-**Range:** `claude-perf-generation..bf408b13a` (8 commits) · **Date:** 2026-08-17 · **Mode:** READ-ONLY
+**Range:** the 8 commits of `claude-perf-web`, up to `docs: record the web query-shape and DBRef-flattening work` (8 commits) · **Date:** 2026-08-17 · **Mode:** READ-ONLY
 Both red→green chains verified by hybrid checkout (fix production + pin tests, unedited).
 
 | Commit | Type | Verdict |
 |---|---|---|
-| `c51e582c2` | test(app) | red **verified** (1/2) |
-| `4c710c676` | fix(app) | chain **verified clean**, pin unedited |
-| `bff391a7e` | refactor(app) | clean, genuinely behaviour-preserving |
-| `99d9d01ec` | test(app) | ships **production code** (W2) |
-| `cf6fc1d35` | fix(app) | chain **verified clean** (3/3 red → 3/3 green), pin unedited |
-| `cb5d264d5` | fix(app) | 18 files, big-bang; **not deployable on its own** (W3, W4) |
-| `4ff94614a` | feat(app) | migration **runner is untested** (W1) |
-| `bf408b13a` | docs | accurate |
+| `pin that the stats endpoint counts instead of scanning` | test(app) | red **verified** (1/2) |
+| `count the stats totals instead of scanning three collections` | fix(app) | chain **verified clean**, pin unedited |
+| `extract the upload duplicate-check from saveUploadedFile` | refactor(app) | clean, genuinely behaviour-preserving |
+| `pin that an upload's duplicate-check does not scan the collection` | test(app) | ships **production code** (W2) |
+| `look an upload's hash up by index instead of scanning every modpack` | fix(app) | chain **verified clean** (3/3 red → 3/3 green), pin unedited |
+| `embed the run-configuration mod lists instead of joining three collections` | fix(app) | 18 files, big-bang; **not deployable on its own** (W3, W4) |
+| `migrate stored run-configurations to embedded mod-lists` | feat(app) | migration **runner is untested** (W1) |
+| `record the web query-shape and DBRef-flattening work` | docs | accurate |
 
 ## HIGH
 
@@ -435,13 +435,13 @@ without a database.
 
 ### W2 — A `test(app):` commit ships production code
 
-`99d9d01ec` adds `@Indexed` to `ModPack.sha256` (+3) and `findBySha256` to `ModPackRepository` (+9).
+`test(app): pin that an upload's duplicate-check does not scan the collection` adds `@Indexed` to `ModPack.sha256` (+3) and `findBySha256` to `ModPackRepository` (+9).
 Identical in kind to H1 on the previous branch, disclosed the same way, and wrong the same way: the label
 says `test`, the diff includes production. Twice on one stack means the pattern, not the slip, is the
 finding — when a guard needs new surface to exist, that surface belongs in a preceding
 `refactor:`/`feat:` commit.
 
-### W3 — `cb5d264d5` is a big-bang change across 18 files
+### W3 — `fix(app): embed the run-configuration mod lists instead of joining three collections` is a big-bang change across 18 files
 
 One commit deletes three `@Document` classes and four repositories, retypes three entity fields, rewrites
 a service, changes a derived query, rewrites a test (deleting four cases), and changes five frontend
@@ -455,8 +455,8 @@ is not compiled against Kotlin.
 
 ### W4 — An intermediate commit leaves the application unable to read its own data
 
-`cb5d264d5` changes the persisted shape; the migration arrives only in `4ff94614a`. Deploying or bisecting
-to `cb5d264d5` gives an application whose mapped type cannot read existing `runConfiguration` documents.
+`fix(app): embed the run-configuration mod lists instead of joining three collections` changes the persisted shape; the migration arrives only in `feat(app): migrate stored run-configurations to embedded mod-lists`. Deploying or bisecting
+to `fix(app): embed the run-configuration mod lists instead of joining three collections` gives an application whose mapped type cannot read existing `runConfiguration` documents.
 
 Disclosed in the message ("this one alone would leave a deployed instance unable to read its own
 run-configurations"), and harmless if the branch merges as a unit — but it means the branch has no
@@ -476,16 +476,16 @@ guarantee, which is the same species as F3 on the first branch.
 
 ### W6 — Verified-correct, recorded so it is not re-litigated
 
-- Both chains verified by hybrid checkout: `c51e582c2` red on its one stated test → green under
-  `4c710c676`; `99d9d01ec` red on all three → green under `cf6fc1d35`. Pins unedited in both cases.
+- Both chains verified by hybrid checkout: `test(app): pin that the stats endpoint counts instead of scanning` red on its one stated test → green under
+  `fix(app): count the stats totals instead of scanning three collections`; `test(app): pin that an upload's duplicate-check does not scan the collection` red on all three → green under `fix(app): look an upload's hash up by index instead of scanning every modpack`. Pins unedited in both cases.
 - **Writing inside a `find()` cursor is safe here**, though only because the rewrite is idempotent: a
   document returned twice by a moving cursor fails `needsRewrite` on the second visit and is skipped.
   Worth recording, since the same loop would be unsafe if the transformation were not idempotent.
 - `replaceOne` is handed a `migrated` document that still carries its original `_id`, so the replace is a
   true in-place update rather than an insert.
-- The `In`-means-contains-any bug fixed in `cb5d264d5` is real and was found while reading, not by a test —
+- The `In`-means-contains-any bug fixed in `fix(app): embed the run-configuration mod lists instead of joining three collections` is real and was found while reading, not by a test —
   surfaced explicitly in the message rather than silently corrected, which is what the conventions ask.
-- Four tests were **deleted** in `cb5d264d5` because the behaviour they pinned ceased to exist, and the
+- Four tests were **deleted** in `fix(app): embed the run-configuration mod lists instead of joining three collections` because the behaviour they pinned ceased to exist, and the
   comma-splitting coverage two of them also carried was preserved under new names. Checked: no coverage was
   silently dropped.
 
@@ -519,7 +519,7 @@ the shared opener itself.
 
 ### X3 — A mistake made during remediation, recorded because it nearly lost work
 
-Rebasing the stack, `git rebase --onto claude-perf-generation 72ad406a2^ claude-perf-web` used the wrong
+Rebasing the stack, `git rebase --onto claude-perf-generation <parent of `docs: record the web query-shape and DBRef-flattening work`> claude-perf-web` used the wrong
 upstream and **dropped seven of web's eight commits**. Caught immediately by inspecting the branch, and
 recovered from the reflog. The correct form for a stacked rebase is `--onto <new-base> <old-base>`, where
 `<old-base>` is the parent branch's *pre-rebase* tip — not `HEAD^`.
@@ -572,7 +572,7 @@ remediation** — the pre-existing findings it set out to fix are confirmed fixe
 |---|---|
 | F1 — first timeout pin went red→red | **Fixed.** Settings group lands first, so the pin references real properties and is red because nothing routes them; green under the routing commit, unedited. |
 | F5 — test bundled into a fix | **Fixed.** `test(api): pin that an unreachable host leaves the present manifest intact` is its own commit. |
-| G2 — autocomplete pin asserted the wrong thing | **Fixed.** `parsedSuggestions()` extracted first, pin holds the identity assertion, red on `@186d20a3` vs `@74ab779f` with equal contents. |
+| G2 — autocomplete pin asserted the wrong thing | **Fixed.** `parsedSuggestions()` extracted first, pin holds the identity assertion, red on `@186d20a3` vs `@74ab779f` with equal contents (Java identity hashes from the failure message, not commits). |
 | H1 — `test:` commit shipped the `openZip` seam | **Fixed.** Seam is now its own `refactor(api)` commit. |
 | H2 — one `fix:` bundled three concerns | **Fixed.** Split into the archive fix, the gatherer hoist, and the Quilt index. |
 | W2 — `test:` commit shipped `findBySha256` + index | **Fixed.** Now a preceding `feat(app)` commit. |
@@ -594,8 +594,8 @@ claude-docs/REFACTOR-LOG.md, REFACTOR-AUDIT.md
   -> 54 hashes not reachable from this branch
 ```
 
-Examples: `REFACTOR-LOG.md` cites `41607582`, `5d30890b`, `350d7cb9`, `f7fdcff3` for the generation work
-and `3d25dd22`, `84aa970a`, `c67e021a`, `549d7e30`, `7acc5fdc`, `16a3f399` for the web work — the entire
+Examples: `REFACTOR-LOG.md` cites `fix(api): stop a bad regex aborting the mod-list, and hoist the loop invariants`, `fix(api): read a modpack archive once per inspection, and index the Quilt merge`, `fix(api): hand out a fresh regex mod-list per read`, `refactor(api): compile the Forge annotation-scanner's regexes once` for the generation work
+and `test(app): pin that the stats endpoint counts instead of scanning`, `fix(app): count the stats totals instead of scanning three collections`, `refactor(app): extract the upload duplicate-check from saveUploadedFile`, `fix(app): look an upload's hash up by index instead of scanning every modpack`, `fix(app): embed the run-configuration mod lists instead of joining three collections`, `feat(app): migrate stored run-configurations to embedded mod-lists` for the web work — the entire
 blow-by-blow. `REFACTOR-AUDIT.md` is a report about commits that no longer exist on the branch.
 
 They resolve **today** only because the four superseded branches still hold them locally. Delete those and
@@ -611,7 +611,7 @@ excluded rather than "fixed".)
 `serverpackcreator-api/CLAUDE.md:245-248`:
 
 > Consequence worth knowing before you trust that pair as an example: because the fixture had to change,
-> `checkout 9fce12419 && apply c124331b0` shows **red → red**, not red → green. The later timeout pins
+> checking out that pin and applying `fix(api): bound every HTTP call with configurable timeouts` shows **red → red**, not red → green. The later timeout pins
 > […] were written against the *existing* signatures precisely so their fixes turn them green untouched —
 > **copy those, not the first one.**
 
@@ -625,7 +625,7 @@ and must survive; only the "and therefore this pair is a bad example" conclusion
 
 ### N3 — The remediation created a third instance of the violation it was fixing
 
-`c90b5ec5d test(app): cover the migration runner's safety decisions, behind a MigrationStore seam` ships
+`test(app): cover the migration runner's safety decisions, behind a MigrationStore seam` ships
 **two main-source files** (`MigrationStore.kt`, and the runner rewired onto it).
 
 This is precisely H1/W2 — a `test:`-labelled commit containing production code — committed *while* those
@@ -639,7 +639,7 @@ Fix: split into `refactor(app): put the migration's database access behind Migra
 
 ### N4 — Two new guards ride along in a `fix:` commit
 
-`5625223a2 fix(api): route every outbound call through one timed opener` adds
+`fix(api): route every outbound call through one timed opener` adds
 `openedConnectionsCarryTheConfiguredTimeouts` and `aNonHttpUrlCanStillBeDownloaded` to the
 already-committed `WebUtilitiesTimeoutTest`.
 
@@ -891,3 +891,202 @@ tests written after the code they cover. Every other new guard bites, module bou
 the new units are correctly sized.
 
 Recommended: fix all three, and mutation-test them afterwards rather than trusting the fix.
+
+---
+
+# Audit — `claude-performance-improvements`, iteration 4
+
+**Range:** `7abd7c85c..HEAD` (49 commits) · **Date:** 2026-08-18 · **Mode:** READ-ONLY
+Focus: the two things three structural passes and one mutation pass could not reach — **whether the
+persistence claims are true of the runtime**, and **whether the contracts outside this repo's own
+source tree still match the code**. Both turned out to hide defects; the mutation pass could not have
+found either, because both are true of code that no test exercises.
+
+## Iteration-3 fixes confirmed
+
+`test: make three guards that passed for the wrong reason actually bite` closes Q1, Q2 and Q3 exactly as recommended: `aFailedProbeIsRetried` now
+`verify(exactly = 2)`s the probe, `theSinglePassAgreesWithTheDedicatedMethods` dropped both `.sorted()`
+calls so the directories-first order is pinned rather than promised in prose, and
+`aNullHashReportsNoDuplicate` now `verify(exactly = 0)`s the repository. Each carries a comment saying
+why the assertion above it is insufficient on its own.
+
+**Also verified, since it gates the finding below:** `perf-safety-snapshot` is fully superseded by this
+branch. `git diff HEAD perf-safety-snapshot` is 10 files, 439 deletions against 36 insertions, with no
+file added or removed on either side; every one of those 36 insertions is text HEAD later replaced
+(the stale hash citations, and suite counts of 337 / 127). All 11 of its patch-id-unique commits have
+subject counterparts on HEAD, some split in two. It needs no merge, and deleting it is safe — which is
+precisely what makes **R4** urgent rather than cosmetic.
+
+## HIGH
+
+### R1 — The `@Indexed` that the upload duplicate-check is built on creates no index
+
+`fix(app): look an upload's hash up by index instead of scanning every modpack` replaced a
+`findAll()`-and-compare loop with `ModPackRepository.findBySha256`, and `ModPack.sha256` carries
+`@Indexed`. The repository's KDoc states the consequence as fact: *"`ModPack.sha256` carries
+`@Indexed`, so this is a single indexed lookup rather than a scan"*.
+
+**No index is ever created.** Spring Data MongoDB stopped creating annotation-declared indexes
+automatically in 3.0. Verified from the resolved artifacts rather than from memory:
+
+| Evidence | Result |
+|---|---|
+| `javap -c` on `MongoMappingContext` (spring-data-mongodb 5.1.0) | the no-arg constructor emits `iconst_0; putfield autoIndexCreation:Z` — the default is **false** |
+| `javap -c` on `DataMongoConfiguration.mongoMappingContext` (spring-boot-data-mongodb 4.1.0) | `PropertyMapper.from(properties.isAutoIndexCreation()).to(context::setAutoIndexCreation)` — `PropertyMapper` skips a null source, so an absent property leaves the constructor default standing |
+| `spring-configuration-metadata.json` in that jar | `spring.data.mongodb.auto-index-creation` exists with **no default value** |
+| `grep -rn 'auto-index-creation\|autoIndexCreation'` across the repo | **no hits** — no property, and no `MongoMappingContext` bean or `AbstractMongoClientConfiguration` subclass anywhere |
+
+So `findBySha256` is a `COLLSCAN`. This is `@Indexed`'s only occurrence in the project and it is **new on
+this branch** (`git grep @Indexed 7abd7c85c` is empty), so nothing pre-existing masks it.
+
+Graded HIGH on this report's own precedent: **F3** was graded HIGH for exactly this shape — a claim
+asserted in a commit message and in durable prose, and false.
+
+**Scoped honestly: the commit is still a real improvement, just not the one it claims.** It stops
+loading every document into the JVM and stops dragging the eager `@DBRef` graph behind each one, which
+was the dominant cost. What it does not do is let the *server* skip documents.
+
+**Fix:** enable `spring.data.mongodb.auto-index-creation=true` in the app's own
+`application.properties`. That keeps the annotation as the single declaration — creating the index in
+code as well would duplicate a decision into two places that can drift.
+
+### R2 — A duplicate hash now yields an uncaught 500 where it used to yield a handled 400
+
+`ModPackRepository.findBySha256` is declared `fun findBySha256(sha256: String?): Optional<ModPack>`. A
+Spring Data derived query returning `Optional<T>` throws `IncorrectResultSizeDataAccessException` when
+more than one document matches.
+
+The code it replaced could not do that. It iterated `findAll()` and threw `StorageException` on the
+**first** match, tolerating any number of duplicates:
+
+```kotlin
+val availableModpacks = modpackRepository.findAll()
+for (available in availableModpacks) {
+    if (available.sha256 == modpack.sha256) { throw StorageException(...) }
+}
+```
+
+`ModPackController` catches `StorageException` and answers with a populated error body.
+`IncorrectResultSizeDataAccessException` is not a `StorageException`, so it escapes to the container as
+a 500 — and it does so on *every* subsequent upload of that hash, not once.
+
+Two ways two documents come to share a hash: an existing database predating the duplicate check, and a
+race between two concurrent uploads of the same file (both scan, both find nothing, both `save`). The
+old code absorbed both; the new code turns the second upload into a server error. Undisclosed — neither
+the commit message nor `serverpackcreator-app/CLAUDE.md` mentions the multiplicity contract.
+
+**Fix:** `findFirstBySha256`. Spring Data's `First` keyword limits the query to one result, so it can
+never throw, and "first match wins" is exactly the pre-branch semantics.
+
+### R3 — A published, versioned REST contract changed shape; its published spec still describes the old one
+
+`fix(app): embed the run-configuration mod lists, and migrate what is stored` changed
+`RunConfiguration.startArgs` / `clientMods` / `whitelistedMods` from `MutableList<StartArgument>` etc. to
+`MutableList<String>`, and deleted the three classes. `RunConfigurationController` returns that entity
+directly — `ResponseEntity<List<RunConfiguration>>` and `ResponseEntity<RunConfiguration>` under
+`@RequestMapping("/api/v2/runconfigs")` — so the response body went from
+
+```json
+"clientMods": [{"id": 1, "mod": "3dskinlayers-"}]
+```
+
+to `"clientMods": ["3dskinlayers-"]`, on a path that carries an explicit API version.
+
+Neither published description was updated:
+
+- `serverpackcreator-help/Writerside/api-docs.yaml` still `$ref`s
+  `#/components/schemas/StartArgument`, `/ClientMod` and `/WhitelistedMod`, and still defines all three
+  — schemas for classes that no longer exist. `RunConfiguration` is embedded in `ServerPackView`, so
+  every response carrying a server pack is described wrongly too.
+- `serverpackcreator-help/Writerside/topics/Run-Configs.md` shows four response samples with
+  `{"id": …, "mod": …}` objects.
+
+`serverpackcreator-app/CLAUDE.md` does say *"The JSON shape is part of this contract"* — but names only
+the two SPA consumers and `types/api.ts`. The obligation it states is "change those in the same
+commit", which is precisely what was done; the documented external contract was simply not in the list.
+
+**Caveat, so the fix is not over-claimed:** that spec is a stale generated snapshot independent of this
+branch — it types `id` as `integer/int32` while the entities use `@MongoId(FieldType.STRING)`, and
+`springdoc` is commented out in `serverpackcreator-app/build.gradle.kts`, so nothing regenerates it.
+This branch widened pre-existing drift rather than creating it. What is new, and this branch's own, is
+that the spec now references deleted types.
+
+**Fix:** inline `type: string` into the three properties, delete the three orphaned schema definitions
+(referenced from nowhere else — verified), and correct the four samples in `Run-Configs.md`. Note that
+`serverpackcreator-help` is not in the Gradle build, so no test can guard this; it is prose, and it
+stays correct only by being edited alongside the entity.
+
+## MEDIUM
+
+### R4 — The audit report itself cites 41 hashes that are not on the branch
+
+Of the 42 hash-shaped tokens cited in `REFACTOR-AUDIT.md`, one is the branch base `7abd7c85c` (on
+`develop`, so stable), two are not commits at all — `61f97194` and `6afc2700` are Java version strings,
+as the report itself notes elsewhere — and **39 are dead commit hashes**. Every one of those 39 resolves
+only because `perf-safety-snapshot` still points at it: the branch this same iteration just established
+is safe to delete. Delete it, and the report's evidence base becomes unreachable and
+garbage-collectable. Two further identity hashes (`@186d20a3`, `@74ab779f`) are Java `hashCode` output
+quoted from a failure message, not refs.
+
+This is the defect class **N1** recorded and `docs: cite commit subjects instead of hashes` fixed — in
+`claude-docs/REFACTOR-LOG.md` and `serverpackcreator-api/CLAUDE.md`. The audit report that *recorded*
+the convention was left violating it, and it is a committed, root-level document like the others.
+
+**Fix:** replace the hash citations with commit subjects, per the convention the branch adopted.
+Verdict tables keep one column of identity — the subject — because that is what survives a rebase.
+
+## LOW
+
+### R5 — The migration's collection name is a string copy of a mapping decision, and a wrong one fails silently
+
+`RunConfigurationListMigrationRunner.COLLECTION` is `"runConfiguration"`, commented as *"The collection
+Spring Data maps `RunConfiguration` to."* That is correct today — Spring Data decapitalises the simple
+class name — and the same is true of the three `ORPHANED_COLLECTIONS`, which have to be literals
+because their classes are gone.
+
+The live one is different from the three dead ones: if `RunConfiguration` is ever renamed or gains
+`@Document("…")`, `store.findAll(COLLECTION)` reads a collection that does not exist, returns an empty
+list, rewrites nothing, drops nothing, logs no failure, and the migration reports success. Every
+guard in `RunConfigurationListMigrationRunnerTest` still passes, because they all drive the store
+through the same constant.
+
+**Fix:** pin it. A standalone `MongoMappingContext` resolves the mapped name with no database, so the
+constant can be asserted against the mapping it claims to mirror.
+
+### R6 — `REFACTOR-AUDIT.md` rides along in five code commits
+
+`test(api): pin that the fallback-list refresh gives up instead of hanging` (`test(api)`), `fix(app): key the installer-probe memo on a Triple instead of NUL-delimited text` and `fix(api): sanitise a network timeout once per assignment` (`fix(api)`/`fix(app)`), `fix(api): route the HasteBin POST through the shared opener too`
+(`fix(api)`) and `test: make three guards that passed for the wrong reason actually bite` (`test`) each bundle the regenerated audit report — twice together with
+`CLAUDE.md` edits — while the branch elsewhere keeps five separate `docs:` commits. Reporting it for
+consistency, not proposing a fix: the report is arguably the fix's own evidence, and rewriting five
+commits' history to relocate a markdown file is disproportionate to the rule it bends.
+
+### R7 — Verified clean, recorded so it is not re-litigated
+
+- **`./gradlew build` green**, and the documented counts are the real ones, read from the JUnit XML:
+  api 339 (1 skip), app 135, clientside 88, grinder 233 (19 skip). The refactor-state table matches.
+- **No new compiler warnings.** A forced recompile (`--rerun-tasks`) of `-api` and `-app` main sources
+  emits 35, and every one blames to a commit reachable from `develop`. The only two in files this
+  branch touched — the delicate-API call in `ConfigEditor` and the unchecked `javaFileListFlavor` cast
+  in `TabbedConfigsTab` — blame to `refactor(gui): own ConfigEditor coroutines via a component-scoped
+  CoroutineScope` and the drag-and-drop feature commit respectively.
+- **No new `!!`** anywhere in the branch's added lines. Every added `var` is a settings property, a memo
+  cache, a loop counter or a mapped entity field.
+- **The NUL-byte defect is genuinely gone.** `fix(app): stop the check-timer re-probing the network and re-parsing the manifest` committed two literal NULs into
+  `ConfigEditorViewModel.kt`, which is why git recorded that one diff as binary; the blob at
+  `fix(app): key the installer-probe memo on a Triple instead of NUL-delimited text` and at `HEAD` contains none, and `file` reports UTF-8 text. The historical commit stays
+  un-diffable, which is not worth rewriting history over.
+
+## Summary
+
+Three HIGH findings, all in the same blind spot: **claims about a runtime this suite never starts, and
+contracts that live outside `src/`.** The declared index does not exist (**R1**), the query that
+replaced a tolerant scan is intolerant of the duplicates the scan existed to report (**R2**), and a
+versioned REST response changed shape while its published spec kept describing types the branch
+deleted (**R3**). None was reachable by inspection of the diff, by the test suite, or by mutation —
+the first two need a real MongoDB, the third needs to look outside the module.
+
+Also: the report you are reading cites 41 hashes that die with `perf-safety-snapshot` (**R4**), and the
+migration's collection name can go wrong silently (**R5**).
+
+Recommended: fix R1–R5, and delete `perf-safety-snapshot` once R4 has landed.
