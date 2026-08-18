@@ -249,8 +249,7 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int32
+          type: string
       responses:
         "200":
           description: OK
@@ -268,8 +267,7 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int32
+          type: string
       - name: vote
         in: path
         required: true
@@ -292,14 +290,12 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int32
+          type: string
       - name: runConfigurationId
         in: path
         required: true
         schema:
-          type: integer
-          format: int32
+          type: string
       responses:
         "200":
           description: OK
@@ -318,8 +314,7 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int32
+          type: string
       responses:
         "200":
           description: OK
@@ -352,8 +347,7 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int32
+          type: string
       responses:
         "200":
           description: OK
@@ -385,8 +379,7 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int32
+          type: string
       responses:
         "200":
           description: OK
@@ -404,8 +397,7 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int32
+          type: string
       responses:
         "200":
           description: OK
@@ -465,8 +457,7 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int32
+          type: string
       responses:
         "200":
           description: OK
@@ -486,8 +477,7 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
-          format: int32
+          type: string
       responses:
         "200":
           description: OK
@@ -524,14 +514,11 @@ components:
         success:
           type: boolean
         modPackId:
-          type: integer
-          format: int32
+          type: string
         runConfigId:
-          type: integer
-          format: int32
+          type: string
         serverPackId:
-          type: integer
-          format: int32
+          type: string
         status:
           type: string
           enum:
@@ -653,8 +640,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
-          format: int32
+          type: string
         minecraftVersion:
           type: string
         modloader:
@@ -761,8 +747,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
-          format: int32
+          type: string
         size:
           type: integer
           format: int32
@@ -776,8 +761,7 @@ components:
           type: string
           format: date-time
         fileID:
-          type: integer
-          format: int64
+          type: string
         sha256:
           type: string
         runConfiguration:
@@ -791,8 +775,7 @@ components:
         error:
           type: string
         id:
-          type: integer
-          format: int32
+          type: string
     QueueEvent:
       required:
       - errors
@@ -801,14 +784,11 @@ components:
       type: object
       properties:
         id:
-          type: integer
-          format: int32
+          type: string
         modPackId:
-          type: integer
-          format: int32
+          type: string
         serverPackId:
-          type: integer
-          format: int32
+          type: string
         status:
           type: string
           enum:
