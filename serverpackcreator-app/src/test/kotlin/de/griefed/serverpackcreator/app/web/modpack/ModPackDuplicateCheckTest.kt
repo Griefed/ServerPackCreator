@@ -74,7 +74,7 @@ internal class ModPackDuplicateCheckTest {
     @Test
     fun anExistingHashIsFoundWithoutScanningTheCollection(@TempDir tempDir: File) {
         val existing = stored("abc123", "Already Uploaded")
-        every { modpackRepository.findBySha256("abc123") } returns Optional.of(existing)
+        every { modpackRepository.findFirstBySha256("abc123") } returns Optional.of(existing)
         // Stubbed but expected unused, so the guard fails by naming the scan rather than by a
         // missing-answer exception.
         every { modpackRepository.findAll() } returns listOf(existing)
@@ -83,7 +83,7 @@ internal class ModPackDuplicateCheckTest {
 
         Assertions.assertTrue(duplicate.isPresent, "The stored modpack with this hash must be found")
         Assertions.assertEquals("Already Uploaded", duplicate.get().name)
-        verify(exactly = 1) { modpackRepository.findBySha256("abc123") }
+        verify(exactly = 1) { modpackRepository.findFirstBySha256("abc123") }
         verify(exactly = 0) { modpackRepository.findAll() }
     }
 
@@ -92,7 +92,7 @@ internal class ModPackDuplicateCheckTest {
      */
     @Test
     fun anUnknownHashReportsNoDuplicate(@TempDir tempDir: File) {
-        every { modpackRepository.findBySha256("nothing-like-it") } returns Optional.empty()
+        every { modpackRepository.findFirstBySha256("nothing-like-it") } returns Optional.empty()
         every { modpackRepository.findAll() } returns listOf(stored("abc123", "Other"))
 
         val duplicate = service(tempDir).existingUploadOf("nothing-like-it")
@@ -107,7 +107,7 @@ internal class ModPackDuplicateCheckTest {
      */
     @Test
     fun aNullHashReportsNoDuplicate(@TempDir tempDir: File) {
-        every { modpackRepository.findBySha256(null) } returns Optional.empty()
+        every { modpackRepository.findFirstBySha256(null) } returns Optional.empty()
         every { modpackRepository.findAll() } returns listOf(ModPack())
 
         Assertions.assertTrue(service(tempDir).existingUploadOf(null).isEmpty)
@@ -115,6 +115,6 @@ internal class ModPackDuplicateCheckTest {
         // null too — it would be verifying the mock, not the code. What the short-circuit exists for is
         // that the database is never asked: Mongo's own `{sha256: null}` *would* match documents whose
         // field is unset.
-        verify(exactly = 0) { modpackRepository.findBySha256(any()) }
+        verify(exactly = 0) { modpackRepository.findFirstBySha256(any()) }
     }
 }

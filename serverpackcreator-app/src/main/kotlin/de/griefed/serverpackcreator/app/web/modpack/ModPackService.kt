@@ -91,7 +91,7 @@ class ModPackService @Autowired constructor(
             // match stored documents whose own sha256 is unset, and the non-ZIP sources leave it so.
             Optional.empty()
         } else {
-            modpackRepository.findBySha256(sha256)
+            modpackRepository.findFirstBySha256(sha256)
         }
 
     /**

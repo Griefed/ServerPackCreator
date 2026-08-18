@@ -30,11 +30,18 @@ interface ModPackRepository : MongoRepository<ModPack, String> {
     fun findByServerPacksContains(serverPack: ServerPack): Optional<ModPack>
 
     /**
-     * The stored modpack whose contents hash to [sha256], if any.
+     * The first stored modpack whose contents hash to [sha256], if any.
      *
      * Backs the upload duplicate-check, which previously loaded the whole collection and compared in
-     * memory. `ModPack.sha256` carries `@Indexed`, so this is a single indexed lookup rather than a
-     * scan that also drags in the eager `@DBRef` graph behind every document.
+     * memory. `ModPack.sha256` carries `@Indexed` and `application.properties` enables index creation, so
+     * this is a single indexed lookup rather than a scan that also drags in the eager `@DBRef` graph
+     * behind every document.
+     *
+     * **`First` is load-bearing, not decoration.** Without it a derived query returning [Optional] raises
+     * `IncorrectResultSizeDataAccessException` as soon as two documents share a hash — which the scan this
+     * replaced tolerated, because it returned on the first match. Duplicates are reachable through a race
+     * between concurrent uploads of one file, and through any database predating the check. Pinned by
+     * `ModPackHashQueryTest`.
      */
-    fun findBySha256(sha256: String?): Optional<ModPack>
+    fun findFirstBySha256(sha256: String?): Optional<ModPack>
 }
