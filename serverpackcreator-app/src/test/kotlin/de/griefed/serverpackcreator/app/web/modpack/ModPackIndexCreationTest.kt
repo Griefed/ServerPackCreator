@@ -47,13 +47,23 @@ internal class ModPackIndexCreationTest {
         return context
     }
 
-    /** The app's shipped `application.properties`, read from the classpath as the running app reads it. */
+    /**
+     * The `application.properties` the running app reads — deliberately **not** via
+     * `getResourceAsStream`, because `src/test/resources` ships its own copy that shadows it on the test
+     * classpath. Every copy is enumerated and the test one discarded, so this asserts against what is
+     * actually shipped.
+     */
     private fun shippedProperties(): Properties {
+        val copies = ModPackIndexCreationTest::class.java.classLoader
+            .getResources("application.properties")
+            .toList()
+            .filterNot { it.path.contains("/resources/test/") || it.path.contains("/test-classes/") }
+        Assertions.assertEquals(
+            1, copies.size,
+            "Expected exactly one non-test application.properties on the classpath, found: $copies"
+        )
         val properties = Properties()
-        ModPackIndexCreationTest::class.java.getResourceAsStream("/application.properties").use { stream ->
-            Assertions.assertNotNull(stream, "The app ships an application.properties")
-            properties.load(stream)
-        }
+        copies.single().openStream().use { properties.load(it) }
         return properties
     }
 
