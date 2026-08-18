@@ -109,6 +109,19 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   successful pass. Failures are logged and swallowed on purpose.
   Note it uses `MongoTemplate` rather than the repository, necessarily: the mapped type can no longer
   read the old shape, which is the very problem being fixed.
+  **Its safety decisions are behind `MigrationStore`, and that is the point.** The ordering (every rewrite
+  before any drop), the skip (never drop when nothing was rewritten), and the swallow (an unreachable
+  database must not fail the boot) are what can lose data if wrong, and they were untestable while the
+  runner talked to `MongoTemplate` directly — an audit caught the runner with **no** test at all while its
+  pure transformation was well covered. `RunConfigurationListMigrationRunnerTest` asserts them against a
+  recording double, and each was verified to have teeth by deliberately breaking it (dropping first fails
+  4 guards; dropping when nothing was rewritten fails 2). Copy this seam for the next migration.
+  Note `MongoMigrationStore.findAll` materialises the collection rather than streaming the cursor,
+  deliberately: writing while iterating a live cursor can return a moved document twice, which is only
+  harmless while every rewrite is idempotent.
+  **The retry promise is half true:** the rewrite retries on the next start, the *drop* does not — it runs
+  only when something was rewritten, so a pass that rewrote everything then failed to drop leaves those
+  collections for good. Harmless, but not self-healing.
   It costs the suite nothing — `WebServiceContextTest` fires the listener against an unreachable Mongo
   and still runs in 0.438 s, because localhost *refuses* rather than black-holes, so server selection
   fails fast instead of waiting out the 30 s default. Do not assume that holds for a remote host.
