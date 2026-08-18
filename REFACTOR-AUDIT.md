@@ -1195,3 +1195,99 @@ caught this in one second, had the configuration under test been the configurati
 
 Recommended: fix S1 by moving index creation to `ApplicationReadyEvent` behind a seam, and close S2 for
 the property that bit by booting the context with it.
+
+---
+
+# Audit — `claude-performance-improvements`, iteration 6
+
+**Range:** `7abd7c85c..HEAD` (60 commits) · **Date:** 2026-08-18 · **Mode:** READ-ONLY
+Focus: the **generalisation** of the last two iterations' findings. R1 and S1 were both the same shape —
+something *declared* that was never actually in effect, unit-tested by construction and never checked
+against the thing that runs it. So: what else does this branch declare that nothing verifies is live?
+Two answers, one in each module the branch touched.
+
+## Iteration-5 fixes confirmed
+
+`DeclaredIndexCreator` creates the declared indexes on `ApplicationReadyEvent`, failures logged and
+swallowed; the property is reverted and left commented with its reason; `DeclaredIndexStartupTest` boots a
+real context with no database and asserts the shipped file does not re-enable refresh-time creation, and it
+shares `WebServiceContextTest`'s context rather than paying a second boot. Both landmines are in
+`serverpackcreator-app/CLAUDE.md`. `./gradlew build` green — api 339 (1 skip), app 143, clientside 88,
+grinder 233 (19 skip).
+
+## MEDIUM
+
+### T1 — Five components this branch added, none asserted to be wired
+
+The branch adds five `@Component`s: `RunConfigurationListMigration`, `RunConfigurationListMigrationRunner`,
+`MigrationStore`/`MongoMigrationStore`, `IndexStore`/`MongoIndexStore` and `DeclaredIndexCreator`. Every one
+is well unit-tested — and every one of those tests **constructs the class directly**, so all of them pass
+whether or not Spring ever creates the bean.
+
+Nothing asserts registration. `WebServiceContextTest` is the module's wiring guard and stops at the
+controllers and four services; neither `@EventListener` is covered by anything. So the failure mode is
+silent in both cases, and unequal in cost:
+
+| If inert | Consequence |
+|---|---|
+| `DeclaredIndexCreator` | the index is never created — R1 again, and its own guard would still pass |
+| `RunConfigurationListMigrationRunner` | **persisted data is never migrated**, and the mapped type cannot read the old shape, so reads fail on real data while the whole suite is green |
+
+Not a live defect — the boot logged in iteration 5 shows both listeners firing (`createIndexes` and then
+`find`, each waiting on the absent server). It is a **guard gap**, and precisely the one that let R1 and S1
+through: a component verified by construction is not verified as reachable.
+
+**Fix:** assert the five beans and the two listeners in the context test that already owns wiring.
+
+### T2 — The frontend guard for the shape change asserts pass-through, not rendering
+
+The DBRef-to-embedded change made `startArgs` / `clientMods` / `whitelistedMods` arrays of strings, and
+`RunConfigurationCard.vue` renders them with `.join(', ')`. Its test asserts
+`expect(wrapper.vm.clientMods).toEqual(['optifine'])` — the value it just passed in, via a component that
+assigns `this.clientMods = runConfig.clientMods` unchanged. The assertion holds for *any* element type.
+
+**Mutation:** revert the component to the pre-branch object shape — `clientMods.map(m => m.mod).join(', ')`,
+at both render sites. **Result: all 31 frontend tests pass.** The card renders `undefined, undefined` in a
+browser and nothing notices.
+
+**`SubmitModPackForm.test.ts` is *not* the same shape, and the first draft of this finding said it was.**
+Its `expect(wrapper.vm.clientMods).toBe('optifine')` looks like the same pass-through, but the form's
+`clientMods` is a *derived* value — `selectedRunConfiguration` does `config.clientMods.join(', ')` into a
+string field — so the assertion is shape-sensitive. Checked rather than assumed: mutating that line to
+`config.clientMods.map(m => m.mod).join(', ')` **fails** the guard. Its three tooltip `.join(', ')` render
+sites are still unasserted, but the consumer that matters is covered. Corrected here because an
+overstated finding is the same defect as an overstated commit message.
+
+This is iteration 3's Q1/Q2/Q3 defect class — a guard that verifies its own input rather than the code —
+reappearing in the module iteration 3 did not cover. It matters more here than usual because the frontend is
+the *only* consumer the shape change was verified against: `serverpackcreator-app/CLAUDE.md` names these two
+components as the contract's consumers, and the guard on them cannot see the shape.
+
+**Fix:** assert the rendered text, not the passed-through prop. `wrapper.text()` containing the joined
+strings fails under the mutation above, because `undefined` is what gets rendered.
+
+## LOW
+
+### T3 — Verified clean
+
+- **Component scanning genuinely reaches the new package.** `WebService` is `@SpringBootApplication` in
+  `de.griefed.serverpackcreator.app.web`, so `web.index` and `web.migration` are below it. Worth stating
+  because T1 is otherwise easy to misread as "the beans are missing" — they are not, they are unasserted.
+- **No annotation the branch added is inert.** The added set is exactly five `@Component`, two
+  `@EventListener(ApplicationReadyEvent)`, one `@Indexed` and four `@Throws`. The `@Indexed` was R1 and is
+  now consumed explicitly by `DeclaredIndexCreator`; the rest are live. No `@Transactional` was added — which
+  is as well, since MongoDB transactions need a replica set and the shipped compose file runs a single node.
+- **The two ready-event listeners are order-independent.** Neither carries `@Order` and their execution
+  order is therefore unspecified, which is fine: the index is non-unique, so creating it before or after the
+  migration rewrites documents changes nothing.
+
+## Summary
+
+Both findings are the same defect as the previous two iterations', one level up: **a declaration verified by
+the test that constructs it, rather than by the thing that runs it.** Five components verified by
+construction and never as beans (**T1**); one frontend guard that asserts the prop it passed in and stays
+green when the component consumes the wrong element shape entirely (**T2**, proven by mutation — and scoped
+down mid-finding, because the second test it accused turned out to bite).
+
+Neither is a live defect today. Both are the reason a live defect went unnoticed twice in this session, so
+they are worth closing on that basis rather than on their current impact.

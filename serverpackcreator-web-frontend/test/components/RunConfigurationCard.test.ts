@@ -12,9 +12,15 @@ vi.mock('boot/axios', () => ({
 let runConfigPayload: Record<string, unknown>
 
 /**
- * Characterization test for RunConfigurationCard — pins the array-flattening derivations the card
- * performs on mount: the nested `{argument}` / `{mod}` objects from the backend are mapped to flat
- * string arrays and joined for display. Added retroactively for the untested card.
+ * Characterization test for RunConfigurationCard — pins how the card consumes a run-configuration's
+ * three mod-lists and renders them.
+ *
+ * Those lists are **plain string arrays**: the web module embedded them, replacing the `{argument}` /
+ * `{mod}` documents they used to be `@DBRef`s to. Every list therefore needs an assertion on the
+ * *rendered text*, not on the prop: the card assigns `this.clientMods = runConfig.clientMods`
+ * unchanged, so comparing `vm.clientMods` to the payload holds for any element type — verified, a card
+ * reverted to `clientMods.map(m => m.mod).join(', ')` renders `undefined, undefined` and passed all 31
+ * frontend tests.
  */
 describe('RunConfigurationCard', () => {
   beforeEach(() => {
@@ -43,5 +49,16 @@ describe('RunConfigurationCard', () => {
   it('joins the start arguments with spaces for display', async () => {
     const wrapper = await mountCard()
     expect(wrapper.text()).toContain('-Xmx4G -Xms2G')
+  })
+
+  // The rendered text, deliberately, and for every list: the assertions above compare the prop with the
+  // payload it came from, which cannot tell a string array from an array of objects. Rendering can —
+  // consuming the wrong element shape puts `undefined` on the card.
+  it('renders the client mods and the whitelist as their own values', async () => {
+    const wrapper = await mountCard()
+    expect(wrapper.text()).toContain('optifine')
+    expect(wrapper.text()).toContain('jei')
+    expect(wrapper.text()).not.toContain('undefined')
+    expect(wrapper.text()).not.toContain('[object Object]')
   })
 })
