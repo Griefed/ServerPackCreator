@@ -240,12 +240,14 @@
     sails past every caller's `catch`. `MinecraftServerManifestCooldownTest` downloads from a `file:`
     URL and caught it; `WebUtilitiesTimeoutTest.aNonHttpUrlCanStillBeDownloaded` now pins it directly.
   - **A `mockk(relaxed = true)` fixture silently defeats a timeout guard.** A relaxed mock answers `0`
-    for an `Int`, and `0` *is* the JDK's "wait forever" — both stall-guards still failed against the
-    *fixed* code until the timeouts were explicitly stubbed. Stub them; never rely on the relaxed default.
-    Consequence worth knowing before you trust that pair as an example: because the fixture had to change,
-    `checkout 9fce12419 && apply c124331b0` shows **red → red**, not red → green. The later timeout pins
-    (`UpdateConfigTimeoutTest`, `VersionCheckerTimeoutTest`) were written against the *existing*
-    signatures precisely so their fixes turn them green untouched — copy those, not the first one.
+    for an `Int`, and `0` *is* the JDK's "wait forever", so the fixture hands the code under test the very
+    defect the guard exists to catch — and the guard then fails against *correct* code, for a reason that
+    has nothing to do with it. Stub the timeouts explicitly; never rely on the relaxed default.
+    This cost a full red→green cycle before it was understood: the first version of
+    `WebUtilitiesTimeoutTest` was written before `NetworkConfig` existed, so it had nothing real to stub.
+    The ordering on this branch is the fix — the settings group lands first, the guard references its
+    actual properties, and it is red only because nothing routes them yet. **Order a new-API pin that way
+    and the fix turns it green untouched.**
   - **A hang guard's bound must not equal the timeout it is measuring.** `VersionCheckerTimeoutTest` uses
     45 s against a 15 s default read-timeout, because a bound *equal* to the timeout races between "gave
     up as configured" and "waited forever" and decides the outcome by scheduling. It also cannot shorten

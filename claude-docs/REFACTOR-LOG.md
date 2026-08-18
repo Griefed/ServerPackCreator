@@ -1401,7 +1401,7 @@ worked — which is what the surrounding `while` is for.
 
 ## Modscanning generification (`claude-modscanning-generification`, 2026-08-15)
 
-Triggered by a Qodana report review (job 37558, rev `dc5aed6`: 58 problems, 13 High, no security or
+Triggered by a Qodana report review (job 37558, rev "RELEASE: 9.0.0-alpha.5": 58 problems, 13 High, no security or
 correctness inspections — 7 self-inflicted `KotlinDeprecation` on the 6.0.0 `scriptTemplates` facades, 4
 `KDocUnresolvedReference` in `ClientsideModels.kt`, one `RedundantInnerClassModifier`, and one
 `UnusedSymbol` that turned out to be in `modscanning`) plus the question of what in the scanners could be
@@ -1621,7 +1621,7 @@ recorded here because the wrong versions were stated out loud first:
 so twelve calls on the *blocking* startup path could wait forever. Not a slow start — a hang at
 splash-screen 20 % with no recovery but killing the process.
 
-Phase 0, timeouts (`9fce124` red, `c124331` fix). Guards written against a loopback `ServerSocket`
+Phase 0, timeouts ("pin that HTTP calls give up instead of hanging forever" red, "bound every HTTP call with configurable timeouts" fix). Guards written against a loopback `ServerSocket`
 that accepts and never answers; both failed past 15 s, blocking in
 `sun.net.www.http.HttpClient.parseHTTPHeader`. Fixed with a `NetworkConfig` settings group (5 s
 connect / 15 s read / 60 s download-read, all tunable, `0` kept as the documented escape hatch to the
@@ -1633,7 +1633,7 @@ error handling entirely; and `mockk(relaxed = true)` answers `0` for an `Int`, w
 "wait forever", so the fixture silently reproduced the defect and both guards still failed against the
 fixed code until the values were explicitly stubbed.
 
-Phase 1, startup (`04c0e57` extract, `6b19148` red, `76dea65` fix). `ManifestUpdater` extracted from
+Phase 1, startup ("extract manifest refreshing into ManifestUpdater" extract, "pin what a manifest check costs" red, "halve startup requests and skip unchanged manifests" fix). `ManifestUpdater` extracted from
 `VersionMeta` as a strict verbatim move — including the ugly `var countOldFile/countNewFile`
 accumulators and the LegacyFabric equal-count nudge — purely to create a seam, since `VersionMeta`
 resolves its twelve URLs from `VersionMetaConfig` constants inside its constructor and nothing about
@@ -1679,23 +1679,23 @@ things per tick from inputs that had not changed.
 
 Sequenced as refactor → red → fix, three times over:
 
-1. `b6a9d2c` **refactor(app)** — `ConfigEditorViewModel` gains `isServerDownloadable` and `packName`
+1. "move the check-timer's server probe and pack-name read behind the view model" **refactor(app)** — `ConfigEditorViewModel` gains `isServerDownloadable` and `packName`
    as plain delegation, and the timer/editor call those instead of reaching into `ApiWrapper`. The
    view-model now takes `ConfigurationHandler` and `ServerPackHandler` beside `VersionMeta`; all three
    are `-api` types, so it stays unit-testable without a display. Fell out of the move: the timer no
    longer builds a `PackConfig` per tick (it only read `.name` off a throwaway one), and
    `ConfigCheckTimer`'s now-unused `apiWrapper` parameter went away.
-2. `6fac2ab` **refactor(api)** — `ModpackManifestParser.manifestCandidates` exposes the six launcher
+2. "make the launcher-manifest candidates askable" **refactor(api)** — `ModpackManifestParser.manifestCandidates` exposes the six launcher
    manifests `checkManifests` consults, with a `ConfigurationHandler` facade, so the app can ask
    whether they changed instead of hardcoding the paths. The alternative was a second source of truth
    that drifts — the failure this repo already documents for `SupportedModloaders`. Pinned by
    `ManifestCandidatesTest`, including that absent files are still reported (a memo must notice a
    manifest about to be created).
-3. `b9cdfeb` **test(app)** red / `edd70d6` **fix(app)** — memoize both. The installer probe is cached
+3. "pin how often the check-timer consults the network and the disk" **test(app)** red / "stop the check-timer re-probing the network and re-parsing the manifest" **fix(app)** — memoize both. The installer probe is cached
    per version-triple, successes only: a published installer does not vanish, but a cached `false`
    would leave the editor stuck on "server unavailable" until restart. The manifest read is keyed on a
    six-`stat` fingerprint of the candidates.
-4. `cac00c8` **test(app)** red / `b2c1e43` **fix(app)** — `SuggestionProvider` parses its ~550-entry
+4. "pin that the autocomplete list is parsed once, not per keystroke" **test(app)** red / "parse the autocomplete list once, and stop reinstalling the LAF per keystroke" **fix(app)** — `SuggestionProvider` parses its ~550-entry
    autocomplete list once instead of per keystroke, drops the per-keystroke `updateUI()`, and hoists
    its `\W` regex.
 
@@ -1756,19 +1756,19 @@ version had already been stated twice (in the investigation and in the plan).
 
 What the phase actually delivered:
 
-- `41607582` **fix(api)** — one `FilterMatcher` per generation. Its value is a **bug fix**, not speed: a
+- "stop a bad regex aborting the mod-list, and hoist the loop invariants" **fix(api)** — one `FilterMatcher` per generation. Its value is a **bug fix**, not speed: a
   single malformed clientside-list entry used to throw `PatternSyntaxException` out of `compileModList`
   and abort generation, because `entry.toRegex()` ran per comparison. Now compiled up front, logged once,
   skipped, and the rest of the list still applies.
-- `5d30890b` **fix(api)** — the archive is read once per inspection at both sites (~80 ms each, scaling
+- "read a modpack archive once per inspection, and index the Quilt merge" **fix(api)** — the archive is read once per inspection at both sites (~80 ms each, scaling
   with the archive), plus the two negligible hoists, each labelled as such. `putIfAbsent` rather than
   `associateBy` in the Quilt merge, because `find` returned the *first* match and `associateBy` keeps the
   last — indistinguishable under the one-entry-per-jar contract, but first-wins is what was being replaced.
-- `350d7cb9` **fix(api)** — `clientsideModsRegex`/`modsWhitelistRegex` return a fresh set per read. Not a
+- "hand out a fresh regex mod-list per read" **fix(api)** — `clientsideModsRegex`/`modsWhitelistRegex` return a fresh set per read. Not a
   performance change at all: the shared field was cleared and refilled per read, so a held result was
   emptied underneath its caller and a concurrent reader could observe it part-way through. Published, and
   the GUI reads settings from a `parallelStream`.
-- `f7fdcff3` **refactor(api)** — the Forge annotation-scanner's two `get() = "…".toRegex()` properties
+- "compile the Forge annotation-scanner's regexes once" **refactor(api)** — the Forge annotation-scanner's two `get() = "…".toRegex()` properties
   become `val`s, and a private `additionalDependencyRegex` holding the *identical* literal is gone. That
   duplicate was the real find: it was what the two `additionalDependency*` checks actually used, so an
   edit to the documented copy would have changed nothing there. 1.12-and-older path only, so no
@@ -1791,9 +1791,9 @@ schema change and its migration second.
 
 **4a, no schema change.** `AmountStatsService` did four full-collection loads to answer one
 `/api/v2/stats` request — one for the tally and three purely for `.size`; the three become `count()`
-(`3d25dd22` red, `84aa970a` fix). `ModPackService`'s upload duplicate-check loaded every modpack to
-compare one hash; extracted as `existingUploadOf` (`c67e021a`), then pinned and moved onto an indexed
-`findBySha256` (`3d25dd22`… see `549d7e30`). Each avoided load mattered more than its row count because
+("pin that the stats endpoint counts instead of scanning" red, "count the stats totals instead of scanning three collections" fix). `ModPackService`'s upload duplicate-check loaded every modpack to
+compare one hash; extracted as `existingUploadOf` ("extract the upload duplicate-check from saveUploadedFile"), then pinned and moved onto an indexed
+`findBySha256` ("pin that the stats endpoint counts instead of scanning"… see "look an upload's hash up by index instead of scanning every modpack"). Each avoided load mattered more than its row count because
 of the eager `@DBRef` fan-out that 4b then removed at the root.
 
 That fix also surfaced a latent semantic bug: with the in-memory comparison, `available.sha256 == sha256`
@@ -1802,7 +1802,7 @@ that also lacked one. Unreachable from the upload path (`SavedFile.sha256` is no
 anyway because the parameter is nullable, stored documents genuinely carry null, and Mongo's own
 `{sha256: null}` query would match them too — so the fix has to say no explicitly.
 
-**4b, the flattening** (`7acc5fdc`). `startArgs`/`clientMods`/`whitelistedMods` become embedded
+**4b, the flattening** ("embed the run-configuration mod lists instead of joining three collections"). `startArgs`/`clientMods`/`whitelistedMods` become embedded
 `List<String>`; `ClientMod`, `WhitelistedMod`, `StartArgument`, their three repositories and
 `ModRepository` are deleted. Each was a `@Document` whose only field was its `@MongoId` — a `ClientMod`
 document is literally `{_id: "OptiFine"}` — so three collections and four repositories existed to store
@@ -1827,7 +1827,7 @@ unwrapping in `RunConfigurationCard.vue` and `SubmitModPackForm.vue` (two sites)
 fixtures moved to the new shape with **expectations untouched** — they failed first with
 `"[object Object], [object Object]"`, which is exactly the coupling being fixed.
 
-**The migration** (`16a3f399`) is what makes the flattening deployable. It is join-free: a DBRef's `$id`
+**The migration** ("migrate stored run-configurations to embedded mod-lists") is what makes the flattening deployable. It is join-free: a DBRef's `$id`
 *is* the value, so `{$ref:"clientMod",$id:"OptiFine"}` → `"OptiFine"` reads nothing, and still works
 after the referenced collections are dropped. Element-wise so an interrupted run is completed rather
 than corrupting a half-rewritten document; idempotent so a restart costs one read and no writes; on

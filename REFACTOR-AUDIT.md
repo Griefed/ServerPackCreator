@@ -556,3 +556,115 @@ recovered from the reflog. The correct form for a stacked rebase is `--onto <new
 **Three HIGH findings, all fixed and pinned.** Every remaining open item is a property of the commit
 history — labels and commit boundaries — which cannot be corrected without rewriting shared history and is
 recorded here instead. No behavioural defect is left open.
+
+---
+
+# Audit — `claude-performance-improvements`, iteration 1
+
+**Range:** `7abd7c85c..HEAD` (45 commits) · **Date:** 2026-08-18 · **Mode:** READ-ONLY
+This branch merges the four performance branches and has had one round of remediation, including
+history restructuring. Re-verified from scratch. **Every finding below was introduced by that
+remediation** — the pre-existing findings it set out to fix are confirmed fixed.
+
+## What the restructuring fixed, verified
+
+| Old finding | Verified now |
+|---|---|
+| F1 — first timeout pin went red→red | **Fixed.** Settings group lands first, so the pin references real properties and is red because nothing routes them; green under the routing commit, unedited. |
+| F5 — test bundled into a fix | **Fixed.** `test(api): pin that an unreachable host leaves the present manifest intact` is its own commit. |
+| G2 — autocomplete pin asserted the wrong thing | **Fixed.** `parsedSuggestions()` extracted first, pin holds the identity assertion, red on `@186d20a3` vs `@74ab779f` with equal contents. |
+| H1 — `test:` commit shipped the `openZip` seam | **Fixed.** Seam is now its own `refactor(api)` commit. |
+| H2 — one `fix:` bundled three concerns | **Fixed.** Split into the archive fix, the gatherer hoist, and the Quilt index. |
+| W2 — `test:` commit shipped `findBySha256` + index | **Fixed.** Now a preceding `feat(app)` commit. |
+| W4 — undeployable midpoint | **Fixed.** Schema change and migration are one commit; no intermediate state cannot read its own data. |
+
+Structural checks pass: no `fix:`/`refactor:` commit alters a previously committed test's *expectations*
+(the three that touch pre-existing test files add guards, update constructor arguments, or delete cases
+whose behaviour ceased to exist), and a replayed chain was spot-verified end to end after the rewrite.
+
+## MEDIUM
+
+### N1 — 54 dead commit-hash references across the documentation
+
+The rewrite changed every hash. The docs still cite the old ones:
+
+```
+CLAUDE.md, serverpackcreator-api/CLAUDE.md, serverpackcreator-app/CLAUDE.md,
+claude-docs/REFACTOR-LOG.md, REFACTOR-AUDIT.md
+  -> 54 hashes not reachable from this branch
+```
+
+Examples: `REFACTOR-LOG.md` cites `41607582`, `5d30890b`, `350d7cb9`, `f7fdcff3` for the generation work
+and `3d25dd22`, `84aa970a`, `c67e021a`, `549d7e30`, `7acc5fdc`, `16a3f399` for the web work — the entire
+blow-by-blow. `REFACTOR-AUDIT.md` is a report about commits that no longer exist on the branch.
+
+They resolve **today** only because the four superseded branches still hold them locally. Delete those and
+every reference dies. The refactor log exists to be read "when you need the *why* of a past decision"; a
+citation that resolves to nothing defeats exactly that.
+
+(Note `61f97194` and `6afc2700` in `REFACTOR-LOG.md:1263` are *not* commits — they are Java
+object-identity hashes quoted inside a test-failure message from earlier, unrelated work. Correctly
+excluded rather than "fixed".)
+
+### N2 — A landmine now documents a defect that has been fixed, and advises against the fixed pattern
+
+`serverpackcreator-api/CLAUDE.md:245-248`:
+
+> Consequence worth knowing before you trust that pair as an example: because the fixture had to change,
+> `checkout 9fce12419 && apply c124331b0` shows **red → red**, not red → green. The later timeout pins
+> […] were written against the *existing* signatures precisely so their fixes turn them green untouched —
+> **copy those, not the first one.**
+
+Two problems. The hashes are dead (N1), and the claim is **no longer true**: the F1 remediation reordered
+that pair so the pin *does* go red → green untouched. A future reader is told to avoid copying the
+`WebUtilitiesTimeoutTest` pattern, which is now the correct one and the most thorough example on the
+branch.
+
+The underlying lesson — a relaxed mockk answers `0`, which is the JDK's "wait forever" — is still valuable
+and must survive; only the "and therefore this pair is a bad example" conclusion is stale.
+
+### N3 — The remediation created a third instance of the violation it was fixing
+
+`c90b5ec5d test(app): cover the migration runner's safety decisions, behind a MigrationStore seam` ships
+**two main-source files** (`MigrationStore.kt`, and the runner rewired onto it).
+
+This is precisely H1/W2 — a `test:`-labelled commit containing production code — committed *while* those
+two were being split apart for the same reason. Applying a standard to inherited work and not to one's own
+is the worse failure of the two.
+
+Fix: split into `refactor(app): put the migration's database access behind MigrationStore`
+(production, behaviour-preserving) followed by the guards.
+
+## LOW
+
+### N4 — Two new guards ride along in a `fix:` commit
+
+`5625223a2 fix(api): route every outbound call through one timed opener` adds
+`openedConnectionsCarryTheConfiguredTimeouts` and `aNonHttpUrlCanStillBeDownloaded` to the
+already-committed `WebUtilitiesTimeoutTest`.
+
+Both genuinely require the API the same commit introduces, so they cannot precede it — but F5 was split for
+the same shape of reason, so the branch is inconsistent with itself. Lower severity than N3 because neither
+guard could have been written earlier: `openTimedConnection` does not exist until this commit.
+
+### N5 — Verified-correct, recorded so it is not re-litigated
+
+- The replayed chain `pin what a manifest check costs` → `halve startup requests` still shows 3 red → all
+  green with the pin unedited, so cherry-picking 40-odd commits did not silently alter intermediate trees.
+- Final tree is byte-identical to the pre-rewrite snapshot (`git diff --quiet` against
+  `perf-safety-snapshot`), so the restructuring changed only history, never content.
+- `./gradlew build` green; api 338 (1 skip), app 135, clientside 88, frontend 31.
+- 45 commits, no duplicated subjects.
+
+## Summary
+
+The restructuring did what it was meant to: all seven inherited commit-boundary findings are fixed and
+verified. It introduced three of its own, all documentation-or-hygiene: **54 stale hash citations**, a
+**landmine that now misdescribes its own repository**, and **one new `test:` commit carrying production
+code** — the same rule it was in the middle of enforcing.
+
+Nothing behavioural is wrong. Recommended order:
+1. `docs` — replace hash citations with commit *subjects*, which survive a rewrite (N1), and correct the
+   landmine to keep the mockk lesson while dropping the stale conclusion (N2).
+2. `refactor(app)` + `test(app)` — split the `MigrationStore` seam out of its guard commit (N3).
+3. Leave N4, with a note: the guards cannot precede the API they exercise.
