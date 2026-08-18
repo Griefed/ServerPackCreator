@@ -96,9 +96,18 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   lookup was `…AndStartArgsInAndClientModsInAndWhitelistedModsIn`, so a configuration could be matched
   and reused because it shared a *single* mod with the one being created. It is now
   `…AndStartArgsAndClientModsAndWhitelistedMods`, an exact array match.
-- **The JSON shape is part of this contract.** `serverpackcreator-web-frontend/src/types/api.ts`
-  declares `string[]`; `RunConfigurationCard.vue` and `SubmitModPackForm.vue` (two sites) consume it
-  directly. Changing the entity means changing those in the same commit.
+- **The JSON shape is part of this contract, and the SPA is not its only consumer.**
+  `RunConfigurationController` returns the entity itself under `/api/v2/runconfigs` — a *versioned* path —
+  so the entity's fields are the response body. Changing it means changing all of these in the same commit:
+  `serverpackcreator-web-frontend/src/types/api.ts` (declares `string[]`), `RunConfigurationCard.vue` and
+  `SubmitModPackForm.vue` (two sites), **and the published description in `serverpackcreator-help`** —
+  `Writerside/api-docs.yaml` plus the response samples in `Run-Configs.md`, `Server-Packs.md` and
+  `Modpacks.md`, which embed a run-configuration too. An audit caught the last group missed: the spec was
+  still `$ref`-ing `StartArgument` / `ClientMod` / `WhitelistedMod` schemas whose classes this very change
+  deleted. **Nothing in the build can catch that** — `serverpackcreator-help` is not a Gradle module and
+  `springdoc` is commented out in `serverpackcreator-app/build.gradle.kts`, so the spec is a hand-maintained
+  snapshot. Treat it as source. (It carries older drift of its own, e.g. `id` typed `integer` where the
+  entities use `@MongoId(FieldType.STRING)`; that predates this work.)
 - **`web/migration/` exists for the upgrade**, and is the pattern to copy if another shape ever changes:
   `RunConfigurationListMigration` is the per-document rewrite (join-free — a DBRef's `$id` is the value,
   so nothing needs reading, and it works even after the referenced collections are dropped), tested

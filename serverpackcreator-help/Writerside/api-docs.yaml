@@ -641,17 +641,6 @@ components:
           type: string
         language:
           type: string
-    ClientMod:
-      required:
-      - id
-      - mod
-      type: object
-      properties:
-        mod:
-          type: string
-        id:
-          type: integer
-          format: int32
     RunConfiguration:
       required:
       - clientMods
@@ -675,15 +664,15 @@ components:
         startArgs:
           type: array
           items:
-            $ref: '#/components/schemas/StartArgument'
+            type: string
         clientMods:
           type: array
           items:
-            $ref: '#/components/schemas/ClientMod'
+            type: string
         whitelistedMods:
           type: array
           items:
-            $ref: '#/components/schemas/WhitelistedMod'
+            type: string
     ServerPackView:
       required:
       - confirmedWorking
@@ -714,28 +703,6 @@ components:
         dateCreated:
           type: string
           format: date-time
-    StartArgument:
-      required:
-      - argument
-      - id
-      type: object
-      properties:
-        argument:
-          type: string
-        id:
-          type: integer
-          format: int32
-    WhitelistedMod:
-      required:
-      - id
-      - mod
-      type: object
-      properties:
-        mod:
-          type: string
-        id:
-          type: integer
-          format: int32
     ModPackView:
       required:
       - dateCreated
