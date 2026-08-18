@@ -325,7 +325,7 @@ class VersionMeta(
             }
             try {
                 manifestToCheck.inputStream().use { existing ->
-                    urlToManifest.openStream().use { newManifest ->
+                    utilities.webUtilities.openTimedStream(urlToManifest).use { newManifest ->
                         var countOldFile = 0
                         var countNewFile = 0
                         val oldContent: String = existing.readText()
@@ -452,7 +452,7 @@ class VersionMeta(
         urlToManifest: URL
     ) {
         try {
-            urlToManifest.openStream().use {
+            utilities.webUtilities.openTimedStream(urlToManifest).use {
                 updateManifest(manifestToRefresh, it.readText())
             }
         } catch (ex: IOException) {

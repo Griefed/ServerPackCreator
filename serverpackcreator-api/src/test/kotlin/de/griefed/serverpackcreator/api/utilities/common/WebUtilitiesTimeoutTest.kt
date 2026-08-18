@@ -152,4 +152,57 @@ internal class WebUtilitiesTimeoutTest {
             }
         }
     }
+
+    /**
+     * Pins that the shared connection-opener applies the *configured* values, which is the half the
+     * stall-guards above cannot observe: they only prove some bound exists, and a connect-timeout
+     * only shows itself against an unroutable host, which no test can rely on being available.
+     */
+    @Test
+    fun openedConnectionsCarryTheConfiguredTimeouts() {
+        val apiProperties = mockk<ApiProperties>(relaxed = true)
+        every { apiProperties.networkConnectTimeout } returns 1234
+        every { apiProperties.networkReadTimeout } returns 5678
+        every { apiProperties.networkDownloadReadTimeout } returns 9012
+        val webUtilities = WebUtilities(apiProperties)
+        // Port 1 is never connected to: opening a connection does not perform the handshake, so this
+        // reads back the configured values without any traffic.
+        val url = URI("http://127.0.0.1:1/never-requested").toURL()
+
+        val metadata = webUtilities.openTimedConnection(url)
+        Assertions.assertEquals(1234, metadata.connectTimeout)
+        Assertions.assertEquals(5678, metadata.readTimeout, "Metadata calls use the metadata read-timeout")
+
+        val download = webUtilities.openTimedConnection(url, apiProperties.networkDownloadReadTimeout)
+        Assertions.assertEquals(9012, download.readTimeout, "Downloads use the longer download read-timeout")
+    }
+
+    /**
+     * Pins that a non-HTTP URL still works.
+     *
+     * [WebUtilities.downloadFile] is published API taking any [java.net.URL], and a `file:` URL yields a
+     * `FileURLConnection`, which is **not** an `HttpURLConnection`. Narrowing the shared opener's
+     * return type to `HttpURLConnection` therefore turned every `file:` download into a
+     * `ClassCastException` — and because that is not an `IOException`, it sailed straight past
+     * `downloadFile`'s error handling to the caller. Caught by
+     * `MinecraftServerManifestCooldownTest`, which downloads from a `file:` URL on purpose; pinned
+     * here so the cause is guarded where it lives rather than only where it happened to surface.
+     */
+    @Test
+    fun aNonHttpUrlCanStillBeDownloaded() {
+        val webUtilities = WebUtilities(timedProperties())
+        val source = File.createTempFile("spc-timeout-guard-source", ".json")
+        val destination = File.createTempFile("spc-timeout-guard-target", ".json").apply { delete() }
+        try {
+            source.writeText("""{"probe":"file-url"}""")
+            Assertions.assertTrue(
+                webUtilities.downloadFile(destination, source.toURI().toURL()),
+                "A file: URL is a legitimate download source and must not throw"
+            )
+            Assertions.assertEquals(source.readText(), destination.readText())
+        } finally {
+            source.delete()
+            destination.delete()
+        }
+    }
 }

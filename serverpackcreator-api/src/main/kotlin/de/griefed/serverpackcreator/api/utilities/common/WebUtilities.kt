@@ -40,6 +40,49 @@ class WebUtilities(private val apiProperties: ApiProperties) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /**
+     * Opens a connection to [url] with the configured connect- and read-timeouts applied, defaulting
+     * [readTimeout] to the metadata timeout.
+     *
+     * **Every outbound call goes through here.** The JDK's default is to wait forever, so a
+     * connection opened anywhere else is a hang waiting to happen — the same single-source-of-truth
+     * rule this module applies to `SupportedModloaders` and `ModScanner.scannerFor`, and for the same
+     * reason: the copies drift, and the one without the timeout is the one that strands a user.
+     *
+     * Redirects are deliberately left following (the JDK default): `maven.legacyfabric.net` answers
+     * `302`, so a connection which stopped following them would report that host as unreachable.
+     *
+     * Returns [URLConnection] rather than `HttpURLConnection` **on purpose.** The timeout setters live
+     * on `URLConnection`, so narrowing buys nothing — and it costs correctness: [downloadFile] is
+     * published API that accepts any URL, a `file:` URL yields a `FileURLConnection`, and casting that
+     * throws `ClassCastException`, which is not an `IOException` and so escapes every caller's error
+     * handling. Callers needing `responseCode` cast for themselves, exactly as they did before.
+     *
+     * @param url The URL to connect to.
+     * @param readTimeout Milliseconds a single read may block. Pass
+     * [ApiProperties.networkDownloadReadTimeout] for file-downloads.
+     * @return The opened, timeout-carrying connection.
+     */
+    @Throws(IOException::class)
+    fun openTimedConnection(url: URL, readTimeout: Int = apiProperties.networkReadTimeout): URLConnection {
+        val connection = url.openConnection()
+        connection.connectTimeout = apiProperties.networkConnectTimeout
+        connection.readTimeout = readTimeout
+        return connection
+    }
+
+    /**
+     * Opens an input-stream on [url] with the configured timeouts applied — the timeout-carrying
+     * replacement for `URL.openStream()`, which inherits the JDK's unbounded default.
+     *
+     * @param url The URL to read from.
+     * @param readTimeout Milliseconds a single read may block.
+     * @return The response body's stream. Closing it releases the connection.
+     */
+    @Throws(IOException::class)
+    fun openTimedStream(url: URL, readTimeout: Int = apiProperties.networkReadTimeout): InputStream =
+        openTimedConnection(url, readTimeout).inputStream
+
+    /**
      * Download the file from the specified URL to the specified destination, replacing the file if it
      * already exists. The destination should end in a valid filename. Any directories up to the
      * specified file will be created.
@@ -76,7 +119,7 @@ class WebUtilities(private val apiProperties: ApiProperties) {
     ): Boolean {
         file.create()
         try {
-            downloadURL.openStream().use { url ->
+            openTimedStream(downloadURL, apiProperties.networkDownloadReadTimeout).use { url ->
                 Channels.newChannel(url).use { channel ->
                     file.outputStream().use { stream ->
                         stream.channel.transferFrom(channel, 0, Long.MAX_VALUE)
@@ -170,6 +213,10 @@ class WebUtilities(private val apiProperties: ApiProperties) {
 
         try {
             conn = url.openConnection() as HttpsURLConnection
+            // Not openTimedConnection: this call needs the HttpsURLConnection type for its POST, so
+            // the timeouts are applied here rather than being skipped.
+            conn.connectTimeout = apiProperties.networkConnectTimeout
+            conn.readTimeout = apiProperties.networkReadTimeout
         } catch (ex: IOException) {
             log.error("Error during opening of connection to URL.", ex)
         }
@@ -241,7 +288,7 @@ class WebUtilities(private val apiProperties: ApiProperties) {
      */
     @Throws(IOException::class)
     fun getResponseAsString(url: URL): String {
-        val `in` = BufferedReader(InputStreamReader(url.openConnection().getInputStream()))
+        val `in` = BufferedReader(InputStreamReader(openTimedStream(url)))
         val response = StringBuilder()
         var currentLine: String?
         while (`in`.readLine().also { currentLine = it } != null) {
@@ -260,8 +307,12 @@ class WebUtilities(private val apiProperties: ApiProperties) {
      */
     @Throws(IOException::class)
     fun getResponseCode(url: URL): Int {
-        val connection = url.openConnection() as HttpURLConnection
-        return connection.responseCode
+        val connection = openTimedConnection(url) as HttpURLConnection
+        return try {
+            connection.responseCode
+        } finally {
+            connection.disconnect()
+        }
     }
 
     /**
@@ -279,7 +330,7 @@ class WebUtilities(private val apiProperties: ApiProperties) {
             val host = url.host
             log.trace("URL:  $url")
             log.trace("Host: $host")
-            connection = url.openConnection() as HttpURLConnection
+            connection = openTimedConnection(url) as HttpURLConnection
             available = connection.responseCode == 200
         } catch (e: IOException) {
             available = false
