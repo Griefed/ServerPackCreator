@@ -41,21 +41,23 @@ import java.util.Properties
  * The same reasoning already governs the migration runner, which runs on `ApplicationReadyEvent` "so an
  * unreachable database delays the migration instead of blocking the boot". Indexes follow it.
  *
- * **This test exists in this shape because a guard that reads the shipped file is not a test that runs
- * with it.** `src/test/resources/application.properties` shadows the shipped one, so the setting that
- * broke startup never reached the context under test and the suite stayed green. Here the shipped file is
- * read *and* its value handed to a real context boot, so the combination that broke is the combination
- * asserted.
+ * **This test exists because a guard that reads the shipped file is not a test that runs with it.**
+ * `src/test/resources/application.properties` shadows the shipped one, so the setting that broke startup
+ * never reached the context under test and the suite stayed green. The two halves cover that from both
+ * ends: a real context boots with no database at all, and the shipped file is read directly and asserted
+ * not to carry the setting that would break it.
+ *
+ * The `properties` below deliberately match `WebServiceContextTest`'s exactly. Spring's test-context cache
+ * keys on them, so an extra entry would mean an extra boot — and with no database reachable each boot pays
+ * ~30 s of driver timeouts for the migration runner's read and this module's index creation. Same
+ * guarantee, one context.
  */
 @SpringBootTest(
     classes = [WebService::class],
     properties = [
         "de.griefed.serverpackcreator.spring.schedules.database.cleanup=-",
         "de.griefed.serverpackcreator.spring.schedules.files.cleanup=-",
-        "de.griefed.serverpackcreator.spring.schedules.versions.refresh=-",
-        // Deliberately the shipped value, asserted below to still be the shipped value. Hardcoded because
-        // @SpringBootTest properties are annotation constants and cannot be computed.
-        "spring.data.mongodb.auto-index-creation=false"
+        "de.griefed.serverpackcreator.spring.schedules.versions.refresh=-"
     ]
 )
 internal class DeclaredIndexStartupTest {
@@ -79,8 +81,8 @@ internal class DeclaredIndexStartupTest {
     }
 
     /**
-     * Pins that the context this test booted — with no MongoDB anywhere — came up. The `properties` above
-     * mirror the shipped setting, and the next test pins that they still mirror it.
+     * Pins that a real web context — with no MongoDB anywhere — came up, which is the property enabling
+     * refresh-time index creation destroys.
      */
     @Test
     fun theContextStartsWithoutADatabase() {
@@ -91,9 +93,9 @@ internal class DeclaredIndexStartupTest {
     }
 
     /**
-     * Pins that the shipped configuration does not switch on refresh-time index creation, which is the
-     * setting the boot above was given. Without this the two halves could drift and the boot would be
-     * asserting about a configuration nobody ships.
+     * Pins that the shipped configuration does not switch on refresh-time index creation. This is the half
+     * that actually catches a regression: because the test copy shadows the shipped file, setting it there
+     * would leave the boot above perfectly green.
      */
     @Test
     fun theShippedConfigurationDoesNotCreateIndexesDuringRefresh() {
