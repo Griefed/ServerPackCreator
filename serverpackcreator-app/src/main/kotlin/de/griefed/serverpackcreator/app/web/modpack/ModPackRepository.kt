@@ -28,4 +28,13 @@ import java.util.*
 @Repository
 interface ModPackRepository : MongoRepository<ModPack, String> {
     fun findByServerPacksContains(serverPack: ServerPack): Optional<ModPack>
+
+    /**
+     * The stored modpack whose contents hash to [sha256], if any.
+     *
+     * Backs the upload duplicate-check, which previously loaded the whole collection and compared in
+     * memory. `ModPack.sha256` carries `@Indexed`, so this is a single indexed lookup rather than a
+     * scan that also drags in the eager `@DBRef` graph behind every document.
+     */
+    fun findBySha256(sha256: String?): Optional<ModPack>
 }
