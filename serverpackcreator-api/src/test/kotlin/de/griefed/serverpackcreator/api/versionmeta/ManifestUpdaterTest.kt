@@ -208,6 +208,30 @@ internal class ManifestUpdaterTest {
     }
 
     /**
+     * Pins that an unreachable host leaves a present manifest intact and does not throw.
+     *
+     * This is the offline startup, and it must stay cheap *and* quiet. Dropping the reachability
+     * pre-check moved this case from "probe says no" onto the `IOException` path, so without care it
+     * would log twelve ERRORs with stack traces every time a user launches without a network — which
+     * is precisely how a genuine manifest failure gets buried. The connection failure is caught
+     * separately and warns; only a manifest that arrives and cannot be parsed errors.
+     */
+    @Test
+    fun anUnreachableHostLeavesThePresentManifestIntact(@TempDir tempDir: File) {
+        val manifest = File(tempDir, "minecraft-manifest.json")
+        val original = minecraftManifest(2)
+        manifest.writeText(original)
+        // A port nothing listens on: the connection is refused rather than merely slow.
+        val dead = URI("http://127.0.0.1:${closedPort()}/manifest.json").toURL()
+        Assertions.assertDoesNotThrow { updater().checkManifest(manifest, dead, Type.MINECRAFT) }
+        Assertions.assertEquals(original, manifest.readText(), "An unreachable host must not disturb the local manifest")
+    }
+
+    /** A port with nothing listening on it, obtained by opening and immediately closing one. */
+    private fun closedPort(): Int =
+        java.net.ServerSocket(0, 1, InetAddress.getLoopbackAddress()).use { it.localPort }
+
+    /**
      * Pins that an absent local manifest is downloaded, and costs one request rather than a
      * reachability probe followed by the download.
      */
