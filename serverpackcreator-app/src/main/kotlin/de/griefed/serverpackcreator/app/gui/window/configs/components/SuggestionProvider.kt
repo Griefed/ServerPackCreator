@@ -67,6 +67,18 @@ class SuggestionProvider(
     private var suggestionListModel = DefaultListModel<String>()
     private var suggestionList = JList(suggestionListModel)
     private var disableTextEvent = false
+
+    /** The raw autocomplete property [cachedSuggestions] was parsed from, or `null` before the first read. */
+    private var cachedProperty: String? = null
+
+    /** The parsed suggestion-set for [cachedProperty]. Never handed out directly — see [allSuggestions]. */
+    private var cachedSuggestions: Set<String> = emptySet()
+
+    companion object {
+        /** A single non-word character, used to decide whether the caret sits on a word boundary.
+         * Held as a constant because the check runs on every keystroke and `toRegex()` compiles anew. */
+        private val nonWordCharacter = "\\W".toRegex()
+    }
     private val keyAdapter = object : KeyAdapter() {
         override fun keyPressed(e: KeyEvent) {
             when (e.keyCode) {
@@ -157,9 +169,12 @@ class SuggestionProvider(
         suggestionListModel.clear()
         suggestionListModel.addAll(suggestions)
         val location = getPopupLocation(sourceComponent) ?: return
+        // revalidate/repaint, not updateUI(): updateUI() re-installs the look-and-feel delegate and
+        // exists for a LAF *change*, not for new content. This runs on every keystroke, and the list's
+        // model already fires the change the view needs.
+        suggestionList.revalidate()
         suggestionMenu.pack()
-        suggestionList.updateUI()
-        suggestionMenu.updateUI()
+        suggestionMenu.repaint()
         suggestionList.selectedIndex = 0
         suggestionMenu.show(sourceComponent, location.getX().toInt(), location.getY().toInt())
     }
@@ -219,7 +234,7 @@ class SuggestionProvider(
             }
             val previousWordIndex = Utilities.getPreviousWord(component, cp)
             val text = try {
-                if (component.getText(previousWordIndex - 1, 1).matches("\\W".toRegex())) {
+                if (component.getText(previousWordIndex - 1, 1).matches(nonWordCharacter)) {
                     component.getText(previousWordIndex - 1, cp - previousWordIndex + 1)
                 } else {
                     component.getText(previousWordIndex, cp - previousWordIndex)
@@ -239,8 +254,15 @@ class SuggestionProvider(
      * @author Griefed
      */
     private fun truncatedSuggestions(text: String): List<String> {
-        val entries = allSuggestions()
-        val truncated = entries.filter { entry -> entry.startsWith(text, ignoreCase = true) }
+        // The parsed set, not allSuggestions(): this is the per-keystroke path and only reads, so it
+        // has no need of the defensive copy allSuggestions() owes its mutating callers.
+        //
+        // Not a TreeSet.tailSet(text) prefix-walk either, tempting as that looks. The match is
+        // case-INsensitive while the set's ordering is case-sensitive, so entries matching a prefix are
+        // not contiguous — tailSet("op") would skip "OptiFine". Making the set case-insensitive instead
+        // would silently deduplicate entries differing only in case. A linear startsWith over a few
+        // hundred already-parsed strings is microseconds; the parse was the cost, and that is cached.
+        val truncated = parsedSuggestions().filter { entry -> entry.startsWith(text, ignoreCase = true) }
         return if (truncated.size == 1 && truncated[0] == text) {
             listOf()
         } else {
@@ -250,28 +272,47 @@ class SuggestionProvider(
     }
 
     /**
+     * All configured suggestions for this provider's [identifier], as a set the caller owns.
+     *
+     * **Returns a fresh copy every time, deliberately.** Every production caller mutates the result
+     * and persists it — `ConfigEditor.saveSuggestions` adds the current field value,
+     * `InclusionsEditor.saveSuggestions` adds and `removeIf`s — so handing out the cached instance
+     * would let those mutations corrupt the source and accumulate across calls. What is cached is the
+     * *parse*, not the set.
+     *
      * @author Griefed
      */
     fun allSuggestions(): TreeSet<String> = TreeSet(parsedSuggestions())
 
     /**
-     * The parsed suggestion-set for this identifier.
+     * The parsed suggestion-set for this identifier, re-parsed only when the underlying property
+     * changes.
      *
-     * Split out from [allSuggestions] because the two have different obligations: this is the read path,
-     * called once per keystroke, while [allSuggestions] owes its callers a set they may mutate and persist.
-     * `internal` so the module's tests can observe it.
+     * `internal` so the module's tests can pin reuse by identity — the reuse is otherwise invisible,
+     * since [allSuggestions] must copy and the property read deliberately still happens per call.
+     *
+     * Keyed on the raw property value rather than on a change-listener: saving suggestions writes the
+     * property back through `storeGuiProperty`, so comparing the raw string is both the cheapest check
+     * and the one that cannot miss an update. Reading the property is a map lookup; splitting it and
+     * building a sorted set of ~550 entries is not, and this runs on the EDT once per keystroke.
      */
     internal fun parsedSuggestions(): Set<String> {
         val property = guiProps.getGuiProperty("autocomplete.$identifier").toString().trim { it <= ' ' }
+        cachedProperty?.let { cached ->
+            if (cached == property) {
+                return cachedSuggestions
+            }
+        }
         val entries = TreeSet<String>()
-        if (property == "null") {
-            return entries
+        if (property != "null") {
+            if (property.contains(",")) {
+                entries.addAll(property.split(","))
+            } else {
+                entries.add(property)
+            }
         }
-        if (property.contains(",")) {
-            entries.addAll(property.split(","))
-        } else {
-            entries.add(property)
-        }
+        cachedProperty = property
+        cachedSuggestions = entries
         return entries
     }
 }
