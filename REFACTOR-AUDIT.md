@@ -1090,3 +1090,108 @@ Also: the report you are reading cites 41 hashes that die with `perf-safety-snap
 migration's collection name can go wrong silently (**R5**).
 
 Recommended: fix R1–R5, and delete `perf-safety-snapshot` once R4 has landed.
+
+---
+
+# Audit — `claude-performance-improvements`, iteration 5
+
+**Range:** `7abd7c85c..HEAD` (57 commits) · **Date:** 2026-08-18 · **Mode:** READ-ONLY
+Focus: **iteration 4's own remediation, adversarially.** Iteration 4 found defects by asking what is
+true of a runtime the suite never starts — so the first thing to ask of its fixes is whether *they*
+were checked against that runtime. One was not, and it is the worst regression on the branch.
+
+## Iteration-4 fixes confirmed
+
+R2 (`findFirstBySha256`, limiting), R3 (the spec and the 30 doc samples, with the three orphaned schemas
+gone and the YAML still parsing), R4 (39 dead hashes replaced by subjects; five hash-shaped tokens
+deliberately kept and each annotated) and R5 (the collection-name guard, mutation-verified) all hold.
+
+**R1 does not.** See S1.
+
+## HIGH
+
+### S1 — The index fix makes the web application refuse to start without a database
+
+`fix(app): create the indexes the web module declares` set
+`spring.data.mongodb.auto-index-creation=true`. That property does not merely *permit* index creation;
+it makes `MongoTemplate`'s own bean creation perform it, during context refresh, against a server that
+must be reachable **then**.
+
+Measured, both directions, same context and same absent MongoDB, one variable changed:
+
+| `spring.data.mongodb.auto-index-creation` | Result |
+|---|---|
+| `false` | context starts, `ModPackService` resolves — *"started fine"* |
+| `true` | `Waiting for server to become available for operation createIndexes with ID 3. Remaining time: 29997 ms`, then `MongoTimeoutException` → `mongoTemplate` fails → **refresh cancelled**, context dead |
+
+So the fix turned "web mode starts, logs a connection error, and works once the database appears" into
+"web mode hangs 30 seconds and then dies if the database is not up yet". That is not a corner case:
+`docker/docker-compose.yml` starts the app and the `db` service together, so losing the race is the
+normal first boot.
+
+It also contradicts a design decision this module already made and documented. From
+`serverpackcreator-app/CLAUDE.md`, on the migration runner: *"applies it on `ApplicationReadyEvent`, not
+during context startup, so an unreachable database delays the migration instead of blocking the boot."*
+The index fix did precisely what that sentence forbids, one directory away from the sentence.
+
+**Why iteration 4 did not catch it:** `WebServiceContextTest` boots the real context with no database
+and would have failed instantly — but the property lives in `src/main/resources/application.properties`,
+and `src/test/resources/application.properties` shadows it on the test classpath. The suite was green
+because the shipped setting never reached the context under test. Iteration 4 noticed the shadowing —
+it is why `ModPackIndexCreationTest` has to enumerate classpath URLs to read the shipped file at all —
+and treated it as a test-plumbing detail rather than as the reason its own change was unverified. See
+**S2**.
+
+**Fix:** revert the property and create the declared indexes on `ApplicationReadyEvent` instead,
+failing soft, exactly as the migration runner does. `@Indexed` stays the single declaration: the
+definitions are resolved from the mapping context with Spring Data's own
+`MongoPersistentEntityIndexResolver`, so nothing is restated in code and startup gains no database
+dependency.
+
+## MEDIUM
+
+### S2 — No test exercises the shipped web configuration, because the test copy shadows it
+
+`serverpackcreator-app/src/test/resources/application.properties` (720 bytes) shadows
+`src/main/resources/application.properties` (1,159 bytes) on the test classpath. Everything Spring
+reads under test therefore comes from the test copy, so **any** change to the shipped file is invisible
+to the suite — `WebServiceContextTest` boots "the real web application context" over a configuration
+that is not the one shipped.
+
+This is what let S1 through, and it is not specific to S1: the same hole covers every future edit to
+that file. It is also pre-existing, and the test copy exists for good reasons (it points
+`spring.config.import` at test fixtures), so the fix is not "delete it".
+
+**Fix:** narrow the exposure where it bit. The startup-safety property of the shipped configuration is
+now asserted directly — the context is booted with no database *and* with the shipped file's
+index-creation setting applied explicitly, so the combination that broke is the combination under test.
+Recorded here rather than solved wholesale, because making the whole shipped file authoritative under
+test is a larger change than this branch should carry.
+
+## LOW
+
+### S3 — Verified clean
+
+- `./gradlew build` green at iteration 4's tip: api 339 (1 skip), app 140, clientside 88, grinder 233
+  (19 skip), and the refactor-state table carries 140 rather than being left at 135.
+- The three iteration-4 guards each bite. `RunConfigurationCollectionNameTest` was mutation-verified in
+  its own commit; `ModPackHashQueryTest` went red on `findBySha256` and green on `findFirstBySha256`;
+  `ModPackIndexCreationTest`'s entity half fails if `@Indexed` is removed, since it resolves through
+  `MongoPersistentEntityIndexResolver` rather than reading the annotation.
+- The doc rewrite is mechanical and complete: no `"mod":` or `"argument":` element survives in
+  `serverpackcreator-help/Writerside/topics/`, and no reference to the three deleted schemas survives
+  in `api-docs.yaml`.
+
+## Summary
+
+One HIGH (**S1**), and it is iteration 4's own: enabling annotation-driven index creation made a
+reachable MongoDB a *startup requirement*, breaking the first boot of the shipped docker-compose and
+contradicting the very design note the module wrote about not blocking startup on the database. It was
+verified by measurement in both directions.
+
+The lesson is **S2**, and it generalises past this branch: a guard that reads a shipped file is not the
+same as a test that *runs* with it. The suite has booted the real context all along and would have
+caught this in one second, had the configuration under test been the configuration shipped.
+
+Recommended: fix S1 by moving index creation to `ApplicationReadyEvent` behind a seam, and close S2 for
+the property that bit by booting the context with it.

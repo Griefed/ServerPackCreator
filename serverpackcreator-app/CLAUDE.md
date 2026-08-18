@@ -80,6 +80,34 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   `RunConfigurationService`, `EventService`, the stats services); no controller is bloated;
   scheduling isolated in `web/scheduling`. No restructuring warranted here.
 
+## Indexes are created after startup, never during it (2026-08-18)
+
+- **LANDMINE — do not set `spring.data.mongodb.auto-index-creation=true`.** It is the obvious way to make
+  `@Indexed` mean something, and it makes a reachable MongoDB a condition of *starting up*: the property
+  makes `MongoTemplate`'s own bean creation run `createIndexes` during context refresh. Measured against an
+  absent database — ~30 s wait, `MongoTimeoutException`, refresh cancelled, application dead. `docker/docker-compose.yml`
+  starts the app alongside its `db` service, so losing that race is the normal first boot. The line sits in
+  `application.properties` commented out, with that reason, because it will otherwise be re-added.
+- `DeclaredIndexCreator` creates them on `ApplicationReadyEvent` instead — the same trade the migration
+  runner makes, and for the same reason. Failures are logged and swallowed: a missing index makes a query
+  slower, an exception there would take down an application already serving, and the next start retries
+  because creating an existing identical index is a server-side no-op.
+- **`@Indexed` stays the single declaration.** Definitions come from the mapping context via Spring Data's
+  `MongoPersistentEntityIndexResolver`, so adding an index to an entity needs no change to the creator, and
+  nothing is restated in two places. `IndexStore` is the seam, for the same reason `MigrationStore` is.
+- **LANDMINE — `src/test/resources/application.properties` shadows the shipped one on the test classpath.**
+  So *no* test exercises the shipped web configuration: `WebServiceContextTest` boots "the real context"
+  over the test copy. This is exactly how the property above got committed green — the suite could not see
+  it. When a shipped setting matters, read that file explicitly (enumerate `getResources("application.properties")`
+  and discard the test copy — `DeclaredIndexStartupTest` does) *and* assert the behaviour in a booted
+  context. A guard that reads a shipped file is not a test that runs with it.
+- Cost to know about: with no database reachable, each context boot pays a driver server-selection timeout
+  per operation — the migration runner's read and now the index creation. Keep new `@SpringBootTest`
+  properties **identical** to `WebServiceContextTest`'s so Spring's context cache reuses one boot; a
+  divergent set costs a whole extra one (measured 2m41s vs 1m41s for `:serverpackcreator-app:test`).
+  Shortening `serverSelectionTimeoutMS` in `src/test/resources` does not work — the effective URI comes from
+  the generated test home.
+
 ## The web module's mod-lists are embedded, not referenced (2026-08-17)
 
 - `RunConfiguration.startArgs` / `clientMods` / `whitelistedMods` are `MutableList<String>` **embedded
