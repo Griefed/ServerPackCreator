@@ -28,6 +28,7 @@ import org.w3c.dom.Document
 import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
+import java.net.HttpURLConnection
 import java.net.URL
 import javax.xml.parsers.ParserConfigurationException
 
@@ -63,15 +64,32 @@ class ManifestUpdater(private val utilities: Utilities) {
         manifestType: Type
     ) {
         if (manifestToCheck.isFile) {
-            if (!utilities.webUtilities.isReachable(urlToManifest)) {
-                log.warn(
-                    "Can not connect to $urlToManifest to check for update(s) of $manifestToCheck."
-                )
+            // Reaching the host and reading its answer are reported differently: being offline is
+            // ordinary and stays a WARN (as it did when a reachability pre-check produced it), while a
+            // manifest that arrives and cannot be understood is a real defect and keeps its ERROR.
+            // Twelve of these run per startup, so mixing the two would bury every genuine failure
+            // under a dozen stack traces every time a user launches without a network.
+            val connection: HttpURLConnection = try {
+                val opened = utilities.webUtilities.openTimedConnection(urlToManifest) as HttpURLConnection
+                // Ask to be told only about changes. The upstreams answer 304 with no body at all, so
+                // an unchanged manifest -- the common case -- costs headers instead of its full size
+                // plus two parses. A host that ignores the header answers 200 and everything below
+                // runs exactly as it did before, which is why this needs no per-host special-casing.
+                opened.ifModifiedSince = manifestToCheck.lastModified()
+                if (opened.responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
+                    log.info("Manifest $manifestToCheck is unchanged upstream.")
+                    opened.disconnect()
+                    return
+                }
+                opened
+            } catch (ex: IOException) {
+                log.warn("Can not connect to $urlToManifest to check for update(s) of $manifestToCheck.")
+                log.debug("Connection to $urlToManifest failed.", ex)
                 return
             }
             try {
                 manifestToCheck.inputStream().use { existing ->
-                    utilities.webUtilities.openTimedStream(urlToManifest).use { newManifest ->
+                    connection.inputStream.use { newManifest ->
                         var countOldFile = 0
                         var countNewFile = 0
                         val oldContent: String = existing.readText()
@@ -155,16 +173,15 @@ class ManifestUpdater(private val utilities: Utilities) {
             } catch (ex: InvalidTypeException) {
                 log.error("Couldn't refresh manifest $manifestToCheck", ex)
             }
-        } else {
-            if (!utilities.webUtilities.isReachable(urlToManifest)) {
-                log.error("CRITICAL! $manifestToCheck not present and $ urlToManifest unreachable. Exiting...")
-                log.error(
-                    "ServerPackCreator should have provided default manifests. Please report this on GitHub at https://github.com/Griefed/ServerPackCreator/issues/new?assignees=Griefed&labels=bug&template=bug-report.yml&title=%5BBug%5D%3A+"
-                )
-                log.error("Make sure you include this log when reporting an error! Please....")
-            } else {
-                updateManifest(manifestToCheck, urlToManifest)
-            }
+        } else if (!updateManifest(manifestToCheck, urlToManifest)) {
+            // Attempt the download and report the failure, rather than probing reachability first and
+            // then downloading: the probe cost a second full request for information the download
+            // already produces, and this way the log names the actual failure instead of "unreachable".
+            log.error("CRITICAL! $manifestToCheck not present and $urlToManifest could not be downloaded. Exiting...")
+            log.error(
+                "ServerPackCreator should have provided default manifests. Please report this on GitHub at https://github.com/Griefed/ServerPackCreator/issues/new?assignees=Griefed&labels=bug&template=bug-report.yml&title=%5BBug%5D%3A+"
+            )
+            log.error("Make sure you include this log when reporting an error! Please....")
         }
     }
 
@@ -190,19 +207,23 @@ class ManifestUpdater(private val utilities: Utilities) {
      *
      * @param manifestToRefresh The manifest file to update.
      * @param urlToManifest     The URL to the file which is to be downloaded.
+     * @return `true` if the manifest was downloaded and written, `false` if it could not be fetched —
+     * which is what lets the caller report an absent manifest without a separate reachability probe.
      * @author whitebear60
      * @author Griefed
      */
     private fun updateManifest(
         manifestToRefresh: File,
         urlToManifest: URL
-    ) {
-        try {
+    ): Boolean {
+        return try {
             utilities.webUtilities.openTimedStream(urlToManifest).use {
                 updateManifest(manifestToRefresh, it.readText())
             }
+            true
         } catch (ex: IOException) {
             log.error("An error occurred refreshing $manifestToRefresh.", ex)
+            false
         }
     }
 }
