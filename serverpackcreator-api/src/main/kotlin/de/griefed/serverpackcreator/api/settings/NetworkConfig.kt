@@ -107,8 +107,11 @@ class NetworkConfig(private val store: PropertyStore) {
             return field
         }
         set(value) {
-            store.setInt(CONNECT_TIMEOUT_KEY, sanitise(value, fallbackConnectTimeout, CONNECT_TIMEOUT_KEY))
-            field = value
+            // Sanitised once, then used for all three: storing one value while keeping and logging
+            // another told an operator the opposite of what took effect.
+            val sanitised = sanitise(value, fallbackConnectTimeout, CONNECT_TIMEOUT_KEY)
+            store.setInt(CONNECT_TIMEOUT_KEY, sanitised)
+            field = sanitised
             log.info("Connect-timeout set to: $field ms")
         }
 
@@ -122,8 +125,11 @@ class NetworkConfig(private val store: PropertyStore) {
             return field
         }
         set(value) {
-            store.setInt(READ_TIMEOUT_KEY, sanitise(value, fallbackReadTimeout, READ_TIMEOUT_KEY))
-            field = value
+            // Sanitised once, then used for all three: storing one value while keeping and logging
+            // another told an operator the opposite of what took effect.
+            val sanitised = sanitise(value, fallbackReadTimeout, READ_TIMEOUT_KEY)
+            store.setInt(READ_TIMEOUT_KEY, sanitised)
+            field = sanitised
             log.info("Read-timeout set to: $field ms")
         }
 
@@ -141,11 +147,9 @@ class NetworkConfig(private val store: PropertyStore) {
             return field
         }
         set(value) {
-            store.setInt(
-                DOWNLOAD_READ_TIMEOUT_KEY,
-                sanitise(value, fallbackDownloadReadTimeout, DOWNLOAD_READ_TIMEOUT_KEY)
-            )
-            field = value
+            val sanitised = sanitise(value, fallbackDownloadReadTimeout, DOWNLOAD_READ_TIMEOUT_KEY)
+            store.setInt(DOWNLOAD_READ_TIMEOUT_KEY, sanitised)
+            field = sanitised
             log.info("Download read-timeout set to: $field ms")
         }
 

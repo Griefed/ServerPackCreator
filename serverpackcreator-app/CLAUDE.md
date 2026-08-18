@@ -233,7 +233,7 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
 ## The config-check timer is on the typing path — keep it cheap (2026-08-17)
 
 `ConfigCheckTimer` is a **500 ms debounce restarted by a document change in *any* field**
-(`ConfigEditor.kt:80` → `checkAll()` → `TabbedConfigsTab.kt:229`), and it runs its whole validation
+(`ConfigEditor.validationChangeListener` → `checkAll()` → `TabbedConfigsTab.timer.restart()`), and it runs its whole validation
 pass for **every open tab**. So anything it does, a user pays for each time they pause while typing,
 multiplied by their open configs. Two things it used to do per tick, now memoized in
 `ConfigEditorViewModel`:

@@ -668,3 +668,111 @@ Nothing behavioural is wrong. Recommended order:
    landmine to keep the mockk lesson while dropping the stale conclusion (N2).
 2. `refactor(app)` + `test(app)` — split the `MigrationStore` seam out of its guard commit (N3).
 3. Leave N4, with a note: the guards cannot precede the API they exercise.
+
+---
+
+# Audit — `claude-performance-improvements`, iteration 2
+
+**Range:** `7abd7c85c..HEAD` (47 commits) · **Date:** 2026-08-18 · **Mode:** READ-ONLY
+Focus: what earlier passes had *not* examined — Kotlin idiom, the internal quality of the units this
+branch adds, and doc/code drift. Previous iteration's fixes re-verified first.
+
+## Iteration-1 fixes confirmed
+
+| Finding | Verified |
+|---|---|
+| N1 — 54 dead hash citations | **0 remain** in the durable docs (the two object-identity hashes at `REFACTOR-LOG.md:1263` correctly left alone) |
+| N2 — stale red→red landmine | Corrected; the mockk lesson survives, the wrong conclusion is gone |
+| N3 — `test:` commit shipping production | No `test:`-labelled commit on the branch touches `src/main` |
+
+## MEDIUM
+
+### P1 — The refactor-state table understates the suites by 9 tests
+
+`CLAUDE.md` "Current status" table versus reality:
+
+| Module | Table | Actual |
+|---|---|---|
+| api | 337 (1 skip) | **338** (1 skip) |
+| app | 127 | **135** |
+| clientside | 88 | 88 ✓ |
+
+The gap is exactly the audit remediation: `UpdateConfigTimeoutTest` (+1, api),
+`VersionCheckerTimeoutTest` (+1, app) and `RunConfigurationListMigrationRunnerTest` (+7, app). Each
+was committed with a correct per-commit count in its message, but the branch's own summary table was
+never brought forward.
+
+That table is described in this repo's own words as the "durable, *current-state* context" a session
+reads before touching code — so a stale count there is worse than a stale count anywhere else. It is
+also the third instance of the same species on this branch (dead hashes, stale landmine, stale
+counts): **documentation that quotes a snapshot goes out of date exactly when the code improves.**
+
+## LOW
+
+### P2 — `NetworkConfig`'s setters store the sanitised value but keep and log the raw one
+
+`serverpackcreator-api/.../settings/NetworkConfig.kt:109-113` (and the two identical siblings):
+
+```kotlin
+set(value) {
+    store.setInt(CONNECT_TIMEOUT_KEY, sanitise(value, fallbackConnectTimeout, CONNECT_TIMEOUT_KEY))
+    field = value                                   // the RAW value
+    log.info("Connect-timeout set to: $field ms")   // reports the RAW value
+}
+```
+
+Assigning `connectTimeout = -5` stores **5000** (correct) but leaves `field` at `-5` and logs
+`"Connect-timeout set to: -5 ms"`. No wrong value can be *read* — the getter recomputes from the store
+— so this cannot reach a connection. It is a lying log line and a field transiently holding a value the
+class has just rejected.
+
+No test covers a negative *assignment* (`settersWriteBackToTheStore` uses a valid value), which is why
+it survived.
+
+**Fix:** sanitise once into a local, use it for the store, the field and the log. Add a guard for the
+negative-assignment path.
+
+### P3 — A line citation this branch's own fix invalidated
+
+`serverpackcreator-app/CLAUDE.md:236` cites `ConfigEditor.kt:80` for the debounce trigger. Line 80 is
+now a MigLayout column spec; `validationChangeListener` moved to **:84** when the view-model
+constructor gained two arguments.
+
+The sibling citation in the same sentence, `TabbedConfigsTab.kt:229` → `timer.restart()`, is still
+accurate.
+
+Same root cause as N1, one level down: a reference to a *position* rather than to a *name*. Symbols
+survive edits; line numbers do not. Worth fixing in kind rather than by bumping the number.
+
+### P4 — Pre-existing drift, out of this branch's scope
+
+`CLAUDE.md` cites `PathsConfig.kt:586`–`:643` for the eight computed script-template properties; line
+586 is a bare `}`. Nothing on this branch touches `PathsConfig.kt` or that paragraph, so this is
+inherited debt, recorded rather than fixed — flagged because the same scan produced it and a future
+reader should not mistake it for new.
+
+### P5 — Verified clean
+
+- **No new `!!`** anywhere: all 38 changed main-source files compared against their pre-branch
+  versions, none has a higher count.
+- **Every `var` justified:** three are `NetworkConfig` settings properties following the established
+  group pattern, two are the verbatim-moved accumulators in `ManifestUpdater`, one is a loop counter in
+  the migration runner. No `var` where a `val` would do.
+- **All 15 test classes named in the docs exist**, and all 15 line citations across the three
+  `CLAUDE.md` files are in range (only the one above points at the wrong content).
+- `MigrationStore` is an interface with a single implementation and four methods, each one operation —
+  no util-dumping, and the seam is the narrowest that makes the runner's decisions observable.
+- `RunConfigurationListMigration.MIGRATED_FIELDS` is an immutable `listOf`, not a mutable companion
+  collection.
+
+## Summary
+
+No behavioural defect. One real code defect (**P2**, a setter that stores one value and logs another)
+and two documentation-drift findings (**P1**, **P3**), plus one inherited (**P4**).
+
+The pattern across three iterations is now unmistakable and worth stating rather than fixing one more
+time: every finding in this pass and the last is a **snapshot quoted in prose** — hashes, line numbers,
+test counts — going stale the moment the code moved. Recommended fixes:
+1. `fix(api)` — sanitise once in the `NetworkConfig` setters, and guard the negative-assignment path (P2).
+2. `docs` — refresh the counts, replace the positional citation with a symbol, and record the
+   snapshot-citation hazard itself so the next reader stops creating them (P1, P3).

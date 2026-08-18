@@ -97,4 +97,34 @@ internal class NetworkConfigTest {
         networkConfig.connectTimeout = 4321
         Assertions.assertEquals("4321", store.properties.getProperty(NetworkConfig.CONNECT_TIMEOUT_KEY))
     }
+
+    /**
+     * Pins that assigning a negative timeout reports what was **stored**, not what was passed.
+     *
+     * **What this does and does not cover, stated because the distinction cost a wasted guard.** It pins
+     * that the store and a read-back agree after a rejected assignment. It does *not* pin the defect that
+     * prompted it: the setter used to store the sanitised value while keeping and logging the raw one, so
+     * `connectTimeout = -5` stored 5000 and announced "-5 ms". That was observable **only** in the log —
+     * the getter recomputes from the store, so no caller could ever read the bad value — and asserting on
+     * log output is brittle. The setters now sanitise once and use that one value for the store, the field
+     * and the message; this guard is what remains legitimately assertable around it.
+     */
+    @Test
+    fun assigningANegativeTimeoutReportsTheStoredValue() {
+        val store = PropertyStore()
+        val networkConfig = NetworkConfig(store)
+
+        networkConfig.connectTimeout = -5
+
+        Assertions.assertEquals(
+            networkConfig.fallbackConnectTimeout.toString(),
+            store.properties.getProperty(NetworkConfig.CONNECT_TIMEOUT_KEY),
+            "the store must hold the sanitised value"
+        )
+        Assertions.assertEquals(
+            networkConfig.fallbackConnectTimeout,
+            networkConfig.connectTimeout,
+            "and reading it back must agree with what was stored"
+        )
+    }
 }
