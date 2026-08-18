@@ -282,6 +282,30 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   **confirm the test fails before the fix**: a guard whose teeth were never checked has repeatedly turned
   out to assert nothing (twice in one session, when a mis-indented edit meant the "broken" run was
   actually unmodified code).
+- **A performance branch is not done until it is proven equivalent to its base.** Green tests are not that
+  proof: they are HEAD's tests, written by the same pass that changed the code, and they pass by construction.
+  The check that *is* proof is cheap and repeatable — run the **base branch's unmodified test tree against the
+  branch's production code**:
+
+  ```
+  git worktree add --detach <tmp> HEAD
+  cd <tmp> && rm -rf <module>/src/test && git checkout develop -- <module>/src/test
+  ./gradlew :<module>:test --continue
+  ```
+
+  Every failure is either a regression or a deliberate change; every *compile* error is a signature change,
+  which is a finding in itself and must be enumerated rather than worked around. Done for this branch
+  (`REFACTOR-AUDIT.md` iteration 7): **490 pre-existing guards, zero failures**, with exactly two files
+  uncompilable — one adapted by adding two constructor arguments and *no* assertion edits (7 guards green), one
+  legitimately unadaptable because it asserted behaviour the branch removed. Also check *which* changed classes
+  the base's tests actually name, so the residual risk is stated rather than assumed; a class-name grep
+  under-reports, since `QuiltPackScanner` is exercised only through `ModScannerSidenessTest`.
+- **What only a real runtime can answer, ask a real runtime.** Anything whose point is what an external system
+  does — an index, a data migration, a REST response shape — is not verified by a mocked test, however good.
+  Iteration 7 ran the actual `bootJar` in `-web` mode against MongoDB 8.0.5 in Docker, seeded with pre-branch
+  shaped documents, and that is what confirmed the `sha256` index really exists, the migration really converts
+  legacy documents and really skips already-migrated ones, and `/api/v2/runconfigs/all` really returns the
+  documented shape. It also surfaced B33, which no test could have. Cost: about fifteen minutes.
 - **Build logic is verified by measurement, not by tests — and the measurement goes in the commit message.**
   `buildSrc` has no test source set and no Gradle TestKit harness, and we have decided not to add one to pin single
   predicates (a task-wiring change or a one-line filter is not worth a second test framework in the build). So for a

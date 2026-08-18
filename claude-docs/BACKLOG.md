@@ -4,6 +4,51 @@ Items consciously deferred, with the reason and enough context to pick them up c
 Not a wish-list: everything here was looked at, judged worth doing, and postponed for a stated reason.
 When an item lands, delete it here and record it in `REFACTOR-LOG.md`.
 
+## 2026-08-18 — found by the equivalence audit, **not** caused by it (`claude-performance-improvements`)
+
+**B33 — the web application appears to use MongoDB's default `test` database, not the configured one.**
+**HIGH, pre-existing, and worth treating as urgent** — it is filed here rather than fixed because it lives in
+config plumbing this branch never touched (`WebserviceConfig.kt` has a *zero* diff against `develop`, as do the
+`spring.config.import` chain and `FALLBACK_DATABASE_URI`), and because `credential=null` below means a working
+authenticated deployment must be configured by some route this reproduction does not use. Guessing at it risks
+breaking installations that work today.
+
+*Reproduction (three times, MongoDB 8.0.5 in Docker on 27017, the version `docker/docker-compose.yml` pins):*
+launch `serverpackcreator-app/build/libs/serverpackcreator-app-dev.jar` with `-web --home <dir>`. The log's
+`MongoClient with metadata …` line reports `clusterSettings={hosts=[localhost:27017]}` and **`credential=null`**,
+and every write lands in the database **`test`**. Seed a `serverpackcreatordb` with legacy-shaped
+run-configurations and it is left completely untouched, while `test` receives the `sha256` index and the
+migration logs `No run-configurations needed migrating (0 inspected)`. Setting
+`spring.data.mongodb.uri=mongodb://localhost:27017/serverpackcreatordb` by hand in the home's
+`serverpackcreator.properties` does **not** change this, nor does `SPRING_DATA_MONGODB_URI` in the environment.
+
+*Two contributing observations, neither conclusive alone:*
+- A freshly generated home writes the URI **triple-escaped**,
+  `spring.data.mongodb.uri=mongodb\\\://user\\\:password@…`, which reads back with *literal* backslashes.
+  The source is `WebserviceConfig.FALLBACK_DATABASE_URI`, whose Kotlin literal already contains `\\:` before
+  `Properties.store` escapes it again.
+- The packaged `application.properties` sets
+  `spring.config.import=classpath:/application.properties,classpath:/serverpackcreator.properties,…` — it
+  **imports itself**, and the second entry is not `optional:` although the jar contains no such resource.
+
+*Why it matters beyond the obvious:* on a correctly-configured instance this would make the DBRef→embedded
+migration a silent no-op (`0 inspected`), leaving persisted run-configurations in a shape the mapped type can
+no longer read. The migration itself is **verified working** — see `REFACTOR-AUDIT.md` iteration 7, where it
+converted real legacy documents once pointed at the database the app actually uses.
+
+*First thing to check when picking this up:* print `context.environment.getProperty("spring.data.mongodb.uri")`
+and the resolved `MongoConnectionDetails` at startup, and compare against what the Docker entrypoint writes.
+`WebUtilities`-style unit tests cannot see any of this; it needs a booted app.
+
+**B34 — `spring.data.mongodb.uri` does not reach the MongoClient in tests either.** Same root cause as B33,
+recorded separately because the symptom is different and cheap to re-verify: a `@SpringBootTest(properties = ["spring.data.mongodb.uri=…?serverSelectionTimeoutMS=250"])`
+*does* reach the environment (probed: `Inlined Test Properties -> …serverSelectionTimeoutMS=250`) while the
+client still reports `serverSelectionTimeout='30000 ms'`. Consequence today: every no-database context boot in
+`:serverpackcreator-app:test` pays ~30 s of driver timeouts — the migration runner's read and
+`DeclaredIndexCreator`'s write — which is most of the suite's ~1m40s. *Waited because:* it is a symptom of B33,
+and two separate attempts to shorten the timeout (test resources, then inlined properties) both failed for what
+is now believed to be the same reason. Fix B33 first and re-measure before touching this.
+
 ## 2026-08-17 — startup / network performance (`claude-perf-network-startup`)
 
 **B30 — `If-None-Match` for the Forge manifest.** After the conditional-GET work, four of twelve

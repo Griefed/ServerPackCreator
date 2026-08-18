@@ -1291,3 +1291,167 @@ down mid-finding, because the second test it accused turned out to bite).
 
 Neither is a live defect today. Both are the reason a live defect went unnoticed twice in this session, so
 they are worth closing on that basis rather than on their current impact.
+
+---
+
+# Audit — `claude-performance-improvements`, iteration 7
+
+**Range:** `7abd7c85c..HEAD` (63 commits) · **Date:** 2026-08-18 · **Mode:** READ-ONLY
+Focus: **equivalence with `develop`.** Iterations 1–6 verified claims, guards and declarations — all
+inward-looking. None of them asked the only question that matters for a performance branch: *does it still
+do what it did before?* This iteration answers that by measurement, three ways, and then by running the
+real application against a real database.
+
+## The result first
+
+**490 pre-existing guards, run unmodified against HEAD's production code, zero failures.**
+
+| Module | develop's own test tree, HEAD's `src/main` | Result |
+|---|---|---|
+| `-api` | 309 (1 skip) | **0 failures** |
+| `-clientside` | 88 | **0 failures** |
+| `-app` | 93 (19 of 21 develop-era files) | **0 failures** |
+
+Method: a detached worktree at HEAD with each module's `src/test` replaced by `git checkout develop --`.
+Nothing else changed, so any failure would be HEAD's production code behaving differently under develop's
+expectations.
+
+Only two develop-era files could not compile, and both are the branch's two deliberate shape changes:
+
+| File | Why it cannot compile | Verdict |
+|---|---|---|
+| `ConfigEditorViewModelTest` | `ConfigEditorViewModel` gained `configurationHandler` + `serverPackHandler` | **adapted and run** — the constructor took two relaxed mocks, *every assertion byte-identical* (diffed to prove it), and all **7** guards pass |
+| `RunConfigurationServiceTest` | references `ClientMod` / `StartArgument` / `WhitelistedMod`, their four repositories, `findByArgument` / `findByMod`, and the 3-arg constructor — all deleted | **not adaptable, and correctly so**: it asserts the join behaviour the branch removed by design |
+
+The second one deserves the detail, since "the test was deleted" is how regressions hide. develop had 10
+guards, HEAD has 9. The three that went — `aKnownStartArgumentIsReplacedByTheStoredEntry`,
+`aKnownClientModIsReplacedByTheStoredEntry`, `aKnownWhitelistedModIsReplacedByTheStoredEntry` — each pinned
+"look up the existing document and reuse it", which cannot exist once the values are embedded strings. HEAD
+adds `clientModsAreSplitOnCommas`, `whitelistedModsAreSplitOnCommas` and
+`buildingAConfigurationCostsTwoRepositoryCalls` in their place, so parsing coverage is **broader** than
+develop's, and `anExistingRunConfigurationIsReturnedInsteadOfSavingADuplicate` — the dedup guard — survived.
+
+### What E1 covers, and what it cannot
+
+Coverage was measured, not assumed: every changed production class was checked against develop's test
+sources for whether anything names or exercises it.
+
+- **Exercised, therefore proven equivalent:** `GenerationConfig` (34 references), `ApiProperties` (21),
+  `WebUtilities` (19), `VersionMeta` (15), `ConfigurationHandler` (9), `ModListCompiler` (7),
+  `ModpackZipInspector` (5), `ModpackManifestParser` (4), `ServerPackFileGatherer` (2), and in `-app`
+  `RunConfiguration`, `RunConfigurationService`, `ModPack`, `ModPackService`, `VersionChecker`,
+  `UpdateChecker`, `ConfigEditorViewModel`, `AmountStatsService`.
+- **Exercised *indirectly*, which the class-name check initially missed:** `QuiltPackScanner` — the one
+  genuinely algorithmic rewrite (search-per-entry → index-by-jar) — is driven by `ModScannerSidenessTest`
+  (30 `quilt` references), `ModScannerTest` and `ModListCompilerTest` (15), all green.
+  `ForgeAnnotationScanner` likewise, via `ModScannerDispatchTest`/`ModScannerTest` and the `1.12` fixtures.
+- **The `FilterMatcher` rewrite is covered across every mode**, not just the common one: develop's
+  `ModListCompilerTest` exercises `CONTAIN` (5), `START` (3), `END`, `REGEX` and `EITHER`, and it passed
+  unedited.
+- **Genuinely outside E1's reach:** `SuggestionProvider` and `ConfigCheckTimer`/`TabbedConfigsTab` —
+  develop's tests never mention them (`Suggestion`, `CheckTimer`: zero hits). The first is covered by
+  HEAD's own `SuggestionProviderTest`, which pins content and not just call counts (size 550, an exact
+  changed set, per-caller copies). The Swing glue in the other two has no automated coverage on **either**
+  side; that is pre-existing, and hand-verification is the only evidence there has ever been.
+- **`AmountStatsService`**: `findAll().size` → `count().toInt()`. Equivalent by definition — both are "how
+  many documents" — so no differential test was written; `count()` is additionally *more* robust, since it
+  cannot trip over a dangling `@DBRef` the way loading every document can.
+
+## Verified against a real MongoDB and the real jar
+
+E1 proves the *tested* behaviour is preserved. It says nothing about the three changes whose whole point is
+what a real database does. Those were run for real: MongoDB 8.0.5 in Docker (the version
+`docker/docker-compose.yml` pins), the actual `bootJar` in `-web` mode, seeded with **pre-branch shaped
+documents** — DBRef arrays plus the three id-only collections, exactly what an upgrading installation holds.
+
+| Change | Result |
+|---|---|
+| `DeclaredIndexCreator` (S1's fix) | `Ensured index 'sha256' on 'modPack'` — and `getIndexes()` confirms `sha256({"sha256":1})` really exists |
+| Index creation must not gate startup | With **no** MongoDB running: `Tomcat started` and `Started ServerPackCreatorKt in 2.083 seconds` **first**, then the failed `createIndexes` attempt. The app served throughout. S1's fix confirmed in production form, not just in a test context |
+| `RunConfigurationListMigration` on real data | `Migrated 1 of 2 run-configurations` — the legacy document rewritten to `["OptiFine","Sodium"]` / `["-Xmx4G","-Xms2G"]` / `["Ping-Wheel-"]`, every other field intact (`mc=1.20.1 loader=Forge ver=47.2.0`), and the already-embedded document **untouched**. Idempotency demonstrated on real documents rather than argued |
+| Orphan collections | All three dropped, after the rewrite: only `modPack` and `runConfiguration` remain |
+| R3's REST contract | `GET /api/v2/runconfigs/all` on the running app returns `"clientMods": ["OptiFine","Sodium"]` and `"id": "rc-legacy-1"` — a **string**, which also confirms U1's id-type correction empirically |
+
+That is the strongest evidence on this branch, and it is the evidence the branch previously had none of:
+before this iteration the migration that rewrites persisted data had **never been run against a database**.
+
+## HIGH
+
+### V1 — The web application ignores its configured database and uses MongoDB's default `test`
+
+Found while setting the above up, and the most consequential finding of the session — **but not this
+branch's**, which is why it is reported rather than fixed.
+
+Launching the built `bootJar` in `-web` mode, the client is created with
+`clusterSettings={hosts=[localhost:27017]}`, **`credential=null`**, and every write lands in the database
+named **`test`**. Reproduced three times, including with a hand-written clean
+`spring.data.mongodb.uri=mongodb://localhost:27017/serverpackcreatordb` in the home's
+`serverpackcreator.properties`. Proof it is not the seed data: the sha256 index was created on
+`test.modPack`, while a `serverpackcreatordb` seeded with the identical legacy documents was left
+completely untouched — and the migration reported `No run-configurations needed migrating (0 inspected)`.
+
+Two contributing observations, neither conclusive on its own:
+
+- A freshly generated home writes the URI **triple-escaped** —
+  `spring.data.mongodb.uri=mongodb\\\://user\\\:password@...` — which reads back as
+  `mongodb\://user\:password@...`, with *literal* backslashes. `WebserviceConfig.FALLBACK_DATABASE_URI` is
+  the Kotlin literal `"mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb"`, so the
+  backslashes are in the value before `Properties.store` escapes them again.
+- The packaged `application.properties` sets
+  `spring.config.import=classpath:/application.properties,classpath:/serverpackcreator.properties,…` — it
+  **imports itself**, and the second entry is not marked `optional:` yet no such resource exists in the jar.
+
+**Not caused by the performance work, and provably so:** `WebserviceConfig.kt` has a *zero* diff against
+develop, and neither the import chain nor the fallback constant was touched. `credential=null` also means
+this cannot be what a working authenticated deployment does, so the docker path presumably supplies the URI
+by a route this local launch does not — which is exactly why the mechanism needs someone who owns that
+plumbing, not a guess from here.
+
+Consequences worth stating plainly: a self-hosted instance may be writing to `test`; and the DBRef→embedded
+migration, run against a correctly-configured database, would find `0 inspected` and silently leave data in
+the old shape — which the mapped type can no longer read.
+
+## LOW
+
+### V2 — U3's dead end has the same cause, so it is one finding rather than two
+
+Iteration 5 recorded that shortening the driver's server-selection timeout in test resources "does not
+work". A second attempt via `@SpringBootTest(properties = …)` also failed — and a probe showed the URI
+*does* reach the environment (`Inlined Test Properties -> …?serverSelectionTimeoutMS=250`) while the client
+still used `serverSelectionTimeout='30000 ms'`. Together with **V1**, the pattern is one thing, not two:
+**`spring.data.mongodb.uri` does not reach the MongoClient in this application**, in tests or at runtime.
+The exact mechanism is unidentified and deliberately not chased further. Both attempts are reverted; the
+~30 s per no-database context boot stands as an accepted cost, now with a stated cause to investigate
+rather than two mysteries.
+
+### V3 — Findings closed this iteration
+
+- **U1** — the spec's id types. Wider than R3's caveat implied: **10 path parameters** and **10 properties**,
+  including `ServerPack.fileID` typed `int64`. Corrected against the entities, which all use
+  `@MongoId(FieldType.STRING)`; `size`/`downloads`/`confirmedWorking` left as integers because they are.
+  `ServerPackView.id` and `ModPackView.id` left alone and reported: those schemas describe classes that no
+  longer exist anywhere, so a type for them would be invention.
+- **U2** — decided rather than half-done. The render-vs-prop rule is recorded in the frontend's `CLAUDE.md`
+  with its mutation evidence; `SubmitModPackForm`'s three tooltip sites stay untested by the same call
+  already made for the tables (two layers of lazy Quasar rendering, display-only duplicates), and the
+  reasoning is written down so the gap is a decision.
+- **R6** — restated as won't-fix. Relocating a markdown file across five commits' history is the "make it
+  pretty" tail, and the branch is local-only either way.
+
+## Summary
+
+**Nothing is broken relative to `develop`.** 490 pre-existing guards pass unmodified against HEAD's
+production code; the one adaptable exception was adapted without touching a single assertion and passes; the
+one non-adaptable exception asserts behaviour the branch deliberately removed, and its replacement covers
+strictly more. Every algorithmic rewrite — the Quilt index, the zip single pass, the exclusion-filter
+matcher across all five modes, the Forge regex hoist, the gatherer hoist — is exercised by develop-era tests
+that were never edited.
+
+Beyond equivalence, the three changes that only a real database can exercise were exercised by one: the
+index is really created, the migration really converts legacy documents and really leaves migrated ones
+alone, and the REST response really carries the shape the corrected spec describes.
+
+The one thing to act on is **V1**, and it is not this branch's: the web mode appears to use MongoDB's
+default `test` database rather than the configured one. It needs whoever owns the config plumbing, and it
+is worth treating as urgent, because it would also make this branch's migration a silent no-op on a
+correctly-configured instance.
