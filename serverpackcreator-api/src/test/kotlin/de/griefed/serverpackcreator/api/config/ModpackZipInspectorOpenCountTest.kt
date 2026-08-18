@@ -110,8 +110,11 @@ internal class ModpackZipInspectorOpenCountTest {
     fun theSinglePassAgreesWithTheDedicatedMethods(@TempDir tempDir: File) {
         val inspector = countingInspector()
         val zip = File(modpackZip(tempDir))
-        val expected = (inspector.getDirectoriesInModpackZip(zip) + inspector.getFilesInModpackZip(zip)).sorted()
-        Assertions.assertEquals(expected, inspector.getAllFilesAndDirectoriesInModpackZip(zip).sorted())
+        // Not `.sorted()` on either side, deliberately: sorting discards the very property the production
+        // code promises ("directories still come first, as they did when they were two separate calls"),
+        // and a sorted comparison passes even with the partition inverted.
+        val expected = inspector.getDirectoriesInModpackZip(zip) + inspector.getFilesInModpackZip(zip)
+        Assertions.assertEquals(expected, inspector.getAllFilesAndDirectoriesInModpackZip(zip))
     }
 
     /**

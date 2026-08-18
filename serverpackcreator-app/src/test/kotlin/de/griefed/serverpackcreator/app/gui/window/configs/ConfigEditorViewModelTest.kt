@@ -199,6 +199,10 @@ internal class ConfigEditorViewModelTest {
             viewModel.isServerDownloadable("1.20.1", "Forge", "47.2.0"),
             "A transient failure must not be remembered — the editor would stay stuck on 'unavailable'"
         )
+        // The assertion above is not enough on its own, and that is the point of this line: if failures
+        // were cached, the second call would short-circuit to `return true` and satisfy it *without*
+        // probing. Only the call count distinguishes "re-probed" from "wrongly remembered".
+        verify(exactly = 2) { serverPackHandler.serverDownloadable("1.20.1", "Forge", "47.2.0") }
     }
 
     /**

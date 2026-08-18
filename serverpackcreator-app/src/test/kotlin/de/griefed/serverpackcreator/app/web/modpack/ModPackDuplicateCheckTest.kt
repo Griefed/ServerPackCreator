@@ -111,5 +111,10 @@ internal class ModPackDuplicateCheckTest {
         every { modpackRepository.findAll() } returns listOf(ModPack())
 
         Assertions.assertTrue(service(tempDir).existingUploadOf(null).isEmpty)
+        // The assertion above passes even without the short-circuit, because the stub answers empty() for
+        // null too — it would be verifying the mock, not the code. What the short-circuit exists for is
+        // that the database is never asked: Mongo's own `{sha256: null}` *would* match documents whose
+        // field is unset.
+        verify(exactly = 0) { modpackRepository.findBySha256(any()) }
     }
 }

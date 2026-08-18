@@ -205,6 +205,18 @@
   same-named threads; reserve identity comparison for distinguishing *which* thread ran something.
   Both halves of this pair were found by auditing a guard that was already green — being red once is
   necessary, not sufficient.
+- **A guard written after its code is unproven until you break the code.** Three on the performance
+  branches passed for the wrong reason, and only mutation found them — inspection never would:
+  - `aFailedProbeIsRetried` stubbed a failure then a success and asserted `true`. With failures cached the
+    second call short-circuits to `return true`, satisfying the assertion **without probing**. Only
+    `verify(exactly = 2)` separates "re-probed" from "wrongly remembered".
+  - `theSinglePassAgreesWithTheDedicatedMethods` compared both sides `.sorted()`, discarding the
+    directories-first order the production code promises in prose. Inverting the partition changed nothing.
+  - `aNullHashReportsNoDuplicate` stubbed `findBySha256(null)` to return empty and asserted empty — so it
+    verified the mock. Removing the short-circuit it existed to guard changed nothing.
+  The method is cheap: change one line of production code, run the class, confirm a failure, revert. Do it
+  for every guard that never had a red state, and prefer asserting **that a collaborator was or was not
+  called** over asserting a return value a wrong implementation could also produce.
 - **LANDMINE — every network call must carry a timeout, and only two ways of applying one exist.**
   The JDK's default connect- and read-timeout is *infinite*, so `url.openConnection()` or
   `url.openStream()` written anywhere else is a hang waiting to happen — and before 2026-08-17 that was

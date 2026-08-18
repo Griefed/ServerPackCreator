@@ -776,3 +776,118 @@ test counts — going stale the moment the code moved. Recommended fixes:
 1. `fix(api)` — sanitise once in the `NetworkConfig` setters, and guard the negative-assignment path (P2).
 2. `docs` — refresh the counts, replace the positional citation with a symbol, and record the
    snapshot-citation hazard itself so the next reader stops creating them (P1, P3).
+
+---
+
+# Audit — `claude-performance-improvements`, iteration 3 (final)
+
+**Range:** `7abd7c85c..HEAD` (48 commits) · **Date:** 2026-08-18 · **Mode:** READ-ONLY
+Focus: what three structural passes could not reach — **whether the guards actually bite**. Done by
+mutation: break the production code, and see whether the suite notices. This found the most substantive
+defects of any iteration.
+
+## Iteration-2 fixes confirmed
+
+`NetworkConfig`'s setters sanitise once (P2); the refactor-state table reads 339 / 135 / 88, matching the
+suites (P1); the positional citation is now a symbol reference (P3).
+
+## MEDIUM
+
+Three guards pass for the wrong reason. Each was written *alongside* its production code, so none ever
+had a red state — exactly the population this project's own conventions warn about ("a guard whose teeth
+were never checked has repeatedly turned out to assert nothing"). Mutation found them; nothing else could.
+
+### Q1 — `aFailedProbeIsRetried` cannot distinguish a retry from a wrongly-cached success
+
+`ConfigEditorViewModelTest.aFailedProbeIsRetried` stubs the probe `false`, asserts `false`, re-stubs it
+`true`, then asserts `true`.
+
+**Mutation:** make `isServerDownloadable` cache failures as well as successes
+(`downloadableTriples.add(triple)` unconditionally). **Result: the whole class still passes.**
+
+Why: with a failure cached, the second call short-circuits at
+`if (downloadableTriples.contains(triple)) return true` — so it returns `true` without probing, and
+`assertTrue` is satisfied. The assertion cannot tell "re-probed and got true" from "remembered a failure
+and wrongly reported true". The guard's stated intent — *the failure must not be remembered* — is
+unverified, and the asymmetric caching policy that intent describes is the whole design decision.
+
+**Fix:** assert the probe happened again — `verify(exactly = 2) { serverPackHandler.serverDownloadable(…) }`.
+
+### Q2 — The zip single-pass guard sorts away the ordering it claims to compare
+
+`ModpackZipInspectorOpenCountTest.theSinglePassAgreesWithTheDedicatedMethods` compares
+`(getDirectoriesInModpackZip + getFilesInModpackZip).sorted()` against
+`getAllFilesAndDirectoriesInModpackZip(...).sorted()`.
+
+**Mutation:** invert the partition (`partition { !it.isDirectory }`), so files come before directories.
+**Result: every zip test still passes.**
+
+Both sides are sorted, so order is discarded — yet the production comment asserts "Directories still come
+first, as they did when they were two separate calls", and the commit message repeats it. That guarantee
+has no guard.
+
+Mitigating, and why this is MEDIUM not HIGH: no production code consumes the order —
+`ConfigurationHandler.kt:865` is the only caller and it returns the list onward untouched. So the claim is
+**decorative**, which is itself the finding: either it matters and must be asserted, or it does not and
+should not be promised.
+
+**Fix:** either drop `.sorted()` and pin the order, or stop claiming it in prose. Pinning is cheaper and
+keeps the promise honest.
+
+### Q3 — `aNullHashReportsNoDuplicate` asserts its own stub
+
+`ModPackDuplicateCheckTest.aNullHashReportsNoDuplicate` stubs `findBySha256(null)` to return
+`Optional.empty()` and asserts the result is empty.
+
+**Mutation:** remove the null short-circuit from `existingUploadOf`, so a null hash goes to the
+repository. **Result: the test still passes** — because the stub answers `empty()` for `null`.
+
+The guard verifies the mock, not the code. Its intent is "a hash-less upload must not even ask the
+database", precisely because Mongo's own `{sha256: null}` *would* match documents whose field is unset —
+the reason the short-circuit exists at all.
+
+**Fix:** `verify(exactly = 0) { modpackRepository.findBySha256(any()) }`.
+
+## LOW
+
+### Q4 — Guards confirmed to bite
+
+The same mutation method, applied to the rest of the never-red population, found these sound:
+
+| Mutation | Result |
+|---|---|
+| migration rewrite stops converting DBRefs | 2 of 5 fail |
+| manifest candidate order swapped | 1 of 3 fails |
+| `DEFAULT_READ_TIMEOUT` 15 000 → 14 000 | 1 of 7 fails |
+| `allSuggestions` leaks the cached instance | 1 of 4 fails |
+| manifest fingerprint ignores size and mtime | 1 of 13 fails |
+
+Together with the earlier runner mutations (drop-before-rewrite → 4 fail; drop-on-empty-pass → 2 fail),
+every other new guard on this branch is demonstrably load-bearing.
+
+### Q5 — Module boundaries intact
+
+`-api` imports no Spring and no FlatLaf. Its four `javax.swing` imports (`ApiPlugins`,
+`ExtensionConfigPanel`, `TabExtension`, `ExtensionTab`) are all **pre-existing** at the branch point —
+verified against `7abd7c85c` — and are the documented plugin-GUI extension points, not new leakage. No
+dependency points outward.
+
+### Q6 — The new units hold up
+
+- `MigrationStore` — four methods, one operation each, single implementation, exists solely to make an
+  unobservable decision observable. Correctly sized.
+- `FilterMatcher` — private nested class, constructed once per generation, holds only what is invariant
+  across the loop it serves.
+- `URL.timedConnection` — one function, the single place that knows *how* a timeout is applied, with two
+  documented call routes and a stated reason for each.
+- `NetworkConfig` — follows the established settings-group pattern exactly; defaults are constants read by
+  the `fallback*` members, so the shipped values exist once.
+
+## Summary
+
+Three guards that assert nothing meaningful (**Q1**, **Q2**, **Q3**) — all found by mutation, none
+findable by inspection, and all in the population the project's own conventions single out as highest risk:
+tests written after the code they cover. Every other new guard bites, module boundaries are intact, and
+the new units are correctly sized.
+
+Recommended: fix all three, and mutation-test them afterwards rather than trusting the fix.
