@@ -76,6 +76,11 @@ internal class ManifestUpdater(private val utilities: Utilities) {
                 // plus two parses. A host that ignores the header answers 200 and everything below
                 // runs exactly as it did before, which is why this needs no per-host special-casing.
                 opened.ifModifiedSince = manifestToCheck.lastModified()
+                // And the ETag, for hosts that ignore the timestamp. files.minecraftforge.net is the one
+                // that matters: it ignores If-Modified-Since entirely but honours If-None-Match against
+                // its weak nginx ETag, and it is the largest manifest otherwise transferred in full on
+                // every startup. Both headers are sent; a host honouring either answers 304.
+                rememberedEtag(manifestToCheck)?.let { opened.setRequestProperty("If-None-Match", it) }
                 if (opened.responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
                     log.info("Manifest $manifestToCheck is unchanged upstream.")
                     opened.disconnect()
@@ -150,6 +155,9 @@ internal class ManifestUpdater(private val utilities: Utilities) {
                         if (countNewFile > countOldFile) {
                             log.info("Refreshing $manifestToCheck.")
                             updateManifest(manifestToCheck, newContent)
+                            // Only now, and only paired with what was written: an ETag recorded for a
+                            // manifest we declined to adopt would earn a 304 for content we do not hold.
+                            rememberEtag(manifestToCheck, connection.getHeaderField("ETag"))
                         } else {
                             log.info("Manifest $manifestToCheck does not need to be refreshed.")
                         }
@@ -182,6 +190,64 @@ internal class ManifestUpdater(private val utilities: Utilities) {
                 "ServerPackCreator should have provided default manifests. Please report this on GitHub at https://github.com/Griefed/ServerPackCreator/issues/new?assignees=Griefed&labels=bug&template=bug-report.yml&title=%5BBug%5D%3A+"
             )
             log.error("Make sure you include this log when reporting an error! Please....")
+        }
+    }
+
+    /**
+     * The sidecar recording the ETag of [manifest], beside the manifest itself.
+     *
+     * A file rather than a property because it must travel with the manifest: the manifests live in their
+     * own directory that survives a wiped home, and a property store would drift from them.
+     */
+    private fun etagSidecar(manifest: File) = File(manifest.parentFile, "${manifest.name}.etag")
+
+    /**
+     * The ETag last recorded for [manifest], or `null` if there is none **or it no longer describes what is
+     * on disk**.
+     *
+     * The pairing is verified rather than trusted, and that is the whole safety of this feature. An ETag
+     * describes one exact body; if the manifest has since been replaced by something else — `ApiWrapper`
+     * re-seeding it from the jar is the real case, a restore or a hand-edit are others — then offering the
+     * old ETag would earn a `304` for content we do not hold and suppress a genuine update *permanently*.
+     * The recorded byte length is what detects that, so a mismatch discards the ETag rather than risking it.
+     */
+    private fun rememberedEtag(manifest: File): String? {
+        val sidecar = etagSidecar(manifest)
+        if (!sidecar.isFile) {
+            return null
+        }
+        return try {
+            val lines = sidecar.readLines()
+            val etag = lines.getOrNull(0)?.takeIf { it.isNotBlank() } ?: return null
+            val describedLength = lines.getOrNull(1)?.trim()?.toLongOrNull() ?: return null
+            if (describedLength == manifest.length()) {
+                etag
+            } else {
+                log.debug("Discarding the ETag for $manifest: it describes $describedLength bytes, not ${manifest.length()}.")
+                null
+            }
+        } catch (ex: IOException) {
+            log.debug("Could not read $sidecar; proceeding without an ETag.", ex)
+            null
+        }
+    }
+
+    /**
+     * Records [etag] as describing the current contents of [manifest], together with the byte length that
+     * lets [rememberedEtag] tell later whether the pairing still holds. A response without an `ETag` header
+     * clears any previous record, so nothing stale survives.
+     */
+    private fun rememberEtag(manifest: File, etag: String?) {
+        val sidecar = etagSidecar(manifest)
+        try {
+            if (etag.isNullOrBlank()) {
+                sidecar.delete()
+            } else {
+                sidecar.writeText(etag + "\n" + manifest.length())
+            }
+        } catch (ex: IOException) {
+            // A missing sidecar only costs one full download next time, so this must never fail a refresh.
+            log.debug("Could not record the ETag for $manifest.", ex)
         }
     }
 

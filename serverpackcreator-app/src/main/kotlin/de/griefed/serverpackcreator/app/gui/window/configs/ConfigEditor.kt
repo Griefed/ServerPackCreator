@@ -84,6 +84,19 @@ class ConfigEditor(
     private val validationChangeListener = object : DocumentChangeListener { override fun update(e: DocumentEvent) { validateInputFields() }}
     private val validationActionListener = ActionListener { validateInputFields() }
     private val updateMinecraftActionListener = ActionListener { updateMinecraftValues() }
+    init {
+        // Declared ABOVE the version lists on purpose: Kotlin runs initialisers in declaration order, so
+        // this is the only place the wait can happen before they are built.
+        //
+        // `VersionMeta` no longer refreshes its manifests during construction -- that cost ~392 ms of
+        // blocking startup -- so the refresh may still be in flight when the first editor opens. These
+        // combo-box models are built exactly once and nothing repopulates them, so a freshly released
+        // Minecraft version would otherwise be missing from the dropdowns until the next launch. By the
+        // time a user can open an editor the refresh has long finished and this returns immediately;
+        // bounded so an unreachable host delays a dropdown instead of hanging the UI.
+        apiWrapper.versionMeta.awaitManifestRefresh()
+    }
+
     private val legacyFabricModel = DefaultComboBoxModel(apiWrapper.versionMeta.legacyFabric.loaderVersions().toTypedArray())
     private val fabricModel = DefaultComboBoxModel(apiWrapper.versionMeta.fabric.loaderVersions().reversed().toTypedArray())
     private val quiltModel = DefaultComboBoxModel(apiWrapper.versionMeta.quilt.loaderVersions().reversed().toTypedArray())

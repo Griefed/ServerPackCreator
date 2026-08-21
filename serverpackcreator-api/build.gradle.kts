@@ -122,6 +122,11 @@ tasks.register<Copy>("updateManifests") {
     dependsOn(tasks.test)
     from(projectDir.resolve("tests/manifests"))
     into(projectDir.resolve("src/main/resources/de/griefed/resources/manifests"))
+    // `.etag` sidecars are per-installation bookkeeping, written beside a manifest when an upstream ETag
+    // is adopted. The suite produces them in this very directory, and without this they would be copied
+    // into the shipped resources and from there into every user's home by `ApiWrapper.setup()` -- shipping
+    // one machine's HTTP bookkeeping to everyone. Measured: 12 manifests copied either way, 0 sidecars.
+    exclude("*.etag")
 }
 
 tasks.test {

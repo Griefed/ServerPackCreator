@@ -1089,6 +1089,46 @@ deadline B9 fixed only in the container engine, the loader-cache marker not reco
 install, the checked-in test properties still carrying machine-specific absolute paths (M1's other half), `.gitignore`
 hiding new `server_files` resources, and an install failure's console being wiped by the next attempt on that tuple.
 
+## 2026-08-21 — the deferred performance items, B30/B31/B32 (`claude-perf-deferred`)
+
+The last three backlog items from the startup/network work, cleared.
+
+**B31 was the real win, and its entry was incomplete.** `VersionMeta` blocked on checking twelve manifests
+before its constructor returned, although `ApiWrapper.setup()` had already seeded every one from the jar.
+Same probe, same machine, constructing over the same home: **~399 ms median before (399/390/835), ~47 ms
+after (56/36/47)** — and far more offline, where the old path waited out twelve connect timeouts before a
+window appeared.
+
+What the entry missed is why this could not be a straight move: the GUI's version dropdowns are
+`DefaultComboBoxModel`s built once in `ConfigEditor`, and **nothing anywhere repopulates them**. A naive
+background refresh would have hidden a freshly released Minecraft version until the next launch — the exact
+workflow the application exists for. Two awaits close it: an `init` block in `ConfigEditor` placed *above*
+the version-list properties (Kotlin runs initialisers in declaration order, so that is the only point that
+works), and `ConfigurationHandler.checkConfiguration`, the single choke point every CLI, interactive, web
+and embedder path passes through — one site instead of four, so a short-lived `--headless` run cannot reject
+a version published minutes ago.
+
+**B30** sends `If-None-Match` beside `If-Modified-Since`. `files.minecraftforge.net` ignores the timestamp
+but honours the ETag, and it was the largest manifest still transferred in full every startup (121,492 B of
+213,885 B). The ETag lives in a `<manifest>.etag` sidecar **with the manifest's byte length**, and is
+offered only while that still matches: an ETag describes one exact body, so a manifest replaced by other
+means — a re-seed from the jar is the real case — would otherwise earn a `304` for content we do not hold
+and suppress a genuine update permanently. It is also recorded only when the manifest is actually adopted,
+since the updater declines an upstream copy with fewer versions. Both guards were mutation-verified;
+before the implementation existed three of the four passed vacuously, which is the only reason to trust
+them now. A build-side hazard came with it: `updateManifests` copied `tests/manifests` unfiltered into the
+shipped resources, so sidecars would have been packaged and seeded into every user's home. Excluded.
+Scoped honestly, B30 buys ~0 ms — the twelve checks run concurrently and Forge is not the slowest — only
+bandwidth on a metered link.
+
+**B32** stopped `hasteBinPreChecks` materialising up to 20 MB of `char` to count characters; it now streams
+through an 8 KB buffer and stops at the limit. Not replaced by a byte check, which is the obvious shortcut
+and wrong: the method applies two independent limits and UTF-8 spends up to four bytes per character, so
+200,000 `€` is 600,000 bytes but only 200,000 characters and must still be accepted. The characterization
+tests caught a second mistake too — `File.length()` on a directory returns a small number, so the first
+version's early return made the check *accept* a directory where it had always rejected one.
+
+
 ## 2026-08-21 — root `CLAUDE.md` back under the large-memory floor (`claude-context-trim`)
 
 Closes B35. Claude Code warns when one loaded memory file exceeds ~5 % of the context window, floor

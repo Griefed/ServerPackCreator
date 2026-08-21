@@ -31,6 +31,10 @@ import de.griefed.serverpackcreator.api.versionmeta.neoforge.NeoForgeMeta
 import de.griefed.serverpackcreator.api.versionmeta.quilt.QuiltMeta
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.runBlocking
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.xml.sax.SAXException
@@ -190,8 +194,67 @@ class VersionMeta(
     /** Keeps the locally stored manifests up to date against their upstream sources. */
     private val manifestUpdater = ManifestUpdater(utilities)
 
+    /**
+     * Where the startup manifest refresh runs. `Dispatchers.IO` owns no thread of its own, and the job below
+     * is the only work ever submitted, so there is nothing to cancel and nothing to leak — deliberately not
+     * `GlobalScope`, which this project has removed everywhere else.
+     */
+    private val refreshScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    /**
+     * The startup manifest refresh, running in the background.
+     *
+     * **This is a change of contract, and the reason [awaitManifestRefresh] exists.** Construction used to
+     * block until all twelve manifests had been checked, so the metas held refreshed data the moment the
+     * constructor returned. They now hold the jar-seeded data immediately and the refreshed data shortly
+     * after — which takes ~392 ms off a GUI launch, and far more off an offline one. A caller that genuinely
+     * needs upstream-fresh data must say so by awaiting.
+     */
+    private val manifestRefresh: Job
+
+    /**
+     * Checks every manifest against its upstream, then re-parses whatever changed.
+     *
+     * The re-parse is the second half and cannot be skipped: the metas are built from the manifest *files*,
+     * so a refreshed file is invisible until the meta reads it again. This is the same pair of steps
+     * [update] performs, and concurrent re-parse while another thread reads a meta is not new here — the web
+     * backend's `VersionRefreshSchedule` has always called [update] on a cron while requests read the metas.
+     */
+    private fun refreshManifests() {
+        try {
+            checkManifests()
+            minecraft.update()
+            fabricIntermediaries.update()
+            fabric.update()
+            legacyFabric.update()
+            forge.update()
+            neoForge.update()
+            quilt.update()
+            log.info("Manifests refreshed.")
+        } catch (ex: Exception) {
+            // Never fatal: the seeded manifests are perfectly usable, and this runs after startup where
+            // throwing would take down whatever thread the dispatcher happened to use.
+            log.warn("Could not refresh the version manifests; continuing with the manifests on disk.", ex)
+        }
+    }
+
+    /**
+     * Waits up to [timeoutMillis] for the background manifest refresh to finish, returning whether it did.
+     *
+     * For callers that must not show stale versions — the GUI's version dropdowns are built once and never
+     * repopulated, so a freshly released Minecraft version would otherwise be missing until the next launch.
+     * Cheap in practice: by the time a user can click anything the refresh has long finished, and this
+     * returns immediately. Bounded so an unreachable host delays a dropdown instead of hanging the UI.
+     */
+    fun awaitManifestRefresh(timeoutMillis: Long = 10_000): Boolean = runBlocking {
+        withTimeoutOrNull(timeoutMillis) { manifestRefresh.join() } != null
+    }
+
     init {
-        checkManifests()
+        // Deliberately NOT checkManifests() -- see `manifestRefresh` below. Every manifest is already on
+        // disk, seeded from the jar by `ApiWrapper.setup()`, so the metas below have working data without a
+        // single request. Refreshing here cost ~392 ms of blocking startup behind the splash screen, and
+        // rather more when offline, for data that is superseded seconds later anyway.
         forge = ForgeMeta(
             forgeManifest,
             utilities,
@@ -244,7 +307,10 @@ class VersionMeta(
         forge.update()
         neoForge.update()
         quilt.update()
-    }
+    
+        // Kicked off last, so everything it re-parses already exists.
+        manifestRefresh = refreshScope.launch { refreshManifests() }
+}
 
     /**
      * Check all our manifests, those being Minecraft, Forge, Fabric and Fabric Installer, for whether
