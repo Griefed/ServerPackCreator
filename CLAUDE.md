@@ -295,7 +295,7 @@ evidence consulted occasionally, not context every session needs.
 
   Every failure is either a regression or a deliberate change; every *compile* error is a signature change,
   which is a finding in itself and must be enumerated rather than worked around. Done for this branch
-  (`REFACTOR-AUDIT.md` iteration 7): **490 pre-existing guards, zero failures**, with exactly two files
+  (`claude-docs/REFACTOR-AUDIT.md` iteration 7): **490 pre-existing guards, zero failures**, with exactly two files
   uncompilable — one adapted by adding two constructor arguments and *no* assertion edits (7 guards green), one
   legitimately unadaptable because it asserted behaviour the branch removed. Also check *which* changed classes
   the base's tests actually name, so the residual risk is stated rather than assumed; a class-name grep
