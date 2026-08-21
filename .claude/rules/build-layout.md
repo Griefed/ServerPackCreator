@@ -58,6 +58,15 @@ the "do not tidy that away, here is what it cost last time".
     The catalog's `kotlin` version cannot rescue this: it governs how the **modules** compile, never
     how build logic does.
 
+    **That specific collision is dead as of the Gradle 9.7.1 upgrade — the mechanism is not.** 9.7.1
+    embeds Kotlin **2.4.0**, which reads 2.3.0 metadata without complaint; tested by putting the marker
+    back and running `:buildSrc:compilePluginsBlocks`, which succeeded in 20 s where 8.14.4 failed in 3.
+    So do not read the paragraph above as a live failure — read it as what happens whenever a plugin's
+    metadata outruns whatever Kotlin the *wrapper's* Gradle embeds, which is a moving target on both
+    sides. Check `./gradlew --version` for the embedded figure before assuming a plugin bump is safe.
+    The `alias` route stays regardless: it is still correct on its own terms, keeping a jar buildSrc
+    never needed off buildSrc's compile classpath. It is simply no longer load-bearing.
+
     The fix was neither downgrading the plugin nor upgrading Gradle. install4j is applied by the
     **root build script**, which is a real one and therefore takes `alias(...)` — so the marker came
     off buildSrc's classpath and the incompatible jar is never compiled against. Measured: `./gradlew
