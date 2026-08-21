@@ -19,6 +19,11 @@
  */
 package de.griefed.serverpackcreator.app.web
 
+import de.griefed.serverpackcreator.app.web.index.DeclaredIndexCreator
+import de.griefed.serverpackcreator.app.web.index.IndexStore
+import de.griefed.serverpackcreator.app.web.migration.MigrationStore
+import de.griefed.serverpackcreator.app.web.migration.RunConfigurationListMigration
+import de.griefed.serverpackcreator.app.web.migration.RunConfigurationListMigrationRunner
 import de.griefed.serverpackcreator.app.web.modpack.ModPackService
 import de.griefed.serverpackcreator.app.web.serverpack.ServerPackService
 import de.griefed.serverpackcreator.app.web.serverpack.runconfiguration.RunConfigurationService
@@ -27,7 +32,9 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationContext
+import org.springframework.context.event.EventListener
 
 /**
  * Boots the **real** web application context and asserts it wires up.
@@ -106,5 +113,49 @@ internal class WebServiceContextTest {
             "-", context.environment.getProperty("de.griefed.serverpackcreator.spring.schedules.files.cleanup"),
             "The file-cleanup schedule was not disabled for this test"
         )
+    }
+
+    /**
+     * The components that only do their work if Spring created them. Every one of them is unit-tested by
+     * direct construction, which passes whether or not the bean exists — so registration is the half no
+     * other test can see, and the half whose failure is silent. An inert
+     * [RunConfigurationListMigrationRunner] leaves persisted data in a shape the mapped type cannot read
+     * while the whole suite stays green; an inert [DeclaredIndexCreator] silently returns the upload
+     * duplicate-check to a collection scan.
+     */
+    @Test
+    fun theComponentsThatOnlyWorkIfSpringCreatedThemAreWired() {
+        Assertions.assertNotNull(context.getBean(RunConfigurationListMigration::class.java))
+        Assertions.assertNotNull(context.getBean(RunConfigurationListMigrationRunner::class.java))
+        Assertions.assertNotNull(context.getBean(MigrationStore::class.java))
+        Assertions.assertNotNull(context.getBean(DeclaredIndexCreator::class.java))
+        Assertions.assertNotNull(context.getBean(IndexStore::class.java))
+    }
+
+    /**
+     * Both deferred jobs must be triggered by `ApplicationReadyEvent` and nothing earlier. Asserted on the
+     * beans Spring actually holds, rather than on the classes, because the point is that the *registered*
+     * listeners are the deferred ones: running either during context refresh makes an unreachable database
+     * cancel the refresh, which is what happened once already.
+     */
+    @Test
+    fun theDeferredJobsRunOnlyOnceTheApplicationIsReady() {
+        val deferred = listOf(
+            context.getBean(RunConfigurationListMigrationRunner::class.java),
+            context.getBean(DeclaredIndexCreator::class.java)
+        )
+        for (bean in deferred) {
+            val listeners = bean.javaClass.methods.filter { it.isAnnotationPresent(EventListener::class.java) }
+            Assertions.assertEquals(
+                1, listeners.size,
+                "${bean.javaClass.simpleName} must have exactly one event listener, found: " +
+                        listeners.map { it.name }
+            )
+            Assertions.assertEquals(
+                listOf(ApplicationReadyEvent::class.java.name),
+                listeners.single().getAnnotation(EventListener::class.java).value.map { it.java.name },
+                "${bean.javaClass.simpleName} must defer its work to ApplicationReadyEvent"
+            )
+        }
     }
 }

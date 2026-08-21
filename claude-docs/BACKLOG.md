@@ -39,6 +39,43 @@ paths-scoped `.claude/rules/build-layout.md`. `.claude/rules/` **does** appear i
 (2.1.234) and a `paths` frontmatter key is referenced, but scoped loading was **never verified end to end**
 here. If it cannot be confirmed, use `claude-docs/BUILD-LAYOUT.md` with a pointer instead — guaranteed to
 work, just not auto-loaded — and keep the two one-liners in root either way.
+## 2026-08-17 — startup / network performance (`claude-perf-network-startup`)
+
+**B30 — `If-None-Match` for the Forge manifest.** After the conditional-GET work, four of twelve
+manifests answer `304` to `If-Modified-Since` (Mojang 206,986 B, fabric-intermediaries 56,270 B,
+fabric-loader 9,381 B, fabric-installer 2,516 B). `files.minecraftforge.net` **ignores**
+`If-Modified-Since` but does honour `If-None-Match` against its weak nginx ETag — verified by hand,
+`304/0` — which is another **121,492 B**, i.e. 57 % of the 213,885 B still transferred per startup.
+Needs somewhere to persist an ETag per manifest (a sidecar file beside each one, or a property),
+kept in sync with the manifest it describes; a stale pairing suppresses a real update.
+*Waited because:* **measured, it buys ~0 ms of startup.** The twelve checks run concurrently, so
+wall-clock is the slowest one, and that is LegacyFabric at ~330 ms for **498 bytes** — pure latency.
+Forge finishes in ~234 ms, below the gate, so making it free does not move the batch. It only starts
+to matter below roughly 4 Mbit/s, where 121,492 B (~972 kbit) overtakes the ~330 ms gate. One host
+only: NeoForge and LegacyFabric publish no ETag at all, and Quilt's non-standard
+`unverified:<sha>` value is not honoured (tested, still `200`). Adding persistent state to the code
+path that was just simplified, for one host and no wall-clock gain, is the wrong ratio — but the
+bandwidth is real on a metered connection, so it is deferred rather than rejected.
+
+**B31 — take the manifest refresh off the blocking startup path.** This is the *larger* win B30 is
+not. Measured after the conditional-GET work: the twelve checks still cost **~392 ms median**
+(3 runs; 601 ms before conditional requests) of blocking startup, behind the splash screen at 20 %
+— `ServerPackCreator.kt:228` → `ApiWrapper.stageTwo()` → `versionMeta` → `VersionMeta.init` →
+`checkManifests()`. It is dominated by one slow, niche host: three LegacyFabric checks at ~330 /
+~260 / ~249 ms for 15 KB combined. Since `ApiWrapper.setup()` already seeds every manifest from the
+jar, SPC has working data *before* any request is made, so refreshing in the background would take
+this off the startup path entirely — ~392 ms → ~0, and it makes the offline launch instant instead
+of timeout-bound. *Waited because:* it changes `VersionMeta`'s construction contract. Today
+callers may assume the metas hold refreshed data the moment the constructor returns; the grinder and
+the web backend's version schedule both need checking against that before the guarantee is weakened.
+Not a drive-by.
+
+**B32 — `hasteBinPreChecks` reads a whole file to measure its length.**
+`WebUtilities.kt:130-137` calls `fileToCheck.readText().length < 400_000` *after* `fileToCheck.size()`
+is already known, materialising up to 10 MB as a String (≈20 MB of `char`) only to count it. Character
+count is not byte count, so it is not strictly redundant — a streaming count, or a bound derived from
+`size()`, gives the same answer without the allocation. *Waited because:* cold path. It runs only when
+a user explicitly uploads a log to HasteBin, once, and the allocation is short-lived.
 
 ## 2026-08-04 — CI / dind (`claude-ci-qodana-jbr-cache`, `claude-ci-audit-fixes`)
 

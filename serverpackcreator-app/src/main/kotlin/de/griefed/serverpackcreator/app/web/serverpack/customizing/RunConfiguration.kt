@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.app.web.serverpack.customizing
 
 import org.springframework.data.annotation.PersistenceCreator
-import org.springframework.data.mongodb.core.mapping.DBRef
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.data.mongodb.core.mapping.FieldType
 import org.springframework.data.mongodb.core.mapping.MongoId
@@ -35,22 +34,28 @@ class RunConfiguration() {
     var modloader: String = ""
     var modloaderVersion: String = ""
 
-    @DBRef
-    var startArgs: MutableList<StartArgument> = mutableListOf()
+    /**
+     * The JVM arguments a server started from this configuration runs with.
+     *
+     * Plain strings, embedded in this document. They were `@DBRef`s to a `StartArgument` collection
+     * whose documents held nothing but their own `@MongoId` — so resolving one returned the string it
+     * was already keyed by, at the cost of a join. Same for the two lists below.
+     */
+    var startArgs: MutableList<String> = mutableListOf()
 
-    @DBRef
-    var clientMods: MutableList<ClientMod> = mutableListOf()
+    /** The clientside-only mods excluded from server packs built with this configuration. */
+    var clientMods: MutableList<String> = mutableListOf()
 
-    @DBRef
-    var whitelistedMods: MutableList<WhitelistedMod> = mutableListOf()
+    /** The mods kept regardless of a clientside match. */
+    var whitelistedMods: MutableList<String> = mutableListOf()
 
     constructor(
         minecraftVersion: String,
         modloader: String,
         modloaderVersion: String,
-        startArgs: MutableList<StartArgument>,
-        clientMods: MutableList<ClientMod>,
-        whitelistedMods: MutableList<WhitelistedMod>
+        startArgs: MutableList<String>,
+        clientMods: MutableList<String>,
+        whitelistedMods: MutableList<String>
     ) : this() {
         this.minecraftVersion = minecraftVersion
         this.modloader = modloader
@@ -67,9 +72,9 @@ class RunConfiguration() {
         minecraftVersion: String,
         modloader: String,
         modloaderVersion: String,
-        startArgs: MutableList<StartArgument>,
-        clientMods: MutableList<ClientMod>,
-        whitelistedMods: MutableList<WhitelistedMod>
+        startArgs: MutableList<String>,
+        clientMods: MutableList<String>,
+        whitelistedMods: MutableList<String>
     ) : this(minecraftVersion,modloader,modloaderVersion,startArgs,clientMods,whitelistedMods) {
         this.id = id
     }

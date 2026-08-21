@@ -159,9 +159,9 @@ export default defineComponent({
       this.minecraftVersion = runConfig.minecraftVersion
       this.modloader = runConfig.modloader
       this.modloaderVersion = runConfig.modloaderVersion
-      this.startArgs = runConfig.startArgs.map((entry: { argument: string }) => entry.argument)
-      this.clientMods = runConfig.clientMods.map((entry: { mod: string }) => entry.mod)
-      this.whitelistedMods = runConfig.whitelistedMods.map((entry: { mod: string }) => entry.mod)
+      this.startArgs = runConfig.startArgs
+      this.clientMods = runConfig.clientMods
+      this.whitelistedMods = runConfig.whitelistedMods
       this.visible = false;
       this.showSimulatedReturnData = true;
     }).catch(error => {
