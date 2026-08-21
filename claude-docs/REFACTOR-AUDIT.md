@@ -2409,3 +2409,90 @@ and a documented rule is acted on later by someone with less context.
   iteration's scope.** Module boundaries, the plugin-facing API and the characterization-test obligation
   are all untouched; the only executable change in nine commits is which classpath a Gradle plugin sits
   on, and the full suite covers that.
+
+---
+
+# Audit — context/documentation commits, iteration 10 (2026-08-21)
+
+**Scope:** `52a192c13^..HEAD` — the mantra addition, the `.claude/rules` migration, the gitignore
+rules, and the BUILD.md CI pointers. All four are documentation or build-hygiene; nothing executable
+was touched, so the characterization-test, module-boundary and plugin-API rules have nothing to bite on.
+
+## HIGH
+
+**H1 — `8dd6af0e0` states a context saving it never verified, and a known open bug would nullify it.**
+`CLAUDE.md`, `.claude/rules/build-layout.md`, `.claude/rules/ci-workflows.md`.
+
+The commit claims "~10,051 → ~6,810 est. tokens resident per session". That number is a **character
+count of files on disk divided by four**. It is not a measurement of what actually loads. The whole
+value of the change rests on `paths:` frontmatter causing a rule file to load only when a matching file
+is touched — and that was asserted from a tool description, never checked against Claude Code's
+behaviour or documentation.
+
+Checking it now:
+[anthropics/claude-code#16299](https://github.com/anthropics/claude-code/issues/16299) —
+*"Path-scoped rules in `.claude/rules/` load into context globally regardless of `paths:` frontmatter"* —
+is **open**, reported 2026-01-05 against 2.0.76, labelled `bug` / `area:core` / `has repro` /
+`perf:memory`, with no maintainer response and no known workaround. If that regression is still live on
+2.1.239, the migration saved **nothing**: the text still loads every session, from a different file,
+1,798 characters larger than before.
+
+This is precisely the rule the conventions already state — *"what only a real runtime can answer, ask a
+real runtime"* — applied to a claim that looked arithmetic and therefore safe. A char count answers
+"how big is this file", never "does this load".
+
+**The correctness risk is smaller than the accounting risk, and worth stating separately.** The two
+known bugs bracket the outcome rather than straddling it: #16299 makes path-scoped rules load
+*globally* (benign here — the landmines stay always-on, we just gain nothing), and
+[#22170](https://github.com/anthropics/claude-code/issues/22170) makes them load *never*, but only for
+`~/.claude/rules/`; ours are project-level, which is that issue's documented workaround. Neither
+failure mode silently drops project rules. So the landmines are not at risk of vanishing — only the
+saving is at risk of being fictional.
+
+Resolvable only outside this session: `/memory` in a **fresh** session lists what actually loaded.
+This session cannot answer it — the rule files were created mid-session, so its context snapshot
+predates them.
+
+## MEDIUM
+
+**M1 — `8dd6af0e0` carries an unrelated whitespace repair.** The migration touches `CLAUDE.md` and the
+two new rule files; it also dedents two lines of `serverpackcreator-api/CLAUDE.md`, which has nothing
+to do with lazy loading. One concern per commit says these are two commits. **Mitigating and recorded
+as such:** Griefed explicitly asked for the three working-tree items to be committed together, and the
+message discloses the dedent in its own paragraph. Noted so the bundling is not read later as an
+accident.
+
+## LOW
+
+**L1 — `882f96725` bundles a correction with an addition.** Adding BUILD.md's two pointers and
+correcting the "four issue-driven `clientside-*` workflows" claim in
+`.claude/rules/ci-workflows.md` are separate concerns in separate files. Disclosed in the message; the
+correction was discovered *while* verifying the addition, which is the honest reason they travelled
+together.
+
+**L2 — the inaccurate workflow claim still survives in one place.**
+`claude-docs/REFACTOR-LOG.md` still says "the four issue-driven `clientside-*` workflows". Verified
+against the triggers: three are `issues:`-driven and `clientside-report-reusable.yml` is a
+`workflow_call:` helper the others invoke. `882f96725` fixed BUILD.md and the rule file but not the log.
+The claim originated in the root `CLAUDE.md` and propagated to three files before anyone checked it —
+which is the "cite names, not snapshots" defect class in its copy-paste form.
+
+## Not findings — verified clean, do not re-litigate
+
+- **`f32c820c8`** is correct and well-scoped. Verified with `git check-ignore -v`: the two rule files
+  match no ignore rule, `.claude/settings.local.json` matches at `.gitignore:465`. The comment stating
+  that `.claude/rules/` and `.claude/skills/` are checked in *on purpose* is load-bearing — without it
+  the obvious tidy-up is `.claude/` wholesale, which would un-share the landmines.
+- **Every glob in both rule files points at something real.** `.releaserc.yml` exists; `buildSrc` holds
+  16 matching files, `.forgejo/workflows` 8, and there are 8 `build.gradle.kts` plus the catalog. Both
+  frontmatter blocks parse as YAML with `description` + `paths`.
+- **Nothing was lost in the migration.** The three files total 1,798 characters *more* than the original
+  single file, that being frontmatter plus the pointers left at both cut sites; heading count is 12
+  before and after.
+- **The api-docs note was deliberately not migrated.** It was glued to the tail of the CI bullet but is
+  about springdoc regeneration, so CI-scoped paths would have stopped it loading when someone edits a
+  controller — which is how it drifted to 25 of 44 endpoints before. It stays resident.
+- **`52a192c13` grew an always-loaded file by ~1.8k chars while its size was the session's problem**,
+  but this is not a finding: it was explicitly requested, and `8dd6af0e0` names it as one of the two
+  additions that tripped the threshold rather than pretending otherwise.
+- **Root `CLAUDE.md` is 27,243 chars**, comfortably under the ~40,000 floor, whatever H1 resolves to.

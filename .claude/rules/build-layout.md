@@ -14,6 +14,16 @@ Moved out of the root `CLAUDE.md` on 2026-08-21: this only matters when editing 
 was ~3.2k tokens of every session. Contributor-facing companion: `BUILD.md` (the "what"); this file is
 the "do not tidy that away, here is what it cost last time".
 
+> **UNVERIFIED: whether this file's `paths:` scoping actually saves anything.** The move was justified
+> by a character count on disk, which answers "how big is this file" and not "does this load".
+> [claude-code#16299](https://github.com/anthropics/claude-code/issues/16299) — path-scoped rules in
+> `.claude/rules/` loading globally regardless of `paths:` — is **open**, with a repro and no maintainer
+> response. If that is still live, this file loads every session anyway and the split bought nothing.
+> **Run `/memory` in a fresh session to settle it.** The correctness risk is the smaller one: the two
+> known bugs make path-scoped rules load *globally* (#16299) or *never* but only under `~/.claude/rules/`
+> ([#22170](https://github.com/anthropics/claude-code/issues/22170)) — these are project-level, which is
+> that issue's documented workaround, so the landmines below are not at risk of silently vanishing.
+
 - **Repositories are declared once**, in `settings.gradle.kts` under `dependencyResolutionManagement`,
   with `RepositoriesMode.FAIL_ON_PROJECT_REPOS` — a project-level `repositories { }` is a build
   failure, not a silent override. They were previously in 13 places. `buildSrc/build.gradle.kts` keeps
