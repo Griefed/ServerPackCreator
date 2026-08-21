@@ -56,7 +56,6 @@ Nothing in `.forgejo/workflows` uses the automatic job token.
 | `SPCUPLOAD_KEY` | OpenSSH **private** key, **no passphrase** — the action cannot answer a prompt | devbuild |
 | `SPCUPLOAD_TARGET` | remote directory the `continuous` folder is copied into | devbuild |
 | `GIT_USER` / `GIT_MAIL` | committer identity for the automated commits (semantic-release's `RELEASE:` + changelog, and the sponsors/contributors refresh). Not credentials, but passed via `env:` rather than interpolated into a command, like every other value | release-generate, update-readme |
-| `QODANA_TOKEN` | Qodana Cloud project token — qodana.cloud → project → Settings | qodana |
 | `WEBHOOK_URL` | Discord webhook for the Qodana result post. **Optional**: the step exits cleanly when unset | qodana |
 | `VT_API_KEY` | VirusTotal API key — profile → API key | release-build |
 | `INSTALL4J_LICENSE` | install4j license key, used with install4j `12.0.2` to build the three installers | release-build, devbuild |
@@ -70,7 +69,7 @@ Useful when you want a partial setup working rather than all of it at once.
 | Workflow | Needs | Degrades to |
 |---|---|---|
 | `test.yml`, `docker-test.yml` | **nothing** | — |
-| `qodana.yml` | `QODANA_TOKEN`; `WEBHOOK_URL` optional | no Cloud upload without the token; silently skips the Discord post without the webhook |
+| `qodana.yml` | **nothing required**; `WEBHOOK_URL` optional | silently skips the Discord post without the webhook |
 | `release-generate.yml` | `FJ_ACTOR`, `FJ_TOKEN`, `GIT_USER`, `GIT_MAIL` | nothing releases — this is the workflow that cuts the version and pushes the tag |
 | `release-build.yml` | everything else | see below — several jobs fail independently |
 | `devbuild.yml` | `FJ_*`, `GH_TOKEN`, `INSTALL4J_LICENSE`, `SPCUPLOAD_*` | no nightly `continuous` build |
@@ -109,6 +108,13 @@ to the retired `.gitlab-ci.yml`, which ran `docker login ghcr.io -u "$DOCKERHUB_
 image jobs, so it is pre-existing behaviour rather than a migration artefact. It works only because
 the Docker Hub and GitHub account names coincide. If they ever diverge, ghcr pushes break and the fix
 is a separate secret for the ghcr namespace.
+
+**Qodana takes no token, and that is not an oversight.** `QODANA_TOKEN` is required only for the paid
+linters and for uploading to Qodana Cloud; it is optional for the Community linters, and `qodana.yml`
+runs `qodana-jvm-community`. There is no free Cloud tier and this project does not subscribe, so the
+job is self-contained: it counts problems out of the SARIF it produced, attaches the HTML report as a
+workflow artifact, and has Discord link the run. An empty token env would imply a Cloud setup that
+does not exist, so there isn't one.
 
 **`FJ_TOKEN` must be able to push to `main`, `alpha` and `beta`.** semantic-release pushes the
 changelog commit and the tag itself. Under branch protection the token's account has to be an allowed
