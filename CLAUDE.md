@@ -123,6 +123,40 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
     plugin **marker** (`<id>:<id>.gradle.plugin:<version>`) that `buildSrc/build.gradle.kts` puts on
     its own compile classpath via `libs.plugins.x.marker()`.
 
+    **LANDMINE — the marker route drags the plugin's jar onto buildSrc's *compile* classpath, so a
+    plugin built with a newer Kotlin than Gradle embeds breaks every task in the build.** `Bump
+    install4j to 13` moved `install4j-gradle` to 13.1, whose jar carries Kotlin **2.3.0** metadata.
+    Precompiled script plugins compile with **Gradle's embedded** Kotlin — 2.0.x on the wrapper's
+    8.14.4 — and `:buildSrc:compilePluginsBlocks` refuses to read it: *"binary version of its metadata
+    is 2.3.0, expected version is 2.0.0"*. `./gradlew help` fails, so nothing in the build runs at all.
+    The catalog's `kotlin` version cannot rescue this: it governs how the **modules** compile, never
+    how build logic does.
+
+    The fix was neither downgrading the plugin nor upgrading Gradle. install4j is applied by the
+    **root build script**, which is a real one and therefore takes `alias(...)` — so the marker came
+    off buildSrc's classpath and the incompatible jar is never compiled against. Measured: `./gradlew
+    help` failed in 3 s before and succeeded in 5 s after, with `install4j` and `media` both still
+    registered.
+
+    So the rule is narrower than "markers everywhere", but be careful how it is narrowed: **a plugin
+    needs the marker when buildSrc needs it at compile time**, which happens two ways — a *precompiled
+    script plugin* applies it by versionless `id(...)`, **or** buildSrc's own Kotlin source compiles
+    against its API. install4j was neither, which is why `alias` works there.
+
+    Both routes are in use. Applied by a precompiled script plugin: `kotlin("jvm")` in
+    `kotlin-conventions`, `kotlin("plugin.spring"/"allopen"/"jpa")` in `spring-conventions`, plus
+    dokka, dokka-javadoc, kover and the siouan frontend plugin. Needed by *source*:
+    `licenseReport` — `buildSrc/src/main/kotlin/de/griefed/common/gradle/LicenseAgreementRenderer.kt`
+    implements jk1's `ReportRenderer` against `ProjectData`/`ModuleData`.
+
+    **Do not "tidy" `licenseReport` onto `alias` — it was tried and it fails.** It looks like the
+    identical case (a versionless `id(...)` in the root script, one metadata bump from the same total
+    failure), and a grep of every `id(...)` and `kotlin(...)` call in the precompiled script plugins
+    supports that reading. It is wrong: dropping the marker fails `:buildSrc:compileKotlin` with
+    ~10 `Unresolved reference: jk1` / `ReportRenderer` / `ProjectData` errors, because the renderer is
+    ordinary buildSrc source, not a plugin application. Checking applications alone under-reports what
+    buildSrc's classpath is for.
+
     Either route reads this one file, so a plugin's id and version are declared exactly once. Before
     2026-08-16 buildSrc depended on plugin *implementation* artifacts under `[libraries]`
     (`kotlinGradlePlugin`, `dokka`, …) while the convention plugins named the plugin *id* — two
@@ -239,6 +273,29 @@ evidence consulted occasionally, not context every session needs.
 ---
 
 ## Conventions
+
+- **"Make it work, make it right, make it fast." — Kent Beck.** A more detailed variation often cited is
+  *"First, make it. Then, make it work. Lastly, if you can, make it pretty."* The sequence exists to head
+  off perfectionism and analysis paralysis: functionality comes before form, and the core logic has to be
+  solid before anyone spends effort on readability or speed.
+  - **Avoiding premature optimization.** Knuth's "root of all evil" — you cannot predict bottlenecks
+    without a working system to measure. This project has the receipts: B30 was a real 121,492-byte
+    saving per startup that bought **~0 ms**, because the twelve manifest checks run concurrently and the
+    slowest one gated the batch. Measured, it was the wrong thing to optimise; the right one (B31, taking
+    the refresh off the startup path) was ~392 ms and only visible once something was running.
+  - **Managing technical debt.** Shortcuts may be taken first, but the bargain is that you come back and
+    polish. Many developers argue "fix it later" is a myth, and that is the risk this convention set
+    exists to contain — which is why `claude-docs/BACKLOG.md` demands a *stated reason* per deferral and
+    enough context to pick it up cold, rather than a wish-list.
+  - **Iterative improvement.** A messy first draft, then refinement.
+
+  **How this squares with TDD and "no shortcuts", which it looks like it contradicts:** the ordering is
+  about which *concern* you attack first, not permission to skip pinning. "Make it work" is what the
+  characterization test asserts; "make it right" and "make it fast" are the steps the test then protects.
+  Read the other way round it licenses exactly the failure this file already documents at length — the
+  performance branch whose tests were written by the same pass that changed the code and therefore passed
+  by construction. Draft messily, but pin before you refine, and never let "make it fast" arrive before
+  there is something whose behaviour is known.
 
 - **Cite names, not snapshots.** Three consecutive audits of the performance branches found the same
   defect class and nothing else: a fact quoted in prose going stale the moment the code moved — 54 commit
@@ -398,7 +455,7 @@ evidence consulted occasionally, not context every session needs.
 
 | Module         | Tests         | Notes                                                                                |
 |----------------|---------------|--------------------------------------------------------------------------------------|
-| api            | 343 (1 skip)  | Phase 1 **complete**. Guard style worth knowing before adding one: manifest and generation work is pinned by *request*, *read* and *open counts* against loopback servers and injected openers, never by wall-clock; shipped shell templates are pinned by **executing** them. |
+| api            | 354 (1 skip)  | Phase 1 **complete**. Counts in this column are re-derivable from `<module>/build/test-results/test/*.xml` after a full build — confirm the files came from that run before trusting a total. Guard style worth knowing before adding one: manifest and generation work is pinned by *request*, *read* and *open counts* against loopback servers and injected openers, never by wall-clock; shipped shell templates are pinned by **executing** them. |
 | clientside     | 88            | Extracted from `-app`; `BootVerifier` split + `packPostProcessor` hook; selection (MC-support gate) + setup-abort classification pinned; `MetadataScanner` dispatches through `ModScanner.scannerFor` |
 | app            | 149           | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay. GUI hot paths are pinned by *call counts* and set identity, never wall-clock; the web module's persistence declarations are pinned against Spring Data's own machinery (`PartTree`, `MongoMappingContext`, `MongoPersistentEntityIndexResolver`) so none of them needs a database. |
 | plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |

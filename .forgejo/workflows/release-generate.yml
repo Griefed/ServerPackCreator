@@ -60,7 +60,12 @@ jobs:
           set -eu
           git remote set-url origin "https://git.griefed.de/Griefed/ServerPackCreator.git"
           auth=$(printf '%s:%s' "$FORGEJO_ACTOR" "$FORGEJO_TOKEN" | base64 | tr -d '\n')
-          git config --global "http.https://git.griefed.de/.extraheader" "Authorization: Basic ${auth}"
+          # --local, not --global: this writes the credential to the checkout's own .git/config, which
+          # is all semantic-release needs (it runs with this repository as its working directory).
+          # --global would put it in the runner's home config, readable by every later step in the job
+          # and applying to every repository on that runner. update-readme.yml gets away with `git -c`,
+          # which touches no file at all, but that cannot reach a git process semantic-release spawns.
+          git config --local "http.https://git.griefed.de/.extraheader" "Authorization: Basic ${auth}"
           git config user.name  "$GIT_USER"
           git config user.email "$GIT_MAIL"
 
