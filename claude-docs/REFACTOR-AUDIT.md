@@ -2421,6 +2421,8 @@ was touched, so the characterization-test, module-boundary and plugin-API rules 
 ## HIGH
 
 **H1 — `8dd6af0e0` states a context saving it never verified, and a known open bug would nullify it.**
+**→ RESOLVED, see iteration 10a below: the mechanism was tested and works. The finding stood for about
+an hour; the reasoning below is kept because the *method* it argues for is what settled it.**
 `CLAUDE.md`, `.claude/rules/build-layout.md`, `.claude/rules/ci-workflows.md`.
 
 The commit claims "~10,051 → ~6,810 est. tokens resident per session". That number is a **character
@@ -2496,3 +2498,42 @@ which is the "cite names, not snapshots" defect class in its copy-paste form.
   but this is not a finding: it was explicitly requested, and `8dd6af0e0` names it as one of the two
   additions that tripped the threshold rather than pretending otherwise.
 - **Root `CLAUDE.md` is 27,243 chars**, comfortably under the ~40,000 floor, whatever H1 resolves to.
+
+
+---
+
+# Audit — iteration 10a: H1 resolved (2026-08-21)
+
+**H1 is closed, in favour of the migration.** `paths:` scoping works on 2.1.239.
+
+**The test.** Reading `gradle/libs.versions.toml` — which matches `build-layout.md`'s `gradle/*.toml`
+glob — caused Claude Code to inject that rule file's entire contents into the session mid-turn, having
+demonstrably not been present before. One file read, one observation, conclusive.
+
+That rules out **both** known failure modes at once, which is what no amount of reading could do:
+
+| Failure mode | Would look like | Observed |
+|---|---|---|
+| [#16299](https://github.com/anthropics/claude-code/issues/16299) loads globally | present before touching anything | absent before the read |
+| [#22170](https://github.com/anthropics/claude-code/issues/22170) never loads | absent after touching a match | present immediately after |
+
+So the ~3.6k est. tokens per session is real, and the landmines do reach a session that edits a build
+file. The `docs: load the build and CI landmines only when they apply` claim was correct; what was wrong
+was calling a char count a measurement.
+
+**The part worth keeping — the verification I prescribed was the wrong one.** H1 said to run `/memory`
+in a fresh session. That test cannot distinguish success from failure: a correctly-scoped rule is
+*supposed* to be absent from a clean session, so absence reads identically to broken. Griefed ran it,
+reported "I don't see them", and that was the **pass** condition being mistaken for the fail condition.
+The discriminating test is to touch a matching file *first*, then look — which is now written at the top
+of both rule files so the next person does not repeat the round trip.
+
+Two lessons, both about the shape of the error rather than the fact:
+
+- **"Ask a real runtime" has to name a test whose outcomes differ.** Iteration 10 correctly refused a
+  disk-based char count as evidence and then prescribed an observation that is identical under both
+  hypotheses. Demanding verification is only half the discipline; the other half is checking the test
+  can fail.
+- **The absence of a signal was nearly read as a defect.** The same trap the check-1 rules in `/doctor`
+  describe for passive components — "a zero is the absence of logging, not evidence of disuse" — applied
+  here to a memory file, and the audit walked into it one iteration after writing about it.

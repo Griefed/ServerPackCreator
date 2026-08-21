@@ -11,15 +11,14 @@ paths:
 Moved out of the root `CLAUDE.md` on 2026-08-21 so it loads when you touch a workflow rather than in
 every session. Operator-facing secret detail lives in `claude-docs/CI-SECRETS.md`.
 
-> **UNVERIFIED: whether this file's `paths:` scoping actually saves anything.** The move was justified
-> by a character count on disk, which answers "how big is this file" and not "does this load".
-> [claude-code#16299](https://github.com/anthropics/claude-code/issues/16299) — path-scoped rules in
-> `.claude/rules/` loading globally regardless of `paths:` — is **open**, with a repro and no maintainer
-> response. If that is still live, this file loads every session anyway and the split bought nothing.
-> **Run `/memory` in a fresh session to settle it.** The correctness risk is the smaller one: the two
-> known bugs make path-scoped rules load *globally* (#16299) or *never* but only under `~/.claude/rules/`
-> ([#22170](https://github.com/anthropics/claude-code/issues/22170)) — these are project-level, which is
-> that issue's documented workaround, so the landmines below are not at risk of silently vanishing.
+> **The `paths:` mechanism is verified** — reading a file matching a rule's globs injects that rule into
+> context mid-session, confirmed 2026-08-21 against `.claude/rules/build-layout.md` and
+> `gradle/libs.versions.toml`. This file's own globs were not exercised directly, but they are the same
+> mechanism.
+>
+> **A bare `/memory` in a clean session proves nothing about it**: a correctly-scoped rule is *supposed*
+> to be absent until a matching file is touched, so absence and breakage look identical. Touch
+> `.forgejo/workflows/…` first, then look.
 
 **CI lives in `.forgejo/workflows`. Forgejo (`git.griefed.de`) is the canonical CI and the origin of
 every release.** `.gitlab-ci.yml` is gone. **LANDMINE:** `.forgejo/workflows` is *all-or-nothing* — once
