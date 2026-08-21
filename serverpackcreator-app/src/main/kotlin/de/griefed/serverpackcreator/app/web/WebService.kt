@@ -75,7 +75,7 @@ class WebService(private val api: ApiWrapper) {
          * The `--spring.config.location` argument: the eight property-file locations Spring reads, in
          * the order it reads them. **Later locations win**, so the two `overrides.properties` entries
          * come last on purpose — that is the file the docker image's `init-spc-config` script composes
-         * `SPC_DATABASE_*` into, and therefore where `spring.data.mongodb.uri` arrives from in a
+         * `SPC_DATABASE_*` into, and therefore where `spring.mongodb.uri` arrives from in a
          * container deployment.
          *
          * Extracted from [start] for the same reason [springArguments] was: `start` hands the result

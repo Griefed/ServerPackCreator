@@ -23,6 +23,7 @@ import Translations
 import com.electronwill.nightconfig.toml.TomlParser
 import de.comahe.i18n4k.Locale
 import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.api.settings.WebserviceConfig
 import de.griefed.serverpackcreator.api.utilities.common.filteredWalk
 import de.griefed.serverpackcreator.api.utilities.common.readText
 import net.lingala.zip4j.ZipFile
@@ -457,6 +458,38 @@ class MigrationManager(
             } catch (ex: IOException) {
                 log.error(
                     "Error reading/writing log4j2.xml.", ex
+                )
+            }
+        }
+
+        /**
+         * Reports the database-URI property rename that Spring Boot 4 forced, and normalises the stored
+         * value onto the live key.
+         *
+         * Spring Boot 4.0.0 retired `spring.data.mongodb.uri` in favour of `spring.mongodb.uri`. Reading
+         * [WebserviceConfig.databaseUri] performs the carry-over by itself, on every build type — this
+         * method exists for the part that read cannot do, which is telling the operator. Anything *they*
+         * own that still writes the old key — their own `overrides.properties`, a container environment, a
+         * deployment script — is silently ignored by Spring, and only a message can point them at it.
+         */
+        private fun NinePointZeroPointZero() {
+            val changes: MutableList<String> = ArrayList(1)
+            if (apiProperties.webserviceConfig.hasLegacyDatabaseUri) {
+                // Reading is what carries the value over to the live key; the value itself is not logged,
+                // because it routinely contains a password.
+                apiProperties.webserviceConfig.databaseUri
+                changes.add(
+                    Translations.migrationmanager_migration_ninepointzeropointzero_databaseuri(
+                        WebserviceConfig.LEGACY_DATABASE_URI_KEY, WebserviceConfig.DATABASE_URI_KEY
+                    ).toString()
+                )
+            }
+
+            if (changes.isNotEmpty()) {
+                migrationMessages.add(
+                    MigrationMessage(
+                        previous, current, changes
+                    )
                 )
             }
         }

@@ -23,13 +23,13 @@ if [[ -n ${SPC_SCHEDULE_VERSIONS_REFRESH} ]];then
 fi
 
 # Host, port and database are the required trio; username and password are optional, because an
-# auth-less MongoDB is a legitimate setup. Spring Boot hands any non-null spring.data.mongodb.uri
+# auth-less MongoDB is a legitimate setup. Spring Boot hands any non-null spring.mongodb.uri
 # straight to com.mongodb.ConnectionString, which rejects anything not prefixed mongodb:// - so a
 # half-built URI is a hard startup failure, never a fallback. When the trio is incomplete we write
 # nothing at all and let Spring's own default apply: a missing property still starts, a malformed
 # one cannot.
 if [[ -z ${SPC_DATABASE_HOST} ]] || [[ -z ${SPC_DATABASE_PORT} ]] || [[ -z ${SPC_DATABASE_DB} ]];then
-  echo "SPC_DATABASE_HOST, _PORT and _DB are required to build a database-URI - leaving spring.data.mongodb.uri unset."
+  echo "SPC_DATABASE_HOST, _PORT and _DB are required to build a database-URI - leaving spring.mongodb.uri unset."
 else
   if [[ -n ${SPC_DATABASE_USERNAME} ]] && [[ -n ${SPC_DATABASE_PASSWORD} ]];then
     credentials="${SPC_DATABASE_USERNAME}\:${SPC_DATABASE_PASSWORD}@"
@@ -37,8 +37,11 @@ else
     echo "No SPC_DATABASE_USERNAME/_PASSWORD given - building an authentication-less database-URI."
     credentials=""
   fi
-  echo "Overriding spring.data.mongodb.uri..."
-  echo "spring.data.mongodb.uri=mongodb\://${credentials}${SPC_DATABASE_HOST}\:${SPC_DATABASE_PORT}/${SPC_DATABASE_DB}" >> ${OVERRIDES}
+  # spring.mongodb.uri, NOT spring.data.mongodb.uri: Spring Boot 4.0.0 retired the latter
+  # (deprecation level "error"), so writing it binds nothing and Boot silently uses its own default
+  # mongodb://localhost/test -- every variable above would be ignored.
+  echo "Overriding spring.mongodb.uri..."
+  echo "spring.mongodb.uri=mongodb\://${credentials}${SPC_DATABASE_HOST}\:${SPC_DATABASE_PORT}/${SPC_DATABASE_DB}" >> ${OVERRIDES}
 fi
 
 if [[ -n ${SPC_MAX_UPLOAD_SIZE} ]];then

@@ -1,7 +1,8 @@
 # Investigation — "MongoDB container not reachable, SPC connects to localhost"
 
-**Status:** root cause of the *reported symptom* still unconfirmed (needs one line from the reporter);
-five independent defects found along the way, all verified.
+**Status: ROOT CAUSE FOUND (2026-08-21) — see "Answered" below.** The property was absent from
+Spring's point of view because **Spring Boot 4.0.0 retired the key ServerPackCreator was writing.**
+Fixed on `claude-mongo-boot4-property`. Six independent defects were found along the way, all verified.
 **Branch:** `claude-docker-mongo-connectivity`, off `develop` (`4bb403ef1`).
 **Report:** a user's `serverpackcreator` container cannot reach the `serverpackcreatordb` container;
 SPC appears to connect to `localhost`.
@@ -62,7 +63,42 @@ eight config locations.** A malformed value cannot produce it — it fails fast 
 Still needed from them: the `spring.data.mongodb.uri` line out of their container's
 `/app/serverpackcreator/overrides.properties`, and that exception.
 
-## Still open: what makes the property absent entirely
+## Answered: what made the property absent entirely
+
+**`spring.data.mongodb.uri` is not a property Spring Boot 4 binds.** Its metadata in
+`spring-boot-mongodb-4.1.0.jar` carries `deprecation.level = "error"`, `replacement =
+"spring.mongodb.uri"`, `since = "4.0.0"`. The connection properties moved off
+`DataMongoProperties` (`@ConfigurationProperties("spring.data.mongodb")`, which no longer declares a
+`uri` at all) onto `MongoProperties` (`@ConfigurationProperties("spring.mongodb")`). A retired key does
+not warn — nothing binds it — so `MongoProperties.uri` stayed null and the else-branch this document
+already documented took over, producing the literal `localhost`.
+
+That closes the triage table's middle row: `MongoSocketOpenException … localhost:27017` did **not** mean
+the reporter's `overrides.properties` was missing or the s6 service had not run. Their file was almost
+certainly correct. **The name was wrong, everywhere, for everyone.**
+
+Measured with the real bootJar, same URI value, only the key differing:
+
+| key written | resolved hosts | credential |
+|---|---|---|
+| `spring.data.mongodb.uri` | `[localhost:27017]` | `null` |
+| `spring.mongodb.uri` | `[127.0.0.1:27017]` | `MongoCredential{userName='spcuser'…}` |
+
+`127.0.0.1` was configured; `localhost` is Boot's own default — that substitution is the proof. And
+end-to-end: a document seeded into a non-default database `spc_e2e`, with SPC configured through the
+**legacy** key only, came back from `GET /api/v2/runconfigs/all` after the fix. Before it, that query
+went to `localhost/test` and returned `[]`.
+
+**Fixed by** `fix(api): write the database-URI under the key Spring Boot 4 actually reads`:
+`DATABASE_URI_KEY` is now `spring.mongodb.uri`, the old name survives as `LEGACY_DATABASE_URI_KEY` and is
+still *read* as a fallback then re-written under the live key, and `init-spc-config/run` writes the live
+key. Guarded by `DatabaseUriPropertyTest`, whose second test reads Boot's own configuration metadata and
+fails on **any** key we write that Boot has retired — so the next such rename is a build failure rather
+than a redirected production database.
+
+Nothing further is needed from the reporter.
+
+## Superseded: the original "still open" candidates
 
 Nothing found so far explains it, and it is the only path to the reported wording. Candidates not yet
 excluded: the s6 init service not running (older image, overridden entrypoint/command, or a bind mount

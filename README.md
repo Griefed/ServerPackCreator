@@ -30,15 +30,15 @@ test something, or just release a new server pack for the new modpack version.
 The thought "*There must be a way to automate this, or at least make it less tedious...*" was the spark which sent me off
 into the world of programming. And here we are.
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/X7X31GM8DG)
+# **READ BEFORE USE:**
 
-**Disclaimer:**
+**FOR THE LOVE OF GODS, TEST YOUR SERVER PACKS BEFORE YOU SHIP THEM!**
 
-* ServerPackCreator is not a guarantee for working server packs. It helps you create them, but you **must still test them**!
+* ServerPackCreator is **not** a guarantee for working server packs. It helps you create them, but you **must still test them**!
 * You are still expected to be knowledgeable about your modpack, server packs in general, server administration and managing your Java installations. ServerPackCreator is not intended to take all the work off your shoulders!
 * When using alpha, beta or in-dev version of ServerPackCreator, it is advised to make a backup of your ServerPackCreator-directory in your home-directory.
 * Things will break with alpha releases, stuff may break when using beta releases.
-* If you distribute server packs generated with a pre-release (alpha, beta) of ServerPackCreator, you do so at your own risk.
+* If you distribute server packs generated with a pre-release (alpha, beta) of ServerPackCreator, you **do so at your own risk**.
 * I will not be held responsible for errors in your server pack caused by you using a pre-release.
 * I will not be held responsible for errors in your server pack in general. **Test your server packs before you ship them!**
 * **TL;DR:** Don't use test to ship to prod! **Test** before shipping!
@@ -221,7 +221,8 @@ If you want to open your webservice-instance to the public, make sure to properl
     1. Unsure where said home-directory is? Check the logs for `Home directory set to:`! 
 4. Install / setup / provide a MongoDB-database for ServerPackCreator. See [MongoDB Installation Tutorial](https://www.mongodb.com/docs/manual/installation/)
 5. Set the database-properties in the `serverpackcreator.properties` according to your database
-   1. `spring.data.mongodb.uri=`
+   1. `spring.mongodb.uri=`
+       - Named `spring.data.mongodb.uri` before ServerPackCreator moved to Spring Boot 4, which retired that key. An existing file using the old name is still read and upgraded automatically.
        - Example:`mongodb\://<USER>:<PASSWORD>@localhost\:27017/serverpackcreatordb`
        - If the username or password includes the following characters `$ : / ? # [ ] @`, those characters must be converted using percent encoding (https://datatracker.ietf.org/doc/html/rfc3986#section-2.1) : `$ : / ? # [ ] @`
 

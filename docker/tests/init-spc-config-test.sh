@@ -89,11 +89,11 @@ out="$(run_init \
   SPC_DATABASE_USERNAME=spcuser \
   SPC_DATABASE_PASSWORD=spcpass)"
 assert_line "authenticated URI is composed from the env" \
-  'spring.data.mongodb.uri=mongodb\://spcuser\:spcpass@serverpackcreatordb\:27017/serverpackcreatordb' \
+  'spring.mongodb.uri=mongodb\://spcuser\:spcpass@serverpackcreatordb\:27017/serverpackcreatordb' \
   "${out}"
 
 echo "=== Case 2: auth-less Mongo (no username/password) - must still be a parseable URI ==="
-# Spring Boot 4 hands any non-null spring.data.mongodb.uri straight to com.mongodb.ConnectionString,
+# Spring Boot 4 hands any non-null spring.mongodb.uri straight to com.mongodb.ConnectionString,
 # which rejects anything not starting with mongodb:// or mongodb+srv://. A degenerate value is a hard
 # startup failure, so this must produce a valid auth-less URI - or no line at all.
 out="$(run_init \
@@ -101,9 +101,9 @@ out="$(run_init \
   SPC_DATABASE_PORT=27017 \
   SPC_DATABASE_DB=serverpackcreatordb)"
 assert_no_match "no degenerate 'mongodb:' URI is written" \
-  '^spring\.data\.mongodb\.uri=mongodb\\?:$' "${out}"
+  '^spring\.mongodb\.uri=mongodb\\?:$' "${out}"
 assert_line "auth-less URI omits the credentials segment" \
-  'spring.data.mongodb.uri=mongodb\://serverpackcreatordb\:27017/serverpackcreatordb' \
+  'spring.mongodb.uri=mongodb\://serverpackcreatordb\:27017/serverpackcreatordb' \
   "${out}"
 
 echo "=== Case 3: SPC_LOG_LEVEL is expanded, not written literally ==="

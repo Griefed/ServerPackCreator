@@ -57,7 +57,7 @@ internal class WebServiceArgumentsTest {
     /**
      * The config-location argument must always be present, whatever else was passed — without it Spring
      * reads none of ServerPackCreator's property-files, including the docker overrides.properties that
-     * carries spring.data.mongodb.uri.
+     * carries spring.mongodb.uri.
      */
     @Test
     fun theConfigLocationArgumentIsAlwaysAppended() {
@@ -97,10 +97,10 @@ internal class WebServiceArgumentsTest {
      *
      * Order is the whole point: later locations win, so the two `overrides.properties` entries must
      * stay last. That is the file the docker image's `init-spc-config` script composes
-     * `SPC_DATABASE_*` into, so it is where `spring.data.mongodb.uri` comes from in a container. If it
+     * `SPC_DATABASE_*` into, so it is where `spring.mongodb.uri` comes from in a container. If it
      * stopped being last, a value from an earlier file would beat it; if it dropped out entirely, the
      * URI would never be read at all — and per this module's landmine, a missing URI is not a degraded
-     * connection but a hard startup failure.
+     * connection but a silent fall-back to Spring Boot's own `mongodb://localhost/test`.
      */
     @Test
     fun theConfigLocationChainListsAllEightLocationsInOrder(@TempDir tempDir: File) {

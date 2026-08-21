@@ -68,6 +68,9 @@ miglayout = "11.4.3"
 balloontip = "1.2.4.1"
 tipoftheday = "0.6.0"
 springBoot = "4.1.0"
+# https://github.com/springdoc/springdoc-openapi — 3.x is the Spring Boot 4 line (its parent POM is
+# spring-boot-starter-parent 4.1.0). 2.x targets Boot 3 and will not resolve here.
+springdoc = "3.1.0"
 springmockk = "5.0.1"
 
 [libraries]
@@ -128,6 +131,9 @@ springBootStarterDataMongodb = { module = "org.springframework.boot:spring-boot-
 springBootStarterTest = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "springBoot" }
 springBootDevtools = { module = "org.springframework.boot:spring-boot-devtools", version.ref = "springBoot" }
 springmockk = { module = "com.ninja-squad:springmockk", version.ref = "springmockk" }
+# developmentOnly in -app: it exists to regenerate serverpackcreator-help/Writerside/api-docs.yaml
+# from the live controllers, and must not ship swagger-ui in the production jar.
+springdocOpenapiStarterWebmvcUi = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
 
 [plugins]
 
