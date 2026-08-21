@@ -1089,6 +1089,40 @@ deadline B9 fixed only in the container engine, the loader-cache marker not reco
 install, the checked-in test properties still carrying machine-specific absolute paths (M1's other half), `.gitignore`
 hiding new `server_files` resources, and an install failure's console being wiped by the next attempt on that tuple.
 
+## 2026-08-21 — root `CLAUDE.md` back under the large-memory floor (`claude-context-trim`)
+
+Closes B35. Claude Code warns when one loaded memory file exceeds ~5 % of the context window, floor
+~40,000 characters; after four branches merged, root `CLAUDE.md` was **56,078**. Now **33,208** — a 41 %
+reduction, with ~17 % headroom under the floor.
+
+**The API behaviour-change table moved to `claude-docs/API-BEHAVIOUR-CHANGES.md`** (20,218 chars, the
+single largest block at ~5,200 tokens per session). The *policy* stayed in root; only its evidence moved.
+Verified as a move rather than a rewrite: all **24** rows are byte-identical and in the original order.
+It is consulted when writing release notes or answering "will this break an embedder?" — not context a
+session needs up front.
+
+**The refactor-state table's per-test enumerations are gone** (api 1,392 → 307 chars, app 1,456 → 386,
+grinder 1,168 → 484). They listed test class names, which `ls src/test` answers, and they contradicted
+this file's own rule to cite what a guard asserts rather than how many tests exist. Each row now carries
+the durable fact instead — the *guard style* to follow when adding one, which is the part a newcomer
+cannot derive.
+
+Nothing was dropped without checking where it already lived. Every backticked symbol in those rows was
+tested against the owning module's `CLAUDE.md`: the survivors were test-class names (derivable) or facts
+documented better elsewhere — `IncorrectResultSizeDataAccessException` in `ModPackRepository`'s KDoc, and
+the CurseForge crawl's two design-killers as LANDMINE #1 and #2 in the grinder's `source/CLAUDE.md`, in
+more detail than root's summary. Root now points at those instead of paraphrasing them.
+
+**The build-layout section deliberately stayed**, against the original plan. Moving it to a paths-scoped
+`.claude/rules/build-layout.md` would save ~2,900 tokens, but scoped loading was never verified end to
+end here, and the landmines it holds are the expensive kind — the Boot BOM `platform()` trap cost 16 app
+tests once, and the Kotlin/coroutines skew failed silently. The target was met without that gamble, so it
+was not taken. If someone confirms `paths` scoping works, that block is the next ~2,900 tokens.
+
+Also refreshed while in there: the status date, and the frontend suite count (31 → 32) the merge had left
+behind.
+
+
 ## 2026-08-21 — the database URI never reached MongoDB (`claude-mongo-boot4-property`)
 
 **Spring Boot 4.0.0 retired `spring.data.mongodb.uri`, the key ServerPackCreator writes.** Metadata

@@ -4,41 +4,6 @@ Items consciously deferred, with the reason and enough context to pick them up c
 Not a wish-list: everything here was looked at, judged worth doing, and postponed for a stated reason.
 When an item lands, delete it here and record it in `REFACTOR-LOG.md`.
 
-## 2026-08-21 — session context size (deferred by sequencing)
-
-**B35 — trim root `CLAUDE.md` back under the large-memory floor, after the open branches merge.**
-Claude Code warns when a single loaded memory file exceeds ~5 % of the context window, floor ~40,000
-characters. Measured:
-
-| ref | root `CLAUDE.md` |
-|---|---|
-| `develop` today | 38,185 — **under** the floor |
-| `claude-mongo-boot4-property` | 41,394 — over on its own |
-| `claude-performance-improvements` | 52,365 |
-| projected once all merge | **~56,078** |
-
-Real, but not yet: nothing is over the floor on `develop` until those branches land.
-
-*Waited because of conflict sequencing, not effort.* The two largest blocks to relocate are the API
-behaviour-change table and the refactor-state table, and `claude-performance-improvements` adds ~14 k of
-new rows to **those same two regions**. Restructuring them first turns the merge into a whole-region
-conflict over the behaviour-change records — precisely the content where a bad resolution is most
-expensive. Griefed's call on 2026-08-21: merge first, then trim.
-
-*The plan when picked up* (`~/.claude/plans/plan-out-the-remaining-snazzy-bee.md`):
-- move the **API behaviour-change table** to `claude-docs/API-BEHAVIOUR-CHANGES.md` and leave a pointer —
-  it is release-notes material consulted occasionally, not per-session context;
-- move the **build-layout section** out, keeping a pointer **plus** its two most dangerous one-liners in
-  the root file (Boot's BOM must stay a `platform()`; never do filesystem work in a task's configuration
-  block), so the warning survives even if the moved file is not loaded;
-- cut the refactor-state table's **per-test enumerations** — derivable from the test sources, chronically
-  stale, and against that file's own "cite what the guard asserts, not how many tests exist" rule.
-
-*One thing to verify first, do not assume it:* the preferred destination for the build-layout block was a
-paths-scoped `.claude/rules/build-layout.md`. `.claude/rules/` **does** appear in the installed CLI
-(2.1.234) and a `paths` frontmatter key is referenced, but scoped loading was **never verified end to end**
-here. If it cannot be confirmed, use `claude-docs/BUILD-LAYOUT.md` with a pointer instead — guaranteed to
-work, just not auto-loaded — and keep the two one-liners in root either way.
 ## 2026-08-17 — startup / network performance (`claude-perf-network-startup`)
 
 **B30 — `If-None-Match` for the Forge manifest.** After the conditional-GET work, four of twelve
