@@ -1141,7 +1141,8 @@ Maven, Docker, the outward mirror and the VirusTotal scan), `devbuild.yml`, `doc
   GitLab's cache drops the executable bit, which `actions/cache` does not, so it survives as documented
   insurance rather than being deleted or blindly copied.
 
-GitHub keeps a **smoke test** and the four issue-driven `clientside-*` workflows. `github_release.yml`,
+GitHub keeps a **smoke test** and the four `clientside-*` workflows (three `issues:`-triggered, one
+`workflow_call:` helper they invoke). `github_release.yml`,
 `github-prerelease.yml`, `devbuild.yml`, `update_readme.yml` and `virustotal.yml` are deleted from there.
 `devbuild` additionally clears the stale GitHub `continuous` *release* while leaving its *tag*, so the
 mirror recreates it from Forgejo.
