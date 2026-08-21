@@ -19,11 +19,13 @@ internal class WebserviceConfigTest {
     fun databaseUriMigratesLegacyValuesOnRead() {
         val store = PropertyStore()
         val webserviceConfig = WebserviceConfig(store)
-        store.define("spring.data.mongodb.uri", "jdbc:sqlite:serverpackcreator.db")
+        store.define(WebserviceConfig.LEGACY_DATABASE_URI_KEY, "jdbc:sqlite:serverpackcreator.db")
         Assertions.assertEquals(WebserviceConfig.FALLBACK_DATABASE_URI, webserviceConfig.databaseUri)
+        // Written under the live key, which is no longer the key it was read from: Spring Boot 4 retired
+        // the legacy one, so leaving the result there would leave it unbound.
         Assertions.assertEquals(
             WebserviceConfig.FALLBACK_DATABASE_URI,
-            store.properties.getProperty("spring.data.mongodb.uri")
+            store.properties.getProperty(WebserviceConfig.DATABASE_URI_KEY)
         )
     }
 
@@ -34,7 +36,7 @@ internal class WebserviceConfigTest {
     fun databaseUriKeepsValidMongoValues() {
         val store = PropertyStore()
         val webserviceConfig = WebserviceConfig(store)
-        store.define("spring.data.mongodb.uri", "mongodb://user:pass@somehost:27017/spcdb")
+        store.define(WebserviceConfig.DATABASE_URI_KEY, "mongodb://user:pass@somehost:27017/spcdb")
         Assertions.assertEquals("mongodb://user:pass@somehost:27017/spcdb", webserviceConfig.databaseUri)
     }
 
@@ -48,12 +50,12 @@ internal class WebserviceConfigTest {
         webserviceConfig.databaseUri = "user:pass@somehost:27017/spcdb"
         Assertions.assertEquals(
             "mongodb://user:pass@somehost:27017/spcdb",
-            store.properties.getProperty("spring.data.mongodb.uri")
+            store.properties.getProperty(WebserviceConfig.DATABASE_URI_KEY)
         )
         webserviceConfig.databaseUri = "mongodb://user:pass@otherhost:27017/spcdb"
         Assertions.assertEquals(
             "mongodb://user:pass@otherhost:27017/spcdb",
-            store.properties.getProperty("spring.data.mongodb.uri")
+            store.properties.getProperty(WebserviceConfig.DATABASE_URI_KEY)
         )
     }
 
@@ -81,6 +83,61 @@ internal class WebserviceConfigTest {
         Assertions.assertEquals(
             "0 0 3 * * *",
             store.properties.getProperty("de.griefed.serverpackcreator.spring.schedules.files.cleanup")
+        )
+    }
+
+    /**
+     * Pins the upgrade path: an installation that only has the pre-Spring-Boot-4 key keeps its configured
+     * database, and the value is re-written under the live key so Spring actually binds it.
+     *
+     * This is the mechanism that protects existing users, and it has to be the mechanism rather than the
+     * `MigrationManager` step beside it: migrations are skipped entirely on dev, alpha and beta builds.
+     */
+    @Test
+    fun aLegacyKeyIsAdoptedAndRewrittenUnderTheLiveKey() {
+        val store = PropertyStore()
+        val webserviceConfig = WebserviceConfig(store)
+        store.define(WebserviceConfig.LEGACY_DATABASE_URI_KEY, "mongodb://user:pass@legacyhost:27017/spcdb")
+
+        Assertions.assertEquals(
+            "mongodb://user:pass@legacyhost:27017/spcdb", webserviceConfig.databaseUri,
+            "A configuration written before Spring Boot 4 must still be honoured"
+        )
+        Assertions.assertEquals(
+            "mongodb://user:pass@legacyhost:27017/spcdb",
+            store.properties.getProperty(WebserviceConfig.DATABASE_URI_KEY),
+            "The adopted value must be re-written under the key Spring Boot actually binds"
+        )
+    }
+
+    /**
+     * Pins that the degenerate `mongodb:` value is rejected rather than passed to the driver.
+     *
+     * The old check was `!startsWith("mongodb")`, which `mongodb:` satisfies — so a partially-configured
+     * container (one missing `SPC_DATABASE_*` variable used to produce exactly that string) got a URI the
+     * driver rejects much later, with a far less obvious message.
+     */
+    @Test
+    fun theDegenerateMongoSchemeIsRejected() {
+        val store = PropertyStore()
+        val webserviceConfig = WebserviceConfig(store)
+        store.define(WebserviceConfig.DATABASE_URI_KEY, "mongodb:")
+
+        Assertions.assertEquals(WebserviceConfig.FALLBACK_DATABASE_URI, webserviceConfig.databaseUri)
+    }
+
+    /**
+     * Pins that `mongodb+srv://` survives, since the tightened check enumerates schemes rather than
+     * prefix-matching. A DNS-seedlist URI is what a hosted Atlas cluster hands out.
+     */
+    @Test
+    fun theSrvSchemeIsAccepted() {
+        val store = PropertyStore()
+        val webserviceConfig = WebserviceConfig(store)
+        store.define(WebserviceConfig.DATABASE_URI_KEY, "mongodb+srv://user:pass@cluster.example.net/spcdb")
+
+        Assertions.assertEquals(
+            "mongodb+srv://user:pass@cluster.example.net/spcdb", webserviceConfig.databaseUri
         )
     }
 }

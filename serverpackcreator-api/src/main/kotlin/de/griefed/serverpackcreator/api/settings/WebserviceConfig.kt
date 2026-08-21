@@ -41,8 +41,21 @@ class WebserviceConfig(private val store: PropertyStore) {
 
         /**
          * Property-key holding the MongoDB database-URI.
+         *
+         * `spring.mongodb.uri` since Spring Boot 4.0.0 retired [LEGACY_DATABASE_URI_KEY]. Writing the old
+         * key means Boot binds nothing and silently uses its own default, `mongodb://localhost/test` — so
+         * this constant's *value* is load-bearing, not cosmetic. Pinned by `DatabaseUriPropertyTest`.
          */
-        const val DATABASE_URI_KEY = "spring.data.mongodb.uri"
+        const val DATABASE_URI_KEY = "spring.mongodb.uri"
+
+        /**
+         * The pre-Spring-Boot-4 property-key, still read when [DATABASE_URI_KEY] is absent so an existing
+         * installation keeps its configured database without anyone editing a file.
+         *
+         * Boot itself no longer binds it: its metadata carries `deprecation.level = "error"` since 4.0.0.
+         * We read it, translate it, and write [DATABASE_URI_KEY] — Spring never sees this key again.
+         */
+        const val LEGACY_DATABASE_URI_KEY = "spring.data.mongodb.uri"
 
         /**
          * Property-key holding the cron-schedule for the webservice's cleanup-job.
@@ -82,13 +95,19 @@ class WebserviceConfig(private val store: PropertyStore) {
      */
     var databaseUri: String = FALLBACK_DATABASE_URI
         get() {
-            var dbPath = store.properties.getProperty(DATABASE_URI_KEY, FALLBACK_DATABASE_URI)
+            // The legacy key is the fallback, not an equal: an installation that predates Spring Boot 4
+            // has only that one, and reading it here is what keeps its database configured. Anything found
+            // under it is re-written under DATABASE_URI_KEY below, so Spring only ever sees the live key.
+            var dbPath = store.properties.getProperty(DATABASE_URI_KEY)
+                ?: store.properties.getProperty(LEGACY_DATABASE_URI_KEY, FALLBACK_DATABASE_URI)
             if (dbPath.isEmpty() ||
                 dbPath.contains("sqlite") ||
                 dbPath.contains("postgresql") ||
-                !dbPath.startsWith("mongodb")
+                // Not `startsWith("mongodb")`: that accepts the degenerate `mongodb:` a partially-configured
+                // container used to produce, which then fails deep in the driver instead of here.
+                !(dbPath.startsWith("mongodb://") || dbPath.startsWith("mongodb+srv://"))
             ) {
-                log.warn("Your spring.data.mongodb.uri-property didn't match a MongoDB-URL: $dbPath. It has been migrated to $FALLBACK_DATABASE_URI.")
+                log.warn("Your $DATABASE_URI_KEY-property didn't match a MongoDB-URL: $dbPath. It has been migrated to $FALLBACK_DATABASE_URI.")
                 dbPath = FALLBACK_DATABASE_URI
             }
             store.define(DATABASE_URI_KEY, dbPath)
