@@ -232,3 +232,10 @@ Read the *first* error, not the last.
   refactor state.
 - `<module>/CLAUDE.md` — per-module architecture notes and landmines.
 - `claude-docs/REFACTOR-LOG.md` — why things are the way they are, in narrative form.
+- `.forgejo/workflows/` — **where CI actually lives.** Forgejo (`git.griefed.de`) is the canonical CI
+  and the origin of every release; `.github/workflows` keeps only a smoke test and the four
+  `clientside-*` workflows — three driven by GitHub issues, plus a reusable helper they call — so looking there for the build or release pipeline will
+  mislead you.
+- `claude-docs/CI-SECRETS.md` — every secret those workflows need, the exact scopes each one requires,
+  and which job stops working without it. Relevant if you run a fork that builds releases, or are
+  debugging a red pipeline; you do not need any of it to build locally.
