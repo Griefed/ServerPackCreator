@@ -1011,13 +1011,6 @@ components:
       required:
       - creations
       - date
-    ClientMod:
-      type: object
-      properties:
-        mod:
-          type: string
-      required:
-      - mod
     RunConfiguration:
       type: object
       properties:
@@ -1034,15 +1027,15 @@ components:
         startArgs:
           type: array
           items:
-            $ref: "#/components/schemas/StartArgument"
+            type: string
         clientMods:
           type: array
           items:
-            $ref: "#/components/schemas/ClientMod"
+            type: string
         whitelistedMods:
           type: array
           items:
-            $ref: "#/components/schemas/WhitelistedMod"
+            type: string
       required:
       - clientMods
       - minecraftVersion
@@ -1104,20 +1097,6 @@ components:
       required:
       - downloadedAt
       - serverPack
-    StartArgument:
-      type: object
-      properties:
-        argument:
-          type: string
-      required:
-      - argument
-    WhitelistedMod:
-      type: object
-      properties:
-        mod:
-          type: string
-      required:
-      - mod
     ModPack:
       type: object
       properties:
