@@ -221,7 +221,8 @@ If you want to open your webservice-instance to the public, make sure to properl
     1. Unsure where said home-directory is? Check the logs for `Home directory set to:`! 
 4. Install / setup / provide a MongoDB-database for ServerPackCreator. See [MongoDB Installation Tutorial](https://www.mongodb.com/docs/manual/installation/)
 5. Set the database-properties in the `serverpackcreator.properties` according to your database
-   1. `spring.data.mongodb.uri=`
+   1. `spring.mongodb.uri=`
+       - Named `spring.data.mongodb.uri` before ServerPackCreator moved to Spring Boot 4, which retired that key. An existing file using the old name is still read and upgraded automatically.
        - Example:`mongodb\://<USER>:<PASSWORD>@localhost\:27017/serverpackcreatordb`
        - If the username or password includes the following characters `$ : / ? # [ ] @`, those characters must be converted using percent encoding (https://datatracker.ietf.org/doc/html/rfc3986#section-2.1) : `$ : / ? # [ ] @`
 

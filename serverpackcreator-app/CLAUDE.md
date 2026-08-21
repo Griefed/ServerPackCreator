@@ -48,7 +48,8 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
 - **The JPA/H2 relics are gone (2026-08-15) — do not let them back in.** Both `application.properties`
   carried settings for a stack this app has not used since the move to MongoDB: `spring.jpa.*`,
   `spring.datasource.*`, `spring.jdbc.*`, `spring.transaction.default-timeout`, and — in the test one —
-  **`spring.data.mongodb.uri=jdbc:h2:mem:testdb`**, a Mongo URI holding a JDBC URL. Per the landmine
+  **`spring.data.mongodb.uri=jdbc:h2:mem:testdb`** (the key's pre-Boot-4 name), a Mongo URI holding a
+  JDBC URL. Per the landmine
   below, `ConnectionString` accepts only `mongodb://`/`mongodb+srv://`, so that value is a hard startup
   failure the moment Mongo autoconfiguration runs. It never did, purely because `WebServiceTest` is
   `@SpringBootTest(classes = [WebServiceTest::class])` and so boots a context of exactly one class — the
@@ -57,7 +58,43 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   cause. Verified dead before removal: no `@Transactional`, no JPA/JDBC types in main source, and
   neither hibernate, tomcat-jdbc nor h2 on the runtime classpath. The unused `testRuntimeOnly` H2
   dependency went with them.
-- **LANDMINE — `spring.data.mongodb.uri` is used verbatim, with no validation and no fallback.**
+- **LANDMINE — the database-URI property is `spring.mongodb.uri`, and the old name silently does nothing.**
+  Spring Boot **4.0.0 retired `spring.data.mongodb.uri`**: its metadata carries
+  `deprecation.level = "error"`, `replacement = "spring.mongodb.uri"`, and the connection properties moved
+  from `DataMongoProperties` (`@ConfigurationProperties("spring.data.mongodb")`, which no longer declares a
+  `uri` at all) to `MongoProperties` (`@ConfigurationProperties("spring.mongodb")`). A retired key does not
+  warn — it is simply not bound, so Boot uses `spring.mongodb.uri`'s own default `mongodb://localhost/test`.
+  SPC wrote the old key until 2026-08-18 and therefore ignored every configured host, credential and
+  database. Measured with the real bootJar, same URI, only the key differing:
+
+  | key written | resolved hosts | credential |
+  |---|---|---|
+  | `spring.data.mongodb.uri` | `[localhost:27017]` | `null` |
+  | `spring.mongodb.uri` | `[127.0.0.1:27017]` | `MongoCredential{userName='spcuser'…}` |
+
+  The host substitution is the tell: `127.0.0.1` was configured, `localhost` is Boot's literal default.
+  `WebserviceConfig` still **reads** `LEGACY_DATABASE_URI_KEY` when the live key is absent and re-writes it
+  under the live one, so an installation predating this keeps working; nothing writes the old key any more.
+  **The `MigrationManager` step is for the message, not the mechanism.**
+  `MigrationMethods.NinePointZeroPointZero` reports the rename; the carry-over itself is the getter's, and
+  has to be, because migrations run release→release only and would miss every dev, alpha and beta user.
+  What a migration adds is telling the operator — anything *they* own that still writes the old key (their
+  own `overrides.properties`, a container environment, a deployment script) is silently ignored by Spring,
+  and no code of ours can fix those. It fires only when `hasLegacyDatabaseUri` is true, so an installation
+  that never used the old key hears nothing; that negative case is pinned too. The stale legacy line is
+  **left in the file on purpose** — deleting it would strand anyone downgrading to a pre-Boot-4
+  ServerPackCreator, and Spring ignores it, so the cost is one dead line.
+  **Corollary worth knowing: URI query parameters work again.** They never did while the key was dead, which
+  is why two attempts to shorten the driver's server-selection timeout in tests looked like they "did not
+  work" — the URI was not reaching the client at all. Measured after the fix:
+  `…/spc_t?serverSelectionTimeoutMS=250` yields `serverSelectionTimeout='250 ms'` in the client's own
+  settings line, against `'30000 ms'` by default. So a `@SpringBootTest` that boots the web context without
+  a database can cut ~30 s per boot by putting that parameter in its URI — relevant to any test that
+  triggers Mongo access at `ApplicationReadyEvent`.
+  Pinned by `DatabaseUriPropertyTest`, whose second guard reads Boot's own
+  `spring-configuration-metadata.json` and fails on any key we write that Boot has retired — so the next
+  such rename is a build failure, not a silently redirected production database.
+- **LANDMINE — the URI is used verbatim, with no validation and no fallback inside Spring.**
   Measured with `javap` against the pinned `spring-boot-mongodb-4.1.0` and `mongodb-driver-core-5.8.0`
   (no sources jar is published for the autoconfigure module). **Re-verified at those versions on
   2026-08-16** — the Boot 4.0.6 -> 4.1.0 bump moved the driver 5.6.2 -> 5.8.0 and the behaviour below
@@ -70,10 +107,11 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   that unreachable else-branch, as does `MongoProperties.DEFAULT_URI = "mongodb://localhost/test"`); and
   a log line naming `localhost:27017` therefore means the property was **absent everywhere**, not
   wrong. `determineUri()` exists and returns `uri ?: DEFAULT_URI`, but the connection path never calls
-  it — don't reason from it.
+  it — don't reason from it. **That "absent everywhere" case had a cause, and it was the retired key
+  above** — which is what `claude-docs/DOCKER-MONGO-INVESTIGATION.md` was unable to explain at the time.
 - **The docker override chain feeds that property, and it is long.** `WebService.springArguments`
   appends `--spring.config.location=` with eight locations, `overrides.properties` **last** (later
-  locations win). The s6 script `init-spc-config/run` composes `SPC_DATABASE_*` into that file; it is
+  locations win). The s6 script `init-spc-config/run` composes `SPC_DATABASE_*` into that file, under `spring.mongodb.uri`; it is
   pinned by `docker/tests/init-spc-config-test.sh`, which runs the real script in the production base
   image. See `claude-docs/DOCKER-MONGO-INVESTIGATION.md`.
 - **Already MVC-layered:** controllers delegate to services (`ModPackService`, `ServerPackService`,
