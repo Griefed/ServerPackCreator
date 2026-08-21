@@ -61,6 +61,14 @@ fun URL.timedConnection(connectTimeout: Int, readTimeout: Int): URLConnection {
  */
 @Suppress("unused")
 class WebUtilities(private val apiProperties: ApiProperties) {
+    companion object {
+        /** HasteBin's upload ceiling in bytes; a larger file is rejected before any request is made. */
+        private const val MAX_HASTEBIN_BYTES = 10_000_000.0
+
+        /** HasteBin's upload ceiling in characters, which is a different measurement from the bytes above. */
+        private const val MAX_HASTEBIN_CHARACTERS = 400_000
+    }
+
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /**
@@ -194,8 +202,8 @@ class WebUtilities(private val apiProperties: ApiProperties) {
     fun hasteBinPreChecks(fileToCheck: File): Boolean {
         val fileSize = fileToCheck.size()
         try {
-            return if (fileSize < 10000000.0
-                && fileToCheck.readText().length < 400_000
+            return if (fileSize < MAX_HASTEBIN_BYTES
+                && fileToCheck.hasFewerCharactersThan(MAX_HASTEBIN_CHARACTERS)
             ) {
                 log.debug("Smaller. $fileSize byte.")
                 true
@@ -207,6 +215,44 @@ class WebUtilities(private val apiProperties: ApiProperties) {
             log.error("Couldn't read file: $fileToCheck", ex)
         }
         return false
+    }
+
+    /**
+     * Whether this file holds fewer than [limit] characters, without materialising it.
+     *
+     * Counts through an 8 KB buffer and stops at the first character past the limit, so the answer costs
+     * 16 KB of `char` regardless of file size — where `readText().length` allocated the whole file as a
+     * String, up to 20 MB of `char` for a 10 MB log, purely to count it.
+     *
+     * **Characters, not bytes**, deliberately: UTF-8 spends up to four bytes on one character, so a file
+     * can be past the byte limit while well under the character one. The one shortcut that *is* sound is
+     * the early return — every character occupies at least one byte, so a file shorter than [limit] bytes
+     * cannot hold [limit] characters, and the common case never opens the file at all.
+     *
+     * `isFile` guards that shortcut for a reason a test caught: `File.length()` on a **directory** returns
+     * some small unspecified number, which would short-circuit to `true` and make the caller accept a
+     * directory. Falling through to [reader] instead throws, which is how the caller has always arrived at
+     * `false` for one.
+     */
+    private fun File.hasFewerCharactersThan(limit: Int): Boolean {
+        if (isFile && length() < limit) {
+            return true
+        }
+        val buffer = CharArray(8192)
+        var counted = 0L
+        reader().use { reader ->
+            while (true) {
+                val read = reader.read(buffer)
+                if (read < 0) {
+                    break
+                }
+                counted += read
+                if (counted >= limit) {
+                    return false
+                }
+            }
+        }
+        return true
     }
 
     /**
