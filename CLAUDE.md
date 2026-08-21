@@ -52,6 +52,11 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   no Spring/Swing; not published. Foundation stage: the container-backed `ServerRunner`. See
   `serverpackcreator-grinder/CLAUDE.md`.
 - Not in the Gradle build: `serverpackcreator-help` (docs), `buildSrc`, `docker`, `misc`.
+  **`serverpackcreator-help/Writerside/api-docs.yaml` is GENERATED, not hand-maintained** — springdoc
+  is wired into `-app` as `developmentOnly`, and the regeneration command sits beside that dependency
+  in `serverpackcreator-app/build.gradle.kts`. It had drifted to 25 of 44 endpoints while being edited
+  by hand, including two schemas for classes that no longer existed. Regenerate it rather than patching
+  it, and regenerate it again after any change to a controller or an entity it serialises.
 
 ## Build & test commands
 
