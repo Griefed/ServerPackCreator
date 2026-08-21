@@ -2345,3 +2345,67 @@ by the pass that had just been enforcing it. **Closed.**
   characterization-test obligation arises, no module boundary moved, and the plugin-facing API is
   untouched. The one-concern-per-commit and test-first rules have nothing to bite on outside H1's
   build change.
+
+---
+
+# Audit — post-CI-migration commits, iteration 9 (2026-08-21)
+
+**Scope:** the same range as iteration 8 plus the four commits that answered it — the iteration-8
+report, the install4j marker fix, the corrected marker rule, and the regenerated license agreement.
+
+## HIGH — none
+
+Iteration 8's H1 is closed. `./gradlew build` SUCCESSFUL in 6m 8s with api 354 (1 skipped), app 149,
+clientside 88, grinder 233 (19 skipped), plugin-example 3, zero failures — and the plugin is genuinely
+applied, not silently dropped: `tasks --all` still lists `install4j` and `media`.
+
+## MEDIUM
+
+**M1 — `20cd6edcc` writes the Forgejo credential with `git config --global`.**
+`.forgejo/workflows/release-generate.yml`, the "Authenticate origin" step.
+
+The commit's own stated purpose was getting the token out of a place that hands it back out. It
+succeeded against `git remote -v` and push-error text, but `--global` writes it to the runner's home
+config, where every later step in the job can read it and where it applies to *every* repository on
+that runner, not just this checkout. `update-readme.yml` — the workflow this one was aligned to — uses
+`git -c http.extraheader=...` inline, which is never written to disk at all.
+
+`git -c` is not available here, because semantic-release spawns its own git rather than running through
+this step. But `--local` is: it writes to the checkout's own `.git/config`, semantic-release runs with
+that repository as its working directory, and the blast radius drops from the runner to one clone. The
+finding is that the commit reached for the widest scope that worked instead of the narrowest.
+
+**M2 — `CLAUDE.md`'s refactor-state table understates the api suite by 11 tests.** It says
+`api | 343 (1 skip)`; the suite reports **354 (1 skipped)**. Checked that this is real rather than
+inflated by leftovers: all 59 result XML files in `serverpackcreator-api/build/test-results/test` were
+written by the last build, none older. The other five rows are accurate (app 149, clientside 88,
+grinder 233/19, plugin-example 3). This is the defect the "cite names, not snapshots" convention names
+outright — "suite counts left behind by the tests that were just added" — and it has drifted more than
+once in this branch's own commit messages, which said 312 and 313 while the table said 343.
+
+## LOW
+
+**L1 — `696931357` shipped a rule that was wrong, and `0138f8799` had to correct it.** The landmine
+generalised from one case to "a plugin needs the marker only when a precompiled script plugin applies
+it", which is a natural reading of the evidence and false: buildSrc also needs a plugin when its own
+Kotlin source compiles against that plugin's API, which is exactly the situation `licenseReport` is in.
+The series self-corrected within one commit and the failed experiment is now recorded as
+do-not-re-litigate, so the cost was one broken `:buildSrc:compileKotlin`. Recorded because the pattern
+is worth noticing: the fix was verified by measurement, but the *generalisation drawn from it* was not,
+and a documented rule is acted on later by someone with less context.
+
+## Not findings — verified clean, do not re-litigate
+
+- **install4j versions are consistent across the whole repo.** No `12.0.2`/`12.0.4` reference survives
+  anywhere outside the audit log; the catalog's `install4j` and `install4jRuntime` and both workflows'
+  `setup-install4j` steps all read 13.1.
+- **`1c9046577` is scoped, not swept.** The regenerated agreement contains exactly one version change
+  (`install4j-runtime` 12.0.4 → 13.1) with no other Group/Name/Version line touched, the dependency
+  count is 44 either side, and the two tracked copies are byte-identical to each other again.
+- **The install4j alias conversion's premise was checked directly, not by analogy.** `buildSrc/src`
+  contains no install4j reference at all, and its only third-party imports are `com.github.jk1.license*`
+  — which is precisely why the same conversion fails for `licenseReport` and works for install4j.
+- **No `-api`/`-app`/`-clientside`/`-grinder` production source was touched by any commit in either
+  iteration's scope.** Module boundaries, the plugin-facing API and the characterization-test obligation
+  are all untouched; the only executable change in nine commits is which classpath a Gradle plugin sits
+  on, and the full suite covers that.
