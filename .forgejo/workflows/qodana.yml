@@ -2,6 +2,9 @@
 #
 # The report is a workflow artifact now. GitLab served it from Pages and the Discord message linked there;
 # with Pages gone the message links the Forgejo run, where the artifact is attached.
+#
+# Entirely Cloud-free: no Qodana Cloud subscription, no QODANA_TOKEN, no upload. Everything this job
+# reports comes out of the SARIF it produces locally.
 name: Qodana
 
 on:
@@ -51,9 +54,12 @@ jobs:
             chmod -R +x "$jbr" || true
           fi
 
+      # No QODANA_TOKEN, deliberately. A token is required only for the paid linters and for uploading
+      # to Qodana Cloud; it is optional for the Community linters, and this is qodana-jvm-community.
+      # There is no free Cloud tier, so the whole job is self-contained: the SARIF is counted below,
+      # the HTML report is attached as an artifact, and Discord links the run. Do not re-add the token
+      # env -- an empty one implies a Cloud setup that does not exist.
       - name: Run Qodana
-        env:
-          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
         run: |
           qodana-jvm-community \
             --cache-dir "$GITHUB_WORKSPACE/qodana/cache" \
