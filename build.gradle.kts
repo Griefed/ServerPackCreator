@@ -41,6 +41,13 @@ licenseReport {
     outputDir = "$projectDir/licenses"
     configurations = arrayOf("runtimeClasspath", "compileClasspath")
 
+    // springdoc exists only to regenerate serverpackcreator-help/Writerside/api-docs.yaml and is declared
+    // `developmentOnly`, so it is NOT in the shipped jar -- verified by listing the bootJar, which contains
+    // no springdoc or swagger entry. It nonetheless reaches compileClasspath/runtimeClasspath above, so
+    // without this the LICENSE-AGREEMENT files -- documents about what ships -- would list a build tool,
+    // and churn 303 lines in two shipped files on every springdoc bump.
+    excludeGroups = arrayOf("org.springdoc")
+
     filters = arrayOf(
         com.github.jk1.license.filter.LicenseBundleNormalizer(),
         SubprojectLicenseFilter()

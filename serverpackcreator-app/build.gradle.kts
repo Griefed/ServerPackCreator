@@ -69,7 +69,12 @@ dependencies {
     // -api instead of quietly running a different one. Without it the two drift on every mockk bump.
     testImplementation(libs.mockk)
     developmentOnly(libs.springBootDevtools)
-    //developmentOnly("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
+    // Regenerates serverpackcreator-help/Writerside/api-docs.yaml from the live controllers:
+    //   ./gradlew :serverpackcreator-app:bootRun --args="-web --home <dir>"
+    //   curl localhost:8080/v3/api-docs.yaml > serverpackcreator-help/Writerside/api-docs.yaml
+    // developmentOnly on purpose — swagger-ui has no business in the shipped jar. The 2.2.0 that
+    // used to be commented here targets Spring Boot 3 and cannot resolve against Boot 4.
+    developmentOnly(libs.springdocOpenapiStarterWebmvcUi)
 }
 
 springBoot {
