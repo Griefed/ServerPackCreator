@@ -58,7 +58,7 @@ Nothing in `.forgejo/workflows` uses the automatic job token.
 | `GIT_USER` / `GIT_MAIL` | committer identity for the automated commits (semantic-release's `RELEASE:` + changelog, and the sponsors/contributors refresh). Not credentials, but passed via `env:` rather than interpolated into a command, like every other value | release-generate, update-readme |
 | `WEBHOOK_URL` | Discord webhook for the Qodana result post. **Optional**: the step exits cleanly when unset | qodana |
 | `VT_API_KEY` | VirusTotal API key — profile → API key | release-build |
-| `INSTALL4J_LICENSE` | install4j license key, used with install4j `12.0.2` to build the three installers | release-build, devbuild |
+| `INSTALL4J_LICENSE` | install4j license key, for the major version the workflows pin (`version:` on the setup-install4j step, kept in step with `install4j` in `gradle/libs.versions.toml`). **a major-version bump needs a key valid for that version** — ej-technologies issues an upgraded key, free if the release falls in your support period — or both jobs fail at the media step | release-build, devbuild |
 
 ---
 
