@@ -66,6 +66,10 @@ internal class ManifestUpdaterTest {
         /** The `If-Modified-Since` of the most recent request, or `null` if it carried none. */
         @Volatile
         var lastIfModifiedSince: String? = null
+
+        /** The `If-None-Match` of the most recent request, or `null` if it carried none. */
+        @Volatile
+        var lastIfNoneMatch: String? = null
     }
 
     /**
@@ -77,6 +81,8 @@ internal class ManifestUpdaterTest {
     private fun withServer(
         body: String,
         honourConditional: Boolean = true,
+        etag: String? = null,
+        honourIfNoneMatch: Boolean = false,
         test: (URI, Observed) -> Unit
     ) {
         val observed = Observed()
@@ -84,8 +90,15 @@ internal class ManifestUpdaterTest {
         server.createContext("/manifest.json") { exchange: HttpExchange ->
             observed.requests.incrementAndGet()
             observed.lastIfModifiedSince = exchange.requestHeaders.getFirst("If-Modified-Since")
+            observed.lastIfNoneMatch = exchange.requestHeaders.getFirst("If-None-Match")
             exchange.responseHeaders.add("Last-Modified", "Mon, 01 Jan 2001 00:00:00 GMT")
-            if (honourConditional && observed.lastIfModifiedSince != null) {
+            if (etag != null) {
+                exchange.responseHeaders.add("ETag", etag)
+            }
+            if (honourIfNoneMatch && observed.lastIfNoneMatch == etag && etag != null) {
+                // What files.minecraftforge.net does: ignores If-Modified-Since, honours If-None-Match.
+                exchange.sendResponseHeaders(304, -1)
+            } else if (honourConditional && observed.lastIfModifiedSince != null) {
                 // 304: no body at all, which is the entire point of asking.
                 exchange.sendResponseHeaders(304, -1)
             } else {
@@ -247,6 +260,101 @@ internal class ManifestUpdaterTest {
                 1,
                 observed.requests.get(),
                 "Fetching a missing manifest must cost one request, not a probe plus a download"
+            )
+        }
+    }
+
+    /**
+     * Pins that an `ETag` handed back by the server is remembered and offered on the next check.
+     *
+     * `files.minecraftforge.net` **ignores** `If-Modified-Since` but honours `If-None-Match` against its
+     * weak nginx ETag, and it is the largest manifest still transferred in full on every startup. Sending
+     * the header requires remembering it across runs, which is the whole of B30.
+     */
+    @Test
+    fun anEtagIsOfferedOnceTheServerHasProvidedOne(@TempDir tempDir: File) {
+        val manifest = File(tempDir, "minecraft-manifest.json")
+        // Seeded, as `ApiWrapper.setup()` leaves it in production — and smaller than upstream, so the
+        // response is adopted and its ETag becomes the one describing our copy.
+        manifest.writeText(minecraftManifest(1))
+        withServer(minecraftManifest(3), honourConditional = false, etag = "\"abc123\"") { uri, observed ->
+            updater().checkManifest(manifest, uri.toURL(), Type.MINECRAFT)
+            Assertions.assertNull(observed.lastIfNoneMatch, "Nothing is known yet, so nothing to offer")
+
+            updater().checkManifest(manifest, uri.toURL(), Type.MINECRAFT)
+            Assertions.assertEquals(
+                "\"abc123\"", observed.lastIfNoneMatch,
+                "The ETag from the first response must be offered on the second check"
+            )
+        }
+    }
+
+    /**
+     * Pins the payoff: a server that ignores `If-Modified-Since` but matches the `ETag` answers `304`, and
+     * the local manifest is left exactly as it was.
+     */
+    @Test
+    fun anEtagMatchCostsNoBodyAndLeavesTheManifestAlone(@TempDir tempDir: File) {
+        val manifest = File(tempDir, "minecraft-manifest.json")
+        manifest.writeText(minecraftManifest(1))
+        withServer(
+            minecraftManifest(3), honourConditional = false, etag = "\"abc123\"", honourIfNoneMatch = true
+        ) { uri, _ ->
+            updater().checkManifest(manifest, uri.toURL(), Type.MINECRAFT)
+            val afterFirst = manifest.readText()
+
+            updater().checkManifest(manifest, uri.toURL(), Type.MINECRAFT)
+
+            Assertions.assertEquals(afterFirst, manifest.readText(), "A 304 must not touch the manifest")
+        }
+    }
+
+    /**
+     * **The trap this feature has to avoid.** A remembered ETag describes one particular local file. If the
+     * manifest is replaced by something else — `ApiWrapper.setup()` re-seeding it from the jar is the real
+     * case — then offering the old ETag would earn a `304` for content we no longer hold, and a genuine
+     * update would be suppressed **permanently**.
+     *
+     * So the pairing must be validated, not trusted: after the manifest changes underneath it, the stored
+     * ETag must not be offered.
+     */
+    @Test
+    fun aStaleEtagPairingIsNotOffered(@TempDir tempDir: File) {
+        val manifest = File(tempDir, "minecraft-manifest.json")
+        manifest.writeText(minecraftManifest(1))
+        withServer(minecraftManifest(3), honourConditional = false, etag = "\"abc123\"") { uri, observed ->
+            updater().checkManifest(manifest, uri.toURL(), Type.MINECRAFT)
+
+            // Someone else replaced the manifest — a re-seed from the jar, a manual edit, a restore.
+            manifest.writeText(minecraftManifest(1))
+
+            updater().checkManifest(manifest, uri.toURL(), Type.MINECRAFT)
+
+            Assertions.assertNull(
+                observed.lastIfNoneMatch,
+                "The stored ETag describes content that is no longer on disk, so offering it would " +
+                        "trade a real update for a 304 forever"
+            )
+        }
+    }
+
+    /**
+     * Pins that an ETag is only remembered when the manifest it describes is actually adopted. A smaller
+     * upstream manifest is deliberately *not* taken (see `aSmallerUpstreamManifestDoesNotReplaceTheLocalCopy`),
+     * so remembering its ETag would describe a file we chose not to keep.
+     */
+    @Test
+    fun anEtagIsNotRememberedForAManifestThatWasNotAdopted(@TempDir tempDir: File) {
+        val manifest = File(tempDir, "minecraft-manifest.json")
+        manifest.writeText(minecraftManifest(5))
+        withServer(minecraftManifest(2), honourConditional = false, etag = "\"smaller\"") { uri, observed ->
+            updater().checkManifest(manifest, uri.toURL(), Type.MINECRAFT)
+
+            updater().checkManifest(manifest, uri.toURL(), Type.MINECRAFT)
+
+            Assertions.assertNotEquals(
+                "\"smaller\"", observed.lastIfNoneMatch,
+                "The rejected manifest's ETag must not be offered as though it described our copy"
             )
         }
     }
