@@ -138,12 +138,24 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
     help` failed in 3 s before and succeeded in 5 s after, with `install4j` and `media` both still
     registered.
 
-    So the rule is narrower than "markers everywhere": **a plugin needs the marker only when a
-    precompiled script plugin applies it.** Verified which ones do — `kotlin("jvm")` in
-    `kotlin-conventions` and `kotlin("plugin.spring"/"allopen"/"jpa")` in `spring-conventions`, plus
-    dokka, dokka-javadoc, kover and the siouan frontend plugin. `licenseReport` was the one other marker kept
-    alive purely by a versionless `id(...)` in the root build script — the same shape, one metadata bump
-    from the same failure — and was converted to `alias` in the following commit for that reason.
+    So the rule is narrower than "markers everywhere", but be careful how it is narrowed: **a plugin
+    needs the marker when buildSrc needs it at compile time**, which happens two ways — a *precompiled
+    script plugin* applies it by versionless `id(...)`, **or** buildSrc's own Kotlin source compiles
+    against its API. install4j was neither, which is why `alias` works there.
+
+    Both routes are in use. Applied by a precompiled script plugin: `kotlin("jvm")` in
+    `kotlin-conventions`, `kotlin("plugin.spring"/"allopen"/"jpa")` in `spring-conventions`, plus
+    dokka, dokka-javadoc, kover and the siouan frontend plugin. Needed by *source*:
+    `licenseReport` — `buildSrc/src/main/kotlin/de/griefed/common/gradle/LicenseAgreementRenderer.kt`
+    implements jk1's `ReportRenderer` against `ProjectData`/`ModuleData`.
+
+    **Do not "tidy" `licenseReport` onto `alias` — it was tried and it fails.** It looks like the
+    identical case (a versionless `id(...)` in the root script, one metadata bump from the same total
+    failure), and a grep of every `id(...)` and `kotlin(...)` call in the precompiled script plugins
+    supports that reading. It is wrong: dropping the marker fails `:buildSrc:compileKotlin` with
+    ~10 `Unresolved reference: jk1` / `ReportRenderer` / `ProjectData` errors, because the renderer is
+    ordinary buildSrc source, not a plugin application. Checking applications alone under-reports what
+    buildSrc's classpath is for.
 
     Either route reads this one file, so a plugin's id and version are declared exactly once. Before
     2026-08-16 buildSrc depended on plugin *implementation* artifacts under `[libraries]`
