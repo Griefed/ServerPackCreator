@@ -93,10 +93,13 @@ jobs:
         env:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
         run: |
+          # A missing webhook is fine and exits cleanly; a webhook that is configured and then fails to
+          # accept the post is a real failure and must not be swallowed -- hence set -e AFTER the guard.
           if [ -z "${WEBHOOK_URL:-}" ]; then
             echo "No WEBHOOK_URL configured - skipping"
             exit 0
           fi
+          set -eu
           export RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_number }}"
           python3 -c "import json,os;print(json.dumps({'username':'ServerPackCreator','embeds':[{'title':'New Qodana report','description':'A new Qodana report is attached to this run.','url':os.environ['RUN_URL'],'color':12648430}]}))" > payload.json
           curl -sf -X POST -H 'Content-Type: application/json' -d @payload.json "$WEBHOOK_URL" > /dev/null

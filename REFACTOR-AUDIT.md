@@ -1584,3 +1584,107 @@ sponsor list, C3 would publish dev assets under a stale tag. None of them would 
 validation, which is all this migration has had so far — the reason to look at them by hand.
 
 Recommended: fix C1–C3 and C5 as one commit each, decide C4, record C6.
+
+---
+
+# Audit — the Forgejo CI migration, iteration 2
+
+**Date:** 2026-08-21 · **Mode:** READ-ONLY
+Focus: **does the shell and API logic actually work?** Iteration 1 read the workflows; this one *ran* the
+steps — extracted each `run:` block from the YAML, substituted the expressions, and executed it against
+real inputs (the repository's own `CHANGELOG.md`, a synthetic build tree). That is the only way to check a
+workflow that cannot be run on the runner from here, and it found a defect no amount of reading had.
+
+## Iteration-1 fixes confirmed
+
+Signing credentials travel as `ORG_GRADLE_PROJECT_*`; both README actions use `GH_TOKEN`; the `continuous`
+tag is moved on Forgejo with git; all four remaining third-party actions are fully qualified; the non-tag
+docs image is restored. Re-validated: no dangling references, no bare third-party actions, no
+`secrets.GITHUB_*` outside a comment.
+
+## HIGH
+
+### D1 — A final release's notes contain every prerelease's notes as well
+
+`release-build.yml`'s *Extract changelog section* uses:
+
+```awk
+$0 ~ "^#+ +\\[?" ver "\\]?" { found=1; next }
+found && /^#+ +\[?[0-9]+\.[0-9]+\.[0-9]+/ { exit }
+```
+
+The closing bracket is **optional**, so for `ver=8.1.1` the start pattern also matches
+`## [8.1.1-beta.2](…)`. That rule runs first and ends in `next`, so the exit rule never sees those
+headings — collection simply continues through them.
+
+Measured against the repository's own `CHANGELOG.md`, comparing the extraction with the true section
+boundaries:
+
+| requested version | extracted | true section | |
+|---|---|---|---|
+| `8.1.1` | 5,685 chars | 2,834 | **wrong** — absorbs `8.1.1-beta.2` and `-beta.1` |
+| `8.1.0` | 28,807 chars | 14,377 | **wrong** — absorbs three betas |
+| `8.1.1-beta.2` | 673 chars | 672 | correct (nothing nests under a prerelease) |
+
+So every *final* release would publish its own changelog followed by the changelogs of the prereleases
+that led to it — duplicated content, and for `8.1.0` roughly double the intended notes. Prereleases are
+unaffected, which is exactly why this would have shipped: the first Forgejo release cut will be an alpha.
+
+**Fix:** require the closing bracket (`\[` … `\]` — every heading in this file is `## [x.y.z](url)`), so a
+prerelease heading falls through to the exit rule. Escape the dots too, so `8.1.1` cannot match `8x1y1`.
+
+## MEDIUM
+
+### D2 — A failed asset upload leaves an incomplete release and a green run
+
+Five `run:` steps that call `curl` in a loop or in sequence have no `set -e`:
+
+| workflow | job | step |
+|---|---|---|
+| `release-build.yml` | `release` | Create release and upload assets **(loops)** |
+| `release-build.yml` | `mirror` | Fetch release notes from Forgejo |
+| `release-build.yml` | `mirror` | Mirror to GitHub **(loops)** |
+| `release-build.yml` | `mirror` | Mirror to GitLab.com |
+| `qodana.yml` | `notify` | Post to Discord |
+
+`curl -sf` returns non-zero on an HTTP error, but without `set -e` the loop continues and the step exits
+with the status of its *last* command. So one asset failing to upload — a network blip, a size limit, a
+name collision — produces a release that is missing a file while the run reports success. For a release
+pipeline that is the wrong failure mode: a loud failure can be re-run, a silently incomplete release gets
+downloaded.
+
+The three steps written for this migration in `devbuild.yml`, and both VirusTotal steps, already have
+`set -eu`. This is inconsistency, not oversight-by-design.
+
+**Fix:** `set -eu` in all five. Discord stays tolerant on purpose — a missing webhook is already handled
+explicitly — but it should not silently swallow a *failed* post.
+
+## LOW
+
+### D3 — Verified working, by execution rather than inspection
+
+Recorded so a future reader does not re-derive it:
+
+- **Tag classification** (`prepare`): accepts `9.0.0`, `9.0.0-alpha.6`, `9.0.0-beta.1`; **refuses**
+  `continuous`, `9.0`, `v9.0.0`, `9.0.0-rc.1` with a non-zero exit and a named error. The `continuous`
+  refusal matters — the dev-build tag must never start a release.
+- **Docs image tags**: `tag/9.0.0` → version + `latest`; `tag/9.0.0-alpha.6` → version only;
+  `branch/develop` → 8-char short SHA. All three GitLab jobs' behaviour, from one computation.
+- **Asset collection**, against a synthetic build tree containing the traps: 13 assets, with
+  `serverpackcreator-app-<v>-plain.jar` and `media/output.txt` correctly excluded, the app jar renamed to
+  `ServerPackCreator-<v>.jar`, the dokka zip included, and `checksum.txt` covering 12 files **without
+  listing itself** — the ordering fix holds.
+- **Forgejo release payload**: built from a real 27-line changelog section containing backticks, brackets,
+  parentheses and quotes. Valid JSON, and the body round-trips byte-identically. The `$BODY` expansion is
+  safe because parameter expansion does not re-interpret the backslashes JSON encoding introduces.
+- **GitLab mirror payload**: valid JSON. Its nested-quoting construction is fragile to read but correct
+  for fixed content; left alone rather than rewritten for taste.
+
+## Summary
+
+One HIGH that only execution could find (**D1** — final releases publish their prereleases' changelogs
+too, roughly doubling the notes), and one MEDIUM about failure modes (**D2** — an incomplete release that
+reports success). Everything else executed correctly against real inputs, including the two payload paths
+most likely to break on quoting.
+
+Recommended: fix D1 and D2; leave D3 as the record.
