@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.api.settings
 
 import de.griefed.serverpackcreator.api.PropertyStore
+import de.griefed.serverpackcreator.api.utilities.common.timedConnection
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.IOException
 import java.net.URI
@@ -39,6 +40,17 @@ class UpdateConfig(
     private val saveToDisk: () -> Unit
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+
+    /**
+     * The network timeouts this group's own fetch is bounded by.
+     *
+     * Its own instance rather than the one `ApiProperties` holds, and that is not a second source of
+     * truth: `NetworkConfig` keeps no state of its own, it reads [store] on every access, so both
+     * instances answer from the same properties. Taking it as a constructor parameter instead would
+     * change this group's signature for no behavioural gain, and would have to respect
+     * `ApiProperties`' declaration order on top.
+     */
+    private val networkConfig = NetworkConfig(store)
 
     /** Property keys for update checking, plus the fallback update URL. */
 
@@ -114,10 +126,14 @@ class UpdateConfig(
     fun updateFallback(): Boolean {
         var remoteProperties: Properties? = null
         try {
-            updateUrl.openStream().use {
-                remoteProperties = Properties()
-                remoteProperties.load(it)
-            }
+            // Bounded, not `updateUrl.openStream()`: this runs from ApiProperties' own init, so an
+            // unbounded wait here blocks construction of the API itself -- earlier than anything else
+            // that touches the network, and with no way out but killing the process.
+            updateUrl.timedConnection(networkConfig.connectTimeout, networkConfig.readTimeout)
+                .getInputStream().use {
+                    remoteProperties = Properties()
+                    remoteProperties.load(it)
+                }
         } catch (e: IOException) {
             log.debug("GitHub could not be reached.", e)
         }

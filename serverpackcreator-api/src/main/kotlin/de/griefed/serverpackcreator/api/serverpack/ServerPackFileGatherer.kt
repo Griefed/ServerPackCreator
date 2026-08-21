@@ -390,12 +390,14 @@ class ServerPackFileGatherer(private val modListCompiler: ModListCompiler) {
      */
     fun getDirectoryFiles(source: String, destination: String): List<ServerPackFile> {
         val serverPackFiles: MutableList<ServerPackFile> = ArrayList(100)
+        // Resolved once: it does not depend on the file being visited, and a large modpack walks tens
+        // of thousands of them.
+        val sourceFile = File(source).absolutePath
         try {
             Files.walk(Paths.get(source).absolute()).use {
                 for (path in it) {
                     try {
                         val pathFile = path.toFile().absolutePath
-                        val sourceFile = File(source).absolutePath
                         val destFile = File(destination, pathFile.replace(sourceFile, ""))
                         serverPackFiles.add(
                             ServerPackFile(

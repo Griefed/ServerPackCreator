@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.app.gui.window.configs.components
 
 import Translations
-import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.app.gui.GuiProps
 import de.griefed.serverpackcreator.app.gui.utilities.ComponentCoroutineScope
 import de.griefed.serverpackcreator.app.gui.window.configs.ConfigEditor
@@ -29,7 +28,6 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.awt.event.ActionListener
-import java.io.File
 import javax.swing.Timer
 import javax.swing.event.AncestorEvent
 import javax.swing.event.AncestorListener
@@ -39,7 +37,7 @@ import javax.swing.event.AncestorListener
  *
  * @author Griefed
  */
-class ConfigCheckTimer(delay: Int, guiProps: GuiProps, apiWrapper: ApiWrapper, tabbedConfigsTab: TabbedConfigsTab) : Timer(delay, null) {
+class ConfigCheckTimer(delay: Int, guiProps: GuiProps, tabbedConfigsTab: TabbedConfigsTab) : Timer(delay, null) {
 
     /** Owns the periodic config-check coroutine; cancelled when the configs tab leaves the screen
      * (ancestor-listener in `init`). The check is idempotent, so cancel-on-tab-switch + the
@@ -54,20 +52,11 @@ class ConfigCheckTimer(delay: Int, guiProps: GuiProps, apiWrapper: ApiWrapper, t
             tabbedConfigsTab.allTabs.parallelStream().forEach { component ->
                 val errors = mutableListOf<String>()
                 val editor = component as ConfigEditor
-                val pack = editor.getCurrentConfiguration()
 
                 runBlocking {
                     launch {
                         errors.addAll(editor.validateModpackDir())
-                        val name = apiWrapper.configurationHandler.checkManifests(editor.getModpackDirectory(), pack)
-                        @Suppress("IfThenToElvis")
-                        editor.title.title = if (pack.name != null) {
-                            pack.name!!
-                        } else if (name != null) {
-                            name
-                        } else {
-                            File(editor.getModpackDirectory()).name
-                        }
+                        editor.title.title = editor.resolvePackName()
                     }
                     launch {
                         errors.addAll(editor.validateSuffix())

@@ -78,6 +78,23 @@ class ModPackService @Autowired constructor(
     }
 
     /**
+     * The already-stored modpack whose contents hash to [sha256], if there is one.
+     *
+     * This is how a re-upload is recognised, so it runs on every upload. Extracted from
+     * [saveUploadedFile] to be testable on its own — that method also wants GridFS, a storage system
+     * and the API's ConfigurationHandler, none of which duplicate-detection depends on.
+     */
+    fun existingUploadOf(sha256: String?): Optional<ModPack> =
+        if (sha256 == null) {
+            // A hash-less upload is not a duplicate of anything. Said explicitly because neither the
+            // old in-memory comparison nor a `{sha256: null}` query would answer it that way: both
+            // match stored documents whose own sha256 is unset, and the non-ZIP sources leave it so.
+            Optional.empty()
+        } else {
+            modpackRepository.findFirstBySha256(sha256)
+        }
+
+    /**
      * Store the multipart-file to disk. If a match in SHA256 hashes is found, a [StorageException] is thrown to prevent
      * duplicates and save storage.
      *
@@ -103,14 +120,13 @@ class ModPackService @Autowired constructor(
         modpack.sha256 = savedFile.sha256
         modpack.name = savedFile.originalName
         modpack.size = savedFile.size
-        val availableModpacks = modpackRepository.findAll()
-        for (available in availableModpacks) {
-            if (available.sha256 == modpack.sha256) {
-                throw StorageException(
-                    "Modpack already exists. Not storing. Match found with hash ${modpack.sha256} in ${available.name} (${available.id})",
-                    available.id
-                )
-            }
+        val duplicate = existingUploadOf(modpack.sha256)
+        if (duplicate.isPresent) {
+            val available = duplicate.get()
+            throw StorageException(
+                "Modpack already exists. Not storing. Match found with hash ${modpack.sha256} in ${available.name} (${available.id})",
+                available.id
+            )
         }
         return modpackRepository.save(modpack)
     }
@@ -152,15 +168,15 @@ class ModPackService @Autowired constructor(
     fun getPackConfigForModpack(modpack: ModPack, runConfiguration: RunConfiguration): PackConfig {
         val packConfig = PackConfig()
         packConfig.modpackDir = rootLocation.resolve("${modpack.fileID}.zip").normalize().toFile().absolutePath
-        packConfig.setClientMods(runConfiguration.clientMods.map { it.mod }.toMutableList())
-        packConfig.setModsWhitelist(runConfiguration.whitelistedMods.map { it.mod }.toMutableList())
+        packConfig.setClientMods(runConfiguration.clientMods.toMutableList())
+        packConfig.setModsWhitelist(runConfiguration.whitelistedMods.toMutableList())
         if (modpack.status == ModPackStatus.GENERATING) {
             packConfig.inclusions.addAll(configurationHandler.suggestInclusions(packConfig.modpackDir))
         }
         packConfig.minecraftVersion = runConfiguration.minecraftVersion
         packConfig.modloader = runConfiguration.modloader
         packConfig.modloaderVersion = runConfiguration.modloaderVersion
-        packConfig.javaArgs = runConfiguration.startArgs.joinToString(" ") { it.argument }
+        packConfig.javaArgs = runConfiguration.startArgs.joinToString(" ")
         packConfig.isZipCreationDesired = true
         return packConfig
     }

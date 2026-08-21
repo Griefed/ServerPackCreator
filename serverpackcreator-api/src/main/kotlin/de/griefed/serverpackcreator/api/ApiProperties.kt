@@ -101,6 +101,17 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
     val generationConfig = GenerationConfig(store)
 
     /**
+     * Settings-group for the timeouts applied to every outbound HTTP call. Prefer accessing these
+     * values through this group; the individual properties on ApiProperties remain as facade.
+     *
+     * Declared here because it depends on nothing but [store] — and note that nothing in
+     * ApiProperties itself reads it, so the declaration-order landmine (Kotlin initialises
+     * properties in declaration order) does not bite: the only consumer is `WebUtilities`, which
+     * reads it per call, long after construction.
+     */
+    val networkConfig = NetworkConfig(store)
+
+    /**
      * Fallback-list of directories to include in a server pack.
      */
     val fallbackDirectoriesInclusion: TreeSet<String> get() = generationConfig.fallbackDirectoriesInclusion
@@ -208,6 +219,36 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
      */
     @Suppress("MemberVisibilityCanBePrivate")
     val modsWhitelistRegex: TreeSet<String> get() = generationConfig.modsWhitelistRegex
+
+    /**
+     * Milliseconds to wait for an HTTP connection to be established before giving up. Facade for
+     * [NetworkConfig.connectTimeout].
+     */
+    var networkConnectTimeout: Int
+        get() = networkConfig.connectTimeout
+        set(value) {
+            networkConfig.connectTimeout = value
+        }
+
+    /**
+     * Milliseconds a single read of a metadata response may block before the call gives up. Facade
+     * for [NetworkConfig.readTimeout].
+     */
+    var networkReadTimeout: Int
+        get() = networkConfig.readTimeout
+        set(value) {
+            networkConfig.readTimeout = value
+        }
+
+    /**
+     * Milliseconds a single read of a file-download may block before the download is abandoned.
+     * Facade for [NetworkConfig.downloadReadTimeout].
+     */
+    var networkDownloadReadTimeout: Int
+        get() = networkConfig.downloadReadTimeout
+        set(value) {
+            networkConfig.downloadReadTimeout = value
+        }
 
     /**
      * Modloaders supported by ServerPackCreator.

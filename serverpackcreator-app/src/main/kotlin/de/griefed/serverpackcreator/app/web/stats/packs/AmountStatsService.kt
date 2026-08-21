@@ -59,10 +59,13 @@ class AmountStatsService @Autowired constructor(
                 }
             }
 
+            // count() rather than findAll().size: the sizes used to cost three more full-collection
+            // loads, and each one fans out across four collections because the @DBRef graph
+            // (ServerPack -> RunConfiguration -> start-args/clientside-mods/whitelist) resolves eagerly.
             return AmountStatsData(
-                modpackRepository.findAll().size,
-                serverPackRepository.findAll().size,
-                runConfigurationRepository.findAll().size,
+                modpackRepository.count().toInt(),
+                serverPackRepository.count().toInt(),
+                runConfigurationRepository.count().toInt(),
                 minecraftVersions,
                 modloaders,
                 modloaderVersions

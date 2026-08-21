@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.app.web.modpack
 import de.griefed.serverpackcreator.api.config.ModpackSource
 import de.griefed.serverpackcreator.app.web.serverpack.ServerPack
 import org.springframework.data.annotation.PersistenceCreator
+import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.DBRef
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.data.mongodb.core.mapping.FieldType
@@ -46,6 +47,8 @@ class ModPack() {
     var status: ModPackStatus = ModPackStatus.QUEUED
     var source: ModpackSource = ModpackSource.ZIP
     var fileID: String? = null
+    /** SHA256 of the uploaded archive. Indexed: it is the key the upload duplicate-check looks up. */
+    @Indexed
     var sha256: String? = null
 
     @DBRef

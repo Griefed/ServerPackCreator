@@ -286,14 +286,14 @@
                         Modloader Version: {{ runConfigurations[id]?.modloaderVersion }}
                       </div>
                       <div class="row">
-                        Start Args: {{ runConfigurations[id]?.startArgs.map((arg) => arg.argument).join(', ') }}
+                        Start Args: {{ runConfigurations[id]?.startArgs.join(', ') }}
                       </div>
                       <div class="row">
-                        Client Mods: {{ runConfigurations[id]?.clientMods.map((mod) => mod.mod).join(', ') }}
+                        Client Mods: {{ runConfigurations[id]?.clientMods.join(', ') }}
                       </div>
                       <div class="row">
                         Whitelisted Mods: {{
-                          runConfigurations[id]?.whitelistedMods.map((mod) => mod.mod).join(', ')
+                          runConfigurations[id]?.whitelistedMods.join(', ')
                         }}
                       </div>
                     </q-tooltip>
@@ -679,9 +679,9 @@ export default defineComponent({
       this.minecraftVersion = config.minecraftVersion;
       this.modloader = config.modloader;
       this.modloaderVersion = config.modloaderVersion;
-      this.startArgs = config.startArgs.map(arg => arg.argument).join(', ');
-      this.whiteListMods = config.whitelistedMods.map(mod => mod.mod).join(', ');
-      this.clientMods = config.clientMods.map(mod => mod.mod).join(', ');
+      this.startArgs = config.startArgs.join(', ');
+      this.whiteListMods = config.whitelistedMods.join(', ');
+      this.clientMods = config.clientMods.join(', ');
     },
     onSubmitRegeneration(evt: Event) {
       const formData = new FormData(evt.target as HTMLFormElement);

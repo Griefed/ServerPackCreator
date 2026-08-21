@@ -30,7 +30,7 @@ export interface RunConfiguration {
   minecraftVersion: string
   modloader: string
   modloaderVersion: string
-  startArgs: { argument: string }[]
-  clientMods: { mod: string }[]
-  whitelistedMods: { mod: string }[]
+  startArgs: string[]
+  clientMods: string[]
+  whitelistedMods: string[]
 }

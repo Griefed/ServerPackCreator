@@ -19,10 +19,7 @@
  */
 package de.griefed.serverpackcreator.app.web.serverpack.runconfiguration
 
-import de.griefed.serverpackcreator.app.web.serverpack.customizing.ClientMod
 import de.griefed.serverpackcreator.app.web.serverpack.customizing.RunConfiguration
-import de.griefed.serverpackcreator.app.web.serverpack.customizing.StartArgument
-import de.griefed.serverpackcreator.app.web.serverpack.customizing.WhitelistedMod
 import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
 import java.util.*
@@ -32,13 +29,13 @@ import java.util.*
 interface RunConfigurationRepository : MongoRepository<RunConfiguration, String> {
     // lol, dat method name
     @Suppress("SpringDataRepositoryMethodParametersInspection")
-    fun findByMinecraftVersionAndModloaderAndModloaderVersionAndStartArgsInAndClientModsInAndWhitelistedModsIn(
+    fun findByMinecraftVersionAndModloaderAndModloaderVersionAndStartArgsAndClientModsAndWhitelistedMods(
         minecraftVersion: String,
         modloader: String,
         modloaderVersion: String,
-        startArgs: MutableList<StartArgument>,
-        clientMods: MutableList<ClientMod>,
-        whitelistedMods: MutableList<WhitelistedMod>
+        startArgs: MutableList<String>,
+        clientMods: MutableList<String>,
+        whitelistedMods: MutableList<String>
     ): Optional<RunConfiguration>
 
     fun findAllByMinecraftVersion(minecraftVersion: String): List<RunConfiguration>

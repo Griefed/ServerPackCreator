@@ -861,29 +861,31 @@ class GenerationConfig(private val store: PropertyStore) {
      * Regex-list of clientside-only mods to exclude from server packs, derived from
      * [clientsideMods] by wrapping every entry in start-and-anything regex-markers.
      */
-    var clientsideModsRegex: TreeSet<String> = TreeSet()
-        get() {
-            field.clear()
-            for (mod in clientsideMods) {
-                field.add("^$mod.*$")
-            }
-            return field
-        }
-        private set
+    val clientsideModsRegex: TreeSet<String>
+        get() = regexVariantOf(clientsideMods)
 
     /**
      * Regex-list of mods to include if present, derived from [modsWhitelist] by wrapping every
      * entry in start-and-anything regex-markers.
      */
-    var modsWhitelistRegex: TreeSet<String> = TreeSet()
-        get() {
-            field.clear()
-            for (mod in modsWhitelist) {
-                field.add("^$mod.*$")
-            }
-            return field
+    val modsWhitelistRegex: TreeSet<String>
+        get() = regexVariantOf(modsWhitelist)
+
+    /**
+     * [entries] wrapped in start-and-anything regex markers, as a set the caller owns.
+     *
+     * A **fresh** set each call, deliberately. The two properties above used to clear and refill one
+     * shared field, which emptied any result a caller was still holding and — because clear-then-refill
+     * is not atomic — let a concurrent reader see the list part-way through. Both are published, and the
+     * GUI reads settings from a `parallelStream`.
+     */
+    private fun regexVariantOf(entries: Collection<String>): TreeSet<String> {
+        val asRegexes = TreeSet<String>()
+        for (entry in entries) {
+            asRegexes.add("^$entry.*$")
         }
-        private set
+        return asRegexes
+    }
 
     /**
      * Merges the stored fallback-list of clientside-only mods into [clientsideMods] and writes

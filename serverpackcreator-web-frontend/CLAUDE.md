@@ -87,3 +87,17 @@
   children never mount — which is why the download-page tests use `shallowMount` + `vm` assertions instead.
   **Still untested by design:** `SubmissionPage` (two scrollbar style objects), `DownloadsPage`, `HistoryPage`,
   `ErrorPage` — pure composition — alongside the three tables.
+- 4g (2026-08-18, from an audit): **assert what a component *renders*, not the prop you handed it.**
+  `RunConfigurationCard`'s guard compared `wrapper.vm.clientMods` with the payload it had just passed in,
+  through a card that assigns `this.clientMods = runConfig.clientMods` unchanged — so it held for any element
+  type. Proven worthless by mutation: reverting the card to the pre-embedding object shape
+  (`clientMods.map(m => m.mod).join(', ')`) rendered `undefined, undefined` and **all 31 tests passed**. The
+  guard now asserts `wrapper.text()`, and that it contains neither `undefined` nor `[object Object]`.
+  `SubmitModPackForm` was checked and is *not* the same shape — its `clientMods` is a value
+  `selectedRunConfiguration` derives with `.join(', ')`, so the assertion is shape-sensitive (verified by
+  mutating that line and watching it fail).
+  **Its three tooltip `.join(', ')` sites stay untested by design**, same call as the tables: they sit behind
+  two layers of lazy Quasar rendering (`QBtnDropdown` renders on open, `QTooltip` on show), so reaching them
+  means driving both plus stubbing them as passthroughs, and they are display-only duplicates of data already
+  guarded at the populate path. A data-shape assertion there would only re-assert the axios mock, which is
+  the very defect this entry is about.

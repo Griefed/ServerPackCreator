@@ -188,7 +188,14 @@ Docker Test:
     # daemon, and the service can be dropped everywhere. A DOCKER_HOST of tcp://docker:2375|2376
     # means the service is the intended endpoint and the socket collision is the real bug. Remove
     # this block once the answer is recorded.
+    #
+    # The runner identity is printed too, and it is not optional: this file declares no `tags:`, so
+    # nothing pins these jobs to one runner. If any runner lacks the /var/run/docker.sock mount that
+    # kills dind, then on THAT runner dind is the only daemon and dropping .dockerized would break
+    # the release pipeline. One pipeline's output cannot answer that without saying which runner
+    # produced it.
     - echo "**** Docker endpoint in use ****"
+    - 'echo "RUNNER id=${CI_RUNNER_ID:-<unset>} desc=${CI_RUNNER_DESCRIPTION:-<unset>} tags=${CI_RUNNER_TAGS:-<none>}"'
     - 'echo "DOCKER_HOST=${DOCKER_HOST:-<unset>} DOCKER_TLS_CERTDIR=${DOCKER_TLS_CERTDIR:-<unset>}"'
     - ls -l /var/run/docker.sock || true
     - docker context ls || true

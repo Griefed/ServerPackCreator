@@ -49,6 +49,34 @@ class ModpackManifestParser(
     private val legacyFabric = SupportedModloaders.legacyFabric
 
     /**
+     * Every launcher-manifest [checkManifests] looks for, whether or not the file exists.
+     *
+     * Ordered as [checkManifests] consults them — most-specific launcher first — with one wrinkle worth
+     * knowing: the last entry, MultiMC/Prism's `instance.cfg`, is read *inside* the `mmc-pack.json`
+     * branch rather than being a candidate in its own right, so it is listed last but never selects a
+     * launcher by itself.
+     *
+     * The single source of truth for "which files define this modpack". [checkManifests] builds its own
+     * candidates from this, so a caller wanting to know whether a modpack's manifests have *changed* —
+     * the GUI's editor does, to avoid re-parsing a multi-megabyte `minecraftinstance.json` on every
+     * keystroke-pause — can ask instead of duplicating the list and drifting from it.
+     *
+     * @param destination The directory the modpack lives in.
+     * @return The candidate manifest files, existing or not, most-specific launcher first.
+     */
+    fun manifestCandidates(destination: String): List<File> {
+        val parent = File(destination).parentFile
+        return listOf(
+            File(destination, "minecraftinstance.json"),
+            File(destination, "manifest.json"),
+            File(destination, "instance.json"),
+            File(parent, "instance.json"),
+            File(parent, "mmc-pack.json"),
+            File(parent, "instance.cfg")
+        )
+    }
+
+    /**
      * Check whether various manifests from various launchers exist and use them to update our
      * ConfigurationModel and pack name.
      *
@@ -61,12 +89,13 @@ class ModpackManifestParser(
      */
     fun checkManifests(destination: String, packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck()): String? {
         var packName: String? = null
-        val curseManifest = File(destination, "manifest.json")
-        val curseMinecraftInstance = File(destination, "minecraftinstance.json")
-        val atLauncherInstance = File(destination, "instance.json")
-        val gdLauncherInstance = File(File(destination).parentFile,"instance.json")
-        val mmcPrismPack = File(File(destination).parentFile, "mmc-pack.json")
-        val mmcPrismInstance = File(File(destination).parentFile, "instance.cfg")
+        val candidates = manifestCandidates(destination)
+        val curseMinecraftInstance = candidates[0]
+        val curseManifest = candidates[1]
+        val atLauncherInstance = candidates[2]
+        val gdLauncherInstance = candidates[3]
+        val mmcPrismPack = candidates[4]
+        val mmcPrismInstance = candidates[5]
         when {
             curseMinecraftInstance.exists() -> {
                 // Check minecraftinstance.json usually created by Overwolf's CurseForge launcher.

@@ -25,7 +25,9 @@ package de.griefed.serverpackcreator.app.updater.versionchecker
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import de.griefed.serverpackcreator.api.settings.NetworkConfig
 import de.griefed.serverpackcreator.api.utilities.common.Comparison
+import de.griefed.serverpackcreator.api.utilities.common.timedConnection
 import de.griefed.serverpackcreator.api.utilities.common.SemanticVersionComparator
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.BufferedReader
@@ -43,6 +45,17 @@ import java.util.*
  */
 @Suppress("unused")
 abstract class VersionChecker {
+
+    /**
+     * Milliseconds to wait for a connection to the release API. Defaulted from
+     * [NetworkConfig.DEFAULT_CONNECT_TIMEOUT] rather than a literal, and overwritten by
+     * [de.griefed.serverpackcreator.app.updater.UpdateChecker] with the configured value — this class
+     * has no `ApiProperties`, and giving it one would change every subclass's constructor.
+     */
+    var connectTimeout: Int = NetworkConfig.DEFAULT_CONNECT_TIMEOUT
+
+    /** Milliseconds a single read of a release-API response may block. See [connectTimeout]. */
+    var readTimeout: Int = NetworkConfig.DEFAULT_READ_TIMEOUT
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     protected var allVersions: List<String>? = null
         private set
@@ -325,7 +338,9 @@ abstract class VersionChecker {
      */
     @Throws(IOException::class)
     protected fun getResponse(requestUrl: URL): String {
-        val httpURLConnection = requestUrl.openConnection() as HttpURLConnection
+        // Bounded rather than a bare openConnection(): the JDK default is to wait forever, and this
+        // runs on the GUI's startup update-check, so a silent host would block it with no way out.
+        val httpURLConnection = requestUrl.timedConnection(connectTimeout, readTimeout) as HttpURLConnection
         httpURLConnection.requestMethod = "GET"
         if (httpURLConnection.responseCode != 200) throw IOException("Request for " + requestUrl + " responded with " + httpURLConnection.responseCode)
         val bufferedReader = BufferedReader(
