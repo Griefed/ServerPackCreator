@@ -7,6 +7,9 @@
 > - **Deferred-but-agreed work** → `claude-docs/BACKLOG.md` (why it waited + context to pick it up cold).
 > - **Behaviour changes on the published API** → `claude-docs/API-BEHAVIOUR-CHANGES.md` (one row per
 >   change, what an embedder sees). The *policy* stays below; that file is its evidence.
+> - **CI secrets — what each one is, its scopes, and which job dies without it** →
+>   `claude-docs/CI-SECRETS.md`. Read it before touching a `secrets.*` reference: Forgejo rejects the
+>   `FORGEJO_`/`GITEA_`/`GITHUB_` prefixes, so the credentials are `FJ_*`/`GH_*` on purpose.
 > - Module-specific facts, patterns and landmines → each module's own `CLAUDE.md`
 >   (lazy-loaded by Claude Code when you work in that module).
 > - Personal working preferences (general approach, organization, no-shortcuts ethos,
