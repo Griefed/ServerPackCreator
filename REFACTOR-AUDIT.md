@@ -1455,3 +1455,348 @@ The one thing to act on is **V1**, and it is not this branch's: the web mode app
 default `test` database rather than the configured one. It needs whoever owns the config plumbing, and it
 is worth treating as urgent, because it would also make this branch's migration a silent no-op on a
 correctly-configured instance.
+
+---
+
+# Audit — the Forgejo CI migration, iteration 1
+
+**Range:** `8195c413c..claude-forgejo-ci` (1 commit, `ci: move CI/CD to Forgejo, and retire GitLab CI`)
+**Date:** 2026-08-21 · **Mode:** READ-ONLY
+Focus: **faithfulness and completeness.** Workflows have no test suite, so the conventions' TDD rules have
+nothing to bite on here; what can go wrong instead is a job silently lost, a reference that cannot resolve,
+or a credential that is the right *name* on the wrong *forge*. All three happened.
+
+## Verified clean first
+
+- **All 20 GitLab jobs are accounted for** — `Build Test`, `Qodana`(+`Post`), `Docker Test`,
+  `Generate Release`, `Build Release`, `Sign Java Publication`, the four `Publish *`, both
+  `Build Docker *`, `Writerside Build`, the three `Writerside Docker *`, `pages`,
+  `Update README:on-schedule`, `release_job`. One case within them is not — see **C4**.
+- **No dangling internal references.** Every `needs:` names a real job, every
+  `needs.<job>.outputs.<x>` is declared by that job, and every `steps.<id>.outputs.*` has a step with
+  that id. Checked programmatically across all 13 workflow files, not by eye.
+- **All 13 workflow files parse as YAML**, and `./gradlew build` is green with the retargeted Maven
+  repository — all four `publishMavenJavaPublicationTo*Repository` tasks still generate, so the names CI
+  invokes still exist.
+
+## HIGH
+
+### C1 — The PGP signing key is passed as a command-line property, and it cannot survive that
+
+`release-build.yml`'s `maven` job builds
+`COMMON="-Pversion=$V -PsigningKey=${{ secrets.SIGNING_KEY }} -PsigningPassword=…"`.
+
+An armoured PGP private key is **multi-line**. Splicing it into a shell variable that is then word-split
+into `./gradlew` arguments cannot work: the first newline ends the argument, and what reaches
+`useInMemoryPgpKeys` is a truncated fragment. Signing then fails — or worse, produces something and fails
+later at OSSRH validation, after three other repositories have already been published to.
+
+GitLab never did this. It set the value as a CI variable and `findProperty("signingKey")`
+(`publishing-conventions.gradle.kts:100`) picked it up, because Gradle resolves `findProperty` from
+`ORG_GRADLE_PROJECT_<name>` environment variables as well as from `-P`. That is the mechanism this must
+use, and it is also the one that keeps a private key out of the process argument list — where `-P` would
+expose it to anything that can read `/proc/<pid>/cmdline`.
+
+**Fix:** `ORG_GRADLE_PROJECT_signingKey` / `ORG_GRADLE_PROJECT_signingPassword` in the job's `env`, and
+drop both from `COMMON`.
+
+### C2 — Two GitHub-API actions are handed the Forgejo token
+
+`update-readme.yml:38` and `:44` pass `${{ secrets.GITHUB_TOKEN }}` to
+`JamesIves/github-sponsors-readme-action` and `actions-cool/contributor-helper`. On Forgejo,
+`secrets.GITHUB_TOKEN` is the **automatically provided Forgejo token** — a credential for
+`git.griefed.de`, handed to two actions that query *GitHub's* GraphQL and REST APIs for sponsors and
+contributors.
+
+The name is right and the forge is wrong, which is the worst shape for this kind of bug: nothing fails to
+parse, and the likely outcome is an empty sponsor list quietly committed over a populated one. The commit
+introduced `GH_ACTOR`/`GH_TOKEN` precisely to keep GitHub credentials distinguishable, then did not use
+them here.
+
+**Fix:** `${{ secrets.GH_TOKEN }}` at both call sites.
+
+### C3 — The `continuous` tag is moved on the wrong forge, by an action that cannot resolve
+
+`devbuild.yml:319–324` keeps GitLab-era `richardsimko/update-tag` with
+`GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}` to move the rolling `continuous` tag. Two defects in one step:
+
+- the reference is **bare**, so Forgejo resolves it against `DEFAULT_ACTIONS_URL`
+  (`https://data.forgejo.org`), which does not host it — see **C5**;
+- even if it resolved, it is a GitHub action moving a GitHub tag, and the rolling release now lives on
+  Forgejo.
+
+This one is not cosmetic. The new "Refresh the Forgejo continuous release" step creates the release with
+`target_commitish: develop` against tag `continuous`; if that tag never moves, every dev build publishes
+assets under a tag pointing at an old commit, and the source archives fetched from
+`/archive/continuous.zip` are of that old commit too — assets and source silently disagreeing.
+
+**Fix:** move the tag on Forgejo with git (`git tag -f continuous && git push --force origin continuous`)
+using `FORGEJO_TOKEN`, and delete the action.
+
+## MEDIUM
+
+### C4 — Docs images are no longer built for non-release commits
+
+GitLab had *three* `Writerside Docker*` jobs, and the plain one carried the inverse rules —
+`$CI_COMMIT_TAG !~ /release patterns/` — so it published `serverpackcreator-help:<short-sha>` on
+**ordinary pipelines**, not tags. `docs.yml` triggers only on `push: tags: ['*.*.*']`, so that case is
+gone: help images now exist for releases only.
+
+That may well be what you want (a per-commit docs image is the same noise `docker-test.yml` deliberately
+stopped publishing), but the commit did not say so — it presented three jobs collapsing into one as pure
+simplification. Either restore a non-tag trigger or record the drop as deliberate.
+
+### C5 — Action qualification is inconsistent, and rests on a setting nobody verified
+
+Four references are fully qualified (`https://github.com/luangong/setup-install4j`,
+`…/JamesIves/…`, `…/actions-cool/…`, `…/release-kit/…`) and **four are bare third-party**:
+`jmgilman/actions-generate-checksum`, `richardsimko/update-tag`, `tiyee/action-ssh`,
+`nogsantos/scp-deploy` (all in `devbuild.yml`).
+
+A bare reference resolves against `DEFAULT_ACTIONS_URL`, which the Forgejo docs give as
+`https://data.forgejo.org` — a mirror of common actions, not of arbitrary GitHub repositories. So these
+four resolve only if this instance's `DEFAULT_ACTIONS_URL` points at github.com. The commit's own comment
+argues the `actions/...@<github-sha>` references are "proven to resolve on this instance", which is sound
+for `actions/*` and `docker/*`; extending that confidence to four one-person repositories is not the same
+claim, and the Forgejo docs explicitly recommend qualifying.
+
+**Fix:** fully qualify all four. It costs nothing and removes the dependency on an instance setting.
+
+## LOW
+
+### C6 — Two GitLab capabilities dropped without being named
+
+Recorded so they are decisions rather than omissions:
+
+- `Build Release` uploaded the app jar to GitLab's **generic package registry** and then created a
+  release *asset link* pointing at it. Forgejo release assets are uploaded directly and get stable URLs,
+  so the two-step dance is genuinely superseded — but a consumer with a hard-coded
+  `/packages/generic/...` URL loses it.
+- `release_job` created a GitLab release whose description linked the changelog on three forges. The
+  Forgejo release now carries the changelog section itself, which is better, and the mirror job creates
+  the downstream entries.
+
+## Summary
+
+Three HIGH, and they share a shape: **a credential or a reference that is syntactically fine and points
+at the wrong system.** C1 would fail signing (or half-publish), C2 would quietly empty the README's
+sponsor list, C3 would publish dev assets under a stale tag. None of them would be caught by YAML
+validation, which is all this migration has had so far — the reason to look at them by hand.
+
+Recommended: fix C1–C3 and C5 as one commit each, decide C4, record C6.
+
+---
+
+# Audit — the Forgejo CI migration, iteration 2
+
+**Date:** 2026-08-21 · **Mode:** READ-ONLY
+Focus: **does the shell and API logic actually work?** Iteration 1 read the workflows; this one *ran* the
+steps — extracted each `run:` block from the YAML, substituted the expressions, and executed it against
+real inputs (the repository's own `CHANGELOG.md`, a synthetic build tree). That is the only way to check a
+workflow that cannot be run on the runner from here, and it found a defect no amount of reading had.
+
+## Iteration-1 fixes confirmed
+
+Signing credentials travel as `ORG_GRADLE_PROJECT_*`; both README actions use `GH_TOKEN`; the `continuous`
+tag is moved on Forgejo with git; all four remaining third-party actions are fully qualified; the non-tag
+docs image is restored. Re-validated: no dangling references, no bare third-party actions, no
+`secrets.GITHUB_*` outside a comment.
+
+## HIGH
+
+### D1 — A final release's notes contain every prerelease's notes as well
+
+`release-build.yml`'s *Extract changelog section* uses:
+
+```awk
+$0 ~ "^#+ +\\[?" ver "\\]?" { found=1; next }
+found && /^#+ +\[?[0-9]+\.[0-9]+\.[0-9]+/ { exit }
+```
+
+The closing bracket is **optional**, so for `ver=8.1.1` the start pattern also matches
+`## [8.1.1-beta.2](…)`. That rule runs first and ends in `next`, so the exit rule never sees those
+headings — collection simply continues through them.
+
+Measured against the repository's own `CHANGELOG.md`, comparing the extraction with the true section
+boundaries:
+
+| requested version | extracted | true section | |
+|---|---|---|---|
+| `8.1.1` | 5,685 chars | 2,834 | **wrong** — absorbs `8.1.1-beta.2` and `-beta.1` |
+| `8.1.0` | 28,807 chars | 14,377 | **wrong** — absorbs three betas |
+| `8.1.1-beta.2` | 673 chars | 672 | correct (nothing nests under a prerelease) |
+
+So every *final* release would publish its own changelog followed by the changelogs of the prereleases
+that led to it — duplicated content, and for `8.1.0` roughly double the intended notes. Prereleases are
+unaffected, which is exactly why this would have shipped: the first Forgejo release cut will be an alpha.
+
+**Fix:** require the closing bracket (`\[` … `\]` — every heading in this file is `## [x.y.z](url)`), so a
+prerelease heading falls through to the exit rule. Escape the dots too, so `8.1.1` cannot match `8x1y1`.
+
+## MEDIUM
+
+### D2 — A failed asset upload leaves an incomplete release and a green run
+
+Five `run:` steps that call `curl` in a loop or in sequence have no `set -e`:
+
+| workflow | job | step |
+|---|---|---|
+| `release-build.yml` | `release` | Create release and upload assets **(loops)** |
+| `release-build.yml` | `mirror` | Fetch release notes from Forgejo |
+| `release-build.yml` | `mirror` | Mirror to GitHub **(loops)** |
+| `release-build.yml` | `mirror` | Mirror to GitLab.com |
+| `qodana.yml` | `notify` | Post to Discord |
+
+`curl -sf` returns non-zero on an HTTP error, but without `set -e` the loop continues and the step exits
+with the status of its *last* command. So one asset failing to upload — a network blip, a size limit, a
+name collision — produces a release that is missing a file while the run reports success. For a release
+pipeline that is the wrong failure mode: a loud failure can be re-run, a silently incomplete release gets
+downloaded.
+
+The three steps written for this migration in `devbuild.yml`, and both VirusTotal steps, already have
+`set -eu`. This is inconsistency, not oversight-by-design.
+
+**Fix:** `set -eu` in all five. Discord stays tolerant on purpose — a missing webhook is already handled
+explicitly — but it should not silently swallow a *failed* post.
+
+## LOW
+
+### D3 — Verified working, by execution rather than inspection
+
+Recorded so a future reader does not re-derive it:
+
+- **Tag classification** (`prepare`): accepts `9.0.0`, `9.0.0-alpha.6`, `9.0.0-beta.1`; **refuses**
+  `continuous`, `9.0`, `v9.0.0`, `9.0.0-rc.1` with a non-zero exit and a named error. The `continuous`
+  refusal matters — the dev-build tag must never start a release.
+- **Docs image tags**: `tag/9.0.0` → version + `latest`; `tag/9.0.0-alpha.6` → version only;
+  `branch/develop` → 8-char short SHA. All three GitLab jobs' behaviour, from one computation.
+- **Asset collection**, against a synthetic build tree containing the traps: 13 assets, with
+  `serverpackcreator-app-<v>-plain.jar` and `media/output.txt` correctly excluded, the app jar renamed to
+  `ServerPackCreator-<v>.jar`, the dokka zip included, and `checksum.txt` covering 12 files **without
+  listing itself** — the ordering fix holds.
+- **Forgejo release payload**: built from a real 27-line changelog section containing backticks, brackets,
+  parentheses and quotes. Valid JSON, and the body round-trips byte-identically. The `$BODY` expansion is
+  safe because parameter expansion does not re-interpret the backslashes JSON encoding introduces.
+- **GitLab mirror payload**: valid JSON. Its nested-quoting construction is fragile to read but correct
+  for fixed content; left alone rather than rewritten for taste.
+
+## Summary
+
+One HIGH that only execution could find (**D1** — final releases publish their prereleases' changelogs
+too, roughly doubling the notes), and one MEDIUM about failure modes (**D2** — an incomplete release that
+reports success). Everything else executed correctly against real inputs, including the two payload paths
+most likely to break on quoting.
+
+Recommended: fix D1 and D2; leave D3 as the record.
+
+---
+
+# Audit — the Forgejo CI migration, iteration 3
+
+**Date:** 2026-08-21 · **Mode:** READ-ONLY
+Focus: **the first real run, and the second.** Iterations 1 and 2 checked that the workflows are internally
+correct. This one asks what happens when the world does not cooperate — a mirror that has not caught up, a
+job that failed halfway, two pushes landing at once, a re-run. Every finding here is invisible to YAML
+validation *and* to executing the steps in isolation, because each is about ordering between jobs.
+
+## Iteration-2 fixes confirmed
+
+Changelog extraction re-verified by execution against five versions: every one now matches the true
+section boundaries exactly, and an absent version still falls back. `set -eu` present in all five
+previously-silent steps, with Discord's guard still exiting cleanly on a missing webhook.
+
+## HIGH
+
+### E1 — The GitHub mirror can create the tag itself, pointing at the wrong commit
+
+`mirror` POSTs to `…/releases` with `tag_name` and no `target_commitish`. GitHub's documented behaviour is
+that **if the tag does not exist, it is created from `target_commitish`, which defaults to the
+repository's default branch.**
+
+Mirroring git refs to GitHub is asynchronous — and, for a push-mirror, may not have happened at all when
+this job runs seconds after the Forgejo release. So the likely first-run outcome is GitHub creating a
+`9.0.0` tag pointing at whatever `main` happened to be, not at the release commit. That is a wrong tag on
+a public forge, it will disagree with Forgejo's, and it will then *block* the correct tag when mirroring
+does catch up.
+
+**Fix:** pass `target_commitish: ${{ github.sha }}` — the commit the tag was cut from. If GitHub has to
+create the tag, it then creates the right one.
+
+## MEDIUM
+
+### E2 — The GitLab mirror fails until the tag has propagated
+
+Same root cause, opposite symptom. GitLab's `POST /projects/:id/releases` requires the tag to exist
+already unless a `ref` is supplied; without one it answers `404 Tag Not Found`. Now that the step has
+`set -eu` (iteration 2), that is a hard failure of the mirror job on every release where mirroring has not
+yet caught up — which is most of them.
+
+**Fix:** pass `ref: ${{ github.sha }}`, which tells GitLab to create the tag at that commit if needed.
+
+### E3 — `devbuild` has no concurrency guard, and this migration made that dangerous
+
+Two pushes to `develop` in quick succession run two devbuilds concurrently. The old GitHub workflow also
+had no guard, but it used `ncipollo/release-action` with `allowUpdates`/`replacesArtifacts` — an in-place
+update, which overlapping runs survive untidily.
+
+This migration replaced that with **delete-then-recreate** (deliberately, to be sure stale assets are
+gone). That is the right shape for one run and the wrong shape for two: run A deletes the release, run B
+deletes nothing, A creates, B's create then collides or B attaches its assets to A's release. There is also
+a window in which the `continuous` release does not exist at all — on the download page users are pointed
+at.
+
+So the guard is not a pre-existing omission being tidied up; the change raised the stakes and should have
+brought it along.
+
+**Fix:** `concurrency: {group: devbuild, cancel-in-progress: true}`.
+
+### E4 — A re-run cannot repair a partly-failed release
+
+`release` creates the release unconditionally. Re-running the workflow for the same tag — the ordinary
+response to `docker` or `maven` failing — now hits `set -eu` and dies at release creation, because a
+release for that tag already exists. `maven` and `docker` would re-run (they do not depend on `release`),
+but `mirror` and `virustotal` are skipped, so the exact path that failed cannot be retried.
+
+**Fix:** look the release up by tag first and reuse its id; create only if absent. That makes the job
+idempotent and a re-run a repair rather than a second failure.
+
+### E5 — The mirrored release never carries the VirusTotal section, and the mirror does not run last
+
+Two ordering problems with one fix:
+
+- `virustotal` PATCHes the **Forgejo** release body with the scan permalinks, but `mirror` reads that body
+  in parallel — both depend only on `release`. So GitHub's copy is written before the section exists and
+  never gets it. The workflow this replaced set `update_release_body: true` on the GitHub release, so this
+  is a capability lost in the move.
+- `mirror` does not depend on `maven` or `docker`, so GitHub can advertise a release whose Maven artifacts
+  and container images do not exist yet — or never will, if those jobs fail. The approved plan said the
+  mirror "runs last and only on success"; the graph does not honour it.
+
+**Fix:** `prepare → assets → {release, maven, docker} → virustotal → mirror`.
+
+## LOW
+
+### E6 — `update-readme` has no concurrency guard
+
+Its schedule and a manual dispatch can overlap, and both commit and push to `main`. The loser fails on a
+non-fast-forward, which is noisy rather than harmful, but the guard costs one line.
+
+### E7 — Verified clean
+
+- Every other workflow has a concurrency group; `release-generate` and `release-build` correctly use
+  `cancel-in-progress: false`, so a release in flight is never cancelled by a following push.
+- `release-build`'s trigger glob `'*.*.*'` does match prerelease tags such as `9.0.0-alpha.6`, and
+  `prepare` refuses anything that is not one of the two release shapes — so a stray tag cannot start a
+  release build.
+- `virustotal` and `mirror` both take their assets from the same artifact the `release` job published, so
+  what is scanned and what is mirrored is what was released, not a rebuild.
+
+## Summary
+
+One HIGH and four MEDIUM, all of them about *when* things happen rather than what they do — the class that
+neither YAML validation nor step-level execution can see. E1 and E2 are the same root cause seen from two
+sides: the mirror assumes a tag that may not be there yet. E3 and E4 are about the second run rather than
+the first. E5 is a capability quietly lost and a dependency the plan specified but the graph did not.
+
+Recommended: fix all six; they are one commit's work and every one of them would show up on the first real
+release.

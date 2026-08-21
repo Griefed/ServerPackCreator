@@ -61,6 +61,11 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   there and nowhere else. `.github/workflows` keeps a **smoke test** plus the four issue-driven
   `clientside-*` workflows, which are GitHub-native; releases are created on Forgejo and mirrored outward
   by `release-build.yml`'s `mirror` job, because Forgejo push-mirrors replicate refs but **not** releases.
+  Two GitLab capabilities were **deliberately not carried over**: `Build Release` uploaded the app jar to
+  GitLab's *generic package registry* and then created a release asset *link* to it (Forgejo attaches
+  assets to the release directly, so a consumer with a hard-coded `/packages/generic/...` URL loses it),
+  and `release_job` created a release whose description merely linked changelogs on three forges (the
+  Forgejo release now carries the changelog section itself).
   **`serverpackcreator-help/Writerside/api-docs.yaml` is GENERATED, not hand-maintained** — springdoc
   is wired into `-app` as `developmentOnly`, and the regeneration command sits beside that dependency
   in `serverpackcreator-app/build.gradle.kts`. It had drifted to 25 of 44 endpoints while being edited

@@ -6,8 +6,17 @@
 # the GitLab `pages` job served is attached to the release by release-build.yml instead.
 name: Documentation
 
+# GitLab had three Writerside Docker jobs: two for tags (`:<version>` and, for a full release, `:latest`)
+# and one with the *inverse* rules that published `:<short-sha>` on ordinary pipelines. All three are here;
+# the non-tag case is kept rather than dropped, because a docs image per commit is how the help site gets
+# previewed before a release.
 on:
   push:
+    branches:
+      - main
+      - alpha
+      - beta
+      - develop
     tags:
       - '*.*.*'
   workflow_dispatch:
@@ -103,15 +112,24 @@ jobs:
 
       # One job replacing three. GitLab needed a separate job per tag set because its rules are per-job;
       # here the tag list is computed, and `latest` is still reserved for a full release.
+      # Three GitLab jobs collapse into this one computation:
+      #   full release  -> :<version> and :latest
+      #   prerelease    -> :<version>
+      #   branch push   -> :<short-sha>   (what the inverse-rules job did)
       - name: Compute tags
         id: tags
         run: |
-          V="${{ github.ref_name }}"
           U="${{ secrets.DOCKERHUB_USER }}"
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            V="${{ github.ref_name }}"
+          else
+            V="$(echo "${{ github.sha }}" | cut -c1-8)"
+          fi
           TAGS="ghcr.io/$U/serverpackcreator-help:$V,index.docker.io/$U/serverpackcreator-help:$V"
           if [[ "$V" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             TAGS="$TAGS,ghcr.io/$U/serverpackcreator-help:latest,index.docker.io/$U/serverpackcreator-help:latest"
           fi
+          echo "version=$V" >> "$GITHUB_OUTPUT"
           echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
 
       - name: Build and push
@@ -122,5 +140,5 @@ jobs:
           platforms: linux/amd64
           push: true
           no-cache: true
-          build-args: VERSION=${{ github.ref_name }}
+          build-args: VERSION=${{ steps.tags.outputs.version }}
           tags: ${{ steps.tags.outputs.tags }}

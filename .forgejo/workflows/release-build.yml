@@ -135,9 +135,15 @@ jobs:
       - name: Extract changelog section
         run: |
           V="${{ needs.prepare.outputs.version }}"
-          awk -v ver="$V" '
-            $0 ~ "^#+ +\\[?" ver "\\]?" { found=1; next }
-            found && /^#+ +\[?[0-9]+\.[0-9]+\.[0-9]+/ { exit }
+          # The closing bracket is REQUIRED and the dots are escaped. With `\]?` optional, a request for
+          # `8.1.1` also matched `## [8.1.1-beta.2](...)`; that rule ends in `next`, so the exit rule never
+          # fired and collection ran on through every prerelease section beneath the release. Measured on
+          # this repository's CHANGELOG: 8.1.1 gave 5,685 chars against a true section of 2,834, and 8.1.0
+          # gave 28,807 against 14,377. Prereleases were unaffected, which is why it would have shipped.
+          VER_RE="$(printf '%s' "$V" | sed 's/\./\\./g')"
+          awk -v ver="$VER_RE" '
+            $0 ~ "^#+ +\\[" ver "\\]" { found=1; next }
+            found && /^#+ +\[[0-9]+\.[0-9]+\.[0-9]+/ { exit }
             found { print }
           ' CHANGELOG.md > notes.md
           if [ ! -s notes.md ]; then
@@ -151,13 +157,27 @@ jobs:
           TOKEN: ${{ secrets.FORGEJO_TOKEN }}
           API: https://git.griefed.de/api/v1/repos/Griefed/ServerPackCreator
         run: |
+          set -eu
           V="${{ needs.prepare.outputs.version }}"
           PRE="${{ needs.prepare.outputs.prerelease }}"
           BODY="$(python3 -c 'import json,sys;print(json.dumps(open("notes.md").read()))')"
-          ID="$(curl -sf -X POST "$API/releases" \
-                 -H "Authorization: token $TOKEN" -H 'Content-Type: application/json' \
-                 -d "{\"tag_name\":\"$V\",\"name\":\"$V\",\"body\":$BODY,\"draft\":false,\"prerelease\":$PRE}" \
-               | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')"
+          # Reuse an existing release for this tag instead of failing. Re-running this workflow is the
+          # ordinary way to repair a release whose `maven` or `docker` job failed, and with `set -eu` an
+          # unconditional POST would die here on the second attempt -- leaving the very jobs that need
+          # repairing (`mirror`, `virustotal`, both of which need this id) skipped.
+          ID="$(curl -s "$API/releases/tags/$V" -H "Authorization: token $TOKEN" \
+                | python3 -c "import json,sys;print(json.load(sys.stdin).get('id') or '')" 2>/dev/null || true)"
+          if [ -n "$ID" ]; then
+            echo "Release for $V already exists ($ID) - reusing it and refreshing its notes"
+            python3 -c "import json;print(json.dumps({'body':open('notes.md').read()}))" > patch.json
+            curl -sf -X PATCH "$API/releases/$ID" -H "Authorization: token $TOKEN" \
+              -H 'Content-Type: application/json' -d @patch.json > /dev/null
+          else
+            ID="$(curl -sf -X POST "$API/releases" \
+                   -H "Authorization: token $TOKEN" -H 'Content-Type: application/json' \
+                   -d "{\"tag_name\":\"$V\",\"name\":\"$V\",\"body\":$BODY,\"draft\":false,\"prerelease\":$PRE}" \
+                 | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')"
+          fi
           echo "release_id=$ID" >> "$GITHUB_OUTPUT"
           for f in assets/*; do
             echo "Uploading $(basename "$f")"
@@ -200,9 +220,17 @@ jobs:
           FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
+          # The signing key travels as an ORG_GRADLE_PROJECT_ variable, NOT as `-PsigningKey=...`.
+          # `findProperty("signingKey")` in publishing-conventions reads either, and an armoured PGP key is
+          # multi-line: spliced into a shell variable and word-split into gradle arguments, it is truncated
+          # at the first newline, so `useInMemoryPgpKeys` gets a fragment. This is also how GitLab supplied
+          # it, and it keeps the private key out of the process argument list where anything able to read
+          # /proc/<pid>/cmdline could see it.
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
         run: |
           V="${{ needs.prepare.outputs.version }}"
-          COMMON="-Pversion=$V -PsigningKey=${{ secrets.SIGNING_KEY }} -PsigningPassword=${{ secrets.SIGNING_PASSWORD }}"
+          COMMON="-Pversion=$V"
           SKIP="-x :serverpackcreator-api:test -x :serverpackcreator-app:test"
           ./gradlew dokkaJavadocJar :serverpackcreator-api:signMavenJavaPublication $COMMON $SKIP --info --stacktrace
           ./gradlew :serverpackcreator-api:publishMavenJavaPublicationToGitGriefedRepository    $COMMON $SKIP --info --stacktrace
@@ -263,7 +291,13 @@ jobs:
 
   mirror:
     name: "Mirror release outward"
-    needs: [prepare, assets, release]
+    # Last, and after everything: the plan for this migration said the mirror "runs last and only on
+    # success", and that has to include `maven` and `docker` -- otherwise GitHub can advertise a release
+    # whose artifacts and images do not exist yet, or never will. `virustotal` is in here too because it
+    # PATCHes the Forgejo release body with the scan permalinks, and the mirror copies that body; without
+    # the dependency the GitHub release would never carry the section, which the workflow this replaced
+    # added via `update_release_body`.
+    needs: [prepare, assets, release, maven, docker, virustotal]
     runs-on: ubuntu-latest
     steps:
 
@@ -279,6 +313,7 @@ jobs:
         env:
           TOKEN: ${{ secrets.FORGEJO_TOKEN }}
         run: |
+          set -eu
           curl -sf "https://git.griefed.de/api/v1/repos/Griefed/ServerPackCreator/releases/${{ needs.release.outputs.release_id }}" \
             -H "Authorization: token $TOKEN" \
             | python3 -c 'import json,sys;open("notes.md","w").write(json.load(sys.stdin)["body"])'
@@ -287,12 +322,17 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
+          set -eu
+          # target_commitish is not optional here. GitHub creates the tag from it when the tag does not
+          # exist, defaulting to the DEFAULT BRANCH -- and git mirroring is asynchronous, so seconds after
+          # the Forgejo release the tag usually has not arrived. Without this, GitHub would create a
+          # `$V` tag pointing at main's HEAD, disagreeing with Forgejo and blocking the real tag later.
           V="${{ needs.prepare.outputs.version }}"
           PRE="${{ needs.prepare.outputs.prerelease }}"
           BODY="$(python3 -c 'import json;print(json.dumps(open("notes.md").read()))')"
           ID="$(curl -sf -X POST "https://api.github.com/repos/Griefed/ServerPackCreator/releases" \
                  -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
-                 -d "{\"tag_name\":\"$V\",\"name\":\"$V\",\"body\":$BODY,\"prerelease\":$PRE}" \
+                 -d "{\"tag_name\":\"$V\",\"target_commitish\":\"${{ github.sha }}\",\"name\":\"$V\",\"body\":$BODY,\"prerelease\":$PRE}" \
                | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')"
           for f in assets/*; do
             curl -sf -X POST \
@@ -307,13 +347,17 @@ jobs:
         env:
           GITLABCOM_TOKEN: ${{ secrets.GITLABCOM_TOKEN }}
         run: |
+          set -eu
           V="${{ needs.prepare.outputs.version }}"
           # GitLab releases reference assets by URL rather than hosting uploads, so the description points
           # back at the Forgejo release, which is the canonical download location now.
           DESC="Release $V. Assets and changelog: https://git.griefed.de/Griefed/ServerPackCreator/releases/tag/$V"
+          # `ref` for the same reason GitHub needs target_commitish: without it GitLab answers
+          # 404 Tag Not Found until mirroring has caught up, which is a hard failure now that this step
+          # has set -eu.
           curl -sf -X POST "https://gitlab.com/api/v4/projects/32677538/releases" \
             -H "PRIVATE-TOKEN: $GITLABCOM_TOKEN" -H 'Content-Type: application/json' \
-            -d "{\"name\":\"$V\",\"tag_name\":\"$V\",\"description\":$(python3 -c "import json,sys;print(json.dumps('$DESC'))")}" \
+            -d "{\"name\":\"$V\",\"tag_name\":\"$V\",\"ref\":\"${{ github.sha }}\",\"description\":$(python3 -c "import json,sys;print(json.dumps('$DESC'))")}" \
             > /dev/null && echo "GitLab.com release created"
 
   virustotal:

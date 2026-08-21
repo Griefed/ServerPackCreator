@@ -23,6 +23,15 @@ on:
 permissions:
   contents: read
 
+# Required, not tidy-up. The GitHub original had no guard either, but it updated the `continuous` release
+# in place (`allowUpdates`/`replacesArtifacts`), which overlapping runs survive untidily. This port
+# deletes-then-recreates so stale assets cannot linger -- right for one run, wrong for two: concurrent
+# runs can interleave delete and create, and there is a window where the release users are pointed at
+# does not exist. cancel-in-progress because only the newest develop commit is worth publishing.
+concurrency:
+  group: devbuild
+  cancel-in-progress: true
+
 jobs:
   build-jar:
     name: Build JAR
@@ -308,7 +317,7 @@ jobs:
           ls -lh continuous/
 
       - name: Generate checksum
-        uses: jmgilman/actions-generate-checksum@238073f4c02f2810adb91c96bdd1e276a5ae9ed6 # v1
+        uses: https://github.com/jmgilman/actions-generate-checksum@238073f4c02f2810adb91c96bdd1e276a5ae9ed6 # v1
         with:
           patterns: |
             continuous/*
@@ -316,12 +325,24 @@ jobs:
       - name: Collect checksum
         run: cp checksum.txt continuous/
 
-      - name: Update develop tag
-        uses: richardsimko/update-tag@d43d3236a342abd387f0ba5d6a7bc93b77e0e718 # v2
-        with:
-          tag_name: continuous
+      # Moves the rolling `continuous` tag on FORGEJO. It was `richardsimko/update-tag` with
+      # `secrets.GITHUB_TOKEN` -- a GitHub action moving a GitHub tag, which is the wrong forge now, and a
+      # bare reference that would not resolve against DEFAULT_ACTIONS_URL anyway.
+      #
+      # It matters more than it looks: the release below is created against tag `continuous`, and the
+      # source archives are fetched from /archive/continuous.zip. If the tag does not move, every dev build
+      # publishes fresh assets under a stale tag, with source archives of a different commit.
+      - name: Move the continuous tag
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FORGEJO_ACTOR: ${{ secrets.FORGEJO_ACTOR }}
+          FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+        run: |
+          set -eu
+          auth=$(printf '%s:%s' "$FORGEJO_ACTOR" "$FORGEJO_TOKEN" | base64 | tr -d '\n')
+          git tag -f continuous "${{ github.sha }}"
+          git -c http.extraheader="Authorization: Basic ${auth}" \
+            push --force "https://git.griefed.de/Griefed/ServerPackCreator.git" refs/tags/continuous
+          echo "continuous now points at ${{ github.sha }}"
 
       - name: Get build timestamp
         id: build_time
@@ -415,7 +436,7 @@ jobs:
           wget -O continuous/source.tar.gz https://git.griefed.de/Griefed/ServerPackCreator/archive/continuous.tar.gz
 
       - name: Cleanup continuous on server
-        uses: tiyee/action-ssh@b2d48d44e978ff09e0c37479a429a8374da6bb63 # v1.0.1
+        uses: https://github.com/tiyee/action-ssh@b2d48d44e978ff09e0c37479a429a8374da6bb63 # v1.0.1
         with:
           host: ${{ secrets.SPCUPLOAD_HOST }}
           username: ${{ secrets.SPCUPLOAD_USERNAME }}
@@ -423,7 +444,7 @@ jobs:
           command: 'rm -rf ~/spc/continuous'
 
       - name: Upload to server
-        uses: nogsantos/scp-deploy@48b9ca0b1adcb229b1568eebda8e16e06436495a # v1.3.0
+        uses: https://github.com/nogsantos/scp-deploy@48b9ca0b1adcb229b1568eebda8e16e06436495a # v1.3.0
         with:
           src: ./continuous
           host: ${{ secrets.SPCUPLOAD_HOST }}
