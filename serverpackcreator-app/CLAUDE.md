@@ -75,6 +75,11 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   The host substitution is the tell: `127.0.0.1` was configured, `localhost` is Boot's literal default.
   `WebserviceConfig` still **reads** `LEGACY_DATABASE_URI_KEY` when the live key is absent and re-writes it
   under the live one, so an installation predating this keeps working; nothing writes the old key any more.
+  **No `MigrationManager` step, deliberately.** Two reasons: migrations only run release→release, so a
+  version-keyed method would miss every dev, alpha and beta user, and it would need a release number that
+  does not exist yet. The getter's re-write covers every build type on first read instead. The stale legacy
+  line is **left in the file on purpose** — deleting it would strand anyone downgrading to a pre-Boot-4
+  ServerPackCreator, and Spring ignores it, so the cost is one dead line.
   Pinned by `DatabaseUriPropertyTest`, whose second guard reads Boot's own
   `spring-configuration-metadata.json` and fails on any key we write that Boot has retired — so the next
   such rename is a build failure, not a silently redirected production database.

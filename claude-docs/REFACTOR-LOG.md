@@ -1089,6 +1089,51 @@ deadline B9 fixed only in the container engine, the loader-cache marker not reco
 install, the checked-in test properties still carrying machine-specific absolute paths (M1's other half), `.gitignore`
 hiding new `server_files` resources, and an install failure's console being wiped by the next attempt on that tuple.
 
+## 2026-08-21 — the database URI never reached MongoDB (`claude-mongo-boot4-property`)
+
+**Spring Boot 4.0.0 retired `spring.data.mongodb.uri`, the key ServerPackCreator writes.** Metadata
+`deprecation.level = "error"`, replacement `spring.mongodb.uri`; the connection properties moved from
+`DataMongoProperties` (`spring.data.mongodb`) to `MongoProperties` (`spring.mongodb`). A retired key is not
+bound and does not warn, so Boot used its own default `mongodb://localhost/test` — ignoring every
+configured host, credential and database, and every `SPC_DATABASE_*` container variable, on **shipped**
+versions (`main` on Boot 4.0.3, develop/alpha on 4.1.0).
+
+Found while building a real-MongoDB harness to verify the performance branch's DBRef→embedded migration —
+the migration reported `0 inspected` against a correctly-seeded database, which made no sense until the
+client's own log line showed `hosts=[localhost:27017]`, `credential=null`.
+
+This is the answer to the question `DOCKER-MONGO-INVESTIGATION.md` left open, and it retires that
+document's middle triage row: a `localhost:27017` connection error did not mean the reporter's
+`overrides.properties` was missing. Their file was fine; the key name was wrong for everyone.
+
+Two guards, then the fix. The behavioural one registers the URI under `WebserviceConfig.DATABASE_URI_KEY`
+via `@DynamicPropertySource` — keyed by the production constant, never a repeated literal — and asserts
+host, credentials and database on Boot's resolved `MongoConnectionDetails`, no database required. It uses
+`127.0.0.1` deliberately, because `localhost` is Boot's fallback and only a different host proves binding.
+The second reads Boot's own `spring-configuration-metadata.json` off the classpath and fails on any key we
+write that Boot has retired; that one generalises past this rename.
+
+Reading stays backward-compatible: `databaseUri` falls back to `LEGACY_DATABASE_URI_KEY` and re-writes the
+value under the live key, so no existing properties file needs editing. **No `MigrationManager` step** —
+migrations run release→release only, so they would miss every dev/alpha/beta user and would need a release
+number that does not exist yet; the getter covers every build type on first read. The legacy line is left
+in place so a downgrade still finds its URI.
+
+Grouped in, because the fallback requires it: the scheme check was `!startsWith("mongodb")`, which accepts
+the degenerate `mongodb:` a partly-configured container produced. It now enumerates `mongodb://` and
+`mongodb+srv://`, with the SRV form pinned since a prefix check had been accepting it by luck.
+
+Verified end-to-end, not only by unit test: a document seeded into a non-default database `spc_e2e`, with
+SPC configured through the **legacy** key alone, came back from `GET /api/v2/runconfigs/all`. Before the
+fix that query hit `localhost/test` and returned `[]`. `docker/tests/init-spc-config-test.sh` re-run in the
+production base image, 10/10. `./gradlew build` green — api 312 (1 skip), app 110, clientside 88, grinder
+233 (19 skip), plugin-example 3.
+
+**Note for whoever merges `claude-performance-improvements`:** its `BACKLOG.md` carries B33 and B34, which
+described this defect's symptoms from the outside. Both are resolved here and should be dropped in the
+merge rather than carried forward as open items.
+
+
 ## 2026-07-31 — audit/backlog cleanup, Phases 1–2 (`claude-audit-backlog-cleanup`)
 
 **Phase 1 — audit findings.** H-B closed by tabling the `variables.txt` contract change (generation reads an
