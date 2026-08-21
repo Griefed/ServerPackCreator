@@ -219,6 +219,12 @@ offline mode; you need to let it through or pre-populate
 resources, which is wired as a task dependency. Run `./gradlew :serverpackcreator-api:processTestResources`
 first if you are invoking tests in an unusual way.
 
+**`java.io.EOFException` from a test task, failing in seconds** — you changed the Gradle version
+without cleaning. Build output from the previous Gradle is not readable by the new one, and the failure
+surfaces as a bare `EOFException` on the *test* task with no result files written and nothing naming
+the real cause. `./gradlew clean` fixes it. Seen going 8.14.4 → 9.7.1: identical trees passed from a
+fresh checkout and failed in 6 s from a used one.
+
 **Changes to a `buildSrc` convention plugin seem to have no effect** — `buildSrc` is compiled before
 the main build; if it fails to compile, Gradle reports that failure and never reaches your module.
 Read the *first* error, not the last.
