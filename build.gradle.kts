@@ -66,7 +66,10 @@ licenseReport {
 // project to be evaluated already — which is what evaluationDependsOnChildren() was there for — and
 // still ended in a `!!` at both use sites because every link in the chain is nullable. A dependency on
 // the project resolves lazily and carries the task dependency with it, so the jar is built on demand.
-val examplePlugin: Configuration by configurations.creating {
+// `create(name) { }` rather than the `creating` delegate, deprecated in Gradle 9.7 (9.6 upgrading
+// guide). The delegate only supplied the name from the property, so the name is unchanged — which
+// matters, because `pluginArtifact` below is consumed by string name.
+val examplePlugin: Configuration = configurations.create("examplePlugin") {
     isCanBeConsumed = false
     isCanBeResolved = true
 }
@@ -117,17 +120,21 @@ tasks.generateLicenseReport {
 install4j {
     //Set the install4jHomeDir-property for building on your own machine, or use the paths listed below according
     //to your operating system family.
-    installDir = if (properties["install4jHomeDir"].toString().isNotBlank()) {
-        file(properties["install4jHomeDir"].toString())
-    } else if (OperatingSystem.current().isWindows) {
-        file("C:\\Program Files\\install4j")
-    } else if (OperatingSystem.current().isMacOsX) {
-        //Ensure your install4j installation is available under this location
-        file("/Applications/install4j.app")
-    } else {
-        //Ensure your install4j installation is available under this location
-        file("/opt/install4j")
-    }
+    // `providers.gradleProperty` instead of the `properties` map, which Gradle 9.7 deprecates. It also
+    // removes a trap: `properties["x"]` on an ABSENT key returns null, whose `.toString()` is the string
+    // "null" — which is not blank, so the old guard passed and installDir became a directory named
+    // `null`. That never fired only because gradle.properties declares `install4jHomeDir=` empty, making
+    // that empty declaration load-bearing. It no longer is.
+    installDir = providers.gradleProperty("install4jHomeDir").orNull
+        ?.takeIf { it.isNotBlank() }
+        ?.let { file(it) }
+        ?: when {
+            OperatingSystem.current().isWindows -> file("C:\\Program Files\\install4j")
+            //Ensure your install4j installation is available under this location
+            OperatingSystem.current().isMacOsX -> file("/Applications/install4j.app")
+            //Ensure your install4j installation is available under this location
+            else -> file("/opt/install4j")
+        }
     verbose = true
 }
 

@@ -12,7 +12,9 @@ plugins {
 // A consumable view of just this module's plugin jar, for the root build's copy tasks. Explicit
 // rather than the legacy `archives` configuration, which Gradle 9 removes, and it carries the task
 // dependency so the jar is built on demand.
-val pluginArtifact: Configuration by configurations.creating {
+// `create(name) { }` rather than the `creating` delegate, which Gradle 9.7 deprecates (9.6 upgrading
+// guide). Same configuration, same name — the delegate only ever supplied the name from the property.
+val pluginArtifact: Configuration = configurations.create("pluginArtifact") {
     isCanBeConsumed = true
     isCanBeResolved = false
 }
