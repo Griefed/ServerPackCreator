@@ -84,8 +84,10 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 - `./gradlew :serverpackcreator-api:test` — API suite (runs against fixture modpacks in
   `serverpackcreator-api/tests/` and `src/test/resources/testresources/`). **Offline for every Minecraft version in
   the shipped manifest snapshot**, which `ApiWrapper.setup()` seeds from the jar; a version newer than that snapshot
-  costs one fetch of its `mcserver/<version>.json`. The snapshot currently lags its own parent manifest (backlog
-  B25). The test home is wiped before each run **except** `manifests/`, so that cache persists and accumulates.
+  costs one fetch of its `mcserver/<version>.json`. The snapshot **no longer lags its own parent
+  manifest** — the release named in `minecraft-manifest.json`'s `latest.release` now has a matching
+  `mcserver/<version>.json`, which is the check worth re-running rather than trusting a file count. That was the open
+  deferral B25, closed as a side effect of the `updateManifests` retarget. The test home is wiped before each run **except** `manifests/`, so that cache persists and accumulates.
 - `./gradlew :serverpackcreator-app:test` — app suite.
 - `./gradlew :<module>:koverHtmlReport` / `koverXmlReport` — coverage (Kover), report under
   `<module>/build/reports/kover/`.
@@ -308,7 +310,9 @@ evidence consulted occasionally, not context every session needs.
   Iteration 7 ran the actual `bootJar` in `-web` mode against MongoDB 8.0.5 in Docker, seeded with pre-branch
   shaped documents, and that is what confirmed the `sha256` index really exists, the migration really converts
   legacy documents and really skips already-migrated ones, and `/api/v2/runconfigs/all` really returns the
-  documented shape. It also surfaced B33, which no test could have. Cost: about fifteen minutes.
+  documented shape. It also surfaced what was filed at the time as B33 — the web application
+    writing to MongoDB's default `test` database instead of the configured one, which no test could have caught, and
+    which the Spring Boot 4 property-key fix has since closed. Cost: about fifteen minutes.
 - **Build logic is verified by measurement, not by tests — and the measurement goes in the commit message.**
   `buildSrc` has no test source set and no Gradle TestKit harness, and we have decided not to add one to pin single
   predicates (a task-wiring change or a one-line filter is not worth a second test framework in the build). So for a
