@@ -14,15 +14,18 @@ Moved out of the root `CLAUDE.md` on 2026-08-21: this only matters when editing 
 was ~3.2k tokens of every session. Contributor-facing companion: `BUILD.md` (the "what"); this file is
 the "do not tidy that away, here is what it cost last time".
 
-> **UNVERIFIED: whether this file's `paths:` scoping actually saves anything.** The move was justified
-> by a character count on disk, which answers "how big is this file" and not "does this load".
-> [claude-code#16299](https://github.com/anthropics/claude-code/issues/16299) — path-scoped rules in
-> `.claude/rules/` loading globally regardless of `paths:` — is **open**, with a repro and no maintainer
-> response. If that is still live, this file loads every session anyway and the split bought nothing.
-> **Run `/memory` in a fresh session to settle it.** The correctness risk is the smaller one: the two
-> known bugs make path-scoped rules load *globally* (#16299) or *never* but only under `~/.claude/rules/`
-> ([#22170](https://github.com/anthropics/claude-code/issues/22170)) — these are project-level, which is
-> that issue's documented workaround, so the landmines below are not at risk of silently vanishing.
+> **VERIFIED 2026-08-21: `paths:` scoping works — this file loads only when you touch a matching file.**
+> Proven by reading `gradle/libs.versions.toml` (matching the `gradle/*.toml` glob below) mid-session and
+> watching this file's full contents get injected into context at that moment, having demonstrably not
+> been there before. That rules out both known failure modes at once: it does **not** load globally
+> ([claude-code#16299](https://github.com/anthropics/claude-code/issues/16299), which is open but either
+> fixed or inapplicable on 2.1.239), and it does **not** silently fail to load
+> ([#22170](https://github.com/anthropics/claude-code/issues/22170) affects `~/.claude/rules/` only —
+> these are project-level, that issue's own workaround).
+>
+> **The test that proves nothing is a bare `/memory` in a clean session.** A correctly-scoped rule is
+> *supposed* to be absent there, so absence looks identical to broken — we ran exactly that test first
+> and misread it. Touch a file matching the globs, *then* look.
 
 - **Repositories are declared once**, in `settings.gradle.kts` under `dependencyResolutionManagement`,
   with `RepositoriesMode.FAIL_ON_PROJECT_REPOS` — a project-level `repositories { }` is a build
