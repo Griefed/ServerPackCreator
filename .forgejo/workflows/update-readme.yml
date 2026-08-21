@@ -74,8 +74,8 @@ jobs:
         env:
           GIT_USER: ${{ secrets.GIT_USER }}
           GIT_MAIL: ${{ secrets.GIT_MAIL }}
-          FORGEJO_ACTOR: ${{ secrets.FORGEJO_ACTOR }}
-          FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          FORGEJO_ACTOR: ${{ secrets.FJ_ACTOR }}
+          FORGEJO_TOKEN: ${{ secrets.FJ_TOKEN }}
         run: |
           git config user.name "$GIT_USER"
           git config user.email "$GIT_MAIL"

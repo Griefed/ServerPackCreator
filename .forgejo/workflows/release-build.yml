@@ -154,7 +154,7 @@ jobs:
       - name: Create release and upload assets
         id: create
         env:
-          TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          TOKEN: ${{ secrets.FJ_TOKEN }}
           API: https://git.griefed.de/api/v1/repos/Griefed/ServerPackCreator
         run: |
           set -eu
@@ -216,8 +216,14 @@ jobs:
           GITHUB_ACTOR: ${{ secrets.GH_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           GITLABCOM_TOKEN: ${{ secrets.GITLABCOM_TOKEN }}
-          FORGEJO_ACTOR: ${{ secrets.FORGEJO_ACTOR }}
-          FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          # The SECRETS are FJ_*, the ENV VARS are FORGEJO_*, and the mismatch is deliberate. Forgejo
+          # rejects any secret or variable whose name starts with FORGEJO_, GITEA_ or GITHUB_, so
+          # `FORGEJO_TOKEN` cannot be created -- and that name is already taken by the automatic
+          # per-job token, which is repo-scoped and cannot write to the package registry. Same reason
+          # GH_ACTOR/GH_TOKEN are not GITHUB_*. The env-var names must stay FORGEJO_*, because
+          # serverpackcreator.publishing-conventions reads them with System.getenv.
+          FORGEJO_ACTOR: ${{ secrets.FJ_ACTOR }}
+          FORGEJO_TOKEN: ${{ secrets.FJ_TOKEN }}
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
           # The signing key travels as an ORG_GRADLE_PROJECT_ variable, NOT as `-PsigningKey=...`.
@@ -311,7 +317,7 @@ jobs:
       # this one does not have. The tag itself arrives by ordinary git mirroring.
       - name: Fetch release notes from Forgejo
         env:
-          TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          TOKEN: ${{ secrets.FJ_TOKEN }}
         run: |
           set -eu
           curl -sf "https://git.griefed.de/api/v1/repos/Griefed/ServerPackCreator/releases/${{ needs.release.outputs.release_id }}" \
@@ -410,7 +416,7 @@ jobs:
       - name: Append the scan links to the Forgejo release
         if: ${{ always() }}
         env:
-          TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          TOKEN: ${{ secrets.FJ_TOKEN }}
           API: https://git.griefed.de/api/v1/repos/Griefed/ServerPackCreator
           RELEASE_ID: ${{ needs.release.outputs.release_id }}
         run: |

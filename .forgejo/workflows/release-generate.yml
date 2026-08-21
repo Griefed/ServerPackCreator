@@ -46,8 +46,8 @@ jobs:
 
       - name: Point origin at a pushable URL
         env:
-          FORGEJO_ACTOR: ${{ secrets.FORGEJO_ACTOR }}
-          FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          FORGEJO_ACTOR: ${{ secrets.FJ_ACTOR }}
+          FORGEJO_TOKEN: ${{ secrets.FJ_TOKEN }}
         run: |
           git remote set-url origin \
             "https://${FORGEJO_ACTOR}:${FORGEJO_TOKEN}@git.griefed.de/Griefed/ServerPackCreator.git"
