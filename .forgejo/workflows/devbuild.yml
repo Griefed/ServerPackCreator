@@ -242,7 +242,7 @@ jobs:
 
       - uses: https://github.com/luangong/setup-install4j@2afa9cd876188382ea8249f56b898a93587e5f2a # v1
         with:
-          version: '12.0.2'
+          version: '13.1'
           license: ${{ secrets.INSTALL4J_LICENSE }}
 
       - name: Remove install4j script
@@ -334,8 +334,8 @@ jobs:
       # publishes fresh assets under a stale tag, with source archives of a different commit.
       - name: Move the continuous tag
         env:
-          FORGEJO_ACTOR: ${{ secrets.FORGEJO_ACTOR }}
-          FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          FORGEJO_ACTOR: ${{ secrets.FJ_ACTOR }}
+          FORGEJO_TOKEN: ${{ secrets.FJ_TOKEN }}
         run: |
           set -eu
           auth=$(printf '%s:%s' "$FORGEJO_ACTOR" "$FORGEJO_TOKEN" | base64 | tr -d '\n')
@@ -358,7 +358,7 @@ jobs:
       - name: Refresh the Forgejo continuous release
         id: forgejo_release
         env:
-          TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          TOKEN: ${{ secrets.FJ_TOKEN }}
           API: https://git.griefed.de/api/v1/repos/Griefed/ServerPackCreator
           TIMESTAMP: ${{ steps.build_time.outputs.timestamp }}
           COMMIT: ${{ github.sha }}

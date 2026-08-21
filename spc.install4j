@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<install4j version="12.0.2" transformSequenceNumber="12">
+<install4j version="13.1" transformSequenceNumber="13">
   <directoryPresets config="./img" />
   <application name="ServerPackCreator" applicationId="3565-3228-6904-0931" mediaDir="./media" mediaFilePattern="ServerPackCreator-${compiler:sys.version}-Installer-${compiler:sys.platform}" compression="9" lzmaCompression="true" createChecksums="false" shrinkRuntime="false" shortName="SPC" publisher="Griefed" publisherWeb="https://serverpackcreator.de" version="${compiler:projectVersion}" allPathsRelative="true" autoSave="true" macVolumeId="521d0a10ddf6d897" javaMinVersion="21">
     <variables>
@@ -13,13 +13,13 @@
       </modules>
     </jreBundles>
   </application>
-  <files globalExcludeSuffixes="install4j*.sh" defaultOverwriteMode="1" defaultUninstallMode="2" launcherOverwriteMode="1" defaultFileMode="755">
+  <files globalExcludeSuffixes="install4j*.sh" defaultOverwriteMode="always" defaultUninstallMode="always" launcherOverwriteMode="always" defaultFileMode="755">
     <mountPoints>
       <mountPoint id="544" location="source" />
       <mountPoint id="26" />
     </mountPoints>
     <entries>
-      <dirEntry mountPoint="544" file="${compiler:projectDir}" overwriteMode="1" uninstallMode="2" overrideOverwriteMode="true" overrideUninstallMode="true">
+      <dirEntry mountPoint="544" file="${compiler:projectDir}" overwriteMode="always" uninstallMode="always" overrideOverwriteMode="true" overrideUninstallMode="true">
         <exclude>
           <entry location=".git" />
           <entry location=".gradle" />
@@ -41,16 +41,16 @@
           <entry location="serverpackcreator-web-frontend/node_modules" />
         </exclude>
       </dirEntry>
-      <fileEntry mountPoint="26" file="${compiler:projectDir}/CHANGELOG.md" overwriteMode="1" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
+      <fileEntry mountPoint="26" file="${compiler:projectDir}/CHANGELOG.md" overwriteMode="always" uninstallMode="always" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
       <fileEntry mountPoint="26" file="${compiler:projectDir}/serverpackcreator-api/src/main/resources/log4j2.xml" />
-      <fileEntry mountPoint="26" file="${compiler:projectDir}/serverpackcreator-api/src/main/resources/serverpackcreator.properties" overwriteMode="1" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
-      <fileEntry mountPoint="26" file="${compiler:projectDir}/CODE_OF_CONDUCT.md" overwriteMode="1" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
-      <fileEntry mountPoint="26" file="${compiler:projectDir}/CONTRIBUTING.md" overwriteMode="1" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
-      <fileEntry mountPoint="26" file="${compiler:projectDir}/HELP.md" overwriteMode="1" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
-      <fileEntry mountPoint="26" file="${compiler:projectDir}/LICENSE" overwriteMode="1" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
-      <fileEntry mountPoint="26" file="${compiler:projectDir}/README.md" overwriteMode="1" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
-      <fileEntry mountPoint="26" file="${compiler:projectDir}/SECURITY.md" overwriteMode="1" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
-      <dirEntry mountPoint="26" file="${compiler:projectDir}/serverpackcreator-app/build/libs" overwriteMode="1" fileMode="755" uninstallMode="2" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" subDirectory="libs" excludeSuffixes="plain.jar" />
+      <fileEntry mountPoint="26" file="${compiler:projectDir}/serverpackcreator-api/src/main/resources/serverpackcreator.properties" overwriteMode="always" uninstallMode="always" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
+      <fileEntry mountPoint="26" file="${compiler:projectDir}/CODE_OF_CONDUCT.md" overwriteMode="always" uninstallMode="always" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
+      <fileEntry mountPoint="26" file="${compiler:projectDir}/CONTRIBUTING.md" overwriteMode="always" uninstallMode="always" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
+      <fileEntry mountPoint="26" file="${compiler:projectDir}/HELP.md" overwriteMode="always" uninstallMode="always" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
+      <fileEntry mountPoint="26" file="${compiler:projectDir}/LICENSE" overwriteMode="always" uninstallMode="always" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
+      <fileEntry mountPoint="26" file="${compiler:projectDir}/README.md" overwriteMode="always" uninstallMode="always" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
+      <fileEntry mountPoint="26" file="${compiler:projectDir}/SECURITY.md" overwriteMode="always" uninstallMode="always" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" />
+      <dirEntry mountPoint="26" file="${compiler:projectDir}/serverpackcreator-app/build/libs" overwriteMode="always" fileMode="755" uninstallMode="always" overrideFileMode="true" overrideOverwriteMode="true" overrideUninstallMode="true" subDirectory="libs" excludeSuffixes="plain.jar" />
     </entries>
   </files>
   <launchers>

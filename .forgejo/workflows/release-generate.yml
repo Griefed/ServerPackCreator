@@ -44,15 +44,25 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Point origin at a pushable URL
+      # semantic-release pushes the CHANGELOG commit and the tag itself, so origin has to be
+      # authenticated before it runs. The credential goes in a per-host Authorization header, NOT in
+      # the remote URL: a URL credential is written into .git/config and then echoed back by
+      # `git remote -v`, by git's own error messages on a failed push, and by anything later in the
+      # job that prints the remote. That is the same finding claude-docs/WORKFLOW-AUDIT.md raised as
+      # H-class against the old workflows, and update-readme.yml already does it this way.
+      - name: Authenticate origin for semantic-release
         env:
-          FORGEJO_ACTOR: ${{ secrets.FORGEJO_ACTOR }}
-          FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          FORGEJO_ACTOR: ${{ secrets.FJ_ACTOR }}
+          FORGEJO_TOKEN: ${{ secrets.FJ_TOKEN }}
+          GIT_USER: ${{ secrets.GIT_USER }}
+          GIT_MAIL: ${{ secrets.GIT_MAIL }}
         run: |
-          git remote set-url origin \
-            "https://${FORGEJO_ACTOR}:${FORGEJO_TOKEN}@git.griefed.de/Griefed/ServerPackCreator.git"
-          git config user.name  "${{ secrets.GIT_USER }}"
-          git config user.email "${{ secrets.GIT_MAIL }}"
+          set -eu
+          git remote set-url origin "https://git.griefed.de/Griefed/ServerPackCreator.git"
+          auth=$(printf '%s:%s' "$FORGEJO_ACTOR" "$FORGEJO_TOKEN" | base64 | tr -d '\n')
+          git config --global "http.https://git.griefed.de/.extraheader" "Authorization: Basic ${auth}"
+          git config user.name  "$GIT_USER"
+          git config user.email "$GIT_MAIL"
 
       # The plugin set is spelled out because GitLab supplied it inside its CI image
       # (ghcr.io/griefed/gitlab-ci-cd), which is gone. commit-analyzer and release-notes-generator ship
