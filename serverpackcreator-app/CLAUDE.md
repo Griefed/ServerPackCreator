@@ -80,6 +80,13 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   does not exist yet. The getter's re-write covers every build type on first read instead. The stale legacy
   line is **left in the file on purpose** — deleting it would strand anyone downgrading to a pre-Boot-4
   ServerPackCreator, and Spring ignores it, so the cost is one dead line.
+  **Corollary worth knowing: URI query parameters work again.** They never did while the key was dead, which
+  is why two attempts to shorten the driver's server-selection timeout in tests looked like they "did not
+  work" — the URI was not reaching the client at all. Measured after the fix:
+  `…/spc_t?serverSelectionTimeoutMS=250` yields `serverSelectionTimeout='250 ms'` in the client's own
+  settings line, against `'30000 ms'` by default. So a `@SpringBootTest` that boots the web context without
+  a database can cut ~30 s per boot by putting that parameter in its URI — relevant to any test that
+  triggers Mongo access at `ApplicationReadyEvent`.
   Pinned by `DatabaseUriPropertyTest`, whose second guard reads Boot's own
   `spring-configuration-metadata.json` and fails on any key we write that Boot has retired — so the next
   such rename is a build failure, not a silently redirected production database.
