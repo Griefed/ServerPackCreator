@@ -23,6 +23,15 @@ on:
 permissions:
   contents: read
 
+# Required, not tidy-up. The GitHub original had no guard either, but it updated the `continuous` release
+# in place (`allowUpdates`/`replacesArtifacts`), which overlapping runs survive untidily. This port
+# deletes-then-recreates so stale assets cannot linger -- right for one run, wrong for two: concurrent
+# runs can interleave delete and create, and there is a window where the release users are pointed at
+# does not exist. cancel-in-progress because only the newest develop commit is worth publishing.
+concurrency:
+  group: devbuild
+  cancel-in-progress: true
+
 jobs:
   build-jar:
     name: Build JAR

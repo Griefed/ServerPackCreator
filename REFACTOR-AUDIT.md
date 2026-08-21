@@ -1688,3 +1688,115 @@ reports success). Everything else executed correctly against real inputs, includ
 most likely to break on quoting.
 
 Recommended: fix D1 and D2; leave D3 as the record.
+
+---
+
+# Audit — the Forgejo CI migration, iteration 3
+
+**Date:** 2026-08-21 · **Mode:** READ-ONLY
+Focus: **the first real run, and the second.** Iterations 1 and 2 checked that the workflows are internally
+correct. This one asks what happens when the world does not cooperate — a mirror that has not caught up, a
+job that failed halfway, two pushes landing at once, a re-run. Every finding here is invisible to YAML
+validation *and* to executing the steps in isolation, because each is about ordering between jobs.
+
+## Iteration-2 fixes confirmed
+
+Changelog extraction re-verified by execution against five versions: every one now matches the true
+section boundaries exactly, and an absent version still falls back. `set -eu` present in all five
+previously-silent steps, with Discord's guard still exiting cleanly on a missing webhook.
+
+## HIGH
+
+### E1 — The GitHub mirror can create the tag itself, pointing at the wrong commit
+
+`mirror` POSTs to `…/releases` with `tag_name` and no `target_commitish`. GitHub's documented behaviour is
+that **if the tag does not exist, it is created from `target_commitish`, which defaults to the
+repository's default branch.**
+
+Mirroring git refs to GitHub is asynchronous — and, for a push-mirror, may not have happened at all when
+this job runs seconds after the Forgejo release. So the likely first-run outcome is GitHub creating a
+`9.0.0` tag pointing at whatever `main` happened to be, not at the release commit. That is a wrong tag on
+a public forge, it will disagree with Forgejo's, and it will then *block* the correct tag when mirroring
+does catch up.
+
+**Fix:** pass `target_commitish: ${{ github.sha }}` — the commit the tag was cut from. If GitHub has to
+create the tag, it then creates the right one.
+
+## MEDIUM
+
+### E2 — The GitLab mirror fails until the tag has propagated
+
+Same root cause, opposite symptom. GitLab's `POST /projects/:id/releases` requires the tag to exist
+already unless a `ref` is supplied; without one it answers `404 Tag Not Found`. Now that the step has
+`set -eu` (iteration 2), that is a hard failure of the mirror job on every release where mirroring has not
+yet caught up — which is most of them.
+
+**Fix:** pass `ref: ${{ github.sha }}`, which tells GitLab to create the tag at that commit if needed.
+
+### E3 — `devbuild` has no concurrency guard, and this migration made that dangerous
+
+Two pushes to `develop` in quick succession run two devbuilds concurrently. The old GitHub workflow also
+had no guard, but it used `ncipollo/release-action` with `allowUpdates`/`replacesArtifacts` — an in-place
+update, which overlapping runs survive untidily.
+
+This migration replaced that with **delete-then-recreate** (deliberately, to be sure stale assets are
+gone). That is the right shape for one run and the wrong shape for two: run A deletes the release, run B
+deletes nothing, A creates, B's create then collides or B attaches its assets to A's release. There is also
+a window in which the `continuous` release does not exist at all — on the download page users are pointed
+at.
+
+So the guard is not a pre-existing omission being tidied up; the change raised the stakes and should have
+brought it along.
+
+**Fix:** `concurrency: {group: devbuild, cancel-in-progress: true}`.
+
+### E4 — A re-run cannot repair a partly-failed release
+
+`release` creates the release unconditionally. Re-running the workflow for the same tag — the ordinary
+response to `docker` or `maven` failing — now hits `set -eu` and dies at release creation, because a
+release for that tag already exists. `maven` and `docker` would re-run (they do not depend on `release`),
+but `mirror` and `virustotal` are skipped, so the exact path that failed cannot be retried.
+
+**Fix:** look the release up by tag first and reuse its id; create only if absent. That makes the job
+idempotent and a re-run a repair rather than a second failure.
+
+### E5 — The mirrored release never carries the VirusTotal section, and the mirror does not run last
+
+Two ordering problems with one fix:
+
+- `virustotal` PATCHes the **Forgejo** release body with the scan permalinks, but `mirror` reads that body
+  in parallel — both depend only on `release`. So GitHub's copy is written before the section exists and
+  never gets it. The workflow this replaced set `update_release_body: true` on the GitHub release, so this
+  is a capability lost in the move.
+- `mirror` does not depend on `maven` or `docker`, so GitHub can advertise a release whose Maven artifacts
+  and container images do not exist yet — or never will, if those jobs fail. The approved plan said the
+  mirror "runs last and only on success"; the graph does not honour it.
+
+**Fix:** `prepare → assets → {release, maven, docker} → virustotal → mirror`.
+
+## LOW
+
+### E6 — `update-readme` has no concurrency guard
+
+Its schedule and a manual dispatch can overlap, and both commit and push to `main`. The loser fails on a
+non-fast-forward, which is noisy rather than harmful, but the guard costs one line.
+
+### E7 — Verified clean
+
+- Every other workflow has a concurrency group; `release-generate` and `release-build` correctly use
+  `cancel-in-progress: false`, so a release in flight is never cancelled by a following push.
+- `release-build`'s trigger glob `'*.*.*'` does match prerelease tags such as `9.0.0-alpha.6`, and
+  `prepare` refuses anything that is not one of the two release shapes — so a stray tag cannot start a
+  release build.
+- `virustotal` and `mirror` both take their assets from the same artifact the `release` job published, so
+  what is scanned and what is mirrored is what was released, not a rebuild.
+
+## Summary
+
+One HIGH and four MEDIUM, all of them about *when* things happen rather than what they do — the class that
+neither YAML validation nor step-level execution can see. E1 and E2 are the same root cause seen from two
+sides: the mirror assumes a tag that may not be there yet. E3 and E4 are about the second run rather than
+the first. E5 is a capability quietly lost and a dependency the plan specified but the graph did not.
+
+Recommended: fix all six; they are one commit's work and every one of them would show up on the first real
+release.

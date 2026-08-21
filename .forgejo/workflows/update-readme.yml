@@ -13,6 +13,11 @@ on:
 permissions:
   contents: read
 
+# The schedule and a manual dispatch can otherwise overlap, and both commit and push to main.
+concurrency:
+  group: update-readme
+  cancel-in-progress: false
+
 jobs:
   blog:
     runs-on: ubuntu-latest
