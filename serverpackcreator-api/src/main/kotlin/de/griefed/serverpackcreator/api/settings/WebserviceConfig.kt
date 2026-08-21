@@ -36,8 +36,15 @@ class WebserviceConfig(private val store: PropertyStore) {
     companion object {
         /**
          * Database-URI used when none is configured or a legacy non-MongoDB URI is encountered.
+         *
+         * **No backslashes.** Escaping colons belongs to the `.properties` file format, and
+         * `Properties.store` applies it on write while `Properties.load` reverses it on read — so a
+         * backslash here is a *literal* backslash in the URI, which `com.mongodb.ConnectionString`
+         * rejects outright. Carrying it in the value is what made a generated home read
+         * `mongodb\\\://…`: three backslashes for one colon, escaped twice. Pinned by
+         * `WebserviceConfigTest.theFallbackIsItselfAUsableUri`.
          */
-        const val FALLBACK_DATABASE_URI = "mongodb\\://user\\:password@localhost\\:27017/serverpackcreatordb"
+        const val FALLBACK_DATABASE_URI = "mongodb://user:password@localhost:27017/serverpackcreatordb"
 
         /**
          * Property-key holding the MongoDB database-URI.
