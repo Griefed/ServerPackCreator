@@ -140,4 +140,30 @@ internal class WebserviceConfigTest {
             "mongodb+srv://user:pass@cluster.example.net/spcdb", webserviceConfig.databaseUri
         )
     }
+
+    /**
+     * Pins that a fresh installation — nothing configured, so the fallback applies — yields a URI the
+     * MongoDB driver will actually accept.
+     *
+     * `ConnectionString` takes only `mongodb://` or `mongodb+srv://`. The fallback is what every
+     * first-time web user starts from, so if it is not itself a valid URI, the very first boot cannot
+     * connect and the reason is a constant rather than anything the user did.
+     */
+    @Test
+    fun theFallbackIsItselfAUsableUri() {
+        val store = PropertyStore()
+        val webserviceConfig = WebserviceConfig(store)
+
+        val uri = webserviceConfig.databaseUri
+
+        Assertions.assertTrue(
+            uri.startsWith("mongodb://") || uri.startsWith("mongodb+srv://"),
+            "The fallback must be a URI the driver accepts, but it was: $uri"
+        )
+        Assertions.assertFalse(
+            uri.contains("\\"),
+            "The fallback must not carry properties-file escaping in its value — `Properties.store` " +
+                    "escapes on write, so a backslash here is a literal backslash in the URI: $uri"
+        )
+    }
 }
