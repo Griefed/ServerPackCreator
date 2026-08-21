@@ -75,10 +75,14 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   The host substitution is the tell: `127.0.0.1` was configured, `localhost` is Boot's literal default.
   `WebserviceConfig` still **reads** `LEGACY_DATABASE_URI_KEY` when the live key is absent and re-writes it
   under the live one, so an installation predating this keeps working; nothing writes the old key any more.
-  **No `MigrationManager` step, deliberately.** Two reasons: migrations only run release→release, so a
-  version-keyed method would miss every dev, alpha and beta user, and it would need a release number that
-  does not exist yet. The getter's re-write covers every build type on first read instead. The stale legacy
-  line is **left in the file on purpose** — deleting it would strand anyone downgrading to a pre-Boot-4
+  **The `MigrationManager` step is for the message, not the mechanism.**
+  `MigrationMethods.NinePointZeroPointZero` reports the rename; the carry-over itself is the getter's, and
+  has to be, because migrations run release→release only and would miss every dev, alpha and beta user.
+  What a migration adds is telling the operator — anything *they* own that still writes the old key (their
+  own `overrides.properties`, a container environment, a deployment script) is silently ignored by Spring,
+  and no code of ours can fix those. It fires only when `hasLegacyDatabaseUri` is true, so an installation
+  that never used the old key hears nothing; that negative case is pinned too. The stale legacy line is
+  **left in the file on purpose** — deleting it would strand anyone downgrading to a pre-Boot-4
   ServerPackCreator, and Spring ignores it, so the cost is one dead line.
   **Corollary worth knowing: URI query parameters work again.** They never did while the key was dead, which
   is why two attempts to shorten the driver's server-selection timeout in tests looked like they "did not

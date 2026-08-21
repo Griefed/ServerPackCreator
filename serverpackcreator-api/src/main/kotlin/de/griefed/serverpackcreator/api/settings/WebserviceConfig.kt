@@ -133,6 +133,16 @@ class WebserviceConfig(private val store: PropertyStore) {
         }
 
     /**
+     * Whether a database-URI is still stored under the retired [LEGACY_DATABASE_URI_KEY].
+     *
+     * True only for an installation configured before the Spring Boot 4 rename — a fresh one writes
+     * [DATABASE_URI_KEY]. Exists so the 9.0.0 migration can report the rename to exactly the operators it
+     * affects instead of to everyone. Read-only: unlike [databaseUri] this touches nothing.
+     */
+    val hasLegacyDatabaseUri: Boolean
+        get() = store.properties.getProperty(LEGACY_DATABASE_URI_KEY) != null
+
+    /**
      * Cron-schedule of the webservice's cleanup-job, stored under [CLEANUP_SCHEDULE_KEY].
      */
     var cleanupSchedule: String
