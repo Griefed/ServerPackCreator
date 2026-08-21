@@ -1,0 +1,76 @@
+# Gradle build + test. This is the canonical CI for the project, replacing GitLab's `Build Test`.
+#
+# NOTE ON `uses:` REFERENCES, here and in every workflow in this directory: they are the same
+# `actions/...@<github-sha>` lines the .github workflows use. Forgejo's docs recommend fully-qualified
+# `https://data.forgejo.org/...` URLs instead, but these exact references are *proven* to resolve on this
+# instance -- they are what built releases 9.0.0-alpha.2 through .6 while Forgejo was reading
+# .github/workflows. Switching them to a mirror whose commit SHAs may differ would trade something known
+# to work for something merely recommended.
+name: Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: "build"
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+          check-latest: true
+          cache: 'gradle'
+
+      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+        with:
+          gradle-version: wrapper
+
+      - name: Set Permissions
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew -Pversion="${{ github.ref_name }}" build --info --full-stacktrace
+
+      # GitLab rendered `reports: junit:` in its UI; Forgejo has no equivalent, so the XML is uploaded
+      # instead. Kept separate from the build artifact so a failed run still yields readable results
+      # without downloading the whole build directory.
+      - name: Upload test results
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() }}
+        with:
+          name: test-results
+          path: |
+            serverpackcreator-api/build/test-results/test/TEST-*.xml
+            serverpackcreator-app/build/test-results/test/TEST-*.xml
+            serverpackcreator-clientside/build/test-results/test/TEST-*.xml
+            serverpackcreator-grinder/build/test-results/test/TEST-*.xml
+            serverpackcreator-plugin-example/build/test-results/test/TEST-*.xml
+          if-no-files-found: warn
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() }}
+        with:
+          name: build-artifacts
+          path: |
+            build
+            buildSrc/build
+            serverpackcreator-api/build
+            serverpackcreator-app/build
+            serverpackcreator-web-frontend/dist
+            serverpackcreator-plugin-example/build
+          if-no-files-found: warn

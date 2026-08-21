@@ -54,6 +54,13 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   no Spring/Swing; not published. Foundation stage: the container-backed `ServerRunner`. See
   `serverpackcreator-grinder/CLAUDE.md`.
 - Not in the Gradle build: `serverpackcreator-help` (docs), `buildSrc`, `docker`, `misc`.
+- **CI lives in `.forgejo/workflows` — Forgejo (`git.griefed.de`) is the canonical CI and the origin of
+  every release.** `.gitlab-ci.yml` is gone. **LANDMINE:** `.forgejo/workflows` is *all-or-nothing* — once
+  it exists, Forgejo ignores `.github/workflows` entirely
+  ([forgejo#9203](https://codeberg.org/forgejo/forgejo/issues/9203)), so anything Forgejo must do belongs
+  there and nowhere else. `.github/workflows` keeps a **smoke test** plus the four issue-driven
+  `clientside-*` workflows, which are GitHub-native; releases are created on Forgejo and mirrored outward
+  by `release-build.yml`'s `mirror` job, because Forgejo push-mirrors replicate refs but **not** releases.
   **`serverpackcreator-help/Writerside/api-docs.yaml` is GENERATED, not hand-maintained** — springdoc
   is wired into `-app` as `developmentOnly`, and the regeneration command sits beside that dependency
   in `serverpackcreator-app/build.gradle.kts`. It had drifted to 25 of 44 endpoints while being edited
@@ -134,8 +141,8 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   IntelliJ analyses with its own bundled Kotlin plugin, so an IDE older than the catalog can report
   metadata errors the command line does not.
 - **Only `-api` publishes.** `serverpackcreator.publishing-conventions` is applied by that module
-  alone, matching CI (`.gitlab-ci.yml` runs four `:serverpackcreator-api:publish...` invocations and
-  nothing else). Non-api modules produce no sources/javadoc jar and run no `signing`. Do not move this
+  alone, matching CI (`.forgejo/workflows/release-build.yml`'s `maven` job runs four
+  `:serverpackcreator-api:publish...` invocations and nothing else). Non-api modules produce no sources/javadoc jar and run no `signing`. Do not move this
   back into `java-conventions`.
 - **Convention plugin graph:** `java-conventions` (toolchain, test isolation, jar manifest) ←
   `kotlin-conventions` (Kotlin + Kover) ← `application-conventions` (= kotlin + spring);

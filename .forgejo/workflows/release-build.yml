@@ -1,0 +1,382 @@
+# Phase 2 of releasing: everything a tag implies. Replaces GitLab's `Build Release`,
+# `Sign Java Publication`, the four `Publish *` jobs and `Build Docker Release`/`PreRelease`, plus the
+# install4j media that used to be built on GitHub by github_release.yml.
+#
+# Forgejo is the origin of the release; the mirror job at the end pushes it outward. Nothing here depends
+# on GitHub or GitLab having run anything first.
+name: Build Release
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-build-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: "Preparations"
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      prerelease: ${{ steps.v.outputs.prerelease }}
+    steps:
+      # The tag *is* the version: .releaserc.yml uses `tagFormat: '${version}'`, no `v` prefix.
+      # Anything not matching the two release shapes is ignored rather than half-released.
+      - name: Determine version
+        id: v
+        run: |
+          VERSION="${{ github.ref_name }}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          if [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          elif [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-(alpha|beta)\.[0-9]+$ ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Tag '$VERSION' is neither X.Y.Z nor X.Y.Z-(alpha|beta).N - refusing to release."
+            exit 1
+          fi
+          echo "Releasing ${VERSION}"
+
+  assets:
+    name: "JARs, media and checksums"
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+          check-latest: true
+          cache: 'gradle'
+
+      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+        with:
+          gradle-version: wrapper
+
+      # The one action deliberately fetched from GitHub rather than a Forgejo mirror: install4j has no
+      # equivalent there. Requires the instance to permit github.com actions; if it does not, install4j
+      # must be pre-installed on the runner and this step replaced by nothing.
+      - uses: https://github.com/luangong/setup-install4j@2afa9cd876188382ea8249f56b898a93587e5f2a # v1
+        with:
+          version: '12.0.2'
+          license: ${{ secrets.INSTALL4J_LICENSE }}
+
+      - name: Remove install4j script
+        run: rm -f install4j_linux-x64_*.sh
+
+      - name: Set Permissions
+        run: chmod +x gradlew
+
+      # Tests already ran on the commit this tag points at, so they are skipped here -- same exclusions
+      # GitLab's `Build Release` used.
+      - name: Build release
+        run: |
+          ./gradlew -Pversion="${{ needs.prepare.outputs.version }}" generateLicenseReport --info --full-stacktrace
+          ./gradlew -Pversion="${{ needs.prepare.outputs.version }}" build --info --full-stacktrace \
+            -x :serverpackcreator-api:test -x :serverpackcreator-app:test
+          ./gradlew -Pversion="${{ needs.prepare.outputs.version }}" media --info --full-stacktrace \
+            -x :serverpackcreator-api:test -x :serverpackcreator-app:test
+          ./gradlew -Pversion="${{ needs.prepare.outputs.version }}" :serverpackcreator-api:dokkaGenerateHtml --info
+
+      - name: Collect files
+        run: |
+          V="${{ needs.prepare.outputs.version }}"
+          mkdir -p "release/$V"
+          mv "serverpackcreator-app/build/libs/serverpackcreator-app-$V.jar" \
+             "serverpackcreator-app/build/libs/ServerPackCreator-$V.jar"
+          cp serverpackcreator-api/build/libs/*.jar            "release/$V/"
+          cp serverpackcreator-app/build/libs/*.jar            "release/$V/"
+          cp serverpackcreator-plugin-example/build/libs/*.jar "release/$V/"
+          cp media/*                                          "release/$V/"
+          rm -f "release/$V/output.txt" "release/$V/"*plain.jar
+          # Dokka HTML replaces what GitLab Pages used to host: it ships as a release asset now.
+          if [ -d serverpackcreator-api/build/dokka ]; then
+            (cd serverpackcreator-api/build/dokka && zip -qr "$GITHUB_WORKSPACE/release/$V/serverpackcreator-api-$V-dokka-html.zip" .)
+          fi
+          # Into a temp file first: `sha256sum * > checksum.txt` has the shell create the (empty) target
+          # before the glob expands, so the file would checksum itself.
+          (cd "release/$V" && sha256sum * > ../checksum.txt && mv ../checksum.txt checksum.txt)
+          ls -lh "release/$V"
+
+      - name: Upload release assets
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-assets
+          path: release/${{ needs.prepare.outputs.version }}/*
+          if-no-files-found: error
+
+  release:
+    name: "Forgejo release"
+    needs: [prepare, assets]
+    runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.create.outputs.release_id }}
+    steps:
+
+      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-assets
+          path: assets
+
+      # Extracted from CHANGELOG.md rather than through a marketplace action: semantic-release has just
+      # written the section for this version, and awk needs no dependency that has to resolve.
+      - name: Extract changelog section
+        run: |
+          V="${{ needs.prepare.outputs.version }}"
+          awk -v ver="$V" '
+            $0 ~ "^#+ +\\[?" ver "\\]?" { found=1; next }
+            found && /^#+ +\[?[0-9]+\.[0-9]+\.[0-9]+/ { exit }
+            found { print }
+          ' CHANGELOG.md > notes.md
+          if [ ! -s notes.md ]; then
+            echo "Release $V" > notes.md
+          fi
+          head -40 notes.md
+
+      - name: Create release and upload assets
+        id: create
+        env:
+          TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          API: https://git.griefed.de/api/v1/repos/Griefed/ServerPackCreator
+        run: |
+          V="${{ needs.prepare.outputs.version }}"
+          PRE="${{ needs.prepare.outputs.prerelease }}"
+          BODY="$(python3 -c 'import json,sys;print(json.dumps(open("notes.md").read()))')"
+          ID="$(curl -sf -X POST "$API/releases" \
+                 -H "Authorization: token $TOKEN" -H 'Content-Type: application/json' \
+                 -d "{\"tag_name\":\"$V\",\"name\":\"$V\",\"body\":$BODY,\"draft\":false,\"prerelease\":$PRE}" \
+               | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')"
+          echo "release_id=$ID" >> "$GITHUB_OUTPUT"
+          for f in assets/*; do
+            echo "Uploading $(basename "$f")"
+            curl -sf -X POST "$API/releases/$ID/assets?name=$(basename "$f")" \
+              -H "Authorization: token $TOKEN" -F "attachment=@$f" > /dev/null
+          done
+
+  maven:
+    name: "Publish Maven"
+    needs: [prepare, assets]
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+          check-latest: true
+          cache: 'gradle'
+
+      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+        with:
+          gradle-version: wrapper
+
+      - name: Set Permissions
+        run: chmod +x gradlew
+
+      # One job where GitLab had five (sign + four publishes). They shared everything but the target and
+      # each rebuilt the same artifacts; sequencing them here keeps that work once.
+      # `-Psigning*` matches serverpackcreator.publishing-conventions, which reads them as properties.
+      - name: Sign and publish
+        env:
+          GITHUB_ACTOR: ${{ secrets.GH_ACTOR }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITLABCOM_TOKEN: ${{ secrets.GITLABCOM_TOKEN }}
+          FORGEJO_ACTOR: ${{ secrets.FORGEJO_ACTOR }}
+          FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
+          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
+        run: |
+          V="${{ needs.prepare.outputs.version }}"
+          COMMON="-Pversion=$V -PsigningKey=${{ secrets.SIGNING_KEY }} -PsigningPassword=${{ secrets.SIGNING_PASSWORD }}"
+          SKIP="-x :serverpackcreator-api:test -x :serverpackcreator-app:test"
+          ./gradlew dokkaJavadocJar :serverpackcreator-api:signMavenJavaPublication $COMMON $SKIP --info --stacktrace
+          ./gradlew :serverpackcreator-api:publishMavenJavaPublicationToGitGriefedRepository    $COMMON $SKIP --info --stacktrace
+          ./gradlew :serverpackcreator-api:publishMavenJavaPublicationToGitHubPackagesRepository $COMMON $SKIP --info --stacktrace
+          ./gradlew :serverpackcreator-api:publishMavenJavaPublicationToGitLabRepository        $COMMON $SKIP --info --stacktrace
+          ./gradlew :serverpackcreator-api:publishToSonatype closeAndReleaseSonatypeStagingRepository $COMMON $SKIP --info --stacktrace
+
+  docker:
+    name: "Docker images"
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+
+      - name: Log in to ghcr.io
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.GH_TOKEN }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.6.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # `latest` only for a full release -- a prerelease must never become the default pull, which is
+      # exactly how GitLab split `Build Docker Release` from `Build Docker PreRelease`.
+      - name: Compute tags
+        id: tags
+        run: |
+          V="${{ needs.prepare.outputs.version }}"
+          U="${{ secrets.DOCKERHUB_USER }}"; R="${{ secrets.DOCKERHUB_REPO }}"
+          TAGS="ghcr.io/$U/$R:$V,index.docker.io/$U/$R:$V"
+          if [ "${{ needs.prepare.outputs.prerelease }}" = "false" ]; then
+            TAGS="$TAGS,ghcr.io/$U/$R:latest,index.docker.io/$U/$R:latest"
+          fi
+          echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: .
+          file: docker/Dockerfile
+          platforms: linux/amd64
+          push: true
+          no-cache: true
+          build-args: VERSION=${{ needs.prepare.outputs.version }}
+          tags: ${{ steps.tags.outputs.tags }}
+
+  mirror:
+    name: "Mirror release outward"
+    needs: [prepare, assets, release]
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-assets
+          path: assets
+
+      # Forgejo push-mirrors replicate refs but NOT releases, so this is explicit rather than a setting.
+      # It runs only after the Forgejo release exists, so no downstream forge ever advertises a release
+      # this one does not have. The tag itself arrives by ordinary git mirroring.
+      - name: Fetch release notes from Forgejo
+        env:
+          TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+        run: |
+          curl -sf "https://git.griefed.de/api/v1/repos/Griefed/ServerPackCreator/releases/${{ needs.release.outputs.release_id }}" \
+            -H "Authorization: token $TOKEN" \
+            | python3 -c 'import json,sys;open("notes.md","w").write(json.load(sys.stdin)["body"])'
+
+      - name: Mirror to GitHub
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          V="${{ needs.prepare.outputs.version }}"
+          PRE="${{ needs.prepare.outputs.prerelease }}"
+          BODY="$(python3 -c 'import json;print(json.dumps(open("notes.md").read()))')"
+          ID="$(curl -sf -X POST "https://api.github.com/repos/Griefed/ServerPackCreator/releases" \
+                 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
+                 -d "{\"tag_name\":\"$V\",\"name\":\"$V\",\"body\":$BODY,\"prerelease\":$PRE}" \
+               | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')"
+          for f in assets/*; do
+            curl -sf -X POST \
+              "https://uploads.github.com/repos/Griefed/ServerPackCreator/releases/$ID/assets?name=$(basename "$f")" \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H 'Content-Type: application/octet-stream' \
+              --data-binary "@$f" > /dev/null
+            echo "GitHub <- $(basename "$f")"
+          done
+
+      - name: Mirror to GitLab.com
+        env:
+          GITLABCOM_TOKEN: ${{ secrets.GITLABCOM_TOKEN }}
+        run: |
+          V="${{ needs.prepare.outputs.version }}"
+          # GitLab releases reference assets by URL rather than hosting uploads, so the description points
+          # back at the Forgejo release, which is the canonical download location now.
+          DESC="Release $V. Assets and changelog: https://git.griefed.de/Griefed/ServerPackCreator/releases/tag/$V"
+          curl -sf -X POST "https://gitlab.com/api/v4/projects/32677538/releases" \
+            -H "PRIVATE-TOKEN: $GITLABCOM_TOKEN" -H 'Content-Type: application/json' \
+            -d "{\"name\":\"$V\",\"tag_name\":\"$V\",\"description\":$(python3 -c "import json,sys;print(json.dumps('$DESC'))")}" \
+            > /dev/null && echo "GitLab.com release created"
+
+  virustotal:
+    name: "VirusTotal scan"
+    needs: [prepare, assets, release]
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-assets
+          path: assets
+
+      # A job here rather than the old release-triggered .github/workflows/virustotal.yml, for two
+      # reasons: the assets already exist as an artifact, and `crazy-max/ghaction-virustotal` updates a
+      # *GitHub* release body, which is the wrong forge now. Submitting through VirusTotal's API directly
+      # removes both problems, and the permalinks are appended to the Forgejo release notes.
+      #
+      # Files over 32 MB need a one-time upload URL; that is what the branch below is for. Failures are
+      # tolerated: a scan that does not come back must not fail a release that is already published.
+      - name: Submit assets to VirusTotal
+        env:
+          VT_API_KEY: ${{ secrets.VT_API_KEY }}
+        run: |
+          set -eu
+          if [ -z "${VT_API_KEY:-}" ]; then
+            echo "No VT_API_KEY configured - skipping"; exit 0
+          fi
+          : > links.md
+          for f in assets/*.jar assets/*.sh assets/*.dmg assets/*.exe; do
+            [ -e "$f" ] || continue
+            SIZE=$(stat -c%s "$f")
+            if [ "$SIZE" -gt 33554432 ]; then
+              URL=$(curl -sf -H "x-apikey: $VT_API_KEY" https://www.virustotal.com/api/v3/files/upload_url \
+                    | python3 -c "import json,sys;print(json.load(sys.stdin)['data'])")
+            else
+              URL="https://www.virustotal.com/api/v3/files"
+            fi
+            ID=$(curl -sf -X POST "$URL" -H "x-apikey: $VT_API_KEY" -F "file=@$f" \
+                 | python3 -c "import json,sys;print(json.load(sys.stdin)['data']['id'])" 2>/dev/null || true)
+            if [ -n "$ID" ]; then
+              echo "- \`$(basename "$f")\` - https://www.virustotal.com/gui/file-analysis/$ID" >> links.md
+              echo "submitted $(basename "$f")"
+            else
+              echo "could not submit $(basename "$f")"
+            fi
+          done
+          cat links.md || true
+
+      - name: Append the scan links to the Forgejo release
+        if: ${{ always() }}
+        env:
+          TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          API: https://git.griefed.de/api/v1/repos/Griefed/ServerPackCreator
+          RELEASE_ID: ${{ needs.release.outputs.release_id }}
+        run: |
+          set -eu
+          [ -s links.md ] || { echo "Nothing to append"; exit 0; }
+          curl -sf "$API/releases/$RELEASE_ID" -H "Authorization: token $TOKEN" \
+            | python3 -c "import json,sys;open('body.txt','w').write(json.load(sys.stdin)['body'])"
+          printf '\n\n## VirusTotal\n\n' >> body.txt
+          cat links.md >> body.txt
+          python3 -c "import json;print(json.dumps({'body':open('body.txt').read()}))" > patch.json
+          curl -sf -X PATCH "$API/releases/$RELEASE_ID" -H "Authorization: token $TOKEN" \
+            -H 'Content-Type: application/json' -d @patch.json > /dev/null
+          echo "Release notes updated"
