@@ -201,6 +201,14 @@ class ConfigurationHandler(
      * @author Griefed
      */
     fun checkConfiguration(packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck(), quietCheck: Boolean = false): ConfigCheck {
+        // The single choke point every validating caller passes through -- CLI, interactive shell, web and
+        // embedders alike -- which is why the wait lives here rather than at four call sites.
+        //
+        // `VersionMeta` refreshes its manifests in the background now instead of during construction, so a
+        // short-lived process can reach this while the refresh is still in flight and reject a Minecraft or
+        // modloader version that upstream published minutes ago. Idempotent and effectively free once the
+        // refresh has landed; bounded, so an unreachable host delays validation rather than hanging it.
+        versionMeta.awaitManifestRefresh()
         sanitizeLinks(packConfig)
         log.info("Checking configuration...")
         if (packConfig.clientMods.isEmpty()) {
