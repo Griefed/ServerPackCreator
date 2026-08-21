@@ -15,8 +15,8 @@
   "Tested" = unit tests per class **plus** generation end-to-end. **Offline for versions in the shipped manifest
   snapshot** (`src/main/resources/de/griefed/resources/manifests`, seeded into the home by `ApiWrapper.setup()`); a
   newer version costs one `mcserver/<version>.json` fetch. The snapshot **no longer lags its parent manifest** —
-    `minecraft-manifest.json`'s `latest.release` has a matching `mcserver/` file — which was B25, closed by the
-    `updateManifests` retarget.
+  `minecraft-manifest.json`'s `latest.release` has a matching `mcserver/` file — which was B25, closed by the
+  `updateManifests` retarget.
   `cleanup()` in the java-conventions plugin wipes the test home before every run but **spares `manifests/`** —
   before 2026-07-31 it did not, taking that cache from 643 files to 0 on every single run.
 
