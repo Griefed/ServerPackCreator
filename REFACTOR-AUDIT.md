@@ -1455,3 +1455,132 @@ The one thing to act on is **V1**, and it is not this branch's: the web mode app
 default `test` database rather than the configured one. It needs whoever owns the config plumbing, and it
 is worth treating as urgent, because it would also make this branch's migration a silent no-op on a
 correctly-configured instance.
+
+---
+
+# Audit — the Forgejo CI migration, iteration 1
+
+**Range:** `8195c413c..claude-forgejo-ci` (1 commit, `ci: move CI/CD to Forgejo, and retire GitLab CI`)
+**Date:** 2026-08-21 · **Mode:** READ-ONLY
+Focus: **faithfulness and completeness.** Workflows have no test suite, so the conventions' TDD rules have
+nothing to bite on here; what can go wrong instead is a job silently lost, a reference that cannot resolve,
+or a credential that is the right *name* on the wrong *forge*. All three happened.
+
+## Verified clean first
+
+- **All 20 GitLab jobs are accounted for** — `Build Test`, `Qodana`(+`Post`), `Docker Test`,
+  `Generate Release`, `Build Release`, `Sign Java Publication`, the four `Publish *`, both
+  `Build Docker *`, `Writerside Build`, the three `Writerside Docker *`, `pages`,
+  `Update README:on-schedule`, `release_job`. One case within them is not — see **C4**.
+- **No dangling internal references.** Every `needs:` names a real job, every
+  `needs.<job>.outputs.<x>` is declared by that job, and every `steps.<id>.outputs.*` has a step with
+  that id. Checked programmatically across all 13 workflow files, not by eye.
+- **All 13 workflow files parse as YAML**, and `./gradlew build` is green with the retargeted Maven
+  repository — all four `publishMavenJavaPublicationTo*Repository` tasks still generate, so the names CI
+  invokes still exist.
+
+## HIGH
+
+### C1 — The PGP signing key is passed as a command-line property, and it cannot survive that
+
+`release-build.yml`'s `maven` job builds
+`COMMON="-Pversion=$V -PsigningKey=${{ secrets.SIGNING_KEY }} -PsigningPassword=…"`.
+
+An armoured PGP private key is **multi-line**. Splicing it into a shell variable that is then word-split
+into `./gradlew` arguments cannot work: the first newline ends the argument, and what reaches
+`useInMemoryPgpKeys` is a truncated fragment. Signing then fails — or worse, produces something and fails
+later at OSSRH validation, after three other repositories have already been published to.
+
+GitLab never did this. It set the value as a CI variable and `findProperty("signingKey")`
+(`publishing-conventions.gradle.kts:100`) picked it up, because Gradle resolves `findProperty` from
+`ORG_GRADLE_PROJECT_<name>` environment variables as well as from `-P`. That is the mechanism this must
+use, and it is also the one that keeps a private key out of the process argument list — where `-P` would
+expose it to anything that can read `/proc/<pid>/cmdline`.
+
+**Fix:** `ORG_GRADLE_PROJECT_signingKey` / `ORG_GRADLE_PROJECT_signingPassword` in the job's `env`, and
+drop both from `COMMON`.
+
+### C2 — Two GitHub-API actions are handed the Forgejo token
+
+`update-readme.yml:38` and `:44` pass `${{ secrets.GITHUB_TOKEN }}` to
+`JamesIves/github-sponsors-readme-action` and `actions-cool/contributor-helper`. On Forgejo,
+`secrets.GITHUB_TOKEN` is the **automatically provided Forgejo token** — a credential for
+`git.griefed.de`, handed to two actions that query *GitHub's* GraphQL and REST APIs for sponsors and
+contributors.
+
+The name is right and the forge is wrong, which is the worst shape for this kind of bug: nothing fails to
+parse, and the likely outcome is an empty sponsor list quietly committed over a populated one. The commit
+introduced `GH_ACTOR`/`GH_TOKEN` precisely to keep GitHub credentials distinguishable, then did not use
+them here.
+
+**Fix:** `${{ secrets.GH_TOKEN }}` at both call sites.
+
+### C3 — The `continuous` tag is moved on the wrong forge, by an action that cannot resolve
+
+`devbuild.yml:319–324` keeps GitLab-era `richardsimko/update-tag` with
+`GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}` to move the rolling `continuous` tag. Two defects in one step:
+
+- the reference is **bare**, so Forgejo resolves it against `DEFAULT_ACTIONS_URL`
+  (`https://data.forgejo.org`), which does not host it — see **C5**;
+- even if it resolved, it is a GitHub action moving a GitHub tag, and the rolling release now lives on
+  Forgejo.
+
+This one is not cosmetic. The new "Refresh the Forgejo continuous release" step creates the release with
+`target_commitish: develop` against tag `continuous`; if that tag never moves, every dev build publishes
+assets under a tag pointing at an old commit, and the source archives fetched from
+`/archive/continuous.zip` are of that old commit too — assets and source silently disagreeing.
+
+**Fix:** move the tag on Forgejo with git (`git tag -f continuous && git push --force origin continuous`)
+using `FORGEJO_TOKEN`, and delete the action.
+
+## MEDIUM
+
+### C4 — Docs images are no longer built for non-release commits
+
+GitLab had *three* `Writerside Docker*` jobs, and the plain one carried the inverse rules —
+`$CI_COMMIT_TAG !~ /release patterns/` — so it published `serverpackcreator-help:<short-sha>` on
+**ordinary pipelines**, not tags. `docs.yml` triggers only on `push: tags: ['*.*.*']`, so that case is
+gone: help images now exist for releases only.
+
+That may well be what you want (a per-commit docs image is the same noise `docker-test.yml` deliberately
+stopped publishing), but the commit did not say so — it presented three jobs collapsing into one as pure
+simplification. Either restore a non-tag trigger or record the drop as deliberate.
+
+### C5 — Action qualification is inconsistent, and rests on a setting nobody verified
+
+Four references are fully qualified (`https://github.com/luangong/setup-install4j`,
+`…/JamesIves/…`, `…/actions-cool/…`, `…/release-kit/…`) and **four are bare third-party**:
+`jmgilman/actions-generate-checksum`, `richardsimko/update-tag`, `tiyee/action-ssh`,
+`nogsantos/scp-deploy` (all in `devbuild.yml`).
+
+A bare reference resolves against `DEFAULT_ACTIONS_URL`, which the Forgejo docs give as
+`https://data.forgejo.org` — a mirror of common actions, not of arbitrary GitHub repositories. So these
+four resolve only if this instance's `DEFAULT_ACTIONS_URL` points at github.com. The commit's own comment
+argues the `actions/...@<github-sha>` references are "proven to resolve on this instance", which is sound
+for `actions/*` and `docker/*`; extending that confidence to four one-person repositories is not the same
+claim, and the Forgejo docs explicitly recommend qualifying.
+
+**Fix:** fully qualify all four. It costs nothing and removes the dependency on an instance setting.
+
+## LOW
+
+### C6 — Two GitLab capabilities dropped without being named
+
+Recorded so they are decisions rather than omissions:
+
+- `Build Release` uploaded the app jar to GitLab's **generic package registry** and then created a
+  release *asset link* pointing at it. Forgejo release assets are uploaded directly and get stable URLs,
+  so the two-step dance is genuinely superseded — but a consumer with a hard-coded
+  `/packages/generic/...` URL loses it.
+- `release_job` created a GitLab release whose description linked the changelog on three forges. The
+  Forgejo release now carries the changelog section itself, which is better, and the mirror job creates
+  the downstream entries.
+
+## Summary
+
+Three HIGH, and they share a shape: **a credential or a reference that is syntactically fine and points
+at the wrong system.** C1 would fail signing (or half-publish), C2 would quietly empty the README's
+sponsor list, C3 would publish dev assets under a stale tag. None of them would be caught by YAML
+validation, which is all this migration has had so far — the reason to look at them by hand.
+
+Recommended: fix C1–C3 and C5 as one commit each, decide C4, record C6.

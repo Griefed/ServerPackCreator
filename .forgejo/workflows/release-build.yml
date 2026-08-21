@@ -200,9 +200,17 @@ jobs:
           FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
+          # The signing key travels as an ORG_GRADLE_PROJECT_ variable, NOT as `-PsigningKey=...`.
+          # `findProperty("signingKey")` in publishing-conventions reads either, and an armoured PGP key is
+          # multi-line: spliced into a shell variable and word-split into gradle arguments, it is truncated
+          # at the first newline, so `useInMemoryPgpKeys` gets a fragment. This is also how GitLab supplied
+          # it, and it keeps the private key out of the process argument list where anything able to read
+          # /proc/<pid>/cmdline could see it.
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
         run: |
           V="${{ needs.prepare.outputs.version }}"
-          COMMON="-Pversion=$V -PsigningKey=${{ secrets.SIGNING_KEY }} -PsigningPassword=${{ secrets.SIGNING_PASSWORD }}"
+          COMMON="-Pversion=$V"
           SKIP="-x :serverpackcreator-api:test -x :serverpackcreator-app:test"
           ./gradlew dokkaJavadocJar :serverpackcreator-api:signMavenJavaPublication $COMMON $SKIP --info --stacktrace
           ./gradlew :serverpackcreator-api:publishMavenJavaPublicationToGitGriefedRepository    $COMMON $SKIP --info --stacktrace
