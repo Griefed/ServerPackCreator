@@ -1,9 +1,18 @@
+# The rolling dev build -- effectively the nightly. Ported from .github/workflows/devbuild.yml, which
+# Forgejo had been running as a fallback until .forgejo/workflows existed.
+#
+# The JAR, AppImage and install4j media jobs are unchanged from that file on purpose: they work, and this
+# port is about *where* the release lands, not how the artifacts are made.
 name: Continuous
 
 on:
   push:
     branches:
       - develop
+  schedule:
+    # Nightly as well as on push, so a quiet day still refreshes the build instead of leaving a stale one
+    # on the download page.
+    - cron: '0 3 * * *'
   workflow_dispatch:
     inputs:
       version:
@@ -222,7 +231,7 @@ jobs:
         with:
           gradle-version: wrapper
 
-      - uses: luangong/setup-install4j@2afa9cd876188382ea8249f56b898a93587e5f2a # v1
+      - uses: https://github.com/luangong/setup-install4j@2afa9cd876188382ea8249f56b898a93587e5f2a # v1
         with:
           version: '12.0.2'
           license: ${{ secrets.INSTALL4J_LICENSE }}
@@ -318,35 +327,92 @@ jobs:
         id: build_time
         run: echo "timestamp=$(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
 
-      - name: Create/Update Release
-        uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1
-        with:
-          allowUpdates: 'true'
-          artifacts: "continuous/*"
-          body: |
-            ## 🔄 Continuous Dev-Build
+      # The rolling release now lives on FORGEJO. `ncipollo/release-action` talked to GitHub's API, which
+      # is the wrong direction under the new arrangement. Delete-then-recreate rather than update: that is
+      # the only way to be certain the previous build's assets are gone, which is what `removeArtifacts`
+      # and `replacesArtifacts` were doing before.
+      #
+      # The JSON payload is built by python from environment variables, not by shell interpolation -- the
+      # body contains backticks, emoji and newlines, and quoting that by hand in YAML is a trap.
+      - name: Refresh the Forgejo continuous release
+        id: forgejo_release
+        env:
+          TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          API: https://git.griefed.de/api/v1/repos/Griefed/ServerPackCreator
+          TIMESTAMP: ${{ steps.build_time.outputs.timestamp }}
+          COMMIT: ${{ github.sha }}
+        run: |
+          set -eu
+          OLD=$(curl -s "$API/releases/tags/continuous" -H "Authorization: token $TOKEN" \
+                | python3 -c "import json,sys;print(json.load(sys.stdin).get('id') or '')" 2>/dev/null || true)
+          if [ -n "$OLD" ]; then
+            echo "Deleting previous Forgejo continuous release $OLD (the tag is kept)"
+            curl -sf -X DELETE "$API/releases/$OLD" -H "Authorization: token $TOKEN"
+          fi
+          python3 - > payload.json <<'PY'
+          import json, os
+          body = (
+              "## \U0001F504 Continuous Dev-Build\n\n"
+              f"**Built:** {os.environ['TIMESTAMP']}\n"
+              f"**Commit:** `{os.environ['COMMIT']}`\n\n---\n\n"
+              "This is an automated development build, updated every time changes are pushed to `develop`.\n\n"
+              "\u26A0\uFE0F **Warning:** Do not use unless you have been told to, or are curious about the "
+              "contents of the dev build.\n\n"
+              "\U0001F6AB **Do not link to this release.**\n"
+          )
+          print(json.dumps({"tag_name": "continuous", "target_commitish": "develop",
+                            "name": "continuous", "body": body,
+                            "draft": False, "prerelease": True}))
+          PY
+          ID=$(curl -sf -X POST "$API/releases" -H "Authorization: token $TOKEN" \
+                 -H 'Content-Type: application/json' -d @payload.json \
+               | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')
+          echo "release_id=$ID" >> "$GITHUB_OUTPUT"
+          for f in continuous/*; do
+            curl -sf -X POST "$API/releases/$ID/assets?name=$(basename "$f")" \
+              -H "Authorization: token $TOKEN" -F "attachment=@$f" > /dev/null
+            echo "Forgejo <- $(basename "$f")"
+          done
 
-            **Built:** ${{ steps.build_time.outputs.timestamp }}
-            **Commit:** `${{ github.sha }}`
+      # Asked for explicitly: clear GitHub's stale continuous RELEASE but leave its TAG alone, so the
+      # mirror below recreates it from Forgejo rather than fighting a half-updated entry.
+      - name: Delete the GitHub continuous release, keeping the tag
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          set -eu
+          ID=$(curl -s "https://api.github.com/repos/Griefed/ServerPackCreator/releases/tags/continuous" \
+                 -H "Authorization: Bearer $GH_TOKEN" \
+                | python3 -c "import json,sys;print(json.load(sys.stdin).get('id') or '')" 2>/dev/null || true)
+          if [ -n "$ID" ]; then
+            curl -sf -X DELETE "https://api.github.com/repos/Griefed/ServerPackCreator/releases/$ID" \
+              -H "Authorization: Bearer $GH_TOKEN"
+            echo "Deleted GitHub release $ID; the 'continuous' tag is untouched"
+          else
+            echo "No GitHub continuous release to delete"
+          fi
 
-            ---
-
-            This is an automated development build, updated every time changes are pushed to `develop`.
-
-            ⚠️ **Warning:** Do not use unless you have been told to, or are curious about the contents of the dev build.
-
-            🚫 **Do not link to this release.**
-          commit: "develop"
-          name: "continuous"
-          prerelease: 'true'
-          removeArtifacts: 'true'
-          replacesArtifacts: 'true'
-          tag: 'continuous'
+      - name: Mirror the continuous release to GitHub
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          set -eu
+          ID=$(curl -sf -X POST "https://api.github.com/repos/Griefed/ServerPackCreator/releases" \
+                 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
+                 -d '{"tag_name":"continuous","name":"continuous","prerelease":true,"body":"Mirrored from https://git.griefed.de/Griefed/ServerPackCreator/releases/tag/continuous"}' \
+               | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')
+          for f in continuous/*; do
+            curl -sf -X POST \
+              "https://uploads.github.com/repos/Griefed/ServerPackCreator/releases/$ID/assets?name=$(basename "$f")" \
+              -H "Authorization: Bearer $GH_TOKEN" -H 'Content-Type: application/octet-stream' \
+              --data-binary "@$f" > /dev/null
+            echo "GitHub <- $(basename "$f")"
+          done
 
       - name: Get source archives
         run: |
-          wget -O continuous/source.zip https://github.com/Griefed/ServerPackCreator/archive/refs/tags/continuous.zip
-          wget -O continuous/source.tar.gz https://github.com/Griefed/ServerPackCreator/archive/refs/tags/continuous.tar.gz
+          wget -O continuous/source.zip    https://git.griefed.de/Griefed/ServerPackCreator/archive/continuous.zip
+          wget -O continuous/source.tar.gz https://git.griefed.de/Griefed/ServerPackCreator/archive/continuous.tar.gz
 
       - name: Cleanup continuous on server
         uses: tiyee/action-ssh@b2d48d44e978ff09e0c37479a429a8374da6bb63 # v1.0.1

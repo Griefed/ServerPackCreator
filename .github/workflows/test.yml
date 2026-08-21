@@ -1,7 +1,14 @@
+# Smoke test only. The canonical CI -- full gradle build, docker image build, Qodana, releases -- lives
+# in .forgejo/workflows and runs on git.griefed.de. This exists so a pull request or a fork still gets a
+# signal on GitHub, where contributors are.
+#
+# Keep it cheap and keep it green: if it starts needing secrets or producing artifacts, it has drifted
+# into being a second CI and the work belongs on Forgejo instead.
 name: Test
 
 on:
   push:
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -39,15 +46,14 @@ jobs:
         run: |
           ./gradlew -Pversion="${{ github.ref_name }}" build --info --full-stacktrace
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      # No artifact upload: the release assets are produced on Forgejo now, and nothing here consumed
+      # these. Test results are enough for a smoke test.
+      - name: Upload test results
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ always() }}
         with:
-          name: jar-and-media
+          name: test-results
           path: |
-            build
-            buildSrc/build
-            serverpackcreator-api/build
-            serverpackcreator-app/build
-            serverpackcreator-web-frontend/dist
-            serverpackcreator-plugin-example/build
-          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
+            serverpackcreator-api/build/test-results/test/TEST-*.xml
+            serverpackcreator-app/build/test-results/test/TEST-*.xml
+          if-no-files-found: warn

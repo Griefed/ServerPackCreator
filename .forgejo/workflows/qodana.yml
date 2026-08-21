@@ -1,0 +1,103 @@
+# Static analysis, replacing GitLab's `Qodana` + `Qodana Post`.
+#
+# The report is a workflow artifact now. GitLab served it from Pages and the Discord message linked there;
+# with Pages gone the message links the Forgejo run, where the artifact is attached.
+name: Qodana
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qodana-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qodana:
+    name: "scan"
+    runs-on: ubuntu-latest
+    container:
+      image: jetbrains/qodana-jvm-community:2026.2
+      options: --entrypoint=""
+    steps:
+
+      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+        with:
+          fetch-depth: 0
+
+      - name: Cache Qodana
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: qodana/cache
+          key: qodana-2026.2-${{ github.ref_name }}
+          restore-keys: |
+            qodana-2026.2-
+
+      # GitLab needed a chmod dance here: Qodana 2026.2 downloads its own JBR into <cache-dir>/qodana-jbr
+      # and GitLab's cache round-trip drops the executable bit, surfacing as the unhelpful "Failed to
+      # create effective configuration". actions/cache archives with tar, which *does* preserve modes, so
+      # this should be unnecessary -- it is kept as cheap insurance and logs what it finds, so if the same
+      # failure ever appears here the evidence is already in the log rather than needing a rediscovery.
+      - name: Restore JBR executable bits
+        run: |
+          jbr="$GITHUB_WORKSPACE/qodana/cache/qodana-jbr"
+          if [ ! -d "$jbr" ]; then
+            echo "No cached JBR directory ($jbr) - Qodana will download one"
+          else
+            find "$jbr" -type f -path '*/bin/java' -exec ls -l {} + || true
+            chmod -R +x "$jbr" || true
+          fi
+
+      - name: Run Qodana
+        env:
+          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+        run: |
+          qodana-jvm-community \
+            --cache-dir "$GITHUB_WORKSPACE/qodana/cache" \
+            --results-dir "$GITHUB_WORKSPACE/qodana/results" \
+            --report-dir "$GITHUB_WORKSPACE/qodana/report" \
+            || true
+
+      - name: Report problem count
+        run: |
+          SARIF="qodana/results/qodana.sarif.json"
+          if [ -f "$SARIF" ]; then
+            COUNT=$(python3 -c "import json;d=json.load(open('$SARIF'));print(sum(len(r.get('results',[])) for r in d.get('runs',[])))")
+            echo "Qodana problems: $COUNT"
+            echo "**Qodana problems: $COUNT**" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No SARIF produced"
+          fi
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() }}
+        with:
+          name: qodana-report
+          path: |
+            qodana/report
+            qodana/results/qodana.sarif.json
+          if-no-files-found: warn
+
+  notify:
+    name: "notify"
+    needs: qodana
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      # Discord, as before, but pointing at the Forgejo run rather than a Pages artifact URL that no
+      # longer exists. Skipped silently when no webhook is configured.
+      - name: Post to Discord
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+        run: |
+          if [ -z "${WEBHOOK_URL:-}" ]; then
+            echo "No WEBHOOK_URL configured - skipping"
+            exit 0
+          fi
+          export RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_number }}"
+          python3 -c "import json,os;print(json.dumps({'username':'ServerPackCreator','embeds':[{'title':'New Qodana report','description':'A new Qodana report is attached to this run.','url':os.environ['RUN_URL'],'color':12648430}]}))" > payload.json
+          curl -sf -X POST -H 'Content-Type: application/json' -d @payload.json "$WEBHOOK_URL" > /dev/null
+          echo "Posted"

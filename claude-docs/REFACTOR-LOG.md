@@ -1089,6 +1089,67 @@ deadline B9 fixed only in the container engine, the loader-cache marker not reco
 install, the checked-in test properties still carrying machine-specific absolute paths (M1's other half), `.gitignore`
 hiding new `server_files` resources, and an install failure's console being wiped by the next attempt on that tuple.
 
+## 2026-08-21 — CI/CD moved to Forgejo (`claude-forgejo-ci`)
+
+`git.griefed.de` is **Forgejo 16.0.3**, not GitLab — verified against `/api/v1/version`. `.gitlab-ci.yml`
+and its 22 jobs are deleted; CI now lives in `.forgejo/workflows`, and Forgejo is the origin of every
+release.
+
+**The constraint that shaped the whole thing:** `.forgejo/workflows` is *all-or-nothing*. Per a Forgejo
+maintainer on [forgejo#9203](https://codeberg.org/forgejo/forgejo/issues/9203), *"If a project contains a
+`.forgejo` and a `.github` folder, then the `.github` folder is ignored."* Forgejo had been running the
+`.github` workflows as a fallback — that is where releases `9.0.0-alpha.2` … `.6` came from — so the
+commit adding `.forgejo/workflows` is a **cutover**: everything Forgejo must do had to land in the same
+change, or releases would simply stop. That is why this is one branch and not five.
+
+**Nine workflows.** `test.yml` and `docker-test.yml` (the GitLab `Build Test` / `Docker Test` role),
+`qodana.yml`, `release-generate.yml` (semantic-release), `release-build.yml` (assets, the Forgejo release,
+Maven, Docker, the outward mirror and the VirusTotal scan), `devbuild.yml`, `docs.yml`, `update-readme.yml`.
+
+**Decisions worth keeping:**
+- **`uses:` references are the same `actions/...@<github-sha>` lines the `.github` workflows used.** The
+  Forgejo docs recommend `https://data.forgejo.org/...` instead, but these exact references are *proven*
+  to resolve on this instance — they built the existing alpha releases. Swapping them for a mirror whose
+  commit SHAs may differ would trade something known to work for something merely recommended. install4j
+  is the one deliberate exception and is fetched from GitHub by full URL, which needs the instance to
+  permit that.
+- **semantic-release keeps doing version + changelog + tag, and nothing else.** `@semantic-release/gitlab`
+  and `gitlabUrl` are gone and `publish` is `false`; the release is created by the tag-triggered workflow,
+  which is where the assets are. Same two-phase shape GitLab had, so the `releaseRules` that produce your
+  version numbers are untouched. **The tag must be pushed with a real user token** — Forgejo, like GitHub,
+  does not trigger workflows from pushes made with the automatic per-run token, so an automatic-token push
+  would tag a release that never gets built.
+- **`GitGriefed` Maven repository retargeted, name kept.** It pointed at
+  `https://git.griefed.de/api/v4/projects/63/packages/maven` with a `Private-Token` header — a GitLab path
+  and a GitLab auth scheme, neither of which exists on Forgejo. Now `/api/packages/Griefed/maven` with
+  HTTP Basic. The repository *name* is unchanged so the generated task name CI calls,
+  `publishMavenJavaPublicationToGitGriefedRepository`, still exists. GitHub Packages, gitlab.com and OSSRH
+  are untouched: the move is off the self-hosted GitLab, not off gitlab.com.
+- **Releases are mirrored by explicit API calls, not by a setting.** Forgejo push-mirrors replicate refs
+  but not releases. The mirror job runs last and only on success, so no downstream forge advertises a
+  release Forgejo does not have.
+- **VirusTotal became a job in `release-build.yml`** rather than a release-triggered workflow: the assets
+  are already there as an artifact, and `crazy-max/ghaction-virustotal` updates a *GitHub* release body,
+  which is the wrong forge now. Submitted through VirusTotal's API, permalinks appended to the Forgejo
+  release notes.
+- **`docker-test.yml` does not push, and that is a deliberate change.** The GitLab job built with `--push`
+  and tagged every commit's image on ghcr.io *and* Docker Hub, so every branch push published a public
+  image nobody consumed. Restoring it is a two-line change, noted in the file.
+- **Two regressions avoided by reading the code being replaced rather than skimming it:** `update-readme`
+  sent its token in an `Authorization` header specifically so it could not leak into logs — the port keeps
+  that instead of putting the token in the push URL; and Qodana's JBR `chmod` dance existed because
+  GitLab's cache drops the executable bit, which `actions/cache` does not, so it survives as documented
+  insurance rather than being deleted or blindly copied.
+
+GitHub keeps a **smoke test** and the four issue-driven `clientside-*` workflows. `github_release.yml`,
+`github-prerelease.yml`, `devbuild.yml`, `update_readme.yml` and `virustotal.yml` are deleted from there.
+`devbuild` additionally clears the stale GitHub `continuous` *release* while leaving its *tag*, so the
+mirror recreates it from Forgejo.
+
+**B26–B29 are dropped** rather than answered: they described GitLab dind and a GitLab-Pages-hosted Qodana
+report. The infrastructure they were about no longer exists. The backlog is now empty.
+
+
 ## 2026-08-21 — the deferred performance items, B30/B31/B32 (`claude-perf-deferred`)
 
 The last three backlog items from the startup/network work, cleared.

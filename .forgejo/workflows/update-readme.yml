@@ -1,6 +1,13 @@
 name: Update README with blog posts and sponsors
 
+# Ported from .github/workflows/update_readme.yml. GitLab used to invoke that GitHub workflow through
+# `act` on a schedule -- a bridge that disappears with GitLab, so the schedule lives here directly.
+#
+# The sponsor and contributor actions read GitHub's API, so they stay GitHub-hosted and need a GitHub
+# token; only the push target changes, from a hand-built GitLab URL to this repository's origin.
 on:
+  schedule:
+    - cron: '0 4 * * 1'
   workflow_dispatch:
 
 permissions:
@@ -17,7 +24,7 @@ jobs:
           repository: Griefed/ServerPackCreator
           ref: main
 
-      - uses: release-kit/hash-files@6437070e108606dfe7614a3ee4caabbb9168268d # v1
+      - uses: https://github.com/release-kit/hash-files@6437070e108606dfe7614a3ee4caabbb9168268d # v1
         id: get-current-hash
         with:
           patterns: |
@@ -26,13 +33,13 @@ jobs:
         run: echo ${{ steps.get-current-hash.outputs.hash }}
 
       - name: Add GitHub Sponsors to Readme
-        uses: JamesIves/github-sponsors-readme-action@2fd9142e765f755780202122261dc85e78459405 # v1
+        uses: https://github.com/JamesIves/github-sponsors-readme-action@2fd9142e765f755780202122261dc85e78459405 # v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           active-only: false
           file: 'README.md'
 
-      - uses: actions-cool/contributor-helper@4ae4f034d624fc63c70cc89af686a0fb80168e1d # v1.2.1
+      - uses: https://github.com/actions-cool/contributor-helper@4ae4f034d624fc63c70cc89af686a0fb80168e1d # v1.2.1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           update-files: 'README.md'
@@ -42,7 +49,7 @@ jobs:
           style: 'base'
           avatar-width: '70'
 
-      - uses: release-kit/hash-files@6437070e108606dfe7614a3ee4caabbb9168268d # v1
+      - uses: https://github.com/release-kit/hash-files@6437070e108606dfe7614a3ee4caabbb9168268d # v1
         id: get-new-hash
         with:
           patterns: |
@@ -52,20 +59,20 @@ jobs:
 
       - name: Push
         if: ${{ steps.get-current-hash.outputs.hash != steps.get-new-hash.outputs.hash }}
-        # Secrets are passed via env (never interpolated into the command) and the GitLab token is
-        # sent in an Authorization header rather than embedded in the push URL, so it can't leak into
-        # logs/error traces. git is preinstalled on ubuntu-latest, so no apt-get is needed.
+        # Secrets are passed via env (never interpolated into the command) and the token is sent in an
+        # Authorization header rather than embedded in the push URL, so it can't leak into logs/error
+        # traces. That property is deliberate and is kept here -- only the forge and token changed.
+        # git is preinstalled on ubuntu-latest, so no apt-get is needed.
         env:
           GIT_USER: ${{ secrets.GIT_USER }}
           GIT_MAIL: ${{ secrets.GIT_MAIL }}
-          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
-          CI_SERVER_HOST: ${{ secrets.CI_SERVER_HOST }}
-          CI_PROJECT_TITLE: ${{ secrets.CI_PROJECT_TITLE }}
+          FORGEJO_ACTOR: ${{ secrets.FORGEJO_ACTOR }}
+          FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
         run: |
           git config user.name "$GIT_USER"
           git config user.email "$GIT_MAIL"
           git add README.md
           git commit -m 'chore: Update sponsors and contributors'
-          auth=$(printf '%s:%s' "$GIT_USER" "$GITLAB_TOKEN" | base64 | tr -d '\n')
+          auth=$(printf '%s:%s' "$FORGEJO_ACTOR" "$FORGEJO_TOKEN" | base64 | tr -d '\n')
           git -c http.extraheader="Authorization: Basic ${auth}" \
-            push "https://${CI_SERVER_HOST}/${GIT_USER}/${CI_PROJECT_TITLE}.git" HEAD:refs/heads/main
+            push "https://git.griefed.de/Griefed/ServerPackCreator.git" HEAD:refs/heads/main

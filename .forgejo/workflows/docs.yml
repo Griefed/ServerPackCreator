@@ -1,0 +1,126 @@
+# Documentation: the Writerside webhelp bundle and its container images.
+# Replaces GitLab's `Writerside Build` and the three `Writerside Docker*` jobs.
+#
+# GitLab Pages hosted the rendered site; Forgejo has no equivalent, so the webhelp ships as a container
+# image (`serverpackcreator-help`), which those Docker jobs were already publishing. The dokka HTML that
+# the GitLab `pages` job served is attached to the release by release-build.yml instead.
+name: Documentation
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  writerside:
+    name: "Writerside webhelp"
+    runs-on: ubuntu-latest
+    container:
+      image: jetbrains/writerside-builder:2026.02.8644
+    env:
+      ARTIFACT: webHelpSPCH2-all.zip
+      INSTANCE: Writerside/spch
+    steps:
+
+      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+
+      # The root-level documents are the source of truth and get copied into the help module, exactly as
+      # the GitLab job did -- Writerside cannot reach outside its own directory.
+      - name: Stage documents and images
+        run: |
+          cp -f img/*.png            serverpackcreator-help/Writerside/topics/img/ || true
+          cp -f img/*.webp           serverpackcreator-help/Writerside/topics/img/ || true
+          cp -f img/*.gif            serverpackcreator-help/Writerside/topics/img/ || true
+          cp -f CHANGELOG.md         serverpackcreator-help/Writerside/topics/CHANGELOG.md
+          cp -f CODE_OF_CONDUCT.md   serverpackcreator-help/Writerside/topics/CODE_OF_CONDUCT.md
+          cp -f CONTRIBUTING.md      serverpackcreator-help/Writerside/topics/CONTRIBUTING.md
+          cp -f HELP.md              serverpackcreator-help/Writerside/topics/HELP.md
+          cp -f LICENSE              serverpackcreator-help/Writerside/topics/LICENSE.md
+          cp -f README.md            serverpackcreator-help/Writerside/topics/README.md
+          cp -f SECURITY.md          serverpackcreator-help/Writerside/topics/SECURITY.md
+
+      # `--runner gitlab` became wrong with the forge change; the flag only labels the environment in the
+      # report, so `other` is accurate and avoids claiming a runner that no longer exists.
+      - name: Build webhelp
+        run: |
+          rm -f /tmp/.X99-lock || true
+          set -e
+          export DISPLAY=:99
+          Xvfb :99 &
+          /opt/builder/bin/idea.sh helpbuilderinspect \
+            -source-dir "$GITHUB_WORKSPACE/serverpackcreator-help" \
+            -product "$INSTANCE" --runner other -output-dir public/ || true
+          echo "Test existing of $ARTIFACT artifact"
+          test -e "public/$ARTIFACT"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: writerside-webhelp
+          path: |
+            public/${{ env.ARTIFACT }}
+            public/report.json
+          if-no-files-found: error
+
+  help-image:
+    name: "Help image"
+    needs: writerside
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: writerside-webhelp
+          path: public
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+
+      - name: Log in to ghcr.io
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.GH_TOKEN }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.6.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # One job replacing three. GitLab needed a separate job per tag set because its rules are per-job;
+      # here the tag list is computed, and `latest` is still reserved for a full release.
+      - name: Compute tags
+        id: tags
+        run: |
+          V="${{ github.ref_name }}"
+          U="${{ secrets.DOCKERHUB_USER }}"
+          TAGS="ghcr.io/$U/serverpackcreator-help:$V,index.docker.io/$U/serverpackcreator-help:$V"
+          if [[ "$V" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            TAGS="$TAGS,ghcr.io/$U/serverpackcreator-help:latest,index.docker.io/$U/serverpackcreator-help:latest"
+          fi
+          echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: .
+          file: docker/Dockerfile.help
+          platforms: linux/amd64
+          push: true
+          no-cache: true
+          build-args: VERSION=${{ github.ref_name }}
+          tags: ${{ steps.tags.outputs.tags }}

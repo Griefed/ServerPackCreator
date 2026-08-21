@@ -1,0 +1,69 @@
+# Phase 1 of releasing: decide whether a release is due, from the commit messages.
+# Replaces GitLab's `Generate Release`. semantic-release analyses commits against the `releaseRules` in
+# .releaserc.yml, writes CHANGELOG.md, commits it as `RELEASE: <version>`, and pushes the tag.
+#
+# Phase 2 (release-build.yml) reacts to that tag and does everything else. Same two-phase shape GitLab
+# had, so the versioning behaviour you already rely on is untouched.
+#
+# *** THE TOKEN MATTERS. *** Forgejo, like GitHub, does not trigger workflows from pushes made with the
+# automatic per-run token -- that is a loop guard. So the tag must be pushed with a real user token
+# (`FORGEJO_TOKEN`, a PAT with write access), or phase 2 never fires and a release is tagged with no
+# assets. If a tag ever lands without a build, this is the first thing to check.
+name: Generate Release
+
+on:
+  push:
+    branches:
+      - main
+      - alpha
+      - beta
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-generate
+  cancel-in-progress: false
+
+jobs:
+  semantic-release:
+    name: "semantic-release"
+    runs-on: ubuntu-latest
+    # Skip semantic-release's own release commit, or it would analyse its way into a loop. Mirrors the
+    # GitLab rule `$CI_COMMIT_TITLE !~ /^RELEASE:.+$/`.
+    if: ${{ !startsWith(github.event.head_commit.message, 'RELEASE:') }}
+    steps:
+
+      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+        with:
+          fetch-depth: 0          # semantic-release needs the full history to find the last release
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        with:
+          node-version: '22'
+
+      - name: Point origin at a pushable URL
+        env:
+          FORGEJO_ACTOR: ${{ secrets.FORGEJO_ACTOR }}
+          FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+        run: |
+          git remote set-url origin \
+            "https://${FORGEJO_ACTOR}:${FORGEJO_TOKEN}@git.griefed.de/Griefed/ServerPackCreator.git"
+          git config user.name  "${{ secrets.GIT_USER }}"
+          git config user.email "${{ secrets.GIT_MAIL }}"
+
+      # The plugin set is spelled out because GitLab supplied it inside its CI image
+      # (ghcr.io/griefed/gitlab-ci-cd), which is gone. commit-analyzer and release-notes-generator ship
+      # with the core; changelog, git and the conventionalcommits preset do not.
+      - name: Run semantic-release
+        env:
+          CI: 'true'
+        run: |
+          npx --yes \
+            -p semantic-release@24 \
+            -p @semantic-release/changelog \
+            -p @semantic-release/git \
+            -p conventional-changelog-conventionalcommits \
+            semantic-release
