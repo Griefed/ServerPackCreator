@@ -10,7 +10,7 @@ plugins {
     kotlin("jvm")
     alias(libs.plugins.nexusPublish)
     id("com.github.jk1.dependency-license-report")
-    id("com.install4j.gradle")
+    alias(libs.plugins.install4j)
 }
 
 idea {

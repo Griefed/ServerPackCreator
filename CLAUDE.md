@@ -123,6 +123,28 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
     plugin **marker** (`<id>:<id>.gradle.plugin:<version>`) that `buildSrc/build.gradle.kts` puts on
     its own compile classpath via `libs.plugins.x.marker()`.
 
+    **LANDMINE — the marker route drags the plugin's jar onto buildSrc's *compile* classpath, so a
+    plugin built with a newer Kotlin than Gradle embeds breaks every task in the build.** `Bump
+    install4j to 13` moved `install4j-gradle` to 13.1, whose jar carries Kotlin **2.3.0** metadata.
+    Precompiled script plugins compile with **Gradle's embedded** Kotlin — 2.0.x on the wrapper's
+    8.14.4 — and `:buildSrc:compilePluginsBlocks` refuses to read it: *"binary version of its metadata
+    is 2.3.0, expected version is 2.0.0"*. `./gradlew help` fails, so nothing in the build runs at all.
+    The catalog's `kotlin` version cannot rescue this: it governs how the **modules** compile, never
+    how build logic does.
+
+    The fix was neither downgrading the plugin nor upgrading Gradle. install4j is applied by the
+    **root build script**, which is a real one and therefore takes `alias(...)` — so the marker came
+    off buildSrc's classpath and the incompatible jar is never compiled against. Measured: `./gradlew
+    help` failed in 3 s before and succeeded in 5 s after, with `install4j` and `media` both still
+    registered.
+
+    So the rule is narrower than "markers everywhere": **a plugin needs the marker only when a
+    precompiled script plugin applies it.** Verified which ones do — `kotlin("jvm")` in
+    `kotlin-conventions` and `kotlin("plugin.spring"/"allopen"/"jpa")` in `spring-conventions`, plus
+    dokka, dokka-javadoc, kover and the siouan frontend plugin. `licenseReport` was the one other marker kept
+    alive purely by a versionless `id(...)` in the root build script — the same shape, one metadata bump
+    from the same failure — and was converted to `alias` in the following commit for that reason.
+
     Either route reads this one file, so a plugin's id and version are declared exactly once. Before
     2026-08-16 buildSrc depended on plugin *implementation* artifacts under `[libraries]`
     (`kotlinGradlePlugin`, `dokka`, …) while the convention plugins named the plugin *id* — two
