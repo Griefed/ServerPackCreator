@@ -2254,3 +2254,94 @@ the first. E5 is a capability quietly lost and a dependency the plan specified b
 
 Recommended: fix all six; they are one commit's work and every one of them would show up on the first real
 release.
+
+---
+
+# Audit — post-CI-migration commits, iteration 8 (2026-08-21)
+
+**Scope:** `eda82e20f^..HEAD` on `develop` — the eight non-merge commits landed after the Forgejo CI
+migration's iteration-3 audit: the audit-file consolidation, the two Forgejo credential fixes, the CI
+secrets reference, Griefed's install4j 13 bump, the Qodana de-Clouding, and two documentation
+corrections.
+
+## HIGH
+
+**H1 — `2c8de2ce6` breaks every Gradle invocation.** `gradle/libs.versions.toml`, the `install4j`
+version ref.
+
+`./gradlew help` — any task at all — fails at `:buildSrc:compilePluginsBlocks`:
+
+```
+install4j-gradle-13.1.jar!/META-INF/…kotlin_module Module was compiled with an incompatible
+version of Kotlin. The binary version of its metadata is 2.3.0, expected version is 2.0.0.
+```
+
+`install4j-gradle:13.1` is built with Kotlin 2.3. buildSrc's precompiled script plugins are compiled
+by **Gradle's embedded** Kotlin — 2.0.x on the wrapper's Gradle 8.14.4 — and the plugin marker is on
+that compile classpath (`buildSrc/build.gradle.kts`, `libs.plugins.install4j.marker()`), so the
+embedded compiler has to read metadata three minor versions ahead of itself and refuses.
+
+This is the exact failure shape the root `CLAUDE.md` already documents for the coroutines bump
+("*binary version of its metadata is X, expected Y*"), with one difference that matters: the catalog's
+`kotlin = "2.4.10"` cannot help here. That version governs how the **modules** compile. Build-logic
+compilation is bound to whatever Kotlin Gradle embeds, which is why this is a Gradle-version problem
+wearing a plugin-version costume.
+
+Two ways out, and they are not equivalent:
+
+- **Gradle 9.x**, which embeds Kotlin 2.3.10–2.3.21 and can read the metadata. A major upgrade against
+  a build that still has 20 configuration-cache problems and third-party plugins (jk1 license report,
+  siouan frontend, Spring Boot, pf4j) to re-verify. The real fix, and not a drive-by.
+- **Keep the Gradle plugin at 12.0.2** while install4j the *tool* and the license stay at 13. Restores
+  a known-good build immediately. Unverified risk: a v12 plugin driving a v13 installation against a
+  `spc.install4j` now stamped `version="13.1"`. The `media` task needs install4j installed locally and
+  is not part of the dev loop, so this cannot be settled from here — it settles on the first release
+  build.
+
+## MEDIUM
+
+**M1 — `2c8de2ce6` records no measurement, and the missing measurement is exactly what would have
+caught H1.** The project's own convention for build-logic changes is explicit: buildSrc has no test
+harness by deliberate choice, so "measure the behaviour before and after, and record both numbers in
+the commit message." The commit records nothing. The measurement in this case is one command that
+takes four seconds and fails.
+
+**M2 — `2c8de2ce6` collapses two version refs that were deliberately distinct.** `install4j` (the
+Gradle plugin) was 12.0.2 and `install4jRuntime` (`com.install4j:install4j-runtime`, `compileOnly` in
+`-app`) was 12.0.4 — different because the two artifacts release independently. Both are now 13.1.
+Checked: `install4j-runtime:13.1` **does** exist on Maven Central (12.0–12.0.5, 13.0–13.1 published),
+so the coordinate is real and this is not a second break. But nothing records that the two are now
+expected to move together, and the next bump will have to rediscover whether they must.
+
+## LOW
+
+**L1 — `20cd6edcc` carries three changes under one `fix(ci)`.** The auth-mechanism change (URL →
+`extraheader`) is the stated concern; the `GIT_USER`/`GIT_MAIL` move into `env:` and the added
+`set -eu` are Boy-Scout cleanup riding along. All three are in the same step and all three are
+disclosed in the message, so this is scope, not deception — but the commit could have been two.
+
+**L2 — `5eeb4a7a3` quoted a version in prose and went stale within a day.** `CI-SECRETS.md` said the
+install4j license is "used with install4j `12.0.2`"; `2c8de2ce6` moved it to 13.1 the same day. Fixed
+by `9832ace60`, which replaced the number with a pointer to where it is declared. Recorded because it
+is a recurrence of the defect class the "cite names, not snapshots" convention exists for, committed
+by the pass that had just been enforcing it. **Closed.**
+
+## Not findings — verified clean, do not re-litigate
+
+- **`eda82e20f`** — both merged halves diff byte-for-byte against their pre-merge blobs (440 and 1802
+  lines, 18 sections). No audit content lost.
+- **`710e8ea8f`** — zero `secrets.FORGEJO_` references remain, all eight workflows parse, no
+  `GITHUB_`/`GITEA_` reference introduced. Env-var names left as `FORGEJO_*` on purpose, so
+  `publishing-conventions`' `System.getenv` calls are untouched.
+- **`d4af07b8d`** — the premise was checked, not assumed: a Qodana token is required only for the paid
+  linters and is optional for the Community linters, and this job runs `qodana-jvm-community`. The
+  job's other Cloud coupling was already gone.
+- **`6f7e95c55`** — B25's closure was verified against the shipped resources (`latest.release` has a
+  matching `mcserver/` file; 659 files against the 643 the entry described), not inferred from prose.
+- **`2c8de2ce6`'s `spc.install4j` regeneration** — structurally identical across the bump: 2 mediaSets
+  and 3 launchers before and after, only the stamped version and formatting differ. The 2093/2093
+  line churn is a reformat, not a content change.
+- **No `-api`/`-app`/`-clientside` source is touched by any commit in scope**, so no
+  characterization-test obligation arises, no module boundary moved, and the plugin-facing API is
+  untouched. The one-concern-per-commit and test-first rules have nothing to bite on outside H1's
+  build change.
