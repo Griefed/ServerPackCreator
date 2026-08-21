@@ -274,6 +274,29 @@ evidence consulted occasionally, not context every session needs.
 
 ## Conventions
 
+- **"Make it work, make it right, make it fast." — Kent Beck.** A more detailed variation often cited is
+  *"First, make it. Then, make it work. Lastly, if you can, make it pretty."* The sequence exists to head
+  off perfectionism and analysis paralysis: functionality comes before form, and the core logic has to be
+  solid before anyone spends effort on readability or speed.
+  - **Avoiding premature optimization.** Knuth's "root of all evil" — you cannot predict bottlenecks
+    without a working system to measure. This project has the receipts: B30 was a real 121,492-byte
+    saving per startup that bought **~0 ms**, because the twelve manifest checks run concurrently and the
+    slowest one gated the batch. Measured, it was the wrong thing to optimise; the right one (B31, taking
+    the refresh off the startup path) was ~392 ms and only visible once something was running.
+  - **Managing technical debt.** Shortcuts may be taken first, but the bargain is that you come back and
+    polish. Many developers argue "fix it later" is a myth, and that is the risk this convention set
+    exists to contain — which is why `claude-docs/BACKLOG.md` demands a *stated reason* per deferral and
+    enough context to pick it up cold, rather than a wish-list.
+  - **Iterative improvement.** A messy first draft, then refinement.
+
+  **How this squares with TDD and "no shortcuts", which it looks like it contradicts:** the ordering is
+  about which *concern* you attack first, not permission to skip pinning. "Make it work" is what the
+  characterization test asserts; "make it right" and "make it fast" are the steps the test then protects.
+  Read the other way round it licenses exactly the failure this file already documents at length — the
+  performance branch whose tests were written by the same pass that changed the code and therefore passed
+  by construction. Draft messily, but pin before you refine, and never let "make it fast" arrive before
+  there is something whose behaviour is known.
+
 - **Cite names, not snapshots.** Three consecutive audits of the performance branches found the same
   defect class and nothing else: a fact quoted in prose going stale the moment the code moved — 54 commit
   hashes killed by a rebase, a landmine still describing a flaw that had been fixed, a line number shifted
