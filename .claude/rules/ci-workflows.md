@@ -64,3 +64,57 @@ its blocks, because GitHub honours them.
 above survived three audit iterations that validated YAML, checked action pinning, matched globs and
 verified secret names. None of that touches whether the runner can execute a step. The only test that
 finds these is a real run on the real instance.
+
+## The release pipeline's two silent killers
+
+Both bit the same run on 2026-08-22 (`release-generate.yml`, branch `alpha`). Neither is visible in the
+workflow YAML, and neither produces a wrong-looking config — only a wrong-looking release.
+
+**LANDMINE — semantic-release keeps a prerelease tag's channel in git notes, not in the tag.** The
+channel of every release is written to `refs/notes/semantic-release`; `lib/branches/get-tags.js` reads
+it and falls back to `channels = [null]` when a tag has no note. `lib/get-last-release.js` then filters
+a **prerelease** branch's tags down to those whose channels match the branch channel:
+
+```js
+(branch.type === "prerelease" && tag.channels.some((c) => isSameChannel(branch.channel, c)) && ...)
+  || !semver.prerelease(tag.version)
+```
+
+So on a remote with no `refs/notes/*`, **every `X-alpha.N` tag is invisible** and only the newest
+non-prerelease tag survives the filter. The observed symptom is a log line that looks almost right —
+`Found git tag 8.1.2 ... on branch alpha` where `9.0.0-alpha.6` was expected — followed by a version
+that restarts the prerelease counter at `.1`. Reproduced in a scratch repo both ways: no notes gives
+`8.1.2` / `9.0.0-alpha.1`, and `git notes --ref=semantic-release add -m '{"channels":["alpha"]}'` on
+`9.0.0-alpha.6` gives `9.0.0-alpha.6` / `9.0.0-alpha.7`.
+
+Two consequences worth knowing:
+
+- **`actions/checkout` does not need changing.** semantic-release runs `fetchNotes` itself before
+  resolving branches, verified against a fresh clone whose only copy of the notes was on the remote.
+  The notes must exist **on origin**; nothing about the checkout step has to fetch them.
+- **A forge migration loses them.** `refs/notes/*` is not a branch and not a tag, so a mirror, an
+  import or a `git push --all --tags` carries none of it. That is exactly how the Forgejo remote ended
+  up with 375 tags and zero notes. `claude-docs/RELEASE-TAG-REPAIR.md` has the repair.
+
+**LANDMINE — creating a release through the forge API mints the tag at the target branch, not at the
+release commit.** Forgejo (like GitHub) creates a missing tag at `target_commitish` when a release is
+created. The releases API still shows `"target_commitish": "main"` on `9.0.0-alpha.1` through `.5`, and
+all five tags sit on `main`'s tip — the `RELEASE: 8.1.2` commit `6cd6e9af3` — while the real
+`RELEASE: 9.0.0-alpha.N` commits sit on `alpha`. Comparing every remote tag against its local
+counterpart bounds the damage exactly: of 375 tags, those five mismatch, `9.0.0-alpha.6` is a ghost
+(see below), `continuous` legitimately moves because it is the rolling dev tag, and **the other 368
+match byte for byte**. Tags pushed by git are fine; tags minted by the API are not.
+
+`release-build.yml` is **not** the culprit and needs no change: its Forgejo call posts
+`{"tag_name":"$V", ...}` with no `target_commitish`, which is why `8.1.2` and `9.0.0-alpha.6` both come
+back from the API with an empty target — the tag already existed when the release was created. How
+`9.0.0-alpha.6`'s tag came to be on `6cd6e9af3` anyway is **not** recoverable from what the remote still
+holds; don't invent a mechanism for it. What *is* on the record: there is no `RELEASE: 9.0.0-alpha.6`
+commit in the history and `CHANGELOG.md` on `origin/alpha` ends at `.5`, so that release's
+`@semantic-release/git` commit never landed.
+
+The rule that follows regardless: **push the tag with git first, then create the release against a tag
+that already exists.** Passing a branch as `target_commitish` for a release that has a real commit is
+how five tags ended up 300-odd commits away from the code they name. Note the mirror job already gets
+this right for the GitHub side — it passes `target_commitish: ${{ github.sha }}` precisely because the
+tag has usually not mirrored across yet.
