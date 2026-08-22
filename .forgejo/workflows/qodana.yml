@@ -11,9 +11,6 @@ on:
   push:
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 concurrency:
   group: qodana-${{ github.ref }}
   cancel-in-progress: true
@@ -22,9 +19,12 @@ jobs:
   qodana:
     name: "scan"
     runs-on: ubuntu-latest
-    container:
-      image: jetbrains/qodana-jvm-community:2026.2
-      options: --entrypoint=""
+    # NO `container:` HERE, DELIBERATELY. Forgejo Actions (act) runs every JavaScript action by exec'ing
+    # `node` INSIDE the job container, and jetbrains/qodana-jvm-community ships none -- verified,
+    # `command -v node` in that image returns nothing. GitHub's hosted runners inject a node binary into
+    # container jobs; act does not, so checkout/cache/upload-artifact all died with exit 127
+    # (nektos/act#107). The linter runs as a `docker run` below, which needs nothing from the image but
+    # the linter itself.
     steps:
 
       - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
@@ -59,13 +59,31 @@ jobs:
       # There is no free Cloud tier, so the whole job is self-contained: the SARIF is counted below,
       # the HTML report is attached as an artifact, and Discord links the run. Do not re-add the token
       # env -- an empty one implies a Cloud setup that does not exist.
+      # `qodana-jvm-community` is NOT a binary in that image -- verified, `command -v` finds nothing. The
+      # entrypoint is the Qodana CLI at /opt/idea/bin/qodana and it needs the `scan` subcommand, so this
+      # step would have failed even with node present; it never got the chance, checkout died first. The
+      # /data/{project,cache,results,report} paths are the image's own conventions (its WorkingDir is
+      # /data/project). This exact command line was run locally against this repo: it opens the project
+      # and starts inspecting, so the form is proven -- see the memory note below.
       - name: Run Qodana
         run: |
-          qodana-jvm-community \
-            --cache-dir "$GITHUB_WORKSPACE/qodana/cache" \
-            --results-dir "$GITHUB_WORKSPACE/qodana/results" \
-            --report-dir "$GITHUB_WORKSPACE/qodana/report" \
+          mkdir -p qodana/cache qodana/results qodana/report
+          docker run --rm \
+            -v "$PWD:/data/project" \
+            -v "$PWD/qodana/cache:/data/cache" \
+            -v "$PWD/qodana/results:/data/results" \
+            -v "$PWD/qodana/report:/data/report" \
+            jetbrains/qodana-jvm-community:2026.2 \
+            scan \
+              --project-dir /data/project \
+              --cache-dir /data/cache \
+              --results-dir /data/results \
+              --report-dir /data/report \
             || true
+          # The image runs as uid 0, so its output is root-owned. upload-artifact runs as the runner user
+          # and cannot read that unless the runner is also root -- normalise, tolerating failure because
+          # it is already readable in the root case.
+          chown -R "$(id -u):$(id -g)" qodana 2>/dev/null || true
 
       - name: Report problem count
         run: |

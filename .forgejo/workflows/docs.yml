@@ -21,9 +21,6 @@ on:
       - '*.*.*'
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 concurrency:
   group: docs-${{ github.ref }}
   cancel-in-progress: true
@@ -32,8 +29,9 @@ jobs:
   writerside:
     name: "Writerside webhelp"
     runs-on: ubuntu-latest
-    container:
-      image: jetbrains/writerside-builder:2026.02.8644
+    # NO `container:` HERE -- same reason as qodana.yml. act runs JavaScript actions by exec'ing `node`
+    # INSIDE the job container, so checkout and upload-artifact fail with exit 127 in any tool image that
+    # lacks node. This job DID fail that way (run 133) before the builder moved into a `docker run`.
     env:
       ARTIFACT: webHelpSPCH2-all.zip
       INSTANCE: Writerside/spch
@@ -58,15 +56,26 @@ jobs:
 
       # `--runner gitlab` became wrong with the forge change; the flag only labels the environment in the
       # report, so `other` is accurate and avoids claiming a runner that no longer exists.
+      # The builder runs in its own container rather than as the job's container, so the workspace is a
+      # bind mount and the paths inside are the mount point, not $GITHUB_WORKSPACE. INSTANCE is passed
+      # with -e because the outer shell must not expand it -- the inner script needs it.
       - name: Build webhelp
         run: |
-          rm -f /tmp/.X99-lock || true
           set -e
-          export DISPLAY=:99
-          Xvfb :99 &
-          /opt/builder/bin/idea.sh helpbuilderinspect \
-            -source-dir "$GITHUB_WORKSPACE/serverpackcreator-help" \
-            -product "$INSTANCE" --runner other -output-dir public/ || true
+          mkdir -p public
+          docker run --rm \
+            -v "$PWD:/workspace" \
+            -w /workspace \
+            -e INSTANCE \
+            --entrypoint bash \
+            jetbrains/writerside-builder:2026.02.8644 \
+            -c 'rm -f /tmp/.X99-lock || true
+                export DISPLAY=:99
+                Xvfb :99 &
+                /opt/builder/bin/idea.sh helpbuilderinspect \
+                  -source-dir /workspace/serverpackcreator-help \
+                  -product "$INSTANCE" --runner other -output-dir /workspace/public/ || true'
+          chown -R "$(id -u):$(id -g)" public 2>/dev/null || true
           echo "Test existing of $ARTIFACT artifact"
           test -e "public/$ARTIFACT"
 

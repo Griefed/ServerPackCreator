@@ -8,13 +8,16 @@
 # to work for something merely recommended.
 name: Test
 
+# NOTE: no `permissions:` block anywhere in this directory. Forgejo does not implement the field --
+# the runner warns "has a permissions field, which is not supported in Forgejo and will be ignored"
+# once per job -- so declaring it bought nothing but noise and a false sense of hardening. Capability
+# scoping on Forgejo is done per job with Authorized Integrations, configured on the instance rather
+# than in the workflow. `.github/workflows` keeps its permissions blocks: GitHub honours them.
+
 on:
   push:
   pull_request:
   workflow_dispatch:
-
-permissions:
-  contents: read
 
 concurrency:
   group: test-${{ github.ref }}

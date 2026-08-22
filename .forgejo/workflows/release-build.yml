@@ -11,9 +11,6 @@ on:
     tags:
       - '*.*.*'
 
-permissions:
-  contents: write
-
 concurrency:
   group: release-build-${{ github.ref_name }}
   cancel-in-progress: false

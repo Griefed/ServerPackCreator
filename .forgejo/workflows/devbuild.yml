@@ -20,9 +20,6 @@ on:
         required: false
         type: string
 
-permissions:
-  contents: read
-
 # Required, not tidy-up. The GitHub original had no guard either, but it updated the `continuous` release
 # in place (`allowUpdates`/`replacesArtifacts`), which overlapping runs survive untidily. This port
 # deletes-then-recreates so stale assets cannot linger -- right for one run, wrong for two: concurrent
@@ -276,9 +273,6 @@ jobs:
       build-media
     ]
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
     steps:
       - name: Checkout latest code
         uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
