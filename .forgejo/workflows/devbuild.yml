@@ -82,7 +82,7 @@ jobs:
             -x :serverpackcreator-api:test -x :serverpackcreator-app:test
 
       - name: Upload JARs
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
         with:
           name: gradle-jars
           path: |
@@ -103,7 +103,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download JARs
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: https://code.forgejo.org/forgejo/download-artifact@769f970437aa3291b13f35dc23fc87967d7fb19f # v7, Forgejo's GHES-patched fork
         with:
           name: gradle-jars
           path: .
@@ -138,7 +138,7 @@ jobs:
           cat "$APPIMAGE.sha256"
 
       - name: Upload AppImage artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
         with:
           name: appimage-x86_64
           path: ServerPackCreator-${{ needs.build-jar.outputs.version }}-x86_64.AppImage
@@ -146,7 +146,7 @@ jobs:
           retention-days: 1
 
       - name: Upload checksums
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
         with:
           name: appimage-x86_64-checksum
           path: "*.sha256"
@@ -165,7 +165,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download JARs
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: https://code.forgejo.org/forgejo/download-artifact@769f970437aa3291b13f35dc23fc87967d7fb19f # v7, Forgejo's GHES-patched fork
         with:
           name: gradle-jars
           path: .
@@ -200,7 +200,7 @@ jobs:
           cat "$APPIMAGE.sha256"
 
       - name: Upload AppImage artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
         with:
           name: appimage-aarch64
           path: ServerPackCreator-${{ needs.build-jar.outputs.version }}-aarch64.AppImage
@@ -208,7 +208,7 @@ jobs:
           retention-days: 1
 
       - name: Upload checksums
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
         with:
           name: appimage-aarch64-checksum
           path: "*.sha256"
@@ -246,7 +246,7 @@ jobs:
         run: rm install4j_linux-x64_*.sh
 
       - name: Download JARs
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: https://code.forgejo.org/forgejo/download-artifact@769f970437aa3291b13f35dc23fc87967d7fb19f # v7, Forgejo's GHES-patched fork
         with:
           name: gradle-jars
           path: .
@@ -258,7 +258,7 @@ jobs:
         run: ./gradlew media --info --full-stacktrace
 
       - name: Upload Media
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
         with:
           name: install4j-media
           path: media/*
@@ -280,7 +280,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download all artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: https://code.forgejo.org/forgejo/download-artifact@769f970437aa3291b13f35dc23fc87967d7fb19f # v7, Forgejo's GHES-patched fork
         with:
           path: artifacts
 

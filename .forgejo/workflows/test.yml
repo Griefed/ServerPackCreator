@@ -6,6 +6,18 @@
 # instance -- they are what built releases 9.0.0-alpha.2 through .6 while Forgejo was reading
 # .github/workflows. Switching them to a mirror whose commit SHAs may differ would trade something known
 # to work for something merely recommended.
+#
+# THE ARTIFACT ACTIONS ARE THE ONE EXCEPTION, and not by preference. Upstream upload-artifact@v4+ and
+# download-artifact@v4+ call `isGhes()` and abort with `GHESNotSupportedError` on any host that is not
+# github.com, so every upload in this directory died -- test.yml, docs.yml and devbuild.yml all failed
+# that way, after the step had already found and staged the files. It is a client-side refusal, not a
+# missing API on the instance, and no runner or instance setting turns it off. Forgejo maintains patched
+# forks whose `isGhes()` is `return false` -- verified 2026-08-22 by reading `dist/upload/index.js` and
+# `dist/index.js` at the pinned commits -- so those two references point at code.forgejo.org, pinned by
+# commit like every other action here. `.github/workflows` keeps the upstream actions: on GitHub the
+# check is correct and the forks are unnecessary. The forks lag upstream (upload v5 vs v7, download v7
+# vs v8); every input this directory passes -- name, path, if-no-files-found, retention-days -- exists in
+# those versions.
 name: Test
 
 # NOTE: no `permissions:` block anywhere in this directory. Forgejo does not implement the field --
@@ -53,7 +65,7 @@ jobs:
       # instead. Kept separate from the build artifact so a failed run still yields readable results
       # without downloading the whole build directory.
       - name: Upload test results
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
         if: ${{ always() }}
         with:
           name: test-results
@@ -65,7 +77,7 @@ jobs:
             serverpackcreator-plugin-example/build/test-results/test/TEST-*.xml
           if-no-files-found: warn
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
         if: ${{ always() }}
         with:
           name: build-artifacts
