@@ -182,6 +182,7 @@ never evicted, and a re-install costs one networked setup boot if it comes back.
 
 | Variable                        | Default                        | Meaning                                                                      |
 |---------------------------------|--------------------------------|------------------------------------------------------------------------------|
+| `SPC_GRINDER_HOME`              | `~/.spc-grinder`               | Everything below lives here, and it is SPC's home directory too              |
 | `SPC_GRINDER_IMAGE`             | `spc-grinder-runtime:latest`   | Image used for the boots                                                     |
 | `SPC_GRINDER_WORK`              | `~/.spc-grinder/work`          | Scratch space for generated packs                                            |
 | `SPC_GRINDER_CACHE`             | `~/.spc-grinder/cache`         | Cached loader installs, one per loader/version/Minecraft                     |

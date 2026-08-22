@@ -19,8 +19,13 @@
  */
 package de.griefed.serverpackcreator.grinder
 
+import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.api.settings.PathsConfig
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
 /**
@@ -43,6 +48,64 @@ internal class GrinderSpcEnvironmentTest {
 
     private val entryPoint =
         File("src/main/kotlin/de/griefed/serverpackcreator/grinder/GrinderApplication.kt")
+
+    private var homeProperty: String? = null
+    private var nodeProperty: String? = null
+
+    /** Saves the SPC properties this suite's JVM runs on, so a test here cannot redirect another one's writes. */
+    @BeforeEach
+    fun rememberSpcProperties() {
+        homeProperty = System.getProperty(PathsConfig.HOME_DIRECTORY_KEY)
+        nodeProperty = System.getProperty(ApiProperties.PREFERENCES_NODE_PROPERTY)
+    }
+
+    /** Puts both properties back exactly as they were, including having been unset. */
+    @AfterEach
+    fun restoreSpcProperties() {
+        homeProperty?.let { System.setProperty(PathsConfig.HOME_DIRECTORY_KEY, it) }
+            ?: System.clearProperty(PathsConfig.HOME_DIRECTORY_KEY)
+        nodeProperty?.let { System.setProperty(ApiProperties.PREFERENCES_NODE_PROPERTY, it) }
+            ?: System.clearProperty(ApiProperties.PREFERENCES_NODE_PROPERTY)
+    }
+
+    /** With nothing configured, SPC's home is the daemon's own base — where the README says its logs are. */
+    @Test
+    fun theDaemonPinsSpcsHomeToItsOwnBase(@TempDir base: File) {
+        System.clearProperty(PathsConfig.HOME_DIRECTORY_KEY)
+
+        GrinderApplication.pinSpcHomeDirectory(base)
+
+        Assertions.assertEquals(
+            base.absolutePath,
+            System.getProperty(PathsConfig.HOME_DIRECTORY_KEY),
+            "the daemon must name SPC's home itself; left to resolve one, a source build takes the working " +
+                "directory, which is `/` under systemd"
+        )
+    }
+
+    /** An operator who names a home keeps it — the daemon fills a gap, it does not overrule a choice. */
+    @Test
+    fun anOperatorsOwnHomeIsNotOverruled(@TempDir base: File, @TempDir chosen: File) {
+        System.setProperty(PathsConfig.HOME_DIRECTORY_KEY, chosen.absolutePath)
+
+        GrinderApplication.pinSpcHomeDirectory(base)
+
+        Assertions.assertEquals(
+            chosen.absolutePath,
+            System.getProperty(PathsConfig.HOME_DIRECTORY_KEY),
+            "-D${PathsConfig.HOME_DIRECTORY_KEY} is the documented escape hatch and must win"
+        )
+    }
+
+    /** A blank home is a misconfiguration, not a choice, and must be replaced rather than passed on to SPC. */
+    @Test
+    fun aBlankHomeIsTreatedAsUnset(@TempDir base: File) {
+        System.setProperty(PathsConfig.HOME_DIRECTORY_KEY, "   ")
+
+        GrinderApplication.pinSpcHomeDirectory(base)
+
+        Assertions.assertEquals(base.absolutePath, System.getProperty(PathsConfig.HOME_DIRECTORY_KEY))
+    }
 
     /**
      * Both claims must precede every `log` use in `main`, since the first one builds an `ApiProperties`.
