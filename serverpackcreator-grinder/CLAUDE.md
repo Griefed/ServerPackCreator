@@ -156,6 +156,10 @@ though their detail lives deeper:
   clean. **Expected and harmless:** the startup log also shows a save into
   `build/install/serverpackcreator-grinder/lib/serverpackcreator.properties` — the dist's own copy, which SPC loads
   and therefore tracks. It lives under `build/`, so it is regenerated and gitignored; don't chase it.
+  **Also expected since the home is pinned to the base:** `<base>/serverpackcreator.properties` is now both the
+  file the daemon passes in *and* the home candidate SPC looks for, so `Loaded properties from …` appears twice per
+  start. Harmless — `PropertyStore.save` collects into a `TreeSet<File>`, so the duplicate collapses and the file is
+  written once.
 - **A cached install is a product of the templates that built it** (`TemplateProvenance` + the marker's
   `templates=` key). The install boot runs the pack's own `start.sh`, so a template change that alters what an
   install *produces* leaves cached layers stale — and the marker used to record only loader/version/Minecraft, so

@@ -2537,3 +2537,139 @@ Two lessons, both about the shape of the error rather than the fact:
 - **The absence of a signal was nearly read as a defect.** The same trap the check-1 rules in `/doctor`
   describe for passive components — "a zero is the absence of logging, not evidence of disuse" — applied
   here to a memory file, and the audit walked into it one iteration after writing about it.
+
+
+---
+
+# Iteration 12 — 2026-08-22 — the systemd home-resolution branch (`claude-fix-service-home-resolution`, merged by `8008c4160`)
+
+Scope: the seven commits `refactor(api): inject PathsConfig's working directory` … `docs: record the systemd
+home-resolution trap and the ordering it depends on`. Self-audit of a bugfix branch, not a refactor branch: the
+reported failure was the grinder dying as a systemd service on `java.io.FileNotFoundException: /log4j2.xml`.
+Reproduced before the fix and re-run after it by launching the installed distribution from `/`, which is where
+`systemd` starts a unit that does not say `WorkingDirectory=`.
+
+## HIGH
+
+### L1 — The new startup check can kill a perfectly writable home, because the write probe races
+
+`b4704961c` — `serverpackcreator-api/src/main/kotlin/de/griefed/serverpackcreator/api/ApiProperties.kt:1394`
+(`requireUsableHomeDirectory`), via `utilities/common/FileUtilities.kt:551` (`testFileWrite`).
+
+The probe writes a **fixed filename**: `File(this, "poke")`, then asserts `file.exists()`, then deletes it. Two
+SPC processes probing the *same* home interleave — A writes `poke`, B writes `poke`, A sees it and deletes it, B's
+`exists()` returns **false** — and the loser concludes the directory is unwritable. Before this commit that verdict
+only made a GUI file-chooser refuse a directory (`GlobalSettings.kt:63`, `:96`, `WebserviceSettings.kt:70`, `:89`),
+which is recoverable and visible. This commit put the same probe on the **construction path of every
+`ApiProperties`**, behind a `throw`, so the loser of that race now dies at startup with
+`IllegalStateException: … home directory is not usable` naming a home that is fine.
+
+Concurrent SPC processes on one host are not hypothetical here — they are the documented normal condition, and the
+reason the `Preferences` node was split per host in the first place (grinder daemon + `:serverpackcreator-api:test`
++ the developer's GUI; see the grinder `CLAUDE.md` landmine and its measured 2026-07-30 incident). The grinder
+itself constructs two `ApiProperties` per start (log4j's `ConfigurationFactory` instance, then `ApiWrapper`'s), so
+the probe now runs twice per start against the daemon's shared home.
+
+Fix: probe with a name that cannot collide — `Files.createTempFile(dir, ".spc-write-probe", null)`, deleted in a
+`finally` — keeping `testFileWrite`'s "false on failure, never throw except on a non-directory" contract. Fixing
+the utility rather than the call site also removes the race from the four GUI call sites.
+
+## MEDIUM
+
+### L2 — The ordering guard scans past `main`, so it can pass vacuously
+
+`4624a572f` (guard) / `d4eec4bff` (the assertions it grew) —
+`serverpackcreator-grinder/src/test/kotlin/…/GrinderSpcEnvironmentTest.kt`,
+`theSpcEnvironmentIsClaimedBeforeTheFirstLogStatement`.
+
+`body` is `readText().substringAfter("fun main(args: Array<String>) {")` — `main`'s body **plus every declaration
+below it**. `indexOf("log.")` and `indexOf("pinSpcHomeDirectory(")` therefore search text that is not `main`:
+today the first match of each is the intended one only because `main` happens to precede the helpers in the file.
+Move `pinSpcHomeDirectory`'s declaration above `main`, or remove `main`'s logging, and the guard compares positions
+of things it was not asserting about and goes green while the property it pins is broken.
+
+This is exactly the failure class this file has recorded twice ("a guard whose teeth were never checked has
+repeatedly turned out to assert nothing"; "a test that only asserts shape is not a pin"). The guard is a source
+assertion by necessity — a JVM whose logging is already initialised cannot observe the ordering — but its window
+has to be `main` itself.
+
+Fix: extract `main`'s body by brace-matching from its opening brace, and assert inside that window only.
+
+## LOW
+
+### L3 — Pinning SPC's home to the daemon base makes the properties file load twice
+
+`d4eec4bff` — `serverpackcreator-grinder/src/main/kotlin/…/GrinderApplication.kt`. SPC's home is now the same
+directory the daemon hands `ApiWrapper.api()` its properties file from, so `PropertyStore` loads
+`<base>/serverpackcreator.properties` as both the explicit file and the home candidate, logging `Loaded properties
+from …` twice per start (visible in the post-fix run at 23:07:02,357). **Verified harmless:** `PropertyStore.save`
+collects into a `TreeSet<File>` (`PropertyStore.kt:216`), so the duplicate collapses and the file is written once.
+Recorded so the doubled journal line is not mistaken for a defect.
+
+### L4 — An added side effect went unmentioned in the fix commit
+
+`d4eec4bff` — `GrinderApplication.kt`, `base` gained `.absoluteFile.apply { mkdirs() }`. Harmless and arguably
+required now that the home is pinned to it, but it is a behaviour addition the commit message does not state.
+
+### L5 — The root `CLAUDE.md` snapshot header was not moved
+
+`bb6545b18` — `CLAUDE.md:305` still reads **Current status (2026-08-21)** while the table below it was edited
+(api 354 → 356, grinder 233 → 237, plus the systemd note). The block is defined by that file as the current
+snapshot.
+
+### L6 — The test-side half of the injection landed in the wrong commit
+
+`ada74768d` — `PathsConfigTest.kt`, the `pathsConfig()` helper's new `workingDirectory` parameter is the
+counterpart of `3c068ce3a`'s constructor injection and belonged in that refactor commit. Reference-only: verified
+that no pre-existing assertion, argument or expected value changed, so the `refactor:` label on `3c068ce3a` and
+the `test:` label on `ada74768d` are both still honest.
+
+## Not findings — verified clean, do not re-litigate
+
+- **`3c068ce3a` is behaviour-preserving despite moving `File("").absoluteFile` from per-access to
+  construction-time.** Probed directly: the JVM resolves an empty path against the working directory it was
+  *launched* with and ignores a later `user.dir` (setting the property mid-process does not move
+  `File("").absolutePath`), so the value cannot change during a process's life. Per-access and once-at-construction
+  are the same value by construction.
+- **No pre-existing assertion changed anywhere on the branch.** `git diff 7780da54a..HEAD -- "*/src/test/*"` is two
+  new files plus `PathsConfigTest`, whose only added assertion lines belong to the new test. The stop-and-flag
+  signal for a mislabelled refactor does not fire.
+- **Logging from inside the log4j-instantiated `ApiProperties` is safe, the new `log.error` in `setLoggingLevel`
+  included.** `ApiProperties` *is* log4j's `ConfigurationFactory` (`@Plugin`, `ApiProperties.kt:57`), so log4j
+  builds one while configuring itself; the post-fix run from `/` shows that instance's own `loadProperties` and
+  `printSettings` INFO lines appearing normally (23:07:02,356–,423), with no recursion, no stall and no lost
+  output.
+- **SPC's home and the grinder's state can share one directory.** The subdirectories do not collide — SPC uses
+  `work/temp` and `work/installers`, the grinder `work/install` and `work/verify` — and nothing in `-api` deletes
+  `work/` wholesale (grepped: the only recursive delete near it is `BootWorkspaceReaper`, which sweeps `verify`
+  only).
+- **A root-owned `/opt` install is not the next failure of this class.** `installLocationXml` — `log4j2.xml` beside
+  the jar — is only ever *read* (`ApiProperties.kt:1502`–`1506`), never written, so an unwritable jar folder costs
+  nothing.
+- **The stored home preference stays authoritative even when unwritable.** Deliberate: a loud, actionable error
+  beats silently relocating a configured home and leaving its configs behind. Flagged to Griefed with its
+  alternative (skip unwritable stored values too, which would self-heal a stale `/` without any error).
+
+## Resolution (same day, on Griefed's instruction to fix all findings)
+
+- **L1 — fixed.** `test(api): pin that the writability probe cannot be defeated by a name collision` landed the
+  guards red (34 of 64 concurrent probes false, plus the deterministic name-collision case), then
+  `fix(api): probe writability with a name nothing else can hold` switched `testFileWrite` to
+  `Files.createTempFile(dir, ".spc-write-probe", null)` with removal in a `finally`. api and app suites green —
+  app matters here, since the four GUI file-chooser call sites live there. Behaviour row appended to
+  `claude-docs/API-BEHAVIOUR-CHANGES.md`.
+- **L2 — fixed.** The guard's window is now `main`'s own body, cut by brace-matching, and it asserts its own
+  boundedness (fails if the window reaches the declarations below `main`). **Teeth checked by mutation:** moving
+  both claims back below `main`'s first log statement turns it red with the intended message; reverting turns it
+  green again. That check is the whole point of the finding — the previous window would have gone green either way
+  once the file was reordered.
+- **L3 — documented, not changed.** Removing the duplicate load would mean changing `PropertyStore`'s candidate
+  list, which is out of proportion to a log line that costs nothing (the write is already deduplicated by
+  `TreeSet`). Recorded in the grinder `CLAUDE.md` beside the existing "expected and harmless" note about the
+  dist's own properties copy, so the doubled line is not chased twice.
+- **L4 — fixed.** `GrinderApplication` now says why `base` is created at that point: SPC's writability check runs
+  against it before anything else of ours would have created it.
+- **L5 — fixed.** Root `CLAUDE.md`'s snapshot header moved to 2026-08-22, with the table it heads.
+- **L6 — accepted, not fixed.** The misplaced test-helper parameter is commit hygiene in already-merged history;
+  rewriting the merge to move two lines is not worth it, and an earlier rewrite on this branch is precisely what
+  swept an unrelated untracked file into a commit. Recorded instead.

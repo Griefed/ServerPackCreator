@@ -57,6 +57,8 @@ object GrinderApplication {
      */
     @JvmStatic
     fun main(args: Array<String>) {
+        // Created here rather than lazily: it is handed to SPC as its home directory below, and SPC's own
+        // writability check runs before anything of ours would have created it.
         val base = File(env("SPC_GRINDER_HOME", File(System.getProperty("user.home"), ".spc-grinder").path))
             .absoluteFile.apply { mkdirs() }
         // Both claims BEFORE anything touches `log`: ApiProperties is registered as log4j's ConfigurationFactory,

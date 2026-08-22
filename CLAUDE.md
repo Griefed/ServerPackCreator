@@ -302,7 +302,7 @@ evidence consulted occasionally, not context every session needs.
 **Goal:** KISS/MVC/TDD/SOLID across api → app → plugin-example → web-frontend.
 **Phases:** 0 baseline · 1 API · 2 app · 3 plugin-example · 4 frontend.
 
-**Current status (2026-08-21):**
+**Current status (2026-08-22):**
 
 | Module         | Tests         | Notes                                                                                |
 |----------------|---------------|--------------------------------------------------------------------------------------|
