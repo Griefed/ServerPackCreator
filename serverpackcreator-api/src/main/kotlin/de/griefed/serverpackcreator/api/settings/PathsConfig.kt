@@ -127,8 +127,9 @@ class PathsConfig(
                 getPreference(HOME_DIRECTORY_KEY).get()
             } else if (store.properties.containsKey(HOME_DIRECTORY_KEY) && store.properties.getProperty(HOME_DIRECTORY_KEY).isNotBlank()) {
                 store.properties.getProperty(HOME_DIRECTORY_KEY)
-            } else if (jarInformation.jarPath.toFile().isDirectory || devBuild) {
-                // Dev environment
+            } else if ((jarInformation.jarPath.toFile().isDirectory || devBuild) && workingDirectory.canWrite()) {
+                // Dev environment. Only when we may actually write there: a service manager starts a unit in `/`
+                // unless its unit file says otherwise, and adopting that made every write SPC performs fail.
                 workingDirectory.absolutePath
             } else if (File(System.getProperty("user.home")).isDirectory) {
                 File(System.getProperty("user.home"),"ServerPackCreator").absolutePath
