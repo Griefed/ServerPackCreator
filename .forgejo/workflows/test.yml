@@ -76,6 +76,13 @@ jobs:
             serverpackcreator-grinder/build/test-results/test/TEST-*.xml
             serverpackcreator-plugin-example/build/test-results/test/TEST-*.xml
           if-no-files-found: warn
+          # Deletion is automatic and server-side: the artifact carries this expiry, and Forgejo's
+          # `cron.cleanup_actions` job (ENABLED true, SCHEDULE @midnight by default) removes what has
+          # expired. Without this the instance default of ARTIFACT_RETENTION_DAYS applies -- 90 days --
+          # on every push, which is not a retention policy so much as an accumulation one. A week is
+          # deliberately longer than the build artifact below: these XMLs are small and are the thing
+          # actually read after a failure, including one noticed the following Monday.
+          retention-days: 7
 
       - uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
         if: ${{ always() }}
@@ -89,3 +96,8 @@ jobs:
             serverpackcreator-web-frontend/dist
             serverpackcreator-plugin-example/build
           if-no-files-found: warn
+          # One day, matching devbuild.yml's convention for the same reason: this is whole build trees --
+          # the run that surfaced the GHES refusal counted 5708 files -- and it is a convenience copy of
+          # something any checkout can rebuild, not evidence. Nothing downstream consumes it, so no job
+          # breaks when it goes.
+          retention-days: 1
