@@ -173,6 +173,21 @@
   underneath a *live* instance (the older test built the config afterwards, so a captured value still looked right).
   The file's other 31 path properties use an equivalent field-assigning getter; either shape is fine, a bare
   initialiser is not.
+- **LANDMINE — the first log statement in the process constructs an `ApiProperties`, and a source build's home
+  is the working directory.** `ApiProperties` is annotated `@Plugin(category = Core.CATEGORY_NAME)` and *is* a
+  log4j `ConfigurationFactory`, so log4j instantiates one during its own initialisation: the earliest stack in
+  the reported grinder crash starts at `GrinderApplication.getLog`, before `main` had wired anything. Anything a
+  host wants to decide about SPC's environment — its `Preferences` node, its home — must therefore be set
+  **before its own first log call**, or the instance log4j built has already resolved and *persisted* something
+  else. Compounding it: `apiVersion` is `dev` for every locally built artifact (`gradle.properties` carries
+  `version=dev`), so `devBuild` is true, and a source build's home falls back to the process working directory —
+  which `systemd` sets to `/` unless the unit says `WorkingDirectory=`. Result, reproduced 2026-08-22 by running
+  the installed grinder distribution from `/`: home `/`, `log4j2.xml` unwritable, and death by
+  `FileNotFoundException: /log4j2.xml` — a message naming neither the home nor where it came from. The fallback
+  now requires a writable working directory, `ApiProperties.init` refuses an unusable home with a message naming
+  it, and `setLoggingLevel` no longer throws. Pinned by
+  `PathsConfigTest.theDevEnvironmentFallbackSkipsAnUnwritableWorkingDirectory`,
+  `ApiPropertiesHomeDirectoryTest` and `GrinderSpcEnvironmentTest`.
 - **`PackConfig.modloader` setter silently ignores unrecognized values** — it does *not* fall back to
   Forge, as this file claimed until 2026-08-14. The setter assigns only on a match (`PackConfig.kt:328-341`),
   so an unrecognised value leaves the field at whatever it already held, which starts as `""`. A config whose

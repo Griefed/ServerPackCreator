@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.grinder
 
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.api.settings.PathsConfig
 import de.griefed.serverpackcreator.grinder.container.DockerJavaContainerEngine
 import de.griefed.serverpackcreator.grinder.loader.*
 import de.griefed.serverpackcreator.grinder.report.JsonVerdictStore
@@ -56,7 +57,14 @@ object GrinderApplication {
      */
     @JvmStatic
     fun main(args: Array<String>) {
-        val base = File(System.getProperty("user.home"), ".spc-grinder")
+        val base = File(env("SPC_GRINDER_HOME", File(System.getProperty("user.home"), ".spc-grinder").path))
+            .absoluteFile.apply { mkdirs() }
+        // Both claims BEFORE anything touches `log`: ApiProperties is registered as log4j's ConfigurationFactory,
+        // so the first log statement in this process constructs one, and whatever that one resolves is what the
+        // daemon runs on -- and gets remembered in the Preferences node for every run after it.
+        claimSpcPreferencesNode()
+        pinSpcHomeDirectory(base)
+
         val image = env("SPC_GRINDER_IMAGE", "spc-grinder-runtime:latest")
         val workDir = File(env("SPC_GRINDER_WORK", File(base, "work").path)).apply { mkdirs() }
         val cacheRoot = File(env("SPC_GRINDER_CACHE", File(base, "cache").path)).apply { mkdirs() }
@@ -64,17 +72,11 @@ object GrinderApplication {
         val port = env("SPC_GRINDER_PORT", "8757").toInt()
         val workers = env("SPC_GRINDER_WORKERS", "2").toInt()
 
-        log.info("Grinder starting — image=$image work=$workDir cache=$cacheRoot store=$storeFile port=$port workers=$workers")
+        log.info(
+            "Grinder starting — home=$base image=$image work=$workDir cache=$cacheRoot store=$storeFile " +
+                "port=$port workers=$workers"
+        )
 
-        // Claim our own Preferences node BEFORE any ApiProperties is built, so the daemon's home directory cannot be
-        // moved by another SPC process on this account (a test suite did exactly that mid-run: it relocated the home
-        // into its own scratch dir, deleted it, and every boot then failed on a missing server-icon.png and was
-        // recorded as a metadata-only verdict). Only set when the operator has not chosen a node themselves.
-        if (System.getProperty(ApiProperties.PREFERENCES_NODE_PROPERTY).isNullOrBlank() &&
-            System.getenv(ApiProperties.PREFERENCES_NODE_ENV).isNullOrBlank()
-        ) {
-            System.setProperty(ApiProperties.PREFERENCES_NODE_PROPERTY, "${ApiProperties.DEFAULT_PREFERENCES_NODE}-grinder")
-        }
         log.info("Using Preferences node '${ApiProperties.resolvePreferencesNode()}' for SPC settings.")
 
         // Point SPC at a specific config when given (reproducible runs), else one inside our own home -- never
@@ -227,6 +229,34 @@ object GrinderApplication {
     internal fun resolveSpcPropertiesFile(explicitPath: String?, home: File): File =
         explicitPath?.takeIf { it.isNotBlank() }?.let { File(it).absoluteFile }
             ?: File(home, "serverpackcreator.properties").absoluteFile
+
+    /**
+     * Claims the daemon its own SPC `Preferences` node, so the home directory it runs on cannot be moved by another
+     * SPC process on this account (a test suite did exactly that mid-run: it relocated the home into its own scratch
+     * directory, deleted it, and every boot then failed on a missing `server-icon.png` and was recorded as a
+     * metadata-only verdict). Only claims one when the operator has not chosen a node themselves.
+     */
+    internal fun claimSpcPreferencesNode() {
+        if (System.getProperty(ApiProperties.PREFERENCES_NODE_PROPERTY).isNullOrBlank() &&
+            System.getenv(ApiProperties.PREFERENCES_NODE_ENV).isNullOrBlank()
+        ) {
+            System.setProperty(ApiProperties.PREFERENCES_NODE_PROPERTY, "${ApiProperties.DEFAULT_PREFERENCES_NODE}-grinder")
+        }
+    }
+
+    /**
+     * Names SPC's home directory for it, so it is the daemon's own base rather than something SPC resolves on its
+     * own. Left to resolve one, a source build — which every locally built artifact is — falls back to the process
+     * working directory, and a service manager starts a unit in `/`: every write SPC performs then fails, starting
+     * with `log4j2.xml`, and the daemon dies before reaching Docker. Set as a system property, which outranks the
+     * stored preference without replacing it, so an operator's own `-D` is left alone and a bad value remembered
+     * from an earlier run is overridden rather than inherited.
+     */
+    internal fun pinSpcHomeDirectory(home: File) {
+        if (System.getProperty(PathsConfig.HOME_DIRECTORY_KEY).isNullOrBlank()) {
+            System.setProperty(PathsConfig.HOME_DIRECTORY_KEY, home.absolutePath)
+        }
+    }
 
     /** Read [key] from the environment, falling back to [default] when unset or blank. */
     private fun env(key: String, default: String): String = System.getenv(key)?.takeIf { it.isNotBlank() } ?: default

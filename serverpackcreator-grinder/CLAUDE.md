@@ -112,6 +112,11 @@ though their detail lives deeper:
   live daemon left it untouched.
   - The node override is `-Dde.griefed.serverpackcreator.preferences.node` / `SPC_PREFERENCES_NODE`; the home
     override is `-Dde.griefed.serverpackcreator.home`, which now beats the dev-build working-directory fallback.
+  - **The daemon also pins the home itself** (`pinSpcHomeDirectory`, 2026-08-22): claiming the node stopped another
+    process from *moving* the home, but left SPC to *choose* one — and for a source build (which every locally
+    built artifact is) that choice is the process working directory. Under systemd that is `/`. It sets
+    `-Dde.griefed.serverpackcreator.home` to `SPC_GRINDER_HOME` unless the operator set it, which also repairs a
+    host whose node already remembers a bad value, since a `-D` outranks the stored preference without replacing it.
   - The preference is consulted **before** cwd and `serverpackcreator.properties`, so `SPC_GRINDER_SPC_PROPERTIES`
     alone never protected against this — the node claim is what does.
   - Editing a template under the grinder home is pointless while the home resolves elsewhere; generation reads
@@ -132,6 +137,14 @@ though their detail lives deeper:
     **A stale value may still be stored** from before the fix — check the shared node once if a GUI instance
     resolves a surprising home.
 
+- **LANDMINE — the first `log.` call in `main` builds an `ApiProperties`, so every SPC decision must precede it.**
+  `ApiProperties` is annotated `@Plugin` and *is* log4j's `ConfigurationFactory`, so log4j instantiates one while
+  initialising — with whatever node and home are resolvable at that moment, and it *persists* what it resolved. The
+  node claim originally sat **after** the `Grinder starting …` line, which is why the reported systemd crash's
+  earliest stack frame is `GrinderApplication.getLog`, before `main` had wired anything. Both claims now run as the
+  first statements of `main`; keep them there, and keep new startup logging below them. Pinned by
+  `GrinderSpcEnvironmentTest.theSpcEnvironmentIsClaimedBeforeTheFirstLogStatement`, which asserts the ordering
+  against the source, since a JVM whose logging is already initialised cannot observe it.
 - **Never hand SPC a *relative* properties file — a loaded one becomes a permanent write target.**
   `PropertyStore.loadProperties` adds every file it reads to `trackedPropertyFiles`, and `save()` writes to **all**
   of them on every save (skipping any that no longer exist, except `alwaysWrite`). `ApiProperties`' default is the
