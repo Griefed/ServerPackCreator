@@ -4,12 +4,23 @@ import java.util.*
 plugins {
     id("serverpackcreator.kotlin-conventions")
     id("serverpackcreator.dokka-conventions")
-    id("de.comahe.i18n4k") version "0.11.2"
+    alias(libs.plugins.i18n4k)
     kotlin("kapt")
 }
 
-repositories {
-    mavenCentral()
+
+// A consumable view of just this module's plugin jar, for the root build's copy tasks. Explicit
+// rather than the legacy `archives` configuration, which Gradle 9 removes, and it carries the task
+// dependency so the jar is built on demand.
+// `create(name) { }` rather than the `creating` delegate, which Gradle 9.7 deprecates (9.6 upgrading
+// guide). Same configuration, same name — the delegate only ever supplied the name from the property.
+val pluginArtifact: Configuration = configurations.create("pluginArtifact") {
+    isCanBeConsumed = true
+    isCanBeResolved = false
+}
+
+artifacts {
+    add(pluginArtifact.name, tasks.jar)
 }
 
 i18n4k {
@@ -31,8 +42,8 @@ val pluginDescription = "An example plugin for ServerPackCreator, written in Kot
 val pluginAuthor = "Griefed"
 
 dependencies {
-    annotationProcessor("org.pf4j:pf4j:3.15.0")
-    kapt("org.pf4j:pf4j:3.15.0")
+    annotationProcessor(libs.pf4j)
+    kapt(libs.pf4j)
     /*
      * CAUTION: When copying the code of the example plugin, make sure to change the dependency on
      * the API to implementation("de.griefed:serverpackcreator:serverpackcreator-api:$VERSION")
@@ -40,43 +51,48 @@ dependencies {
     implementation(project(":serverpackcreator-api"))
 
     // Testing
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.4.10")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.2")
-    testImplementation("io.mockk:mockk:1.14.6")
+    testImplementation(libs.kotlinTestJunit5)
+    testRuntimeOnly(libs.junitPlatformLauncher)
+    testImplementation(libs.mockk)
 }
 
 tasks.processResources {
+    dependsOn(tasks.named("shipPluginDocuments"))
+    // The expansion values are read into locals first: referencing the script's own properties from
+    // inside the closure would capture the build script, which the configuration cache cannot
+    // serialize.
+    val expansions = mapOf(
+        "version" to project.version,
+        "plugin_id" to pluginId,
+        "plugin_name" to pluginName,
+        "plugin_description" to pluginDescription,
+        "plugin_author" to pluginAuthor,
+        "plugin_class" to pluginClass
+    )
     filesMatching("plugin.toml") {
-        expand(
-            "version" to project.version,
-            "plugin_id" to pluginId,
-            "plugin_name" to pluginName,
-            "plugin_description" to pluginDescription,
-            "plugin_author" to pluginAuthor,
-            "plugin_class" to pluginClass
-        )
+        expand(expansions)
     }
-    copy {
-        from(layout.projectDirectory.file("LICENSE"))
-        into(layout.projectDirectory.dir("src/main/resources"))
+}
+
+// The documents this plugin ships inside its own jar. Previously three bare `copy { }` calls inside
+// the processResources CONFIGURATION block, so they ran whenever that task was configured — including
+// on runs where processResources itself was UP-TO-DATE and did nothing — with no inputs, no outputs
+// and no caching, writing into the source tree each time. Same fix as -api's shipRootDocuments.
+//
+// CHANGELOG.md is deliberately still listed even though this module has no such file at its root: the
+// old copy silently did nothing for it, and `include` behaves the same way, so the shipped
+// src/main/resources/CHANGELOG.md (which is tracked, and predates this) keeps whatever it holds. See
+// the commit message — that stale file is worth a separate look, not a silent deletion here.
+tasks.register<Copy>("shipPluginDocuments") {
+    description = "Copies this plugin's own LICENSE, README and CHANGELOG into its resources."
+    from(layout.projectDirectory) {
+        include("LICENSE", "README.md", "CHANGELOG.md")
     }
-    copy {
-        from(layout.projectDirectory.file("README.md"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
-    copy {
-        from(layout.projectDirectory.file("CHANGELOG.md"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
+    into(layout.projectDirectory.dir("src/main/resources"))
 }
 
 // Explicit dependency to remove Gradle 8 warning
 tasks.processResources {
-    dependsOn(tasks.generateI18n4kFiles)
-}
-
-// Explicit dependency to remove Gradle 8 warning
-tasks.sourcesJar {
     dependsOn(tasks.generateI18n4kFiles)
 }
 

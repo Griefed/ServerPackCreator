@@ -106,6 +106,30 @@ internal class ModListCompilerTest {
                     """"minecraft":{"environment":"$environment"}}"""
         )
 
+    /**
+     * Writes a real (openable) jar holding a modern Forge `META-INF/mods.toml` into [modsDir]. The
+     * mod's sideness comes from the side it demands of the platform, so [side] is put on a
+     * `minecraft` dependency — which is what `ForgeTomlScanner` reads as the mod's own side.
+     */
+    private fun forgeTomlJar(modsDir: File, jarName: String, modId: String, side: String): File =
+        jarContaining(
+            modsDir, jarName, "META-INF/mods.toml",
+            """
+            modLoader="javafml"
+            loaderVersion="[40,)"
+            license="MIT"
+            [[mods]]
+            modId="$modId"
+            version="1.0.0"
+            [[dependencies.$modId]]
+            modId="minecraft"
+            mandatory=true
+            versionRange="[1.16.5,)"
+            ordering="NONE"
+            side="$side"
+            """.trimIndent()
+        )
+
     /** Writes a real (openable) jar into [modsDir] holding exactly [entryPath] with [content]. */
     private fun jarContaining(modsDir: File, jarName: String, entryPath: String, content: String): File {
         val jar = File(modsDir, jarName)
@@ -242,6 +266,41 @@ internal class ModListCompilerTest {
             Assertions.assertEquals(
                 totalJars, included.size + disabled.size,
                 "$modloader/$minecraftVersion: every jar must be partitioned into included or disabled exactly once"
+            )
+        }
+    }
+
+    /**
+     * Forge's scanner is chosen by Minecraft *era*, and Minecraft has two versioning schemes
+     * (`1.x.y` and the newer `YY.x.y`), so the choice must not be made from the minor component
+     * alone: `26.2`'s minor is `2`, which reads as the 1.2 era and would send a modern pack to the
+     * annotation scanner meant for 1.12-and-older.
+     *
+     * The failure is silent — the annotation scanner finds no `fml_cache_annotation.json` in a
+     * modern jar, falls back to the never-drop-a-jar default of SERVER, and auto-exclusion quietly
+     * stops working — so this pins the *outcome*: a jar whose `mods.toml` declares CLIENT must be
+     * auto-excluded on both schemes, and its SERVER counterpart must survive on both.
+     */
+    @Test
+    fun forgeScannerSelectionSpansBothMinecraftVersioningSchemes(@TempDir tempDir: File) {
+        apiProperties.isAutoExcludingModsEnabled = true
+
+        for (minecraftVersion in listOf("1.20.1", "26.2")) {
+            val modsDir = File(tempDir, minecraftVersion).also { it.mkdirs() }
+            forgeTomlJar(modsDir, "clientonly.jar", "clientonlymod", "CLIENT")
+            forgeTomlJar(modsDir, "serverside.jar", "serversidemod", "BOTH")
+
+            val (included, disabled) = modListCompiler.compileModList(
+                modsDir.absolutePath, emptyList(), emptyList(), minecraftVersion, "Forge"
+            )
+
+            Assertions.assertEquals(
+                listOf("clientonly.jar"), disabled.map { it.name },
+                "Minecraft $minecraftVersion: the CLIENT-declaring mods.toml jar must be auto-excluded"
+            )
+            Assertions.assertEquals(
+                listOf("serverside.jar"), included.map { it.name },
+                "Minecraft $minecraftVersion: the BOTH-declaring mods.toml jar must be kept"
             )
         }
     }

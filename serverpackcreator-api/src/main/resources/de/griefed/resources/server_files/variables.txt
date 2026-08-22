@@ -23,6 +23,12 @@
 # SKIP_JAVA_CHECK true/false allows you to disable/enable the compatibility check
 #   of your Minecraft version and the provided Java version, as well as the automatic
 #   installation of a compatible Java version, should JAVA be set to 'java'.
+#   Note - the Java version is still READ even when this is 'true'. Skipping the check
+#   skips comparing and installing, not looking: Forge servers need to know whether the
+#   Java in use is 24 or newer, because Java 24 removed Security Manager support and the
+#   ServerStarterJar cannot be used there. If the version cannot be read at all, the
+#   script assumes the newer behaviour and installs Forge itself, which is safe on every
+#   Java version.
 # JDK_VENDOR is for the automatic installation of a JDK compatible with the Minecraft
 #   version of your server pack. For an extensive list of available vendors, check out
 #   https://github.com/Jabba-Team/index/blob/main/index.json

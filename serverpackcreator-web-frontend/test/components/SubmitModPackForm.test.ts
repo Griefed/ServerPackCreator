@@ -86,9 +86,9 @@ describe('SubmitModPackForm', () => {
         minecraftVersion: '1.20.1',
         modloader: 'Forge',
         modloaderVersion: '47.1.0',
-        startArgs: [{ argument: '-Xmx4G' }, { argument: '-Xms2G' }],
-        clientMods: [{ mod: 'optifine' }],
-        whitelistedMods: [{ mod: 'jei' }, { mod: 'jade' }]
+        startArgs: ['-Xmx4G', '-Xms2G'],
+        clientMods: ['optifine'],
+        whitelistedMods: ['jei', 'jade']
       }
     }
 

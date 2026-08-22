@@ -1,0 +1,36 @@
+# Docker image build check, replacing GitLab's `Docker Test`.
+#
+# DELIBERATE DIFFERENCE FROM THE GITLAB JOB: this does not push. The GitLab job built with
+# `--push` and tagged every commit's image `:$CI_COMMIT_SHORT_SHA` on both ghcr.io and Docker Hub,
+# so every branch push published a public image nobody consumed. Here the build proves the
+# Dockerfile still builds and stops there; release images are `release-build.yml`'s job.
+# Restoring the old behaviour is a two-line change: add `push: true` and the two SHA tags below.
+name: Docker Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: docker-test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docker:
+    name: "build image"
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+
+      - name: Build image
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: false
+          tags: serverpackcreator:${{ github.sha }}

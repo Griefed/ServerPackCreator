@@ -69,7 +69,11 @@ class ConfigEditor(
      * ([removeNotify]) instead of leaking on [GlobalScope] and outliving the disposed editor. */
     private val componentScope = ComponentCoroutineScope()
 
-    private val viewModel = ConfigEditorViewModel(apiWrapper.versionMeta)
+    private val viewModel = ConfigEditorViewModel(
+        apiWrapper.versionMeta,
+        apiWrapper.configurationHandler,
+        apiWrapper.serverPackHandler
+    )
     private val panel = JPanel(
         MigLayout(
             "left,wrap",
@@ -80,6 +84,19 @@ class ConfigEditor(
     private val validationChangeListener = object : DocumentChangeListener { override fun update(e: DocumentEvent) { validateInputFields() }}
     private val validationActionListener = ActionListener { validateInputFields() }
     private val updateMinecraftActionListener = ActionListener { updateMinecraftValues() }
+    init {
+        // Declared ABOVE the version lists on purpose: Kotlin runs initialisers in declaration order, so
+        // this is the only place the wait can happen before they are built.
+        //
+        // `VersionMeta` no longer refreshes its manifests during construction -- that cost ~392 ms of
+        // blocking startup -- so the refresh may still be in flight when the first editor opens. These
+        // combo-box models are built exactly once and nothing repopulates them, so a freshly released
+        // Minecraft version would otherwise be missing from the dropdowns until the next launch. By the
+        // time a user can open an editor the refresh has long finished and this returns immediately;
+        // bounded so an unreachable host delays a dropdown instead of hanging the UI.
+        apiWrapper.versionMeta.awaitManifestRefresh()
+    }
+
     private val legacyFabricModel = DefaultComboBoxModel(apiWrapper.versionMeta.legacyFabric.loaderVersions().toTypedArray())
     private val fabricModel = DefaultComboBoxModel(apiWrapper.versionMeta.fabric.loaderVersions().reversed().toTypedArray())
     private val quiltModel = DefaultComboBoxModel(apiWrapper.versionMeta.quilt.loaderVersions().reversed().toTypedArray())
@@ -682,6 +699,12 @@ class ConfigEditor(
         viewModel.requiredJavaVersion(getMinecraftVersion())
 
     /**
+     * The name to show on this editor's tab: what the modpack's launcher-manifest declares, or the
+     * modpack directory's own name. Delegates to the view-model, which owns the resolution.
+     */
+    fun resolvePackName(): String = viewModel.packName(getModpackDirectory())
+
+    /**
      * @author Griefed
      */
     fun compareSettings() {
@@ -1195,7 +1218,7 @@ class ConfigEditor(
         val mcVersion = mcVersionSetting.selectedItem!!.toString()
         val modloader = modloaderSetting.selectedItem!!.toString()
         val modloaderVersion = modloaderVersionSetting.selectedItem!!.toString()
-        if (!apiWrapper.serverPackHandler.serverDownloadable(mcVersion, modloader, modloaderVersion)) {
+        if (!viewModel.isServerDownloadable(mcVersion, modloader, modloaderVersion)) {
             val message = Translations.createserverpack_gui_createserverpack_checkboxserver_unavailable_message(
                 modloader,
                 mcVersion,
@@ -1234,35 +1257,34 @@ class ConfigEditor(
      */
     @Suppress("unused")
     private fun checkJava(): Boolean {
-        return if (!apiWrapper.apiProperties.javaAvailable()) {
-            when (JOptionPane.showConfirmDialog(
-                this,
-                Translations.createserverpack_gui_createserverpack_checkboxserver_confirm_message.toString(),
-                Translations.createserverpack_gui_createserverpack_checkboxserver_confirm_title.toString(),
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE,
-                guiProps.warningIcon
-            )) {
-                0 -> {
-                    chooseJava()
-                    true
-                }
-
-                1 -> {
-                    JOptionPane.showMessageDialog(
-                        this,
-                        Translations.createserverpack_gui_createserverpack_checkboxserver_message_message.toString(),
-                        Translations.createserverpack_gui_createserverpack_checkboxserver_message_title.toString(),
-                        JOptionPane.ERROR_MESSAGE,
-                        guiProps.errorIcon
-                    )
-                    false
-                }
-
-                else -> false
+        if (apiWrapper.apiProperties.javaAvailable()) {
+            return true
+        }
+        return when (JOptionPane.showConfirmDialog(
+            this,
+            Translations.createserverpack_gui_createserverpack_checkboxserver_confirm_message.toString(),
+            Translations.createserverpack_gui_createserverpack_checkboxserver_confirm_title.toString(),
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE,
+            guiProps.warningIcon
+        )) {
+            0 -> {
+                chooseJava()
+                true
             }
-        } else {
-            true
+
+            1 -> {
+                JOptionPane.showMessageDialog(
+                    this,
+                    Translations.createserverpack_gui_createserverpack_checkboxserver_message_message.toString(),
+                    Translations.createserverpack_gui_createserverpack_checkboxserver_message_title.toString(),
+                    JOptionPane.ERROR_MESSAGE,
+                    guiProps.errorIcon
+                )
+                false
+            }
+
+            else -> false
         }
     }
 

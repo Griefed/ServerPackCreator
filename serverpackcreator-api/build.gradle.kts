@@ -1,115 +1,95 @@
 
 plugins {
     id("serverpackcreator.kotlin-conventions")
+    id("serverpackcreator.publishing-conventions")
     id("serverpackcreator.dokka-conventions")
-    id("de.comahe.i18n4k") version "0.11.2"
+    alias(libs.plugins.i18n4k)
 }
 
-repositories {
-    mavenCentral()
-    maven("https://jitpack.io")
-}
 
 dependencies {
-    api("io.github.microutils:kotlin-logging:3.0.5")
-    api("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0-0.6.x-compat")
-    implementation("org.jetbrains.kotlin:kotlin-bom:2.3.21")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.21")
-    api("de.jensklingenberg.ktorfit:ktorfit-lib:2.7.3")
-    api("de.comahe.i18n4k:i18n4k-core:0.11.2")
-    api("de.comahe.i18n4k:i18n4k-core-jvm:0.11.2")
+    api(libs.kotlinLogging)
+    api(libs.kotlinxDatetime)
+    implementation(libs.kotlinBom)
+    implementation(libs.kotlinStdlib)
+    api(libs.ktorfit)
+    api(libs.i18n4kCore)
+    api(libs.i18n4kCoreJvm)
     implementation(files("${layout.buildDirectory.asFile.get()}/resources/main"))
-    api("com.electronwill.night-config:toml:3.8.4")
-    api("com.fasterxml.jackson.core:jackson-databind:2.21.1")
-    api("net.lingala.zip4j:zip4j:2.11.6")
-    api("org.apache.logging.log4j:log4j-api-kotlin:1.5.0")
-    api("org.apache.logging.log4j:log4j-core:2.26.0")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
-    api("org.pf4j:pf4j:3.15.0")
-    api("org.bouncycastle:bcpkix-jdk18on:1.84")
+    api(libs.nightConfigToml)
+    api(libs.jacksonDatabind)
+    api(libs.zip4j)
+    api(libs.log4jApiKotlin)
+    api(libs.log4jCore)
+    api(libs.kotlinxCoroutinesCore)
+    api(libs.pf4j)
+    api(libs.bouncycastle)
 
-    api("org.jabref:mslinks:1.2")
-    api("com.github.MCRcortex:nekodetector:Version-1.1-pre")
+    api(libs.mslinks)
+    api(libs.nekodetector)
     //api("dev.kosmx.needle:jneedle:1.0.1")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.21")
+    testImplementation(libs.kotlinTestJunit5)
     // MockK lets the unit tests stub network-bound collaborators (WebUtilities, VersionMeta) so
-    // provisioner/manifest branches can be exercised offline. Version pinned to the same 1.14.6 the
-    // app module already resolves transitively via springmockk, keeping the build's mockk single-versioned.
-    testImplementation("io.mockk:mockk:1.14.6")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.0")
+    // provisioner/manifest branches can be exercised offline. Single-versioned across the build via the
+    // catalog's `mockk` — springmockk drags in an older one transitively, so `-app` declares this same
+    // dependency explicitly to out-rank it. Bumping `mockk` without that would silently split the two.
+    testImplementation(libs.mockk)
+    testRuntimeOnly(libs.junitPlatformLauncher)
 }
 
 tasks.sourcesJar {
-    dependsOn(tasks.generateI18n4kFiles)
+    // shipRootDocuments writes into src/main/resources, which this task packages. Gradle can only see
+    // that coupling now that the copies are real tasks; as configuration-time copy{} calls the ordering
+    // was pure luck.
+    dependsOn(tasks.generateI18n4kFiles, tasks.named("shipRootDocuments"))
 }
 
 tasks.processResources {
-    dependsOn(tasks.generateI18n4kFiles)
-    //API
-    copy {
-        from(rootProject.layout.projectDirectory.file("CHANGELOG.md"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("CODE_OF_CONDUCT.md"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("CONTRIBUTING.md"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("HELP.md"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("LICENSE"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("README.md"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("SECURITY.md"))
-        into(layout.projectDirectory.dir("src/main/resources"))
-    }
+    dependsOn(tasks.generateI18n4kFiles, tasks.named("shipRootDocuments"))
+}
 
-    // Writerside
-    copy {
-        from(rootProject.layout.projectDirectory.file("CHANGELOG.md"))
-        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
+// The root-level documents SPC ships inside its own jar and reads back at runtime (ApiWrapper.setup()
+// writes them into the user's home), plus the copies Writerside builds the help site from.
+//
+// These used to be fifteen bare `copy { }` calls inside the `processResources` CONFIGURATION block, so
+// they ran whenever that task was configured -- including on runs where processResources itself was
+// UP-TO-DATE and did nothing. Measured before this change: a second, fully up-to-date
+// `:serverpackcreator-api:processResources` still rewrote both destinations. As real Copy tasks they
+// have declared inputs and outputs, so they are up-to-date checked, cacheable, and do not write into
+// two source trees on every build that happens to touch this project.
+val shippedDocuments = listOf(
+    "CHANGELOG.md", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", "HELP.md", "LICENSE", "README.md", "SECURITY.md"
+)
+
+tasks.register<Copy>("shipRootDocuments") {
+    description = "Copies the root-level documents SPC ships in its jar into this module's resources."
+    from(rootProject.layout.projectDirectory) {
+        include(shippedDocuments)
     }
-    copy {
-        from(rootProject.layout.projectDirectory.file("CODE_OF_CONDUCT.md"))
-        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
+    into(layout.projectDirectory.dir("src/main/resources"))
+}
+
+tasks.register<Copy>("shipWritersideDocuments") {
+    description = "Mirrors the root-level documents and images into the Writerside help sources."
+    // LICENSE has no extension; Writerside needs it as Markdown to render it as a topic.
+    from(rootProject.layout.projectDirectory) {
+        include(shippedDocuments)
+        rename("LICENSE", "LICENSE.md")
     }
-    copy {
-        from(rootProject.layout.projectDirectory.file("CONTRIBUTING.md"))
-        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("HELP.md"))
-        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("LICENSE"))
-        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
-        rename("LICENSE","LICENSE.md")
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("README.md"))
-        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.file("SECURITY.md"))
-        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
-    }
-    copy {
-        from(rootProject.layout.projectDirectory.dir("img"))
-        into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics/img"))
-    }
+    into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics"))
+}
+
+tasks.register<Copy>("shipWritersideImages") {
+    description = "Mirrors the root img directory into the Writerside help sources."
+    from(rootProject.layout.projectDirectory.dir("img"))
+    into(rootProject.layout.projectDirectory.dir("serverpackcreator-help/Writerside/topics/img"))
+}
+
+// The help sources are a documentation artifact, not an input to any jar, so they refresh with the
+// build rather than blocking resource processing on them.
+tasks.named("build") {
+    dependsOn(tasks.named("shipWritersideDocuments"), tasks.named("shipWritersideImages"))
 }
 
 //Fix resources missing in multiplatform jvm inDev run https://youtrack.jetbrains.com/issue/KTIJ-16582/Consumer-Kotlin-JVM-library-cannot-access-a-Kotlin-Multiplatform-JVM-target-resources-in-multi-module-Gradle-project
@@ -120,15 +100,15 @@ tasks.register<Copy>("fixMissingResources") {
 }
 
 tasks.dokkaGeneratePublicationHtml {
-    dependsOn(tasks.generateI18n4kFiles, tasks.getByName("fixMissingResources"))
+    dependsOn(tasks.generateI18n4kFiles, tasks.named("fixMissingResources"))
 }
 
 tasks.dokkaGeneratePublicationJavadoc {
-    dependsOn(tasks.generateI18n4kFiles, tasks.getByName("fixMissingResources"), tasks.processResources)
+    dependsOn(tasks.generateI18n4kFiles, tasks.named("fixMissingResources"), tasks.processResources)
 }
 
 tasks.jar {
-    dependsOn(tasks.getByName("fixMissingResources"))
+    dependsOn(tasks.named("fixMissingResources"))
 }
 
 // Refreshes the shipped manifest snapshot from a test home that has just been populated. Sources *this* module's
@@ -142,10 +122,15 @@ tasks.register<Copy>("updateManifests") {
     dependsOn(tasks.test)
     from(projectDir.resolve("tests/manifests"))
     into(projectDir.resolve("src/main/resources/de/griefed/resources/manifests"))
+    // `.etag` sidecars are per-installation bookkeeping, written beside a manifest when an upstream ETag
+    // is adopted. The suite produces them in this very directory, and without this they would be copied
+    // into the shipped resources and from there into every user's home by `ApiWrapper.setup()` -- shipping
+    // one machine's HTTP bookkeeping to everyone. Measured: 12 manifests copied either way, 0 sidecars.
+    exclude("*.etag")
 }
 
 tasks.test {
-    dependsOn(tasks.getByName("fixMissingResources"))
+    dependsOn(tasks.named("fixMissingResources"))
     // `ShippedResourceTrackingTest` asserts on the repository's ignore rules, which are not otherwise an input to
     // anything -- without this the task reports UP-TO-DATE after a .gitignore change and the guard silently does
     // not run, which is exactly how its own first teeth-check appeared to pass.
@@ -153,15 +138,12 @@ tasks.test {
 }
 
 tasks.build {
-    doLast {
-        tasks.dokkaGeneratePublicationJavadoc
-    }
     finalizedBy(tasks.dokkaGeneratePublicationJavadoc)
 }
 
 tasks.generatePomFileForMavenJavaPublication {
     dependsOn(
-        tasks.getByName("fixMissingResources"),
+        tasks.named("fixMissingResources"),
         tasks.processResources)
 }
 

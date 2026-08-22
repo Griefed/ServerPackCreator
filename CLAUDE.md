@@ -5,6 +5,11 @@
 >
 > - Per-sprint **narrative** history → `git log` and `claude-docs/REFACTOR-LOG.md`.
 > - **Deferred-but-agreed work** → `claude-docs/BACKLOG.md` (why it waited + context to pick it up cold).
+> - **Behaviour changes on the published API** → `claude-docs/API-BEHAVIOUR-CHANGES.md` (one row per
+>   change, what an embedder sees). The *policy* stays below; that file is its evidence.
+> - **CI secrets — what each one is, its scopes, and which job dies without it** →
+>   `claude-docs/CI-SECRETS.md`. Read it before touching a `secrets.*` reference: Forgejo rejects the
+>   `FORGEJO_`/`GITEA_`/`GITHUB_` prefixes, so the credentials are `FJ_*`/`GH_*` on purpose.
 > - Module-specific facts, patterns and landmines → each module's own `CLAUDE.md`
 >   (lazy-loaded by Claude Code when you work in that module).
 > - Personal working preferences (general approach, organization, no-shortcuts ethos,
@@ -52,6 +57,15 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   no Spring/Swing; not published. Foundation stage: the container-backed `ServerRunner`. See
   `serverpackcreator-grinder/CLAUDE.md`.
 - Not in the Gradle build: `serverpackcreator-help` (docs), `buildSrc`, `docker`, `misc`.
+- **CI lives in `.forgejo/workflows`** — Forgejo (`git.griefed.de`) is the canonical CI and the origin of
+  every release; `.gitlab-ci.yml` is gone. The wiring, the all-or-nothing `.forgejo`/`.github` landmine and
+  the two deliberately-dropped GitLab capabilities are in `.claude/rules/ci-workflows.md`, which loads when
+  you touch a workflow. Secrets, scopes and which job dies without which → `claude-docs/CI-SECRETS.md`.
+- **`serverpackcreator-help/Writerside/api-docs.yaml` is GENERATED, not hand-maintained** — springdoc
+  is wired into `-app` as `developmentOnly`, and the regeneration command sits beside that dependency
+  in `serverpackcreator-app/build.gradle.kts`. It had drifted to 25 of 44 endpoints while being edited
+  by hand, including two schemas for classes that no longer existed. Regenerate it rather than patching
+  it, and regenerate it again after any change to a controller or an entity it serialises.
 
 ## Build & test commands
 
@@ -62,16 +76,28 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 - `./gradlew :serverpackcreator-api:test` — API suite (runs against fixture modpacks in
   `serverpackcreator-api/tests/` and `src/test/resources/testresources/`). **Offline for every Minecraft version in
   the shipped manifest snapshot**, which `ApiWrapper.setup()` seeds from the jar; a version newer than that snapshot
-  costs one fetch of its `mcserver/<version>.json`. The snapshot currently lags its own parent manifest (backlog
-  B25). The test home is wiped before each run **except** `manifests/`, so that cache persists and accumulates.
+  costs one fetch of its `mcserver/<version>.json`. The snapshot **no longer lags its own parent
+  manifest** — the release named in `minecraft-manifest.json`'s `latest.release` now has a matching
+  `mcserver/<version>.json`, which is the check worth re-running rather than trusting a file count. That was the open
+  deferral B25, closed as a side effect of the `updateManifests` retarget. The test home is wiped before each run **except** `manifests/`, so that cache persists and accumulates.
 - `./gradlew :serverpackcreator-app:test` — app suite.
 - `./gradlew :<module>:koverHtmlReport` / `koverXmlReport` — coverage (Kover), report under
   `<module>/build/reports/kover/`.
 - Frontend: `npm install && npx quasar dev` in `serverpackcreator-web-frontend/` (dev server),
   `npx quasar build` for production build, `npm test` (Vitest).
-- Run the app locally: `./gradlew :serverpackcreator-app:run` (GUI by default; CLI/web via args,
-  see `Mode.kt` / `CommandlineParser.kt`).
+- Run the app locally: `./gradlew :serverpackcreator-app:bootRun` (GUI by default; CLI/web via args,
+  **not `:run`** — `-app` applies the Spring Boot plugin, not `application`, so `run` does not exist there;
+  `:serverpackcreator-grinder:run` does, because the grinder applies `application`; see `Mode.kt` /
+  `CommandlineParser.kt` for the arguments).
 - `media` task needs install4j installed locally — not part of regular dev loop.
+
+### Build layout
+
+**Where every build declaration lives, and the landmines protecting them, are in
+`.claude/rules/build-layout.md`** — it loads whenever you touch `build.gradle.kts`,
+`settings.gradle.kts`, `buildSrc/`, or the version catalog. Read it before changing any of those:
+it is the difference between a two-line bump and re-introducing a failure this project already paid
+for. `BUILD.md` is the contributor-facing tour of the same ground.
 
 ## Branching & git workflow
 
@@ -88,21 +114,48 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 - Internal-only types may move/change freely once they are no longer exported.
 - **Source-compatible is not the same as behaviour-compatible.** A change that keeps every signature but
   alters what an exported call *returns* is still a contract change for embedders, and belongs in the
-  release notes even though nothing fails to compile. Recorded because this branch made one:
+  release notes even though nothing fails to compile.
 
-| Change | Effect on an embedder |
-|---|---|
-| `PathsConfig.homeDirectory` consults `-Dde.griefed.serverpackcreator.home` **before** the stored preference and the properties file (`PathsConfig.kt:106`) | A host that sets that property now resolves a different home than the same code did before. Additive and opt-in — nothing changes unless the property is set — but every plugin reading `apiProperties.homeDirectory` follows it. |
-| `ApiProperties.resolvePreferencesNode` + `PREFERENCES_NODE_PROPERTY` / `PREFERENCES_NODE_ENV` / `DEFAULT_PREFERENCES_NODE` | New exported surface; the default node name is unchanged, so existing installations keep reading their own settings. |
-| The eight `default*ScriptTemplate` properties are computed per access (`PathsConfig.kt:586`–`:643`) instead of captured at construction, and the `ApiProperties` facades (`:801`–`:836`) pass that through | For a stable home the value is identical, so nothing changes for a normal embedder. What changes is that the value is no longer a *constant*: a host that moves the home at runtime (`--home`, the `-D` override, the GUI settings panel) now sees the template paths follow it, where before they kept pointing into the old home. Anything caching one of these paths across a home change was reading a stale path and should re-read instead. |
-| `MinecraftServer` gains defaulted `downloadCooldown` / `clock` parameters, and a failed manifest **download** is not re-attempted for an hour (`MinecraftServer.kt`, `readServerJson`) | A manifest already on disk is still always read, so a working installation is unchanged. What changes is a *failing* one: an embedder that previously saw a download attempt — and `WebUtilities`' ERROR-with-stack-trace — on every `getServer`/`requiredJavaVersion` call now sees at most one per hour per version. The exported `Optional` shape is unchanged; a caller reading empty as "no server available" still gets that. |
-| `ServerPackProvisioner.variables` reads the shipped `server_files/variables.txt` instead of a compiled-in string literal, falling back to the bundled copy (`ServerPackProvisioner.kt:56-63`). New exported members: `PathsConfig.defaultVariablesTemplate`, `ApiProperties.defaultVariablesTemplate` | A default installation gets byte-identical output — but the value is no longer a constant. An operator who edits that file changes what **every** embedder's generation emits, and one who deletes it gets the bundled fallback (the app's delete-watcher restores it). Anything asserting on a fixed `variables` string should read the template instead. |
-| `ServerPackHandler.modFileEndings` and `ConfigurationHandler.zipCheck` become getters reading `ModListCompiler.modFileEndings` / `ModpackZipInspector.zipCheck`, which are promoted from `private` to public (new exported surface) | Both facades return the identical value they always did, so nothing observable changes today — this is listed because they are no longer *constants*: each is now one object shared with its owner, where before the facade held a separate equal-valued copy. An embedder comparing either by identity (`===`) against the owner's now succeeds where it previously failed; one mutating a captured reference would affect both, though both values are immutable. |
+**The behaviour-change record lives in `claude-docs/API-BEHAVIOUR-CHANGES.md`** — one row per change,
+with what an embedder actually sees. Append to it whenever you change what an exported call *does*,
+and read it before answering "will this break an embedder?". It is out of this file because it is
+evidence consulted occasionally, not context every session needs.
 
 ---
 
 ## Conventions
 
+- **"Make it work, make it right, make it fast." — Kent Beck.** A more detailed variation often cited is
+  *"First, make it. Then, make it work. Lastly, if you can, make it pretty."* The sequence exists to head
+  off perfectionism and analysis paralysis: functionality comes before form, and the core logic has to be
+  solid before anyone spends effort on readability or speed.
+  - **Avoiding premature optimization.** Knuth's "root of all evil" — you cannot predict bottlenecks
+    without a working system to measure. This project has the receipts: B30 was a real 121,492-byte
+    saving per startup that bought **~0 ms**, because the twelve manifest checks run concurrently and the
+    slowest one gated the batch. Measured, it was the wrong thing to optimise; the right one (B31, taking
+    the refresh off the startup path) was ~392 ms and only visible once something was running.
+  - **Managing technical debt.** Shortcuts may be taken first, but the bargain is that you come back and
+    polish. Many developers argue "fix it later" is a myth, and that is the risk this convention set
+    exists to contain — which is why `claude-docs/BACKLOG.md` demands a *stated reason* per deferral and
+    enough context to pick it up cold, rather than a wish-list.
+  - **Iterative improvement.** A messy first draft, then refinement.
+
+  **How this squares with TDD and "no shortcuts", which it looks like it contradicts:** the ordering is
+  about which *concern* you attack first, not permission to skip pinning. "Make it work" is what the
+  characterization test asserts; "make it right" and "make it fast" are the steps the test then protects.
+  Read the other way round it licenses exactly the failure this file already documents at length — the
+  performance branch whose tests were written by the same pass that changed the code and therefore passed
+  by construction. Draft messily, but pin before you refine, and never let "make it fast" arrive before
+  there is something whose behaviour is known.
+
+- **Cite names, not snapshots.** Three consecutive audits of the performance branches found the same
+  defect class and nothing else: a fact quoted in prose going stale the moment the code moved — 54 commit
+  hashes killed by a rebase, a landmine still describing a flaw that had been fixed, a line number shifted
+  by the very commit that cited it, and suite counts left behind by the tests that were just added. Prefer
+  the **commit subject** over its hash (subjects survive rebase, cherry-pick and squash), the **symbol name**
+  over `File.kt:123`, and "what the guard asserts" over "how many tests exist". Where a number genuinely
+  earns its place — a measurement, a byte count — say what produced it, so a reader can re-run it instead of
+  trusting it.
 - **KISS + MVC + TDD + SOLID** — always.
 - **No shortcuts:** fix bugs when found, don't defer.
 - **No assumptions:** read the code, check the docs before advising.
@@ -142,6 +195,32 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   **confirm the test fails before the fix**: a guard whose teeth were never checked has repeatedly turned
   out to assert nothing (twice in one session, when a mis-indented edit meant the "broken" run was
   actually unmodified code).
+- **A performance branch is not done until it is proven equivalent to its base.** Green tests are not that
+  proof: they are HEAD's tests, written by the same pass that changed the code, and they pass by construction.
+  The check that *is* proof is cheap and repeatable — run the **base branch's unmodified test tree against the
+  branch's production code**:
+
+  ```
+  git worktree add --detach <tmp> HEAD
+  cd <tmp> && rm -rf <module>/src/test && git checkout develop -- <module>/src/test
+  ./gradlew :<module>:test --continue
+  ```
+
+  Every failure is either a regression or a deliberate change; every *compile* error is a signature change,
+  which is a finding in itself and must be enumerated rather than worked around. Done for this branch
+  (`claude-docs/REFACTOR-AUDIT.md` iteration 7): **490 pre-existing guards, zero failures**, with exactly two files
+  uncompilable — one adapted by adding two constructor arguments and *no* assertion edits (7 guards green), one
+  legitimately unadaptable because it asserted behaviour the branch removed. Also check *which* changed classes
+  the base's tests actually name, so the residual risk is stated rather than assumed; a class-name grep
+  under-reports, since `QuiltPackScanner` is exercised only through `ModScannerSidenessTest`.
+- **What only a real runtime can answer, ask a real runtime.** Anything whose point is what an external system
+  does — an index, a data migration, a REST response shape — is not verified by a mocked test, however good.
+  Iteration 7 ran the actual `bootJar` in `-web` mode against MongoDB 8.0.5 in Docker, seeded with pre-branch
+  shaped documents, and that is what confirmed the `sha256` index really exists, the migration really converts
+  legacy documents and really skips already-migrated ones, and `/api/v2/runconfigs/all` really returns the
+  documented shape. It also surfaced what was filed at the time as B33 — the web application
+    writing to MongoDB's default `test` database instead of the configured one, which no test could have caught, and
+    which the Spring Boot 4 property-key fix has since closed. Cost: about fifteen minutes.
 - **Build logic is verified by measurement, not by tests — and the measurement goes in the commit message.**
   `buildSrc` has no test source set and no Gradle TestKit harness, and we have decided not to add one to pin single
   predicates (a task-wiring change or a one-line filter is not worth a second test framework in the build). So for a
@@ -223,16 +302,16 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 **Goal:** KISS/MVC/TDD/SOLID across api → app → plugin-example → web-frontend.
 **Phases:** 0 baseline · 1 API · 2 app · 3 plugin-example · 4 frontend.
 
-**Current status (2026-08-14):**
+**Current status (2026-08-21):**
 
 | Module         | Tests         | Notes                                                                                |
 |----------------|---------------|--------------------------------------------------------------------------------------|
-| api            | 295 (1 skip)  | Phase 1 **complete**; + `FacadeConstantDelegationTest` (the published `modFileEndings`/`zipCheck` facades must *read* their owner, asserted on identity so a re-introduced equal-valued copy still fails); + `MinecraftMetaTest` (`requiredJavaVersion`) and `ScriptTemplateContentTest` (non-gated guard for the shipped templates; skips its `fish -n` case where fish is absent, and **executes** the bash `setupFabric` to pin the offline launcher path); + `ModScannerSidenessTest` and the `ModListCompilerTest` additions (modscanning hardening, 2026-08-14 — see `claude-docs/REFACTOR-LOG.md`). |
-| clientside     | 87            | Extracted from `-app`; `BootVerifier` split + `packPostProcessor` hook; selection (MC-support gate) + setup-abort classification pinned |
-| app            | 80            | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay             |
+| api            | 354 (1 skip)  | Phase 1 **complete**. Counts in this column are re-derivable from `<module>/build/test-results/test/*.xml` after a full build — confirm the files came from that run before trusting a total. Guard style worth knowing before adding one: manifest and generation work is pinned by *request*, *read* and *open counts* against loopback servers and injected openers, never by wall-clock; shipped shell templates are pinned by **executing** them. |
+| clientside     | 88            | Extracted from `-app`; `BootVerifier` split + `packPostProcessor` hook; selection (MC-support gate) + setup-abort classification pinned; `MetadataScanner` dispatches through `ModScanner.scannerFor` |
+| app            | 149           | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay. GUI hot paths are pinned by *call counts* and set identity, never wall-clock; the web module's persistence declarations are pinned against Spring Data's own machinery (`PartTree`, `MongoMappingContext`, `MongoPersistentEntityIndexResolver`) so none of them needs a database. |
 | plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |
-| web-frontend   | 31 (from 0)   | Phase 4a–4e done: Vitest, `$q` decoupling, **full TS migration**, component coverage  |
-| grinder        | 233 (19 skip) | + `BootWorkspaceReaper` — staging reclamation; the work tree grew unbounded at ~23 GB/h (98 GB measured) before it. Core loop **e2e-verified on current MC** (26.2/Quilt boots offline on JDK 25); **continuous fire-and-forget** with a **persisted catalog crawl cursor** (each pass takes the next slice, so coverage accumulates instead of re-checking the top N) + work-driven pacing; Modrinth + CurseForge sources; **script-template matrix IT** (bash/fish/pwsh — caught + fixed a real `.fish` bug); container/loader/report/source subpackages; MC selection bounded to image-supported Java. 94 run + 8 gated (3 engine IT, 3 live-crawl IT, 2 template-matrix). Template matrix fully green: 5 MC x 5 loaders x bash/fish, bash == fish everywhere. CurseForge is crawled **in partitions** (135 Minecraft versions × modloader × category, both sort directions) to get past its 10 000-result API cap — **now live-verified with a real API key** (`CurseForgeCrawlLiveIT`), which caught two silent design-killers the docs had hidden: `totalCount` saturates at the cap (so no split could ever fire) and the version list is 98 % non-Minecraft strings |
+| web-frontend   | 32 (from 0)   | Phase 4a–4e done: Vitest, `$q` decoupling, **full TS migration**, component coverage; `types/api.ts` mod-lists are `string[]` since the web module embedded them (2026-08-17); `RunConfigurationCard` asserts the *rendered* lists, not the props it passed in — the pass-through version stayed green with the card reverted to the pre-branch object shape (2026-08-18) |
+| grinder        | 233 (19 skip) | Continuous fire-and-forget boot-verification in network-less containers, with a persisted catalog crawl cursor so coverage accumulates instead of re-checking the top N. Core loop e2e-verified on current MC; script-template matrix green across bash/fish. **The CurseForge crawl's two design-killers are LANDMINE #1 and #2 in `serverpackcreator-grinder/src/main/kotlin/de/griefed/serverpackcreator/grinder/source/CLAUDE.md`** — read those before touching the partition plan. |
 
 Key size reductions (all behind source-compatible facades): `ApiProperties.kt` 3,007 → 1,372;
 `ConfigurationHandler.kt` 1,562 → 897; `ServerPackHandler.kt` 1,466 → 490.
@@ -249,6 +328,6 @@ settings-store `$q` coupling (4b) and `jsconfig.json`/TS gap (4c) are **resolved
 **Current phase — 4 (frontend) complete; GUI structured-concurrency done.** Frontend 4a–4e: Vitest,
 settings-store `$q` decoupling, full TypeScript migration (all `src/` is TS, verified by
 `quasar build`), a Quasar component test harness (Vue Test Utils), and broadened component coverage
-(all cards + nav SFCs; suite at 31 across 14 files; tables left untested by design — trivial format-lambda logic vs.
+(all cards + nav SFCs; suite at 32 across 14 files; tables left untested by design — trivial format-lambda logic vs.
 brittle QTable rendering). The GUI `GlobalScope.launch` anti-pattern is resolved (see Open issues),
 GUI-verified. **Next (optional):** broaden component-test coverage further.

@@ -45,9 +45,60 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
 
 - **Persistence is MongoDB** (`spring-boot-starter-data-mongodb`), **not JPA.** Full-context tests
   would need a live Mongo instance — don't assume JPA anywhere.
-- **LANDMINE — `spring.data.mongodb.uri` is used verbatim, with no validation and no fallback.**
-  Measured with `javap` against the pinned `spring-boot-mongodb-4.0.2` and `mongodb-driver-core-5.6.2`
-  (no sources jar is published for the autoconfigure module):
+- **The JPA/H2 relics are gone (2026-08-15) — do not let them back in.** Both `application.properties`
+  carried settings for a stack this app has not used since the move to MongoDB: `spring.jpa.*`,
+  `spring.datasource.*`, `spring.jdbc.*`, `spring.transaction.default-timeout`, and — in the test one —
+  **`spring.data.mongodb.uri=jdbc:h2:mem:testdb`** (the key's pre-Boot-4 name), a Mongo URI holding a
+  JDBC URL. Per the landmine
+  below, `ConnectionString` accepts only `mongodb://`/`mongodb+srv://`, so that value is a hard startup
+  failure the moment Mongo autoconfiguration runs. It never did, purely because `WebServiceTest` is
+  `@SpringBootTest(classes = [WebServiceTest::class])` and so boots a context of exactly one class — the
+  same test this file already says to replace rather than extend. **The trap:** the first real
+  `@SpringBootTest` anyone writes inherits that URI and fails with a message pointing nowhere near the
+  cause. Verified dead before removal: no `@Transactional`, no JPA/JDBC types in main source, and
+  neither hibernate, tomcat-jdbc nor h2 on the runtime classpath. The unused `testRuntimeOnly` H2
+  dependency went with them.
+- **LANDMINE — the database-URI property is `spring.mongodb.uri`, and the old name silently does nothing.**
+  Spring Boot **4.0.0 retired `spring.data.mongodb.uri`**: its metadata carries
+  `deprecation.level = "error"`, `replacement = "spring.mongodb.uri"`, and the connection properties moved
+  from `DataMongoProperties` (`@ConfigurationProperties("spring.data.mongodb")`, which no longer declares a
+  `uri` at all) to `MongoProperties` (`@ConfigurationProperties("spring.mongodb")`). A retired key does not
+  warn — it is simply not bound, so Boot uses `spring.mongodb.uri`'s own default `mongodb://localhost/test`.
+  SPC wrote the old key until 2026-08-18 and therefore ignored every configured host, credential and
+  database. Measured with the real bootJar, same URI, only the key differing:
+
+  | key written | resolved hosts | credential |
+  |---|---|---|
+  | `spring.data.mongodb.uri` | `[localhost:27017]` | `null` |
+  | `spring.mongodb.uri` | `[127.0.0.1:27017]` | `MongoCredential{userName='spcuser'…}` |
+
+  The host substitution is the tell: `127.0.0.1` was configured, `localhost` is Boot's literal default.
+  `WebserviceConfig` still **reads** `LEGACY_DATABASE_URI_KEY` when the live key is absent and re-writes it
+  under the live one, so an installation predating this keeps working; nothing writes the old key any more.
+  **The `MigrationManager` step is for the message, not the mechanism.**
+  `MigrationMethods.NinePointZeroPointZero` reports the rename; the carry-over itself is the getter's, and
+  has to be, because migrations run release→release only and would miss every dev, alpha and beta user.
+  What a migration adds is telling the operator — anything *they* own that still writes the old key (their
+  own `overrides.properties`, a container environment, a deployment script) is silently ignored by Spring,
+  and no code of ours can fix those. It fires only when `hasLegacyDatabaseUri` is true, so an installation
+  that never used the old key hears nothing; that negative case is pinned too. The stale legacy line is
+  **left in the file on purpose** — deleting it would strand anyone downgrading to a pre-Boot-4
+  ServerPackCreator, and Spring ignores it, so the cost is one dead line.
+  **Corollary worth knowing: URI query parameters work again.** They never did while the key was dead, which
+  is why two attempts to shorten the driver's server-selection timeout in tests looked like they "did not
+  work" — the URI was not reaching the client at all. Measured after the fix:
+  `…/spc_t?serverSelectionTimeoutMS=250` yields `serverSelectionTimeout='250 ms'` in the client's own
+  settings line, against `'30000 ms'` by default. So a `@SpringBootTest` that boots the web context without
+  a database can cut ~30 s per boot by putting that parameter in its URI — relevant to any test that
+  triggers Mongo access at `ApplicationReadyEvent`.
+  Pinned by `DatabaseUriPropertyTest`, whose second guard reads Boot's own
+  `spring-configuration-metadata.json` and fails on any key we write that Boot has retired — so the next
+  such rename is a build failure, not a silently redirected production database.
+- **LANDMINE — the URI is used verbatim, with no validation and no fallback inside Spring.**
+  Measured with `javap` against the pinned `spring-boot-mongodb-4.1.0` and `mongodb-driver-core-5.8.0`
+  (no sources jar is published for the autoconfigure module). **Re-verified at those versions on
+  2026-08-16** — the Boot 4.0.6 -> 4.1.0 bump moved the driver 5.6.2 -> 5.8.0 and the behaviour below
+  is byte-for-byte the same shape, so the landmine stands; only the version numbers had gone stale:
   `PropertiesMongoConnectionDetails.getConnectionString()` is
   `if (properties.getUri() != null) return new ConnectionString(properties.getUri())`, and
   `ConnectionString` accepts **only** `mongodb://` or `mongodb+srv://`. Consequences: a malformed URI
@@ -56,15 +107,99 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   that unreachable else-branch, as does `MongoProperties.DEFAULT_URI = "mongodb://localhost/test"`); and
   a log line naming `localhost:27017` therefore means the property was **absent everywhere**, not
   wrong. `determineUri()` exists and returns `uri ?: DEFAULT_URI`, but the connection path never calls
-  it — don't reason from it.
+  it — don't reason from it. **That "absent everywhere" case had a cause, and it was the retired key
+  above** — which is what `claude-docs/DOCKER-MONGO-INVESTIGATION.md` was unable to explain at the time.
 - **The docker override chain feeds that property, and it is long.** `WebService.springArguments`
   appends `--spring.config.location=` with eight locations, `overrides.properties` **last** (later
-  locations win). The s6 script `init-spc-config/run` composes `SPC_DATABASE_*` into that file; it is
+  locations win). The s6 script `init-spc-config/run` composes `SPC_DATABASE_*` into that file, under `spring.mongodb.uri`; it is
   pinned by `docker/tests/init-spc-config-test.sh`, which runs the real script in the production base
   image. See `claude-docs/DOCKER-MONGO-INVESTIGATION.md`.
 - **Already MVC-layered:** controllers delegate to services (`ModPackService`, `ServerPackService`,
   `RunConfigurationService`, `EventService`, the stats services); no controller is bloated;
   scheduling isolated in `web/scheduling`. No restructuring warranted here.
+
+## Indexes are created after startup, never during it (2026-08-18)
+
+- **LANDMINE — do not set `spring.data.mongodb.auto-index-creation=true`.** It is the obvious way to make
+  `@Indexed` mean something, and it makes a reachable MongoDB a condition of *starting up*: the property
+  makes `MongoTemplate`'s own bean creation run `createIndexes` during context refresh. Measured against an
+  absent database — ~30 s wait, `MongoTimeoutException`, refresh cancelled, application dead. `docker/docker-compose.yml`
+  starts the app alongside its `db` service, so losing that race is the normal first boot. The line sits in
+  `application.properties` commented out, with that reason, because it will otherwise be re-added.
+- `DeclaredIndexCreator` creates them on `ApplicationReadyEvent` instead — the same trade the migration
+  runner makes, and for the same reason. Failures are logged and swallowed: a missing index makes a query
+  slower, an exception there would take down an application already serving, and the next start retries
+  because creating an existing identical index is a server-side no-op.
+- **`@Indexed` stays the single declaration.** Definitions come from the mapping context via Spring Data's
+  `MongoPersistentEntityIndexResolver`, so adding an index to an entity needs no change to the creator, and
+  nothing is restated in two places. `IndexStore` is the seam, for the same reason `MigrationStore` is.
+- **LANDMINE — `src/test/resources/application.properties` shadows the shipped one on the test classpath.**
+  So *no* test exercises the shipped web configuration: `WebServiceContextTest` boots "the real context"
+  over the test copy. This is exactly how the property above got committed green — the suite could not see
+  it. When a shipped setting matters, read that file explicitly (enumerate `getResources("application.properties")`
+  and discard the test copy — `DeclaredIndexStartupTest` does) *and* assert the behaviour in a booted
+  context. A guard that reads a shipped file is not a test that runs with it.
+- Cost to know about: with no database reachable, each context boot pays a driver server-selection timeout
+  per operation — the migration runner's read and now the index creation. Keep new `@SpringBootTest`
+  properties **identical** to `WebServiceContextTest`'s so Spring's context cache reuses one boot; a
+  divergent set costs a whole extra one (measured 2m41s vs 1m41s for `:serverpackcreator-app:test`).
+  Shortening `serverSelectionTimeoutMS` in `src/test/resources` does not work — the effective URI comes from
+  the generated test home.
+
+## The web module's mod-lists are embedded, not referenced (2026-08-17)
+
+- `RunConfiguration.startArgs` / `clientMods` / `whitelistedMods` are `MutableList<String>` **embedded
+  in the document**. They were `@DBRef` arrays pointing at `StartArgument` / `ClientMod` /
+  `WhitelistedMod` — each a `@Document` whose *only* field was its `@MongoId`, so a `ClientMod`
+  document was literally `{_id: "OptiFine"}` and the eager join resolved to the string it was already
+  keyed by. Three collections and four repositories stored nothing. **Do not reintroduce them.**
+- That removed ~550 sequential round-trips per created run-configuration (one `findBy` per entry plus a
+  `save` per miss, on the default clientside list) — now two calls total, pinned by
+  `RunConfigurationServiceTest.buildingAConfigurationCostsTwoRepositoryCalls`. It also removed an eager
+  join from every read reaching a RunConfiguration, which is what made `findAll()` on server packs or
+  modpacks fan out across four collections.
+- **LANDMINE — `In` in a derived query name means "contains any of", not "equals".** The duplicate
+  lookup was `…AndStartArgsInAndClientModsInAndWhitelistedModsIn`, so a configuration could be matched
+  and reused because it shared a *single* mod with the one being created. It is now
+  `…AndStartArgsAndClientModsAndWhitelistedMods`, an exact array match.
+- **The JSON shape is part of this contract, and the SPA is not its only consumer.**
+  `RunConfigurationController` returns the entity itself under `/api/v2/runconfigs` — a *versioned* path —
+  so the entity's fields are the response body. Changing it means changing all of these in the same commit:
+  `serverpackcreator-web-frontend/src/types/api.ts` (declares `string[]`), `RunConfigurationCard.vue` and
+  `SubmitModPackForm.vue` (two sites), **and the published description in `serverpackcreator-help`** —
+  `Writerside/api-docs.yaml` plus the response samples in `Run-Configs.md`, `Server-Packs.md` and
+  `Modpacks.md`, which embed a run-configuration too. An audit caught the last group missed: the spec was
+  still `$ref`-ing `StartArgument` / `ClientMod` / `WhitelistedMod` schemas whose classes this very change
+  deleted. **Nothing in the build can catch that** — `serverpackcreator-help` is not a Gradle module and
+  `springdoc` is commented out in `serverpackcreator-app/build.gradle.kts`, so the spec is a hand-maintained
+  snapshot. Treat it as source. (It carries older drift of its own, e.g. `id` typed `integer` where the
+  entities use `@MongoId(FieldType.STRING)`; that predates this work.)
+- **`web/migration/` exists for the upgrade**, and is the pattern to copy if another shape ever changes:
+  `RunConfigurationListMigration` is the per-document rewrite (join-free — a DBRef's `$id` is the value,
+  so nothing needs reading, and it works even after the referenced collections are dropped), tested
+  without a database; `RunConfigurationListMigrationRunner` applies it on `ApplicationReadyEvent`, not
+  during context startup, so an unreachable database delays the migration instead of blocking the boot.
+  It is idempotent and element-wise, so an interrupted run is *completed* on the next start rather than
+  corrupting a half-rewritten document, and the orphaned collections are dropped only after a fully
+  successful pass. Failures are logged and swallowed on purpose.
+  Note it uses `MongoTemplate` rather than the repository, necessarily: the mapped type can no longer
+  read the old shape, which is the very problem being fixed.
+  **Its safety decisions are behind `MigrationStore`, and that is the point.** The ordering (every rewrite
+  before any drop), the skip (never drop when nothing was rewritten), and the swallow (an unreachable
+  database must not fail the boot) are what can lose data if wrong, and they were untestable while the
+  runner talked to `MongoTemplate` directly — an audit caught the runner with **no** test at all while its
+  pure transformation was well covered. `RunConfigurationListMigrationRunnerTest` asserts them against a
+  recording double, and each was verified to have teeth by deliberately breaking it (dropping first fails
+  4 guards; dropping when nothing was rewritten fails 2). Copy this seam for the next migration.
+  Note `MongoMigrationStore.findAll` materialises the collection rather than streaming the cursor,
+  deliberately: writing while iterating a live cursor can return a moved document twice, which is only
+  harmless while every rewrite is idempotent.
+  **The retry promise is half true:** the rewrite retries on the next start, the *drop* does not — it runs
+  only when something was rewritten, so a pass that rewrote everything then failed to drop leaves those
+  collections for good. Harmless, but not self-healing.
+  It costs the suite nothing — `WebServiceContextTest` fires the listener against an unreachable Mongo
+  and still runs in 0.438 s, because localhost *refuses* rather than black-holes, so server selection
+  fails fast instead of waiting out the 30 s default. Do not assume that holds for a remote host.
 
 ## Testing patterns
 
@@ -75,12 +210,52 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   stats).
 - **Web-entity IDs are `private set`** (Spring Data `PersistenceCreator`); tests assign them via the
   `assignEntityId` reflection helper.
-- `WebServiceArgumentsTest` covers `WebService.springArguments` — pure argument composition, no context.
-  It exists because `start()` boots Spring, so the composition had to be extracted to be assertable;
-  the old context-only `WebServiceTest` is still the one CLAUDE.md says to replace rather than extend.
+- **The controller tests `mockk()` their service, so a green controller test says nothing about the
+  service.** `EventServiceTest` and `RunConfigurationServiceTest` (added 2026-08-15) test the services
+  directly with mocked repositories, because the look-up-or-store loops in both had been executed by
+  **no** test at all. They pin the *outcome* — which entries the built object holds and which reach
+  `save` — deliberately **not** the number of repository lookups, which is an implementation detail.
+- `WebServiceArgumentsTest` covers `WebService.springArguments` **and** `configLocationArgument` — pure
+  composition, no context. Both were extracted from `start()` for the same reason: it hands them
+  straight to Spring Boot, so nothing welded to it can be asserted. The config-location tests pin the
+  **order** of the eight property-file locations, because later locations win and the two
+  `overrides.properties` entries must stay last — that is where a container's `spring.data.mongodb.uri`
+  arrives from (see the Mongo landmine below).
+- **`WebServiceContextTest` boots the real application context, and needs no database.** The MongoDB
+  driver connects lazily, so every bean is constructed and every injection point resolved without a
+  server being reachable — the driver logs a connection error in the background and startup continues.
+  That covers bean wiring across all controllers, services, repositories and scheduling, which is what
+  breaks when someone adds a constructor parameter or misplaces an annotation. Verified it can fail:
+  removing `@Service` from `EventService` fails it with `NoSuchBeanDefinitionException`. It replaces
+  the old `WebServiceTest`, which was `@SpringBootTest(classes = [WebServiceTest::class])` — a context
+  of one class, itself — with an empty test body, and so could not fail for any ServerPackCreator
+  reason. **Landmine:** the three schedules are disabled in it via Spring's `CRON_DISABLED` (`-`), not
+  left on their midnight crons — `FileCleanupSchedule` deletes modpack files whose IDs are absent from
+  the database, and a suite running at 00:30 against an unreachable database should not find out what
+  that does. Keep them disabled if you add cases.
 - GUI: view-model unit tests; Swing views stay dumb. CLI/entry-point logic pinned by
   `CommandlineParserTest` (headless-independent branches only) and `MigrationManagerTest`
-  (mockk-mocked `ApiProperties`, version ranges chosen to never hit a real migration method).
+  (mockk-mocked `ApiProperties`, version ranges chosen to never hit a real migration method, plus a
+  pin on `LAMBDA_SUFFIX` — the regex stripping the compiler's `$0lambda$1` off a migration method's
+  name, which both discovery and version parsing run every declared name through).
+- **`VersionCheckerTest`** covers the update-check comparison, which had **zero** tests until
+  2026-08-15. The class is abstract and `allVersions()` is its only data source, so a canned subclass
+  exercises the whole alpha/beta path offline — no repository, no network. **The fake's
+  `latestVersion()` computes the newest rather than taking the list head, deliberately:** the real
+  `allVersions()` comes from a repository API whose ordering nothing guarantees, and a fixture that
+  is silently newest-first cannot catch code depending on that ordering — which is exactly the bug it
+  did hide on the first attempt.
+- **Pre-release ordering is channel-first, and both halves were broken until 2026-08-15.**
+  `isPreReleaseNewer` compared only the number after the dot, so a beta did not supersede an alpha of
+  the same version: `alpha.2` was offered `beta.3` (3 > 2) while `alpha.5` was offered **nothing**
+  (3 > 5) with the same two releases published. And `latestBeta`/`latestAlpha` required a candidate to
+  be *both* newer-or-equal **and** higher-numbered, so `3.2.0-beta.1` lost to `3.1.0-beta.3` — whether
+  that reached a user depended on repository ordering. Now `preReleaseChannel` (alpha < beta <
+  release) with the number as tie-break, and `isVersionNewer` (semantic version first) for
+  latest-of-channel. **Landmine:** `isNewAlphaAvailable`'s explicit "a beta is never offered an alpha"
+  guard was removed as dead once the channel ordering subsumed it — if you ever weaken that ordering,
+  that rule disappears with it, and only
+  `VersionCheckerTest.aBetaIsNotOfferedAnAlphaOfTheSameVersion` will say so.
 
 ## Landmines & verified quirks (durable)
 
@@ -129,6 +304,63 @@ stem(s), assess server-safety, and — once accepted — open the PR. **All thre
   switchable container.
 - The check timers register their `ActionListener` in `init` (not the `Timer` super-constructor,
   where `this` is unavailable) so they can launch on an instance scope.
+
+## The config-check timer is on the typing path — keep it cheap (2026-08-17)
+
+`ConfigCheckTimer` is a **500 ms debounce restarted by a document change in *any* field**
+(`ConfigEditor.validationChangeListener` → `checkAll()` → `TabbedConfigsTab.timer.restart()`), and it runs its whole validation
+pass for **every open tab**. So anything it does, a user pays for each time they pause while typing,
+multiplied by their open configs. Two things it used to do per tick, now memoized in
+`ConfigEditorViewModel`:
+
+- **`isServerDownloadable`** — an HTTP request to the modloader's maven (~234 ms measured against
+  `files.minecraftforge.net`), existing only to drive a warning label. Cached per
+  `(minecraftVersion, modloader, modloaderVersion)`. **Successes are cached, failures are not**, and
+  the asymmetry is deliberate: a published installer does not vanish, but a `false` may only mean the
+  network blinked, and remembering it would leave the editor insisting "server unavailable" until
+  restart. Pinned both ways in `ConfigEditorViewModelTest`.
+- **`packName`** — `checkManifests` parses the launcher manifest into a Jackson tree. Re-read only
+  when the fingerprint (existence/size/mtime) of the six candidates changes. Measured against this
+  repo's own CurseForge fixture: **4.70 ms parse vs 0.021 ms fingerprint** on 2,715,835 bytes, 221x.
+  The latency saved is modest; the garbage avoided (a tree of a 2.7 MB document per keystroke-pause,
+  per tab) is the real gain.
+  **The fingerprint must read `ConfigurationHandler.manifestCandidates`**, never its own copy of the
+  paths — a drifted list makes the memo miss real edits. `ManifestCandidatesTest` in `-api` guards it.
+
+The timer no longer builds a `PackConfig` per tick either; it only ever read `.name` off a throwaway
+one. **Note the concurrency inside is illusory** and always was: the ten `launch { }` blocks sit inside
+`runBlocking { }`, whose dispatcher is the single blocked thread's event loop, so they run
+sequentially — which is also the only reason the shared `errors` `ArrayList` is safe. Making them
+genuinely concurrent would introduce a data race.
+
+## SuggestionProvider runs on every keystroke, on the EDT (2026-08-17)
+
+- The autocomplete set is parsed once and reused until the property changes, keyed on the **raw
+  property value** rather than a change-listener — saving suggestions writes it back via
+  `storeGuiProperty`, so comparing the string cannot miss an update. The property *read* stays
+  per-call on purpose (a map lookup); rebuilding a ~550-entry sorted set was the cost.
+- **`allSuggestions()` must keep returning a fresh `TreeSet`.** Every caller mutates it and persists
+  the result (`ConfigEditor.saveSuggestions` adds the field value, `InclusionsEditor.saveSuggestions`
+  adds and `removeIf`s), so caching the *instance* would corrupt the source and accumulate across
+  calls. Cache the parse, copy on the way out. Pinned by `eachCallerGetsItsOwnMutableSet`.
+- **LANDMINE — do not "optimise" the prefix filter into `TreeSet.tailSet(prefix)`.** The match is
+  case-**in**sensitive while the set's ordering is case-sensitive, so matches are not contiguous:
+  `tailSet("op")` skips `OptiFine`. Making the set case-insensitive instead silently deduplicates
+  entries differing only in case. A linear `startsWith` over a few hundred parsed strings is
+  microseconds.
+- `showPopup` uses `revalidate`/`pack`/`repaint`, **not `updateUI()`** — that re-installs the
+  look-and-feel delegate and is for a LAF *change*, and it ran per keystroke.
+
+**How the popup was GUI-verified, since `osascript` has no Accessibility permission on this machine
+(no synthetic clicks or keystrokes):** a throwaway JUnit "harness" test drove Swing from *inside* the
+test JVM — `-app` tests are not headless — showing a real `SuggestionProvider` on a real `JFrame`,
+inserting characters into the document on the EDT, and logging each visible `JList`'s row count and
+`preferredSize` while `screencapture` took stills. That produced the actual evidence the `updateUI()`
+removal needed: the popup **resizes** with its content, `56x85 px at 5 matches → 54x34 px at 2`,
+correctly filtered and positioned at the caret. Re-assert focus before each burst — the popup only
+shows while the component `isFocusOwner`, and anything stealing focus closes it, which made a first
+attempt look like a failure when it was only unfocused. The harness was deleted afterwards; it is a
+technique to repeat, not a test to keep.
 
 ## ConfigEditor status
 

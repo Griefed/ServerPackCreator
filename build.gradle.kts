@@ -1,9 +1,6 @@
 import com.install4j.gradle.Install4jTask
 import de.griefed.common.gradle.LicenseAgreementRenderer
 import de.griefed.common.gradle.SubprojectLicenseFilter
-//import org.cyclonedx.model.AttachmentText
-//import org.cyclonedx.model.License
-//import org.cyclonedx.model.OrganizationalContact
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
 import java.time.LocalDate
@@ -11,10 +8,9 @@ import java.time.LocalDate
 plugins {
     idea
     kotlin("jvm")
-    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
+    alias(libs.plugins.nexusPublish)
     id("com.github.jk1.dependency-license-report")
-    id("com.install4j.gradle")
-    //id("org.cyclonedx.bom") version "1.10.0"
+    alias(libs.plugins.install4j)
 }
 
 idea {
@@ -28,24 +24,6 @@ idea {
     }
 }
 
-allprojects {
-    repositories {
-        gradlePluginPortal()
-        google()
-        mavenCentral()
-        maven(url = uri("https://jitpack.io"))
-    }
-
-    tasks.withType<Test> {
-        jvmArgs("-XX:+EnableDynamicAgentLoading", "-Djdk.attach.allowAttachSelf=true")
-    }
-}
-evaluationDependsOnChildren()
-
-project("serverpackcreator-app").tasks.build.get().mustRunAfter(
-    tasks.getByName("generateLicenseReport"),
-    project("serverpackcreator-web-frontend").tasks.build.get()
-)
 
 nexusPublishing {
     repositories {
@@ -58,41 +36,17 @@ nexusPublishing {
     }
 }
 
-/*
-tasks.cyclonedxBom {
-    setIncludeConfigs(listOf("runtimeClasspath"))
-    setSkipConfigs(listOf("compileClasspath", "testCompileClasspath"))
-    setProjectType("application")
-    setSchemaVersion("1.5")
-    setDestination(project.file("build/reports"))
-    setOutputName("bom")
-    //setOutputFormat("json")
-    setIncludeBomSerialNumber(true)
-
-    val organizationalContact = OrganizationalContact()
-    organizationalContact.name = "Griefed"
-    organizationalContact.email = "griefed@griefed.de"
-    setOrganizationalEntity { oe ->
-        oe.name = "Griefed"
-        oe.urls = listOf("griefed.de")
-        oe.addContact(organizationalContact)
-    }
-
-    val attachementText = AttachmentText()
-    attachementText.text = File(projectDir,"LICENSE").readText()
-    val license = License()
-    license.name = "LGPL-2.1"
-    license.setLicenseText(attachementText)
-    license.url = "https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE"
-    setLicenseChoice { lc ->
-        lc.addLicense(license)
-    }
-}
-*/
 
 licenseReport {
     outputDir = "$projectDir/licenses"
     configurations = arrayOf("runtimeClasspath", "compileClasspath")
+
+    // springdoc exists only to regenerate serverpackcreator-help/Writerside/api-docs.yaml and is declared
+    // `developmentOnly`, so it is NOT in the shipped jar -- verified by listing the bootJar, which contains
+    // no springdoc or swagger entry. It nonetheless reaches compileClasspath/runtimeClasspath above, so
+    // without this the LICENSE-AGREEMENT files -- documents about what ships -- would list a build tool,
+    // and churn 303 lines in two shipped files on every springdoc bump.
+    excludeGroups = arrayOf("org.springdoc")
 
     filters = arrayOf(
         com.github.jk1.license.filter.LicenseBundleNormalizer(),
@@ -107,38 +61,45 @@ licenseReport {
     )
 }
 
-val appPlugins = File("serverpackcreator-app/tests/plugins")
-val apiPlugins = File("serverpackcreator-api/src/test/resources/testresources/plugins")
-val kotlinPlugin = project.childProjects["serverpackcreator-plugin-example"]?.tasks?.jar?.get()?.archiveFile?.get()?.asFile?.toPath()
-tasks.register<Delete>("cleanAppPlugins") {
-    delete(
-        fileTree(appPlugins) {
-            include("**/*.jar")
-        }
-    )
+// The example plugin's jar, consumed as an ARTIFACT rather than by reaching into the other project's
+// task container. `project.childProjects[...]?.tasks?.jar?.get()?.archiveFile?.get()` needed that
+// project to be evaluated already — which is what evaluationDependsOnChildren() was there for — and
+// still ended in a `!!` at both use sites because every link in the chain is nullable. A dependency on
+// the project resolves lazily and carries the task dependency with it, so the jar is built on demand.
+// `create(name) { }` rather than the `creating` delegate, deprecated in Gradle 9.7 (9.6 upgrading
+// guide). The delegate only supplied the name from the property, so the name is unchanged — which
+// matters, because `pluginArtifact` below is consumed by string name.
+val examplePlugin: Configuration = configurations.create("examplePlugin") {
+    isCanBeConsumed = false
+    isCanBeResolved = true
 }
+
+dependencies {
+    examplePlugin(project(path = ":serverpackcreator-plugin-example", configuration = "pluginArtifact"))
+}
+
+val appPlugins = layout.projectDirectory.dir("serverpackcreator-app/tests/plugins")
+val apiPlugins = layout.projectDirectory.dir("serverpackcreator-api/src/test/resources/testresources/plugins")
+
+tasks.register<Delete>("cleanAppPlugins") {
+    delete(fileTree(appPlugins) { include("**/*.jar") })
+}
+
 tasks.register<Copy>("copyExamplePluginsToApp") {
-    dependsOn(
-        "cleanAppPlugins",
-        ":serverpackcreator-plugin-example:build"
-    )
-    appPlugins.mkdirs()
-    from(kotlinPlugin!!)
+    description = "Refreshes the example plugin in the app's manual-test plugins directory."
+    dependsOn("cleanAppPlugins")
+    from(examplePlugin)
     into(appPlugins)
 }
+
 tasks.register<Delete>("cleanApiUnitTestPlugins") {
-    delete(
-        fileTree(apiPlugins) {
-            include("**/*.jar")
-        }
-    )
+    delete(fileTree(apiPlugins) { include("**/*.jar") })
 }
+
 tasks.register<Copy>("copyPluginsApiUnitTests") {
-    dependsOn(
-        "cleanApiUnitTestPlugins",
-        ":serverpackcreator-plugin-example:build"
-    )
-    from(kotlinPlugin!!)
+    description = "Refreshes the example plugin ApiPluginsTest loads through pf4j."
+    dependsOn("cleanApiUnitTestPlugins")
+    from(examplePlugin)
     into(apiPlugins)
 }
 
@@ -152,26 +113,28 @@ tasks.register<Copy>("copyLicenseReport") {
 }
 
 tasks.generateLicenseReport {
-    mustRunAfter(tasks.getByName("cleanLicenseReport"))
-    finalizedBy(tasks.getByName("copyLicenseReport"))
+    mustRunAfter(tasks.named("cleanLicenseReport"))
+    finalizedBy(tasks.named("copyLicenseReport"))
 }
 
 install4j {
     //Set the install4jHomeDir-property for building on your own machine, or use the paths listed below according
     //to your operating system family.
-    installDir = if (properties["install4jHomeDir"].toString().isNotBlank()) {
-        file(properties["install4jHomeDir"].toString())
-    } else if (OperatingSystem.current().isWindows) {
-        file("C:\\Program Files\\install4j")
-    } else if (OperatingSystem.current().isMacOsX) {
-        //Ensure your install4j installation is available under this location
-        file("/Applications/install4j.app")
-    } else if (OperatingSystem.current().isLinux)  {
-        //Ensure your install4j installation is available under this location
-        file("/opt/install4j")
-    } else {
-        file(properties["install4jHomeDir"].toString())
-    }
+    // `providers.gradleProperty` instead of the `properties` map, which Gradle 9.7 deprecates. It also
+    // removes a trap: `properties["x"]` on an ABSENT key returns null, whose `.toString()` is the string
+    // "null" — which is not blank, so the old guard passed and installDir became a directory named
+    // `null`. That never fired only because gradle.properties declares `install4jHomeDir=` empty, making
+    // that empty declaration load-bearing. It no longer is.
+    installDir = providers.gradleProperty("install4jHomeDir").orNull
+        ?.takeIf { it.isNotBlank() }
+        ?.let { file(it) }
+        ?: when {
+            OperatingSystem.current().isWindows -> file("C:\\Program Files\\install4j")
+            //Ensure your install4j installation is available under this location
+            OperatingSystem.current().isMacOsX -> file("/Applications/install4j.app")
+            //Ensure your install4j installation is available under this location
+            else -> file("/opt/install4j")
+        }
     verbose = true
 }
 

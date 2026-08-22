@@ -25,7 +25,9 @@ package de.griefed.serverpackcreator.app.updater.versionchecker
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import de.griefed.serverpackcreator.api.settings.NetworkConfig
 import de.griefed.serverpackcreator.api.utilities.common.Comparison
+import de.griefed.serverpackcreator.api.utilities.common.timedConnection
 import de.griefed.serverpackcreator.api.utilities.common.SemanticVersionComparator
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.BufferedReader
@@ -43,6 +45,17 @@ import java.util.*
  */
 @Suppress("unused")
 abstract class VersionChecker {
+
+    /**
+     * Milliseconds to wait for a connection to the release API. Defaulted from
+     * [NetworkConfig.DEFAULT_CONNECT_TIMEOUT] rather than a literal, and overwritten by
+     * [de.griefed.serverpackcreator.app.updater.UpdateChecker] with the configured value — this class
+     * has no `ApiProperties`, and giving it one would change every subclass's constructor.
+     */
+    var connectTimeout: Int = NetworkConfig.DEFAULT_CONNECT_TIMEOUT
+
+    /** Milliseconds a single read of a release-API response may block. See [connectTimeout]. */
+    var readTimeout: Int = NetworkConfig.DEFAULT_READ_TIMEOUT
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     protected var allVersions: List<String>? = null
         private set
@@ -118,24 +131,16 @@ abstract class VersionChecker {
             return false
         }
         val latestAlpha = latestAlpha()
-        if (SemanticVersionComparator.compareSemantics(currentVersion, latestAlpha, Comparison.EQUAL) && currentVersion.contains("beta")) {
-            return false
-        }
+
+        // A beta is never offered an alpha of the same version. That used to need an explicit guard
+        // here; the channel ordering in isPreReleaseNewer now rules it out on its own.
 
         // Check if the given version is older than the latest alpha version by checking semantically. (1.2.3, 2.3.4, 6.6.6)
-        return if (SemanticVersionComparator.compareSemantics(currentVersion, latestAlpha, Comparison.NEW)) {
-            true
-        } else if (SemanticVersionComparator.compareSemantics(
-                currentVersion,
-                latestAlpha,
-                Comparison.EQUAL_OR_NEW
-            ) && currentVersion.contains("-")
-        ) {
-            // If a new alpha, say alpha.5 for the given, say alpha.1, is available, return true.
-            isPreReleaseNewer(currentVersion, latestAlpha)
-        } else {
-            false
-        }
+        return SemanticVersionComparator.compareSemantics(currentVersion, latestAlpha, Comparison.NEW)
+                // Or, at the same version, if a new alpha — say alpha.5 for the given alpha.1 — is available.
+                || (SemanticVersionComparator.compareSemantics(currentVersion, latestAlpha, Comparison.EQUAL_OR_NEW)
+                && currentVersion.contains("-")
+                && isPreReleaseNewer(currentVersion, latestAlpha))
     }
 
     /**
@@ -156,40 +161,80 @@ abstract class VersionChecker {
         val latestBeta = latestBeta()
 
         // Check if the given version is older than the latest beta version by checking semantically. (1.2.3, 2.3.4, 6.6.6)
-        return if (SemanticVersionComparator.compareSemantics(currentVersion, latestBeta, Comparison.NEW)) {
-            true
-        } else if (SemanticVersionComparator.compareSemantics(
-                currentVersion,
-                latestBeta,
-                Comparison.EQUAL_OR_NEW
-            ) && currentVersion.contains("-")
-        ) {
-
-            // If a new beta, say beta.5 for the given, say beta.1, is available, return true.
-            isPreReleaseNewer(currentVersion, latestBeta)
-        } else {
-            false
-        }
+        return SemanticVersionComparator.compareSemantics(currentVersion, latestBeta, Comparison.NEW)
+                // Or, at the same version, if a new beta — say beta.5 for the given beta.1 — is available.
+                || (SemanticVersionComparator.compareSemantics(currentVersion, latestBeta, Comparison.EQUAL_OR_NEW)
+                && currentVersion.contains("-")
+                && isPreReleaseNewer(currentVersion, latestBeta))
     }
 
     /**
-     * Check whether the release number for the new version is bigger than the one of the current version, indicating a
-     * newer pre-release is available.
+     * Check whether [newVersion] is a newer pre-release than [currentVersion], for two versions that
+     * are already known to share the same semantic version.
+     *
+     * Channel first, number only as the tie-break: a beta supersedes an alpha of the same version no
+     * matter what the two numbers are. Comparing the numbers alone made the answer depend on a
+     * numeric accident — `alpha.5` would not be offered `beta.3`, because `3 > 5` is false.
+     *
      * @author Griefed
      * @param currentVersion The current version for which we want to check for newer versions availability.
      * @param newVersion The new version with which we want to check if it is indeed newer than the current version.
      * @return True if the new version is a newer pre-release.
      */
     private fun isPreReleaseNewer(currentVersion: String, newVersion: String): Boolean {
-        val currentVersionReleaseNumber =
-            currentVersion.split("-".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1].split("\\.".toRegex())
-                .dropLastWhile { it.isEmpty() }.toTypedArray()[1]
-                .toInt()
-        val newVersionReleaseNumber =
-            newVersion.split("-".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1].split("\\.".toRegex())
-                .dropLastWhile { it.isEmpty() }.toTypedArray()[1]
-                .toInt()
-        return newVersionReleaseNumber > currentVersionReleaseNumber
+        val channelDifference = preReleaseChannel(newVersion) - preReleaseChannel(currentVersion)
+        return if (channelDifference != 0) {
+            channelDifference > 0
+        } else {
+            preReleaseNumber(newVersion) > preReleaseNumber(currentVersion)
+        }
+    }
+
+    /**
+     * Rank of [version]'s pre-release channel, so the channels can be ordered: alpha, then beta, then
+     * a plain release, which supersedes every pre-release of the same version.
+     *
+     * @author Griefed
+     * @param version The version whose channel to rank.
+     * @return `0` for an alpha, `1` for a beta, `2` for anything else.
+     */
+    private fun preReleaseChannel(version: String) = when {
+        version.contains("alpha") -> 0
+        version.contains("beta") -> 1
+        else -> 2
+    }
+
+    /**
+     * The number a pre-release counts up, e.g. `5` for `3.1.0-alpha.5`.
+     *
+     * A version carrying no pre-release suffix, or one whose suffix holds no number, yields `0` — it
+     * is only ever compared within one channel by [isPreReleaseNewer], where a plain release already
+     * outranks anything numbered.
+     *
+     * @author Griefed
+     * @param version The version whose pre-release number to read.
+     * @return The pre-release number, or `0` when the version carries none.
+     */
+    private fun preReleaseNumber(version: String) =
+        version.substringAfter('-', "").substringAfter('.', "").toIntOrNull() ?: 0
+
+    /**
+     * Check whether [candidate] is newer than [current], comparing the semantic version first and
+     * falling back to the pre-release ordering only when the two are the same version.
+     *
+     * This is what picking "the latest" of a channel needs. Requiring a candidate to be *both*
+     * newer-or-equal **and** higher-numbered — as the latest-of-channel scans used to — drops a newer
+     * version that restarted its count, so `3.2.0-beta.1` lost to `3.1.0-beta.3`.
+     *
+     * @author Griefed
+     * @param current The version to beat.
+     * @param candidate The version being considered.
+     * @return True if the candidate supersedes the current one.
+     */
+    private fun isVersionNewer(current: String, candidate: String) = when {
+        SemanticVersionComparator.compareSemantics(current, candidate, Comparison.NEW) -> true
+        !SemanticVersionComparator.compareSemantics(current, candidate, Comparison.EQUAL) -> false
+        else -> isPreReleaseNewer(current, candidate)
     }
 
     /**
@@ -253,11 +298,7 @@ abstract class VersionChecker {
         if (betaVersions != null) {
             beta = betaVersions[0]
             for (betaVersion in betaVersions) {
-                if (SemanticVersionComparator.compareSemantics(beta, betaVersion, Comparison.EQUAL_OR_NEW) && isPreReleaseNewer(
-                        beta,
-                        betaVersion
-                    )
-                ) {
+                if (isVersionNewer(beta, betaVersion)) {
                     beta = betaVersion
                 }
             }
@@ -279,11 +320,7 @@ abstract class VersionChecker {
         if (alphaVersions != null) {
             alpha = alphaVersions[0]
             for (alphaVersion in alphaVersions) {
-                if (SemanticVersionComparator.compareSemantics(alpha, alphaVersion, Comparison.EQUAL_OR_NEW) && isPreReleaseNewer(
-                        alpha,
-                        alphaVersion
-                    )
-                ) {
+                if (isVersionNewer(alpha, alphaVersion)) {
                     alpha = alphaVersion
                 }
             }
@@ -301,7 +338,9 @@ abstract class VersionChecker {
      */
     @Throws(IOException::class)
     protected fun getResponse(requestUrl: URL): String {
-        val httpURLConnection = requestUrl.openConnection() as HttpURLConnection
+        // Bounded rather than a bare openConnection(): the JDK default is to wait forever, and this
+        // runs on the GUI's startup update-check, so a silent host would block it with no way out.
+        val httpURLConnection = requestUrl.timedConnection(connectTimeout, readTimeout) as HttpURLConnection
         httpURLConnection.requestMethod = "GET"
         if (httpURLConnection.responseCode != 200) throw IOException("Request for " + requestUrl + " responded with " + httpURLConnection.responseCode)
         val bufferedReader = BufferedReader(
@@ -325,6 +364,14 @@ abstract class VersionChecker {
         }
 
     protected abstract fun allVersions(): List<String>?
+    /**
+     * Re-read the repository's version list, so subsequent checks see releases published since the
+     * last call.
+     *
+     * @author Griefed
+     * @return This checker, for chaining.
+     * @throws IOException if the repository could not be reached.
+     */
     @Throws(IOException::class)
     abstract fun refresh(): VersionChecker
     protected fun setAllVersions() {
@@ -335,5 +382,14 @@ abstract class VersionChecker {
     protected abstract fun getDownloadUrl(version: String): String
     @Throws(IOException::class)
     protected abstract fun setRepository()
+    /**
+     * The available update for [currentVersion] as a repository-specific [Update], carrying the
+     * release's own metadata (description, assets) rather than just a version string.
+     *
+     * @author Griefed
+     * @param currentVersion The current version of the app.
+     * @param checkForPreReleases Whether alpha and beta releases count as updates.
+     * @return The update, or empty when the current version is the newest.
+     */
     abstract fun check(currentVersion: String, checkForPreReleases: Boolean): Optional<Update>
 }

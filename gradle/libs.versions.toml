@@ -1,0 +1,167 @@
+[versions]
+
+# https://kotlinlang.org/docs/releases.html#release-details
+# ONE version for everything JetBrains ships out of the Kotlin release train: the compiler plugin,
+# the allopen/jpa/spring compiler plugins, and the stdlib/reflect/test libraries. JetBrains versions
+# these together, so splitting them only ever produced skew — this was four entries until
+# 2026-08-16, with the compiler on 2.3.20 and the libraries on 2.4.10.
+kotlin = "2.4.10"
+
+# https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-gradle-plugin
+# Keep in lockstep with `springBoot` below — the plugin and the libraries are the same product, and
+# letting them drift is what left `spring-boot` resolving 4.0.2 while `spring-boot-starter-web`
+# resolved 4.1.0. The BOM no longer comes from the plugin, but a mismatch is still a trap.
+springGradle = "4.1.0"
+
+# https://kotlinlang.org/docs/dokka-get-started.html
+dokka = "2.1.0"
+
+# https://github.com/jk1/Gradle-License-Report
+licenseReport = "3.0.1"
+
+# https://github.com/Kotlin/kotlinx-kover
+kover = "0.9.9"
+
+# https://plugins.gradle.org/plugin/org.siouan.frontend-jdk11
+frontendPlugin = "10.0.0"
+
+# https://plugins.gradle.org/plugin/com.install4j.gradle
+install4j = "13.1"
+
+# https://github.com/gradle-nexus/publish-plugin
+nexusPublish = "2.0.0"
+
+# ---- libraries ----
+coroutines = "1.11.0"
+kotlinxDatetime = "0.8.0-0.6.x-compat"
+junitPlatform = "6.1.3"
+# Matches what springmockk resolves transitively, keeping mockk single-versioned.
+mockk = "1.14.11"
+kotlinLogging = "3.0.5"
+ktorfit = "2.7.5"
+# Drives both the i18n4k libraries and the `i18n4k` plugin alias in [plugins], so -api and
+# -plugin-example can no longer apply a plugin version that disagrees with the libraries.
+i18n4k = "0.11.2"
+nightConfig = "3.9.0"
+jackson = "2.22.1"
+zip4j = "2.11.6"
+log4jApiKotlin = "1.5.0"
+log4j = "2.26.1"
+pf4j = "3.15.0"
+bouncycastle = "1.85"
+mslinks = "1.2"
+# Resolved from jitpack; published nowhere else.
+nekodetector = "Version-1.1-pre"
+playwright = "1.62.0"
+dockerJava = "3.7.1"
+commonsIo = "2.22.0"
+cronUtils = "9.2.1"
+install4jRuntime = "13.1"
+picocli = "4.7.7"
+flatlaf = "3.7.2"
+flatlafFontsJetbrainsMono = "2.304"
+flatlafFontsInter = "4.1"
+flatlafFontsRoboto = "2.137"
+flatlafFontsRobotoMono = "3.000"
+svgSalamander = "1.1.4"
+miglayout = "11.4.3"
+balloontip = "1.2.4.1"
+tipoftheday = "0.6.0"
+springBoot = "4.1.0"
+# https://github.com/springdoc/springdoc-openapi — 3.x is the Spring Boot 4 line (its parent POM is
+# spring-boot-starter-parent 4.1.0). 2.x targets Boot 3 and will not resolve here.
+springdoc = "3.1.0"
+springmockk = "5.0.1"
+
+[libraries]
+
+# ---- libraries ----
+kotlinTestJunit5 = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin" }
+junitPlatformLauncher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitPlatform" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+kotlinBom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
+kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+kotlinReflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+kotlinxCoroutinesCore = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinxCoroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "coroutines" }
+kotlinxDatetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
+kotlinLogging = { module = "io.github.microutils:kotlin-logging", version.ref = "kotlinLogging" }
+ktorfit = { module = "de.jensklingenberg.ktorfit:ktorfit-lib", version.ref = "ktorfit" }
+i18n4kCore = { module = "de.comahe.i18n4k:i18n4k-core", version.ref = "i18n4k" }
+i18n4kCoreJvm = { module = "de.comahe.i18n4k:i18n4k-core-jvm", version.ref = "i18n4k" }
+nightConfigToml = { module = "com.electronwill.night-config:toml", version.ref = "nightConfig" }
+jacksonDatabind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+jacksonModuleKotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+jacksonJsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
+zip4j = { module = "net.lingala.zip4j:zip4j", version.ref = "zip4j" }
+log4jApiKotlin = { module = "org.apache.logging.log4j:log4j-api-kotlin", version.ref = "log4jApiKotlin" }
+log4jCore = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
+pf4j = { module = "org.pf4j:pf4j", version.ref = "pf4j" }
+bouncycastle = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = "bouncycastle" }
+mslinks = { module = "org.jabref:mslinks", version.ref = "mslinks" }
+nekodetector = { module = "com.github.MCRcortex:nekodetector", version.ref = "nekodetector" }
+playwright = { module = "com.microsoft.playwright:playwright", version.ref = "playwright" }
+dockerJavaCore = { module = "com.github.docker-java:docker-java-core", version.ref = "dockerJava" }
+dockerJavaTransport = { module = "com.github.docker-java:docker-java-transport-zerodep", version.ref = "dockerJava" }
+commonsIo = { module = "commons-io:commons-io", version.ref = "commonsIo" }
+cronUtils = { module = "com.cronutils:cron-utils", version.ref = "cronUtils" }
+install4jRuntime = { module = "com.install4j:install4j-runtime", version.ref = "install4jRuntime" }
+picocli = { module = "info.picocli:picocli-shell-jline3", version.ref = "picocli" }
+flatlaf = { module = "com.formdev:flatlaf", version.ref = "flatlaf" }
+flatlafExtras = { module = "com.formdev:flatlaf-extras", version.ref = "flatlaf" }
+flatlafIntellijThemes = { module = "com.formdev:flatlaf-intellij-themes", version.ref = "flatlaf" }
+flatlafFontsJetbrainsMono = { module = "com.formdev:flatlaf-fonts-jetbrains-mono", version.ref = "flatlafFontsJetbrainsMono" }
+flatlafFontsInter = { module = "com.formdev:flatlaf-fonts-inter", version.ref = "flatlafFontsInter" }
+flatlafFontsRoboto = { module = "com.formdev:flatlaf-fonts-roboto", version.ref = "flatlafFontsRoboto" }
+flatlafFontsRobotoMono = { module = "com.formdev:flatlaf-fonts-roboto-mono", version.ref = "flatlafFontsRobotoMono" }
+svgSalamander = { module = "com.formdev:svgSalamander", version.ref = "svgSalamander" }
+miglayoutSwing = { module = "com.miglayout:miglayout-swing", version.ref = "miglayout" }
+balloontip = { module = "net.java.balloontip:balloontip", version.ref = "balloontip" }
+tipoftheday = { module = "tokyo.northside:tipoftheday", version.ref = "tipoftheday" }
+# Consumed as a Gradle `platform()`, NOT through io.spring.dependency-management. As a platform its
+# versions are ordinary constraints that lose to a higher request, so a library this project pins
+# itself in this catalog stays at the pinned version instead of being forced back to Boot's.
+# IntelliJ reports this alias as unused — it is a FALSE POSITIVE. `spring-conventions` is a
+# precompiled script plugin and has no `libs` accessor, so it resolves the alias by name via
+# `findLibrary("springBootDependencies")`, which static analysis cannot follow. Do not delete it.
+springBootDependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springBoot" }
+springBootStarterWeb = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "springBoot" }
+springBootStarterLog4j2 = { module = "org.springframework.boot:spring-boot-starter-log4j2", version.ref = "springBoot" }
+springBootStarterDataMongodb = { module = "org.springframework.boot:spring-boot-starter-data-mongodb", version.ref = "springBoot" }
+springBootStarterTest = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "springBoot" }
+springBootDevtools = { module = "org.springframework.boot:spring-boot-devtools", version.ref = "springBoot" }
+springmockk = { module = "com.ninja-squad:springmockk", version.ref = "springmockk" }
+# developmentOnly in -app: it exists to regenerate serverpackcreator-help/Writerside/api-docs.yaml
+# from the live controllers, and must not ship swagger-ui in the production jar.
+springdocOpenapiStarterWebmvcUi = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
+
+[plugins]
+
+# Every Gradle plugin this build applies, with its id and version declared exactly once.
+#
+# Two consumption routes, because Gradle only supports one of them everywhere:
+#   * a real build script uses `plugins { alias(libs.plugins.x) }`;
+#   * a PRECOMPILED SCRIPT PLUGIN (buildSrc/src/main/kotlin/*.gradle.kts) CANNOT — `alias(...)` there
+#     fails with `Unresolved reference: libs` (verified, not assumed). Those apply a versionless
+#     `id("...")` and get the version from the plugin marker that buildSrc/build.gradle.kts puts on
+#     its own compile classpath, derived from the entry here.
+# Either way the version comes from this file. See CLAUDE.md for the landmine.
+
+# Applied by `alias(...)` from a real build script:
+i18n4k = { id = "de.comahe.i18n4k", version.ref = "i18n4k" }
+nexusPublish = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "nexusPublish" }
+
+# Applied by versionless `id("...")` from the convention plugins, which cannot use `alias(...)`.
+# buildSrc/build.gradle.kts puts each of these on its own compile classpath via the plugin MARKER
+# derived from the entry below, so the id and the version are declared exactly once, here, and the
+# convention plugin only ever names the id.
+kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlinAllOpen = { id = "org.jetbrains.kotlin.plugin.allopen", version.ref = "kotlin" }
+kotlinJpa = { id = "org.jetbrains.kotlin.plugin.jpa", version.ref = "kotlin" }
+springBoot = { id = "org.springframework.boot", version.ref = "springGradle" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+dokkaJavadoc = { id = "org.jetbrains.dokka-javadoc", version.ref = "dokka" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
+frontend = { id = "org.siouan.frontend-jdk21", version.ref = "frontendPlugin" }
+install4j = { id = "com.install4j.gradle", version.ref = "install4j" }
+licenseReport = { id = "com.github.jk1.dependency-license-report", version.ref = "licenseReport" }

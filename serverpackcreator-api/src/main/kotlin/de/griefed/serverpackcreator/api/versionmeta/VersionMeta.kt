@@ -21,10 +21,7 @@ package de.griefed.serverpackcreator.api.versionmeta
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import de.griefed.serverpackcreator.api.ApiProperties
-import de.griefed.serverpackcreator.api.utilities.common.JarUtilities
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
-import de.griefed.serverpackcreator.api.utilities.common.create
-import de.griefed.serverpackcreator.api.utilities.common.readText
 import de.griefed.serverpackcreator.api.versionmeta.fabric.FabricIntermediaries
 import de.griefed.serverpackcreator.api.versionmeta.fabric.FabricMeta
 import de.griefed.serverpackcreator.api.versionmeta.forge.ForgeMeta
@@ -34,9 +31,12 @@ import de.griefed.serverpackcreator.api.versionmeta.neoforge.NeoForgeMeta
 import de.griefed.serverpackcreator.api.versionmeta.quilt.QuiltMeta
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.runBlocking
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import org.w3c.dom.Document
 import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
@@ -191,8 +191,70 @@ class VersionMeta(
     @Suppress("MemberVisibilityCanBePrivate")
     val fabricIntermediaries: FabricIntermediaries
 
+    /** Keeps the locally stored manifests up to date against their upstream sources. */
+    private val manifestUpdater = ManifestUpdater(utilities)
+
+    /**
+     * Where the startup manifest refresh runs. `Dispatchers.IO` owns no thread of its own, and the job below
+     * is the only work ever submitted, so there is nothing to cancel and nothing to leak — deliberately not
+     * `GlobalScope`, which this project has removed everywhere else.
+     */
+    private val refreshScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    /**
+     * The startup manifest refresh, running in the background.
+     *
+     * **This is a change of contract, and the reason [awaitManifestRefresh] exists.** Construction used to
+     * block until all twelve manifests had been checked, so the metas held refreshed data the moment the
+     * constructor returned. They now hold the jar-seeded data immediately and the refreshed data shortly
+     * after — which takes ~392 ms off a GUI launch, and far more off an offline one. A caller that genuinely
+     * needs upstream-fresh data must say so by awaiting.
+     */
+    private val manifestRefresh: Job
+
+    /**
+     * Checks every manifest against its upstream, then re-parses whatever changed.
+     *
+     * The re-parse is the second half and cannot be skipped: the metas are built from the manifest *files*,
+     * so a refreshed file is invisible until the meta reads it again. This is the same pair of steps
+     * [update] performs, and concurrent re-parse while another thread reads a meta is not new here — the web
+     * backend's `VersionRefreshSchedule` has always called [update] on a cron while requests read the metas.
+     */
+    private fun refreshManifests() {
+        try {
+            checkManifests()
+            minecraft.update()
+            fabricIntermediaries.update()
+            fabric.update()
+            legacyFabric.update()
+            forge.update()
+            neoForge.update()
+            quilt.update()
+            log.info("Manifests refreshed.")
+        } catch (ex: Exception) {
+            // Never fatal: the seeded manifests are perfectly usable, and this runs after startup where
+            // throwing would take down whatever thread the dispatcher happened to use.
+            log.warn("Could not refresh the version manifests; continuing with the manifests on disk.", ex)
+        }
+    }
+
+    /**
+     * Waits up to [timeoutMillis] for the background manifest refresh to finish, returning whether it did.
+     *
+     * For callers that must not show stale versions — the GUI's version dropdowns are built once and never
+     * repopulated, so a freshly released Minecraft version would otherwise be missing until the next launch.
+     * Cheap in practice: by the time a user can click anything the refresh has long finished, and this
+     * returns immediately. Bounded so an unreachable host delays a dropdown instead of hanging the UI.
+     */
+    fun awaitManifestRefresh(timeoutMillis: Long = 10_000): Boolean = runBlocking {
+        withTimeoutOrNull(timeoutMillis) { manifestRefresh.join() } != null
+    }
+
     init {
-        checkManifests()
+        // Deliberately NOT checkManifests() -- see `manifestRefresh` below. Every manifest is already on
+        // disk, seeded from the jar by `ApiWrapper.setup()`, so the metas below have working data without a
+        // single request. Refreshing here cost ~392 ms of blocking startup behind the splash screen, and
+        // rather more when offline, for data that is superseded seconds later anyway.
         forge = ForgeMeta(
             forgeManifest,
             utilities,
@@ -245,7 +307,10 @@ class VersionMeta(
         forge.update()
         neoForge.update()
         quilt.update()
-    }
+    
+        // Kicked off last, so everything it re-parses already exists.
+        manifestRefresh = refreshScope.launch { refreshManifests() }
+}
 
     /**
      * Check all our manifests, those being Minecraft, Forge, Fabric and Fabric Installer, for whether
@@ -297,14 +362,7 @@ class VersionMeta(
     }
 
     /**
-     * Check a given manifest for updates.
-     *
-     * If it does not exist, it is downloaded and stored.
-     *
-     *
-     * If it exists, it is compared to the online manifest.
-     *
-     * If the online version contains more versions, the local manifests are replaced by the online ones.
+     * Check a given manifest for updates, delegating to [ManifestUpdater] which owns the refresh.
      *
      * @param manifestToCheck The manifest to check.
      * @param urlToManifest   The URL to the manifest.
@@ -315,150 +373,7 @@ class VersionMeta(
         manifestToCheck: File,
         urlToManifest: URL,
         manifestType: Type
-    ) {
-        if (manifestToCheck.isFile) {
-            if (!utilities.webUtilities.isReachable(urlToManifest)) {
-                log.warn(
-                    "Can not connect to $urlToManifest to check for update(s) of $manifestToCheck."
-                )
-                return
-            }
-            try {
-                manifestToCheck.inputStream().use { existing ->
-                    urlToManifest.openStream().use { newManifest ->
-                        var countOldFile = 0
-                        var countNewFile = 0
-                        val oldContent: String = existing.readText()
-                        val newContent: String = newManifest.readText()
-                        when (manifestType) {
-                            Type.MINECRAFT -> {
-                                countOldFile = utilities.jsonUtilities.getJson(oldContent).get(VersionMetaConfig.TAG_VERSIONS).size()
-                                countNewFile = utilities.jsonUtilities.getJson(newContent).get(VersionMetaConfig.TAG_VERSIONS).size()
-                            }
-
-                            Type.FORGE -> {
-                                for (mcVer in utilities.jsonUtilities.getJson(oldContent)) {
-                                    countOldFile += mcVer.size()
-                                }
-                                for (mcVer in utilities.jsonUtilities.getJson(newContent)) {
-                                    countNewFile += mcVer.size()
-                                }
-                            }
-
-                            Type.FABRIC_INTERMEDIARIES -> {
-                                countOldFile = utilities.jsonUtilities.getJson(oldContent).size()
-                                countNewFile = utilities.jsonUtilities.getJson(newContent).size()
-                            }
-
-                            Type.FABRIC, Type.FABRIC_INSTALLER, Type.QUILT, Type.QUILT_INSTALLER, Type.NEO_FORGE -> {
-                                countOldFile = utilities.xmlUtilities.getXml(oldContent)
-                                    .getElementsByTagName(VersionMetaConfig.TAG_VERSION).length
-                                countNewFile = utilities.xmlUtilities.getXml(newContent)
-                                    .getElementsByTagName(VersionMetaConfig.TAG_VERSION).length
-                            }
-
-                            Type.LEGACY_FABRIC -> if (manifestToCheck.name.endsWith(".json")) {
-                                countOldFile = utilities.jsonUtilities.getJson(oldContent).size()
-                                countNewFile = utilities.jsonUtilities.getJson(newContent).size()
-                            } else {
-                                val oldXML: Document = utilities.xmlUtilities.getXml(oldContent)
-                                val newXML: Document = utilities.xmlUtilities.getXml(newContent)
-                                countOldFile = oldXML.getElementsByTagName(VersionMetaConfig.TAG_VERSION).length
-                                countNewFile = newXML.getElementsByTagName(VersionMetaConfig.TAG_VERSION).length
-                                if (countOldFile == countNewFile) {
-                                    if (oldXML.getElementsByTagName(VersionMetaConfig.TAG_VERSION).item(0).childNodes.item(0)
-                                            .nodeValue != newXML.getElementsByTagName(VersionMetaConfig.TAG_VERSION).item(0).childNodes
-                                            .item(0)
-                                            .nodeValue
-                                    ) {
-                                        countNewFile += 1
-                                    }
-                                }
-                            }
-
-                            else -> throw InvalidTypeException(
-                                "Manifest type must be either Type.MINECRAFT, Type.FORGE, Type.FABRIC or Type.FABRIC_INSTALLER. Specified: "
-                                        + manifestType
-                            )
-                        }
-                        log.debug("Nodes/Versions/Size in/of old $manifestToCheck: $countOldFile")
-                        log.debug("Nodes/Versions/Size in/of new $manifestToCheck: $countNewFile")
-                        if (countNewFile > countOldFile) {
-                            log.info("Refreshing $manifestToCheck.")
-                            updateManifest(manifestToCheck, newContent)
-                        } else {
-                            log.info("Manifest $manifestToCheck does not need to be refreshed.")
-                        }
-                    }
-                }
-            } catch (ex: SAXException) {
-                JarUtilities.copyFileFromJar(
-                    "de/griefed/resources/manifests/${manifestToCheck.name}",
-                    manifestToCheck,
-                    true,
-                    VersionMeta::class.java
-                )
-                log.error(
-                    "Unexpected end of file in XML-manifest. Restoring default "
-                            + manifestToCheck.path
-                )
-            } catch (ex: ParserConfigurationException) {
-                log.error("Couldn't refresh manifest $manifestToCheck", ex)
-            } catch (ex: IOException) {
-                log.error("Couldn't refresh manifest $manifestToCheck", ex)
-            } catch (ex: InvalidTypeException) {
-                log.error("Couldn't refresh manifest $manifestToCheck", ex)
-            }
-        } else {
-            if (!utilities.webUtilities.isReachable(urlToManifest)) {
-                log.error("CRITICAL! $manifestToCheck not present and $ urlToManifest unreachable. Exiting...")
-                log.error(
-                    "ServerPackCreator should have provided default manifests. Please report this on GitHub at https://github.com/Griefed/ServerPackCreator/issues/new?assignees=Griefed&labels=bug&template=bug-report.yml&title=%5BBug%5D%3A+"
-                )
-                log.error("Make sure you include this log when reporting an error! Please....")
-            } else {
-                updateManifest(manifestToCheck, urlToManifest)
-            }
-        }
-    }
-
-    /**
-     * Ensures we always have the latest manifest for version validation available.
-     *
-     * @param manifestToRefresh The manifest file to update.
-     * @param content           The content to write to the new manifest.
-     * @author whitebear60
-     * @author Griefed
-     */
-    @Throws(IOException::class)
-    private fun updateManifest(
-        manifestToRefresh: File,
-        content: String
-    ) {
-        manifestToRefresh.create()
-        manifestToRefresh.writeText(content)
-    }
-
-    /**
-     * Ensures we always have the latest manifest for version validation available.
-     *
-     * @param manifestToRefresh The manifest file to update.
-     * @param urlToManifest     The URL to the file which is to be downloaded.
-     * @author whitebear60
-     * @author Griefed
-     */
-    private fun updateManifest(
-        manifestToRefresh: File,
-        urlToManifest: URL
-    ) {
-        try {
-            urlToManifest.openStream().use {
-                updateManifest(manifestToRefresh, it.readText())
-            }
-        } catch (ex: IOException) {
-            log.error("An error occurred refreshing $manifestToRefresh.", ex)
-        }
-    }
+    ) = manifestUpdater.checkManifest(manifestToCheck, urlToManifest, manifestType)
 
     /**
      * Update the Minecraft, Forge and Fabric metas. Usually called when the manifest files have been

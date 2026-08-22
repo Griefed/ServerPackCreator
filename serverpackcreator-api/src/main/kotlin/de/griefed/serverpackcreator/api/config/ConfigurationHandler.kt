@@ -201,6 +201,14 @@ class ConfigurationHandler(
      * @author Griefed
      */
     fun checkConfiguration(packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck(), quietCheck: Boolean = false): ConfigCheck {
+        // The single choke point every validating caller passes through -- CLI, interactive shell, web and
+        // embedders alike -- which is why the wait lives here rather than at four call sites.
+        //
+        // `VersionMeta` refreshes its manifests in the background now instead of during construction, so a
+        // short-lived process can reach this while the refresh is still in flight and reject a Minecraft or
+        // modloader version that upstream published minutes ago. Idempotent and effectively free once the
+        // refresh has landed; bounded, so an unreachable host delays validation rather than hanging it.
+        versionMeta.awaitManifestRefresh()
         sanitizeLinks(packConfig)
         log.info("Checking configuration...")
         if (packConfig.clientMods.isEmpty()) {
@@ -412,11 +420,8 @@ class ConfigurationHandler(
      * specified, but the file was not found.
      * @author Griefed
      */
-    fun checkIconAndProperties(iconOrPropertiesPath: String) = if (iconOrPropertiesPath.isEmpty()) {
-        true
-    } else {
-        File(iconOrPropertiesPath).isFile
-    }
+    fun checkIconAndProperties(iconOrPropertiesPath: String) =
+        iconOrPropertiesPath.isEmpty() || File(iconOrPropertiesPath).isFile
 
     /**
      * If the in the configuration specified modpack dir is an existing directory, checks are made for
@@ -676,6 +681,14 @@ class ConfigurationHandler(
      */
     fun checkManifests(destination: String, packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck()): String? =
         manifestParser.checkManifests(destination, packConfig, configCheck)
+
+    /**
+     * Every launcher-manifest [checkManifests] looks for in [destination], existing or not. Reads
+     * [ModpackManifestParser.manifestCandidates] rather than holding its own copy, so the published
+     * facade and the list actually consulted cannot drift apart.
+     */
+    fun manifestCandidates(destination: String): List<File> =
+        manifestParser.manifestCandidates(destination)
 
     /**
      * Prints all passed fields to the console and serverpackcreator.log. Used to show the user the

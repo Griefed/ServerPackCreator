@@ -5,9 +5,6 @@ plugins {
     id("org.jetbrains.dokka-javadoc")
 }
 
-repositories {
-    mavenCentral()
-}
 
 dokka {
     moduleName = "ServerPackCreator"
@@ -51,8 +48,17 @@ dokka {
     }
 }
 
-tasks.dokkaGeneratePublicationJavadoc {
-    dependsOn(tasks.getByName("compileJava"), tasks.getByName("compileTestJava"))
+// BOTH publications read `build/generated` — `suppressedFiles` above points at it — so both must
+// declare the Java compilations that also write there, or Gradle fails the build with
+// "uses this output of task ':…:compileJava' without declaring an explicit or implicit dependency".
+// Only the Javadoc half was declared until 2026-08-16; the HTML half had the identical need and was
+// missing it. The gap stayed invisible because `build` runs only the Javadoc publication (via
+// `finalizedBy` in -api), so nothing in the normal loop ever put HTML in a graph with the compile
+// tasks. Keep the two in step — fixing one and not the other is exactly how this arose.
+listOf(tasks.dokkaGeneratePublicationJavadoc, tasks.dokkaGeneratePublicationHtml).forEach { publication ->
+    publication.configure {
+        dependsOn(tasks.named("compileJava"), tasks.named("compileTestJava"))
+    }
 }
 
 tasks.register<Jar>("dokkaJavadocJar") {

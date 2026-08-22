@@ -5,17 +5,11 @@ plugins {
     id("serverpackcreator.application-conventions")
 }
 
-repositories {
-    mavenCentral()
-    maven { url = uri("https://repo.spring.io/milestone") }
-    maven { url = uri("https://maven.ej-technologies.com/repository") }
-}
-
-dependencyManagement {
-    imports {
-        mavenBom(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
-    }
-}
+// Boot's BOM arrives as a Gradle `platform()` from `serverpackcreator.spring-conventions`; there is
+// deliberately no `dependencyManagement { imports { mavenBom(...) } }` here and no
+// `ext["<name>.version"]` overrides. See the comment in that convention plugin — the short version is
+// that the BOM must constrain, not force, or it silently reverts this module's half of every version
+// bump in `gradle/libs.versions.toml`.
 
 configurations {
     all {
@@ -33,46 +27,54 @@ dependencies {
     // Clientside-mod verification engine (platforms, metadata/boot signals, list editing). The CLI
     // verbs in this module are thin wrappers over it; Playwright arrives transitively from here.
     api(project(":serverpackcreator-clientside"))
-    api("org.jetbrains.kotlin:kotlin-reflect:2.3.21")
-    api("commons-io:commons-io:2.22.0")
-    api("com.cronutils:cron-utils:9.2.1")
-    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.22.0")
-    compileOnly("com.install4j:install4j-runtime:12.0.4")
+    api(libs.kotlinReflect)
+    api(libs.commonsIo)
+    api(libs.cronUtils)
+    api(libs.jacksonModuleKotlin)
+    compileOnly(libs.install4jRuntime)
 
 
     //CLI
-    api("info.picocli:picocli-shell-jline3:4.7.7")
+    api(libs.picocli)
 
     //GUI
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.10.2")
-    api("com.formdev:flatlaf:3.7.1")
-    api("com.formdev:flatlaf-extras:3.7.1")
-    api("com.formdev:flatlaf-intellij-themes:3.7.1")
-    api("com.formdev:flatlaf-fonts-jetbrains-mono:2.304")
-    api("com.formdev:flatlaf-fonts-inter:4.1")
-    api("com.formdev:flatlaf-fonts-roboto:2.137")
-    api("com.formdev:flatlaf-fonts-roboto-mono:3.000")
-    api("com.miglayout:miglayout-swing:11.4.3")
-    api("com.formdev:svgSalamander:1.1.4")
-    api("net.java.balloontip:balloontip:1.2.4.1")
-    api("tokyo.northside:tipoftheday:0.6.0")
+    api(libs.kotlinxCoroutinesSwing)
+    api(libs.flatlaf)
+    api(libs.flatlafExtras)
+    api(libs.flatlafIntellijThemes)
+    api(libs.flatlafFontsJetbrainsMono)
+    api(libs.flatlafFontsInter)
+    api(libs.flatlafFontsRoboto)
+    api(libs.flatlafFontsRobotoMono)
+    api(libs.miglayoutSwing)
+    api(libs.svgSalamander)
+    api(libs.balloontip)
+    api(libs.tipoftheday)
 
     //WEB
-    api("org.springframework.boot:spring-boot-starter-web:4.0.6")
-    api("org.springframework.boot:spring-boot-starter-log4j2:4.0.6")
-    api("org.springframework.boot:spring-boot-starter-data-mongodb:4.0.6")
-    testRuntimeOnly("com.h2database:h2:2.4.240")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:4.0.6") {
+    api(libs.springBootStarterWeb)
+    api(libs.springBootStarterLog4j2)
+    api(libs.springBootStarterDataMongodb)
+    testImplementation(libs.springBootStarterTest) {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
         exclude(group = "org.mockito", module = "mockito-core")
     }
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.21")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.0")
+    testImplementation(libs.kotlinTestJunit5)
+    testRuntimeOnly(libs.junitPlatformLauncher)
 
-    testImplementation("com.ninja-squad:springmockk:5.0.1")
-    developmentOnly("org.springframework.boot:spring-boot-devtools:4.0.6")
-    //developmentOnly("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
+    testImplementation(libs.springmockk)
+    // springmockk pulls an older mockk transitively (1.14.6 against the catalog's 1.14.11). Declaring
+    // the catalog's version explicitly out-ranks it, so this module tests against the same mockk as
+    // -api instead of quietly running a different one. Without it the two drift on every mockk bump.
+    testImplementation(libs.mockk)
+    developmentOnly(libs.springBootDevtools)
+    // Regenerates serverpackcreator-help/Writerside/api-docs.yaml from the live controllers:
+    //   ./gradlew :serverpackcreator-app:bootRun --args="-web --home <dir>"
+    //   curl localhost:8080/v3/api-docs.yaml > serverpackcreator-help/Writerside/api-docs.yaml
+    // developmentOnly on purpose — swagger-ui has no business in the shipped jar. The 2.2.0 that
+    // used to be commented here targets Spring Boot 3 and cannot resolve against Boot 4.
+    developmentOnly(libs.springdocOpenapiStarterWebmvcUi)
 }
 
 springBoot {
@@ -93,19 +95,18 @@ tasks.processResources {
     dependsOn(":copyLicenseReport")
 }
 
-tasks.sourcesJar {
-    dependsOn(":copyLicenseReport")
-}
-
 tasks.bootJar {
     dependsOn(":serverpackcreator-api:processTestResources")
 }
 
 tasks.build {
     dependsOn(":generateLicenseReport")
-    doLast {
-        tasks.dokkaJavadocJar
-    }
+    // This module bundles the license report and the built SPA, so both have to be finished first.
+    // Declared here, by task PATH, rather than from the root reaching in with
+    // `project("serverpackcreator-app").tasks.build.get()`: a string path is resolved lazily, whereas
+    // reaching into another project's task container forces it to be evaluated, which is what used to
+    // require evaluationDependsOnChildren() in the root build.
+    mustRunAfter(":generateLicenseReport", ":serverpackcreator-web-frontend:build")
     finalizedBy(tasks.dokkaJavadocJar)
 }
 
@@ -113,16 +114,15 @@ tasks.test {
     dependsOn(":serverpackcreator-api:processTestResources")
     useJUnitPlatform()
     systemProperty("java.util.logging.manager","org.jboss.logmanager.LogManager")
+    // Captured as a File so the action closes over that alone. Reading projectDir or calling
+    // Project.mkdir inside a task action holds the project object, which the configuration cache
+    // cannot serialize.
+    val testHome = layout.projectDirectory.dir("tests").asFile
     doFirst {
-        val tests = File(projectDir,"tests").absoluteFile
-        mkdir(tests.absolutePath)
-        val gitkeep = File(tests,".gitkeep").absoluteFile
+        testHome.mkdirs()
+        val gitkeep = File(testHome, ".gitkeep")
         if (!gitkeep.exists()) {
-            File(tests,".gitkeep").writeText("Hi")
+            gitkeep.writeText("Hi")
         }
     }
-}
-
-tasks.signMavenJavaPublication {
-    dependsOn(tasks.dokkaJavadocJar)
 }

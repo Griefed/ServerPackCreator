@@ -174,7 +174,7 @@ object CurseForgePartitions {
     val FIRST = CurseForgePartition(gameVersion = null, categoryId = null, modLoaderType = null, ascending = false)
 
     /** Shorthand for the platform's paging cap, the bound every partition has to fit under. */
-    private val CAP = CurseForgeCandidateSource.MAX_INDEX
+    private const val CAP = CurseForgeCandidateSource.MAX_INDEX
 
     /**
      * The slice to crawl after [current], given that slice's [totalCount], the platform's [versions] (newest

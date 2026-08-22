@@ -1089,6 +1089,187 @@ deadline B9 fixed only in the container engine, the loader-cache marker not reco
 install, the checked-in test properties still carrying machine-specific absolute paths (M1's other half), `.gitignore`
 hiding new `server_files` resources, and an install failure's console being wiped by the next attempt on that tuple.
 
+## 2026-08-21 — CI/CD moved to Forgejo (`claude-forgejo-ci`)
+
+`git.griefed.de` is **Forgejo 16.0.3**, not GitLab — verified against `/api/v1/version`. `.gitlab-ci.yml`
+and its 22 jobs are deleted; CI now lives in `.forgejo/workflows`, and Forgejo is the origin of every
+release.
+
+**The constraint that shaped the whole thing:** `.forgejo/workflows` is *all-or-nothing*. Per a Forgejo
+maintainer on [forgejo#9203](https://codeberg.org/forgejo/forgejo/issues/9203), *"If a project contains a
+`.forgejo` and a `.github` folder, then the `.github` folder is ignored."* Forgejo had been running the
+`.github` workflows as a fallback — that is where releases `9.0.0-alpha.2` … `.6` came from — so the
+commit adding `.forgejo/workflows` is a **cutover**: everything Forgejo must do had to land in the same
+change, or releases would simply stop. That is why this is one branch and not five.
+
+**Nine workflows.** `test.yml` and `docker-test.yml` (the GitLab `Build Test` / `Docker Test` role),
+`qodana.yml`, `release-generate.yml` (semantic-release), `release-build.yml` (assets, the Forgejo release,
+Maven, Docker, the outward mirror and the VirusTotal scan), `devbuild.yml`, `docs.yml`, `update-readme.yml`.
+
+**Decisions worth keeping:**
+- **`uses:` references are the same `actions/...@<github-sha>` lines the `.github` workflows used.** The
+  Forgejo docs recommend `https://data.forgejo.org/...` instead, but these exact references are *proven*
+  to resolve on this instance — they built the existing alpha releases. Swapping them for a mirror whose
+  commit SHAs may differ would trade something known to work for something merely recommended. install4j
+  is the one deliberate exception and is fetched from GitHub by full URL, which needs the instance to
+  permit that.
+- **semantic-release keeps doing version + changelog + tag, and nothing else.** `@semantic-release/gitlab`
+  and `gitlabUrl` are gone and `publish` is `false`; the release is created by the tag-triggered workflow,
+  which is where the assets are. Same two-phase shape GitLab had, so the `releaseRules` that produce your
+  version numbers are untouched. **The tag must be pushed with a real user token** — Forgejo, like GitHub,
+  does not trigger workflows from pushes made with the automatic per-run token, so an automatic-token push
+  would tag a release that never gets built.
+- **`GitGriefed` Maven repository retargeted, name kept.** It pointed at
+  `https://git.griefed.de/api/v4/projects/63/packages/maven` with a `Private-Token` header — a GitLab path
+  and a GitLab auth scheme, neither of which exists on Forgejo. Now `/api/packages/Griefed/maven` with
+  HTTP Basic. The repository *name* is unchanged so the generated task name CI calls,
+  `publishMavenJavaPublicationToGitGriefedRepository`, still exists. GitHub Packages, gitlab.com and OSSRH
+  are untouched: the move is off the self-hosted GitLab, not off gitlab.com.
+- **Releases are mirrored by explicit API calls, not by a setting.** Forgejo push-mirrors replicate refs
+  but not releases. The mirror job runs last and only on success, so no downstream forge advertises a
+  release Forgejo does not have.
+- **VirusTotal became a job in `release-build.yml`** rather than a release-triggered workflow: the assets
+  are already there as an artifact, and `crazy-max/ghaction-virustotal` updates a *GitHub* release body,
+  which is the wrong forge now. Submitted through VirusTotal's API, permalinks appended to the Forgejo
+  release notes.
+- **`docker-test.yml` does not push, and that is a deliberate change.** The GitLab job built with `--push`
+  and tagged every commit's image on ghcr.io *and* Docker Hub, so every branch push published a public
+  image nobody consumed. Restoring it is a two-line change, noted in the file.
+- **Two regressions avoided by reading the code being replaced rather than skimming it:** `update-readme`
+  sent its token in an `Authorization` header specifically so it could not leak into logs — the port keeps
+  that instead of putting the token in the push URL; and Qodana's JBR `chmod` dance existed because
+  GitLab's cache drops the executable bit, which `actions/cache` does not, so it survives as documented
+  insurance rather than being deleted or blindly copied.
+
+GitHub keeps a **smoke test** and the four `clientside-*` workflows (three `issues:`-triggered, one
+`workflow_call:` helper they invoke). `github_release.yml`,
+`github-prerelease.yml`, `devbuild.yml`, `update_readme.yml` and `virustotal.yml` are deleted from there.
+`devbuild` additionally clears the stale GitHub `continuous` *release* while leaving its *tag*, so the
+mirror recreates it from Forgejo.
+
+**B26–B29 are dropped** rather than answered: they described GitLab dind and a GitLab-Pages-hosted Qodana
+report. The infrastructure they were about no longer exists. The backlog is now empty.
+
+
+## 2026-08-21 — the deferred performance items, B30/B31/B32 (`claude-perf-deferred`)
+
+The last three backlog items from the startup/network work, cleared.
+
+**B31 was the real win, and its entry was incomplete.** `VersionMeta` blocked on checking twelve manifests
+before its constructor returned, although `ApiWrapper.setup()` had already seeded every one from the jar.
+Same probe, same machine, constructing over the same home: **~399 ms median before (399/390/835), ~47 ms
+after (56/36/47)** — and far more offline, where the old path waited out twelve connect timeouts before a
+window appeared.
+
+What the entry missed is why this could not be a straight move: the GUI's version dropdowns are
+`DefaultComboBoxModel`s built once in `ConfigEditor`, and **nothing anywhere repopulates them**. A naive
+background refresh would have hidden a freshly released Minecraft version until the next launch — the exact
+workflow the application exists for. Two awaits close it: an `init` block in `ConfigEditor` placed *above*
+the version-list properties (Kotlin runs initialisers in declaration order, so that is the only point that
+works), and `ConfigurationHandler.checkConfiguration`, the single choke point every CLI, interactive, web
+and embedder path passes through — one site instead of four, so a short-lived `--headless` run cannot reject
+a version published minutes ago.
+
+**B30** sends `If-None-Match` beside `If-Modified-Since`. `files.minecraftforge.net` ignores the timestamp
+but honours the ETag, and it was the largest manifest still transferred in full every startup (121,492 B of
+213,885 B). The ETag lives in a `<manifest>.etag` sidecar **with the manifest's byte length**, and is
+offered only while that still matches: an ETag describes one exact body, so a manifest replaced by other
+means — a re-seed from the jar is the real case — would otherwise earn a `304` for content we do not hold
+and suppress a genuine update permanently. It is also recorded only when the manifest is actually adopted,
+since the updater declines an upstream copy with fewer versions. Both guards were mutation-verified;
+before the implementation existed three of the four passed vacuously, which is the only reason to trust
+them now. A build-side hazard came with it: `updateManifests` copied `tests/manifests` unfiltered into the
+shipped resources, so sidecars would have been packaged and seeded into every user's home. Excluded.
+Scoped honestly, B30 buys ~0 ms — the twelve checks run concurrently and Forge is not the slowest — only
+bandwidth on a metered link.
+
+**B32** stopped `hasteBinPreChecks` materialising up to 20 MB of `char` to count characters; it now streams
+through an 8 KB buffer and stops at the limit. Not replaced by a byte check, which is the obvious shortcut
+and wrong: the method applies two independent limits and UTF-8 spends up to four bytes per character, so
+200,000 `€` is 600,000 bytes but only 200,000 characters and must still be accepted. The characterization
+tests caught a second mistake too — `File.length()` on a directory returns a small number, so the first
+version's early return made the check *accept* a directory where it had always rejected one.
+
+
+## 2026-08-21 — root `CLAUDE.md` back under the large-memory floor (`claude-context-trim`)
+
+Closes B35. Claude Code warns when one loaded memory file exceeds ~5 % of the context window, floor
+~40,000 characters; after four branches merged, root `CLAUDE.md` was **56,078**. Now **33,208** — a 41 %
+reduction, with ~17 % headroom under the floor.
+
+**The API behaviour-change table moved to `claude-docs/API-BEHAVIOUR-CHANGES.md`** (20,218 chars, the
+single largest block at ~5,200 tokens per session). The *policy* stayed in root; only its evidence moved.
+Verified as a move rather than a rewrite: all **24** rows are byte-identical and in the original order.
+It is consulted when writing release notes or answering "will this break an embedder?" — not context a
+session needs up front.
+
+**The refactor-state table's per-test enumerations are gone** (api 1,392 → 307 chars, app 1,456 → 386,
+grinder 1,168 → 484). They listed test class names, which `ls src/test` answers, and they contradicted
+this file's own rule to cite what a guard asserts rather than how many tests exist. Each row now carries
+the durable fact instead — the *guard style* to follow when adding one, which is the part a newcomer
+cannot derive.
+
+Nothing was dropped without checking where it already lived. Every backticked symbol in those rows was
+tested against the owning module's `CLAUDE.md`: the survivors were test-class names (derivable) or facts
+documented better elsewhere — `IncorrectResultSizeDataAccessException` in `ModPackRepository`'s KDoc, and
+the CurseForge crawl's two design-killers as LANDMINE #1 and #2 in the grinder's `source/CLAUDE.md`, in
+more detail than root's summary. Root now points at those instead of paraphrasing them.
+
+**The build-layout section deliberately stayed**, against the original plan. Moving it to a paths-scoped
+`.claude/rules/build-layout.md` would save ~2,900 tokens, but scoped loading was never verified end to
+end here, and the landmines it holds are the expensive kind — the Boot BOM `platform()` trap cost 16 app
+tests once, and the Kotlin/coroutines skew failed silently. The target was met without that gamble, so it
+was not taken. If someone confirms `paths` scoping works, that block is the next ~2,900 tokens.
+
+Also refreshed while in there: the status date, and the frontend suite count (31 → 32) the merge had left
+behind.
+
+
+## 2026-08-21 — the database URI never reached MongoDB (`claude-mongo-boot4-property`)
+
+**Spring Boot 4.0.0 retired `spring.data.mongodb.uri`, the key ServerPackCreator writes.** Metadata
+`deprecation.level = "error"`, replacement `spring.mongodb.uri`; the connection properties moved from
+`DataMongoProperties` (`spring.data.mongodb`) to `MongoProperties` (`spring.mongodb`). A retired key is not
+bound and does not warn, so Boot used its own default `mongodb://localhost/test` — ignoring every
+configured host, credential and database, and every `SPC_DATABASE_*` container variable, on **shipped**
+versions (`main` on Boot 4.0.3, develop/alpha on 4.1.0).
+
+Found while building a real-MongoDB harness to verify the performance branch's DBRef→embedded migration —
+the migration reported `0 inspected` against a correctly-seeded database, which made no sense until the
+client's own log line showed `hosts=[localhost:27017]`, `credential=null`.
+
+This is the answer to the question `DOCKER-MONGO-INVESTIGATION.md` left open, and it retires that
+document's middle triage row: a `localhost:27017` connection error did not mean the reporter's
+`overrides.properties` was missing. Their file was fine; the key name was wrong for everyone.
+
+Two guards, then the fix. The behavioural one registers the URI under `WebserviceConfig.DATABASE_URI_KEY`
+via `@DynamicPropertySource` — keyed by the production constant, never a repeated literal — and asserts
+host, credentials and database on Boot's resolved `MongoConnectionDetails`, no database required. It uses
+`127.0.0.1` deliberately, because `localhost` is Boot's fallback and only a different host proves binding.
+The second reads Boot's own `spring-configuration-metadata.json` off the classpath and fails on any key we
+write that Boot has retired; that one generalises past this rename.
+
+Reading stays backward-compatible: `databaseUri` falls back to `LEGACY_DATABASE_URI_KEY` and re-writes the
+value under the live key, so no existing properties file needs editing. **No `MigrationManager` step** —
+migrations run release→release only, so they would miss every dev/alpha/beta user and would need a release
+number that does not exist yet; the getter covers every build type on first read. The legacy line is left
+in place so a downgrade still finds its URI.
+
+Grouped in, because the fallback requires it: the scheme check was `!startsWith("mongodb")`, which accepts
+the degenerate `mongodb:` a partly-configured container produced. It now enumerates `mongodb://` and
+`mongodb+srv://`, with the SRV form pinned since a prefix check had been accepting it by luck.
+
+Verified end-to-end, not only by unit test: a document seeded into a non-default database `spc_e2e`, with
+SPC configured through the **legacy** key alone, came back from `GET /api/v2/runconfigs/all`. Before the
+fix that query hit `localhost/test` and returned `[]`. `docker/tests/init-spc-config-test.sh` re-run in the
+production base image, 10/10. `./gradlew build` green — api 312 (1 skip), app 110, clientside 88, grinder
+233 (19 skip), plugin-example 3.
+
+**Note for whoever merges `claude-performance-improvements`:** its `BACKLOG.md` carries B33 and B34, which
+described this defect's symptoms from the outside. Both are resolved here and should be dropped in the
+merge rather than carried forward as open items.
+
+
 ## 2026-07-31 — audit/backlog cleanup, Phases 1–2 (`claude-audit-backlog-cleanup`)
 
 **Phase 1 — audit findings.** H-B closed by tabling the `variables.txt` contract change (generation reads an
@@ -1396,3 +1577,448 @@ reached mods the scanner had called server-side and the user had excluded by nam
 exists for. Clause dropped; pinned in both the direct and the **transitive** case (`servermod → midlib → deeplib`,
 middle and leaf both clientside), because a single-pass rescue keeps the leaf excluded and still looks like it
 worked — which is what the surrounding `while` is for.
+
+---
+
+## Modscanning generification (`claude-modscanning-generification`, 2026-08-15)
+
+Triggered by a Qodana report review (job 37558, rev "RELEASE: 9.0.0-alpha.5": 58 problems, 13 High, no security or
+correctness inspections — 7 self-inflicted `KotlinDeprecation` on the 6.0.0 `scriptTemplates` facades, 4
+`KDocUnresolvedReference` in `ClientsideModels.kt`, one `RedundantInnerClassModifier`, and one
+`UnusedSymbol` that turned out to be in `modscanning`) plus the question of what in the scanners could be
+generified.
+
+**The bug the reading found, fixed before any restructuring.** `ModListCompiler` picked Forge's scanner with
+`mcVersions[1].toInt() > 12`, and `-clientside`'s `MetadataScanner` with the same test. Minecraft has two
+versioning schemes, so `26.2`'s minor of `2` read as the 1.2 era and sent every modern Forge pack to
+`ForgeAnnotationScanner` — the 1.12-and-older one. No modern jar carries `fml_cache_annotation.json`, so every
+jar threw, every jar fell back to the never-drop-a-jar `SERVER` default, and **auto-exclusion silently did
+nothing on Forge 26.x** while logging one ERROR per mod. It fails safe (everything included), which is why it
+had gone unnoticed; `autoDiscoveryReachesScannerBranchPerLoader` only ever covered 1.12.2 and 1.16.5.
+
+This is the versioning-scheme landmine's **third** instance and the first outside the shell templates — and
+`serverpackcreator-api/CLAUDE.md` had asserted *"the Kotlin side was surveyed and is clean by construction"*.
+It was not: the survey covered the boot/selection code the grinder work had just touched, not the generation
+path. That claim is now corrected in place rather than deleted, because the wrong-but-confident version is the
+part worth remembering.
+
+Pinned red first in its own commit (`f8cb89bff`), both tests looping 1.20.1 and 26.2 against a real jar with a
+modern `META-INF/mods.toml` and asserting the *outcome* (excluded / kept, CLIENT / SERVER_OR_BOTH) rather than
+which scanner was chosen. Observed failing for the right reason — the 1.20.1 iteration passed in both, so the
+fixtures were valid and only the era selection was wrong. Fixed in `4dbf653cc` by comparing every component
+through `SemanticVersionComparator` against 1.13, the version Forge actually switched at, which is the call the
+NeoForge branch three lines below had been making correctly all along.
+
+**Then the generification.** Four extractions, behaviour-preserving, no existing assertion touched:
+
+1. **`ModJarScanner`** (public) replaces the `internal Scanner<T, U>`, whose two type parameters had exactly
+   one instantiation across all five implementations. The real problem was `internal`: `-clientside` and
+   `-grinder` could not see it, which is *why* `MetadataScanner` hand-wrote dispatch over concrete types. A
+   plugin can now implement a scanner for the first time.
+2. **`DescriptorScanner`** owns the walk-the-jars loop and the one-`ScannedMod`-per-input-jar guarantee all
+   five repeated. `scan` is `final`; subclasses implement `read(File)` and may throw. That contract is the one
+   thing no scanner may get wrong — a dropped entry is a mod missing from the finished pack.
+3. **`FabricFamilyScanner`** absorbs what Fabric and Quilt genuinely share (id + environment reading, differing
+   only in field *paths*, including the subtle "no environment entry means SERVER" default). Dependencies stay
+   abstract: Fabric declares an object keyed by mod id, Quilt an array of either objects or bare strings, so
+   the block's *shape* differs, not its path.
+4. **`ModScanner.scannerFor(modloader, minecraftVersion)`** is now the single dispatch for both callers, and
+   **`QuiltPackScanner`** holds the two-descriptor merge that only `ModListCompiler` implemented. The
+   clientside `CLAUDE.md`'s *"kept in sync deliberately; it is not shared code"* is retired — that instruction
+   is exactly what let one bug live in two files.
+
+**Quilt merge equivalence**, since the two callers differed: `ModListCompiler` kept the Quilt entry unless
+Quilt said SERVER and Fabric said CLIENT; `MetadataScanner` unioned the two clientside sets. Both yield CLIENT
+iff either scanner did, so the composite reproduces `ModListCompiler`'s rule exactly and `MetadataScanner`'s
+answer is unchanged. What the union had lost — *which* `ScannedMod`, and so which id and dependency list,
+survives — is preserved, and it matters for the downstream dependency-rescue.
+
+**`JsonBasedScanner` was removed, not deprecated — Griefed's call, overriding the adopted policy.** The first
+cut kept it as a standalone `@Deprecated(ReplaceWith("JsonDescriptorScanner"))` facade, because it is published
+and gaining the abstract `read` would break any plugin subclass. Griefed overrode that the same day: scanners
+are **not** a pf4j extension point, so a plugin could subclass the helper but never register the result — the
+facade was compatibility cost with no reachable benefit. It is deleted, `getJarJson` lives on
+`JsonDescriptorScanner`, and the break is recorded in the root `CLAUDE.md` compatibility table rather than
+papered over. Worth remembering as the shape of a legitimate override: the policy protects *reachable* plugin
+surface, and this was not.
+
+Swept up along the way: the Qodana `UnusedSymbol` (`JsonBasedScanner`'s never-read `log`), the same in
+`ForgeTomlScanner` once its catch moved to the base, and a dead `NullPointerException` catch in `FabricScanner`
+around a `ModDependency` construction that cannot throw. Two logging changes are stated rather than hidden —
+`ForgeAnnotationScanner`'s per-jar failure loses its stack trace in favour of the message form the other four
+used, and `ModListCompiler`'s two NeoForge "Scanning using X scanner." debug lines go with the branch that
+emitted them.
+
+Code lines with comments and blanks stripped: `ModListCompiler` 169 → 131, `MetadataScanner` 43 → 21, the
+`modscanning` package 523 → 527 — i.e. the duplication became a shared, documented abstraction at roughly zero
+net cost, and the dispatch now exists once. `ModScannerDispatchTest` (6 tests, asserted on **identity**) pins
+the selection itself, including that an unparseable version falls back to the modern scanner instead of
+throwing — `"26"` used to raise `IndexOutOfBoundsException` out of the bare-component parsing.
+
+Suites: api 302 (1 skip), clientside 88, app 80, grinder 233 — all green.
+
+### Qodana moderates (same branch, 2026-08-15)
+
+45 Moderate findings from the same report, cleared in three commits. Of them **41 applied, 4
+deliberately not** — an inspection is a suggestion, not a verdict:
+
+- **UsePropertyAccessSyntax** (LarsonScanner) does not compile. `Graphics2D.getRenderingHints()`
+  returns `RenderingHints` while `setRenderingHints` takes a `Map`, so Kotlin exposes the property
+  read-only; `g2d.renderingHints = …` fails with *"'val' cannot be reassigned"*. Tried, reverted,
+  and the call now carries a comment so nobody repeats it.
+- **DestructuringDeclaration** ×3 (`ClientsideReportRenderer` ×2, `Grinder`) are all
+  `for (verdict in report.perLoader)` over `LoaderVerdict`, a data class with eight-plus fields.
+  Positional destructuring costs every speaking name the loop bodies use, and `componentN` is
+  positional — a reordered property would silently *rebind* every variable rather than fail to
+  compile. Exactly the silent-failure class this codebase guards against.
+
+Two **RedundantIf** findings were applied as `when`, not as the `||` Qodana implies:
+`BooleanUtilities.convert`'s recognised-false branch and its fallback both return false, but only
+the fallback warns — a plain `||` would have fired *"couldn't parse boolean"* on every valid
+`"false"`/`"0"`/`"no"`. And `JsonUtilities.getNestedBoolean` keeps its three-way shape with the
+throw; `toBooleanStrictOrNull()` is **not** a drop-in there, it is case-sensitive and that method
+accepts `"True"`/`"FALSE"`. Both now say so in a comment.
+
+**Two untested things had to be pinned before they could be touched**, both in the version-parsing
+silent-failure category:
+
+1. `VersionChecker` had **zero** tests and Qodana wanted three of its boolean chains collapsed. A
+   canned subclass over `allVersions()` pins the whole alpha/beta path offline. Writing it surfaced
+   a genuine defect — channel-blind pre-release comparison — pinned as-is at first, then **fixed on
+   request later the same day** (see below).
+2. `MigrationManager`'s lambda-suffix regex was written out **twice** in two escaping-heavy copies
+   with no coverage. Hoisted to one documented `LAMBDA_SUFFIX` constant, converted, and pinned — and
+   the pin's **teeth were checked** (broken to `"[0-9]*lambda[0-9]*"` it fails with
+   `expected: <SixDotZeroDotZero> but was: <SixDotZeroDotZero$$1>`, green again on restore).
+
+The three Spring `@Scheduled(cron = …)` placeholders have no test that loads the scheduling context,
+so they were verified by **measurement** instead: `javap` on the compiled classes shows the
+constant-pool entry unchanged — `#106 = Utf8 ${de.griefed.serverpackcreator.spring.schedules.database.cleanup}`.
+
+Swept up in the four loops the `indices` fix already touched: each called its repository's finder
+**twice** per element (once for `isPresent`, once for `get()`). Now one lookup reused through
+`orElseGet`, halving the queries on every run-configuration save and every event carrying errors.
+
+Suites after: api 302 (1 skip), clientside 88, app 88, grinder 233 (19 skip), plugin-example 3 —
+**714 total**, full `./gradlew build` green.
+
+### VersionChecker pre-release ordering (same branch, 2026-08-15)
+
+The quirk the characterization tests had recorded, fixed on request — plus a second defect the first
+one was hiding. Both pinned **red in their own commit** before the fix.
+
+**1. Channel-blind comparison.** `isPreReleaseNewer` compared only the number after the dot, so a
+beta did not supersede an alpha of the same version: `alpha.5` vs `beta.3` reduced to `3 > 5`. What
+an alpha user was offered therefore depended on a numeric accident — `alpha.2` got `beta.3`,
+`alpha.5` got nothing at all with both published. Now channel first (`alpha < beta < release`) with
+the number as the tie-break.
+
+**2. Latest-of-channel ignored the version.** `latestBeta`/`latestAlpha` kept a candidate only if it
+was *both* semantically newer-or-equal **and** higher-numbered, so a version restarting its count —
+`3.2.0-beta.1` after `3.1.0-beta.3` — lost to the older one. Both scans now use `isVersionNewer`:
+semantic version first, pre-release ordering only within one version.
+
+**The second pin took three attempts to make honest, and that is the lesson worth keeping.** The
+first fixture passed against the broken code because it was newest-first, so `latestBeta`'s wrong
+answer never mattered. The second passed too: `isUpdateAvailable` **falls through to
+`latestVersion()`**, which masks a wrong `latestBeta` whenever the newest release is a newer *base*
+version. It only reaches a user when the beta branch itself fires and returns `latestBeta()`
+directly — needing an oldest-first list *and* a current version old enough to trigger that branch
+(`3.1.0-beta.1`). A pin that had been committed at either earlier stage would have looked like a
+guard while asserting nothing about the defect.
+
+Two consequences worth remembering:
+
+- The test fake's `latestVersion()` now **computes** the newest instead of taking the list head. The
+  real `allVersions()` comes from a repository API whose ordering nothing guarantees, and a fixture
+  that is silently newest-first cannot catch code that depends on that ordering.
+- `isNewAlphaAvailable`'s explicit *"a beta is never offered an alpha of the same version"* guard is
+  **gone**, subsumed by the channel ordering — verified by removing it and watching
+  `aBetaIsNotOfferedAnAlphaOfTheSameVersion` stay green, which makes the removal provable rather than
+  argued. Weaken the ordering and that rule vanishes with it; that one test is what will say so.
+
+`preReleaseNumber` also stopped throwing on a version with no pre-release suffix. The old
+split-and-index raised `IndexOutOfBoundsException`, which `checkForUpdate` does **not** catch — it
+catches `NumberFormatException` only.
+
+app 89, full build green.
+
+### Scan-failure log levels (`claude-scan-log-levels`, 2026-08-15)
+
+Follow-up to `6026f3640`, which restored the exception + stack trace on the shared `DescriptorScanner`
+catch. That was right for real failures and wrong for the majority of what reached it: **159** ERROR
+lines with stack traces in a single api suite run, most describing nothing an operator or mod-author
+could act on. Two causes, both fixed at the source rather than muted.
+
+**1. "No dependencies specified." was never an error.** `ForgeTomlScanner.getMapOfDependencyLists`
+raised `ScanningException` when a `mods.toml` carried no `[[dependencies]]` block — an ordinary
+descriptor. The raise aborted `read()` mid-way, so the mod fell back to the unreadable-jar defaults and
+its **already-parsed modId was replaced by the filename** (`expected: <lonelymod> but was:
+<lonelymod-1.0.0>`, pinned red first). Traced before claiming a defect: the *verdict* is unaffected, since
+a mod declaring no dependencies has no clientside signal and comes out SERVER down either path, and the
+lost id is joined on only by the dependency rescue — which looks up *disabled* mods, and a mod on this
+path is never disabled. So: real data loss, no reachable consequence. Now returns an empty map;
+`ScanningException` had no other thrower and is deleted.
+
+**2. A jar with no descriptor is not this scanner's business.** Every scanner is handed the whole
+mods-directory, and a Quilt pack is deliberately scanned by *both* the Quilt and Fabric scanner, so one
+of the two finds nothing in every single-format jar. The absence used to surface as an NPE from
+`JarFile.getInputStream(null)` — indistinguishable from a genuine failure. It is now explicit
+(`MissingDescriptorException`, extending `IOException` so the readers' `@Throws` contract is unchanged)
+and logged at DEBUG.
+
+Measured over a full `:serverpackcreator-api:test` run:
+
+| | lines | breakdown |
+|---|---|---|
+| before | 159 | 80 `NullPointerException`, 37 `ZipException`, 28 `ScanningException` |
+| after | **51** | 37 `ZipException` (corrupt archive), 14 `ParsingException` (malformed TOML) |
+
+Both survivors are real defects in a jar and stay loud, with the stack trace. `DescriptorScanner.read`
+was promoted protected → public in the process: *which* exception it throws is the meaningful part and
+is only observable there, since `scan` flattens both outcomes to a default entry by design.
+
+## 2026-08-17 — network + startup performance (`claude-perf-network-startup`), api 309 → 326
+
+Opened by a read-only performance investigation of `-api` and `-app`. That survey produced fifteen
+findings; this branch takes the first two phases of the resulting plan (timeouts, then startup), and
+four of the original claims were **corrected on re-verification** before any code was written —
+recorded here because the wrong versions were stated out loud first:
+
+- `serverDownloadable` does **not** gate generation. Its only production caller is
+  `ConfigEditor.kt:1198`, the GUI check timer — so the risk of touching it is far lower than claimed,
+  but it also means an HTTP request per keystroke-pause exists purely to drive a warning label.
+- `exclusionFilter` defaults to `START` (`GenerationConfig.kt:815`), so the per-comparison
+  `entry.toRegex()` hits only users who chose `REGEX`/`EITHER`. The real hot-loop cost on the default
+  path is the *filter read itself* — `matchesFilter` reads `apiProperties.exclusionFilter` once per
+  (mod × list-entry) pair, and that getter does two `Properties.getProperty` calls, i.e. two
+  **synchronized** `Hashtable` lookups, ~330 k of them for a 300-mod pack.
+- Zip inspection is **not** on the GUI timer path — `checkModpackDir` only does a `listFiles`. It is
+  once per generation, not once per keystroke.
+- The `ModListCompiler` dependency-rescue loop, called a hotspot, is ~10–20 ms at realistic pack
+  sizes. A real smell, a negligible user win; demoted to opportunistic.
+
+**The finding that reframed the work:** nothing in the codebase set an HTTP connect- or read-timeout,
+so twelve calls on the *blocking* startup path could wait forever. Not a slow start — a hang at
+splash-screen 20 % with no recovery but killing the process.
+
+Phase 0, timeouts ("pin that HTTP calls give up instead of hanging forever" red, "bound every HTTP call with configurable timeouts" fix). Guards written against a loopback `ServerSocket`
+that accepts and never answers; both failed past 15 s, blocking in
+`sun.net.www.http.HttpClient.parseHTTPHeader`. Fixed with a `NetworkConfig` settings group (5 s
+connect / 15 s read / 60 s download-read, all tunable, `0` kept as the documented escape hatch to the
+old behaviour) and one sanctioned opener, `WebUtilities.openTimedConnection` / `openTimedStream`, with
+every call site routed through it. Two lessons, both now landmines in the module `CLAUDE.md`:
+the opener must return `URLConnection` — narrowing it to `HttpURLConnection` turned every `file:`
+download into a `ClassCastException`, which is not an `IOException` and so escaped `downloadFile`'s
+error handling entirely; and `mockk(relaxed = true)` answers `0` for an `Int`, which *is* the JDK's
+"wait forever", so the fixture silently reproduced the defect and both guards still failed against the
+fixed code until the values were explicitly stubbed.
+
+Phase 1, startup ("extract manifest refreshing into ManifestUpdater" extract, "pin what a manifest check costs" red, "halve startup requests and skip unchanged manifests" fix). `ManifestUpdater` extracted from
+`VersionMeta` as a strict verbatim move — including the ugly `var countOldFile/countNewFile`
+accumulators and the LegacyFabric equal-count nudge — purely to create a seam, since `VersionMeta`
+resolves its twelve URLs from `VersionMetaConfig` constants inside its constructor and nothing about
+request counts was reachable from a test. Then both `isReachable` pre-checks dropped and
+`If-Modified-Since` added.
+
+Measured, and the measurement is the point — pinned by *request count* against a loopback
+`com.sun.net.httpserver.HttpServer`, never by wall-clock:
+
+| | Requests | Bytes | Batch wall-clock (median of 3) |
+|---|---|---|---|
+| before | 24 | 489,038 | ~601 ms |
+| after | 12 | 213,885 | ~392 ms |
+
+Only 4 of 12 hosts honour `If-Modified-Since` (Mojang 206,986 B, fabric-intermediaries 56,270 B,
+fabric-loader, fabric-installer). Deliberately no per-host special-casing: a host that ignores it
+answers `200` and the version-count comparison gates the replacement exactly as before.
+
+One behaviour preserved on purpose and pinned: an unreachable host still logs one **WARN** per
+manifest. Dropping the pre-check moved that case onto the `IOException` path, which would have printed
+twelve ERRORs with stack traces on every networkless launch — which is exactly how a genuine manifest
+failure gets buried.
+
+Two follow-ups deferred with numbers rather than opinions (**B30**, **B31**). B30, `If-None-Match` for
+the Forge manifest, was measured and **rejected for now**: it is another 121,492 B, 57 % of what still
+transfers, but ~0 ms of startup, because the twelve checks run concurrently and the critical path is
+LegacyFabric at ~330 ms for **498 bytes** — pure latency, while Forge finishes in ~234 ms, below the
+gate. It only matters below roughly 4 Mbit/s. B31 is the larger prize the same measurement exposed:
+`ApiWrapper.setup()` already seeds every manifest from the jar, so the refresh need not block startup
+at all (~392 ms → ~0), but that weakens `VersionMeta`'s construction contract and needs the grinder and
+the web version-schedule checked against it first.
+
+Doc note: the `app` row in the root `CLAUDE.md` refactor-state table said 102 tests; the suite actually
+runs **108**. Pre-existing drift, not caused by this branch — corrected to the measured number without
+attempting to reconstruct which six were added when.
+
+## 2026-08-17 — GUI typing-path performance (`claude-perf-gui`), app 108 → 118
+
+Phase 2 of the performance plan. The config-check timer is a 500 ms debounce restarted by a document
+change in *any* field, running its whole validation pass for *every* open tab — so everything it does
+is paid each time a user pauses while typing, multiplied by their open configs. It was doing two
+things per tick from inputs that had not changed.
+
+Sequenced as refactor → red → fix, three times over:
+
+1. "move the check-timer's server probe and pack-name read behind the view model" **refactor(app)** — `ConfigEditorViewModel` gains `isServerDownloadable` and `packName`
+   as plain delegation, and the timer/editor call those instead of reaching into `ApiWrapper`. The
+   view-model now takes `ConfigurationHandler` and `ServerPackHandler` beside `VersionMeta`; all three
+   are `-api` types, so it stays unit-testable without a display. Fell out of the move: the timer no
+   longer builds a `PackConfig` per tick (it only read `.name` off a throwaway one), and
+   `ConfigCheckTimer`'s now-unused `apiWrapper` parameter went away.
+2. "make the launcher-manifest candidates askable" **refactor(api)** — `ModpackManifestParser.manifestCandidates` exposes the six launcher
+   manifests `checkManifests` consults, with a `ConfigurationHandler` facade, so the app can ask
+   whether they changed instead of hardcoding the paths. The alternative was a second source of truth
+   that drifts — the failure this repo already documents for `SupportedModloaders`. Pinned by
+   `ManifestCandidatesTest`, including that absent files are still reported (a memo must notice a
+   manifest about to be created).
+3. "pin how often the check-timer consults the network and the disk" **test(app)** red / "stop the check-timer re-probing the network and re-parsing the manifest" **fix(app)** — memoize both. The installer probe is cached
+   per version-triple, successes only: a published installer does not vanish, but a cached `false`
+   would leave the editor stuck on "server unavailable" until restart. The manifest read is keyed on a
+   six-`stat` fingerprint of the candidates.
+4. "pin that the autocomplete list is parsed once, not per keystroke" **test(app)** red / "parse the autocomplete list once, and stop reinstalling the LAF per keystroke" **fix(app)** — `SuggestionProvider` parses its ~550-entry
+   autocomplete list once instead of per keystroke, drops the per-keystroke `updateUI()`, and hoists
+   its `\W` regex.
+
+Measured:
+
+| | before | after |
+|---|---|---|
+| installer probe per debounce tick, per tab | 1 HTTP request (~234 ms) | 1 per distinct version-triple |
+| manifest read per tick, per tab | 4.70 ms parse of 2,715,835 bytes | 0.021 ms, six `stat`s (221x) |
+| autocomplete parse per keystroke | split + 550 sorted inserts | once per property change |
+
+Three things worth keeping:
+
+- **`allSuggestions()` must keep returning a fresh set.** Every caller mutates it and persists the
+  result, so the *parse* is cached and copied on the way out. Caching the instance would have
+  corrupted the source and accumulated across calls — caught by reading the callers before writing the
+  cache, not after.
+- **A `tailSet(prefix)` prefix-walk is a trap, not an optimisation** — case-insensitive matching over a
+  case-sensitive ordering means matches are not contiguous (`tailSet("op")` skips `OptiFine`).
+  Recorded in a comment at the site.
+- **One guard was wrong on the first attempt and is worth remembering as a pattern.**
+  `anUnchangedSuggestionListIsParsedOnce` first verified the *property-read* count — a claim the design
+  deliberately does not make, so it stayed red against correct code. Rewritten to assert reuse by
+  identity. Because the corrected form had then only ever run green, the cache was temporarily defeated
+  to check it: it fails with two distinct `TreeSet` instances whose **contents are identical**, which is
+  exactly why identity is the right assertion and a value comparison would have guarded nothing. Same
+  lesson as the `parallelMap` guards in `-api`: being red once is necessary, not sufficient — and a
+  guard corrected after the fix must be re-broken deliberately.
+
+GUI-verified, and the method is reusable: `osascript` has no Accessibility permission on this machine,
+so no synthetic clicks or keystrokes are possible. A throwaway JUnit harness drove Swing from inside
+the test JVM instead (`-app` tests are not headless), showing a real provider on a real `JFrame`,
+inserting characters on the EDT, and logging every visible `JList`'s row count and `preferredSize`
+while `screencapture` took stills. Result: the popup **resizes** with its content —
+`56x85 px at 5 matches → 54x34 px at 2` — correctly filtered, first row preselected, positioned at the
+caret. A first attempt looked like a failure until focus was re-asserted before each burst; the popup
+only shows while the component `isFocusOwner`. Harness deleted after use.
+
+## 2026-08-17 — generation throughput (`claude-perf-generation`), api 329 → 337
+
+Phase 3 of the performance plan, and the phase where **measuring first repeatedly contradicted the
+plan's own estimates**. Each candidate was benchmarked at realistic pack scale before being
+implemented, and the numbers reordered the work:
+
+| Candidate | Measured cost | Verdict |
+|---|---|---|
+| Archive central-directory re-parses | **79.9 ms** per read, 10,000-entry archive, at two sites | the only real win |
+| `Pattern.compile` per comparison (REGEX/EITHER) | 20 ms at 300 mods x 550 entries | small |
+| Quilt merge nested `find` | 4.71 ms at 500 mods | trivial |
+| `exclusionFilter` read per comparison | **3 ms** at 300 mods x 550 entries | negligible |
+| `File(source).absolutePath` per walked file | 3.0 ms at 50,000 files | negligible |
+
+**The `exclusionFilter` read was the plan's headline item for this phase and it is worth ~3 ms.** The
+reasoning behind the estimate was sound — 330,000 synchronized `Hashtable` lookups on the default path —
+but `Hashtable.get` is fast and its monitor uncontended, so the arithmetic simply does not translate into
+time. That correction is recorded in the commit message rather than quietly dropped, because the wrong
+version had already been stated twice (in the investigation and in the plan).
+
+What the phase actually delivered:
+
+- "stop a bad regex aborting the mod-list, and hoist the loop invariants" **fix(api)** — one `FilterMatcher` per generation. Its value is a **bug fix**, not speed: a
+  single malformed clientside-list entry used to throw `PatternSyntaxException` out of `compileModList`
+  and abort generation, because `entry.toRegex()` ran per comparison. Now compiled up front, logged once,
+  skipped, and the rest of the list still applies.
+- "read a modpack archive once per inspection, and index the Quilt merge" **fix(api)** — the archive is read once per inspection at both sites (~80 ms each, scaling
+  with the archive), plus the two negligible hoists, each labelled as such. `putIfAbsent` rather than
+  `associateBy` in the Quilt merge, because `find` returned the *first* match and `associateBy` keeps the
+  last — indistinguishable under the one-entry-per-jar contract, but first-wins is what was being replaced.
+- "hand out a fresh regex mod-list per read" **fix(api)** — `clientsideModsRegex`/`modsWhitelistRegex` return a fresh set per read. Not a
+  performance change at all: the shared field was cleared and refilled per read, so a held result was
+  emptied underneath its caller and a concurrent reader could observe it part-way through. Published, and
+  the GUI reads settings from a `parallelStream`.
+- "compile the Forge annotation-scanner's regexes once" **refactor(api)** — the Forge annotation-scanner's two `get() = "…".toRegex()` properties
+  become `val`s, and a private `additionalDependencyRegex` holding the *identical* literal is gone. That
+  duplicate was the real find: it was what the two `additionalDependency*` checks actually used, so an
+  edit to the documented copy would have changed nothing there. 1.12-and-older path only, so no
+  performance claim.
+
+Testing notes worth keeping: archive open-counts are unobservable from the outside — every method returns
+the same answer regardless — so `ModpackZipInspector` gained a defaulted `openZip` parameter purely to
+count them. And zip4j's `addFile` with a path-in-zip writes no directory entries, which made the first
+version of the open-count test fail for entirely the wrong reason.
+
+Deliberately **not** done: the `ModListCompiler` dependency-rescue loop (`:202-222`), whose O(n²·d) shape
+with two list allocations per pair is a genuine smell but ~10–20 ms at realistic sizes. Left alone rather
+than churn the most delicate logic in the file for a rounding error; it is described in the root
+`CLAUDE.md` hotspot notes if it ever matters.
+
+## 2026-08-17 — web query shapes and the DBRef flattening (`claude-perf-web`), app 118 → 127
+
+Phase 4, the only phase touching persisted data. Split deliberately: risk-free query fixes first, the
+schema change and its migration second.
+
+**4a, no schema change.** `AmountStatsService` did four full-collection loads to answer one
+`/api/v2/stats` request — one for the tally and three purely for `.size`; the three become `count()`
+("pin that the stats endpoint counts instead of scanning" red, "count the stats totals instead of scanning three collections" fix). `ModPackService`'s upload duplicate-check loaded every modpack to
+compare one hash; extracted as `existingUploadOf` ("extract the upload duplicate-check from saveUploadedFile"), then pinned and moved onto an indexed
+`findBySha256` ("pin that the stats endpoint counts instead of scanning"… see "look an upload's hash up by index instead of scanning every modpack"). Each avoided load mattered more than its row count because
+of the eager `@DBRef` fan-out that 4b then removed at the root.
+
+That fix also surfaced a latent semantic bug: with the in-memory comparison, `available.sha256 == sha256`
+is true when **both** are null, so a hash-less upload would be called a duplicate of any stored modpack
+that also lacked one. Unreachable from the upload path (`SavedFile.sha256` is non-null), and guarded
+anyway because the parameter is nullable, stored documents genuinely carry null, and Mongo's own
+`{sha256: null}` query would match them too — so the fix has to say no explicitly.
+
+**4b, the flattening** ("embed the run-configuration mod lists instead of joining three collections"). `startArgs`/`clientMods`/`whitelistedMods` become embedded
+`List<String>`; `ClientMod`, `WhitelistedMod`, `StartArgument`, their three repositories and
+`ModRepository` are deleted. Each was a `@Document` whose only field was its `@MongoId` — a `ClientMod`
+document is literally `{_id: "OptiFine"}` — so three collections and four repositories existed to store
+nothing, and the eager join resolved to the string it was already keyed by.
+
+Measured effect: creating a run-configuration went from ~550 sequential round-trips (one `findBy` per
+entry plus a `save` per miss, on the default clientside list) to **two** calls, pinned by
+`buildingAConfigurationCostsTwoRepositoryCalls`.
+
+Two things fell out of it:
+
+- **A real bug.** The duplicate lookup was `…AndStartArgsInAndClientModsInAndWhitelistedModsIn`, and
+  Spring Data's `In` means "contains any of", not "equals" — so a configuration could be matched and
+  reused because it shared a *single* mod with the one being created. Now an exact array match.
+- **Four tests were deleted rather than adapted**, which is normally the stop-and-flag signal and here
+  is the honest consequence: they described resolution against collections that no longer exist. The two
+  that *also* covered comma-splitting were replaced by tests keeping exactly that assertion, so no
+  coverage was lost. Everything else changed only by dropping `.map { it.mod }`.
+
+The frontend moved in the same commit, because it is one contract: `types/api.ts` → `string[]`, and the
+unwrapping in `RunConfigurationCard.vue` and `SubmitModPackForm.vue` (two sites) deleted. The Vitest
+fixtures moved to the new shape with **expectations untouched** — they failed first with
+`"[object Object], [object Object]"`, which is exactly the coupling being fixed.
+
+**The migration** ("migrate stored run-configurations to embedded mod-lists") is what makes the flattening deployable. It is join-free: a DBRef's `$id`
+*is* the value, so `{$ref:"clientMod",$id:"OptiFine"}` → `"OptiFine"` reads nothing, and still works
+after the referenced collections are dropped. Element-wise so an interrupted run is completed rather
+than corrupting a half-rewritten document; idempotent so a restart costs one read and no writes; on
+`ApplicationReadyEvent` so an unreachable database delays it instead of blocking the boot; failures
+logged and swallowed; orphaned collections dropped only after a fully successful pass.
+
+Verified it costs the suite nothing: `WebServiceContextTest` fires the listener against an unreachable
+Mongo and still runs in 0.438 s, because localhost *refuses* rather than black-holes and server
+selection fails fast instead of waiting out the 30 s default. That would not hold for a remote host.
+
+Deliberately dropped from the plan: projections for `FileCleanupSchedule` / `DatabaseCleanupSchedule`.
+Their cost was the eager `@DBRef` fan-out on `findAll()`, which the flattening removed at the source, so
+the remaining work would have been machinery for a midnight cron with nothing left to win.

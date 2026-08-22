@@ -21,15 +21,14 @@ package de.griefed.serverpackcreator.clientside
 
 import de.griefed.serverpackcreator.api.modscanning.ModScanner
 import de.griefed.serverpackcreator.api.modscanning.Sideness
-import de.griefed.serverpackcreator.api.utilities.common.Comparison
-import de.griefed.serverpackcreator.api.utilities.common.SemanticVersionComparator
 import java.io.File
 
 /**
  * Runs ServerPackCreator's own per-loader mod-scanners over a jar to read the sideness the mod
  * *declares* in its metadata (`fabric.mod.json`, `mods.toml`/`neoforge.mods.toml`, `quilt.mod.json`).
- * This is the jar-based half of the metadata signal; the loader→scanner dispatch mirrors
- * [de.griefed.serverpackcreator.api.serverpack.ModListCompiler] so results match a real generation.
+ * This is the jar-based half of the metadata signal. The loader→scanner choice is not made here: it
+ * comes from [ModScanner.scannerFor], the same call a real generation makes, so the two cannot
+ * disagree about what a jar declared.
  *
  * @param modScanner The bundle of per-loader scanners from [de.griefed.serverpackcreator.api.ApiWrapper].
  * @author Griefed
@@ -50,45 +49,20 @@ class MetadataScanner(private val modScanner: ModScanner) {
 
     /**
      * Scan a single [jar] for the given [loader] and [minecraftVersion], returning whether the mod
-     * declares itself client-only. The mod is [Result.CLIENT] when the loader's scanner places it in
-     * its clientside-delta.
+     * declares itself client-only. The mod is [Result.CLIENT] when the loader's scanner reads its
+     * descriptor as clientside.
+     *
+     * A loader no scanner knows yields [Result.SERVER_OR_BOTH] — nothing was read, so nothing
+     * declared the mod client-only.
      */
-    fun scan(jar: File, loader: String, minecraftVersion: String): Result {
-        val files = listOf(jar)
-        return try {
-            val clientside: Collection<File> = when (loader) {
-                "Fabric", "LegacyFabric" -> modScanner.fabricScanner.scan(files).filter { it.sideness == Sideness.CLIENT }.map { entry -> entry.file }
-
-                "Quilt" -> modScanner.fabricScanner.scan(files).filter { it.sideness == Sideness.CLIENT }.map { entry -> entry.file } +
-                        modScanner.quiltScanner.scan(files).filter { it.sideness == Sideness.CLIENT }.map { entry -> entry.file }
-
-                "Forge" -> if (forgeUsesToml(minecraftVersion)) {
-                    modScanner.forgeTomlScanner.scan(files).filter { it.sideness == Sideness.CLIENT }.map { entry -> entry.file }
-                } else {
-                    modScanner.forgeAnnotationScanner.scan(files).filter { it.sideness == Sideness.CLIENT }.map { entry -> entry.file }
-                }
-
-                "NeoForge" -> if (neoForgeUsesNeoToml(minecraftVersion)) {
-                    modScanner.neoForgeTomlScanner.scan(files).filter { it.sideness == Sideness.CLIENT }.map { entry -> entry.file }
-                } else {
-                    modScanner.forgeTomlScanner.scan(files).filter { it.sideness == Sideness.CLIENT }.map { entry -> entry.file }
-                }
-
-                else -> emptyList()
-            }
-            if (clientside.contains(jar)) Result.CLIENT else Result.SERVER_OR_BOTH
-        } catch (ex: Exception) {
-            Result.ERROR
-        }
+    fun scan(jar: File, loader: String, minecraftVersion: String): Result = try {
+        val scanner = modScanner.scannerFor(loader, minecraftVersion)
+        val clientside = scanner
+            ?.scan(listOf(jar))
+            ?.any { it.file == jar && it.sideness == Sideness.CLIENT }
+            ?: false
+        if (clientside) Result.CLIENT else Result.SERVER_OR_BOTH
+    } catch (_: Exception) {
+        Result.ERROR
     }
-
-    /** Forge switched from annotation-cache to `mods.toml` after Minecraft 1.12. */
-    private fun forgeUsesToml(minecraftVersion: String): Boolean {
-        val minor = minecraftVersion.split(".").getOrNull(1)?.toIntOrNull() ?: return true
-        return minor > 12
-    }
-
-    /** NeoForge renamed `mods.toml` to `neoforge.mods.toml` starting with Minecraft 1.20.5. */
-    private fun neoForgeUsesNeoToml(minecraftVersion: String): Boolean =
-        SemanticVersionComparator.compareSemantics("1.20.5", minecraftVersion, Comparison.EQUAL_OR_NEW)
 }

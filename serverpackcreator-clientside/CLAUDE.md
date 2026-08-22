@@ -15,8 +15,14 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
 
 ## Engine details & landmines (durable)
 
-- **`MetadataScanner`** mirrors `ModListCompiler`'s loader→scanner dispatch (kept in sync deliberately;
-  it is *not* shared code — if you change one, check the other).
+- **`MetadataScanner` no longer mirrors `ModListCompiler` — since 2026-08-15 both dispatch through
+  `ModScanner.scannerFor(modloader, minecraftVersion)` in `-api`.** It *is* shared code now; do not
+  re-add a local `when (loader)` over the concrete scanners. The old "kept in sync deliberately" note
+  is why this entry exists: the two copies had already drifted, and both carried the same Forge
+  era bug (Minecraft's `YY.x.y` scheme read as `1.x` — see the versioning-scheme landmine in
+  `serverpackcreator-api/CLAUDE.md`), so the metadata signal was degraded on every modern Forge mod.
+  A loader `scannerFor` does not know yields `null`, which this class reads as `SERVER_OR_BOTH`:
+  nothing was read, so nothing declared the mod client-only.
 - **Platform layer**: `ModPlatform` (Modrinth/CurseForge) over an injectable `HttpFetcher` so tests use
   canned JSON (no live network). **CurseForge has no sideness field** → `DeclaredSupport.UNKNOWN`; only
   Modrinth declares `client_side`/`server_side`. Use `JsonNode.textOrNull` for nullable URL fields —
@@ -141,7 +147,7 @@ seam (writes the log, then `BootLogClassifier` + `BootLogExcerpt`). The default
 
 ## Testing patterns
 
-- 41 tests across 12 files, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
+- 88 tests, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
   JSON to a fake `HttpFetcher`; **`MetadataScannerTest` is the only one needing a resource** — it boots
   an offline `ApiWrapper` from `src/test/resources/serverpackcreator.properties` (whose `ModScanner`
   relies on the API's cached version-manifests, hence `test` `dependsOn :serverpackcreator-api:processTestResources`).

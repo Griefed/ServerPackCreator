@@ -1,0 +1,225 @@
+# Static analysis, replacing GitLab's `Qodana` + `Qodana Post`.
+#
+# The report is a workflow artifact now. GitLab served it from Pages and the Discord message linked there;
+# with Pages gone the message links the artifact itself, one click from Discord instead of a run page and
+# a hunt for the download. Nothing renders it in-browser: the link serves the zip, whose index.html opens
+# locally. Forgejo has no Pages, and a report committed to a branch would not work either -- raw files
+# come back as `text/plain` with `nosniff`, verified against this instance, so the HTML would show as
+# source and its CSS/JS would be blocked.
+#
+# Entirely Cloud-free: no Qodana Cloud subscription, no QODANA_TOKEN, no upload. Everything this job
+# reports comes out of the SARIF it produces locally.
+name: Qodana
+
+on:
+  push:
+  workflow_dispatch:
+
+concurrency:
+  group: qodana-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qodana:
+    name: "scan"
+    runs-on: ubuntu-latest
+    # Whether an artifact actually exists, for the notify job. Empty when the upload produced nothing --
+    # `if-no-files-found: warn` means a scan that died before writing a report warns rather than fails --
+    # and notify falls back to the run URL rather than posting a link that 404s.
+    outputs:
+      report_artifact_id: ${{ steps.upload_report.outputs.artifact-id }}
+    # NO `container:` HERE, DELIBERATELY. Forgejo Actions (act) runs every JavaScript action by exec'ing
+    # `node` INSIDE the job container, and jetbrains/qodana-jvm-community ships none -- verified,
+    # `command -v node` in that image returns nothing. GitHub's hosted runners inject a node binary into
+    # container jobs; act does not, so checkout/cache/upload-artifact all died with exit 127
+    # (nektos/act#107). The linter runs as a `docker run` below, which needs nothing from the image but
+    # the linter itself.
+    steps:
+
+      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+        with:
+          fetch-depth: 0
+
+      - name: Cache Qodana
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: qodana/cache
+          key: qodana-2026.2-${{ github.ref_name }}
+          restore-keys: |
+            qodana-2026.2-
+
+      # GitLab needed a chmod dance here: Qodana 2026.2 downloads its own JBR into <cache-dir>/qodana-jbr
+      # and GitLab's cache round-trip drops the executable bit, surfacing as the unhelpful "Failed to
+      # create effective configuration". actions/cache archives with tar, which *does* preserve modes, so
+      # this should be unnecessary -- it is kept as cheap insurance and logs what it finds, so if the same
+      # failure ever appears here the evidence is already in the log rather than needing a rediscovery.
+      - name: Restore JBR executable bits
+        run: |
+          jbr="$GITHUB_WORKSPACE/qodana/cache/qodana-jbr"
+          if [ ! -d "$jbr" ]; then
+            echo "No cached JBR directory ($jbr) - Qodana will download one"
+          else
+            find "$jbr" -type f -path '*/bin/java' -exec ls -l {} + || true
+            chmod -R +x "$jbr" || true
+          fi
+
+      # No QODANA_TOKEN, deliberately. A token is required only for the paid linters and for uploading
+      # to Qodana Cloud; it is optional for the Community linters, and this is qodana-jvm-community.
+      # There is no free Cloud tier, so the whole job is self-contained: the SARIF is counted below,
+      # the HTML report is attached as an artifact, and Discord links the run. Do not re-add the token
+      # env -- an empty one implies a Cloud setup that does not exist.
+      # `qodana-jvm-community` is NOT a binary in that image -- verified, `command -v` finds nothing. The
+      # entrypoint is the Qodana CLI at /opt/idea/bin/qodana and it needs the `scan` subcommand, so this
+      # step would have failed even with node present; it never got the chance, checkout died first.
+      # The /data/{project,cache,results,report} mounts this step used to pass are gone, and NOT because
+      # the image's conventions changed -- they are still its conventions, and its WorkingDir is still
+      # /data/project. Under docker-in-docker a `-v "$PWD:..."` bind is resolved by the DIND daemon, whose
+      # filesystem holds no copy of the job's workspace: verified 2026-08-22 against docker:dind, the
+      # sibling saw an EMPTY directory and exited 0, i.e. Qodana would have scanned nothing and the
+      # `|| true` would have hidden it. `--volumes-from` inherits the job container's own workspace volume,
+      # so $PWD names the same files on both sides and the CLI's --*-dir flags point straight at them.
+      # THIS REQUIRES the runner's `container.options` to mount a volume at the workspace parent
+      # (`-v /workspace`); without it nothing propagates to the sibling.
+      # The /data-mount form was the one proven by a local run against this repo; this workspace-path
+      # form has NOT been run locally, so the first CI run is its proof.
+      - name: Run Qodana
+        run: |
+          mkdir -p qodana/cache qodana/results qodana/report
+          # Fail loudly if the sibling cannot see the workspace. The scan below ends in `|| true`, so
+          # without this guard a broken `--volumes-from` looks exactly like "no problems found". Uses the
+          # Qodana image itself rather than adding a second one -- it is being pulled anyway.
+          docker run --rm --volumes-from "$(cat /etc/hostname)" -w "$PWD" \
+            --entrypoint sh jetbrains/qodana-jvm-community:2026.2 -c 'test -f gradlew'
+          docker run --rm \
+            --volumes-from "$(cat /etc/hostname)" \
+            -w "$PWD" \
+            jetbrains/qodana-jvm-community:2026.2 \
+            scan \
+              --project-dir "$PWD" \
+              --cache-dir "$PWD/qodana/cache" \
+              --results-dir "$PWD/qodana/results" \
+              --report-dir "$PWD/qodana/report" \
+            || true
+          # The image runs as uid 0, so its output is root-owned. upload-artifact runs as the runner user
+          # and cannot read that unless the runner is also root -- normalise, tolerating failure because
+          # it is already readable in the root case.
+          chown -R "$(id -u):$(id -g)" qodana 2>/dev/null || true
+
+      - name: Report problem count
+        run: |
+          SARIF="qodana/results/qodana.sarif.json"
+          if [ -f "$SARIF" ]; then
+            COUNT=$(python3 -c "import json;d=json.load(open('$SARIF'));print(sum(len(r.get('results',[])) for r in d.get('runs',[])))")
+            echo "Qodana problems: $COUNT"
+            echo "**Qodana problems: $COUNT**" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No SARIF produced"
+          fi
+
+      - name: Upload report
+        id: upload_report
+        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
+        if: ${{ always() }}
+        with:
+          name: qodana-report
+          path: |
+            qodana/report
+            qodana/results/qodana.sarif.json
+          if-no-files-found: warn
+          # The Discord message links this artifact, so its lifetime is how long that link stays good --
+          # seven days, rather than the instance default of ARTIFACT_RETENTION_DAYS (90). Deletion is
+          # server-side once an expiry is set: `cron.cleanup_actions` runs @midnight and is enabled by
+          # default. An older message keeps pointing at its own run's artifact, so it goes dead rather
+          # than quietly showing a newer scan.
+          retention-days: 7
+
+  notify:
+    name: "notify"
+    needs: qodana
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      # Discord, as before, but the embed now links the report artifact instead of the run page.
+      # Skipped silently when no webhook is configured.
+      - name: Post to Discord
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          REPORT_ARTIFACT_ID: ${{ needs.qodana.outputs.report_artifact_id }}
+          COMMIT: ${{ github.sha }}
+        run: |
+          # A missing webhook is fine and exits cleanly; a webhook that is configured and then fails to
+          # accept the post is a real failure and must not be swallowed -- hence set -e AFTER the guard.
+          if [ -z "${WEBHOOK_URL:-}" ]; then
+            echo "No WEBHOOK_URL configured - skipping"
+            exit 0
+          fi
+          set -eu
+          export RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_number }}"
+          export SHORT_SHA="$(echo "$COMMIT" | cut -c1-8)"
+          # Discord renders <t:EPOCH:f> in each reader's own timezone and locale, so the message can say
+          # when the link dies without anyone doing arithmetic. The epoch is Forgejo's own `expires_at`
+          # for this artifact, not retention-days re-added to "now": if those two ever disagree the
+          # instance is the one that deletes, so it is the one worth quoting. The listing answers
+          # anonymously for this repo (verified), so no token is involved. When the lookup yields
+          # nothing the line is left out entirely -- no expiry beats a wrong one.
+          cat > expiry.py <<'EXPIRY_PY'
+          import datetime, json, os, sys
+
+          def epoch(stamp):
+              """Parse Forgejo's RFC3339 expires_at into a UTC epoch, accepting both the plain-Z and
+              numeric-offset spellings the API may emit."""
+              for fmt in ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S%z"):
+                  try:
+                      parsed = datetime.datetime.strptime(stamp, fmt)
+                  except ValueError:
+                      continue
+                  if parsed.tzinfo is None:
+                      parsed = parsed.replace(tzinfo=datetime.timezone.utc)
+                  return int(parsed.timestamp())
+              return None
+
+          wanted = os.environ.get("REPORT_ARTIFACT_ID", "")
+          try:
+              listing = json.load(open("artifacts.json"))
+          except Exception:
+              sys.exit(0)
+          # The endpoint returns a bare array; tolerate a paginated object in case that ever changes.
+          entries = listing if isinstance(listing, list) else listing.get("entries") or []
+          for entry in entries:
+              if str(entry.get("id")) == wanted and entry.get("expires_at"):
+                  stamp = epoch(entry["expires_at"])
+                  if stamp:
+                      print(stamp)
+                  break
+          EXPIRY_PY
+          EXPIRES_EPOCH=""
+          if [ -n "${REPORT_ARTIFACT_ID:-}" ]; then
+            # Explicit, rather than trusting the redirect below to truncate: a listing left over from
+            # anything else would otherwise be read as this run's and dated the message wrongly.
+            rm -f artifacts.json
+            curl -sf --max-time 30 \
+              "${{ github.server_url }}/api/v1/repos/${{ github.repository }}/actions/artifacts?limit=100" \
+              > artifacts.json || echo "Could not read the artifact listing - posting without an expiry"
+            EXPIRES_EPOCH="$(python3 expiry.py || true)"
+          fi
+          # Forgejo serves an artifact at <run>/artifacts/<name-or-id> -- verified in its own routing
+          # table, `m.Get("/artifacts/{artifact_name_or_id}", actions.ArtifactsDownloadView)`. The name is
+          # used rather than the id because it is stable and readable, and rather than the upload action's
+          # own `artifact-url` output because that output is built from `github.context.runId`, which on
+          # Forgejo is not the per-repo index its run URLs use -- the same reason RUN_URL above uses
+          # `github.run_number`. The id is still consulted, as the existence check.
+          if [ -n "${REPORT_ARTIFACT_ID:-}" ]; then
+            export TARGET_URL="$RUN_URL/artifacts/qodana-report"
+            export DESCRIPTION="Report for $SHORT_SHA. The link downloads the report archive - open index.html inside it."
+            # $'\n' rather than a literal newline: an unindented continuation line would dedent out of
+            # this YAML block scalar and be parsed as a mapping key. The default shell here is bash.
+            if [ -n "$EXPIRES_EPOCH" ]; then
+              export DESCRIPTION="$DESCRIPTION"$'\n'"Expires at: <t:$EXPIRES_EPOCH:f>"
+            fi
+          else
+            export TARGET_URL="$RUN_URL"
+            export DESCRIPTION="No report was produced for $SHORT_SHA - the scan did not get that far. This links the run."
+          fi
+          python3 -c "import json,os;print(json.dumps({'username':'ServerPackCreator','embeds':[{'title':'New Qodana report','description':os.environ['DESCRIPTION'],'url':os.environ['TARGET_URL'],'color':12648430}]}))" > payload.json
+          curl -sf -X POST -H 'Content-Type: application/json' -d @payload.json "$WEBHOOK_URL" > /dev/null
+          echo "Posted: $TARGET_URL"

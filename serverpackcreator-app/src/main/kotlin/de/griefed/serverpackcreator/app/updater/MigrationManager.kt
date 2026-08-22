@@ -23,6 +23,7 @@ import Translations
 import com.electronwill.nightconfig.toml.TomlParser
 import de.comahe.i18n4k.Locale
 import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.api.settings.WebserviceConfig
 import de.griefed.serverpackcreator.api.utilities.common.filteredWalk
 import de.griefed.serverpackcreator.api.utilities.common.readText
 import net.lingala.zip4j.ZipFile
@@ -157,7 +158,7 @@ class MigrationManager(
         val methodMap = HashMap<String, Method>(100)
         val methodVersions = TreeSet<String>()
         for (method in methods) {
-            val methodVersion = toSemantic(method.name.replace("\\\$[0-9]*lambda\\\$[0-9]*".toRegex(),""))
+            val methodVersion = toSemantic(method.name.replace(LAMBDA_SUFFIX, ""))
             methodMap[methodVersion] = method
             methodVersions.add(methodVersion)
         }
@@ -222,12 +223,11 @@ class MigrationManager(
             return true
         }
 
-        // Current MAJOR version equal and current MINOR version smaller?
-        return if (checkAgainst[0] == old[0] && checkAgainst[1] < old[1]) {
-            true
-
-            // Current MAJOR version equal, current MINOR equal, current PATCH version smaller?
-        } else checkAgainst[0] == old[0] && checkAgainst[1] == old[1] && checkAgainst[2] < old[2]
+        return (
+                // Current MAJOR version equal and current MINOR version smaller?
+                checkAgainst[0] == old[0] && checkAgainst[1] < old[1])
+                // Current MAJOR version equal, current MINOR equal, current PATCH version smaller?
+                || (checkAgainst[0] == old[0] && checkAgainst[1] == old[1] && checkAgainst[2] < old[2])
     }
 
     /**
@@ -238,7 +238,7 @@ class MigrationManager(
      * @author Griefed
      */
     private fun semantics(version: String): IntArray {
-        return version.replace("\\\$[0-9]*lambda\\\$[0-9]*".toRegex(),"").split(Regex("\\.")).map { it.toInt() }.toIntArray()
+        return version.replace(LAMBDA_SUFFIX, "").split(Regex("\\.")).map { it.toInt() }.toIntArray()
     }
 
     /**
@@ -285,13 +285,11 @@ class MigrationManager(
             return true
         }
 
-        // Method MAJOR version equal and method MINOR bigger?
-        return if (checkAgainst[0] == old[0] && checkAgainst[1] > old[1]) {
-            true
-        } else {
-            // Method MAJOR equal, method MINOR equal, method PATCH bigger?
-            checkAgainst[0] == old[0] && checkAgainst[1] == old[1] && checkAgainst[2] > old[2]
-        }
+        return (
+                // Method MAJOR version equal and method MINOR bigger?
+                checkAgainst[0] == old[0] && checkAgainst[1] > old[1])
+                // Method MAJOR equal, method MINOR equal, method PATCH bigger?
+                || (checkAgainst[0] == old[0] && checkAgainst[1] == old[1] && checkAgainst[2] > old[2])
     }
 
     /**
@@ -368,7 +366,7 @@ class MigrationManager(
      *
      * @author Griefed
      */
-    inner class MigrationMessage(
+    class MigrationMessage(
         private val fromVersion: String, private val toVersion: String, private val changes: MutableList<String> = ArrayList(20)
     ) {
 
@@ -464,6 +462,38 @@ class MigrationManager(
             }
         }
 
+        /**
+         * Reports the database-URI property rename that Spring Boot 4 forced, and normalises the stored
+         * value onto the live key.
+         *
+         * Spring Boot 4.0.0 retired `spring.data.mongodb.uri` in favour of `spring.mongodb.uri`. Reading
+         * [WebserviceConfig.databaseUri] performs the carry-over by itself, on every build type — this
+         * method exists for the part that read cannot do, which is telling the operator. Anything *they*
+         * own that still writes the old key — their own `overrides.properties`, a container environment, a
+         * deployment script — is silently ignored by Spring, and only a message can point them at it.
+         */
+        private fun NinePointZeroPointZero() {
+            val changes: MutableList<String> = ArrayList(1)
+            if (apiProperties.webserviceConfig.hasLegacyDatabaseUri) {
+                // Reading is what carries the value over to the live key; the value itself is not logged,
+                // because it routinely contains a password.
+                apiProperties.webserviceConfig.databaseUri
+                changes.add(
+                    Translations.migrationmanager_migration_ninepointzeropointzero_databaseuri(
+                        WebserviceConfig.LEGACY_DATABASE_URI_KEY, WebserviceConfig.DATABASE_URI_KEY
+                    ).toString()
+                )
+            }
+
+            if (changes.isNotEmpty()) {
+                migrationMessages.add(
+                    MigrationMessage(
+                        previous, current, changes
+                    )
+                )
+            }
+        }
+
         private fun FourPointZeroPointZero() {
             val changes: MutableList<String> = ArrayList(10)
             if (File(apiProperties.homeDirectory, "plugins").isDirectory && File(
@@ -501,6 +531,12 @@ class MigrationManager(
             }
         }
 
+        /**
+         * Reads and writes the deprecated flat `scriptTemplates` list deliberately: migrating a 5.0.0
+         * installation means touching the representation *that* version wrote. Pointing it at the
+         * replacement would migrate the wrong setting.
+         */
+        @Suppress("DEPRECATION")
         private fun FivePointZeroPointZero() {
             val changes: MutableList<String> = ArrayList(10)
             val previousSetting = apiProperties.scriptTemplates.joinToString(",")
@@ -532,6 +568,12 @@ class MigrationManager(
             }
         }
 
+        /**
+         * Reads the deprecated flat `scriptTemplates` list deliberately: this migration's whole job is
+         * to turn what a pre-6.0.0 installation stored into the per-type map 6.0.0 uses, so the old
+         * representation is its input by definition.
+         */
+        @Suppress("DEPRECATION")
         private fun SixPointZeroPointZero() {
             val changes: MutableList<String> = ArrayList(10)
             val previousSetting = apiProperties.scriptTemplates
@@ -544,5 +586,18 @@ class MigrationManager(
                 changes.add(Translations.migrationmanager_migration_sixpointzeropointzero_scripts_template("$type = ${template.absolutePath}"))
             }
         }
+    }
+
+    internal companion object {
+        /**
+         * Strips the synthetic suffix the Kotlin compiler appends to the name of a method that carries
+         * a lambda — `$0lambda$1`, or a bare `$lambda$` — so a migration method's declared name still
+         * reads as the version it migrates to.
+         *
+         * A single source of truth on purpose: the literal used to be written out twice, in method
+         * discovery and in version parsing, where the two escaping-heavy copies could silently drift
+         * apart and leave a migration undiscovered rather than failing.
+         */
+        internal val LAMBDA_SUFFIX = $$"\\$[0-9]*lambda\\$[0-9]*".toRegex()
     }
 }

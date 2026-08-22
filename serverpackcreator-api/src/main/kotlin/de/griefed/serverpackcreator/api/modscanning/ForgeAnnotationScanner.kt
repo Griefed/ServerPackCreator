@@ -35,9 +35,8 @@ import java.util.*
  *
  * @author Griefed
  */
-class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val utilities: Utilities) : JsonBasedScanner(), Scanner<List<ScannedMod>, Collection<File>> {
+class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val utilities: Utilities) : JsonDescriptorScanner() {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
-    private val additionalDependencyRegex = "(@.*|\\[.*)".toRegex()
     private val caches = "META-INF/fml_cache_annotation.json"
     private val annotations = "annotations"
     private val values = "values"
@@ -46,48 +45,48 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
     private val clientSideOnly = "clientSideOnly"
     private val dependencies = "dependencies"
 
-    /** Matches a dependency entry worth recording, filtering out the malformed ones older packs contain. */
-    val dependencyCheck: Regex
-        get() = "(before:.*|after:.*|required-after:.*|)".toRegex()
-    /** Strips the version range off a dependency entry, leaving the mod id the scanner matches on. */
-    val dependencyReplace: Regex
-        get() = "(@.*|\\[.*)".toRegex()
+    /**
+     * Matches a dependency entry worth recording, filtering out the malformed ones older packs contain.
+     *
+     * A `val`, not a `get() = ...toRegex()`: this is read inside the per-dependency loops below, and a
+     * getter recompiled the pattern on every read. `Regex` is safe to share — matching creates its own
+     * matcher — so one instance per scanner is all that is needed.
+     */
+    val dependencyCheck: Regex = "(before:.*|after:.*|required-after:.*|)".toRegex()
 
     /**
-     * Scan the `fml-cache-annotation.json`-files in mod JAR-files of a given directory for their sideness.
+     * Strips the version range off a dependency entry, leaving the mod id the scanner matches on.
      *
-     * If `clientSideOnly` specifies `"value": "true"`, and is not listed as a dependency for another mod, it is added
-     * and therefore later on excluded from the server pack.
+     * The single source of truth for that pattern: a private `additionalDependencyRegex` held the
+     * identical literal and was what the two `additionalDependency*` checks actually used, so the
+     * pattern existed twice with only one copy documented — the same equal-valued-copy trap this module
+     * records for `modFileEndings` and `zipCheck`.
+     */
+    val dependencyReplace: Regex = "(@.*|\\[.*)".toRegex()
+
+    override val scanAnnouncement = "Scanning Minecraft 1.12.x and older mods for sideness..."
+
+    /**
+     * Read one mod's `fml_cache_annotation.json` for its sideness.
      *
-     * @param jarFiles A list of files in which to check the `fml-cache-annotation.json `-files.
-     * @return List of mods not to include in server pack based on fml-cache-annotation.json-content.
+     * If `clientSideOnly` specifies `"value": "true"`, and the mod is not listed as a dependency of
+     * another mod, it is later excluded from the server pack.
+     *
+     * @param modJar The jar whose annotation cache to read.
+     * @return What this mod declared.
      * @author Griefed
      */
-    override fun scan(jarFiles: Collection<File>): List<ScannedMod> {
-        log.info("Scanning Minecraft 1.12.x and older mods for sideness...")
+    override fun read(modJar: File): ScannedMod {
+        val modConfig: JsonNode = getJarJson(modJar, caches, objectMapper)
+        val (modId, sidenesses, dependencies) = getSidenessesAndDependencies(modConfig)
 
-        val scannedMods = mutableListOf<ScannedMod>()
-
-        for (modJar in jarFiles) {
-            try {
-                val modConfig: JsonNode = getJarJson(modJar, caches, objectMapper)
-                val (modId, sidenesses, dependencies) = getSidenessesAndDependencies(modConfig)
-
-                if (modId == null) {
-                    // No annotation in the cache carried a modId, so nothing read here can be attributed.
-                    // Fall back to the defaults, as an unreadable jar does.
-                    log.error("Could not scan ${modJar.name}. Consider reporting this: no modId in the annotation cache.")
-                    scannedMods.add(ScannedMod(modJar))
-                } else {
-                    scannedMods.add(ScannedMod(modJar, modId, sidenessOf(sidenesses), dependencies))
-                }
-            } catch (e: Exception) {
-                log.error("Could not scan ${modJar.name}. Consider reporting this:", e)
-                scannedMods.add(ScannedMod(modJar))
-            }
+        if (modId == null) {
+            // No annotation in the cache carried a modId, so nothing read here can be attributed.
+            // Fall back to the defaults, as an unreadable jar does.
+            log.error("Could not scan ${modJar.name}. Consider reporting this to the mod-author: no modId in the annotation cache.")
+            return ScannedMod(modJar)
         }
-
-        return scannedMods
+        return ScannedMod(modJar, modId, sidenessOf(sidenesses), dependencies)
     }
 
     /**
@@ -332,7 +331,7 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
             }
             val dependencyIndex = dependency.lastIndexOf(":") + 1
             val dependencySubstring = dependency.substring(dependencyIndex)
-            val checked = dependencySubstring.replace(additionalDependencyRegex, "")
+            val checked = dependencySubstring.replace(dependencyReplace, "")
             if (checked == modId) {
                 depends = true
             }
@@ -355,7 +354,7 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
             val dependencies: String = utilities.jsonUtilities.getNestedText(child, values, dependencies, value)
             val dependencyIndex = dependencies.lastIndexOf(":") + 1
             val dependencySubstring = dependencies.substring(dependencyIndex)
-            val dependency = dependencySubstring.replace(additionalDependencyRegex, "")
+            val dependency = dependencySubstring.replace(dependencyReplace, "")
             if (dependency == modId) {
                 depends = true
             }

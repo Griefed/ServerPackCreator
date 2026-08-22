@@ -21,10 +21,8 @@ package de.griefed.serverpackcreator.api.modscanning
 
 import com.electronwill.nightconfig.core.CommentedConfig
 import com.electronwill.nightconfig.toml.TomlParser
-import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.io.IOException
-import java.io.InputStream
 import java.util.jar.JarFile
 
 /**
@@ -33,8 +31,7 @@ import java.util.jar.JarFile
  * @param tomlParser To parse .toml-files.
  * @Griefed
  */
-open class ForgeTomlScanner(private val tomlParser: TomlParser): Scanner<List<ScannedMod>, Collection<File>> {
-    private val log by lazy { cachedLoggerOf(this.javaClass) }
+open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScanner() {
     private val mods = "mods"
     private val modId = "modId"
     private val dependencies = "dependencies"
@@ -55,40 +52,24 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser): Scanner<List<Sc
         get() = "^CLIENT$".toRegex()
 
     /**
-     * Scan the `mods.toml`-files in mod JAR-files of a given directory for their sideness.
+     * Read one mod's `mods.toml` for its sideness.
      *
-     * If `mods` specifies `side=BOTH|SERVER`, it is added.
+     * The side a mod demands of the platform (`Forge`/`NeoForge`/`Minecraft`) is taken as its own:
+     * a mod requiring Minecraft `side=CLIENT` is clientside. Every other dependency is recorded as a
+     * dependency instead. A mod declaring no dependencies at all is treated as server-side, to
+     * prevent false positives.
      *
-     * If `dependencies.modId` for `Forge|Minecraft` specifies `side=BOTH|SERVER `, it is added.
-     *
-     * Any modId of a dependency specifying `side=BOTH|SERVER` is added.
-     *
-     * If no sideness can be found for a given mod, it is added to prevent false positives.
-     * @param jarFiles A list of files in which to check the `mods.toml`-files.
-     * @return Mods not to include in server pack based on mods.toml-configuration.
+     * @param modJar The jar whose `mods.toml` to read.
+     * @return What this mod declared.
      * @author Griefed
      */
-    override fun scan(jarFiles: Collection<File>): List<ScannedMod> {
-
-        val scannedMods = mutableListOf<ScannedMod>()
-
-        for (modJar in jarFiles) {
-            try {
-                val modConfig: CommentedConfig = getConfig(modJar)
-                val modId = getModId((modConfig.valueMap()[mods] as ArrayList<*>)[0] as CommentedConfig)
-                val (sidenesses, dependencies) = getSidenessesAndDependencies(modConfig, modId)
-
-                scannedMods.add(ScannedMod(modJar, modId, sidenessOf(sidenesses), dependencies))
-            } catch (e: Exception) {
-                log.error("Could not scan ${modJar.name}. Consider reporting this: ${e.cause}: ${e.message}")
-                scannedMods.add(ScannedMod(modJar))
-            }
-        }
-
-        return scannedMods
+    override fun read(modJar: File): ScannedMod {
+        val modConfig: CommentedConfig = getConfig(modJar)
+        val modId = getModId((modConfig.valueMap()[mods] as ArrayList<*>)[0] as CommentedConfig)
+        val (sidenesses, dependencies) = getSidenessesAndDependencies(modConfig, modId)
+        return ScannedMod(modJar, modId, sidenessOf(sidenesses), dependencies)
     }
 
-    @Throws(ScanningException::class)
     private fun getSidenessesAndDependencies(modConfig: CommentedConfig, modId: String): Pair<List<Sideness>, List<ModDependency>> {
         val dependencies: Map<String, ArrayList<CommentedConfig>> = getMapOfDependencyLists(modConfig)
         val sidesForModloader = mutableListOf<Sideness>()
@@ -100,8 +81,11 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser): Scanner<List<Sc
                 for (declared in declaredDependencies) {
                     val dependencyModId = getModId(declared)
                     val side = getSide(declared)
-                    val dependencySideness =
-                        if (side.uppercase().matches(client)) Sideness.CLIENT else Sideness.SERVER
+                    val dependencySideness = if (side.uppercase().matches(client)) {
+                        Sideness.CLIENT
+                    } else {
+                        Sideness.SERVER
+                    }
 
                     if (dependencyModId.matches(neoForgeMinecraft)) {
                         // The platform itself. What side this mod demands of Minecraft/Forge IS its sideness.
@@ -110,6 +94,14 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser): Scanner<List<Sc
                         modDependencies.add(ModDependency(dependencyModId, dependencySideness))
                     }
                 }
+
+                if (declaredDependencies.none { dependency ->
+                        getModId(dependency).matches(neoForgeMinecraft)
+                    }) {
+                    //No side for either Forge, NeoForge, or Minecraft specified, assume SERVER.
+                    sidesForModloader.add(Sideness.SERVER)
+                }
+
             } else {
                 //no dependencies specified, assume required
                 sidesForModloader.add(Sideness.SERVER)
@@ -128,31 +120,34 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser): Scanner<List<Sc
      *
      * @param file The file from which to acquire the toml config.
      * @return Config read from the toml in the mod.
-     * @throws IOException if the mods.toml file could not be read/found.
+     * @throws IOException if the mods.toml file could not be read.
+     * @throws MissingDescriptorException if the jar carries no mods.toml — a normal outcome for a
+     * jar belonging to another loader, not a failure.
      */
-    @Throws(IOException::class)
+    @Throws(IOException::class, MissingDescriptorException::class)
     private fun getConfig(file: File): CommentedConfig {
-        val jarFile = JarFile(file)
-        val jarEntry = jarFile.getJarEntry(modsToml)
-        val tomlStream: InputStream = jarFile.getInputStream(jarEntry)
-        val config: CommentedConfig = tomlParser.parse(tomlStream)
-        jarFile.close()
-        tomlStream.close()
-        return config
+        JarFile(file).use { jarFile ->
+            val jarEntry = jarFile.getJarEntry(modsToml) ?: throw MissingDescriptorException(modsToml, file)
+            jarFile.getInputStream(jarEntry).use { tomlStream ->
+                return tomlParser.parse(tomlStream)
+            }
+        }
     }
 
     /**
      * Acquire a map of all dependencies specified by a mod.
      *
+     * A descriptor with no `[[dependencies]]` block yields an **empty map** rather than raising: a
+     * mod is allowed to depend on nothing, and treating that as a failure aborted the read and threw
+     * away the mod id it had already parsed.
+     *
      * @param config Base-config toml of the mod which contains all * information.
      * @return Map of dependencies for the passed mod config, String keys are mapped to ArrayLists of
-     * CommentedConfigs.
-     * @throws ScanningException if the mod declares no dependencies.
+     * CommentedConfigs. Empty when the mod declares none.
      */
-    @Throws(ScanningException::class)
     private fun getMapOfDependencyLists(config: CommentedConfig): Map<String, ArrayList<CommentedConfig>> {
         if (config.valueMap()[dependencies] == null) {
-            throw ScanningException("No dependencies specified.")
+            return emptyMap()
         }
         val modDependencies = HashMap<String, ArrayList<CommentedConfig>>(100)
         val configValueMap = config.valueMap()

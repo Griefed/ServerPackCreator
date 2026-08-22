@@ -185,4 +185,35 @@ internal class GenerationConfigTest {
         Assertions.assertTrue(generationConfig.clientSideMods().all { mod -> mod.startsWith("^") })
         Assertions.assertTrue(generationConfig.whitelistedMods().all { mod -> mod.startsWith("^") })
     }
+
+    /**
+     * Pins that each read of the regex-variant lists yields its **own** set.
+     *
+     * The getter used to `clear()` and refill one shared `TreeSet` field on every access. Two problems
+     * with that, and the second is why this is a `fix:` rather than tidying: a caller holding an earlier
+     * result silently saw it emptied and rewritten under them, and because the mutation is not atomic a
+     * concurrent reader could observe the set mid-clear. Both `ApiProperties.clientsideModsRegex` and
+     * `modsWhitelistRegex` are published, and the GUI reads settings from a `parallelStream` walk.
+     */
+    @Test
+    fun regexVariantListsAreNotSharedBetweenReads() {
+        val store = PropertyStore()
+        val generationConfig = GenerationConfig(store)
+
+        val firstClientside = generationConfig.clientsideModsRegex
+        val secondClientside = generationConfig.clientsideModsRegex
+        Assertions.assertNotSame(firstClientside, secondClientside, "Each read must yield its own set")
+        Assertions.assertEquals(firstClientside, secondClientside, "...holding equal contents")
+        Assertions.assertTrue(firstClientside.isNotEmpty(), "precondition: the fallback list is not empty")
+
+        val firstWhitelist = generationConfig.modsWhitelistRegex
+        Assertions.assertNotSame(firstWhitelist, generationConfig.modsWhitelistRegex)
+
+        // A caller mutating what it was handed must not disturb the next reader.
+        firstClientside.clear()
+        Assertions.assertTrue(
+            generationConfig.clientsideModsRegex.isNotEmpty(),
+            "A caller emptying its own copy must not empty the source"
+        )
+    }
 }
