@@ -49,8 +49,9 @@ its own, keeping the same report live at `localhost:8757`:
 Two things worth knowing before you act on the table. **Only `HIGH` confidence is decisive** — it means the
 server actually crashed with the mod in place; `MEDIUM` only means the server booted, which does not prove
 the mod is server-safe (§6). And **everything the grinder writes lives under `~/.spc-grinder`** —
-`verdicts.json` (results), `cache/` (loader installs), `work/` (staging). Nothing else on the host is
-touched, and no mod ever gets network access.
+`verdicts.json` (results), `cache/` (loader installs), `work/` (staging), plus SPC's own home directory
+(`logs/`, `server_files/`, `serverpackcreator.properties`). Move the lot with `SPC_GRINDER_HOME`. Nothing else
+on the host is touched, and no mod ever gets network access.
 
 ---
 
@@ -374,6 +375,11 @@ docker logs -f <name>
 | `<work>/verify/boot/<slug>-<Loader>/boot.log` | one boot's console | no; replaced per attempt |
 | `<cache>/<mc>/<loader>/<ver>/.spc-install.log` | one loader install's console | no; removed with the tuple |
 
+Those first two paths are `~/.spc-grinder` because the daemon **tells SPC that its home directory is
+`SPC_GRINDER_HOME`** — SPC's own `logs/`, `work/`, `server_files/` and `serverpackcreator.properties` all land
+there, next to the grinder's `cache/` and `verdicts.json`. Override it for SPC alone with
+`JAVA_OPTS=-Dde.griefed.serverpackcreator.home=<dir>`, which wins over everything else.
+
 A `grinder.log` in `~/.spc-grinder` exists only if *you* redirected the process's stdout there. The log4j file
 above is written regardless. Under systemd, console output goes to the journal instead:
 
@@ -393,6 +399,8 @@ Requires=docker.service
 
 [Service]
 User=grinder
+WorkingDirectory=/home/grinder
+Environment=SPC_GRINDER_HOME=/home/grinder/.spc-grinder
 Environment=SPC_GRINDER_WORKERS=4
 Environment=SPC_GRINDER_BATCH=100
 Environment=SPC_GRINDER_REVERIFY_TTL_DAYS=180
@@ -407,6 +415,17 @@ WantedBy=multi-user.target
 
 Give `TimeoutStopSec` room: on stop the grinder removes in-flight containers before exiting.
 
+**`WorkingDirectory=` is not decoration.** A unit without it runs in `/`, and anything that resolves a relative
+path there fails — log4j's own `logs/` among them, which is why the journal used to open with
+`java.io.IOException: Could not create directory /logs`. Point it at a directory the service user owns.
+
+Two more things the unit file decides, both worth stating explicitly:
+
+- **`SPC_GRINDER_HOME` is where everything lives**, the grinder's own state *and* SPC's home directory. It
+  defaults to `~/.spc-grinder`, and under systemd `~` is the home of `User=`, so set it explicitly rather than
+  relying on the account.
+- **`User=` must be in the `docker` group**, or every boot fails at the daemon socket.
+
 ---
 
 ## 9. Troubleshooting
@@ -414,6 +433,8 @@ Give `TimeoutStopSec` room: on stop the grinder removes in-flight containers bef
 | Symptom                                  | Cause & fix                                                                                                                   |
 |------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|
 | `Cannot connect to the Docker daemon`    | Daemon not running, or your user isn't in the `docker` group                                                                  |
+| `FileNotFoundException: /log4j2.xml`, `Could not create directory /logs` | The service ran in `/` and SPC took it for its home. Fixed in the daemon, which now names its home itself; on an older build set `WorkingDirectory=` in the unit (§8) |
+| `home directory is not usable: <path>` | SPC resolved a home it cannot write to. Point it somewhere writable with `JAVA_OPTS=-Dde.griefed.serverpackcreator.home=<dir>`, or fix that directory's ownership |
 | `No cached loader install for …`         | The one-off install boot failed — it is the only boot allowed network. Check connectivity and the logs above it               |
 | Mods on the newest Minecraft are skipped | The image lacks that version's required JDK. Add it to the Dockerfile **and** `ImageJavaRuntimes.bundledMajors`, then rebuild |
 | Boots die with `Killed` mid-startup      | Host out of memory — lower `SPC_GRINDER_WORKERS`                                                                              |
