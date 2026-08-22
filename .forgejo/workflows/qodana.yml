@@ -1,7 +1,11 @@
 # Static analysis, replacing GitLab's `Qodana` + `Qodana Post`.
 #
 # The report is a workflow artifact now. GitLab served it from Pages and the Discord message linked there;
-# with Pages gone the message links the Forgejo run, where the artifact is attached.
+# with Pages gone the message links the artifact itself, one click from Discord instead of a run page and
+# a hunt for the download. Nothing renders it in-browser: the link serves the zip, whose index.html opens
+# locally. Forgejo has no Pages, and a report committed to a branch would not work either -- raw files
+# come back as `text/plain` with `nosniff`, verified against this instance, so the HTML would show as
+# source and its CSS/JS would be blocked.
 #
 # Entirely Cloud-free: no Qodana Cloud subscription, no QODANA_TOKEN, no upload. Everything this job
 # reports comes out of the SARIF it produces locally.
@@ -19,6 +23,11 @@ jobs:
   qodana:
     name: "scan"
     runs-on: ubuntu-latest
+    # Whether an artifact actually exists, for the notify job. Empty when the upload produced nothing --
+    # `if-no-files-found: warn` means a scan that died before writing a report warns rather than fails --
+    # and notify falls back to the run URL rather than posting a link that 404s.
+    outputs:
+      report_artifact_id: ${{ steps.upload_report.outputs.artifact-id }}
     # NO `container:` HERE, DELIBERATELY. Forgejo Actions (act) runs every JavaScript action by exec'ing
     # `node` INSIDE the job container, and jetbrains/qodana-jvm-community ships none -- verified,
     # `command -v node` in that image returns nothing. GitHub's hosted runners inject a node binary into
@@ -107,7 +116,9 @@ jobs:
             echo "No SARIF produced"
           fi
 
-      - uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
+      - name: Upload report
+        id: upload_report
+        uses: https://code.forgejo.org/forgejo/upload-artifact@cb8afe72b42edc798abfb8fcb556cf660d894245 # v5, Forgejo's GHES-patched fork
         if: ${{ always() }}
         with:
           name: qodana-report
@@ -115,6 +126,12 @@ jobs:
             qodana/report
             qodana/results/qodana.sarif.json
           if-no-files-found: warn
+          # The Discord message links this artifact, so its lifetime is how long that link stays good --
+          # seven days, rather than the instance default of ARTIFACT_RETENTION_DAYS (90). Deletion is
+          # server-side once an expiry is set: `cron.cleanup_actions` runs @midnight and is enabled by
+          # default. An older message keeps pointing at its own run's artifact, so it goes dead rather
+          # than quietly showing a newer scan.
+          retention-days: 7
 
   notify:
     name: "notify"
@@ -122,11 +139,13 @@ jobs:
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
-      # Discord, as before, but pointing at the Forgejo run rather than a Pages artifact URL that no
-      # longer exists. Skipped silently when no webhook is configured.
+      # Discord, as before, but the embed now links the report artifact instead of the run page.
+      # Skipped silently when no webhook is configured.
       - name: Post to Discord
         env:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          REPORT_ARTIFACT_ID: ${{ needs.qodana.outputs.report_artifact_id }}
+          COMMIT: ${{ github.sha }}
         run: |
           # A missing webhook is fine and exits cleanly; a webhook that is configured and then fails to
           # accept the post is a real failure and must not be swallowed -- hence set -e AFTER the guard.
@@ -136,6 +155,20 @@ jobs:
           fi
           set -eu
           export RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_number }}"
-          python3 -c "import json,os;print(json.dumps({'username':'ServerPackCreator','embeds':[{'title':'New Qodana report','description':'A new Qodana report is attached to this run.','url':os.environ['RUN_URL'],'color':12648430}]}))" > payload.json
+          export SHORT_SHA="$(echo "$COMMIT" | cut -c1-8)"
+          # Forgejo serves an artifact at <run>/artifacts/<name-or-id> -- verified in its own routing
+          # table, `m.Get("/artifacts/{artifact_name_or_id}", actions.ArtifactsDownloadView)`. The name is
+          # used rather than the id because it is stable and readable, and rather than the upload action's
+          # own `artifact-url` output because that output is built from `github.context.runId`, which on
+          # Forgejo is not the per-repo index its run URLs use -- the same reason RUN_URL above uses
+          # `github.run_number`. The id is still consulted, as the existence check.
+          if [ -n "${REPORT_ARTIFACT_ID:-}" ]; then
+            export TARGET_URL="$RUN_URL/artifacts/qodana-report"
+            export DESCRIPTION="Report for $SHORT_SHA. The link downloads the report archive - open index.html inside it. Kept for 7 days."
+          else
+            export TARGET_URL="$RUN_URL"
+            export DESCRIPTION="No report was produced for $SHORT_SHA - the scan did not get that far. This links the run."
+          fi
+          python3 -c "import json,os;print(json.dumps({'username':'ServerPackCreator','embeds':[{'title':'New Qodana report','description':os.environ['DESCRIPTION'],'url':os.environ['TARGET_URL'],'color':12648430}]}))" > payload.json
           curl -sf -X POST -H 'Content-Type: application/json' -d @payload.json "$WEBHOOK_URL" > /dev/null
-          echo "Posted"
+          echo "Posted: $TARGET_URL"
