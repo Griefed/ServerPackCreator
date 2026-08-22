@@ -56,16 +56,22 @@ jobs:
 
       # `--runner gitlab` became wrong with the forge change; the flag only labels the environment in the
       # report, so `other` is accurate and avoids claiming a runner that no longer exists.
-      # The builder runs in its own container rather than as the job's container, so the workspace is a
-      # bind mount and the paths inside are the mount point, not $GITHUB_WORKSPACE. INSTANCE is passed
-      # with -e because the outer shell must not expand it -- the inner script needs it.
+      # The builder runs in its own container rather than as the job's container. Under docker-in-docker a
+      # `-v "$PWD:/workspace"` bind is resolved by the DIND daemon, whose filesystem holds no copy of the
+      # job's workspace -- verified 2026-08-22 against docker:dind, the sibling saw an EMPTY directory and
+      # still exited 0, so the build would have silently produced nothing. `--volumes-from` inherits the
+      # job container's own workspace volume instead, which makes $PWD name the same files on both sides.
+      # THIS REQUIRES the runner's `container.options` to mount a volume at the workspace parent
+      # (`-v /workspace`); without it the workspace is ordinary container filesystem and nothing
+      # propagates. INSTANCE is passed with -e because the outer shell must not expand it -- the inner
+      # script needs it, and $PWD in that single-quoted script expands inside the builder, where -w set it.
       - name: Build webhelp
         run: |
           set -e
           mkdir -p public
           docker run --rm \
-            -v "$PWD:/workspace" \
-            -w /workspace \
+            --volumes-from "$(cat /etc/hostname)" \
+            -w "$PWD" \
             -e INSTANCE \
             --entrypoint bash \
             jetbrains/writerside-builder:2026.02.8644 \
@@ -73,8 +79,8 @@ jobs:
                 export DISPLAY=:99
                 Xvfb :99 &
                 /opt/builder/bin/idea.sh helpbuilderinspect \
-                  -source-dir /workspace/serverpackcreator-help \
-                  -product "$INSTANCE" --runner other -output-dir /workspace/public/ || true'
+                  -source-dir "$PWD/serverpackcreator-help" \
+                  -product "$INSTANCE" --runner other -output-dir "$PWD/public/" || true'
           chown -R "$(id -u):$(id -g)" public 2>/dev/null || true
           echo "Test existing of $ARTIFACT artifact"
           test -e "public/$ARTIFACT"

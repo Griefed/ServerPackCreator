@@ -61,24 +61,35 @@ jobs:
       # env -- an empty one implies a Cloud setup that does not exist.
       # `qodana-jvm-community` is NOT a binary in that image -- verified, `command -v` finds nothing. The
       # entrypoint is the Qodana CLI at /opt/idea/bin/qodana and it needs the `scan` subcommand, so this
-      # step would have failed even with node present; it never got the chance, checkout died first. The
-      # /data/{project,cache,results,report} paths are the image's own conventions (its WorkingDir is
-      # /data/project). This exact command line was run locally against this repo: it opens the project
-      # and starts inspecting, so the form is proven -- see the memory note below.
+      # step would have failed even with node present; it never got the chance, checkout died first.
+      # The /data/{project,cache,results,report} mounts this step used to pass are gone, and NOT because
+      # the image's conventions changed -- they are still its conventions, and its WorkingDir is still
+      # /data/project. Under docker-in-docker a `-v "$PWD:..."` bind is resolved by the DIND daemon, whose
+      # filesystem holds no copy of the job's workspace: verified 2026-08-22 against docker:dind, the
+      # sibling saw an EMPTY directory and exited 0, i.e. Qodana would have scanned nothing and the
+      # `|| true` would have hidden it. `--volumes-from` inherits the job container's own workspace volume,
+      # so $PWD names the same files on both sides and the CLI's --*-dir flags point straight at them.
+      # THIS REQUIRES the runner's `container.options` to mount a volume at the workspace parent
+      # (`-v /workspace`); without it nothing propagates to the sibling.
+      # The /data-mount form was the one proven by a local run against this repo; this workspace-path
+      # form has NOT been run locally, so the first CI run is its proof.
       - name: Run Qodana
         run: |
           mkdir -p qodana/cache qodana/results qodana/report
+          # Fail loudly if the sibling cannot see the workspace. The scan below ends in `|| true`, so
+          # without this guard a broken `--volumes-from` looks exactly like "no problems found". Uses the
+          # Qodana image itself rather than adding a second one -- it is being pulled anyway.
+          docker run --rm --volumes-from "$(cat /etc/hostname)" -w "$PWD" \
+            --entrypoint sh jetbrains/qodana-jvm-community:2026.2 -c 'test -f gradlew'
           docker run --rm \
-            -v "$PWD:/data/project" \
-            -v "$PWD/qodana/cache:/data/cache" \
-            -v "$PWD/qodana/results:/data/results" \
-            -v "$PWD/qodana/report:/data/report" \
+            --volumes-from "$(cat /etc/hostname)" \
+            -w "$PWD" \
             jetbrains/qodana-jvm-community:2026.2 \
             scan \
-              --project-dir /data/project \
-              --cache-dir /data/cache \
-              --results-dir /data/results \
-              --report-dir /data/report \
+              --project-dir "$PWD" \
+              --cache-dir "$PWD/qodana/cache" \
+              --results-dir "$PWD/qodana/results" \
+              --report-dir "$PWD/qodana/report" \
             || true
           # The image runs as uid 0, so its output is root-owned. upload-artifact runs as the runner user
           # and cannot read that unless the runner is also root -- normalise, tolerating failure because
