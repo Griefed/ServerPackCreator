@@ -66,15 +66,7 @@ object GrinderApplication {
 
         log.info("Grinder starting — image=$image work=$workDir cache=$cacheRoot store=$storeFile port=$port workers=$workers")
 
-        // Claim our own Preferences node BEFORE any ApiProperties is built, so the daemon's home directory cannot be
-        // moved by another SPC process on this account (a test suite did exactly that mid-run: it relocated the home
-        // into its own scratch dir, deleted it, and every boot then failed on a missing server-icon.png and was
-        // recorded as a metadata-only verdict). Only set when the operator has not chosen a node themselves.
-        if (System.getProperty(ApiProperties.PREFERENCES_NODE_PROPERTY).isNullOrBlank() &&
-            System.getenv(ApiProperties.PREFERENCES_NODE_ENV).isNullOrBlank()
-        ) {
-            System.setProperty(ApiProperties.PREFERENCES_NODE_PROPERTY, "${ApiProperties.DEFAULT_PREFERENCES_NODE}-grinder")
-        }
+        claimSpcPreferencesNode()
         log.info("Using Preferences node '${ApiProperties.resolvePreferencesNode()}' for SPC settings.")
 
         // Point SPC at a specific config when given (reproducible runs), else one inside our own home -- never
@@ -227,6 +219,20 @@ object GrinderApplication {
     internal fun resolveSpcPropertiesFile(explicitPath: String?, home: File): File =
         explicitPath?.takeIf { it.isNotBlank() }?.let { File(it).absoluteFile }
             ?: File(home, "serverpackcreator.properties").absoluteFile
+
+    /**
+     * Claims the daemon its own SPC `Preferences` node, so the home directory it runs on cannot be moved by another
+     * SPC process on this account (a test suite did exactly that mid-run: it relocated the home into its own scratch
+     * directory, deleted it, and every boot then failed on a missing `server-icon.png` and was recorded as a
+     * metadata-only verdict). Only claims one when the operator has not chosen a node themselves.
+     */
+    internal fun claimSpcPreferencesNode() {
+        if (System.getProperty(ApiProperties.PREFERENCES_NODE_PROPERTY).isNullOrBlank() &&
+            System.getenv(ApiProperties.PREFERENCES_NODE_ENV).isNullOrBlank()
+        ) {
+            System.setProperty(ApiProperties.PREFERENCES_NODE_PROPERTY, "${ApiProperties.DEFAULT_PREFERENCES_NODE}-grinder")
+        }
+    }
 
     /** Read [key] from the environment, falling back to [default] when unset or blank. */
     private fun env(key: String, default: String): String = System.getenv(key)?.takeIf { it.isNotBlank() } ?: default
