@@ -156,7 +156,13 @@ jobs:
   build-appimage-aarch64:
     name: Build AppImage (aarch64)
     needs: build-jar
-    runs-on: ubuntu-24.04-arm
+    # An amd64 runner, deliberately, for an aarch64 artifact: the AppImage is cross-packaged. Nothing
+    # aarch64 has to *run* here -- the JDK is downloaded and unpacked, the JAR arrives from build-jar,
+    # and appimagetool runs as the host's architecture while ARCH tells it which runtime to embed. That
+    # keeps this job off the `ubuntu-24.04-arm` label, which no registered runner offers ("No matching
+    # online runner with label"), and off QEMU. Supporting that label instead would have meant a
+    # `?platform=linux/arm64` label on the runner plus binfmt handlers on its host.
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -176,10 +182,10 @@ jobs:
           path: jdk-21-aarch64
           key: jdk-21-aarch64
 
-      - name: Build AppImage for aarch64
+      - name: Build AppImage for aarch64 (cross-packaged)
         run: |
           chmod +x misc/build-appimage.sh
-          misc/build-appimage.sh "${{ needs.build-jar.outputs.version }}"
+          misc/build-appimage.sh --arch aarch64 "${{ needs.build-jar.outputs.version }}"
 
       - name: Verify AppImage
         run: |
