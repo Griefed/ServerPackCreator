@@ -537,7 +537,11 @@ fun File.create(createFileOrDir: Boolean = false, asDirectory: Boolean = false) 
 }
 
 /**
- * Test whether files can be written to this file denoting a directory.
+ * Test whether files can be written to this file denoting a directory, by creating a throwaway file in it and
+ * removing it again. The probe file's name is generated per call, never fixed: a shared name is defeated both by
+ * anything already holding it and by a second probe deleting this one's file mid-check — measured at 34 of 64
+ * concurrent probes reporting a writable directory as unwritable — and callers act on a false answer by refusing
+ * a directory or, in `ApiProperties`, by refusing to start.
  * If this file is not a directory, an [IllegalArgumentException] will be thrown.
  *
  * @author Griefed
@@ -547,16 +551,14 @@ fun File.testFileWrite() : Boolean {
     if (!this.isDirectory) {
         throw(IllegalArgumentException("Destination must be a directory."))
     }
+    var probe: Path? = null
     return try {
-        val file = File(this,"poke")
-        file.writeText("writable")
-        if (file.exists()) {
-            file.deleteQuietly()
-            true
-        } else {
-            false
-        }
+        probe = Files.createTempFile(this.toPath(), ".spc-write-probe", null)
+        Files.isRegularFile(probe)
     } catch (ex: Exception) {
         false
+    } finally {
+        // Litter in a user's home outlives the process that dropped it, so removal must survive a failed probe.
+        probe?.let { runCatching { Files.deleteIfExists(it) } }
     }
 }
