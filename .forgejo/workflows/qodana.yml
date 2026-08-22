@@ -156,6 +156,52 @@ jobs:
           set -eu
           export RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_number }}"
           export SHORT_SHA="$(echo "$COMMIT" | cut -c1-8)"
+          # Discord renders <t:EPOCH:f> in each reader's own timezone and locale, so the message can say
+          # when the link dies without anyone doing arithmetic. The epoch is Forgejo's own `expires_at`
+          # for this artifact, not retention-days re-added to "now": if those two ever disagree the
+          # instance is the one that deletes, so it is the one worth quoting. The listing answers
+          # anonymously for this repo (verified), so no token is involved. When the lookup yields
+          # nothing the line is left out entirely -- no expiry beats a wrong one.
+          cat > expiry.py <<'EXPIRY_PY'
+          import datetime, json, os, sys
+
+          def epoch(stamp):
+              """Parse Forgejo's RFC3339 expires_at into a UTC epoch, accepting both the plain-Z and
+              numeric-offset spellings the API may emit."""
+              for fmt in ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S%z"):
+                  try:
+                      parsed = datetime.datetime.strptime(stamp, fmt)
+                  except ValueError:
+                      continue
+                  if parsed.tzinfo is None:
+                      parsed = parsed.replace(tzinfo=datetime.timezone.utc)
+                  return int(parsed.timestamp())
+              return None
+
+          wanted = os.environ.get("REPORT_ARTIFACT_ID", "")
+          try:
+              listing = json.load(open("artifacts.json"))
+          except Exception:
+              sys.exit(0)
+          # The endpoint returns a bare array; tolerate a paginated object in case that ever changes.
+          entries = listing if isinstance(listing, list) else listing.get("entries") or []
+          for entry in entries:
+              if str(entry.get("id")) == wanted and entry.get("expires_at"):
+                  stamp = epoch(entry["expires_at"])
+                  if stamp:
+                      print(stamp)
+                  break
+          EXPIRY_PY
+          EXPIRES_EPOCH=""
+          if [ -n "${REPORT_ARTIFACT_ID:-}" ]; then
+            # Explicit, rather than trusting the redirect below to truncate: a listing left over from
+            # anything else would otherwise be read as this run's and dated the message wrongly.
+            rm -f artifacts.json
+            curl -sf --max-time 30 \
+              "${{ github.server_url }}/api/v1/repos/${{ github.repository }}/actions/artifacts?limit=100" \
+              > artifacts.json || echo "Could not read the artifact listing - posting without an expiry"
+            EXPIRES_EPOCH="$(python3 expiry.py || true)"
+          fi
           # Forgejo serves an artifact at <run>/artifacts/<name-or-id> -- verified in its own routing
           # table, `m.Get("/artifacts/{artifact_name_or_id}", actions.ArtifactsDownloadView)`. The name is
           # used rather than the id because it is stable and readable, and rather than the upload action's
@@ -164,7 +210,12 @@ jobs:
           # `github.run_number`. The id is still consulted, as the existence check.
           if [ -n "${REPORT_ARTIFACT_ID:-}" ]; then
             export TARGET_URL="$RUN_URL/artifacts/qodana-report"
-            export DESCRIPTION="Report for $SHORT_SHA. The link downloads the report archive - open index.html inside it. Kept for 7 days."
+            export DESCRIPTION="Report for $SHORT_SHA. The link downloads the report archive - open index.html inside it."
+            # $'\n' rather than a literal newline: an unindented continuation line would dedent out of
+            # this YAML block scalar and be parsed as a mapping key. The default shell here is bash.
+            if [ -n "$EXPIRES_EPOCH" ]; then
+              export DESCRIPTION="$DESCRIPTION"$'\n'"Expires at: <t:$EXPIRES_EPOCH:f>"
+            fi
           else
             export TARGET_URL="$RUN_URL"
             export DESCRIPTION="No report was produced for $SHORT_SHA - the scan did not get that far. This links the run."
