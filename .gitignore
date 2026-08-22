@@ -460,3 +460,8 @@ jdk-21-*
 ServerPackCreator-*.AppImage
 appimagetool
 /serverpackcreator-web-frontend/.frontend-gradle-plugin/
+
+# Claude Code — personal/local only. `.claude/rules/` and `.claude/skills/` ARE
+# checked in on purpose; these two are per-developer and must not be.
+.claude/settings.local.json
+CLAUDE.local.md

@@ -34,7 +34,6 @@ dependencies {
     implementation(libs.plugins.licenseReport.marker())
     implementation(libs.plugins.kover.marker())
     implementation(libs.plugins.frontend.marker())
-    implementation(libs.plugins.install4j.marker())
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {

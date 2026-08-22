@@ -34,14 +34,17 @@ publishing {
             }
         }
         maven {
+            // git.griefed.de is FORGEJO now, not GitLab. The old URL was a GitLab path
+            // (/api/v4/projects/63/packages/maven) authenticated with a `Private-Token` header, and
+            // neither exists on Forgejo: its package registry is /api/packages/{owner}/maven and it
+            // authenticates with ordinary HTTP Basic. The repository keeps the name `GitGriefed` so the
+            // generated task name -- publishMavenJavaPublicationToGitGriefedRepository, which CI calls --
+            // does not change.
             name = "GitGriefed"
-            url = uri("https://git.griefed.de/api/v4/projects/63/packages/maven")
-            credentials(HttpHeaderCredentials::class) {
-                name = "Private-Token"
-                value = System.getenv("GITLAB_TOKEN")
-            }
-            authentication {
-                create<HttpHeaderAuthentication>("header")
+            url = uri("https://git.griefed.de/api/packages/Griefed/maven")
+            credentials {
+                username = System.getenv("FORGEJO_ACTOR")
+                password = System.getenv("FORGEJO_TOKEN")
             }
         }
         maven {

@@ -7,6 +7,9 @@
 > - **Deferred-but-agreed work** → `claude-docs/BACKLOG.md` (why it waited + context to pick it up cold).
 > - **Behaviour changes on the published API** → `claude-docs/API-BEHAVIOUR-CHANGES.md` (one row per
 >   change, what an embedder sees). The *policy* stays below; that file is its evidence.
+> - **CI secrets — what each one is, its scopes, and which job dies without it** →
+>   `claude-docs/CI-SECRETS.md`. Read it before touching a `secrets.*` reference: Forgejo rejects the
+>   `FORGEJO_`/`GITEA_`/`GITHUB_` prefixes, so the credentials are `FJ_*`/`GH_*` on purpose.
 > - Module-specific facts, patterns and landmines → each module's own `CLAUDE.md`
 >   (lazy-loaded by Claude Code when you work in that module).
 > - Personal working preferences (general approach, organization, no-shortcuts ethos,
@@ -54,7 +57,11 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   no Spring/Swing; not published. Foundation stage: the container-backed `ServerRunner`. See
   `serverpackcreator-grinder/CLAUDE.md`.
 - Not in the Gradle build: `serverpackcreator-help` (docs), `buildSrc`, `docker`, `misc`.
-  **`serverpackcreator-help/Writerside/api-docs.yaml` is GENERATED, not hand-maintained** — springdoc
+- **CI lives in `.forgejo/workflows`** — Forgejo (`git.griefed.de`) is the canonical CI and the origin of
+  every release; `.gitlab-ci.yml` is gone. The wiring, the all-or-nothing `.forgejo`/`.github` landmine and
+  the two deliberately-dropped GitLab capabilities are in `.claude/rules/ci-workflows.md`, which loads when
+  you touch a workflow. Secrets, scopes and which job dies without which → `claude-docs/CI-SECRETS.md`.
+- **`serverpackcreator-help/Writerside/api-docs.yaml` is GENERATED, not hand-maintained** — springdoc
   is wired into `-app` as `developmentOnly`, and the regeneration command sits beside that dependency
   in `serverpackcreator-app/build.gradle.kts`. It had drifted to 25 of 44 endpoints while being edited
   by hand, including two schemas for classes that no longer existed. Regenerate it rather than patching
@@ -69,8 +76,10 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
 - `./gradlew :serverpackcreator-api:test` — API suite (runs against fixture modpacks in
   `serverpackcreator-api/tests/` and `src/test/resources/testresources/`). **Offline for every Minecraft version in
   the shipped manifest snapshot**, which `ApiWrapper.setup()` seeds from the jar; a version newer than that snapshot
-  costs one fetch of its `mcserver/<version>.json`. The snapshot currently lags its own parent manifest (backlog
-  B25). The test home is wiped before each run **except** `manifests/`, so that cache persists and accumulates.
+  costs one fetch of its `mcserver/<version>.json`. The snapshot **no longer lags its own parent
+  manifest** — the release named in `minecraft-manifest.json`'s `latest.release` now has a matching
+  `mcserver/<version>.json`, which is the check worth re-running rather than trusting a file count. That was the open
+  deferral B25, closed as a side effect of the `updateManifests` retarget. The test home is wiped before each run **except** `manifests/`, so that cache persists and accumulates.
 - `./gradlew :serverpackcreator-app:test` — app suite.
 - `./gradlew :<module>:koverHtmlReport` / `koverXmlReport` — coverage (Kover), report under
   `<module>/build/reports/kover/`.
@@ -82,120 +91,13 @@ Each in-build module has its own `CLAUDE.md` with the details — the entries be
   `CommandlineParser.kt` for the arguments).
 - `media` task needs install4j installed locally — not part of regular dev loop.
 
-### Build layout (durable — where things are declared)
+### Build layout
 
-- **Repositories are declared once**, in `settings.gradle.kts` under `dependencyResolutionManagement`,
-  with `RepositoriesMode.FAIL_ON_PROJECT_REPOS` — a project-level `repositories { }` is a build
-  failure, not a silent override. They were previously in 13 places. `buildSrc/build.gradle.kts` keeps
-  its own because it is a **separate build** and cannot read the root settings; it deliberately does
-  **not** list `mavenLocal()`, which used to be first there and let a stale `~/.m2` artifact shadow the
-  real one.
-- **The foojay toolchain resolver is declared TWICE, differently, and both are required.**
-  `settings.gradle.kts` has it `version "0.8.0"`; `buildSrc/settings.gradle.kts` has it **without** a
-  version. buildSrc is a separate build and does **not** inherit the root's toolchain repositories
-  (verified — it fails with *"Toolchain download repositories have not been configured"*), yet by the
-  time its settings evaluate the plugin is already on the classpath, so requesting a version there
-  fails with *"already on the classpath with an unknown version"*. Don't "tidy" either one away.
-- **Versions live in `gradle/libs.versions.toml`** — `[versions]`, `[libraries]` (49) and `[plugins]`
-  (12). Do not re-add a hardcoded coordinate to a module build file.
-  **Plugins are consumed by two different routes, and only one of them works everywhere:**
-  - a *real* build script (`build.gradle.kts`, a module's own) uses `plugins { alias(libs.plugins.x) }`;
-  - a **precompiled script plugin** (`buildSrc/src/main/kotlin/*.gradle.kts`) **cannot** — `alias(...)`
-    there fails at `:buildSrc:compilePluginsBlocks` with `Unresolved reference: libs`. Verified by
-    trying it, not assumed. Those apply a versionless `id("...")`, and the version arrives from the
-    plugin **marker** (`<id>:<id>.gradle.plugin:<version>`) that `buildSrc/build.gradle.kts` puts on
-    its own compile classpath via `libs.plugins.x.marker()`.
-
-    Either route reads this one file, so a plugin's id and version are declared exactly once. Before
-    2026-08-16 buildSrc depended on plugin *implementation* artifacts under `[libraries]`
-    (`kotlinGradlePlugin`, `dokka`, …) while the convention plugins named the plugin *id* — two
-    unlinked strings per plugin. Converting to markers is behaviour-preserving; measured, the
-    flattened buildSrc compile classpath gained only the marker POMs and **lost
-    `org.jetbrains.dokka:javadoc-plugin`**, which the `org.jetbrains.dokka-javadoc` marker does not
-    depend on. That artifact turned out to be unnecessary: a from-scratch `dokkaJavadocJar` still
-    produces 467 files / 356 HTML pages. Check that jar if you touch dokka wiring — `-api`'s javadoc
-    is **published to Maven Central**, and the task reports success either way.
-  - `settings.gradle.kts` cannot use the catalog in its own `plugins { }` block (it is evaluated
-    before the catalog exists), which is why the foojay resolver keeps a literal version there. `buildSrc/settings.gradle.kts` points at the same file
-  explicitly: buildSrc does **not** inherit the root catalog (verified on Gradle 8.14.4 — removing the
-  block fails with `Unresolved reference: libs`).
-  **Everything Kotlin is ONE `kotlin` entry (2.4.10) — keep it that way.** The compiler plugin, the
-  allopen/jpa/spring compiler plugins and the stdlib/reflect/test libraries all read `version.ref =
-  "kotlin"`. JetBrains versions these together, so a split only ever produces skew: until 2026-08-16
-  this was four entries (`kotlin`, `kotlinAllOpen`, `kotlinJpa` on 2.3.20; `kotlinLibs` on 2.4.10),
-  which meant `-api` compiled with a 2.3.20 compiler against a 2.4.10 stdlib. That combination did
-  work — but it is the same *shape* as the coroutines failure below: a compiler reading metadata from
-  a newer library fails hard with *"binary version of its metadata is X, expected Y"*, and nothing
-  warns you as the gap widens. Do not re-split it to bump libraries without the compiler.
-  Unifying was measured, not assumed: compiler warnings **243 before, 243 after**, the only delta
-  being one warning the newer compiler rewords in place (`ServerPackCreator.kt:164:95`, elvis
-  operator); 741 tests green; `bootJar`, `dokkaJavadocJar` (356 HTML pages), `sourcesJar` and
-  `generateLicenseReport` all still succeed. Note the compiler version binds **Gradle** only —
-  IntelliJ analyses with its own bundled Kotlin plugin, so an IDE older than the catalog can report
-  metadata errors the command line does not.
-- **Only `-api` publishes.** `serverpackcreator.publishing-conventions` is applied by that module
-  alone, matching CI (`.gitlab-ci.yml` runs four `:serverpackcreator-api:publish...` invocations and
-  nothing else). Non-api modules produce no sources/javadoc jar and run no `signing`. Do not move this
-  back into `java-conventions`.
-- **Convention plugin graph:** `java-conventions` (toolchain, test isolation, jar manifest) ←
-  `kotlin-conventions` (Kotlin + Kover) ← `application-conventions` (= kotlin + spring);
-  `spring-conventions`, `dokka-conventions`, `quasar-conventions` and `publishing-conventions` are
-  applied on top as needed.
-- **No cross-project configuration in the root build.** `allprojects { }`,
-  `evaluationDependsOnChildren()` and `project("x").tasks.y.get()` are gone. A module that needs to run
-  after another declares it itself, by task **path** (`-app`'s
-  `mustRunAfter(":generateLicenseReport", ":serverpackcreator-web-frontend:build")`) — a string path
-  resolves lazily, reaching into another project's task container forces it to be evaluated. The
-  example-plugin jar is consumed as an artifact (`pluginArtifact`, a consumable configuration on
-  `-plugin-example`) rather than dug out of `childProjects[...]`, which is what removed the build's last
-  `!!`. Do not re-introduce any of the four.
-- **Configuration cache is NOT enabled, and step 5 above is not what is blocking it** — measured, because
-  this was claimed and was wrong: `build --dry-run --configuration-cache` reported the *same* 20 problems
-  (13 unique) before and after the cross-project work, and configuration time was ~4.95 s either way.
-  Those constructs block project **isolation**, a different feature. The 20 problems are:
-  - `:generateLicenseReport` holds a `Project` reference — **third-party** (jk1 gradle-license-report),
-    not fixable here.
-  - every module's `test` and `processTestResources` "cannot serialize Gradle script object references" —
-    **ours**: the `filter { }` in `processTestResources` and the `doFirst { cleanup() }` in `test`, both in
-    `java-conventions`, capture the enclosing script; `-app`'s `test.doFirst` additionally captures
-    `projectDir`.
-  So the ceiling without excluding `generateLicenseReport` is "fewer problems", not zero. Fixing our own is
-  a real, separate piece of work; do not start it expecting the cache to switch on at the end of it.
-- **LANDMINE — Boot's BOM is a `platform()`, never `io.spring.dependency-management`. Do not "restore"
-  that plugin.** Boot's BOM manages far more than Spring — verified in 4.0.2's BOM: `kotlin.version`
-  2.2.21, `kotlin-coroutines.version` 1.10.2, `log4j2.version` 2.25.3, `jackson-2-bom.version` 2.20.2,
-  `jackson-bom.version` 3.0.4, `junit-jupiter.version` 6.0.2, `mongodb.version` 5.6.2, i.e. most of what
-  this project pins for itself. `io.spring.dependency-management` applies those as **forced** versions
-  that beat every transitive request, so each catalog bump upgraded the other modules and was silently
-  reverted in `-app`. That is not a warning and not a build failure — it surfaces as a
-  `NoSuchMethodError` the first time the newer API is *called*. It cost 16 app tests on the coroutines
-  1.11.0 bump (`BuildersKt.runBlockingK`, renamed in 1.11.0, absent from the 1.10.2 the BOM forced),
-  while `./gradlew compileKotlin` was green in every module.
-  Since 2026-08-16 `serverpackcreator.spring-conventions` imports the BOM as a Gradle `platform()`,
-  whose versions are ordinary constraints that lose to a higher request — the catalog wins, Boot still
-  versions everything we do not pin. Measured `-api` vs `-app` on shared coordinates:
-
-  | Configuration | Differing before | Differing after |
-  |---|---|---|
-  | `runtimeClasspath` | 13 of 79 | **0 of 79** |
-  | `testRuntimeClasspath` | 31 of 101 | **3 of 102** |
-
-  The three survivors are `-app` resolving *higher* (byte-buddy 1.18.10, asm 9.7.1) from test
-  dependencies `-api` lacks — correct conflict resolution, not drift. **Two related traps:**
-  - The BOM coordinate comes from the catalog's `springBoot`, **not** `SpringBootPlugin.BOM_COORDINATES`,
-    which is the *Gradle plugin's* version (`springGradle`). Those had drifted to 4.0.2 vs 4.1.0, leaving
-    Boot internally inconsistent — `spring-boot` at 4.0.2 while `spring-boot-starter-web` was 4.1.0.
-  - A platform only out-ranks what the module actually *requests*. `-app` got mockk only transitively
-    from springmockk (1.14.6), so the catalog's 1.14.11 never applied and `-api`'s comment claiming the
-    build is mockk-single-versioned was false. `-app` now declares `libs.mockk` explicitly. Bumping a
-    library that reaches a module **only transitively** still needs an explicit declaration there.
-- **LANDMINE — never do filesystem work in a task's configuration block.** `-api` shipped its
-  root-level documents with fifteen bare `copy { }` calls inside `tasks.processResources { }`, so they
-  ran when the task was *configured* — including on runs where `processResources` was UP-TO-DATE and did
-  nothing — with no inputs, no outputs and no caching, writing into two source trees. They are now the
-  `shipRootDocuments` / `shipWritersideDocuments` / `shipWritersideImages` Copy tasks. Making them
-  visible immediately surfaced a real undeclared dependency (`sourcesJar` packages what
-  `shipRootDocuments` writes), which had been ordering by luck.
+**Where every build declaration lives, and the landmines protecting them, are in
+`.claude/rules/build-layout.md`** — it loads whenever you touch `build.gradle.kts`,
+`settings.gradle.kts`, `buildSrc/`, or the version catalog. Read it before changing any of those:
+it is the difference between a two-line bump and re-introducing a failure this project already paid
+for. `BUILD.md` is the contributor-facing tour of the same ground.
 
 ## Branching & git workflow
 
@@ -222,6 +124,29 @@ evidence consulted occasionally, not context every session needs.
 ---
 
 ## Conventions
+
+- **"Make it work, make it right, make it fast." — Kent Beck.** A more detailed variation often cited is
+  *"First, make it. Then, make it work. Lastly, if you can, make it pretty."* The sequence exists to head
+  off perfectionism and analysis paralysis: functionality comes before form, and the core logic has to be
+  solid before anyone spends effort on readability or speed.
+  - **Avoiding premature optimization.** Knuth's "root of all evil" — you cannot predict bottlenecks
+    without a working system to measure. This project has the receipts: B30 was a real 121,492-byte
+    saving per startup that bought **~0 ms**, because the twelve manifest checks run concurrently and the
+    slowest one gated the batch. Measured, it was the wrong thing to optimise; the right one (B31, taking
+    the refresh off the startup path) was ~392 ms and only visible once something was running.
+  - **Managing technical debt.** Shortcuts may be taken first, but the bargain is that you come back and
+    polish. Many developers argue "fix it later" is a myth, and that is the risk this convention set
+    exists to contain — which is why `claude-docs/BACKLOG.md` demands a *stated reason* per deferral and
+    enough context to pick it up cold, rather than a wish-list.
+  - **Iterative improvement.** A messy first draft, then refinement.
+
+  **How this squares with TDD and "no shortcuts", which it looks like it contradicts:** the ordering is
+  about which *concern* you attack first, not permission to skip pinning. "Make it work" is what the
+  characterization test asserts; "make it right" and "make it fast" are the steps the test then protects.
+  Read the other way round it licenses exactly the failure this file already documents at length — the
+  performance branch whose tests were written by the same pass that changed the code and therefore passed
+  by construction. Draft messily, but pin before you refine, and never let "make it fast" arrive before
+  there is something whose behaviour is known.
 
 - **Cite names, not snapshots.** Three consecutive audits of the performance branches found the same
   defect class and nothing else: a fact quoted in prose going stale the moment the code moved — 54 commit
@@ -283,7 +208,7 @@ evidence consulted occasionally, not context every session needs.
 
   Every failure is either a regression or a deliberate change; every *compile* error is a signature change,
   which is a finding in itself and must be enumerated rather than worked around. Done for this branch
-  (`REFACTOR-AUDIT.md` iteration 7): **490 pre-existing guards, zero failures**, with exactly two files
+  (`claude-docs/REFACTOR-AUDIT.md` iteration 7): **490 pre-existing guards, zero failures**, with exactly two files
   uncompilable — one adapted by adding two constructor arguments and *no* assertion edits (7 guards green), one
   legitimately unadaptable because it asserted behaviour the branch removed. Also check *which* changed classes
   the base's tests actually name, so the residual risk is stated rather than assumed; a class-name grep
@@ -293,7 +218,9 @@ evidence consulted occasionally, not context every session needs.
   Iteration 7 ran the actual `bootJar` in `-web` mode against MongoDB 8.0.5 in Docker, seeded with pre-branch
   shaped documents, and that is what confirmed the `sha256` index really exists, the migration really converts
   legacy documents and really skips already-migrated ones, and `/api/v2/runconfigs/all` really returns the
-  documented shape. It also surfaced B33, which no test could have. Cost: about fifteen minutes.
+  documented shape. It also surfaced what was filed at the time as B33 — the web application
+    writing to MongoDB's default `test` database instead of the configured one, which no test could have caught, and
+    which the Spring Boot 4 property-key fix has since closed. Cost: about fifteen minutes.
 - **Build logic is verified by measurement, not by tests — and the measurement goes in the commit message.**
   `buildSrc` has no test source set and no Gradle TestKit harness, and we have decided not to add one to pin single
   predicates (a task-wiring change or a one-line filter is not worth a second test framework in the build). So for a
@@ -379,7 +306,7 @@ evidence consulted occasionally, not context every session needs.
 
 | Module         | Tests         | Notes                                                                                |
 |----------------|---------------|--------------------------------------------------------------------------------------|
-| api            | 343 (1 skip)  | Phase 1 **complete**. Guard style worth knowing before adding one: manifest and generation work is pinned by *request*, *read* and *open counts* against loopback servers and injected openers, never by wall-clock; shipped shell templates are pinned by **executing** them. |
+| api            | 354 (1 skip)  | Phase 1 **complete**. Counts in this column are re-derivable from `<module>/build/test-results/test/*.xml` after a full build — confirm the files came from that run before trusting a total. Guard style worth knowing before adding one: manifest and generation work is pinned by *request*, *read* and *open counts* against loopback servers and injected openers, never by wall-clock; shipped shell templates are pinned by **executing** them. |
 | clientside     | 88            | Extracted from `-app`; `BootVerifier` split + `packPostProcessor` hook; selection (MC-support gate) + setup-abort classification pinned; `MetadataScanner` dispatches through `ModScanner.scannerFor` |
 | app            | 149           | Phase 2 largely complete; clientside engine extracted out, CLI verbs stay. GUI hot paths are pinned by *call counts* and set identity, never wall-clock; the web module's persistence declarations are pinned against Spring Data's own machinery (`PartTree`, `MongoMappingContext`, `MongoPersistentEntityIndexResolver`) so none of them needs a database. |
 | plugin-example | 3 (from 0)    | Phase 3 **complete**                                                                  |

@@ -26,7 +26,7 @@ kover = "0.9.9"
 frontendPlugin = "10.0.0"
 
 # https://plugins.gradle.org/plugin/com.install4j.gradle
-install4j = "12.0.2"
+install4j = "13.1"
 
 # https://github.com/gradle-nexus/publish-plugin
 nexusPublish = "2.0.0"
@@ -56,7 +56,7 @@ playwright = "1.62.0"
 dockerJava = "3.7.1"
 commonsIo = "2.22.0"
 cronUtils = "9.2.1"
-install4jRuntime = "12.0.4"
+install4jRuntime = "13.1"
 picocli = "4.7.7"
 flatlaf = "3.7.2"
 flatlafFontsJetbrainsMono = "2.304"
