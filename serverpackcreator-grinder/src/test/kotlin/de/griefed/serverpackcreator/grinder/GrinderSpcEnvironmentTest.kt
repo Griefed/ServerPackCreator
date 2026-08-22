@@ -46,9 +46,6 @@ import java.io.File
  */
 internal class GrinderSpcEnvironmentTest {
 
-    private val entryPoint =
-        File("src/main/kotlin/de/griefed/serverpackcreator/grinder/GrinderApplication.kt")
-
     private var homeProperty: String? = null
     private var nodeProperty: String? = null
 
@@ -117,8 +114,7 @@ internal class GrinderSpcEnvironmentTest {
      */
     @Test
     fun theSpcEnvironmentIsClaimedBeforeTheFirstLogStatement() {
-        Assertions.assertTrue(entryPoint.isFile, "entry point not found at ${entryPoint.absolutePath}")
-        val body = mainBody()
+        val body = grinderMainBody()
 
         val firstLog = body.indexOf("log.")
         Assertions.assertTrue(firstLog > 0, "no log statement found in main — did the entry point change shape?")
@@ -133,35 +129,5 @@ internal class GrinderSpcEnvironmentTest {
                     "resolves is what the daemon runs on"
             )
         }
-    }
-
-    /**
-     * `main`'s body and nothing else, cut by matching braces from its opening one. Asserts that the window stops
-     * before the declarations that follow `main`, since a window that silently ran past them is exactly how the
-     * guard above would keep passing while asserting nothing.
-     */
-    private fun mainBody(): String {
-        val source = entryPoint.readText()
-        val signature = source.indexOf("fun main(args: Array<String>) {")
-        Assertions.assertTrue(signature > 0, "main(args) not found — did the entry point change shape?")
-
-        val open = source.indexOf('{', signature)
-        var depth = 0
-        var index = open
-        while (index < source.length) {
-            when (source[index]) {
-                '{' -> depth++
-                '}' -> if (--depth == 0) break
-            }
-            index++
-        }
-        Assertions.assertTrue(depth == 0, "main's braces do not balance — the window would run to end of file")
-
-        val body = source.substring(open + 1, index)
-        Assertions.assertFalse(
-            body.contains("internal fun pinSpcHomeDirectory"),
-            "the window ran past main and into the declarations below it, so this guard would assert nothing"
-        )
-        return body
     }
 }
