@@ -109,11 +109,16 @@ internal class GrinderSpcEnvironmentTest {
 
     /**
      * Both claims must precede every `log` use in `main`, since the first one builds an `ApiProperties`.
+     *
+     * The window is `main`'s own body, closing brace included in the arithmetic. Scanning to end-of-file instead
+     * would let both `indexOf` calls match text that is not `main` — the `pinSpcHomeDirectory` *declaration* below
+     * it, or a helper's log call — and the guard would then compare positions of things it is not asserting about
+     * and pass whatever `main` does. [mainBody] asserts its own boundedness, so that cannot rot silently.
      */
     @Test
     fun theSpcEnvironmentIsClaimedBeforeTheFirstLogStatement() {
         Assertions.assertTrue(entryPoint.isFile, "entry point not found at ${entryPoint.absolutePath}")
-        val body = entryPoint.readText().substringAfter("fun main(args: Array<String>) {")
+        val body = mainBody()
 
         val firstLog = body.indexOf("log.")
         Assertions.assertTrue(firstLog > 0, "no log statement found in main — did the entry point change shape?")
@@ -128,5 +133,35 @@ internal class GrinderSpcEnvironmentTest {
                     "resolves is what the daemon runs on"
             )
         }
+    }
+
+    /**
+     * `main`'s body and nothing else, cut by matching braces from its opening one. Asserts that the window stops
+     * before the declarations that follow `main`, since a window that silently ran past them is exactly how the
+     * guard above would keep passing while asserting nothing.
+     */
+    private fun mainBody(): String {
+        val source = entryPoint.readText()
+        val signature = source.indexOf("fun main(args: Array<String>) {")
+        Assertions.assertTrue(signature > 0, "main(args) not found — did the entry point change shape?")
+
+        val open = source.indexOf('{', signature)
+        var depth = 0
+        var index = open
+        while (index < source.length) {
+            when (source[index]) {
+                '{' -> depth++
+                '}' -> if (--depth == 0) break
+            }
+            index++
+        }
+        Assertions.assertTrue(depth == 0, "main's braces do not balance — the window would run to end of file")
+
+        val body = source.substring(open + 1, index)
+        Assertions.assertFalse(
+            body.contains("internal fun pinSpcHomeDirectory"),
+            "the window ran past main and into the declarations below it, so this guard would assert nothing"
+        )
+        return body
     }
 }
