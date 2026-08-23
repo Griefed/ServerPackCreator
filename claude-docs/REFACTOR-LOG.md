@@ -2207,3 +2207,42 @@ observed red at all**: the interleaving could not be provoked at 8 workers or at
 `Grinder.grind` initialises log4j and reliably delays worker 1 past the construction loop. That is stated in
 the test's own doc rather than glossed, because a guard whose teeth were never checked has repeatedly turned
 out to assert nothing.
+
+## 2026-08-23 — the container CPU cap becomes an operator knob
+
+`SPC_GRINDER_CPUS` caps every container the grinder starts — each mod boot and each loader install — in
+cores, the way docker's own `--cpus` does. The cap was not new: `ContainerResources` has carried a
+200,000µs quota since the container runtime existed, and `ContainerCandidateVerifier`,
+`ContainerServerRunner` and `DockerLoaderInstaller` have all accepted one. `main` never passed one, so the
+value was unreachable from outside the source — the same shape of gap `SPC_GRINDER_HOST` closed for the
+report's bind address, and `CpuLimitWiringTest` is the same kind of guard, asserting the join against
+`main`'s own text because `main` boots Docker.
+
+The default stays 2 cores, so upgrading re-tunes nothing, and `ContainerResourcesTest` pins that
+equivalence (`ContainerResources() == forCpus(2.0)`) instead of asserting it in prose. `forCpus` also
+absorbs the two ends that otherwise surface far from their cause: `0` means an unset quota — docker's own
+"no limit", matching how `0` reads for `SPC_GRINDER_CACHE_TTL_DAYS` — and anything positive below the
+daemon's 1ms floor is raised, because a quota docker refuses fails every container at create time rather
+than throttling it.
+
+**The finding was in the half nobody would have looked at.** `hostConfigFor` sent `withCpuQuota` and no
+period. A quota is a fraction of a period, so the real cap was whatever the daemon's default period made
+it — correct today by coincidence, since the kernel's `cpu.cfs_period_us` is the 100ms the arithmetic
+assumed. Measured against a live daemon (Docker 29.7.2) with the period dropped and a 50ms period
+requested, 1.5 cores arrived in the container's cgroup as `75000 100000`: **0.75 cores, silently halved,
+with nothing reporting a problem.** `theCpuCapReachesTheKernelWithItsPeriod` reads the numbers back from
+*inside* the container for that reason — docker echoing a `HostConfig` only proves the field was
+transmitted — and uses the non-default period on purpose, since at 100ms the assertion passes with the
+period never sent. That is the guard whose teeth were checked by removing the fix and watching it go red.
+
+The operator-facing half states what the knob does *not* cover, which is the more useful sentence: a
+unit-level `CPUQuota=` bounds the JVM's host-side work (mod resolution and downloads, pack generation, the
+headless Chromium a distribution-locked CurseForge file needs) and can never reach a boot, because
+containers are children of the docker daemon rather than of the service's control group — the same fact
+that makes the shutdown hook the only thing able to stop them. Both halves are now in README §5 (*Capping
+CPU*, with `workers × cpus` as what the grinder can occupy) and in the unit as a commented `CPUQuota=`
+beside the new `Environment=` line. The floor is stated too: below ~1 core a boot that cannot reach its
+ready-line inside 15 minutes is scored INCONCLUSIVE, which reads as a mod that hangs rather than as a
+starved host — so fewer workers beats starving each of them.
+
+Suite 290 → 298, 0 failures, 22 skipped; the gated `DockerJavaContainerEngineIT` green at 7/7.

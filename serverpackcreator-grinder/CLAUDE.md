@@ -180,6 +180,13 @@ though their detail lives deeper:
   client a *staler* list than they had. Pinned end-to-end by `FallbackPropertiesConsumerTest`, which drives the
   real `UpdateConfig` against a running `ReportServer` over loopback — the model-vs-consumer distinction matters
   here, since everything else asserts against `java.util.Properties` rather than SPC itself.
+- **A unit-level `CPUQuota=` bounds the JVM and nothing else** — same cause as the shutdown landmine below:
+  containers belong to the docker daemon's control group, not the service's. `SPC_GRINDER_CPUS` (cores per
+  container, default `2`, `0` = uncapped) is the only lever on the boots; the daemon's own host-side share —
+  mod resolution/downloads, pack generation, the headless Chromium for a locked CurseForge file — is the half
+  systemd *can* cap. Floor the knob at ~1 core: a Minecraft startup is largely single-thread-bound, and a boot
+  throttled past its 15-minute budget is scored INCONCLUSIVE, which reads as a hanging mod rather than a
+  starved host. Detail (and why the quota must be sent with its period) in `grinder/container/CLAUDE.md`.
 - **LANDMINE — a container is not in the unit's control group, so only the application can stop it.**
   Containers are children of the docker daemon; `systemctl stop` kills the JVM's cgroup and never touches them.
   The shutdown hook is the *only* thing that does: it marks the engine closed (so a worker cannot create one

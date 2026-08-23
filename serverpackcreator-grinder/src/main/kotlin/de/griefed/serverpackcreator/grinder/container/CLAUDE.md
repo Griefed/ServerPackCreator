@@ -16,6 +16,15 @@ The boot seam: the grinder implements clientside's `ServerRunner` for containers
   hardening as defaults**: `networkMode=none`, `readonlyRootfs`, `dropAllCapabilities`,
   `noNewPrivileges`, non-root `user`, tmpfs for `/tmp`, plus memory/cpu/pids caps. **Never mount the
   Docker socket into a boot container.**
+- **`ContainerResources` is set in cores, via `forCpus`** — `SPC_GRINDER_CPUS` (default `2`) is read in
+  `GrinderApplication` and reaches both the mod boot and the loader install; `CpuLimitWiringTest` pins that
+  join, because `main` boots Docker and no test can execute it. **Send the quota and the period together.**
+  A quota is a fraction of a period, so `withCpuQuota` alone leaves the real cap at whatever the daemon's
+  default period makes it — measured against Docker 29.7.2 with the period dropped, a requested 1.5 cores
+  arrived in the container's cgroup as `75000 100000`, i.e. 0.75 cores, with nothing reporting a problem.
+  `theCpuCapReachesTheKernelWithItsPeriod` reads it back *from inside* the container for that reason (docker
+  echoing a `HostConfig` only proves transmission) and deliberately uses a non-default 50ms period, since at
+  the kernel's own 100ms the assertion would pass with the period never sent.
 - **`DockerJavaContainerEngine`** is the real docker-java impl (create → start → follow logs → stop →
   inspect exit → force-remove). **Not unit-tested** (needs a live daemon) — that is the whole reason
   the testable orchestration sits in `ContainerServerRunner` behind the seam. If you change it, verify
