@@ -312,14 +312,31 @@ jobs:
       # Forgejo push-mirrors replicate refs but NOT releases, so this is explicit rather than a setting.
       # It runs only after the Forgejo release exists, so no downstream forge ever advertises a release
       # this one does not have. The tag itself arrives by ordinary git mirroring.
+      #
+      # GitHub is the only outward mirror. gitlab.com WAS mirrored here too, until 2026-08-23: that step
+      # could never have succeeded, and reported a bare `exitcode '22'`, because gitlab.com's copy of the
+      # repository stopped receiving commits on 2024-04-28 (newest commit there: RELEASE: 5.2.1, 1397
+      # commits behind main) when the git push-mirror died with the GitLab->Forgejo migration. Both
+      # branches of GitLab's release API need something that repository does not have -- the tag, or the
+      # `ref` commit to mint it from -- so no amount of release-API work could have fixed it. Do not
+      # re-add it without first restoring the push-mirror and confirming gitlab.com has the tag.
       - name: Fetch release notes from Forgejo
         env:
           TOKEN: ${{ secrets.FJ_TOKEN }}
         run: |
           set -eu
-          curl -sf "https://git.griefed.de/api/v1/repos/Griefed/ServerPackCreator/releases/${{ needs.release.outputs.release_id }}" \
-            -H "Authorization: token $TOKEN" \
-            | python3 -c 'import json,sys;open("notes.md","w").write(json.load(sys.stdin)["body"])'
+          # -o/-w rather than -f: `curl -sf` prints nothing on an HTTP error, which is how the GitLab step
+          # that used to follow this one reported five failed releases as `exitcode '22': failure` and
+          # nothing else. The body is where every one of these APIs says what is actually wrong.
+          STATUS="$(curl -sS -o release.json -w '%{http_code}' \
+            "https://git.griefed.de/api/v1/repos/Griefed/ServerPackCreator/releases/${{ needs.release.outputs.release_id }}" \
+            -H "Authorization: token $TOKEN")"
+          if [ "$STATUS" -ge 400 ]; then
+            echo "::error::Forgejo returned HTTP $STATUS reading release ${{ needs.release.outputs.release_id }}"
+            cat release.json
+            exit 1
+          fi
+          python3 -c 'import json;open("notes.md","w").write(json.load(open("release.json"))["body"])'
 
       - name: Mirror to GitHub
         env:
@@ -333,35 +350,30 @@ jobs:
           V="${{ needs.prepare.outputs.version }}"
           PRE="${{ needs.prepare.outputs.prerelease }}"
           BODY="$(python3 -c 'import json;print(json.dumps(open("notes.md").read()))')"
-          ID="$(curl -sf -X POST "https://api.github.com/repos/Griefed/ServerPackCreator/releases" \
-                 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
-                 -d "{\"tag_name\":\"$V\",\"target_commitish\":\"${{ github.sha }}\",\"name\":\"$V\",\"body\":$BODY,\"prerelease\":$PRE}" \
-               | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')"
+          STATUS="$(curl -sS -o created.json -w '%{http_code}' \
+            -X POST "https://api.github.com/repos/Griefed/ServerPackCreator/releases" \
+            -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
+            -d "{\"tag_name\":\"$V\",\"target_commitish\":\"${{ github.sha }}\",\"name\":\"$V\",\"body\":$BODY,\"prerelease\":$PRE}")"
+          if [ "$STATUS" -ge 400 ]; then
+            echo "::error::GitHub returned HTTP $STATUS creating release $V"
+            cat created.json
+            exit 1
+          fi
+          ID="$(python3 -c 'import json;print(json.load(open("created.json"))["id"])')"
           for f in assets/*; do
-            curl -sf -X POST \
+            STATUS="$(curl -sS -o upload.json -w '%{http_code}' -X POST \
               "https://uploads.github.com/repos/Griefed/ServerPackCreator/releases/$ID/assets?name=$(basename "$f")" \
               -H "Authorization: Bearer $GH_TOKEN" \
               -H 'Content-Type: application/octet-stream' \
-              --data-binary "@$f" > /dev/null
+              --data-binary "@$f")"
+            if [ "$STATUS" -ge 400 ]; then
+              echo "::error::GitHub returned HTTP $STATUS uploading $(basename "$f")"
+              cat upload.json
+              exit 1
+            fi
             echo "GitHub <- $(basename "$f")"
           done
 
-      - name: Mirror to GitLab.com
-        env:
-          GITLABCOM_TOKEN: ${{ secrets.GITLABCOM_TOKEN }}
-        run: |
-          set -eu
-          V="${{ needs.prepare.outputs.version }}"
-          # GitLab releases reference assets by URL rather than hosting uploads, so the description points
-          # back at the Forgejo release, which is the canonical download location now.
-          DESC="Release $V. Assets and changelog: https://git.griefed.de/Griefed/ServerPackCreator/releases/tag/$V"
-          # `ref` for the same reason GitHub needs target_commitish: without it GitLab answers
-          # 404 Tag Not Found until mirroring has caught up, which is a hard failure now that this step
-          # has set -eu.
-          curl -sf -X POST "https://gitlab.com/api/v4/projects/32677538/releases" \
-            -H "PRIVATE-TOKEN: $GITLABCOM_TOKEN" -H 'Content-Type: application/json' \
-            -d "{\"name\":\"$V\",\"tag_name\":\"$V\",\"ref\":\"${{ github.sha }}\",\"description\":$(python3 -c "import json,sys;print(json.dumps('$DESC'))")}" \
-            > /dev/null && echo "GitLab.com release created"
 
   virustotal:
     name: "VirusTotal scan"
