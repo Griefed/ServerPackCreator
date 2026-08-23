@@ -451,9 +451,18 @@ something to retype:
   service and forgotten here fails the build.
 - [`deploy/install-grinder.sh`](deploy/install-grinder.sh) — builds the runtime image, runs `installDist`,
   installs to `/opt/spc-grinder`, and creates the service account with its home and `docker` group membership.
-  Run it from the repository root as your normal user, **not** as root: it calls `sudo` for the four privileged
-  steps itself, and a Gradle build run as root leaves root-owned files in `build/`. Re-running it is the upgrade
-  path.
+  Run it as your normal user, **not** as root: it calls `sudo` for the privileged steps itself, and a Gradle
+  build run as root leaves root-owned files in `build/`. Re-running it is the upgrade path. `--help` lists the
+  flags; two are worth knowing about — `--grant-docker`, without which it refuses to put an *already-existing*
+  account into the root-equivalent `docker` group, and `--no-pull` for an offline image rebuild.
+
+**The service needs a JVM systemd can find.** The launcher wants `JAVA_HOME` or a `java` on `PATH`, and systemd
+gives a unit neither — its `PATH` is `/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin` and nothing
+else. A distro-packaged JDK lands in `/usr/bin/java` and works; a Temurin tarball under `/opt`, SDKMAN or asdf
+does not, and the first `systemctl start` fails with `JAVA_HOME is not set and no 'java' command could be found
+in your PATH`. The JDK you *build* with is irrelevant — it comes from your profile, which the service never
+reads. `install-grinder.sh` checks this against systemd's own `PATH` and tells you; set `JAVA_HOME` in the unit
+if it warns.
 
 Give `TimeoutStopSec` room: on stop the grinder removes in-flight containers before exiting.
 

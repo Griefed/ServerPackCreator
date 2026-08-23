@@ -3049,3 +3049,34 @@ as canonical. Defensible — GitHub is the public-facing one — but it should b
 | LOW | 5 | L1–L2 worth fixing, L3–L5 are judgement calls |
 
 Not fixed — reported for a go-ahead, per the audit's read-only rule.
+
+## Resolution (2026-08-23, on Griefed's instruction to fix all findings)
+
+Every finding fixed. Verified on real runtimes — Debian and Fedora containers — rather than by inspection, since
+all ten are about what happens on a host this machine is not.
+
+- **H1 — fixed**, guard first (`test(grinder): pin that the unit tells the operator how to provide Java`, red on
+  "the unit does not mention JAVA_HOME"). The unit gained a JVM section quoting the exact launcher error and
+  systemd's real `PATH`, plus `JAVA_HOME`, `JAVA_OPTS` and `SERVERPACKCREATOR_GRINDER_OPTS`; those three are
+  read by the Gradle launcher rather than any Kotlin, so the phantom-variable guard whitelists them as
+  launcher-read. The installer checks with `env -i PATH=<systemd's>`, deliberately *not* the caller's
+  environment. Observed firing in a JDK-less container with the full warning text.
+- **H2 — fixed.** An account the script creates is still added to `docker` automatically; one that already
+  existed now needs `--grant-docker`. Verified both ways against a pre-existing account: refused with
+  `id -nG grinder` still reading `grinder`, then granted to `grinder docker` with the flag.
+- **M1 — fixed.** The script reads `Group=` out of the unit and creates that group when missing. Verified on the
+  host shape that produced the finding — `USERGROUPS_ENAB no`, where `useradd` gave `gid=100(users)` and no
+  group — after which `getent group grinder` resolves and the unit's `Group=` is valid.
+- **M2 and L1 — fixed together.** `set -E` now has something to propagate: an `ERR` trap reporting the failing
+  line, and an `EXIT` trap that restarts the service when the install died after stopping it. The inert flag and
+  the silent outage were the same omission.
+- **M3 — fixed.** The consistency check moved into preflight, before anything is built or changed, and is fatal
+  when `--install-unit` would install the mismatched unit. Verified: `SERVICE_USER=someoneelse … --install-unit`
+  now dies at "Checking prerequisites" having touched nothing.
+- **L2 — fixed.** `chmod -R go-w` before `a+rX`. Verified `755`, `root`-owned.
+- **L3 — fixed.** `--pull` by default, `--no-pull` for an offline rebuild.
+- **L4, L5 — fixed.** `SyslogIdentifier=spc-grinder`; `Documentation=` lists `git.griefed.de` before the GitHub
+  mirror.
+
+Re-verified after the changes: `shellcheck -S style` exit 0, `systemd-analyze verify` reporting only the two
+container artefacts, grinder suite **251**, zero failures.
