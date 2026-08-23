@@ -412,6 +412,12 @@ on <file>` means other versions crashed too, `but <file> booted cleanly` means t
 no longer a crash, and `no other version … to re-check against` means the mod publishes only the one version,
 so the sample behind the verdict is a single build.
 
+**A crash is also weighed against the project's other loaders.** What this list publishes is a file-name stem
+matched with `startsWith`, and that stem is loader-agnostic — so if one loader crashed while another booted a
+server under the *same* stem, publishing the crash would strip a build that demonstrably works. Such a verdict
+keeps its boot result but not its confidence, and its detail ends in `booted a server with the same entry`.
+A crash whose stem is unique to its loader is unaffected: sideness can genuinely differ per loader.
+
 The store is plain JSON (`SPC_GRINDER_STORE`), keyed by platform + slug + loader — the same slug on
 Modrinth and CurseForge stays two separate projects. How far the crawl has got is in `SPC_GRINDER_CURSORS`:
 one entry per platform with the next `offset`, the number of completed `sweeps`, and — for CurseForge — the
@@ -495,6 +501,8 @@ Lines worth grepping for:
 | `Reusing cached` | an installed loader build was reused instead of installing a newer one |
 | `not the newest build` | a crash is being re-checked on the newest loader before it counts |
 | `although the metadata declares` | a crash contradicts the mod's claimed server support; other versions of the mod are being booted to settle it |
+| `booted the same` | a crash was set aside because another loader of the same project booted a server under the same list-entry |
+| `has more files than` | a CurseForge project's file history was longer than the paging cap; its oldest builds were not read |
 | `were not reached` | a pass was cut short; the crawl cursor was held back so nothing is skipped |
 | `Evicted` | idle loader installs reclaimed (`SPC_GRINDER_CACHE_TTL_DAYS`) |
 | `holds .* mods but only` | a CurseForge slice is too big to page through; its middle is unreachable |
