@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.clientside
 
+import com.microsoft.playwright.options.WaitUntilState
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -70,6 +71,40 @@ internal class BrowserDownloaderTest {
             "a timeout is not a download"
         )
         Assertions.assertFalse(BrowserDownloader.isDownloadAbort(RuntimeException(null as String?)))
+    }
+
+
+    /**
+     * The other two behaviours changed alongside the abort fix, which had no guard at all until audit iteration
+     * 17 (M2). Both are decided host-side, before any browser exists, so they are pinned by *building* the
+     * options rather than by reading the source for them.
+     *
+     * `load` is the default and the wrong one here: a CurseForge project page keeps fetching ads and trackers
+     * long after it is usable, so waiting for it spends the whole budget on third parties. And every timeout in
+     * the 2026-08-23 run was exactly `Timeout 30000ms exceeded` — Playwright's untouched default, never a
+     * page-specific budget.
+     */
+    @Test
+    fun waitsForTheDomRatherThanForEveryAdOnThePage() {
+        val options = BrowserDownloader(requestDelayMillis = 0, navigationTimeoutMillis = 45_000.0).navigationOptions()
+
+        Assertions.assertEquals(WaitUntilState.DOMCONTENTLOADED, options.waitUntil)
+        Assertions.assertEquals(45_000.0, options.timeout)
+    }
+
+    @Test
+    fun givesTheDownloadItselfTheSameBudgetAsTheNavigation() {
+        val downloader = BrowserDownloader(requestDelayMillis = 0, navigationTimeoutMillis = 45_000.0)
+
+        Assertions.assertEquals(45_000.0, downloader.downloadOptions().timeout)
+    }
+
+    @Test
+    fun defaultsToMoreThanPlaywrightsThirtySeconds() {
+        Assertions.assertTrue(
+            (BrowserDownloader().navigationOptions().timeout ?: 0.0) > 30_000.0,
+            "30s is the default that timed out on every locked CurseForge file"
+        )
     }
 
 }
