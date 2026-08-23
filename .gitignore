@@ -73,6 +73,10 @@ classes/
 deploy/
 javadoc/
 
+# ...but the grinder's deployment files are source, not output. The `deploy/` rule above comes from the
+# JDeveloper/IDEA template and means "build output"; this directory holds the systemd unit and installer.
+!serverpackcreator-grinder/deploy/
+
 # lock file, a part of Oracle Credential Store Framework
 cwallet.sso.lck
 

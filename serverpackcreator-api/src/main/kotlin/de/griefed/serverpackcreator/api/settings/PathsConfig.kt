@@ -39,7 +39,13 @@ class PathsConfig(
     private val store: PropertyStore,
     private val preferences: Preferences,
     private val jarInformation: JarInformation,
-    private val devBuild: Boolean
+    private val devBuild: Boolean,
+    /**
+     * The directory the process was started in, which a source build falls back to when nothing else names a
+     * home. Injectable because it is otherwise unobservable: the JVM resolves `File("")` against the working
+     * directory it was *launched* with and ignores a later `user.dir`, so a test cannot present a different one.
+     */
+    private val workingDirectory: File = File("").absoluteFile
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val serverPacksRegex = "^(?:\\./)?server-packs$".toRegex()
@@ -121,9 +127,10 @@ class PathsConfig(
                 getPreference(HOME_DIRECTORY_KEY).get()
             } else if (store.properties.containsKey(HOME_DIRECTORY_KEY) && store.properties.getProperty(HOME_DIRECTORY_KEY).isNotBlank()) {
                 store.properties.getProperty(HOME_DIRECTORY_KEY)
-            } else if (jarInformation.jarPath.toFile().isDirectory || devBuild) {
-                // Dev environment
-                File("").absolutePath
+            } else if ((jarInformation.jarPath.toFile().isDirectory || devBuild) && workingDirectory.canWrite()) {
+                // Dev environment. Only when we may actually write there: a service manager starts a unit in `/`
+                // unless its unit file says otherwise, and adopting that made every write SPC performs fail.
+                workingDirectory.absolutePath
             } else if (File(System.getProperty("user.home")).isDirectory) {
                 File(System.getProperty("user.home"),"ServerPackCreator").absolutePath
             } else {

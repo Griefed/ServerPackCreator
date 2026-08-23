@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.grinder
 
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.api.settings.PathsConfig
 import de.griefed.serverpackcreator.grinder.container.DockerJavaContainerEngine
 import de.griefed.serverpackcreator.grinder.loader.*
 import de.griefed.serverpackcreator.grinder.report.JsonVerdictStore
@@ -56,25 +57,31 @@ object GrinderApplication {
      */
     @JvmStatic
     fun main(args: Array<String>) {
-        val base = File(System.getProperty("user.home"), ".spc-grinder")
+        // Created here rather than lazily: it is handed to SPC as its home directory below, and SPC's own
+        // writability check runs before anything of ours would have created it.
+        val base = File(env("SPC_GRINDER_HOME", File(System.getProperty("user.home"), ".spc-grinder").path))
+            .absoluteFile.apply { mkdirs() }
+        // Both claims BEFORE anything touches `log`: ApiProperties is registered as log4j's ConfigurationFactory,
+        // so the first log statement in this process constructs one, and whatever that one resolves is what the
+        // daemon runs on -- and gets remembered in the Preferences node for every run after it.
+        claimSpcPreferencesNode()
+        pinSpcHomeDirectory(base)
+
         val image = env("SPC_GRINDER_IMAGE", "spc-grinder-runtime:latest")
         val workDir = File(env("SPC_GRINDER_WORK", File(base, "work").path)).apply { mkdirs() }
         val cacheRoot = File(env("SPC_GRINDER_CACHE", File(base, "cache").path)).apply { mkdirs() }
         val storeFile = File(env("SPC_GRINDER_STORE", File(base, "verdicts.json").path)).apply { parentFile?.mkdirs() }
         val port = env("SPC_GRINDER_PORT", "8757").toInt()
+        // Loopback by default: the report is unauthenticated, so reaching it from anywhere else -- a reverse
+        // proxy in a container dials the host over the bridge gateway, never 127.0.0.1 -- is a deliberate act.
+        val bindHost = env("SPC_GRINDER_HOST", "127.0.0.1")
         val workers = env("SPC_GRINDER_WORKERS", "2").toInt()
 
-        log.info("Grinder starting — image=$image work=$workDir cache=$cacheRoot store=$storeFile port=$port workers=$workers")
+        log.info(
+            "Grinder starting — home=$base image=$image work=$workDir cache=$cacheRoot store=$storeFile " +
+                "bind=$bindHost port=$port workers=$workers"
+        )
 
-        // Claim our own Preferences node BEFORE any ApiProperties is built, so the daemon's home directory cannot be
-        // moved by another SPC process on this account (a test suite did exactly that mid-run: it relocated the home
-        // into its own scratch dir, deleted it, and every boot then failed on a missing server-icon.png and was
-        // recorded as a metadata-only verdict). Only set when the operator has not chosen a node themselves.
-        if (System.getProperty(ApiProperties.PREFERENCES_NODE_PROPERTY).isNullOrBlank() &&
-            System.getenv(ApiProperties.PREFERENCES_NODE_ENV).isNullOrBlank()
-        ) {
-            System.setProperty(ApiProperties.PREFERENCES_NODE_PROPERTY, "${ApiProperties.DEFAULT_PREFERENCES_NODE}-grinder")
-        }
         log.info("Using Preferences node '${ApiProperties.resolvePreferencesNode()}' for SPC settings.")
 
         // Point SPC at a specific config when given (reproducible runs), else one inside our own home -- never
@@ -125,11 +132,11 @@ object GrinderApplication {
         val cursorFile = File(env("SPC_GRINDER_CURSORS", File(base, "cursors.json").path))
             .apply { parentFile?.mkdirs() }
         val cursorStore = JsonCursorStore(cursorFile)
-        val server = ReportServer(store, port, status = status, cursors = cursorStore, cacheRoot = cacheRoot).start()
-        log.info(
-            "Report:  http://localhost:${server.port}/    CSV: http://localhost:${server.port}/export.csv" +
-                "    live status: http://localhost:${server.port}/status"
-        )
+        val server = ReportServer(
+            store, port, host = bindHost, status = status, cursors = cursorStore, cacheRoot = cacheRoot
+        ).start()
+        val reportUrl = reportUrl(bindHost, server.port)
+        log.info("Report:  $reportUrl/    CSV: $reportUrl/export.csv    live status: $reportUrl/status")
 
         if (args.isNotEmpty()) {
             // One-shot: grind a fixed set of project URLs (handy for an end-to-end verification), then
@@ -214,6 +221,28 @@ object GrinderApplication {
     }
 
     /**
+     * The base URL to print for the report, given the address it was bound to. The bound host rather than a
+     * hardcoded "localhost": under a non-default bind that URL is one the operator cannot reach, and the
+     * journal is where they go looking for it.
+     *
+     * Two of the shapes a bind address can take do not survive plain interpolation. A wildcard means "every
+     * interface" and is not a destination a browser can resolve, so it is reported as the loopback the report
+     * is certainly answering on; and an IPv6 literal needs the brackets of RFC 3986, without which the port is
+     * silently parsed as -1 rather than rejected.
+     */
+    internal fun reportUrl(bindHost: String, port: Int): String {
+        val reachable = when (bindHost) {
+            "0.0.0.0" -> "127.0.0.1"
+            "::", "0:0:0:0:0:0:0:0" -> "::1"
+            else -> bindHost
+        }
+        // startsWith("["): the JDK binds a bracketed literal quite happily, so an operator may have written
+        // one, and bracketing it again yields http://[[::1]]:8757.
+        val literal = if (reachable.contains(':') && !reachable.startsWith("[")) "[$reachable]" else reachable
+        return "http://$literal:$port"
+    }
+
+    /**
      * Where the daemon's SPC settings file lives: [explicitPath] when the operator named one, otherwise
      * `serverpackcreator.properties` inside the daemon's own [home]. Always absolute.
      *
@@ -227,6 +256,34 @@ object GrinderApplication {
     internal fun resolveSpcPropertiesFile(explicitPath: String?, home: File): File =
         explicitPath?.takeIf { it.isNotBlank() }?.let { File(it).absoluteFile }
             ?: File(home, "serverpackcreator.properties").absoluteFile
+
+    /**
+     * Claims the daemon its own SPC `Preferences` node, so the home directory it runs on cannot be moved by another
+     * SPC process on this account (a test suite did exactly that mid-run: it relocated the home into its own scratch
+     * directory, deleted it, and every boot then failed on a missing `server-icon.png` and was recorded as a
+     * metadata-only verdict). Only claims one when the operator has not chosen a node themselves.
+     */
+    internal fun claimSpcPreferencesNode() {
+        if (System.getProperty(ApiProperties.PREFERENCES_NODE_PROPERTY).isNullOrBlank() &&
+            System.getenv(ApiProperties.PREFERENCES_NODE_ENV).isNullOrBlank()
+        ) {
+            System.setProperty(ApiProperties.PREFERENCES_NODE_PROPERTY, "${ApiProperties.DEFAULT_PREFERENCES_NODE}-grinder")
+        }
+    }
+
+    /**
+     * Names SPC's home directory for it, so it is the daemon's own base rather than something SPC resolves on its
+     * own. Left to resolve one, a source build — which every locally built artifact is — falls back to the process
+     * working directory, and a service manager starts a unit in `/`: every write SPC performs then fails, starting
+     * with `log4j2.xml`, and the daemon dies before reaching Docker. Set as a system property, which outranks the
+     * stored preference without replacing it, so an operator's own `-D` is left alone and a bad value remembered
+     * from an earlier run is overridden rather than inherited.
+     */
+    internal fun pinSpcHomeDirectory(home: File) {
+        if (System.getProperty(PathsConfig.HOME_DIRECTORY_KEY).isNullOrBlank()) {
+            System.setProperty(PathsConfig.HOME_DIRECTORY_KEY, home.absolutePath)
+        }
+    }
 
     /** Read [key] from the environment, falling back to [default] when unset or blank. */
     private fun env(key: String, default: String): String = System.getenv(key)?.takeIf { it.isNotBlank() } ?: default

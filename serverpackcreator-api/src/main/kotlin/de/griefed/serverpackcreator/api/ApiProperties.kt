@@ -30,6 +30,7 @@ import de.griefed.serverpackcreator.api.utilities.common.JarInformation
 import de.griefed.serverpackcreator.api.utilities.common.ListUtilities
 import de.griefed.serverpackcreator.api.utilities.common.create
 import de.griefed.serverpackcreator.api.utilities.common.readText
+import de.griefed.serverpackcreator.api.utilities.common.testFileWrite
 import org.apache.logging.log4j.core.Core
 import org.apache.logging.log4j.core.LoggerContext
 import org.apache.logging.log4j.core.config.Configuration
@@ -1338,6 +1339,7 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         i18n4k = i18n4kConfig
         i18n4kConfig.defaultLocale = Locale("en_GB")
         loadProperties(propertiesFile, false)
+        requireUsableHomeDirectory()
         log4jXml = File(homeDirectory, "log4j2.xml")
         try {
             var log4j: String
@@ -1381,13 +1383,42 @@ class ApiProperties(propertiesFile: File = File("serverpackcreator.properties"))
         saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
     }
 
-    private fun setLoggingLevel(level: String) {
-        var loggingConfig = log4jXml.readText()
-        loggingConfig = loggingConfig.replace(
-            "<Property name=\"log-level-spc\">.*</Property>".toRegex(),
-            "<Property name=\"log-level-spc\">${level.uppercase()}</Property>"
+    /**
+     * Fails fast when [homeDirectory] is not a directory this process may write to. Everything below is a write
+     * into it — `log4j2.xml`, the properties-file, the logs and every derived directory — so continuing produces a
+     * cascade of failures naming files nobody configured, each blaming the operation that tripped over the home
+     * rather than the home itself. Probed by actually writing, since `canWrite()` lies about directories on Windows.
+     */
+    private fun requireUsableHomeDirectory() {
+        val home = homeDirectory
+        if (home.isDirectory && home.testFileWrite()) {
+            return
+        }
+        throw IllegalStateException(
+            "ServerPackCreator's home directory is not usable: ${home.absolutePath} — it is not a directory this " +
+                "process may write to. Point it somewhere writable with -D${PathsConfig.HOME_DIRECTORY_KEY}=<directory>, or " +
+                "correct the permissions. A service started without a working directory of its own inherits `/`, " +
+                "which is the usual cause of this. The resolved value is remembered in the " +
+                "'${resolvePreferencesNode()}' Preferences node, where a `-D` overrides it without replacing it."
         )
-        log4jXml.writeText(loggingConfig)
+    }
+
+    /**
+     * Stamps [level] into [log4jXml] so it takes effect without a restart. Reports rather than throws when the file
+     * cannot be read or written: a log level is a setting, and failing to record one must not take down the caller —
+     * an unguarded read here turned an unwritable home into a fatal `FileNotFoundException` during construction.
+     */
+    private fun setLoggingLevel(level: String) {
+        try {
+            var loggingConfig = log4jXml.readText()
+            loggingConfig = loggingConfig.replace(
+                "<Property name=\"log-level-spc\">.*</Property>".toRegex(),
+                "<Property name=\"log-level-spc\">${level.uppercase()}</Property>"
+            )
+            log4jXml.writeText(loggingConfig)
+        } catch (ex: IOException) {
+            log.error("Could not set the log level to $level in ${log4jXml.absolutePath}.", ex)
+        }
     }
 
     /**

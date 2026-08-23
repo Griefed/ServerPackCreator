@@ -24,8 +24,17 @@ internal class PathsConfigTest {
      * JarInformation of the test-class resolves to a directory, putting the config in
      * dev-environment-mode.
      */
-    private fun pathsConfig(store: PropertyStore = PropertyStore()): PathsConfig =
-        PathsConfig(store, scratchPreferences, JarInformation(PathsConfigTest::class.java), devBuild = true)
+    private fun pathsConfig(
+        store: PropertyStore = PropertyStore(),
+        workingDirectory: File = File("").absoluteFile
+    ): PathsConfig =
+        PathsConfig(
+            store,
+            scratchPreferences,
+            JarInformation(PathsConfigTest::class.java),
+            devBuild = true,
+            workingDirectory = workingDirectory
+        )
 
     /** Saved so [restoreHomeDirectoryProperty] can put the build's value back. */
     private var homeDirectoryProperty: String? = null
@@ -338,6 +347,47 @@ internal class PathsConfigTest {
         // And with the override gone, the stored preference is what resolves again.
         System.clearProperty(PathsConfig.HOME_DIRECTORY_KEY)
         Assertions.assertEquals(storedHome.absoluteFile, pathsConfig().homeDirectory)
+    }
+
+    /**
+     * A source build must not adopt a working directory it cannot write to.
+     *
+     * `systemd` starts a unit in `/` unless the unit sets `WorkingDirectory=`, and every locally built artifact is a
+     * source build (`gradle.properties` carries `version=dev`, so `Implementation-Version` is `dev` and
+     * [de.griefed.serverpackcreator.api.ApiProperties.devBuild] is true). The two together made the daemon resolve
+     * its home to `/`, and *every* write then failed: reproduced 2026-08-22 by running the installed grinder
+     * distribution from `/`, which died with `java.io.FileNotFoundException: /log4j2.xml` — a message naming
+     * neither the home directory nor the working directory it came from.
+     *
+     * The unwritable directory here is one that does not exist, which is how
+     * [tomcatLogsDirectoryFallsBackWhenNotWritable] gets the same signal: `canWrite()` is false for a missing path
+     * whatever the user id, so the pin holds when the suite runs as root and a `setWritable(false)` one would not.
+     */
+    @Test
+    fun theDevEnvironmentFallbackSkipsAnUnwritableWorkingDirectory(@TempDir tempDir: File) {
+        val unwritableWorkingDirectory = File(tempDir, "not-there").absoluteFile
+        val userHome = File(tempDir, "user-home").apply { mkdirs() }
+        val realUserHome = System.getProperty("user.home")
+        System.setProperty("user.home", userHome.absolutePath)
+
+        try {
+            val resolved = pathsConfig(workingDirectory = unwritableWorkingDirectory).homeDirectory
+
+            Assertions.assertNotEquals(
+                unwritableWorkingDirectory,
+                resolved,
+                "a working directory SPC cannot write to must not become its home — this is the `/` a systemd " +
+                    "unit without WorkingDirectory= hands a source build"
+            )
+            Assertions.assertEquals(
+                File(userHome, "ServerPackCreator").absoluteFile,
+                resolved,
+                "resolution must fall through to the next candidate, the user's home"
+            )
+            Assertions.assertTrue(resolved.canWrite(), "whatever it settles on has to be writable")
+        } finally {
+            System.setProperty("user.home", realUserHome)
+        }
     }
 
     /** A blank override is a misconfiguration and must not be taken for "use the filesystem root". */

@@ -2537,3 +2537,546 @@ Two lessons, both about the shape of the error rather than the fact:
 - **The absence of a signal was nearly read as a defect.** The same trap the check-1 rules in `/doctor`
   describe for passive components — "a zero is the absence of logging, not evidence of disuse" — applied
   here to a memory file, and the audit walked into it one iteration after writing about it.
+
+
+---
+
+# Iteration 12 — 2026-08-22 — the systemd home-resolution branch (`claude-fix-service-home-resolution`, merged by `8008c4160`)
+
+Scope: the seven commits `refactor(api): inject PathsConfig's working directory` … `docs: record the systemd
+home-resolution trap and the ordering it depends on`. Self-audit of a bugfix branch, not a refactor branch: the
+reported failure was the grinder dying as a systemd service on `java.io.FileNotFoundException: /log4j2.xml`.
+Reproduced before the fix and re-run after it by launching the installed distribution from `/`, which is where
+`systemd` starts a unit that does not say `WorkingDirectory=`.
+
+## HIGH
+
+### L1 — The new startup check can kill a perfectly writable home, because the write probe races
+
+`b4704961c` — `serverpackcreator-api/src/main/kotlin/de/griefed/serverpackcreator/api/ApiProperties.kt:1394`
+(`requireUsableHomeDirectory`), via `utilities/common/FileUtilities.kt:551` (`testFileWrite`).
+
+The probe writes a **fixed filename**: `File(this, "poke")`, then asserts `file.exists()`, then deletes it. Two
+SPC processes probing the *same* home interleave — A writes `poke`, B writes `poke`, A sees it and deletes it, B's
+`exists()` returns **false** — and the loser concludes the directory is unwritable. Before this commit that verdict
+only made a GUI file-chooser refuse a directory (`GlobalSettings.kt:63`, `:96`, `WebserviceSettings.kt:70`, `:89`),
+which is recoverable and visible. This commit put the same probe on the **construction path of every
+`ApiProperties`**, behind a `throw`, so the loser of that race now dies at startup with
+`IllegalStateException: … home directory is not usable` naming a home that is fine.
+
+Concurrent SPC processes on one host are not hypothetical here — they are the documented normal condition, and the
+reason the `Preferences` node was split per host in the first place (grinder daemon + `:serverpackcreator-api:test`
++ the developer's GUI; see the grinder `CLAUDE.md` landmine and its measured 2026-07-30 incident). The grinder
+itself constructs two `ApiProperties` per start (log4j's `ConfigurationFactory` instance, then `ApiWrapper`'s), so
+the probe now runs twice per start against the daemon's shared home.
+
+Fix: probe with a name that cannot collide — `Files.createTempFile(dir, ".spc-write-probe", null)`, deleted in a
+`finally` — keeping `testFileWrite`'s "false on failure, never throw except on a non-directory" contract. Fixing
+the utility rather than the call site also removes the race from the four GUI call sites.
+
+## MEDIUM
+
+### L2 — The ordering guard scans past `main`, so it can pass vacuously
+
+`4624a572f` (guard) / `d4eec4bff` (the assertions it grew) —
+`serverpackcreator-grinder/src/test/kotlin/…/GrinderSpcEnvironmentTest.kt`,
+`theSpcEnvironmentIsClaimedBeforeTheFirstLogStatement`.
+
+`body` is `readText().substringAfter("fun main(args: Array<String>) {")` — `main`'s body **plus every declaration
+below it**. `indexOf("log.")` and `indexOf("pinSpcHomeDirectory(")` therefore search text that is not `main`:
+today the first match of each is the intended one only because `main` happens to precede the helpers in the file.
+Move `pinSpcHomeDirectory`'s declaration above `main`, or remove `main`'s logging, and the guard compares positions
+of things it was not asserting about and goes green while the property it pins is broken.
+
+This is exactly the failure class this file has recorded twice ("a guard whose teeth were never checked has
+repeatedly turned out to assert nothing"; "a test that only asserts shape is not a pin"). The guard is a source
+assertion by necessity — a JVM whose logging is already initialised cannot observe the ordering — but its window
+has to be `main` itself.
+
+Fix: extract `main`'s body by brace-matching from its opening brace, and assert inside that window only.
+
+## LOW
+
+### L3 — Pinning SPC's home to the daemon base makes the properties file load twice
+
+`d4eec4bff` — `serverpackcreator-grinder/src/main/kotlin/…/GrinderApplication.kt`. SPC's home is now the same
+directory the daemon hands `ApiWrapper.api()` its properties file from, so `PropertyStore` loads
+`<base>/serverpackcreator.properties` as both the explicit file and the home candidate, logging `Loaded properties
+from …` twice per start (visible in the post-fix run at 23:07:02,357). **Verified harmless:** `PropertyStore.save`
+collects into a `TreeSet<File>` (`PropertyStore.kt:216`), so the duplicate collapses and the file is written once.
+Recorded so the doubled journal line is not mistaken for a defect.
+
+### L4 — An added side effect went unmentioned in the fix commit
+
+`d4eec4bff` — `GrinderApplication.kt`, `base` gained `.absoluteFile.apply { mkdirs() }`. Harmless and arguably
+required now that the home is pinned to it, but it is a behaviour addition the commit message does not state.
+
+### L5 — The root `CLAUDE.md` snapshot header was not moved
+
+`bb6545b18` — `CLAUDE.md:305` still reads **Current status (2026-08-21)** while the table below it was edited
+(api 354 → 356, grinder 233 → 237, plus the systemd note). The block is defined by that file as the current
+snapshot.
+
+### L6 — The test-side half of the injection landed in the wrong commit
+
+`ada74768d` — `PathsConfigTest.kt`, the `pathsConfig()` helper's new `workingDirectory` parameter is the
+counterpart of `3c068ce3a`'s constructor injection and belonged in that refactor commit. Reference-only: verified
+that no pre-existing assertion, argument or expected value changed, so the `refactor:` label on `3c068ce3a` and
+the `test:` label on `ada74768d` are both still honest.
+
+## Not findings — verified clean, do not re-litigate
+
+- **`3c068ce3a` is behaviour-preserving despite moving `File("").absoluteFile` from per-access to
+  construction-time.** Probed directly: the JVM resolves an empty path against the working directory it was
+  *launched* with and ignores a later `user.dir` (setting the property mid-process does not move
+  `File("").absolutePath`), so the value cannot change during a process's life. Per-access and once-at-construction
+  are the same value by construction.
+- **No pre-existing assertion changed anywhere on the branch.** `git diff 7780da54a..HEAD -- "*/src/test/*"` is two
+  new files plus `PathsConfigTest`, whose only added assertion lines belong to the new test. The stop-and-flag
+  signal for a mislabelled refactor does not fire.
+- **Logging from inside the log4j-instantiated `ApiProperties` is safe, the new `log.error` in `setLoggingLevel`
+  included.** `ApiProperties` *is* log4j's `ConfigurationFactory` (`@Plugin`, `ApiProperties.kt:57`), so log4j
+  builds one while configuring itself; the post-fix run from `/` shows that instance's own `loadProperties` and
+  `printSettings` INFO lines appearing normally (23:07:02,356–,423), with no recursion, no stall and no lost
+  output.
+- **SPC's home and the grinder's state can share one directory.** The subdirectories do not collide — SPC uses
+  `work/temp` and `work/installers`, the grinder `work/install` and `work/verify` — and nothing in `-api` deletes
+  `work/` wholesale (grepped: the only recursive delete near it is `BootWorkspaceReaper`, which sweeps `verify`
+  only).
+- **A root-owned `/opt` install is not the next failure of this class.** `installLocationXml` — `log4j2.xml` beside
+  the jar — is only ever *read* (`ApiProperties.kt:1502`–`1506`), never written, so an unwritable jar folder costs
+  nothing.
+- **The stored home preference stays authoritative even when unwritable.** Deliberate: a loud, actionable error
+  beats silently relocating a configured home and leaving its configs behind. Flagged to Griefed with its
+  alternative (skip unwritable stored values too, which would self-heal a stale `/` without any error).
+
+## Resolution (same day, on Griefed's instruction to fix all findings)
+
+- **L1 — fixed.** `test(api): pin that the writability probe cannot be defeated by a name collision` landed the
+  guards red (34 of 64 concurrent probes false, plus the deterministic name-collision case), then
+  `fix(api): probe writability with a name nothing else can hold` switched `testFileWrite` to
+  `Files.createTempFile(dir, ".spc-write-probe", null)` with removal in a `finally`. api and app suites green —
+  app matters here, since the four GUI file-chooser call sites live there. Behaviour row appended to
+  `claude-docs/API-BEHAVIOUR-CHANGES.md`.
+- **L2 — fixed.** The guard's window is now `main`'s own body, cut by brace-matching, and it asserts its own
+  boundedness (fails if the window reaches the declarations below `main`). **Teeth checked by mutation:** moving
+  both claims back below `main`'s first log statement turns it red with the intended message; reverting turns it
+  green again. That check is the whole point of the finding — the previous window would have gone green either way
+  once the file was reordered.
+- **L3 — documented, not changed.** Removing the duplicate load would mean changing `PropertyStore`'s candidate
+  list, which is out of proportion to a log line that costs nothing (the write is already deduplicated by
+  `TreeSet`). Recorded in the grinder `CLAUDE.md` beside the existing "expected and harmless" note about the
+  dist's own properties copy, so the doubled line is not chased twice.
+- **L4 — fixed.** `GrinderApplication` now says why `base` is created at that point: SPC's writability check runs
+  against it before anything else of ours would have created it.
+- **L5 — fixed.** Root `CLAUDE.md`'s snapshot header moved to 2026-08-22, with the table it heads.
+- **L6 — accepted, not fixed.** The misplaced test-helper parameter is commit hygiene in already-merged history;
+  rewriting the merge to move two lines is not worth it, and an earlier rewrite on this branch is precisely what
+  swept an unrelated untracked file into a commit. Recorded instead.
+
+---
+
+# Iteration 13 — 2026-08-23 — the report bind-address branch (`claude-grinder-report-bind-host`, merged by `030036580`)
+
+Scope: `git log 97f487e0e..HEAD`, 17 commits. Thirteen of them were already audited as iteration 12 and its
+resolutions; their conclusions are re-affirmed below rather than re-litigated. Fresh scrutiny falls on the four
+new commits — `test(grinder): pin the report's bind address and its wiring`, `feat(grinder): make the report's
+bind address configurable`, `docs: record the grinder's report bind address in the status table`, and the merge.
+
+Self-audit of a feature branch, not a refactor branch. The reported failure was a reverse proxy 502ing against
+the grinder's report while the report answered fine on the box itself; the cause was `main` never passing
+`ReportServer`'s `host`, so it took the loopback default.
+
+## HIGH — none
+
+No behaviour change is mixed into a `refactor:` commit (there are no refactor commits on the branch), no module
+boundary moved, and nothing here is on the plugin-facing API — the grinder is not published to Maven.
+
+## MEDIUM
+
+### M1 — `claude-docs/REFACTOR-LOG.md` has no entry for this branch, nor for the one before it
+
+Definition of done, item 4: "Append the blow-by-blow to `claude-docs/REFACTOR-LOG.md`." The file's last entry is
+`## 2026-08-17 — web query shapes and the DBRef flattening`. Both the 2026-08-22 systemd home-resolution branch
+(iteration 12) and this one landed without one, so the log is two branches stale. Iteration 12 did not catch this
+about itself.
+
+### M2 — `7b8e762d2` bundles a test refactor with the new guards
+
+One concern per commit. The commit adds `ReportBindWiringTest` and `ReportServerBindAddressTest` *and* lifts
+`mainBody()` out of `GrinderSpcEnvironmentTest` into `GrindTestFixtures` as `grinderMainBody()`. The move is
+reference-only — every assertion byte-identical, which the conventions' carve-out explicitly permits to stay a
+`refactor:` — but that is an argument for it being its own `refactor(grinder):` commit *before* the guards, not
+for merging it into a `test:` one.
+
+## LOW
+
+### L1 — a `0.0.0.0` bind logs a URL nobody can open
+
+`f91cedfdb` — `GrinderApplication.kt`, the `reportUrl` line.
+
+Replacing the hardcoded `localhost` with `$bindHost` is right for a concrete address and wrong for the wildcard:
+verified against the JDK's `HttpServer`, `0.0.0.0` binds fine and the line now prints `http://0.0.0.0:56442/`,
+which is not a browsable URL. The old hardcoded text was correct for exactly this case. Regression, narrow.
+
+### L2 — an IPv6 bind produces a malformed URL
+
+Same line. Verified: `::1` binds (`hostString` comes back `0:0:0:0:0:0:0:1`) and the log reads
+`http://::1:56443/`. IPv6 literals need brackets — `http://[::1]:56443/` — or the URL is unparseable.
+
+### L3 — four new `!!` assertions
+
+Kotlin conventions, "no **new** `!!` in refactored code": `ReportServerBindAddressTest` has `address!!` twice,
+`ReportBindWiringTest` has `read!!` and `construction!!`. All four exist only because `Assumptions.assumeTrue`
+and `Assertions.assertNotNull` do not smart-cast. Both have null-safe spellings that read better.
+
+### L4 — `assertThrows(ConnectException)` is tighter than the fact it is pinning
+
+`ReportServerBindAddressTest.theDefaultIsReachableOnLoopbackOnly`. The claim is "not reachable"; the assertion is
+"refused with this exact exception". A host that DROPs rather than REJECTs yields `HttpConnectTimeoutException`
+after the 5 s timeout, and the guard then *fails* on a box where the property it guards actually holds.
+
+### L5 — the ephemeral port is chosen on loopback and assumed free on the other interface
+
+Same test. `requestedPort = 0` allocates a free port *for 127.0.0.1*; the guard then connects to
+`nonLoopbackIp:thatPort`. A process bound specifically to that address and port would make the connection succeed
+and the guard fail. Rare, not impossible; recorded rather than fixed, since every fix costs more than the flake.
+
+### L6 — the README's "fails loudly at startup" was written before it was checked
+
+§5 *Exposing the report* asserts that a stale bridge subnet makes the bind fail at startup "rather than silently
+falling back". True — verified after the fact: an unassigned address gives `BindException: Can't assign requested
+address` and a typo'd hostname `SocketException: Unresolved address`. The convention is "document what you
+verify"; here the order was reversed.
+
+## Not findings — verified clean, do not re-litigate
+
+- **The guards landed red, in their own commit, for the right reason.** `7b8e762d2` predates any
+  `SPC_GRINDER_HOST` in the source, so `theConfiguredBindHostReachesTheReportServer` failed on "main() no longer
+  reads SPC_GRINDER_HOST" — the intended assertion, not an accident of its own regex. This is the boundary the
+  2026-07-31 audit found collapsed in eight commits; it holds here.
+- **The regex widening inside `f91cedfdb` is not the stop-and-flag signal.** It changes how broadly a
+  one-commit-old guard *searches*, not what it expects; no expectation, argument or expected value moved. The
+  signal is about existing assertions changing under a `refactor:` label, and this is a `feat:`.
+- **No pre-existing assertion changed anywhere on the branch.** `git diff 3e873af88..HEAD -- "*/src/test/*"` is
+  two new files plus the reference-only helper move.
+- **`0.0.0.0` is not the recommended value and the docs say so.** README §5 recommends the bridge gateway and
+  states why (the report is unauthenticated end to end — `/`, `/status` and `/export.csv` all answer
+  unconditionally, no auth anywhere in `ReportServer.start()`).
+- **No `API-BEHAVIOUR-CHANGES.md` row is owed.** The grinder is not published and not plugin-facing; the changed
+  surface is a log line and an environment variable.
+- **Iteration 12's resolutions stand.** `testFileWrite` still probes via `Files.createTempFile` with removal in a
+  `finally`, and its behaviour row is still in `claude-docs/API-BEHAVIOUR-CHANGES.md`.
+
+## Summary
+
+| Severity | Count | Fixable in place |
+|---|---|---|
+| HIGH | 0 | — |
+| MEDIUM | 2 | M1 yes; M2 no — already-merged history |
+| LOW | 6 | L1–L4 yes; L5 recorded; L6 already verified, wording only |
+
+## Resolution (same day, on Griefed's instruction to fix all findings)
+
+- **M1 — fixed.** `claude-docs/REFACTOR-LOG.md` backfilled with both missing entries: the 2026-08-22 systemd
+  home-resolution branch (iteration 12's subject, which had none either) and this one.
+- **M2 — accepted, not fixed.** Splitting `7b8e762d2` means rewriting history already merged into `develop`. The
+  same call iteration 12 made for its L6, and for the same reason: an earlier rewrite on this project is exactly
+  what swept an unrelated untracked file into a commit. The lesson was applied going forward instead — the L1/L2
+  fix below landed as four commits (extract, pin red, fix, clean) rather than one.
+- **L1 and L2 — fixed.** `refactor(grinder): extract the report URL from main()` made the line testable,
+  `test(grinder): pin the logged report URL for wildcard and IPv6 binds` landed red on three of four cases, and
+  `fix(grinder): make the logged report URL openable for wildcard and IPv6 binds` turned them green. A wildcard
+  is reported as the loopback the report is certainly answering on; IPv6 literals are bracketed.
+  `concreteIpv4AddressesAreLeftAlone` was green before *and* after, so the ordinary path is demonstrably
+  untouched.
+- **L3 and L4 — fixed.** `refactor(grinder): drop the bind guards' !! and over-tight exception type`. All four
+  `!!` are gone: `nonLoopbackIpv4()` returns `String` and throws `TestAbortedException` itself (JUnit reports the
+  same skip the assumption did), and the two regex lookups use elvis into `Assertions.fail`, which returns
+  `Nothing`. The unreachability assertion widened from `ConnectException` to `IOException`, so a host that DROPs
+  rather than REJECTs no longer fails a guard whose property holds.
+- **L5 — recorded, not fixed.** Standing: every available fix costs more than the flake it prevents.
+- **L6 — fixed.** README §5 now names what was actually observed — `BindException: Can't assign requested
+  address` for an unowned address, `SocketException: Unresolved address` for a name that does not resolve — so a
+  reader can recognise either rather than take the claim on faith.
+
+Suite after the resolutions: grinder **245**, zero failures.
+
+---
+
+# Iteration 14 — 2026-08-23 — the deployment files (`feat(grinder): ship an example systemd unit and an installer`)
+
+Scope: the two commits adding `serverpackcreator-grinder/deploy/` and its guard, audited immediately after
+landing. Shell and unit files, so the "measure it rather than test it" ceiling from the conventions applies —
+every finding below was reproduced against a real shell before being written down.
+
+## HIGH — none
+
+## MEDIUM
+
+### M1 — the installer's overridable paths can silently disagree with the unit that has to run them
+
+`install-grinder.sh` honours `PREFIX`, `SERVICE_USER` and `SERVICE_HOME` from the environment; the shipped unit
+hardcodes `ExecStart=/opt/spc-grinder/…`, `User=grinder` and `WorkingDirectory=/home/grinder`. Override any one
+and the install still reports success, having produced a deployment the unit cannot start. The failure surfaces
+later as a systemd start error with no connection back to the override.
+
+## LOW
+
+### L1 — `${PREFIX:?}` guards emptiness and nothing else
+
+`rm -rf "${PREFIX:?}/lib"` is protected against an *unset* PREFIX, which is not the dangerous case. `PREFIX=/`
+makes it `rm -rf /lib`; `PREFIX=/usr` makes it `rm -rf /usr/lib`. Both were reachable.
+
+### L2 — "one sudo prompt up front" is a claim the timestamp cannot keep
+
+`sudo -v` caches for ~15 minutes by default. A cold `docker build` of the runtime image plus a Gradle
+`installDist` routinely exceeds that, so the comment promising a single prompt was wrong in exactly the case it
+was written for.
+
+### L3 — the header told you to run it from a directory it does not care about
+
+"Run it from the repository root" — but `repo_root` is derived from `BASH_SOURCE`, so the working directory is
+irrelevant. A doc line contradicting the code beside it.
+
+## Not findings — verified clean, do not re-litigate
+
+- **`cp -a bin lib "$PREFIX/"` merges on a re-run rather than nesting `bin/bin`.** The obvious suspicion about
+  re-running the installer; reproduced in a scratch tree instead of reasoned about — a changed file was
+  overwritten (`v1` → `v2`), a new file appeared, and no nested `bin/bin` was created.
+- **The exec bit survives git.** `git ls-files -s` reports `100755` for `install-grinder.sh`.
+- **The `deploy/` gitignore exception works.** `git check-ignore -v` exits 1 for both files. The rule it escapes
+  is the JDeveloper/IDEA template's "default output directories" block, which swallowed the first commit
+  attempt silently — the commit reported success having added nothing.
+- **The unit's three hardcoded values agree with the installer's three defaults.** Parsed out of the unit and
+  compared: `grinder`, `/home/grinder`, `/opt/spc-grinder/bin/serverpackcreator-grinder`. M1 is about overrides,
+  not about the shipped defaults.
+- **`SystemdUnitConfigurationTest` has teeth.** Four mutations, four distinct failures, unit restored
+  byte-identical afterwards — recorded in that commit's message rather than assumed from a green run.
+
+## Resolution (same day)
+
+- **M1 — fixed.** The installer now parses `User=`, `WorkingDirectory=` and `ExecStart=` out of the unit and
+  compares them against the values it is installing with, printing exactly what to change. A warning rather than
+  a hard failure: an operator who has already edited their own copy is doing nothing wrong.
+- **L1 — fixed.** `PREFIX` must now be absolute and at least two components deep. Verified: `/` and `/usr` are
+  both rejected by name, a relative path is rejected as non-absolute, and `/opt/spc-grinder` passes.
+- **L2 — fixed.** `sudo -v` is refreshed immediately before the privileged block, and the comment now says what
+  actually happens instead of promising something the timestamp cannot deliver.
+- **L3 — fixed.** The header says the working directory does not matter and why.
+
+Suite after the resolutions: grinder **249**, zero failures, 39 classes.
+
+---
+
+# Iteration 15 — 2026-08-23 — third pass over `97f487e0e..HEAD`, auditing iterations 13 and 14's own fixes
+
+Scope: the full 25-commit range, with the eight commits produced by iterations 13 and 14 getting the scrutiny —
+a fix is a change like any other, and this pass exists because the first two passes had not been audited by
+anything. Two of the three findings below are defects the earlier *fixes* introduced.
+
+## HIGH — none
+
+## MEDIUM
+
+### M1 — `ad7aff574` is labelled `refactor:` while changing an existing assertion
+
+`refactor(grinder): drop the bind guards' !! and over-tight exception type` changed
+`assertThrows(ConnectException::class.java, …)` to `assertThrows(IOException::class.java, …)`. The conventions
+are explicit: "If an **existing** test's *assertion, argument or expected value* has to change, the label is
+already wrong — that is the stop-and-flag signal, not a formality." The reference-only carve-out does not apply,
+because no symbol moved; the expectation genuinely widened. `fix(test)` or `test:` was the honest label.
+
+Recorded rather than corrected: the commit is on `develop`, and the project's standing decision — iteration 12's
+L6, iteration 13's M2 — is that rewriting merged history to relabel a commit costs more than it returns. The
+body describes the change accurately; only the type lies. Same disposition as `358675fbf`, already in this file.
+
+## LOW
+
+### L1 — the iteration-13 URL fix double-brackets an already-bracketed IPv6 literal
+
+`reportUrl` bracketed anything containing a colon, so `SPC_GRINDER_HOST=[::1]` produced
+`http://[[::1]]:8757`. The bracketed form is not a user error — verified against `HttpServer`, which binds
+`[::1]` and reports `0:0:0:0:0:0:0:1`. Fixed, pinned red first.
+
+### L2 — the iteration-14 header fix silently truncated `--help`
+
+L3 of iteration 14 rewrote the script's header comment from three lines to four. `--help` printed a fixed
+`sed -n '2,21p'` range, so the extra line pushed `--skip-image` out of the output entirely — the flag stopped
+being documented by the very commit that improved the documentation above it. Fixed structurally with an `awk`
+that prints the contiguous comment block, rather than by bumping the number to 22 and waiting for it to rot.
+
+This is the "cite names, not snapshots" rule from `CLAUDE.md` reappearing in a shell script: a line-number
+citation went stale inside one commit.
+
+## Not findings — verified clean, do not re-litigate
+
+- **`reportUrl` handles hostnames correctly.** A name like `grinder.internal` contains no colon, so it is not
+  bracketed. Only literals and the two wildcards take a branch.
+- **The wildcard substitution is complete.** `0.0.0.0`, `::` and the JDK's expanded `0:0:0:0:0:0:0:0` are all
+  mapped; a bind to any of them is reported on the loopback it is certainly answering on.
+- **Iteration 14's four fixes hold.** The `PREFIX` shape guard rejects `/`, `/usr` and a relative path by name
+  and passes `/opt/spc-grinder`; the unit/installer consistency check parses `grinder`, `/home/grinder` and
+  `/opt/spc-grinder/bin/serverpackcreator-grinder` out of the shipped unit and agrees with all three defaults.
+- **Iteration 13's L3 and L4 fixes hold.** No `!!` remains in either bind guard, and both still pass with the
+  interface up.
+
+## Summary
+
+| Severity | Count | Disposition |
+|---|---|---|
+| HIGH | 0 | — |
+| MEDIUM | 1 | M1 recorded — merged history, body honest, type wrong |
+| LOW | 2 | both fixed, both introduced by the two preceding iterations' fixes |
+
+Suite: grinder **250**, zero failures.
+
+---
+
+# Iteration 16 — 2026-08-23 — targeted audit of `deploy/install-grinder.sh` and `deploy/spc-grinder.service`
+
+Scope: the two deployment files only, on request. Not a commit-convention pass — a review of what the script and
+the unit actually do on a real Linux host. Every finding below was reproduced against a real runtime (shellcheck,
+`systemd-analyze verify`, and `useradd` in Debian containers) rather than reasoned about, per the conventions'
+"what only a real runtime can answer, ask a real runtime".
+
+## HIGH
+
+### H1 — nothing provides or checks Java, and the launcher cannot start without it
+
+Neither file mentions `java` or `JAVA_HOME` — `grep -c` returns 0 for both. The Gradle launcher requires one or
+the other and dies otherwise:
+
+    ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH.
+
+systemd gives a unit a minimal `PATH` (`/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin`) and no
+`JAVA_HOME` at all. A distro-packaged JDK lands in `/usr/bin/java` and works by luck; a Temurin tarball under
+`/opt`, SDKMAN, asdf or a JDK in the *installing user's* profile all produce a service that never starts. The
+installer builds with Gradle, so Java is on the *operator's* PATH — which is exactly what makes this invisible
+until the first `systemctl start`. This is the most likely first-run failure of the whole deployment and neither
+file says a word about it.
+
+### H2 — an existing account is silently granted root-equivalent privilege
+
+`install-grinder.sh:128–148`. When `$SERVICE_USER` already exists the script prints "leaving it alone" and then
+runs `usermod -aG docker` on it anyway. Docker group membership is root-equivalent — `docker run -v /:/host`
+hands out the whole filesystem — so pointing `SERVICE_USER` at an existing human account escalates that account
+to effective root, reported as the single line "added X to the docker group". The "leaving it alone" message
+immediately above makes it read as though nothing was changed.
+
+## MEDIUM
+
+### M1 — `Group=grinder` may name a group that was never created
+
+Reproduced in `debian:stable`. With the stock `/etc/login.defs` the group exists:
+
+    uid=999(grinder) gid=999(grinder) groups=999(grinder)      group grinder EXISTS
+
+With `USERGROUPS_ENAB no` — a supported setting, and the default on some hardened images — it does not:
+
+    uid=998(g2) gid=100(users) groups=100(users)               group g2 MISSING
+
+The unit's `Group=grinder` then refers to nothing and the service fails at start. The script never verifies the
+group exists, and `install-grinder.sh:139`'s `chown "$SERVICE_USER:$SERVICE_USER"` would fail for the same
+reason if it were reached.
+
+### M2 — a failed upgrade leaves the service stopped
+
+`install-grinder.sh:100–105` stops a running service, and `set -e` means any later failure — `cp`, `chown`,
+`useradd`, a full disk — exits the script before `:179` restarts it. The upgrade path therefore converts a
+transient error into an outage that persists until someone notices. Nothing unwinds the stop.
+
+### M3 — `--install-unit` installs a unit the script has just warned does not match
+
+The consistency check (`:150–168`) runs *before* the install block (`:171–177`), so with an override in play the
+script prints "WARNING: the unit does not match this install" and then installs that unit regardless. The
+ordering makes the warning read as though it had been acted on.
+
+## LOW
+
+### L1 — `set -E` is inert
+
+`set -Eeuo pipefail` at `:24`. `-E` only propagates an `ERR` trap into functions and subshells, and no `trap …
+ERR` is ever installed. Harmless, but it advertises error handling the script does not have — and an ERR trap
+reporting the failing line is also the natural fix for M2.
+
+### L2 — `chmod -R a+rX` adds permissions and never removes any
+
+`:122`. `cp -a` preserves the build tree's modes, which come from the operator's umask. A umask of `002` or `000`
+carries group- or world-writable modes into `/opt/spc-grinder`, and anyone who can write there controls what the
+service executes. `a+rX` cannot undo that; `go-w` would.
+
+### L3 — `docker build` without `--pull`
+
+`:85`. A cached base image silently persists, so "rebuild the image" may not pick up a new base. A tradeoff
+rather than a defect — `--pull` costs a registry round trip on every run — but it is currently an unstated one.
+
+### L4 — no `SyslogIdentifier=`
+
+Journal lines are tagged with the launcher's name rather than `spc-grinder`. `journalctl -fu spc-grinder` works
+regardless, since that selects by unit; this only affects how lines read when grepping the whole journal.
+
+### L5 — `Documentation=` points at the mirror
+
+The unit cites `github.com/Griefed/ServerPackCreator` while `origin` is `git.griefed.de`, which `CLAUDE.md` names
+as canonical. Defensible — GitHub is the public-facing one — but it should be a decision rather than a default.
+
+## Not findings — verified clean, do not re-litigate
+
+- **shellcheck is clean at `-S style`.** Exit 0, no output, run via `koalaman/shellcheck:stable`. No quoting,
+  word-splitting, expansion or subshell defects — including the `$(…)` inside the `echo` at `:113`.
+- **`systemd-analyze verify` reports no unit defects.** Run in `fedora:latest` with systemd installed. The only
+  two lines are `Unit docker.service not found` and `Command /opt/spc-grinder/bin/serverpackcreator-grinder is
+  not executable` — both artefacts of verifying inside a container that has neither. No syntax errors, unknown
+  directives or deprecated options.
+- **The state directory is private by default.** `useradd --create-home` produced `drwx------ grinder grinder
+  /home/grinder`.
+- **`ProtectSystem=full` does not restrict anything the service needs.** It covers `/usr`, `/boot` and `/etc`,
+  leaving `/opt` (binaries), `/home` (state) and `/run` (the docker socket) writable.
+- **The restart limiter never trips, deliberately.** `RestartSec=30s` against systemd's default
+  `StartLimitIntervalSec=10s`/`StartLimitBurst=5` means two restarts never fall inside one window, so a
+  permanently broken service retries forever instead of being given up on. Correct for a daemon meant to survive
+  a reboot loop; noted so nobody "fixes" it by accident.
+- **Iteration 14 and 15's fixes hold.** `cp -a` merges rather than nesting, the exec bit survives git as
+  `100755`, the `PREFIX` shape guards reject `/`, `/usr` and relative paths, and `--help` prints the whole header.
+
+## Summary
+
+| Severity | Count | Note |
+|---|---|---|
+| HIGH | 2 | H1 breaks the first start on most non-distro JDKs; H2 is a silent privilege grant |
+| MEDIUM | 3 | M1 host-config dependent, M2 turns an error into an outage, M3 an ordering bug |
+| LOW | 5 | L1–L2 worth fixing, L3–L5 are judgement calls |
+
+Not fixed — reported for a go-ahead, per the audit's read-only rule.
+
+## Resolution (2026-08-23, on Griefed's instruction to fix all findings)
+
+Every finding fixed. Verified on real runtimes — Debian and Fedora containers — rather than by inspection, since
+all ten are about what happens on a host this machine is not.
+
+- **H1 — fixed**, guard first (`test(grinder): pin that the unit tells the operator how to provide Java`, red on
+  "the unit does not mention JAVA_HOME"). The unit gained a JVM section quoting the exact launcher error and
+  systemd's real `PATH`, plus `JAVA_HOME`, `JAVA_OPTS` and `SERVERPACKCREATOR_GRINDER_OPTS`; those three are
+  read by the Gradle launcher rather than any Kotlin, so the phantom-variable guard whitelists them as
+  launcher-read. The installer checks with `env -i PATH=<systemd's>`, deliberately *not* the caller's
+  environment. Observed firing in a JDK-less container with the full warning text.
+- **H2 — fixed.** An account the script creates is still added to `docker` automatically; one that already
+  existed now needs `--grant-docker`. Verified both ways against a pre-existing account: refused with
+  `id -nG grinder` still reading `grinder`, then granted to `grinder docker` with the flag.
+- **M1 — fixed.** The script reads `Group=` out of the unit and creates that group when missing. Verified on the
+  host shape that produced the finding — `USERGROUPS_ENAB no`, where `useradd` gave `gid=100(users)` and no
+  group — after which `getent group grinder` resolves and the unit's `Group=` is valid.
+- **M2 and L1 — fixed together.** `set -E` now has something to propagate: an `ERR` trap reporting the failing
+  line, and an `EXIT` trap that restarts the service when the install died after stopping it. The inert flag and
+  the silent outage were the same omission.
+- **M3 — fixed.** The consistency check moved into preflight, before anything is built or changed, and is fatal
+  when `--install-unit` would install the mismatched unit. Verified: `SERVICE_USER=someoneelse … --install-unit`
+  now dies at "Checking prerequisites" having touched nothing.
+- **L2 — fixed.** `chmod -R go-w` before `a+rX`. Verified `755`, `root`-owned.
+- **L3 — fixed.** `--pull` by default, `--no-pull` for an offline rebuild.
+- **L4, L5 — fixed.** `SyslogIdentifier=spc-grinder`; `Documentation=` lists `git.griefed.de` before the GitHub
+  mirror.
+
+Re-verified after the changes: `shellcheck -S style` exit 0, `systemd-analyze verify` reporting only the two
+container artefacts, grinder suite **251**, zero failures.

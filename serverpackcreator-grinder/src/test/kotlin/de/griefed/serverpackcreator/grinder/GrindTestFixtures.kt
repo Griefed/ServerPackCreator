@@ -20,6 +20,8 @@
 package de.griefed.serverpackcreator.grinder
 
 import de.griefed.serverpackcreator.clientside.*
+import org.junit.jupiter.api.Assertions
+import java.io.File
 import java.time.Instant
 
 /** Build a minimal [LoaderVerdict] for tests, defaulting the signals not under test. */
@@ -68,3 +70,37 @@ internal fun grindVerdict(
     platform: String = "Modrinth",
     verifiedAt: Instant = Instant.EPOCH
 ) = GrindVerdict(platform, slug, projectUrl, loader, suggestedEntry, confidence, detail, verifiedAt)
+
+/** [GrinderApplication]'s source, for the guards that can only be stated against `main`'s own text. */
+internal val grinderEntryPoint = File("src/main/kotlin/de/griefed/serverpackcreator/grinder/GrinderApplication.kt")
+
+/**
+ * `main`'s body and nothing else, cut by matching braces from its opening one. Asserts that the window stops
+ * before the declarations that follow `main`, since a window that silently ran past them is exactly how a
+ * guard built on it would keep passing while asserting nothing.
+ */
+internal fun grinderMainBody(): String {
+    Assertions.assertTrue(grinderEntryPoint.isFile, "entry point not found at ${grinderEntryPoint.absolutePath}")
+    val source = grinderEntryPoint.readText()
+    val signature = source.indexOf("fun main(args: Array<String>) {")
+    Assertions.assertTrue(signature > 0, "main(args) not found — did the entry point change shape?")
+
+    val open = source.indexOf('{', signature)
+    var depth = 0
+    var index = open
+    while (index < source.length) {
+        when (source[index]) {
+            '{' -> depth++
+            '}' -> if (--depth == 0) break
+        }
+        index++
+    }
+    Assertions.assertTrue(depth == 0, "main's braces do not balance — the window would run to end of file")
+
+    val body = source.substring(open + 1, index)
+    Assertions.assertFalse(
+        body.contains("internal fun pinSpcHomeDirectory"),
+        "the window ran past main and into the declarations below it, so this guard would assert nothing"
+    )
+    return body
+}
