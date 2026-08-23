@@ -109,4 +109,46 @@ internal class BootVerifierOutcomeTest {
     fun stagingProceedsWhenEveryDependencyWasStaged() {
         Assertions.assertNull(BootVerifier.refuseForMissingDependencies(emptySet(), "Fabric", "1.20.1"))
     }
+
+    // --- the console that survives a re-check -------------------------------------------------------
+
+    /**
+     * Every attempt for one candidate stages into the same directory and therefore writes the same
+     * `boot.log`, so a re-check leaves the file holding the *last* boot's console while the reported verdict
+     * may come from an earlier one. The grinder's reaper keeps exactly that one file and deletes the rest of
+     * the staging, so without this the crash a HIGH was published on is diagnosed from a different boot.
+     */
+    @Test
+    fun theReportedOutcomesConsoleIsWhatEndsUpInItsLogFile(@TempDir dir: File) {
+        val logFile = File(dir, "boot.log")
+        val crash = BootVerifier.outcomeFor(
+            RunResult.Completed(listOf("crashing boot"), exitCode = 1, timedOut = false), logFile, "Forge 1.0 / Minecraft 1.20.2"
+        )
+        // A later re-check boots another version through the same path and overwrites the file.
+        BootVerifier.outcomeFor(RunResult.Completed(listOf("re-check boot"), exitCode = 1, timedOut = false), logFile, "Forge 1.0 / Minecraft 1.20.1")
+        Assertions.assertEquals("re-check boot", logFile.readText(), "precondition: the re-check clobbered the crash log")
+
+        BootVerifier.restoreDecisiveConsole(crash)
+
+        Assertions.assertEquals("crashing boot", logFile.readText(), "the verdict's own console must be the one kept")
+    }
+
+    /** Nothing to restore, nothing touched — a verdict that never produced a console must not empty a log. */
+    @Test
+    fun anOutcomeWithoutAConsoleLeavesTheLogAlone(@TempDir dir: File) {
+        val logFile = File(dir, "boot.log").apply { writeText("someone else's console") }
+
+        BootVerifier.restoreDecisiveConsole(BootVerifier.BootOutcome(BootResult.INCONCLUSIVE, logFile, "never booted"))
+
+        Assertions.assertEquals("someone else's console", logFile.readText())
+    }
+
+    /** Diagnostics may never cost a verdict: an unwritable log is logged and swallowed, exactly as the write is. */
+    @Test
+    fun anUnwritableLogDoesNotFailTheVerdict(@TempDir dir: File) {
+        val directoryInTheWay = File(dir, "boot.log").apply { mkdirs() }
+        val outcome = BootVerifier.BootOutcome(BootResult.CRASHED, directoryInTheWay, "detail", "excerpt", "console")
+
+        Assertions.assertDoesNotThrow { BootVerifier.restoreDecisiveConsole(outcome) }
+    }
 }
