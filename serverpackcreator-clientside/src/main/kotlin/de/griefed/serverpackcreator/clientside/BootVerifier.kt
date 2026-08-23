@@ -99,10 +99,12 @@ class BootVerifier(
 
     /**
      * A single re-check attempt on another version of the mod: what was booted, and what came of it. The
-     * [label] is what the report shows, so it names the file and the Minecraft version rather than an index.
+     * [label] is what the report shows, so it names the file, the loader and the Minecraft version rather
+     * than an index — the loader because the sample deliberately spans loaders, which makes a bare file-name
+     * ambiguous about what actually ran.
      */
     data class OtherVersionAttempt(
-        /** Human-readable identification of the version booted, e.g. `ironchest-1.20.1.jar (Minecraft 1.20.1)`. */
+        /** What was booted, e.g. `ironchest-1.20.1.jar (Forge, Minecraft 1.20.1)`. */
         val label: String,
         /** What that boot produced — including an INCONCLUSIVE standing in for staging that never got to boot. */
         val outcome: BootOutcome
@@ -182,15 +184,22 @@ class BootVerifier(
 
     /**
      * When a crash **contradicts** the metadata — the mod claims to support servers, yet the server died —
-     * boot up to [otherVersionRecheckLimit] other versions of the mod and let them settle the contradiction.
-     * A mod that cannot run server-side cannot run server-side in *any* build, so one clean boot elsewhere
-     * proves the crash belonged to the build, not to the mod's sideness.
+     * boot up to [otherVersionRecheckLimit] other published combinations of the mod and let them settle the
+     * contradiction. A mod that cannot run server-side cannot run server-side in *any* build, so one clean
+     * boot elsewhere proves the crash belonged to the build, not to the mod's sideness.
      *
      * **Why it exists:** measured live on 2026-08-23, `iron-chests` — a mod nobody would call clientside —
      * was published `HIGH` off a single crashing build (`Forge 48.1.0 / Minecraft 1.20.2`). One boot cannot
      * tell a broken build from a clientside mod, and the engine resolved that in the direction that writes a
      * wrong entry into the fallback list, which silently strips the mod from every server pack built against
      * it. Stops at the first clean boot, and anything that fails to disprove the crash leaves it standing.
+     *
+     * **The sample spans loaders, so a candidate is staged under its own loader, not [loader].** See
+     * [BootCandidateSelector.pickRecheckCandidates] for why, and why crossing the loader is admissible here
+     * and not in `ClientsideVerifier.loaderDisprovingTheCrash`. Every attempt nonetheless stages into the
+     * *crashing* loader's directory: all attempts for one candidate share one `boot.log`, which
+     * [restoreDecisiveConsole] repairs at the end of [verify], and staging into another loader's directory
+     * would wipe the pack and console that loader's own verdict is about to be built from.
      */
     private fun recheckCrashOnOtherModVersions(
         project: ProjectFiles,
@@ -207,7 +216,7 @@ class BootVerifier(
             loader,
             booted.minecraftVersion,
             otherVersionRecheckLimit,
-            bootableMinecraft(loader)
+            bootableCombination()
         )
         val contradiction = "${project.slug}: $loader crashed on Minecraft ${booted.minecraftVersion} " +
             "although the metadata declares server support"
@@ -217,9 +226,16 @@ class BootVerifier(
             log.info("$contradiction — re-checking ${candidates.size} other version(s) before trusting the crash.")
         }
         val attempts = mutableListOf<OtherVersionAttempt>()
-        for ((file, minecraftVersion) in candidates) {
-            val label = "${file.fileName} (Minecraft $minecraftVersion)"
-            val staged = stageBootPack(project, loader, file, minecraftVersion, loaderVersionOverride = null)
+        for ((file, candidateLoader, minecraftVersion) in candidates) {
+            val label = "${file.fileName} ($candidateLoader, Minecraft $minecraftVersion)"
+            val staged = stageBootPack(
+                project,
+                candidateLoader,
+                file,
+                minecraftVersion,
+                loaderVersionOverride = null,
+                attemptDirName = "${project.slug}-$loader"
+            )
             if (staged is Prepared.Failed) {
                 log.warn("Could not re-stage ${project.slug} as $label: ${staged.detail}")
                 attempts.add(OtherVersionAttempt(label, BootOutcome(BootResult.INCONCLUSIVE, null, staged.detail)))
@@ -335,22 +351,26 @@ class BootVerifier(
      * policy's preference — used by the crash re-check to re-stage on the newest build.
      */
     fun prepareBootPack(project: ProjectFiles, loader: String, loaderVersionOverride: String? = null): Prepared {
-        val candidate = BootCandidateSelector.pickBootableCandidate(project.files, loader, bootableMinecraft(loader))
+        val bootable = bootableCombination()
+        val candidate = BootCandidateSelector.pickBootableCandidate(project.files, loader) { bootable(loader, it) }
             ?: return Prepared.Failed("No bootable file/Minecraft/loader combination for $loader.")
         val (mainFile, minecraftVersion) = candidate
         return stageBootPack(project, loader, mainFile, minecraftVersion, loaderVersionOverride)
     }
 
     /**
-     * Whether [loader] can actually be booted on a given Minecraft version. Only a stable Minecraft *release*
-     * qualifies — a mod's newest file may target a pre-release (a `-pre`/`-rc`/`-snapshot`), which is unstable
-     * and a waste to boot — AND-ed with [minecraftAcceptable] (the host's own constraint, e.g. the grinder's
-     * supported-Java gate) and the loader actually having a build. The release set is read once per call, so
-     * a selection that probes many versions does not re-read SPC's metadata for each of them.
+     * Whether a given loader can actually be booted on a given Minecraft version. Only a stable Minecraft
+     * *release* qualifies — a mod's newest file may target a pre-release (a `-pre`/`-rc`/`-snapshot`), which
+     * is unstable and a waste to boot — AND-ed with [minecraftAcceptable] (the host's own constraint, e.g.
+     * the grinder's supported-Java gate) and the loader actually having a build. The release set is read
+     * once per call, so a selection that probes many combinations does not re-read SPC's metadata for each.
+     *
+     * Takes the loader per call rather than closing over one, because the crash re-check's sample spans
+     * loaders and has to gate each candidate against its own.
      */
-    private fun bootableMinecraft(loader: String): (String) -> Boolean {
+    private fun bootableCombination(): (String, String) -> Boolean {
         val releaseVersions = apiWrapper.versionMeta.minecraft.serverReleases().map { it.minecraftVersion }.toHashSet()
-        return { minecraftVersion ->
+        return { loader, minecraftVersion ->
             minecraftVersion in releaseVersions &&
                 minecraftAcceptable(minecraftVersion) &&
                 loaderVersionPolicy.latestVersion(loader, minecraftVersion) != null
@@ -358,22 +378,27 @@ class BootVerifier(
     }
 
     /**
-     * Stage one *chosen* (file, Minecraft-version) combination: download [mainFile] plus its required
-     * dependencies and generate the self-installing server pack. Split out of [prepareBootPack] so a
-     * re-check can stage a combination it picked itself instead of the newest one selection would return.
+     * Stage one *chosen* (file, loader, Minecraft-version) combination: download [mainFile] plus its
+     * required dependencies and generate the self-installing server pack. Split out of [prepareBootPack] so
+     * a re-check can stage a combination it picked itself instead of the newest one selection would return.
+     *
+     * [attemptDirName] names the scratch directory, which staging wipes. It defaults to this [loader]'s own,
+     * and the cross-loader crash re-check overrides it with the *crashing* loader's — a candidate booted
+     * under another loader must not wipe the pack and console that loader's own verdict is built from.
      */
     private fun stageBootPack(
         project: ProjectFiles,
         loader: String,
         mainFile: ModFile,
         minecraftVersion: String,
-        loaderVersionOverride: String?
+        loaderVersionOverride: String?,
+        attemptDirName: String = "${project.slug}-$loader"
     ): Prepared {
         val loaderVersion = loaderVersionOverride
             ?: loaderVersionPolicy.preferredVersion(loader, minecraftVersion)
             ?: return Prepared.Failed("No $loader version for Minecraft $minecraftVersion.")
 
-        val attemptDir = File(workDirectory, "${project.slug}-$loader").apply { deleteRecursively() }
+        val attemptDir = File(workDirectory, attemptDirName).apply { deleteRecursively() }
         val modsDir = File(attemptDir, "modpack/mods").apply { mkdirs() }
 
         val unsatisfied = mutableSetOf<String>()
@@ -523,6 +548,10 @@ class BootVerifier(
          * that build's — while crashes elsewhere corroborate it and attempts that learned nothing leave it
          * exactly as it was. Every branch records what was tried, so a reader of the report can see how large
          * the sample behind the verdict was instead of guessing.
+         *
+         * The winning attempt's own outcome is what gets returned, so a verdict may report a boot run under a
+         * *different* loader than the one it is about. That is why every attempt's `label` names its loader:
+         * the detail has to say what actually ran, not merely that something did.
          */
         internal fun reconcileOtherVersionRecheck(first: BootOutcome, attempts: List<OtherVersionAttempt>): BootOutcome {
             val survivor = attempts.firstOrNull { it.outcome.result == BootResult.SURVIVED }

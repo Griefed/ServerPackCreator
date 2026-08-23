@@ -55,35 +55,93 @@ object BootCandidateSelector {
             .firstOrNull { loaderVersionAvailable(it.second) }
 
     /**
-     * The sample the other-version crash re-check boots: the newest bootable file of each Minecraft version
-     * *other than* [bootedMinecraftVersion], most recent Minecraft first, capped at [limit] — the same
-     * [loaderVersionAvailable] gate as [pickBootableCandidate], since a version the loader cannot install can
+     * One member of the sample the other-version crash re-check boots: which file, under which loader, on
+     * which Minecraft version. The loader is carried explicitly because the sample deliberately leaves the
+     * crashing loader — see [pickRecheckCandidates].
+     */
+    data class RecheckCandidate(
+        /** The published file to stage. */
+        val file: ModFile,
+        /** The loader to boot it under; not necessarily the one that crashed. */
+        val loader: String,
+        /** The Minecraft version to boot it on. */
+        val minecraftVersion: String
+    )
+
+    /**
+     * The sample the other-version crash re-check boots, capped at [limit]: a *diverse* set of published
+     * combinations other than the crashing `bootedLoader` / [bootedMinecraftVersion] one, gated by
+     * [loaderVersionAvailable] exactly as selection is — a combination the loader has no build for can
      * never be staged either.
      *
-     * One candidate per Minecraft version, never two builds of the same one: two rebuilds for one Minecraft
-     * are near-identical code, so a different version line buys far more per boot spent. That relies on
-     * [files] arriving newest-first, which both platforms do and the stable sort preserves, so the file kept
-     * for a version is that version's latest.
+     * Each pick prefers a candidate introducing both a [minecraftLine] and a loader that no earlier pick
+     * used (the crashing combination's own line counts as used from the start), then relaxes to a new line,
+     * then to a new loader, and finally takes whatever is left. So the diversity is a *preference*: a
+     * project publishing one loader and one Minecraft line still spends its whole budget, on the same
+     * newest-first versions it always did. Candidates are considered most-recent-Minecraft-first and only
+     * the newest file of each (loader, Minecraft version) is ever one — two rebuilds for one Minecraft are
+     * near-identical code. That relies on [files] arriving newest-first, which both platforms do and the
+     * stable sort preserves.
+     *
+     * **Why diverse and not simply newest.** Measured 2026-08-23 on `creativecore`: a Fabric crash on
+     * Minecraft 26.2 was re-checked on Fabric 26.1.2 and Fabric 26.1 — same loader, same loader version
+     * `0.19.3`, and the two Minecraft versions either side of the crashing one. Both were INCONCLUSIVE and
+     * the crash was published HIGH, while NeoForge had booted a server for the same project in the same
+     * run. Two boots that close to the crashing combination re-test its environment, not the mod.
+     *
+     * **Crossing the loader is a wider claim than [pickBootableCandidate] makes, and it is gated to match.**
+     * A mod really can be client-only on one loader, which is why `ClientsideVerifier.loaderDisprovingTheCrash`
+     * refuses to let any survival clear any crash. This sample is spent only where the crash already
+     * *contradicts* a declared server support (`BootVerifier.shouldRecheckAgainstOtherVersions`), i.e. where
+     * one of the two signals is known to be wrong — and a project the author declares server-capable, that
+     * boots a server under another loader, is far better explained by a broken build than by sideness.
      */
     fun pickRecheckCandidates(
         files: List<ModFile>,
-        loader: String,
+        bootedLoader: String,
         bootedMinecraftVersion: String,
         limit: Int,
-        loaderVersionAvailable: (minecraftVersion: String) -> Boolean
-    ): List<Pair<ModFile, String>> {
+        loaderVersionAvailable: (loader: String, minecraftVersion: String) -> Boolean
+    ): List<RecheckCandidate> {
         if (limit <= 0) {
             return emptyList()
         }
-        return files.filter { loader in it.loaders }
-            .flatMap { file -> file.minecraftVersions.map { file to it } }
-            .filter { (_, minecraftVersion) ->
-                minecraftVersion != bootedMinecraftVersion && loaderVersionAvailable(minecraftVersion)
+        val pool = files
+            .flatMap { file -> file.loaders.flatMap { loader -> file.minecraftVersions.map { RecheckCandidate(file, loader, it) } } }
+            .filter { candidate ->
+                !(candidate.loader == bootedLoader && candidate.minecraftVersion == bootedMinecraftVersion) &&
+                    loaderVersionAvailable(candidate.loader, candidate.minecraftVersion)
             }
-            .sortedWith { left, right -> minecraftComparator.compare(right.second, left.second) }
-            .distinctBy { it.second }
-            .take(limit)
+            .sortedWith { left, right -> minecraftComparator.compare(right.minecraftVersion, left.minecraftVersion) }
+            .distinctBy { it.loader to it.minecraftVersion }
+            .toMutableList()
+
+        val usedLines = mutableSetOf(minecraftLine(bootedMinecraftVersion))
+        val usedLoaders = mutableSetOf<String>()
+        val picked = ArrayList<RecheckCandidate>(limit)
+        while (picked.size < limit && pool.isNotEmpty()) {
+            val next = pool.firstOrNull { it.loader !in usedLoaders && minecraftLine(it.minecraftVersion) !in usedLines }
+                ?: pool.firstOrNull { minecraftLine(it.minecraftVersion) !in usedLines }
+                ?: pool.firstOrNull { it.loader !in usedLoaders }
+                ?: pool.first()
+            pool.remove(next)
+            usedLoaders.add(next.loader)
+            usedLines.add(minecraftLine(next.minecraftVersion))
+            picked.add(next)
+        }
+        return picked
     }
+
+    /**
+     * The Minecraft *version-line* [minecraftVersion] belongs to — its first two components, so `26.1.2` and
+     * `26.1` are one line while `26.2` is another, and `1.21.11` is separate from `1.20.1`.
+     *
+     * A line is the granularity at which mod code actually differs: builds within one are ports of the same
+     * source across a patch release, which is why re-checking a crash on the version next to it learns so
+     * little.
+     */
+    internal fun minecraftLine(minecraftVersion: String): String =
+        minecraftVersion.split('.').take(2).joinToString(".")
 
     /**
      * Pick a dependency-file from [files] for the same [loader], preferring an exact
