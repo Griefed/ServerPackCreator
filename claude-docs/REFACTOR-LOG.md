@@ -2261,3 +2261,28 @@ operator-facing findings went with it — the startup line now states the cap as
 `### Capping CPU` stopped splitting the worker-sizing section in half, and the installer's "worth a decision"
 list names the knob. Final: **303 tests, 0 failures**, 16 skipped with the gated Docker IT enabled and 23
 without.
+
+## 2026-08-23 — the memory cap joins it, with a warning instead of a formula
+
+`SPC_GRINDER_MEMORY_GIB` completes the per-container budget: both caps now come from the environment through
+one `ContainerResources.forLimits` call, on the rules the CPU knob established — exact `0` uncapped, a smaller
+positive value raised to the daemon's floor rather than refused by it ("Minimum memory limit allowed is 6MB",
+its own words), negative and non-finite rejected. The default stays 3 GiB, so nothing an install already runs
+changes, and a new guard pins the thing neither literal default could: that `main`'s fallbacks resolve to
+*exactly* the `ContainerResources` property defaults, since every other construction site falls back to those
+independently. Its teeth were checked by flipping the class default to 4 GiB and watching it fail.
+
+**Why it shipped with a warning rather than as a lever.** The knob was asked for with "only change this when
+you know what you are doing", and the measurement behind that turned out to be sharper than expected: the
+packs the grinder builds leave `javaArgs` empty, so nothing passes `-Xmx` and the JVM derives the server's
+heap from the container's cgroup limit — Temurin 21, `--memory=3g` → `MaxHeapSize 805306368` (768 MiB, 25%);
+`--memory=1g` → `268435456`. The cap is therefore not a ceiling the boot happens to sit under, it is *what
+the heap is*. And it is simultaneously the divisor in §5's worker-sizing formula. So lowering it starves boots
+of heap, raising it without lowering `SPC_GRINDER_WORKERS` over-subscribes the host by exactly that factor,
+and both failures are OOM kills scored `INCONCLUSIVE` — indistinguishable, from the report, from mods that
+hang. That is the whole content of the README warning, the unit's comment block and the entry point's own:
+if the intent is "grind faster", the levers are `WORKERS` and `CPUS`.
+
+`CpuLimitWiringTest` became `ContainerLimitsWiringTest` in the process (it guards two knobs now, with the
+existing assertions intact and the memory equivalents added). Suite 303 → **310, 0 failures**, 16 skipped with
+the gated Docker IT enabled and 23 without.

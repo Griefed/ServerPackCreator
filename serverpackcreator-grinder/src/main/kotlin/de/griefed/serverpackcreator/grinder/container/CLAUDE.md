@@ -30,6 +30,16 @@ The boot seam: the grinder implements clientside's `ServerRunner` for containers
   `max 100000`), so the two zeroes must not be conflated. Audit iteration 23 found exactly that inversion.
   An *over*-large value needs no clamp: the raw cfs path is not bounded by host CPU count the way docker's
   `--cpus` is (measured on 16 cores, a 1000-core quota is accepted verbatim), it simply means uncapped.
+- **`forLimits` is the entry point's one call for the whole per-container budget** (`SPC_GRINDER_CPUS` +
+  `SPC_GRINDER_MEMORY_GIB`), and the memory half follows the CPU half's rules exactly — exact `0` uncapped,
+  a smaller positive value raised to the daemon's floor (6 MB, its own message). **Do not treat the memory
+  cap as a throughput knob.** The grinder's packs leave `javaArgs` empty, so nothing passes `-Xmx` and the
+  JVM sizes the server's heap from the cgroup limit: measured on Temurin 21, `--memory=3g` →
+  `MaxHeapSize 805306368` (768 MiB, 25%), `--memory=1g` → `268435456`. It is simultaneously the divisor in
+  README §5's worker-sizing formula, so both directions of change end in OOM kills that are scored
+  INCONCLUSIVE — the failure mode that looks like a hanging mod rather than a mis-set host.
+  `ContainerLimitsWiringTest` asserts both knobs reach both collaborators, and that `main`'s fallbacks
+  resolve to exactly the `ContainerResources` defaults every other construction site falls back to.
 - **`DockerJavaContainerEngine`** is the real docker-java impl (create → start → follow logs → stop →
   inspect exit → force-remove). **Not unit-tested** (needs a live daemon) — that is the whole reason
   the testable orchestration sits in `ContainerServerRunner` behind the seam. If you change it, verify
