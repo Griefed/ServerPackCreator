@@ -27,6 +27,20 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   canned JSON (no live network). **CurseForge has no sideness field** → `DeclaredSupport.UNKNOWN`; only
   Modrinth declares `client_side`/`server_side`. Use `JsonNode.textOrNull` for nullable URL fields —
   `asText(null)` returns the literal `"null"` for a JSON-null and would defeat `ModFile.locked`.
+- **LANDMINE — a Modrinth version's `files[]` is not a list of mods.** Authors attach source jars, and
+  Modrinth flags the real one `"primary": true`; `ModrinthPlatform.modFilesOf` keeps only those, falling
+  back to *every* file of a version that flags none (3 of `creativecore`'s 300 versions genuinely do, and
+  dropping them would lose real builds). Without it a source jar is a candidate for everything a `ModFile`
+  feeds: the published list-entry, the jar-scan sample, and — order permitting — the boot itself.
+  **What it cost, measured against the live API on 2026-08-23:** `creativecore`'s Fabric group holds 143
+  files, one being the stray `CreativeCore-sources.jar`. That name shares no delimited prefix with the
+  `CreativeCore_FABRIC_v*.jar` builds, so `FilenameStemDeriver` fell back to stripping the version off the
+  *shortest* name and published `CreativeCore-sources` — an entry matching nothing the project ships. It
+  also cost the mod its cross-loader disproof: `loaderDisprovingTheCrash` compares entries, and that stem
+  matched neither other loader's `CreativeCore_`, so a Fabric crash stood as HIGH while NeoForge had booted
+  a server in the same run. **CurseForge has no equivalent flag** — its file list is plain uploads, so an
+  author who publishes a source jar as a normal file there is still unfiltered; nothing has been seen doing
+  it, and there is no signal to act on if one does.
 - **CurseForge file resolution pages; a dependency's deliberately does not.** `resolve` walks
   `/mods/{id}/files` with `index` until `totalCount` is reached, capped at `MAX_FILE_PAGES` (10 × 50) with a
   warning when it truncates. **Why:** the newest 50 files are 50 files *across all loaders*, so a project that
@@ -86,8 +100,29 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   "this build crashes" and "this mod cannot run on a server" produced identical evidence — reported
   2026-08-23, `iron-chests` published `HIGH` off a single crashing `Forge 48.1.0 / Minecraft 1.20.2`. A mod
   that cannot run server-side cannot run server-side in *any* build, so one clean boot on another version
-  clears the crash. Sample: the newest file of each of the next two most-recent Minecraft versions (one per
-  version — two rebuilds for one Minecraft are near-identical code), stopping at the first clean boot.
+  clears the crash. Stops at the first clean boot.
+  **The sample is deliberately diverse, not simply the next-newest builds** (2026-08-23). Each pick
+  introduces a Minecraft **version-line** (`minecraftLine` = the first two components, so `26.1.2` and `26.1`
+  are one line and `26.2` another — the granularity at which mod source actually differs) *and* a loader that
+  no earlier pick used, newest Minecraft first, with the crashing combination's own line marked used from the
+  start. **Why:** `creativecore` — a mod whose own description advertises server features — crashed on
+  Fabric / MC 26.2 and spent both re-checks on Fabric 26.1.2 and Fabric 26.1, same loader, same loader
+  version `0.19.3`. Both INCONCLUSIVE, so the crash published HIGH, while NeoForge 26.1.2.97 booted a server
+  for the same project *in the same run* and the CurseForge run minutes earlier booted the very file the 26.1
+  re-check gave up on. Two boots that close to the crashing combination re-test its environment, not the mod.
+  The same budget now buys Fabric 26.1.2 + NeoForge 1.21.11 — verified by running the real
+  `ModrinthPlatform` + `pickRecheckCandidates` over the project's live 300-version response, which is also
+  where the `CreativeCore_FABRIC_` stem above was confirmed. **Diversity is a preference, not a filter** — it
+  relaxes to a new line, then a new loader, then whatever is left, so a project publishing one loader and one
+  Minecraft line samples exactly as deeply as before; `aSingleMinecraftLineStillSpendsTheWholeBudget` pins that
+  direction. **Landmine — crossing the loader here is a wider claim than `loaderDisprovingTheCrash` permits**,
+  and the difference is the gate: that pass applies to *any* crash, so it insists on a matching entry, while
+  this sample is spent only where the crash already contradicts a declared server support, i.e. where one of
+  the two signals is known to be wrong. Do not loosen one by pointing at the other. Two consequences worth
+  knowing: every attempt's label names its loader (`file.jar (NeoForge, Minecraft 1.21.1)`) because the
+  returned outcome may be a boot run under a *different* loader than the verdict is about, and every attempt
+  stages into the **crashing** loader's directory (`stageBootPack`'s `attemptDirName`) — staging under the
+  candidate's own loader would wipe the pack and console that loader's own verdict is about to be built from.
   **Landmine — the gate is the contradiction, not the crash.** It arms only when
   `ClientsideVerifier.declaresServerSupport` holds, which is the same predicate that prints the "Declared
   server/both but the server crashed" note; keep them sharing it, or the report states a contradiction the
@@ -210,7 +245,7 @@ seam (writes the log, then `BootLogClassifier` + `BootLogExcerpt`). The default
 
 ## Testing patterns
 
-- 126 tests, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
+- 130 tests, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
   JSON to a fake `HttpFetcher`; **`MetadataScannerTest` is the only one needing a resource** — it boots
   an offline `ApiWrapper` from `src/test/resources/serverpackcreator.properties` (whose `ModScanner`
   relies on the API's cached version-manifests, hence `test` `dependsOn :serverpackcreator-api:processTestResources`).

@@ -2377,3 +2377,70 @@ within-loader answer.
 Teeth checked: relaxing the entry-collision condition fails `aLoaderBootingUnderADifferentEntryDisprovesNothing`;
 capping the file walk at one page fails `resolvePagesThroughEveryPublishedFile` and
 `aTotalCountThatIsNeverReachedStopsAtTheCap`. Suite 113 → **126, 0 failures**.
+
+---
+
+## 2026-08-23 — `creativecore`: a source jar as a list-entry, and a re-check that never left the neighbourhood
+
+Reported the same day as `iron-chests`, and it survived every guard that case installed. `creativecore` — a
+library mod whose own project description advertises server-side features — was published `HIGH` clientside
+for Modrinth/Fabric under the suggested entry **`CreativeCore-sources`**. Two independent defects had to line
+up for that, and each is worth its own note.
+
+**A Modrinth version's `files[]` is not a list of mods.** `filesOf` mapped every entry onto a `ModFile`, and a
+Modrinth version routinely carries more than one: authors attach source jars, flagged `"primary": false`.
+Measured against the live API: the project publishes 300 versions, its Fabric group holding 143 files, of
+which exactly one is the stray `CreativeCore-sources.jar` (fabric, 1.21.1, non-primary, uploaded 2024-09-04).
+That single name shares no delimited prefix with the `CreativeCore_FABRIC_v*.jar` builds, so
+`FilenameStemDeriver` fell through to its last resort — strip the version off the **shortest** name — and
+derived an entry matching nothing the project has ever shipped. The deriver behaved exactly as documented;
+it was fed something that is not a mod.
+
+The knock-on is the interesting part. `loaderDisprovingTheCrash`, installed hours earlier, compares *entries*,
+and `CreativeCore-sources` matches neither of the other loaders' `CreativeCore_`. So the guard that exists
+precisely to stop one loader's crash outranking another loader's clean boot looked at a run where NeoForge had
+booted a server, found no colliding entry, and let the Fabric crash stand. A garbage stem does not merely
+publish a useless entry — it disables the disproof.
+
+`modFilesOf` now keeps only the primaries, falling back to every file of a version that flags none. That
+fallback is load-bearing rather than defensive: 3 of the 300 versions genuinely carry no primary flag, and
+dropping them would lose real builds. CurseForge has no equivalent field, and nothing has been seen publishing
+a source jar as a plain CF upload — stated so the asymmetry is a known gap, not an oversight.
+
+**The other-version re-check spent both boots in the crashing combination's own neighbourhood.**
+`pickRecheckCandidates` took the newest file of each *other Minecraft version* of the crashing loader, which
+with a budget of two means the two versions either side of it. Here: Fabric / MC 26.2 crashed, and the
+re-checks went to Fabric 26.1.2 and Fabric 26.1 — same loader, same loader version `0.19.3`, adjacent
+Minecraft versions, i.e. near-identical code re-tested in a near-identical environment. Both came back
+INCONCLUSIVE (exit 1 and exit 0), so the crash stood. Meanwhile, in the *same* run, NeoForge 26.1.2.97 booted
+a server for this project, and the CurseForge sweep two minutes earlier had booted
+`CreativeCore_FABRIC_v2.14.13_mc26.1.jar` — the exact file the Modrinth 26.1 re-check gave up on — to a clean
+ready-line. The evidence existed; the sample was aimed away from it.
+
+Each pick now has to introduce a Minecraft **version-line** and a loader that no earlier pick used, considered
+newest-Minecraft-first, with the crashing combination's own line marked used from the start. A line is the
+first two components (`26.1.2` and `26.1` are one, `26.2` another) because that is the granularity at which
+mod source actually differs — builds within a line are ports of the same source across a patch release. On
+this shape the same two boots become Fabric 26.1.2 and NeoForge 1.21.11 — not asserted from the
+miniature in the unit test but from running the real `ModrinthPlatform` and `pickRecheckCandidates` over the
+project's live 300-version response, which is also where the recovered `CreativeCore_FABRIC_` stem was
+confirmed.
+
+**Diversity is a preference, not a filter**, and that distinction is pinned: selection relaxes to a new line,
+then a new loader, then whatever is left, so a project publishing one loader and one Minecraft line samples
+exactly as deeply as it did before. The budget is unchanged — this buys better boots, not more of them.
+
+**Crossing the loader is a wider claim than `loaderDisprovingTheCrash` permits, and the difference is the
+gate.** That pass runs on *any* crash, so it insists on a colliding entry; this sample is spent only where the
+crash already contradicts a declared server support, i.e. where one of the two signals is already known to be
+wrong. A project whose author declares it server-capable, and which boots a server under another loader, is
+far better explained by a broken build than by sideness. Two consequences fall out: every attempt's label now
+names its loader, because the returned outcome may be a boot run under a different loader than the verdict is
+about; and every attempt still stages into the **crashing** loader's directory, since staging under the
+candidate's own would wipe the pack and console that loader's own verdict is about to be built from.
+
+Teeth checked: both Modrinth pins were committed red and fail on the unfiltered `files[]`
+(`nonPrimaryFilesAreNotModFiles`, `aSourceJarDoesNotPoisonTheDerivedListEntry`); the selector pins were
+committed red as a compile failure, the honest shape of a signature change, and
+`aCrashIsReCheckedOnAnotherLoaderRatherThanTwiceOnItsOwn` is the miniature of the live report.
+Suite 126 → **130, 0 failures**.
