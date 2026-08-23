@@ -63,4 +63,26 @@ internal class ContainerUserTest {
 
         Assertions.assertEquals(ContainerUser.IMAGE_DEFAULT, ContainerUser.forDirectory(missing, override = null))
     }
+
+    /**
+     * A malformed override must not reach Docker, but the operator has to learn it was ignored: this is the one
+     * knob whose entire purpose is overriding a resolution that has already gone wrong once, so silently
+     * substituting a different answer is the worst of both.
+     */
+    @Test
+    fun recognisesAnOverrideItCannotUse() {
+        Assertions.assertTrue(ContainerUser.isUsableOverride("1000:1000"))
+        Assertions.assertFalse(ContainerUser.isUsableOverride("1000"), "a bare uid names no group")
+        Assertions.assertFalse(ContainerUser.isUsableOverride("grinder:grinder"), "docker-java needs numeric ids here")
+        Assertions.assertFalse(ContainerUser.isUsableOverride(null))
+        Assertions.assertFalse(ContainerUser.isUsableOverride("   "), "a blank override is an unset one")
+    }
+
+    @Test
+    fun ignoresAMalformedOverrideRatherThanHandingDockerNonsense(@TempDir workDirectory: File) {
+        val resolved = ContainerUser.forDirectory(workDirectory, override = "grinder:grinder")
+
+        Assertions.assertTrue(resolved.matches(Regex("""\d+:\d+""")), "must fall back to a real uid:gid, was '$resolved'")
+    }
+
 }

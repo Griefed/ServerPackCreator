@@ -136,4 +136,33 @@ internal class FallbackPropertiesRendererTest {
         parsed.load(document.byteInputStream(Charsets.ISO_8859_1))
         Assertions.assertNotNull(parsed.getProperty(fallbackKey), "the key must exist even when empty, or clients see no update")
     }
+
+    /**
+     * A comma cannot survive the round trip: `UpdateConfig.updateFallback` splits the value on it, so one entry
+     * containing a comma arrives at every client as *two* bogus `startsWith` matchers against real mod
+     * filenames. Filenames may legally contain commas and `FilenameStemDeriver` derives stems straight from
+     * them, so this is reachable without anything unusual happening — and silent at both ends.
+     */
+    @Test
+    fun dropsAnEntryTheCommaSeparatedFormatCannotRepresent() {
+        val document = FallbackPropertiesRenderer.render(
+            clientsideMods = listOf("safe-", "danger,ous-"),
+            whitelist = listOf("also,bad-"),
+            verdicts = emptyList()
+        )
+
+        Assertions.assertEquals(listOf("safe-"), entriesOf(document, fallbackKey))
+        Assertions.assertTrue(entriesOf(document, whitelistKey).isEmpty(), "the whitelist must be filtered too")
+    }
+
+    @Test
+    fun saysSoInTheDocumentWhenItHadToDropSomething() {
+        val document = FallbackPropertiesRenderer.render(listOf("safe-", "danger,ous-"), emptyList(), emptyList())
+
+        Assertions.assertTrue(
+            document.lineSequence().any { it.startsWith("#") && it.contains("comma") },
+            "dropping an entry silently is how a list quietly goes wrong; the document must admit it"
+        )
+    }
+
 }
