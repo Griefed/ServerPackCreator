@@ -22,8 +22,10 @@ package de.griefed.serverpackcreator.grinder
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.settings.PathsConfig
+import de.griefed.serverpackcreator.grinder.container.ContainerUser
 import de.griefed.serverpackcreator.grinder.container.DockerJavaContainerEngine
 import de.griefed.serverpackcreator.grinder.loader.*
+import de.griefed.serverpackcreator.grinder.report.FallbackLists
 import de.griefed.serverpackcreator.grinder.report.JsonVerdictStore
 import de.griefed.serverpackcreator.grinder.report.ReportServer
 import de.griefed.serverpackcreator.grinder.source.*
@@ -76,10 +78,18 @@ object GrinderApplication {
         // proxy in a container dials the host over the bridge gateway, never 127.0.0.1 -- is a deliberate act.
         val bindHost = env("SPC_GRINDER_HOST", "127.0.0.1")
         val workers = env("SPC_GRINDER_WORKERS", "2").toInt()
+        // The image declares USER 1000:1000, which is only right while the daemon itself is uid 1000. Every
+        // container bind-mounts a directory this process created, so it has to run as that directory's owner --
+        // otherwise every write inside the pack is refused, and the boot dies on a missing @argfile far from
+        // the actual cause. Logged below so the identity is visible without reproducing the failure.
+        // Read here rather than inside ContainerUser so the entry point stays the one place environment is
+        // consulted -- which is also what keeps the README table and the systemd unit honest, since both guards
+        // scan this file for the names it reads.
+        val containerUser = ContainerUser.forDirectory(workDir, System.getenv("SPC_GRINDER_CONTAINER_USER"))
 
         log.info(
             "Grinder starting — home=$base image=$image work=$workDir cache=$cacheRoot store=$storeFile " +
-                "bind=$bindHost port=$port workers=$workers"
+                "bind=$bindHost port=$port workers=$workers containerUser=$containerUser"
         )
 
         log.info("Using Preferences node '${ApiProperties.resolvePreferencesNode()}' for SPC settings.")
@@ -90,7 +100,10 @@ object GrinderApplication {
         val engine = DockerJavaContainerEngine()
         // Authoritative Minecraft -> required-Java from SPC's own metadata; gates selection to the image's JDKs.
         val imageJava = ImageJavaRuntimes.from(apiWrapper.versionMeta.minecraft)
-        val installer = DockerLoaderInstaller(engine, image, ApiVanillaPackGenerator(apiWrapper, File(workDir, "install")), imageJava)
+        val installer = DockerLoaderInstaller(
+            engine, image, ApiVanillaPackGenerator(apiWrapper, File(workDir, "install")), imageJava,
+            containerUser = containerUser
+        )
         // A cached install is a product of the start-script templates that built it, so record which ones those
         // were. Read per call rather than once: SPC resolves its templates from the then-current home, and the
         // daemon's home can be re-resolved while it runs.
@@ -99,7 +112,9 @@ object GrinderApplication {
                 apiWrapper.apiProperties.defaultStartScriptTemplates().values.map { File(it) }
             )
         })
-        val verifier = ContainerCandidateVerifier(apiWrapper, cache, engine, image, imageJava, File(workDir, "verify"))
+        val verifier = ContainerCandidateVerifier(
+            apiWrapper, cache, engine, image, imageJava, File(workDir, "verify"), containerUser = containerUser
+        )
         // A run killed mid-boot leaves a staged pack that no per-candidate reap will ever come for, so sweep what
         // we inherited before adding to it. Safe here and only here: nothing is in flight yet.
         BootWorkspaceReaper(File(workDir, "verify")).reapAll().let { reclaimed ->
@@ -133,10 +148,19 @@ object GrinderApplication {
             .apply { parentFile?.mkdirs() }
         val cursorStore = JsonCursorStore(cursorFile)
         val server = ReportServer(
-            store, port, host = bindHost, status = status, cursors = cursorStore, cacheRoot = cacheRoot
+            store, port, host = bindHost, status = status, cursors = cursorStore, cacheRoot = cacheRoot,
+            // Read per request, not captured once: SPC refreshes these from its own update-URL while the
+            // daemon runs, and /as-properties must publish what this instance holds now.
+            fallbackLists = {
+                FallbackLists(
+                    clientsideMods = apiWrapper.apiProperties.clientsideMods.toList(),
+                    whitelist = apiWrapper.apiProperties.modsWhitelist.toList()
+                )
+            }
         ).start()
         val reportUrl = reportUrl(bindHost, server.port)
         log.info("Report:  $reportUrl/    CSV: $reportUrl/export.csv    live status: $reportUrl/status")
+        log.info("Fallback list for SPC instances (set as their fallback.updateurl): $reportUrl/as-properties")
 
         if (args.isNotEmpty()) {
             // One-shot: grind a fixed set of project URLs (handy for an end-to-end verification), then

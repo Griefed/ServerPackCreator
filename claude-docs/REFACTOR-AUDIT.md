@@ -3080,3 +3080,238 @@ all ten are about what happens on a host this machine is not.
 
 Re-verified after the changes: `shellcheck -S style` exit 0, `systemd-analyze verify` reporting only the two
 container artefacts, grinder suite **251**, zero failures.
+
+---
+
+# Audit iteration 17 — 2026-08-23 — the container-identity branch (`claude-grinder-uid-browser-properties`)
+
+Scope: `git log develop..HEAD`, ten commits. Three unrelated production defects found from a live grinder run
+plus one new endpoint. Base for the comparison is `develop` at `845fb6381`.
+
+**Method.** Read every commit's diff against the conventions; re-read the four new units in full rather than
+their diffs; ran `:serverpackcreator-grinder:test` (268, 19 skipped) and `:serverpackcreator-clientside:test`
+(90, 0 skipped), both green. Counts re-derived from `build/test-results/test/*.xml` of that run.
+
+## HIGH
+
+None. No behaviour change is hidden inside a `refactor:`, no module boundary is crossed (`-grinder` and
+`-clientside` gained nothing pointing outward; the new endpoint reads `ApiWrapper` in the composition root only),
+and nothing `serverpackcreator-api` exports changed shape or behaviour.
+
+## MEDIUM
+
+- **M1 — `012211dd0` is labelled `docs(grinder)` and carries a production signature change.**
+  `container/ContainerUser.kt:60` loses its default argument (`override: String? = System.getenv(ENV_KEY)` →
+  `override: String?`) and the read moves to `GrinderApplication.kt:88`. Behaviour is preserved, so this is a
+  *pure refactor* mislabelled as documentation, not a behaviour change in disguise — but it is exactly the
+  "one concern per commit" violation the conventions single out, and the file's own precedent (`358675fbf`) is
+  explicit that the remedy is cheap before a merge and unfixable after. The branch is unpushed, so it is still
+  cheap. **Fix:** split the two-file code change out of the docs commit.
+
+- **M2 — `9df60fca8` changes three behaviours and pins one.** `BrowserDownloader.kt` swallows the download
+  abort (pinned by `isDownloadAbort`), *and* switches both navigations from Playwright's default `load` to
+  `DOMCONTENTLOADED`, *and* raises the 30s default to a configurable 60s. The latter two have no guard of any
+  kind. Grouping related behaviour changes is allowed; leaving two of them unpinned is not. The repo already
+  has the technique for a join no test can execute — `ReportBindWiringTest` asserts against `main`'s own
+  source text — and the same applies here, since exercising the options needs a live Chromium.
+
+- **M3 — `6be42c479` leaves the endpoint's production wiring unpinned.** `ReportServerTest` supplies its own
+  `fallbackLists` lambda, so nothing asserts that `GrinderApplication.kt:186` hands the endpoint SPC's *real*
+  `clientsideMods`/`modsWhitelist`. This is the identical gap `ReportBindWiringTest` was written to close for
+  `SPC_GRINDER_HOST`: the endpoint could be wired to an empty list and every test would stay green while every
+  polling client silently received nothing.
+
+- **M4 — a comma inside an entry silently corrupts the published list.**
+  `report/FallbackPropertiesRenderer.kt:124` passes character 44 through verbatim (it is inside the printable
+  range), and the consumer — `UpdateConfig.updateFallback` — does `newBlacklist.split(",")`. One stem
+  containing a comma therefore arrives at every client as two bogus entries, each of which is a `startsWith`
+  matcher against real mod filenames. Filenames may legally contain commas, and `FilenameStemDeriver` derives
+  stems straight from them, so this is reachable without anything unusual happening. Silent at both ends.
+
+- **M5 — a malformed `SPC_GRINDER_CONTAINER_USER` is discarded without a word.**
+  `container/ContainerUser.kt:63` requires `\d+:\d+`, and anything else (`1000`, `grinder:grinder`, a stray
+  quote) falls through to the directory owner. That is the right *behaviour* — a nonsense identity must not
+  reach Docker — but an operator who deliberately set the variable gets no signal that it was ignored, on the
+  one knob whose whole purpose is overriding a resolution that has already gone wrong once.
+
+## LOW
+
+- **L1 — `report/FallbackPropertiesRenderer.kt:118` is clever where it should be plain.**
+  `appendLine("…$separator\\".removeSuffix(if (index == entries.lastIndex) "\\" else ""))` appends a
+  continuation backslash and then removes it again for the last entry. Correct, but the reader has to simulate
+  it; the same `index == entries.lastIndex` test is asked twice in one expression.
+
+- **L2 — the charset branch added to `ReportServer.respond` cannot be reached.**
+  `report/ReportServer.kt:141` picks ISO-8859-1 when the content-type says so, but
+  `FallbackPropertiesRenderer.escape` maps every character outside 32..126 to `\uXXXX`, so the rendered
+  document is pure ASCII and both encodings produce identical bytes. The *declared* charset in the header is
+  load-bearing and must stay; the branching is a mechanism that can never do anything, in a helper every
+  endpoint shares.
+
+- **L3 — `report/FallbackPropertiesRenderer.kt:79,96` normalise the same collections twice**, once for the
+  header's counts and once to render. Harmless at this size, but it means two sources of truth for "how many
+  entries are we publishing".
+
+- **L4 — `loader/InstallFailureDiagnosisTest.kt:60` uses `!!`** after an `assertNotNull`. Test code, but the
+  convention says no new non-null assertions, and `assertNotNull` returns the narrowed value.
+
+- **L5 — fully-qualified names where an import belongs.**
+  `loader/InstallFailureDiagnosisTest.kt:66` writes `de.griefed.serverpackcreator.grinder.container.ContainerUser.ENV_KEY`
+  inline, and `report/ReportServerTest.kt` constructs `java.util.Properties()` the same way.
+
+## Verified clean — do not re-litigate
+
+- **Pin-before-fix boundaries hold on all four units.** `29644191d`, `5ecf8cdc9`, `a43573563` and `47f991719`
+  each land red on their own and are followed by the change; each red state was observed (compile failure on
+  the missing unit) before committing.
+- **`de20741de` is correctly labelled `fix:`,** and its `ContainerEngine.kt` edit is documentation of the
+  parameter it changes the meaning of — within the commit's stated scope, not sprawl.
+- **`8ec7440f5` does not guess.** `InstallFailureDiagnosis.of` returns `null` for a console it cannot explain,
+  and that is pinned, so the raw tail stays the fallback rather than being replaced by a confident invention.
+- **The confidence floor on `/as-properties` is pinned in both directions** — HIGH published,
+  MEDIUM/LOW/INCONCLUSIVE and a null `suggestedEntry` excluded — and the document is verified by *parsing* it
+  with `java.util.Properties`, which is what the consumer does, rather than by asserting on its shape.
+- **No `-api` behaviour changed,** so `claude-docs/API-BEHAVIOUR-CHANGES.md` correctly gains no row. `-grinder`
+  and `-clientside` are unpublished, so their signature changes carry no compatibility obligation.
+
+---
+
+# Audit iteration 18 — 2026-08-23 — second pass over the same branch, after iteration 17's fixes
+
+Scope: `git log develop..HEAD`, now 24 commits. Iteration 17's ten findings are all closed; this pass
+re-reads the branch as a whole rather than commit-by-commit, and pushes on the two things iteration 17 asserted
+without executing.
+
+Suites at the time of writing: grinder 275 (19 skipped), clientside 93. Both green, counts re-derived from
+`build/test-results/test/*.xml`.
+
+## Iteration 17 findings — closed
+
+- **M1** split: `c14e750e0 refactor(grinder): read the container-user override in the entry point` carries the
+  code, `31e696797 docs(grinder)` carries the documentation.
+- **M2/M3** pinned: `navigationOptions()`/`downloadOptions()` extracted and asserted by *building* them
+  (`723394f62`, `02d8a3916`), and `FallbackListWiringTest` asserts the endpoint's production wiring against
+  `main`'s source. Teeth verified by breaking the join — it fails on "the published clientside list must come
+  from SPC's own property".
+- **M4/M5** fixed with red pins first (`93bbab2ed` → `3b4dc45a5`).
+- **L1–L5** cleaned in `72dc9d2cd`, existing assertions untouched.
+
+## What this pass added
+
+- **The endpoint is now verified against its real consumer, not a model of it.**
+  `FallbackPropertiesConsumerTest` (`c37…`, commit `test(grinder): drive SPC's real updater…`) points a real
+  `UpdateConfig.updateFallback` at a running `ReportServer` over an ephemeral loopback port and asserts the
+  entries land in `GenerationConfig.clientsideMods`. Everything else on this endpoint asserts against
+  `java.util.Properties`, which is my model of the consumer; this is the consumer. It needs neither Docker nor
+  internet, so it is a plain test rather than a gated IT. **Teeth verified:** removing the continuation
+  backslash collapses the whole list to `[, entityculling-]` and both cases go red.
+
+## MEDIUM
+
+- **P2-M1 — the published base list is only as fresh as this daemon's own SPC, and that was undocumented.**
+  `UpdateConfig` *replaces* a client's lists with whatever it is served, so a grinder running an old build — or
+  one that could not reach the repository at its own startup — hands every client a **staler** list than they
+  had. The endpoint is a mechanism for distributing this daemon's opinion, and that opinion has an age. Fixed
+  in this pass: README §5 and the module landmine now state it.
+
+- **P2-M2 — the container-user fix is still unverified against a real daemon, and this host cannot verify it.**
+  Attempted, with `docker:29.7.2` and a *named volume* rather than a bind mount, specifically so the
+  permissions would be real Linux ones inside the VM. The result is inconclusive for an instructive reason:
+  with the volume root chowned to `1001:1001`, a container run as `--user 0:0` reads it back as `1001:1001`,
+  while a container run as `--user 1001:1001` reads the same directory as `0:0` and cannot write. Root and
+  non-root containers disagree about the same inode, which is Docker Desktop's own id remapping, not kernel
+  DAC — so **neither the bug nor the fix reproduces faithfully here**, and the run proves nothing either way.
+
+  The bug itself is not in doubt: the production console on 2026-08-23 shows three `Permission denied` lines
+  against the mounted pack, and the fix is the standard remedy. But the convention is explicit that a real
+  runtime answers this class of question, so it stays open until run on the Linux host:
+
+  ```
+  sudo -u grinder mkdir -p /tmp/spc-uid-check
+  docker run --rm -v /tmp/spc-uid-check:/pack -w /pack --user "$(id -u grinder):$(id -g grinder)" \
+      spc-grinder-runtime:latest bash -c 'touch user_jvm_args.txt && echo WRITABLE'
+  ```
+
+  Expected: `WRITABLE`. The same command with `--user 1000:1000` should fail wherever `id -u grinder` is not
+  1000 — that pair is the actual proof, since it shows the two identities behaving differently on one directory.
+
+## LOW
+
+- **P2-L1 — `@JvmStatic` on `BrowserDownloader.isDownloadAbort`** for a helper with no Java callers. Removed.
+- **P2-L2 — the root `CLAUDE.md` counts were stale again** (268/90, written before iteration 17's own tests
+  landed). A count in prose goes stale by being *correct at the time*, which is the failure mode the
+  "cite names, not snapshots" convention exists for; the column already says how to re-derive it, and the
+  numbers were re-derived rather than adjusted by hand.
+
+## Verified clean — do not re-litigate
+
+- **`ContainerUser` resolves after `workDir` is created** (`GrinderApplication.kt`: `workDir` is
+  `.apply { mkdirs() }` at declaration, the resolution follows the `workers` read), so `ownerOf` never reads a
+  path that does not exist and never silently falls back to the image default for that reason.
+- **Running as an id with no matching entry in the image's `/etc/passwd` is not a new risk.** The rootfs is
+  read-only and only `/tmp` is a tmpfs, so nothing could write to a home directory under the old uid either;
+  the JDKs under `/opt` are world-readable.
+- **The comma filter applies to both lists and to grinder findings**, not just the shipped list — checked
+  against `normalise` being the single funnel every published entry passes through.
+- **No endpoint other than `/as-properties` changed behaviour.** `respond` now always encodes UTF-8, which is
+  what it did before this branch; the ISO-8859-1 branch existed only within this branch's own history.
+
+---
+
+# Audit iteration 19 — 2026-08-23 — third pass, and the equivalence check
+
+Scope: `git log develop..HEAD`, 27 commits. This pass stops re-reading commit boundaries — iterations 17 and 18
+covered those — and does the two things that had not been done: run the base branch's tests against this
+branch's code, and read the finished units rather than their diffs.
+
+## Equivalence against the base — clean
+
+`develop`'s unmodified test tree, checked out over this branch's production code in a detached worktree:
+
+```
+git worktree add --detach <tmp> HEAD
+cd <tmp> && rm -rf serverpackcreator-{grinder,clientside}/src/test
+git checkout develop -- serverpackcreator-{grinder,clientside}/src/test
+./gradlew :serverpackcreator-grinder:test :serverpackcreator-clientside:test --continue
+```
+
+**339 pre-existing guards (grinder 251 with 19 skipped, clientside 88), zero failures, zero compile errors.**
+No file needed adapting, which is itself the finding: every signature this branch changed gained a *defaulted*
+parameter (`ContainerServerRunner`, `DockerLoaderInstaller`, `ContainerCandidateVerifier`, `ReportServer`,
+`BrowserDownloader`), and the one signature that lost a default — `ContainerUser.forDirectory` — is new on this
+branch and has no base-tree callers. Nothing existing changed shape.
+
+## LOW
+
+- **P3-L1 — `unrepresentable()` counted duplicates while `normalise()` de-duplicated.**
+  `report/FallbackPropertiesRenderer.kt` — one mod dropped on three loaders was reported in the document as
+  three omissions, sending a reader hunting two entries that never existed. Two functions filtering the same
+  collection by the same predicate should agree on what "an entry" is. Fixed.
+- **P3-L2 — the DOMCONTENTLOADED rationale existed twice**, inline at the first `page.navigate` and in
+  `navigationOptions()`' KDoc, after the extraction moved the decision. Two copies of a reason is one copy that
+  goes stale. Inline copy removed. Fixed.
+- **P3-L3 — the root `CLAUDE.md` counts were stale for the third time in one session** (268/90 → 276/93). Not
+  a new defect each time, but worth stating as a pattern: any count written before the last test lands is
+  wrong by the time it is committed, and this session generated three chances to get it wrong. Re-derived from
+  the run that produced them.
+
+## Considered and deliberately not changed
+
+- **`/as-properties` re-renders on every request** rather than caching. The full list is a few hundred KB and
+  the consumer polls at *startup*, so a cache would add invalidation to save nothing measurable. Recorded so
+  the next reader does not re-derive it — and so that if polling ever becomes frequent, the decision is known
+  to have been made under the startup-only assumption.
+- **Running as a uid with no `/etc/passwd` entry in the image.** `$HOME` is unset for such a uid, but the
+  rootfs is read-only with only `/tmp` writable, so nothing could write to a home directory under the old uid
+  either. No regression; see iteration 18's clean list.
+- **`InstallFailureDiagnosis` recognises exactly one cause.** Adding speculative patterns would restore the
+  problem it was written to fix — a confident diagnosis pointing at the wrong subsystem. It returns `null` and
+  falls back to the raw tail for anything else, and that is pinned.
+
+## Still open
+
+- **P2-M2 — the container-user fix has no real-runtime verification** and cannot get one on this workstation
+  (see iteration 18 for why Docker Desktop's id remapping makes the local run prove nothing). The two-command
+  check for the Linux host is recorded there. This is the one claim on the branch resting on reasoning plus
+  production logs rather than on an executed check, and it should be closed on Yggdrasil before the fix is
+  trusted in the release notes.

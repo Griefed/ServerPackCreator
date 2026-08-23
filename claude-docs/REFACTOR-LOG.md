@@ -2072,3 +2072,74 @@ of the shapes a bind can take: `0.0.0.0` printed an unopenable `http://0.0.0.0:8
 `http://::1:8757`, which `URI` does not reject — it silently parses the port as `-1`. Fixed after extracting
 `reportUrl` so it was testable at all; the concrete-IPv4 case was pinned green *before* the fix, so the change is
 provably confined to the two broken shapes.
+
+## 2026-08-23 — the grinder was producing nothing, in three unrelated ways
+
+Reported as three symptoms in one message: CurseForge jars would not download, Modrinth ones downloaded but the
+check never ran, and separately the report was still unreachable through the reverse proxy. They turned out to
+share nothing but the day.
+
+**The proxy was never the grinder's problem.** The bind had already been widened — `ReportServer` logged
+`0:0:0:0:0:0:0:0`, which is a dual-stack wildcard socket, while `main` logged `127.0.0.1` because `reportUrl`
+rewrites `0.0.0.0` into something clickable. The two lines disagreeing is what identified the bind as `0.0.0.0`.
+ufw was dropping the proxy's packets: its allow rules for the port named `172.17.0.0/24` and `172.18.0.0/24`,
+both with **zero packet counts**, and the proxy container sat on a third bridge. Timeout rather than
+connection-refused is the discriminator, and it is now a troubleshooting row — the existing row attributes that
+symptom to a loopback bind, which was true until the bind moved.
+
+**Every container write was being refused.** The runtime image bakes in `USER 1000:1000` and `ContainerSpec.user`
+defaulted to the same literal, which was correct only while the daemon ran as uid 1000 — it stopped being so on
+2026-08-22, when the grinder became a systemd service under its own account. The install console shows the shape
+exactly: three `Permission denied` lines near the top, the start script carrying on regardless, and twenty lines
+later the JVM's `Error: could not open 'user_jvm_args.txt'`. That last line is what the failure warning quoted,
+because it printed `output.lines.takeLast(25)` — so the visible evidence pointed at the start-script template
+while the cause had scrolled away. Three rounds of diagnosis went to networks, templates and loader versions
+before the full console was read.
+
+Two fixes, because the reporting failure is as real as the bug: `ContainerUser.forDirectory` resolves the owner
+of the mounted directory (override `SPC_GRINDER_CONTAINER_USER`, image default as fallback), and
+`InstallFailureDiagnosis` scans the *whole* console for a nameable cause, since a tail is the wrong slice
+whenever the first failure is survivable. The give-away worth remembering: every loader failed at once, and a
+permission wall is the only thing indifferent to which loader is being installed.
+
+**Locked CurseForge files were being downloaded and then thrown away.** `BrowserDownloader` navigates to
+`/download` from inside `waitForDownload`; CurseForge answers with a file transfer, Chromium aborts a navigation
+that becomes a download, and Playwright's `net::ERR_ABORTED` escaped the callback and tore down the wait that
+would have caught the file. Both wordings Playwright uses are now recognised, and nothing else is — a timeout or
+a DNS failure must still fail, or the downloader returns `null` in silence forever. Both navigations also stop
+waiting for `load`: a CurseForge page keeps fetching ads long after it is usable, and every timeout in the run
+was the untouched 30s default rather than a page-specific budget. The remaining half is on the host —
+`Playwright Host validation warning` was in the log all along, listing OS libraries nobody had installed, which
+is now checked by `install-grinder.sh` against the *service account's* cache rather than the caller's.
+
+**`/as-properties`, so the fallback list stops needing a maintainer.** The grinder already boots mods
+continuously and a crash is exactly the evidence the clientside list encodes, so the report server now serves a
+`serverpackcreator.properties` fragment an instance can poll through
+`de.griefed.serverpackcreator.configuration.fallback.updateurl`: the shipped list plus every `HIGH`-confidence
+finding, whitelist passed through so it replaces the GitHub URL wholesale rather than freezing half of it.
+
+The confidence floor is deliberately not a tunable. A clean boot proves nothing, while a false entry silently
+strips a mod out of every server pack built against the list, so only a crash-proven mod is published. Two
+encoding details are load-bearing and pinned by *parsing* the output with `java.util.Properties` rather than
+asserting on its shape: the consumer decodes ISO-8859-1, so entries are `\uXXXX`-escaped and this one endpoint
+does not answer UTF-8; and rendering is order-stable, so a poll that sees a difference has seen a real change.
+
+Three audit passes followed (iterations 17–19). The first found a code change riding inside a `docs:` commit
+and two joins with no guard at all — the browser's navigation options, and the wiring that feeds
+`/as-properties` SPC's real lists — plus two silent corruptions: an entry containing a comma, which the
+consumer's `split(",")` turns into two bogus prefix-matchers, and a malformed `SPC_GRINDER_CONTAINER_USER`
+being discarded without a word on the one knob whose purpose is overriding a resolution that already went
+wrong once.
+
+The second pass replaced the endpoint's *model* of its consumer with the consumer: `FallbackPropertiesConsumerTest`
+points a real `UpdateConfig.updateFallback` at a running `ReportServer` over loopback and checks the entries
+land in `GenerationConfig.clientsideMods`. Teeth verified by dropping the continuation backslash, which
+collapses the whole list to `[, entityculling-]`. It also recorded what this workstation *cannot* answer: with
+a named volume chowned to `1001:1001`, a root container reads it back as `1001:1001` while a `--user 1001:1001`
+container reads the same inode as `0:0` — Docker Desktop's id remapping, not kernel DAC, so neither the bug nor
+the fix reproduces here. The two-command check for the Linux host is in the audit rather than a claim of
+verification.
+
+Equivalence against the base was checked the usual way — `develop`'s unmodified test tree run against this
+branch's production code: **339 pre-existing guards, zero failures, zero compile errors**, so every signature
+gained a default and nothing existing changed shape.

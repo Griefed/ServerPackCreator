@@ -127,6 +127,13 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   routed (`selectDownloader`) to the **Playwright** headless-browser `BrowserDownloader` (lazy; only
   launched for locked files), everything else to `HttpJarDownloader`. Playwright is declared in **this**
   module's build (`com.microsoft.playwright:playwright`), exported `api` so `-app` gets it transitively.
+  **LANDMINE — the `/download` navigation is *supposed* to fail.** CurseForge answers it with a file transfer,
+  and Chromium aborts a navigation that becomes a download, so Playwright throws `net::ERR_ABORTED`. That throw
+  used to escape the `waitForDownload` callback and tear the wait down, discarding a download that had already
+  started (observed 2026-08-23 on bwncr-neoforge, tombstone-neoforge, Structory). `isDownloadAbort` swallows
+  exactly that and nothing else — a timeout or a DNS failure must still fail, or the downloader returns `null`
+  forever in silence. Both navigations also wait for `DOMCONTENTLOADED`, never the default `load`: an ad-laden
+  project page keeps fetching long after it is usable, and the whole 30s default budget was being spent on it.
 - **`ClientsideListEditor`** (pure, unit-tested) inserts accepted entries into both files that ship the
   fallback-list: the `fallbackMods` `listOf(...)` block in `GenerationConfig.kt` (sorted, aligned
   `//link` comment, Kotlin trailing-comma is fine) and the backslash-continued `fallbackmodslist` in

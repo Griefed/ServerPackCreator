@@ -63,6 +63,12 @@ Environment=SPC_GRINDER_HOME=/home/grinder/.spc-grinder
 #Environment=SPC_GRINDER_PORT=8757
 #Environment=SPC_GRINDER_HOST=127.0.0.1
 
+# The uid:gid every boot and install container runs as. Defaults to the owner of SPC_GRINDER_WORK, which
+# is what the container has to be able to write to -- the runtime image's own USER 1000:1000 is only
+# correct while the daemon itself is uid 1000. Set this only if the owner is not the right answer;
+# getting it wrong makes every install fail with "Permission denied" inside the mounted pack.
+#Environment=SPC_GRINDER_CONTAINER_USER=1000:1000
+
 # Throughput. Budget 3 GiB of memory *available to Docker* per worker — an over-subscribed host
 # OOM-kills boots, which cost their full budget and teach nothing. See README §5, "Sizing the worker
 # count".

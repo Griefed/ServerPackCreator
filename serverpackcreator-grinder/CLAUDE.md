@@ -155,6 +155,31 @@ though their detail lives deeper:
   IPv4 (skips where the host has none), and `ReportBindWiringTest` asserts against `main`'s source that the
   variable actually reaches `ReportServer`'s `host` — the join no test can execute, because `main` boots Docker.
   README §5 *Exposing the report* is the operator-facing half.
+- **LANDMINE — a container must run as the *owner of the directory it mounts*, not as the image's `USER`.**
+  `docker/Dockerfile` bakes in `USER 1000:1000`, and `ContainerSpec.user` defaulted to the same literal — correct
+  only while the daemon itself is uid 1000, which stopped being true the moment it became a systemd service under
+  its own account. Every boot and install bind-mounts a directory the *host* process created, so a mismatch means
+  the container reads the pack and writes nothing. **The failure names the wrong subsystem:** the start script
+  carries on past its refused writes and dies ~20 lines later on the JVM's `Error: could not open
+  'user_jvm_args.txt'`, which reads as a broken start-script template. Measured 2026-08-23: every install failed
+  across Fabric, Forge *and* NeoForge at once — loader-indifference is the tell for a permission wall.
+  `ContainerUser.forDirectory` resolves it (override `SPC_GRINDER_CONTAINER_USER`), `GrinderApplication` logs it
+  as `containerUser=` on the startup line, and `InstallFailureDiagnosis` names it in the failure warning.
+  **Corollary:** `DockerLoaderInstaller` quoted `output.lines.takeLast(25)`, and this cause sits at the *top* of
+  the console — a tail is the wrong slice whenever the first failure is survivable, so the diagnosis scans all of it.
+- **`/as-properties` publishes the fallback clientside list, and only `HIGH` may ever reach it.**
+  `FallbackPropertiesRenderer` merges the list SPC currently holds with every crash-proven verdict and serves it
+  where an instance's `de.griefed.serverpackcreator.configuration.fallback.updateurl` can poll it. Two things are
+  load-bearing. It is written for `Properties.load(InputStream)`, which decodes **ISO-8859-1** — hence `\uXXXX`
+  escaping and an ISO-8859-1 response, the one endpoint that is not UTF-8. And the confidence floor is not a
+  tunable: a clean boot proves nothing, while a wrong entry silently strips a mod from every server pack built
+  against the list. **Never point the grinder's own SPC instance at this endpoint** — its findings would fold back
+  into what it publishes as "the shipped list", and an entry could then never leave it. **Second-order:** the
+  base list it publishes is whatever *this* daemon's SPC holds, and `UpdateConfig` replaces a client's lists
+  wholesale — so a grinder on an old build, or one that could not reach the repository at startup, hands every
+  client a *staler* list than they had. Pinned end-to-end by `FallbackPropertiesConsumerTest`, which drives the
+  real `UpdateConfig` against a running `ReportServer` over loopback — the model-vs-consumer distinction matters
+  here, since everything else asserts against `java.util.Properties` rather than SPC itself.
 - **Never hand SPC a *relative* properties file — a loaded one becomes a permanent write target.**
   `PropertyStore.loadProperties` adds every file it reads to `trackedPropertyFiles`, and `save()` writes to **all**
   of them on every save (skipping any that no longer exist, except `alwaysWrite`). `ApiProperties`' default is the

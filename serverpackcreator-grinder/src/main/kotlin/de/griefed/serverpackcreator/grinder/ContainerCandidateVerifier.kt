@@ -24,6 +24,7 @@ import de.griefed.serverpackcreator.clientside.*
 import de.griefed.serverpackcreator.grinder.container.ContainerEngine
 import de.griefed.serverpackcreator.grinder.container.ContainerResources
 import de.griefed.serverpackcreator.grinder.container.ContainerServerRunner
+import de.griefed.serverpackcreator.grinder.container.ContainerUser
 import de.griefed.serverpackcreator.grinder.loader.CachedLoaderVersions
 import de.griefed.serverpackcreator.grinder.loader.ImageJavaRuntimes
 import de.griefed.serverpackcreator.grinder.loader.LoaderCache
@@ -50,6 +51,8 @@ import java.time.Duration
  * @param bootTimeout     Per-boot budget.
  * @param resources       CPU/memory/pid caps per mod-boot container.
  * @param curseForgeApiKey CurseForge key (CF resolution); Modrinth needs none.
+ * @param containerUser   The `uid:gid` every boot container runs as; must own the staged pack, or the
+ *                        mod-boot cannot write into it. Resolved from the host by `ContainerUser`.
  * @author Griefed
  */
 class ContainerCandidateVerifier(
@@ -61,7 +64,8 @@ class ContainerCandidateVerifier(
     private val workDirectory: File,
     private val bootTimeout: Duration = Duration.ofMinutes(15),
     private val resources: ContainerResources = ContainerResources(),
-    private val curseForgeApiKey: String? = System.getenv("CURSEFORGE_API_KEY")
+    private val curseForgeApiKey: String? = System.getenv("CURSEFORGE_API_KEY"),
+    private val containerUser: String = ContainerUser.IMAGE_DEFAULT
 ) : CandidateVerifier {
     /** Reclaims each candidate's staging once its verdicts are in; without it the work tree grows without bound. */
     private val reaper = BootWorkspaceReaper(workDirectory)
@@ -101,7 +105,7 @@ class ContainerCandidateVerifier(
                             ::knownLoaderVersionsNewestFirst
                         ),
                         workDirectory = File(workDirectory, "boot"),
-                        serverRunner = ContainerServerRunner(containerEngine, runtimeImage, resources),
+                        serverRunner = ContainerServerRunner(containerEngine, runtimeImage, resources, containerUser),
                         packPostProcessor = ::overlayLoaderInstall,
                         minecraftAcceptable = imageJava::supports,
                         bootTimeout = bootTimeout

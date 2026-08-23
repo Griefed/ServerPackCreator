@@ -69,7 +69,8 @@ data class BindMount(val hostPath: String, val containerPath: String, val readOn
  * @param readonlyRootfs   Whether the root filesystem is read-only.
  * @param dropAllCapabilities Whether to drop all Linux capabilities.
  * @param noNewPrivileges  Whether to forbid privilege escalation (`no-new-privileges`).
- * @param user             The `uid:gid` to run as (non-root).
+ * @param user             The `uid:gid` to run as (non-root). The default matches the image's own `USER`;
+ *                         callers that bind-mount a host directory pass the host owner (see `ContainerUser`).
  * @param tmpfsMounts      Writable tmpfs mount points, needed because the rootfs is read-only.
  * @author Griefed
  */
