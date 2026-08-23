@@ -40,7 +40,11 @@ import java.nio.file.Files
  */
 object ContainerUser {
 
-    /** Environment variable letting an operator pin the container identity explicitly. */
+    /**
+     * Environment variable letting an operator pin the container identity explicitly. Named here so the
+     * diagnosis that suggests it and the entry point that reads it cannot drift apart; the *reading* happens
+     * in `GrinderApplication`, with every other environment knob.
+     */
     const val ENV_KEY = "SPC_GRINDER_CONTAINER_USER"
 
     /** The image's own `USER`, used when the host owner cannot be determined (non-POSIX, unreadable path). */
@@ -57,7 +61,7 @@ object ContainerUser {
      * identity that must be able to write there, and it stays correct if an operator relocates
      * `SPC_GRINDER_WORK` onto a share owned by somebody else.
      */
-    fun forDirectory(directory: File, override: String? = System.getenv(ENV_KEY)): String {
+    fun forDirectory(directory: File, override: String?): String {
         val explicit = override?.trim()
         if (!explicit.isNullOrEmpty() && userAndGroup.matches(explicit)) {
             return explicit

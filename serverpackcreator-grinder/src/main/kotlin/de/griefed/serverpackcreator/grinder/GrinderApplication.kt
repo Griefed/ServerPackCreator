@@ -82,7 +82,10 @@ object GrinderApplication {
         // container bind-mounts a directory this process created, so it has to run as that directory's owner --
         // otherwise every write inside the pack is refused, and the boot dies on a missing @argfile far from
         // the actual cause. Logged below so the identity is visible without reproducing the failure.
-        val containerUser = ContainerUser.forDirectory(workDir)
+        // Read here rather than inside ContainerUser so the entry point stays the one place environment is
+        // consulted -- which is also what keeps the README table and the systemd unit honest, since both guards
+        // scan this file for the names it reads.
+        val containerUser = ContainerUser.forDirectory(workDir, System.getenv("SPC_GRINDER_CONTAINER_USER"))
 
         log.info(
             "Grinder starting — home=$base image=$image work=$workDir cache=$cacheRoot store=$storeFile " +
