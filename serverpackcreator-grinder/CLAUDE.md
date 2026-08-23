@@ -174,7 +174,12 @@ though their detail lives deeper:
   escaping and an ISO-8859-1 response, the one endpoint that is not UTF-8. And the confidence floor is not a
   tunable: a clean boot proves nothing, while a wrong entry silently strips a mod from every server pack built
   against the list. **Never point the grinder's own SPC instance at this endpoint** — its findings would fold back
-  into what it publishes as "the shipped list", and an entry could then never leave it.
+  into what it publishes as "the shipped list", and an entry could then never leave it. **Second-order:** the
+  base list it publishes is whatever *this* daemon's SPC holds, and `UpdateConfig` replaces a client's lists
+  wholesale — so a grinder on an old build, or one that could not reach the repository at startup, hands every
+  client a *staler* list than they had. Pinned end-to-end by `FallbackPropertiesConsumerTest`, which drives the
+  real `UpdateConfig` against a running `ReportServer` over loopback — the model-vs-consumer distinction matters
+  here, since everything else asserts against `java.util.Properties` rather than SPC itself.
 - **Never hand SPC a *relative* properties file — a loaded one becomes a permanent write target.**
   `PropertyStore.loadProperties` adds every file it reads to `trackedPropertyFiles`, and `save()` writes to **all**
   of them on every save (skipping any that no longer exist, except `alwaysWrite`). `ApiProperties`' default is the

@@ -129,7 +129,6 @@ class BrowserDownloader(
          * navigation that genuinely failed. Both wordings Playwright uses for the event are recognised; a
          * timeout or a DNS failure is not one of them, and must keep failing the download.
          */
-        @JvmStatic
         fun isDownloadAbort(failure: Throwable): Boolean {
             val message = failure.message ?: return false
             return message.contains("net::ERR_ABORTED", ignoreCase = true) ||

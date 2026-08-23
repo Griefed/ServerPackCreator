@@ -3173,3 +3173,85 @@ and nothing `serverpackcreator-api` exports changed shape or behaviour.
   with `java.util.Properties`, which is what the consumer does, rather than by asserting on its shape.
 - **No `-api` behaviour changed,** so `claude-docs/API-BEHAVIOUR-CHANGES.md` correctly gains no row. `-grinder`
   and `-clientside` are unpublished, so their signature changes carry no compatibility obligation.
+
+---
+
+# Audit iteration 18 — 2026-08-23 — second pass over the same branch, after iteration 17's fixes
+
+Scope: `git log develop..HEAD`, now 24 commits. Iteration 17's ten findings are all closed; this pass
+re-reads the branch as a whole rather than commit-by-commit, and pushes on the two things iteration 17 asserted
+without executing.
+
+Suites at the time of writing: grinder 275 (19 skipped), clientside 93. Both green, counts re-derived from
+`build/test-results/test/*.xml`.
+
+## Iteration 17 findings — closed
+
+- **M1** split: `c14e750e0 refactor(grinder): read the container-user override in the entry point` carries the
+  code, `31e696797 docs(grinder)` carries the documentation.
+- **M2/M3** pinned: `navigationOptions()`/`downloadOptions()` extracted and asserted by *building* them
+  (`723394f62`, `02d8a3916`), and `FallbackListWiringTest` asserts the endpoint's production wiring against
+  `main`'s source. Teeth verified by breaking the join — it fails on "the published clientside list must come
+  from SPC's own property".
+- **M4/M5** fixed with red pins first (`93bbab2ed` → `3b4dc45a5`).
+- **L1–L5** cleaned in `72dc9d2cd`, existing assertions untouched.
+
+## What this pass added
+
+- **The endpoint is now verified against its real consumer, not a model of it.**
+  `FallbackPropertiesConsumerTest` (`c37…`, commit `test(grinder): drive SPC's real updater…`) points a real
+  `UpdateConfig.updateFallback` at a running `ReportServer` over an ephemeral loopback port and asserts the
+  entries land in `GenerationConfig.clientsideMods`. Everything else on this endpoint asserts against
+  `java.util.Properties`, which is my model of the consumer; this is the consumer. It needs neither Docker nor
+  internet, so it is a plain test rather than a gated IT. **Teeth verified:** removing the continuation
+  backslash collapses the whole list to `[, entityculling-]` and both cases go red.
+
+## MEDIUM
+
+- **P2-M1 — the published base list is only as fresh as this daemon's own SPC, and that was undocumented.**
+  `UpdateConfig` *replaces* a client's lists with whatever it is served, so a grinder running an old build — or
+  one that could not reach the repository at its own startup — hands every client a **staler** list than they
+  had. The endpoint is a mechanism for distributing this daemon's opinion, and that opinion has an age. Fixed
+  in this pass: README §5 and the module landmine now state it.
+
+- **P2-M2 — the container-user fix is still unverified against a real daemon, and this host cannot verify it.**
+  Attempted, with `docker:29.7.2` and a *named volume* rather than a bind mount, specifically so the
+  permissions would be real Linux ones inside the VM. The result is inconclusive for an instructive reason:
+  with the volume root chowned to `1001:1001`, a container run as `--user 0:0` reads it back as `1001:1001`,
+  while a container run as `--user 1001:1001` reads the same directory as `0:0` and cannot write. Root and
+  non-root containers disagree about the same inode, which is Docker Desktop's own id remapping, not kernel
+  DAC — so **neither the bug nor the fix reproduces faithfully here**, and the run proves nothing either way.
+
+  The bug itself is not in doubt: the production console on 2026-08-23 shows three `Permission denied` lines
+  against the mounted pack, and the fix is the standard remedy. But the convention is explicit that a real
+  runtime answers this class of question, so it stays open until run on the Linux host:
+
+  ```
+  sudo -u grinder mkdir -p /tmp/spc-uid-check
+  docker run --rm -v /tmp/spc-uid-check:/pack -w /pack --user "$(id -u grinder):$(id -g grinder)" \
+      spc-grinder-runtime:latest bash -c 'touch user_jvm_args.txt && echo WRITABLE'
+  ```
+
+  Expected: `WRITABLE`. The same command with `--user 1000:1000` should fail wherever `id -u grinder` is not
+  1000 — that pair is the actual proof, since it shows the two identities behaving differently on one directory.
+
+## LOW
+
+- **P2-L1 — `@JvmStatic` on `BrowserDownloader.isDownloadAbort`** for a helper with no Java callers. Removed.
+- **P2-L2 — the root `CLAUDE.md` counts were stale again** (268/90, written before iteration 17's own tests
+  landed). A count in prose goes stale by being *correct at the time*, which is the failure mode the
+  "cite names, not snapshots" convention exists for; the column already says how to re-derive it, and the
+  numbers were re-derived rather than adjusted by hand.
+
+## Verified clean — do not re-litigate
+
+- **`ContainerUser` resolves after `workDir` is created** (`GrinderApplication.kt`: `workDir` is
+  `.apply { mkdirs() }` at declaration, the resolution follows the `workers` read), so `ownerOf` never reads a
+  path that does not exist and never silently falls back to the image default for that reason.
+- **Running as an id with no matching entry in the image's `/etc/passwd` is not a new risk.** The rootfs is
+  read-only and only `/tmp` is a tmpfs, so nothing could write to a home directory under the old uid either;
+  the JDKs under `/opt` are world-readable.
+- **The comma filter applies to both lists and to grinder findings**, not just the shipped list — checked
+  against `normalise` being the single funnel every published entry passes through.
+- **No endpoint other than `/as-properties` changed behaviour.** `respond` now always encodes UTF-8, which is
+  what it did before this branch; the ISO-8859-1 branch existed only within this branch's own history.

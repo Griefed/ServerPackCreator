@@ -255,6 +255,12 @@ Only `HIGH` confidence is ever published — a mod that crashed a server. A mod 
 nothing, and a wrong entry silently strips a mod out of every server pack built against the list, so the gate
 is a floor rather than a threshold to tune.
 
+**The base list is only as fresh as this daemon's own SPC instance.** `UpdateConfig` *replaces* a client's
+lists with what it is served, so whatever this grinder holds becomes what every client holds. That is the
+shipped list of the SPC version the grinder was built from, refreshed from the repository at *its* startup — so
+a grinder that could not reach the repository when it started, or that is running an old build, will hand its
+clients an older base list than they had. Keep it current and let it reach the repository on boot.
+
 > **Do not point the grinder's own SPC instance at this endpoint.** Its findings would be folded back into
 > what it publishes as "the shipped list", and an entry could then never leave the list even after a later
 > verdict disagrees. Leave `SPC_GRINDER_SPC_PROPERTIES`' update-URL on the repository.
