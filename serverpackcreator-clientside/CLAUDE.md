@@ -71,6 +71,30 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   by host memory pressure**, systematically, for the biggest mods. `SIGABRT` (134) is deliberately *not* excused: a
   fatal JVM abort is a real failure of the running server. Keep the guard narrow — a genuine mod-load crash
   (`NoClassDefFoundError: net/minecraft/client/…`) must still read CRASHED, and a test pins that.
+- **A crash that contradicts the metadata is re-checked on the mod's other versions.**
+  `recheckCrashOnOtherModVersions`, over the pure `shouldRecheckAgainstOtherVersions`,
+  `reconcileOtherVersionRecheck` and `BootCandidateSelector.pickRecheckCandidates`.
+  **Why:** only one build of a project is ever booted, so
+  "this build crashes" and "this mod cannot run on a server" produced identical evidence — reported
+  2026-08-23, `iron-chests` published `HIGH` off a single crashing `Forge 48.1.0 / Minecraft 1.20.2`. A mod
+  that cannot run server-side cannot run server-side in *any* build, so one clean boot on another version
+  clears the crash. Sample: the newest file of each of the next two most-recent Minecraft versions (one per
+  version — two rebuilds for one Minecraft are near-identical code), stopping at the first clean boot.
+  **Landmine — the gate is the contradiction, not the crash.** It arms only when
+  `ClientsideVerifier.declaresServerSupport` holds, which is the same predicate that prints the "Declared
+  server/both but the server crashed" note; keep them sharing it, or the report states a contradiction the
+  re-check silently decided did not exist. Where the metadata already leans clientside the crash *confirms*
+  it, and in a catalog sweep that agreement is the common case — arming there costs two boots per true
+  positive and buys nothing. **CurseForge has no sideness field**, so its claim can only come from the jar
+  scan: a gate reading the platform alone never arms for a CurseForge mod, i.e. never for the report that
+  prompted this. Conservative in every other direction, like the re-check below: crashes elsewhere
+  corroborate, and an attempt that learned nothing leaves the crash standing.
+- **Landmine — every attempt for one candidate writes the *same* `boot.log`.** Staging wipes
+  `<work>/boot/<slug>-<loader>` and re-creates it, so the loader-build re-check and each other-version boot
+  overwrite the previous console, while the *reported* verdict is usually the first crash. The grinder's
+  reaper keeps exactly that one file, so the log a `HIGH` is diagnosed from would be a different boot's.
+  `BootOutcome.console` + `restoreDecisiveConsole` (called at the end of `verify`) put the decided outcome's
+  own console back. Any new re-check path must leave that call last.
 - **`LoaderVersionPolicy` (seam) + crash re-check.** `BootVerifier` takes a *policy*, not the concrete
   `LoaderVersionResolver`: `preferredVersion` is what gets booted, `latestVersion` is the authoritative newest.
   The default resolver answers both identically. A caller may prefer an **older** build it already has installed
@@ -154,13 +178,15 @@ seam (writes the log, then `BootLogClassifier` + `BootLogExcerpt`). The default
 
 ## Testing patterns
 
-- 88 tests, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
+- 110 tests, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
   JSON to a fake `HttpFetcher`; **`MetadataScannerTest` is the only one needing a resource** — it boots
   an offline `ApiWrapper` from `src/test/resources/serverpackcreator.properties` (whose `ModScanner`
   relies on the API's cached version-manifests, hence `test` `dependsOn :serverpackcreator-api:processTestResources`).
 - `BootCandidateSelector`, `BootLogClassifier`, `FilenameStemDeriver`, `ClientsideListEditor`, plus the
   extracted `BootVerifier.outcomeFor` (`BootVerifierOutcomeTest`) and `HostProcessServerRunner`'s
   no-start-script contract are pure/offline-testable without a running server — keep new logic that way.
+  Both crash re-checks follow the same split: `verify` needs an `ApiWrapper` and a running server, so what is
+  pinned is *when* a re-check happens and *how the attempts reconcile*, in `BootVerifierCrashRecheckTest`.
 
 ## Roadmap — the grinder (`serverpackcreator-grinder`, planned)
 

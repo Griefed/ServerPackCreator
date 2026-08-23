@@ -2286,3 +2286,47 @@ if the intent is "grind faster", the levers are `WORKERS` and `CPUS`.
 `CpuLimitWiringTest` became `ContainerLimitsWiringTest` in the process (it guards two knobs now, with the
 existing assertions intact and the memory equivalents added). Suite 303 → **310, 0 failures**, 16 skipped with
 the gated Docker IT enabled and 23 without.
+
+## 2026-08-23 — one build is not a mod: the other-version crash re-check
+
+`iron-chests` was reported `HIGH` off `Forge 48.1.0 / Minecraft 1.20.2 → CRASHED (exit 1)`, with the note
+"Declared server/both but the server crashed — a strong clientside signal". It is not a clientside mod, and
+the engine had no way to know: exactly **one** build of a project was ever booted, so "this build crashes"
+and "this mod cannot run on a server" produced identical evidence, and the tie was broken toward the answer
+that reaches `/as-properties` — where a wrong entry silently strips the mod from every server pack built
+against the fallback list.
+
+The third guard against a false `HIGH` (after the selection-time loader/Java gate and the classifier's
+setup-abort/killed mapping, and alongside the loader-build re-check) is therefore: **a crash that contradicts
+the metadata is re-checked on other versions of the mod**, and one clean boot there clears it. A mod that
+cannot run server-side cannot run server-side in *any* build, so a version that boots proves the crash
+belonged to that build. The sample is the newest file of each of the next two most-recent Minecraft versions
+— one per version, because two rebuilds for one Minecraft are near-identical code while a different version
+line is an independent sample — and it stops at the first clean boot.
+
+**The gate is the contradiction, not the crash.** It arms only when the platform's `server_side: required` or
+SPC's own jar scan claims server support, which is the same predicate that prints that note
+(`ClientsideVerifier.declaresServerSupport`, now shared so the two can never drift about what "declared
+server" means). Where the metadata already leans clientside, the crash *confirms* it and a re-check would
+spend boots to learn nothing while the crawl falls behind — and in a catalog sweep that agreement is the
+common case. Worth knowing for CurseForge, which is where the report came from: it has no sideness field at
+all, so the claim can only ever come from the jar scan, and a gate reading the platform alone would never arm
+for a CurseForge mod.
+
+Every other direction stays conservative, matching the loader-build re-check: crashes elsewhere corroborate
+and are named in the detail, and an attempt that learned nothing — staging failed, timed out — leaves the
+crash exactly as it was. Budget is a constructor knob (`otherVersionRecheckLimit`, default 2, `0` off) rather
+than an env var: no new deployment surface for a number nobody has evidence to tune yet. Cost is two extra
+boots per contradicting crash and nowhere else.
+
+**A defect the change forced out of hiding.** Every attempt for one candidate stages into
+`<work>/boot/<slug>-<loader>`, which staging wipes, so all of them write the same `boot.log` — while the
+*reported* verdict is frequently not the last boot, since both re-checks keep the original crash. The
+grinder's reaper then keeps that single file and deletes the staging around it, so the console a `HIGH` was
+diagnosed from was a different boot's. Pre-existing since the loader-build re-check landed and occasional;
+with up to three boots now sharing the file it would have been near-certain. `BootOutcome` carries its own
+console and `verify` writes the decided one back, best-effort like the write it repairs.
+
+Both fixes' guards had their teeth checked rather than assumed: stubbing the survivor lookup to `null` fails
+the two clearing guards, removing `distinctBy` fails the one-per-version guard, and removing the restore's
+`writeText` fails the console guard. Suite 93 → **110, 0 failures**.
