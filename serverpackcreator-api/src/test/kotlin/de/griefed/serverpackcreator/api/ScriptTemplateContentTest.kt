@@ -426,7 +426,11 @@ internal class ScriptTemplateContentTest {
             // The YY.x scheme. `26.2`'s minor is 2 and `26.20.2` matches 1.20.2 component for component below
             // the major — neither is the affected era.
             "26.2" to true,
-            "26.20.2" to true
+            "26.20.2" to true,
+            // A component that is not a number at all (a snapshot-shaped version). It must take the bypass: the
+            // argfile path works for every Forge from 1.17 on, while the starter jar does not, so a version we
+            // cannot read must not be sent down the route that has a known failure.
+            "26w05a" to false
         )
 
         for ((minecraftVersion, starterJarExpected) in expectations) {
@@ -473,6 +477,11 @@ internal class ScriptTemplateContentTest {
                 "Minecraft $minecraftVersion was launched via ${if (choseStarterJar) "the ServerStarterJar" else "Forge's argfile"}; " +
                     "expected ${if (starterJarExpected) "the ServerStarterJar" else "Forge's argfile"}. Run command: $runCommand"
             )
+            // Reading an unparseable version must stay silent, not shout bash arithmetic at the operator.
+            Assertions.assertFalse(
+                output.contains("value too great for base") || output.contains("integer expression expected"),
+                "Minecraft $minecraftVersion made the shell complain about arithmetic:\n$output"
+            )
             // The argfile path must name the argfile it launches from, not merely avoid the starter jar.
             if (!starterJarExpected) {
                 Assertions.assertTrue(
@@ -492,21 +501,30 @@ internal class ScriptTemplateContentTest {
      * silently lacks the bypass produces a server pack that cannot start on Minecraft 1.20.2 — the failure this
      * exists to prevent — and one that omits the major test bypasses the starter jar for `26.20.2` as well,
      * quietly dropping the hosting compatibility it provides.
+     *
+     * Each must also **screen a component before comparing it**, and fail towards the bypass when it cannot be
+     * read. Comparing an unreadable component is not harmless: bash prints `value too great for base` at the
+     * operator, and PowerShell's `[int]` cast *throws*. Failing towards the bypass is the safe polarity for the
+     * same reason the Java guard's is — the argfile path works for every Forge from 1.17 on, so a version nobody
+     * can parse must not be handed to the one route with a known failure.
      */
     @Test
     fun allTemplatesBypassTheStarterJarForTheAffectedForgeVersionsAndTestTheMajor() {
         val expectations = mapOf(
             "default_template.sh" to listOf(
+                """[[ "${'$'}{SEMANTICS[0]}" =~ ^[0-9]+${'$'} ]] || return 0""",
                 """[[ ${'$'}{SEMANTICS[0]} -eq 1 ]] || return 1""",
                 """[[ ${'$'}{SEMANTICS[1]} -eq 20 ]] || return 1""",
                 """[[ ${'$'}{SEMANTICS[2]} -eq 2 || ${'$'}{SEMANTICS[2]} -eq 3 ]]"""
             ),
             "default_template.fish" to listOf(
+                """if not string match -qr '^[0-9]+${'$'}' -- "${'$'}SEMANTICS[1]"""",
                 """test "${'$'}SEMANTICS[1]" -eq 1""",
                 """test "${'$'}SEMANTICS[2]" -eq 20""",
                 """test "${'$'}SEMANTICS[3]" -eq 2; or test "${'$'}SEMANTICS[3]" -eq 3"""
             ),
             "default_template.ps1" to listOf(
+                """if (-Not ([string]${'$'}Semantics[0] -match '^\d+${'$'}'))""",
                 """[int]${'$'}Semantics[0] -ne 1""",
                 """[int]${'$'}Semantics[1] -ne 20""",
                 """[int]${'$'}Semantics[2] -eq 2) -Or ([int]${'$'}Semantics[2] -eq 3"""
