@@ -57,7 +57,7 @@ internal class ContainerResourcesTest {
 
     /** The knob must not change what an existing install gets: the default stays the two cores it was. */
     @Test
-    fun theDefaultIsUnchangedByTheKnobExisting() {
+    fun theShippedDefaultIsExactlyTwoCores() {
         Assertions.assertEquals(ContainerResources().cpuQuota, ContainerResources.forCpus(2.0).cpuQuota)
         Assertions.assertEquals(200_000L, ContainerResources().cpuQuota, "the shipped default is ~2 cores")
     }
@@ -80,5 +80,32 @@ internal class ContainerResourcesTest {
     @Test
     fun aQuotaTooSmallForTheDaemonIsRaisedToItsMinimum() {
         Assertions.assertEquals(1_000L, ContainerResources.forCpus(0.0001).cpuQuota)
+    }
+
+    /**
+     * The floor above must be decided by what the operator *asked for*, not by what the arithmetic produced.
+     *
+     * A count small enough to round to a 0µs quota is still a request for a cap, and quota `0` is docker's
+     * "no limit" — so reading the computed value as the uncapped sentinel turns the smallest possible cap
+     * into none at all, in the one direction a hardening knob must never fail. Verified against the daemon:
+     * `--cpu-quota=0 --cpu-period=100000` reports `max 100000` in the container's own cgroup.
+     */
+    @Test
+    fun aCapTooSmallToRoundIsStillACapAndNotUncapped() {
+        Assertions.assertEquals(
+            1_000L, ContainerResources.forCpus(0.000001).cpuQuota,
+            "a positive core count must never produce the unset quota that means uncapped"
+        )
+    }
+
+    /**
+     * `Infinity` and `NaN` both survive `String.toDouble()`, so the knob can be handed either. Rejected at
+     * the conversion, because the alternatives are silent: infinity rounds to `Long.MAX_VALUE` (a quota so
+     * large it means uncapped), and NaN rounds to 0 (uncapped outright).
+     */
+    @Test
+    fun aNonFiniteCountIsRejectedRatherThanRoundedIntoNonsense() {
+        Assertions.assertThrows(IllegalArgumentException::class.java) { ContainerResources.forCpus(Double.POSITIVE_INFINITY) }
+        Assertions.assertThrows(IllegalArgumentException::class.java) { ContainerResources.forCpus(Double.NaN) }
     }
 }
