@@ -268,6 +268,34 @@ clients an older base list than they had. Keep it current and let it reach the r
 Serving it publicly means serving it to other people's build tooling. Read *Exposing the report* first: the
 same port also serves the unauthenticated verdict table and the full CSV export.
 
+### Stopping it
+
+`systemctl stop spc-grinder` sends SIGTERM to the JVM, which is the unit's main process — the Gradle launcher
+`exec`s it, so nothing swallows the signal. The shutdown hook then, in this order:
+
+1. stops the pass loop and tells workers to take no further candidates;
+2. marks the container engine closed, so no worker can start another container behind the cleanup;
+3. asks every in-flight container to exit — `docker stop` with a **15-second** window, i.e. SIGTERM and then
+   the daemon's own SIGKILL — running up to 8 at a time;
+4. gives the workers what is left of that window, interrupting them so a worker parked in a boot wakes now
+   rather than after its 15-minute budget, and abandons any that will not quit;
+5. exits.
+
+**Workers are threads, not processes**, so there is nothing for systemd to kill separately. **Containers are
+not in the unit's control group** — they belong to the docker daemon — so systemd never touches them either,
+and step 3 is the only thing that stops them. That is why `TimeoutStopSec` has to stay above the window: a
+SIGKILL landing mid-cleanup leaves Minecraft servers running with nothing to tidy them.
+
+If that happens anyway, the next start recovers. Every container carries the label
+`de.griefed.serverpackcreator.grinder`, and startup removes whatever wears it:
+
+```bash
+docker ps -a --filter label=de.griefed.serverpackcreator.grinder=1   # what a killed run left behind
+```
+
+> **One grinder per Docker daemon.** The label identifies *a* grinder, not *this* grinder, so a second
+> instance sharing a daemon would have its running boots reaped by the first one's startup.
+
 ### Container identity
 
 Every boot and every loader install bind-mounts a directory **this process created** and then runs as
