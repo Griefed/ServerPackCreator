@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.grinder.report
 import de.griefed.serverpackcreator.clientside.AttemptDirectory
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
+import java.io.RandomAccessFile
 
 /**
  * The durable home for the console of a boot that **crashed** — the one artefact a HIGH verdict cannot be
@@ -59,14 +60,37 @@ class CrashLogStore(private val directory: File) {
         val name = fileName(platform, slug, loader)
         return runCatching {
             directory.mkdirs()
-            val text = console.readText()
-            val kept = if (text.length <= MAX_BYTES) text else TRUNCATION_NOTICE + text.takeLast(MAX_BYTES)
-            File(directory, name).writeText(kept)
+            File(directory, name).writeText(tailOf(console))
             name
         }.getOrElse {
             log.warn("Could not keep the crash console for $platform/$slug ($loader): ${it.message}")
             null
         }
+    }
+
+    /**
+     * [console]'s content, or its last [MAX_BYTES] with the truncation stated, **without ever holding the
+     * whole file**.
+     *
+     * The cap has to bound what is *read* and not only what is written. Boot consoles are streamed to disk
+     * uncapped, bounded only by the boot timeout, so a chatty mod can leave hundreds of megabytes — which
+     * `readText` would then inflate to roughly double as a UTF-16 `String`. [keep]'s `runCatching` catches
+     * `Throwable`, so the resulting `OutOfMemoryError` would be swallowed and the daemon would carry on in an
+     * unknown heap state: a failure that is worse than the one it hides.
+     *
+     * Seeks instead. Decoding may clip a multi-byte character at the seek point, which is why the notice sits
+     * in front of it — the first line is already declared incomplete.
+     */
+    private fun tailOf(console: File): String {
+        if (console.length() <= MAX_BYTES) {
+            return console.readText()
+        }
+        val tail = ByteArray(MAX_BYTES)
+        RandomAccessFile(console, "r").use { file ->
+            file.seek(console.length() - MAX_BYTES)
+            file.readFully(tail)
+        }
+        return TRUNCATION_NOTICE + String(tail, Charsets.UTF_8)
     }
 
     /** The kept log's name for a tuple, or `null` when none is kept — which is what stops a report linking a 404. */

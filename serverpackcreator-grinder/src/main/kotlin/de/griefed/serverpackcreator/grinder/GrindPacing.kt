@@ -62,9 +62,19 @@ object GrindPacing {
      * re-grind into a just-dozed daemon waits up to six hours for it — and the immediate re-grind queue exists
      * precisely so that a verdict known to be wrong is not served while a timer runs down. Trading a 30-day
      * TTL for a 6-hour one is better and still not what was built.
+     *
+     * **LANDMINE — a remainder that has already elapsed slices to zero, never to a negative.** The caller
+     * computes `wakeAt - now` *after* testing `now < wakeAt`, with a read of the queue file in between, so on
+     * the final slice — bounded by construction to `(0, POLL_SLICE]` — an I/O stall longer than the remainder
+     * makes it negative. `Thread.sleep` throws `IllegalArgumentException` on a negative timeout, and that is
+     * not an `InterruptedException`: it would escape the wait's catch, escape `while (running.get())` and end
+     * `main`, leaving a fire-and-forget daemon quietly not grinding.
      */
-    fun pollInterval(pause: Duration): Duration =
-        if (pause < POLL_SLICE) pause else POLL_SLICE
+    fun pollInterval(pause: Duration): Duration = when {
+        pause.isNegative -> Duration.ZERO
+        pause < POLL_SLICE -> pause
+        else -> POLL_SLICE
+    }
 
     /**
      * The longest the daemon sleeps without checking whether work has been queued.

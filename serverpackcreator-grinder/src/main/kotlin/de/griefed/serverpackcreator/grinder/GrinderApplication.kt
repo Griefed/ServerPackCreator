@@ -246,7 +246,10 @@ object GrinderApplication {
         if (args.isNotEmpty()) {
             // One-shot: grind a fixed set of project URLs (handy for an end-to-end verification), then
             // hold the report open. The re-verify TTL still applies, so re-running skips fresh verdicts.
-            val candidates = args.map { GrindCandidate(it, slugFromUrl(it), 0, ModPlatforms.ofUrl(it)) }
+            // Same resolution the re-grind queue uses, and for the same reason: a link no platform recognises
+            // can only fail later, so it is named back now rather than counted as work.
+            val (candidates, unresolvable) = RequeueSelection.fromLinks(args.toList())
+            unresolvable.forEach { log.warn("Not a Modrinth or CurseForge project link, ignoring: $it") }
             log.info("One-shot run: grinding ${candidates.size} candidate(s) with $workers worker(s)...")
             // Registered like the continuous path's pool: activePool is the only handle the shutdown hook has,
             // and without it Ctrl-C here signalled and awaited nothing -- both calls no-opping through a null.
@@ -455,7 +458,11 @@ object GrinderApplication {
         val verb = args.first()
         val rest = args.drop(1)
         val candidates = when (verb) {
-            "--requeue" -> rest.map { GrindCandidate(it, slugFromUrl(it), 0, ModPlatforms.ofUrl(it)) }
+            "--requeue" -> {
+                val (resolvable, rejected) = RequeueSelection.fromLinks(rest)
+                rejected.forEach { println("Not a Modrinth or CurseForge project link, ignoring: $it") }
+                resolvable
+            }
 
             "--requeue-before" -> {
                 val instant = rest.firstOrNull()?.let { runCatching { Instant.parse(it) }.getOrNull() }
@@ -483,6 +490,4 @@ object GrinderApplication {
         )
     }
 
-    /** Best-effort project-slug from a URL (last path segment) — used only for the skip-already-done check. */
-    private fun slugFromUrl(url: String): String = url.substringBefore('?').trimEnd('/').substringAfterLast('/').ifBlank { url }
 }

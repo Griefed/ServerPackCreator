@@ -141,7 +141,10 @@ internal class CrashLogStoreTest {
         val oversized = File(directory.parentFile, "huge-boot.log")
         val chunk = "x".repeat(1024 * 1024)
         oversized.bufferedWriter().use { writer -> repeat(64) { writer.write(chunk) } }
-        Assertions.assertTrue(oversized.length() > 64L * 1024 * 1024, "fixture must exceed the cap many times over")
+        Assertions.assertTrue(
+            oversized.length() > CrashLogStore.MAX_BYTES * 8L,
+            "fixture must exceed the cap many times over, was ${oversized.length()} bytes"
+        )
 
         val runtime = Runtime.getRuntime()
         System.gc()
