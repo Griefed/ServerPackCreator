@@ -35,7 +35,9 @@ for arg in "$@"; do
     case "$arg" in
         --install-unit) install_unit=true ;;
         --skip-image)   skip_image=true ;;
-        -h|--help)      sed -n '2,21p' "$0"; exit 0 ;;
+        # The header block, however long it grows. A fixed line range was wrong within one commit of
+        # being written — the range is the kind of citation that rots the moment the text above moves.
+        -h|--help)      awk 'NR>1 && /^#/ {sub(/^# ?/,""); print; next} NR>1 {exit}' "$0"; exit 0 ;;
         *)              echo "unknown option: $arg (try --help)" >&2; exit 2 ;;
     esac
 done

@@ -236,7 +236,9 @@ object GrinderApplication {
             "::", "0:0:0:0:0:0:0:0" -> "::1"
             else -> bindHost
         }
-        val literal = if (reachable.contains(':')) "[$reachable]" else reachable
+        // startsWith("["): the JDK binds a bracketed literal quite happily, so an operator may have written
+        // one, and bracketing it again yields http://[[::1]]:8757.
+        val literal = if (reachable.contains(':') && !reachable.startsWith("[")) "[$reachable]" else reachable
         return "http://$literal:$port"
     }
 
