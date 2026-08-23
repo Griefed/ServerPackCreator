@@ -114,4 +114,90 @@ internal class DockerJavaContainerEngineIT {
             .count { container ->
                 container.image == "busybox:latest" && (container.command?.contains("sleep 300") == true)
             }
+
+    /**
+     * `systemctl stop` must *signal* a container, not shoot it. `close` therefore issues a `docker stop` with a
+     * bounded grace window before force-removing, so a Minecraft server gets its chance to save and exit — the
+     * previous behaviour went straight to `remove --force`, which is a SIGKILL to PID 1 and loses the world save
+     * of an in-flight boot.
+     *
+     * Asserted on the container's own exit: a shell trapping TERM writes its marker and exits 0 only if the
+     * signal actually arrived.
+     */
+    @Test
+    fun closeSignalsAContainerBeforeKillingIt() {
+        val signalEngine = DockerJavaContainerEngine()
+        val sawSignal = java.util.concurrent.atomic.AtomicBoolean(false)
+        val booting = Thread {
+            runCatching {
+                signalEngine.run(
+                    busyboxSpec("trap 'echo GRACEFUL-TERM; exit 0' TERM; echo ready-to-be-stopped; while true; do sleep 1; done"),
+                    Regex("this-never-appears"),
+                    Duration.ofMinutes(5)
+                ) { line -> if (line.contains("GRACEFUL-TERM")) sawSignal.set(true) }
+            }
+        }.apply { isDaemon = true; start() }
+
+        waitForContainer(signalEngine)
+        signalEngine.close()
+        booting.join(30_000)
+
+        Assertions.assertTrue(sawSignal.get(), "the container must receive SIGTERM and get to run its handler before removal")
+        Assertions.assertTrue(runningGrinderContainers().isEmpty(), "nothing may be left running after close")
+    }
+
+    /**
+     * The teardown race: `requestStop` only stops a worker taking a *new candidate*, and once shutdown hooks are
+     * running the JVM no longer waits for worker threads — so a worker between its loader install and its mod
+     * boot could create a container *after* `close` had already swept, and that one was never removed.
+     */
+    @Test
+    fun refusesToCreateAContainerOnceClosed() {
+        val closedEngine = DockerJavaContainerEngine()
+        closedEngine.close()
+
+        Assertions.assertThrows(IllegalStateException::class.java) {
+            closedEngine.run(busyboxSpec("echo should-never-start"), Regex("x"), Duration.ofSeconds(30))
+        }
+        Assertions.assertTrue(runningGrinderContainers().isEmpty(), "a refused run must leave nothing behind")
+    }
+
+    /**
+     * The SIGKILL case, which no in-process hook can cover: systemd kills the JVM before `close` finishes and the
+     * containers keep running, parented by the docker daemon rather than the unit's cgroup. They carry a label so
+     * the next start can find and remove them — without one, an orphan survives every restart forever.
+     */
+    @Test
+    fun reapsALabelledOrphanLeftByAPreviousProcess() {
+        val orphanEngine = DockerJavaContainerEngine()
+        Thread {
+            runCatching {
+                orphanEngine.run(busyboxSpec("echo orphan-alive; sleep 300"), Regex("this-never-appears"), Duration.ofMinutes(5))
+            }
+        }.apply { isDaemon = true; start() }
+        waitForContainer(orphanEngine)
+        // Forget the container the way a killed JVM does: the tracking set dies with the process, the container
+        // does not. A fresh engine is exactly what the next `systemctl start` brings up.
+        Assertions.assertEquals(1, runningGrinderContainers().size, "test setup: the orphan must be running")
+
+        val reaped = DockerJavaContainerEngine().reapOrphans()
+
+        Assertions.assertEquals(1, reaped, "the labelled orphan must be found and removed")
+        Assertions.assertTrue(runningGrinderContainers().isEmpty(), "no grinder container may survive the reap")
+    }
+
+    /** Every container this engine owns, by the label it stamps on them. */
+    private fun runningGrinderContainers(): List<String> =
+        DockerJavaContainerEngine.defaultClient().listContainersCmd().withShowAll(true)
+            .withLabelFilter(mapOf(DockerJavaContainerEngine.OWNER_LABEL to "1"))
+            .exec().map { it.id }
+
+    /** Block until [engine] actually has a container up, so a test never pulls the rug before there is one. */
+    private fun waitForContainer(engine: DockerJavaContainerEngine) {
+        val until = System.currentTimeMillis() + 30_000
+        while (System.currentTimeMillis() < until && runningGrinderContainers().isEmpty()) {
+            Thread.sleep(200)
+        }
+    }
+
 }
