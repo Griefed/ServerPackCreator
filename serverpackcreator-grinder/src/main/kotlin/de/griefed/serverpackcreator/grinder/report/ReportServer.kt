@@ -29,6 +29,8 @@ import de.griefed.serverpackcreator.grinder.source.CursorStore
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.net.InetSocketAddress
+import java.net.URLDecoder
+import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -45,6 +47,8 @@ import java.util.concurrent.Executors
  * @param fallbackLists Supplies the lists `/as-properties` publishes alongside the grinder's findings, read
  *                      per request so a refreshed list is served without a restart. `null` serves the
  *                      grinder's own findings only — the report server stays constructible without SPC.
+ * @param crashLogs The kept consoles of crashed boots, linked from the table and served by name. `null`
+ *                  simply offers no links, so the report stays constructible without a log store.
  * @author Griefed
  */
 class ReportServer(
@@ -54,7 +58,8 @@ class ReportServer(
     private val status: GrinderStatus? = null,
     private val cursors: CursorStore? = null,
     private val cacheRoot: File? = null,
-    private val fallbackLists: (() -> FallbackLists)? = null
+    private val fallbackLists: (() -> FallbackLists)? = null,
+    private val crashLogs: CrashLogStore? = null
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val server: HttpServer = HttpServer.create(InetSocketAddress(host, requestedPort), 0)
@@ -76,8 +81,29 @@ class ReportServer(
         server.createContext("/status") { exchange ->
             respond(exchange, "application/json; charset=utf-8", statusJson())
         }
+        // Longest-prefix match again: /crash-logs is its own context, so /crash-log cannot swallow it.
+        server.createContext("/crash-logs") { exchange ->
+            respond(exchange, "text/html; charset=utf-8", crashLogIndex())
+        }
+        server.createContext("/crash-log") { exchange ->
+            val name = queryParameter(exchange.requestURI.rawQuery, "name")
+            // `read` is what enforces that a name cannot escape the store; a refusal is indistinguishable
+            // from an absent log on purpose, so probing tells an unauthenticated caller nothing.
+            val body = name?.let { crashLogs?.read(it) }
+            if (body == null) {
+                respond(exchange, "text/plain; charset=utf-8", "No such crash log.", status = 404)
+            } else {
+                respond(exchange, "text/plain; charset=utf-8", body)
+            }
+        }
         server.createContext("/") { exchange ->
-            respond(exchange, "text/html; charset=utf-8", VerdictReportRenderer.toHtml(store.all()))
+            respond(
+                exchange,
+                "text/html; charset=utf-8",
+                VerdictReportRenderer.toHtml(store.all()) { verdict ->
+                    crashLogs?.nameFor(verdict.platform, verdict.slug, verdict.loader)
+                }
+            )
         }
         pool = Executors.newFixedThreadPool(2).also { server.executor = it }
         server.start()
@@ -95,6 +121,44 @@ class ReportServer(
             ?: FallbackLists(emptyList(), emptyList())
         return FallbackPropertiesRenderer.render(lists.clientsideMods, lists.whitelist, store.all())
     }
+
+    /**
+     * The index of kept crash consoles: every boot whose server died, linkable without first finding its row
+     * in the table. Deliberately plain — it is a list of file names, and the page that gives them meaning is
+     * the verdict table this links back to.
+     */
+    private fun crashLogIndex(): String {
+        val names = crashLogs?.list().orEmpty()
+        val items = names.joinToString("\n") { name ->
+            """  <li><a href="/crash-log?name=${URLEncoder.encode(name, StandardCharsets.UTF_8)}">$name</a></li>"""
+        }
+        val body = if (names.isEmpty()) "<p>No crashed boots have been recorded yet.</p>" else "<ul>\n$items\n</ul>"
+        return """
+            <!doctype html>
+            <html lang="en">
+            <head><meta charset="utf-8"><title>ServerPackCreator — crash consoles</title></head>
+            <body style="font-family: system-ui, sans-serif; margin: 1.5rem;">
+              <h1>Crash consoles (${names.size})</h1>
+              <p><a href="/">&larr; back to the verdict table</a></p>
+              $body
+            </body>
+            </html>
+        """.trimIndent()
+    }
+
+    /**
+     * The value of [key] in a raw query string, percent-decoded, or `null` when absent.
+     *
+     * Hand-rolled because the JDK's HTTP server hands over the raw query and this daemon deliberately carries
+     * no web framework to parse one. A malformed escape decodes to `null` rather than throwing — a bad query
+     * is a 404, never a 500 in somebody's log.
+     */
+    private fun queryParameter(rawQuery: String?, key: String): String? =
+        rawQuery?.split('&')
+            ?.firstOrNull { it.substringBefore('=') == key }
+            ?.substringAfter('=', "")
+            ?.let { runCatching { URLDecoder.decode(it, StandardCharsets.UTF_8) }.getOrNull() }
+            ?.ifEmpty { null }
 
     /** Stop serving and shut the thread pool down. */
     fun stop() {
@@ -133,17 +197,18 @@ class ReportServer(
     }
 
     /**
-     * Write [body] as a 200 response with the given [contentType], closing the exchange.
+     * Write [body] with the given [contentType] and [status] (200 unless a route says otherwise, which only
+     * the crash-log lookup does), closing the exchange.
      *
      * UTF-8 for every endpoint, including `/as-properties`: that document declares ISO-8859-1 because
      * `Properties.load(InputStream)` decodes it that way, but `FallbackPropertiesRenderer` escapes everything
      * outside printable ASCII to `\uXXXX`, and the two encodings agree byte for byte there. Encoding it
      * "correctly" would be a branch that can never change an output.
      */
-    private fun respond(exchange: HttpExchange, contentType: String, body: String) {
+    private fun respond(exchange: HttpExchange, contentType: String, body: String, status: Int = 200) {
         val bytes = body.toByteArray(StandardCharsets.UTF_8)
         exchange.responseHeaders.add("Content-Type", contentType)
-        exchange.sendResponseHeaders(200, bytes.size.toLong())
+        exchange.sendResponseHeaders(status, bytes.size.toLong())
         exchange.responseBody.use { it.write(bytes) }
     }
 }

@@ -29,6 +29,7 @@ import de.griefed.serverpackcreator.grinder.loader.CachedLoaderVersions
 import de.griefed.serverpackcreator.grinder.loader.ImageJavaRuntimes
 import de.griefed.serverpackcreator.grinder.loader.LoaderCache
 import de.griefed.serverpackcreator.grinder.loader.PackVariables
+import de.griefed.serverpackcreator.grinder.report.CrashLogStore
 import java.io.File
 import java.time.Duration
 
@@ -65,7 +66,8 @@ class ContainerCandidateVerifier(
     private val bootTimeout: Duration = Duration.ofMinutes(15),
     private val resources: ContainerResources = ContainerResources(),
     private val curseForgeApiKey: String? = System.getenv("CURSEFORGE_API_KEY"),
-    private val containerUser: String = ContainerUser.IMAGE_DEFAULT
+    private val containerUser: String = ContainerUser.IMAGE_DEFAULT,
+    private val crashLogs: CrashLogStore? = null
 ) : CandidateVerifier {
     /** Reclaims each candidate's staging once its verdicts are in; without it the work tree grows without bound. */
     private val reaper = BootWorkspaceReaper(workDirectory)
@@ -73,7 +75,12 @@ class ContainerCandidateVerifier(
     override fun verify(candidate: GrindCandidate): ClientsideReport {
         var resolved: ClientsideReport? = null
         try {
-            return verifyStaged(candidate).also { resolved = it }
+            val report = verifyStaged(candidate)
+            resolved = report
+            // Before the reaper runs, and before the next re-grind of this tuple wipes the staging: the console
+            // of a boot that crashed is the only evidence the verdict cannot be re-derived without.
+            keepCrashConsoles(report, File(workDirectory, "boot"), crashLogs)
+            return report
         } finally {
             // In a `finally` because a *thrown* verification is exactly when staging is most likely to be left
             // behind, and the reaper keeps the boot logs the failure will have to be diagnosed from.
@@ -83,6 +90,39 @@ class ContainerCandidateVerifier(
     }
 
     companion object {
+        /**
+         * Copy the console of every **crashed** boot in [report] out of the staging under [bootRoot] and into
+         * [crashLogs], returning how many were kept.
+         *
+         * **Why it has to happen here.** `BootWorkspaceReaper` keeps one `boot.log` per attempt directory, but
+         * staging *wipes and re-creates* that directory, so the next re-grind of the same tuple destroys the
+         * console belonging to the verdict still being published. A crash is the only outcome that reaches
+         * HIGH, and its usual cause — a server loading a mod that reaches for a client-only class — is legible
+         * from the console and from nothing else.
+         *
+         * Only CRASHED is kept: a clean boot proves nothing about sideness and explains nothing either, and
+         * an INCONCLUSIVE one learned nothing by definition. The console is read from the *crashing loader's*
+         * own directory, which is where `BootVerifier.restoreDecisiveConsole` has just put the decided boot's
+         * output — including when a cross-loader re-check ran in the same directory.
+         *
+         * Nothing here may fail a grind that already has its answer, so a missing or unreadable console keeps
+         * nothing and reports nothing.
+         */
+        internal fun keepCrashConsoles(report: ClientsideReport, bootRoot: File, crashLogs: CrashLogStore?): Int {
+            if (crashLogs == null) {
+                return 0
+            }
+            return report.perLoader
+                .filter { it.bootResult == BootResult.CRASHED }
+                .count { verdict ->
+                    val console = File(
+                        bootRoot,
+                        AttemptDirectory.nameFor(report.platform, report.slug, verdict.loader) + "/" + BootWorkspaceReaper.KEPT_LOG
+                    )
+                    console.isFile && crashLogs.keep(report.platform, report.slug, verdict.loader, console) != null
+                }
+        }
+
         /**
          * Which `(platform, slug)` [verify] asks the reaper to reclaim: the **resolved report's**, because that
          * is what the staging directories were named from (`AttemptDirectory` is fed `ProjectFiles.platform`

@@ -27,6 +27,7 @@ import de.griefed.serverpackcreator.grinder.container.ContainerUser
 import de.griefed.serverpackcreator.grinder.container.SHUTDOWN_GRACE
 import de.griefed.serverpackcreator.grinder.container.DockerJavaContainerEngine
 import de.griefed.serverpackcreator.grinder.loader.*
+import de.griefed.serverpackcreator.grinder.report.CrashLogStore
 import de.griefed.serverpackcreator.grinder.report.FallbackLists
 import de.griefed.serverpackcreator.grinder.report.JsonVerdictStore
 import de.griefed.serverpackcreator.grinder.report.ReportServer
@@ -130,9 +131,14 @@ object GrinderApplication {
                 apiWrapper.apiProperties.defaultStartScriptTemplates().values.map { File(it) }
             )
         })
+        // Lives under the daemon's home rather than under `work/`, deliberately: everything below `work/` is
+        // scratch the reaper is entitled to reclaim, and the console of a crashed boot is the one artefact a
+        // HIGH verdict cannot be re-derived without. Bounded by the number of distinct crashing tuples, since
+        // a re-grind replaces a project's log rather than adding one.
+        val crashLogs = CrashLogStore(File(base, "crash-logs"))
         val verifier = ContainerCandidateVerifier(
             apiWrapper, cache, engine, image, imageJava, File(workDir, "verify"),
-            resources = containerResources, containerUser = containerUser
+            resources = containerResources, containerUser = containerUser, crashLogs = crashLogs
         )
         // Containers first: a JVM that was SIGKILLed (systemd's TimeoutStopSec expiring mid-cleanup) leaves them
         // running, parented by the docker daemon rather than this unit's control group, so nothing else on the
@@ -206,10 +212,12 @@ object GrinderApplication {
                     clientsideMods = apiWrapper.apiProperties.clientsideMods.toList(),
                     whitelist = apiWrapper.apiProperties.modsWhitelist.toList()
                 )
-            }
+            },
+            crashLogs = crashLogs
         ).start()
         val reportUrl = reportUrl(bindHost, server.port)
         log.info("Report:  $reportUrl/    CSV: $reportUrl/export.csv    live status: $reportUrl/status")
+        log.info("Crash consoles of boots that died: $reportUrl/crash-logs (also linked per row in the report)")
         log.info("Fallback list for SPC instances (set as their fallback.updateurl): $reportUrl/as-properties")
 
         if (args.isNotEmpty()) {
