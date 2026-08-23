@@ -2866,3 +2866,67 @@ irrelevant. A doc line contradicting the code beside it.
 - **L3 — fixed.** The header says the working directory does not matter and why.
 
 Suite after the resolutions: grinder **249**, zero failures, 39 classes.
+
+---
+
+# Iteration 15 — 2026-08-23 — third pass over `97f487e0e..HEAD`, auditing iterations 13 and 14's own fixes
+
+Scope: the full 25-commit range, with the eight commits produced by iterations 13 and 14 getting the scrutiny —
+a fix is a change like any other, and this pass exists because the first two passes had not been audited by
+anything. Two of the three findings below are defects the earlier *fixes* introduced.
+
+## HIGH — none
+
+## MEDIUM
+
+### M1 — `ad7aff574` is labelled `refactor:` while changing an existing assertion
+
+`refactor(grinder): drop the bind guards' !! and over-tight exception type` changed
+`assertThrows(ConnectException::class.java, …)` to `assertThrows(IOException::class.java, …)`. The conventions
+are explicit: "If an **existing** test's *assertion, argument or expected value* has to change, the label is
+already wrong — that is the stop-and-flag signal, not a formality." The reference-only carve-out does not apply,
+because no symbol moved; the expectation genuinely widened. `fix(test)` or `test:` was the honest label.
+
+Recorded rather than corrected: the commit is on `develop`, and the project's standing decision — iteration 12's
+L6, iteration 13's M2 — is that rewriting merged history to relabel a commit costs more than it returns. The
+body describes the change accurately; only the type lies. Same disposition as `358675fbf`, already in this file.
+
+## LOW
+
+### L1 — the iteration-13 URL fix double-brackets an already-bracketed IPv6 literal
+
+`reportUrl` bracketed anything containing a colon, so `SPC_GRINDER_HOST=[::1]` produced
+`http://[[::1]]:8757`. The bracketed form is not a user error — verified against `HttpServer`, which binds
+`[::1]` and reports `0:0:0:0:0:0:0:1`. Fixed, pinned red first.
+
+### L2 — the iteration-14 header fix silently truncated `--help`
+
+L3 of iteration 14 rewrote the script's header comment from three lines to four. `--help` printed a fixed
+`sed -n '2,21p'` range, so the extra line pushed `--skip-image` out of the output entirely — the flag stopped
+being documented by the very commit that improved the documentation above it. Fixed structurally with an `awk`
+that prints the contiguous comment block, rather than by bumping the number to 22 and waiting for it to rot.
+
+This is the "cite names, not snapshots" rule from `CLAUDE.md` reappearing in a shell script: a line-number
+citation went stale inside one commit.
+
+## Not findings — verified clean, do not re-litigate
+
+- **`reportUrl` handles hostnames correctly.** A name like `grinder.internal` contains no colon, so it is not
+  bracketed. Only literals and the two wildcards take a branch.
+- **The wildcard substitution is complete.** `0.0.0.0`, `::` and the JDK's expanded `0:0:0:0:0:0:0:0` are all
+  mapped; a bind to any of them is reported on the loopback it is certainly answering on.
+- **Iteration 14's four fixes hold.** The `PREFIX` shape guard rejects `/`, `/usr` and a relative path by name
+  and passes `/opt/spc-grinder`; the unit/installer consistency check parses `grinder`, `/home/grinder` and
+  `/opt/spc-grinder/bin/serverpackcreator-grinder` out of the shipped unit and agrees with all three defaults.
+- **Iteration 13's L3 and L4 fixes hold.** No `!!` remains in either bind guard, and both still pass with the
+  interface up.
+
+## Summary
+
+| Severity | Count | Disposition |
+|---|---|---|
+| HIGH | 0 | — |
+| MEDIUM | 1 | M1 recorded — merged history, body honest, type wrong |
+| LOW | 2 | both fixed, both introduced by the two preceding iterations' fixes |
+
+Suite: grinder **250**, zero failures.
