@@ -233,6 +233,9 @@ class DockerJavaContainerEngine(
             .withNetworkMode(spec.networkMode)
             .withMemory(spec.resources.memoryBytes)
             .withCpuQuota(spec.resources.cpuQuota)
+            // Both halves, always: a quota is a fraction of a period, so sending one without the other
+            // leaves the cap dependent on whatever the daemon's default period happens to be.
+            .withCpuPeriod(spec.resources.cpuPeriod)
             .withPidsLimit(spec.resources.pidsLimit)
             .withReadonlyRootfs(spec.readonlyRootfs)
             .withBinds(spec.mounts.map { Bind(it.hostPath, Volume(it.containerPath), if (it.readOnly) AccessMode.ro else AccessMode.rw) })

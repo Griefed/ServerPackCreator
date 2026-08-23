@@ -54,16 +54,49 @@ const val MAX_PARALLEL_STOPS = 64
  * CPU / memory / pid caps applied to every boot container, so one fat modpack can't exhaust the host
  * and a runaway can't peg every core. Defaults are sized for a single Minecraft server boot.
  *
+ * Prefer [forCpus] over setting [cpuQuota] by hand: cores are the unit an operator thinks in, and the
+ * quota only means anything relative to [cpuPeriod].
+ *
  * @param memoryBytes Hard memory limit (`--memory`); the server's heap must fit inside this.
- * @param cpuQuota    CFS CPU quota in microseconds per the default 100ms period (200_000 = ~2 cores).
+ * @param cpuQuota    CFS CPU quota in microseconds per [cpuPeriod] (`200_000` at the default period =
+ *                    ~2 cores). `0` disables the quota entirely, which is docker's own "no limit".
+ * @param cpuPeriod   CFS scheduling period in microseconds the quota is measured against
+ *                    (`--cpu-period`). Stated rather than inherited, so the cores-to-quota arithmetic
+ *                    cannot be silently invalidated by a daemon or kernel default.
  * @param pidsLimit   Maximum process/thread count (`--pids-limit`), guarding against fork-bombs.
  * @author Griefed
  */
 data class ContainerResources(
     val memoryBytes: Long = 3L * 1024 * 1024 * 1024,
     val cpuQuota: Long = 200_000,
+    val cpuPeriod: Long = 100_000,
     val pidsLimit: Long = 512
-)
+) {
+    companion object {
+        /**
+         * The smallest quota the docker daemon accepts — it rejects anything under 1ms per period with
+         * "CPU cfs quota can not be less than 1ms", which would fail every container rather than the knob.
+         */
+        private const val MINIMUM_QUOTA_MICROSECONDS = 1_000L
+
+        /**
+         * Caps a container at [cpus] cores, converting to the quota docker actually wants by multiplying
+         * against the period — the same arithmetic as docker's own `--cpus`.
+         *
+         * `0.0` means uncapped (an unset quota), matching how `0` reads elsewhere in the daemon's
+         * configuration; anything positive but smaller than the daemon's floor is raised to it, since a
+         * quota it refuses breaks the run instead of throttling it. A negative count is an operator error
+         * with no sensible reading, so it throws rather than being silently clamped.
+         */
+        fun forCpus(cpus: Double, base: ContainerResources = ContainerResources()): ContainerResources {
+            require(cpus >= 0.0) { "A container's CPU cap cannot be negative, was $cpus — use 0 for uncapped." }
+            val requested = Math.round(cpus * base.cpuPeriod)
+            return base.copy(
+                cpuQuota = if (requested == 0L) 0L else maxOf(MINIMUM_QUOTA_MICROSECONDS, requested)
+            )
+        }
+    }
+}
 
 /**
  * A host-path → container-path bind mount.
