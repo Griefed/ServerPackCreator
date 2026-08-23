@@ -194,6 +194,9 @@ class GrindPool(
      * holding it open. A `false` return is worth logging — it means the process is about to exit with work still
      * running.
      */
+    /** How many workers the pool is currently tracking — the set [awaitStop] would signal. Test-facing. */
+    internal fun trackedWorkerCount(): Int = workers.size
+
     fun awaitStop(grace: Duration): Boolean {
         stopRequested.set(true)
         val running = workers
@@ -225,7 +228,10 @@ class GrindPool(
         val queue = ConcurrentLinkedQueue(interleaveByPlatform(candidates))
         val verified = AtomicInteger(0)
         val reached = ConcurrentHashMap.newKeySet<GrindCandidate>()
-        val running = (1..workerCount).map {
+        // Constructed, published, and only then started. Starting inside the `map` left a window in which a
+        // worker was running before `workers` had been assigned -- and a shutdown landing there would have
+        // interrupted nobody and reported a clean stop, because an empty list satisfies "none alive".
+        val running = (1..workerCount).map { worker ->
             Thread {
                 while (!stopRequested.get()) {
                     val candidate = queue.poll() ?: break
@@ -235,9 +241,10 @@ class GrindPool(
                         verified.incrementAndGet()
                     }
                 }
-            }.apply { name = "grind-worker-$it"; start() }
+            }.apply { name = "grind-worker-$worker" }
         }
         workers = running
+        running.forEach { it.start() }
         try {
             running.forEach { it.join() }
         } catch (_: InterruptedException) {
