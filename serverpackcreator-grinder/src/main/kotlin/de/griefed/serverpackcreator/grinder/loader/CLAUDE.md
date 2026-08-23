@@ -97,6 +97,20 @@ diffed each booted dir against its pre-boot baseline. Conclusions:
   `SERVERSTARTERJAR_FORCE_FETCH=false` (else Forge/NeoForge *re-download* `server.jar` → needs network),
   and pre-write `eula.txt` = `eula=true` (else an interactive EULA prompt). Also set `JAVA` to the
   bundled per-MC JDK (`/opt/java-{8,17,21,25}`).
+- **`USE_SSJ=false` on every generated pack — this is a Forge-only lever, and it is load-bearing.** The
+  ServerStarterJar cannot launch a bootstraplauncher-era Forge install: it synthesises a boot layer for the
+  module path in `unix_args.txt`, and Forge's `SecureModuleClassLoader` matches a read module's configuration
+  against its **direct** parents only, so `java.base` (one level up, in the real boot configuration) is not
+  found and it throws `Could not find parent layer for module` before FML exists. cpw's original — what
+  NeoForge runs — falls back to the platform classloader instead, which is why the same jar launches NeoForge
+  and not Forge. That is the incompatibility `HELP.md` records for Minecraft 1.20.2/1.20.3; the knob is a pack
+  author's escape hatch, and an unattended grinder is the one caller that can never reach for it. Measured on
+  Forge 1.20.2-48.1.0 under `--network none` on Temurin 17: the starter jar dies at
+  `SecureModuleClassLoader.<init>` (the *module named* varies per run — match the message, not the module),
+  the argfile path reaches `Done (5.183s)! For help`. **Set on the install boot too**, or the cached layer is
+  installed one way and launched the other. Consequence worth knowing: the grinder therefore exercises the
+  argfile path rather than the one a default user pack takes, and the starter-jar path is covered by
+  `ScriptTemplateMatrixIT` instead.
 - **Cache-overlay seam — RESOLVED (no deep `BootVerifier` change needed).** The install layer never
   name-collides with pack files (`libraries/`, `server.jar`, run-scripts vs. `start.sh`/`mods/`/`config/`),
   so the overlay is a plain recursive copy. Plan: add an optional `packPostProcessor:

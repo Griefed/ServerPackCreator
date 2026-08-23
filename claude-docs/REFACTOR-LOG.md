@@ -2554,3 +2554,116 @@ no `ApiProperties` was constructed and the landmine above holds in the built art
 source guard.
 
 Suite: grinder 325 → **336, 0 failures**.
+
+---
+
+## 2026-08-23 — three grinder reports: a favicon, container name resolution, and two Forge failures
+
+Five items, all from the live daemon at `grinder.serverpackcreator.de`. Two of them were false clientside
+evidence; one was noise that turned out to be a real environment defect; two were interface work.
+
+### 1. The report serves its own tab icon
+
+`img/config.png`, copied byte-identical into the grinder's resources and served off the classpath, so the
+page still fetches nothing external. Registered under **both** `/favicon.ico` and `/favicon.png` — the red
+test is what showed why: without its own context, a browser's unprompted `/favicon.ico` request falls through
+to the catch-all `/` and is answered `text/html` with the whole verdict table. Asserted on the PNG signature,
+because a 404 page and an HTML fall-through are also non-empty 200 bodies.
+
+### 2. A boot container could not resolve its own hostname
+
+`Modrinth-chloride-NeoForge.log` opened with three `UnknownHostException: 928f022c75b5: Temporary failure in
+name resolution` stacktraces before a single mod was loaded. Cause: the daemon writes an `<ip> <hostname>`
+line into `/etc/hosts` only for a container that *has* an address, and a grinder boot is `--network none`.
+log4j calls `InetAddress.getLocalHost()` while configuring itself, so every boot paid for it.
+
+Fixed by adopting exactly what the daemon does for a networked container, with loopback standing in for the
+address it cannot have: a fixed hostname (`spc-grinder` — the mapping is part of the create call, and the
+container id does not exist until after it) plus `--add-host spc-grinder:127.0.0.1`.
+
+Measured against docker 29.7.2 under `--network none`, through `wget` because it calls the same `getaddrinfo`
+the JVM does:
+
+| | console |
+|---|---|
+| before | `wget: bad address '11419499a196:1'` |
+| after | `wget: can't connect to remote host (127.0.0.1): Connection refused` |
+
+i.e. resolution now reaches the connect. `--add-host` is honoured with no network at all, which is what makes
+this possible without granting the boot one. The guard (`theContainersOwnHostnameResolvesWithoutANetwork`)
+was committed red against a live daemon and is green after.
+
+### 3. A Forge server that never bootstrapped was scored as a mod crash
+
+`CurseForge-ars-nouveau-Forge.log` died in `BootstrapLauncher.main` with `IllegalStateException: Could not
+find parent layer for module \`java.base\` read by \`net.minecraftforge.eventbus\``. Non-zero exit, no
+ready-line, nothing else recognised — so it reached the classifier's floor as **CRASHED**, i.e. a clientside
+HIGH for a mod whose code never ran.
+
+The cause is upstream and deterministic, established by reading both sources and then reproducing it:
+
+* `ServerStarterJar`'s `installModulePath` defines a layer for the module path in `unix_args.txt` with
+  `List.of(ModuleLayer.boot())` as parent, then makes `ModuleLayer.boot()` return it.
+* Forge's `SecureModuleClassLoader` resolves a read module's configuration by scanning its **direct** parents
+  (`parents.stream().filter(p -> p.configuration() == other.configuration())`) and throws when none matches.
+  `java.base` lives one level further up, in the real boot configuration.
+* cpw's original `ModuleClassLoader` — what NeoForge runs — ends the same lookup with
+  `.orElse(ClassLoader.getPlatformClassLoader())`. That asymmetry is the whole reason the same starter jar
+  launches NeoForge and not Forge, and it is why `HELP.md` already records "people ran into trouble when using
+  Forge and Minecraft 1.20.2 and 1.20.3" with `USE_SSJ` as the escape hatch.
+
+Two fixes, because the defect has two halves:
+
+**The classifier can no longer read it as a crash.** New `loaderBootstrapFailureMarkers` rung between
+launch-failure and killed/OOM, matching the *message* and not the module — reproduced locally, the identical
+run named `java.management.rmi` read by `JarJarMetadata` instead, so the iteration order varies. The starter
+jar's own give-ups (`Failed to find run file at`, `Failed to find startup arguments using run script path`)
+joined it.
+
+**The grinder's Forge boots take the hatch.** `PackVariables` now writes `USE_SSJ=false` on every pack, on the
+install boot as well as the mod boot (installing one way and launching the other would cache a layer the
+offline boot cannot use). Measured on Forge 1.20.2-48.1.0, installed by its own `--installServer` and booted
+under `--network none` with a 3 GiB cap on Temurin 17:
+
+| launch | result |
+|---|---|
+| `-jar server.jar --installer-force --installer …` | `IllegalStateException: Could not find parent layer for module` at `SecureModuleClassLoader.java:137` |
+| `@user_jvm_args.txt @libraries/…/unix_args.txt nogui` | `[Server thread/INFO]: Done (5.183s)! For help, type "help"` |
+
+Same install, same JVM, same flags otherwise. That run also confirmed fix #2 end to end: the only
+`UnknownHostException` left in it is `api.minecraftservices.com`, which is the no-network design working.
+
+**And the gap the fix opened, closed in the same branch.** Forge now boots from an `@argfile`, so an install
+layer cached without `unix_args.txt` fails with the launcher's `Error: could not open \`…'` — Temurin 17,
+verbatim — which `launchFailureMarkers` did not know and which therefore scored CRASHED. It is the same
+incomplete-cached-install case that guard already existed for; only the file the boot depends on changed.
+Matched with the launcher's own `Error: ` prefix so a mod logging "could not open" about one of its own files
+is still judged on its merits.
+
+### 4. `Modrinth-polytone-NeoForge.log` — a correct verdict, and a real finding underneath it
+
+The verdict is right: `NoClassDefFoundError: net/minecraft/client/multiplayer/ClientLevel` from
+`mods/polytone-26.2-6.4.1-neoforge.jar` is the decisive `clientOnlyClassMarker`, and the mod earns its HIGH.
+
+What the log also shows is `NoClassDefFoundError: Could not initialize class com.sun.jna.Native` and
+`Failed retrieving info for group processor/memory/software`. Docker mounts a `--tmpfs` as
+`rw,nosuid,nodev,noexec` (verified on 29.7.2) and the rootfs is read-only, so JNA cannot extract and map its
+native library — which is what Minecraft's own `oshi` system-report probes need. Harmless *here*: it degraded
+only the crash report's diagnostics. **Not necessarily harmless in general** — a mod needing JNA at load time
+would fail for the environment and arrive at the classifier as a crash. Landmined in
+`grinder/container/CLAUDE.md` rather than fixed, because adding `exec` to `/tmp` is a deliberate weakening of
+the untrusted-mod posture and that is a decision, not a cleanup.
+
+### 5. The overview says when each mod was scanned
+
+`GrindVerdict.verifiedAt` was recorded from the start — it is what the re-verify TTL compares against — and
+shown nowhere, so a reader could not tell a fresh verdict from one reached weeks ago on a loader build long
+since superseded. Now a `Scanned (UTC)` column on the table and a `Scanned` column closing each CSV row,
+through one shared `ScanDate`, because the download button hands out the exporter's own output and a
+divergence would show as the page disagreeing with its own file. `YEAR/MM/DD`, UTC (a stored `Instant` reads
+the same on any host) and zero-padded (the table sorts as text, so `2026/1/5` would sort after `2026/11/…`).
+
+### Suites
+
+clientside 136 → **138**, grinder 344 → **351**, zero failures. Counts read back from
+`<module>/build/test-results/test/*.xml`. Every code commit is preceded by its own red `test(...)` commit.
