@@ -82,8 +82,11 @@ class ClientsideVerifier(
             else -> scanSample(sample, loader, project)
         }
 
+        // The boot needs the metadata verdict too: a crash that *contradicts* a declared server support is
+        // re-checked against other versions of the mod before it may stand (see BootVerifier.verify).
+        val declaresServer = declaresServerSupport(project.serverSide, jarScan)
         val bootOutcome = bootVerifier?.let { verifier ->
-            runCatching { verifier.verify(project, loader) }
+            runCatching { verifier.verify(project, loader, declaresServer) }
                 .onFailure { log.warn("Boot-test for $loader failed: ${it.message}") }
                 .getOrNull()
         }
@@ -131,7 +134,7 @@ class ClientsideVerifier(
         val jarClient = jarScan == JarScan.CLIENT
         val jarServer = jarScan == JarScan.SERVER_OR_BOTH
         val metadataClient = declaresClient || jarClient
-        val metadataServer = declaresServer || jarServer
+        val metadataServer = declaresServerSupport(serverSide, jarScan)
 
         val note = when {
             declaresClient && jarServer -> "Platform marks server unsupported but the jar declares server/both."
@@ -150,5 +153,21 @@ class ClientsideVerifier(
             else -> Confidence.INCONCLUSIVE
         }
         return confidence to note
+    }
+
+    companion object {
+        /**
+         * Whether the mod *claims* to support servers — the platform's own `server_side: required`, or SPC's
+         * scan of the jar reading server/both. Either source is enough; neither is trusted, which is why the
+         * boot exists at all.
+         *
+         * Shared on purpose between the confidence aggregation and the boot's other-version crash re-check:
+         * the same answer both prints "Declared server/both but the server crashed" and decides whether that
+         * contradiction is worth re-checking, and a report that states the contradiction while the re-check
+         * silently decided there was none would be worse than either behaviour alone. [DeclaredSupport.OPTIONAL]
+         * deliberately does not count — "runs with or without the side" is not a claim that the server works.
+         */
+        internal fun declaresServerSupport(serverSide: DeclaredSupport, jarScan: JarScan): Boolean =
+            serverSide == DeclaredSupport.REQUIRED || jarScan == JarScan.SERVER_OR_BOTH
     }
 }
