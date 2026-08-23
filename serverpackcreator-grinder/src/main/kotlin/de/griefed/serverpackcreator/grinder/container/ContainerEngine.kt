@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.grinder.container
 
 import java.time.Duration
+import kotlin.math.roundToLong
 
 /**
  * Where a server pack is bind-mounted inside a grinder container — and every such container's working
@@ -79,21 +80,30 @@ data class ContainerResources(
          */
         private const val MINIMUM_QUOTA_MICROSECONDS = 1_000L
 
+        /** The quota docker reads as "no limit at all" — an unset one. Verified: the cgroup then reads `max`. */
+        private const val UNSET_QUOTA = 0L
+
         /**
          * Caps a container at [cpus] cores, converting to the quota docker actually wants by multiplying
-         * against the period — the same arithmetic as docker's own `--cpus`.
+         * against the period — the same arithmetic docker's own `--cpus` performs, though **not** the same
+         * validation: `--cpus` is bounded by the host's CPU count, while the raw quota this sets is not
+         * (measured on a 16-core host, a 1000-core quota is accepted and simply means "effectively
+         * uncapped"), so an over-large value is the operator's to get right.
          *
-         * `0.0` means uncapped (an unset quota), matching how `0` reads elsewhere in the daemon's
-         * configuration; anything positive but smaller than the daemon's floor is raised to it, since a
-         * quota it refuses breaks the run instead of throttling it. A negative count is an operator error
-         * with no sensible reading, so it throws rather than being silently clamped.
+         * Exactly `0.0` means uncapped (an unset quota), matching how `0` reads elsewhere in the daemon's
+         * configuration. Every other accepted value produces a real cap: anything below the daemon's own
+         * floor is raised to it, since a quota docker refuses breaks the run instead of throttling it. The
+         * decision is made on the *input* rather than on the computed quota, because a count that rounds
+         * away to 0µs is still a request for a cap and must not collapse into "no limit". A negative or
+         * non-finite count has no sensible reading and throws.
          */
         fun forCpus(cpus: Double, base: ContainerResources = ContainerResources()): ContainerResources {
+            require(cpus.isFinite()) { "A container's CPU cap must be a finite core count, was $cpus." }
             require(cpus >= 0.0) { "A container's CPU cap cannot be negative, was $cpus — use 0 for uncapped." }
-            val requested = Math.round(cpus * base.cpuPeriod)
-            return base.copy(
-                cpuQuota = if (requested == 0L) 0L else maxOf(MINIMUM_QUOTA_MICROSECONDS, requested)
-            )
+            if (cpus == 0.0) {
+                return base.copy(cpuQuota = UNSET_QUOTA)
+            }
+            return base.copy(cpuQuota = maxOf(MINIMUM_QUOTA_MICROSECONDS, (cpus * base.cpuPeriod).roundToLong()))
         }
     }
 }
