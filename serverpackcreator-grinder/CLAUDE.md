@@ -287,6 +287,28 @@ though their detail lives deeper:
     resolving directly inside the store — checked on the string before the filesystem is touched, then
     confirmed canonically so a symlink cannot lead out — and a refusal is deliberately indistinguishable from
     an absent log, so probing tells a caller nothing. Two tests pin it; do not "simplify" it to `File(dir, name)`.
+- **The immediate re-grind queue is how a *defect in the engine* gets un-published** (`RequeueStore`,
+  `RequeueSelection`, `Grinder.grind(force)`). The crawl and the re-verify TTL answer "when does this come
+  round again?" with *eventually, at TTL* — correct when a mod changes, wrong when the bug is ours, and then
+  the bad verdicts are already being served. Drained at the **start of every pass**, before the catalog slice.
+  **LANDMINE — the drain must stay `force = true`.** A project is queued precisely because its verdict is
+  wrong, and a wrong verdict is usually a *recent* one (engine defects are found by reading verdicts that were
+  just produced), so an unforced drain turns straight into `SKIPPED_FRESH` and looks like it worked.
+  `aForcedGrindReVerifiesEvenAFreshVerdict` pins it.
+  - Selectors: `--requeue <url>…` for a named handful, `--requeue-before <ISO instant>` for the recurring
+    shape — a defect invalidates a *population*, not a hand-assembled list. One candidate per project
+    (platform + the platform's own id where known), so a rename is still one re-grind and the same slug on
+    two platforms is still two.
+  - **LANDMINE — the CLI path runs *before* `claimSpcPreferencesNode()`/`pinSpcHomeDirectory()` and must never
+    use `log`.** It is run by an operator against a service that is already up: claiming or re-pinning would
+    move the home out from under the running daemon, and those claims are remembered for every later run. The
+    first `log` statement in a process constructs the very `ApiProperties` they exist to control, so this path
+    prints to stdout. `theRequeuePathRunsBeforeTheClaimsAndNeverLogs` guards **both** halves — `main`'s own
+    body cannot see a log call made from inside the helper, which is why the guard reads the helper's source.
+  - **Not an HTTP endpoint, on purpose.** The report server has no authentication; a write endpoint there
+    would let anyone who can reach the page schedule unbounded container work.
+  - `/status` reports `requeued`; a queued grind logs `(re-grind requested)`, which is how the log tells
+    "the crawl reached this" from "somebody decided the old verdict was wrong".
 - **The report links every endpoint.** `/export.csv`, `/status`, `/as-properties` and `/crash-logs` are buttons
   beside "Download CSV", and each crashing row links its own console. They were previously reachable only from
   a line printed at startup, which an operator sees once. `VerdictReportRenderer.toHtml` takes a per-row

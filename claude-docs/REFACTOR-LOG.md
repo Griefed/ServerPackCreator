@@ -2492,3 +2492,65 @@ restoring either producer's `"${project.slug}-$loader"` fails
 `theJarScanOfTwoPlatformsSharingASlugDownloadsIntoSeparateDirectories` and
 `theSameSlugOnTwoPlatformsStagesIntoSeparateDirectories`. Clientside 130 → **134**, grinder 310 → **311**,
 0 failures in either.
+
+---
+
+## 2026-08-23 — the immediate re-grind queue: how a defect in the *engine* gets un-published
+
+Three engine defects landed in one day — a source jar becoming a list-entry, a crash re-check that never left
+the crashing combination's neighbourhood, and two platform runs of one slug sharing a staging directory. Each
+one invalidated verdicts that were **already being published** through `/as-properties`, and none of them had
+a remedy: the catalog crawl plus the 30-day re-verify TTL answer *when does this project come round again?*
+with **eventually**. Correct when a mod changes. Wrong when the bug is ours, because then the answer is
+"serve the wrong clientside entry for a month".
+
+`RequeueStore` is the missing lane. Persisted (`SPC_GRINDER_REQUEUE`), drained at the **start of every pass**
+ahead of the catalog slice, and ground with `force = true`.
+
+**The force is the whole feature, and it is the part that would have been easy to leave out.** A project is
+queued precisely because its stored verdict is wrong — and a wrong verdict is almost always a *recent* one,
+since engine defects get found by reading verdicts that were just produced. Without the force a drained queue
+turns straight into `SKIPPED_FRESH`: the log says the queue drained, the queue is empty afterwards, and
+nothing was re-verified. That is a failure mode that looks exactly like success, which is why
+`aForcedGrindReVerifiesEvenAFreshVerdict` pins both directions in one test.
+
+**Two selectors, because two things actually happen.** `--requeue <url>…` is a named handful — a report a
+user disputed. `--requeue-before <instant>` is the recurring one, and the reason the feature generalises: a
+defect invalidates a *population*, not a list somebody assembles by hand. Naming the moment is also
+auditable — a reader of the log can tell exactly which population was re-verified and why. One candidate per
+*project* rather than per verdict row, identified by platform plus the platform's own id where known, so a
+renamed project is one re-grind and the same slug on two platforms is still two.
+
+**Three placement decisions, each with a reason that is not obvious from the code.**
+
+*Not an HTTP endpoint.* The report server has no authentication — that is deliberate and landmined — so a
+write endpoint on it would let anyone who can reach the page schedule unbounded container work. The queue is
+authored through the CLI, i.e. through the machine's own access control.
+
+*Before `claimSpcPreferencesNode()` and `pinSpcHomeDirectory()`.* The command is run **against a daemon that
+is already up**. Claiming the preferences node or re-pinning SPC's home from a one-shot would move the home
+out from under the running service, and those claims are remembered for every later run.
+
+*Stdout, never `log`.* This is the same landmine one level removed: `ApiProperties` is registered as log4j's
+`ConfigurationFactory`, so the first log statement in a process constructs one — the very thing the claims
+exist to control. A `log.info` on this path would re-introduce the hazard from inside a helper, where the
+existing guard (which scans `main`'s body) could not see it.
+`theRequeuePathRunsBeforeTheClaimsAndNeverLogs` therefore asserts the ordering *and* reads the helper's own
+source for `log.`.
+
+**Verified against the real entry point**, not only through the suite, because the operator-facing half is
+exactly what a mocked test cannot answer. A store sliced from the live 875-verdict file, run through
+`:serverpackcreator-grinder:run`:
+
+| Command | Result |
+|---|---|
+| `--requeue-before 2030-01-01T00:00:00Z` | 14 rows → **7 distinct projects**, both platforms of `chipped` and `ambientsounds` kept apart |
+| the same command again | `Queued 0 of 7 … (7 already waiting)` — additive and idempotent |
+| `--requeue https://modrinth.com/mod/creativecore` | `Queued 1 of 1 … 8 now pending` |
+| `--requeue-before yesterday` | the ISO-8601 hint, not a stack trace |
+
+The run left **only `requeue.json`** in the home — no `logs/` directory — which is the observable proof that
+no `ApiProperties` was constructed and the landmine above holds in the built artefact rather than only in the
+source guard.
+
+Suite: grinder 325 → **336, 0 failures**.

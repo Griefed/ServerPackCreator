@@ -82,6 +82,55 @@ internal class GrinderTest {
     }
 
     /**
+     * **A forced grind ignores freshness.** That is the whole point of the immediate re-grind queue: a
+     * verdict is queued precisely *because* it is wrong, and it is almost always recent — the defects that
+     * invalidate verdicts are found by reading verdicts that were just produced. Without this the queue
+     * would drain into `SKIPPED_FRESH` and do nothing at all.
+     */
+    @Test
+    fun aForcedGrindReVerifiesEvenAFreshVerdict() {
+        val now = Instant.parse("2026-06-01T00:00:00Z")
+        val store = InMemoryVerdictStore()
+        store.record(grindVerdict("creativecore", "Fabric", verifiedAt = now.minus(Duration.ofMinutes(5))))
+        val calls = AtomicInteger(0)
+        val verifier = CandidateVerifier { c ->
+            calls.incrementAndGet()
+            clientsideReport(c.slug, listOf(loaderVerdict("Fabric", "CreativeCore_FABRIC_", Confidence.LOW)))
+        }
+        val grinder = Grinder(verifier, store, reverifyTtl = Duration.ofDays(30), clock = { now })
+
+        Assertions.assertEquals(GrindOutcome.SKIPPED_FRESH, grinder.grind(candidate("creativecore")))
+        Assertions.assertEquals(GrindOutcome.VERIFIED, grinder.grind(candidate("creativecore"), force = true))
+        Assertions.assertEquals(1, calls.get(), "only the forced grind may re-verify")
+        Assertions.assertEquals(
+            Confidence.LOW,
+            store.all().single { it.loader == "Fabric" }.confidence,
+            "the re-grind replaces the verdict it was queued to correct"
+        )
+    }
+
+    /** The pool carries the force through to every candidate, or a queued batch would drain into nothing. */
+    @Test
+    fun theForcedFlagReachesEveryCandidateInAPooledBatch() {
+        val now = Instant.parse("2026-06-01T00:00:00Z")
+        val store = InMemoryVerdictStore()
+        listOf("creativecore", "jei").forEach {
+            store.record(grindVerdict(it, "Forge", verifiedAt = now.minus(Duration.ofMinutes(5))))
+        }
+        val calls = AtomicInteger(0)
+        val verifier = CandidateVerifier { c ->
+            calls.incrementAndGet()
+            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "${c.slug}-", Confidence.LOW)))
+        }
+        val grinder = Grinder(verifier, store, reverifyTtl = Duration.ofDays(30), clock = { now })
+
+        val pass = GrindPool(grinder, 2).grindAll(listOf(candidate("creativecore"), candidate("jei")), force = true)
+
+        Assertions.assertEquals(2, pass.verified)
+        Assertions.assertEquals(2, calls.get())
+    }
+
+    /**
      * The freshness check is per-platform: a fresh Modrinth verdict for `jei` must not stop CurseForge's
      * `jei` — a different project that happens to share a slug — from being ground.
      */
