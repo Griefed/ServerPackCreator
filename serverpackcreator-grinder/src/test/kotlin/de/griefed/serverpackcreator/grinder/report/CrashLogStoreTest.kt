@@ -125,6 +125,39 @@ internal class CrashLogStoreTest {
         Assertions.assertTrue(kept.length <= CrashLogStore.MAX_BYTES + 512, "kept ${kept.length} bytes")
     }
 
+    /**
+     * **The cap has to bound what is *read*, not only what is written.** Boot consoles are streamed to disk
+     * uncapped, bounded only by the 15-minute boot timeout, so a chatty mod can leave hundreds of megabytes —
+     * and reading one whole into a `String` inflates it to roughly double as UTF-16. Worse, `keep`'s
+     * `runCatching` catches `Throwable`, so the resulting `OutOfMemoryError` would be swallowed and the
+     * daemon would carry on in an unknown heap state.
+     *
+     * Asserted by measurement rather than by reading the code: the JVM is given a console far larger than the
+     * cap and the heap used across the call is required to stay a fraction of it, which is only true if the
+     * file was never read whole.
+     */
+    @Test
+    fun anOversizedConsoleIsNeverReadWholeIntoMemory() {
+        val oversized = File(directory.parentFile, "huge-boot.log")
+        val chunk = "x".repeat(1024 * 1024)
+        oversized.bufferedWriter().use { writer -> repeat(64) { writer.write(chunk) } }
+        Assertions.assertTrue(oversized.length() > 64L * 1024 * 1024, "fixture must exceed the cap many times over")
+
+        val runtime = Runtime.getRuntime()
+        System.gc()
+        val before = runtime.totalMemory() - runtime.freeMemory()
+        val name = store().keep(ModPlatforms.MODRINTH, "spewy", "Forge", oversized)
+        val peak = runtime.totalMemory() - runtime.freeMemory()
+
+        Assertions.assertNotNull(name)
+        Assertions.assertTrue(
+            peak - before < oversized.length(),
+            "keeping a ${oversized.length() / 1024 / 1024} MiB console allocated ${(peak - before) / 1024 / 1024} MiB — " +
+                "it is being read whole before the cap is applied"
+        )
+        Assertions.assertTrue(File(directory, name!!).length() <= CrashLogStore.MAX_BYTES + 512L)
+    }
+
     /** Reclamation must never fail a grind, so an unwritable store degrades to "no log" rather than throwing. */
     @Test
     fun anUnwritableStoreYieldsNoNameInsteadOfThrowing() {

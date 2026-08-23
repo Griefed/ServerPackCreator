@@ -112,4 +112,25 @@ internal class GrindPacingTest {
             "no pause, nothing to slice"
         )
     }
+
+    /**
+     * **A remainder that has already elapsed must slice to zero, never to a negative.**
+     *
+     * The caller computes `wakeAt - now` *after* checking `now < wakeAt`, with a synchronized read of the
+     * queue file in between — so on the final slice, where the remainder is by construction somewhere in
+     * `(0, 15s]`, an I/O stall longer than the remainder makes it negative. A negative `Duration` compares
+     * below the slice and would be passed straight through, and `Thread.sleep(-5)` throws
+     * `IllegalArgumentException` — not an `InterruptedException`, so it escapes the wait's catch, escapes
+     * `while (running.get())`, and ends `main`. A fire-and-forget daemon then quietly stops grinding with no
+     * crash anybody is watching for.
+     */
+    @Test
+    fun aRemainderThatHasAlreadyElapsedSlicesToZero() {
+        Assertions.assertTrue(GrindPacing.pollInterval(Duration.ofMillis(-5)).isZero)
+        Assertions.assertTrue(GrindPacing.pollInterval(Duration.ofHours(-1)).isZero)
+        Assertions.assertFalse(
+            GrindPacing.pollInterval(Duration.ofMillis(-5)).isNegative,
+            "Thread.sleep throws on a negative timeout, and nothing on that path catches it"
+        )
+    }
 }
