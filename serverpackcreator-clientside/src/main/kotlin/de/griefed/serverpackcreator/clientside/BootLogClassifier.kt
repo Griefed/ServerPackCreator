@@ -112,6 +112,29 @@ object BootLogClassifier {
     )
 
     /**
+     * The **modloader itself** failed to bootstrap: the JVM started, but the server never did, so no mod was ever
+     * loaded and the run says nothing about sideness. One rung below [launchFailureMarkers] — there the JVM could
+     * not open the jar, here it opened it and the loader fell over on its own module wiring.
+     *
+     * Found live on 2026-08-23 in `CurseForge-ars-nouveau-Forge.log`, which was scored CRASHED and therefore
+     * headed for a clientside HIGH for a mod whose code never ran. The cause is upstream and deterministic, not a
+     * flaky boot: the NeoForge ServerStarterJar synthesises a boot layer for the module path named in Forge's
+     * `unix_args.txt`, and Forge's `SecureModuleClassLoader` looks a read module's configuration up among its
+     * **direct** parents only — so `java.base`, one level further up in the real boot configuration, is not found
+     * and it throws. cpw's original, which NeoForge itself runs, falls back to the platform classloader there,
+     * which is why the same starter jar launches NeoForge and not Forge.
+     *
+     * The starter jar's own give-ups are the same class of failure and sit here too: an install layer with no
+     * run-script leaves it nothing to read launch arguments out of, and it exits before any loader code runs.
+     */
+    private val loaderBootstrapFailureMarkers = Regex(
+        "(Could not find parent layer for module" +
+            "|Failed to find run file at" +
+            "|Failed to find startup arguments using run script path)",
+        RegexOption.IGNORE_CASE
+    )
+
+    /**
      * A mod whose **required dependencies** were not satisfied never got a fair test: it was refused before its own
      * code ran, so its failure says nothing about client-vs-server.
      *
@@ -152,8 +175,10 @@ object BootLogClassifier {
      * The ready-line wins outright — when present the boot [BootResult.SURVIVED] even though the
      * process is subsequently killed (yielding a non-zero exit). Otherwise a timeout is
      * [BootResult.INCONCLUSIVE]; a pre-launch [setupAbortMarkers] hit is [BootResult.INCONCLUSIVE]
-     * (the mod was never tested — the loader/env/install failed first); a clean `0` exit without ever
-     * reaching ready is [BootResult.INCONCLUSIVE]; and any other non-zero exit is [BootResult.CRASHED].
+     * (the mod was never tested — the loader/env/install failed first); so is a JVM that never launched
+     * ([launchFailureMarkers]) or a loader that never bootstrapped ([loaderBootstrapFailureMarkers]); a clean
+     * `0` exit without ever reaching ready is [BootResult.INCONCLUSIVE]; and any other non-zero exit is
+     * [BootResult.CRASHED].
      */
     fun classify(consoleLines: List<String>, exitCode: Int?, timedOut: Boolean): BootResult {
         if (consoleLines.any { readyLine.containsMatchIn(it) }) {
@@ -167,6 +192,10 @@ object BootLogClassifier {
         }
         // The JVM never got as far as running the server, so nothing about the mod was exercised.
         if (consoleLines.any { launchFailureMarkers.containsMatchIn(it) }) {
+            return BootResult.INCONCLUSIVE
+        }
+        // The loader fell over before it could load anything, so there was no mod in the run to blame.
+        if (consoleLines.any { loaderBootstrapFailureMarkers.containsMatchIn(it) }) {
             return BootResult.INCONCLUSIVE
         }
         // Killed from outside, or killed for memory: the mod never got the chance to fail on its own merits.
