@@ -98,6 +98,66 @@ internal class ContainerResourcesTest {
         )
     }
 
+    /** GiB is the unit the cap has always been documented in, so it is the unit the knob takes. */
+    @Test
+    fun memoryGibiBytesBecomeBytes() {
+        Assertions.assertEquals(3L * 1024 * 1024 * 1024, ContainerResources.forLimits(2.0, 3.0).memoryBytes)
+        Assertions.assertEquals(
+            (1.5 * 1024 * 1024 * 1024).toLong(), ContainerResources.forLimits(2.0, 1.5).memoryBytes,
+            "a fractional cap must survive the conversion — 1.5 GiB is not 1"
+        )
+    }
+
+    /** The knob must not change what an existing install gets: the default stays the 3 GiB it was. */
+    @Test
+    fun theShippedDefaultIsExactlyThreeGibiBytes() {
+        Assertions.assertEquals(3L * 1024 * 1024 * 1024, ContainerResources().memoryBytes)
+        Assertions.assertEquals(ContainerResources().memoryBytes, ContainerResources.forLimits(2.0, 3.0).memoryBytes)
+    }
+
+    /**
+     * `Minimum memory limit allowed is 6MB` — the daemon's own words, so a smaller positive value is raised
+     * here rather than failing every container at create time. Same reasoning as the CPU floor, and the same
+     * distinction: only an exact `0` means uncapped, never a value that merely rounded small.
+     */
+    @Test
+    fun aMemoryCapTooSmallForTheDaemonIsRaisedToItsMinimum() {
+        Assertions.assertEquals(6L * 1024 * 1024, ContainerResources.forLimits(2.0, 0.000001).memoryBytes)
+    }
+
+    /**
+     * `0` removes the memory limit, as it does for the quota. Sharper than the CPU equivalent — an uncapped
+     * boot can take the host's memory with it rather than merely hogging cores — which is why the README
+     * carries the warning it does, and why it still has to be reachable rather than reinvented with `-1`.
+     */
+    @Test
+    fun zeroMemoryMeansUncappedAndBadInputIsRejected() {
+        Assertions.assertEquals(0L, ContainerResources.forLimits(2.0, 0.0).memoryBytes)
+        Assertions.assertThrows(IllegalArgumentException::class.java) { ContainerResources.forLimits(2.0, -1.0) }
+        Assertions.assertThrows(IllegalArgumentException::class.java) { ContainerResources.forLimits(2.0, Double.NaN) }
+        Assertions.assertThrows(IllegalArgumentException::class.java) {
+            ContainerResources.forLimits(2.0, Double.POSITIVE_INFINITY)
+        }
+    }
+
+    /** [ContainerResources.forLimits] must not quietly re-implement the CPU half it delegates. */
+    @Test
+    fun bothLimitsComeFromOneCall() {
+        val tiny = ContainerResources.forLimits(0.000001, 0.000001)
+
+        Assertions.assertEquals(1_000L, tiny.cpuQuota, "the CPU floor must still apply through forLimits")
+        Assertions.assertEquals(6L * 1024 * 1024, tiny.memoryBytes, "the memory floor must apply too")
+        Assertions.assertEquals(150_000L, ContainerResources.forLimits(1.5, 3.0).cpuQuota)
+    }
+
+    /** The memory cap answers in GiB for the same reason the CPU cap answers in cores: it is what was set. */
+    @Test
+    fun theMemoryCapDescribesItselfInGibiBytes() {
+        Assertions.assertEquals("3.0 GiB", ContainerResources.forLimits(2.0, 3.0).memoryCapDescription())
+        Assertions.assertEquals("1.5 GiB", ContainerResources.forLimits(2.0, 1.5).memoryCapDescription())
+        Assertions.assertEquals("uncapped", ContainerResources.forLimits(2.0, 0.0).memoryCapDescription())
+    }
+
     /**
      * The startup line is where an operator checks the cap they set, so it has to answer in their unit.
      *
