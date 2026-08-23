@@ -149,4 +149,50 @@ internal class ReportServerTest {
         }
     }
 
+
+    /**
+     * `/as-properties` is what a ServerPackCreator instance polls through its
+     * `de.griefed.serverpackcreator.configuration.fallback.updateurl`. It must therefore be served as a
+     * document `java.util.Properties` can load, carrying the repository's own list plus the grinder's
+     * crash-proven findings — so the fallback list stops depending on a maintainer editing the repo.
+     */
+    @Test
+    fun servesTheFallbackListAsPollableProperties() {
+        val store = InMemoryVerdictStore().apply {
+            record(grindVerdict("entityculling", "Fabric", confidence = Confidence.HIGH, suggestedEntry = "entityculling-"))
+            record(grindVerdict("inconclusive", "Forge", confidence = Confidence.INCONCLUSIVE, suggestedEntry = "inconclusive-"))
+        }
+        val server = ReportServer(
+            store,
+            requestedPort = 0,
+            fallbackLists = { FallbackLists(clientsideMods = listOf("jei-"), whitelist = listOf("Ping-Wheel-")) }
+        ).start()
+        try {
+            val response = get(server.port, "/as-properties")
+            Assertions.assertEquals(200, response.statusCode())
+
+            val parsed = java.util.Properties()
+            parsed.load(response.body().byteInputStream(Charsets.ISO_8859_1))
+            val entries = parsed.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist")
+                .orEmpty().split(",").map { it.trim() }
+            Assertions.assertTrue(entries.contains("jei-"), "the repository list must be served: $entries")
+            Assertions.assertTrue(entries.contains("entityculling-"), "a HIGH finding must be served: $entries")
+            Assertions.assertFalse(entries.contains("inconclusive-"), "an unproven finding must never be served: $entries")
+        } finally {
+            server.stop()
+        }
+    }
+
+    @Test
+    fun answersAsPropertiesEvenWithNoListSourceWiredIn() {
+        // The report server is constructible without SPC (every other endpoint is), and a 500 on a polled
+        // endpoint would have every client log an error forever.
+        val server = ReportServer(InMemoryVerdictStore(), requestedPort = 0).start()
+        try {
+            Assertions.assertEquals(200, get(server.port, "/as-properties").statusCode())
+        } finally {
+            server.stop()
+        }
+    }
+
 }
