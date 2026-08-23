@@ -245,15 +245,54 @@ though their detail lives deeper:
   unknown case instead of skipping it, and `26.2` is in the default Minecraft axis so the `YY.x` scheme is exercised
   without anyone remembering to pass `SPC_GRINDER_TEMPLATE_MC`.
 - **Staging is reclaimed, not accumulated** (`BootWorkspaceReaper`). Each attempt stages a full server pack with the
-  overlaid loader libraries under `<work>/verify/boot/<slug>-<loader>` plus downloaded jars under
-  `<work>/verify/verify/<slug>-<loader>`, and staging only ever deleted a directory when that *same* `(slug, loader)`
+  overlaid loader libraries under `<work>/verify/boot/<platform>-<slug>-<loader>` plus downloaded jars under
+  `<work>/verify/verify/<platform>-<slug>-<loader>`, and staging only ever deleted a directory when that *same*
+  `(platform, slug, loader)`
   was retried — which during a catalog sweep is never. Measured 2026-07-30: **98 GB across 1750 attempt directories,
   ~23 GB/h**, enough to fill the host inside a day. The reaper strips each finished candidate's staging down to its
   `boot.log` (the verdict detail is read from it; the packs are reproducible), runs in a `finally` so a *thrown*
   verification is reclaimed too, and sweeps orphans at startup — first live startup reclaimed 8 897 MiB, taking the
-  work tree from 8.7 GB to 155 MB. **Landmine:** it is scoped to one slug on purpose, matching `<slug>-<loader>` by
-  cutting the loader suffix rather than prefix-matching the slug — workers run in parallel, and a prefix match
-  (`jei` vs `jei-extras`) would delete the pack out from under a container that is still booting it.
+  work tree from 8.7 GB to 155 MB. **Landmine:** it is scoped to one **`(platform, slug)`** on purpose, and both halves matter.
+  The names are built and parsed by `AttemptDirectory` in `-clientside` — one place, because the two verifiers
+  that *write* the name and this reaper, which decides what to *delete* from it, used to agree only by separate
+  string literals happening to match. The loader suffix is cut rather than the slug prefix-matched (`jei` vs
+  `jei-extras`), and the platform is part of the scope because **the same slug on Modrinth and CurseForge is two
+  candidates this pool grinds in parallel** — freshness is keyed `(platform, slug)` for the same reason. Reaping
+  on the bare slug deleted the other platform's pack mid-boot: measured on `creativecore`, 2026-08-23, two
+  platform runs 71s apart produced NeoForge 26.2.0.66 / MC 26.2 reading **SURVIVED on one and CRASHED on the
+  other** for the identical build, a Fabric boot exiting **127** (the shell could not find the command — the pack
+  had gone), and re-checks reading INCONCLUSIVE on a file the other run had booted to a ready-line. A crash is
+  the one outcome that reaches HIGH, so this manufactured false positives rather than merely losing runs.
+  Directories staged before the rename match no owner and are cleared by the startup `reapAll()`.
+  **Landmine — reap the identity the staging was *named* from, not the candidate's.** Directories carry
+  `ProjectFiles.platform`/`slug` (the resolved report's); `ContainerCandidateVerifier.reapTarget` therefore
+  prefers the report and falls back to the candidate only when the verification threw and there is no report
+  to ask. `Grinder` logs `"Platform mismatch for …: candidate says 'X', resolved report says 'Y'"`, so the two
+  are known to be able to disagree, and a slug is a mutable name a rename can move out from under a queued
+  candidate. Asking with the candidate's copy of either matches nothing and leaks a whole pack per attempt.
+- **A crashed boot's console outlives its staging** (`CrashLogStore`, `ContainerCandidateVerifier.keepCrashConsoles`).
+  The reaper keeps one `boot.log` per attempt directory, but staging *wipes and re-creates* that directory, so
+  the next re-grind of the same tuple destroyed the console for a verdict that is still published. Since a crash
+  is the only outcome that reaches HIGH — and its usual cause, a server loading a mod that reaches for a
+  client-only class (`NoClassDefFoundError: net/minecraft/client/…`), is legible from the console and nothing
+  else — crashing consoles are copied into `<home>/crash-logs` as each candidate's verdicts land. **Only
+  CRASHED is kept**: a clean boot proves nothing about sideness and explains nothing either.
+  - **Under the *home*, not under `work/`** — everything below `work/` is scratch the reaper may reclaim.
+  - **Growth is bounded by the catalog, not by uptime**: a log is named `<platform>-<slug>-<loader>.log` via
+    the same `AttemptDirectory` helper, so a re-grind *replaces* it. That is the deliberate opposite of the
+    naming that once grew the work tree to 98 GB. Oversized consoles keep their **tail** (the stack trace is
+    at the end) with the truncation written into the file.
+  - **LANDMINE — the name is untrusted input.** `/crash-log?name=` addresses the store by name, and this
+    report has no authentication and is documented as reverse-proxyable. `read` requires a plain file name
+    resolving directly inside the store — checked on the string before the filesystem is touched, then
+    confirmed canonically so a symlink cannot lead out — and a refusal is deliberately indistinguishable from
+    an absent log, so probing tells a caller nothing. Two tests pin it; do not "simplify" it to `File(dir, name)`.
+- **The report links every endpoint.** `/export.csv`, `/status`, `/as-properties` and `/crash-logs` are buttons
+  beside "Download CSV", and each crashing row links its own console. They were previously reachable only from
+  a line printed at startup, which an operator sees once. `VerdictReportRenderer.toHtml` takes a per-row
+  *lookup* for the crash-log name rather than reading a field off `GrindVerdict`: the log lives on disk, so
+  asking at render time means the link appears exactly when the file does, and a hand-deleted log cannot
+  strand the table pointing at a 404.
 
 and the grinder sets `$JAVA` per MC version (via the pack's `variables.txt`) from SPC's declared
 required-Java — **no Java download**, which is what keeps mod-boots runnable under `--network none`.

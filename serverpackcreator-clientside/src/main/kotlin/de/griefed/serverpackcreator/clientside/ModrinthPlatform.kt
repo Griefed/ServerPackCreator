@@ -76,7 +76,8 @@ class ModrinthPlatform(
 
     /**
      * Map a single Modrinth version-node onto our [ModFile]s. A version's `loaders`/`game_versions`
-     * and required `dependencies` apply to every file it lists.
+     * and required `dependencies` apply to every file it lists, but only its [modFilesOf] entries are
+     * mods at all.
      */
     private fun filesOf(version: JsonNode, projectUrl: String): List<ModFile> {
         val loaders = LoaderNames.canonicalLoaders(version.path("loaders").map { it.asText() })
@@ -84,7 +85,7 @@ class ModrinthPlatform(
         val requiredDeps = version.path("dependencies")
             .filter { it.path("dependency_type").asText() == "required" }
             .mapNotNull { it.path("project_id").asText(null) }
-        return version.path("files").map { file ->
+        return modFilesOf(version).map { file ->
             ModFile(
                 fileName = file.path("filename").asText(),
                 loaders = loaders,
@@ -94,6 +95,26 @@ class ModrinthPlatform(
                 requiredDependencies = requiredDeps
             )
         }
+    }
+
+    /**
+     * The entries of [version]'s `files` that are actually the mod: the ones Modrinth flags
+     * `"primary": true`, or — for a version that flags none — all of them.
+     *
+     * A Modrinth version routinely carries attachments beside its mod jar, source jars above all, and none
+     * of them is a mod: not bootable, not worth scanning, and poisonous to the file-name stem the verdict
+     * is published under. Measured against the live API on 2026-08-23: `creativecore`'s single stray
+     * `CreativeCore-sources.jar` dragged its Fabric list-entry from `CreativeCore_FABRIC_` down to
+     * `CreativeCore-sources`, which matches nothing.
+     *
+     * The fallback is not defensive padding — 3 of that project's 300 versions genuinely flag no primary,
+     * and dropping them would lose real builds. "No primary" means "Modrinth cannot tell us which one",
+     * not "none of these is a mod".
+     */
+    private fun modFilesOf(version: JsonNode): List<JsonNode> {
+        val files = version.path("files").toList()
+        val primaries = files.filter { it.path("primary").asBoolean(false) }
+        return primaries.ifEmpty { files }
     }
 
     /**

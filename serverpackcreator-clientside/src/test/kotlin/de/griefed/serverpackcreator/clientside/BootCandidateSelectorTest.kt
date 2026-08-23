@@ -69,13 +69,18 @@ internal class BootCandidateSelectorTest {
     // --- the sample the other-version crash re-check boots ------------------------------------------
 
     /**
-     * What "other versions of the mod" means: the newest file of each *other* Minecraft version, most recent
-     * Minecraft first. One per version, never two builds of the same one — two rebuilds for one Minecraft are
-     * near-identical code, so the second boot buys far less than a different version line does — and never a
-     * file the booted version already covered, which is the whole point of re-checking somewhere else.
+     * What "other versions of the mod" means: a *diverse* sample, not the next-newest builds. Each pick
+     * introduces a Minecraft version-line and a loader no earlier pick used, most recent Minecraft first
+     * — so the crashing combination's own line is skipped before its neighbours are considered, and the
+     * budget is not spent twice on the same loader.
+     *
+     * **Why:** measured 2026-08-23 on `creativecore`, both re-checks landed on the same loader, the same
+     * loader version (Fabric 0.19.3) and the two Minecraft versions adjacent to the crashing one — near
+     * identical code in a near-identical environment, and both came back INCONCLUSIVE while another loader
+     * of the same project had booted a server cleanly.
      */
     @Test
-    fun recheckCandidatesAreTheNewestFileOfEachOtherMinecraftVersion() {
+    fun recheckCandidatesSpanOtherMinecraftLinesAndOtherLoaders() {
         val files = listOf(
             file("mod-1.20.2-2.jar", setOf("Forge"), setOf("1.20.2")),
             file("mod-1.20.2-1.jar", setOf("Forge"), setOf("1.20.2")),
@@ -85,16 +90,75 @@ internal class BootCandidateSelectorTest {
             file("mod-fabric-1.18.2.jar", setOf("Fabric"), setOf("1.18.2"))
         )
 
-        val picked = BootCandidateSelector.pickRecheckCandidates(files, "Forge", "1.20.2", limit = 5) { true }
+        val picked = BootCandidateSelector.pickRecheckCandidates(files, "Forge", "1.20.2", limit = 5) { _, _ -> true }
 
         Assertions.assertEquals(
-            listOf("mod-1.20.1-2.jar" to "1.20.1", "mod-1.19.2.jar" to "1.19.2"),
-            picked.map { it.first.fileName to it.second },
-            "expected the newest Forge file of 1.20.1 then 1.19.2 — no 1.20.2 sibling, no Fabric file"
+            listOf(
+                Triple("mod-1.19.2.jar", "Forge", "1.19.2"),
+                Triple("mod-fabric-1.18.2.jar", "Fabric", "1.18.2"),
+                Triple("mod-1.20.1-2.jar", "Forge", "1.20.1")
+            ),
+            picked.map { Triple(it.file.fileName, it.loader, it.minecraftVersion) },
+            "expected a new line first (1.19.2 over the booted line's 1.20.1), then a new loader, and only " +
+                "then the booted line's sibling — newest file of each Minecraft version throughout"
         )
     }
 
-    /** Each re-check is a full boot, so the limit is a hard budget, taken from the most recent end. */
+    /**
+     * The shape that prompted the change, in miniature: `creativecore` crashed on Fabric / Minecraft 26.2
+     * while NeoForge booted a server, and the two re-checks it spent both went to Fabric 26.1.2 and 26.1.
+     * The diverse sample keeps one same-loader answer and spends the other on a different loader *and* a
+     * different Minecraft line.
+     */
+    @Test
+    fun aCrashIsReCheckedOnAnotherLoaderRatherThanTwiceOnItsOwn() {
+        val files = listOf(
+            file("CreativeCore_FABRIC_v2.14.16_mc26.2.jar", setOf("Fabric"), setOf("26.2")),
+            file("CreativeCore_NEOFORGE_v2.14.16_mc26.2.jar", setOf("NeoForge"), setOf("26.2")),
+            file("CreativeCore_FABRIC_v2.14.16_mc26.1.2.jar", setOf("Fabric"), setOf("26.1.2")),
+            file("CreativeCore_NEOFORGE_v2.14.16_mc26.1.2.jar", setOf("NeoForge"), setOf("26.1.2")),
+            file("CreativeCore_FABRIC_v2.14.13_mc26.1.jar", setOf("Fabric"), setOf("26.1")),
+            file("CreativeCore_FABRIC_v2.13.39_mc1.21.1.jar", setOf("Fabric"), setOf("1.21.1")),
+            file("CreativeCore_NEOFORGE_v2.13.39_mc1.21.1.jar", setOf("NeoForge"), setOf("1.21.1")),
+            file("CreativeCore_FORGE_v2.12.39_mc1.20.1.jar", setOf("Forge"), setOf("1.20.1"))
+        )
+
+        val picked = BootCandidateSelector.pickRecheckCandidates(files, "Fabric", "26.2", limit = 2) { _, _ -> true }
+
+        Assertions.assertEquals(
+            listOf(
+                Triple("CreativeCore_FABRIC_v2.14.16_mc26.1.2.jar", "Fabric", "26.1.2"),
+                Triple("CreativeCore_NEOFORGE_v2.13.39_mc1.21.1.jar", "NeoForge", "1.21.1")
+            ),
+            picked.map { Triple(it.file.fileName, it.loader, it.minecraftVersion) },
+            "expected the 26.1 line on the crashing loader, then a different loader on a different line — " +
+                "never 26.1.2 and 26.1, which are the same line"
+        )
+    }
+
+    /**
+     * Two builds of the same Minecraft version are near-identical code, so only the newest is ever a
+     * candidate — but a project that publishes a single Minecraft *line* must still spend its budget, and
+     * the relaxation that lets it is what keeps that case as well-sampled as it was before diversity
+     * became a preference.
+     */
+    @Test
+    fun aSingleMinecraftLineStillSpendsTheWholeBudget() {
+        val files = listOf(
+            file("mod-1.20.4.jar", setOf("Forge"), setOf("1.20.4")),
+            file("mod-1.20.2-b.jar", setOf("Forge"), setOf("1.20.2")),
+            file("mod-1.20.2-a.jar", setOf("Forge"), setOf("1.20.2")),
+            file("mod-1.20.1.jar", setOf("Forge"), setOf("1.20.1"))
+        )
+
+        Assertions.assertEquals(
+            listOf("mod-1.20.2-b.jar" to "1.20.2", "mod-1.20.1.jar" to "1.20.1"),
+            BootCandidateSelector.pickRecheckCandidates(files, "Forge", "1.20.4", limit = 2) { _, _ -> true }
+                .map { it.file.fileName to it.minecraftVersion }
+        )
+    }
+
+    /** Each re-check is a full boot, so the limit is a hard budget. */
     @Test
     fun recheckCandidatesStopAtTheLimit() {
         val files = listOf(
@@ -104,41 +168,49 @@ internal class BootCandidateSelectorTest {
         )
 
         Assertions.assertEquals(
-            listOf("1.20.1"),
-            BootCandidateSelector.pickRecheckCandidates(files, "Forge", "1.20.2", limit = 1) { true }.map { it.second }
+            listOf("1.19.2"),
+            BootCandidateSelector.pickRecheckCandidates(files, "Forge", "1.20.2", limit = 1) { _, _ -> true }
+                .map { it.minecraftVersion },
+            "the single boot goes to the other Minecraft line, not to the crashing line's neighbour"
         )
         Assertions.assertTrue(
-            BootCandidateSelector.pickRecheckCandidates(files, "Forge", "1.20.2", limit = 0) { true }.isEmpty(),
+            BootCandidateSelector.pickRecheckCandidates(files, "Forge", "1.20.2", limit = 0) { _, _ -> true }.isEmpty(),
             "a zero budget must buy no boots at all"
         )
     }
 
-    /** Same gate as selection: a Minecraft version the loader has no build for can never be staged. */
+    /**
+     * Same gate as selection, now asked per *loader* as well: a combination the loader has no build for can
+     * never be staged, and a cross-loader candidate makes the loader half of that question a real one.
+     */
     @Test
-    fun recheckCandidatesSkipMinecraftVersionsWithoutAnAvailableLoaderVersion() {
+    fun recheckCandidatesSkipCombinationsWithoutAnAvailableLoaderVersion() {
         val files = listOf(
             file("mod-1.20.2.jar", setOf("Forge"), setOf("1.20.2")),
             file("mod-1.20.1.jar", setOf("Forge"), setOf("1.20.1")),
-            file("mod-1.19.2.jar", setOf("Forge"), setOf("1.19.2"))
+            file("mod-1.19.2.jar", setOf("Forge"), setOf("1.19.2")),
+            file("mod-fabric-1.19.2.jar", setOf("Fabric"), setOf("1.19.2"))
         )
 
         Assertions.assertEquals(
-            listOf("1.19.2"),
-            BootCandidateSelector.pickRecheckCandidates(files, "Forge", "1.20.2", limit = 5) { it != "1.20.1" }
-                .map { it.second }
+            listOf("Forge" to "1.19.2", "Forge" to "1.20.1"),
+            BootCandidateSelector.pickRecheckCandidates(files, "Forge", "1.20.2", limit = 5) { loader, _ ->
+                loader != "Fabric"
+            }.map { it.loader to it.minecraftVersion },
+            "the Fabric build is gated out, so the sample falls back to the crashing loader's own versions"
         )
     }
 
-    /** A mod published for exactly one Minecraft version has nothing to be re-checked against. */
+    /** A mod published for exactly one loader and one Minecraft version has nothing to be re-checked against. */
     @Test
-    fun aProjectWithNoOtherMinecraftVersionYieldsNoRecheckCandidates() {
+    fun aProjectWithNoOtherCombinationYieldsNoRecheckCandidates() {
         val files = listOf(
             file("mod-1.20.2-2.jar", setOf("Forge"), setOf("1.20.2")),
             file("mod-1.20.2-1.jar", setOf("Forge"), setOf("1.20.2"))
         )
 
         Assertions.assertTrue(
-            BootCandidateSelector.pickRecheckCandidates(files, "Forge", "1.20.2", limit = 5) { true }.isEmpty()
+            BootCandidateSelector.pickRecheckCandidates(files, "Forge", "1.20.2", limit = 5) { _, _ -> true }.isEmpty()
         )
     }
 

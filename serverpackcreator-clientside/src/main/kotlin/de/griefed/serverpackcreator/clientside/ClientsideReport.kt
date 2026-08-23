@@ -55,6 +55,10 @@ enum class JarScan {
  * @param declaredServerSide Platform-declared server support (Modrinth; UNKNOWN for CurseForge).
  * @param jarScan           DeclaredSupport read from the jar metadata via SPC's scanners.
  * @param bootResult        Outcome of the server-boot test, or `null` when boot was not run.
+ * @param bootedLoader      Which loader actually produced [bootResult], or `null` when no boot ran. Usually
+ *                          [loader]; it differs when a cross-loader crash re-check decided the outcome, and
+ *                          the difference is load-bearing — only a loader's *own* clean boot may disprove
+ *                          another loader's crash (see `ClientsideVerifier.loaderDisprovingTheCrash`).
  * @param confidence        Aggregate confidence for this loader.
  * @param sampleFile        The file-name the jar-scan ran against (for traceability).
  * @param note              Optional caveat (e.g. a metadata/jar-scan contradiction, or a boot detail).
@@ -67,6 +71,7 @@ data class LoaderVerdict(
     val declaredServerSide: DeclaredSupport,
     val jarScan: JarScan,
     val bootResult: BootResult?,
+    val bootedLoader: String?,
     val bootCrashExcerpt: String?,
     val confidence: Confidence,
     val sampleFile: String?,

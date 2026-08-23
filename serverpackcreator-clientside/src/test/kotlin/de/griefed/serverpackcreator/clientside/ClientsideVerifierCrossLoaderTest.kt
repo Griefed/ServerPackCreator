@@ -45,7 +45,8 @@ internal class ClientsideVerifierCrossLoaderTest {
         loader: String,
         entry: String?,
         bootResult: BootResult?,
-        confidence: Confidence = Confidence.LOW
+        confidence: Confidence = Confidence.LOW,
+        bootedLoader: String? = loader
     ) = LoaderVerdict(
         loader = loader,
         suggestedEntry = entry,
@@ -53,6 +54,7 @@ internal class ClientsideVerifierCrossLoaderTest {
         declaredServerSide = DeclaredSupport.UNKNOWN,
         jarScan = JarScan.SERVER_OR_BOTH,
         bootResult = bootResult,
+        bootedLoader = bootedLoader,
         bootCrashExcerpt = null,
         confidence = confidence,
         sampleFile = null,
@@ -68,6 +70,45 @@ internal class ClientsideVerifierCrossLoaderTest {
         val disproving = ClientsideVerifier.loaderDisprovingTheCrash(forge, listOf(forge, neoForge))
 
         Assertions.assertEquals("NeoForge", disproving?.loader)
+    }
+
+    /**
+     * **Only a loader's *own* clean boot may disprove another loader's crash.**
+     *
+     * Since the other-version crash re-check began spanning loaders, a verdict's [LoaderVerdict.bootResult]
+     * can be the result of a boot run under a *different* loader — `reconcileOtherVersionRecheck` returns the
+     * surviving attempt's own outcome, and that attempt may be a cross-loader one. Letting such a SURVIVED
+     * disprove a third loader's crash breaks the invariant this reconciliation is built on: the entries are
+     * compared so that the published stem cannot strip a build proven to boot, but the build that actually
+     * booted belongs to a loader whose stem may be different.
+     *
+     * The shape below is the one `FilenameStemDeriver.deriveStems` documents — a project shipping
+     * `embeddium-` for Forge/NeoForge and `sodium-fabric-` for Fabric. NeoForge's SURVIVED came from a Fabric
+     * boot of `sodium-fabric-…jar`, which `embeddium-` would never strip, so publishing the Forge crash
+     * endangers nothing and the disproof is unfounded. It would also print "NeoForge booted a server", which
+     * NeoForge did not do.
+     */
+    @Test
+    fun aSurvivalBorrowedFromAnotherLoaderDisprovesNothing() {
+        val forge = verdict("Forge", "embeddium-", BootResult.CRASHED, Confidence.HIGH)
+        val neoForge = verdict("NeoForge", "embeddium-", BootResult.SURVIVED, bootedLoader = "Fabric")
+
+        Assertions.assertNull(
+            ClientsideVerifier.loaderDisprovingTheCrash(forge, listOf(forge, neoForge)),
+            "NeoForge never booted a server — a Fabric build did, under a stem 'embeddium-' cannot strip"
+        )
+    }
+
+    /** The same verdict with its own loader behind the boot is a disproof, so the guard is about *whose* boot. */
+    @Test
+    fun theSameSurvivalOnItsOwnLoaderStillDisproves() {
+        val forge = verdict("Forge", "embeddium-", BootResult.CRASHED, Confidence.HIGH)
+        val neoForge = verdict("NeoForge", "embeddium-", BootResult.SURVIVED, bootedLoader = "NeoForge")
+
+        Assertions.assertEquals(
+            "NeoForge",
+            ClientsideVerifier.loaderDisprovingTheCrash(forge, listOf(forge, neoForge))?.loader
+        )
     }
 
     /**
