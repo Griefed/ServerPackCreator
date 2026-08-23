@@ -94,7 +94,19 @@ class BootVerifier(
          * *same* `boot.log` — a re-check overwrites it — so the reported verdict has to be able to put its
          * own console back; see [restoreDecisiveConsole].
          */
-        val console: String? = null
+        val console: String? = null,
+        /**
+         * The loader this attempt actually booted, or `null` when no server ran (staging failed, a hook
+         * threw). Stamped by [runPrepared], the one place that knows it.
+         *
+         * **Why it has to be carried rather than inferred from the caller.** The other-version crash
+         * re-check samples across loaders, and [reconcileOtherVersionRecheck] returns the *surviving
+         * attempt's own outcome* — so a verdict for one loader can be decided by a boot of another. That is
+         * fine as evidence about the mod, and wrong as evidence about the loader: only a loader's own clean
+         * boot may disprove another loader's crash, because the entry comparison that guards the published
+         * stem is about the build that actually booted.
+         */
+        val bootedLoader: String? = null
     )
 
     /**
@@ -467,7 +479,10 @@ class BootVerifier(
             } finally {
                 runCatching { liveLog?.close() }
             }
+            // Stamped here rather than inside `outcomeFor`, which classifies a console and has no business
+            // knowing what was booted; this is the one place that does.
             return outcomeFor(runResult, pack.logFile, "${pack.loader} ${pack.loaderVersion} / Minecraft ${pack.minecraftVersion}")
+                .copy(bootedLoader = pack.loader)
         }
 
         /**

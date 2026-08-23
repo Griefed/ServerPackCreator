@@ -145,6 +145,7 @@ class ClientsideVerifier(
                 declaredServerSide = project.serverSide,
                 jarScan = jarScan,
                 bootResult = bootOutcome?.result,
+                bootedLoader = bootOutcome?.bootedLoader,
                 bootCrashExcerpt = bootOutcome?.crashExcerpt,
                 confidence = confidence,
                 sampleFile = sample?.fileName,
@@ -223,13 +224,23 @@ class ClientsideVerifier(
 
         /**
          * The loader whose clean boot disproves [verdict]'s crash, or `null` when nothing in [allVerdicts]
-         * does. Disproof takes all of: [verdict] actually crashed, another loader actually **survived**, and
-         * the two derive the *same* non-blank list-entry — because that shared entry is what would be
-         * published, and `startsWith`-matching it would strip a build proven to boot a server.
+         * does. Disproof takes all of: [verdict] actually crashed, another loader actually **survived under
+         * its own loader**, and the two derive the *same* non-blank list-entry — because that shared entry is
+         * what would be published, and `startsWith`-matching it would strip a build proven to boot a server.
          *
          * Deliberately not "any survival clears any crash": sideness can genuinely differ per loader, and
          * where the stems differ the published entry harms nothing. Only a clean boot counts, the same rule
          * every other guard here follows — an inconclusive or absent boot learned nothing.
+         *
+         * **Landmine — `bootResult` alone is not enough; check whose boot it was.** Since the other-version
+         * re-check began spanning loaders, `BootVerifier.reconcileOtherVersionRecheck` can decide one
+         * loader's verdict from another loader's clean boot, leaving `bootResult == SURVIVED` on a loader
+         * that crashed. Accepting that as a disproof breaks the invariant the entry comparison exists to
+         * enforce: the build that actually booted belongs to a third loader whose stem may differ, so the
+         * published entry would strip nothing that was proven bootable — and the note would say
+         * "<loader> booted a server" of a loader that did not. `embeddium-` (Forge/NeoForge) versus
+         * `sodium-fabric-` is exactly that shape, and it is the one `FilenameStemDeriver.deriveStems`
+         * documents.
          */
         internal fun loaderDisprovingTheCrash(verdict: LoaderVerdict, allVerdicts: List<LoaderVerdict>): LoaderVerdict? {
             if (verdict.bootResult != BootResult.CRASHED) {
@@ -239,6 +250,7 @@ class ClientsideVerifier(
             return allVerdicts.firstOrNull { other ->
                 other.loader != verdict.loader &&
                     other.bootResult == BootResult.SURVIVED &&
+                    other.bootedLoader == other.loader &&
                     other.suggestedEntry?.trim() == entry
             }
         }
