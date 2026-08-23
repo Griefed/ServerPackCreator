@@ -2930,3 +2930,122 @@ citation went stale inside one commit.
 | LOW | 2 | both fixed, both introduced by the two preceding iterations' fixes |
 
 Suite: grinder **250**, zero failures.
+
+---
+
+# Iteration 16 — 2026-08-23 — targeted audit of `deploy/install-grinder.sh` and `deploy/spc-grinder.service`
+
+Scope: the two deployment files only, on request. Not a commit-convention pass — a review of what the script and
+the unit actually do on a real Linux host. Every finding below was reproduced against a real runtime (shellcheck,
+`systemd-analyze verify`, and `useradd` in Debian containers) rather than reasoned about, per the conventions'
+"what only a real runtime can answer, ask a real runtime".
+
+## HIGH
+
+### H1 — nothing provides or checks Java, and the launcher cannot start without it
+
+Neither file mentions `java` or `JAVA_HOME` — `grep -c` returns 0 for both. The Gradle launcher requires one or
+the other and dies otherwise:
+
+    ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH.
+
+systemd gives a unit a minimal `PATH` (`/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin`) and no
+`JAVA_HOME` at all. A distro-packaged JDK lands in `/usr/bin/java` and works by luck; a Temurin tarball under
+`/opt`, SDKMAN, asdf or a JDK in the *installing user's* profile all produce a service that never starts. The
+installer builds with Gradle, so Java is on the *operator's* PATH — which is exactly what makes this invisible
+until the first `systemctl start`. This is the most likely first-run failure of the whole deployment and neither
+file says a word about it.
+
+### H2 — an existing account is silently granted root-equivalent privilege
+
+`install-grinder.sh:128–148`. When `$SERVICE_USER` already exists the script prints "leaving it alone" and then
+runs `usermod -aG docker` on it anyway. Docker group membership is root-equivalent — `docker run -v /:/host`
+hands out the whole filesystem — so pointing `SERVICE_USER` at an existing human account escalates that account
+to effective root, reported as the single line "added X to the docker group". The "leaving it alone" message
+immediately above makes it read as though nothing was changed.
+
+## MEDIUM
+
+### M1 — `Group=grinder` may name a group that was never created
+
+Reproduced in `debian:stable`. With the stock `/etc/login.defs` the group exists:
+
+    uid=999(grinder) gid=999(grinder) groups=999(grinder)      group grinder EXISTS
+
+With `USERGROUPS_ENAB no` — a supported setting, and the default on some hardened images — it does not:
+
+    uid=998(g2) gid=100(users) groups=100(users)               group g2 MISSING
+
+The unit's `Group=grinder` then refers to nothing and the service fails at start. The script never verifies the
+group exists, and `install-grinder.sh:139`'s `chown "$SERVICE_USER:$SERVICE_USER"` would fail for the same
+reason if it were reached.
+
+### M2 — a failed upgrade leaves the service stopped
+
+`install-grinder.sh:100–105` stops a running service, and `set -e` means any later failure — `cp`, `chown`,
+`useradd`, a full disk — exits the script before `:179` restarts it. The upgrade path therefore converts a
+transient error into an outage that persists until someone notices. Nothing unwinds the stop.
+
+### M3 — `--install-unit` installs a unit the script has just warned does not match
+
+The consistency check (`:150–168`) runs *before* the install block (`:171–177`), so with an override in play the
+script prints "WARNING: the unit does not match this install" and then installs that unit regardless. The
+ordering makes the warning read as though it had been acted on.
+
+## LOW
+
+### L1 — `set -E` is inert
+
+`set -Eeuo pipefail` at `:24`. `-E` only propagates an `ERR` trap into functions and subshells, and no `trap …
+ERR` is ever installed. Harmless, but it advertises error handling the script does not have — and an ERR trap
+reporting the failing line is also the natural fix for M2.
+
+### L2 — `chmod -R a+rX` adds permissions and never removes any
+
+`:122`. `cp -a` preserves the build tree's modes, which come from the operator's umask. A umask of `002` or `000`
+carries group- or world-writable modes into `/opt/spc-grinder`, and anyone who can write there controls what the
+service executes. `a+rX` cannot undo that; `go-w` would.
+
+### L3 — `docker build` without `--pull`
+
+`:85`. A cached base image silently persists, so "rebuild the image" may not pick up a new base. A tradeoff
+rather than a defect — `--pull` costs a registry round trip on every run — but it is currently an unstated one.
+
+### L4 — no `SyslogIdentifier=`
+
+Journal lines are tagged with the launcher's name rather than `spc-grinder`. `journalctl -fu spc-grinder` works
+regardless, since that selects by unit; this only affects how lines read when grepping the whole journal.
+
+### L5 — `Documentation=` points at the mirror
+
+The unit cites `github.com/Griefed/ServerPackCreator` while `origin` is `git.griefed.de`, which `CLAUDE.md` names
+as canonical. Defensible — GitHub is the public-facing one — but it should be a decision rather than a default.
+
+## Not findings — verified clean, do not re-litigate
+
+- **shellcheck is clean at `-S style`.** Exit 0, no output, run via `koalaman/shellcheck:stable`. No quoting,
+  word-splitting, expansion or subshell defects — including the `$(…)` inside the `echo` at `:113`.
+- **`systemd-analyze verify` reports no unit defects.** Run in `fedora:latest` with systemd installed. The only
+  two lines are `Unit docker.service not found` and `Command /opt/spc-grinder/bin/serverpackcreator-grinder is
+  not executable` — both artefacts of verifying inside a container that has neither. No syntax errors, unknown
+  directives or deprecated options.
+- **The state directory is private by default.** `useradd --create-home` produced `drwx------ grinder grinder
+  /home/grinder`.
+- **`ProtectSystem=full` does not restrict anything the service needs.** It covers `/usr`, `/boot` and `/etc`,
+  leaving `/opt` (binaries), `/home` (state) and `/run` (the docker socket) writable.
+- **The restart limiter never trips, deliberately.** `RestartSec=30s` against systemd's default
+  `StartLimitIntervalSec=10s`/`StartLimitBurst=5` means two restarts never fall inside one window, so a
+  permanently broken service retries forever instead of being given up on. Correct for a daemon meant to survive
+  a reboot loop; noted so nobody "fixes" it by accident.
+- **Iteration 14 and 15's fixes hold.** `cp -a` merges rather than nesting, the exec bit survives git as
+  `100755`, the `PREFIX` shape guards reject `/`, `/usr` and relative paths, and `--help` prints the whole header.
+
+## Summary
+
+| Severity | Count | Note |
+|---|---|---|
+| HIGH | 2 | H1 breaks the first start on most non-distro JDKs; H2 is a silent privilege grant |
+| MEDIUM | 3 | M1 host-config dependent, M2 turns an error into an outage, M3 an ordering bug |
+| LOW | 5 | L1–L2 worth fixing, L3–L5 are judgement calls |
+
+Not fixed — reported for a go-ahead, per the audit's read-only rule.
