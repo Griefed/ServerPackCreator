@@ -180,6 +180,25 @@ though their detail lives deeper:
   client a *staler* list than they had. Pinned end-to-end by `FallbackPropertiesConsumerTest`, which drives the
   real `UpdateConfig` against a running `ReportServer` over loopback — the model-vs-consumer distinction matters
   here, since everything else asserts against `java.util.Properties` rather than SPC itself.
+- **LANDMINE — a container is not in the unit's control group, so only the application can stop it.**
+  Containers are children of the docker daemon; `systemctl stop` kills the JVM's cgroup and never touches them.
+  The shutdown hook is the *only* thing that does: it marks the engine closed (so a worker cannot create one
+  behind the sweep), `docker stop`s each in flight with `SHUTDOWN_GRACE` (15s SIGTERM-then-kill, 8 at a time
+  because the window is per container), then gives the workers what is left of the same window via
+  `GrindPool.awaitStop`. Three things follow. `requestStop` alone can never end a shutdown — its flag is read
+  only *between* candidates, so a worker inside a boot runs for up to that boot's 15-minute budget; the
+  interrupt is what wakes it. `TimeoutStopSec` in the unit must stay above the window, or systemd's SIGKILL
+  lands during the cleanup that prevents the leak (the arithmetic is in the unit's own comment). And workers
+  are **threads**, so "force kill a worker" does not exist — the JVM exiting is the force, and `awaitStop`
+  only decides when to stop waiting. Verified against a live daemon, not reasoned about: a container trapping
+  SIGTERM proves the signal arrives before removal (`DockerJavaContainerEngineIT`, gated on
+  `GRINDER_DOCKER_IT=1`).
+- **Every container carries `OWNER_LABEL`, and that label is the only way to find an orphan.**
+  A SIGKILLed JVM leaves containers running with nothing tracking them — the in-memory set died with the
+  process, and they have no name and no autoremove. `reapOrphans()` at startup is the sole recovery, and it
+  assumes **one grinder per Docker daemon**: the label says "a grinder made this", not "*this* grinder", so a
+  second instance sharing a daemon would have its live boots reaped by the first one's startup. The shipped
+  unit is a singleton, which is what makes the simple label safe.
 - **Never hand SPC a *relative* properties file — a loaded one becomes a permanent write target.**
   `PropertyStore.loadProperties` adds every file it reads to `trackedPropertyFiles`, and `save()` writes to **all**
   of them on every save (skipping any that no longer exist, except `alwaysWrite`). `ApiProperties`' default is the

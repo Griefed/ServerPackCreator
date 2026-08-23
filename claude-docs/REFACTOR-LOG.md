@@ -2143,3 +2143,39 @@ verification.
 Equivalence against the base was checked the usual way — `develop`'s unmodified test tree run against this
 branch's production code: **339 pre-existing guards, zero failures, zero compile errors**, so every signature
 gained a default and nothing existing changed shape.
+
+## 2026-08-23 — stopping the service actually stops the work
+
+Asked directly whether `systemctl stop` kills the workers and the containers. The honest answer was "yes, by
+two different mechanisms, and there are two holes" — which turned into this branch.
+
+The workers were never the problem in principle: they are threads in the one JVM, so there is nothing for
+systemd to kill separately. But `requestStop` sets a flag the worker loop reads *between* candidates, so a
+worker parked in a boot kept going for up to that boot's fifteen-minute budget while systemd counted down.
+`GrindPool.awaitStop(grace)` now signals, interrupts and joins with a deadline; a worker that ignores its
+interrupt is abandoned and logged, because nothing can force a thread to die in the JVM and the actual force
+is the process exiting.
+
+The containers were the real hazard, for a reason that is not visible in the unit file: **they are children of
+the docker daemon, not members of the unit's control group**, so `KillMode=control-group` never touches them.
+The shutdown hook was the only thing stopping them, and it went straight to `remove --force` — a SIGKILL to
+PID 1, costing an in-flight Minecraft server its world save. It now `docker stop`s each with a 15-second
+window, 8 at a time, because the window is per container and ten workers stopped serially would be ten windows
+and would overrun `TimeoutStopSec` into the SIGKILL the whole path exists to avoid.
+
+Two holes the question exposed:
+
+- Nothing stopped a worker creating a container *after* the sweep. Once shutdown hooks run, the JVM no longer
+  waits for worker threads, so a worker between its loader install and its mod boot could start one that
+  outlived the process. A `closed` flag now refuses creation, re-checked after the tracking-set add so a
+  container created in the gap removes itself.
+- A SIGKILLed JVM left containers running that **nothing could ever find again** — no label, no name, no
+  autoremove, and the tracking set died with the process. They now carry
+  `de.griefed.serverpackcreator.grinder` and startup reaps whatever wears it, which is the same shape as the
+  staging sweep that already ran beside it.
+
+Verified against a live daemon rather than argued: 6/6 gated cases on docker 29.7.2, including a container
+trapping SIGTERM to prove the signal arrives and is honoured before removal, and a labelled orphan reaped by
+the fresh engine a restart brings up. The pre-existing drain case went from instant to 15.6s, which is the
+change working — busybox's shell does not forward SIGTERM to `sleep`, so it uses the whole window and is then
+killed.
