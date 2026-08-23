@@ -310,8 +310,11 @@ out, with its default:
 
   $script_dir/$UNIT_NAME
 
-Three worth a decision rather than a default:
+Four worth a decision rather than a default:
   SPC_GRINDER_WORKERS  budget 3 GiB of Docker-available memory each; the default of 2 is conservative
+  SPC_GRINDER_CPUS     cores per container, so workers x cpus is what the boots can occupy (4 by
+                       default). A unit-level CPUQuota= cannot reach them -- containers belong to the
+                       Docker daemon's control group, not this service's
   SPC_GRINDER_HOST     loopback unless a reverse proxy needs it; the report has NO authentication
   SPC_GRINDER_CONTAINER_USER  defaults to the owner of the work directory, which is almost always right;
                        a wrong value makes every install fail with Permission denied inside the pack

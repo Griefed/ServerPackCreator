@@ -84,8 +84,9 @@ internal class CpuLimitWiringTest {
     @Test
     fun theStartupLineStatesTheCapInTheOperatorsUnit() {
         val body = grinderMainBody()
-        val startupLine = Regex("""log\.info\(\s*
-?\s*"Grinder starting(.*?)\)""", RegexOption.DOT_MATCHES_ALL)
+        // Bounded by the closing paren *on its own line*: a lazy match to the first `)` stops inside the
+        // very call being asserted on, and the guard then fails on a line that is in fact correct.
+        val startupLine = Regex("""log\.info\(\s*\n\s*"Grinder starting(.*?)\n\s*\)""", RegexOption.DOT_MATCHES_ALL)
             .find(body) ?: Assertions.fail("main() no longer logs a `Grinder starting` line")
 
         Assertions.assertTrue(

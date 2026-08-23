@@ -73,6 +73,14 @@ data class ContainerResources(
     val cpuPeriod: Long = 100_000,
     val pidsLimit: Long = 512
 ) {
+    /**
+     * The CPU cap in the unit it was set in, for the startup line: `2.0 cores (200000/100000µs)`, or
+     * `uncapped` when there is no quota. The raw pair rides along because it is what the kernel was actually
+     * given, which is the number to compare against a container's own `cpu.max` when a boot looks throttled.
+     */
+    fun cpuCapDescription(): String =
+        if (cpuQuota == UNSET_QUOTA) "uncapped" else "${cpuQuota.toDouble() / cpuPeriod} cores ($cpuQuota/${cpuPeriod}µs)"
+
     companion object {
         /**
          * The smallest quota the docker daemon accepts — it rejects anything under 1ms per period with

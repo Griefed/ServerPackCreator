@@ -100,7 +100,7 @@ object GrinderApplication {
         log.info(
             "Grinder starting — home=$base image=$image work=$workDir cache=$cacheRoot store=$storeFile " +
                 "bind=$bindHost port=$port workers=$workers containerUser=$containerUser " +
-                "cpuQuota=${containerResources.cpuQuota}/${containerResources.cpuPeriod}"
+                "cpus=${containerResources.cpuCapDescription()}"
         )
 
         log.info("Using Preferences node '${ApiProperties.resolvePreferencesNode()}' for SPC settings.")
