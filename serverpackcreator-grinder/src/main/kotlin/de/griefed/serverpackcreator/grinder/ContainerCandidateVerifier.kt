@@ -71,13 +71,33 @@ class ContainerCandidateVerifier(
     private val reaper = BootWorkspaceReaper(workDirectory)
 
     override fun verify(candidate: GrindCandidate): ClientsideReport {
+        var resolved: ClientsideReport? = null
         try {
-            return verifyStaged(candidate)
+            return verifyStaged(candidate).also { resolved = it }
         } finally {
             // In a `finally` because a *thrown* verification is exactly when staging is most likely to be left
             // behind, and the reaper keeps the boot logs the failure will have to be diagnosed from.
-            reaper.reap(candidate.platform, candidate.slug)
+            val (platform, slug) = reapTarget(candidate, resolved)
+            reaper.reap(platform, slug)
         }
+    }
+
+    companion object {
+        /**
+         * Which `(platform, slug)` [verify] asks the reaper to reclaim: the **resolved report's**, because that
+         * is what the staging directories were named from (`AttemptDirectory` is fed `ProjectFiles.platform`
+         * and `ProjectFiles.slug`). Falls back to the [candidate]'s when no [report] exists, which is the
+         * thrown-verification case — precisely when staging is most likely to be left behind.
+         *
+         * **The two really can disagree.** `Grinder` logs `"Platform mismatch for …: candidate says 'X',
+         * resolved report says 'Y'"` when a source labels a project differently from the platform that
+         * resolves it, and a slug is a mutable display name a rename can move out from under a queued
+         * candidate. Asking for the candidate's copy of either matches no directory and leaks a full server
+         * pack per attempt — the disk-growth class `BootWorkspaceReaper` exists for (98 GB across 1750
+         * directories, measured 2026-07-30).
+         */
+        internal fun reapTarget(candidate: GrindCandidate, report: ClientsideReport?): Pair<String, String> =
+            report?.let { it.platform to it.slug } ?: (candidate.platform to candidate.slug)
     }
 
     /** Run the actual verification, leaving the staging cleanup to [verify]. */
