@@ -123,4 +123,31 @@ internal class ContainerLimitsWiringTest {
             "the per-container memory cap must default to 3 GiB — the value the worker-sizing advice divides by"
         )
     }
+
+    /**
+     * The two places a default lives must agree: `main`'s fallback string, and `ContainerResources`' own
+     * property defaults.
+     *
+     * Neither of the literal pins above can catch a drift *between* them — a class default moved to 4 GiB
+     * with `main` still falling back to `"3"` leaves every code path that constructs `ContainerResources()`
+     * directly (the fallbacks in `ContainerCandidateVerifier`, `ContainerServerRunner` and
+     * `DockerLoaderInstaller`, and `ReadmeConfigurationTest`'s own sizing check) disagreeing with the
+     * running daemon. So this asserts the identity rather than the values.
+     */
+    @Test
+    fun theKnobDefaultsAgreeWithTheClassDefaults() {
+        val body = grinderMainBody()
+        val shipped = ContainerResources()
+
+        val cpus = Regex("""env\("SPC_GRINDER_CPUS",\s*"([^"]*)"\)""").find(body)?.groupValues?.get(1)
+            ?: Assertions.fail("main() no longer reads SPC_GRINDER_CPUS with a literal default")
+        val memoryGiB = Regex("""env\("SPC_GRINDER_MEMORY_GIB",\s*"([^"]*)"\)""").find(body)?.groupValues?.get(1)
+            ?: Assertions.fail("main() no longer reads SPC_GRINDER_MEMORY_GIB with a literal default")
+
+        Assertions.assertEquals(
+            shipped, ContainerResources.forLimits(cpus.toDouble(), memoryGiB.toDouble()),
+            "main()'s fallbacks ($cpus cores / $memoryGiB GiB) must resolve to exactly the ContainerResources " +
+                "defaults every other construction site falls back to"
+        )
+    }
 }
