@@ -314,12 +314,14 @@ object GrinderApplication {
             }
             log.info("Pass #$pass: grinding ${batch.candidates.size} candidate(s)...")
             val pool = GrindPool(grinder, workers).also { activePool.set(it) }
-            val pass = pool.grindAll(batch.candidates)
-            val verified = pass.verified
+            // Named for what it is, and deliberately not `pass`: that shadowed the pass *counter*, so every
+            // "Pass #$pass" below it printed this data class instead of the number.
+            val catalogPass = pool.grindAll(batch.candidates)
+            val verified = catalogPass.verified
             activePool.set(null)
             // Advance the crawl only past what was actually ground. An interrupted pass re-hands the rest next
             // time instead of skipping those projects until the next full sweep, weeks or months away.
-            crawler.commit(batch, pass.reached)
+            crawler.commit(batch, catalogPass.reached)
             log.info("Pass #$pass complete: $verified verified, ${store.all().size} verdict(s) total.")
             // Bound the loader cache by time. Each tuple costs ~150 MB and loaders keep shipping builds, so an
             // unattended sweep would grow it without limit; a tuple still being booted is stamped as used on
