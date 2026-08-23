@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.grinder
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.settings.PathsConfig
+import de.griefed.serverpackcreator.grinder.container.ContainerUser
 import de.griefed.serverpackcreator.grinder.container.DockerJavaContainerEngine
 import de.griefed.serverpackcreator.grinder.loader.*
 import de.griefed.serverpackcreator.grinder.report.JsonVerdictStore
@@ -76,10 +77,15 @@ object GrinderApplication {
         // proxy in a container dials the host over the bridge gateway, never 127.0.0.1 -- is a deliberate act.
         val bindHost = env("SPC_GRINDER_HOST", "127.0.0.1")
         val workers = env("SPC_GRINDER_WORKERS", "2").toInt()
+        // The image declares USER 1000:1000, which is only right while the daemon itself is uid 1000. Every
+        // container bind-mounts a directory this process created, so it has to run as that directory's owner --
+        // otherwise every write inside the pack is refused, and the boot dies on a missing @argfile far from
+        // the actual cause. Logged below so the identity is visible without reproducing the failure.
+        val containerUser = ContainerUser.forDirectory(workDir)
 
         log.info(
             "Grinder starting — home=$base image=$image work=$workDir cache=$cacheRoot store=$storeFile " +
-                "bind=$bindHost port=$port workers=$workers"
+                "bind=$bindHost port=$port workers=$workers containerUser=$containerUser"
         )
 
         log.info("Using Preferences node '${ApiProperties.resolvePreferencesNode()}' for SPC settings.")
@@ -90,7 +96,10 @@ object GrinderApplication {
         val engine = DockerJavaContainerEngine()
         // Authoritative Minecraft -> required-Java from SPC's own metadata; gates selection to the image's JDKs.
         val imageJava = ImageJavaRuntimes.from(apiWrapper.versionMeta.minecraft)
-        val installer = DockerLoaderInstaller(engine, image, ApiVanillaPackGenerator(apiWrapper, File(workDir, "install")), imageJava)
+        val installer = DockerLoaderInstaller(
+            engine, image, ApiVanillaPackGenerator(apiWrapper, File(workDir, "install")), imageJava,
+            containerUser = containerUser
+        )
         // A cached install is a product of the start-script templates that built it, so record which ones those
         // were. Read per call rather than once: SPC resolves its templates from the then-current home, and the
         // daemon's home can be re-resolved while it runs.
@@ -99,7 +108,9 @@ object GrinderApplication {
                 apiWrapper.apiProperties.defaultStartScriptTemplates().values.map { File(it) }
             )
         })
-        val verifier = ContainerCandidateVerifier(apiWrapper, cache, engine, image, imageJava, File(workDir, "verify"))
+        val verifier = ContainerCandidateVerifier(
+            apiWrapper, cache, engine, image, imageJava, File(workDir, "verify"), containerUser = containerUser
+        )
         // A run killed mid-boot leaves a staged pack that no per-candidate reap will ever come for, so sweep what
         // we inherited before adding to it. Safe here and only here: nothing is in flight yet.
         BootWorkspaceReaper(File(workDir, "verify")).reapAll().let { reclaimed ->

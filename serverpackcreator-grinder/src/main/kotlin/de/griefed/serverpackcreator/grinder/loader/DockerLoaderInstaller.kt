@@ -44,6 +44,8 @@ const val INSTALL_LOG = "install.log"
  * @param imageJava      Resolves the bundled JDK for the tuple's Minecraft version.
  * @param installTimeout Budget for the install boot (downloads + first server start).
  * @param resources      CPU/memory/pid caps for the install container.
+ * @param containerUser  The `uid:gid` the install runs as; must own the generated pack, or the installer
+ *                       cannot save `server.jar` and the install produces no library layer.
  * @author Griefed
  */
 class DockerLoaderInstaller(
@@ -52,7 +54,8 @@ class DockerLoaderInstaller(
     private val packGenerator: VanillaPackGenerator,
     private val imageJava: ImageJavaRuntimes,
     private val installTimeout: Duration = Duration.ofMinutes(20),
-    private val resources: ContainerResources = ContainerResources()
+    private val resources: ContainerResources = ContainerResources(),
+    private val containerUser: String = ContainerUser.IMAGE_DEFAULT
 ) : LoaderInstaller {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
@@ -85,7 +88,8 @@ class DockerLoaderInstaller(
                 workingDir = PACK_MOUNT,
                 mounts = listOf(BindMount(pack.absolutePath, PACK_MOUNT, readOnly = false)),
                 resources = resources,
-                networkMode = "bridge" // the ONLY networked boot — downloads loader + MC server + libraries
+                networkMode = "bridge", // the ONLY networked boot — downloads loader + MC server + libraries
+                user = containerUser
             )
             // Stream the install console live into the cache dir, next to the completion marker. This is the
             // slowest phase of a cold grind (minutes of library downloads), so it is the one an operator most
