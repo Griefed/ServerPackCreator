@@ -81,6 +81,16 @@ Environment=SPC_GRINDER_HOME=/home/grinder/.spc-grinder
 #Environment=SPC_GRINDER_WORKERS=2
 #Environment=SPC_GRINDER_BATCH=25
 
+# Cores per container (docker's --cpus), so workers x cpus is what the boots can occupy. 0 = uncapped.
+# Keep it at or above 1: a Minecraft startup is largely single-thread-bound, and a boot throttled past
+# its budget is scored INCONCLUSIVE -- indistinguishable from a mod that hangs.
+#Environment=SPC_GRINDER_CPUS=2
+
+# The daemon's own CPU share is a separate question, and CPUQuota= below is the *only* half of it this
+# unit controls: containers are children of the Docker daemon, not of this service's control group, so a
+# quota here bounds the JVM (mod downloads, pack generation, the headless browser) and never the boots.
+#CPUQuota=400%
+
 # Pacing, in seconds.
 #Environment=SPC_GRINDER_INTERVAL=21600
 #Environment=SPC_GRINDER_SCAN_DELAY=15

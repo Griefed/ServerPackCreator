@@ -108,6 +108,33 @@ internal class DockerJavaContainerEngineIT {
         Assertions.assertEquals(0, countBusyboxSleepers(client), "close() must force-remove abandoned containers")
     }
 
+    /**
+     * The CPU cap must land in the *kernel's* view, not merely in the request we sent.
+     *
+     * Read from inside the container, because that is the only place the answer is authoritative: docker echoing
+     * back a `HostConfig` proves the field was transmitted, and nothing more. A quota is meaningless without the
+     * period it divides, and this is the guard for sending both — with the period omitted the cap silently
+     * becomes whatever the daemon's default period makes it.
+     */
+    @Test
+    fun theCpuCapReachesTheKernelWithItsPeriod() {
+        // A *non-default* period on purpose: at the kernel's own 100ms, a container created without the period
+        // being sent at all would report the right numbers anyway, and the guard would have no teeth.
+        val requested = ContainerResources.forCpus(1.5, ContainerResources(cpuPeriod = 50_000))
+        // cgroup v2 states both numbers in one file ("150000 100000"); v1 splits them. Try v2, fall back.
+        val spec = busyboxSpec("cat /sys/fs/cgroup/cpu.max 2>/dev/null || cat /sys/fs/cgroup/cpu/cpu.cfs_quota_us /sys/fs/cgroup/cpu/cpu.cfs_period_us")
+            .copy(resources = requested)
+
+        val output = engine.run(spec, Regex("this-never-appears"), Duration.ofSeconds(30))
+        val reported = output.lines.joinToString(" ").split(Regex("\\s+")).mapNotNull { it.toLongOrNull() }
+
+        Assertions.assertTrue(
+            reported.containsAll(listOf(requested.cpuQuota, requested.cpuPeriod)),
+            "the container's own cgroup must show quota ${requested.cpuQuota} and period ${requested.cpuPeriod}, " +
+                "saw: ${output.lines}"
+        )
+    }
+
     /** Count running containers that look like this test's probe, so the assertion can't match anything else. */
     private fun countBusyboxSleepers(client: DockerClient): Int =
         client.listContainersCmd().withShowAll(false).exec()

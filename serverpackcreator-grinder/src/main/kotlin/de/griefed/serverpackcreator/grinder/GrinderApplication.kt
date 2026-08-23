@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.grinder
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.settings.PathsConfig
+import de.griefed.serverpackcreator.grinder.container.ContainerResources
 import de.griefed.serverpackcreator.grinder.container.ContainerUser
 import de.griefed.serverpackcreator.grinder.container.SHUTDOWN_GRACE
 import de.griefed.serverpackcreator.grinder.container.DockerJavaContainerEngine
@@ -79,6 +80,14 @@ object GrinderApplication {
         // proxy in a container dials the host over the bridge gateway, never 127.0.0.1 -- is a deliberate act.
         val bindHost = env("SPC_GRINDER_HOST", "127.0.0.1")
         val workers = env("SPC_GRINDER_WORKERS", "2").toInt()
+        // Cores per container, not per host: `workers * cpus` is what the grinder can actually occupy, and the
+        // default pair (2 workers x 2 cores) is what every install has been running on. Worth a knob because a
+        // grinder normally shares its box -- and because the cap the code shipped with was unreachable from the
+        // outside. Do not tune it below ~1 core: world generation is single-thread-bound, and a boot throttled
+        // past its 15-minute budget is scored INCONCLUSIVE, which reads as a hanging mod rather than as a
+        // starved host. 0 disables the cap.
+        val containerCpus = env("SPC_GRINDER_CPUS", "2").toDouble()
+        val containerResources = ContainerResources.forCpus(containerCpus)
         // The image declares USER 1000:1000, which is only right while the daemon itself is uid 1000. Every
         // container bind-mounts a directory this process created, so it has to run as that directory's owner --
         // otherwise every write inside the pack is refused, and the boot dies on a missing @argfile far from
@@ -90,7 +99,8 @@ object GrinderApplication {
 
         log.info(
             "Grinder starting — home=$base image=$image work=$workDir cache=$cacheRoot store=$storeFile " +
-                "bind=$bindHost port=$port workers=$workers containerUser=$containerUser"
+                "bind=$bindHost port=$port workers=$workers containerUser=$containerUser " +
+                "cpuQuota=${containerResources.cpuQuota}/${containerResources.cpuPeriod}"
         )
 
         log.info("Using Preferences node '${ApiProperties.resolvePreferencesNode()}' for SPC settings.")
@@ -103,7 +113,7 @@ object GrinderApplication {
         val imageJava = ImageJavaRuntimes.from(apiWrapper.versionMeta.minecraft)
         val installer = DockerLoaderInstaller(
             engine, image, ApiVanillaPackGenerator(apiWrapper, File(workDir, "install")), imageJava,
-            containerUser = containerUser
+            resources = containerResources, containerUser = containerUser
         )
         // A cached install is a product of the start-script templates that built it, so record which ones those
         // were. Read per call rather than once: SPC resolves its templates from the then-current home, and the
@@ -114,7 +124,8 @@ object GrinderApplication {
             )
         })
         val verifier = ContainerCandidateVerifier(
-            apiWrapper, cache, engine, image, imageJava, File(workDir, "verify"), containerUser = containerUser
+            apiWrapper, cache, engine, image, imageJava, File(workDir, "verify"),
+            resources = containerResources, containerUser = containerUser
         )
         // Containers first: a JVM that was SIGKILLed (systemd's TimeoutStopSec expiring mid-cleanup) leaves them
         // running, parented by the docker daemon rather than this unit's control group, so nothing else on the

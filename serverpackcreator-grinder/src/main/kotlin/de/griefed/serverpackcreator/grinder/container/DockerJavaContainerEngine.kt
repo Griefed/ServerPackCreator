@@ -232,9 +232,10 @@ class DockerJavaContainerEngine(
         val hostConfig = HostConfig.newHostConfig()
             .withNetworkMode(spec.networkMode)
             .withMemory(spec.resources.memoryBytes)
+            // Both halves, always: a quota is a fraction of a period, so sending one without the other leaves
+            // the cap at whatever the daemon's default period makes it. Measured with the period dropped, a
+            // requested 1.5 cores arrived in the kernel as 75000/100000 -- 0.75 cores, silently.
             .withCpuQuota(spec.resources.cpuQuota)
-            // Both halves, always: a quota is a fraction of a period, so sending one without the other
-            // leaves the cap dependent on whatever the daemon's default period happens to be.
             .withCpuPeriod(spec.resources.cpuPeriod)
             .withPidsLimit(spec.resources.pidsLimit)
             .withReadonlyRootfs(spec.readonlyRootfs)
