@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.grinder.source
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import de.griefed.serverpackcreator.grinder.GrindCandidate
+import de.griefed.serverpackcreator.grinder.ModPlatforms
 import de.griefed.serverpackcreator.grinder.GrindVerdict
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
@@ -103,6 +104,7 @@ class JsonRequeueStore(private val file: File) : RequeueStore {
         return waiting
     }
 
+    @Synchronized
     override fun pending(): Int = read().size
 
     /** Read the queue, treating anything unreadable as empty so a bad file cannot stop a grind. */
@@ -142,6 +144,28 @@ class JsonRequeueStore(private val file: File) : RequeueStore {
  * @author Griefed
  */
 object RequeueSelection {
+    /**
+     * Split [links] into candidates that can actually be ground and the links no platform resolves.
+     *
+     * **Rejecting here is the point.** `ModPlatforms.ofUrl` answers `Unknown` for anything that is neither
+     * Modrinth nor CurseForge, and queueing that reports a cheerful success before failing hours later inside
+     * the daemon, where `ClientsideVerifier.report` throws "No supported platform" into a log nobody is
+     * reading. A typo belongs to the command that read it — the only moment somebody is watching.
+     */
+    fun fromLinks(links: Collection<String>): Pair<List<GrindCandidate>, List<String>> {
+        val (resolvable, rejected) = links.partition { ModPlatforms.ofUrl(it) != ModPlatforms.UNKNOWN }
+        return resolvable.map {
+            GrindCandidate(it, slugFromUrl(it), 0, ModPlatforms.ofUrl(it))
+        } to rejected
+    }
+
+    /**
+     * Best-effort project-slug from a URL: the last path segment, query stripped. A display name for the log
+     * and the report — identity is the platform's own id where one is known.
+     */
+    private fun slugFromUrl(url: String): String =
+        url.substringBefore('?').trimEnd('/').substringAfterLast('/').ifBlank { url }
+
     /**
      * Every project whose verdict was recorded **before** [instant], as one candidate each.
      *

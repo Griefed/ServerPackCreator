@@ -246,7 +246,10 @@ object GrinderApplication {
         if (args.isNotEmpty()) {
             // One-shot: grind a fixed set of project URLs (handy for an end-to-end verification), then
             // hold the report open. The re-verify TTL still applies, so re-running skips fresh verdicts.
-            val candidates = args.map { GrindCandidate(it, slugFromUrl(it), 0, ModPlatforms.ofUrl(it)) }
+            // Same resolution the re-grind queue uses, and for the same reason: a link no platform recognises
+            // can only fail later, so it is named back now rather than counted as work.
+            val (candidates, unresolvable) = RequeueSelection.fromLinks(args.toList())
+            unresolvable.forEach { log.warn("Not a Modrinth or CurseForge project link, ignoring: $it") }
             log.info("One-shot run: grinding ${candidates.size} candidate(s) with $workers worker(s)...")
             // Registered like the continuous path's pool: activePool is the only handle the shutdown hook has,
             // and without it Ctrl-C here signalled and awaited nothing -- both calls no-opping through a null.
@@ -296,20 +299,32 @@ object GrinderApplication {
             // wrong verdict is usually a recent one, so an unforced drain would skip every one as fresh.
             // Ground before the catalog slice so a re-grind lands in minutes rather than at the next TTL.
             val requeued = requeue.drain()
+            val batch = crawler.nextBatch()
+            // Announced before either pool runs, and counting both: /status answers "what is it doing right
+            // now?", and a drain of hundreds used to leave it showing the *previous* pass for the duration.
+            status.beginPass(pass, requeued.size + batch.candidates.size)
             if (requeued.isNotEmpty()) {
                 log.info("Pass #$pass: re-grinding ${requeued.size} requested candidate(s) ahead of the crawl...")
                 GrindPool(grinder, workers).also { activePool.set(it) }.grindAll(requeued, force = true)
             }
-            val batch = crawler.nextBatch()
+            // LANDMINE: this check is what keeps a *second* pool per pass safe. The shutdown hook holds one
+            // handle and reads it once (deliberately -- reading twice could signal one pool and wait on
+            // another), so a stop that landed in the drain above has already been signalled, awaited and
+            // reported complete. Falling through would start a whole new pool of boots behind it, creating
+            // containers after the hook finished and while TimeoutStopSec counts down.
+            if (!running.get()) {
+                break
+            }
             log.info("Pass #$pass: grinding ${batch.candidates.size} candidate(s)...")
-            status.beginPass(pass, batch.candidates.size)
             val pool = GrindPool(grinder, workers).also { activePool.set(it) }
-            val pass = pool.grindAll(batch.candidates)
-            val verified = pass.verified
+            // Named for what it is, and deliberately not `pass`: that shadowed the pass *counter*, so every
+            // "Pass #$pass" below it printed this data class instead of the number.
+            val catalogPass = pool.grindAll(batch.candidates)
+            val verified = catalogPass.verified
             activePool.set(null)
             // Advance the crawl only past what was actually ground. An interrupted pass re-hands the rest next
             // time instead of skipping those projects until the next full sweep, weeks or months away.
-            crawler.commit(batch, pass.reached)
+            crawler.commit(batch, catalogPass.reached)
             log.info("Pass #$pass complete: $verified verified, ${store.all().size} verdict(s) total.")
             // Bound the loader cache by time. Each tuple costs ~150 MB and loaders keep shipping builds, so an
             // unattended sweep would grow it without limit; a tuple still being booted is stamped as used on
@@ -327,8 +342,18 @@ object GrinderApplication {
             if (pause.isZero) {
                 continue
             }
+            // Served out in slices rather than one sleep, so a re-grind queued into a dozing daemon starts in
+            // seconds instead of waiting out a six-hour inter-sweep pause. See GrindPacing.pollInterval.
+            val wakeAt = System.currentTimeMillis() + pause.toMillis()
             try {
-                Thread.sleep(pause.toMillis())
+                while (running.get() && System.currentTimeMillis() < wakeAt) {
+                    if (requeue.pending() > 0) {
+                        log.info("Work was queued for re-grinding; starting the next pass now.")
+                        break
+                    }
+                    val remaining = Duration.ofMillis(wakeAt - System.currentTimeMillis())
+                    Thread.sleep(GrindPacing.pollInterval(remaining).toMillis())
+                }
             } catch (_: InterruptedException) {
                 break // shutdown requested during the inter-pass wait
             }
@@ -433,7 +458,11 @@ object GrinderApplication {
         val verb = args.first()
         val rest = args.drop(1)
         val candidates = when (verb) {
-            "--requeue" -> rest.map { GrindCandidate(it, slugFromUrl(it), 0, ModPlatforms.ofUrl(it)) }
+            "--requeue" -> {
+                val (resolvable, rejected) = RequeueSelection.fromLinks(rest)
+                rejected.forEach { println("Not a Modrinth or CurseForge project link, ignoring: $it") }
+                resolvable
+            }
 
             "--requeue-before" -> {
                 val instant = rest.firstOrNull()?.let { runCatching { Instant.parse(it) }.getOrNull() }
@@ -461,6 +490,4 @@ object GrinderApplication {
         )
     }
 
-    /** Best-effort project-slug from a URL (last path segment) — used only for the skip-already-done check. */
-    private fun slugFromUrl(url: String): String = url.substringBefore('?').trimEnd('/').substringAfterLast('/').ifBlank { url }
 }

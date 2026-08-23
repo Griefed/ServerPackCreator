@@ -3820,3 +3820,227 @@ fails `theResolvedReportsIdentityIsWhatGetsReaped`.
 **Re-verified after the fixes and the two features that followed:** clientside **136 tests, 0 failures**;
 grinder **325 tests, 0 failures** (23 skipped — the gated Docker IT and the two bind-address guards that
 need a real non-loopback IPv4).
+
+---
+
+# Audit — 2026-08-23, unpushed `develop` (iteration 25)
+
+Scope: `git log origin/develop..HEAD` — everything not yet pushed, i.e. the two merges landed this session
+(`f2cf95dc4` the creativecore work, `23e8efc46` the re-grind queue) and their branches. Read-only pass. The
+MEDIUM below was confirmed against the **production log** rather than reasoned about.
+
+## HIGH
+
+**H1 — a shutdown landing in the re-grind drain is ignored, and a fresh catalog pass starts anyway.**
+`serverpackcreator-grinder/src/main/kotlin/de/griefed/serverpackcreator/grinder/GrinderApplication.kt`, the
+continuous pass loop (`2376d75d6`).
+
+The drain introduced a **second `GrindPool` per pass**, and the shutdown hook holds exactly one handle:
+
+```kotlin
+val requeued = requeue.drain()
+if (requeued.isNotEmpty()) {
+    GrindPool(grinder, workers).also { activePool.set(it) }.grindAll(requeued, force = true)
+}
+val batch = crawler.nextBatch()                                   // <-- no running.get() between
+val pool = GrindPool(grinder, workers).also { activePool.set(it) }
+```
+
+The hook reads `activePool` **once** — deliberately, and the comment says why ("reading it twice could signal
+one pool and wait on another"). So a stop during a drain signals the requeue pool, closes the engine, awaits
+the workers, and reports a clean stop; `main` then falls through to `crawler.nextBatch()` and starts a *new*
+pool, grinding new candidates and creating new containers **after the hook has finished**, with systemd's
+`TimeoutStopSec` already counting down. The loop's only `running.get()` checks are at the top of the iteration
+and after the catalog pass — neither is between the two pools.
+
+Before this branch the invariant held by construction: one pool per iteration, set immediately before use, so
+the hook's single read always named the pool that was running. The drain broke it. Severity HIGH because the
+grinder's shutdown path is load-bearing — containers live in the docker daemon's cgroup, not the unit's, so
+the hook is the only thing that can stop them, and this branch's own module doc says so.
+
+## MEDIUM
+
+**M1 — `/status` under-reports, and goes stale, for the whole drain.**
+`status.beginPass(pass, batch.candidates.size)` is called *after* the requeue pool and counts only the catalog
+slice. So while a drain of 300 forced re-grinds is running, `/status` still shows the **previous** pass's
+number and size while `active` shows workers grinding candidates that belong to neither. The endpoint exists
+to answer "what is it doing right now?", and during the one operation an operator is most likely to be
+watching, it answers wrongly.
+
+**M2 — a queued re-grind can wait six hours, which is not what "immediate" or the README promise.**
+The inter-pass pause is a single uninterruptible `Thread.sleep(pause.toMillis())`, and
+`GrindPacing.pauseAfterPass` returns `betweenSweeps` — default `SPC_GRINDER_INTERVAL` = 21 600 s — whenever a
+completed sweep verified nothing. Queue work into a daemon that has just gone to sleep and nothing happens for
+up to six hours. The README says "a running daemon takes them at the start of its next pass" without saying
+how far away that can be, which reads as *soon*. The queue's whole justification is not waiting out a 30-day
+TTL; trading it for a 6-hour one is better but still not what was built.
+
+**M3 — pre-existing, found while auditing: the pass-completion log prints a whole `GrindPass`, not the pass
+number.** `val pass = pool.grindAll(batch.candidates)` shadows the `var pass` counter, so
+`log.info("Pass #$pass complete: …")` interpolates the data class. Present on `origin/develop`, so not this
+branch's doing — surfaced here because the conventions require it rather than deferring it.
+
+Confirmed against `~/.spc-grinder/grinder.log`, 14 such lines, e.g.:
+
+```
+Pass #GrindPass(reached=[GrindCandidate(projectUrl=https://modrinth.com/mod/lambdynamiclights,
+slug=lambdynamiclights, popularity=49644693, platform=Modrin… complete: …
+```
+
+A multi-kilobyte line, dumping every candidate's URL and popularity, where a two-digit number belongs — in
+the one line an operator greps to see pass progress.
+
+## LOW
+
+**L1 — `JsonRequeueStore.pending()` is not `@Synchronized` while `add` and `drain` are.** It only reads, and
+`read()` degrades to empty on any failure, so the exposure is a momentarily stale count on `/status` rather
+than corruption. But the inconsistency invites the next reader to conclude the annotation is decorative.
+
+**L2 — the README's re-grind section does not say when "next pass" is.** Same fact as M2, stated where an
+operator reads it; worth fixing in the same breath as M2 rather than separately.
+
+## Verified clean — do not re-litigate
+
+- **Commit hygiene across all 21 unpushed commits**: every code commit touches a single source set, test
+  commits precede their fixes and were red, and the two merges carry the reasoning rather than a file list.
+- **The re-grind queue's own contract** is pinned where it matters and the pins have teeth: the force
+  (`aForcedGrindReVerifiesEvenAFreshVerdict` asserts both directions in one test), persistence across
+  processes, identity by project id over slug, and the platform split.
+- **The CLI path's placement** — before the SPC claims, printing to stdout — is guarded on *both* halves by
+  `theRequeuePathRunsBeforeTheClaimsAndNeverLogs`, which reads the helper's own source because `main`'s body
+  cannot see a log call made inside it. Verified in the built artefact too: a real
+  `:serverpackcreator-grinder:run --requeue-before …` against a store sliced from the live 875-verdict file
+  left only `requeue.json` behind, no `logs/`, i.e. no `ApiProperties` was constructed.
+- **Not an HTTP endpoint** is the right call and is documented as such: the report server is unauthenticated
+  by design, so a write endpoint would let anyone who can reach the page schedule unbounded container work.
+- **`CrashLogStore`'s traversal guard** checks the name before touching the filesystem and confirms
+  canonically afterwards; both the store-level and the served-over-HTTP cases are pinned, and a refusal is
+  deliberately indistinguishable from an absent log.
+
+## Resolution — iteration 25, same session
+
+| Finding | Outcome |
+|---|---|
+| H1 shutdown gap between the two pools | **fixed** — `running` re-checked between them, landmined; guard keys on the two `GrindPool` constructions |
+| M1 `/status` stale and under-reporting during a drain | **fixed** — announced before either pool, counting `requeued.size + batch.candidates.size` |
+| M2 a queued re-grind waiting out a 6-hour pause | **fixed** — `GrindPacing.pollInterval`, wait served in 15 s slices, ends early when work is queued |
+| M3 pre-existing shadowed pass counter | **fixed** — renamed to `catalogPass`, own commit pair |
+| L1 `pending()` not `@Synchronized` | **fixed** |
+| L2 README silent on how far "next pass" is | **fixed** with M2 |
+
+**Both source guards were re-targeted before they went green, and that is worth stating plainly** rather than
+leaving it to look like a moved goalpost. They originally keyed on `crawler.nextBatch()` and on
+`requeue.drain()`; the fix moved both, so the guards asserted about landmarks that no longer carried the
+meaning. The *intent* is unchanged — no new pool after a signalled stop, and a pass size that includes the
+drain — and they now key on the two `GrindPool` constructions and on `beginPass`'s argument list. Teeth
+re-checked **after** re-targeting: removing either fix fails its guard.
+
+---
+
+# Audit — 2026-08-23, unpushed `develop` (iteration 26)
+
+Scope: as iteration 25, plus that iteration's own fixes (`d20fc2c8f`, `447acafe7`, `96701a362`,
+`59f7d7130`). A fresh pass, weighted toward what the last one changed — which is where two of the three
+findings are.
+
+## HIGH
+
+**H1 — the sliced inter-pass wait can throw and take the daemon's pass loop with it.**
+`GrinderApplication.kt`, the inter-pass wait (`447acafe7`), with `GrindPacing.pollInterval`:
+
+```kotlin
+while (running.get() && System.currentTimeMillis() < wakeAt) {
+    if (requeue.pending() > 0) { … break }
+    val remaining = Duration.ofMillis(wakeAt - System.currentTimeMillis())
+    Thread.sleep(GrindPacing.pollInterval(remaining).toMillis())
+}
+```
+
+The loop condition guarantees `remaining > 0` *when it is evaluated*, but `requeue.pending()` runs between
+that test and the subtraction — a synchronized read that stats and parses a JSON file. On the **final** slice,
+where `remaining` is by construction somewhere in `(0, 15 s]`, an I/O stall longer than the remainder makes
+`remaining` negative. `pollInterval` passes a negative duration straight through (`-5ms < 15s` is true), and
+`Thread.sleep(-5)` throws:
+
+```
+PROBE Thread.sleep(-5) -> java.lang.IllegalArgumentException: timeout value is negative
+```
+
+`IllegalArgumentException` is not `InterruptedException`, so it escapes the `catch` around the wait, escapes
+`while (running.get())`, and ends `main`. A fire-and-forget daemon stops grinding — no crash banner an
+operator would notice, just a service that quietly does nothing until somebody looks. Once per pause there is
+a window; across a six-hour pause there are 1 440 iterations and exactly one of them is the risky last, so the
+expected time to hit it is passes, not years.
+
+## MEDIUM
+
+**M1 — `CrashLogStore.keep` reads an entire console into memory to keep 2 MiB of it.**
+`CrashLogStore.kt`: `val text = console.readText()` precedes the `MAX_BYTES` check, so the cap bounds what is
+*written*, not what is *read*. Boot consoles are streamed to disk uncapped and bounded only by the 15-minute
+boot timeout, so a chatty mod can leave hundreds of megabytes — and `readText()` inflates that to roughly
+double as a UTF-16 `String`. The `runCatching` turns an `OutOfMemoryError`… into nothing, because
+`runCatching` catches `Throwable`: the daemon would swallow an OOM and carry on in an unknown heap state. The
+truncation test passes because it plants a file just over the cap; nothing exercises the case the guard was
+written for.
+
+**M2 — `--requeue` accepts a link no platform can resolve and queues it anyway.**
+`enqueueAndExit` maps every argument through `ModPlatforms.ofUrl`, which answers `Unknown` for anything that
+is neither Modrinth nor CurseForge. The entry is queued, reported as `Queued 1 of 1`, and then fails in the
+daemon hours later when `ClientsideVerifier.report` throws "No supported platform" — one line in a log the
+operator is not watching. A typo in a URL should be refused by the command that reads it, which is the only
+moment anybody is looking.
+
+## LOW
+
+**L1 — the catalog batch is now fetched before a drain that may run for hours.** Moving `crawler.nextBatch()`
+above the drain (needed so `/status` can announce both sizes) means a long drain grinds a slice whose
+popularity ordering is hours stale, and two catalog API calls are spent even when the pass then breaks for
+shutdown. Neither is a correctness problem — the cursor is only advanced by `commit`, so an abandoned batch is
+re-handed — and the alternative costs a mutable status API. Recorded so the next reader does not re-derive it.
+
+## Verified clean — do not re-litigate
+
+- **Cursor safety across the new `break`.** Breaking between the drain and the catalog pass leaves `batch`
+  uncommitted; `nextBatch()` only *reads* cursors and `commit` is what persists an advance, so the slice is
+  re-handed on the next start rather than skipped. This is the documented intent ("an interrupted pass
+  re-hands the rest next time"), and the new early exit inherits it correctly.
+- **The re-targeted guards have teeth after re-targeting**, re-checked by removing each fix.
+- **`pollInterval`'s slice size** — 15 s across a six-hour pause is 1 440 wake-ups that each stat one small
+  file, against a daemon that boots Minecraft servers in containers when it is awake. Not worth tuning.
+- **`thePassCounterIsNotShadowed`** is narrow enough not to cry wolf: it asserts `var pass = 0` exists and no
+  `val pass =` shadows it, which is exactly the defect and nothing else.
+
+## Resolution — iteration 26, same session
+
+| Finding | Outcome |
+|---|---|
+| H1 negative slice → `IllegalArgumentException` ends `main` | **fixed** — `pollInterval` clamps a negative remainder to zero, landmined |
+| M1 crash console read whole before the cap | **fixed** — `tailOf` seeks; pinned **by measurement** on a 64 MiB console |
+| M2 an unresolvable link queued anyway | **fixed** — `RequeueSelection.fromLinks` refuses and names it back |
+| L1 catalog batch fetched before a long drain | **accepted, recorded** — cursor only advances on `commit`, so an abandoned batch is re-handed |
+
+**M2's fix consolidates rather than patches, deliberately.** The one-shot path carried the *identical*
+expression — `args.map { GrindCandidate(it, slugFromUrl(it), 0, ModPlatforms.ofUrl(it)) }` — so fixing only
+the queue would have left the same defect one call site away, which is how a fixed bug comes back. Both now
+resolve through `fromLinks`, and `slugFromUrl` moved with it.
+
+**M1 is pinned by measurement, not by reading the code**, because that is the only formulation that separates
+a bounded read from a lucky one: the existing truncation test plants a file just over the cap and passes
+either way. The new guard writes a 64 MiB console and requires heap growth across `keep` to stay under the
+file size. (The first cut of that guard asserted `length() > 64 MiB` against a file of exactly 64 MiB and
+failed on its own fixture — caught because the expected red arrived for the wrong reason.)
+
+**Teeth re-checked on both fixes** by restoring the old line: `readText()` fails
+`anOversizedConsoleIsNeverReadWholeIntoMemory`, the two-branch `pollInterval` fails
+`aRemainderThatHasAlreadyElapsedSlicesToZero`.
+
+**Verified in the built artefact**, since the rejection is an operator-facing path:
+
+```
+$ spc-grinder --requeue …/creativecore https://modrint.com/mod/typo …/mc-mods/jei
+Not a Modrinth or CurseForge project link, ignoring: https://modrint.com/mod/typo
+Queued 2 of 2 project(s) for immediate re-grinding (0 already waiting); 2 now pending.
+queued: [('Modrinth', 'creativecore'), ('CurseForge', 'jei')]
+```
+
+**Suite after both iterations: grinder 336 → 344, 0 failures** (23 skipped).

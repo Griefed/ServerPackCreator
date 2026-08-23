@@ -152,4 +152,35 @@ internal class RequeueStoreTest {
             "both platforms' creativecore is suspect; the verdict recorded after the fix is not"
         )
     }
+
+    /**
+     * **A link no platform can resolve must be refused where somebody is looking.**
+     *
+     * `ModPlatforms.ofUrl` answers `Unknown` for anything that is neither Modrinth nor CurseForge. Queueing
+     * that reports a cheerful "Queued 1 of 1" and then fails hours later inside the daemon, where
+     * `ClientsideVerifier.report` throws "No supported platform" into a log the operator is not reading. A
+     * typo belongs to the command that read it — that is the only moment anyone is watching.
+     */
+    @Test
+    fun aLinkNoPlatformResolvesIsNotQueueable() {
+        val good = "https://modrinth.com/mod/creativecore"
+        val typo = "https://modrint.com/mod/creativecore"
+
+        val (queueable, rejected) = RequeueSelection.fromLinks(listOf(good, typo))
+
+        Assertions.assertEquals(listOf("creativecore"), queueable.map { it.slug })
+        Assertions.assertEquals(ModPlatforms.MODRINTH, queueable.single().platform)
+        Assertions.assertEquals(listOf(typo), rejected, "the unresolvable link is named back, not queued")
+    }
+
+    /** A CurseForge link resolves too — the guard is about *unknown* hosts, not about Modrinth being special. */
+    @Test
+    fun aCurseForgeLinkIsQueueable() {
+        val (queueable, rejected) = RequeueSelection.fromLinks(
+            listOf("https://www.curseforge.com/minecraft/mc-mods/jei")
+        )
+
+        Assertions.assertEquals(ModPlatforms.CURSEFORGE, queueable.single().platform)
+        Assertions.assertTrue(rejected.isEmpty())
+    }
 }

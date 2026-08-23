@@ -199,4 +199,86 @@ internal class GrindPoolShutdownTest {
         holdOn.countDown()
     }
 
+    /**
+     * **A stop landing in the re-grind drain must not be followed by a fresh catalog pass.**
+     *
+     * The drain gave the pass loop a *second* `GrindPool`, and the shutdown hook holds exactly one handle
+     * (`activePool`), read once — deliberately, since reading it twice could signal one pool and wait on
+     * another. So without a `running` check between the two pools, a stop during a drain is signalled,
+     * awaited and reported clean, and then `main` builds a new pool and starts new containers *after* the
+     * hook has finished, with systemd's `TimeoutStopSec` already counting down. Containers live in the docker
+     * daemon's cgroup rather than the unit's, so the hook is the only thing that can ever stop them.
+     *
+     * Asserted against `main`'s own source, in the same idiom as the other entry-point guards: the loop needs
+     * an ApiWrapper, Docker and a report port to run, and none of that is needed to know the check is there.
+     */
+    @Test
+    fun theCatalogPassIsNotStartedWhenAStopArrivedDuringTheDrain() {
+        val body = grinderMainBody()
+        // The two landmarks that carry the meaning: the pool that grinds the drain, and the pool that grinds
+        // the catalog slice. Anything between them runs *after* a stop may already have been signalled and
+        // awaited, so the guard is about what sits in that gap — not about where the batch is fetched.
+        val drainPool = body.indexOf("grindAll(requeued")
+        Assertions.assertTrue(drainPool > 0, "main() no longer grinds the re-grind queue in its own pool")
+        val catalogPool = body.indexOf("GrindPool(grinder, workers)", drainPool + 1)
+        Assertions.assertTrue(catalogPool > drainPool, "main() no longer builds a second pool for the catalog slice")
+
+        Assertions.assertTrue(
+            body.substring(drainPool, catalogPool).contains("running.get()"),
+            "the pass loop must re-check `running` between the re-grind pool and the catalog pool: the " +
+                "shutdown hook reads activePool once, so a stop during the drain would otherwise be followed " +
+                "by a whole new pool of boots the hook has already stopped waiting for"
+        )
+    }
+
+    /**
+     * The pass's live size has to include what the drain is grinding, or `/status` answers "what is it doing
+     * right now?" with the *previous* pass's number and size for the whole drain — during the one operation
+     * an operator is most likely to be watching.
+     */
+    @Test
+    fun theLivePassCountsTheRequeuedCandidatesToo() {
+        val body = grinderMainBody()
+        val beginPass = body.indexOf("status.beginPass(")
+        Assertions.assertTrue(beginPass > 0, "main() no longer reports a pass to /status")
+        Assertions.assertTrue(
+            beginPass < body.indexOf("grindAll(requeued"),
+            "the pass must be announced before the drain is ground, or /status shows the previous pass for " +
+                "the whole of it"
+        )
+        Assertions.assertTrue(
+            body.substring(beginPass, body.indexOf(')', beginPass)).contains("requeued"),
+            "the announced size must include the requeued candidates, or /status under-reports a drain of " +
+                "hundreds as whatever the catalog slice happens to be"
+        )
+    }
+
+    /**
+     * **The pass counter must not be shadowed.** `val pass = pool.grindAll(...)` hid the `var pass` counter,
+     * so `"Pass #$pass complete"` interpolated the `GrindPass` data class instead of the number.
+     *
+     * Found by reading the production log rather than the code, which is why it survived so long — it
+     * compiles, it runs, and the line still starts with "Pass #". `~/.spc-grinder/grinder.log` carried 14 of
+     * them, each a multi-kilobyte dump of every reached candidate's URL and popularity, in the one line an
+     * operator greps to see how a pass went:
+     *
+     * ```
+     * Pass #GrindPass(reached=[GrindCandidate(projectUrl=https://modrinth.com/mod/lambdynamiclights,
+     * slug=lambdynamiclights, popularity=49644693, platform=Modrin… complete: …
+     * ```
+     *
+     * Asserted on `main`'s source because that is where the shadowing is; nothing about a log line's text is
+     * reachable from a unit test without an appender, and the defect is the declaration, not the formatting.
+     */
+    @Test
+    fun thePassCounterIsNotShadowed() {
+        val body = grinderMainBody()
+
+        Assertions.assertTrue(body.contains("var pass = 0"), "main() no longer counts passes")
+        Assertions.assertFalse(
+            body.contains("val pass ="),
+            "a `val pass` inside the loop shadows the counter, and every \"Pass #\$pass\" below it then " +
+                "interpolates whatever that local holds"
+        )
+    }
 }
