@@ -23,6 +23,7 @@ import de.griefed.serverpackcreator.clientside.Confidence
 import de.griefed.serverpackcreator.grinder.grindVerdict
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import java.time.Instant
 
 /**
  * Pins the CSV export: a header, highest-confidence-first ordering, the name-pattern column, and
@@ -40,7 +41,7 @@ internal class VerdictCsvExporterTest {
             )
         )
         val lines = csv.lines()
-        Assertions.assertEquals("Name,Project,NamePattern,Confidence,Loader,Detail", lines[0])
+        Assertions.assertEquals("Name,Project,NamePattern,Confidence,Loader,Detail,Scanned", lines[0])
         Assertions.assertTrue(lines[1].startsWith("high-mod,"), "HIGH must come first: ${lines[1]}")
         Assertions.assertTrue(lines[2].startsWith("medium-mod,"))
         Assertions.assertTrue(lines[3].startsWith("low-mod,"))
@@ -62,8 +63,20 @@ internal class VerdictCsvExporterTest {
         Assertions.assertTrue(csv.contains("\"crashed: a, b and \"\"quoted\"\"\nsecond line\""), "bad escaping:\n$csv")
     }
 
+    /**
+     * The scan date rides along in the export too, so a downloaded CSV can be sorted or filtered by it — the
+     * store has always carried `verifiedAt`, and until now nothing showed it.
+     */
+    @Test
+    fun carriesTheScanDate() {
+        val csv = VerdictCsvExporter.toCsv(
+            listOf(grindVerdict("jei", "Forge", verifiedAt = Instant.parse("2026-08-23T19:41:13Z")))
+        )
+        Assertions.assertTrue(csv.lines()[1].endsWith(",2026/08/23"), "scan date must close the row: ${csv.lines()[1]}")
+    }
+
     @Test
     fun emptyVerdictsStillEmitTheHeader() {
-        Assertions.assertEquals("Name,Project,NamePattern,Confidence,Loader,Detail", VerdictCsvExporter.toCsv(emptyList()))
+        Assertions.assertEquals("Name,Project,NamePattern,Confidence,Loader,Detail,Scanned", VerdictCsvExporter.toCsv(emptyList()))
     }
 }

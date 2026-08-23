@@ -23,6 +23,7 @@ import de.griefed.serverpackcreator.clientside.Confidence
 import de.griefed.serverpackcreator.grinder.grindVerdict
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import java.time.Instant
 
 /**
  * Pins the HTML report: clickable column headers (the sort hook), a data row carrying the
@@ -43,6 +44,32 @@ internal class VerdictReportRendererTest {
         Assertions.assertTrue(html.contains(">jei-<"), "the clientside-list name-pattern column")
         Assertions.assertTrue(html.contains(">HIGH<"), "the confidence")
         Assertions.assertTrue(html.contains("""href="https://modrinth.com/mod/jei""""), "a link to the project")
+    }
+
+    /**
+     * When the mod was scanned, as `YEAR/MM/DD`.
+     *
+     * The store has carried `verifiedAt` all along — it is what the re-verify TTL compares against — but the
+     * overview never showed it, so a reader could not tell a verdict reached minutes ago from one reached weeks
+     * ago on a loader build long since superseded. Rendered in **UTC** so the same store reads the same on any
+     * host, and zero-padded so the column sorts correctly as text under the table's own sort.
+     */
+    @Test
+    fun showsWhenTheModWasScanned() {
+        val html = VerdictReportRenderer.toHtml(
+            listOf(grindVerdict("jei", "Forge", verifiedAt = Instant.parse("2026-08-23T19:41:13Z")))
+        )
+        Assertions.assertTrue(html.contains(">Scanned (UTC)<"), "the column needs a header")
+        Assertions.assertTrue(html.contains(">2026/08/23<"), "the scan date must be in the row: $html")
+    }
+
+    /** A date early in the year must stay zero-padded, or the column sorts as text in the wrong order. */
+    @Test
+    fun zeroPadsTheScanDate() {
+        val html = VerdictReportRenderer.toHtml(
+            listOf(grindVerdict("jei", "Forge", verifiedAt = Instant.parse("2026-01-05T00:00:00Z")))
+        )
+        Assertions.assertTrue(html.contains(">2026/01/05<"), "expected a padded date: $html")
     }
 
     /**
@@ -86,7 +113,7 @@ internal class VerdictReportRendererTest {
         val html = VerdictReportRenderer.toHtml(listOf(grindVerdict("jei", "Forge", suggestedEntry = "jei-")))
         Assertions.assertTrue(html.contains("function downloadCsv("), "needs the CSV download hook")
         // The CSV is embedded as a JS string literal; its header and the name-pattern must be present.
-        Assertions.assertTrue(html.contains("Name,Project,NamePattern,Confidence,Loader,Detail"), "embedded CSV header")
+        Assertions.assertTrue(html.contains("Name,Project,NamePattern,Confidence,Loader,Detail,Scanned"), "embedded CSV header")
         Assertions.assertTrue(html.contains("jei-"), "embedded CSV row")
     }
 
