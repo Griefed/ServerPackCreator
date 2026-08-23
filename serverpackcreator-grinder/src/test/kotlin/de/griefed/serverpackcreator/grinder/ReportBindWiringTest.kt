@@ -41,7 +41,8 @@ internal class ReportBindWiringTest {
         Assertions.assertNotNull(read, "main() no longer reads SPC_GRINDER_HOST")
         val variable = read!!.groupValues[1]
 
-        val construction = Regex("""ReportServer\(([^\n]*)\)""").find(body)
+        // Across newlines: the construction is wrapped, and a single-line pattern would report it missing.
+        val construction = Regex("""ReportServer\((.*?)\)\s*\.start\(\)""", RegexOption.DOT_MATCHES_ALL).find(body)
         Assertions.assertNotNull(construction, "main() no longer constructs a ReportServer")
         Assertions.assertTrue(
             construction!!.groupValues[1].contains("host = $variable"),

@@ -72,11 +72,14 @@ object GrinderApplication {
         val cacheRoot = File(env("SPC_GRINDER_CACHE", File(base, "cache").path)).apply { mkdirs() }
         val storeFile = File(env("SPC_GRINDER_STORE", File(base, "verdicts.json").path)).apply { parentFile?.mkdirs() }
         val port = env("SPC_GRINDER_PORT", "8757").toInt()
+        // Loopback by default: the report is unauthenticated, so reaching it from anywhere else -- a reverse
+        // proxy in a container dials the host over the bridge gateway, never 127.0.0.1 -- is a deliberate act.
+        val bindHost = env("SPC_GRINDER_HOST", "127.0.0.1")
         val workers = env("SPC_GRINDER_WORKERS", "2").toInt()
 
         log.info(
             "Grinder starting — home=$base image=$image work=$workDir cache=$cacheRoot store=$storeFile " +
-                "port=$port workers=$workers"
+                "bind=$bindHost port=$port workers=$workers"
         )
 
         log.info("Using Preferences node '${ApiProperties.resolvePreferencesNode()}' for SPC settings.")
@@ -129,11 +132,13 @@ object GrinderApplication {
         val cursorFile = File(env("SPC_GRINDER_CURSORS", File(base, "cursors.json").path))
             .apply { parentFile?.mkdirs() }
         val cursorStore = JsonCursorStore(cursorFile)
-        val server = ReportServer(store, port, status = status, cursors = cursorStore, cacheRoot = cacheRoot).start()
-        log.info(
-            "Report:  http://localhost:${server.port}/    CSV: http://localhost:${server.port}/export.csv" +
-                "    live status: http://localhost:${server.port}/status"
-        )
+        val server = ReportServer(
+            store, port, host = bindHost, status = status, cursors = cursorStore, cacheRoot = cacheRoot
+        ).start()
+        // The bound host, not "localhost": under a non-default bind that URL is one an operator cannot reach,
+        // and the journal is where they go looking for it.
+        val reportUrl = "http://$bindHost:${server.port}"
+        log.info("Report:  $reportUrl/    CSV: $reportUrl/export.csv    live status: $reportUrl/status")
 
         if (args.isNotEmpty()) {
             // One-shot: grind a fixed set of project URLs (handy for an end-to-end verification), then
