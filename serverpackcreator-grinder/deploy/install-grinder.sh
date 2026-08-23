@@ -7,9 +7,10 @@
 #   3. installs the distribution to /opt/spc-grinder
 #   4. creates the service account, with a home directory and docker group membership
 #
-# Run it from the repository root, as your normal user — NOT as root. The build must not run as root
-# or it leaves root-owned files in build/ that your next ordinary build cannot overwrite. The four
-# privileged steps call sudo themselves and are the only things that do.
+# Run it as your normal user — NOT as root. The build must not run as root or it leaves root-owned
+# files in build/ that your next ordinary build cannot overwrite. The four privileged steps call sudo
+# themselves and are the only things that do. The working directory does not matter: the repository
+# root is derived from this script's own location.
 #
 # Re-running is safe: it is the upgrade path. An already-running service is stopped before its jars
 # are replaced and restarted afterwards, and nothing under the service's home is touched.
@@ -50,6 +51,12 @@ die()  { printf '\033[31merror: %s\033[0m\n' "$1" >&2; exit 1; }
 step "Checking prerequisites"
 
 [[ -f "$repo_root/settings.gradle.kts" ]] || die "not a ServerPackCreator checkout: $repo_root"
+
+# This script rm -rf's $PREFIX/lib. ${PREFIX:?} below catches an empty value and nothing else, so the
+# shape of the path is checked here instead: absolute, and at least two components deep, so that a
+# PREFIX of "/" or "/usr" cannot turn the cleanup into something catastrophic.
+[[ "$PREFIX" == /* ]]              || die "PREFIX must be an absolute path, got '$PREFIX'"
+[[ "$PREFIX" =~ ^/[^/]+/[^/]+ ]]   || die "PREFIX looks too close to the root to rm -rf under: '$PREFIX'"
 [[ "$(id -u)" -ne 0 ]] || die "do not run this as root — the Gradle build would leave root-owned files in build/"
 
 command -v docker >/dev/null || die "docker not found on PATH"
@@ -62,7 +69,9 @@ echo "install to:   $PREFIX"
 echo "service user: $SERVICE_USER (home $SERVICE_HOME)"
 echo "runtime image: $IMAGE"
 
-# One sudo prompt up front rather than four scattered through a long build.
+# Ask once up front rather than surprising you four steps in. The timestamp only lasts ~15 minutes,
+# which a cold image build plus a Gradle build can outlive, so it is refreshed again before the
+# privileged steps rather than assumed to still be valid.
 sudo -v
 
 # --- 1. The runtime image -------------------------------------------------------------------------
@@ -81,6 +90,8 @@ step "2/4  Building the distribution (installDist)"
 
 # --- 3. Install it --------------------------------------------------------------------------------
 step "3/4  Installing to $PREFIX"
+
+sudo -v
 
 # Stop first if it is running: replacing jars under a live JVM is how you get a class-loading failure
 # hours later, on a lazily-loaded class, with nothing in the log to connect it to this script.
@@ -132,6 +143,26 @@ if id -nG "$SERVICE_USER" | tr ' ' '\n' | grep -qx docker; then
 else
     sudo usermod -aG docker "$SERVICE_USER"
     echo "added $SERVICE_USER to the docker group"
+fi
+
+# --- Consistency with the unit ---------------------------------------------------------------------
+# PREFIX, SERVICE_USER and SERVICE_HOME are overridable, but the shipped unit hardcodes all three.
+# Override one and the install still succeeds — it just produces a deployment the unit cannot run, and
+# the failure surfaces later as a systemd start error rather than here.
+unit_file="$script_dir/$UNIT_NAME"
+if [[ -f "$unit_file" ]]; then
+    unit_value() { sed -n "s/^$1=//p" "$unit_file" | head -1; }
+    mismatch=false
+    [[ "$(unit_value User)" == "$SERVICE_USER" ]] ||
+        { echo "  unit has User=$(unit_value User), installing for $SERVICE_USER"; mismatch=true; }
+    [[ "$(unit_value WorkingDirectory)" == "$SERVICE_HOME" ]] ||
+        { echo "  unit has WorkingDirectory=$(unit_value WorkingDirectory), home is $SERVICE_HOME"; mismatch=true; }
+    [[ "$(unit_value ExecStart)" == "$PREFIX/bin/serverpackcreator-grinder" ]] ||
+        { echo "  unit has ExecStart=$(unit_value ExecStart), installed to $PREFIX"; mismatch=true; }
+    if [[ "$mismatch" == true ]]; then
+        step "WARNING: the unit does not match this install"
+        echo "Edit $unit_file to match before starting the service, or it will fail at startup."
+    fi
 fi
 
 # --- Optional: the unit ---------------------------------------------------------------------------

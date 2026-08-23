@@ -2801,3 +2801,68 @@ verify"; here the order was reversed.
   reader can recognise either rather than take the claim on faith.
 
 Suite after the resolutions: grinder **245**, zero failures.
+
+---
+
+# Iteration 14 — 2026-08-23 — the deployment files (`feat(grinder): ship an example systemd unit and an installer`)
+
+Scope: the two commits adding `serverpackcreator-grinder/deploy/` and its guard, audited immediately after
+landing. Shell and unit files, so the "measure it rather than test it" ceiling from the conventions applies —
+every finding below was reproduced against a real shell before being written down.
+
+## HIGH — none
+
+## MEDIUM
+
+### M1 — the installer's overridable paths can silently disagree with the unit that has to run them
+
+`install-grinder.sh` honours `PREFIX`, `SERVICE_USER` and `SERVICE_HOME` from the environment; the shipped unit
+hardcodes `ExecStart=/opt/spc-grinder/…`, `User=grinder` and `WorkingDirectory=/home/grinder`. Override any one
+and the install still reports success, having produced a deployment the unit cannot start. The failure surfaces
+later as a systemd start error with no connection back to the override.
+
+## LOW
+
+### L1 — `${PREFIX:?}` guards emptiness and nothing else
+
+`rm -rf "${PREFIX:?}/lib"` is protected against an *unset* PREFIX, which is not the dangerous case. `PREFIX=/`
+makes it `rm -rf /lib`; `PREFIX=/usr` makes it `rm -rf /usr/lib`. Both were reachable.
+
+### L2 — "one sudo prompt up front" is a claim the timestamp cannot keep
+
+`sudo -v` caches for ~15 minutes by default. A cold `docker build` of the runtime image plus a Gradle
+`installDist` routinely exceeds that, so the comment promising a single prompt was wrong in exactly the case it
+was written for.
+
+### L3 — the header told you to run it from a directory it does not care about
+
+"Run it from the repository root" — but `repo_root` is derived from `BASH_SOURCE`, so the working directory is
+irrelevant. A doc line contradicting the code beside it.
+
+## Not findings — verified clean, do not re-litigate
+
+- **`cp -a bin lib "$PREFIX/"` merges on a re-run rather than nesting `bin/bin`.** The obvious suspicion about
+  re-running the installer; reproduced in a scratch tree instead of reasoned about — a changed file was
+  overwritten (`v1` → `v2`), a new file appeared, and no nested `bin/bin` was created.
+- **The exec bit survives git.** `git ls-files -s` reports `100755` for `install-grinder.sh`.
+- **The `deploy/` gitignore exception works.** `git check-ignore -v` exits 1 for both files. The rule it escapes
+  is the JDeveloper/IDEA template's "default output directories" block, which swallowed the first commit
+  attempt silently — the commit reported success having added nothing.
+- **The unit's three hardcoded values agree with the installer's three defaults.** Parsed out of the unit and
+  compared: `grinder`, `/home/grinder`, `/opt/spc-grinder/bin/serverpackcreator-grinder`. M1 is about overrides,
+  not about the shipped defaults.
+- **`SystemdUnitConfigurationTest` has teeth.** Four mutations, four distinct failures, unit restored
+  byte-identical afterwards — recorded in that commit's message rather than assumed from a green run.
+
+## Resolution (same day)
+
+- **M1 — fixed.** The installer now parses `User=`, `WorkingDirectory=` and `ExecStart=` out of the unit and
+  compares them against the values it is installing with, printing exactly what to change. A warning rather than
+  a hard failure: an operator who has already edited their own copy is doing nothing wrong.
+- **L1 — fixed.** `PREFIX` must now be absolute and at least two components deep. Verified: `/` and `/usr` are
+  both rejected by name, a relative path is rejected as non-absolute, and `/opt/spc-grinder` passes.
+- **L2 — fixed.** `sudo -v` is refreshed immediately before the privileged block, and the comment now says what
+  actually happens instead of promising something the timestamp cannot deliver.
+- **L3 — fixed.** The header says the working directory does not matter and why.
+
+Suite after the resolutions: grinder **249**, zero failures, 39 classes.
