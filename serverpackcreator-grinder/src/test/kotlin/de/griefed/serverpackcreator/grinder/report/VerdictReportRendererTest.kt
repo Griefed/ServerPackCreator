@@ -45,6 +45,42 @@ internal class VerdictReportRendererTest {
         Assertions.assertTrue(html.contains("""href="https://modrinth.com/mod/jei""""), "a link to the project")
     }
 
+    /**
+     * The overview is the only page an operator ever opens, and the daemon's other endpoints were reachable
+     * only from a log line printed at startup. Each one now has a button beside "Download CSV".
+     */
+    @Test
+    fun linksEveryEndpointBesideTheDownloadButton() {
+        val html = VerdictReportRenderer.toHtml(listOf(grindVerdict("jei", "Forge", suggestedEntry = "jei-")))
+
+        listOf("/export.csv", "/status", "/as-properties", "/crash-logs").forEach { endpoint ->
+            Assertions.assertTrue(
+                html.contains("""href="$endpoint""""),
+                "the overview must offer $endpoint; it was only ever in a startup log line"
+            )
+        }
+    }
+
+    /**
+     * A crash log is offered only where one is actually kept, so the table never points at a 404 — which is
+     * why the renderer asks a lookup per row instead of trusting a field that a deleted file would strand.
+     */
+    @Test
+    fun onlyARowWithAKeptCrashLogGetsALink() {
+        val crashed = grindVerdict("creativecore", "Fabric", confidence = Confidence.HIGH)
+        val clean = grindVerdict("jei", "Forge", confidence = Confidence.LOW)
+
+        val html = VerdictReportRenderer.toHtml(listOf(crashed, clean)) { verdict ->
+            "Modrinth-creativecore-Fabric.log".takeIf { verdict.slug == "creativecore" }
+        }
+
+        Assertions.assertTrue(
+            html.contains("""href="/crash-log?name=Modrinth-creativecore-Fabric.log""""),
+            "the crashing row must link its console"
+        )
+        Assertions.assertEquals(1, Regex("/crash-log\\?name=").findAll(html).count(), "and only that row")
+    }
+
     @Test
     fun embedsTheCsvForTheDownloadButton() {
         val html = VerdictReportRenderer.toHtml(listOf(grindVerdict("jei", "Forge", suggestedEntry = "jei-")))
