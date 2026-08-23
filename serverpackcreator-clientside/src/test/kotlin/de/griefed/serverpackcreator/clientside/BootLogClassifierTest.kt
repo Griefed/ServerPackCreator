@@ -305,7 +305,11 @@ internal class BootLogClassifierTest {
         val cases = listOf(
             "Error: Unable to access jarfile forge.jar",
             "Error: Could not find or load main class do_not_manually_edit",
-            "Error: Invalid or corrupt jarfile server.jar"
+            "Error: Invalid or corrupt jarfile server.jar",
+            // The JVM's own message for an `@argfile` it cannot read, verbatim from Temurin 17. Reachable since
+            // Forge boots from `@libraries/.../unix_args.txt`: an install layer cached without that file fails
+            // exactly here, which is the same incomplete-cache case the jarfile messages above cover.
+            "Error: could not open `libraries/net/minecraftforge/forge/1.20.2-48.1.0/unix_args.txt'"
         )
         for (line in cases) {
             Assertions.assertEquals(
