@@ -44,7 +44,7 @@ Nothing in `.forgejo/workflows` uses the automatic job token.
 | `FJ_TOKEN` | Forgejo access token — Settings → Applications → Access Tokens. Scopes: **`write:package`** for the maven registry, **`write:repository`** to create releases, upload assets and push the `RELEASE:` commit and tags | the same four |
 | `GH_ACTOR` | GitHub username; used as the GitHub Packages maven username | release-build |
 | `GH_TOKEN` | GitHub **classic** PAT. Scopes: `write:packages` (covers both `maven.pkg.github.com` and the `ghcr.io` login) and `repo` (mirror the release, delete the stale `continuous` release). Fine-grained tokens do not cover ghcr/maven packages cleanly — use a classic one | release-build, devbuild, docs |
-| `GITLABCOM_TOKEN` | gitlab.com PAT, scope **`api`** — one scope covers both the `Private-Token` maven upload to project `32677538` and the release API | release-build |
+| `GITLABCOM_TOKEN` | gitlab.com PAT, scope **`api`** — the `Private-Token` maven upload to project `32677538`. It also covered the release API until the outward mirror to gitlab.com was dropped on 2026-08-23 (that repository stopped receiving commits in April 2024); the package registry does not depend on git refs, so this upload is unaffected | release-build |
 | `SIGNING_KEY` | ASCII-armoured PGP **private** key: `gpg --armor --export-secret-keys <KEYID>`, the entire block including BEGIN/END lines and newlines | release-build |
 | `SIGNING_PASSWORD` | that key's passphrase | release-build |
 | `SONATYPE_USERNAME` / `SONATYPE_PASSWORD` | Central Portal **user token** pair — central.sonatype.com → View Account → Generate User Token. Not your portal login | release-build |
@@ -87,7 +87,7 @@ rather than the release:
 | `maven` | `SIGNING_KEY`, `SIGNING_PASSWORD`, and then whichever registries you want: `FJ_*`, `GH_*`, `GITLABCOM_TOKEN`, `SONATYPE_*` |
 | `docker` | `DOCKERHUB_USER`, `DOCKERHUB_TOKEN`, `DOCKERHUB_REPO`, `GH_TOKEN` (ghcr login) |
 | `virustotal` | `VT_API_KEY`, `FJ_TOKEN` (appends the scan links to the release) |
-| `mirror` | `GH_TOKEN`, `GITLABCOM_TOKEN`, `FJ_TOKEN` (reads the release notes back off Forgejo) |
+| `mirror` | `GH_TOKEN`, `FJ_TOKEN` (reads the release notes back off Forgejo). **No `GITLABCOM_TOKEN`** since 2026-08-23 — GitHub is the only outward mirror |
 
 `FJ_TOKEN` is therefore the one secret four separate jobs depend on — it is the first thing to check
 when a release half-happens.

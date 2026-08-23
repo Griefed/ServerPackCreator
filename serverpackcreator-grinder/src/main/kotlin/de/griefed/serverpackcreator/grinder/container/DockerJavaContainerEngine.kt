@@ -30,6 +30,7 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -42,10 +43,13 @@ import java.util.concurrent.atomic.AtomicBoolean
  * imperative docker-java translation only.
  *
  * @param client The docker-java client; defaults to one built from the ambient Docker environment.
+ * @param shutdownGrace How long a container gets to exit on its own during [close] before it is killed.
+ *                      A parameter so a test can shorten it; production always takes [SHUTDOWN_GRACE].
  * @author Griefed
  */
 class DockerJavaContainerEngine(
-    private val client: DockerClient = defaultClient()
+    private val client: DockerClient = defaultClient(),
+    private val shutdownGrace: Duration = SHUTDOWN_GRACE
 ) : ContainerEngine {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
@@ -57,15 +61,35 @@ class DockerJavaContainerEngine(
      */
     private val liveContainers: MutableSet<String> = Collections.newSetFromMap(ConcurrentHashMap())
 
+    /**
+     * Set by [close] before it sweeps, so a container cannot be created behind it.
+     *
+     * `GrindPool.requestStop` only stops a worker taking a *new candidate*, and once shutdown hooks are running
+     * the JVM no longer waits for worker threads — so a worker between its loader install and its mod boot could
+     * start a container after the sweep and have it outlive the process.
+     */
+    private val closed = AtomicBoolean(false)
+
     override fun run(spec: ContainerSpec, readyPattern: Regex, timeout: Duration, onLine: (String) -> Unit): ContainerRunOutput {
+        check(!closed.get()) { "The container engine is shutting down; refusing to start a new container." }
         val containerId = client.createContainerCmd(spec.image)
             .withHostConfig(hostConfigFor(spec))
             .withCmd(spec.command)
             .withWorkingDir(spec.workingDir)
             .withUser(spec.user)
+            // Stamped so a container that outlives its JVM can still be identified. Nothing else can find it:
+            // it has no name, no autoremove, and the tracking set above dies with the process.
+            .withLabels(mapOf(OWNER_LABEL to "1"))
             .exec()
             .id
         liveContainers.add(containerId)
+        // Re-checked after the add, not only before the create: close() may have swept in between, and then
+        // this container is in nobody's list. Either close() sees it here, or this sees close().
+        if (closed.get()) {
+            runCatching { client.removeContainerCmd(containerId).withForce(true).exec() }
+            liveContainers.remove(containerId)
+            throw IllegalStateException("The container engine shut down while this container was being created.")
+        }
 
         val lines = Collections.synchronizedList(ArrayList<String>())
         val ready = AtomicBoolean(false)
@@ -120,7 +144,16 @@ class DockerJavaContainerEngine(
             return ContainerRunOutput(ArrayList(lines), exitCodeOf(containerId), timedOut)
         } finally {
             runCatching { client.removeContainerCmd(containerId).withForce(true).exec() }
-                .onFailure { log.warn("Could not remove container $containerId: ${it.message}") }
+                .onFailure { failure ->
+                    // On shutdown `close()` has already removed it, so this is the expected 404 rather than a
+                    // problem -- and a WARN here is indistinguishable in the journal from a removal that really
+                    // did fail, which is exactly the noise that makes a real one hard to spot.
+                    if (closed.get()) {
+                        log.debug("Container $containerId was already removed by the shutdown sweep.")
+                    } else {
+                        log.warn("Could not remove container $containerId: ${failure.message}")
+                    }
+                }
             liveContainers.remove(containerId)
         }
     }
@@ -131,15 +164,66 @@ class DockerJavaContainerEngine(
      * mid-boot. Safe to call repeatedly and never throws: a container that already vanished is fine.
      */
     override fun close() {
+        closed.set(true)
         val abandoned = liveContainers.toList()
         if (abandoned.isEmpty()) {
             return
         }
-        log.info("Removing ${abandoned.size} container(s) abandoned by an interrupted run.")
-        for (containerId in abandoned) {
-            runCatching { client.removeContainerCmd(containerId).withForce(true).exec() }
-                .onFailure { log.warn("Could not remove abandoned container $containerId: ${it.message}") }
-            liveContainers.remove(containerId)
+        log.info(
+            "Stopping ${abandoned.size} container(s) abandoned by an interrupted run — " +
+                "${shutdownGrace.seconds}s to exit on their own, then killed."
+        )
+        // Concurrently, because the grace window is per container: ten workers stopped one after another would
+        // be ten times the window, and would blow through the unit's TimeoutStopSec into the SIGKILL this whole
+        // path exists to avoid.
+        val stoppers = Executors.newFixedThreadPool(minOf(abandoned.size, MAX_PARALLEL_STOPS))
+        try {
+            abandoned.map { containerId -> stoppers.submit { stopThenRemove(containerId) } }
+                .forEach { pending -> runCatching { pending.get() } }
+        } finally {
+            stoppers.shutdownNow()
+        }
+    }
+
+    /**
+     * Ask one container to exit, then remove it. `docker stop` with a timeout is SIGTERM followed by the
+     * daemon's own SIGKILL once the window passes, which is what gives a Minecraft server the chance to save
+     * its world — going straight to `remove --force`, as this used to, is a SIGKILL to PID 1 with no warning.
+     */
+    private fun stopThenRemove(containerId: String) {
+        runCatching { client.stopContainerCmd(containerId).withTimeout(shutdownGrace.seconds.toInt()).exec() }
+            .onFailure { log.debug("Container $containerId did not stop cleanly: ${it.message}") }
+        runCatching { client.removeContainerCmd(containerId).withForce(true).exec() }
+            .onFailure { log.warn("Could not remove abandoned container $containerId: ${it.message}") }
+        liveContainers.remove(containerId)
+    }
+
+    /**
+     * Remove every container carrying [OWNER_LABEL], which at startup can only be an orphan of a previous
+     * process — this engine has started none yet.
+     *
+     * **LANDMINE: this assumes one grinder per Docker daemon.** The label says "a grinder made this", not
+     * "*this* grinder made this", so a second instance sharing the daemon would have its in-flight boots
+     * removed by the first one's startup. The shipped unit is a singleton service, which is what makes the
+     * simple label safe; anything else needs a per-instance label first.
+     */
+    override fun reapOrphans(): Int {
+        val orphans = runCatching {
+            client.listContainersCmd().withShowAll(true)
+                .withLabelFilter(mapOf(OWNER_LABEL to "1"))
+                .exec()
+        }.getOrElse {
+            log.warn("Could not list containers to reap orphans: ${it.message}")
+            return 0
+        }
+        if (orphans.isEmpty()) {
+            return 0
+        }
+        log.info("Reaping ${orphans.size} container(s) left behind by a previous run — a kill, not a clean stop.")
+        return orphans.count { orphan ->
+            runCatching { client.removeContainerCmd(orphan.id).withForce(true).exec() }
+                .onFailure { log.warn("Could not reap orphaned container ${orphan.id}: ${it.message}") }
+                .isSuccess
         }
     }
 
@@ -148,7 +232,11 @@ class DockerJavaContainerEngine(
         val hostConfig = HostConfig.newHostConfig()
             .withNetworkMode(spec.networkMode)
             .withMemory(spec.resources.memoryBytes)
+            // Both halves, always: a quota is a fraction of a period, so sending one without the other leaves
+            // the cap at whatever the daemon's default period makes it. Measured with the period dropped, a
+            // requested 1.5 cores arrived in the kernel as 75000/100000 -- 0.75 cores, silently.
             .withCpuQuota(spec.resources.cpuQuota)
+            .withCpuPeriod(spec.resources.cpuPeriod)
             .withPidsLimit(spec.resources.pidsLimit)
             .withReadonlyRootfs(spec.readonlyRootfs)
             .withBinds(spec.mounts.map { Bind(it.hostPath, Volume(it.containerPath), if (it.readOnly) AccessMode.ro else AccessMode.rw) })
@@ -177,6 +265,14 @@ class DockerJavaContainerEngine(
     companion object {
         /** How often the boot's liveness and ready-state are polled. */
         internal const val POLL_INTERVAL_MILLIS = 500L
+
+        /**
+         * Docker label every container this engine creates carries, so one that outlives its JVM can still be
+         * found. Without it an orphan is indistinguishable from any other container on the host.
+         */
+        const val OWNER_LABEL = "de.griefed.serverpackcreator.grinder"
+
+
 
         /** Build a [DockerClient] from the ambient Docker environment (DOCKER_HOST, TLS settings, …). */
         fun defaultClient(): DockerClient {

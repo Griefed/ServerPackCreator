@@ -157,6 +157,15 @@ class GrindPool(
     /** Set by [requestStop]; workers finish their current candidate and then stop taking new ones. */
     private val stopRequested = AtomicBoolean(false)
 
+    /**
+     * The worker threads of the pass currently running, so [awaitStop] can interrupt them.
+     *
+     * Held as a field rather than staying local to [grindAll] because the shutdown hook runs on a different
+     * thread entirely and has no other way to reach them. Empty between passes.
+     */
+    @Volatile
+    private var workers: List<Thread> = emptyList()
+
     init {
         require(workerCount >= 1) { "workerCount must be at least 1, was $workerCount" }
     }
@@ -169,6 +178,38 @@ class GrindPool(
      */
     fun requestStop() {
         stopRequested.set(true)
+    }
+
+    /**
+     * Stop for real: signal, **interrupt** every worker, and wait up to [grace] for them to come back. Returns
+     * whether they all did.
+     *
+     * [requestStop] alone cannot end a shutdown, because the flag is only read *between* candidates — a worker
+     * parked in a boot keeps going for up to that boot's budget, which is measured in minutes, while systemd
+     * counts down to the SIGKILL that orphans containers. The interrupt is what wakes a worker out of the boot's
+     * poll loop so it can notice the flag.
+     *
+     * A worker that ignores its interrupt is abandoned rather than waited for: nothing can force a thread to die
+     * in the JVM, so the actual "force kill" is the process exiting, and this method's job is only to stop
+     * holding it open. A `false` return is worth logging — it means the process is about to exit with work still
+     * running.
+     */
+    /** How many workers the pool is currently tracking — the set [awaitStop] would signal. Test-facing. */
+    internal fun trackedWorkerCount(): Int = workers.size
+
+    fun awaitStop(grace: Duration): Boolean {
+        stopRequested.set(true)
+        val running = workers
+        running.forEach { worker -> runCatching { worker.interrupt() } }
+        val deadline = System.currentTimeMillis() + grace.toMillis()
+        for (worker in running) {
+            val remaining = deadline - System.currentTimeMillis()
+            if (remaining <= 0) {
+                break
+            }
+            runCatching { worker.join(remaining) }
+        }
+        return running.none { it.isAlive }
     }
 
     /**
@@ -187,7 +228,10 @@ class GrindPool(
         val queue = ConcurrentLinkedQueue(interleaveByPlatform(candidates))
         val verified = AtomicInteger(0)
         val reached = ConcurrentHashMap.newKeySet<GrindCandidate>()
-        val workers = (1..workerCount).map {
+        // Constructed, published, and only then started. Starting inside the `map` left a window in which a
+        // worker was running before `workers` had been assigned -- and a shutdown landing there would have
+        // interrupted nobody and reported a clean stop, because an empty list satisfies "none alive".
+        val running = (1..workerCount).map { worker ->
             Thread {
                 while (!stopRequested.get()) {
                     val candidate = queue.poll() ?: break
@@ -197,10 +241,12 @@ class GrindPool(
                         verified.incrementAndGet()
                     }
                 }
-            }.apply { name = "grind-worker-$it"; start() }
+            }.apply { name = "grind-worker-$worker" }
         }
+        workers = running
+        running.forEach { it.start() }
         try {
-            workers.forEach { it.join() }
+            running.forEach { it.join() }
         } catch (_: InterruptedException) {
             // The daemon's shutdown hook interrupts the thread that is parked here. Abandon the rest of the
             // batch instead of letting the interrupt escape as an uncaught exception (which killed the
@@ -209,6 +255,8 @@ class GrindPool(
             // separately by closing the container engine.
             requestStop()
             Thread.currentThread().interrupt()
+        } finally {
+            workers = emptyList()
         }
         return GrindPass(reached, verified.get())
     }

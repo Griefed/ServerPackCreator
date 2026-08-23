@@ -94,4 +94,15 @@ internal class ContainerServerRunnerTest {
         Assertions.assertFalse(packMount.readOnly, "the server writes its world/logs into the pack")
         Assertions.assertEquals("eula=true\n", File(pack, "eula.txt").readText())
     }
+
+    @Test
+    fun runsAsTheHostUserSoTheMountedPackIsWritable(@TempDir packDir: File) {
+        val pack = packWithStartScript(packDir)
+        val engine = RecordingEngine(ContainerRunOutput(emptyList(), 0, false))
+
+        ContainerServerRunner(engine, "spc-grind:latest", containerUser = "1234:5678").run(pack, Duration.ofMinutes(1)) { }
+
+        Assertions.assertEquals("1234:5678", engine.lastSpec?.user)
+    }
+
 }

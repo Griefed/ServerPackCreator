@@ -42,6 +42,9 @@ import java.util.concurrent.Executors
  * @param store The verdicts to render; read live on each request so the table reflects the running grind.
  * @param requestedPort The port to bind (0 = pick a free one; read it back from [port] after [start]).
  * @param host The interface to bind; loopback by default so the report isn't exposed beyond the box.
+ * @param fallbackLists Supplies the lists `/as-properties` publishes alongside the grinder's findings, read
+ *                      per request so a refreshed list is served without a restart. `null` serves the
+ *                      grinder's own findings only — the report server stays constructible without SPC.
  * @author Griefed
  */
 class ReportServer(
@@ -50,7 +53,8 @@ class ReportServer(
     host: String = "127.0.0.1",
     private val status: GrinderStatus? = null,
     private val cursors: CursorStore? = null,
-    private val cacheRoot: File? = null
+    private val cacheRoot: File? = null,
+    private val fallbackLists: (() -> FallbackLists)? = null
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val server: HttpServer = HttpServer.create(InetSocketAddress(host, requestedPort), 0)
@@ -66,6 +70,9 @@ class ReportServer(
         server.createContext("/export.csv") { exchange ->
             respond(exchange, "text/csv; charset=utf-8", VerdictCsvExporter.toCsv(store.all()))
         }
+        server.createContext("/as-properties") { exchange ->
+            respond(exchange, "text/x-java-properties; charset=iso-8859-1", fallbackProperties())
+        }
         server.createContext("/status") { exchange ->
             respond(exchange, "application/json; charset=utf-8", statusJson())
         }
@@ -76,6 +83,17 @@ class ReportServer(
         server.start()
         log.info("Grinder report available at http://${server.address.hostString}:$port/")
         return this
+    }
+
+    /**
+     * The `serverpackcreator.properties` fragment an SPC instance polls: the lists this daemon knows plus
+     * every crash-proven finding. A failing list-source degrades to the findings alone rather than to a 500 —
+     * this endpoint is polled unattended, and an error there is an error in somebody's log forever.
+     */
+    private fun fallbackProperties(): String {
+        val lists = fallbackLists?.let { source -> runCatching { source() }.getOrNull() }
+            ?: FallbackLists(emptyList(), emptyList())
+        return FallbackPropertiesRenderer.render(lists.clientsideMods, lists.whitelist, store.all())
     }
 
     /** Stop serving and shut the thread pool down. */
@@ -114,7 +132,14 @@ class ReportServer(
             .getOrElse { "{\"error\":\"status unavailable\"}" }
     }
 
-    /** Write [body] as a 200 response with the given [contentType], closing the exchange. */
+    /**
+     * Write [body] as a 200 response with the given [contentType], closing the exchange.
+     *
+     * UTF-8 for every endpoint, including `/as-properties`: that document declares ISO-8859-1 because
+     * `Properties.load(InputStream)` decodes it that way, but `FallbackPropertiesRenderer` escapes everything
+     * outside printable ASCII to `\uXXXX`, and the two encodings agree byte for byte there. Encoding it
+     * "correctly" would be a branch that can never change an output.
+     */
     private fun respond(exchange: HttpExchange, contentType: String, body: String) {
         val bytes = body.toByteArray(StandardCharsets.UTF_8)
         exchange.responseHeaders.add("Content-Type", contentType)

@@ -28,6 +28,8 @@ there and nowhere else. `.github/workflows` keeps a **smoke test** plus the four
 `clientside-*` workflows, which are GitHub-native (three `issues:`-triggered, one `workflow_call:`
 helper); releases are created on Forgejo and mirrored outward
 by `release-build.yml`'s `mirror` job, because Forgejo push-mirrors replicate refs but **not** releases.
+**GitHub is the only outward mirror.** gitlab.com was one too until 2026-08-23 — see *The mirror can only be
+as current as the repository it mirrors into* below.
 Two GitLab capabilities were **deliberately not carried over**: `Build Release` uploaded the app jar to
 GitLab's *generic package registry* and then created a release asset *link* to it (Forgejo attaches
 assets to the release directly, so a consumer with a hard-coded `/packages/generic/...` URL loses it),
@@ -64,6 +66,37 @@ its blocks, because GitHub honours them.
 above survived three audit iterations that validated YAML, checked action pinning, matched globs and
 verified secret names. None of that touches whether the runner can execute a step. The only test that
 finds these is a real run on the real instance.
+
+## The mirror can only be as current as the repository it mirrors into
+
+**gitlab.com was dropped as an outward mirror on 2026-08-23, and no release-API change could have saved it.**
+The `Mirror to GitLab.com` step reported a bare `⚙️ [runner]: exitcode '22': failure` in 0 s — curl's
+`--fail`, meaning HTTP ≥ 400, with the body discarded by `-sf`. It had never been able to succeed since it
+was written, because its precondition was already false when the migration added it. The cause was not in
+the workflow:
+
+```
+gitlab.com/Griefed/ServerPackCreator  newest commit  071e55402  2024-04-27  "RELEASE: 5.2.1"
+                                      newest tag     5.2.1        (1397 commits behind main)
+                                      releases       5, latest 5.2.1
+```
+
+The git push-mirror to gitlab.com died with the GitLab→Forgejo migration, so that repository has not received
+a commit since April 2024. GitLab's `POST /releases` needs either an existing `tag_name` or a `ref` commit to
+mint the tag from, and **that repository has neither** — the tag names a version four major lines newer than
+anything there, and the SHA has never existed there. The step's own comment anticipated the 404 and added `ref` to fix it, which was the
+right fix for a mirror that is merely *behind* and useless for one that is *stopped*.
+
+Two things generalise beyond GitLab:
+
+- **A mirror step's precondition is the mirror, not the API call.** Before adding or restoring one, check the
+  target actually has the ref: `curl -s https://<forge>/api/.../repository/commits?per_page=1`. Anonymous is
+  enough for a public repo, and it takes seconds.
+- **`curl -sf` in CI is how a failure becomes unreadable.** `-f` sets exit 22 and `-s` throws away the body —
+  which is the only place these APIs say what is wrong. The failing run said nothing else whatsoever.
+  The `mirror` job now captures the status with `-o file -w '%{http_code}'` and prints the body before
+  exiting; **the `release`, `virustotal` and release-body-update steps still use `curl -sf`** and have the
+  same blindness waiting for them.
 
 ## The release pipeline's two silent killers
 

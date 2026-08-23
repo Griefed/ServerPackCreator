@@ -37,12 +37,15 @@ import java.time.Duration
  * @param engine    The container runtime boundary.
  * @param image     The runtime image the pack is booted in.
  * @param resources CPU/memory/pid caps per boot.
+ * @param containerUser The `uid:gid` the boot runs as; must own the mounted pack or every write in it is
+ *                      refused. Resolved from the host by [ContainerUser] rather than trusting the image's.
  * @author Griefed
  */
 class ContainerServerRunner(
     private val engine: ContainerEngine,
     private val image: String,
-    private val resources: ContainerResources = ContainerResources()
+    private val resources: ContainerResources = ContainerResources(),
+    private val containerUser: String = ContainerUser.IMAGE_DEFAULT
 ) : ServerRunner {
 
     /** The vanilla server's ready-line, watched in the container's streamed console to stop early. */
@@ -65,7 +68,8 @@ class ContainerServerRunner(
             command = listOf("bash", "start.sh"),
             workingDir = PACK_MOUNT,
             mounts = listOf(BindMount(serverPack.absolutePath, PACK_MOUNT, readOnly = false)),
-            resources = resources
+            resources = resources,
+            user = containerUser
         )
         val output = engine.run(spec, readyLine, timeout, onLine)
         return RunResult.Completed(output.lines, output.exitCode, output.timedOut)
