@@ -2246,3 +2246,18 @@ ready-line inside 15 minutes is scored INCONCLUSIVE, which reads as a mod that h
 starved host — so fewer workers beats starving each of them.
 
 Suite 290 → 298, 0 failures, 22 skipped; the gated `DockerJavaContainerEngineIT` green at 7/7.
+
+**Audit iteration 23 then found the knob's own inversion.** `forCpus` used its *computed* quota as the
+"uncapped" sentinel, so any count below 5e-6 cores rounded to 0µs and returned quota `0` — which is docker's
+no-limit, verified in the container's cgroup as `max 100000`. A request for the smallest possible cap
+produced no cap at all, against a KDoc that promised the floor, in the one direction a hardening knob must
+not fail. The decision now reads the input (`cpus == 0.0`), the sentinel is named, and non-finite input is
+rejected up front: both `Infinity` and `NaN` survive `String.toDouble()`, and both round into a lie —
+`Long.MAX_VALUE` (so large it means uncapped) and `0` (uncapped outright). The same pass established, by
+measurement, that an over-large value needs **no** clamp: on a 16-core host a 1000-core quota is accepted and
+reported verbatim, because the raw cfs path carries none of `--cpus`'s host-bound validation. Three
+operator-facing findings went with it — the startup line now states the cap as `cpus=2.0 cores
+(200000/100000µs)` or `cpus=uncapped` instead of a raw quota that read as "zero CPU" at the escape hatch,
+`### Capping CPU` stopped splitting the worker-sizing section in half, and the installer's "worth a decision"
+list names the knob. Final: **303 tests, 0 failures**, 16 skipped with the gated Docker IT enabled and 23
+without.

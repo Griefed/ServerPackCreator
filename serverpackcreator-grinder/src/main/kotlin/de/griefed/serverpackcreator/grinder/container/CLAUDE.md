@@ -25,6 +25,11 @@ The boot seam: the grinder implements clientside's `ServerRunner` for containers
   `theCpuCapReachesTheKernelWithItsPeriod` reads it back *from inside* the container for that reason (docker
   echoing a `HostConfig` only proves transmission) and deliberately uses a non-default 50ms period, since at
   the kernel's own 100ms the assertion would pass with the period never sent.
+  **The uncapped sentinel is decided on the input, never on the computed quota** — a count that rounds away
+  to 0µs is still a request for a cap, and quota `0` is docker's "no limit" (measured: the cgroup then reads
+  `max 100000`), so the two zeroes must not be conflated. Audit iteration 23 found exactly that inversion.
+  An *over*-large value needs no clamp: the raw cfs path is not bounded by host CPU count the way docker's
+  `--cpus` is (measured on 16 cores, a 1000-core quota is accepted verbatim), it simply means uncapped.
 - **`DockerJavaContainerEngine`** is the real docker-java impl (create → start → follow logs → stop →
   inspect exit → force-remove). **Not unit-tested** (needs a live daemon) — that is the whole reason
   the testable orchestration sits in `ContainerServerRunner` behind the seam. If you change it, verify

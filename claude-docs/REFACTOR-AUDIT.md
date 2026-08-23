@@ -3629,3 +3629,30 @@ cd <tmp> && rm -rf serverpackcreator-grinder/src/test && git checkout develop --
 
 **290 pre-existing guards, 0 failures, 22 skipped, zero compile errors** — no signature changed, so nothing
 had to be adapted. Branch's own suite: 298 / 0 / 22.
+
+## Resolution — 2026-08-23, same session
+
+| Finding | Status | Where |
+|---|---|---|
+| H1 positive cap → uncapped | **fixed** | guard `test(grinder): pin that a positive CPU cap stays a cap` (red: `expected: <1000> but was: <0>`), fix `fix(grinder): decide "uncapped" from the request, not from the arithmetic` |
+| M1 README section split | **fixed** | `fix(grinder): report the CPU cap the way the operator set it` |
+| M2 startup line in µs | **fixed** | guard + `cpuCapDescription()`, same commit; teeth checked by restoring the old line |
+| M3 guard bundled with its code | **accepted, not rewritten** — see below |
+| M4 installer's "three worth a decision" | **fixed** | same commit as M1 |
+| L1 `Math.round` | **fixed** | `roundToLong()` |
+| L2 test name | **fixed** | `theShippedDefaultIsExactlyTwoCores` |
+| L3 `--cpus` validation implied | **fixed** | KDoc now states the raw cfs path is *not* host-bounded, with the measurement |
+| L4 brittle-but-loud wiring regex | **no change** | fails loudly rather than passing silently; the new startup-line matcher documents the lazy-match trap it hit |
+
+**M3 is deliberately not remedied by rewriting history, and that is a judgement call worth stating.** The
+convention's purpose is that someone can check out a parent and watch the pin go red. Buying that here costs
+a rebase of the whole branch, and the rebase would invalidate every commit hash this very report cites —
+precisely the failure mode CLAUDE.md's "cite names, not snapshots" entry exists for (54 hashes killed by a
+rebase). What is bought is thin: the guard in question is `theCpuCapReachesTheKernelWithItsPeriod`, a gated
+IT that no CI run will ever execute, whose teeth were checked in-session by removing the production line
+(`saw: [75000 100000]`) and whose red is recorded in three places. The two subsequent fixes on this branch
+were landed guard-first in their own commits, so the discipline is demonstrated where it is cheap. If a
+future reader disagrees, the remedy is a rewrite *before* the merge; after it, it is unfixable.
+
+**Re-verified after the fixes:** branch suite **303 tests, 0 failures** (16 skipped with `GRINDER_DOCKER_IT=1`,
+23 without — the gated Docker IT grew a case). Gated `DockerJavaContainerEngineIT` 7/7 against Docker 29.7.2.
