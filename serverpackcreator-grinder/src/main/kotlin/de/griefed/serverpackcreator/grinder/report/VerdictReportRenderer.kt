@@ -36,7 +36,8 @@ import java.nio.charset.StandardCharsets
 object VerdictReportRenderer {
 
     /** Column headers, in the order the rows below emit their cells. */
-    private val columns = listOf("Name", "Project", "Name-pattern", "Confidence", "Loader", "Detail", "Crash log")
+    private val columns =
+        listOf("Name", "Project", "Name-pattern", "Confidence", "Loader", "Detail", "Crash log", "Scanned (UTC)")
 
     /** Default order: strongest clientside signal first, then by name — matches the CSV export. */
     private val confidenceRank = mapOf(
@@ -128,8 +129,8 @@ object VerdictReportRenderer {
     }
 
     /**
-     * One table row; the Name links to the project, the last cell links the kept crash console when
-     * [crashLogName] names one, and every cell is HTML-escaped.
+     * One table row; the Name links to the project, the crash-console cell links the kept log when
+     * [crashLogName] names one, the last cell says when the mod was scanned, and every cell is HTML-escaped.
      *
      * The crash console is the cell that answers *why* a HIGH was reached — most often a server loading a mod
      * that reaches for a client-only class — which the Detail column can only summarise.
@@ -145,7 +146,9 @@ object VerdictReportRenderer {
             esc(verdict.confidence.name),
             esc(verdict.loader),
             esc(verdict.detail),
-            crashLog
+            crashLog,
+            // Last, because it is the one column whose width never changes — and the sort works on it as text.
+            ScanDate.of(verdict.verifiedAt)
         )
         return "<tr>" + cells.joinToString("") { "<td>$it</td>" } + "</tr>"
     }

@@ -23,16 +23,17 @@ import de.griefed.serverpackcreator.grinder.GrindVerdict
 
 /**
  * Renders verdicts as RFC-4180 CSV — the export behind the web table's "download CSV" action. Columns
- * mirror the table: project name (slug), link, the clientside-list name-pattern, the confidence and
- * which loader produced it. Rows are sorted highest-confidence-then-name so the strongest
- * clientside candidates lead; the web table re-sorts client-side, this is just a deterministic default.
+ * mirror the table: project name (slug), link, the clientside-list name-pattern, the confidence,
+ * which loader produced it, and the UTC date it was scanned on (see [ScanDate]). Rows are sorted
+ * highest-confidence-then-name so the strongest clientside candidates lead; the web table re-sorts
+ * client-side, this is just a deterministic default.
  *
  * @author Griefed
  */
 object VerdictCsvExporter {
 
     /** The header row; also documents the column order callers (and the table) rely on. */
-    private val header = listOf("Name", "Project", "NamePattern", "Confidence", "Loader", "Detail")
+    private val header = listOf("Name", "Project", "NamePattern", "Confidence", "Loader", "Detail", "Scanned")
 
     /** Confidence ordering for the default sort: strongest clientside signal first. */
     private val confidenceRank = mapOf(
@@ -54,7 +55,8 @@ object VerdictCsvExporter {
                 verdict.suggestedEntry ?: "",
                 verdict.confidence.name,
                 verdict.loader,
-                verdict.detail
+                verdict.detail,
+                ScanDate.of(verdict.verifiedAt)
             )
         }
         return (listOf(header) + rows).joinToString("\n") { fields -> fields.joinToString(",") { escape(it) } }
