@@ -230,7 +230,9 @@ Prefer the gateway address over `0.0.0.0`: it is reachable from containers on th
 from nowhere else, so an unauthenticated report does not end up published on a public interface. Check what you
 actually got — `ss -ltnp | grep 8757` must show the address you asked for, and the daemon logs it as `bind=` at
 startup. If the bridge is ever recreated on a different subnet the bind fails loudly at startup rather than
-silently falling back; pinning the subnet on a user-defined network avoids that.
+silently falling back — verified against the JDK's `HttpServer`: an address this host does not own gives
+`BindException: Can't assign requested address`, and a name that does not resolve gives `SocketException:
+Unresolved address`. Pinning the subnet on a user-defined network avoids the situation entirely.
 
 ### Sizing the worker count
 

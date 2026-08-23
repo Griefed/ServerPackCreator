@@ -2673,3 +2673,131 @@ the `test:` label on `ada74768d` are both still honest.
 - **L6 — accepted, not fixed.** The misplaced test-helper parameter is commit hygiene in already-merged history;
   rewriting the merge to move two lines is not worth it, and an earlier rewrite on this branch is precisely what
   swept an unrelated untracked file into a commit. Recorded instead.
+
+---
+
+# Iteration 13 — 2026-08-23 — the report bind-address branch (`claude-grinder-report-bind-host`, merged by `030036580`)
+
+Scope: `git log 97f487e0e..HEAD`, 17 commits. Thirteen of them were already audited as iteration 12 and its
+resolutions; their conclusions are re-affirmed below rather than re-litigated. Fresh scrutiny falls on the four
+new commits — `test(grinder): pin the report's bind address and its wiring`, `feat(grinder): make the report's
+bind address configurable`, `docs: record the grinder's report bind address in the status table`, and the merge.
+
+Self-audit of a feature branch, not a refactor branch. The reported failure was a reverse proxy 502ing against
+the grinder's report while the report answered fine on the box itself; the cause was `main` never passing
+`ReportServer`'s `host`, so it took the loopback default.
+
+## HIGH — none
+
+No behaviour change is mixed into a `refactor:` commit (there are no refactor commits on the branch), no module
+boundary moved, and nothing here is on the plugin-facing API — the grinder is not published to Maven.
+
+## MEDIUM
+
+### M1 — `claude-docs/REFACTOR-LOG.md` has no entry for this branch, nor for the one before it
+
+Definition of done, item 4: "Append the blow-by-blow to `claude-docs/REFACTOR-LOG.md`." The file's last entry is
+`## 2026-08-17 — web query shapes and the DBRef flattening`. Both the 2026-08-22 systemd home-resolution branch
+(iteration 12) and this one landed without one, so the log is two branches stale. Iteration 12 did not catch this
+about itself.
+
+### M2 — `7b8e762d2` bundles a test refactor with the new guards
+
+One concern per commit. The commit adds `ReportBindWiringTest` and `ReportServerBindAddressTest` *and* lifts
+`mainBody()` out of `GrinderSpcEnvironmentTest` into `GrindTestFixtures` as `grinderMainBody()`. The move is
+reference-only — every assertion byte-identical, which the conventions' carve-out explicitly permits to stay a
+`refactor:` — but that is an argument for it being its own `refactor(grinder):` commit *before* the guards, not
+for merging it into a `test:` one.
+
+## LOW
+
+### L1 — a `0.0.0.0` bind logs a URL nobody can open
+
+`f91cedfdb` — `GrinderApplication.kt`, the `reportUrl` line.
+
+Replacing the hardcoded `localhost` with `$bindHost` is right for a concrete address and wrong for the wildcard:
+verified against the JDK's `HttpServer`, `0.0.0.0` binds fine and the line now prints `http://0.0.0.0:56442/`,
+which is not a browsable URL. The old hardcoded text was correct for exactly this case. Regression, narrow.
+
+### L2 — an IPv6 bind produces a malformed URL
+
+Same line. Verified: `::1` binds (`hostString` comes back `0:0:0:0:0:0:0:1`) and the log reads
+`http://::1:56443/`. IPv6 literals need brackets — `http://[::1]:56443/` — or the URL is unparseable.
+
+### L3 — four new `!!` assertions
+
+Kotlin conventions, "no **new** `!!` in refactored code": `ReportServerBindAddressTest` has `address!!` twice,
+`ReportBindWiringTest` has `read!!` and `construction!!`. All four exist only because `Assumptions.assumeTrue`
+and `Assertions.assertNotNull` do not smart-cast. Both have null-safe spellings that read better.
+
+### L4 — `assertThrows(ConnectException)` is tighter than the fact it is pinning
+
+`ReportServerBindAddressTest.theDefaultIsReachableOnLoopbackOnly`. The claim is "not reachable"; the assertion is
+"refused with this exact exception". A host that DROPs rather than REJECTs yields `HttpConnectTimeoutException`
+after the 5 s timeout, and the guard then *fails* on a box where the property it guards actually holds.
+
+### L5 — the ephemeral port is chosen on loopback and assumed free on the other interface
+
+Same test. `requestedPort = 0` allocates a free port *for 127.0.0.1*; the guard then connects to
+`nonLoopbackIp:thatPort`. A process bound specifically to that address and port would make the connection succeed
+and the guard fail. Rare, not impossible; recorded rather than fixed, since every fix costs more than the flake.
+
+### L6 — the README's "fails loudly at startup" was written before it was checked
+
+§5 *Exposing the report* asserts that a stale bridge subnet makes the bind fail at startup "rather than silently
+falling back". True — verified after the fact: an unassigned address gives `BindException: Can't assign requested
+address` and a typo'd hostname `SocketException: Unresolved address`. The convention is "document what you
+verify"; here the order was reversed.
+
+## Not findings — verified clean, do not re-litigate
+
+- **The guards landed red, in their own commit, for the right reason.** `7b8e762d2` predates any
+  `SPC_GRINDER_HOST` in the source, so `theConfiguredBindHostReachesTheReportServer` failed on "main() no longer
+  reads SPC_GRINDER_HOST" — the intended assertion, not an accident of its own regex. This is the boundary the
+  2026-07-31 audit found collapsed in eight commits; it holds here.
+- **The regex widening inside `f91cedfdb` is not the stop-and-flag signal.** It changes how broadly a
+  one-commit-old guard *searches*, not what it expects; no expectation, argument or expected value moved. The
+  signal is about existing assertions changing under a `refactor:` label, and this is a `feat:`.
+- **No pre-existing assertion changed anywhere on the branch.** `git diff 3e873af88..HEAD -- "*/src/test/*"` is
+  two new files plus the reference-only helper move.
+- **`0.0.0.0` is not the recommended value and the docs say so.** README §5 recommends the bridge gateway and
+  states why (the report is unauthenticated end to end — `/`, `/status` and `/export.csv` all answer
+  unconditionally, no auth anywhere in `ReportServer.start()`).
+- **No `API-BEHAVIOUR-CHANGES.md` row is owed.** The grinder is not published and not plugin-facing; the changed
+  surface is a log line and an environment variable.
+- **Iteration 12's resolutions stand.** `testFileWrite` still probes via `Files.createTempFile` with removal in a
+  `finally`, and its behaviour row is still in `claude-docs/API-BEHAVIOUR-CHANGES.md`.
+
+## Summary
+
+| Severity | Count | Fixable in place |
+|---|---|---|
+| HIGH | 0 | — |
+| MEDIUM | 2 | M1 yes; M2 no — already-merged history |
+| LOW | 6 | L1–L4 yes; L5 recorded; L6 already verified, wording only |
+
+## Resolution (same day, on Griefed's instruction to fix all findings)
+
+- **M1 — fixed.** `claude-docs/REFACTOR-LOG.md` backfilled with both missing entries: the 2026-08-22 systemd
+  home-resolution branch (iteration 12's subject, which had none either) and this one.
+- **M2 — accepted, not fixed.** Splitting `7b8e762d2` means rewriting history already merged into `develop`. The
+  same call iteration 12 made for its L6, and for the same reason: an earlier rewrite on this project is exactly
+  what swept an unrelated untracked file into a commit. The lesson was applied going forward instead — the L1/L2
+  fix below landed as four commits (extract, pin red, fix, clean) rather than one.
+- **L1 and L2 — fixed.** `refactor(grinder): extract the report URL from main()` made the line testable,
+  `test(grinder): pin the logged report URL for wildcard and IPv6 binds` landed red on three of four cases, and
+  `fix(grinder): make the logged report URL openable for wildcard and IPv6 binds` turned them green. A wildcard
+  is reported as the loopback the report is certainly answering on; IPv6 literals are bracketed.
+  `concreteIpv4AddressesAreLeftAlone` was green before *and* after, so the ordinary path is demonstrably
+  untouched.
+- **L3 and L4 — fixed.** `refactor(grinder): drop the bind guards' !! and over-tight exception type`. All four
+  `!!` are gone: `nonLoopbackIpv4()` returns `String` and throws `TestAbortedException` itself (JUnit reports the
+  same skip the assumption did), and the two regex lookups use elvis into `Assertions.fail`, which returns
+  `Nothing`. The unreachability assertion widened from `ConnectException` to `IOException`, so a host that DROPs
+  rather than REJECTs no longer fails a guard whose property holds.
+- **L5 — recorded, not fixed.** Standing: every available fix costs more than the flake it prevents.
+- **L6 — fixed.** README §5 now names what was actually observed — `BindException: Can't assign requested
+  address` for an unowned address, `SocketException: Unresolved address` for a name that does not resolve — so a
+  reader can recognise either rather than take the claim on faith.
+
+Suite after the resolutions: grinder **245**, zero failures.
