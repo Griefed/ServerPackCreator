@@ -35,7 +35,7 @@ internal class GrinderReportUrlTest {
     /** Every URL logged must parse and carry a host, whatever the bind address was. */
     @Test
     fun everyBindAddressYieldsAParsableUrl() {
-        for (bind in listOf("127.0.0.1", "172.19.0.1", "0.0.0.0", "::1", "::", "fe80::1")) {
+        for (bind in listOf("127.0.0.1", "172.19.0.1", "0.0.0.0", "::1", "::", "fe80::1", "[::1]")) {
             val url = GrinderApplication.reportUrl(bind, 8757)
             val parsed = URI.create(url)
             Assertions.assertEquals("http", parsed.scheme, "not a usable URL for bind '$bind': $url")
@@ -59,6 +59,16 @@ internal class GrinderReportUrlTest {
     fun ipv6LiteralsAreBracketed() {
         Assertions.assertEquals("http://[::1]:8757", GrinderApplication.reportUrl("::1", 8757))
         Assertions.assertEquals("http://[fe80::1]:9090", GrinderApplication.reportUrl("fe80::1", 9090))
+    }
+
+    /**
+     * An operator may well write the bracketed form, and the JDK accepts it as a bind address — verified
+     * against `HttpServer`, which binds `[::1]` and reports `0:0:0:0:0:0:0:1`. Bracketing it a second time
+     * would hand them `http://[[::1]]:8757`.
+     */
+    @Test
+    fun anAlreadyBracketedLiteralIsNotBracketedAgain() {
+        Assertions.assertEquals("http://[::1]:8757", GrinderApplication.reportUrl("[::1]", 8757))
     }
 
     /** The ordinary cases are untouched: a concrete IPv4 address is already exactly what it should be. */
