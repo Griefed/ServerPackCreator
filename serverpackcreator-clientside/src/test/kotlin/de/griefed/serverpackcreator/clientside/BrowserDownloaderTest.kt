@@ -39,4 +39,37 @@ internal class BrowserDownloaderTest {
             Assertions.assertNull(downloader.download(file, tempDir))
         }
     }
+
+    /**
+     * The download-flow's own navigation is expected to be aborted: CurseForge answers `/download` with a
+     * file transfer, and Chromium aborts a navigation that turns into one. Playwright surfaces that as a
+     * thrown `net::ERR_ABORTED`, which used to escape the `waitForDownload` callback and tear the wait down
+     * — discarding a download that had in fact started. Observed live 2026-08-23 on `bwncr-neoforge`,
+     * `tombstone-neoforge` and `Structory`, all stacked at `_FrameSession._navigate`.
+     */
+    @Test
+    fun treatsAnAbortedNavigationAsTheDownloadStarting() {
+        Assertions.assertTrue(
+            BrowserDownloader.isDownloadAbort(RuntimeException("Error { message='net::ERR_ABORTED; maybe frame was detached?' }")),
+            "net::ERR_ABORTED is how a navigation-turned-download reports itself"
+        )
+        Assertions.assertTrue(
+            BrowserDownloader.isDownloadAbort(RuntimeException("Download is starting")),
+            "Playwright also words the same event this way"
+        )
+    }
+
+    @Test
+    fun doesNotSwallowANavigationThatFailedForARealReason() {
+        Assertions.assertFalse(
+            BrowserDownloader.isDownloadAbort(RuntimeException("net::ERR_NAME_NOT_RESOLVED at https://www.curseforge.com/")),
+            "a genuine navigation failure must not be mistaken for a download"
+        )
+        Assertions.assertFalse(
+            BrowserDownloader.isDownloadAbort(RuntimeException("Timeout 30000ms exceeded")),
+            "a timeout is not a download"
+        )
+        Assertions.assertFalse(BrowserDownloader.isDownloadAbort(RuntimeException(null as String?)))
+    }
+
 }
