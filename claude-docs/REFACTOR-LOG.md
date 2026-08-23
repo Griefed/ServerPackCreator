@@ -2667,3 +2667,78 @@ the same on any host) and zero-padded (the table sorts as text, so `2026/1/5` wo
 
 clientside 136 → **138**, grinder 344 → **351**, zero failures. Counts read back from
 `<module>/build/test-results/test/*.xml`. Every code commit is preceded by its own red `test(...)` commit.
+
+---
+
+## 2026-08-23 (later) — the template fix: which Forge versions the ServerStarterJar cannot launch
+
+Follow-up to item 3 above, after Griefed asked for the shipped-template change and — crucially — for it to
+be **tested rather than assumed**. That instruction is what saved it: the suggestion in the earlier report
+was *wrong*.
+
+### The wrong hypothesis, and what disproved it
+
+Reading the sources said: Forge switched from cpw's `securejarhandler` to its own `securemodules` fork at
+Minecraft 1.20.2, cpw's parent-layer lookup ends in `.orElse(getPlatformClassLoader())` while Forge's
+*throws*, and the throw is still present in `securemodules` **2.2.21** (verified in the jar's own class
+bytes). Conclusion: every Forge from 1.20.2 onwards is unlaunchable by the ServerStarterJar.
+
+Then `1.21.1-52.1.0` booted **through** the starter jar — `Done (6.593s)! For help` — logging the line that
+explains everything:
+
+```
+Launching in jar mode, using jar: /w/forge-1.21.1-52.1.0-shim.jar
+```
+
+The deciding artefact is not the module loader, it is **which argfile the installer writes**:
+
+| Minecraft | argfile | shim jar | ServerStarterJar |
+|---|---|---|---|
+| 1.17 – 1.20.1 | `-p <module path>`, cpw securejarhandler | no | works — cpw's loader falls back |
+| **1.20.2** | `-p <module path> --add-modules ALL-MODULE-PATH`, Forge securemodules | **no** | **dies** |
+| 1.20.3 onwards | `-jar forge-<version>-shim.jar` | yes | works — jar mode, nothing synthesised |
+
+Boots, all on Temurin under `--network none` with a 3 GiB cap:
+
+| Forge | through SSJ | from its own argfile |
+|---|---|---|
+| `1.20.1-47.4.0` | ready-line reached | — |
+| `1.20.2-48.1.0` | `IllegalStateException` at `SecureModuleClassLoader.<init>` | `Done (5.183s)! For help` |
+| `1.21.1-52.1.0` | `Done (6.593s)! For help` | — |
+
+Had the wrong rule shipped, every modern Forge pack would have lost the hosting-company compatibility the
+starter jar exists to provide. `securemodules` 2.2.21 still containing the throw is exactly the kind of
+evidence that reads as conclusive and is not: the code is there, the path to it is gone.
+
+### What shipped
+
+`forgeNeedsItsOwnArgfile` in all three templates, as a *second* independent reason to bypass the starter
+jar beside the existing Java-24 one; the two now share one argfile block instead of two copies. 1.20.3 is
+bypassed on HELP.md's word rather than a boot — it ships the shim, so it probably works, but it has two
+Forge builds in total, so over-including costs nothing and under-including costs a dead server.
+
+**Verified by execution in all three shells, not by reading two of them.** bash through the new
+`ScriptTemplateContentTest` case; fish and PowerShell by extracting the function and driving it in
+containers, since neither is installable on every dev machine:
+
+| Minecraft | 1.17.1 | 1.19.2 | 1.20 | 1.20.1 | 1.20.2 | 1.20.3 | 1.20.4 | 1.21.1 | 26.2 | 26.20.2 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| bash / fish / pwsh | SSJ | SSJ | SSJ | SSJ | **bypass** | **bypass** | SSJ | SSJ | SSJ | SSJ |
+
+All ten agree in all three. `26.20.2` is why the major is part of the test: it matches 1.20.2 component for
+component below the major. Whole templates also pass `fish -n` and PowerShell's own
+`Parser::ParseFile` — the PowerShell behaviour run needed `-Command` rather than `-File`, because the
+amd64 image aborts under QEMU on this host with `-File`.
+
+### And the grinder's workaround came back out
+
+The earlier `USE_SSJ=false` in `PackVariables` was right while the templates could not tell the affected
+versions apart, and wrong afterwards: it is blanket, so it also disabled the starter jar for 1.17–1.20.1
+and 1.20.4+, where it works. The grinder would then boot every Forge pack by a route almost no user's pack
+takes — and would never again notice that route breaking. It noticed once, which is why the templates now
+decide, so the knob is reverted and `leavesTheStarterJarChoiceToTheTemplates` fails if it returns.
+
+`variables.txt` and `HELP.md` now tell operators they should not need the knob at all, instead of naming
+two Minecraft versions and leaving them to act.
+
+Suites: api 356 → **361**, clientside **139**, grinder **350**, zero failures.
