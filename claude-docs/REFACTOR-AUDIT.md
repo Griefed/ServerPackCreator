@@ -3820,3 +3820,99 @@ fails `theResolvedReportsIdentityIsWhatGetsReaped`.
 **Re-verified after the fixes and the two features that followed:** clientside **136 tests, 0 failures**;
 grinder **325 tests, 0 failures** (23 skipped — the gated Docker IT and the two bind-address guards that
 need a real non-loopback IPv4).
+
+---
+
+# Audit — 2026-08-23, unpushed `develop` (iteration 25)
+
+Scope: `git log origin/develop..HEAD` — everything not yet pushed, i.e. the two merges landed this session
+(`f2cf95dc4` the creativecore work, `23e8efc46` the re-grind queue) and their branches. Read-only pass. The
+MEDIUM below was confirmed against the **production log** rather than reasoned about.
+
+## HIGH
+
+**H1 — a shutdown landing in the re-grind drain is ignored, and a fresh catalog pass starts anyway.**
+`serverpackcreator-grinder/src/main/kotlin/de/griefed/serverpackcreator/grinder/GrinderApplication.kt`, the
+continuous pass loop (`2376d75d6`).
+
+The drain introduced a **second `GrindPool` per pass**, and the shutdown hook holds exactly one handle:
+
+```kotlin
+val requeued = requeue.drain()
+if (requeued.isNotEmpty()) {
+    GrindPool(grinder, workers).also { activePool.set(it) }.grindAll(requeued, force = true)
+}
+val batch = crawler.nextBatch()                                   // <-- no running.get() between
+val pool = GrindPool(grinder, workers).also { activePool.set(it) }
+```
+
+The hook reads `activePool` **once** — deliberately, and the comment says why ("reading it twice could signal
+one pool and wait on another"). So a stop during a drain signals the requeue pool, closes the engine, awaits
+the workers, and reports a clean stop; `main` then falls through to `crawler.nextBatch()` and starts a *new*
+pool, grinding new candidates and creating new containers **after the hook has finished**, with systemd's
+`TimeoutStopSec` already counting down. The loop's only `running.get()` checks are at the top of the iteration
+and after the catalog pass — neither is between the two pools.
+
+Before this branch the invariant held by construction: one pool per iteration, set immediately before use, so
+the hook's single read always named the pool that was running. The drain broke it. Severity HIGH because the
+grinder's shutdown path is load-bearing — containers live in the docker daemon's cgroup, not the unit's, so
+the hook is the only thing that can stop them, and this branch's own module doc says so.
+
+## MEDIUM
+
+**M1 — `/status` under-reports, and goes stale, for the whole drain.**
+`status.beginPass(pass, batch.candidates.size)` is called *after* the requeue pool and counts only the catalog
+slice. So while a drain of 300 forced re-grinds is running, `/status` still shows the **previous** pass's
+number and size while `active` shows workers grinding candidates that belong to neither. The endpoint exists
+to answer "what is it doing right now?", and during the one operation an operator is most likely to be
+watching, it answers wrongly.
+
+**M2 — a queued re-grind can wait six hours, which is not what "immediate" or the README promise.**
+The inter-pass pause is a single uninterruptible `Thread.sleep(pause.toMillis())`, and
+`GrindPacing.pauseAfterPass` returns `betweenSweeps` — default `SPC_GRINDER_INTERVAL` = 21 600 s — whenever a
+completed sweep verified nothing. Queue work into a daemon that has just gone to sleep and nothing happens for
+up to six hours. The README says "a running daemon takes them at the start of its next pass" without saying
+how far away that can be, which reads as *soon*. The queue's whole justification is not waiting out a 30-day
+TTL; trading it for a 6-hour one is better but still not what was built.
+
+**M3 — pre-existing, found while auditing: the pass-completion log prints a whole `GrindPass`, not the pass
+number.** `val pass = pool.grindAll(batch.candidates)` shadows the `var pass` counter, so
+`log.info("Pass #$pass complete: …")` interpolates the data class. Present on `origin/develop`, so not this
+branch's doing — surfaced here because the conventions require it rather than deferring it.
+
+Confirmed against `~/.spc-grinder/grinder.log`, 14 such lines, e.g.:
+
+```
+Pass #GrindPass(reached=[GrindCandidate(projectUrl=https://modrinth.com/mod/lambdynamiclights,
+slug=lambdynamiclights, popularity=49644693, platform=Modrin… complete: …
+```
+
+A multi-kilobyte line, dumping every candidate's URL and popularity, where a two-digit number belongs — in
+the one line an operator greps to see pass progress.
+
+## LOW
+
+**L1 — `JsonRequeueStore.pending()` is not `@Synchronized` while `add` and `drain` are.** It only reads, and
+`read()` degrades to empty on any failure, so the exposure is a momentarily stale count on `/status` rather
+than corruption. But the inconsistency invites the next reader to conclude the annotation is decorative.
+
+**L2 — the README's re-grind section does not say when "next pass" is.** Same fact as M2, stated where an
+operator reads it; worth fixing in the same breath as M2 rather than separately.
+
+## Verified clean — do not re-litigate
+
+- **Commit hygiene across all 21 unpushed commits**: every code commit touches a single source set, test
+  commits precede their fixes and were red, and the two merges carry the reasoning rather than a file list.
+- **The re-grind queue's own contract** is pinned where it matters and the pins have teeth: the force
+  (`aForcedGrindReVerifiesEvenAFreshVerdict` asserts both directions in one test), persistence across
+  processes, identity by project id over slug, and the platform split.
+- **The CLI path's placement** — before the SPC claims, printing to stdout — is guarded on *both* halves by
+  `theRequeuePathRunsBeforeTheClaimsAndNeverLogs`, which reads the helper's own source because `main`'s body
+  cannot see a log call made inside it. Verified in the built artefact too: a real
+  `:serverpackcreator-grinder:run --requeue-before …` against a store sliced from the live 875-verdict file
+  left only `requeue.json` behind, no `logs/`, i.e. no `ApiProperties` was constructed.
+- **Not an HTTP endpoint** is the right call and is documented as such: the report server is unauthenticated
+  by design, so a write endpoint would let anyone who can reach the page schedule unbounded container work.
+- **`CrashLogStore`'s traversal guard** checks the name before touching the filesystem and confirms
+  canonically afterwards; both the store-level and the served-over-HTTP cases are pinned, and a refusal is
+  deliberately indistinguishable from an absent log.
