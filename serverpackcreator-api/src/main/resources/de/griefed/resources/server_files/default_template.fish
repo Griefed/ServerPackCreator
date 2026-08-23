@@ -256,6 +256,14 @@ end
 # NOTE: fish arrays are 1-indexed. Bash's ${SEMANTICS[0]} (major) is $SEMANTICS[1] here, ${SEMANTICS[1]} (minor)
 # is $SEMANTICS[2] and ${SEMANTICS[2]} (patch) is $SEMANTICS[3].
 function forgeNeedsItsOwnArgfile
+    # Screen every component before comparing it, and take the bypass for anything unreadable -- comparing a
+    # non-numeric component is an error, and the bypass is the route that works for every Forge from 1.17 on.
+    if not string match -qr '^[0-9]+$' -- "$SEMANTICS[1]"
+        return 0
+    end
+    if not string match -qr '^[0-9]+$' -- "$SEMANTICS[2]"
+        return 0
+    end
     if not test "$SEMANTICS[1]" -eq 1
         return 1
     end
@@ -264,6 +272,9 @@ function forgeNeedsItsOwnArgfile
     end
     if test (count $SEMANTICS) -lt 3
         return 1
+    end
+    if not string match -qr '^[0-9]+$' -- "$SEMANTICS[3]"
+        return 0
     end
     if test "$SEMANTICS[3]" -eq 2; or test "$SEMANTICS[3]" -eq 3
         return 0
@@ -285,7 +296,8 @@ function setupForge
     # 1.17 it produces libraries/.../unix_args.txt instead. The major must be checked too, because the minor alone only
     # carries that meaning under the 1.x scheme -- Minecraft 26.2 has minor 2, which would otherwise read as the 1.2
     # era and take the legacy path, where the server dies with "Unable to access jarfile forge.jar".
-    if test $SEMANTICS[1] -eq 1; and test $SEMANTICS[2] -le 16
+    # Screened before compared, as in forgeNeedsItsOwnArgfile: comparing a non-numeric component is an error.
+    if string match -qr '^[0-9]+$' -- "$SEMANTICS[1]"; and string match -qr '^[0-9]+$' -- "$SEMANTICS[2]"; and test $SEMANTICS[1] -eq 1; and test $SEMANTICS[2] -le 16
         set -g FORGE_JAR_LOCATION "forge.jar"
         set -g LAUNCHER_JAR_LOCATION "forge.jar"
         set -g SERVER_RUN_COMMAND "$JAVA_ARGS -jar $LAUNCHER_JAR_LOCATION nogui"

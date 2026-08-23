@@ -377,6 +377,16 @@ Function global:ForgeNeedsItsOwnArgfile
     Minecraft 26.20.2 matches 1.20.2 component for component below the major, and bypassing the starter jar
     there would quietly drop that compatibility for every modern pack.
     #>
+    # Screen every component before casting it, and take the bypass for anything unreadable -- [int] THROWS on a
+    # non-numeric component, and the bypass is the route that works for every Forge from 1.17 on.
+    if (-Not ([string]$Semantics[0] -match '^\d+$'))
+    {
+        return $true
+    }
+    if (-Not ([string]$Semantics[1] -match '^\d+$'))
+    {
+        return $true
+    }
     if ([int]$Semantics[0] -ne 1)
     {
         return $false
@@ -388,6 +398,10 @@ Function global:ForgeNeedsItsOwnArgfile
     if ($Semantics.count -lt 3)
     {
         return $false
+    }
+    if (-Not ([string]$Semantics[2] -match '^\d+$'))
+    {
+        return $true
     }
     return (([int]$Semantics[2] -eq 2) -Or ([int]$Semantics[2] -eq 3))
 }
@@ -402,7 +416,9 @@ Function global:SetupForge
     # 1.17 it produces libraries/.../win_args.txt instead. The major must be checked too, because the minor alone only
     # carries that meaning under the 1.x scheme -- Minecraft 26.2 has minor 2, which would otherwise read as the 1.2
     # era and take the legacy path, where the server cannot find forge.jar at all.
-    if ([int]$Semantics[0] -eq 1 -And [int]$Semantics[1] -le 16)
+    # Screened before cast, as in ForgeNeedsItsOwnArgfile: [int] THROWS on a non-numeric component, which would
+    # take the whole start script down for a snapshot-shaped version.
+    if (([string]$Semantics[0] -match '^\d+$') -And ([string]$Semantics[1] -match '^\d+$') -And ([int]$Semantics[0] -eq 1) -And ([int]$Semantics[1] -le 16))
     {
         $ForgeJarLocation = "forge.jar"
         $script:LauncherJarLocation = "forge.jar"

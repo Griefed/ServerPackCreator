@@ -221,12 +221,19 @@ cleanServerFiles() {
 #
 # The MAJOR is part of the test on purpose. Minor and patch carry this meaning only under the 1.x scheme:
 # Minecraft 26.20.2 matches 1.20.2 component for component below the major, and bypassing the starter jar there
-# would quietly drop that compatibility for every modern pack. Anything unreadable falls through to a bypass,
-# which is the safe direction -- the argfile path works for every Forge from 1.17 on.
+# would quietly drop that compatibility for every modern pack.
+#
+# Every component is screened before it is compared, and anything unreadable takes the BYPASS. Both halves
+# matter: comparing a non-numeric component prints "value too great for base" at the operator, and the argfile
+# path works for every Forge from 1.17 on while the ServerStarterJar has a known failure -- so a version nobody
+# can parse must not be handed to the route that can die. Same fail-safe polarity as the JAVA_VERSION guard.
 forgeNeedsItsOwnArgfile() {
+  [[ "${SEMANTICS[0]}" =~ ^[0-9]+$ ]] || return 0
+  [[ "${SEMANTICS[1]}" =~ ^[0-9]+$ ]] || return 0
   [[ ${SEMANTICS[0]} -eq 1 ]] || return 1
   [[ ${SEMANTICS[1]} -eq 20 ]] || return 1
   [[ ${#SEMANTICS[@]} -ge 3 ]] || return 1
+  [[ "${SEMANTICS[2]}" =~ ^[0-9]+$ ]] || return 0
   [[ ${SEMANTICS[2]} -eq 2 || ${SEMANTICS[2]} -eq 3 ]]
 }
 
@@ -243,7 +250,11 @@ setupForge() {
   # 1.17 it produces libraries/.../unix_args.txt instead. The major must be checked too, because the minor alone only
   # carries that meaning under the 1.x scheme -- Minecraft 26.2 has minor 2, which would otherwise read as the 1.2 era
   # and take the legacy path, where the server dies with "Unable to access jarfile forge.jar" before loading any mod.
-  if [[ ${SEMANTICS[0]} -eq 1 ]] && [[ ${SEMANTICS[1]} -le 16 ]]; then
+  # Screened before compared, for the reason forgeNeedsItsOwnArgfile documents: a non-numeric component makes
+  # the comparison itself print "value too great for base" at the operator. Unreadable falls to the modern era,
+  # which is where every version that is not plainly 1.x-and-old belongs anyway.
+  if [[ "${SEMANTICS[0]}" =~ ^[0-9]+$ ]] && [[ "${SEMANTICS[1]}" =~ ^[0-9]+$ ]] && \
+     [[ ${SEMANTICS[0]} -eq 1 ]] && [[ ${SEMANTICS[1]} -le 16 ]]; then
     FORGE_JAR_LOCATION="forge.jar"
     LAUNCHER_JAR_LOCATION="forge.jar"
     SERVER_RUN_COMMAND="${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"
