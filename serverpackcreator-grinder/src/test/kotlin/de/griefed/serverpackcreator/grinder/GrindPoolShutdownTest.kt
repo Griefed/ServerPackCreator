@@ -252,4 +252,33 @@ internal class GrindPoolShutdownTest {
                 "hundreds as whatever the catalog slice happens to be"
         )
     }
+
+    /**
+     * **The pass counter must not be shadowed.** `val pass = pool.grindAll(...)` hid the `var pass` counter,
+     * so `"Pass #$pass complete"` interpolated the `GrindPass` data class instead of the number.
+     *
+     * Found by reading the production log rather than the code, which is why it survived so long — it
+     * compiles, it runs, and the line still starts with "Pass #". `~/.spc-grinder/grinder.log` carried 14 of
+     * them, each a multi-kilobyte dump of every reached candidate's URL and popularity, in the one line an
+     * operator greps to see how a pass went:
+     *
+     * ```
+     * Pass #GrindPass(reached=[GrindCandidate(projectUrl=https://modrinth.com/mod/lambdynamiclights,
+     * slug=lambdynamiclights, popularity=49644693, platform=Modrin… complete: …
+     * ```
+     *
+     * Asserted on `main`'s source because that is where the shadowing is; nothing about a log line's text is
+     * reachable from a unit test without an appender, and the defect is the declaration, not the formatting.
+     */
+    @Test
+    fun thePassCounterIsNotShadowed() {
+        val body = grinderMainBody()
+
+        Assertions.assertTrue(body.contains("var pass = 0"), "main() no longer counts passes")
+        Assertions.assertFalse(
+            body.contains("val pass ="),
+            "a `val pass` inside the loop shadows the counter, and every \"Pass #\$pass\" below it then " +
+                "interpolates whatever that local holds"
+        )
+    }
 }
