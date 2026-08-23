@@ -146,6 +146,16 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   | Forge | `HIGH` | `ironchest-` | Forge 48.1.0 / MC 1.20.2 → CRASHED (exit 1) |
   | NeoForge | `LOW` | `ironchest-` | NeoForge 21.11.45 / MC 1.21.11 → SURVIVED (exit 137) |
 
+  **LANDMINE — `bootResult` alone is not enough; check *whose* boot it was.** Since the other-version re-check
+  began spanning loaders, `reconcileOtherVersionRecheck` can decide one loader's verdict from another loader's
+  clean boot, leaving `bootResult == SURVIVED` on a loader that crashed. `BootOutcome.bootedLoader` (stamped by
+  `runPrepared`, carried to `LoaderVerdict.bootedLoader`) records which loader actually ran, and
+  `loaderDisprovingTheCrash` requires `other.bootedLoader == other.loader`. Without it the guard fires on
+  evidence it does not have: the build that booted belongs to a third loader whose stem may differ, so the
+  published entry would strip nothing proven bootable — `embeddium-` (Forge/NeoForge) versus `sodium-fabric-`
+  is exactly that shape, and it is the one `FilenameStemDeriver.deriveStems` documents — and the note would
+  read "<loader> booted a server" of a loader that did not. The Markdown report's Boot cell says
+  `SURVIVED (via NeoForge)` when the two differ, so no row claims a boot it never had.
   **Exit 137 on a SURVIVED row is normal, not a kill to investigate** — `ContainerServerRunner` watches for the
   ready-line and stops the container the moment it appears, so every clean container boot exits 137.
   **The crash is not erased:** `bootResult` and the excerpt stay, because the server did crash and that is
@@ -262,7 +272,7 @@ seam (writes the log, then `BootLogClassifier` + `BootLogExcerpt`). The default
 
 ## Testing patterns
 
-- 134 tests, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
+- 136 tests, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
   JSON to a fake `HttpFetcher`. **Four need a resource** — `MetadataScannerTest`, `LoaderVersionResolverTest`,
   `BootVerifierSelectionTest` and `AttemptStagingIsolationTest` each boot an offline `ApiWrapper` from
   `src/test/resources/serverpackcreator.properties` (whose `ModScanner` relies on the API's cached

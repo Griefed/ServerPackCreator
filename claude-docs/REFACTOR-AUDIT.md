@@ -3656,3 +3656,167 @@ future reader disagrees, the remedy is a rewrite *before* the merge; after it, i
 
 **Re-verified after the fixes:** branch suite **303 tests, 0 failures** (16 skipped with `GRINDER_DOCKER_IT=1`,
 23 without — the gated Docker IT grew a case). Gated `DockerJavaContainerEngineIT` 7/7 against Docker 29.7.2.
+
+---
+
+# Audit — 2026-08-23, `claude-clientside-recheck-diversity` (iteration 24)
+
+Scope: `git log develop..HEAD` — eight commits, six of code in strict test-then-fix pairs
+(`bcc802174`/`14c8539a0` Modrinth primary files, `1f4dea431`/`39d340340` diversified crash re-check,
+`638cbf0a0`/`82c0c9c39` per-attempt staging identity) and two of documentation (`7a7d9e952`,
+`5c4fcfa31`). Read-only pass; every number below was produced by a command, and the HIGH was
+reproduced by executing the two functions involved rather than by reading them.
+
+## HIGH
+
+**H1 — a clean boot under one loader is published as another loader's `bootResult`, and then disproves
+a *third* loader's crash on evidence that does not support it.**
+`serverpackcreator-clientside/src/main/kotlin/de/griefed/serverpackcreator/clientside/BootVerifier.kt`
+(`reconcileOtherVersionRecheck`, survivor branch) together with
+`ClientsideVerifier.loaderDisprovingTheCrash` / `supersededByLoader` — introduced by `39d340340`.
+
+Before this branch, every attempt folded into a verdict was a boot of *that verdict's own loader*, so
+`survivor.outcome.copy(...)` returning the survivor's `result` was sound. `39d340340` made the re-check
+sample span loaders without changing that fold, so the survivor may now be a different loader's boot.
+Two consequences, both reproduced by calling the real functions:
+
+```
+PROBE1 result=SURVIVED
+        reconcileOtherVersionRecheck(NeoForge CRASHED,
+            [OtherVersionAttempt("sodium-fabric-0.5.jar (Fabric, Minecraft 1.21.11)", SURVIVED)])
+PROBE2 disproving=NeoForge
+PROBE2 note=Forge 48.1.0 / MC 1.20.2 -> CRASHED (exit 1) Crashed, but NeoForge booted a server with
+        the same entry 'embeddium-' — the crash belongs to that build, not to the mod's sideness.
+```
+
+1. **The report states something untrue.** NeoForge never booted a server; Fabric did. The module's own
+   rule for this note is that it is *rebuilt* rather than appended to, "because bolting a correction onto
+   a false sentence is how prose goes stale" — this produces the false sentence directly.
+   `ClientsideReportRenderer.kt:66` renders `verdict.bootResult` as that loader's row, so the per-loader
+   table shows `SURVIVED` for a loader that crashed.
+2. **`loaderDisprovingTheCrash`'s stated invariant is no longer satisfied.** It exists so a published
+   entry cannot strip a build proven to boot, and it tests that by comparing the two verdicts' *entries*.
+   With a cross-loader survivor the build that actually booted belongs to a third loader whose entry may
+   differ — `sodium-fabric-0.5.jar` does not start with `embeddium-`, the very Fabric/NeoForge naming
+   split `FilenameStemDeriver.deriveStems` documents. The guard fires; nothing it protects is at risk.
+
+Direction of harm is a false *negative* (a crash cleared that should have stood), which is the
+conservative side for the fallback list — but the branch's whole subject is the honesty of this evidence
+chain, and it currently publishes a sentence it cannot support. Severity HIGH because a behaviour change
+in `39d340340` silently altered the meaning of an input an *existing* guard depends on.
+
+Suggested remedy, in the branch's own idiom: record on `BootOutcome` which loader produced the decisive
+boot, carry it to `LoaderVerdict`, and require in `loaderDisprovingTheCrash` that a disproving verdict's
+decisive boot was its **own** loader's. That keeps the guard's invariant exactly as documented, keeps the
+note true, and leaves the within-loader and cross-loader re-checks untouched.
+
+## MEDIUM
+
+**M1 — the reaper's scope now rests on an agreement the code elsewhere warns can fail.**
+`serverpackcreator-grinder/src/main/kotlin/de/griefed/serverpackcreator/grinder/ContainerCandidateVerifier.kt`
+(`reaper.reap(candidate.platform, candidate.slug)`, `82c0c9c39`). Staging is named from the *resolved
+report's* `ProjectFiles.platform`/`slug`; reaping is keyed on the *candidate's*. `Grinder.kt:82-88`
+explicitly logs `"Platform mismatch for …: candidate says 'X', resolved report says 'Y'"`, i.e. the
+codebase already knows the two can disagree. On disagreement the reap matches nothing and that
+candidate's staging survives until the next startup `reapAll()` — bounded, but it re-opens the disk-growth
+class `BootWorkspaceReaper` exists for (98 GB / 1750 directories, 2026-07-30).
+
+Not newly invented: `reap(candidate.slug)` versus a directory named from `project.slug` had the same
+coupling before this branch. The change *extends* it from one field to two, which is the moment to close
+it rather than inherit it. Remedy: reap on the resolved report's identity when the verification produced
+one, falling back to the candidate's when it threw.
+
+**M2 — a landmine claim in the module context file is false, and the branch edits the line it sits on.**
+`serverpackcreator-clientside/CLAUDE.md:266` — *"`MetadataScannerTest` is the only one needing a
+resource"*. Measured: on `develop` three test classes already build an `ApiWrapper`
+(`MetadataScannerTest`, `BootVerifierSelectionTest`, `LoaderVersionResolverTest`); this branch adds
+`AttemptStagingIsolationTest`, making four. The claim was stale before the branch, but `7a7d9e952`
+rewrites the test count on that same bullet, so the Boy-Scout rule puts it in scope — and this project
+treats stale prose as its own defect class ("cite names, not snapshots").
+
+## LOW
+
+**L1 — a log line that no longer describes what it does.**
+`BootVerifier.kt:226` (`39d340340`): `"re-checking ${candidates.size} other version(s) before trusting
+the crash"`. The sample now spans loaders, so "version" is only half of what is being tried; the
+per-attempt labels were updated for exactly this reason and this line was not.
+
+**L2 — a fixture that no longer illustrates the shape it stands for.**
+`BootVerifierCrashRecheckTest`'s synthetic labels keep the pre-change
+`"ironchest-1.20.1.jar (Minecraft 1.20.1)"` form while production now emits
+`"… (Forge, Minecraft 1.20.1)"`. Harmless — they are opaque strings to the function under test — but the
+file is where a reader goes to learn what a label looks like.
+
+## Verified clean — do not re-litigate
+
+- **Commit hygiene is exact.** Every one of the six code commits touches a single source set:
+  `bcc802174`, `1f4dea431`, `638cbf0a0` → `src/test` only; `14c8539a0`, `39d340340`, `82c0c9c39` →
+  `src/main` only. No commit mixes a test with the change it pins, which is the boundary CLAUDE.md
+  records eight commits collapsing on 2026-07-31.
+- **Both test commits were verified red before their fix**, and the two signature-change commits are red
+  as compile failures — the honest shape for a signature change, stated as such in their messages.
+- **Teeth checked on all five new behavioural pins**, each by restoring the pre-fix line and observing the
+  named test fail: `reapingOnePlatformLeavesTheSameSlugOnAnotherPlatformAlone`,
+  `theJarScanOfTwoPlatformsSharingASlugDownloadsIntoSeparateDirectories`,
+  `theSameSlugOnTwoPlatformsStagesIntoSeparateDirectories`, `nonPrimaryFilesAreNotModFiles`,
+  `aSourceJarDoesNotPoisonTheDerivedListEntry`.
+- **No new compiler warnings** in either touched module (`compileKotlin` + `compileTestKotlin`,
+  `--rerun-tasks`, filtered to `clientside`/`grinder`: none).
+- **Module boundaries intact.** `AttemptDirectory` lives in `-clientside` and is consumed by `-grinder`,
+  which already depends on it. Nothing points inward; no Spring, Swing or frontend reach was added.
+- **No plugin-API contract touched.** Every changed signature (`pickRecheckCandidates`,
+  `BootWorkspaceReaper.reap`, `stageBootPack`, `OtherVersionAttempt.label` semantics) is in
+  `-clientside` or `-grinder`, neither of which is published to Maven Central. `-api` is untouched by the
+  branch.
+- **`14c8539a0` is a genuine fix, not a filter dressed as one.** The `primaries.ifEmpty { files }`
+  fallback is load-bearing: 3 of `creativecore`'s 300 live versions flag no primary, and dropping them
+  would lose real builds. Verified against the live API, not assumed.
+
+## Equivalence against the base — clean
+
+`develop`'s unmodified test tree run against this branch's production code, per CLAUDE.md's procedure:
+
+```
+git worktree add --detach /tmp/spc-base HEAD
+rm -rf <clientside|grinder>/src/test && git checkout develop -- <both>/src/test
+./gradlew :serverpackcreator-clientside:test :serverpackcreator-grinder:test --continue
+```
+
+**415 pre-existing guards, 0 failures** (clientside 114, grinder 301), with exactly **two** files
+uncompilable, both enumerated rather than worked around:
+
+| File | Why it cannot compile | Deliberate? |
+|---|---|---|
+| `BootCandidateSelectorTest` | `pickRecheckCandidates` gained a loader per candidate and gates on `(loader, mc)` | yes — re-pinned by `1f4dea431` |
+| `BootWorkspaceReaperTest` | `reap` gained the platform half of its scope | yes — re-pinned by `638cbf0a0` |
+
+Both are the branch's two intended contract changes, and both are the subject of a red test commit. No
+*other* guard on `develop` changed meaning: the remaining 415 were run unmodified and passed.
+
+## Resolution — 2026-08-23, same session
+
+All five findings fixed, each pinned red first in its own `test(...)` commit.
+
+| Finding | Outcome |
+|---|---|
+| H1 cross-loader survivor disproving a third loader's crash | **fixed** — `BootOutcome.bootedLoader` stamped by `runPrepared`, carried to `LoaderVerdict.bootedLoader`; `loaderDisprovingTheCrash` now requires `other.bootedLoader == other.loader`; the Markdown Boot cell reads `SURVIVED (via NeoForge)` when they differ |
+| M1 reap keyed on the candidate's identity | **fixed** — `ContainerCandidateVerifier.reapTarget` prefers the resolved report's `(platform, slug)` and falls back to the candidate only when the verification threw |
+| M2 stale "only one test needs a resource" | **fixed** — names all four and states the `grep` that re-derives them, rather than leaving another number to trust |
+| L1 "other version(s)" log line | **fixed** — says "combination(s)" and lists each `<loader> / Minecraft <version>` |
+| L2 fixture labels in the pre-change format | **fixed** — labels carry their loader; every assertion byte-identical |
+
+**H1's remedy was chosen over two cheaper ones and it is worth saying why.** Making
+`reconcileOtherVersionRecheck` return the *crashing* loader's outcome with a patched result would have kept
+`bootResult` honest per row but thrown away which build actually booted, so the report could no longer say
+what cleared the crash. Suppressing cross-loader survivors from the fold entirely would have undone the fix
+the branch exists for. Recording the loader costs one nullable field and makes both the guard and the
+rendered table state exactly what happened.
+
+**Teeth checked on both fixes**: restoring `loaderDisprovingTheCrash`'s two-condition form fails
+`aSurvivalBorrowedFromAnotherLoaderDisprovesNothing` while `theSameSurvivalOnItsOwnLoaderStillDisproves`
+stays green (so the guard narrowed rather than closed); `reapTarget` returning the candidate unconditionally
+fails `theResolvedReportsIdentityIsWhatGetsReaped`.
+
+**Re-verified after the fixes and the two features that followed:** clientside **136 tests, 0 failures**;
+grinder **325 tests, 0 failures** (23 skipped — the gated Docker IT and the two bind-address guards that
+need a real non-loopback IPv4).

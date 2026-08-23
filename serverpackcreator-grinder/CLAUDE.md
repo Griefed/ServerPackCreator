@@ -264,6 +264,35 @@ though their detail lives deeper:
   had gone), and re-checks reading INCONCLUSIVE on a file the other run had booted to a ready-line. A crash is
   the one outcome that reaches HIGH, so this manufactured false positives rather than merely losing runs.
   Directories staged before the rename match no owner and are cleared by the startup `reapAll()`.
+  **Landmine — reap the identity the staging was *named* from, not the candidate's.** Directories carry
+  `ProjectFiles.platform`/`slug` (the resolved report's); `ContainerCandidateVerifier.reapTarget` therefore
+  prefers the report and falls back to the candidate only when the verification threw and there is no report
+  to ask. `Grinder` logs `"Platform mismatch for …: candidate says 'X', resolved report says 'Y'"`, so the two
+  are known to be able to disagree, and a slug is a mutable name a rename can move out from under a queued
+  candidate. Asking with the candidate's copy of either matches nothing and leaks a whole pack per attempt.
+- **A crashed boot's console outlives its staging** (`CrashLogStore`, `ContainerCandidateVerifier.keepCrashConsoles`).
+  The reaper keeps one `boot.log` per attempt directory, but staging *wipes and re-creates* that directory, so
+  the next re-grind of the same tuple destroyed the console for a verdict that is still published. Since a crash
+  is the only outcome that reaches HIGH — and its usual cause, a server loading a mod that reaches for a
+  client-only class (`NoClassDefFoundError: net/minecraft/client/…`), is legible from the console and nothing
+  else — crashing consoles are copied into `<home>/crash-logs` as each candidate's verdicts land. **Only
+  CRASHED is kept**: a clean boot proves nothing about sideness and explains nothing either.
+  - **Under the *home*, not under `work/`** — everything below `work/` is scratch the reaper may reclaim.
+  - **Growth is bounded by the catalog, not by uptime**: a log is named `<platform>-<slug>-<loader>.log` via
+    the same `AttemptDirectory` helper, so a re-grind *replaces* it. That is the deliberate opposite of the
+    naming that once grew the work tree to 98 GB. Oversized consoles keep their **tail** (the stack trace is
+    at the end) with the truncation written into the file.
+  - **LANDMINE — the name is untrusted input.** `/crash-log?name=` addresses the store by name, and this
+    report has no authentication and is documented as reverse-proxyable. `read` requires a plain file name
+    resolving directly inside the store — checked on the string before the filesystem is touched, then
+    confirmed canonically so a symlink cannot lead out — and a refusal is deliberately indistinguishable from
+    an absent log, so probing tells a caller nothing. Two tests pin it; do not "simplify" it to `File(dir, name)`.
+- **The report links every endpoint.** `/export.csv`, `/status`, `/as-properties` and `/crash-logs` are buttons
+  beside "Download CSV", and each crashing row links its own console. They were previously reachable only from
+  a line printed at startup, which an operator sees once. `VerdictReportRenderer.toHtml` takes a per-row
+  *lookup* for the crash-log name rather than reading a field off `GrindVerdict`: the log lives on disk, so
+  asking at render time means the link appears exactly when the file does, and a hand-deleted log cannot
+  strand the table pointing at a 404.
 
 and the grinder sets `$JAVA` per MC version (via the pack's `variables.txt`) from SPC's declared
 required-Java — **no Java download**, which is what keeps mod-boots runnable under `--network none`.
