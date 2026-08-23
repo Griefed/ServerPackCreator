@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder
 
+import de.griefed.serverpackcreator.grinder.container.ContainerResources
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -70,6 +71,28 @@ internal class CpuLimitWiringTest {
             construction(body, "DockerLoaderInstaller").contains("resources = $resources"),
             "main() never hands its ContainerResources to DockerLoaderInstaller — a loader install is the " +
                 "heaviest container the daemon runs and would stay uncapped by the knob"
+        )
+    }
+
+    /**
+     * The startup line must state the cap, and state it as [ContainerResources.cpuCapDescription] renders it.
+     *
+     * That line is the only place an operator sees what the daemon actually resolved — the same role it
+     * already plays for `containerUser=`, which exists because the alternative was reproducing a permission
+     * failure to find out. A raw quota there would answer in a unit nobody set.
+     */
+    @Test
+    fun theStartupLineStatesTheCapInTheOperatorsUnit() {
+        val body = grinderMainBody()
+        val startupLine = Regex("""log\.info\(\s*
+?\s*"Grinder starting(.*?)\)""", RegexOption.DOT_MATCHES_ALL)
+            .find(body) ?: Assertions.fail("main() no longer logs a `Grinder starting` line")
+
+        Assertions.assertTrue(
+            startupLine.groupValues[1].contains("cpuCapDescription()"),
+            "the startup line must render the cap through cpuCapDescription() — a bare quota reads as a " +
+                "microsecond count nobody set, and `0` reads as no CPU when it means uncapped. Line was: " +
+                startupLine.value
         )
     }
 

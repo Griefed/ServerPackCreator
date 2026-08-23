@@ -99,6 +99,20 @@ internal class ContainerResourcesTest {
     }
 
     /**
+     * The startup line is where an operator checks the cap they set, so it has to answer in their unit.
+     *
+     * Both halves matter. A quota alone reads as a microsecond count nobody set, and at the documented
+     * escape hatch `0` it reads as "zero CPU" when it means the exact opposite — which is the value an
+     * operator is most likely to be double-checking.
+     */
+    @Test
+    fun theCapDescribesItselfInTheOperatorsOwnUnit() {
+        Assertions.assertEquals("2.0 cores (200000/100000µs)", ContainerResources.forCpus(2.0).cpuCapDescription())
+        Assertions.assertEquals("1.5 cores (150000/100000µs)", ContainerResources.forCpus(1.5).cpuCapDescription())
+        Assertions.assertEquals("uncapped", ContainerResources.forCpus(0.0).cpuCapDescription())
+    }
+
+    /**
      * `Infinity` and `NaN` both survive `String.toDouble()`, so the knob can be handed either. Rejected at
      * the conversion, because the alternatives are silent: infinity rounds to `Long.MAX_VALUE` (a quota so
      * large it means uncapped), and NaN rounds to 0 (uncapped outright).
