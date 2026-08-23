@@ -4044,3 +4044,136 @@ queued: [('Modrinth', 'creativecore'), ('CurseForge', 'jei')]
 ```
 
 **Suite after both iterations: grinder 336 → 344, 0 failures** (23 skipped).
+
+---
+
+# Audit — 2026-08-23, `claude-grinder-favicon-hostname-forge` (iteration 27)
+
+Scope: the 13 commits of `develop..HEAD` — a bundled favicon, container name resolution, the Forge
+launch path, two classifier rungs and a scan-date column. Six code commits, each preceded by its own
+red `test(...)` commit; no commit carries a `refactor:` label, so the behaviour-preservation rule is
+not in play.
+
+## HIGH
+
+**H1 — `Error: could not open` is broad enough to destroy a true clientside HIGH, and it is checked
+above the marker that produces one.**
+`BootLogClassifier.kt`, `launchFailureMarkers` (`c54637df7`):
+
+```kotlin
+"|Error: could not open)", RegexOption.IGNORE_CASE
+```
+
+`classify` tests `launchFailureMarkers` at rung four and `clientOnlyClassMarker` at rung seven, so a
+console that matches the former never reaches the latter. The pattern is unanchored and
+case-insensitive, so *any* line containing the substring matches — including a mod's own log line:
+
+```
+[19:41:26] [main/ERROR] [polytone/]: Error: could not open assets/polytone/foo.json
+java.lang.NoClassDefFoundError: net/minecraft/client/multiplayer/ClientLevel
+```
+
+That console is a textbook clientside crash and would now be scored **INCONCLUSIVE** — a true positive
+silently dropped, which is the one failure mode this classifier's whole guard ladder is arranged to
+avoid. The commit's own KDoc claims the opposite ("Matched with the launcher's own `Error: ` prefix so
+a mod logging 'could not open' about one of its own files is not excused along with it"), which is
+false: a log line can contain `Error: could not open` anywhere in it. So the defect ships with a
+comment asserting it is absent — the stale-prose failure class this file's conventions single out.
+
+The JVM launcher emits it as the **entire line**, with no timestamp or level prefix, while every mod
+line carries one. Anchoring the alternative to line start (`^Error: could not open`) is exact — the
+classifier already matches per line, so `^` means "the launcher said it" and nothing else.
+
+## MEDIUM
+
+**M1 — the new `Scanned` cell is the only table cell not HTML-escaped, and the doc says otherwise.**
+`VerdictReportRenderer.kt`, `rowHtml` (`3b1392f1c`): every other cell goes through `esc(...)`;
+`ScanDate.of(verdict.verifiedAt)` does not. No injection is reachable today — the value comes from a
+fixed `yyyy/MM/dd` formatter over an `Instant`, so it can only be digits and slashes. What is broken is
+the *invariant*, and the same commit edited that function's KDoc to read "and every cell is
+HTML-escaped", which is now untrue. The uniform discipline is what makes the next cell safe to add;
+one exception costs a character to remove and is otherwise a trap for whoever adds the cell after it.
+
+## LOW
+
+**L1 — `ContainerSpec.hostName` is unvalidated.** A blank one produces `withExtraHosts(":127.0.0.1")`
+and the daemon refuses *every* create with a message about extra hosts rather than about the spec.
+**Accepted, recorded:** both construction sites (`ContainerServerRunner`, `DockerLoaderInstaller`) take
+the default constant, and unlike `ContainerResources` — which validates precisely because
+`SPC_GRINDER_CPUS`/`SPC_GRINDER_MEMORY_GIB` reach it from the environment — nothing plumbs a value in.
+A `require` here would guard an input that cannot currently exist.
+
+**L2 — the icon is served without `Cache-Control`,** so a browser re-fetches 4 160 bytes per page load
+of a loopback service. Accepted; not worth a header.
+
+## Equivalence against the base — clean
+
+`develop`'s unmodified test tree against this branch's production code (worktree at `HEAD`,
+`src/test` replaced from `develop`, `--continue`):
+
+| Module | Base guards | Failures | Compile errors |
+|---|---|---|---|
+| clientside | 136 | **0** | none |
+| grinder | 344 | 2 | none |
+
+Both grinder failures are `VerdictCsvExporterTest.emitsHeaderAndOrdersHighestConfidenceFirst` and
+`emptyVerdictsStillEmitTheHeader` — the two exact `assertEquals` on the CSV header, changed
+deliberately by the `Scanned` column and enumerated in that column's own red-test commit. **Zero
+compile errors** is the load-bearing half: `ContainerSpec` gained a parameter and `respond` changed
+shape, and no base guard's signature broke. Notably the base `PackVariablesTest`, `ReportServerTest`
+and the whole clientside classifier suite pass untouched, so `USE_SSJ=false`, the two new favicon
+contexts and the two new INCONCLUSIVE rungs regressed nothing that was already pinned.
+
+## Verified clean — do not re-litigate
+
+- **The favicon really ships in the artefact**, not only on the test classpath. Measured, since the
+  guard resolves the resource from `build/resources/main` and would stay green if packaging dropped it,
+  and `buildSrc`/packaging has no test harness by decision:
+  `unzip -l serverpackcreator-grinder-dev.jar` → `de/griefed/serverpackcreator/grinder/report/favicon.png`,
+  **4160 bytes**, byte-identical to `img/config.png`.
+- **`CLEANUP` cannot delete the argfile the Forge boot now depends on.** `cleanServerFiles` runs only on
+  `--cleanup` or when `.previousrun` shows a changed version, and `.previousrun` is in the install
+  snapshot's runtime-state denylist — so a freshly staged grinder pack has none and never cleans.
+  The `libraries/` tree the argfile lives in therefore survives the offline boot.
+- **The extra host does not disturb the *networked* install container.** Measured on the bridge default:
+  `/etc/hosts` carries `127.0.0.1 spc-grinder` ahead of the daemon's own `172.17.0.3 spc-grinder`, so
+  the container's own name resolves to loopback — harmless for a container that only makes outbound
+  calls — and outbound DNS is unaffected (`nslookup maven.neoforged.net` answers).
+- **Matching the message and not the module** in `loaderBootstrapFailureMarkers` is deliberate and
+  proven, not a shortcut: the production log named `java.base` read by `net.minecraftforge.eventbus`,
+  the local reproduction of the identical launch named `java.management.rmi` read by `JarJarMetadata`.
+- **`loaderBootstrapFailureMarkers`' own breadth.** `Could not find parent layer for module`,
+  `Failed to find run file at` and `Failed to find startup arguments using run script path` are all
+  distinctive upstream sentences with no plausible mod-log collision — unlike H1's, none of them is a
+  generic verb phrase. Checked against the guard-ordering hazard H1 describes and cleared.
+- **The `/tmp` `noexec` finding is recorded, not deferred.** JNA cannot map a native library out of a
+  `noexec` tmpfs, which is the `com.sun.jna.Native` / `oshi` noise in `Modrinth-polytone-NeoForge.log`.
+  It cost nothing there (crash-report diagnostics only, and the real client-class crash was still
+  detected) and it must not be "fixed" in the classifier: those markers appear *inside* polytone's
+  correct HIGH, so excusing them would destroy the verdict. The only real fix is `exec` on `/tmp`,
+  which is a deliberate weakening of the untrusted-mod posture and therefore an owner's decision, not
+  a cleanup. Landmined in `grinder/container/CLAUDE.md`.
+- **Commit hygiene.** Every one of the six code commits is preceded by its own `test(...)` commit that
+  was observed red, with the red output quoted in the message; tests and behaviour changes are never in
+  the same commit; the single `docs:` commit touches only files documenting this branch's work.
+
+## Resolution — iteration 27, same session
+
+| Finding | Outcome |
+|---|---|
+| H1 `Error: could not open` suppresses a true clientside HIGH | **fixed** — anchored to line start, both directions pinned |
+| M1 the `Scanned` cell was the only unescaped one | **fixed** — `esc(...)`, byte-identical output, labelled `refactor:` |
+| L1 `hostName` unvalidated | **accepted, recorded** — no caller can supply one; unlike `ContainerResources`, nothing plumbs it from the environment |
+| L2 no `Cache-Control` on the icon | **accepted, recorded** |
+
+**H1's teeth were checked in the only way that proves them**: the guard was committed red
+(`expected: <CRASHED> but was: <INCONCLUSIVE>` on a console holding a mod's `Error: could not open`
+line *and* `NoClassDefFoundError: net/minecraft/client/multiplayer/ClientLevel`) and is green with the
+anchor. The pre-existing `aJvmThatNeverLaunchedIsInconclusive` case — the launcher's own whole-line
+message — stays green, so the anchor narrowed the guard without disarming it.
+
+**M1 is deliberately labelled `refactor:` and deliberately carries no new test.** `esc` rewrites only
+`& < > " '`; a `yyyy/MM/dd` string from a fixed formatter over an `Instant` contains none, so output is
+byte-identical and every existing assertion stays as it was — which is what the label claims and what
+makes a new guard pointless. A test would have to assert the *shape* of the call, which this repo's
+conventions rule out.
