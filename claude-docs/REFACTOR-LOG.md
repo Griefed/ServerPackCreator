@@ -2741,4 +2741,5 @@ decide, so the knob is reverted and `leavesTheStarterJarChoiceToTheTemplates` fa
 `variables.txt` and `HELP.md` now tell operators they should not need the knob at all, instead of naming
 two Minecraft versions and leaving them to act.
 
-Suites: api 356 → **361**, clientside **139**, grinder **350**, zero failures.
+Suites: api 356 → **361**, clientside **139**, grinder **351**, zero failures — read back from
+`<module>/build/test-results/test/*.xml` after the run, not carried forward from the earlier section.
