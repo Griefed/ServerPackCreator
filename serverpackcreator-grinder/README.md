@@ -190,6 +190,7 @@ never evicted, and a re-install costs one networked setup boot if it comes back.
 | `SPC_GRINDER_CACHE`             | `~/.spc-grinder/cache`         | Cached loader installs, one per loader/version/Minecraft                     |
 | `SPC_GRINDER_STORE`             | `~/.spc-grinder/verdicts.json` | Verdict store — delete to start fresh                                        |
 | `SPC_GRINDER_CURSORS`           | `~/.spc-grinder/cursors.json`  | Crawl position per platform — delete to re-sweep from the most-downloaded    |
+| `SPC_GRINDER_REQUEUE`           | `~/.spc-grinder/requeue.json`  | Immediate re-grind queue — see *Re-grinding verdicts you no longer trust*    |
 | `SPC_GRINDER_PORT`              | `8757`                         | Report server port                                                           |
 | `SPC_GRINDER_HOST`              | `127.0.0.1`                    | Report server bind address. Loopback by default — see *Exposing the report*  |
 | `SPC_GRINDER_CONTAINER_USER`    | owner of `SPC_GRINDER_WORK`    | `uid:gid` the containers run as. Must own the staging — see *Container identity* |
@@ -423,6 +424,39 @@ Modrinth and CurseForge stays two separate projects. How far the crawl has got i
 one entry per platform with the next `offset`, the number of completed `sweeps`, and — for CurseForge — the
 `partition` being walked (`gameVersion|modLoaderType|direction`, `*` meaning "no filter"). Read it to tell
 "still on the first pass over this platform" from "covered it, now keeping it current".
+
+### Re-grinding verdicts you no longer trust
+
+The crawl plus the re-verify TTL answer *when does a project come round again?* with **eventually, at the
+TTL** — right when a mod changes, wrong when the bug is in the grinder. When that happens the affected
+verdicts are already published, and waiting out a 30-day TTL means serving a known-wrong clientside entry for
+a month.
+
+So there is a queue that jumps the crawl. Entries in it are ground **first, in the next pass, and past the
+freshness check** — the last part matters, because a verdict is queued precisely *because* it is wrong, and a
+wrong verdict is usually a recent one.
+
+```bash
+# A named handful — a report someone disputed, a verdict that looks wrong.
+spc-grinder --requeue https://modrinth.com/mod/creativecore https://www.curseforge.com/minecraft/mc-mods/jei
+
+# Everything verified before a fix landed. This is the one you want after an engine bug:
+# a defect invalidates a *population*, not a list you assemble by hand.
+spc-grinder --requeue-before 2026-08-23T18:00:00Z
+```
+
+Both commands **queue and exit**, so run them against a service that is already up — the daemon takes the
+queue at the start of its next pass (a stopped one, on its next start). They are additive and idempotent:
+queueing something already waiting changes nothing, and the same slug on the two platforms queues twice
+because it is two projects. Run them **as the same user as the service**, or it will not be able to read the
+queue back.
+
+Watch the backlog drain on `/status` → `requeued`, and in the log: a queued grind logs
+`Grinding <platform>/<slug> (re-grind requested)`, which is how you tell "the crawl reached this" from
+"somebody decided the old verdict was wrong".
+
+The queue lives in `SPC_GRINDER_REQUEUE` (`~/.spc-grinder/requeue.json`) and survives restarts. Deleting the
+file cancels whatever is still waiting.
 
 ---
 

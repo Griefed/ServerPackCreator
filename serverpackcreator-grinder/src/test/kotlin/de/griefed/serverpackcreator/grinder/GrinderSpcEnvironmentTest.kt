@@ -112,6 +112,41 @@ internal class GrinderSpcEnvironmentTest {
      * it, or a helper's log call — and the guard would then compare positions of things it is not asserting about
      * and pass whatever `main` does. [mainBody] asserts its own boundedness, so that cannot rot silently.
      */
+    /**
+     * **The queue-and-exit path must run before the claims *and* must not log.**
+     *
+     * `--requeue` is run by an operator against a service that is already up, so it must not claim the
+     * preferences node or re-pin SPC's home — those are remembered for every later run, and re-pinning them
+     * from a one-shot command would move the home out from under the running daemon. Being early is only half
+     * of it: the first `log` use in a process constructs an `ApiProperties`, which is the very thing the
+     * claims exist to control, so a log statement on this path would re-introduce the hazard from inside the
+     * helper where [theSpcEnvironmentIsClaimedBeforeTheFirstLogStatement] — which scans `main`'s body — cannot
+     * see it.
+     */
+    @Test
+    fun theRequeuePathRunsBeforeTheClaimsAndNeverLogs() {
+        val body = grinderMainBody()
+        val branch = body.indexOf("enqueueAndExit(")
+        Assertions.assertTrue(branch > 0, "main() no longer routes --requeue to enqueueAndExit")
+        for (claim in listOf("claimSpcPreferencesNode()", "pinSpcHomeDirectory(")) {
+            Assertions.assertTrue(
+                branch < body.indexOf(claim),
+                "$claim must come *after* the queue-and-exit branch: a one-shot --requeue must not re-pin the " +
+                    "home of the daemon it is queueing work for"
+            )
+        }
+
+        val helper = grinderEntryPoint.readText()
+            .substringAfter("private fun enqueueAndExit(")
+            .substringBefore("\n    /**")
+        Assertions.assertTrue(helper.isNotBlank(), "could not isolate enqueueAndExit — did the entry point change shape?")
+        Assertions.assertFalse(
+            helper.contains("log."),
+            "enqueueAndExit must write to stdout, never to log: the first log statement in a process builds " +
+                "the ApiProperties whose home the claims below it exist to pin"
+        )
+    }
+
     @Test
     fun theSpcEnvironmentIsClaimedBeforeTheFirstLogStatement() {
         val body = grinderMainBody()

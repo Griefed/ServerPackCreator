@@ -26,6 +26,7 @@ import de.griefed.serverpackcreator.grinder.GrinderStatus
 import de.griefed.serverpackcreator.grinder.ModPlatforms
 import de.griefed.serverpackcreator.grinder.loader.LoaderCache
 import de.griefed.serverpackcreator.grinder.source.CursorStore
+import de.griefed.serverpackcreator.grinder.source.RequeueStore
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.net.InetSocketAddress
@@ -49,6 +50,8 @@ import java.util.concurrent.Executors
  *                      grinder's own findings only — the report server stays constructible without SPC.
  * @param crashLogs The kept consoles of crashed boots, linked from the table and served by name. `null`
  *                  simply offers no links, so the report stays constructible without a log store.
+ * @param requeue The immediate re-grind queue, reported as a backlog count on `/status` so a queued
+ *                re-verification is visible rather than inferred from the logs.
  * @author Griefed
  */
 class ReportServer(
@@ -59,7 +62,8 @@ class ReportServer(
     private val cursors: CursorStore? = null,
     private val cacheRoot: File? = null,
     private val fallbackLists: (() -> FallbackLists)? = null,
-    private val crashLogs: CrashLogStore? = null
+    private val crashLogs: CrashLogStore? = null,
+    private val requeue: RequeueStore? = null
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val server: HttpServer = HttpServer.create(InetSocketAddress(host, requestedPort), 0)
@@ -178,6 +182,9 @@ class ReportServer(
     private fun statusJson(): String {
         val document = linkedMapOf<String, Any?>(
             "verdicts" to store.all().size,
+            // How much work is waiting in the jump-the-crawl lane. Read live: an operator queueing a re-grind
+            // wants to see it land, and a backlog that never shrinks is the symptom of a stalled pass.
+            "requeued" to requeue?.pending(),
             "activity" to status?.snapshot(),
             "crawl" to cursors?.let { store ->
                 ModPlatforms.known.associateWith { platform ->
