@@ -96,4 +96,51 @@ internal class ShutdownWiringTest {
                 "$workers workers — systemd would SIGKILL mid-sweep and leave containers running"
         )
     }
+
+    /**
+     * Audit iteration 21, P21-H1. The one-shot run built its pool inline and never stored it in `activePool`,
+     * which is the only handle the shutdown hook has — so Ctrl-C during the end-to-end verification path
+     * signalled and awaited nothing, both calls no-opping through a null receiver. It looked fine because the
+     * engine still closed and the boots collapsed with their containers.
+     */
+    @Test
+    fun theOneShotRunRegistersItsPoolSoCtrlCCanStopIt() {
+        val body = grinderMainBody()
+        // Counting `activePool.set(` occurrences would be the obvious check and is wrong: the pass loop also
+        // clears the reference with `activePool.set(null)`, so a reset reads as a registration and the
+        // unregistered one-shot pool passed. Each construction is therefore checked against what follows it.
+        val constructions = Regex("""GrindPool\([^)]*\)""").findAll(body).toList()
+        Assertions.assertTrue(constructions.isNotEmpty(), "main() no longer builds a GrindPool — did it change shape?")
+
+        val unregistered = constructions.filterNot { construction ->
+            body.substring(construction.range.last, minOf(body.length, construction.range.last + 60))
+                .contains("activePool.set(")
+        }
+        Assertions.assertTrue(
+            unregistered.isEmpty(),
+            "${unregistered.size} GrindPool(s) are built without reaching activePool, which is the only handle " +
+                "the shutdown hook has — an unregistered pool's workers are never signalled or awaited"
+        )
+    }
+
+    /**
+     * Audit iteration 21, P21-M1. The workers must get what remains of the *shared* window, not a second full
+     * one after the containers have spent it — the hook's own log line, its comment and README §5 all promise
+     * a single 15-second budget, and the unit's TimeoutStopSec arithmetic assumes the two overlap.
+     */
+    @Test
+    fun theWorkersGetTheRemainderOfTheWindowRatherThanASecondOne() {
+        val body = grinderMainBody()
+
+        Assertions.assertFalse(
+            body.contains("awaitStop(SHUTDOWN_GRACE)"),
+            "awaitStop is handed the full window after close() may already have spent it, making the real " +
+                "worst case two windows while everything documented promises one"
+        )
+        Assertions.assertTrue(
+            body.contains("awaitStop("),
+            "main() no longer waits for the workers at all"
+        )
+    }
+
 }
