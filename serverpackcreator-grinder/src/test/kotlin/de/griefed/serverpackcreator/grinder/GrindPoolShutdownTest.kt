@@ -127,4 +127,76 @@ internal class GrindPoolShutdownTest {
 
         Assertions.assertEquals(atStop, ground.get(), "no candidate may be picked up after the stop")
     }
+
+    /**
+     * The publication race (audit iteration 20, H1). `grindAll` started its threads inside the `map` and only
+     * assigned the field `awaitStop` reads afterwards, so a stop arriving in that window found an empty list,
+     * interrupted nobody, and returned `true` — a clean stop that had not happened, with no warning logged.
+     *
+     * **Neither this test nor its sibling was observed red against the unfixed code, and that is stated rather
+     * than glossed:** the interleaving could not be provoked here at 8 workers or at 64, because the first
+     * `Grinder.grind` initialises log4j and that reliably delays worker 1 past the `map`. The window is real —
+     * it opens on every pass — but entering it needs a SIGTERM inside it, which is what makes it rare rather
+     * than harmless.
+     *
+     * What this does hold is the invariant going forward: a running worker is always already tracked, so
+     * `awaitStop` can never signal a subset and call it a clean stop. It fails immediately if anyone moves the
+     * publication back after the starts.
+     */
+    @Test
+    @Timeout(30)
+    fun tracksEveryWorkerBeforeAnyOfThemCanRun() {
+        val poolRef = java.util.concurrent.atomic.AtomicReference<GrindPool>()
+        val seen = java.util.concurrent.ConcurrentLinkedQueue<Int>()
+        val entered = CountDownLatch(1)
+        val observing = CandidateVerifier { candidate ->
+            seen.add(poolRef.get().trackedWorkerCount())
+            entered.countDown()
+            Thread.sleep(100)
+            clientsideReport(candidate.slug, emptyList())
+        }
+        val pool = GrindPool(Grinder(observing, InMemoryVerdictStore()), workerCount = 8)
+        poolRef.set(pool)
+        Thread { pool.grindAll(candidates(16)) }.apply { isDaemon = true; start() }
+        Assertions.assertTrue(entered.await(10, TimeUnit.SECONDS), "no worker ever started")
+        pool.awaitStop(Duration.ofSeconds(5))
+
+        Assertions.assertTrue(seen.isNotEmpty(), "test setup: no worker recorded what the pool was tracking")
+        Assertions.assertTrue(
+            seen.all { it == 8 },
+            "a worker ran while the pool tracked $seen of 8 — awaitStop would interrupt only the tracked ones " +
+                "and report a clean stop for the rest"
+        )
+    }
+
+    /**
+     * The consequence of H1, stated as the contract rather than as the mechanism: whatever the tracking does
+     * internally, `awaitStop` must never answer "cleanly stopped" while a worker is still running. This one
+     * cannot force the race — it passed against the unfixed code — and is kept as the statement of intent that
+     * [tracksEveryWorkerBeforeAnyOfThemCanRun] backs with teeth.
+     */
+    @Test
+    @Timeout(30)
+    fun neverReportsACleanStopWhileAWorkerIsStillRunning() {
+        val started = CountDownLatch(1)
+        val holdOn = CountDownLatch(1)
+        val ignoresInterrupts = object : CandidateVerifier {
+            override fun verify(candidate: GrindCandidate): ClientsideReport {
+                started.countDown()
+                while (holdOn.count > 0L) {
+                    runCatching { Thread.sleep(20) }
+                }
+                return clientsideReport(candidate.slug, emptyList())
+            }
+        }
+        val pool = GrindPool(Grinder(ignoresInterrupts, InMemoryVerdictStore()), workerCount = 4)
+        Thread { pool.grindAll(candidates(8)) }.apply { isDaemon = true; start() }
+        Assertions.assertTrue(started.await(10, TimeUnit.SECONDS), "no worker ever started")
+
+        val stoppedCleanly = pool.awaitStop(Duration.ofSeconds(1))
+
+        Assertions.assertFalse(stoppedCleanly, "a worker was still running, so this must not report a clean stop")
+        holdOn.countDown()
+    }
+
 }
