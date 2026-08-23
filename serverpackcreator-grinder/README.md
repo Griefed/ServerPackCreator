@@ -49,8 +49,9 @@ its own, keeping the same report live at `localhost:8757`:
 Two things worth knowing before you act on the table. **Only `HIGH` confidence is decisive** — it means the
 server actually crashed with the mod in place; `MEDIUM` only means the server booted, which does not prove
 the mod is server-safe (§6). And **everything the grinder writes lives under `~/.spc-grinder`** —
-`verdicts.json` (results), `cache/` (loader installs), `work/` (staging). Nothing else on the host is
-touched, and no mod ever gets network access.
+`verdicts.json` (results), `cache/` (loader installs), `work/` (staging), plus SPC's own home directory
+(`logs/`, `server_files/`, `serverpackcreator.properties`). Move the lot with `SPC_GRINDER_HOME`. Nothing else
+on the host is touched, and no mod ever gets network access.
 
 ---
 
@@ -182,12 +183,14 @@ never evicted, and a re-install costs one networked setup boot if it comes back.
 
 | Variable                        | Default                        | Meaning                                                                      |
 |---------------------------------|--------------------------------|------------------------------------------------------------------------------|
+| `SPC_GRINDER_HOME`              | `~/.spc-grinder`               | Everything below lives here, and it is SPC's home directory too              |
 | `SPC_GRINDER_IMAGE`             | `spc-grinder-runtime:latest`   | Image used for the boots                                                     |
 | `SPC_GRINDER_WORK`              | `~/.spc-grinder/work`          | Scratch space for generated packs                                            |
 | `SPC_GRINDER_CACHE`             | `~/.spc-grinder/cache`         | Cached loader installs, one per loader/version/Minecraft                     |
 | `SPC_GRINDER_STORE`             | `~/.spc-grinder/verdicts.json` | Verdict store — delete to start fresh                                        |
 | `SPC_GRINDER_CURSORS`           | `~/.spc-grinder/cursors.json`  | Crawl position per platform — delete to re-sweep from the most-downloaded    |
 | `SPC_GRINDER_PORT`              | `8757`                         | Report server port                                                           |
+| `SPC_GRINDER_HOST`              | `127.0.0.1`                    | Report server bind address. Loopback by default — see *Exposing the report*  |
 | `SPC_GRINDER_WORKERS`           | `2`                            | Parallel boots. **Budget 3 GiB RAM each** — see *Sizing the worker count*    |
 | `SPC_GRINDER_BATCH`             | `25`                           | Projects taken from **each** platform per pass — the sweep-speed lever       |
 | `SPC_GRINDER_INTERVAL`          | `21600` (6 h)                  | Seconds to idle after a full sweep found nothing due                         |
@@ -203,6 +206,33 @@ export SPC_GRINDER_BATCH=100
 export SPC_GRINDER_PORT=8757
 ./gradlew :serverpackcreator-grinder:run
 ```
+
+### Exposing the report
+
+The report binds **loopback** by default, because it has no authentication of any kind: everything it serves —
+the verdict table, `/status`, the full CSV export — goes to whoever reaches the port. Left at the default it is
+reachable over an SSH tunnel and from nothing else, which is the right posture for most installs:
+
+```bash
+ssh -L 8757:127.0.0.1:8757 grinder-box     # then browse http://127.0.0.1:8757/
+```
+
+**A reverse proxy needs a different bind, not a different proxy config.** A proxy in a container reaches the host
+over the Docker bridge gateway (`172.19.0.1` and friends), never over `127.0.0.1` — that address inside the
+container is the container itself. A loopback-bound report refuses that connection at the TCP layer, so the proxy
+reports a 502 while the report answers perfectly well over the tunnel above. Point it at the gateway:
+
+```ini
+Environment=SPC_GRINDER_HOST=172.19.0.1
+```
+
+Prefer the gateway address over `0.0.0.0`: it is reachable from containers on that bridge and from the host, and
+from nowhere else, so an unauthenticated report does not end up published on a public interface. Check what you
+actually got — `ss -ltnp | grep 8757` must show the address you asked for, and the daemon logs it as `bind=` at
+startup. If the bridge is ever recreated on a different subnet the bind fails loudly at startup rather than
+silently falling back — verified against the JDK's `HttpServer`: an address this host does not own gives
+`BindException: Can't assign requested address`, and a name that does not resolve gives `SocketException:
+Unresolved address`. Pinning the subnet on a user-defined network avoids the situation entirely.
 
 ### Sizing the worker count
 
@@ -373,6 +403,11 @@ docker logs -f <name>
 | `<work>/verify/boot/<slug>-<Loader>/boot.log` | one boot's console | no; replaced per attempt |
 | `<cache>/<mc>/<loader>/<ver>/.spc-install.log` | one loader install's console | no; removed with the tuple |
 
+Those first two paths are `~/.spc-grinder` because the daemon **tells SPC that its home directory is
+`SPC_GRINDER_HOME`** — SPC's own `logs/`, `work/`, `server_files/` and `serverpackcreator.properties` all land
+there, next to the grinder's `cache/` and `verdicts.json`. Override it for SPC alone with
+`JAVA_OPTS=-Dde.griefed.serverpackcreator.home=<dir>`, which wins over everything else.
+
 A `grinder.log` in `~/.spc-grinder` exists only if *you* redirected the process's stdout there. The log4j file
 above is written regardless. Under systemd, console output goes to the journal instead:
 
@@ -392,7 +427,11 @@ Requires=docker.service
 
 [Service]
 User=grinder
+WorkingDirectory=/home/grinder
+Environment=SPC_GRINDER_HOME=/home/grinder/.spc-grinder
 Environment=SPC_GRINDER_WORKERS=4
+# Only if a reverse proxy must reach it — see §5, *Exposing the report*
+# Environment=SPC_GRINDER_HOST=172.19.0.1
 Environment=SPC_GRINDER_BATCH=100
 Environment=SPC_GRINDER_REVERIFY_TTL_DAYS=180
 # Environment=CURSEFORGE_API_KEY=...
@@ -404,7 +443,39 @@ TimeoutStopSec=120
 WantedBy=multi-user.target
 ```
 
+**A ready-made unit and an installer ship with the module**, so the block above is a summary rather than
+something to retype:
+
+- [`deploy/spc-grinder.service`](deploy/spc-grinder.service) — every variable §5 documents, commented out, with
+  its default. Pinned against `GrinderApplication` by `SystemdUnitConfigurationTest`, so a knob added to the
+  service and forgotten here fails the build.
+- [`deploy/install-grinder.sh`](deploy/install-grinder.sh) — builds the runtime image, runs `installDist`,
+  installs to `/opt/spc-grinder`, and creates the service account with its home and `docker` group membership.
+  Run it as your normal user, **not** as root: it calls `sudo` for the privileged steps itself, and a Gradle
+  build run as root leaves root-owned files in `build/`. Re-running it is the upgrade path. `--help` lists the
+  flags; two are worth knowing about — `--grant-docker`, without which it refuses to put an *already-existing*
+  account into the root-equivalent `docker` group, and `--no-pull` for an offline image rebuild.
+
+**The service needs a JVM systemd can find.** The launcher wants `JAVA_HOME` or a `java` on `PATH`, and systemd
+gives a unit neither — its `PATH` is `/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin` and nothing
+else. A distro-packaged JDK lands in `/usr/bin/java` and works; a Temurin tarball under `/opt`, SDKMAN or asdf
+does not, and the first `systemctl start` fails with `JAVA_HOME is not set and no 'java' command could be found
+in your PATH`. The JDK you *build* with is irrelevant — it comes from your profile, which the service never
+reads. `install-grinder.sh` checks this against systemd's own `PATH` and tells you; set `JAVA_HOME` in the unit
+if it warns.
+
 Give `TimeoutStopSec` room: on stop the grinder removes in-flight containers before exiting.
+
+**`WorkingDirectory=` is not decoration.** A unit without it runs in `/`, and anything that resolves a relative
+path there fails — log4j's own `logs/` among them, which is why the journal used to open with
+`java.io.IOException: Could not create directory /logs`. Point it at a directory the service user owns.
+
+Two more things the unit file decides, both worth stating explicitly:
+
+- **`SPC_GRINDER_HOME` is where everything lives**, the grinder's own state *and* SPC's home directory. It
+  defaults to `~/.spc-grinder`, and under systemd `~` is the home of `User=`, so set it explicitly rather than
+  relying on the account.
+- **`User=` must be in the `docker` group**, or every boot fails at the daemon socket.
 
 ---
 
@@ -413,6 +484,8 @@ Give `TimeoutStopSec` room: on stop the grinder removes in-flight containers bef
 | Symptom                                  | Cause & fix                                                                                                                   |
 |------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|
 | `Cannot connect to the Docker daemon`    | Daemon not running, or your user isn't in the `docker` group                                                                  |
+| `FileNotFoundException: /log4j2.xml`, `Could not create directory /logs` | The service ran in `/` and SPC took it for its home. Fixed in the daemon, which now names its home itself; on an older build set `WorkingDirectory=` in the unit (§8) |
+| `home directory is not usable: <path>` | SPC resolved a home it cannot write to. Point it somewhere writable with `JAVA_OPTS=-Dde.griefed.serverpackcreator.home=<dir>`, or fix that directory's ownership |
 | `No cached loader install for …`         | The one-off install boot failed — it is the only boot allowed network. Check connectivity and the logs above it               |
 | Mods on the newest Minecraft are skipped | The image lacks that version's required JDK. Add it to the Dockerfile **and** `ImageJavaRuntimes.bundledMajors`, then rebuild |
 | Boots die with `Killed` mid-startup      | Host out of memory — lower `SPC_GRINDER_WORKERS`                                                                              |
@@ -423,6 +496,7 @@ Give `TimeoutStopSec` room: on stop the grinder removes in-flight containers bef
 | `game-version list unavailable`          | CurseForge's `/games/432/versions` failed, so that sweep covers only the unfiltered top 10 000. Check the key and connectivity |
 | `category list unavailable`               | CurseForge's `/categories` failed, so an over-cap version is covered by its modloader slices only that sweep                   |
 | `holds N mods but only 20000 are reachable` | Even a version × category × modloader slice is too big to page through; its middle is skipped. No further filter exists      |
+| Reverse proxy 502s, but the report works over an SSH tunnel | The report is bound to loopback, which a containerised proxy cannot reach. Set `SPC_GRINDER_HOST` to the bridge gateway — §5, *Exposing the report* |
 | A container outlived the process         | Should not happen — shutdown drains them. If it does, `docker ps` and remove it, and please report it                         |
 
 ---

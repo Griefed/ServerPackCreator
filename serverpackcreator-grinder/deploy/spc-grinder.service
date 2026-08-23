@@ -1,0 +1,113 @@
+# ServerPackCreator Grinder — example systemd unit.
+#
+# Install:   sudo install -m 644 spc-grinder.service /etc/systemd/system/spc-grinder.service
+#            sudo systemctl daemon-reload
+#            sudo systemctl enable --now spc-grinder
+# Logs:      journalctl -fu spc-grinder
+#
+# Every SPC_GRINDER_* variable the service reads is listed below, commented out, with the default it
+# falls back to. Uncomment only what you actually want to change — an Environment= line set to the
+# default is indistinguishable from the default, but it will not follow the default if that ever moves.
+
+[Unit]
+Description=ServerPackCreator Grinder
+Documentation=https://git.griefed.de/Griefed/ServerPackCreator https://github.com/Griefed/ServerPackCreator
+# Requires=, not just After=: every boot the grinder performs is a container, so without the daemon
+# the service does nothing but fail.
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+
+# The account must be in the `docker` group or every boot dies at the daemon socket.
+User=grinder
+Group=grinder
+
+# NOT optional. SPC takes the working directory for its home when nothing else names one, and systemd
+# starts a unit in `/` — which is how this service first died, on `FileNotFoundException: /log4j2.xml`.
+# The daemon now pins its own home, so this is belt-and-braces, but it costs nothing and the failure
+# mode it prevents is silent and confusing.
+WorkingDirectory=/home/grinder
+
+ExecStart=/opt/spc-grinder/bin/serverpackcreator-grinder
+
+Restart=on-failure
+RestartSec=30s
+
+# Shutdown removes in-flight containers before exiting; give it room or systemd SIGKILLs mid-cleanup
+# and leaves them running.
+TimeoutStopSec=120
+
+# Without this the journal tags lines with the launcher's name. `journalctl -u spc-grinder` selects by
+# unit either way; this only matters when reading the journal as a whole.
+SyslogIdentifier=spc-grinder
+
+# --- Configuration ------------------------------------------------------------------------------
+# Paths. SPC_GRINDER_HOME is the one worth setting explicitly: it defaults to the home of User=, and
+# stating it here means a change to the account cannot silently relocate the state.
+Environment=SPC_GRINDER_HOME=/home/grinder/.spc-grinder
+#Environment=SPC_GRINDER_WORK=/home/grinder/.spc-grinder/work
+#Environment=SPC_GRINDER_CACHE=/home/grinder/.spc-grinder/cache
+#Environment=SPC_GRINDER_STORE=/home/grinder/.spc-grinder/verdicts.json
+#Environment=SPC_GRINDER_CURSORS=/home/grinder/.spc-grinder/cursors.json
+
+# The image the boots run in. Build it with serverpackcreator-grinder/docker/Dockerfile.
+#Environment=SPC_GRINDER_IMAGE=spc-grinder-runtime:latest
+
+# Report server. The bind address is loopback by default and the report has NO authentication —
+# anything that can reach the port gets the verdict table and the full CSV export. Raise it only to
+# put a reverse proxy in front, and prefer the Docker bridge gateway over 0.0.0.0, which publishes it
+# on every interface the host has. See README §5, "Exposing the report".
+#Environment=SPC_GRINDER_PORT=8757
+#Environment=SPC_GRINDER_HOST=127.0.0.1
+
+# Throughput. Budget 3 GiB of memory *available to Docker* per worker — an over-subscribed host
+# OOM-kills boots, which cost their full budget and teach nothing. See README §5, "Sizing the worker
+# count".
+#Environment=SPC_GRINDER_WORKERS=2
+#Environment=SPC_GRINDER_BATCH=25
+
+# Pacing, in seconds.
+#Environment=SPC_GRINDER_INTERVAL=21600
+#Environment=SPC_GRINDER_SCAN_DELAY=15
+
+# Freshness, in days. Raise REVERIFY_TTL_DAYS above the time a full sweep takes, or the crawl never
+# reaches the tail because the head keeps going stale.
+#Environment=SPC_GRINDER_REVERIFY_TTL_DAYS=30
+#Environment=SPC_GRINDER_CACHE_TTL_DAYS=7
+
+# Optional, no default. Point SPC at a specific properties file for reproducible runs.
+#Environment=SPC_GRINDER_SPC_PROPERTIES=/home/grinder/serverpackcreator.properties
+
+# Optional, no default. Without it only Modrinth is crawled. Prefer an EnvironmentFile with mode 600
+# over an Environment= line: unit files are world-readable, and `systemctl show` prints them.
+#Environment=CURSEFORGE_API_KEY=
+#EnvironmentFile=-/etc/spc-grinder.env
+
+# --- The JVM -------------------------------------------------------------------------------------
+# READ THIS BEFORE THE FIRST START. The launcher needs either JAVA_HOME or a `java` on PATH, and dies
+# with "JAVA_HOME is not set and no 'java' command could be found in your PATH" when it has neither.
+# systemd gives a unit a minimal PATH — /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin —
+# and no JAVA_HOME at all, so the JDK you build with is NOT necessarily the one this service can see.
+# A distro-packaged JDK lands in /usr/bin/java and is found; a Temurin tarball under /opt, SDKMAN or
+# asdf is not. When in doubt set it explicitly — install-grinder.sh checks and tells you.
+#Environment=JAVA_HOME=/usr/lib/jvm/temurin-21-jdk
+
+# Heap and JVM flags. The grinder itself is modest — the memory goes to the containers, not this
+# process — but a long-running daemon on a small box may want a ceiling.
+#Environment=JAVA_OPTS=-Xmx1g
+#Environment=SERVERPACKCREATOR_GRINDER_OPTS=
+
+# --- Hardening ----------------------------------------------------------------------------------
+# LANDMINE: do NOT add PrivateTmp=, ProtectHome=, RootDirectory= or any other namespacing option.
+# The grinder bind-mounts host paths into its containers, and the *docker daemon* resolves those
+# paths in the host namespace, not this unit's. A path this process can see but the daemon cannot
+# fails at container creation with an error that points nowhere near systemd.
+# These two do not namespace anything, so they are safe here.
+NoNewPrivileges=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

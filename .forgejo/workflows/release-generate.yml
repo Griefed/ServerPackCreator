@@ -69,13 +69,27 @@ jobs:
       # The plugin set is spelled out because GitLab supplied it inside its CI image
       # (ghcr.io/griefed/gitlab-ci-cd), which is gone. commit-analyzer and release-notes-generator ship
       # with the core; changelog, git and the conventionalcommits preset do not.
+      #
+      # *** EVERY -p IS PINNED TO A MAJOR, AND THE PRESET PIN IS LOAD-BEARING. ***
+      # `npx -p <name>` with no version resolves to the newest major every single run, so an unpinned
+      # entry here is a release that breaks on somebody else's publish schedule. That is not
+      # hypothetical: conventional-changelog-conventionalcommits@10 moved to
+      # @conventional-changelog/template, which deliberately plants a bogus `mainTemplate` so that a
+      # legacy writer throws instead of silently emitting an empty changelog. semantic-release@24 pulls
+      # @semantic-release/release-notes-generator@14, which depends on conventional-changelog-writer@^8
+      # -- a legacy writer -- so the guard fires and generateNotes dies with
+      # `Missing helper: "conventional-changelog-conventionalcommits requires
+      # conventional-changelog-writer@9 or newer ..."`. Preset 9 is the last major that renders on
+      # writer 8. Upgrading semantic-release does NOT help: 25.0.9 still depends on
+      # release-notes-generator ^14.1.0, hence still writer 8. Only unpin the preset once
+      # release-notes-generator@15 (writer 9) is out of beta and semantic-release depends on it.
       - name: Run semantic-release
         env:
           CI: 'true'
         run: |
           npx --yes \
             -p semantic-release@24 \
-            -p @semantic-release/changelog \
-            -p @semantic-release/git \
-            -p conventional-changelog-conventionalcommits \
+            -p @semantic-release/changelog@7 \
+            -p @semantic-release/git@11 \
+            -p conventional-changelog-conventionalcommits@9 \
             semantic-release

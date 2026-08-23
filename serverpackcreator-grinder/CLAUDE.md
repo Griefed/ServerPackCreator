@@ -112,6 +112,11 @@ though their detail lives deeper:
   live daemon left it untouched.
   - The node override is `-Dde.griefed.serverpackcreator.preferences.node` / `SPC_PREFERENCES_NODE`; the home
     override is `-Dde.griefed.serverpackcreator.home`, which now beats the dev-build working-directory fallback.
+  - **The daemon also pins the home itself** (`pinSpcHomeDirectory`, 2026-08-22): claiming the node stopped another
+    process from *moving* the home, but left SPC to *choose* one — and for a source build (which every locally
+    built artifact is) that choice is the process working directory. Under systemd that is `/`. It sets
+    `-Dde.griefed.serverpackcreator.home` to `SPC_GRINDER_HOME` unless the operator set it, which also repairs a
+    host whose node already remembers a bad value, since a `-D` outranks the stored preference without replacing it.
   - The preference is consulted **before** cwd and `serverpackcreator.properties`, so `SPC_GRINDER_SPC_PROPERTIES`
     alone never protected against this — the node claim is what does.
   - Editing a template under the grinder home is pointless while the home resolves elsewhere; generation reads
@@ -132,6 +137,24 @@ though their detail lives deeper:
     **A stale value may still be stored** from before the fix — check the shared node once if a GUI instance
     resolves a surprising home.
 
+- **LANDMINE — the first `log.` call in `main` builds an `ApiProperties`, so every SPC decision must precede it.**
+  `ApiProperties` is annotated `@Plugin` and *is* log4j's `ConfigurationFactory`, so log4j instantiates one while
+  initialising — with whatever node and home are resolvable at that moment, and it *persists* what it resolved. The
+  node claim originally sat **after** the `Grinder starting …` line, which is why the reported systemd crash's
+  earliest stack frame is `GrinderApplication.getLog`, before `main` had wired anything. Both claims now run as the
+  first statements of `main`; keep them there, and keep new startup logging below them. Pinned by
+  `GrinderSpcEnvironmentTest.theSpcEnvironmentIsClaimedBeforeTheFirstLogStatement`, which asserts the ordering
+  against the source, since a JVM whose logging is already initialised cannot observe it.
+- **LANDMINE — the report binds loopback by default, and it is unauthenticated. Both halves matter.**
+  `ReportServer`'s `host` defaults to `127.0.0.1`, and until `SPC_GRINDER_HOST` existed `main` never passed one,
+  so the daemon was unreachable through any reverse proxy: a proxy in a container dials the host over the Docker
+  bridge gateway, never `127.0.0.1`, and a loopback socket refuses that at the TCP layer — the operator sees a 502
+  while the report answers fine over an SSH tunnel. Raise the bind to the *gateway address*, not `0.0.0.0`: `/`,
+  `/status` and `/export.csv` all answer unconditionally, with no auth anywhere in `start()`. Pinned two ways,
+  because neither alone reaches: `ReportServerBindAddressTest` executes the mechanism over a real non-loopback
+  IPv4 (skips where the host has none), and `ReportBindWiringTest` asserts against `main`'s source that the
+  variable actually reaches `ReportServer`'s `host` — the join no test can execute, because `main` boots Docker.
+  README §5 *Exposing the report* is the operator-facing half.
 - **Never hand SPC a *relative* properties file — a loaded one becomes a permanent write target.**
   `PropertyStore.loadProperties` adds every file it reads to `trackedPropertyFiles`, and `save()` writes to **all**
   of them on every save (skipping any that no longer exist, except `alwaysWrite`). `ApiProperties`' default is the
@@ -143,6 +166,10 @@ though their detail lives deeper:
   clean. **Expected and harmless:** the startup log also shows a save into
   `build/install/serverpackcreator-grinder/lib/serverpackcreator.properties` — the dist's own copy, which SPC loads
   and therefore tracks. It lives under `build/`, so it is regenerated and gitignored; don't chase it.
+  **Also expected since the home is pinned to the base:** `<base>/serverpackcreator.properties` is now both the
+  file the daemon passes in *and* the home candidate SPC looks for, so `Loaded properties from …` appears twice per
+  start. Harmless — `PropertyStore.save` collects into a `TreeSet<File>`, so the duplicate collapses and the file is
+  written once.
 - **A cached install is a product of the templates that built it** (`TemplateProvenance` + the marker's
   `templates=` key). The install boot runs the pack's own `start.sh`, so a template change that alters what an
   install *produces* leaves cached layers stale — and the marker used to record only loader/version/Minecraft, so

@@ -2022,3 +2022,53 @@ selection fails fast instead of waiting out the 30 s default. That would not hol
 Deliberately dropped from the plan: projections for `FileCleanupSchedule` / `DatabaseCleanupSchedule`.
 Their cost was the eager `@DBRef` fan-out on `findAll()`, which the flattening removed at the source, so
 the remaining work would have been machinery for a midnight cron with nothing left to win.
+
+## 2026-08-22 — the grinder as a systemd service: home resolution (`claude-fix-service-home-resolution`), api 352 → 356, grinder 233 → 237
+
+Backfilled 2026-08-23, flagged as M1 by audit iteration 13 — this branch and the one below it both landed
+without a log entry, leaving the file two branches stale at 2026-08-17.
+
+Reported failure: the grinder, newly run as a systemd unit, died on `java.io.FileNotFoundException: /log4j2.xml`
+and `Could not create directory /logs`. Reproduced by launching the installed distribution from `/`, which is
+where systemd starts a unit with no `WorkingDirectory=`.
+
+Two independent causes, which is why the fix spans two modules:
+
+- **`-api` resolved its home to the working directory without ever asking whether it could write there.** Fixed
+  by `fix(api): never resolve the home directory to a place SPC cannot write`, after
+  `refactor(api): inject PathsConfig's working directory` made the decision reachable from a test at all. The
+  injected value is behaviour-identical — the JVM resolves `File("")` against the directory it was *launched*
+  with and ignores a later `user.dir`, so per-access and once-at-construction cannot differ.
+- **The grinder never told SPC where its home was**, and could not simply log the fact first: `ApiProperties` is
+  annotated `@Plugin` and *is* log4j's `ConfigurationFactory`, so the first `log.` call in the process builds one
+  and it permanently keeps whatever it resolved. `fix(grinder): pin SPC's home to the daemon's base before
+  anything logs` moves both claims to the top of `main`, pinned by a source-level ordering guard because a JVM
+  whose logging is already initialised cannot observe the ordering from inside.
+
+The audit of that branch (iteration 12, L1) then found the new writability probe racing on a fixed `poke`
+filename: two SPC processes probing one home interleave and one wrongly concludes the home is unwritable.
+Measured at 34 of 64 concurrent probes false. `fix(api): probe writability with a name nothing else can hold`
+switched to `Files.createTempFile`, with a behaviour row in `claude-docs/API-BEHAVIOUR-CHANGES.md`.
+
+## 2026-08-23 — the report's bind address (`claude-grinder-report-bind-host`), grinder 237 → 245
+
+Reported failure: an nginx reverse proxy 502ing against the grinder's report while the report answered fine on
+the box itself.
+
+`ReportServer` had accepted a `host` since it was written, defaulting to `127.0.0.1`, and `main` had never passed
+one — only the port was ever wired to the environment. A proxy in a container reaches the host over the Docker
+bridge gateway, never over `127.0.0.1`, and a loopback socket refuses that at the TCP layer, so no proxy
+configuration could have worked. `SPC_GRINDER_HOST` now carries it, still defaulting to loopback because the
+report is unauthenticated end to end.
+
+Pinned twice on purpose, because neither guard reaches alone: `ReportServerBindAddressTest` executes the
+mechanism over a real non-loopback IPv4 (and aborts to a skip where the host has none), while
+`ReportBindWiringTest` states against `main`'s own source that the variable actually reaches `ReportServer`'s
+`host` — the join no test can execute, since `main` boots Docker. Reading `main`'s text is the same technique the
+ordering guard above uses, and shares its brace-matched window via `grinderMainBody()`.
+
+Audit iteration 13 then found the logged URL, which had been changed to follow the bind address, broken for two
+of the shapes a bind can take: `0.0.0.0` printed an unopenable `http://0.0.0.0:8757`, and an IPv6 literal printed
+`http://::1:8757`, which `URI` does not reject — it silently parses the port as `-1`. Fixed after extracting
+`reportUrl` so it was testable at all; the concrete-IPv4 case was pinned green *before* the fix, so the change is
+provably confined to the two broken shapes.
