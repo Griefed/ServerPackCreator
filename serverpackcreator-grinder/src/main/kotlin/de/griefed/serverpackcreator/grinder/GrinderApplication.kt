@@ -23,6 +23,7 @@ import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.settings.PathsConfig
 import de.griefed.serverpackcreator.grinder.container.ContainerUser
+import de.griefed.serverpackcreator.grinder.container.SHUTDOWN_GRACE
 import de.griefed.serverpackcreator.grinder.container.DockerJavaContainerEngine
 import de.griefed.serverpackcreator.grinder.loader.*
 import de.griefed.serverpackcreator.grinder.report.FallbackLists
@@ -115,6 +116,15 @@ object GrinderApplication {
         val verifier = ContainerCandidateVerifier(
             apiWrapper, cache, engine, image, imageJava, File(workDir, "verify"), containerUser = containerUser
         )
+        // Containers first: a JVM that was SIGKILLed (systemd's TimeoutStopSec expiring mid-cleanup) leaves them
+        // running, parented by the docker daemon rather than this unit's control group, so nothing else on the
+        // host will ever collect them. Safe here and only here, for the same reason as the staging sweep below:
+        // nothing of ours is in flight yet, so anything wearing our label is by definition inherited.
+        engine.reapOrphans().let { reaped ->
+            if (reaped > 0) {
+                log.info("Reaped $reaped container(s) left running by a previous, killed run.")
+            }
+        }
         // A run killed mid-boot leaves a staged pack that no per-candidate reap will ever come for, so sweep what
         // we inherited before adding to it. Safe here and only here: nothing is in flight yet.
         BootWorkspaceReaper(File(workDir, "verify")).reapAll().let { reclaimed ->
@@ -136,11 +146,21 @@ object GrinderApplication {
         val activePool = AtomicReference<GrindPool?>(null)
         val mainThread = Thread.currentThread()
         Runtime.getRuntime().addShutdownHook(Thread {
-            log.info("Shutdown requested — stopping the grind loop.")
+            log.info("Shutdown requested — ${SHUTDOWN_GRACE.seconds}s for containers and workers to quit, then killed.")
             running.set(false)
+            // No new candidates, before anything else: cheap, and it means a worker finishing right now does not
+            // start another one while the rest of this runs.
             activePool.get()?.requestStop()
+            // Containers first, and this is the ordering that matters. `close()` marks the engine closed before
+            // it sweeps, so a worker cannot create a container behind it; it then asks each container to exit
+            // (SIGTERM, killed after the window) which is also what unblocks the workers waiting on them.
             runCatching { engine.close() }
                 .onFailure { log.warn("Could not clean up in-flight containers: ${it.message}") }
+            // Whatever is left of the window goes to the workers. A worker that does not come back is abandoned
+            // -- the JVM exits either way -- but say so, because it means work was still running at exit.
+            if (activePool.get()?.awaitStop(SHUTDOWN_GRACE) == false) {
+                log.warn("A worker did not stop within ${SHUTDOWN_GRACE.seconds}s; exiting anyway.")
+            }
             mainThread.interrupt()
         })
 

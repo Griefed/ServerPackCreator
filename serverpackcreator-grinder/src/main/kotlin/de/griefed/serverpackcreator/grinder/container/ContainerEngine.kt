@@ -30,6 +30,16 @@ import java.time.Duration
 const val PACK_MOUNT = "/srv/pack"
 
 /**
+ * How long anything the grinder is tearing down gets to exit on its own before it is killed.
+ *
+ * Applies to both halves of a shutdown, because both are on the same clock: the container is asked to stop
+ * with this as its `docker stop` timeout (SIGTERM, then the daemon's own SIGKILL), and the workers get the
+ * same window to come back from whatever they were doing. It has to stay comfortably below the unit's
+ * `TimeoutStopSec`, or systemd's SIGKILL lands *during* the cleanup that exists to prevent orphans.
+ */
+val SHUTDOWN_GRACE: Duration = Duration.ofSeconds(15)
+
+/**
  * CPU / memory / pid caps applied to every boot container, so one fat modpack can't exhaust the host
  * and a runaway can't peg every core. Defaults are sized for a single Minecraft server boot.
  *
@@ -139,4 +149,14 @@ interface ContainerEngine : AutoCloseable {
     override fun close() {
         // Nothing to release by default.
     }
+
+    /**
+     * Remove containers this engine's *previous* process left behind, returning how many went.
+     *
+     * Distinct from [close], which cleans up after the process it runs in. Containers are children of the
+     * container daemon, not of the unit's control group, so a JVM killed outright — systemd's SIGKILL once
+     * `TimeoutStopSec` expires — leaves them running with nothing to tidy them. Called at startup, this is the
+     * only thing that ever collects them. Default no-op for engines with no such notion (test fakes).
+     */
+    fun reapOrphans(): Int = 0
 }
