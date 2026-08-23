@@ -81,10 +81,20 @@ class BootVerifier(
      * (on a crash) the excerpt of the console-output around the failure for in-comment analysis.
      */
     data class BootOutcome(
+        /** What the boot proved, as classified from its console and exit status. */
         val result: BootResult,
+        /** Where this attempt's console was written, or `null` when the server never launched. */
         val logFile: File?,
+        /** Human-readable evidence: the combination booted, the outcome, and how the attempt was reached. */
         val detail: String,
-        val crashExcerpt: String? = null
+        /** On a crash, the console around the failure, so a report carries the evidence without the whole log. */
+        val crashExcerpt: String? = null,
+        /**
+         * The full console this attempt produced. Held because every attempt for one candidate writes the
+         * *same* `boot.log` — a re-check overwrites it — so the reported verdict has to be able to put its
+         * own console back; see [restoreDecisiveConsole].
+         */
+        val console: String? = null
     )
 
     /**
@@ -123,6 +133,9 @@ class BootVerifier(
         val outcome = runPrepared(ready, serverRunner, packPostProcessor, bootTimeout)
         val loaderChecked = recheckCrashOnNewestVersion(project, loader, ready, outcome)
         val decided = recheckCrashOnOtherModVersions(project, loader, ready, loaderChecked, metadataDeclaresServerSupport)
+        // Every attempt above wrote the same boot.log, so the file currently holds the *last* boot's console
+        // while `decided` may be an earlier one. Put the reported verdict's own console back.
+        restoreDecisiveConsole(decided)
         // An inconclusive boot learned nothing, so the *reason* is the whole value of the attempt — a missing
         // loader build, an overlay that could not be staged, a timeout. Without this the log said only
         // "boot:INCONCLUSIVE" and the reason had to be dug out of the per-boot console.
@@ -540,10 +553,11 @@ class BootVerifier(
         internal fun outcomeFor(runResult: RunResult, logFile: File, label: String): BootOutcome = when (runResult) {
             is RunResult.NotStarted -> BootOutcome(BootResult.INCONCLUSIVE, null, runResult.detail)
             is RunResult.Completed -> {
+                val console = runResult.lines.joinToString("\n")
                 // Persisting the console must never fail the verification: the verdict comes from the lines in
                 // memory, and an unwritable log (a full disk, a path that is a directory) is a diagnostics
                 // problem, not a reason to lose a boot that already ran.
-                runCatching { logFile.writeText(runResult.lines.joinToString("\n")) }
+                runCatching { logFile.writeText(console) }
                     .onFailure { log.warn("Could not write the boot log ${logFile.absolutePath}: ${it.message}") }
                 val result = BootLogClassifier.classify(runResult.lines, runResult.exitCode, runResult.timedOut)
                 val crashExcerpt = if (result == BootResult.CRASHED) BootLogExcerpt.crashExcerpt(runResult.lines) else null
@@ -551,8 +565,25 @@ class BootVerifier(
                 // record it. Without it an INCONCLUSIVE verdict is undiagnosable from the report alone: a run that
                 // crashed loudly in its console but reported exit 0 looks identical to one that never started.
                 val exitDetail = if (runResult.timedOut) "timed out" else "exit ${runResult.exitCode ?: "unknown"}"
-                BootOutcome(result, logFile, "$label → $result ($exitDetail)", crashExcerpt)
+                BootOutcome(result, logFile, "$label → $result ($exitDetail)", crashExcerpt, console)
             }
+        }
+
+        /**
+         * Put [outcome]'s own console back into its log file, undoing a later attempt's overwrite.
+         *
+         * Every attempt for one candidate stages into the same directory — staging wipes it — so all of them
+         * write the same `boot.log`, while the *reported* verdict is frequently not the last one booted: both
+         * crash re-checks keep the original crash. The grinder's reaper then keeps that single file and
+         * deletes the staging around it, so the console a HIGH is diagnosed from would be a different boot's.
+         * Best-effort, exactly like the write it repairs: an unwritable log is a diagnostics problem, never a
+         * reason to lose a verdict.
+         */
+        internal fun restoreDecisiveConsole(outcome: BootOutcome) {
+            val logFile = outcome.logFile ?: return
+            val console = outcome.console ?: return
+            runCatching { logFile.writeText(console) }
+                .onFailure { log.warn("Could not restore the boot log ${logFile.absolutePath}: ${it.message}") }
         }
     }
 }
