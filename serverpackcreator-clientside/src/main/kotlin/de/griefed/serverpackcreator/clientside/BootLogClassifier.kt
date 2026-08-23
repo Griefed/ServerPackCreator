@@ -107,14 +107,22 @@ object BootLogClassifier {
      * `Error: could not open` is the JVM launcher's message for an **`@argfile`** it cannot read, and it belongs to
      * exactly the same incomplete-cached-install case — only the file the boot depends on differs. It became
      * reachable when the grinder started launching Forge from `@libraries/.../unix_args.txt` instead of through the
-     * ServerStarterJar. Matched with the launcher's own `Error: ` prefix so a mod logging "could not open" about
-     * one of its own files is not excused along with it.
+     * ServerStarterJar.
+     *
+     * **Anchored to line start, and that anchor is load-bearing.** This guard is checked ahead of
+     * [clientOnlyClassMarker], so anything it matches never reaches the decisive marker — an over-broad
+     * alternative here does not add noise, it turns a textbook clientside crash into
+     * [BootResult.INCONCLUSIVE] and drops a true positive. `could not open` is a generic verb phrase a mod may
+     * well log about one of its own resources, unlike the three distinctive sentences beside it. The launcher
+     * emits this one as the **entire line**, while every mod line carries a timestamp and level prefix, so `^`
+     * means "the launcher said it" and nothing else. Lines are matched one at a time, which is what makes the
+     * anchor mean line start.
      */
     private val launchFailureMarkers = Regex(
         "(Unable to access jarfile" +
             "|Could not find or load main class" +
             "|Invalid or corrupt jarfile" +
-            "|Error: could not open)",
+            "|^Error: could not open)",
         RegexOption.IGNORE_CASE
     )
 
