@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder.container
 
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.nio.file.Files
 
@@ -39,6 +40,8 @@ import java.nio.file.Files
  * @author Griefed
  */
 object ContainerUser {
+
+    private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /**
      * Environment variable letting an operator pin the container identity explicitly. Named here so the
@@ -62,11 +65,28 @@ object ContainerUser {
      * `SPC_GRINDER_WORK` onto a share owned by somebody else.
      */
     fun forDirectory(directory: File, override: String?): String {
-        val explicit = override?.trim()
-        if (!explicit.isNullOrEmpty() && userAndGroup.matches(explicit)) {
-            return explicit
+        override?.trim()?.takeIf { isUsableOverride(it) }?.let { return it }
+        val resolved = ownerOf(directory) ?: IMAGE_DEFAULT
+        // Only when something was actually set: an unset variable is the normal case and needs no comment,
+        // but a *set* one being ignored has to be said out loud, or an operator debugging the very failure
+        // this knob exists for is looking at a value they did not choose.
+        if (!override.isNullOrBlank()) {
+            log.warn(
+                "Ignoring $ENV_KEY='$override': it must be numeric `uid:gid` (e.g. 1000:1000). " +
+                    "Using $resolved, the owner of ${directory.absolutePath}, instead."
+            )
         }
-        return ownerOf(directory) ?: IMAGE_DEFAULT
+        return resolved
+    }
+
+    /**
+     * Whether [override] is something Docker can be handed: a numeric `uid:gid`. Names are rejected because the
+     * ids are resolved against the *container's* `/etc/passwd`, not the host's, so a host account name either
+     * fails to start the container or silently means somebody else inside it.
+     */
+    fun isUsableOverride(override: String?): Boolean {
+        val trimmed = override?.trim()
+        return !trimmed.isNullOrEmpty() && userAndGroup.matches(trimmed)
     }
 
     /**

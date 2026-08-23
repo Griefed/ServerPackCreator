@@ -76,8 +76,11 @@ object FallbackPropertiesRenderer {
         val proven = verdicts
             .filter { it.confidence == Confidence.HIGH }
             .mapNotNull { it.suggestedEntry?.trim()?.ifEmpty { null } }
+        val shipped = normalise(clientsideMods)
         val merged = normalise(clientsideMods + proven)
-        val added = merged.size - normalise(clientsideMods).size
+        val whitelisted = normalise(whitelist)
+        val added = merged.size - shipped.size
+        val dropped = unrepresentable(clientsideMods + proven) + unrepresentable(whitelist)
 
         return buildString {
             appendLine("# ServerPackCreator fallback lists, served by the grinder.")
@@ -90,17 +93,35 @@ object FallbackPropertiesRenderer {
             appendLine("# cleanly are never published: a clean boot proves nothing, and a wrong entry strips")
             appendLine("# a mod out of every server pack that uses this list.")
             appendLine("#")
-            appendLine("# ${merged.size} clientside entries (${added} contributed by the grinder), ${normalise(whitelist).size} whitelisted.")
+            appendLine("# ${merged.size} clientside entries ($added contributed by the grinder), ${whitelisted.size} whitelisted.")
+            if (dropped > 0) {
+                appendLine("# $dropped entry/entries omitted: a comma cannot be carried by a comma-separated list.")
+            }
             appendLine()
             appendList(FALLBACK_MODS_LIST_KEY, merged)
             appendLine()
-            appendList(MODS_WHITELIST_KEY, normalise(whitelist))
+            appendList(MODS_WHITELIST_KEY, whitelisted)
         }
     }
 
-    /** Merge, drop blanks, de-duplicate and sort case-insensitively so the rendering is input-order independent. */
+    /**
+     * Merge, drop blanks and unrepresentable entries, de-duplicate, and sort case-insensitively so the
+     * rendering is input-order independent.
+     *
+     * An entry containing a comma is dropped rather than emitted: the consumer splits the value on commas, so
+     * such an entry would arrive as *two* bogus `startsWith` matchers against real mod filenames. Filenames may
+     * legally contain commas and stems are derived straight from them, so this is reachable — and silent at
+     * both ends, which is why [render] states the count in the document.
+     */
     private fun normalise(entries: Collection<String>): List<String> =
-        entries.map { it.trim() }.filter { it.isNotEmpty() }.distinct().sortedBy { it.lowercase() }
+        entries.map { it.trim() }
+            .filter { it.isNotEmpty() && !it.contains(',') }
+            .distinct()
+            .sortedBy { it.lowercase() }
+
+    /** How many of [entries] this format cannot carry, for the document to admit rather than silently swallow. */
+    private fun unrepresentable(entries: Collection<String>): Int =
+        entries.count { it.trim().isNotEmpty() && it.contains(',') }
 
     /**
      * Append one `key=` line with its comma-separated [entries] spread over continuation lines. An empty
@@ -114,8 +135,9 @@ object FallbackPropertiesRenderer {
         }
         appendLine("$key=\\")
         entries.forEachIndexed { index, entry ->
-            val separator = if (index == entries.lastIndex) "" else ","
-            appendLine("$CONTINUATION_INDENT${escape(entry)}$separator\\".removeSuffix(if (index == entries.lastIndex) "\\" else ""))
+            // Every line but the last carries a comma and a continuation backslash; the last carries neither.
+            val lineEnding = if (index == entries.lastIndex) "" else ",\\"
+            appendLine("$CONTINUATION_INDENT${escape(entry)}$lineEnding")
         }
     }
 
