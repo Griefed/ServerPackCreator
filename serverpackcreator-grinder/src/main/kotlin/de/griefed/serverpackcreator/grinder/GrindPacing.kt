@@ -52,4 +52,26 @@ object GrindPacing {
         sweepCompleted -> betweenSweeps
         else -> whileCrawling
     }
+
+    /**
+     * How long to wait *before looking again* while serving out a [pause] from [pauseAfterPass] — the whole
+     * pause when it is shorter than [POLL_SLICE], otherwise one slice.
+     *
+     * **Why the wait is sliced at all.** [pauseAfterPass] returns `betweenSweeps` after a completed sweep that
+     * verified nothing, and that default is six hours. Sleeping it in one call means an operator who queues a
+     * re-grind into a just-dozed daemon waits up to six hours for it — and the immediate re-grind queue exists
+     * precisely so that a verdict known to be wrong is not served while a timer runs down. Trading a 30-day
+     * TTL for a 6-hour one is better and still not what was built.
+     */
+    fun pollInterval(pause: Duration): Duration =
+        if (pause < POLL_SLICE) pause else POLL_SLICE
+
+    /**
+     * The longest the daemon sleeps without checking whether work has been queued.
+     *
+     * Small enough that a re-grind feels immediate, large enough that a dozing daemon is not spinning: across
+     * a six-hour pause this is 1 440 wake-ups that each read one small JSON file, which is nothing beside the
+     * container boots the same daemon does when it is awake.
+     */
+    private val POLL_SLICE: Duration = Duration.ofSeconds(15)
 }

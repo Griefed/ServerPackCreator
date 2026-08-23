@@ -215,15 +215,17 @@ internal class GrindPoolShutdownTest {
     @Test
     fun theCatalogPassIsNotStartedWhenAStopArrivedDuringTheDrain() {
         val body = grinderMainBody()
-        val drain = body.indexOf("requeue.drain()")
-        Assertions.assertTrue(drain > 0, "main() no longer drains the re-grind queue")
-        val nextBatch = body.indexOf("crawler.nextBatch()", drain)
-        Assertions.assertTrue(nextBatch > drain, "main() no longer takes a catalog batch after the drain")
+        // The two landmarks that carry the meaning: the pool that grinds the drain, and the pool that grinds
+        // the catalog slice. Anything between them runs *after* a stop may already have been signalled and
+        // awaited, so the guard is about what sits in that gap — not about where the batch is fetched.
+        val drainPool = body.indexOf("grindAll(requeued")
+        Assertions.assertTrue(drainPool > 0, "main() no longer grinds the re-grind queue in its own pool")
+        val catalogPool = body.indexOf("GrindPool(grinder, workers)", drainPool + 1)
+        Assertions.assertTrue(catalogPool > drainPool, "main() no longer builds a second pool for the catalog slice")
 
-        val between = body.substring(drain, nextBatch)
         Assertions.assertTrue(
-            between.contains("running.get()"),
-            "the pass loop must re-check `running` between the re-grind drain and the catalog batch: the " +
+            body.substring(drainPool, catalogPool).contains("running.get()"),
+            "the pass loop must re-check `running` between the re-grind pool and the catalog pool: the " +
                 "shutdown hook reads activePool once, so a stop during the drain would otherwise be followed " +
                 "by a whole new pool of boots the hook has already stopped waiting for"
         )
@@ -240,8 +242,14 @@ internal class GrindPoolShutdownTest {
         val beginPass = body.indexOf("status.beginPass(")
         Assertions.assertTrue(beginPass > 0, "main() no longer reports a pass to /status")
         Assertions.assertTrue(
-            beginPass < body.indexOf("requeue.drain()"),
-            "the pass must be announced *before* the drain, or /status shows the previous pass throughout it"
+            beginPass < body.indexOf("grindAll(requeued"),
+            "the pass must be announced before the drain is ground, or /status shows the previous pass for " +
+                "the whole of it"
+        )
+        Assertions.assertTrue(
+            body.substring(beginPass, body.indexOf(')', beginPass)).contains("requeued"),
+            "the announced size must include the requeued candidates, or /status under-reports a drain of " +
+                "hundreds as whatever the catalog slice happens to be"
         )
     }
 }

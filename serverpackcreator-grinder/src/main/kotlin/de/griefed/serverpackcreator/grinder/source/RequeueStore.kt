@@ -103,6 +103,7 @@ class JsonRequeueStore(private val file: File) : RequeueStore {
         return waiting
     }
 
+    @Synchronized
     override fun pending(): Int = read().size
 
     /** Read the queue, treating anything unreadable as empty so a bad file cannot stop a grind. */
