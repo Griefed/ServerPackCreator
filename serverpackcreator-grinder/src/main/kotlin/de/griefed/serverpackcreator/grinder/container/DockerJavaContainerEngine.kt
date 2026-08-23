@@ -77,6 +77,9 @@ class DockerJavaContainerEngine(
             .withCmd(spec.command)
             .withWorkingDir(spec.workingDir)
             .withUser(spec.user)
+            // Fixed rather than the daemon's default (the container id), because `hostConfigFor` has to map it
+            // to an address and the id does not exist until after this call. See CONTAINER_HOST_NAME.
+            .withHostName(spec.hostName)
             // Stamped so a container that outlives its JVM can still be identified. Nothing else can find it:
             // it has no name, no autoremove, and the tracking set above dies with the process.
             .withLabels(mapOf(OWNER_LABEL to "1"))
@@ -240,6 +243,13 @@ class DockerJavaContainerEngine(
             .withPidsLimit(spec.resources.pidsLimit)
             .withReadonlyRootfs(spec.readonlyRootfs)
             .withBinds(spec.mounts.map { Bind(it.hostPath, Volume(it.containerPath), if (it.readOnly) AccessMode.ro else AccessMode.rw) })
+            // The name resolution the daemon gives a *networked* container: it writes `<ip> <hostname>` into
+            // /etc/hosts, which is what makes a container's own name resolvable. A `none`-network boot has no
+            // address to write, so the entry is added by hand and pointed at loopback -- the mod must stay
+            // unable to reach anything, but it must be able to look *itself* up. Verified against docker 29.7.2
+            // that an extra host is written even with no network; without it `getaddrinfo` fails and every boot
+            // opens with three `UnknownHostException` stacktraces from log4j's getLocalHost().
+            .withExtraHosts("${spec.hostName}:$LOOPBACK_ADDRESS")
         if (spec.dropAllCapabilities) {
             hostConfig.withCapDrop(Capability.ALL)
         }
@@ -265,6 +275,12 @@ class DockerJavaContainerEngine(
     companion object {
         /** How often the boot's liveness and ready-state are polled. */
         internal const val POLL_INTERVAL_MILLIS = 500L
+
+        /**
+         * The address a container's own hostname is mapped to. Loopback, because a network-less container has
+         * no other one — and the point is only that the name resolves, never that anything is reachable.
+         */
+        private const val LOOPBACK_ADDRESS = "127.0.0.1"
 
         /**
          * Docker label every container this engine creates carries, so one that outlives its JVM can still be
