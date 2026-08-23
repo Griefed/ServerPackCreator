@@ -56,7 +56,8 @@ class ClientsideVerifier(
         val project = platform.resolve(projectUrl)
         val bootVerifier = bootVerifierFactory?.invoke(platform)
 
-        val perLoader = project.loaders.map { loader -> verdictFor(project, loader, bootVerifier) }
+        val assessed = project.loaders.map { loader -> verdictFor(project, loader, bootVerifier) }
+        val perLoader = reconcileAcrossLoaders(project, assessed)
         val suggestedEntries = perLoader.mapNotNull { it.suggestedEntry }.distinct().sorted()
 
         return ClientsideReport(
@@ -70,8 +71,52 @@ class ClientsideVerifier(
         )
     }
 
+    /**
+     * One loader's verdict plus the boot detail behind it, kept apart so [reconcileAcrossLoaders] can
+     * *rebuild* a superseded verdict's note instead of appending a correction to a claim that is no longer
+     * true. Internal to the two passes; the report only ever sees [LoaderVerdict].
+     */
+    private data class LoaderAssessment(
+        /** The verdict as the loader's own signals produced it, before any cross-loader reconciliation. */
+        val verdict: LoaderVerdict,
+        /** What the boot reported, or `null` when none ran — the one part of the note worth carrying over. */
+        val bootDetail: String?
+    )
+
+    /**
+     * Second pass over the per-loader verdicts: a crash cannot stand as clientside evidence when **another
+     * loader of the same project booted a server with the same list-entry**.
+     *
+     * **Why the entry and not the loader:** what gets published is a loader-agnostic file-name stem, matched
+     * with `startsWith`. Measured 2026-08-23 — `iron-chests` produced `Forge → CRASHED` and
+     * `NeoForge → SURVIVED` in one run, both deriving `ironchest-`, and the crash was published, which strips
+     * the very NeoForge build that had just booted a server. Where the stems differ, the published entry
+     * cannot strip the surviving build and the two verdicts do not contradict each other at all — a mod may
+     * genuinely be client-only on one loader.
+     *
+     * The crash itself is preserved (`bootResult`, the excerpt): it happened, and it is worth diagnosing.
+     * Only its *standing* changes, down to whatever the metadata alone supports.
+     */
+    private fun reconcileAcrossLoaders(project: ProjectFiles, assessed: List<LoaderAssessment>): List<LoaderVerdict> {
+        val verdicts = assessed.map { it.verdict }
+        return assessed.map { assessment ->
+            val disproving = loaderDisprovingTheCrash(assessment.verdict, verdicts)
+                ?: return@map assessment.verdict
+            log.info(
+                "${project.slug}: ${assessment.verdict.loader} crashed, but ${disproving.loader} booted the same " +
+                    "entry '${assessment.verdict.suggestedEntry}' cleanly — the crash is not a sideness signal."
+            )
+            supersededByLoader(
+                verdict = assessment.verdict,
+                disproving = disproving,
+                metadataOnly = aggregate(project.serverSide, assessment.verdict.jarScan, null),
+                bootDetail = assessment.bootDetail
+            )
+        }
+    }
+
     /** Compute the verdict for a single [loader] of the resolved [project], optionally booting it. */
-    private fun verdictFor(project: ProjectFiles, loader: String, bootVerifier: BootVerifier?): LoaderVerdict {
+    private fun verdictFor(project: ProjectFiles, loader: String, bootVerifier: BootVerifier?): LoaderAssessment {
         val loaderFiles = project.files.filter { loader in it.loaders }
         val stem = FilenameStemDeriver.deriveStem(loaderFiles.map { it.fileName })
         val sample = loaderFiles.firstOrNull()
@@ -82,24 +127,30 @@ class ClientsideVerifier(
             else -> scanSample(sample, loader, project)
         }
 
+        // The boot needs the metadata verdict too: a crash that *contradicts* a declared server support is
+        // re-checked against other versions of the mod before it may stand (see BootVerifier.verify).
+        val declaresServer = declaresServerSupport(project.serverSide, jarScan)
         val bootOutcome = bootVerifier?.let { verifier ->
-            runCatching { verifier.verify(project, loader) }
+            runCatching { verifier.verify(project, loader, declaresServer) }
                 .onFailure { log.warn("Boot-test for $loader failed: ${it.message}") }
                 .getOrNull()
         }
 
         val (confidence, note) = aggregate(project.serverSide, jarScan, bootOutcome?.result)
-        return LoaderVerdict(
-            loader = loader,
-            suggestedEntry = stem,
-            declaredClientSide = project.clientSide,
-            declaredServerSide = project.serverSide,
-            jarScan = jarScan,
-            bootResult = bootOutcome?.result,
-            bootCrashExcerpt = bootOutcome?.crashExcerpt,
-            confidence = confidence,
-            sampleFile = sample?.fileName,
-            note = listOfNotNull(note, bootOutcome?.detail).joinToString(" ").ifBlank { null }
+        return LoaderAssessment(
+            verdict = LoaderVerdict(
+                loader = loader,
+                suggestedEntry = stem,
+                declaredClientSide = project.clientSide,
+                declaredServerSide = project.serverSide,
+                jarScan = jarScan,
+                bootResult = bootOutcome?.result,
+                bootCrashExcerpt = bootOutcome?.crashExcerpt,
+                confidence = confidence,
+                sampleFile = sample?.fileName,
+                note = listOfNotNull(note, bootOutcome?.detail).joinToString(" ").ifBlank { null }
+            ),
+            bootDetail = bootOutcome?.detail
         )
     }
 
@@ -131,7 +182,7 @@ class ClientsideVerifier(
         val jarClient = jarScan == JarScan.CLIENT
         val jarServer = jarScan == JarScan.SERVER_OR_BOTH
         val metadataClient = declaresClient || jarClient
-        val metadataServer = declaresServer || jarServer
+        val metadataServer = declaresServerSupport(serverSide, jarScan)
 
         val note = when {
             declaresClient && jarServer -> "Platform marks server unsupported but the jar declares server/both."
@@ -150,5 +201,69 @@ class ClientsideVerifier(
             else -> Confidence.INCONCLUSIVE
         }
         return confidence to note
+    }
+
+    companion object {
+        /**
+         * Whether the mod *claims* to support servers — the platform's own `server_side: required`, or SPC's
+         * scan of the jar reading server/both. Either source is enough; neither is trusted, which is why the
+         * boot exists at all.
+         *
+         * Shared on purpose between the confidence aggregation and the boot's other-version crash re-check:
+         * the same answer both prints "Declared server/both but the server crashed" and decides whether that
+         * contradiction is worth re-checking, and a report that states the contradiction while the re-check
+         * silently decided there was none would be worse than either behaviour alone. [DeclaredSupport.OPTIONAL]
+         * deliberately does not count — "runs with or without the side" is not a claim that the server works.
+         */
+        internal fun declaresServerSupport(serverSide: DeclaredSupport, jarScan: JarScan): Boolean =
+            serverSide == DeclaredSupport.REQUIRED || jarScan == JarScan.SERVER_OR_BOTH
+
+        /**
+         * The loader whose clean boot disproves [verdict]'s crash, or `null` when nothing in [allVerdicts]
+         * does. Disproof takes all of: [verdict] actually crashed, another loader actually **survived**, and
+         * the two derive the *same* non-blank list-entry — because that shared entry is what would be
+         * published, and `startsWith`-matching it would strip a build proven to boot a server.
+         *
+         * Deliberately not "any survival clears any crash": sideness can genuinely differ per loader, and
+         * where the stems differ the published entry harms nothing. Only a clean boot counts, the same rule
+         * every other guard here follows — an inconclusive or absent boot learned nothing.
+         */
+        internal fun loaderDisprovingTheCrash(verdict: LoaderVerdict, allVerdicts: List<LoaderVerdict>): LoaderVerdict? {
+            if (verdict.bootResult != BootResult.CRASHED) {
+                return null
+            }
+            val entry = verdict.suggestedEntry?.trim()?.ifEmpty { null } ?: return null
+            return allVerdicts.firstOrNull { other ->
+                other.loader != verdict.loader &&
+                    other.bootResult == BootResult.SURVIVED &&
+                    other.suggestedEntry?.trim() == entry
+            }
+        }
+
+        /**
+         * Restate [verdict] once [disproving] has taken the sting out of its crash: the confidence drops to
+         * [metadataOnly] — what `aggregate` yields for the same signals with no boot, so there is one
+         * confidence ladder and not a second one written here — and the note is **rebuilt** from the metadata
+         * caveat, the [bootDetail] and why the crash no longer counts.
+         *
+         * Rebuilt rather than appended to, because the old note ends in "a strong clientside signal", which is
+         * exactly what is no longer true; bolting a correction onto a false sentence is how prose goes stale.
+         * `bootResult` and the crash excerpt are kept untouched: the server did crash, and that is worth
+         * diagnosing even though it says nothing about which side the mod belongs on.
+         */
+        internal fun supersededByLoader(
+            verdict: LoaderVerdict,
+            disproving: LoaderVerdict,
+            metadataOnly: Pair<Confidence, String?>,
+            bootDetail: String?
+        ): LoaderVerdict {
+            val (confidence, metadataNote) = metadataOnly
+            val supersedes = "Crashed, but ${disproving.loader} booted a server with the same entry " +
+                "'${verdict.suggestedEntry?.trim()}' — the crash belongs to that build, not to the mod's sideness."
+            return verdict.copy(
+                confidence = confidence,
+                note = listOfNotNull(metadataNote, bootDetail, supersedes).joinToString(" ").ifBlank { null }
+            )
+        }
     }
 }

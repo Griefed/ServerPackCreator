@@ -92,8 +92,15 @@ though their detail lives deeper:
 - **Never wire the candidate-mod boot with network.** `--network none` is the whole isolation guarantee; only
   the one-off loader install per tuple gets network. Detail: `grinder/loader/CLAUDE.md`.
 - **A mod must never be mis-scored as a clientside crash.** Two independent guards exist (selection-time loader
-  availability + Java support, and the classifier's pre-launch setup-abort mapping), plus clientside's crash
-  re-check when an older cached loader build was booted. See `serverpackcreator-clientside/CLAUDE.md`.
+  availability + Java support, and the classifier's pre-launch setup-abort mapping), plus *three* crash checks
+  in clientside: one when an older cached loader build was booted, one — since 2026-08-23 — when the crash
+  contradicts a declared server support, which boots up to two **other versions of the mod** to find out whether
+  the crash was that build's, and a free cross-loader pass that refuses to let a crash stand when another loader
+  of the same project booted a server with the same list-entry (the entry is what gets published, and it is
+  loader-agnostic). See `serverpackcreator-clientside/CLAUDE.md`. **Consequence for pacing:** one
+  contradicting crash can now hold a worker for up to three boot budgets (~45 min at the default 15), which is
+  the price of not publishing a wrong `HIGH` to `/as-properties`. Only a crash the metadata contradicts pays it;
+  a genuine clientside mod still costs one boot, because its metadata and its crash agree.
 - **`installDist` is not rebuilt by `test`** — always rebuild before a live run, or you will draw conclusions
   from a stale jar (this has happened: a run reported the unfiltered 7 339-version axis because of it).
 

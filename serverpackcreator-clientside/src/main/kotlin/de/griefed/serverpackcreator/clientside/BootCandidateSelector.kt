@@ -55,6 +55,37 @@ object BootCandidateSelector {
             .firstOrNull { loaderVersionAvailable(it.second) }
 
     /**
+     * The sample the other-version crash re-check boots: the newest bootable file of each Minecraft version
+     * *other than* [bootedMinecraftVersion], most recent Minecraft first, capped at [limit] — the same
+     * [loaderVersionAvailable] gate as [pickBootableCandidate], since a version the loader cannot install can
+     * never be staged either.
+     *
+     * One candidate per Minecraft version, never two builds of the same one: two rebuilds for one Minecraft
+     * are near-identical code, so a different version line buys far more per boot spent. That relies on
+     * [files] arriving newest-first, which both platforms do and the stable sort preserves, so the file kept
+     * for a version is that version's latest.
+     */
+    fun pickRecheckCandidates(
+        files: List<ModFile>,
+        loader: String,
+        bootedMinecraftVersion: String,
+        limit: Int,
+        loaderVersionAvailable: (minecraftVersion: String) -> Boolean
+    ): List<Pair<ModFile, String>> {
+        if (limit <= 0) {
+            return emptyList()
+        }
+        return files.filter { loader in it.loaders }
+            .flatMap { file -> file.minecraftVersions.map { file to it } }
+            .filter { (_, minecraftVersion) ->
+                minecraftVersion != bootedMinecraftVersion && loaderVersionAvailable(minecraftVersion)
+            }
+            .sortedWith { left, right -> minecraftComparator.compare(right.second, left.second) }
+            .distinctBy { it.second }
+            .take(limit)
+    }
+
+    /**
      * Pick a dependency-file from [files] for the same [loader], preferring an exact
      * [minecraftVersion] match and falling back to any file for that loader.
      */

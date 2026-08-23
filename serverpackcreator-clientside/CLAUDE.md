@@ -27,6 +27,14 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   canned JSON (no live network). **CurseForge has no sideness field** → `DeclaredSupport.UNKNOWN`; only
   Modrinth declares `client_side`/`server_side`. Use `JsonNode.textOrNull` for nullable URL fields —
   `asText(null)` returns the literal `"null"` for a JSON-null and would defeat `ModFile.locked`.
+- **CurseForge file resolution pages; a dependency's deliberately does not.** `resolve` walks
+  `/mods/{id}/files` with `index` until `totalCount` is reached, capped at `MAX_FILE_PAGES` (10 × 50) with a
+  warning when it truncates. **Why:** the newest 50 files are 50 files *across all loaders*, so a project that
+  migrated Forge → NeoForge keeps publishing NeoForge builds until its older Forge builds fall out of the
+  window — leaving the crash re-check nothing of that loader to try, precisely for the projects that produce a
+  false clientside verdict. Most projects still cost one call. `resolveDependency` stays single-page on
+  purpose: it needs *a* usable file for one loader/Minecraft pair, not a history, and paging every dependency
+  of every candidate would multiply what a catalog sweep spends of the API key's quota.
 - **LANDMINE — `DeclaredSupport` and `api.modscanning.Sideness` are different concepts; do not merge them.**
   This module's enum was itself called `Sideness` until 2026-08-14, which made them look like duplicates
   of one idea. They are not, and the confidence model depends on the difference:
@@ -71,6 +79,54 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   by host memory pressure**, systematically, for the biggest mods. `SIGABRT` (134) is deliberately *not* excused: a
   fatal JVM abort is a real failure of the running server. Keep the guard narrow — a genuine mod-load crash
   (`NoClassDefFoundError: net/minecraft/client/…`) must still read CRASHED, and a test pins that.
+- **A crash that contradicts the metadata is re-checked on the mod's other versions.**
+  `recheckCrashOnOtherModVersions`, over the pure `shouldRecheckAgainstOtherVersions`,
+  `reconcileOtherVersionRecheck` and `BootCandidateSelector.pickRecheckCandidates`.
+  **Why:** only one build of a project is ever booted, so
+  "this build crashes" and "this mod cannot run on a server" produced identical evidence — reported
+  2026-08-23, `iron-chests` published `HIGH` off a single crashing `Forge 48.1.0 / Minecraft 1.20.2`. A mod
+  that cannot run server-side cannot run server-side in *any* build, so one clean boot on another version
+  clears the crash. Sample: the newest file of each of the next two most-recent Minecraft versions (one per
+  version — two rebuilds for one Minecraft are near-identical code), stopping at the first clean boot.
+  **Landmine — the gate is the contradiction, not the crash.** It arms only when
+  `ClientsideVerifier.declaresServerSupport` holds, which is the same predicate that prints the "Declared
+  server/both but the server crashed" note; keep them sharing it, or the report states a contradiction the
+  re-check silently decided did not exist. Where the metadata already leans clientside the crash *confirms*
+  it, and in a catalog sweep that agreement is the common case — arming there costs two boots per true
+  positive and buys nothing. **CurseForge has no sideness field**, so its claim can only come from the jar
+  scan: a gate reading the platform alone never arms for a CurseForge mod, i.e. never for the report that
+  prompted this. Conservative in every other direction, like the re-check below: crashes elsewhere
+  corroborate, and an attempt that learned nothing leaves the crash standing.
+- **A crash cannot outrank another loader's clean boot** (`ClientsideVerifier.reconcileAcrossLoaders`, over the
+  pure `loaderDisprovingTheCrash` / `supersededByLoader`). `report()` runs a second pass once every loader is
+  in: where one loader CRASHED and another SURVIVED deriving the **same** list-entry, the crash stops counting
+  as sideness evidence and the confidence drops to what `aggregate` yields with no boot. **Why the entry and
+  not the loader:** the published artefact is a loader-agnostic file-name stem matched with `startsWith`, so
+  the crash's entry would strip the surviving build. Where the stems differ nothing is stripped and there is
+  no contradiction — a mod really can be client-only on one loader, and this must not become "any survival
+  clears any crash". The live case (2026-08-23) had both rows in **one run**, and the disproof was discarded:
+
+  | Loader | Was | Entry | Boot |
+  |---|---|---|---|
+  | Forge | `HIGH` | `ironchest-` | Forge 48.1.0 / MC 1.20.2 → CRASHED (exit 1) |
+  | NeoForge | `LOW` | `ironchest-` | NeoForge 21.11.45 / MC 1.21.11 → SURVIVED (exit 137) |
+
+  **Exit 137 on a SURVIVED row is normal, not a kill to investigate** — `ContainerServerRunner` watches for the
+  ready-line and stops the container the moment it appears, so every clean container boot exits 137.
+  **The crash is not erased:** `bootResult` and the excerpt stay, because the server did crash and that is
+  worth diagnosing; only its *standing* changes. The note is **rebuilt**, not appended to — its old text ended
+  in "a strong clientside signal", and bolting a correction onto a false sentence is how prose goes stale.
+- **The two crash guards layer, and both cost.** The within-loader other-version re-check runs *during* the
+  crashing loader's own boot; cross-loader reconciliation runs after every loader is in. So a crash on a
+  project whose other loader survives still pays the two extra boots first — loaders are assessed in sorted
+  order (`Fabric, Forge, NeoForge, Quilt`), and nothing looks ahead. Deliberate: the extra boots also produce
+  the *within*-loader answer, which is the more specific one.
+- **Landmine — every attempt for one candidate writes the *same* `boot.log`.** Staging wipes
+  `<work>/boot/<slug>-<loader>` and re-creates it, so the loader-build re-check and each other-version boot
+  overwrite the previous console, while the *reported* verdict is usually the first crash. The grinder's
+  reaper keeps exactly that one file, so the log a `HIGH` is diagnosed from would be a different boot's.
+  `BootOutcome.console` + `restoreDecisiveConsole` (called at the end of `verify`) put the decided outcome's
+  own console back. Any new re-check path must leave that call last.
 - **`LoaderVersionPolicy` (seam) + crash re-check.** `BootVerifier` takes a *policy*, not the concrete
   `LoaderVersionResolver`: `preferredVersion` is what gets booted, `latestVersion` is the authoritative newest.
   The default resolver answers both identically. A caller may prefer an **older** build it already has installed
@@ -154,13 +210,15 @@ seam (writes the log, then `BootLogClassifier` + `BootLogExcerpt`). The default
 
 ## Testing patterns
 
-- 88 tests, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
+- 126 tests, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
   JSON to a fake `HttpFetcher`; **`MetadataScannerTest` is the only one needing a resource** — it boots
   an offline `ApiWrapper` from `src/test/resources/serverpackcreator.properties` (whose `ModScanner`
   relies on the API's cached version-manifests, hence `test` `dependsOn :serverpackcreator-api:processTestResources`).
 - `BootCandidateSelector`, `BootLogClassifier`, `FilenameStemDeriver`, `ClientsideListEditor`, plus the
   extracted `BootVerifier.outcomeFor` (`BootVerifierOutcomeTest`) and `HostProcessServerRunner`'s
   no-start-script contract are pure/offline-testable without a running server — keep new logic that way.
+  Both crash re-checks follow the same split: `verify` needs an `ApiWrapper` and a running server, so what is
+  pinned is *when* a re-check happens and *how the attempts reconcile*, in `BootVerifierCrashRecheckTest`.
 
 ## Roadmap — the grinder (`serverpackcreator-grinder`, planned)
 
