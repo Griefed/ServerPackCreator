@@ -3396,3 +3396,66 @@ docker 29.7.2.
 - **Concurrency in `close()` is bounded** at 8 and the pool is shut down in a `finally`.
 - **`reapOrphans` runs before the staging reaper and after the engine exists**, and at that point this process
   owns no containers, so everything wearing the label is by definition inherited.
+
+---
+
+# Audit iteration 21 — 2026-08-23 — second pass over the shutdown work
+
+Scope: the same three merged commits plus iteration 20's two fix commits. Grinder suite 288 (22 skipped),
+Docker-gated IT 6/6 against docker 29.7.2.
+
+## Iteration 20 findings — closed
+
+H1 fixed (workers published before they start) and its invariant pinned; M2/M3/M4 pinned by
+`ShutdownWiringTest`, **teeth verified on all three** by breaking each in turn; M5 injected; L1–L3 cleaned.
+Recorded honestly in the test's own doc: H1's guards were never observed red, because the interleaving could
+not be provoked at 8 or 64 workers.
+
+## HIGH
+
+- **P21-H1 — the one-shot run's workers are never signalled.** `GrinderApplication.kt:190`:
+
+  ```kotlin
+  GrindPool(grinder, workers).grindAll(candidates)   // one-shot: no crawl cursor to advance
+  ```
+
+  The pool is constructed inline and **never stored in `activePool`**, which is the only handle the shutdown
+  hook has. So on Ctrl-C during a one-shot run the hook calls `requestStop()` and `awaitStop()` on `null`,
+  both silently no-op via `?.`, and the workers are neither signalled nor waited for. The engine still closes,
+  so containers are stopped and the boots collapse — which is why this looks like it works — but the worker
+  half of the contract does not run at all, and the `false`-means-warn branch cannot fire either.
+
+  The hook's own comment claims otherwise: *"registered before any boot can start so it covers the one-shot
+  path too"*. That was true of the hook and stopped being true of what the hook can reach. One-shot is the
+  end-to-end verification path, and Ctrl-C is how it is always ended.
+
+## MEDIUM
+
+- **P21-M1 — the workers get a second full window, not the remainder of the first.** The hook passes
+  `awaitStop(SHUTDOWN_GRACE)` *after* `engine.close()` may already have spent the entire 15 s, so the real
+  worst case is **30 s**, not 15. Three places say otherwise: the hook's log line ("15s for containers and
+  workers to quit"), the comment directly above the call ("whatever is left of the window"), and README §5
+  step 4 ("gives the workers what is left of that window"). The requested contract was one shared window, the
+  documentation describes one shared window, and the code implements two sequential ones.
+
+  It also quietly undercuts `ShutdownWiringTest.theUnitAllowsEnoughTimeForTheCleanupItDependsOn`, whose
+  arithmetic (`ceil(workers / 8) * grace`) assumes the worker wait overlaps the container wait rather than
+  following it.
+
+## LOW
+
+- **P21-L1 — `activePool.get()` is read twice in the hook**, once for `requestStop` and once for `awaitStop`,
+  so the two calls can in principle land on different pools: `main` sets a new one per pass, and the hook runs
+  concurrently with it. Capture it once.
+- **P21-L2 — `SHUTDOWN_GRACE` lives in the `container` package but now governs workers too.** Its KDoc says
+  so, and moving it would churn imports for little gain, but the home is no longer quite right — noted so the
+  next reader does not assume the worker timeout is a container concern.
+
+## Verified clean — do not re-litigate
+
+- **The hook's ordering is correct and now guarded**: `close()` (which sets the closed flag) strictly precedes
+  `awaitStop`, verified red by swapping them.
+- **`requestStop()` before `close()` is deliberate**, not redundant with `awaitStop`'s own flag set: it stops a
+  worker that finishes during the sweep from picking up another candidate.
+- **A null `activePool` is handled correctly** for the *continuous* path — it is null only between passes,
+  when there are no workers to signal. P21-H1 is about the one-shot path never setting it at all.
