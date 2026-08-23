@@ -209,10 +209,13 @@ class BootVerifier(
             otherVersionRecheckLimit,
             bootableMinecraft(loader)
         )
-        log.info(
-            "${project.slug}: $loader crashed on Minecraft ${booted.minecraftVersion} although the metadata declares " +
-                "server support — re-checking ${candidates.size} other version(s) before trusting the crash."
-        )
+        val contradiction = "${project.slug}: $loader crashed on Minecraft ${booted.minecraftVersion} " +
+            "although the metadata declares server support"
+        if (candidates.isEmpty()) {
+            log.info("$contradiction, and the mod publishes no other bootable version to re-check against.")
+        } else {
+            log.info("$contradiction — re-checking ${candidates.size} other version(s) before trusting the crash.")
+        }
         val attempts = mutableListOf<OtherVersionAttempt>()
         for ((file, minecraftVersion) in candidates) {
             val label = "${file.fileName} (Minecraft $minecraftVersion)"
