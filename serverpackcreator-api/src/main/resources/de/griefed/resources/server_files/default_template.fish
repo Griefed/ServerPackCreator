@@ -230,6 +230,47 @@ function cleanServerFiles
     end
 end
 
+# forgeNeedsItsOwnArgfile
+# Whether the ServerStarterJar must be bypassed for this Minecraft version, because it cannot launch the Forge
+# install produced for it. Returns success (0) when the pack has to start Forge from Forge's own argfile.
+#
+# Forge's installer writes one of two argfiles, and the ServerStarterJar can only start one of them:
+#   * Minecraft 1.17 .. 1.20.1  -> "-p <module path>" over cpw's securejarhandler. The starter jar synthesises a
+#                                  boot layer for that module path, and cpw's loader falls back to the platform
+#                                  classloader for anything it cannot place, so this works.
+#   * Minecraft 1.20.2          -> "-p <module path> --add-modules ALL-MODULE-PATH" over Forge's OWN securemodules
+#                                  fork, which instead THROWS "Could not find parent layer for module `java.base`"
+#                                  from SecureModuleClassLoader before the server starts. No shim jar exists here.
+#   * Minecraft 1.20.3 onwards  -> "-jar forge-<version>-shim.jar". The starter jar takes its own "jar mode" and
+#                                  never synthesises a layer, so this works again -- verified through Minecraft
+#                                  1.21.1, which reaches the ready-line through the starter jar.
+#
+# 1.20.3 is bypassed with 1.20.2 even though it ships the shim: it is documented as affected in HELP.md, it has
+# two Forge builds in total, and over-including it costs only the starter jar's hosting-company compatibility
+# while under-including it costs a server that cannot start.
+#
+# The MAJOR is part of the test on purpose. Minor and patch carry this meaning only under the 1.x scheme:
+# Minecraft 26.20.2 matches 1.20.2 component for component below the major, and bypassing the starter jar there
+# would quietly drop that compatibility for every modern pack.
+#
+# NOTE: fish arrays are 1-indexed. Bash's ${SEMANTICS[0]} (major) is $SEMANTICS[1] here, ${SEMANTICS[1]} (minor)
+# is $SEMANTICS[2] and ${SEMANTICS[2]} (patch) is $SEMANTICS[3].
+function forgeNeedsItsOwnArgfile
+    if not test "$SEMANTICS[1]" -eq 1
+        return 1
+    end
+    if not test "$SEMANTICS[2]" -eq 20
+        return 1
+    end
+    if test (count $SEMANTICS) -lt 3
+        return 1
+    end
+    if test "$SEMANTICS[3]" -eq 2; or test "$SEMANTICS[3]" -eq 3
+        return 0
+    end
+    return 1
+end
+
 # setupForge
 # Download and install a Forge server for $MODLOADER_VERSION.
 function setupForge
@@ -284,9 +325,18 @@ function setupForge
             # launches the server. So on Java that cannot trap the exit we do not hand SSJ the install at all:
             # install here, then launch from the argfile the installer produces, as the USE_SSJ=false path does.
             # Fail-safe: only a Java we can read AND that predates 24 may use the ServerStarterJar path.
+            # Second reason, independent of Java: Minecraft 1.20.2/1.20.3 Forge cannot be launched by the
+            # ServerStarterJar at all -- see forgeNeedsItsOwnArgfile above.
+            set -l SSJ_REFUSAL ""
             if not string match -qr '^[0-9]+$' -- "$JAVA_VERSION"; or test "$JAVA_VERSION" -ge 24
-                echo "Java $JAVA_VERSION cannot grant ServerStarterJar the Security Manager it needs to run the Forge"
-                echo "installer, so this pack installs Forge directly and starts it from its argfile instead."
+                set SSJ_REFUSAL "Java $JAVA_VERSION cannot grant ServerStarterJar the Security Manager it needs to run the Forge installer"
+            else if forgeNeedsItsOwnArgfile
+                set SSJ_REFUSAL "Forge for Minecraft $MINECRAFT_VERSION starts from a module-path argfile the ServerStarterJar cannot launch"
+            end
+
+            if test -n "$SSJ_REFUSAL"
+                echo "$SSJ_REFUSAL,"
+                echo "so this pack installs Forge directly and starts it from its argfile instead."
                 set -g FORGE_ARGS_FILE "libraries/net/minecraftforge/forge/$MINECRAFT_VERSION-$MODLOADER_VERSION/unix_args.txt"
                 set -g SERVER_RUN_COMMAND "@user_jvm_args.txt @$FORGE_ARGS_FILE nogui"
                 if test (downloadIfNotExist "$FORGE_ARGS_FILE" "forge-installer.jar" "$FORGE_INSTALLER_URL") = "true"

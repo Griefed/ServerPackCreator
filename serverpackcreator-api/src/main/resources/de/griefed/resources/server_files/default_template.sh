@@ -200,6 +200,36 @@ cleanServerFiles() {
   done
 }
 
+# forgeNeedsItsOwnArgfile
+# Whether the ServerStarterJar must be bypassed for this Minecraft version, because it cannot launch the Forge
+# install produced for it. Returns success (0) when the pack has to start Forge from Forge's own argfile.
+#
+# Forge's installer writes one of two argfiles, and the ServerStarterJar can only start one of them:
+#   * Minecraft 1.17 .. 1.20.1  -> "-p <module path>" over cpw's securejarhandler. The starter jar synthesises a
+#                                  boot layer for that module path, and cpw's loader falls back to the platform
+#                                  classloader for anything it cannot place, so this works.
+#   * Minecraft 1.20.2          -> "-p <module path> --add-modules ALL-MODULE-PATH" over Forge's OWN securemodules
+#                                  fork, which instead THROWS "Could not find parent layer for module `java.base`"
+#                                  from SecureModuleClassLoader before the server starts. No shim jar exists here.
+#   * Minecraft 1.20.3 onwards  -> "-jar forge-<version>-shim.jar". The starter jar takes its own "jar mode" and
+#                                  never synthesises a layer, so this works again -- verified through Minecraft
+#                                  1.21.1, which reaches the ready-line through the starter jar.
+#
+# 1.20.3 is bypassed with 1.20.2 even though it ships the shim: it is documented as affected in HELP.md, it has
+# two Forge builds in total, and over-including it costs only the starter jar's hosting-company compatibility
+# while under-including it costs a server that cannot start.
+#
+# The MAJOR is part of the test on purpose. Minor and patch carry this meaning only under the 1.x scheme:
+# Minecraft 26.20.2 matches 1.20.2 component for component below the major, and bypassing the starter jar there
+# would quietly drop that compatibility for every modern pack. Anything unreadable falls through to a bypass,
+# which is the safe direction -- the argfile path works for every Forge from 1.17 on.
+forgeNeedsItsOwnArgfile() {
+  [[ ${SEMANTICS[0]} -eq 1 ]] || return 1
+  [[ ${SEMANTICS[1]} -eq 20 ]] || return 1
+  [[ ${#SEMANTICS[@]} -ge 3 ]] || return 1
+  [[ ${SEMANTICS[2]} -eq 2 || ${SEMANTICS[2]} -eq 3 ]]
+}
+
 # setupForge
 # Download and install a Forge server for $MODLOADER_VERSION. For Minecraft 1.17 and newer the ServerStarterJar from the
 # NeoForge-group is used. This has the benefit of making this server pack compatible with most hosting-companies.
@@ -245,23 +275,34 @@ setupForge() {
         runJavaCommand "-jar forge-installer.jar --installServer"
       fi
     else
-      # SSJ_FORGE_ARGS defaults to -Djava.security.manager=allow, which Forge's ServerStarterJar needed on older
-      # Java. JEP 486 removed Security Manager support in Java 24, so from that release the flag is not merely
-      # useless -- the VM refuses to start ("A command line option has attempted to allow or enable the Security
-      # Manager"). Minecraft 26.x requires Java 25, so passing it there breaks every modern Forge pack before Forge
-      # loads. Keep it where it is still needed, drop it where it is fatal.
+      # Two independent reasons the ServerStarterJar cannot be used, both of which stop the server from starting
+      # rather than being cosmetic. Either one lands in the same place: install Forge here, then launch through
+      # the argfile the installer produces, exactly as the USE_SSJ=false path above does.
       #
-      # That flag is not cosmetic to SSJ: it runs the Forge installer inside its own JVM and needs a SecurityManager
-      # to swallow the System.exit(0) the installer calls when it is done. Without it the installer's exit ends the
-      # whole process -- the pack installs, reports success, exits 0, and never launches the server. So on Java that
-      # cannot trap the exit we do not hand SSJ the install at all: install here, then launch through the argfile the
-      # installer produces, exactly as the USE_SSJ=false path does. Below Java 24 nothing changes.
-      # Fail-safe: take the ServerStarterJar path only when we KNOW this Java predates 24. An unresolved
-      # JAVA_VERSION cannot rule out 24+, where the flag stops the VM from starting at all, so it must land
-      # here rather than in the else-branch.
+      # 1. SSJ_FORGE_ARGS defaults to -Djava.security.manager=allow, which Forge's ServerStarterJar needed on
+      #    older Java. JEP 486 removed Security Manager support in Java 24, so from that release the flag is not
+      #    merely useless -- the VM refuses to start ("A command line option has attempted to allow or enable the
+      #    Security Manager"). Minecraft 26.x requires Java 25, so passing it there breaks every modern Forge pack
+      #    before Forge loads. The flag is not cosmetic to SSJ either: it runs the Forge installer inside its own
+      #    JVM and needs a SecurityManager to swallow the System.exit(0) the installer calls when it is done.
+      #    Without it the installer's exit ends the whole process -- the pack installs, reports success, exits 0,
+      #    and never launches the server. So on Java that cannot trap the exit we do not hand SSJ the install at
+      #    all. Below Java 24 nothing changes.
+      #    Fail-safe: take the ServerStarterJar path only when we KNOW this Java predates 24. An unresolved
+      #    JAVA_VERSION cannot rule out 24+, where the flag stops the VM from starting at all, so it must land
+      #    in the bypass rather than in the else-branch.
+      # 2. Minecraft 1.20.2/1.20.3 Forge cannot be launched by the ServerStarterJar at all -- see
+      #    forgeNeedsItsOwnArgfile above for which argfile each Forge era produces and why only that one fails.
+      SSJ_REFUSAL=""
       if [[ ! "${JAVA_VERSION}" =~ ^[0-9]+$ ]] || [[ ${JAVA_VERSION} -ge 24 ]]; then
-        echo "Java ${JAVA_VERSION} cannot grant ServerStarterJar the Security Manager it needs to run the Forge"
-        echo "installer, so this pack installs Forge directly and starts it from its argfile instead."
+        SSJ_REFUSAL="Java ${JAVA_VERSION} cannot grant ServerStarterJar the Security Manager it needs to run the Forge installer"
+      elif forgeNeedsItsOwnArgfile; then
+        SSJ_REFUSAL="Forge for Minecraft ${MINECRAFT_VERSION} starts from a module-path argfile the ServerStarterJar cannot launch"
+      fi
+
+      if [[ -n "${SSJ_REFUSAL}" ]]; then
+        echo "${SSJ_REFUSAL},"
+        echo "so this pack installs Forge directly and starts it from its argfile instead."
         FORGE_ARGS_FILE="libraries/net/minecraftforge/forge/${MINECRAFT_VERSION}-${MODLOADER_VERSION}/unix_args.txt"
         SERVER_RUN_COMMAND="@user_jvm_args.txt @${FORGE_ARGS_FILE} nogui"
         if [[ $(downloadIfNotExist "${FORGE_ARGS_FILE}" "forge-installer.jar" "${FORGE_INSTALLER_URL}") == "true" ]]; then
