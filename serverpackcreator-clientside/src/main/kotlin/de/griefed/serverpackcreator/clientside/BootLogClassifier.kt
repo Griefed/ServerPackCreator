@@ -103,11 +103,18 @@ object BootLogClassifier {
      * promoted to HIGH-confidence clientside — ten of the sweep's first fifteen HIGH verdicts, including the
      * definitely-server-side libraries `balm`, `collective` and `geckolib`. Trusting the exit status is what made this
      * class visible, which is why it needs the same pre-launch treatment as [setupAbortMarkers].
+     *
+     * `Error: could not open` is the JVM launcher's message for an **`@argfile`** it cannot read, and it belongs to
+     * exactly the same incomplete-cached-install case — only the file the boot depends on differs. It became
+     * reachable when the grinder started launching Forge from `@libraries/.../unix_args.txt` instead of through the
+     * ServerStarterJar. Matched with the launcher's own `Error: ` prefix so a mod logging "could not open" about
+     * one of its own files is not excused along with it.
      */
     private val launchFailureMarkers = Regex(
         "(Unable to access jarfile" +
             "|Could not find or load main class" +
-            "|Invalid or corrupt jarfile)",
+            "|Invalid or corrupt jarfile" +
+            "|Error: could not open)",
         RegexOption.IGNORE_CASE
     )
 
