@@ -147,18 +147,27 @@ object GrinderApplication {
         val mainThread = Thread.currentThread()
         Runtime.getRuntime().addShutdownHook(Thread {
             log.info("Shutdown requested — ${SHUTDOWN_GRACE.seconds}s for containers and workers to quit, then killed.")
+            // ONE window for the whole shutdown, not one per half: the containers and the workers are the same
+            // stop as far as an operator and systemd are concerned, and spending a full window on each would
+            // double the worst case past what the unit's TimeoutStopSec is sized for.
+            val deadline = System.currentTimeMillis() + SHUTDOWN_GRACE.toMillis()
             running.set(false)
+            // Read once: `main` replaces this per pass, and reading it twice could signal one pool and wait on
+            // another.
+            val pool = activePool.get()
             // No new candidates, before anything else: cheap, and it means a worker finishing right now does not
             // start another one while the rest of this runs.
-            activePool.get()?.requestStop()
+            pool?.requestStop()
             // Containers first, and this is the ordering that matters. `close()` marks the engine closed before
             // it sweeps, so a worker cannot create a container behind it; it then asks each container to exit
             // (SIGTERM, killed after the window) which is also what unblocks the workers waiting on them.
             runCatching { engine.close() }
                 .onFailure { log.warn("Could not clean up in-flight containers: ${it.message}") }
-            // Whatever is left of the window goes to the workers. A worker that does not come back is abandoned
-            // -- the JVM exits either way -- but say so, because it means work was still running at exit.
-            if (activePool.get()?.awaitStop(SHUTDOWN_GRACE) == false) {
+            // Whatever is left of the window goes to the workers -- which is usually most of it, since stopping
+            // containers is what frees them. A worker that does not come back is abandoned (the JVM exits either
+            // way), but say so: it means work was still running at exit.
+            val remaining = Duration.ofMillis(maxOf(0L, deadline - System.currentTimeMillis()))
+            if (pool?.awaitStop(remaining) == false) {
                 log.warn("A worker did not stop within ${SHUTDOWN_GRACE.seconds}s; exiting anyway.")
             }
             mainThread.interrupt()
@@ -187,7 +196,10 @@ object GrinderApplication {
             // hold the report open. The re-verify TTL still applies, so re-running skips fresh verdicts.
             val candidates = args.map { GrindCandidate(it, slugFromUrl(it), 0, ModPlatforms.ofUrl(it)) }
             log.info("One-shot run: grinding ${candidates.size} candidate(s) with $workers worker(s)...")
-            GrindPool(grinder, workers).grindAll(candidates) // one-shot: no crawl cursor to advance
+            // Registered like the continuous path's pool: activePool is the only handle the shutdown hook has,
+            // and without it Ctrl-C here signalled and awaited nothing -- both calls no-opping through a null.
+            GrindPool(grinder, workers).also { activePool.set(it) }
+                .grindAll(candidates) // one-shot: no crawl cursor to advance
             log.info("Grind complete: ${store.all().size} verdict(s). Report stays up at http://localhost:${server.port}/ — Ctrl-C to exit.")
             // Park until the shutdown hook interrupts us. Catching the interrupt is the point: the hook calls
             // `mainThread.interrupt()`, and letting that escape printed a bare `Exception in thread "main"
