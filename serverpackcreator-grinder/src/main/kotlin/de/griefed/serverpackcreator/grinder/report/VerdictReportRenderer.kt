@@ -72,6 +72,7 @@ object VerdictReportRenderer {
             <head>
               <meta charset="utf-8">
               <title>ServerPackCreator — suspected clientside mods</title>
+              <link rel="icon" type="image/png" href="/favicon.png">
               <style>
                 body { font-family: system-ui, sans-serif; margin: 1.5rem; }
                 table { border-collapse: collapse; width: 100%; }
