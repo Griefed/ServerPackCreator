@@ -11,7 +11,7 @@
 
 [Unit]
 Description=ServerPackCreator Grinder
-Documentation=https://github.com/Griefed/ServerPackCreator
+Documentation=https://git.griefed.de/Griefed/ServerPackCreator https://github.com/Griefed/ServerPackCreator
 # Requires=, not just After=: every boot the grinder performs is a container, so without the daemon
 # the service does nothing but fail.
 After=docker.service network-online.target
@@ -39,6 +39,10 @@ RestartSec=30s
 # Shutdown removes in-flight containers before exiting; give it room or systemd SIGKILLs mid-cleanup
 # and leaves them running.
 TimeoutStopSec=120
+
+# Without this the journal tags lines with the launcher's name. `journalctl -u spc-grinder` selects by
+# unit either way; this only matters when reading the journal as a whole.
+SyslogIdentifier=spc-grinder
 
 # --- Configuration ------------------------------------------------------------------------------
 # Paths. SPC_GRINDER_HOME is the one worth setting explicitly: it defaults to the home of User=, and
@@ -81,6 +85,20 @@ Environment=SPC_GRINDER_HOME=/home/grinder/.spc-grinder
 # over an Environment= line: unit files are world-readable, and `systemctl show` prints them.
 #Environment=CURSEFORGE_API_KEY=
 #EnvironmentFile=-/etc/spc-grinder.env
+
+# --- The JVM -------------------------------------------------------------------------------------
+# READ THIS BEFORE THE FIRST START. The launcher needs either JAVA_HOME or a `java` on PATH, and dies
+# with "JAVA_HOME is not set and no 'java' command could be found in your PATH" when it has neither.
+# systemd gives a unit a minimal PATH — /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin —
+# and no JAVA_HOME at all, so the JDK you build with is NOT necessarily the one this service can see.
+# A distro-packaged JDK lands in /usr/bin/java and is found; a Temurin tarball under /opt, SDKMAN or
+# asdf is not. When in doubt set it explicitly — install-grinder.sh checks and tells you.
+#Environment=JAVA_HOME=/usr/lib/jvm/temurin-21-jdk
+
+# Heap and JVM flags. The grinder itself is modest — the memory goes to the containers, not this
+# process — but a long-running daemon on a small box may want a ceiling.
+#Environment=JAVA_OPTS=-Xmx1g
+#Environment=SERVERPACKCREATOR_GRINDER_OPTS=
 
 # --- Hardening ----------------------------------------------------------------------------------
 # LANDMINE: do NOT add PrivateTmp=, ProtectHome=, RootDirectory= or any other namespacing option.
