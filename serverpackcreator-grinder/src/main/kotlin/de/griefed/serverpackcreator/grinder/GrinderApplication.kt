@@ -25,6 +25,7 @@ import de.griefed.serverpackcreator.api.settings.PathsConfig
 import de.griefed.serverpackcreator.grinder.container.ContainerUser
 import de.griefed.serverpackcreator.grinder.container.DockerJavaContainerEngine
 import de.griefed.serverpackcreator.grinder.loader.*
+import de.griefed.serverpackcreator.grinder.report.FallbackLists
 import de.griefed.serverpackcreator.grinder.report.JsonVerdictStore
 import de.griefed.serverpackcreator.grinder.report.ReportServer
 import de.griefed.serverpackcreator.grinder.source.*
@@ -144,10 +145,19 @@ object GrinderApplication {
             .apply { parentFile?.mkdirs() }
         val cursorStore = JsonCursorStore(cursorFile)
         val server = ReportServer(
-            store, port, host = bindHost, status = status, cursors = cursorStore, cacheRoot = cacheRoot
+            store, port, host = bindHost, status = status, cursors = cursorStore, cacheRoot = cacheRoot,
+            // Read per request, not captured once: SPC refreshes these from its own update-URL while the
+            // daemon runs, and /as-properties must publish what this instance holds now.
+            fallbackLists = {
+                FallbackLists(
+                    clientsideMods = apiWrapper.apiProperties.clientsideMods.toList(),
+                    whitelist = apiWrapper.apiProperties.modsWhitelist.toList()
+                )
+            }
         ).start()
         val reportUrl = reportUrl(bindHost, server.port)
         log.info("Report:  $reportUrl/    CSV: $reportUrl/export.csv    live status: $reportUrl/status")
+        log.info("Fallback list for SPC instances (set as their fallback.updateurl): $reportUrl/as-properties")
 
         if (args.isNotEmpty()) {
             // One-shot: grind a fixed set of project URLs (handy for an end-to-end verification), then
