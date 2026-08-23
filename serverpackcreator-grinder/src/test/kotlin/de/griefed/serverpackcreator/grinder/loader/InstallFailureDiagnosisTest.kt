@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder.loader
 
+import de.griefed.serverpackcreator.grinder.container.ContainerUser
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -52,14 +53,14 @@ internal class InstallFailureDiagnosisTest {
     @Test
     fun namesTheUnwritableMountRatherThanTheDownstreamJvmError() {
         val diagnosis = InstallFailureDiagnosis.of(realFailedInstall)
+            ?: Assertions.fail("a console full of Permission denied must be diagnosed")
 
-        Assertions.assertNotNull(diagnosis, "a console full of Permission denied must be diagnosed")
         Assertions.assertTrue(
-            diagnosis!!.contains("write", ignoreCase = true),
+            diagnosis.contains("write", ignoreCase = true),
             "the diagnosis must say the container could not write; was: $diagnosis"
         )
         Assertions.assertTrue(
-            diagnosis.contains(de.griefed.serverpackcreator.grinder.container.ContainerUser.ENV_KEY),
+            diagnosis.contains(ContainerUser.ENV_KEY),
             "the diagnosis must name the knob that fixes it; was: $diagnosis"
         )
     }
@@ -70,10 +71,10 @@ internal class InstallFailureDiagnosisTest {
         val buried = realFailedInstall + (1..200).map { "[Server thread/INFO]: noise $it" }
 
         val diagnosis = InstallFailureDiagnosis.of(buried)
+            ?: Assertions.fail("a cause buried under 200 lines of noise is still a cause")
 
-        Assertions.assertNotNull(diagnosis)
         Assertions.assertTrue(
-            diagnosis!!.contains("./.previousrun") || diagnosis.contains("user_jvm_args.txt"),
+            diagnosis.contains("./.previousrun") || diagnosis.contains("user_jvm_args.txt"),
             "the diagnosis must quote an offending line as evidence; was: $diagnosis"
         )
     }

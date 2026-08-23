@@ -133,17 +133,15 @@ class ReportServer(
     }
 
     /**
-     * Write [body] as a 200 response with the given [contentType], closing the exchange. The charset is taken
-     * from [contentType]: `/as-properties` must go out as ISO-8859-1, because `Properties.load(InputStream)`
-     * decodes it that way and a UTF-8 byte would arrive as mojibake in somebody's mod list.
+     * Write [body] as a 200 response with the given [contentType], closing the exchange.
+     *
+     * UTF-8 for every endpoint, including `/as-properties`: that document declares ISO-8859-1 because
+     * `Properties.load(InputStream)` decodes it that way, but `FallbackPropertiesRenderer` escapes everything
+     * outside printable ASCII to `\uXXXX`, and the two encodings agree byte for byte there. Encoding it
+     * "correctly" would be a branch that can never change an output.
      */
     private fun respond(exchange: HttpExchange, contentType: String, body: String) {
-        val charset = if (contentType.contains("iso-8859-1", ignoreCase = true)) {
-            StandardCharsets.ISO_8859_1
-        } else {
-            StandardCharsets.UTF_8
-        }
-        val bytes = body.toByteArray(charset)
+        val bytes = body.toByteArray(StandardCharsets.UTF_8)
         exchange.responseHeaders.add("Content-Type", contentType)
         exchange.sendResponseHeaders(200, bytes.size.toLong())
         exchange.responseBody.use { it.write(bytes) }

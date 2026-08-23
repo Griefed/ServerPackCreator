@@ -36,6 +36,7 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse.BodyHandlers
+import java.util.Properties
 
 /**
  * Pins the JDK-HttpServer report endpoint over a real loopback socket (ephemeral port): `/` serves the
@@ -171,7 +172,7 @@ internal class ReportServerTest {
             val response = get(server.port, "/as-properties")
             Assertions.assertEquals(200, response.statusCode())
 
-            val parsed = java.util.Properties()
+            val parsed = Properties()
             parsed.load(response.body().byteInputStream(Charsets.ISO_8859_1))
             val entries = parsed.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist")
                 .orEmpty().split(",").map { it.trim() }
