@@ -4236,3 +4236,91 @@ rather than assumed.** Broken deliberately in both directions:
 
 Counted off the rendered page rather than off the two source lists, so it pins the consequence (a
 misaligned table) and not the implementation that currently produces it.
+
+---
+
+# Audit — 2026-08-23, `claude-grinder-favicon-hostname-forge` (iteration 29)
+
+Scope: the template work Griefed asked for mid-session (`c9106d0b1`, `a39285749`, `84a6d58fb`) — which
+iterations 27 and 28 predate — plus its docs. This is the pass that mattered most, because the change
+touches three shell templates and only one of them can be executed by the suite.
+
+## HIGH
+
+**H1 — the new guard's fail-safe polarity was inverted, and its own KDoc said otherwise.**
+`forgeNeedsItsOwnArgfile` in all three templates. The doc read "anything unreadable falls through to a
+bypass, which is the safe direction"; the code fell through to the **ServerStarterJar**:
+
+```
+Minecraft 26w05a was launched via the ServerStarterJar; expected Forge's argfile
+```
+
+The bypass is the safe direction precisely because the argfile path works for every Forge from 1.17 on
+while the starter jar has a known failure — so a version nobody can parse must not be handed to the
+latter. Exactly the polarity the Java-24 guard already gets right, and exactly the class of defect this
+file records for that guard ("a guard inverted the wrong way still parses, still runs, and silently
+reinstates the crash").
+
+**H2 — comparing an unscreened version component is not harmless, and one call site was pre-existing.**
+Found by the guard written for H1. Per shell:
+
+| shell | comparing `26w05a` |
+|---|---|
+| bash | prints `bash: 26w05a: value too great for base` at the operator |
+| fish | the comparison is an error |
+| PowerShell | `[int]` **throws** (`RuntimeException`) — a snapshot-shaped version takes the whole start script down |
+
+The PowerShell case is a live defect in the **launcher-era** check (`[int]$Semantics[0] -eq 1 -And …`),
+which predates this branch. Both call sites are screened now, in one commit, because it is one concern.
+The era check still falls to the modern era for an unreadable version, which is where anything not
+plainly 1.x-and-old belongs, so its pinned behaviour is unchanged.
+
+## MEDIUM
+
+**M1 — the fish and PowerShell *callers* had no execution evidence, only a parse check.** The suite
+executes bash's `setupForge` and asserts source fragments for the other two — the repo's documented
+compromise, since neither shell installs everywhere. That covers the *helper* but not the caller wiring
+the branch restructured (`SSJ_REFUSAL`, the `elif`, the folded argfile block). Closed by measurement
+rather than by a new test, which would skip on every machine without those shells: the whole
+`setupForge` was extracted and driven in a container. **fish agrees with bash on all eight versions
+tried** (`1.17.1/1.20.1/1.20.2/1.20.3/1.20.4/1.21.1/26.2/26.20.2` → SSJ/SSJ/ARGFILE/ARGFILE/SSJ/SSJ/SSJ/SSJ).
+The PowerShell whole-`SetupForge` drive did not complete — the amd64 image runs under QEMU on this host
+and aborts or stalls on the file-writing parts — so **PowerShell's caller wiring rests on its parser plus
+the helper matrix, and that residual gap is stated rather than papered over.**
+
+**M2 — a suite count went stale inside the same session that changed it.** REFACTOR-LOG said grinder
+**350**; the test-result XML says **351**. The count moved twice on one branch (an alignment guard added,
+two `PackVariables` guards replaced by one). Corrected in `142f53db6`, and the corrected line now names
+where the number comes from.
+
+## Verified clean — do not re-litigate
+
+- **All three shells agree on all eleven versions after the fix**, verified by *executing* the extracted
+  helper, not by reading it:
+  `1.17.1/1.19.2/1.20/1.20.1 → SSJ`, `1.20.2/1.20.3 → BYPASS`, `1.20.4/1.21.1/26.2/26.20.2 → SSJ`,
+  `26w05a → BYPASS`. No shell emits a complaint, and both non-bash templates pass their own parser
+  (`fish -n`, `Parser::ParseFile`).
+- **The Java-24 guard's literal text survived the restructure**, so
+  `allTemplatesResolveJavaAfterTheChecksAndFailSafeWhenItIsUnknown` still pins what it always did — checked
+  by running it, not by eyeballing the diff.
+- **`26.20.2` is the case that earns the major test.** It matches 1.20.2 component for component below the
+  major; without the major test every modern pack would lose the starter jar.
+- **The `USE_SSJ=false` branch of `setupForge` is untouched** — `develop`'s own template tests pass.
+- **`HELP.md` under `src/main/resources` is generated and gitignored**; the root `HELP.md` is the source and
+  `shipRootDocuments` copies it. The first edit went to the generated copy and was reverted.
+- **The grinder's own `USE_SSJ=false` was removed rather than left as belt-and-braces**, deliberately: it
+  disabled the starter jar for every version, so the grinder would have stopped exercising the path most
+  user packs take — the path whose breakage it is the only thing that noticed.
+
+## Resolution — iteration 29, same session
+
+| Finding | Outcome |
+|---|---|
+| H1 inverted fail-safe polarity, doc claiming the opposite | **fixed** — unreadable ⇒ bypass, pinned red-first |
+| H2 unscreened component compared (one site pre-existing, ps1 throws) | **fixed** — both sites screened, all three shells |
+| M1 fish/ps1 caller unexecuted | **fish closed by measurement; PowerShell's caller gap stated** |
+| M2 stale suite count | **fixed** — 351, with the source of the number named |
+
+**Suites after all three iterations: api 356 → 361, clientside 136 → 139, grinder 344 → 351, zero
+failures** (24 skipped in the grinder — the docker ITs and the two bind-address guards needing a
+non-loopback IPv4). Read back from `<module>/build/test-results/test/*.xml`.
