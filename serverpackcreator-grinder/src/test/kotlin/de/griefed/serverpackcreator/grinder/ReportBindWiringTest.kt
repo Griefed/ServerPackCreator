@@ -38,14 +38,14 @@ internal class ReportBindWiringTest {
         val body = grinderMainBody()
 
         val read = Regex("""val\s+(\w+)\s*=\s*env\("SPC_GRINDER_HOST"""").find(body)
-        Assertions.assertNotNull(read, "main() no longer reads SPC_GRINDER_HOST")
-        val variable = read!!.groupValues[1]
+            ?: Assertions.fail("main() no longer reads SPC_GRINDER_HOST")
+        val variable = read.groupValues[1]
 
         // Across newlines: the construction is wrapped, and a single-line pattern would report it missing.
-        val construction = Regex("""ReportServer\((.*?)\)\s*\.start\(\)""", RegexOption.DOT_MATCHES_ALL).find(body)
-        Assertions.assertNotNull(construction, "main() no longer constructs a ReportServer")
+        val construction = Regex("""ReportServer\((.*?)\)\s*\.start\(\)""", RegexOption.DOT_MATCHES_ALL)
+            .find(body) ?: Assertions.fail("main() no longer constructs a ReportServer")
         Assertions.assertTrue(
-            construction!!.groupValues[1].contains("host = $variable"),
+            construction.groupValues[1].contains("host = $variable"),
             "main() reads SPC_GRINDER_HOST into `$variable` but never passes it as ReportServer's host — " +
                 "the report would bind loopback and stay unreachable through a reverse proxy. Construction " +
                 "was: ${construction.value}"

@@ -20,9 +20,9 @@
 package de.griefed.serverpackcreator.grinder.report
 
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
-import java.net.ConnectException
+import org.opentest4j.TestAbortedException
+import java.io.IOException
 import java.net.Inet4Address
 import java.net.NetworkInterface
 import java.net.URI
@@ -45,15 +45,19 @@ import java.time.Duration
 internal class ReportServerBindAddressTest {
 
     /**
-     * A non-loopback IPv4 this host actually owns, or `null`. Binding to a concrete address rather than
-     * `0.0.0.0` keeps the test from opening the box up any wider than the one interface it measures.
+     * A non-loopback IPv4 this host actually owns, aborting the test where there is none — the guards below
+     * cross an interface boundary that no amount of `127.0.0.1` can simulate, so without one there is nothing
+     * to measure. Aborting rather than returning null keeps the callers free of `!!`, and JUnit reports it as
+     * a skip exactly as an assumption would. Binding to a concrete address rather than `0.0.0.0` keeps the
+     * test from opening the box up any wider than the one interface it measures.
      */
-    private fun nonLoopbackIpv4(): String? = NetworkInterface.getNetworkInterfaces().toList()
+    private fun nonLoopbackIpv4(): String = NetworkInterface.getNetworkInterfaces().toList()
         .filter { it.isUp && !it.isLoopback }
         .flatMap { it.inetAddresses.toList() }
         .filterIsInstance<Inet4Address>()
         .firstOrNull { !it.isLoopbackAddress && !it.isLinkLocalAddress }
         ?.hostAddress
+        ?: throw TestAbortedException("no non-loopback IPv4 on this host")
 
     /** A short timeout: a refused connection is immediate, and a hang here would mean the opposite verdict. */
     private fun get(host: String, port: Int) = HttpClient.newHttpClient().send(
@@ -69,13 +73,15 @@ internal class ReportServerBindAddressTest {
     @Test
     fun theDefaultIsReachableOnLoopbackOnly() {
         val address = nonLoopbackIpv4()
-        Assumptions.assumeTrue(address != null, "no non-loopback IPv4 on this host")
 
         val server = ReportServer(InMemoryVerdictStore(), requestedPort = 0).start()
         try {
             Assertions.assertEquals(200, get("127.0.0.1", server.port).statusCode())
-            Assertions.assertThrows(ConnectException::class.java, {
-                get(address!!, server.port)
+            // IOException, not ConnectException: the claim is "unreachable", and a host that DROPs rather
+            // than REJECTs delivers that verdict as a connect *timeout*. Pinning the narrower type would
+            // fail on a box where the property being guarded holds perfectly well.
+            Assertions.assertThrows(IOException::class.java, {
+                get(address, server.port)
             }, "the default bind must not be reachable off loopback — the report carries no authentication")
         } finally {
             server.stop()
@@ -86,9 +92,8 @@ internal class ReportServerBindAddressTest {
     @Test
     fun aConfiguredAddressIsReachableFromOffLoopback() {
         val address = nonLoopbackIpv4()
-        Assumptions.assumeTrue(address != null, "no non-loopback IPv4 on this host")
 
-        val server = ReportServer(InMemoryVerdictStore(), requestedPort = 0, host = address!!).start()
+        val server = ReportServer(InMemoryVerdictStore(), requestedPort = 0, host = address).start()
         try {
             val response = get(address, server.port)
             Assertions.assertEquals(200, response.statusCode())
