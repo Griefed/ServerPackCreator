@@ -405,6 +405,13 @@ Columns are `Name, Project, NamePattern, Confidence, Loader, Detail`, highest co
 means the server booted — which does *not* prove the mod is server-safe. `INCONCLUSIVE` means nothing was
 learned, e.g. the loader has no build for that Minecraft version, so the mod was never actually tested.
 
+**Read the `Detail` column on a crash.** A crash that *contradicts* the mod's own metadata — it claims to
+support servers, yet the server died — is re-checked on up to two other versions of the mod before it may
+stand, because one crashing build is not a clientside mod. The detail says which way that went: `also crashed
+on <file>` means other versions crashed too, `but <file> booted cleanly` means the verdict was cleared and is
+no longer a crash, and `no other version … to re-check against` means the mod publishes only the one version,
+so the sample behind the verdict is a single build.
+
 The store is plain JSON (`SPC_GRINDER_STORE`), keyed by platform + slug + loader — the same slug on
 Modrinth and CurseForge stays two separate projects. How far the crawl has got is in `SPC_GRINDER_CURSORS`:
 one entry per platform with the next `offset`, the number of completed `sweeps`, and — for CurseForge — the
@@ -487,6 +494,7 @@ Lines worth grepping for:
 | `Grinding ` / `Done .*→` | candidate started / finished, with its per-loader verdicts |
 | `Reusing cached` | an installed loader build was reused instead of installing a newer one |
 | `not the newest build` | a crash is being re-checked on the newest loader before it counts |
+| `although the metadata declares` | a crash contradicts the mod's claimed server support; other versions of the mod are being booted to settle it |
 | `were not reached` | a pass was cut short; the crawl cursor was held back so nothing is skipped |
 | `Evicted` | idle loader installs reclaimed (`SPC_GRINDER_CACHE_TTL_DAYS`) |
 | `holds .* mods but only` | a CurseForge slice is too big to page through; its middle is unreachable |
