@@ -157,7 +157,10 @@ class ClientsideVerifier(
     /** Download a sample file and read its declared sideness, degrading to [JarScan.ERROR] on failure. */
     private fun scanSample(sample: ModFile, loader: String, project: ProjectFiles): JarScan {
         val minecraftVersion = sample.minecraftVersions.maxOrNull() ?: ""
-        val jar = jarDownloader.download(sample, File(workDirectory, "${project.slug}-$loader"))
+        val jar = jarDownloader.download(
+            sample,
+            File(workDirectory, AttemptDirectory.nameFor(project.platform, project.slug, loader))
+        )
         if (jar == null) {
             log.warn("Could not download ${sample.fileName} for $loader; jar-scan unavailable.")
             return JarScan.ERROR

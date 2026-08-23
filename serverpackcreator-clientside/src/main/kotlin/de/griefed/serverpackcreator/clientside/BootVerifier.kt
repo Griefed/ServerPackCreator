@@ -234,7 +234,7 @@ class BootVerifier(
                 file,
                 minecraftVersion,
                 loaderVersionOverride = null,
-                attemptDirName = "${project.slug}-$loader"
+                attemptDirName = AttemptDirectory.nameFor(project.platform, project.slug, loader)
             )
             if (staged is Prepared.Failed) {
                 log.warn("Could not re-stage ${project.slug} as $label: ${staged.detail}")
@@ -392,7 +392,7 @@ class BootVerifier(
         mainFile: ModFile,
         minecraftVersion: String,
         loaderVersionOverride: String?,
-        attemptDirName: String = "${project.slug}-$loader"
+        attemptDirName: String = AttemptDirectory.nameFor(project.platform, project.slug, loader)
     ): Prepared {
         val loaderVersion = loaderVersionOverride
             ?: loaderVersionPolicy.preferredVersion(loader, minecraftVersion)

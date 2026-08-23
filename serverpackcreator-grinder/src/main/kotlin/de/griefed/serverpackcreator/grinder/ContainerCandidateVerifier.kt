@@ -76,7 +76,7 @@ class ContainerCandidateVerifier(
         } finally {
             // In a `finally` because a *thrown* verification is exactly when staging is most likely to be left
             // behind, and the reaper keeps the boot logs the failure will have to be diagnosed from.
-            reaper.reap(candidate.slug)
+            reaper.reap(candidate.platform, candidate.slug)
         }
     }
 
