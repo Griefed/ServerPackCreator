@@ -40,10 +40,10 @@ RestartSec=30s
 # same window, so give it room: systemd SIGKILLing mid-cleanup leaves containers running, parented by
 # the docker daemon rather than this unit's control group, where nothing here can reach them.
 #
-# The arithmetic: the grace window is 15s per container and stops run 8 at a time, so N workers cost
-# ceil(N/8) * 15s -- 30s at SPC_GRINDER_WORKERS=10 -- plus removal and JVM exit. 60s covers that with
-# margin. Raise it if you run more than 16 workers. Lowering it below the window is the one change that
-# actively causes the leak. A start does reap orphans by label, so a SIGKILL is recoverable, not fatal.
+# The arithmetic: the 15s window is per container, but stops run concurrently up to 64 -- far above any
+# worker count a host has the memory for -- so the whole cleanup is one window, plus removal and JVM exit.
+# 60s covers that several times over. Lowering it below the window is the one change that actively causes
+# the leak. A start does reap orphans by label, so a SIGKILL is recoverable, not fatal.
 TimeoutStopSec=60
 
 # Without this the journal tags lines with the launcher's name. `journalctl -u spc-grinder` selects by

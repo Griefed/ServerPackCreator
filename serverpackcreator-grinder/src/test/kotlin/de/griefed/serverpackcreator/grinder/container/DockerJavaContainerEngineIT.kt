@@ -126,7 +126,8 @@ internal class DockerJavaContainerEngineIT {
      */
     @Test
     fun closeSignalsAContainerBeforeKillingIt() {
-        val signalEngine = DockerJavaContainerEngine()
+        // A short window: this asserts that the signal is *sent and honoured*, not how long production waits.
+        val signalEngine = DockerJavaContainerEngine(shutdownGrace = Duration.ofSeconds(5))
         val sawSignal = java.util.concurrent.atomic.AtomicBoolean(false)
         val booting = Thread {
             runCatching {
@@ -138,7 +139,7 @@ internal class DockerJavaContainerEngineIT {
             }
         }.apply { isDaemon = true; start() }
 
-        waitForContainer(signalEngine)
+        waitForContainer()
         signalEngine.close()
         booting.join(30_000)
 
@@ -175,7 +176,7 @@ internal class DockerJavaContainerEngineIT {
                 orphanEngine.run(busyboxSpec("echo orphan-alive; sleep 300"), Regex("this-never-appears"), Duration.ofMinutes(5))
             }
         }.apply { isDaemon = true; start() }
-        waitForContainer(orphanEngine)
+        waitForContainer()
         // Forget the container the way a killed JVM does: the tracking set dies with the process, the container
         // does not. A fresh engine is exactly what the next `systemctl start` brings up.
         Assertions.assertEquals(1, runningGrinderContainers().size, "test setup: the orphan must be running")
@@ -184,6 +185,9 @@ internal class DockerJavaContainerEngineIT {
 
         Assertions.assertEquals(1, reaped, "the labelled orphan must be found and removed")
         Assertions.assertTrue(runningGrinderContainers().isEmpty(), "no grinder container may survive the reap")
+        // The engine that made the orphan is still open, and its worker is still polling a container that no
+        // longer exists. Close it here rather than leaving the only test in this file that does not tidy up.
+        orphanEngine.close()
     }
 
     /** Every container this engine owns, by the label it stamps on them. */
@@ -192,8 +196,8 @@ internal class DockerJavaContainerEngineIT {
             .withLabelFilter(mapOf(DockerJavaContainerEngine.OWNER_LABEL to "1"))
             .exec().map { it.id }
 
-    /** Block until [engine] actually has a container up, so a test never pulls the rug before there is one. */
-    private fun waitForContainer(engine: DockerJavaContainerEngine) {
+    /** Block until a grinder-labelled container is actually up, so a test never pulls the rug before there is one. */
+    private fun waitForContainer() {
         val until = System.currentTimeMillis() + 30_000
         while (System.currentTimeMillis() < until && runningGrinderContainers().isEmpty()) {
             Thread.sleep(200)

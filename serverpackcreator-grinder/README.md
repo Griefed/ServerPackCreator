@@ -276,7 +276,7 @@ same port also serves the unauthenticated verdict table and the full CSV export.
 1. stops the pass loop and tells workers to take no further candidates;
 2. marks the container engine closed, so no worker can start another container behind the cleanup;
 3. asks every in-flight container to exit — `docker stop` with a **15-second** window, i.e. SIGTERM and then
-   the daemon's own SIGKILL — running up to 8 at a time;
+   the daemon's own SIGKILL — all of them at once, so the window is shared rather than paid per container;
 4. gives the workers what is left of that window, interrupting them so a worker parked in a boot wakes now
    rather than after its 15-minute budget, and abandons any that will not quit;
 5. exits.

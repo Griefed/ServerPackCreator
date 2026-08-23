@@ -2179,3 +2179,31 @@ trapping SIGTERM to prove the signal arrives and is honoured before removal, and
 the fresh engine a restart brings up. The pre-existing drain case went from instant to 15.6s, which is the
 change working — busybox's shell does not forward SIGTERM to `sleep`, so it uses the whole window and is then
 killed.
+
+Three audit passes followed (iterations 20–22), and each found something the previous had not. Iteration 20
+found the branch's own guarantee resting on a race: `grindAll` started its worker threads inside the `map` and
+published the list `awaitStop` reads only afterwards, so a stop landing in that window would have interrupted
+nobody and returned `true` — a clean stop that had not happened. It also found the hook's wiring, the 15-second
+window and the unit's stop timeout all unpinned, which is the same gap `FallbackListWiringTest` was written to
+close two audits earlier, simply not applied here.
+
+Iteration 21 found the one-shot run building its `GrindPool` inline and never registering it in `activePool`,
+the only handle the hook has — so Ctrl-C on the end-to-end verification path signalled and awaited nothing,
+both calls no-opping through a null receiver. It looked like it worked, because the engine still closed and the
+boots collapsed with their containers. The same pass caught the workers being handed a *second* full window
+after the containers had spent the first, against a log line, a comment and a README section that all promised
+one shared budget.
+
+Iteration 22 found the promised single window was still not real above eight in-flight containers, because the
+stop concurrency was capped there — at the deployed ten workers the container phase alone was thirty seconds
+and the workers got none of the budget. The cap was raised to sixty-four, which is above anything a host has
+the memory to run, and the arithmetic that had been transcribed into a test, a unit comment and the README
+collapsed to one window.
+
+Two process notes worth more than the individual bugs. **An expected red that does not arrive is the finding.**
+The one-shot guard passed when it should have failed, because counting `activePool.set(` occurrences also
+counts the pass loop's `activePool.set(null)` — a reset reading as a registration. And **H1's guards were never
+observed red at all**: the interleaving could not be provoked at 8 workers or at 64, because the first
+`Grinder.grind` initialises log4j and reliably delays worker 1 past the construction loop. That is stated in
+the test's own doc rather than glossed, because a guard whose teeth were never checked has repeatedly turned
+out to assert nothing.

@@ -43,10 +43,13 @@ import java.util.concurrent.atomic.AtomicBoolean
  * imperative docker-java translation only.
  *
  * @param client The docker-java client; defaults to one built from the ambient Docker environment.
+ * @param shutdownGrace How long a container gets to exit on its own during [close] before it is killed.
+ *                      A parameter so a test can shorten it; production always takes [SHUTDOWN_GRACE].
  * @author Griefed
  */
 class DockerJavaContainerEngine(
-    private val client: DockerClient = defaultClient()
+    private val client: DockerClient = defaultClient(),
+    private val shutdownGrace: Duration = SHUTDOWN_GRACE
 ) : ContainerEngine {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
@@ -141,7 +144,16 @@ class DockerJavaContainerEngine(
             return ContainerRunOutput(ArrayList(lines), exitCodeOf(containerId), timedOut)
         } finally {
             runCatching { client.removeContainerCmd(containerId).withForce(true).exec() }
-                .onFailure { log.warn("Could not remove container $containerId: ${it.message}") }
+                .onFailure { failure ->
+                    // On shutdown `close()` has already removed it, so this is the expected 404 rather than a
+                    // problem -- and a WARN here is indistinguishable in the journal from a removal that really
+                    // did fail, which is exactly the noise that makes a real one hard to spot.
+                    if (closed.get()) {
+                        log.debug("Container $containerId was already removed by the shutdown sweep.")
+                    } else {
+                        log.warn("Could not remove container $containerId: ${failure.message}")
+                    }
+                }
             liveContainers.remove(containerId)
         }
     }
@@ -159,7 +171,7 @@ class DockerJavaContainerEngine(
         }
         log.info(
             "Stopping ${abandoned.size} container(s) abandoned by an interrupted run — " +
-                "${SHUTDOWN_GRACE.seconds}s to exit on their own, then killed."
+                "${shutdownGrace.seconds}s to exit on their own, then killed."
         )
         // Concurrently, because the grace window is per container: ten workers stopped one after another would
         // be ten times the window, and would blow through the unit's TimeoutStopSec into the SIGKILL this whole
@@ -179,7 +191,7 @@ class DockerJavaContainerEngine(
      * its world — going straight to `remove --force`, as this used to, is a SIGKILL to PID 1 with no warning.
      */
     private fun stopThenRemove(containerId: String) {
-        runCatching { client.stopContainerCmd(containerId).withTimeout(SHUTDOWN_GRACE.seconds.toInt()).exec() }
+        runCatching { client.stopContainerCmd(containerId).withTimeout(shutdownGrace.seconds.toInt()).exec() }
             .onFailure { log.debug("Container $containerId did not stop cleanly: ${it.message}") }
         runCatching { client.removeContainerCmd(containerId).withForce(true).exec() }
             .onFailure { log.warn("Could not remove abandoned container $containerId: ${it.message}") }
@@ -256,8 +268,7 @@ class DockerJavaContainerEngine(
          */
         const val OWNER_LABEL = "de.griefed.serverpackcreator.grinder"
 
-        /** Cap on concurrent stop requests during shutdown, so a large worker count cannot flood the daemon. */
-        private const val MAX_PARALLEL_STOPS = 8
+
 
         /** Build a [DockerClient] from the ambient Docker environment (DOCKER_HOST, TLS settings, …). */
         fun defaultClient(): DockerClient {

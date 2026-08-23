@@ -3315,3 +3315,204 @@ branch and has no base-tree callers. Nothing existing changed shape.
   check for the Linux host is recorded there. This is the one claim on the branch resting on reasoning plus
   production logs rather than on an executed check, and it should be closed on Yggdrasil before the fix is
   trusted in the release notes.
+
+---
+
+# Audit iteration 20 — 2026-08-23 — the graceful-shutdown branch
+
+Scope: the three commits merged as `c22e54a40` — `312745b33` (pins), `25541a8d8` (implementation),
+`067ebc31f` (documentation). Already on `develop`, so the fixes land as a follow-on branch rather than by
+rewriting merged history.
+
+Suites: grinder 282 (22 skipped), plus 6/6 of the Docker-gated `DockerJavaContainerEngineIT` against
+docker 29.7.2.
+
+## HIGH
+
+- **H1 — the branch's central guarantee has a reachable window in which it silently does not hold.**
+  `Grinder.kt`, `GrindPool.grindAll`: the worker threads are **started inside the `map`** and the field the
+  shutdown path reads is assigned only afterwards.
+
+  ```kotlin
+  val running = (1..workerCount).map {
+      Thread { … }.apply { name = "grind-worker-$it"; start() }   // running
+  }
+  workers = running                                              // …only now visible to awaitStop
+  ```
+
+  A SIGTERM arriving between the first `start()` and that assignment finds `workers == emptyList()`. `awaitStop`
+  then interrupts nobody, joins nothing, and — because `emptyList().none { it.isAlive }` is `true` — **reports a
+  clean stop**. The hook logs no warning, the JVM exits, and workers are still running. It is the exact failure
+  the branch was written to prevent, wearing a success message.
+
+  The window is small (thread construction for N workers) but it is entered on *every* pass, and a daemon that
+  restarts on a schedule enters it often. Publish the list before starting the threads.
+
+  Severity mapped deliberately: the rubric's HIGH covers behaviour-change-inside-a-refactor, broken boundaries
+  and plugin-API contracts, none of which this is. Calling it MEDIUM would understate a defect that makes the
+  feature's promise conditional on a race.
+
+## MEDIUM
+
+- **M2 — nothing pins the shutdown hook's wiring**, which is the same gap `FallbackListWiringTest` was written
+  to close two audits ago, left unapplied to a hook that cannot be executed (it builds an `ApiWrapper` and a
+  Docker client). Nothing asserts that `main` calls `awaitStop` at all, that it calls `reapOrphans` at startup,
+  or that `engine.close()` precedes `awaitStop` — and the ordering is load-bearing: `close()` is what sets the
+  closed flag, so reversing the two re-opens the create-behind-the-sweep hole this branch closed.
+
+- **M3 — the 15-second window is unpinned.** `SHUTDOWN_GRACE` is stated in the unit, in the README and in the
+  operator contract, and no test fails if someone changes it. It is a number an operator was promised.
+
+- **M4 — `TimeoutStopSec` and `SHUTDOWN_GRACE` are coupled with nothing enforcing it.** The unit's own comment
+  says lowering the timeout below the window "is the one change that actively causes the leak", and
+  `SystemdUnitConfigurationTest` checks environment knobs only. The relationship is arithmetic and therefore
+  checkable: the stop timeout must exceed `ceil(workers / 8) × grace` with margin.
+
+- **M5 — the grace window is a hard-coded top-level `val` the engine reads directly**, so no test can vary it.
+  Two consequences: the value itself is untestable (M3), and one IT case burns 15.6 s of real wall-clock
+  waiting out a window it cannot shorten. A constructor parameter defaulting to the constant fixes both
+  without changing production behaviour.
+
+## LOW
+
+- **L1 — `DockerJavaContainerEngineIT.waitForContainer(engine)` ignores its parameter**; it polls the daemon
+  globally by label. The signature claims a scoping that does not exist.
+- **L2 — `reapsALabelledOrphanLeftByAPreviousProcess` leaves its `orphanEngine` open** and its worker thread
+  running against a container the reap has removed. Harmless in a gated IT, but it is the one test in the file
+  that does not clean up after itself.
+- **L3 — every shutdown with a boot in flight now logs a spurious WARN.** `close()` removes the container,
+  then `run()`'s own `finally` tries again and the 404 surfaces as
+  `Could not remove container <id>: …`. Expected, harmless, and indistinguishable in the journal from a
+  removal that genuinely failed — which is precisely the kind of noise that made the 2026-08-23 install
+  diagnosis take three rounds.
+
+## Verified clean — do not re-litigate
+
+- **The pins landed red and separately** (`312745b33` before `25541a8d8`), and the container half was verified
+  against a live daemon rather than reasoned about — including a trapped SIGTERM proving the signal arrives
+  before removal.
+- **`close()` sets `closed` before it sweeps, and `run()` re-checks after adding to the tracking set.** Either
+  the sweep sees the container or the creator sees the flag; there is no third outcome.
+- **Concurrency in `close()` is bounded** at 8 and the pool is shut down in a `finally`.
+- **`reapOrphans` runs before the staging reaper and after the engine exists**, and at that point this process
+  owns no containers, so everything wearing the label is by definition inherited.
+
+---
+
+# Audit iteration 21 — 2026-08-23 — second pass over the shutdown work
+
+Scope: the same three merged commits plus iteration 20's two fix commits. Grinder suite 288 (22 skipped),
+Docker-gated IT 6/6 against docker 29.7.2.
+
+## Iteration 20 findings — closed
+
+H1 fixed (workers published before they start) and its invariant pinned; M2/M3/M4 pinned by
+`ShutdownWiringTest`, **teeth verified on all three** by breaking each in turn; M5 injected; L1–L3 cleaned.
+Recorded honestly in the test's own doc: H1's guards were never observed red, because the interleaving could
+not be provoked at 8 or 64 workers.
+
+## HIGH
+
+- **P21-H1 — the one-shot run's workers are never signalled.** `GrinderApplication.kt:190`:
+
+  ```kotlin
+  GrindPool(grinder, workers).grindAll(candidates)   // one-shot: no crawl cursor to advance
+  ```
+
+  The pool is constructed inline and **never stored in `activePool`**, which is the only handle the shutdown
+  hook has. So on Ctrl-C during a one-shot run the hook calls `requestStop()` and `awaitStop()` on `null`,
+  both silently no-op via `?.`, and the workers are neither signalled nor waited for. The engine still closes,
+  so containers are stopped and the boots collapse — which is why this looks like it works — but the worker
+  half of the contract does not run at all, and the `false`-means-warn branch cannot fire either.
+
+  The hook's own comment claims otherwise: *"registered before any boot can start so it covers the one-shot
+  path too"*. That was true of the hook and stopped being true of what the hook can reach. One-shot is the
+  end-to-end verification path, and Ctrl-C is how it is always ended.
+
+## MEDIUM
+
+- **P21-M1 — the workers get a second full window, not the remainder of the first.** The hook passes
+  `awaitStop(SHUTDOWN_GRACE)` *after* `engine.close()` may already have spent the entire 15 s, so the real
+  worst case is **30 s**, not 15. Three places say otherwise: the hook's log line ("15s for containers and
+  workers to quit"), the comment directly above the call ("whatever is left of the window"), and README §5
+  step 4 ("gives the workers what is left of that window"). The requested contract was one shared window, the
+  documentation describes one shared window, and the code implements two sequential ones.
+
+  It also quietly undercuts `ShutdownWiringTest.theUnitAllowsEnoughTimeForTheCleanupItDependsOn`, whose
+  arithmetic (`ceil(workers / 8) * grace`) assumes the worker wait overlaps the container wait rather than
+  following it.
+
+## LOW
+
+- **P21-L1 — `activePool.get()` is read twice in the hook**, once for `requestStop` and once for `awaitStop`,
+  so the two calls can in principle land on different pools: `main` sets a new one per pass, and the hook runs
+  concurrently with it. Capture it once.
+- **P21-L2 — `SHUTDOWN_GRACE` lives in the `container` package but now governs workers too.** Its KDoc says
+  so, and moving it would churn imports for little gain, but the home is no longer quite right — noted so the
+  next reader does not assume the worker timeout is a container concern.
+
+## Verified clean — do not re-litigate
+
+- **The hook's ordering is correct and now guarded**: `close()` (which sets the closed flag) strictly precedes
+  `awaitStop`, verified red by swapping them.
+- **`requestStop()` before `close()` is deliberate**, not redundant with `awaitStop`'s own flag set: it stops a
+  worker that finishes during the sweep from picking up another candidate.
+- **A null `activePool` is handled correctly** for the *continuous* path — it is null only between passes,
+  when there are no workers to signal. P21-H1 is about the one-shot path never setting it at all.
+
+---
+
+# Audit iteration 22 — 2026-08-23 — third pass, and the equivalence check
+
+Scope: the shutdown work plus iterations 20 and 21's fixes. Grinder suite 288 (22 skipped). Docker-gated IT
+6/6 on docker 29.7.2.
+
+## Equivalence against the base — clean
+
+The pre-shutdown test tree (`develop~1`) checked out over the current production code in a detached worktree:
+**276 pre-existing guards, zero failures, zero compile errors, nothing needing adaptation.** Every signature
+this work changed either is new (`awaitStop`, `reapOrphans`, `trackedWorkerCount`) or gained a defaulted
+parameter (`DockerJavaContainerEngine(shutdownGrace = …)`).
+
+## MEDIUM
+
+- **P22-M1 — the "one 15-second window" is only true up to eight in-flight containers.**
+  `DockerJavaContainerEngine.MAX_PARALLEL_STOPS = 8`, so with more containers than that the stops run in
+  batches and the container phase alone costs `ceil(n / 8) × 15 s`. At `SPC_GRINDER_WORKERS=10` — the value
+  actually deployed — that is **30 s before the workers get anything**, and iteration 21's deadline then hands
+  `awaitStop` zero milliseconds.
+
+  So iteration 21 fixed the *sequencing* of the two windows and left the multiplication in place. The unit's
+  comment and `ShutdownWiringTest` both already encode `ceil(workers / 8)`, which means the arithmetic is
+  honest — but it is honest about a number that did not need to be larger than one in the first place. The cap
+  was chosen defensively ("so a large worker count cannot flood the daemon"); a `docker stop` is an HTTP call
+  that spends its time waiting, and the realistic ceiling on concurrent boots is memory-bound at ~20. Raising
+  the cap well above any real worker count makes the promised single window true, and collapses the arithmetic
+  in three documents to `1 × grace`.
+
+- **P22-M2 — a container that burns the whole window leaves the workers exactly zero.**
+  With `remaining` clamped at 0, `awaitStop` interrupts and then joins nothing, so the "did not stop within
+  15s" warning is *guaranteed* rather than informative — the workers were never given a chance to observe the
+  interrupt they were just sent. A small floor (a second) makes the warning mean what it says, at a worst case
+  of 16 s against a 60 s stop timeout.
+
+## LOW
+
+- **P22-L1 — `theWorkersGetTheRemainderOfTheWindowRatherThanASecondOne` asserts an absence.**
+  `!body.contains("awaitStop(SHUTDOWN_GRACE)")` passes for any spelling that is not that exact string, so a
+  future rewrite that reintroduces the second window under a different name slips through. A positive
+  assertion — that a deadline is computed and its remainder passed — is what the guard means.
+- **P22-L2 — the one-shot path never clears `activePool`.** Harmless (a finished pool tracks no workers, so
+  `awaitStop` returns immediately) and noted only so it is not read as an oversight later.
+
+## Verified clean — do not re-litigate
+
+- **Iterations 20 and 21's guards all have verified teeth**, each broken in turn: `TimeoutStopSec=20`, the
+  removed reap call, the swapped `close`/`awaitStop` ordering, the unregistered one-shot pool, and the
+  full-window `awaitStop`. The one exception is stated in its own test doc — H1's invariant guards were never
+  observed red because the interleaving could not be provoked.
+- **The `activePool.set(` counting mistake is fixed and worth remembering**: the pass loop clears the
+  reference with `activePool.set(null)`, so counting occurrences made an unregistered pool pass. Caught only
+  because an expected red did not arrive.
+- **The three documents now agree with the code** on ordering and on the shared window (subject to P22-M1's
+  batching), and each is guarded rather than merely written.
