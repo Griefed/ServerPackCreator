@@ -3516,3 +3516,116 @@ parameter (`DockerJavaContainerEngine(shutdownGrace = …)`).
   because an expected red did not arrive.
 - **The three documents now agree with the code** on ordering and on the shared window (subject to P22-M1's
   batching), and each is guarded rather than merely written.
+
+---
+
+# Audit — 2026-08-23, `claude-grinder-cpu-limit` (iteration 23)
+
+Scope: `git log develop..HEAD` — four commits (`408ff8d57` tests, `b5b69b5bc` `ContainerResources.forCpus`
++ `cpuPeriod`, `6db241e88` `main` wiring + operator docs + the gated IT, `7c9ee5710` context files and the
+log). Read-only pass; every number below was produced by a command, not recalled.
+
+## HIGH
+
+**H1 — a positive CPU cap can silently become *no* cap.**
+`serverpackcreator-grinder/src/main/kotlin/de/griefed/serverpackcreator/grinder/container/ContainerEngine.kt:93`
+(`b5b69b5bc`). `forCpus` uses the *computed* quota as its "uncapped" sentinel:
+
+```kotlin
+val requested = Math.round(cpus * base.cpuPeriod)
+cpuQuota = if (requested == 0L) 0L else maxOf(MINIMUM_QUOTA_MICROSECONDS, requested)
+```
+
+`requested` is 0 for any `cpus < 5e-6`, so the branch cannot distinguish "the operator asked for uncapped"
+from "the operator's value rounded away to nothing" — and quota `0` is *no limit*, verified against the
+daemon: `docker run --cpu-quota=0 --cpu-period=100000 busybox cat /sys/fs/cgroup/cpu.max` → `max 100000`.
+The KDoc two lines above promises the opposite ("anything positive but smaller than the daemon's floor is
+raised to it"), and the direction of the failure is the hardening-off one: a request for the smallest
+possible cap yields none at all. The trigger needs an absurd value, but this is a security-posture knob and
+the guarantee is written down, so it is graded on the failure, not the likelihood. `ContainerResourcesTest`
+misses it because its floor case (`forCpus(0.0001)`) is two orders of magnitude above the boundary.
+Fix: branch on the *input* (`cpus == 0.0`), and reject non-finite input while there — `"Infinity".toDouble()`
+parses, and `Math.round(Double.POSITIVE_INFINITY * 100_000)` is `Long.MAX_VALUE`.
+
+## MEDIUM
+
+**M1 — the new README section was inserted into the middle of the previous one.**
+`serverpackcreator-grinder/README.md:345` (`6db241e88`). `### Capping CPU` landed before the **Keep the host
+awake** paragraph, which is about suspends and `caffeinate` and belongs to *Sizing the worker count* — it now
+reads as the closing advice of the CPU section. Same commit also leaves §5's sizing opener ("the worker count
+is a memory question rather than a CPU one") without the pointer it now needs. Boy-Scout scope was respected;
+the placement is simply wrong.
+
+**M2 — the startup line reports the derived numbers, not the knob.**
+`GrinderApplication.kt:101` (`6db241e88`) logs `cpuQuota=200000/100000`. Every other knob is logged in the
+operator's own unit (`workers=2`, `port=8757`, `containerUser=…`), and this is the one whose whole point is
+that the operator thinks in cores. Worse at the documented escape hatch: `SPC_GRINDER_CPUS=0` prints
+`cpuQuota=0/100000`, which reads as "zero CPU" when it means "uncapped" — the value an operator is most
+likely to double-check in the log is the one the log states most misleadingly.
+
+**M3 — a guard shipped in the same commit as the code it guards.**
+`6db241e88` adds `DockerJavaContainerEngineIT.theCpuCapReachesTheKernelWithItsPeriod` alongside the wiring,
+and the behaviour that guard actually pins — `withCpuPeriod` in `hostConfigFor` — landed one commit earlier
+in `b5b69b5bc`, bundled with the new API. Nobody can check out a commit and watch that pin go red. This is
+the exact boundary CLAUDE.md's "Pin first means *commit* first" entry was written about after the 2026-07-31
+audit found eight commits doing it. Mitigating evidence, recorded because it is real: the teeth *were*
+checked in-session by removing `.withCpuPeriod` and re-running, which produced `saw: [75000 100000]` for a
+requested 1.5 cores at a 50 ms period. Unlike the 2026-07-31 case the branch is **local and unpushed**, so
+the honest remedy is available: split the history rather than write an apology into a convention file.
+
+**M4 — `deploy/install-grinder.sh:313` still says "Three worth a decision rather than a default".**
+It names `SPC_GRINDER_WORKERS` as the throughput lever and never mentions its CPU twin, so the installer —
+the operator's first surface, and the one no guard test covers — is now the only place the knob is invisible.
+`SystemdUnitConfigurationTest`/`ReadmeConfigurationTest` cannot catch this; the script is not scanned by
+either.
+
+## LOW
+
+**L1 — `Math.round(...)`** at `ContainerEngine.kt:92` is a Java-ism where `kotlin.math.roundToLong()` is the
+idiom ("Don't port Java patterns 1:1").
+
+**L2 — `ContainerResourcesTest.theDefaultIsUnchangedByTheKnobExisting`** is not a sentence; the assertion it
+makes (default ≡ `forCpus(2.0)`) deserves a name that says so.
+
+**L3 — the docs imply docker's `--cpus` validation applies, and it does not.** `forCpus`'s KDoc and README
+§5 both say "the same arithmetic as docker's own `--cpus`", which is true of the arithmetic and false of the
+guard rails: the CLI's `--cpus` is bounded by the host's CPU count, while the raw cfs path we use is not.
+Measured on a 16-core host: `docker run --cpu-quota=100000000 --cpu-period=100000` (1000 cores) is accepted
+and the container's cgroup reports `100000000 100000`. Consequence for the fix list: an over-large value
+needs **no** clamp — it silently means "effectively uncapped", which is worth one sentence rather than code.
+
+**L4 — `CpuLimitWiringTest.construction()`** requires the call's closing paren on its own line
+(`"""$type\((.*?)\n\s*\)"""`). Reformatting a call to one line makes the guard fail with "main() no longer
+constructs a …" rather than pass silently, so the failure mode is loud and acceptable; noted so the next
+reader does not mistake it for a real regression.
+
+## Verified clean — do not re-litigate
+
+- **No positional `ContainerResources(...)` callers exist**, so inserting `cpuPeriod` as the third parameter
+  cannot have silently rebound anyone's `pidsLimit`. Checked on both trees: `git grep "ContainerResources("`
+  over `develop` and HEAD finds only `ContainerResources()`, named-argument, and default-value uses.
+- **The daemon's 1 ms floor is real and the quoted error is verbatim.** `docker run --cpu-quota=500
+  --cpu-period=100000 busybox true` → `Error response from daemon: CPU cfs quota can not be less than 1ms
+  (i.e. 1000)`. `MINIMUM_QUOTA_MICROSECONDS` and its comment are accurate.
+- **The `withCpuPeriod` fix is verified in the kernel, not in the request.**
+  `theCpuCapReachesTheKernelWithItsPeriod` reads `/sys/fs/cgroup/cpu.max` from inside the container and uses
+  a non-default 50 ms period so the assertion cannot pass with the period unsent — confirmed by removing the
+  production line and watching it fail. Docker 29.7.2, full gated IT 7/7.
+- **`0` really is uncapped end to end**, in the daemon (`max 100000`, above) and through our own path.
+- **Commit `408ff8d57` is a legitimate red-first test commit**; its red is a compile error naming the missing
+  API, which is the only form available for a not-yet-existing symbol.
+- **The `ContainerResources` KDoc reshape** (one parameter per line was already the shape) added `cpuPeriod`
+  with docs and left names, types, order and defaults of the existing parameters untouched.
+
+## Equivalence against the base — clean
+
+`develop`'s unmodified test tree against the branch's production code, per CLAUDE.md's recipe:
+
+```
+git worktree add --detach <tmp> HEAD
+cd <tmp> && rm -rf serverpackcreator-grinder/src/test && git checkout develop -- serverpackcreator-grinder/src/test
+./gradlew :serverpackcreator-grinder:test --continue
+```
+
+**290 pre-existing guards, 0 failures, 22 skipped, zero compile errors** — no signature changed, so nothing
+had to be adapted. Branch's own suite: 298 / 0 / 22.
