@@ -371,6 +371,28 @@ internal class BootLogClassifierTest {
     }
 
     /**
+     * The launcher's `Error: could not open` excuse must not be claimable by a **mod's own log line**.
+     *
+     * `launchFailureMarkers` is rung four and [BootLogClassifier.clientOnlyClassMarker] is rung seven, so
+     * anything matching the former never reaches the latter — an over-broad pattern there does not merely add
+     * noise, it converts a textbook clientside crash into INCONCLUSIVE and drops a true positive. The JVM
+     * launcher emits its message as the **whole line**, while every mod line carries a timestamp and level
+     * prefix, which is the difference the guard has to key on.
+     */
+    @Test
+    fun aModLoggingCouldNotOpenDoesNotEscapeAClientOnlyClassCrash() {
+        val lines = listOf(
+            "[19:41:26] [main/ERROR] [polytone/]: Error: could not open assets/polytone/colormap.json",
+            "java.lang.NoClassDefFoundError: net/minecraft/client/multiplayer/ClientLevel"
+        )
+        Assertions.assertEquals(
+            BootResult.CRASHED,
+            BootLogClassifier.classify(lines, exitCode = 1, timedOut = false),
+            "a mod's own message must not buy it the launcher's excuse"
+        )
+    }
+
+    /**
      * Pins the guard order **as a whole**, which no other test in this file does.
      *
      * `classify` is eight ordered guards, and its correctness rests entirely on that order. They accreted one at a
