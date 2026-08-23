@@ -87,7 +87,14 @@ object GrinderApplication {
         // past its 15-minute budget is scored INCONCLUSIVE, which reads as a hanging mod rather than as a
         // starved host. 0 disables the cap.
         val containerCpus = env("SPC_GRINDER_CPUS", "2").toDouble()
-        val containerResources = ContainerResources.forCpus(containerCpus)
+        // Memory per container, and the one knob here that is genuinely dangerous to touch: the packs the
+        // grinder builds leave `javaArgs` empty, so the JVM sizes the server's heap from this cgroup limit
+        // (measured at 25%, so 3 GiB gives a 768 MiB heap), and it is also what the README's worker-sizing
+        // advice divides by. Lower it and boots die of a heap too small for a modded server; raise it without
+        // dropping workers and the host over-subscribes and OOM-kills them. Both are scored INCONCLUSIVE,
+        // i.e. they look like mods that hang. Default 3 GiB -- see README §5's warning.
+        val containerMemoryGiB = env("SPC_GRINDER_MEMORY_GIB", "3").toDouble()
+        val containerResources = ContainerResources.forLimits(containerCpus, containerMemoryGiB)
         // The image declares USER 1000:1000, which is only right while the daemon itself is uid 1000. Every
         // container bind-mounts a directory this process created, so it has to run as that directory's owner --
         // otherwise every write inside the pack is refused, and the boot dies on a missing @argfile far from
@@ -100,7 +107,7 @@ object GrinderApplication {
         log.info(
             "Grinder starting — home=$base image=$image work=$workDir cache=$cacheRoot store=$storeFile " +
                 "bind=$bindHost port=$port workers=$workers containerUser=$containerUser " +
-                "cpus=${containerResources.cpuCapDescription()}"
+                "cpus=${containerResources.cpuCapDescription()} memory=${containerResources.memoryCapDescription()}"
         )
 
         log.info("Using Preferences node '${ApiProperties.resolvePreferencesNode()}' for SPC settings.")

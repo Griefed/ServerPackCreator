@@ -195,6 +195,7 @@ never evicted, and a re-install costs one networked setup boot if it comes back.
 | `SPC_GRINDER_CONTAINER_USER`    | owner of `SPC_GRINDER_WORK`    | `uid:gid` the containers run as. Must own the staging — see *Container identity* |
 | `SPC_GRINDER_WORKERS`           | `2`                            | Parallel boots. **Budget 3 GiB RAM each** — see *Sizing the worker count*    |
 | `SPC_GRINDER_CPUS`              | `2`                            | Cores **per container**. `0` = uncapped — see *Capping CPU*                  |
+| `SPC_GRINDER_MEMORY_GIB`        | `3`                            | GiB **per container**. ⚠ Only change this if you know what you are doing     |
 | `SPC_GRINDER_BATCH`             | `25`                           | Projects taken from **each** platform per pass — the sweep-speed lever       |
 | `SPC_GRINDER_INTERVAL`          | `21600` (6 h)                  | Seconds to idle after a full sweep found nothing due                         |
 | `SPC_GRINDER_SCAN_DELAY`        | `15`                           | Seconds between passes that only scanned past fresh verdicts                 |
@@ -319,8 +320,9 @@ somebody else, or a userns-remapped daemon.
 
 ### Sizing the worker count
 
-Each in-flight grind holds a booting Minecraft server, capped at **3 GiB** (`ContainerResources.memoryBytes`), so the
-worker count is a memory question first — for the CPU side see *Capping CPU* below:
+Each in-flight grind holds a booting Minecraft server, capped at **3 GiB** (`SPC_GRINDER_MEMORY_GIB`, and see the
+warning below before touching it), so the worker count is a memory question first — for the CPU side see *Capping
+CPU* below:
 
 ```
 SPC_GRINDER_WORKERS  ≈  (memory available to Docker − ~2 GiB overhead) / 3 GiB
@@ -341,6 +343,25 @@ over-subscribing does not corrupt results, it just wastes the boot.
 Throughput is roughly linear in workers until memory runs out: at one worker a candidate takes 60–90 s including its
 boot, so ~50/hour; Modrinth's ~71 000 mod projects alone are then about two months of wall-clock, and both platforms
 interleaved considerably more. Raising the worker count is the single biggest lever on how long a full sweep takes.
+
+#### ⚠ `SPC_GRINDER_MEMORY_GIB` — only change this if you know what you are doing
+
+The per-container memory cap is configurable, and it is the one knob here where the default is load-bearing in
+three directions at once:
+
+- **It is what every boot's heap is.** The packs the grinder builds leave `javaArgs` empty, so nothing passes
+  `-Xmx` and the JVM sizes its own heap from the container's cgroup limit — measured on Temurin 21 at 25%, so a
+  3 GiB cap gives a **768 MiB heap** (`--memory=3g` → `MaxHeapSize 805306368`; at `--memory=1g` it is
+  `268435456`). Lower the cap and modded servers stop reaching their ready-line for want of heap.
+- **It is the divisor in the formula above.** Raise it without lowering `SPC_GRINDER_WORKERS` and the host is
+  over-subscribed by exactly the factor you raised it by.
+- **Either failure is scored `INCONCLUSIVE`, which looks like a mod that hangs.** A boot killed for memory
+  teaches nothing, costs its full budget, and does not announce that the *host* was the problem.
+
+`0` removes the limit entirely. That is sharper here than for CPU: an uncapped boot can take the host's memory
+with it, rather than merely hogging cores. Values below the daemon's own floor are raised to it (6 MB).
+
+If the intent is "grind faster", the lever is `SPC_GRINDER_WORKERS` or `SPC_GRINDER_CPUS`, not this.
 
 **Keep the host awake.** A suspend freezes a boot mid-flight; the grinder adds detected suspends back to the boot's
 budget, but a machine asleep for eight hours simply is not grinding. Run it under `caffeinate -ims` on macOS (or the

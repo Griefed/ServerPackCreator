@@ -55,8 +55,8 @@ const val MAX_PARALLEL_STOPS = 64
  * CPU / memory / pid caps applied to every boot container, so one fat modpack can't exhaust the host
  * and a runaway can't peg every core. Defaults are sized for a single Minecraft server boot.
  *
- * Prefer [forCpus] over setting [cpuQuota] by hand: cores are the unit an operator thinks in, and the
- * quota only means anything relative to [cpuPeriod].
+ * Prefer [forLimits] (or [forCpus]) over setting [cpuQuota] and [memoryBytes] by hand: cores and gibibytes
+ * are the units an operator thinks in, and the quota only means anything relative to [cpuPeriod].
  *
  * @param memoryBytes Hard memory limit (`--memory`); the server's heap must fit inside this.
  * @param cpuQuota    CFS CPU quota in microseconds per [cpuPeriod] (`200_000` at the default period =
@@ -74,6 +74,14 @@ data class ContainerResources(
     val pidsLimit: Long = 512
 ) {
     /**
+     * The memory cap in the unit it was set in, for the startup line: `3.0 GiB`, or `uncapped`. Worth logging
+     * even though it is rarely changed — it is what every boot's heap is derived from, so it is the first
+     * number to check when boots die with `Killed`.
+     */
+    fun memoryCapDescription(): String =
+        if (memoryBytes == UNSET_MEMORY) "uncapped" else "${memoryBytes.toDouble() / BYTES_PER_GIBIBYTE} GiB"
+
+    /**
      * The CPU cap in the unit it was set in, for the startup line: `2.0 cores (200000/100000µs)`, or
      * `uncapped` when there is no quota. The raw pair rides along because it is what the kernel was actually
      * given, which is the number to compare against a container's own `cpu.max` when a boot looks throttled.
@@ -90,6 +98,18 @@ data class ContainerResources(
 
         /** The quota docker reads as "no limit at all" — an unset one. Verified: the cgroup then reads `max`. */
         private const val UNSET_QUOTA = 0L
+
+        /**
+         * The smallest memory limit the docker daemon accepts, in its own words: "Minimum memory limit
+         * allowed is 6MB". Raised to here rather than refused there, for the same reason as the CPU floor.
+         */
+        private const val MINIMUM_MEMORY_BYTES = 6L * 1024 * 1024
+
+        /** The memory limit docker reads as unlimited — the same unset-means-no-limit rule as the quota. */
+        private const val UNSET_MEMORY = 0L
+
+        /** One gibibyte, the unit the memory cap is documented, configured and reported in. */
+        private const val BYTES_PER_GIBIBYTE = 1024L * 1024 * 1024
 
         /**
          * Caps a container at [cpus] cores, converting to the quota docker actually wants by multiplying
@@ -112,6 +132,32 @@ data class ContainerResources(
                 return base.copy(cpuQuota = UNSET_QUOTA)
             }
             return base.copy(cpuQuota = maxOf(MINIMUM_QUOTA_MICROSECONDS, (cpus * base.cpuPeriod).roundToLong()))
+        }
+
+        /**
+         * Caps a container at [cpus] cores and [memoryGiB] gibibytes — the whole per-container budget in one
+         * call, which is what the entry point wants, since both halves come from the environment together.
+         *
+         * The memory half follows exactly the rules [forCpus] established, deliberately: an exact `0.0` is
+         * uncapped, a smaller positive value is raised to the daemon's floor rather than refused by it, and
+         * negative or non-finite input throws. **Changing the memory cap changes what every boot's heap is:**
+         * the packs the grinder builds leave `javaArgs` empty, so the JVM sizes its own heap from the cgroup
+         * limit (measured at 25% — a 3 GiB cap gives a 768 MiB heap), and it is also the divisor in the
+         * worker-sizing advice. Hence the warning that travels with the knob.
+         */
+        fun forLimits(
+            cpus: Double,
+            memoryGiB: Double,
+            base: ContainerResources = ContainerResources()
+        ): ContainerResources {
+            require(memoryGiB.isFinite()) { "A container's memory cap must be a finite GiB count, was $memoryGiB." }
+            require(memoryGiB >= 0.0) { "A container's memory cap cannot be negative, was $memoryGiB — use 0 for uncapped." }
+            val memoryBytes = if (memoryGiB == 0.0) {
+                UNSET_MEMORY
+            } else {
+                maxOf(MINIMUM_MEMORY_BYTES, (memoryGiB * BYTES_PER_GIBIBYTE).roundToLong())
+            }
+            return forCpus(cpus, base.copy(memoryBytes = memoryBytes))
         }
     }
 }

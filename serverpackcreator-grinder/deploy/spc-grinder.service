@@ -81,6 +81,13 @@ Environment=SPC_GRINDER_HOME=/home/grinder/.spc-grinder
 #Environment=SPC_GRINDER_WORKERS=2
 #Environment=SPC_GRINDER_BATCH=25
 
+# ONLY CHANGE THIS IF YOU KNOW WHAT YOU ARE DOING. Memory per container, in GiB. The packs the grinder
+# builds pass no -Xmx, so the JVM derives the server's heap from this limit (25% of it: 3 GiB -> a 768 MiB
+# heap), and the worker-sizing advice in README §5 divides by it. Lowering it starves boots of heap;
+# raising it without lowering WORKERS over-subscribes the host. Either way the boots are killed and scored
+# INCONCLUSIVE, which reads as mods that hang. 0 = uncapped, which can take the host's memory with it.
+#Environment=SPC_GRINDER_MEMORY_GIB=3
+
 # Cores per container (docker's --cpus), so workers x cpus is what the boots can occupy. 0 = uncapped.
 # Keep it at or above 1: a Minecraft startup is largely single-thread-bound, and a boot throttled past
 # its budget is scored INCONCLUSIVE -- indistinguishable from a mod that hangs.
