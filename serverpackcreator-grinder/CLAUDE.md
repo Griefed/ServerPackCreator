@@ -145,6 +145,16 @@ though their detail lives deeper:
   first statements of `main`; keep them there, and keep new startup logging below them. Pinned by
   `GrinderSpcEnvironmentTest.theSpcEnvironmentIsClaimedBeforeTheFirstLogStatement`, which asserts the ordering
   against the source, since a JVM whose logging is already initialised cannot observe it.
+- **LANDMINE — the report binds loopback by default, and it is unauthenticated. Both halves matter.**
+  `ReportServer`'s `host` defaults to `127.0.0.1`, and until `SPC_GRINDER_HOST` existed `main` never passed one,
+  so the daemon was unreachable through any reverse proxy: a proxy in a container dials the host over the Docker
+  bridge gateway, never `127.0.0.1`, and a loopback socket refuses that at the TCP layer — the operator sees a 502
+  while the report answers fine over an SSH tunnel. Raise the bind to the *gateway address*, not `0.0.0.0`: `/`,
+  `/status` and `/export.csv` all answer unconditionally, with no auth anywhere in `start()`. Pinned two ways,
+  because neither alone reaches: `ReportServerBindAddressTest` executes the mechanism over a real non-loopback
+  IPv4 (skips where the host has none), and `ReportBindWiringTest` asserts against `main`'s source that the
+  variable actually reaches `ReportServer`'s `host` — the join no test can execute, because `main` boots Docker.
+  README §5 *Exposing the report* is the operator-facing half.
 - **Never hand SPC a *relative* properties file — a loaded one becomes a permanent write target.**
   `PropertyStore.loadProperties` adds every file it reads to `trackedPropertyFiles`, and `save()` writes to **all**
   of them on every save (skipping any that no longer exist, except `alwaysWrite`). `ApiProperties`' default is the

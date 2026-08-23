@@ -190,6 +190,7 @@ never evicted, and a re-install costs one networked setup boot if it comes back.
 | `SPC_GRINDER_STORE`             | `~/.spc-grinder/verdicts.json` | Verdict store — delete to start fresh                                        |
 | `SPC_GRINDER_CURSORS`           | `~/.spc-grinder/cursors.json`  | Crawl position per platform — delete to re-sweep from the most-downloaded    |
 | `SPC_GRINDER_PORT`              | `8757`                         | Report server port                                                           |
+| `SPC_GRINDER_HOST`              | `127.0.0.1`                    | Report server bind address. Loopback by default — see *Exposing the report*  |
 | `SPC_GRINDER_WORKERS`           | `2`                            | Parallel boots. **Budget 3 GiB RAM each** — see *Sizing the worker count*    |
 | `SPC_GRINDER_BATCH`             | `25`                           | Projects taken from **each** platform per pass — the sweep-speed lever       |
 | `SPC_GRINDER_INTERVAL`          | `21600` (6 h)                  | Seconds to idle after a full sweep found nothing due                         |
@@ -205,6 +206,31 @@ export SPC_GRINDER_BATCH=100
 export SPC_GRINDER_PORT=8757
 ./gradlew :serverpackcreator-grinder:run
 ```
+
+### Exposing the report
+
+The report binds **loopback** by default, because it has no authentication of any kind: everything it serves —
+the verdict table, `/status`, the full CSV export — goes to whoever reaches the port. Left at the default it is
+reachable over an SSH tunnel and from nothing else, which is the right posture for most installs:
+
+```bash
+ssh -L 8757:127.0.0.1:8757 grinder-box     # then browse http://127.0.0.1:8757/
+```
+
+**A reverse proxy needs a different bind, not a different proxy config.** A proxy in a container reaches the host
+over the Docker bridge gateway (`172.19.0.1` and friends), never over `127.0.0.1` — that address inside the
+container is the container itself. A loopback-bound report refuses that connection at the TCP layer, so the proxy
+reports a 502 while the report answers perfectly well over the tunnel above. Point it at the gateway:
+
+```ini
+Environment=SPC_GRINDER_HOST=172.19.0.1
+```
+
+Prefer the gateway address over `0.0.0.0`: it is reachable from containers on that bridge and from the host, and
+from nowhere else, so an unauthenticated report does not end up published on a public interface. Check what you
+actually got — `ss -ltnp | grep 8757` must show the address you asked for, and the daemon logs it as `bind=` at
+startup. If the bridge is ever recreated on a different subnet the bind fails loudly at startup rather than
+silently falling back; pinning the subnet on a user-defined network avoids that.
 
 ### Sizing the worker count
 
@@ -402,6 +428,8 @@ User=grinder
 WorkingDirectory=/home/grinder
 Environment=SPC_GRINDER_HOME=/home/grinder/.spc-grinder
 Environment=SPC_GRINDER_WORKERS=4
+# Only if a reverse proxy must reach it — see §5, *Exposing the report*
+# Environment=SPC_GRINDER_HOST=172.19.0.1
 Environment=SPC_GRINDER_BATCH=100
 Environment=SPC_GRINDER_REVERIFY_TTL_DAYS=180
 # Environment=CURSEFORGE_API_KEY=...
@@ -445,6 +473,7 @@ Two more things the unit file decides, both worth stating explicitly:
 | `game-version list unavailable`          | CurseForge's `/games/432/versions` failed, so that sweep covers only the unfiltered top 10 000. Check the key and connectivity |
 | `category list unavailable`               | CurseForge's `/categories` failed, so an over-cap version is covered by its modloader slices only that sweep                   |
 | `holds N mods but only 20000 are reachable` | Even a version × category × modloader slice is too big to page through; its middle is skipped. No further filter exists      |
+| Reverse proxy 502s, but the report works over an SSH tunnel | The report is bound to loopback, which a containerised proxy cannot reach. Set `SPC_GRINDER_HOST` to the bridge gateway — §5, *Exposing the report* |
 | A container outlived the process         | Should not happen — shutdown drains them. If it does, `docker ps` and remove it, and please report it                         |
 
 ---
