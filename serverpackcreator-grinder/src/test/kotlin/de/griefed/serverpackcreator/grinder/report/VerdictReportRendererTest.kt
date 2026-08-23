@@ -73,6 +73,35 @@ internal class VerdictReportRendererTest {
     }
 
     /**
+     * Every header must have a cell under it.
+     *
+     * `columns` and `rowHtml`'s cell list are two hand-maintained lists that have to stay the same length, and
+     * nothing checked it. Add a header without its cell (or the reverse) and the table still renders: every
+     * column past the gap shows the neighbouring column's data, and `sortBy(index)` — wired from the header's
+     * position — sorts by the wrong one. No existing guard notices, because each of them looks for one value
+     * somewhere in the page. This branch incremented both lists, which is exactly when the two drift.
+     *
+     * Counted off the rendered page rather than the two lists, so it pins the consequence and not the source.
+     */
+    @Test
+    fun everyHeaderHasACellBeneathIt() {
+        val html = VerdictReportRenderer.toHtml(
+            listOf(grindVerdict("jei", "Forge"), grindVerdict("sodium", "Fabric"))
+        )
+        val headers = Regex("<th[ >]").findAll(html).count()
+        val bodyRows = html.substringAfter("<tbody>").substringBefore("</tbody>").trim().lines()
+
+        Assertions.assertEquals(2, bodyRows.size, "test setup: one row per verdict")
+        bodyRows.forEach { row ->
+            Assertions.assertEquals(
+                headers,
+                Regex("<td[ >]").findAll(row).count(),
+                "a row must carry exactly one cell per header ($headers): $row"
+            )
+        }
+    }
+
+    /**
      * The overview is the only page an operator ever opens, and the daemon's other endpoints were reachable
      * only from a log line printed at startup. Each one now has a button beside "Download CSV".
      */
