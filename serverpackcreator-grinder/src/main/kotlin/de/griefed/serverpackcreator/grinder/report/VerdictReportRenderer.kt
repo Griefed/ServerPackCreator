@@ -148,7 +148,10 @@ object VerdictReportRenderer {
             esc(verdict.detail),
             crashLog,
             // Last, because it is the one column whose width never changes — and the sort works on it as text.
-            ScanDate.of(verdict.verifiedAt)
+            // Escaped like every other cell even though a `yyyy/MM/dd` string cannot contain markup: the
+            // uniformity is what makes the *next* cell safe to add, and one exception is a trap for whoever
+            // adds it.
+            esc(ScanDate.of(verdict.verifiedAt))
         )
         return "<tr>" + cells.joinToString("") { "<td>$it</td>" } + "</tr>"
     }
