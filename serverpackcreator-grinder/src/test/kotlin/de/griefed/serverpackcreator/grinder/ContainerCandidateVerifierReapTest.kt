@@ -19,8 +19,17 @@
  */
 package de.griefed.serverpackcreator.grinder
 
+import de.griefed.serverpackcreator.clientside.AttemptDirectory
+import de.griefed.serverpackcreator.clientside.BootResult
+import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.DeclaredSupport
+import de.griefed.serverpackcreator.clientside.JarScan
+import de.griefed.serverpackcreator.clientside.LoaderVerdict
+import de.griefed.serverpackcreator.grinder.report.CrashLogStore
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+import java.io.File
 
 /**
  * Pins *which identity* the reaper is asked to reclaim, which has to be the one the staging was **named
@@ -45,6 +54,69 @@ internal class ContainerCandidateVerifierReapTest {
         platform = platform,
         projectId = "id"
     )
+
+    /** Stage a finished attempt's kept console exactly where `BootVerifier` and the reaper leave it. */
+    private fun stagedConsole(bootRoot: File, platform: String, slug: String, loader: String, text: String) {
+        File(bootRoot, AttemptDirectory.nameFor(platform, slug, loader))
+            .apply { mkdirs() }
+            .resolve("boot.log")
+            .writeText(text)
+    }
+
+    private fun verdict(loader: String, bootResult: BootResult?) = LoaderVerdict(
+        loader = loader,
+        suggestedEntry = "$loader-",
+        declaredClientSide = DeclaredSupport.UNKNOWN,
+        declaredServerSide = DeclaredSupport.REQUIRED,
+        jarScan = JarScan.SERVER_OR_BOTH,
+        bootResult = bootResult,
+        bootedLoader = loader,
+        bootCrashExcerpt = null,
+        confidence = Confidence.HIGH,
+        sampleFile = null,
+        note = null
+    )
+
+    /**
+     * **A crashed boot's console is copied out of staging, because staging is about to be reused.** The
+     * attempt directory is wiped and re-created by the next re-grind of the same tuple, taking with it the
+     * only evidence behind a HIGH verdict — most often a server loading a mod that reaches for a client-only
+     * class, which is legible from the console and nowhere else.
+     */
+    @Test
+    fun aCrashedBootsConsoleIsKeptOutsideStaging(@TempDir work: File) {
+        val bootRoot = File(work, "boot")
+        val crashLogs = CrashLogStore(File(work, "crash-logs"))
+        stagedConsole(bootRoot, ModPlatforms.MODRINTH, "creativecore", "Fabric", "NoClassDefFoundError: net/minecraft/client/Minecraft")
+        stagedConsole(bootRoot, ModPlatforms.MODRINTH, "creativecore", "NeoForge", "Done (21.5s)! For help")
+        val report = clientsideReport(
+            slug = "creativecore",
+            perLoader = listOf(verdict("Fabric", BootResult.CRASHED), verdict("NeoForge", BootResult.SURVIVED))
+        )
+
+        ContainerCandidateVerifier.keepCrashConsoles(report, bootRoot, crashLogs)
+
+        Assertions.assertEquals(
+            listOf("Modrinth-creativecore-Fabric.log"),
+            crashLogs.list(),
+            "only the boot that crashed is worth keeping — a clean boot proves nothing and explains nothing"
+        )
+        Assertions.assertTrue(crashLogs.read("Modrinth-creativecore-Fabric.log")!!.contains("net/minecraft/client/Minecraft"))
+    }
+
+    /**
+     * A crash whose console never reached disk (a runner that never started, an unwritable log) keeps nothing
+     * and says nothing — collecting evidence must not fail a grind that already has its verdict.
+     */
+    @Test
+    fun aCrashWithNoConsoleOnDiskKeepsNothingAndDoesNotThrow(@TempDir work: File) {
+        val crashLogs = CrashLogStore(File(work, "crash-logs"))
+        val report = clientsideReport(slug = "ghost", perLoader = listOf(verdict("Forge", BootResult.CRASHED)))
+
+        ContainerCandidateVerifier.keepCrashConsoles(report, File(work, "boot"), crashLogs)
+
+        Assertions.assertTrue(crashLogs.list().isEmpty())
+    }
 
     /** The report resolved the project, so its identity is the one the directories carry. */
     @Test

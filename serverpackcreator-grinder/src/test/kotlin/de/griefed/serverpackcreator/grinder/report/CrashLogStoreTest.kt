@@ -42,9 +42,13 @@ internal class CrashLogStoreTest {
 
     private fun store() = CrashLogStore(directory)
 
-    /** A staged console, as the boot verifier leaves it. */
-    private fun console(@Suppress("SameParameterValue") text: String): File =
-        File(directory, "staged-boot.log").apply { writeText(text) }
+    /**
+     * A staged console, as the boot verifier leaves it — written **outside** the store, because that is where
+     * a real one lives: under `<work>/boot/<attempt>/boot.log`, in the staging this store exists to rescue it
+     * from.
+     */
+    private fun console(text: String): File =
+        File(directory.parentFile, "staged-boot-${text.hashCode()}.log").apply { writeText(text) }
 
     /** The round trip a report link makes: keep it, get a name, read the same bytes back by that name. */
     @Test
