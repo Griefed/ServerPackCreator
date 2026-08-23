@@ -3255,3 +3255,63 @@ Suites at the time of writing: grinder 275 (19 skipped), clientside 93. Both gre
   against `normalise` being the single funnel every published entry passes through.
 - **No endpoint other than `/as-properties` changed behaviour.** `respond` now always encodes UTF-8, which is
   what it did before this branch; the ISO-8859-1 branch existed only within this branch's own history.
+
+---
+
+# Audit iteration 19 — 2026-08-23 — third pass, and the equivalence check
+
+Scope: `git log develop..HEAD`, 27 commits. This pass stops re-reading commit boundaries — iterations 17 and 18
+covered those — and does the two things that had not been done: run the base branch's tests against this
+branch's code, and read the finished units rather than their diffs.
+
+## Equivalence against the base — clean
+
+`develop`'s unmodified test tree, checked out over this branch's production code in a detached worktree:
+
+```
+git worktree add --detach <tmp> HEAD
+cd <tmp> && rm -rf serverpackcreator-{grinder,clientside}/src/test
+git checkout develop -- serverpackcreator-{grinder,clientside}/src/test
+./gradlew :serverpackcreator-grinder:test :serverpackcreator-clientside:test --continue
+```
+
+**339 pre-existing guards (grinder 251 with 19 skipped, clientside 88), zero failures, zero compile errors.**
+No file needed adapting, which is itself the finding: every signature this branch changed gained a *defaulted*
+parameter (`ContainerServerRunner`, `DockerLoaderInstaller`, `ContainerCandidateVerifier`, `ReportServer`,
+`BrowserDownloader`), and the one signature that lost a default — `ContainerUser.forDirectory` — is new on this
+branch and has no base-tree callers. Nothing existing changed shape.
+
+## LOW
+
+- **P3-L1 — `unrepresentable()` counted duplicates while `normalise()` de-duplicated.**
+  `report/FallbackPropertiesRenderer.kt` — one mod dropped on three loaders was reported in the document as
+  three omissions, sending a reader hunting two entries that never existed. Two functions filtering the same
+  collection by the same predicate should agree on what "an entry" is. Fixed.
+- **P3-L2 — the DOMCONTENTLOADED rationale existed twice**, inline at the first `page.navigate` and in
+  `navigationOptions()`' KDoc, after the extraction moved the decision. Two copies of a reason is one copy that
+  goes stale. Inline copy removed. Fixed.
+- **P3-L3 — the root `CLAUDE.md` counts were stale for the third time in one session** (268/90 → 276/93). Not
+  a new defect each time, but worth stating as a pattern: any count written before the last test lands is
+  wrong by the time it is committed, and this session generated three chances to get it wrong. Re-derived from
+  the run that produced them.
+
+## Considered and deliberately not changed
+
+- **`/as-properties` re-renders on every request** rather than caching. The full list is a few hundred KB and
+  the consumer polls at *startup*, so a cache would add invalidation to save nothing measurable. Recorded so
+  the next reader does not re-derive it — and so that if polling ever becomes frequent, the decision is known
+  to have been made under the startup-only assumption.
+- **Running as a uid with no `/etc/passwd` entry in the image.** `$HOME` is unset for such a uid, but the
+  rootfs is read-only with only `/tmp` writable, so nothing could write to a home directory under the old uid
+  either. No regression; see iteration 18's clean list.
+- **`InstallFailureDiagnosis` recognises exactly one cause.** Adding speculative patterns would restore the
+  problem it was written to fix — a confident diagnosis pointing at the wrong subsystem. It returns `null` and
+  falls back to the raw tail for anything else, and that is pinned.
+
+## Still open
+
+- **P2-M2 — the container-user fix has no real-runtime verification** and cannot get one on this workstation
+  (see iteration 18 for why Docker Desktop's id remapping makes the local run prove nothing). The two-command
+  check for the Linux host is recorded there. This is the one claim on the branch resting on reasoning plus
+  production logs rather than on an executed check, and it should be closed on Yggdrasil before the fix is
+  trusted in the release notes.
