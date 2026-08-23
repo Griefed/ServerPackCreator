@@ -4009,3 +4009,38 @@ re-handed — and the alternative costs a mutable status API. Recorded so the ne
   file, against a daemon that boots Minecraft servers in containers when it is awake. Not worth tuning.
 - **`thePassCounterIsNotShadowed`** is narrow enough not to cry wolf: it asserts `var pass = 0` exists and no
   `val pass =` shadows it, which is exactly the defect and nothing else.
+
+## Resolution — iteration 26, same session
+
+| Finding | Outcome |
+|---|---|
+| H1 negative slice → `IllegalArgumentException` ends `main` | **fixed** — `pollInterval` clamps a negative remainder to zero, landmined |
+| M1 crash console read whole before the cap | **fixed** — `tailOf` seeks; pinned **by measurement** on a 64 MiB console |
+| M2 an unresolvable link queued anyway | **fixed** — `RequeueSelection.fromLinks` refuses and names it back |
+| L1 catalog batch fetched before a long drain | **accepted, recorded** — cursor only advances on `commit`, so an abandoned batch is re-handed |
+
+**M2's fix consolidates rather than patches, deliberately.** The one-shot path carried the *identical*
+expression — `args.map { GrindCandidate(it, slugFromUrl(it), 0, ModPlatforms.ofUrl(it)) }` — so fixing only
+the queue would have left the same defect one call site away, which is how a fixed bug comes back. Both now
+resolve through `fromLinks`, and `slugFromUrl` moved with it.
+
+**M1 is pinned by measurement, not by reading the code**, because that is the only formulation that separates
+a bounded read from a lucky one: the existing truncation test plants a file just over the cap and passes
+either way. The new guard writes a 64 MiB console and requires heap growth across `keep` to stay under the
+file size. (The first cut of that guard asserted `length() > 64 MiB` against a file of exactly 64 MiB and
+failed on its own fixture — caught because the expected red arrived for the wrong reason.)
+
+**Teeth re-checked on both fixes** by restoring the old line: `readText()` fails
+`anOversizedConsoleIsNeverReadWholeIntoMemory`, the two-branch `pollInterval` fails
+`aRemainderThatHasAlreadyElapsedSlicesToZero`.
+
+**Verified in the built artefact**, since the rejection is an operator-facing path:
+
+```
+$ spc-grinder --requeue …/creativecore https://modrint.com/mod/typo …/mc-mods/jei
+Not a Modrinth or CurseForge project link, ignoring: https://modrint.com/mod/typo
+Queued 2 of 2 project(s) for immediate re-grinding (0 already waiting); 2 now pending.
+queued: [('Modrinth', 'creativecore'), ('CurseForge', 'jei')]
+```
+
+**Suite after both iterations: grinder 336 → 344, 0 failures** (23 skipped).
