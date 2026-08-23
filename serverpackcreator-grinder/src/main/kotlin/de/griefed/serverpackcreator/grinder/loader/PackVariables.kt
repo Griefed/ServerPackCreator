@@ -28,7 +28,8 @@ import java.io.File
  *  - `WAIT_FOR_USER_INPUT=false` (else the script blocks on a `read`),
  *  - `JAVA` pointed at the bundled per-Minecraft JDK (so no Java download),
  *  - `SERVERSTARTERJAR_FORCE_FETCH=false` for **offline** (cached) boots, else Forge/NeoForge
- *    re-download `server.jar` — fatal under `--network none`. The install boot leaves it on.
+ *    re-download `server.jar` — fatal under `--network none`. The install boot leaves it on,
+ *  - `USE_SSJ=false` so **Forge** launches from the installer's own argfile (see [prepareUnattended]).
  *
  * @author Griefed
  */
@@ -54,6 +55,16 @@ object PackVariables {
      * modloader *installers* that need a newer Java than the server. Without it, Quilt cannot install on
      * an older Minecraft (its installer requires Java 17+ while e.g. 1.16.1 runs on Java 8). Harmless for
      * every other loader: the templates fall back to `JAVA` and only Quilt's install consults it.
+     *
+     * **`USE_SSJ=false` is set on every pack, and it is only Forge that reads it.** The ServerStarterJar cannot
+     * launch a Forge install whose module path it has to synthesise a boot layer for — Forge's
+     * `SecureModuleClassLoader` resolves a read module's configuration against its *direct* parents only, so
+     * `java.base` is not found and it throws `Could not find parent layer for module` before FML exists. That is
+     * the incompatibility `HELP.md` records for Minecraft 1.20.2/1.20.3, and the knob is a pack author's escape
+     * hatch — which an unattended grinder has no way to reach for, so it takes the hatch by default and every
+     * Forge boot launches the way `run.sh` does. The trade-off worth stating: the grinder therefore exercises the
+     * argfile path rather than the one a default user pack takes, and the starter-jar path is covered by
+     * `ScriptTemplateMatrixIT` instead. NeoForge is unaffected — `setupNeoForge` never consults the knob.
      */
     fun prepareUnattended(packDir: File, javaPath: String, offline: Boolean, installerJavaPath: String? = null) {
         File(packDir, "eula.txt").writeText("eula=true\n")
@@ -64,6 +75,9 @@ object PackVariables {
         var text = variables.readText()
         text = set(text, "WAIT_FOR_USER_INPUT", "false")
         text = set(text, "JAVA", javaPath)
+        // Both boots, install and mod: the install layer that gets cached has to be the one the offline boot
+        // then launches from.
+        text = set(text, "USE_SSJ", "false")
         if (installerJavaPath != null) {
             text = set(text, "JAVA_INSTALLER", installerJavaPath)
         }
