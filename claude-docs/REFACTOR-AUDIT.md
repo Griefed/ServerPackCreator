@@ -4177,3 +4177,62 @@ message — stays green, so the anchor narrowed the guard without disarming it.
 byte-identical and every existing assertion stays as it was — which is what the label claims and what
 makes a new guard pointless. A test would have to assert the *shape* of the call, which this repo's
 conventions rule out.
+
+---
+
+# Audit — 2026-08-23, `claude-grinder-favicon-hostname-forge` (iteration 28)
+
+Scope: as iteration 27, plus that iteration's own fixes (`ff8dc823d`, `b88f502d4`, `4e4cd96ca`).
+Weighted toward the guard-ordering hazard H1 exposed — the natural follow-through is whether any
+*sibling* marker has the same shape — and toward the two lists this branch incremented.
+
+## MEDIUM
+
+**M1 — nothing couples the table's header count to its cell count, and this branch changed both.**
+`VerdictReportRenderer.kt`: `columns` (now 8 entries) and `rowHtml`'s cell list (now 8) are two
+hand-maintained lists kept in step only by a reader noticing. Add a header without its cell and the
+page still renders — every column past the gap displays its neighbour's data, and `sortBy(index)`,
+wired from the header's *position*, sorts by the wrong column. Every existing guard looks for one
+value somewhere in the page, so none of them notices a shifted table. Incrementing both at once, which
+this branch did twice (crash-log cell earlier, `Scanned` here), is exactly when the two drift.
+
+## Examined and cleared — do not re-litigate
+
+- **`setupAbortMarkers` has H1's shape and is deliberately left broad.** `is not available for
+  Minecraft` is a phrase a mod could plausibly log about its own feature gating, and it sits at rung
+  three — one *above* the rung H1 was fixed at, so the same suppression is reachable. It is
+  nevertheless correct as-is: that guard exists to prevent a **false HIGH** on a loader with no build
+  for a new Minecraft, and for that job losing a true positive is the cheaper error — the engine's
+  stated policy is to claim CRASHED only when sure. H1 was the opposite case: a newly added generic
+  phrase whose own KDoc claimed a narrowness it did not have. Recorded so a later pass does not
+  "fix" a breadth that is chosen. (`crashServer` does echo its message as a whole line, so anchoring
+  is *available* there — it is simply not wanted.)
+- **The `^` anchor versus docker's log framing.** `DockerJavaContainerEngine` splits each frame's
+  payload on `\n`, so a line spanning two frames would arrive as two fragments and the anchor would
+  see the second fragment's start rather than the line's. Not reachable: the log driver frames at
+  write boundaries (and 16 KB), while the launcher's ~80-byte message is the process's first write —
+  and a *substring* match would fail on a split line just as surely. Accepted.
+- **`loaderBootstrapFailureMarkers` re-checked against H1's hazard.** All three alternatives are
+  distinctive upstream sentences, not generic verb phrases, and none has a plausible mod-log
+  collision. Cleared a second time, deliberately, because it is the guard H1's sibling review would
+  otherwise have to revisit.
+- **Dokka is clean for both touched modules** (`dokkaGenerateHtml`, no warnings), including the
+  `[ScanDate]` reference from `VerdictCsvExporter`'s public KDoc to an `internal` object — which is
+  the one new cross-visibility doc link on the branch.
+
+## Resolution — iteration 28, same session
+
+| Finding | Outcome |
+|---|---|
+| M1 headers and cells uncoupled | **fixed** — `everyHeaderHasACellBeneathIt`, teeth checked both ways |
+
+**A characterization test, so it passes as written — which is precisely why its teeth had to be shown
+rather than assumed.** Broken deliberately in both directions:
+
+| Injected defect | Guard says |
+|---|---|
+| a ninth header, no cell | `expected: <9> but was: <8>` |
+| a ninth cell, no header | `expected: <8> but was: <9>` |
+
+Counted off the rendered page rather than off the two source lists, so it pins the consequence (a
+misaligned table) and not the implementation that currently produces it.
