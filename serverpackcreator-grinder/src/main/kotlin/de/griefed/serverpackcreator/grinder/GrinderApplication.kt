@@ -135,9 +135,7 @@ object GrinderApplication {
         val server = ReportServer(
             store, port, host = bindHost, status = status, cursors = cursorStore, cacheRoot = cacheRoot
         ).start()
-        // The bound host, not "localhost": under a non-default bind that URL is one an operator cannot reach,
-        // and the journal is where they go looking for it.
-        val reportUrl = "http://$bindHost:${server.port}"
+        val reportUrl = reportUrl(bindHost, server.port)
         log.info("Report:  $reportUrl/    CSV: $reportUrl/export.csv    live status: $reportUrl/status")
 
         if (args.isNotEmpty()) {
@@ -221,6 +219,13 @@ object GrinderApplication {
         }
         log.info("Grinder stopped after $pass pass(es).")
     }
+
+    /**
+     * The base URL to print for the report, given the address it was bound to. The bound host rather than a
+     * hardcoded "localhost": under a non-default bind that URL is one the operator cannot reach, and the
+     * journal is where they go looking for it.
+     */
+    internal fun reportUrl(bindHost: String, port: Int): String = "http://$bindHost:$port"
 
     /**
      * Where the daemon's SPC settings file lives: [explicitPath] when the operator named one, otherwise
