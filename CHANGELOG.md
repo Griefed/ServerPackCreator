@@ -1,3 +1,81 @@
+## [9.0.0-alpha.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.0.0-alpha.6...9.0.0-alpha.7) (2026-08-23)
+
+### :scissors: Refactor
+
+* audit iteration 19's consistency findings, and the re-derived counts ([4b9c056](https://git.griefed.de/Griefed/ServerPackCreator/commit/4b9c056b47ad3d9e3814c1accd325b6b57b9f016))
+* **clientside:** extract the navigation options so they can be pinned ([723394f](https://git.griefed.de/Griefed/ServerPackCreator/commit/723394f6261d1083c4770cc17f91aac172c3a949))
+* **clientside:** split staging from selection in prepareBootPack ([45b7fac](https://git.griefed.de/Griefed/ServerPackCreator/commit/45b7facb7f43f37cca0a6b79ffc6d1c8d7a69d59))
+* **grinder:** drop a branch that cannot change an output ([72dc9d2](https://git.griefed.de/Griefed/ServerPackCreator/commit/72dc9d2cd651637c8e8b432fb869a84e640b9d89))
+* **grinder:** read the container-user override in the entry point ([c14e750](https://git.griefed.de/Griefed/ServerPackCreator/commit/c14e750e0108779a588065c26e42476c764720ef))
+
+### 📔 Docs
+
+* audit iteration 17 — the container-identity branch ([6054c0d](https://git.griefed.de/Griefed/ServerPackCreator/commit/6054c0dc405092ad1be363cdd853600a870a1d7f))
+* audit iteration 18, and the two findings it fixed in passing ([f81c174](https://git.griefed.de/Griefed/ServerPackCreator/commit/f81c174a746ce4ed6956910e9388d22e26df2313))
+* audit iteration 19 — third pass and the equivalence check ([4a1b7a5](https://git.griefed.de/Griefed/ServerPackCreator/commit/4a1b7a57ef3338c125adc7f6aa810d14150340d7))
+* audit iteration 20 — the graceful-shutdown branch ([975a951](https://git.griefed.de/Griefed/ServerPackCreator/commit/975a951b6706cab0e744dc45dfdd664a8727bf23))
+* audit iteration 21 — second pass over the shutdown work ([95198b6](https://git.griefed.de/Griefed/ServerPackCreator/commit/95198b689d7b8ebbca92dd166bc586e21d80a3be))
+* audit iteration 22 — third pass and the equivalence check ([b01fed9](https://git.griefed.de/Griefed/ServerPackCreator/commit/b01fed9fef75056cf07dc0d74a824af066344019))
+* audit iteration 23 — the CPU-cap branch ([b27b535](https://git.griefed.de/Griefed/ServerPackCreator/commit/b27b5355af98936dcb1a8340aa9c19104b26ffb2))
+* correct the clientside suite count to the 113 the run reports ([b31667a](https://git.griefed.de/Griefed/ServerPackCreator/commit/b31667a2a0e557b6bf9af53b3f10753eca66787f))
+* record iteration 23's resolutions, and why M3 stands ([50987b7](https://git.griefed.de/Griefed/ServerPackCreator/commit/50987b7a26aa2dfef40021c4ca5460a7ba6c3015))
+* record the container-identity outage and the /as-properties endpoint ([76a6769](https://git.griefed.de/Griefed/ServerPackCreator/commit/76a676931fda2765da8a995d00e0cb23e3593cd7))
+* record the CPU-cap knob and the quota-without-period finding ([751edb2](https://git.griefed.de/Griefed/ServerPackCreator/commit/751edb214cc6705bb590ac01d96d1eaa6d078f89))
+* record the cross-loader reconciliation and the CurseForge window ([8f8b165](https://git.griefed.de/Griefed/ServerPackCreator/commit/8f8b1650811a37e5850178c036eae28a513b869e))
+* record the memory knob and the heap derivation behind its warning ([54d32af](https://git.griefed.de/Griefed/ServerPackCreator/commit/54d32afb6093893938eabb6ea053ae4a012dbc1f))
+* record the other-version crash re-check and what arms it ([ae2a11b](https://git.griefed.de/Griefed/ServerPackCreator/commit/ae2a11bc3325659d33ac9e2dbd79fdbd43b6acba))
+* **grinder:** close the deployment gaps this outage ran into ([31e6967](https://git.griefed.de/Griefed/ServerPackCreator/commit/31e696797f155f67dc25502281c603348c019978))
+* **grinder:** explain a crash weighed against another loader ([415284e](https://git.griefed.de/Griefed/ServerPackCreator/commit/415284e329d6bad5257619b60a86212b484ca51f))
+* **grinder:** tell the operator what a re-checked crash looks like ([a0263c2](https://git.griefed.de/Griefed/ServerPackCreator/commit/a0263c268cd94b516d41973093331cc92cb67c80))
+* **grinder:** the shutdown contract, and the cgroup fact behind it ([067ebc3](https://git.griefed.de/Griefed/ServerPackCreator/commit/067ebc31f7a0edc9cb3d10d762698a917672aaed))
+
+### 🧪 Tests
+
+* pin the two joins audit iteration 17 found unguarded ([02d8a39](https://git.griefed.de/Griefed/ServerPackCreator/commit/02d8a39164f280519f72b9610f4f48b65fff4b5c))
+* **clientside:** pin cross-loader reconciliation and CurseForge file paging ([5b5151f](https://git.griefed.de/Griefed/ServerPackCreator/commit/5b5151fb74bd44df30e6e6a3a498d35e28724d72))
+* **clientside:** pin that a verdict's own console is the log that is kept ([01f153a](https://git.griefed.de/Griefed/ServerPackCreator/commit/01f153ab895ee4e35d42dcec4761042404f2b42b))
+* **clientside:** pin that an aborted navigation means the download started ([a435735](https://git.griefed.de/Griefed/ServerPackCreator/commit/a435735635a755e870ec074fbbbb6cee20fa0ee5))
+* **clientside:** pin the other-version crash re-check ([847bdd0](https://git.griefed.de/Griefed/ServerPackCreator/commit/847bdd0770e61317cca7d984ea7098291bec5670))
+* **grinder:** drive SPC's real updater against the live /as-properties ([c3cbf50](https://git.griefed.de/Griefed/ServerPackCreator/commit/c3cbf50bb07ea9bf3c3a56535066a96f0895aea8))
+* **grinder:** pin audit iteration 17's two silent-corruption findings ([93bbab2](https://git.griefed.de/Griefed/ServerPackCreator/commit/93bbab2ed46e8e7413c09cd127ea0fac67165cda))
+* **grinder:** pin audit iteration 21's two shutdown gaps ([8236c93](https://git.griefed.de/Griefed/ServerPackCreator/commit/8236c93548af357f51d4264f7de1890e411ae471))
+* **grinder:** pin how the CPU cap is reported to the operator ([f3b72af](https://git.griefed.de/Griefed/ServerPackCreator/commit/f3b72af55971d2f2c48b3cb036b2157149c26007))
+* **grinder:** pin that a failed install names an unwritable mount ([5ecf8cd](https://git.griefed.de/Griefed/ServerPackCreator/commit/5ecf8cdc9db0ddac613c01a59e3b8c5c03aea98e))
+* **grinder:** pin that a positive CPU cap stays a cap ([ebb8a2a](https://git.griefed.de/Griefed/ServerPackCreator/commit/ebb8a2a82bac5439b73f2228847e05233aae0ca0))
+* **grinder:** pin that the knob defaults and the class defaults agree ([d005852](https://git.griefed.de/Griefed/ServerPackCreator/commit/d005852a5d4fbab838b935eb108550fb4e5e2ec1))
+* **grinder:** pin the per-container CPU cap and its wiring ([6b159bf](https://git.griefed.de/Griefed/ServerPackCreator/commit/6b159bfbf7511a4fdfad38263b1684009bfc7ad6))
+* **grinder:** pin the per-container memory cap and both caps' wiring ([1fc9720](https://git.griefed.de/Griefed/ServerPackCreator/commit/1fc97209898aa30a613a90847adb3fc7ea7fefba))
+* **grinder:** pin the pollable fallback-list properties document ([47f9917](https://git.griefed.de/Griefed/ServerPackCreator/commit/47f991719f9cb4e8ebbadc19ea3e68d04c807be7))
+* **grinder:** pin the shared window positively and against the real cap ([2a90aa0](https://git.griefed.de/Griefed/ServerPackCreator/commit/2a90aa05fd650cc4ad000163524cfe299b7162ef))
+* **grinder:** pin the shutdown invariant, its wiring and its 15s window ([25c0c2c](https://git.griefed.de/Griefed/ServerPackCreator/commit/25c0c2cec22adc1dbb97325f4019d3484d638fc4))
+* **grinder:** pin what stopping the service must do to workers and containers ([312745b](https://git.griefed.de/Griefed/ServerPackCreator/commit/312745b338bc93b504a80c9c8b305be5a4282de7))
+* **grinder:** pin which uid:gid a container runs as ([2964419](https://git.griefed.de/Griefed/ServerPackCreator/commit/29644191d4246840e89b73af22e454b59dd1b028))
+
+### 🚀 Features
+
+* **grinder:** express the container CPU cap in cores, against a stated period ([00b5e77](https://git.griefed.de/Griefed/ServerPackCreator/commit/00b5e77894e76609ae9e5e3e386b913941e9b3d1))
+* **grinder:** make the per-container CPU cap configurable ([65c921c](https://git.griefed.de/Griefed/ServerPackCreator/commit/65c921c404821226f90de1c15e359b9cf1755fe7))
+* **grinder:** make the per-container memory cap configurable, with its warning ([61fed6a](https://git.griefed.de/Griefed/ServerPackCreator/commit/61fed6a22d7f973ebfd1eeb9cb8532d262e73d7b))
+* **grinder:** serve the fallback list as pollable properties at /as-properties ([6be42c4](https://git.griefed.de/Griefed/ServerPackCreator/commit/6be42c479cc72404a6f75bb1684daaf92e799473))
+* **grinder:** stop containers and workers gracefully, then kill them ([25541a8](https://git.griefed.de/Griefed/ServerPackCreator/commit/25541a8d898fcf7cf445ec73ae8db163d68968bb))
+
+### 🛠 Fixes
+
+* **ci:** drop the gitlab.com release mirror, and stop curl hiding why ([3b29a57](https://git.griefed.de/Griefed/ServerPackCreator/commit/3b29a57b03dae6a6acc2b4df67bb8ddb6a6cbcc1))
+* **clientside:** a crash cannot outrank another loader's clean boot ([e4ea0b8](https://git.griefed.de/Griefed/ServerPackCreator/commit/e4ea0b88614b9afb7ac7c923ad5240b3e801b8ea))
+* **clientside:** don't log "re-checking 0 other version(s)" ([3400ff4](https://git.griefed.de/Griefed/ServerPackCreator/commit/3400ff4914faaab75b8e07920367e1e4e84a1407))
+* **clientside:** keep the file when CurseForge aborts the navigation ([9df60fc](https://git.griefed.de/Griefed/ServerPackCreator/commit/9df60fca8868358761ae3cb432df8a3fcd34fad9))
+* **clientside:** keep the reported verdict's own boot console ([f036bf4](https://git.griefed.de/Griefed/ServerPackCreator/commit/f036bf4ad596681a07a1969e55ef9ce561884600))
+* **clientside:** re-check a crash against the mod's other versions ([7daca76](https://git.griefed.de/Griefed/ServerPackCreator/commit/7daca767ac7de37d338e8d1b48d649715e492dc9))
+* **grinder:** decide "uncapped" from the request, not from the arithmetic ([11dfba6](https://git.griefed.de/Griefed/ServerPackCreator/commit/11dfba6b7c0c188936f756d92d9ca66eb1e363aa))
+* **grinder:** diagnose a failed install from the whole console ([8ec7440](https://git.griefed.de/Griefed/ServerPackCreator/commit/8ec7440f58e4a8be4744a256a6d35229871b1a5c))
+* **grinder:** make Ctrl-C stop a one-shot run, and share one 15s window ([c7cc767](https://git.griefed.de/Griefed/ServerPackCreator/commit/c7cc7678a522bd5e7941d14a5a3ce99c48744233))
+* **grinder:** make the shared shutdown window real above eight containers ([f7b0302](https://git.griefed.de/Griefed/ServerPackCreator/commit/f7b030252c21e5ef204e182478fa0d9d217bde81))
+* **grinder:** publish the worker list before starting the workers ([6042833](https://git.griefed.de/Griefed/ServerPackCreator/commit/6042833edea5c13b89b852913f4167caa1f2bef5))
+* **grinder:** report the CPU cap the way the operator set it ([63cfd46](https://git.griefed.de/Griefed/ServerPackCreator/commit/63cfd46c7094e37b017b4ba439d863d6b5f2c25d))
+* **grinder:** run containers as the owner of the pack they mount ([de20741](https://git.griefed.de/Griefed/ServerPackCreator/commit/de20741de7f5c541292a6c9eb0719d0724769298))
+* **grinder:** stop two silent corruptions found by audit iteration 17 ([3b4dc45](https://git.griefed.de/Griefed/ServerPackCreator/commit/3b4dc45a51849ac85f3c2d4f8df18b2197287d29))
+
 ## [9.0.0-alpha.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/9.0.0-alpha.5...9.0.0-alpha.6) (2026-08-23)
 
 ### ⚠ BREAKING CHANGES
