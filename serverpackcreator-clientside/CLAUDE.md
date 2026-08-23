@@ -156,8 +156,25 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   project whose other loader survives still pays the two extra boots first — loaders are assessed in sorted
   order (`Fabric, Forge, NeoForge, Quilt`), and nothing looks ahead. Deliberate: the extra boots also produce
   the *within*-loader answer, which is the more specific one.
+- **LANDMINE — a slug is not an identity; scratch space is owned by `(platform, slug, loader)`.**
+  `AttemptDirectory` (this module) builds `<platform>-<slug>-<loader>` and reads it back to its owner, and
+  **both halves live there because three callers must agree**: `ClientsideVerifier` (jar-scan downloads),
+  `BootVerifier` (staged packs) and the grinder's `BootWorkspaceReaper`, which decides what to *delete* from
+  the name alone. They used to agree only by separate string literals happening to match. **Why the
+  platform:** the same slug on Modrinth and on CurseForge is two projects, and in the grinder two candidates
+  ground by parallel workers (freshness is keyed `(platform, slug)` for the same reason). Staging *wipes* the
+  directory before using it and the reaper deletes it afterwards, so an unqualified name let one candidate
+  pull the server pack out from under a container the other was still booting. Measured on `creativecore`,
+  2026-08-23, two platform runs finishing 71s apart: **NeoForge 26.2.0.66 / MC 26.2 read SURVIVED (exit 137)
+  on one platform and CRASHED (exit 1) on the other** — same loader build, same Minecraft, same mod — a
+  Fabric boot exited **127** (a shell that could not find the command it was given, because the pack had
+  gone), and two re-checks came back INCONCLUSIVE on a file the other run had booted to a ready-line minutes
+  earlier. Every one of those is a boot scored as evidence about a mod when it was evidence about a deleted
+  directory, and a crash is the one outcome that reaches HIGH. Cut only the *loader* suffix when parsing —
+  slugs nest, and a prefix match would claim `creativecore-extras` for `creativecore`. Directories staged
+  before this change match no owner and are cleared by the grinder's startup `reapAll()`.
 - **Landmine — every attempt for one candidate writes the *same* `boot.log`.** Staging wipes
-  `<work>/boot/<slug>-<loader>` and re-creates it, so the loader-build re-check and each other-version boot
+  `<work>/boot/<platform>-<slug>-<loader>` and re-creates it, so the loader-build re-check and each other-version boot
   overwrite the previous console, while the *reported* verdict is usually the first crash. The grinder's
   reaper keeps exactly that one file, so the log a `HIGH` is diagnosed from would be a different boot's.
   `BootOutcome.console` + `restoreDecisiveConsole` (called at the end of `verify`) put the decided outcome's
@@ -245,7 +262,7 @@ seam (writes the log, then `BootLogClassifier` + `BootLogExcerpt`). The default
 
 ## Testing patterns
 
-- 130 tests, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
+- 134 tests, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
   JSON to a fake `HttpFetcher`; **`MetadataScannerTest` is the only one needing a resource** — it boots
   an offline `ApiWrapper` from `src/test/resources/serverpackcreator.properties` (whose `ModScanner`
   relies on the API's cached version-manifests, hence `test` `dependsOn :serverpackcreator-api:processTestResources`).

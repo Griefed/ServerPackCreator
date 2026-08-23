@@ -245,15 +245,25 @@ though their detail lives deeper:
   unknown case instead of skipping it, and `26.2` is in the default Minecraft axis so the `YY.x` scheme is exercised
   without anyone remembering to pass `SPC_GRINDER_TEMPLATE_MC`.
 - **Staging is reclaimed, not accumulated** (`BootWorkspaceReaper`). Each attempt stages a full server pack with the
-  overlaid loader libraries under `<work>/verify/boot/<slug>-<loader>` plus downloaded jars under
-  `<work>/verify/verify/<slug>-<loader>`, and staging only ever deleted a directory when that *same* `(slug, loader)`
+  overlaid loader libraries under `<work>/verify/boot/<platform>-<slug>-<loader>` plus downloaded jars under
+  `<work>/verify/verify/<platform>-<slug>-<loader>`, and staging only ever deleted a directory when that *same*
+  `(platform, slug, loader)`
   was retried — which during a catalog sweep is never. Measured 2026-07-30: **98 GB across 1750 attempt directories,
   ~23 GB/h**, enough to fill the host inside a day. The reaper strips each finished candidate's staging down to its
   `boot.log` (the verdict detail is read from it; the packs are reproducible), runs in a `finally` so a *thrown*
   verification is reclaimed too, and sweeps orphans at startup — first live startup reclaimed 8 897 MiB, taking the
-  work tree from 8.7 GB to 155 MB. **Landmine:** it is scoped to one slug on purpose, matching `<slug>-<loader>` by
-  cutting the loader suffix rather than prefix-matching the slug — workers run in parallel, and a prefix match
-  (`jei` vs `jei-extras`) would delete the pack out from under a container that is still booting it.
+  work tree from 8.7 GB to 155 MB. **Landmine:** it is scoped to one **`(platform, slug)`** on purpose, and both halves matter.
+  The names are built and parsed by `AttemptDirectory` in `-clientside` — one place, because the two verifiers
+  that *write* the name and this reaper, which decides what to *delete* from it, used to agree only by separate
+  string literals happening to match. The loader suffix is cut rather than the slug prefix-matched (`jei` vs
+  `jei-extras`), and the platform is part of the scope because **the same slug on Modrinth and CurseForge is two
+  candidates this pool grinds in parallel** — freshness is keyed `(platform, slug)` for the same reason. Reaping
+  on the bare slug deleted the other platform's pack mid-boot: measured on `creativecore`, 2026-08-23, two
+  platform runs 71s apart produced NeoForge 26.2.0.66 / MC 26.2 reading **SURVIVED on one and CRASHED on the
+  other** for the identical build, a Fabric boot exiting **127** (the shell could not find the command — the pack
+  had gone), and re-checks reading INCONCLUSIVE on a file the other run had booted to a ready-line. A crash is
+  the one outcome that reaches HIGH, so this manufactured false positives rather than merely losing runs.
+  Directories staged before the rename match no owner and are cleared by the startup `reapAll()`.
 
 and the grinder sets `$JAVA` per MC version (via the pack's `variables.txt`) from SPC's declared
 required-Java — **no Java download**, which is what keeps mod-boots runnable under `--network none`.
