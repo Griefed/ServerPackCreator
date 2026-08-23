@@ -245,16 +245,40 @@ class BootVerifier(
      * policy's preference — used by the crash re-check to re-stage on the newest build.
      */
     fun prepareBootPack(project: ProjectFiles, loader: String, loaderVersionOverride: String? = null): Prepared {
-        // Only ever boot a stable Minecraft *release* — a mod's newest file may target a pre-release
-        // (a `-pre`/`-rc`/`-snapshot` of the current version), which is unstable and a waste to boot.
-        // [minecraftAcceptable] adds the host's own constraint (e.g. the grinder's supported-Java gate).
+        val candidate = BootCandidateSelector.pickBootableCandidate(project.files, loader, bootableMinecraft(loader))
+            ?: return Prepared.Failed("No bootable file/Minecraft/loader combination for $loader.")
+        val (mainFile, minecraftVersion) = candidate
+        return stageBootPack(project, loader, mainFile, minecraftVersion, loaderVersionOverride)
+    }
+
+    /**
+     * Whether [loader] can actually be booted on a given Minecraft version. Only a stable Minecraft *release*
+     * qualifies — a mod's newest file may target a pre-release (a `-pre`/`-rc`/`-snapshot`), which is unstable
+     * and a waste to boot — AND-ed with [minecraftAcceptable] (the host's own constraint, e.g. the grinder's
+     * supported-Java gate) and the loader actually having a build. The release set is read once per call, so
+     * a selection that probes many versions does not re-read SPC's metadata for each of them.
+     */
+    private fun bootableMinecraft(loader: String): (String) -> Boolean {
         val releaseVersions = apiWrapper.versionMeta.minecraft.serverReleases().map { it.minecraftVersion }.toHashSet()
-        val candidate = BootCandidateSelector.pickBootableCandidate(project.files, loader) { minecraftVersion ->
+        return { minecraftVersion ->
             minecraftVersion in releaseVersions &&
                 minecraftAcceptable(minecraftVersion) &&
                 loaderVersionPolicy.latestVersion(loader, minecraftVersion) != null
-        } ?: return Prepared.Failed("No bootable file/Minecraft/loader combination for $loader.")
-        val (mainFile, minecraftVersion) = candidate
+        }
+    }
+
+    /**
+     * Stage one *chosen* (file, Minecraft-version) combination: download [mainFile] plus its required
+     * dependencies and generate the self-installing server pack. Split out of [prepareBootPack] so a
+     * re-check can stage a combination it picked itself instead of the newest one selection would return.
+     */
+    private fun stageBootPack(
+        project: ProjectFiles,
+        loader: String,
+        mainFile: ModFile,
+        minecraftVersion: String,
+        loaderVersionOverride: String?
+    ): Prepared {
         val loaderVersion = loaderVersionOverride
             ?: loaderVersionPolicy.preferredVersion(loader, minecraftVersion)
             ?: return Prepared.Failed("No $loader version for Minecraft $minecraftVersion.")
