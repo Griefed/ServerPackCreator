@@ -338,6 +338,45 @@ jobs:
           fi
           python3 -c 'import json;open("notes.md","w").write(json.load(open("release.json"))["body"])'
 
+      # LANDMINE - the mirror step's precondition is the mirror, NOT the API call. `target_commitish`
+      # below lets GitHub mint a tag it does not have, but only from a commit it DOES have, and a
+      # push-mirror that has stopped has delivered neither. That is how 9.0.0-alpha.7 failed: GitHub
+      # answered the release POST with a 422 listing `tag_name is not a valid tag`, `Published releases
+      # must have a valid tag` and an invalid `target_commitish`, none of which mentions the mirror, while
+      # `GET /commits/50fd50f37` returned 422 `No commit found for SHA` and GitHub's `alpha` still sat on
+      # `RELEASE: 9.0.0-alpha.6`, 69 commits behind. Probe the precondition here and name the real cause.
+      #
+      # Poll rather than fail at once: `Sync when new commits are pushed` is an OPT-IN checkbox on a
+      # Forgejo push-mirror, and without it the mirror is periodic on an interval that defaults to 8h.
+      # No release can wait that long, but one merely queued behind a large push is worth a few minutes.
+      - name: Require GitHub to have the release commit
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          set -eu
+          SHA="${{ github.sha }}"
+          API="https://api.github.com/repos/Griefed/ServerPackCreator"
+          for attempt in $(seq 1 20); do
+            STATUS="$(curl -sS -o probe.json -w '%{http_code}' "$API/commits/$SHA" \
+              -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json')"
+            if [ "$STATUS" = "200" ]; then
+              echo "GitHub has $SHA (attempt $attempt) - safe to create the release"
+              exit 0
+            fi
+            # 401/403 is the token, not the mirror. Waiting five minutes on a credential problem and
+            # then blaming the mirror is exactly the misdiagnosis this step exists to prevent.
+            if [ "$STATUS" = "401" ] || [ "$STATUS" = "403" ]; then
+              cat probe.json
+              echo "::error::GH_TOKEN was rejected with HTTP $STATUS probing $SHA - this is the credential, not the mirror. See claude-docs/CI-SECRETS.md."
+              exit 1
+            fi
+            echo "attempt $attempt/20: GitHub answered HTTP $STATUS for $SHA - waiting 15s"
+            sleep 15
+          done
+          cat probe.json
+          echo "::error::The Forgejo->GitHub push-mirror has not delivered ${{ github.sha }} after 5 minutes, so GitHub cannot mint tag ${{ github.ref_name }} and the release POST below would fail with a 422 about tag_name/target_commitish. Repair the mirror first: repo Settings -> Mirror Settings -> Synchronize Now, and READ the error it prints there. Confirm with: curl -s -o /dev/null -w '%{http_code}' ${API}/commits/${{ github.sha }} returning 200. Then re-run THIS JOB ALONE - a whole-workflow re-run would re-publish Maven and Docker for a version that is already released."
+          exit 1
+
       - name: Mirror to GitHub
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -347,31 +386,62 @@ jobs:
           # exist, defaulting to the DEFAULT BRANCH -- and git mirroring is asynchronous, so seconds after
           # the Forgejo release the tag usually has not arrived. Without this, GitHub would create a
           # `$V` tag pointing at main's HEAD, disagreeing with Forgejo and blocking the real tag later.
+          # It covers an absent TAG only; the commit it names still has to be there, which is what the
+          # step above guarantees. 9.0.0-alpha.6 is the proof it works when the mirror is current -- its
+          # GitHub release carries target_commitish f7ebba4e, not `main` as .1 through .5 do.
           V="${{ needs.prepare.outputs.version }}"
           PRE="${{ needs.prepare.outputs.prerelease }}"
+          API="https://api.github.com/repos/Griefed/ServerPackCreator"
           BODY="$(python3 -c 'import json;print(json.dumps(open("notes.md").read()))')"
-          STATUS="$(curl -sS -o created.json -w '%{http_code}' \
-            -X POST "https://api.github.com/repos/Griefed/ServerPackCreator/releases" \
-            -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
-            -d "{\"tag_name\":\"$V\",\"target_commitish\":\"${{ github.sha }}\",\"name\":\"$V\",\"body\":$BODY,\"prerelease\":$PRE}")"
-          if [ "$STATUS" -ge 400 ]; then
-            echo "::error::GitHub returned HTTP $STATUS creating release $V"
-            cat created.json
-            exit 1
+          # Reuse an existing GitHub release for this tag, exactly as the `release` job does for Forgejo,
+          # and for the same reason: re-running this job alone is the documented repair when the mirror
+          # was behind, and it is the ONLY safe repair -- a whole-workflow re-run would re-publish Maven
+          # and Docker for a version already released. Without reuse, a re-run after a half-finished
+          # asset loop dies on GitHub's `already_exists` and the release stays half-populated.
+          ID="$(curl -sS "$API/releases/tags/$V" -H "Authorization: Bearer $GH_TOKEN" \
+                | python3 -c "import json,sys;print(json.load(sys.stdin).get('id') or '')" 2>/dev/null || true)"
+          if [ -n "$ID" ]; then
+            echo "GitHub release for $V already exists ($ID) - reusing it and refreshing its notes"
+            python3 -c "import json;print(json.dumps({'body':open('notes.md').read()}))" > patch.json
+            STATUS="$(curl -sS -o patched.json -w '%{http_code}' -X PATCH "$API/releases/$ID" \
+              -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' -d @patch.json)"
+            if [ "$STATUS" -ge 400 ]; then
+              echo "::error::GitHub returned HTTP $STATUS patching release $ID"
+              cat patched.json
+              exit 1
+            fi
+          else
+            STATUS="$(curl -sS -o created.json -w '%{http_code}' \
+              -X POST "$API/releases" \
+              -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
+              -d "{\"tag_name\":\"$V\",\"target_commitish\":\"${{ github.sha }}\",\"name\":\"$V\",\"body\":$BODY,\"prerelease\":$PRE}")"
+            if [ "$STATUS" -ge 400 ]; then
+              echo "::error::GitHub returned HTTP $STATUS creating release $V"
+              cat created.json
+              exit 1
+            fi
+            ID="$(python3 -c 'import json;print(json.load(open("created.json"))["id"])')"
           fi
-          ID="$(python3 -c 'import json;print(json.load(open("created.json"))["id"])')"
+          # Names already attached, so a re-run tops up the gap instead of failing on a duplicate name.
+          curl -sS "$API/releases/$ID/assets?per_page=100" -H "Authorization: Bearer $GH_TOKEN" \
+            | python3 -c "import json,sys;print('\n'.join(a['name'] for a in json.load(sys.stdin)))" > have.txt
           for f in assets/*; do
+            NAME="$(basename "$f")"
+            if grep -qxF "$NAME" have.txt; then
+              echo "GitHub already has $NAME - skipping"
+              continue
+            fi
             STATUS="$(curl -sS -o upload.json -w '%{http_code}' -X POST \
-              "https://uploads.github.com/repos/Griefed/ServerPackCreator/releases/$ID/assets?name=$(basename "$f")" \
+              "https://uploads.github.com/repos/Griefed/ServerPackCreator/releases/$ID/assets?name=$NAME" \
               -H "Authorization: Bearer $GH_TOKEN" \
               -H 'Content-Type: application/octet-stream' \
               --data-binary "@$f")"
             if [ "$STATUS" -ge 400 ]; then
-              echo "::error::GitHub returned HTTP $STATUS uploading $(basename "$f")"
+              echo "::error::GitHub returned HTTP $STATUS uploading $NAME"
               cat upload.json
               exit 1
             fi
-            echo "GitHub <- $(basename "$f")"
+            echo "GitHub <- $NAME"
           done
 
 
