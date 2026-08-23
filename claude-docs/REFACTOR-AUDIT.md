@@ -3080,3 +3080,96 @@ all ten are about what happens on a host this machine is not.
 
 Re-verified after the changes: `shellcheck -S style` exit 0, `systemd-analyze verify` reporting only the two
 container artefacts, grinder suite **251**, zero failures.
+
+---
+
+# Audit iteration 17 — 2026-08-23 — the container-identity branch (`claude-grinder-uid-browser-properties`)
+
+Scope: `git log develop..HEAD`, ten commits. Three unrelated production defects found from a live grinder run
+plus one new endpoint. Base for the comparison is `develop` at `845fb6381`.
+
+**Method.** Read every commit's diff against the conventions; re-read the four new units in full rather than
+their diffs; ran `:serverpackcreator-grinder:test` (268, 19 skipped) and `:serverpackcreator-clientside:test`
+(90, 0 skipped), both green. Counts re-derived from `build/test-results/test/*.xml` of that run.
+
+## HIGH
+
+None. No behaviour change is hidden inside a `refactor:`, no module boundary is crossed (`-grinder` and
+`-clientside` gained nothing pointing outward; the new endpoint reads `ApiWrapper` in the composition root only),
+and nothing `serverpackcreator-api` exports changed shape or behaviour.
+
+## MEDIUM
+
+- **M1 — `012211dd0` is labelled `docs(grinder)` and carries a production signature change.**
+  `container/ContainerUser.kt:60` loses its default argument (`override: String? = System.getenv(ENV_KEY)` →
+  `override: String?`) and the read moves to `GrinderApplication.kt:88`. Behaviour is preserved, so this is a
+  *pure refactor* mislabelled as documentation, not a behaviour change in disguise — but it is exactly the
+  "one concern per commit" violation the conventions single out, and the file's own precedent (`358675fbf`) is
+  explicit that the remedy is cheap before a merge and unfixable after. The branch is unpushed, so it is still
+  cheap. **Fix:** split the two-file code change out of the docs commit.
+
+- **M2 — `9df60fca8` changes three behaviours and pins one.** `BrowserDownloader.kt` swallows the download
+  abort (pinned by `isDownloadAbort`), *and* switches both navigations from Playwright's default `load` to
+  `DOMCONTENTLOADED`, *and* raises the 30s default to a configurable 60s. The latter two have no guard of any
+  kind. Grouping related behaviour changes is allowed; leaving two of them unpinned is not. The repo already
+  has the technique for a join no test can execute — `ReportBindWiringTest` asserts against `main`'s own
+  source text — and the same applies here, since exercising the options needs a live Chromium.
+
+- **M3 — `6be42c479` leaves the endpoint's production wiring unpinned.** `ReportServerTest` supplies its own
+  `fallbackLists` lambda, so nothing asserts that `GrinderApplication.kt:186` hands the endpoint SPC's *real*
+  `clientsideMods`/`modsWhitelist`. This is the identical gap `ReportBindWiringTest` was written to close for
+  `SPC_GRINDER_HOST`: the endpoint could be wired to an empty list and every test would stay green while every
+  polling client silently received nothing.
+
+- **M4 — a comma inside an entry silently corrupts the published list.**
+  `report/FallbackPropertiesRenderer.kt:124` passes character 44 through verbatim (it is inside the printable
+  range), and the consumer — `UpdateConfig.updateFallback` — does `newBlacklist.split(",")`. One stem
+  containing a comma therefore arrives at every client as two bogus entries, each of which is a `startsWith`
+  matcher against real mod filenames. Filenames may legally contain commas, and `FilenameStemDeriver` derives
+  stems straight from them, so this is reachable without anything unusual happening. Silent at both ends.
+
+- **M5 — a malformed `SPC_GRINDER_CONTAINER_USER` is discarded without a word.**
+  `container/ContainerUser.kt:63` requires `\d+:\d+`, and anything else (`1000`, `grinder:grinder`, a stray
+  quote) falls through to the directory owner. That is the right *behaviour* — a nonsense identity must not
+  reach Docker — but an operator who deliberately set the variable gets no signal that it was ignored, on the
+  one knob whose whole purpose is overriding a resolution that has already gone wrong once.
+
+## LOW
+
+- **L1 — `report/FallbackPropertiesRenderer.kt:118` is clever where it should be plain.**
+  `appendLine("…$separator\\".removeSuffix(if (index == entries.lastIndex) "\\" else ""))` appends a
+  continuation backslash and then removes it again for the last entry. Correct, but the reader has to simulate
+  it; the same `index == entries.lastIndex` test is asked twice in one expression.
+
+- **L2 — the charset branch added to `ReportServer.respond` cannot be reached.**
+  `report/ReportServer.kt:141` picks ISO-8859-1 when the content-type says so, but
+  `FallbackPropertiesRenderer.escape` maps every character outside 32..126 to `\uXXXX`, so the rendered
+  document is pure ASCII and both encodings produce identical bytes. The *declared* charset in the header is
+  load-bearing and must stay; the branching is a mechanism that can never do anything, in a helper every
+  endpoint shares.
+
+- **L3 — `report/FallbackPropertiesRenderer.kt:79,96` normalise the same collections twice**, once for the
+  header's counts and once to render. Harmless at this size, but it means two sources of truth for "how many
+  entries are we publishing".
+
+- **L4 — `loader/InstallFailureDiagnosisTest.kt:60` uses `!!`** after an `assertNotNull`. Test code, but the
+  convention says no new non-null assertions, and `assertNotNull` returns the narrowed value.
+
+- **L5 — fully-qualified names where an import belongs.**
+  `loader/InstallFailureDiagnosisTest.kt:66` writes `de.griefed.serverpackcreator.grinder.container.ContainerUser.ENV_KEY`
+  inline, and `report/ReportServerTest.kt` constructs `java.util.Properties()` the same way.
+
+## Verified clean — do not re-litigate
+
+- **Pin-before-fix boundaries hold on all four units.** `29644191d`, `5ecf8cdc9`, `a43573563` and `47f991719`
+  each land red on their own and are followed by the change; each red state was observed (compile failure on
+  the missing unit) before committing.
+- **`de20741de` is correctly labelled `fix:`,** and its `ContainerEngine.kt` edit is documentation of the
+  parameter it changes the meaning of — within the commit's stated scope, not sprawl.
+- **`8ec7440f5` does not guess.** `InstallFailureDiagnosis.of` returns `null` for a console it cannot explain,
+  and that is pinned, so the raw tail stays the fallback rather than being replaced by a confident invention.
+- **The confidence floor on `/as-properties` is pinned in both directions** — HIGH published,
+  MEDIUM/LOW/INCONCLUSIVE and a null `suggestedEntry` excluded — and the document is verified by *parsing* it
+  with `java.util.Properties`, which is what the consumer does, rather than by asserting on its shape.
+- **No `-api` behaviour changed,** so `claude-docs/API-BEHAVIOUR-CHANGES.md` correctly gains no row. `-grinder`
+  and `-clientside` are unpublished, so their signature changes carry no compatibility obligation.
