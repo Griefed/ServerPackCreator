@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder
 
+import de.griefed.serverpackcreator.grinder.container.MAX_PARALLEL_STOPS
 import de.griefed.serverpackcreator.grinder.container.SHUTDOWN_GRACE
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -79,15 +80,16 @@ internal class ShutdownWiringTest {
 
     /**
      * The unit's stop timeout must outlast the cleanup, or systemd's SIGKILL lands *during* the very work that
-     * prevents orphaned containers. The arithmetic is the unit's own: the window is per container and stops run
-     * eight at a time, so a full complement of workers costs `ceil(workers / 8) * grace`, plus removal and JVM
-     * exit. Checked against a generous worker count rather than the default, because raising SPC_GRINDER_WORKERS
-     * is the normal thing to do and nothing else would catch it.
+     * prevents orphaned containers. The arithmetic is the unit's own: stops run concurrently up to
+     * [MAX_PARALLEL_STOPS], so the container phase costs `ceil(workers / cap) * grace` — one window for any
+     * worker count at or below the cap, which is every realistic deployment. Checked against a generous worker
+     * count rather than the default, because raising SPC_GRINDER_WORKERS is the normal thing to do and nothing
+     * else would catch it.
      */
     @Test
     fun theUnitAllowsEnoughTimeForTheCleanupItDependsOn() {
         val workers = 16L
-        val batches = ceil(workers / 8.0).toLong()
+        val batches = ceil(workers.toDouble() / MAX_PARALLEL_STOPS).toLong()
         val cleanupSeconds = batches * SHUTDOWN_GRACE.seconds
 
         Assertions.assertTrue(
@@ -132,14 +134,16 @@ internal class ShutdownWiringTest {
     fun theWorkersGetTheRemainderOfTheWindowRatherThanASecondOne() {
         val body = grinderMainBody()
 
-        Assertions.assertFalse(
-            body.contains("awaitStop(SHUTDOWN_GRACE)"),
-            "awaitStop is handed the full window after close() may already have spent it, making the real " +
-                "worst case two windows while everything documented promises one"
+        Assertions.assertTrue(body.contains("awaitStop("), "main() no longer waits for the workers at all")
+        // Positive, not "does not contain awaitStop(SHUTDOWN_GRACE)": an absence passes for any spelling that
+        // is not that exact string, so a rewrite could reintroduce the second window under another name.
+        Assertions.assertTrue(
+            body.contains("val deadline = System.currentTimeMillis() + SHUTDOWN_GRACE"),
+            "the hook must take a deadline at entry, or the two halves cannot share one window"
         )
         Assertions.assertTrue(
-            body.contains("awaitStop("),
-            "main() no longer waits for the workers at all"
+            Regex("""awaitStop\(\s*remaining\s*\)""").containsMatchIn(body),
+            "awaitStop must be handed what is left of the shared window, not a window of its own"
         )
     }
 
