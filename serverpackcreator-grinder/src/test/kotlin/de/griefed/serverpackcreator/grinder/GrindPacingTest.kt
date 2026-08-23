@@ -82,4 +82,34 @@ internal class GrindPacingTest {
 
         Assertions.assertEquals(Duration.ZERO, pause)
     }
+
+    /**
+     * **The inter-pass wait has to end early when work is queued.**
+     *
+     * `pauseAfterPass` returns `betweenSweeps` — default `SPC_GRINDER_INTERVAL`, 21 600 s — after a completed
+     * sweep that verified nothing. Sleeping that in one call means an operator who queues a re-grind into a
+     * just-dozed daemon waits up to six hours, and the queue exists precisely so a known-wrong verdict is not
+     * served while a timer runs down. Trading a 30-day TTL for a 6-hour one is better and still not what was
+     * built.
+     *
+     * Pinned as the pure decision — how long to wait *before looking again* — so no test has to sleep.
+     */
+    @Test
+    fun theWaitIsSlicedSoQueuedWorkIsNoticedLongBeforeItEnds() {
+        val sixHours = Duration.ofHours(6)
+
+        Assertions.assertTrue(
+            GrindPacing.pollInterval(sixHours) <= Duration.ofSeconds(30),
+            "a six-hour pause must be looked at far more often than once"
+        )
+        Assertions.assertEquals(
+            Duration.ofSeconds(5),
+            GrindPacing.pollInterval(Duration.ofSeconds(5)),
+            "a pause shorter than the slice is simply the pause — never round it up"
+        )
+        Assertions.assertTrue(
+            GrindPacing.pollInterval(Duration.ZERO).isZero,
+            "no pause, nothing to slice"
+        )
+    }
 }

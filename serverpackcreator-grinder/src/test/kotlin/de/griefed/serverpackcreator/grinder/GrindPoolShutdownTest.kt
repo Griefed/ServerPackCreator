@@ -199,4 +199,49 @@ internal class GrindPoolShutdownTest {
         holdOn.countDown()
     }
 
+    /**
+     * **A stop landing in the re-grind drain must not be followed by a fresh catalog pass.**
+     *
+     * The drain gave the pass loop a *second* `GrindPool`, and the shutdown hook holds exactly one handle
+     * (`activePool`), read once — deliberately, since reading it twice could signal one pool and wait on
+     * another. So without a `running` check between the two pools, a stop during a drain is signalled,
+     * awaited and reported clean, and then `main` builds a new pool and starts new containers *after* the
+     * hook has finished, with systemd's `TimeoutStopSec` already counting down. Containers live in the docker
+     * daemon's cgroup rather than the unit's, so the hook is the only thing that can ever stop them.
+     *
+     * Asserted against `main`'s own source, in the same idiom as the other entry-point guards: the loop needs
+     * an ApiWrapper, Docker and a report port to run, and none of that is needed to know the check is there.
+     */
+    @Test
+    fun theCatalogPassIsNotStartedWhenAStopArrivedDuringTheDrain() {
+        val body = grinderMainBody()
+        val drain = body.indexOf("requeue.drain()")
+        Assertions.assertTrue(drain > 0, "main() no longer drains the re-grind queue")
+        val nextBatch = body.indexOf("crawler.nextBatch()", drain)
+        Assertions.assertTrue(nextBatch > drain, "main() no longer takes a catalog batch after the drain")
+
+        val between = body.substring(drain, nextBatch)
+        Assertions.assertTrue(
+            between.contains("running.get()"),
+            "the pass loop must re-check `running` between the re-grind drain and the catalog batch: the " +
+                "shutdown hook reads activePool once, so a stop during the drain would otherwise be followed " +
+                "by a whole new pool of boots the hook has already stopped waiting for"
+        )
+    }
+
+    /**
+     * The pass's live size has to include what the drain is grinding, or `/status` answers "what is it doing
+     * right now?" with the *previous* pass's number and size for the whole drain — during the one operation
+     * an operator is most likely to be watching.
+     */
+    @Test
+    fun theLivePassCountsTheRequeuedCandidatesToo() {
+        val body = grinderMainBody()
+        val beginPass = body.indexOf("status.beginPass(")
+        Assertions.assertTrue(beginPass > 0, "main() no longer reports a pass to /status")
+        Assertions.assertTrue(
+            beginPass < body.indexOf("requeue.drain()"),
+            "the pass must be announced *before* the drain, or /status shows the previous pass throughout it"
+        )
+    }
 }
