@@ -119,9 +119,13 @@ object FallbackPropertiesRenderer {
             .distinct()
             .sortedBy { it.lowercase() }
 
-    /** How many of [entries] this format cannot carry, for the document to admit rather than silently swallow. */
+    /**
+     * How many *distinct* entries this format cannot carry, for the document to admit rather than silently
+     * swallow. De-duplicated to match [normalise]: one mod appearing on three loaders is one dropped entry,
+     * and a count that says three would send a reader looking for two entries that do not exist.
+     */
     private fun unrepresentable(entries: Collection<String>): Int =
-        entries.count { it.trim().isNotEmpty() && it.contains(',') }
+        entries.map { it.trim() }.filter { it.isNotEmpty() && it.contains(',') }.distinct().size
 
     /**
      * Append one `key=` line with its comma-separated [entries] spread over continuation lines. An empty

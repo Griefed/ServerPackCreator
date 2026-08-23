@@ -2123,3 +2123,23 @@ strips a mod out of every server pack built against the list, so only a crash-pr
 encoding details are load-bearing and pinned by *parsing* the output with `java.util.Properties` rather than
 asserting on its shape: the consumer decodes ISO-8859-1, so entries are `\uXXXX`-escaped and this one endpoint
 does not answer UTF-8; and rendering is order-stable, so a poll that sees a difference has seen a real change.
+
+Three audit passes followed (iterations 17–19). The first found a code change riding inside a `docs:` commit
+and two joins with no guard at all — the browser's navigation options, and the wiring that feeds
+`/as-properties` SPC's real lists — plus two silent corruptions: an entry containing a comma, which the
+consumer's `split(",")` turns into two bogus prefix-matchers, and a malformed `SPC_GRINDER_CONTAINER_USER`
+being discarded without a word on the one knob whose purpose is overriding a resolution that already went
+wrong once.
+
+The second pass replaced the endpoint's *model* of its consumer with the consumer: `FallbackPropertiesConsumerTest`
+points a real `UpdateConfig.updateFallback` at a running `ReportServer` over loopback and checks the entries
+land in `GenerationConfig.clientsideMods`. Teeth verified by dropping the continuation backslash, which
+collapses the whole list to `[, entityculling-]`. It also recorded what this workstation *cannot* answer: with
+a named volume chowned to `1001:1001`, a root container reads it back as `1001:1001` while a `--user 1001:1001`
+container reads the same inode as `0:0` — Docker Desktop's id remapping, not kernel DAC, so neither the bug nor
+the fix reproduces here. The two-command check for the Linux host is in the audit rather than a claim of
+verification.
+
+Equivalence against the base was checked the usual way — `develop`'s unmodified test tree run against this
+branch's production code: **339 pre-existing guards, zero failures, zero compile errors**, so every signature
+gained a default and nothing existing changed shape.

@@ -64,8 +64,6 @@ class BrowserDownloader(
             targetDirectory.mkdirs()
             val destination = File(targetDirectory, modFile.fileName)
             newPage().use { page ->
-                // DOMCONTENTLOADED, not the default `load`: a CurseForge project page keeps fetching ads and
-                // trackers long after it is usable, and waiting for `load` turns a working page into a timeout.
                 page.navigate(pageUrl, navigationOptions())
                 // CurseForge auto-initiates the file-download on the `/download` page; navigating
                 // there inside waitForDownload captures the resulting transfer.
