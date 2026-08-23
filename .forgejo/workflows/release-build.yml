@@ -338,6 +338,45 @@ jobs:
           fi
           python3 -c 'import json;open("notes.md","w").write(json.load(open("release.json"))["body"])'
 
+      # LANDMINE - the mirror step's precondition is the mirror, NOT the API call. `target_commitish`
+      # below lets GitHub mint a tag it does not have, but only from a commit it DOES have, and a
+      # push-mirror that has stopped has delivered neither. That is how 9.0.0-alpha.7 failed: GitHub
+      # answered the release POST with a 422 listing `tag_name is not a valid tag`, `Published releases
+      # must have a valid tag` and an invalid `target_commitish`, none of which mentions the mirror, while
+      # `GET /commits/50fd50f37` returned 422 `No commit found for SHA` and GitHub's `alpha` still sat on
+      # `RELEASE: 9.0.0-alpha.6`, 69 commits behind. Probe the precondition here and name the real cause.
+      #
+      # Poll rather than fail at once: `Sync when new commits are pushed` is an OPT-IN checkbox on a
+      # Forgejo push-mirror, and without it the mirror is periodic on an interval that defaults to 8h.
+      # No release can wait that long, but one merely queued behind a large push is worth a few minutes.
+      - name: Require GitHub to have the release commit
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          set -eu
+          SHA="${{ github.sha }}"
+          API="https://api.github.com/repos/Griefed/ServerPackCreator"
+          for attempt in $(seq 1 20); do
+            STATUS="$(curl -sS -o probe.json -w '%{http_code}' "$API/commits/$SHA" \
+              -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json')"
+            if [ "$STATUS" = "200" ]; then
+              echo "GitHub has $SHA (attempt $attempt) - safe to create the release"
+              exit 0
+            fi
+            # 401/403 is the token, not the mirror. Waiting five minutes on a credential problem and
+            # then blaming the mirror is exactly the misdiagnosis this step exists to prevent.
+            if [ "$STATUS" = "401" ] || [ "$STATUS" = "403" ]; then
+              cat probe.json
+              echo "::error::GH_TOKEN was rejected with HTTP $STATUS probing $SHA - this is the credential, not the mirror. See claude-docs/CI-SECRETS.md."
+              exit 1
+            fi
+            echo "attempt $attempt/20: GitHub answered HTTP $STATUS for $SHA - waiting 15s"
+            sleep 15
+          done
+          cat probe.json
+          echo "::error::The Forgejo->GitHub push-mirror has not delivered ${{ github.sha }} after 5 minutes, so GitHub cannot mint tag ${{ github.ref_name }} and the release POST below would fail with a 422 about tag_name/target_commitish. Repair the mirror first: repo Settings -> Mirror Settings -> Synchronize Now, and READ the error it prints there. Confirm with: curl -s -o /dev/null -w '%{http_code}' ${API}/commits/${{ github.sha }} returning 200. Then re-run THIS JOB ALONE - a whole-workflow re-run would re-publish Maven and Docker for a version that is already released."
+          exit 1
+
       - name: Mirror to GitHub
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -347,31 +386,62 @@ jobs:
           # exist, defaulting to the DEFAULT BRANCH -- and git mirroring is asynchronous, so seconds after
           # the Forgejo release the tag usually has not arrived. Without this, GitHub would create a
           # `$V` tag pointing at main's HEAD, disagreeing with Forgejo and blocking the real tag later.
+          # It covers an absent TAG only; the commit it names still has to be there, which is what the
+          # step above guarantees. 9.0.0-alpha.6 is the proof it works when the mirror is current -- its
+          # GitHub release carries target_commitish f7ebba4e, not `main` as .1 through .5 do.
           V="${{ needs.prepare.outputs.version }}"
           PRE="${{ needs.prepare.outputs.prerelease }}"
+          API="https://api.github.com/repos/Griefed/ServerPackCreator"
           BODY="$(python3 -c 'import json;print(json.dumps(open("notes.md").read()))')"
-          STATUS="$(curl -sS -o created.json -w '%{http_code}' \
-            -X POST "https://api.github.com/repos/Griefed/ServerPackCreator/releases" \
-            -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
-            -d "{\"tag_name\":\"$V\",\"target_commitish\":\"${{ github.sha }}\",\"name\":\"$V\",\"body\":$BODY,\"prerelease\":$PRE}")"
-          if [ "$STATUS" -ge 400 ]; then
-            echo "::error::GitHub returned HTTP $STATUS creating release $V"
-            cat created.json
-            exit 1
+          # Reuse an existing GitHub release for this tag, exactly as the `release` job does for Forgejo,
+          # and for the same reason: re-running this job alone is the documented repair when the mirror
+          # was behind, and it is the ONLY safe repair -- a whole-workflow re-run would re-publish Maven
+          # and Docker for a version already released. Without reuse, a re-run after a half-finished
+          # asset loop dies on GitHub's `already_exists` and the release stays half-populated.
+          ID="$(curl -sS "$API/releases/tags/$V" -H "Authorization: Bearer $GH_TOKEN" \
+                | python3 -c "import json,sys;print(json.load(sys.stdin).get('id') or '')" 2>/dev/null || true)"
+          if [ -n "$ID" ]; then
+            echo "GitHub release for $V already exists ($ID) - reusing it and refreshing its notes"
+            python3 -c "import json;print(json.dumps({'body':open('notes.md').read()}))" > patch.json
+            STATUS="$(curl -sS -o patched.json -w '%{http_code}' -X PATCH "$API/releases/$ID" \
+              -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' -d @patch.json)"
+            if [ "$STATUS" -ge 400 ]; then
+              echo "::error::GitHub returned HTTP $STATUS patching release $ID"
+              cat patched.json
+              exit 1
+            fi
+          else
+            STATUS="$(curl -sS -o created.json -w '%{http_code}' \
+              -X POST "$API/releases" \
+              -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
+              -d "{\"tag_name\":\"$V\",\"target_commitish\":\"${{ github.sha }}\",\"name\":\"$V\",\"body\":$BODY,\"prerelease\":$PRE}")"
+            if [ "$STATUS" -ge 400 ]; then
+              echo "::error::GitHub returned HTTP $STATUS creating release $V"
+              cat created.json
+              exit 1
+            fi
+            ID="$(python3 -c 'import json;print(json.load(open("created.json"))["id"])')"
           fi
-          ID="$(python3 -c 'import json;print(json.load(open("created.json"))["id"])')"
+          # Names already attached, so a re-run tops up the gap instead of failing on a duplicate name.
+          curl -sS "$API/releases/$ID/assets?per_page=100" -H "Authorization: Bearer $GH_TOKEN" \
+            | python3 -c "import json,sys;print('\n'.join(a['name'] for a in json.load(sys.stdin)))" > have.txt
           for f in assets/*; do
+            NAME="$(basename "$f")"
+            if grep -qxF "$NAME" have.txt; then
+              echo "GitHub already has $NAME - skipping"
+              continue
+            fi
             STATUS="$(curl -sS -o upload.json -w '%{http_code}' -X POST \
-              "https://uploads.github.com/repos/Griefed/ServerPackCreator/releases/$ID/assets?name=$(basename "$f")" \
+              "https://uploads.github.com/repos/Griefed/ServerPackCreator/releases/$ID/assets?name=$NAME" \
               -H "Authorization: Bearer $GH_TOKEN" \
               -H 'Content-Type: application/octet-stream' \
               --data-binary "@$f")"
             if [ "$STATUS" -ge 400 ]; then
-              echo "::error::GitHub returned HTTP $STATUS uploading $(basename "$f")"
+              echo "::error::GitHub returned HTTP $STATUS uploading $NAME"
               cat upload.json
               exit 1
             fi
-            echo "GitHub <- $(basename "$f")"
+            echo "GitHub <- $NAME"
           done
 
 
@@ -439,3 +509,90 @@ jobs:
           curl -sf -X PATCH "$API/releases/$RELEASE_ID" -H "Authorization: token $TOKEN" \
             -H 'Content-Type: application/json' -d @patch.json > /dev/null
           echo "Release notes updated"
+
+  news:
+    name: "News on Discord"
+    # Recreated from `main`'s `github_release.yml` and `github-prerelease.yml`, which carried a `news` job
+    # each, differing only in the words "release" and "Pre-Release". `prepare.outputs.prerelease` chooses
+    # between them here, so this is one job rather than two near-identical workflows.
+    #
+    # It announces the FORGEJO release -- the canonical one -- and therefore deliberately does NOT need
+    # `mirror`: a stalled push-mirror must not silence the announcement of a release that is complete
+    # here, and `mirror` is the job that failed on BOTH releases of 2026-08-23. It does wait for `maven`
+    # and `docker`, on the same reasoning `mirror` gives for its own `needs`: nobody should be pointed at
+    # a release whose artifacts and images do not exist yet. `virustotal` is left out because its own
+    # failures are explicitly tolerated and this announcement does not reproduce the release notes.
+    needs: [prepare, release, maven, docker]
+    runs-on: ubuntu-latest
+    steps:
+
+      # Two findings against the original are fixed by construction rather than carried across.
+      # WORKFLOW-AUDIT.md M6: it `curl`ed ChaoticWeg/discord.sh's *master* and executed it, which is
+      # remote-code-execution-by-trust for what is only a JSON builder -- so the payload is built the way
+      # qodana.yml already builds its own. M4: the deprecated `::set-output` disappears along with the
+      # separate date step that fed it. Every value reaches python through `env:` rather than being
+      # interpolated into the shell, per WORKFLOW-AUDIT.md L2.
+      - name: Post to Discord
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+          PRERELEASE: ${{ needs.prepare.outputs.prerelease }}
+          REPOSITORY: ${{ github.repository }}
+          SERVER_URL: ${{ github.server_url }}
+        run: |
+          # A missing webhook is fine and exits cleanly; a webhook that IS configured and then fails to
+          # accept the post is a real failure and must not be swallowed -- hence set -e after the guard,
+          # exactly as in qodana.yml's post.
+          if [ -z "${WEBHOOK_URL:-}" ]; then
+            echo "No WEBHOOK_URL configured - skipping"
+            exit 0
+          fi
+          set -eu
+          export RELEASED_AT="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          cat > news.py <<'NEWS_PY'
+          import json, os
+
+          version = os.environ["VERSION"]
+          repository = os.environ["REPOSITORY"]
+          server = os.environ["SERVER_URL"].rstrip("/")
+          # `prepare` writes exactly "true" or "false" and refuses any tag that is neither shape, so this
+          # comparison cannot silently mis-class a release.
+          prerelease = os.environ["PRERELEASE"] == "true"
+          noun = "pre-release" if prerelease else "release"
+          headline = "Pre-Release" if prerelease else "Release"
+          url = f"{server}/{repository}/releases/tag/{version}"
+          sentence = (f"There's been a new {noun} for {repository}. "
+                      f"The new version is {version} and is available at")
+          payload = {
+              "username": repository,
+              "avatar_url": "https://git.griefed.de/Griefed/ServerPackCreator/raw/branch/main/img/prosper.png",
+              # The angle brackets suppress Discord's own link unfurl in the message body, as the
+              # original did -- the embed below is the preview.
+              "content": f"{sentence} <{url}>",
+              "embeds": [{
+                  "title": f"New {repository} {headline}",
+                  "description": f"{sentence} {url}",
+                  "url": url,
+                  "color": 12648430,  # 0xC0FFEE, the colour used on main
+                  "author": {
+                      "name": "Griefed",
+                      "url": f"{server}/Griefed",
+                      "icon_url": "https://www.griefed.de/img/sam_icon.c4ec5b56.webp",
+                  },
+                  "thumbnail": {"url": "https://git.griefed.de/Griefed/ServerPackCreator/raw/branch/main/img/app_128x128.png"},
+                  "fields": [
+                      {"name": "Author", "value": f"[Griefed]({server}/Griefed)", "inline": True},
+                      # Was "GitHub". Forgejo is where the release lives now and what `url` points at.
+                      {"name": "Platform", "value": f"[Forgejo]({server})", "inline": True},
+                  ],
+                  "footer": {
+                      "text": f"Released at {os.environ['RELEASED_AT']}",
+                      "icon_url": "https://git.griefed.de/Griefed/ServerPackCreator/ra",
+                  },
+              }],
+          }
+          print(json.dumps(payload))
+          NEWS_PY
+          python3 news.py > payload.json
+          curl -sf -X POST -H 'Content-Type: application/json' -d @payload.json "$WEBHOOK_URL" > /dev/null
+          echo "Announced $VERSION at $SERVER_URL/$REPOSITORY/releases/tag/$VERSION"

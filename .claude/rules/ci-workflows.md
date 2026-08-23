@@ -87,6 +87,64 @@ mint the tag from, and **that repository has neither** — the tag names a versi
 anything there, and the SHA has never existed there. The step's own comment anticipated the 404 and added `ref` to fix it, which was the
 right fix for a mirror that is merely *behind* and useless for one that is *stopped*.
 
+**The concrete instance is run `222` (`9.0.0-alpha.6`), job `Mirror release outward`, and its log is the
+proof — plus a trap worth knowing.** That job mirrored **all twelve assets to GitHub successfully**, and
+only then died:
+
+```
+10:02:09Z  GitHub <- updates.xml          <- the last of 12, all fine
+10:02:11Z  ⚙️ [runner]: exitcode '22': failure
+```
+
+`22` is curl's `--fail`, and the step that produced it was `Mirror to GitLab.com`, present at that tag
+(`git show 9.0.0-alpha.6:.forgejo/workflows/release-build.yml` has it) and deleted two and a half hours
+later by *fix(ci): drop the gitlab.com release mirror, and stop curl hiding why*. So **alpha.6 needs no
+repair and the failure cannot recur** — the step is gone.
+
+**The trap: a red `mirror` job does not mean an incomplete GitHub release.** Verified for alpha.6 against
+both APIs — 12/12 assets present with matching sizes, an identical 41,275-char body including the
+VirusTotal section, `target_commitish` `f7ebba4e`, `prerelease: true`. Red CI, complete release. Check the
+release before repairing one, or you will "fix" something that was never broken. It also means the run
+list alone cannot tell these two failures apart: **`9.0.0-alpha.6` and `9.0.0-alpha.7` both show exactly
+one red job, `Mirror release outward`, attempt 1, and they failed for completely unrelated reasons** — the
+deleted GitLab step versus the stalled mirror below. Read the job log (`GET
+/api/v1/repos/{owner}/{repo}/actions/jobs/{job_id}/logs`, which works anonymously on a public repo and is
+the fastest way in) and distinguish them by exit code: `22` is the old GitLab step, `1` is the `::error::`
+the GitHub steps now emit. Note the API's run id is **not** the number in the run's URL — that is
+`index_in_repo` (`222` → id `252`, `272` → id `311`), so `/actions/runs/222` 404s.
+
+**It then happened to GitHub, on 9.0.0-alpha.7 (2026-08-23, run `272`) — so this is a class, not a
+GitLab story. This is a DIFFERENT failure from alpha.6's above, despite looking identical in the run
+list.**
+The `mirror` job died on a GitHub `422` naming three fields at once: `tag_name is not a valid tag`,
+`Published releases must have a valid tag`, and an invalid `target_commitish`. All three are one cause with
+three symptoms. GitHub did not have the release commit: `GET /commits/50fd50f37` answered `422 No commit
+found for SHA`, GitHub's `alpha` still sat on `f7ebba4e` (`RELEASE: 9.0.0-alpha.6`, 69 commits behind), and
+`pushed_at` was five hours older than the tag. With no commit there is nothing to mint the tag from, so
+`target_commitish` is rejected, and a release with no tag is rejected in turn. **Nothing was wrong with the
+workflow** — the Forgejo release was complete and correct (id 1730, 12 assets, the VirusTotal section
+present, the tag on the right commit), and `9.0.0-alpha.6` is standing proof the same code works when the
+mirror is current: its GitHub release carries `target_commitish` `f7ebba4e`, where `.1` through `.5` carry
+`main`.
+
+Note what this costs in reading time: GitHub's 422 is about `tag_name`, so it sends you to the tag, the
+changelog and the release payload — three places that were all fine. `release-build.yml` now probes
+`GET /commits/${{ github.sha }}` before the POST and polls for five minutes, because a push-mirror's
+`Sync when new commits are pushed` is an **opt-in** checkbox and without it the mirror is periodic on an
+interval that [defaults to 8h](https://forgejo.org/docs/v15.0/user/repo-mirror/); it then fails naming the
+mirror, and treats `401`/`403` as the credential rather than waiting five minutes to blame the wrong thing.
+
+**Nothing else in the release should be gated on the mirror.** The `news` job — the Discord
+announcement recreated from `main`'s `github_release.yml`/`github-prerelease.yml` — needs
+`[prepare, release, maven, docker]` and pointedly **not** `mirror`, because it announces the Forgejo
+release, which is complete and correct in both incidents above. Gating it on the mirror would have
+silenced the announcement of two perfectly good releases.
+
+**Repairing one is per-job, not per-workflow.** Re-running the whole run would re-execute `maven` and
+`docker` for a version already published — `closeAndReleaseSonatypeStagingRepository` plus three registries
+that reject a re-published version. Only `release` is idempotent by design. Forgejo 16.0.3 can re-run a
+single job, so repair the mirror, then re-run `mirror` alone.
+
 Two things generalise beyond GitLab:
 
 - **A mirror step's precondition is the mirror, not the API call.** Before adding or restoring one, check the
@@ -150,4 +208,5 @@ The rule that follows regardless: **push the tag with git first, then create the
 that already exists.** Passing a branch as `target_commitish` for a release that has a real commit is
 how five tags ended up 300-odd commits away from the code they name. Note the mirror job already gets
 this right for the GitHub side — it passes `target_commitish: ${{ github.sha }}` precisely because the
-tag has usually not mirrored across yet.
+tag has usually not mirrored across yet. That covers an absent **tag** only: the commit it names still has
+to be present, which is why the job now probes for it first (see above).
