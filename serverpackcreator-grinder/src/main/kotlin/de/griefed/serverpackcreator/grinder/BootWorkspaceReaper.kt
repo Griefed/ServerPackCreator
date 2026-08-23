@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.grinder
 
+import de.griefed.serverpackcreator.clientside.AttemptDirectory
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 
@@ -40,12 +41,21 @@ class BootWorkspaceReaper(private val workDirectory: File) {
 
     /**
      * Reclaim the staging of one finished candidate, across every loader it was attempted on. Scoped to the given
-     * slug on purpose: workers run in parallel, and deleting another candidate's directory would pull the server
-     * out from under a container that is still booting it.
+     * `(platform, slug)` on purpose: workers run in parallel, and deleting another candidate's directory would pull
+     * the server out from under a container that is still booting it.
+     *
+     * **The platform is half of the scope, not decoration.** The same slug on Modrinth and on CurseForge is two
+     * candidates — verdict freshness is keyed that way for the same reason — and they are ground concurrently.
+     * Reaping by slug alone deleted the other platform's pack mid-boot, which is what produced `creativecore`'s
+     * exit-127 Fabric boot and its NeoForge 26.2 run reading SURVIVED on one platform and CRASHED on the other
+     * (2026-08-23).
      *
      * @return Bytes freed, for the caller to log.
      */
-    fun reap(slug: String): Long = reapMatching("candidate '$slug'") { it.attemptSlug() == slug }
+    fun reap(platform: String, slug: String): Long {
+        val owner = AttemptDirectory.ownerKey(platform, slug)
+        return reapMatching("candidate '$platform/$slug'") { AttemptDirectory.ownerOf(it.name) == owner }
+    }
 
     /**
      * Sweep every attempt directory found, for use at startup. A run killed mid-boot leaves staging that no
@@ -91,13 +101,6 @@ class BootWorkspaceReaper(private val workDirectory: File) {
         }
         return reclaimed
     }
-
-    /**
-     * The candidate slug an attempt directory belongs to. Directories are named `<slug>-<loader>`, and slugs nest
-     * (`jei` vs `jei-extras`), so the loader suffix is cut off rather than the slug prefix-matched — a prefix match
-     * would reap a different, possibly in-flight, project.
-     */
-    private fun File.attemptSlug(): String = name.substringBeforeLast('-')
 
     /** Total size of a file, or of every file beneath a directory. */
     private fun File.sizeRecursively(): Long =

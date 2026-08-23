@@ -48,6 +48,41 @@ internal class ReportServerTest {
     private fun get(port: Int, path: String) = HttpClient.newHttpClient()
         .send(HttpRequest.newBuilder(URI.create("http://127.0.0.1:$port$path")).build(), BodyHandlers.ofString())
 
+    /**
+     * The crash console a HIGH verdict was reached from, served by name so the overview can link it. The
+     * name is untrusted input off a query string, so the traversal case is pinned in the same test as the
+     * happy path — they are the same code path with different input.
+     */
+    @Test
+    fun servesAKeptCrashLogAndRefusesToEscapeItsStore(@TempDir logDir: File) {
+        val secret = File(logDir.parentFile, "secret.txt").apply { writeText("not yours") }
+        val crashLogs = CrashLogStore(logDir)
+        crashLogs.keep(
+            ModPlatforms.MODRINTH, "creativecore", "Fabric",
+            File(logDir.parentFile, "staged.log").apply {
+                writeText("java.lang.NoClassDefFoundError: net/minecraft/client/Minecraft")
+            }
+        )
+        val store = InMemoryVerdictStore().apply { record(grindVerdict("creativecore", "Fabric")) }
+        val server = ReportServer(store, requestedPort = 0, crashLogs = crashLogs).start()
+        try {
+            val kept = get(server.port, "/crash-log?name=Modrinth-creativecore-Fabric.log")
+            Assertions.assertEquals(200, kept.statusCode())
+            Assertions.assertTrue(kept.headers().firstValue("Content-Type").orElse("").contains("text/plain"))
+            Assertions.assertTrue(kept.body().contains("net/minecraft/client/Minecraft"))
+
+            val escaped = get(server.port, "/crash-log?name=../${secret.name}")
+            Assertions.assertEquals(404, escaped.statusCode(), "a traversal must not be served")
+            Assertions.assertFalse(escaped.body().contains("not yours"), "and must not leak the file either")
+
+            val index = get(server.port, "/crash-logs")
+            Assertions.assertEquals(200, index.statusCode())
+            Assertions.assertTrue(index.body().contains("Modrinth-creativecore-Fabric.log"), "the index lists what is kept")
+        } finally {
+            server.stop()
+        }
+    }
+
     @Test
     fun servesTheHtmlTableAndTheCsvExport() {
         val store = InMemoryVerdictStore().apply {

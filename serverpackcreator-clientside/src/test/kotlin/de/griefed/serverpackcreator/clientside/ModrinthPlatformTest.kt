@@ -95,4 +95,88 @@ internal class ModrinthPlatformTest {
         Assertions.assertFalse(fabricFile.locked)
         Assertions.assertEquals("https://cdn.modrinth.com/jei-fabric.jar", fabricFile.downloadUrl)
     }
+
+    /**
+     * Modrinth versions may carry more than one file, of which exactly one is the mod: authors attach
+     * source jars, and those are flagged `"primary": false`. Shaped after `creativecore`, whose Fabric
+     * group holds one stray `CreativeCore-sources.jar` among `CreativeCore_FABRIC_v*.jar` builds.
+     */
+    private val extraFilesJson = """
+        [
+          {
+            "loaders": ["fabric"],
+            "game_versions": ["26.2"],
+            "dependencies": [],
+            "files": [
+              {"filename": "CreativeCore_FABRIC_v2.14.16_mc26.2.jar", "primary": true, "url": "https://cdn.modrinth.com/a.jar"},
+              {"filename": "CreativeCore_FABRIC_SOURCE_v2.14.16_mc26.2.jar", "primary": false, "url": "https://cdn.modrinth.com/b.jar"}
+            ]
+          },
+          {
+            "loaders": ["fabric"],
+            "game_versions": ["1.21.1"],
+            "dependencies": [],
+            "files": [
+              {"filename": "CreativeCore_FABRIC_v2.13.39_mc1.21.1.jar", "primary": true, "url": "https://cdn.modrinth.com/c.jar"},
+              {"filename": "CreativeCore-sources.jar", "primary": false, "url": "https://cdn.modrinth.com/d.jar"}
+            ]
+          },
+          {
+            "loaders": ["fabric"],
+            "game_versions": ["1.10.2"],
+            "dependencies": [],
+            "files": [
+              {"filename": "CreativeCore_v1.10.62_mc1.10.2.jar", "url": "https://cdn.modrinth.com/e.jar"}
+            ]
+          }
+        ]
+    """.trimIndent()
+
+    /** The same two endpoints, answering with [extraFilesJson] instead. */
+    private val extraFilesPlatform = ModrinthPlatform(
+        HttpFetcher { url, _ ->
+            when {
+                url.endsWith("/version") -> extraFilesJson
+                url.contains("/project/") -> projectJson
+                else -> throw IllegalStateException("unexpected url $url")
+            }
+        }
+    )
+
+    /**
+     * A source jar is not a mod file. It is never bootable, it is never worth scanning, and — the reason
+     * this is pinned — one of them poisons the list-entry the whole verdict is published under.
+     */
+    @Test
+    fun nonPrimaryFilesAreNotModFiles() {
+        val fileNames = extraFilesPlatform.resolve("https://modrinth.com/mod/creativecore").fileNames
+
+        Assertions.assertEquals(
+            listOf(
+                "CreativeCore_FABRIC_v2.14.16_mc26.2.jar",
+                "CreativeCore_FABRIC_v2.13.39_mc1.21.1.jar",
+                "CreativeCore_v1.10.62_mc1.10.2.jar"
+            ),
+            fileNames,
+            "expected only the primary file of each version, plus the legacy version that flags none"
+        )
+    }
+
+    /**
+     * The defect the flag exists to stop, asserted where it actually hurt: `creativecore`'s Fabric group
+     * shares no delimited prefix with `CreativeCore-sources`, so [FilenameStemDeriver] fell back to the
+     * shortest name and published `CreativeCore-sources` as the clientside list-entry — an entry matching
+     * nothing, which also made the crashing loader's entry differ from every other loader's and so slipped
+     * past `ClientsideVerifier.loaderDisprovingTheCrash`.
+     */
+    @Test
+    fun aSourceJarDoesNotPoisonTheDerivedListEntry() {
+        val fabricFiles = extraFilesPlatform.resolve("https://modrinth.com/mod/creativecore").files
+            .filter { "Fabric" in it.loaders }
+
+        Assertions.assertEquals(
+            "CreativeCore_",
+            FilenameStemDeriver.deriveStem(fabricFiles.map { it.fileName })
+        )
+    }
 }

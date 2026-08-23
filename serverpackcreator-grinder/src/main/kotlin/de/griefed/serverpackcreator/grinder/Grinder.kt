@@ -56,11 +56,17 @@ class Grinder(
     /**
      * Verify [candidate] (unless a fresh verdict exists), record its per-loader verdicts and report what
      * happened — the daemon paces itself on how much real work a pass did (see [GrindPacing]).
+     *
+     * [force] skips the freshness check, which is what the immediate re-grind queue
+     * ([de.griefed.serverpackcreator.grinder.source.RequeueStore]) runs on. **It is not a convenience.** A
+     * project is queued precisely because its stored verdict is known to be wrong, and a wrong verdict is
+     * usually a recent one — engine defects get found by reading verdicts that were just produced — so an
+     * unforced drain would turn straight into [GrindOutcome.SKIPPED_FRESH] and quietly do nothing.
      */
-    fun grind(candidate: GrindCandidate): GrindOutcome {
+    fun grind(candidate: GrindCandidate, force: Boolean = false): GrindOutcome {
         // Freshness is per (platform, slug): the same slug on Modrinth and CurseForge is two projects.
         val lastVerified = store.newestVerification(candidate.platform, candidate.slug, candidate.projectId)
-        if (lastVerified != null && Duration.between(lastVerified, clock()) < reverifyTtl) {
+        if (!force && lastVerified != null && Duration.between(lastVerified, clock()) < reverifyTtl) {
             // Deliberately not INFO: a pass can skip dozens of fresh projects in microseconds, and logging each
             // would bury the one line that matters — the candidate actually being worked on.
             log.debug("Skipping ${candidate.platform}/${candidate.slug}: verdict still fresh.")
@@ -68,7 +74,10 @@ class Grinder(
         }
         // One readable line per candidate actually being ground, so `tail -f` answers "what is it doing?"
         // without decoding pack paths. The thread name in the log pattern says which worker.
-        log.info("Grinding ${candidate.platform}/${candidate.slug} — ${candidate.projectUrl}")
+        // Say when a grind jumped the queue: it is the difference between "the crawl reached this" and
+        // "somebody decided the stored verdict was wrong", which is the first question asked of a re-grind.
+        val why = if (force) " (re-grind requested)" else ""
+        log.info("Grinding ${candidate.platform}/${candidate.slug}$why — ${candidate.projectUrl}")
         status?.beginCandidate(candidate)
         val startedAt = clock()
         val report = runCatching { verifier.verify(candidate) }
@@ -223,8 +232,12 @@ class GrindPool(
      * A candidate counts as reached only once [Grinder.grind] has *returned* for it, so one still being ground
      * while the JVM tears down is deliberately not reported — it gets handed out again next time.
      * `verified` stays the pacing measure (see [GrindPacing]); skipped-as-fresh and failed do not count there.
+     *
+     * [force] is carried through to every candidate, which is what makes a drained re-grind queue actually
+     * re-grind: the whole batch is there because its verdicts are known to be wrong, and most of them are too
+     * recent to pass the freshness check.
      */
-    fun grindAll(candidates: Collection<GrindCandidate>): GrindPass {
+    fun grindAll(candidates: Collection<GrindCandidate>, force: Boolean = false): GrindPass {
         val queue = ConcurrentLinkedQueue(interleaveByPlatform(candidates))
         val verified = AtomicInteger(0)
         val reached = ConcurrentHashMap.newKeySet<GrindCandidate>()
@@ -235,7 +248,7 @@ class GrindPool(
             Thread {
                 while (!stopRequested.get()) {
                     val candidate = queue.poll() ?: break
-                    val outcome = grinder.grind(candidate)
+                    val outcome = grinder.grind(candidate, force)
                     reached.add(candidate)
                     if (outcome == GrindOutcome.VERIFIED) {
                         verified.incrementAndGet()

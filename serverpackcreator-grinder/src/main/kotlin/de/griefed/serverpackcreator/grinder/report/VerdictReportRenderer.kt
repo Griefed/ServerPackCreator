@@ -22,6 +22,8 @@ package de.griefed.serverpackcreator.grinder.report
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.griefed.serverpackcreator.clientside.Confidence
 import de.griefed.serverpackcreator.grinder.GrindVerdict
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 /**
  * Renders the verdicts as a single **self-contained HTML page**: a table with click-to-sort columns
@@ -34,20 +36,28 @@ import de.griefed.serverpackcreator.grinder.GrindVerdict
 object VerdictReportRenderer {
 
     /** Column headers, in the order the rows below emit their cells. */
-    private val columns = listOf("Name", "Project", "Name-pattern", "Confidence", "Loader", "Detail")
+    private val columns = listOf("Name", "Project", "Name-pattern", "Confidence", "Loader", "Detail", "Crash log")
 
     /** Default order: strongest clientside signal first, then by name — matches the CSV export. */
     private val confidenceRank = mapOf(
         Confidence.HIGH to 0, Confidence.MEDIUM to 1, Confidence.LOW to 2, Confidence.INCONCLUSIVE to 3
     )
 
-    /** Build the full HTML document for [verdicts]. */
-    fun toHtml(verdicts: List<GrindVerdict>): String {
+    /**
+     * Build the full HTML document for [verdicts].
+     *
+     * [crashLogName] answers, per verdict, the name of the kept crash console to link — or `null` for no
+     * link. It is a *lookup* rather than a field on [GrindVerdict] on purpose: the log lives on disk under
+     * [CrashLogStore], so asking at render time means a link appears exactly when a file is there, and a log
+     * removed by hand cannot strand the table pointing at a 404. Defaults to "no logs anywhere", which keeps
+     * the page renderable — and openable straight from disk — with no store wired at all.
+     */
+    fun toHtml(verdicts: List<GrindVerdict>, crashLogName: (GrindVerdict) -> String? = { null }): String {
         val ordered = verdicts.sortedWith(
             compareBy({ confidenceRank[it.confidence] ?: Int.MAX_VALUE }, { it.slug }, { it.loader })
         )
         val headerCells = columns.mapIndexed { index, name -> """<th onclick="sortBy($index)">${esc(name)}</th>""" }.joinToString("")
-        val bodyRows = ordered.joinToString("\n") { rowHtml(it) }
+        val bodyRows = ordered.joinToString("\n") { rowHtml(it, crashLogName(it)) }
         // jackson yields a valid JS string literal (quotes/newlines escaped); additionally escape
         // <, > and & to their \uXXXX form so a mod-supplied "</script>" can't break out of the script
         // block (jackson does not escape these by default).
@@ -68,11 +78,23 @@ object VerdictReportRenderer {
                 th, td { border: 1px solid #ccc; padding: 4px 8px; text-align: left; }
                 th { cursor: pointer; background: #f3f3f3; user-select: none; }
                 tr:nth-child(even) td { background: #fafafa; }
+                .toolbar { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: 1rem; }
+                .toolbar button, .toolbar .btn {
+                  font: inherit; padding: .35rem .75rem; border: 1px solid #bbb; border-radius: 4px;
+                  background: #f3f3f3; color: inherit; text-decoration: none; cursor: pointer;
+                }
+                .toolbar button:hover, .toolbar .btn:hover { background: #e6e6e6; }
               </style>
             </head>
             <body>
               <h1>Suspected clientside mods (${ordered.size})</h1>
-              <button onclick="downloadCsv()">Download CSV</button>
+              <nav class="toolbar">
+                <button onclick="downloadCsv()">Download CSV</button>
+                <a class="btn" href="/export.csv">CSV endpoint</a>
+                <a class="btn" href="/status">Live status</a>
+                <a class="btn" href="/as-properties">Fallback list</a>
+                <a class="btn" href="/crash-logs">Crash logs</a>
+              </nav>
               <table id="verdicts">
                 <thead><tr>$headerCells</tr></thead>
                 <tbody>
@@ -104,18 +126,36 @@ object VerdictReportRenderer {
         """.trimIndent()
     }
 
-    /** One table row; the Name links to the project, every cell is HTML-escaped. */
-    private fun rowHtml(verdict: GrindVerdict): String {
+    /**
+     * One table row; the Name links to the project, the last cell links the kept crash console when
+     * [crashLogName] names one, and every cell is HTML-escaped.
+     *
+     * The crash console is the cell that answers *why* a HIGH was reached — most often a server loading a mod
+     * that reaches for a client-only class — which the Detail column can only summarise.
+     */
+    private fun rowHtml(verdict: GrindVerdict, crashLogName: String?): String {
+        val crashLog = crashLogName
+            ?.let { """<a href="/crash-log?name=${esc(urlEncode(it))}">console</a>""" }
+            ?: ""
         val cells = listOf(
             esc(verdict.slug),
             """<a href="${esc(verdict.projectUrl)}" rel="noopener noreferrer">${esc(verdict.projectUrl)}</a>""",
             esc(verdict.suggestedEntry ?: ""),
             esc(verdict.confidence.name),
             esc(verdict.loader),
-            esc(verdict.detail)
+            esc(verdict.detail),
+            crashLog
         )
         return "<tr>" + cells.joinToString("") { "<td>$it</td>" } + "</tr>"
     }
+
+    /**
+     * Percent-encode a crash-log name for the `?name=` query. Names are built from a platform, a slug and a
+     * loader, and a slug is whatever the platform allows — so this must not assume the name is already safe
+     * for a URL, even though the store refuses anything with a separator when it reads it back.
+     */
+    private fun urlEncode(value: String): String =
+        URLEncoder.encode(value, StandardCharsets.UTF_8)
 
     /** Escape a value for HTML text/attribute context so mod-supplied strings can't break the page. */
     private fun esc(value: String): String = value

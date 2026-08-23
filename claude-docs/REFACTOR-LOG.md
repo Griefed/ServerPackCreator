@@ -2286,3 +2286,271 @@ if the intent is "grind faster", the levers are `WORKERS` and `CPUS`.
 `CpuLimitWiringTest` became `ContainerLimitsWiringTest` in the process (it guards two knobs now, with the
 existing assertions intact and the memory equivalents added). Suite 303 → **310, 0 failures**, 16 skipped with
 the gated Docker IT enabled and 23 without.
+
+## 2026-08-23 — one build is not a mod: the other-version crash re-check
+
+`iron-chests` was reported `HIGH` off `Forge 48.1.0 / Minecraft 1.20.2 → CRASHED (exit 1)`, with the note
+"Declared server/both but the server crashed — a strong clientside signal". It is not a clientside mod, and
+the engine had no way to know: exactly **one** build of a project was ever booted, so "this build crashes"
+and "this mod cannot run on a server" produced identical evidence, and the tie was broken toward the answer
+that reaches `/as-properties` — where a wrong entry silently strips the mod from every server pack built
+against the fallback list.
+
+The third guard against a false `HIGH` (after the selection-time loader/Java gate and the classifier's
+setup-abort/killed mapping, and alongside the loader-build re-check) is therefore: **a crash that contradicts
+the metadata is re-checked on other versions of the mod**, and one clean boot there clears it. A mod that
+cannot run server-side cannot run server-side in *any* build, so a version that boots proves the crash
+belonged to that build. The sample is the newest file of each of the next two most-recent Minecraft versions
+— one per version, because two rebuilds for one Minecraft are near-identical code while a different version
+line is an independent sample — and it stops at the first clean boot.
+
+**The gate is the contradiction, not the crash.** It arms only when the platform's `server_side: required` or
+SPC's own jar scan claims server support, which is the same predicate that prints that note
+(`ClientsideVerifier.declaresServerSupport`, now shared so the two can never drift about what "declared
+server" means). Where the metadata already leans clientside, the crash *confirms* it and a re-check would
+spend boots to learn nothing while the crawl falls behind — and in a catalog sweep that agreement is the
+common case. Worth knowing for CurseForge, which is where the report came from: it has no sideness field at
+all, so the claim can only ever come from the jar scan, and a gate reading the platform alone would never arm
+for a CurseForge mod.
+
+Every other direction stays conservative, matching the loader-build re-check: crashes elsewhere corroborate
+and are named in the detail, and an attempt that learned nothing — staging failed, timed out — leaves the
+crash exactly as it was. Budget is a constructor knob (`otherVersionRecheckLimit`, default 2, `0` off) rather
+than an env var: no new deployment surface for a number nobody has evidence to tune yet. Cost is two extra
+boots per contradicting crash and nowhere else.
+
+**A defect the change forced out of hiding.** Every attempt for one candidate stages into
+`<work>/boot/<slug>-<loader>`, which staging wipes, so all of them write the same `boot.log` — while the
+*reported* verdict is frequently not the last boot, since both re-checks keep the original crash. The
+grinder's reaper then keeps that single file and deletes the staging around it, so the console a `HIGH` was
+diagnosed from was a different boot's. Pre-existing since the loader-build re-check landed and occasional;
+with up to three boots now sharing the file it would have been near-certain. `BootOutcome` carries its own
+console and `verify` writes the decided one back, best-effort like the write it repairs.
+
+Both fixes' guards had their teeth checked rather than assumed: stubbing the survivor lookup to `null` fails
+the two clearing guards, removing `distinctBy` fails the one-per-version guard, and removing the restore's
+`writeText` fails the console guard. Suite 93 → **113, 0 failures**.
+
+## 2026-08-23 — the disproof was already in hand: cross-loader reconciliation
+
+The live verdict pair for `iron-chests` turned the previous entry's guess into evidence, and added a finding
+it had missed. Both rows come from **one run**:
+
+| Loader | Confidence | Entry | Boot |
+|---|---|---|---|
+| Forge | `HIGH` | `ironchest-` | Forge 48.1.0 / Minecraft 1.20.2 → CRASHED (exit 1) |
+| NeoForge | `LOW` | `ironchest-` | NeoForge 21.11.45 / Minecraft 1.21.11 → SURVIVED (exit 137) |
+
+The engine booted a real Minecraft server with this mod, watched it reach its ready-line, and then published
+the mod as clientside off the *other* loader's crash. (Exit 137 on the surviving row is not a kill worth
+investigating: `ContainerServerRunner` watches for the ready-line and stops the container the moment it
+appears, so every clean container boot exits 137.) The shape also confirms the abandoned-port hypothesis —
+Forge stops at 1.20.2 while NeoForge is at 1.21.11, i.e. the project migrated and left one final Forge build
+behind.
+
+**Why one loader's crash is not the other loader's business — except that it is.** The per-loader model is
+deliberate, and a mod genuinely can be client-only on one loader. But the *published* artefact is a
+loader-agnostic file-name stem matched with `startsWith`, and both rows derive `ironchest-`, so publishing
+the Forge crash strips the NeoForge build that had just proven itself. `reconcileAcrossLoaders` therefore
+keys on **the entry colliding**, not on any survival anywhere: where the stems differ nothing is stripped and
+there is no contradiction to resolve. The confidence drops to whatever `aggregate` yields for the same
+signals with no boot — re-derived, so there is one ladder rather than a second one — while `bootResult` and
+the crash excerpt stay, because the server did crash and that is worth diagnosing. The note is *rebuilt*
+rather than appended to: it used to end in "a strong clientside signal", and bolting a correction onto a
+false sentence is the stale-prose failure this project keeps paying for.
+
+**And the fix from earlier the same day would probably not have saved this mod.** `CurseForgePlatform.resolve`
+took `?pageSize=50` — the newest 50 files *across all loaders*. A project that migrated Forge → NeoForge keeps
+publishing NeoForge builds, so its last Forge build sinks toward the far end of that window and the builds
+before it drop out of it entirely, leaving the other-version re-check nothing of that loader to boot. Exactly
+the projects that produce the false positive are the ones the window hides the evidence from. Resolution now
+walks `index` until `totalCount`, capped at `MAX_FILE_PAGES` (10 × 50) with a warning when it truncates; a
+project inside one page still costs one call. Dependency resolution stays single-page on purpose — it needs
+*a* usable file for one loader/Minecraft pair, not a history.
+
+The two crash guards layer rather than compete: the within-loader re-check runs during the crashing loader's
+own boot, cross-loader reconciliation after every loader is in, so a crash must survive both. Loaders are
+assessed in sorted order and nothing looks ahead, so a project like this one still pays the two extra Forge
+boots before NeoForge supersedes them — deliberate, since those boots also produce the more specific
+within-loader answer.
+
+Teeth checked: relaxing the entry-collision condition fails `aLoaderBootingUnderADifferentEntryDisprovesNothing`;
+capping the file walk at one page fails `resolvePagesThroughEveryPublishedFile` and
+`aTotalCountThatIsNeverReachedStopsAtTheCap`. Suite 113 → **126, 0 failures**.
+
+---
+
+## 2026-08-23 — `creativecore`: a source jar as a list-entry, and a re-check that never left the neighbourhood
+
+Reported the same day as `iron-chests`, and it survived every guard that case installed. `creativecore` — a
+library mod whose own project description advertises server-side features — was published `HIGH` clientside
+for Modrinth/Fabric under the suggested entry **`CreativeCore-sources`**. Two independent defects had to line
+up for that, and each is worth its own note.
+
+**A Modrinth version's `files[]` is not a list of mods.** `filesOf` mapped every entry onto a `ModFile`, and a
+Modrinth version routinely carries more than one: authors attach source jars, flagged `"primary": false`.
+Measured against the live API: the project publishes 300 versions, its Fabric group holding 143 files, of
+which exactly one is the stray `CreativeCore-sources.jar` (fabric, 1.21.1, non-primary, uploaded 2024-09-04).
+That single name shares no delimited prefix with the `CreativeCore_FABRIC_v*.jar` builds, so
+`FilenameStemDeriver` fell through to its last resort — strip the version off the **shortest** name — and
+derived an entry matching nothing the project has ever shipped. The deriver behaved exactly as documented;
+it was fed something that is not a mod.
+
+The knock-on is the interesting part. `loaderDisprovingTheCrash`, installed hours earlier, compares *entries*,
+and `CreativeCore-sources` matches neither of the other loaders' `CreativeCore_`. So the guard that exists
+precisely to stop one loader's crash outranking another loader's clean boot looked at a run where NeoForge had
+booted a server, found no colliding entry, and let the Fabric crash stand. A garbage stem does not merely
+publish a useless entry — it disables the disproof.
+
+`modFilesOf` now keeps only the primaries, falling back to every file of a version that flags none. That
+fallback is load-bearing rather than defensive: 3 of the 300 versions genuinely carry no primary flag, and
+dropping them would lose real builds. CurseForge has no equivalent field, and nothing has been seen publishing
+a source jar as a plain CF upload — stated so the asymmetry is a known gap, not an oversight.
+
+**The other-version re-check spent both boots in the crashing combination's own neighbourhood.**
+`pickRecheckCandidates` took the newest file of each *other Minecraft version* of the crashing loader, which
+with a budget of two means the two versions either side of it. Here: Fabric / MC 26.2 crashed, and the
+re-checks went to Fabric 26.1.2 and Fabric 26.1 — same loader, same loader version `0.19.3`, adjacent
+Minecraft versions, i.e. near-identical code re-tested in a near-identical environment. Both came back
+INCONCLUSIVE (exit 1 and exit 0), so the crash stood. Meanwhile, in the *same* run, NeoForge 26.1.2.97 booted
+a server for this project, and the CurseForge sweep two minutes earlier had booted
+`CreativeCore_FABRIC_v2.14.13_mc26.1.jar` — the exact file the Modrinth 26.1 re-check gave up on — to a clean
+ready-line. The evidence existed; the sample was aimed away from it.
+
+Each pick now has to introduce a Minecraft **version-line** and a loader that no earlier pick used, considered
+newest-Minecraft-first, with the crashing combination's own line marked used from the start. A line is the
+first two components (`26.1.2` and `26.1` are one, `26.2` another) because that is the granularity at which
+mod source actually differs — builds within a line are ports of the same source across a patch release. On
+this shape the same two boots become Fabric 26.1.2 and NeoForge 1.21.11 — not asserted from the
+miniature in the unit test but from running the real `ModrinthPlatform` and `pickRecheckCandidates` over the
+project's live 300-version response, which is also where the recovered `CreativeCore_FABRIC_` stem was
+confirmed.
+
+**Diversity is a preference, not a filter**, and that distinction is pinned: selection relaxes to a new line,
+then a new loader, then whatever is left, so a project publishing one loader and one Minecraft line samples
+exactly as deeply as it did before. The budget is unchanged — this buys better boots, not more of them.
+
+**Crossing the loader is a wider claim than `loaderDisprovingTheCrash` permits, and the difference is the
+gate.** That pass runs on *any* crash, so it insists on a colliding entry; this sample is spent only where the
+crash already contradicts a declared server support, i.e. where one of the two signals is already known to be
+wrong. A project whose author declares it server-capable, and which boots a server under another loader, is
+far better explained by a broken build than by sideness. Two consequences fall out: every attempt's label now
+names its loader, because the returned outcome may be a boot run under a different loader than the verdict is
+about; and every attempt still stages into the **crashing** loader's directory, since staging under the
+candidate's own would wipe the pack and console that loader's own verdict is about to be built from.
+
+Teeth checked: both Modrinth pins were committed red and fail on the unfiltered `files[]`
+(`nonPrimaryFilesAreNotModFiles`, `aSourceJarDoesNotPoisonTheDerivedListEntry`); the selector pins were
+committed red as a compile failure, the honest shape of a signature change, and
+`aCrashIsReCheckedOnAnotherLoaderRatherThanTwiceOnItsOwn` is the miniature of the live report.
+Suite 126 → **130, 0 failures**.
+
+---
+
+## 2026-08-23 — the same slug on two platforms was one directory
+
+Follow-up to the `creativecore` report above, from the loose end it left: the Minecraft 26.2 boots in that
+report did not merely disagree with each other, they disagreed *about the same build*. CurseForge had
+NeoForge 26.2.0.66 / MC 26.2 → **SURVIVED** (exit 137) while Modrinth had NeoForge 26.2.0.66 / MC 26.2 →
+**CRASHED** (exit 1) — identical loader build, identical Minecraft, identical mod, verdicts 71 seconds apart.
+A CurseForge Fabric boot exited **127**, which is a shell reporting that the command it was told to run does
+not exist. And the Modrinth Fabric re-check on `CreativeCore_FABRIC_v2.14.13_mc26.1.jar` came back
+INCONCLUSIVE (exit 0, no ready-line) on the very file the CurseForge run had booted to a ready-line two
+minutes earlier. Those are not four flaky boots; they are one cause.
+
+**Per-attempt scratch space was keyed on `(slug, loader)`.** Staging *wipes* that directory before using it
+(`stageBootPack` opens with `deleteRecursively()`), and `BootWorkspaceReaper.reap(slug)` deletes it again once
+a candidate's verdicts are in. The grinder, meanwhile, is explicit that the same slug on Modrinth and on
+CurseForge is two candidates — `Grinder` keys verdict freshness on `(platform, slug)` and says so in a comment
+— and `GrindPool` runs them on parallel workers. So both runs of `creativecore` shared
+`<work>/boot/creativecore-NeoForge`, and either was free to delete the server pack out from under a container
+the other was still booting. Exit 127 is the signature of exactly that: `start.sh` went missing mid-run.
+
+The reaper had a landmine for the neighbouring hazard already — *"scoped to one slug on purpose … workers run
+in parallel, and a prefix match would delete the pack out from under a container that is still booting it"* —
+and its test carried `leavesOtherCandidatesAlone`. Both reasoned about *different* slugs. The case where two
+candidates **share** a slug was the hole, and it is the case the platform column exists to name.
+
+**`AttemptDirectory`** now builds `<platform>-<slug>-<loader>` and reads it back to its owner. Both halves
+live in one object in `-clientside` because three callers depend on them agreeing: `ClientsideVerifier` for
+the jar-scan download, `BootVerifier` for the staged pack, and the grinder's reaper, which decides what to
+delete from the name alone. Until now they agreed only by two separate string literals happening to match —
+the kind of coupling that survives until someone changes one of them. Parsing still cuts only the loader
+suffix rather than prefix-matching the slug, so `creativecore` does not claim `creativecore-extras`.
+Directories staged under the old name match no owner and are cleared by the startup `reapAll()`.
+
+**Why this mattered more than a lost run.** Every affected boot was scored as evidence about a mod when it was
+evidence about a deleted directory — and the confidence model is deliberately asymmetric: a crash is the one
+outcome that reaches HIGH. A boot the environment destroyed therefore does not degrade to "we learned
+nothing", it manufactures a false positive, and a false positive is what writes a wrong entry into the
+fallback list. Two of the guards this project already built exist to catch environment failures masquerading
+as crashes (`killedExitCodes`/`outOfMemoryMarkers`, `launchFailureMarkers`); this one produced consoles those
+guards had no reason to distrust.
+
+Teeth checked: reaping on the bare slug fails `reapingOnePlatformLeavesTheSameSlugOnAnotherPlatformAlone`;
+restoring either producer's `"${project.slug}-$loader"` fails
+`theJarScanOfTwoPlatformsSharingASlugDownloadsIntoSeparateDirectories` and
+`theSameSlugOnTwoPlatformsStagesIntoSeparateDirectories`. Clientside 130 → **134**, grinder 310 → **311**,
+0 failures in either.
+
+---
+
+## 2026-08-23 — the immediate re-grind queue: how a defect in the *engine* gets un-published
+
+Three engine defects landed in one day — a source jar becoming a list-entry, a crash re-check that never left
+the crashing combination's neighbourhood, and two platform runs of one slug sharing a staging directory. Each
+one invalidated verdicts that were **already being published** through `/as-properties`, and none of them had
+a remedy: the catalog crawl plus the 30-day re-verify TTL answer *when does this project come round again?*
+with **eventually**. Correct when a mod changes. Wrong when the bug is ours, because then the answer is
+"serve the wrong clientside entry for a month".
+
+`RequeueStore` is the missing lane. Persisted (`SPC_GRINDER_REQUEUE`), drained at the **start of every pass**
+ahead of the catalog slice, and ground with `force = true`.
+
+**The force is the whole feature, and it is the part that would have been easy to leave out.** A project is
+queued precisely because its stored verdict is wrong — and a wrong verdict is almost always a *recent* one,
+since engine defects get found by reading verdicts that were just produced. Without the force a drained queue
+turns straight into `SKIPPED_FRESH`: the log says the queue drained, the queue is empty afterwards, and
+nothing was re-verified. That is a failure mode that looks exactly like success, which is why
+`aForcedGrindReVerifiesEvenAFreshVerdict` pins both directions in one test.
+
+**Two selectors, because two things actually happen.** `--requeue <url>…` is a named handful — a report a
+user disputed. `--requeue-before <instant>` is the recurring one, and the reason the feature generalises: a
+defect invalidates a *population*, not a list somebody assembles by hand. Naming the moment is also
+auditable — a reader of the log can tell exactly which population was re-verified and why. One candidate per
+*project* rather than per verdict row, identified by platform plus the platform's own id where known, so a
+renamed project is one re-grind and the same slug on two platforms is still two.
+
+**Three placement decisions, each with a reason that is not obvious from the code.**
+
+*Not an HTTP endpoint.* The report server has no authentication — that is deliberate and landmined — so a
+write endpoint on it would let anyone who can reach the page schedule unbounded container work. The queue is
+authored through the CLI, i.e. through the machine's own access control.
+
+*Before `claimSpcPreferencesNode()` and `pinSpcHomeDirectory()`.* The command is run **against a daemon that
+is already up**. Claiming the preferences node or re-pinning SPC's home from a one-shot would move the home
+out from under the running service, and those claims are remembered for every later run.
+
+*Stdout, never `log`.* This is the same landmine one level removed: `ApiProperties` is registered as log4j's
+`ConfigurationFactory`, so the first log statement in a process constructs one — the very thing the claims
+exist to control. A `log.info` on this path would re-introduce the hazard from inside a helper, where the
+existing guard (which scans `main`'s body) could not see it.
+`theRequeuePathRunsBeforeTheClaimsAndNeverLogs` therefore asserts the ordering *and* reads the helper's own
+source for `log.`.
+
+**Verified against the real entry point**, not only through the suite, because the operator-facing half is
+exactly what a mocked test cannot answer. A store sliced from the live 875-verdict file, run through
+`:serverpackcreator-grinder:run`:
+
+| Command | Result |
+|---|---|
+| `--requeue-before 2030-01-01T00:00:00Z` | 14 rows → **7 distinct projects**, both platforms of `chipped` and `ambientsounds` kept apart |
+| the same command again | `Queued 0 of 7 … (7 already waiting)` — additive and idempotent |
+| `--requeue https://modrinth.com/mod/creativecore` | `Queued 1 of 1 … 8 now pending` |
+| `--requeue-before yesterday` | the ISO-8601 hint, not a stack trace |
+
+The run left **only `requeue.json`** in the home — no `logs/` directory — which is the observable proof that
+no `ApiProperties` was constructed and the landmine above holds in the built artefact rather than only in the
+source guard.
+
+Suite: grinder 325 → **336, 0 failures**.

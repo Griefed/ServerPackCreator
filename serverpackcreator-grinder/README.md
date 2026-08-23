@@ -190,6 +190,7 @@ never evicted, and a re-install costs one networked setup boot if it comes back.
 | `SPC_GRINDER_CACHE`             | `~/.spc-grinder/cache`         | Cached loader installs, one per loader/version/Minecraft                     |
 | `SPC_GRINDER_STORE`             | `~/.spc-grinder/verdicts.json` | Verdict store — delete to start fresh                                        |
 | `SPC_GRINDER_CURSORS`           | `~/.spc-grinder/cursors.json`  | Crawl position per platform — delete to re-sweep from the most-downloaded    |
+| `SPC_GRINDER_REQUEUE`           | `~/.spc-grinder/requeue.json`  | Immediate re-grind queue — see *Re-grinding verdicts you no longer trust*    |
 | `SPC_GRINDER_PORT`              | `8757`                         | Report server port                                                           |
 | `SPC_GRINDER_HOST`              | `127.0.0.1`                    | Report server bind address. Loopback by default — see *Exposing the report*  |
 | `SPC_GRINDER_CONTAINER_USER`    | owner of `SPC_GRINDER_WORK`    | `uid:gid` the containers run as. Must own the staging — see *Container identity* |
@@ -405,11 +406,57 @@ Columns are `Name, Project, NamePattern, Confidence, Loader, Detail`, highest co
 means the server booted — which does *not* prove the mod is server-safe. `INCONCLUSIVE` means nothing was
 learned, e.g. the loader has no build for that Minecraft version, so the mod was never actually tested.
 
+**Read the `Detail` column on a crash.** A crash that *contradicts* the mod's own metadata — it claims to
+support servers, yet the server died — is re-checked on up to two other versions of the mod before it may
+stand, because one crashing build is not a clientside mod. The detail says which way that went: `also crashed
+on <file>` means other versions crashed too, `but <file> booted cleanly` means the verdict was cleared and is
+no longer a crash, and `no other version … to re-check against` means the mod publishes only the one version,
+so the sample behind the verdict is a single build.
+
+**A crash is also weighed against the project's other loaders.** What this list publishes is a file-name stem
+matched with `startsWith`, and that stem is loader-agnostic — so if one loader crashed while another booted a
+server under the *same* stem, publishing the crash would strip a build that demonstrably works. Such a verdict
+keeps its boot result but not its confidence, and its detail ends in `booted a server with the same entry`.
+A crash whose stem is unique to its loader is unaffected: sideness can genuinely differ per loader.
+
 The store is plain JSON (`SPC_GRINDER_STORE`), keyed by platform + slug + loader — the same slug on
 Modrinth and CurseForge stays two separate projects. How far the crawl has got is in `SPC_GRINDER_CURSORS`:
 one entry per platform with the next `offset`, the number of completed `sweeps`, and — for CurseForge — the
 `partition` being walked (`gameVersion|modLoaderType|direction`, `*` meaning "no filter"). Read it to tell
 "still on the first pass over this platform" from "covered it, now keeping it current".
+
+### Re-grinding verdicts you no longer trust
+
+The crawl plus the re-verify TTL answer *when does a project come round again?* with **eventually, at the
+TTL** — right when a mod changes, wrong when the bug is in the grinder. When that happens the affected
+verdicts are already published, and waiting out a 30-day TTL means serving a known-wrong clientside entry for
+a month.
+
+So there is a queue that jumps the crawl. Entries in it are ground **first, in the next pass, and past the
+freshness check** — the last part matters, because a verdict is queued precisely *because* it is wrong, and a
+wrong verdict is usually a recent one.
+
+```bash
+# A named handful — a report someone disputed, a verdict that looks wrong.
+spc-grinder --requeue https://modrinth.com/mod/creativecore https://www.curseforge.com/minecraft/mc-mods/jei
+
+# Everything verified before a fix landed. This is the one you want after an engine bug:
+# a defect invalidates a *population*, not a list you assemble by hand.
+spc-grinder --requeue-before 2026-08-23T18:00:00Z
+```
+
+Both commands **queue and exit**, so run them against a service that is already up — the daemon takes the
+queue at the start of its next pass (a stopped one, on its next start). They are additive and idempotent:
+queueing something already waiting changes nothing, and the same slug on the two platforms queues twice
+because it is two projects. Run them **as the same user as the service**, or it will not be able to read the
+queue back.
+
+Watch the backlog drain on `/status` → `requeued`, and in the log: a queued grind logs
+`Grinding <platform>/<slug> (re-grind requested)`, which is how you tell "the crawl reached this" from
+"somebody decided the old verdict was wrong".
+
+The queue lives in `SPC_GRINDER_REQUEUE` (`~/.spc-grinder/requeue.json`) and survives restarts. Deleting the
+file cancels whatever is still waiting.
 
 ---
 
@@ -487,6 +534,9 @@ Lines worth grepping for:
 | `Grinding ` / `Done .*→` | candidate started / finished, with its per-loader verdicts |
 | `Reusing cached` | an installed loader build was reused instead of installing a newer one |
 | `not the newest build` | a crash is being re-checked on the newest loader before it counts |
+| `although the metadata declares` | a crash contradicts the mod's claimed server support; other versions of the mod are being booted to settle it |
+| `booted the same` | a crash was set aside because another loader of the same project booted a server under the same list-entry |
+| `has more files than` | a CurseForge project's file history was longer than the paging cap; its oldest builds were not read |
 | `were not reached` | a pass was cut short; the crawl cursor was held back so nothing is skipped |
 | `Evicted` | idle loader installs reclaimed (`SPC_GRINDER_CACHE_TTL_DAYS`) |
 | `holds .* mods but only` | a CurseForge slice is too big to page through; its middle is unreachable |

@@ -98,6 +98,28 @@ internal class BootVerifierSelectionTest {
     }
 
     /**
+     * Two candidates sharing a slug across platforms must stage into separate directories. Staging *wipes*
+     * the directory it is about to use, and the grinder runs the two platform candidates in parallel, so a
+     * shared name lets one run delete the pack another is booting from — see `AttemptStagingIsolationTest`
+     * for the `creativecore` evidence. Executed rather than asserted on the name alone: both calls run real
+     * staging as far as the download, which is what creates the directory on disk.
+     */
+    @Test
+    fun theSameSlugOnTwoPlatformsStagesIntoSeparateDirectories(@TempDir workDir: File) {
+        verifier(workDir) { true }.prepareBootPack(forgeProject(forgeRelease), "Forge")
+        verifier(workDir) { true }.prepareBootPack(forgeProject(forgeRelease).copy(platform = "CurseForge"), "Forge")
+
+        Assertions.assertEquals(
+            listOf(
+                AttemptDirectory.nameFor("CurseForge", "testmod", "Forge"),
+                AttemptDirectory.nameFor("Modrinth", "testmod", "Forge")
+            ).sorted(),
+            workDir.listFiles()?.map { it.name }?.sorted() ?: emptyList<String>(),
+            "the second platform's staging must not have wiped and reused the first's directory"
+        )
+    }
+
+    /**
      * The release-only filter rejects a project that targets only pre-releases — a `-pre`/`-rc` is not in
      * `serverReleases()`, so no bootable combination is found.
      */

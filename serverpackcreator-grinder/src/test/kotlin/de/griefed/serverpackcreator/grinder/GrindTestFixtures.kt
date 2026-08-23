@@ -37,6 +37,7 @@ internal fun loaderVerdict(
     declaredServerSide = DeclaredSupport.UNKNOWN,
     jarScan = JarScan.ERROR,
     bootResult = null,
+    bootedLoader = null,
     bootCrashExcerpt = null,
     confidence = confidence,
     sampleFile = null,

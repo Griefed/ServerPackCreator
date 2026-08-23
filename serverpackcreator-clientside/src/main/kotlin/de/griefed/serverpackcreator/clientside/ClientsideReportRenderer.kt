@@ -63,7 +63,7 @@ object ClientsideReportRenderer {
             builder.appendLine(
                 "| ${verdict.loader} | ${code(verdict.suggestedEntry)} | " +
                         "${verdict.declaredClientSide} / ${verdict.declaredServerSide} | " +
-                        "${verdict.jarScan} | ${verdict.bootResult ?: "—"} | ${badge(verdict.confidence)} |"
+                        "${verdict.jarScan} | ${bootCell(verdict)} | ${badge(verdict.confidence)} |"
             )
         }
         builder.appendLine()
@@ -100,6 +100,19 @@ object ClientsideReportRenderer {
         builder.appendLine(jsonWriter.writeValueAsString(report))
         builder.appendLine("-->")
         return builder.toString()
+    }
+
+    /**
+     * The `Boot` cell for one loader: the result, and — when a *different* loader produced it — which one.
+     *
+     * The other-version crash re-check samples across loaders, so a verdict can be decided by a boot that ran
+     * under another loader. That is honest evidence about the mod and misleading evidence about the loader, so
+     * the cell has to say `SURVIVED (via NeoForge)` rather than let a row claim a boot it never had.
+     */
+    private fun bootCell(verdict: LoaderVerdict): String {
+        val result = verdict.bootResult ?: return "—"
+        val via = verdict.bootedLoader?.takeIf { it != verdict.loader } ?: return result.toString()
+        return "$result (via $via)"
     }
 
     /** Wrap a non-null entry in inline-code, or render an em-dash for a missing one. */

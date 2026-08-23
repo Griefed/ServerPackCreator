@@ -27,13 +27,16 @@ import de.griefed.serverpackcreator.grinder.container.ContainerUser
 import de.griefed.serverpackcreator.grinder.container.SHUTDOWN_GRACE
 import de.griefed.serverpackcreator.grinder.container.DockerJavaContainerEngine
 import de.griefed.serverpackcreator.grinder.loader.*
+import de.griefed.serverpackcreator.grinder.report.CrashLogStore
 import de.griefed.serverpackcreator.grinder.report.FallbackLists
 import de.griefed.serverpackcreator.grinder.report.JsonVerdictStore
+import de.griefed.serverpackcreator.grinder.report.VerdictStore
 import de.griefed.serverpackcreator.grinder.report.ReportServer
 import de.griefed.serverpackcreator.grinder.source.*
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.time.Duration
+import java.time.Instant
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -55,7 +58,9 @@ object GrinderApplication {
     private val log by lazy { cachedLoggerOf(GrinderApplication::class.java) }
 
     /**
-     * Entry point. With project URLs as [args] it grinds exactly those once and exits; with none it runs
+     * Entry point. `--requeue <url>…` and `--requeue-before <instant>` add work to the immediate re-grind
+     * queue and exit without grinding, so they can be run against a service that is already up. With project
+     * URLs as [args] it grinds exactly those once and exits; with none it runs
      * continuously, taking the next catalogue slice each pass and persisting verdicts and crawl position after every
      * step so a restart resumes mid-catalogue. Everything else is read from the environment — see README §5.
      */
@@ -65,6 +70,20 @@ object GrinderApplication {
         // writability check runs before anything of ours would have created it.
         val base = File(env("SPC_GRINDER_HOME", File(System.getProperty("user.home"), ".spc-grinder").path))
             .absoluteFile.apply { mkdirs() }
+        // Queue-and-exit, BEFORE the two claims below and before anything expensive is built. This process runs
+        // *against a daemon that is already up*, so it must not claim the preferences node, re-pin SPC's home,
+        // or touch Docker, the loader cache and the report port -- the service owns all of those, and the claims
+        // are remembered for every later run. It writes to stdout rather than the log for the same reason: the
+        // first `log` use in this process would construct the very ApiProperties the claims exist to control.
+        // Answered here rather than over HTTP because the report server is unauthenticated by design, and a
+        // write endpoint on it would let anyone who can reach the page schedule unbounded container work.
+        if (args.isNotEmpty() && args.first().startsWith("--requeue")) {
+            val storePath = File(env("SPC_GRINDER_STORE", File(base, "verdicts.json").path))
+            val queuePath = File(env("SPC_GRINDER_REQUEUE", File(base, "requeue.json").path))
+                .apply { parentFile?.mkdirs() }
+            enqueueAndExit(args, JsonRequeueStore(queuePath), JsonVerdictStore(storePath))
+            return
+        }
         // Both claims BEFORE anything touches `log`: ApiProperties is registered as log4j's ConfigurationFactory,
         // so the first log statement in this process constructs one, and whatever that one resolves is what the
         // daemon runs on -- and gets remembered in the Preferences node for every run after it.
@@ -75,6 +94,10 @@ object GrinderApplication {
         val workDir = File(env("SPC_GRINDER_WORK", File(base, "work").path)).apply { mkdirs() }
         val cacheRoot = File(env("SPC_GRINDER_CACHE", File(base, "cache").path)).apply { mkdirs() }
         val storeFile = File(env("SPC_GRINDER_STORE", File(base, "verdicts.json").path)).apply { parentFile?.mkdirs() }
+        // The immediate re-grind lane. Lives beside the verdict store rather than under `work/`: it is state an
+        // operator authored, not scratch the reaper may reclaim.
+        val requeueFile = File(env("SPC_GRINDER_REQUEUE", File(base, "requeue.json").path)).apply { parentFile?.mkdirs() }
+        val requeue = JsonRequeueStore(requeueFile)
         val port = env("SPC_GRINDER_PORT", "8757").toInt()
         // Loopback by default: the report is unauthenticated, so reaching it from anywhere else -- a reverse
         // proxy in a container dials the host over the bridge gateway, never 127.0.0.1 -- is a deliberate act.
@@ -130,9 +153,14 @@ object GrinderApplication {
                 apiWrapper.apiProperties.defaultStartScriptTemplates().values.map { File(it) }
             )
         })
+        // Lives under the daemon's home rather than under `work/`, deliberately: everything below `work/` is
+        // scratch the reaper is entitled to reclaim, and the console of a crashed boot is the one artefact a
+        // HIGH verdict cannot be re-derived without. Bounded by the number of distinct crashing tuples, since
+        // a re-grind replaces a project's log rather than adding one.
+        val crashLogs = CrashLogStore(File(base, "crash-logs"))
         val verifier = ContainerCandidateVerifier(
             apiWrapper, cache, engine, image, imageJava, File(workDir, "verify"),
-            resources = containerResources, containerUser = containerUser
+            resources = containerResources, containerUser = containerUser, crashLogs = crashLogs
         )
         // Containers first: a JVM that was SIGKILLed (systemd's TimeoutStopSec expiring mid-cleanup) leaves them
         // running, parented by the docker daemon rather than this unit's control group, so nothing else on the
@@ -206,16 +234,22 @@ object GrinderApplication {
                     clientsideMods = apiWrapper.apiProperties.clientsideMods.toList(),
                     whitelist = apiWrapper.apiProperties.modsWhitelist.toList()
                 )
-            }
+            },
+            crashLogs = crashLogs,
+            requeue = requeue
         ).start()
         val reportUrl = reportUrl(bindHost, server.port)
         log.info("Report:  $reportUrl/    CSV: $reportUrl/export.csv    live status: $reportUrl/status")
+        log.info("Crash consoles of boots that died: $reportUrl/crash-logs (also linked per row in the report)")
         log.info("Fallback list for SPC instances (set as their fallback.updateurl): $reportUrl/as-properties")
 
         if (args.isNotEmpty()) {
             // One-shot: grind a fixed set of project URLs (handy for an end-to-end verification), then
             // hold the report open. The re-verify TTL still applies, so re-running skips fresh verdicts.
-            val candidates = args.map { GrindCandidate(it, slugFromUrl(it), 0, ModPlatforms.ofUrl(it)) }
+            // Same resolution the re-grind queue uses, and for the same reason: a link no platform recognises
+            // can only fail later, so it is named back now rather than counted as work.
+            val (candidates, unresolvable) = RequeueSelection.fromLinks(args.toList())
+            unresolvable.forEach { log.warn("Not a Modrinth or CurseForge project link, ignoring: $it") }
             log.info("One-shot run: grinding ${candidates.size} candidate(s) with $workers worker(s)...")
             // Registered like the continuous path's pool: activePool is the only handle the shutdown hook has,
             // and without it Ctrl-C here signalled and awaited nothing -- both calls no-opping through a null.
@@ -261,16 +295,36 @@ object GrinderApplication {
         var pass = 0
         while (running.get()) {
             pass++
+            // The immediate lane first, and forced: these are projects somebody decided are wrong, and a
+            // wrong verdict is usually a recent one, so an unforced drain would skip every one as fresh.
+            // Ground before the catalog slice so a re-grind lands in minutes rather than at the next TTL.
+            val requeued = requeue.drain()
             val batch = crawler.nextBatch()
+            // Announced before either pool runs, and counting both: /status answers "what is it doing right
+            // now?", and a drain of hundreds used to leave it showing the *previous* pass for the duration.
+            status.beginPass(pass, requeued.size + batch.candidates.size)
+            if (requeued.isNotEmpty()) {
+                log.info("Pass #$pass: re-grinding ${requeued.size} requested candidate(s) ahead of the crawl...")
+                GrindPool(grinder, workers).also { activePool.set(it) }.grindAll(requeued, force = true)
+            }
+            // LANDMINE: this check is what keeps a *second* pool per pass safe. The shutdown hook holds one
+            // handle and reads it once (deliberately -- reading twice could signal one pool and wait on
+            // another), so a stop that landed in the drain above has already been signalled, awaited and
+            // reported complete. Falling through would start a whole new pool of boots behind it, creating
+            // containers after the hook finished and while TimeoutStopSec counts down.
+            if (!running.get()) {
+                break
+            }
             log.info("Pass #$pass: grinding ${batch.candidates.size} candidate(s)...")
-            status.beginPass(pass, batch.candidates.size)
             val pool = GrindPool(grinder, workers).also { activePool.set(it) }
-            val pass = pool.grindAll(batch.candidates)
-            val verified = pass.verified
+            // Named for what it is, and deliberately not `pass`: that shadowed the pass *counter*, so every
+            // "Pass #$pass" below it printed this data class instead of the number.
+            val catalogPass = pool.grindAll(batch.candidates)
+            val verified = catalogPass.verified
             activePool.set(null)
             // Advance the crawl only past what was actually ground. An interrupted pass re-hands the rest next
             // time instead of skipping those projects until the next full sweep, weeks or months away.
-            crawler.commit(batch, pass.reached)
+            crawler.commit(batch, catalogPass.reached)
             log.info("Pass #$pass complete: $verified verified, ${store.all().size} verdict(s) total.")
             // Bound the loader cache by time. Each tuple costs ~150 MB and loaders keep shipping builds, so an
             // unattended sweep would grow it without limit; a tuple still being booted is stamped as used on
@@ -288,8 +342,18 @@ object GrinderApplication {
             if (pause.isZero) {
                 continue
             }
+            // Served out in slices rather than one sleep, so a re-grind queued into a dozing daemon starts in
+            // seconds instead of waiting out a six-hour inter-sweep pause. See GrindPacing.pollInterval.
+            val wakeAt = System.currentTimeMillis() + pause.toMillis()
             try {
-                Thread.sleep(pause.toMillis())
+                while (running.get() && System.currentTimeMillis() < wakeAt) {
+                    if (requeue.pending() > 0) {
+                        log.info("Work was queued for re-grinding; starting the next pass now.")
+                        break
+                    }
+                    val remaining = Duration.ofMillis(wakeAt - System.currentTimeMillis())
+                    Thread.sleep(GrindPacing.pollInterval(remaining).toMillis())
+                }
             } catch (_: InterruptedException) {
                 break // shutdown requested during the inter-pass wait
             }
@@ -371,6 +435,59 @@ object GrinderApplication {
 
     private fun env(key: String, default: String): String = System.getenv(key)?.takeIf { it.isNotBlank() } ?: default
 
-    /** Best-effort project-slug from a URL (last path segment) — used only for the skip-already-done check. */
-    private fun slugFromUrl(url: String): String = url.substringBefore('?').trimEnd('/').substringAfterLast('/').ifBlank { url }
+    /**
+     * Handle `--requeue …` and `--requeue-before …`, print what was queued, and return without grinding.
+     *
+     * Two selectors, because two things actually happen. `--requeue <url>…` is a named handful — a report a
+     * user disputed, a project whose verdict looks wrong. `--requeue-before <instant>` is the recurring one:
+     * a defect is found in the engine and *everything verified before the fix* is suspect, which is a
+     * population nobody should have to list by hand. Both are additive and idempotent — queueing an entry
+     * that is already waiting changes nothing.
+     *
+     * The running daemon picks the queue up at the start of its next pass. This process deliberately builds
+     * nothing else: no Docker, no loader cache, no report port, because a service is already holding those.
+     *
+     * **It writes to stdout, never to `log`, and that is load-bearing rather than stylistic.** `ApiProperties`
+     * is registered as log4j's `ConfigurationFactory`, so the first log statement in a process constructs one
+     * and whatever it resolves is remembered in SPC's Preferences node for every later run — which is exactly
+     * what [claimSpcPreferencesNode] and [pinSpcHomeDirectory] exist to control, and which this path runs
+     * *before*. An operator running `--requeue` would otherwise re-pin the home of the service it is queueing
+     * work for. Stdout is also simply what a queue-and-exit command should produce.
+     */
+    private fun enqueueAndExit(args: Array<String>, requeue: RequeueStore, store: VerdictStore) {
+        val verb = args.first()
+        val rest = args.drop(1)
+        val candidates = when (verb) {
+            "--requeue" -> {
+                val (resolvable, rejected) = RequeueSelection.fromLinks(rest)
+                rejected.forEach { println("Not a Modrinth or CurseForge project link, ignoring: $it") }
+                resolvable
+            }
+
+            "--requeue-before" -> {
+                val instant = rest.firstOrNull()?.let { runCatching { Instant.parse(it) }.getOrNull() }
+                if (instant == null) {
+                    println("--requeue-before needs an ISO-8601 instant, e.g. --requeue-before 2026-08-23T18:00:00Z")
+                    return
+                }
+                RequeueSelection.verifiedBefore(store.all(), instant)
+            }
+
+            else -> {
+                println("Unknown verb '$verb'. Use --requeue <url>… or --requeue-before <ISO-8601 instant>.")
+                return
+            }
+        }
+        if (candidates.isEmpty()) {
+            println("Nothing to re-grind: the selection matched no project.")
+            return
+        }
+        val added = requeue.add(candidates)
+        println(
+            "Queued $added of ${candidates.size} project(s) for immediate re-grinding " +
+                "(${candidates.size - added} already waiting); ${requeue.pending()} now pending.\n" +
+                "A running daemon takes them at the start of its next pass; a stopped one on its next start."
+        )
+    }
+
 }

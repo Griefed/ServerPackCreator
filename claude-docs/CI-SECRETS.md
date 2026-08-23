@@ -56,7 +56,7 @@ Nothing in `.forgejo/workflows` uses the automatic job token.
 | `SPCUPLOAD_KEY` | OpenSSH **private** key, **no passphrase** — the action cannot answer a prompt | devbuild |
 | `SPCUPLOAD_TARGET` | remote directory the `continuous` folder is copied into | devbuild |
 | `GIT_USER` / `GIT_MAIL` | committer identity for the automated commits (semantic-release's `RELEASE:` + changelog, and the sponsors/contributors refresh). Not credentials, but passed via `env:` rather than interpolated into a command, like every other value | release-generate, update-readme |
-| `WEBHOOK_URL` | Discord webhook for the Qodana result post. **Optional**: the step exits cleanly when unset | qodana |
+| `WEBHOOK_URL` | Discord webhook — the Qodana result post and the release announcement (`news`). **Optional in both**: each step exits cleanly when unset | qodana, release-build |
 | `VT_API_KEY` | VirusTotal API key — profile → API key | release-build |
 | `INSTALL4J_LICENSE` | install4j license key, for the major version the workflows pin (`version:` on the setup-install4j step, kept in step with `install4j` in `gradle/libs.versions.toml`). **a major-version bump needs a key valid for that version** — ej-technologies issues an upgraded key, free if the release falls in your support period — or both jobs fail at the media step | release-build, devbuild |
 
@@ -88,6 +88,7 @@ rather than the release:
 | `docker` | `DOCKERHUB_USER`, `DOCKERHUB_TOKEN`, `DOCKERHUB_REPO`, `GH_TOKEN` (ghcr login) |
 | `virustotal` | `VT_API_KEY`, `FJ_TOKEN` (appends the scan links to the release) |
 | `mirror` | `GH_TOKEN`, `FJ_TOKEN` (reads the release notes back off Forgejo). **No `GITLABCOM_TOKEN`** since 2026-08-23 — GitHub is the only outward mirror |
+| `news` | `WEBHOOK_URL` only, and optionally — a release with no Discord webhook configured announces nothing and stays green. Announces the **Forgejo** release, so it does not wait for `mirror` |
 
 `FJ_TOKEN` is therefore the one secret four separate jobs depend on — it is the first thing to check
 when a release half-happens.

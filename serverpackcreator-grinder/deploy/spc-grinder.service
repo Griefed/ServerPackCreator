@@ -58,6 +58,9 @@ Environment=SPC_GRINDER_HOME=/home/grinder/.spc-grinder
 #Environment=SPC_GRINDER_CACHE=/home/grinder/.spc-grinder/cache
 #Environment=SPC_GRINDER_STORE=/home/grinder/.spc-grinder/verdicts.json
 #Environment=SPC_GRINDER_CURSORS=/home/grinder/.spc-grinder/cursors.json
+# The immediate re-grind queue. Written by `--requeue`/`--requeue-before` (run as the SAME user, or the
+# daemon cannot read it back) and drained at the start of every pass.
+#Environment=SPC_GRINDER_REQUEUE=/home/grinder/.spc-grinder/requeue.json
 
 # The image the boots run in. Build it with serverpackcreator-grinder/docker/Dockerfile.
 #Environment=SPC_GRINDER_IMAGE=spc-grinder-runtime:latest

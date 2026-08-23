@@ -92,8 +92,15 @@ though their detail lives deeper:
 - **Never wire the candidate-mod boot with network.** `--network none` is the whole isolation guarantee; only
   the one-off loader install per tuple gets network. Detail: `grinder/loader/CLAUDE.md`.
 - **A mod must never be mis-scored as a clientside crash.** Two independent guards exist (selection-time loader
-  availability + Java support, and the classifier's pre-launch setup-abort mapping), plus clientside's crash
-  re-check when an older cached loader build was booted. See `serverpackcreator-clientside/CLAUDE.md`.
+  availability + Java support, and the classifier's pre-launch setup-abort mapping), plus *three* crash checks
+  in clientside: one when an older cached loader build was booted, one — since 2026-08-23 — when the crash
+  contradicts a declared server support, which boots up to two **other versions of the mod** to find out whether
+  the crash was that build's, and a free cross-loader pass that refuses to let a crash stand when another loader
+  of the same project booted a server with the same list-entry (the entry is what gets published, and it is
+  loader-agnostic). See `serverpackcreator-clientside/CLAUDE.md`. **Consequence for pacing:** one
+  contradicting crash can now hold a worker for up to three boot budgets (~45 min at the default 15), which is
+  the price of not publishing a wrong `HIGH` to `/as-properties`. Only a crash the metadata contradicts pays it;
+  a genuine clientside mod still costs one boot, because its metadata and its crash agree.
 - **`installDist` is not rebuilt by `test`** — always rebuild before a live run, or you will draw conclusions
   from a stale jar (this has happened: a run reported the unfiltered 7 339-version axis because of it).
 
@@ -238,15 +245,76 @@ though their detail lives deeper:
   unknown case instead of skipping it, and `26.2` is in the default Minecraft axis so the `YY.x` scheme is exercised
   without anyone remembering to pass `SPC_GRINDER_TEMPLATE_MC`.
 - **Staging is reclaimed, not accumulated** (`BootWorkspaceReaper`). Each attempt stages a full server pack with the
-  overlaid loader libraries under `<work>/verify/boot/<slug>-<loader>` plus downloaded jars under
-  `<work>/verify/verify/<slug>-<loader>`, and staging only ever deleted a directory when that *same* `(slug, loader)`
+  overlaid loader libraries under `<work>/verify/boot/<platform>-<slug>-<loader>` plus downloaded jars under
+  `<work>/verify/verify/<platform>-<slug>-<loader>`, and staging only ever deleted a directory when that *same*
+  `(platform, slug, loader)`
   was retried — which during a catalog sweep is never. Measured 2026-07-30: **98 GB across 1750 attempt directories,
   ~23 GB/h**, enough to fill the host inside a day. The reaper strips each finished candidate's staging down to its
   `boot.log` (the verdict detail is read from it; the packs are reproducible), runs in a `finally` so a *thrown*
   verification is reclaimed too, and sweeps orphans at startup — first live startup reclaimed 8 897 MiB, taking the
-  work tree from 8.7 GB to 155 MB. **Landmine:** it is scoped to one slug on purpose, matching `<slug>-<loader>` by
-  cutting the loader suffix rather than prefix-matching the slug — workers run in parallel, and a prefix match
-  (`jei` vs `jei-extras`) would delete the pack out from under a container that is still booting it.
+  work tree from 8.7 GB to 155 MB. **Landmine:** it is scoped to one **`(platform, slug)`** on purpose, and both halves matter.
+  The names are built and parsed by `AttemptDirectory` in `-clientside` — one place, because the two verifiers
+  that *write* the name and this reaper, which decides what to *delete* from it, used to agree only by separate
+  string literals happening to match. The loader suffix is cut rather than the slug prefix-matched (`jei` vs
+  `jei-extras`), and the platform is part of the scope because **the same slug on Modrinth and CurseForge is two
+  candidates this pool grinds in parallel** — freshness is keyed `(platform, slug)` for the same reason. Reaping
+  on the bare slug deleted the other platform's pack mid-boot: measured on `creativecore`, 2026-08-23, two
+  platform runs 71s apart produced NeoForge 26.2.0.66 / MC 26.2 reading **SURVIVED on one and CRASHED on the
+  other** for the identical build, a Fabric boot exiting **127** (the shell could not find the command — the pack
+  had gone), and re-checks reading INCONCLUSIVE on a file the other run had booted to a ready-line. A crash is
+  the one outcome that reaches HIGH, so this manufactured false positives rather than merely losing runs.
+  Directories staged before the rename match no owner and are cleared by the startup `reapAll()`.
+  **Landmine — reap the identity the staging was *named* from, not the candidate's.** Directories carry
+  `ProjectFiles.platform`/`slug` (the resolved report's); `ContainerCandidateVerifier.reapTarget` therefore
+  prefers the report and falls back to the candidate only when the verification threw and there is no report
+  to ask. `Grinder` logs `"Platform mismatch for …: candidate says 'X', resolved report says 'Y'"`, so the two
+  are known to be able to disagree, and a slug is a mutable name a rename can move out from under a queued
+  candidate. Asking with the candidate's copy of either matches nothing and leaks a whole pack per attempt.
+- **A crashed boot's console outlives its staging** (`CrashLogStore`, `ContainerCandidateVerifier.keepCrashConsoles`).
+  The reaper keeps one `boot.log` per attempt directory, but staging *wipes and re-creates* that directory, so
+  the next re-grind of the same tuple destroyed the console for a verdict that is still published. Since a crash
+  is the only outcome that reaches HIGH — and its usual cause, a server loading a mod that reaches for a
+  client-only class (`NoClassDefFoundError: net/minecraft/client/…`), is legible from the console and nothing
+  else — crashing consoles are copied into `<home>/crash-logs` as each candidate's verdicts land. **Only
+  CRASHED is kept**: a clean boot proves nothing about sideness and explains nothing either.
+  - **Under the *home*, not under `work/`** — everything below `work/` is scratch the reaper may reclaim.
+  - **Growth is bounded by the catalog, not by uptime**: a log is named `<platform>-<slug>-<loader>.log` via
+    the same `AttemptDirectory` helper, so a re-grind *replaces* it. That is the deliberate opposite of the
+    naming that once grew the work tree to 98 GB. Oversized consoles keep their **tail** (the stack trace is
+    at the end) with the truncation written into the file.
+  - **LANDMINE — the name is untrusted input.** `/crash-log?name=` addresses the store by name, and this
+    report has no authentication and is documented as reverse-proxyable. `read` requires a plain file name
+    resolving directly inside the store — checked on the string before the filesystem is touched, then
+    confirmed canonically so a symlink cannot lead out — and a refusal is deliberately indistinguishable from
+    an absent log, so probing tells a caller nothing. Two tests pin it; do not "simplify" it to `File(dir, name)`.
+- **The immediate re-grind queue is how a *defect in the engine* gets un-published** (`RequeueStore`,
+  `RequeueSelection`, `Grinder.grind(force)`). The crawl and the re-verify TTL answer "when does this come
+  round again?" with *eventually, at TTL* — correct when a mod changes, wrong when the bug is ours, and then
+  the bad verdicts are already being served. Drained at the **start of every pass**, before the catalog slice.
+  **LANDMINE — the drain must stay `force = true`.** A project is queued precisely because its verdict is
+  wrong, and a wrong verdict is usually a *recent* one (engine defects are found by reading verdicts that were
+  just produced), so an unforced drain turns straight into `SKIPPED_FRESH` and looks like it worked.
+  `aForcedGrindReVerifiesEvenAFreshVerdict` pins it.
+  - Selectors: `--requeue <url>…` for a named handful, `--requeue-before <ISO instant>` for the recurring
+    shape — a defect invalidates a *population*, not a hand-assembled list. One candidate per project
+    (platform + the platform's own id where known), so a rename is still one re-grind and the same slug on
+    two platforms is still two.
+  - **LANDMINE — the CLI path runs *before* `claimSpcPreferencesNode()`/`pinSpcHomeDirectory()` and must never
+    use `log`.** It is run by an operator against a service that is already up: claiming or re-pinning would
+    move the home out from under the running daemon, and those claims are remembered for every later run. The
+    first `log` statement in a process constructs the very `ApiProperties` they exist to control, so this path
+    prints to stdout. `theRequeuePathRunsBeforeTheClaimsAndNeverLogs` guards **both** halves — `main`'s own
+    body cannot see a log call made from inside the helper, which is why the guard reads the helper's source.
+  - **Not an HTTP endpoint, on purpose.** The report server has no authentication; a write endpoint there
+    would let anyone who can reach the page schedule unbounded container work.
+  - `/status` reports `requeued`; a queued grind logs `(re-grind requested)`, which is how the log tells
+    "the crawl reached this" from "somebody decided the old verdict was wrong".
+- **The report links every endpoint.** `/export.csv`, `/status`, `/as-properties` and `/crash-logs` are buttons
+  beside "Download CSV", and each crashing row links its own console. They were previously reachable only from
+  a line printed at startup, which an operator sees once. `VerdictReportRenderer.toHtml` takes a per-row
+  *lookup* for the crash-log name rather than reading a field off `GrindVerdict`: the log lives on disk, so
+  asking at render time means the link appears exactly when the file does, and a hand-deleted log cannot
+  strand the table pointing at a 404.
 
 and the grinder sets `$JAVA` per MC version (via the pack's `variables.txt`) from SPC's declared
 required-Java — **no Java download**, which is what keeps mod-boots runnable under `--network none`.
