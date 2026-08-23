@@ -263,9 +263,12 @@ seam (writes the log, then `BootLogClassifier` + `BootLogExcerpt`). The default
 ## Testing patterns
 
 - 134 tests, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
-  JSON to a fake `HttpFetcher`; **`MetadataScannerTest` is the only one needing a resource** — it boots
-  an offline `ApiWrapper` from `src/test/resources/serverpackcreator.properties` (whose `ModScanner`
-  relies on the API's cached version-manifests, hence `test` `dependsOn :serverpackcreator-api:processTestResources`).
+  JSON to a fake `HttpFetcher`. **Four need a resource** — `MetadataScannerTest`, `LoaderVersionResolverTest`,
+  `BootVerifierSelectionTest` and `AttemptStagingIsolationTest` each boot an offline `ApiWrapper` from
+  `src/test/resources/serverpackcreator.properties` (whose `ModScanner` relies on the API's cached
+  version-manifests, hence `test` `dependsOn :serverpackcreator-api:processTestResources`). The count is
+  re-derivable with `grep -rl "ApiWrapper.api(" src/test`; it read "`MetadataScannerTest` is the only one"
+  while three already did, which is why it is stated as a command rather than a number to trust.
 - `BootCandidateSelector`, `BootLogClassifier`, `FilenameStemDeriver`, `ClientsideListEditor`, plus the
   extracted `BootVerifier.outcomeFor` (`BootVerifierOutcomeTest`) and `HostProcessServerRunner`'s
   no-start-script contract are pure/offline-testable without a running server — keep new logic that way.
