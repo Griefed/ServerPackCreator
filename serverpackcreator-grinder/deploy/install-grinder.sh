@@ -259,6 +259,35 @@ JAVA_HOME in the unit, or the first `systemctl start` fails with:
 JVM
 fi
 
+# --- The headless browser CurseForge needs -----------------------------------------------------------
+# Distribution-locked CurseForge files (`allowModDistribution=false`) carry no API download-URL and are
+# fetched by driving the site with a headless Chromium, on the host, as the service account. Checked
+# against $SERVICE_USER's cache rather than the caller's: Playwright keeps browsers under $HOME, so the
+# operator having them proves nothing about the service. Missing, every locked CurseForge file fails and
+# the catalogue looks merely uncooperative.
+step "Checking the headless browser for locked CurseForge files"
+
+service_home="$(getent passwd "$SERVICE_USER" | cut -d: -f6)"
+if [[ -n "$service_home" ]] && compgen -G "$service_home/.cache/ms-playwright/chromium-*" >/dev/null 2>&1; then
+    echo "Chromium present in $service_home/.cache/ms-playwright"
+else
+    step "WARNING: no Chromium for $SERVICE_USER"
+    cat <<BROWSER
+Distribution-locked CurseForge files can only be fetched with a headless browser, and $SERVICE_USER has
+none. Modrinth is unaffected; locked CurseForge candidates will fail with
+
+  Could not download <file>.jar.
+
+Install it as the service account, then the OS libraries as root:
+
+  sudo -u $SERVICE_USER -H npx --yes playwright install chromium
+  sudo npx --yes playwright install-deps chromium
+
+The second command is not optional on a headless host: without those libraries Chromium launches but
+navigations time out, which reads as CurseForge being slow rather than as a missing dependency.
+BROWSER
+fi
+
 # --- Optional: the unit ---------------------------------------------------------------------------
 if [[ "$install_unit" == true ]]; then
     step "Installing $UNIT_NAME"
@@ -281,9 +310,14 @@ out, with its default:
 
   $script_dir/$UNIT_NAME
 
-Two worth a decision rather than a default:
+Four worth a decision rather than a default:
   SPC_GRINDER_WORKERS  budget 3 GiB of Docker-available memory each; the default of 2 is conservative
+  SPC_GRINDER_CPUS     cores per container, so workers x cpus is what the boots can occupy (4 by
+                       default). A unit-level CPUQuota= cannot reach them -- containers belong to the
+                       Docker daemon's control group, not this service's
   SPC_GRINDER_HOST     loopback unless a reverse proxy needs it; the report has NO authentication
+  SPC_GRINDER_CONTAINER_USER  defaults to the owner of the work directory, which is almost always right;
+                       a wrong value makes every install fail with Permission denied inside the pack
 
 NEXT
 

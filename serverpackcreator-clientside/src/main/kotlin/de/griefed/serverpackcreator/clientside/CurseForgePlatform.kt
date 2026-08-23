@@ -65,10 +65,7 @@ class CurseForgePlatform(
         val modId = modNode.path("id").asLong()
         val webBase = modNode.path("links").textOrNull("websiteUrl") ?: projectUrl
 
-        val filesResponse = objectMapper.readTree(
-            httpFetcher.get("$apiBase/mods/$modId/files?pageSize=50", headers)
-        )
-        val files = filesResponse.path("data").map { fileNode -> toModFile(fileNode, webBase) }
+        val files = allFilesOf(modId, webBase, slug)
         return ProjectFiles(
             platform = "CurseForge",
             slug = slug,
@@ -83,12 +80,50 @@ class CurseForgePlatform(
         val modId = nativeRef.toLong()
         val modNode = objectMapper.readTree(httpFetcher.get("$apiBase/mods/$modId", headers)).path("data")
         val webBase = modNode.path("links").textOrNull("websiteUrl") ?: "https://www.curseforge.com"
-        val files = objectMapper.readTree(httpFetcher.get("$apiBase/mods/$modId/files?pageSize=50", headers))
+        // Deliberately one page, unlike [resolve]: a dependency only needs *a* usable file for the loader and
+        // Minecraft version being booted, and paging every dependency of every candidate would multiply what a
+        // catalog sweep spends of the API key's quota for evidence nobody reads.
+        val files = objectMapper.readTree(httpFetcher.get(filesUrl(modId, index = 0), headers))
             .path("data").map { toModFile(it, webBase) }
         ProjectFiles("CurseForge", nativeRef, webBase, DeclaredSupport.UNKNOWN, DeclaredSupport.UNKNOWN, files)
     } catch (ex: Exception) {
         log.warn("Could not resolve CurseForge dependency '$nativeRef': ${ex.message}")
         null
+    }
+
+    /** One page of a project's files, `index` being the offset CurseForge pages on. */
+    private fun filesUrl(modId: Long, index: Int) = "$apiBase/mods/$modId/files?index=$index&pageSize=$FILE_PAGE_SIZE"
+
+    /**
+     * Every published file of [modId], walked page by page rather than taking the newest [FILE_PAGE_SIZE].
+     *
+     * **Why the whole list:** a project that migrated Forge → NeoForge keeps publishing NeoForge builds, so its
+     * last Forge build sinks toward the far end of a single page and the builds before it drop out of view
+     * entirely — leaving the boot-phase's crash re-check with no other version of *that* loader to try,
+     * precisely for the projects that produce a false clientside verdict (measured on `iron-chests`,
+     * 2026-08-23). Most projects still cost one call, because `totalCount` says when to stop.
+     *
+     * Bounded by [MAX_FILE_PAGES]: a `totalCount` that never arrives — an odd answer, a changed response
+     * shape — must cost a bounded number of calls against the key's quota rather than spin. A truncated view
+     * is logged rather than passed off as the whole list.
+     */
+    private fun allFilesOf(modId: Long, webBase: String, slug: String): List<ModFile> {
+        val files = ArrayList<ModFile>()
+        for (page in 0 until MAX_FILE_PAGES) {
+            val response = objectMapper.readTree(httpFetcher.get(filesUrl(modId, files.size), headers))
+            val data = response.path("data")
+            if (data.isEmpty) {
+                break
+            }
+            data.forEach { fileNode -> files.add(toModFile(fileNode, webBase)) }
+            // An absent pagination block reads as "this was all of it", which keeps a fetcher that does not
+            // emulate paging to exactly one call instead of walking until it repeats itself.
+            if (files.size >= response.path("pagination").path("totalCount").asInt(files.size)) {
+                return files
+            }
+        }
+        log.warn("CurseForge project '$slug' has more files than ${MAX_FILE_PAGES * FILE_PAGE_SIZE}; older builds were not read.")
+        return files
     }
 
     /**
@@ -123,5 +158,17 @@ class CurseForgePlatform(
         // segments are [game, category, slug, ...]; the slug sits at index 2.
         require(segments.size >= 3) { "Cannot extract a CurseForge mod-slug from '$projectUrl'." }
         return segments[2]
+    }
+
+    companion object {
+        /** CurseForge's maximum `pageSize` for the files endpoint; asking for more is not honoured. */
+        const val FILE_PAGE_SIZE = 50
+
+        /**
+         * How many file-pages one project may cost. 500 files is far past any real mod's history, so the cap
+         * is a runaway guard rather than a budget — it exists so a response that never reports a reachable
+         * `totalCount` cannot spend the API key's quota in a loop.
+         */
+        const val MAX_FILE_PAGES = 10
     }
 }

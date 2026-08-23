@@ -2072,3 +2072,308 @@ of the shapes a bind can take: `0.0.0.0` printed an unopenable `http://0.0.0.0:8
 `http://::1:8757`, which `URI` does not reject — it silently parses the port as `-1`. Fixed after extracting
 `reportUrl` so it was testable at all; the concrete-IPv4 case was pinned green *before* the fix, so the change is
 provably confined to the two broken shapes.
+
+## 2026-08-23 — the grinder was producing nothing, in three unrelated ways
+
+Reported as three symptoms in one message: CurseForge jars would not download, Modrinth ones downloaded but the
+check never ran, and separately the report was still unreachable through the reverse proxy. They turned out to
+share nothing but the day.
+
+**The proxy was never the grinder's problem.** The bind had already been widened — `ReportServer` logged
+`0:0:0:0:0:0:0:0`, which is a dual-stack wildcard socket, while `main` logged `127.0.0.1` because `reportUrl`
+rewrites `0.0.0.0` into something clickable. The two lines disagreeing is what identified the bind as `0.0.0.0`.
+ufw was dropping the proxy's packets: its allow rules for the port named `172.17.0.0/24` and `172.18.0.0/24`,
+both with **zero packet counts**, and the proxy container sat on a third bridge. Timeout rather than
+connection-refused is the discriminator, and it is now a troubleshooting row — the existing row attributes that
+symptom to a loopback bind, which was true until the bind moved.
+
+**Every container write was being refused.** The runtime image bakes in `USER 1000:1000` and `ContainerSpec.user`
+defaulted to the same literal, which was correct only while the daemon ran as uid 1000 — it stopped being so on
+2026-08-22, when the grinder became a systemd service under its own account. The install console shows the shape
+exactly: three `Permission denied` lines near the top, the start script carrying on regardless, and twenty lines
+later the JVM's `Error: could not open 'user_jvm_args.txt'`. That last line is what the failure warning quoted,
+because it printed `output.lines.takeLast(25)` — so the visible evidence pointed at the start-script template
+while the cause had scrolled away. Three rounds of diagnosis went to networks, templates and loader versions
+before the full console was read.
+
+Two fixes, because the reporting failure is as real as the bug: `ContainerUser.forDirectory` resolves the owner
+of the mounted directory (override `SPC_GRINDER_CONTAINER_USER`, image default as fallback), and
+`InstallFailureDiagnosis` scans the *whole* console for a nameable cause, since a tail is the wrong slice
+whenever the first failure is survivable. The give-away worth remembering: every loader failed at once, and a
+permission wall is the only thing indifferent to which loader is being installed.
+
+**Locked CurseForge files were being downloaded and then thrown away.** `BrowserDownloader` navigates to
+`/download` from inside `waitForDownload`; CurseForge answers with a file transfer, Chromium aborts a navigation
+that becomes a download, and Playwright's `net::ERR_ABORTED` escaped the callback and tore down the wait that
+would have caught the file. Both wordings Playwright uses are now recognised, and nothing else is — a timeout or
+a DNS failure must still fail, or the downloader returns `null` in silence forever. Both navigations also stop
+waiting for `load`: a CurseForge page keeps fetching ads long after it is usable, and every timeout in the run
+was the untouched 30s default rather than a page-specific budget. The remaining half is on the host —
+`Playwright Host validation warning` was in the log all along, listing OS libraries nobody had installed, which
+is now checked by `install-grinder.sh` against the *service account's* cache rather than the caller's.
+
+**`/as-properties`, so the fallback list stops needing a maintainer.** The grinder already boots mods
+continuously and a crash is exactly the evidence the clientside list encodes, so the report server now serves a
+`serverpackcreator.properties` fragment an instance can poll through
+`de.griefed.serverpackcreator.configuration.fallback.updateurl`: the shipped list plus every `HIGH`-confidence
+finding, whitelist passed through so it replaces the GitHub URL wholesale rather than freezing half of it.
+
+The confidence floor is deliberately not a tunable. A clean boot proves nothing, while a false entry silently
+strips a mod out of every server pack built against the list, so only a crash-proven mod is published. Two
+encoding details are load-bearing and pinned by *parsing* the output with `java.util.Properties` rather than
+asserting on its shape: the consumer decodes ISO-8859-1, so entries are `\uXXXX`-escaped and this one endpoint
+does not answer UTF-8; and rendering is order-stable, so a poll that sees a difference has seen a real change.
+
+Three audit passes followed (iterations 17–19). The first found a code change riding inside a `docs:` commit
+and two joins with no guard at all — the browser's navigation options, and the wiring that feeds
+`/as-properties` SPC's real lists — plus two silent corruptions: an entry containing a comma, which the
+consumer's `split(",")` turns into two bogus prefix-matchers, and a malformed `SPC_GRINDER_CONTAINER_USER`
+being discarded without a word on the one knob whose purpose is overriding a resolution that already went
+wrong once.
+
+The second pass replaced the endpoint's *model* of its consumer with the consumer: `FallbackPropertiesConsumerTest`
+points a real `UpdateConfig.updateFallback` at a running `ReportServer` over loopback and checks the entries
+land in `GenerationConfig.clientsideMods`. Teeth verified by dropping the continuation backslash, which
+collapses the whole list to `[, entityculling-]`. It also recorded what this workstation *cannot* answer: with
+a named volume chowned to `1001:1001`, a root container reads it back as `1001:1001` while a `--user 1001:1001`
+container reads the same inode as `0:0` — Docker Desktop's id remapping, not kernel DAC, so neither the bug nor
+the fix reproduces here. The two-command check for the Linux host is in the audit rather than a claim of
+verification.
+
+Equivalence against the base was checked the usual way — `develop`'s unmodified test tree run against this
+branch's production code: **339 pre-existing guards, zero failures, zero compile errors**, so every signature
+gained a default and nothing existing changed shape.
+
+## 2026-08-23 — stopping the service actually stops the work
+
+Asked directly whether `systemctl stop` kills the workers and the containers. The honest answer was "yes, by
+two different mechanisms, and there are two holes" — which turned into this branch.
+
+The workers were never the problem in principle: they are threads in the one JVM, so there is nothing for
+systemd to kill separately. But `requestStop` sets a flag the worker loop reads *between* candidates, so a
+worker parked in a boot kept going for up to that boot's fifteen-minute budget while systemd counted down.
+`GrindPool.awaitStop(grace)` now signals, interrupts and joins with a deadline; a worker that ignores its
+interrupt is abandoned and logged, because nothing can force a thread to die in the JVM and the actual force
+is the process exiting.
+
+The containers were the real hazard, for a reason that is not visible in the unit file: **they are children of
+the docker daemon, not members of the unit's control group**, so `KillMode=control-group` never touches them.
+The shutdown hook was the only thing stopping them, and it went straight to `remove --force` — a SIGKILL to
+PID 1, costing an in-flight Minecraft server its world save. It now `docker stop`s each with a 15-second
+window, 8 at a time, because the window is per container and ten workers stopped serially would be ten windows
+and would overrun `TimeoutStopSec` into the SIGKILL the whole path exists to avoid.
+
+Two holes the question exposed:
+
+- Nothing stopped a worker creating a container *after* the sweep. Once shutdown hooks run, the JVM no longer
+  waits for worker threads, so a worker between its loader install and its mod boot could start one that
+  outlived the process. A `closed` flag now refuses creation, re-checked after the tracking-set add so a
+  container created in the gap removes itself.
+- A SIGKILLed JVM left containers running that **nothing could ever find again** — no label, no name, no
+  autoremove, and the tracking set died with the process. They now carry
+  `de.griefed.serverpackcreator.grinder` and startup reaps whatever wears it, which is the same shape as the
+  staging sweep that already ran beside it.
+
+Verified against a live daemon rather than argued: 6/6 gated cases on docker 29.7.2, including a container
+trapping SIGTERM to prove the signal arrives and is honoured before removal, and a labelled orphan reaped by
+the fresh engine a restart brings up. The pre-existing drain case went from instant to 15.6s, which is the
+change working — busybox's shell does not forward SIGTERM to `sleep`, so it uses the whole window and is then
+killed.
+
+Three audit passes followed (iterations 20–22), and each found something the previous had not. Iteration 20
+found the branch's own guarantee resting on a race: `grindAll` started its worker threads inside the `map` and
+published the list `awaitStop` reads only afterwards, so a stop landing in that window would have interrupted
+nobody and returned `true` — a clean stop that had not happened. It also found the hook's wiring, the 15-second
+window and the unit's stop timeout all unpinned, which is the same gap `FallbackListWiringTest` was written to
+close two audits earlier, simply not applied here.
+
+Iteration 21 found the one-shot run building its `GrindPool` inline and never registering it in `activePool`,
+the only handle the hook has — so Ctrl-C on the end-to-end verification path signalled and awaited nothing,
+both calls no-opping through a null receiver. It looked like it worked, because the engine still closed and the
+boots collapsed with their containers. The same pass caught the workers being handed a *second* full window
+after the containers had spent the first, against a log line, a comment and a README section that all promised
+one shared budget.
+
+Iteration 22 found the promised single window was still not real above eight in-flight containers, because the
+stop concurrency was capped there — at the deployed ten workers the container phase alone was thirty seconds
+and the workers got none of the budget. The cap was raised to sixty-four, which is above anything a host has
+the memory to run, and the arithmetic that had been transcribed into a test, a unit comment and the README
+collapsed to one window.
+
+Two process notes worth more than the individual bugs. **An expected red that does not arrive is the finding.**
+The one-shot guard passed when it should have failed, because counting `activePool.set(` occurrences also
+counts the pass loop's `activePool.set(null)` — a reset reading as a registration. And **H1's guards were never
+observed red at all**: the interleaving could not be provoked at 8 workers or at 64, because the first
+`Grinder.grind` initialises log4j and reliably delays worker 1 past the construction loop. That is stated in
+the test's own doc rather than glossed, because a guard whose teeth were never checked has repeatedly turned
+out to assert nothing.
+
+## 2026-08-23 — the container CPU cap becomes an operator knob
+
+`SPC_GRINDER_CPUS` caps every container the grinder starts — each mod boot and each loader install — in
+cores, the way docker's own `--cpus` does. The cap was not new: `ContainerResources` has carried a
+200,000µs quota since the container runtime existed, and `ContainerCandidateVerifier`,
+`ContainerServerRunner` and `DockerLoaderInstaller` have all accepted one. `main` never passed one, so the
+value was unreachable from outside the source — the same shape of gap `SPC_GRINDER_HOST` closed for the
+report's bind address, and `CpuLimitWiringTest` is the same kind of guard, asserting the join against
+`main`'s own text because `main` boots Docker.
+
+The default stays 2 cores, so upgrading re-tunes nothing, and `ContainerResourcesTest` pins that
+equivalence (`ContainerResources() == forCpus(2.0)`) instead of asserting it in prose. `forCpus` also
+absorbs the two ends that otherwise surface far from their cause: `0` means an unset quota — docker's own
+"no limit", matching how `0` reads for `SPC_GRINDER_CACHE_TTL_DAYS` — and anything positive below the
+daemon's 1ms floor is raised, because a quota docker refuses fails every container at create time rather
+than throttling it.
+
+**The finding was in the half nobody would have looked at.** `hostConfigFor` sent `withCpuQuota` and no
+period. A quota is a fraction of a period, so the real cap was whatever the daemon's default period made
+it — correct today by coincidence, since the kernel's `cpu.cfs_period_us` is the 100ms the arithmetic
+assumed. Measured against a live daemon (Docker 29.7.2) with the period dropped and a 50ms period
+requested, 1.5 cores arrived in the container's cgroup as `75000 100000`: **0.75 cores, silently halved,
+with nothing reporting a problem.** `theCpuCapReachesTheKernelWithItsPeriod` reads the numbers back from
+*inside* the container for that reason — docker echoing a `HostConfig` only proves the field was
+transmitted — and uses the non-default period on purpose, since at 100ms the assertion passes with the
+period never sent. That is the guard whose teeth were checked by removing the fix and watching it go red.
+
+The operator-facing half states what the knob does *not* cover, which is the more useful sentence: a
+unit-level `CPUQuota=` bounds the JVM's host-side work (mod resolution and downloads, pack generation, the
+headless Chromium a distribution-locked CurseForge file needs) and can never reach a boot, because
+containers are children of the docker daemon rather than of the service's control group — the same fact
+that makes the shutdown hook the only thing able to stop them. Both halves are now in README §5 (*Capping
+CPU*, with `workers × cpus` as what the grinder can occupy) and in the unit as a commented `CPUQuota=`
+beside the new `Environment=` line. The floor is stated too: below ~1 core a boot that cannot reach its
+ready-line inside 15 minutes is scored INCONCLUSIVE, which reads as a mod that hangs rather than as a
+starved host — so fewer workers beats starving each of them.
+
+Suite 290 → 298, 0 failures, 22 skipped; the gated `DockerJavaContainerEngineIT` green at 7/7.
+
+**Audit iteration 23 then found the knob's own inversion.** `forCpus` used its *computed* quota as the
+"uncapped" sentinel, so any count below 5e-6 cores rounded to 0µs and returned quota `0` — which is docker's
+no-limit, verified in the container's cgroup as `max 100000`. A request for the smallest possible cap
+produced no cap at all, against a KDoc that promised the floor, in the one direction a hardening knob must
+not fail. The decision now reads the input (`cpus == 0.0`), the sentinel is named, and non-finite input is
+rejected up front: both `Infinity` and `NaN` survive `String.toDouble()`, and both round into a lie —
+`Long.MAX_VALUE` (so large it means uncapped) and `0` (uncapped outright). The same pass established, by
+measurement, that an over-large value needs **no** clamp: on a 16-core host a 1000-core quota is accepted and
+reported verbatim, because the raw cfs path carries none of `--cpus`'s host-bound validation. Three
+operator-facing findings went with it — the startup line now states the cap as `cpus=2.0 cores
+(200000/100000µs)` or `cpus=uncapped` instead of a raw quota that read as "zero CPU" at the escape hatch,
+`### Capping CPU` stopped splitting the worker-sizing section in half, and the installer's "worth a decision"
+list names the knob. Final: **303 tests, 0 failures**, 16 skipped with the gated Docker IT enabled and 23
+without.
+
+## 2026-08-23 — the memory cap joins it, with a warning instead of a formula
+
+`SPC_GRINDER_MEMORY_GIB` completes the per-container budget: both caps now come from the environment through
+one `ContainerResources.forLimits` call, on the rules the CPU knob established — exact `0` uncapped, a smaller
+positive value raised to the daemon's floor rather than refused by it ("Minimum memory limit allowed is 6MB",
+its own words), negative and non-finite rejected. The default stays 3 GiB, so nothing an install already runs
+changes, and a new guard pins the thing neither literal default could: that `main`'s fallbacks resolve to
+*exactly* the `ContainerResources` property defaults, since every other construction site falls back to those
+independently. Its teeth were checked by flipping the class default to 4 GiB and watching it fail.
+
+**Why it shipped with a warning rather than as a lever.** The knob was asked for with "only change this when
+you know what you are doing", and the measurement behind that turned out to be sharper than expected: the
+packs the grinder builds leave `javaArgs` empty, so nothing passes `-Xmx` and the JVM derives the server's
+heap from the container's cgroup limit — Temurin 21, `--memory=3g` → `MaxHeapSize 805306368` (768 MiB, 25%);
+`--memory=1g` → `268435456`. The cap is therefore not a ceiling the boot happens to sit under, it is *what
+the heap is*. And it is simultaneously the divisor in §5's worker-sizing formula. So lowering it starves boots
+of heap, raising it without lowering `SPC_GRINDER_WORKERS` over-subscribes the host by exactly that factor,
+and both failures are OOM kills scored `INCONCLUSIVE` — indistinguishable, from the report, from mods that
+hang. That is the whole content of the README warning, the unit's comment block and the entry point's own:
+if the intent is "grind faster", the levers are `WORKERS` and `CPUS`.
+
+`CpuLimitWiringTest` became `ContainerLimitsWiringTest` in the process (it guards two knobs now, with the
+existing assertions intact and the memory equivalents added). Suite 303 → **310, 0 failures**, 16 skipped with
+the gated Docker IT enabled and 23 without.
+
+## 2026-08-23 — one build is not a mod: the other-version crash re-check
+
+`iron-chests` was reported `HIGH` off `Forge 48.1.0 / Minecraft 1.20.2 → CRASHED (exit 1)`, with the note
+"Declared server/both but the server crashed — a strong clientside signal". It is not a clientside mod, and
+the engine had no way to know: exactly **one** build of a project was ever booted, so "this build crashes"
+and "this mod cannot run on a server" produced identical evidence, and the tie was broken toward the answer
+that reaches `/as-properties` — where a wrong entry silently strips the mod from every server pack built
+against the fallback list.
+
+The third guard against a false `HIGH` (after the selection-time loader/Java gate and the classifier's
+setup-abort/killed mapping, and alongside the loader-build re-check) is therefore: **a crash that contradicts
+the metadata is re-checked on other versions of the mod**, and one clean boot there clears it. A mod that
+cannot run server-side cannot run server-side in *any* build, so a version that boots proves the crash
+belonged to that build. The sample is the newest file of each of the next two most-recent Minecraft versions
+— one per version, because two rebuilds for one Minecraft are near-identical code while a different version
+line is an independent sample — and it stops at the first clean boot.
+
+**The gate is the contradiction, not the crash.** It arms only when the platform's `server_side: required` or
+SPC's own jar scan claims server support, which is the same predicate that prints that note
+(`ClientsideVerifier.declaresServerSupport`, now shared so the two can never drift about what "declared
+server" means). Where the metadata already leans clientside, the crash *confirms* it and a re-check would
+spend boots to learn nothing while the crawl falls behind — and in a catalog sweep that agreement is the
+common case. Worth knowing for CurseForge, which is where the report came from: it has no sideness field at
+all, so the claim can only ever come from the jar scan, and a gate reading the platform alone would never arm
+for a CurseForge mod.
+
+Every other direction stays conservative, matching the loader-build re-check: crashes elsewhere corroborate
+and are named in the detail, and an attempt that learned nothing — staging failed, timed out — leaves the
+crash exactly as it was. Budget is a constructor knob (`otherVersionRecheckLimit`, default 2, `0` off) rather
+than an env var: no new deployment surface for a number nobody has evidence to tune yet. Cost is two extra
+boots per contradicting crash and nowhere else.
+
+**A defect the change forced out of hiding.** Every attempt for one candidate stages into
+`<work>/boot/<slug>-<loader>`, which staging wipes, so all of them write the same `boot.log` — while the
+*reported* verdict is frequently not the last boot, since both re-checks keep the original crash. The
+grinder's reaper then keeps that single file and deletes the staging around it, so the console a `HIGH` was
+diagnosed from was a different boot's. Pre-existing since the loader-build re-check landed and occasional;
+with up to three boots now sharing the file it would have been near-certain. `BootOutcome` carries its own
+console and `verify` writes the decided one back, best-effort like the write it repairs.
+
+Both fixes' guards had their teeth checked rather than assumed: stubbing the survivor lookup to `null` fails
+the two clearing guards, removing `distinctBy` fails the one-per-version guard, and removing the restore's
+`writeText` fails the console guard. Suite 93 → **113, 0 failures**.
+
+## 2026-08-23 — the disproof was already in hand: cross-loader reconciliation
+
+The live verdict pair for `iron-chests` turned the previous entry's guess into evidence, and added a finding
+it had missed. Both rows come from **one run**:
+
+| Loader | Confidence | Entry | Boot |
+|---|---|---|---|
+| Forge | `HIGH` | `ironchest-` | Forge 48.1.0 / Minecraft 1.20.2 → CRASHED (exit 1) |
+| NeoForge | `LOW` | `ironchest-` | NeoForge 21.11.45 / Minecraft 1.21.11 → SURVIVED (exit 137) |
+
+The engine booted a real Minecraft server with this mod, watched it reach its ready-line, and then published
+the mod as clientside off the *other* loader's crash. (Exit 137 on the surviving row is not a kill worth
+investigating: `ContainerServerRunner` watches for the ready-line and stops the container the moment it
+appears, so every clean container boot exits 137.) The shape also confirms the abandoned-port hypothesis —
+Forge stops at 1.20.2 while NeoForge is at 1.21.11, i.e. the project migrated and left one final Forge build
+behind.
+
+**Why one loader's crash is not the other loader's business — except that it is.** The per-loader model is
+deliberate, and a mod genuinely can be client-only on one loader. But the *published* artefact is a
+loader-agnostic file-name stem matched with `startsWith`, and both rows derive `ironchest-`, so publishing
+the Forge crash strips the NeoForge build that had just proven itself. `reconcileAcrossLoaders` therefore
+keys on **the entry colliding**, not on any survival anywhere: where the stems differ nothing is stripped and
+there is no contradiction to resolve. The confidence drops to whatever `aggregate` yields for the same
+signals with no boot — re-derived, so there is one ladder rather than a second one — while `bootResult` and
+the crash excerpt stay, because the server did crash and that is worth diagnosing. The note is *rebuilt*
+rather than appended to: it used to end in "a strong clientside signal", and bolting a correction onto a
+false sentence is the stale-prose failure this project keeps paying for.
+
+**And the fix from earlier the same day would probably not have saved this mod.** `CurseForgePlatform.resolve`
+took `?pageSize=50` — the newest 50 files *across all loaders*. A project that migrated Forge → NeoForge keeps
+publishing NeoForge builds, so its last Forge build sinks toward the far end of that window and the builds
+before it drop out of it entirely, leaving the other-version re-check nothing of that loader to boot. Exactly
+the projects that produce the false positive are the ones the window hides the evidence from. Resolution now
+walks `index` until `totalCount`, capped at `MAX_FILE_PAGES` (10 × 50) with a warning when it truncates; a
+project inside one page still costs one call. Dependency resolution stays single-page on purpose — it needs
+*a* usable file for one loader/Minecraft pair, not a history.
+
+The two crash guards layer rather than compete: the within-loader re-check runs during the crashing loader's
+own boot, cross-loader reconciliation after every loader is in, so a crash must survive both. Loaders are
+assessed in sorted order and nothing looks ahead, so a project like this one still pays the two extra Forge
+boots before NeoForge supersedes them — deliberate, since those boots also produce the more specific
+within-loader answer.
+
+Teeth checked: relaxing the entry-collision condition fails `aLoaderBootingUnderADifferentEntryDisprovesNothing`;
+capping the file walk at one page fails `resolvePagesThroughEveryPublishedFile` and
+`aTotalCountThatIsNeverReachedStopsAtTheCap`. Suite 113 → **126, 0 failures**.

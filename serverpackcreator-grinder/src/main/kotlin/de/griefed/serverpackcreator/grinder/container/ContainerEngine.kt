@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.grinder.container
 
 import java.time.Duration
+import kotlin.math.roundToLong
 
 /**
  * Where a server pack is bind-mounted inside a grinder container — and every such container's working
@@ -30,19 +31,136 @@ import java.time.Duration
 const val PACK_MOUNT = "/srv/pack"
 
 /**
+ * How long anything the grinder is tearing down gets to exit on its own before it is killed.
+ *
+ * Applies to both halves of a shutdown, because both are on the same clock: the container is asked to stop
+ * with this as its `docker stop` timeout (SIGTERM, then the daemon's own SIGKILL), and the workers get the
+ * same window to come back from whatever they were doing. It has to stay comfortably below the unit's
+ * `TimeoutStopSec`, or systemd's SIGKILL lands *during* the cleanup that exists to prevent orphans.
+ */
+val SHUTDOWN_GRACE: Duration = Duration.ofSeconds(15)
+
+/**
+ * How many containers are asked to stop at once during shutdown.
+ *
+ * The window in [SHUTDOWN_GRACE] is *per container*, so anything below the number in flight turns one window
+ * into several: at a cap of 8 and ten workers, the container phase alone was 30 seconds and the workers were
+ * left with none of the shared budget. A `docker stop` is an HTTP call that spends its time waiting, and
+ * concurrent boots are memory-bound at roughly twenty, so a cap well above any real worker count costs nothing
+ * and makes the single window the documentation promises actually true.
+ */
+const val MAX_PARALLEL_STOPS = 64
+
+/**
  * CPU / memory / pid caps applied to every boot container, so one fat modpack can't exhaust the host
  * and a runaway can't peg every core. Defaults are sized for a single Minecraft server boot.
  *
+ * Prefer [forLimits] (or [forCpus]) over setting [cpuQuota] and [memoryBytes] by hand: cores and gibibytes
+ * are the units an operator thinks in, and the quota only means anything relative to [cpuPeriod].
+ *
  * @param memoryBytes Hard memory limit (`--memory`); the server's heap must fit inside this.
- * @param cpuQuota    CFS CPU quota in microseconds per the default 100ms period (200_000 = ~2 cores).
+ * @param cpuQuota    CFS CPU quota in microseconds per [cpuPeriod] (`200_000` at the default period =
+ *                    ~2 cores). `0` disables the quota entirely, which is docker's own "no limit".
+ * @param cpuPeriod   CFS scheduling period in microseconds the quota is measured against
+ *                    (`--cpu-period`). Stated rather than inherited, so the cores-to-quota arithmetic
+ *                    cannot be silently invalidated by a daemon or kernel default.
  * @param pidsLimit   Maximum process/thread count (`--pids-limit`), guarding against fork-bombs.
  * @author Griefed
  */
 data class ContainerResources(
     val memoryBytes: Long = 3L * 1024 * 1024 * 1024,
     val cpuQuota: Long = 200_000,
+    val cpuPeriod: Long = 100_000,
     val pidsLimit: Long = 512
-)
+) {
+    /**
+     * The memory cap in the unit it was set in, for the startup line: `3.0 GiB`, or `uncapped`. Worth logging
+     * even though it is rarely changed — it is what every boot's heap is derived from, so it is the first
+     * number to check when boots die with `Killed`.
+     */
+    fun memoryCapDescription(): String =
+        if (memoryBytes == UNSET_MEMORY) "uncapped" else "${memoryBytes.toDouble() / BYTES_PER_GIBIBYTE} GiB"
+
+    /**
+     * The CPU cap in the unit it was set in, for the startup line: `2.0 cores (200000/100000µs)`, or
+     * `uncapped` when there is no quota. The raw pair rides along because it is what the kernel was actually
+     * given, which is the number to compare against a container's own `cpu.max` when a boot looks throttled.
+     */
+    fun cpuCapDescription(): String =
+        if (cpuQuota == UNSET_QUOTA) "uncapped" else "${cpuQuota.toDouble() / cpuPeriod} cores ($cpuQuota/${cpuPeriod}µs)"
+
+    companion object {
+        /**
+         * The smallest quota the docker daemon accepts — it rejects anything under 1ms per period with
+         * "CPU cfs quota can not be less than 1ms", which would fail every container rather than the knob.
+         */
+        private const val MINIMUM_QUOTA_MICROSECONDS = 1_000L
+
+        /** The quota docker reads as "no limit at all" — an unset one. Verified: the cgroup then reads `max`. */
+        private const val UNSET_QUOTA = 0L
+
+        /**
+         * The smallest memory limit the docker daemon accepts, in its own words: "Minimum memory limit
+         * allowed is 6MB". Raised to here rather than refused there, for the same reason as the CPU floor.
+         */
+        private const val MINIMUM_MEMORY_BYTES = 6L * 1024 * 1024
+
+        /** The memory limit docker reads as unlimited — the same unset-means-no-limit rule as the quota. */
+        private const val UNSET_MEMORY = 0L
+
+        /** One gibibyte, the unit the memory cap is documented, configured and reported in. */
+        private const val BYTES_PER_GIBIBYTE = 1024L * 1024 * 1024
+
+        /**
+         * Caps a container at [cpus] cores, converting to the quota docker actually wants by multiplying
+         * against the period — the same arithmetic docker's own `--cpus` performs, though **not** the same
+         * validation: `--cpus` is bounded by the host's CPU count, while the raw quota this sets is not
+         * (measured on a 16-core host, a 1000-core quota is accepted and simply means "effectively
+         * uncapped"), so an over-large value is the operator's to get right.
+         *
+         * Exactly `0.0` means uncapped (an unset quota), matching how `0` reads elsewhere in the daemon's
+         * configuration. Every other accepted value produces a real cap: anything below the daemon's own
+         * floor is raised to it, since a quota docker refuses breaks the run instead of throttling it. The
+         * decision is made on the *input* rather than on the computed quota, because a count that rounds
+         * away to 0µs is still a request for a cap and must not collapse into "no limit". A negative or
+         * non-finite count has no sensible reading and throws.
+         */
+        fun forCpus(cpus: Double, base: ContainerResources = ContainerResources()): ContainerResources {
+            require(cpus.isFinite()) { "A container's CPU cap must be a finite core count, was $cpus." }
+            require(cpus >= 0.0) { "A container's CPU cap cannot be negative, was $cpus — use 0 for uncapped." }
+            if (cpus == 0.0) {
+                return base.copy(cpuQuota = UNSET_QUOTA)
+            }
+            return base.copy(cpuQuota = maxOf(MINIMUM_QUOTA_MICROSECONDS, (cpus * base.cpuPeriod).roundToLong()))
+        }
+
+        /**
+         * Caps a container at [cpus] cores and [memoryGiB] gibibytes — the whole per-container budget in one
+         * call, which is what the entry point wants, since both halves come from the environment together.
+         *
+         * The memory half follows exactly the rules [forCpus] established, deliberately: an exact `0.0` is
+         * uncapped, a smaller positive value is raised to the daemon's floor rather than refused by it, and
+         * negative or non-finite input throws. **Changing the memory cap changes what every boot's heap is:**
+         * the packs the grinder builds leave `javaArgs` empty, so the JVM sizes its own heap from the cgroup
+         * limit (measured at 25% — a 3 GiB cap gives a 768 MiB heap), and it is also the divisor in the
+         * worker-sizing advice. Hence the warning that travels with the knob.
+         */
+        fun forLimits(
+            cpus: Double,
+            memoryGiB: Double,
+            base: ContainerResources = ContainerResources()
+        ): ContainerResources {
+            require(memoryGiB.isFinite()) { "A container's memory cap must be a finite GiB count, was $memoryGiB." }
+            require(memoryGiB >= 0.0) { "A container's memory cap cannot be negative, was $memoryGiB — use 0 for uncapped." }
+            val memoryBytes = if (memoryGiB == 0.0) {
+                UNSET_MEMORY
+            } else {
+                maxOf(MINIMUM_MEMORY_BYTES, (memoryGiB * BYTES_PER_GIBIBYTE).roundToLong())
+            }
+            return forCpus(cpus, base.copy(memoryBytes = memoryBytes))
+        }
+    }
+}
 
 /**
  * A host-path → container-path bind mount.
@@ -69,7 +187,8 @@ data class BindMount(val hostPath: String, val containerPath: String, val readOn
  * @param readonlyRootfs   Whether the root filesystem is read-only.
  * @param dropAllCapabilities Whether to drop all Linux capabilities.
  * @param noNewPrivileges  Whether to forbid privilege escalation (`no-new-privileges`).
- * @param user             The `uid:gid` to run as (non-root).
+ * @param user             The `uid:gid` to run as (non-root). The default matches the image's own `USER`;
+ *                         callers that bind-mount a host directory pass the host owner (see `ContainerUser`).
  * @param tmpfsMounts      Writable tmpfs mount points, needed because the rootfs is read-only.
  * @author Griefed
  */
@@ -138,4 +257,14 @@ interface ContainerEngine : AutoCloseable {
     override fun close() {
         // Nothing to release by default.
     }
+
+    /**
+     * Remove containers this engine's *previous* process left behind, returning how many went.
+     *
+     * Distinct from [close], which cleans up after the process it runs in. Containers are children of the
+     * container daemon, not of the unit's control group, so a JVM killed outright — systemd's SIGKILL once
+     * `TimeoutStopSec` expires — leaves them running with nothing to tidy them. Called at startup, this is the
+     * only thing that ever collects them. Default no-op for engines with no such notion (test fakes).
+     */
+    fun reapOrphans(): Int = 0
 }

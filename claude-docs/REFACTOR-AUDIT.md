@@ -3080,3 +3080,579 @@ all ten are about what happens on a host this machine is not.
 
 Re-verified after the changes: `shellcheck -S style` exit 0, `systemd-analyze verify` reporting only the two
 container artefacts, grinder suite **251**, zero failures.
+
+---
+
+# Audit iteration 17 — 2026-08-23 — the container-identity branch (`claude-grinder-uid-browser-properties`)
+
+Scope: `git log develop..HEAD`, ten commits. Three unrelated production defects found from a live grinder run
+plus one new endpoint. Base for the comparison is `develop` at `845fb6381`.
+
+**Method.** Read every commit's diff against the conventions; re-read the four new units in full rather than
+their diffs; ran `:serverpackcreator-grinder:test` (268, 19 skipped) and `:serverpackcreator-clientside:test`
+(90, 0 skipped), both green. Counts re-derived from `build/test-results/test/*.xml` of that run.
+
+## HIGH
+
+None. No behaviour change is hidden inside a `refactor:`, no module boundary is crossed (`-grinder` and
+`-clientside` gained nothing pointing outward; the new endpoint reads `ApiWrapper` in the composition root only),
+and nothing `serverpackcreator-api` exports changed shape or behaviour.
+
+## MEDIUM
+
+- **M1 — `012211dd0` is labelled `docs(grinder)` and carries a production signature change.**
+  `container/ContainerUser.kt:60` loses its default argument (`override: String? = System.getenv(ENV_KEY)` →
+  `override: String?`) and the read moves to `GrinderApplication.kt:88`. Behaviour is preserved, so this is a
+  *pure refactor* mislabelled as documentation, not a behaviour change in disguise — but it is exactly the
+  "one concern per commit" violation the conventions single out, and the file's own precedent (`358675fbf`) is
+  explicit that the remedy is cheap before a merge and unfixable after. The branch is unpushed, so it is still
+  cheap. **Fix:** split the two-file code change out of the docs commit.
+
+- **M2 — `9df60fca8` changes three behaviours and pins one.** `BrowserDownloader.kt` swallows the download
+  abort (pinned by `isDownloadAbort`), *and* switches both navigations from Playwright's default `load` to
+  `DOMCONTENTLOADED`, *and* raises the 30s default to a configurable 60s. The latter two have no guard of any
+  kind. Grouping related behaviour changes is allowed; leaving two of them unpinned is not. The repo already
+  has the technique for a join no test can execute — `ReportBindWiringTest` asserts against `main`'s own
+  source text — and the same applies here, since exercising the options needs a live Chromium.
+
+- **M3 — `6be42c479` leaves the endpoint's production wiring unpinned.** `ReportServerTest` supplies its own
+  `fallbackLists` lambda, so nothing asserts that `GrinderApplication.kt:186` hands the endpoint SPC's *real*
+  `clientsideMods`/`modsWhitelist`. This is the identical gap `ReportBindWiringTest` was written to close for
+  `SPC_GRINDER_HOST`: the endpoint could be wired to an empty list and every test would stay green while every
+  polling client silently received nothing.
+
+- **M4 — a comma inside an entry silently corrupts the published list.**
+  `report/FallbackPropertiesRenderer.kt:124` passes character 44 through verbatim (it is inside the printable
+  range), and the consumer — `UpdateConfig.updateFallback` — does `newBlacklist.split(",")`. One stem
+  containing a comma therefore arrives at every client as two bogus entries, each of which is a `startsWith`
+  matcher against real mod filenames. Filenames may legally contain commas, and `FilenameStemDeriver` derives
+  stems straight from them, so this is reachable without anything unusual happening. Silent at both ends.
+
+- **M5 — a malformed `SPC_GRINDER_CONTAINER_USER` is discarded without a word.**
+  `container/ContainerUser.kt:63` requires `\d+:\d+`, and anything else (`1000`, `grinder:grinder`, a stray
+  quote) falls through to the directory owner. That is the right *behaviour* — a nonsense identity must not
+  reach Docker — but an operator who deliberately set the variable gets no signal that it was ignored, on the
+  one knob whose whole purpose is overriding a resolution that has already gone wrong once.
+
+## LOW
+
+- **L1 — `report/FallbackPropertiesRenderer.kt:118` is clever where it should be plain.**
+  `appendLine("…$separator\\".removeSuffix(if (index == entries.lastIndex) "\\" else ""))` appends a
+  continuation backslash and then removes it again for the last entry. Correct, but the reader has to simulate
+  it; the same `index == entries.lastIndex` test is asked twice in one expression.
+
+- **L2 — the charset branch added to `ReportServer.respond` cannot be reached.**
+  `report/ReportServer.kt:141` picks ISO-8859-1 when the content-type says so, but
+  `FallbackPropertiesRenderer.escape` maps every character outside 32..126 to `\uXXXX`, so the rendered
+  document is pure ASCII and both encodings produce identical bytes. The *declared* charset in the header is
+  load-bearing and must stay; the branching is a mechanism that can never do anything, in a helper every
+  endpoint shares.
+
+- **L3 — `report/FallbackPropertiesRenderer.kt:79,96` normalise the same collections twice**, once for the
+  header's counts and once to render. Harmless at this size, but it means two sources of truth for "how many
+  entries are we publishing".
+
+- **L4 — `loader/InstallFailureDiagnosisTest.kt:60` uses `!!`** after an `assertNotNull`. Test code, but the
+  convention says no new non-null assertions, and `assertNotNull` returns the narrowed value.
+
+- **L5 — fully-qualified names where an import belongs.**
+  `loader/InstallFailureDiagnosisTest.kt:66` writes `de.griefed.serverpackcreator.grinder.container.ContainerUser.ENV_KEY`
+  inline, and `report/ReportServerTest.kt` constructs `java.util.Properties()` the same way.
+
+## Verified clean — do not re-litigate
+
+- **Pin-before-fix boundaries hold on all four units.** `29644191d`, `5ecf8cdc9`, `a43573563` and `47f991719`
+  each land red on their own and are followed by the change; each red state was observed (compile failure on
+  the missing unit) before committing.
+- **`de20741de` is correctly labelled `fix:`,** and its `ContainerEngine.kt` edit is documentation of the
+  parameter it changes the meaning of — within the commit's stated scope, not sprawl.
+- **`8ec7440f5` does not guess.** `InstallFailureDiagnosis.of` returns `null` for a console it cannot explain,
+  and that is pinned, so the raw tail stays the fallback rather than being replaced by a confident invention.
+- **The confidence floor on `/as-properties` is pinned in both directions** — HIGH published,
+  MEDIUM/LOW/INCONCLUSIVE and a null `suggestedEntry` excluded — and the document is verified by *parsing* it
+  with `java.util.Properties`, which is what the consumer does, rather than by asserting on its shape.
+- **No `-api` behaviour changed,** so `claude-docs/API-BEHAVIOUR-CHANGES.md` correctly gains no row. `-grinder`
+  and `-clientside` are unpublished, so their signature changes carry no compatibility obligation.
+
+---
+
+# Audit iteration 18 — 2026-08-23 — second pass over the same branch, after iteration 17's fixes
+
+Scope: `git log develop..HEAD`, now 24 commits. Iteration 17's ten findings are all closed; this pass
+re-reads the branch as a whole rather than commit-by-commit, and pushes on the two things iteration 17 asserted
+without executing.
+
+Suites at the time of writing: grinder 275 (19 skipped), clientside 93. Both green, counts re-derived from
+`build/test-results/test/*.xml`.
+
+## Iteration 17 findings — closed
+
+- **M1** split: `c14e750e0 refactor(grinder): read the container-user override in the entry point` carries the
+  code, `31e696797 docs(grinder)` carries the documentation.
+- **M2/M3** pinned: `navigationOptions()`/`downloadOptions()` extracted and asserted by *building* them
+  (`723394f62`, `02d8a3916`), and `FallbackListWiringTest` asserts the endpoint's production wiring against
+  `main`'s source. Teeth verified by breaking the join — it fails on "the published clientside list must come
+  from SPC's own property".
+- **M4/M5** fixed with red pins first (`93bbab2ed` → `3b4dc45a5`).
+- **L1–L5** cleaned in `72dc9d2cd`, existing assertions untouched.
+
+## What this pass added
+
+- **The endpoint is now verified against its real consumer, not a model of it.**
+  `FallbackPropertiesConsumerTest` (`c37…`, commit `test(grinder): drive SPC's real updater…`) points a real
+  `UpdateConfig.updateFallback` at a running `ReportServer` over an ephemeral loopback port and asserts the
+  entries land in `GenerationConfig.clientsideMods`. Everything else on this endpoint asserts against
+  `java.util.Properties`, which is my model of the consumer; this is the consumer. It needs neither Docker nor
+  internet, so it is a plain test rather than a gated IT. **Teeth verified:** removing the continuation
+  backslash collapses the whole list to `[, entityculling-]` and both cases go red.
+
+## MEDIUM
+
+- **P2-M1 — the published base list is only as fresh as this daemon's own SPC, and that was undocumented.**
+  `UpdateConfig` *replaces* a client's lists with whatever it is served, so a grinder running an old build — or
+  one that could not reach the repository at its own startup — hands every client a **staler** list than they
+  had. The endpoint is a mechanism for distributing this daemon's opinion, and that opinion has an age. Fixed
+  in this pass: README §5 and the module landmine now state it.
+
+- **P2-M2 — the container-user fix is still unverified against a real daemon, and this host cannot verify it.**
+  Attempted, with `docker:29.7.2` and a *named volume* rather than a bind mount, specifically so the
+  permissions would be real Linux ones inside the VM. The result is inconclusive for an instructive reason:
+  with the volume root chowned to `1001:1001`, a container run as `--user 0:0` reads it back as `1001:1001`,
+  while a container run as `--user 1001:1001` reads the same directory as `0:0` and cannot write. Root and
+  non-root containers disagree about the same inode, which is Docker Desktop's own id remapping, not kernel
+  DAC — so **neither the bug nor the fix reproduces faithfully here**, and the run proves nothing either way.
+
+  The bug itself is not in doubt: the production console on 2026-08-23 shows three `Permission denied` lines
+  against the mounted pack, and the fix is the standard remedy. But the convention is explicit that a real
+  runtime answers this class of question, so it stays open until run on the Linux host:
+
+  ```
+  sudo -u grinder mkdir -p /tmp/spc-uid-check
+  docker run --rm -v /tmp/spc-uid-check:/pack -w /pack --user "$(id -u grinder):$(id -g grinder)" \
+      spc-grinder-runtime:latest bash -c 'touch user_jvm_args.txt && echo WRITABLE'
+  ```
+
+  Expected: `WRITABLE`. The same command with `--user 1000:1000` should fail wherever `id -u grinder` is not
+  1000 — that pair is the actual proof, since it shows the two identities behaving differently on one directory.
+
+## LOW
+
+- **P2-L1 — `@JvmStatic` on `BrowserDownloader.isDownloadAbort`** for a helper with no Java callers. Removed.
+- **P2-L2 — the root `CLAUDE.md` counts were stale again** (268/90, written before iteration 17's own tests
+  landed). A count in prose goes stale by being *correct at the time*, which is the failure mode the
+  "cite names, not snapshots" convention exists for; the column already says how to re-derive it, and the
+  numbers were re-derived rather than adjusted by hand.
+
+## Verified clean — do not re-litigate
+
+- **`ContainerUser` resolves after `workDir` is created** (`GrinderApplication.kt`: `workDir` is
+  `.apply { mkdirs() }` at declaration, the resolution follows the `workers` read), so `ownerOf` never reads a
+  path that does not exist and never silently falls back to the image default for that reason.
+- **Running as an id with no matching entry in the image's `/etc/passwd` is not a new risk.** The rootfs is
+  read-only and only `/tmp` is a tmpfs, so nothing could write to a home directory under the old uid either;
+  the JDKs under `/opt` are world-readable.
+- **The comma filter applies to both lists and to grinder findings**, not just the shipped list — checked
+  against `normalise` being the single funnel every published entry passes through.
+- **No endpoint other than `/as-properties` changed behaviour.** `respond` now always encodes UTF-8, which is
+  what it did before this branch; the ISO-8859-1 branch existed only within this branch's own history.
+
+---
+
+# Audit iteration 19 — 2026-08-23 — third pass, and the equivalence check
+
+Scope: `git log develop..HEAD`, 27 commits. This pass stops re-reading commit boundaries — iterations 17 and 18
+covered those — and does the two things that had not been done: run the base branch's tests against this
+branch's code, and read the finished units rather than their diffs.
+
+## Equivalence against the base — clean
+
+`develop`'s unmodified test tree, checked out over this branch's production code in a detached worktree:
+
+```
+git worktree add --detach <tmp> HEAD
+cd <tmp> && rm -rf serverpackcreator-{grinder,clientside}/src/test
+git checkout develop -- serverpackcreator-{grinder,clientside}/src/test
+./gradlew :serverpackcreator-grinder:test :serverpackcreator-clientside:test --continue
+```
+
+**339 pre-existing guards (grinder 251 with 19 skipped, clientside 88), zero failures, zero compile errors.**
+No file needed adapting, which is itself the finding: every signature this branch changed gained a *defaulted*
+parameter (`ContainerServerRunner`, `DockerLoaderInstaller`, `ContainerCandidateVerifier`, `ReportServer`,
+`BrowserDownloader`), and the one signature that lost a default — `ContainerUser.forDirectory` — is new on this
+branch and has no base-tree callers. Nothing existing changed shape.
+
+## LOW
+
+- **P3-L1 — `unrepresentable()` counted duplicates while `normalise()` de-duplicated.**
+  `report/FallbackPropertiesRenderer.kt` — one mod dropped on three loaders was reported in the document as
+  three omissions, sending a reader hunting two entries that never existed. Two functions filtering the same
+  collection by the same predicate should agree on what "an entry" is. Fixed.
+- **P3-L2 — the DOMCONTENTLOADED rationale existed twice**, inline at the first `page.navigate` and in
+  `navigationOptions()`' KDoc, after the extraction moved the decision. Two copies of a reason is one copy that
+  goes stale. Inline copy removed. Fixed.
+- **P3-L3 — the root `CLAUDE.md` counts were stale for the third time in one session** (268/90 → 276/93). Not
+  a new defect each time, but worth stating as a pattern: any count written before the last test lands is
+  wrong by the time it is committed, and this session generated three chances to get it wrong. Re-derived from
+  the run that produced them.
+
+## Considered and deliberately not changed
+
+- **`/as-properties` re-renders on every request** rather than caching. The full list is a few hundred KB and
+  the consumer polls at *startup*, so a cache would add invalidation to save nothing measurable. Recorded so
+  the next reader does not re-derive it — and so that if polling ever becomes frequent, the decision is known
+  to have been made under the startup-only assumption.
+- **Running as a uid with no `/etc/passwd` entry in the image.** `$HOME` is unset for such a uid, but the
+  rootfs is read-only with only `/tmp` writable, so nothing could write to a home directory under the old uid
+  either. No regression; see iteration 18's clean list.
+- **`InstallFailureDiagnosis` recognises exactly one cause.** Adding speculative patterns would restore the
+  problem it was written to fix — a confident diagnosis pointing at the wrong subsystem. It returns `null` and
+  falls back to the raw tail for anything else, and that is pinned.
+
+## Still open
+
+- **P2-M2 — the container-user fix has no real-runtime verification** and cannot get one on this workstation
+  (see iteration 18 for why Docker Desktop's id remapping makes the local run prove nothing). The two-command
+  check for the Linux host is recorded there. This is the one claim on the branch resting on reasoning plus
+  production logs rather than on an executed check, and it should be closed on Yggdrasil before the fix is
+  trusted in the release notes.
+
+---
+
+# Audit iteration 20 — 2026-08-23 — the graceful-shutdown branch
+
+Scope: the three commits merged as `c22e54a40` — `312745b33` (pins), `25541a8d8` (implementation),
+`067ebc31f` (documentation). Already on `develop`, so the fixes land as a follow-on branch rather than by
+rewriting merged history.
+
+Suites: grinder 282 (22 skipped), plus 6/6 of the Docker-gated `DockerJavaContainerEngineIT` against
+docker 29.7.2.
+
+## HIGH
+
+- **H1 — the branch's central guarantee has a reachable window in which it silently does not hold.**
+  `Grinder.kt`, `GrindPool.grindAll`: the worker threads are **started inside the `map`** and the field the
+  shutdown path reads is assigned only afterwards.
+
+  ```kotlin
+  val running = (1..workerCount).map {
+      Thread { … }.apply { name = "grind-worker-$it"; start() }   // running
+  }
+  workers = running                                              // …only now visible to awaitStop
+  ```
+
+  A SIGTERM arriving between the first `start()` and that assignment finds `workers == emptyList()`. `awaitStop`
+  then interrupts nobody, joins nothing, and — because `emptyList().none { it.isAlive }` is `true` — **reports a
+  clean stop**. The hook logs no warning, the JVM exits, and workers are still running. It is the exact failure
+  the branch was written to prevent, wearing a success message.
+
+  The window is small (thread construction for N workers) but it is entered on *every* pass, and a daemon that
+  restarts on a schedule enters it often. Publish the list before starting the threads.
+
+  Severity mapped deliberately: the rubric's HIGH covers behaviour-change-inside-a-refactor, broken boundaries
+  and plugin-API contracts, none of which this is. Calling it MEDIUM would understate a defect that makes the
+  feature's promise conditional on a race.
+
+## MEDIUM
+
+- **M2 — nothing pins the shutdown hook's wiring**, which is the same gap `FallbackListWiringTest` was written
+  to close two audits ago, left unapplied to a hook that cannot be executed (it builds an `ApiWrapper` and a
+  Docker client). Nothing asserts that `main` calls `awaitStop` at all, that it calls `reapOrphans` at startup,
+  or that `engine.close()` precedes `awaitStop` — and the ordering is load-bearing: `close()` is what sets the
+  closed flag, so reversing the two re-opens the create-behind-the-sweep hole this branch closed.
+
+- **M3 — the 15-second window is unpinned.** `SHUTDOWN_GRACE` is stated in the unit, in the README and in the
+  operator contract, and no test fails if someone changes it. It is a number an operator was promised.
+
+- **M4 — `TimeoutStopSec` and `SHUTDOWN_GRACE` are coupled with nothing enforcing it.** The unit's own comment
+  says lowering the timeout below the window "is the one change that actively causes the leak", and
+  `SystemdUnitConfigurationTest` checks environment knobs only. The relationship is arithmetic and therefore
+  checkable: the stop timeout must exceed `ceil(workers / 8) × grace` with margin.
+
+- **M5 — the grace window is a hard-coded top-level `val` the engine reads directly**, so no test can vary it.
+  Two consequences: the value itself is untestable (M3), and one IT case burns 15.6 s of real wall-clock
+  waiting out a window it cannot shorten. A constructor parameter defaulting to the constant fixes both
+  without changing production behaviour.
+
+## LOW
+
+- **L1 — `DockerJavaContainerEngineIT.waitForContainer(engine)` ignores its parameter**; it polls the daemon
+  globally by label. The signature claims a scoping that does not exist.
+- **L2 — `reapsALabelledOrphanLeftByAPreviousProcess` leaves its `orphanEngine` open** and its worker thread
+  running against a container the reap has removed. Harmless in a gated IT, but it is the one test in the file
+  that does not clean up after itself.
+- **L3 — every shutdown with a boot in flight now logs a spurious WARN.** `close()` removes the container,
+  then `run()`'s own `finally` tries again and the 404 surfaces as
+  `Could not remove container <id>: …`. Expected, harmless, and indistinguishable in the journal from a
+  removal that genuinely failed — which is precisely the kind of noise that made the 2026-08-23 install
+  diagnosis take three rounds.
+
+## Verified clean — do not re-litigate
+
+- **The pins landed red and separately** (`312745b33` before `25541a8d8`), and the container half was verified
+  against a live daemon rather than reasoned about — including a trapped SIGTERM proving the signal arrives
+  before removal.
+- **`close()` sets `closed` before it sweeps, and `run()` re-checks after adding to the tracking set.** Either
+  the sweep sees the container or the creator sees the flag; there is no third outcome.
+- **Concurrency in `close()` is bounded** at 8 and the pool is shut down in a `finally`.
+- **`reapOrphans` runs before the staging reaper and after the engine exists**, and at that point this process
+  owns no containers, so everything wearing the label is by definition inherited.
+
+---
+
+# Audit iteration 21 — 2026-08-23 — second pass over the shutdown work
+
+Scope: the same three merged commits plus iteration 20's two fix commits. Grinder suite 288 (22 skipped),
+Docker-gated IT 6/6 against docker 29.7.2.
+
+## Iteration 20 findings — closed
+
+H1 fixed (workers published before they start) and its invariant pinned; M2/M3/M4 pinned by
+`ShutdownWiringTest`, **teeth verified on all three** by breaking each in turn; M5 injected; L1–L3 cleaned.
+Recorded honestly in the test's own doc: H1's guards were never observed red, because the interleaving could
+not be provoked at 8 or 64 workers.
+
+## HIGH
+
+- **P21-H1 — the one-shot run's workers are never signalled.** `GrinderApplication.kt:190`:
+
+  ```kotlin
+  GrindPool(grinder, workers).grindAll(candidates)   // one-shot: no crawl cursor to advance
+  ```
+
+  The pool is constructed inline and **never stored in `activePool`**, which is the only handle the shutdown
+  hook has. So on Ctrl-C during a one-shot run the hook calls `requestStop()` and `awaitStop()` on `null`,
+  both silently no-op via `?.`, and the workers are neither signalled nor waited for. The engine still closes,
+  so containers are stopped and the boots collapse — which is why this looks like it works — but the worker
+  half of the contract does not run at all, and the `false`-means-warn branch cannot fire either.
+
+  The hook's own comment claims otherwise: *"registered before any boot can start so it covers the one-shot
+  path too"*. That was true of the hook and stopped being true of what the hook can reach. One-shot is the
+  end-to-end verification path, and Ctrl-C is how it is always ended.
+
+## MEDIUM
+
+- **P21-M1 — the workers get a second full window, not the remainder of the first.** The hook passes
+  `awaitStop(SHUTDOWN_GRACE)` *after* `engine.close()` may already have spent the entire 15 s, so the real
+  worst case is **30 s**, not 15. Three places say otherwise: the hook's log line ("15s for containers and
+  workers to quit"), the comment directly above the call ("whatever is left of the window"), and README §5
+  step 4 ("gives the workers what is left of that window"). The requested contract was one shared window, the
+  documentation describes one shared window, and the code implements two sequential ones.
+
+  It also quietly undercuts `ShutdownWiringTest.theUnitAllowsEnoughTimeForTheCleanupItDependsOn`, whose
+  arithmetic (`ceil(workers / 8) * grace`) assumes the worker wait overlaps the container wait rather than
+  following it.
+
+## LOW
+
+- **P21-L1 — `activePool.get()` is read twice in the hook**, once for `requestStop` and once for `awaitStop`,
+  so the two calls can in principle land on different pools: `main` sets a new one per pass, and the hook runs
+  concurrently with it. Capture it once.
+- **P21-L2 — `SHUTDOWN_GRACE` lives in the `container` package but now governs workers too.** Its KDoc says
+  so, and moving it would churn imports for little gain, but the home is no longer quite right — noted so the
+  next reader does not assume the worker timeout is a container concern.
+
+## Verified clean — do not re-litigate
+
+- **The hook's ordering is correct and now guarded**: `close()` (which sets the closed flag) strictly precedes
+  `awaitStop`, verified red by swapping them.
+- **`requestStop()` before `close()` is deliberate**, not redundant with `awaitStop`'s own flag set: it stops a
+  worker that finishes during the sweep from picking up another candidate.
+- **A null `activePool` is handled correctly** for the *continuous* path — it is null only between passes,
+  when there are no workers to signal. P21-H1 is about the one-shot path never setting it at all.
+
+---
+
+# Audit iteration 22 — 2026-08-23 — third pass, and the equivalence check
+
+Scope: the shutdown work plus iterations 20 and 21's fixes. Grinder suite 288 (22 skipped). Docker-gated IT
+6/6 on docker 29.7.2.
+
+## Equivalence against the base — clean
+
+The pre-shutdown test tree (`develop~1`) checked out over the current production code in a detached worktree:
+**276 pre-existing guards, zero failures, zero compile errors, nothing needing adaptation.** Every signature
+this work changed either is new (`awaitStop`, `reapOrphans`, `trackedWorkerCount`) or gained a defaulted
+parameter (`DockerJavaContainerEngine(shutdownGrace = …)`).
+
+## MEDIUM
+
+- **P22-M1 — the "one 15-second window" is only true up to eight in-flight containers.**
+  `DockerJavaContainerEngine.MAX_PARALLEL_STOPS = 8`, so with more containers than that the stops run in
+  batches and the container phase alone costs `ceil(n / 8) × 15 s`. At `SPC_GRINDER_WORKERS=10` — the value
+  actually deployed — that is **30 s before the workers get anything**, and iteration 21's deadline then hands
+  `awaitStop` zero milliseconds.
+
+  So iteration 21 fixed the *sequencing* of the two windows and left the multiplication in place. The unit's
+  comment and `ShutdownWiringTest` both already encode `ceil(workers / 8)`, which means the arithmetic is
+  honest — but it is honest about a number that did not need to be larger than one in the first place. The cap
+  was chosen defensively ("so a large worker count cannot flood the daemon"); a `docker stop` is an HTTP call
+  that spends its time waiting, and the realistic ceiling on concurrent boots is memory-bound at ~20. Raising
+  the cap well above any real worker count makes the promised single window true, and collapses the arithmetic
+  in three documents to `1 × grace`.
+
+- **P22-M2 — a container that burns the whole window leaves the workers exactly zero.**
+  With `remaining` clamped at 0, `awaitStop` interrupts and then joins nothing, so the "did not stop within
+  15s" warning is *guaranteed* rather than informative — the workers were never given a chance to observe the
+  interrupt they were just sent. A small floor (a second) makes the warning mean what it says, at a worst case
+  of 16 s against a 60 s stop timeout.
+
+## LOW
+
+- **P22-L1 — `theWorkersGetTheRemainderOfTheWindowRatherThanASecondOne` asserts an absence.**
+  `!body.contains("awaitStop(SHUTDOWN_GRACE)")` passes for any spelling that is not that exact string, so a
+  future rewrite that reintroduces the second window under a different name slips through. A positive
+  assertion — that a deadline is computed and its remainder passed — is what the guard means.
+- **P22-L2 — the one-shot path never clears `activePool`.** Harmless (a finished pool tracks no workers, so
+  `awaitStop` returns immediately) and noted only so it is not read as an oversight later.
+
+## Verified clean — do not re-litigate
+
+- **Iterations 20 and 21's guards all have verified teeth**, each broken in turn: `TimeoutStopSec=20`, the
+  removed reap call, the swapped `close`/`awaitStop` ordering, the unregistered one-shot pool, and the
+  full-window `awaitStop`. The one exception is stated in its own test doc — H1's invariant guards were never
+  observed red because the interleaving could not be provoked.
+- **The `activePool.set(` counting mistake is fixed and worth remembering**: the pass loop clears the
+  reference with `activePool.set(null)`, so counting occurrences made an unregistered pool pass. Caught only
+  because an expected red did not arrive.
+- **The three documents now agree with the code** on ordering and on the shared window (subject to P22-M1's
+  batching), and each is guarded rather than merely written.
+
+---
+
+# Audit — 2026-08-23, `claude-grinder-cpu-limit` (iteration 23)
+
+Scope: `git log develop..HEAD` — four commits (`408ff8d57` tests, `b5b69b5bc` `ContainerResources.forCpus`
++ `cpuPeriod`, `6db241e88` `main` wiring + operator docs + the gated IT, `7c9ee5710` context files and the
+log). Read-only pass; every number below was produced by a command, not recalled.
+
+## HIGH
+
+**H1 — a positive CPU cap can silently become *no* cap.**
+`serverpackcreator-grinder/src/main/kotlin/de/griefed/serverpackcreator/grinder/container/ContainerEngine.kt:93`
+(`b5b69b5bc`). `forCpus` uses the *computed* quota as its "uncapped" sentinel:
+
+```kotlin
+val requested = Math.round(cpus * base.cpuPeriod)
+cpuQuota = if (requested == 0L) 0L else maxOf(MINIMUM_QUOTA_MICROSECONDS, requested)
+```
+
+`requested` is 0 for any `cpus < 5e-6`, so the branch cannot distinguish "the operator asked for uncapped"
+from "the operator's value rounded away to nothing" — and quota `0` is *no limit*, verified against the
+daemon: `docker run --cpu-quota=0 --cpu-period=100000 busybox cat /sys/fs/cgroup/cpu.max` → `max 100000`.
+The KDoc two lines above promises the opposite ("anything positive but smaller than the daemon's floor is
+raised to it"), and the direction of the failure is the hardening-off one: a request for the smallest
+possible cap yields none at all. The trigger needs an absurd value, but this is a security-posture knob and
+the guarantee is written down, so it is graded on the failure, not the likelihood. `ContainerResourcesTest`
+misses it because its floor case (`forCpus(0.0001)`) is two orders of magnitude above the boundary.
+Fix: branch on the *input* (`cpus == 0.0`), and reject non-finite input while there — `"Infinity".toDouble()`
+parses, and `Math.round(Double.POSITIVE_INFINITY * 100_000)` is `Long.MAX_VALUE`.
+
+## MEDIUM
+
+**M1 — the new README section was inserted into the middle of the previous one.**
+`serverpackcreator-grinder/README.md:345` (`6db241e88`). `### Capping CPU` landed before the **Keep the host
+awake** paragraph, which is about suspends and `caffeinate` and belongs to *Sizing the worker count* — it now
+reads as the closing advice of the CPU section. Same commit also leaves §5's sizing opener ("the worker count
+is a memory question rather than a CPU one") without the pointer it now needs. Boy-Scout scope was respected;
+the placement is simply wrong.
+
+**M2 — the startup line reports the derived numbers, not the knob.**
+`GrinderApplication.kt:101` (`6db241e88`) logs `cpuQuota=200000/100000`. Every other knob is logged in the
+operator's own unit (`workers=2`, `port=8757`, `containerUser=…`), and this is the one whose whole point is
+that the operator thinks in cores. Worse at the documented escape hatch: `SPC_GRINDER_CPUS=0` prints
+`cpuQuota=0/100000`, which reads as "zero CPU" when it means "uncapped" — the value an operator is most
+likely to double-check in the log is the one the log states most misleadingly.
+
+**M3 — a guard shipped in the same commit as the code it guards.**
+`6db241e88` adds `DockerJavaContainerEngineIT.theCpuCapReachesTheKernelWithItsPeriod` alongside the wiring,
+and the behaviour that guard actually pins — `withCpuPeriod` in `hostConfigFor` — landed one commit earlier
+in `b5b69b5bc`, bundled with the new API. Nobody can check out a commit and watch that pin go red. This is
+the exact boundary CLAUDE.md's "Pin first means *commit* first" entry was written about after the 2026-07-31
+audit found eight commits doing it. Mitigating evidence, recorded because it is real: the teeth *were*
+checked in-session by removing `.withCpuPeriod` and re-running, which produced `saw: [75000 100000]` for a
+requested 1.5 cores at a 50 ms period. Unlike the 2026-07-31 case the branch is **local and unpushed**, so
+the honest remedy is available: split the history rather than write an apology into a convention file.
+
+**M4 — `deploy/install-grinder.sh:313` still says "Three worth a decision rather than a default".**
+It names `SPC_GRINDER_WORKERS` as the throughput lever and never mentions its CPU twin, so the installer —
+the operator's first surface, and the one no guard test covers — is now the only place the knob is invisible.
+`SystemdUnitConfigurationTest`/`ReadmeConfigurationTest` cannot catch this; the script is not scanned by
+either.
+
+## LOW
+
+**L1 — `Math.round(...)`** at `ContainerEngine.kt:92` is a Java-ism where `kotlin.math.roundToLong()` is the
+idiom ("Don't port Java patterns 1:1").
+
+**L2 — `ContainerResourcesTest.theDefaultIsUnchangedByTheKnobExisting`** is not a sentence; the assertion it
+makes (default ≡ `forCpus(2.0)`) deserves a name that says so.
+
+**L3 — the docs imply docker's `--cpus` validation applies, and it does not.** `forCpus`'s KDoc and README
+§5 both say "the same arithmetic as docker's own `--cpus`", which is true of the arithmetic and false of the
+guard rails: the CLI's `--cpus` is bounded by the host's CPU count, while the raw cfs path we use is not.
+Measured on a 16-core host: `docker run --cpu-quota=100000000 --cpu-period=100000` (1000 cores) is accepted
+and the container's cgroup reports `100000000 100000`. Consequence for the fix list: an over-large value
+needs **no** clamp — it silently means "effectively uncapped", which is worth one sentence rather than code.
+
+**L4 — `CpuLimitWiringTest.construction()`** requires the call's closing paren on its own line
+(`"""$type\((.*?)\n\s*\)"""`). Reformatting a call to one line makes the guard fail with "main() no longer
+constructs a …" rather than pass silently, so the failure mode is loud and acceptable; noted so the next
+reader does not mistake it for a real regression.
+
+## Verified clean — do not re-litigate
+
+- **No positional `ContainerResources(...)` callers exist**, so inserting `cpuPeriod` as the third parameter
+  cannot have silently rebound anyone's `pidsLimit`. Checked on both trees: `git grep "ContainerResources("`
+  over `develop` and HEAD finds only `ContainerResources()`, named-argument, and default-value uses.
+- **The daemon's 1 ms floor is real and the quoted error is verbatim.** `docker run --cpu-quota=500
+  --cpu-period=100000 busybox true` → `Error response from daemon: CPU cfs quota can not be less than 1ms
+  (i.e. 1000)`. `MINIMUM_QUOTA_MICROSECONDS` and its comment are accurate.
+- **The `withCpuPeriod` fix is verified in the kernel, not in the request.**
+  `theCpuCapReachesTheKernelWithItsPeriod` reads `/sys/fs/cgroup/cpu.max` from inside the container and uses
+  a non-default 50 ms period so the assertion cannot pass with the period unsent — confirmed by removing the
+  production line and watching it fail. Docker 29.7.2, full gated IT 7/7.
+- **`0` really is uncapped end to end**, in the daemon (`max 100000`, above) and through our own path.
+- **Commit `408ff8d57` is a legitimate red-first test commit**; its red is a compile error naming the missing
+  API, which is the only form available for a not-yet-existing symbol.
+- **The `ContainerResources` KDoc reshape** (one parameter per line was already the shape) added `cpuPeriod`
+  with docs and left names, types, order and defaults of the existing parameters untouched.
+
+## Equivalence against the base — clean
+
+`develop`'s unmodified test tree against the branch's production code, per CLAUDE.md's recipe:
+
+```
+git worktree add --detach <tmp> HEAD
+cd <tmp> && rm -rf serverpackcreator-grinder/src/test && git checkout develop -- serverpackcreator-grinder/src/test
+./gradlew :serverpackcreator-grinder:test --continue
+```
+
+**290 pre-existing guards, 0 failures, 22 skipped, zero compile errors** — no signature changed, so nothing
+had to be adapted. Branch's own suite: 298 / 0 / 22.
+
+## Resolution — 2026-08-23, same session
+
+| Finding | Status | Where |
+|---|---|---|
+| H1 positive cap → uncapped | **fixed** | guard `test(grinder): pin that a positive CPU cap stays a cap` (red: `expected: <1000> but was: <0>`), fix `fix(grinder): decide "uncapped" from the request, not from the arithmetic` |
+| M1 README section split | **fixed** | `fix(grinder): report the CPU cap the way the operator set it` |
+| M2 startup line in µs | **fixed** | guard + `cpuCapDescription()`, same commit; teeth checked by restoring the old line |
+| M3 guard bundled with its code | **accepted, not rewritten** — see below |
+| M4 installer's "three worth a decision" | **fixed** | same commit as M1 |
+| L1 `Math.round` | **fixed** | `roundToLong()` |
+| L2 test name | **fixed** | `theShippedDefaultIsExactlyTwoCores` |
+| L3 `--cpus` validation implied | **fixed** | KDoc now states the raw cfs path is *not* host-bounded, with the measurement |
+| L4 brittle-but-loud wiring regex | **no change** | fails loudly rather than passing silently; the new startup-line matcher documents the lazy-match trap it hit |
+
+**M3 is deliberately not remedied by rewriting history, and that is a judgement call worth stating.** The
+convention's purpose is that someone can check out a parent and watch the pin go red. Buying that here costs
+a rebase of the whole branch, and the rebase would invalidate every commit hash this very report cites —
+precisely the failure mode CLAUDE.md's "cite names, not snapshots" entry exists for (54 hashes killed by a
+rebase). What is bought is thin: the guard in question is `theCpuCapReachesTheKernelWithItsPeriod`, a gated
+IT that no CI run will ever execute, whose teeth were checked in-session by removing the production line
+(`saw: [75000 100000]`) and whose red is recorded in three places. The two subsequent fixes on this branch
+were landed guard-first in their own commits, so the discipline is demonstrated where it is cheap. If a
+future reader disagrees, the remedy is a rewrite *before* the merge; after it, it is unfixable.
+
+**Re-verified after the fixes:** branch suite **303 tests, 0 failures** (16 skipped with `GRINDER_DOCKER_IT=1`,
+23 without — the gated Docker IT grew a case). Gated `DockerJavaContainerEngineIT` 7/7 against Docker 29.7.2.

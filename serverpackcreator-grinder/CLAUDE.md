@@ -92,8 +92,15 @@ though their detail lives deeper:
 - **Never wire the candidate-mod boot with network.** `--network none` is the whole isolation guarantee; only
   the one-off loader install per tuple gets network. Detail: `grinder/loader/CLAUDE.md`.
 - **A mod must never be mis-scored as a clientside crash.** Two independent guards exist (selection-time loader
-  availability + Java support, and the classifier's pre-launch setup-abort mapping), plus clientside's crash
-  re-check when an older cached loader build was booted. See `serverpackcreator-clientside/CLAUDE.md`.
+  availability + Java support, and the classifier's pre-launch setup-abort mapping), plus *three* crash checks
+  in clientside: one when an older cached loader build was booted, one — since 2026-08-23 — when the crash
+  contradicts a declared server support, which boots up to two **other versions of the mod** to find out whether
+  the crash was that build's, and a free cross-loader pass that refuses to let a crash stand when another loader
+  of the same project booted a server with the same list-entry (the entry is what gets published, and it is
+  loader-agnostic). See `serverpackcreator-clientside/CLAUDE.md`. **Consequence for pacing:** one
+  contradicting crash can now hold a worker for up to three boot budgets (~45 min at the default 15), which is
+  the price of not publishing a wrong `HIGH` to `/as-properties`. Only a crash the metadata contradicts pays it;
+  a genuine clientside mod still costs one boot, because its metadata and its crash agree.
 - **`installDist` is not rebuilt by `test`** — always rebuild before a live run, or you will draw conclusions
   from a stale jar (this has happened: a run reported the unfiltered 7 339-version axis because of it).
 
@@ -155,6 +162,57 @@ though their detail lives deeper:
   IPv4 (skips where the host has none), and `ReportBindWiringTest` asserts against `main`'s source that the
   variable actually reaches `ReportServer`'s `host` — the join no test can execute, because `main` boots Docker.
   README §5 *Exposing the report* is the operator-facing half.
+- **LANDMINE — a container must run as the *owner of the directory it mounts*, not as the image's `USER`.**
+  `docker/Dockerfile` bakes in `USER 1000:1000`, and `ContainerSpec.user` defaulted to the same literal — correct
+  only while the daemon itself is uid 1000, which stopped being true the moment it became a systemd service under
+  its own account. Every boot and install bind-mounts a directory the *host* process created, so a mismatch means
+  the container reads the pack and writes nothing. **The failure names the wrong subsystem:** the start script
+  carries on past its refused writes and dies ~20 lines later on the JVM's `Error: could not open
+  'user_jvm_args.txt'`, which reads as a broken start-script template. Measured 2026-08-23: every install failed
+  across Fabric, Forge *and* NeoForge at once — loader-indifference is the tell for a permission wall.
+  `ContainerUser.forDirectory` resolves it (override `SPC_GRINDER_CONTAINER_USER`), `GrinderApplication` logs it
+  as `containerUser=` on the startup line, and `InstallFailureDiagnosis` names it in the failure warning.
+  **Corollary:** `DockerLoaderInstaller` quoted `output.lines.takeLast(25)`, and this cause sits at the *top* of
+  the console — a tail is the wrong slice whenever the first failure is survivable, so the diagnosis scans all of it.
+- **`/as-properties` publishes the fallback clientside list, and only `HIGH` may ever reach it.**
+  `FallbackPropertiesRenderer` merges the list SPC currently holds with every crash-proven verdict and serves it
+  where an instance's `de.griefed.serverpackcreator.configuration.fallback.updateurl` can poll it. Two things are
+  load-bearing. It is written for `Properties.load(InputStream)`, which decodes **ISO-8859-1** — hence `\uXXXX`
+  escaping and an ISO-8859-1 response, the one endpoint that is not UTF-8. And the confidence floor is not a
+  tunable: a clean boot proves nothing, while a wrong entry silently strips a mod from every server pack built
+  against the list. **Never point the grinder's own SPC instance at this endpoint** — its findings would fold back
+  into what it publishes as "the shipped list", and an entry could then never leave it. **Second-order:** the
+  base list it publishes is whatever *this* daemon's SPC holds, and `UpdateConfig` replaces a client's lists
+  wholesale — so a grinder on an old build, or one that could not reach the repository at startup, hands every
+  client a *staler* list than they had. Pinned end-to-end by `FallbackPropertiesConsumerTest`, which drives the
+  real `UpdateConfig` against a running `ReportServer` over loopback — the model-vs-consumer distinction matters
+  here, since everything else asserts against `java.util.Properties` rather than SPC itself.
+- **A unit-level `CPUQuota=` bounds the JVM and nothing else** — same cause as the shutdown landmine below:
+  containers belong to the docker daemon's control group, not the service's. `SPC_GRINDER_CPUS` (cores per
+  container, default `2`, `0` = uncapped) is the only lever on the boots; the daemon's own host-side share —
+  mod resolution/downloads, pack generation, the headless Chromium for a locked CurseForge file — is the half
+  systemd *can* cap. Floor the knob at ~1 core: a Minecraft startup is largely single-thread-bound, and a boot
+  throttled past its 15-minute budget is scored INCONCLUSIVE, which reads as a hanging mod rather than a
+  starved host. Detail (and why the quota must be sent with its period) in `grinder/container/CLAUDE.md`.
+- **LANDMINE — a container is not in the unit's control group, so only the application can stop it.**
+  Containers are children of the docker daemon; `systemctl stop` kills the JVM's cgroup and never touches them.
+  The shutdown hook is the *only* thing that does: it marks the engine closed (so a worker cannot create one
+  behind the sweep), `docker stop`s each in flight with `SHUTDOWN_GRACE` (15s SIGTERM-then-kill, 8 at a time
+  because the window is per container), then gives the workers what is left of the same window via
+  `GrindPool.awaitStop`. Three things follow. `requestStop` alone can never end a shutdown — its flag is read
+  only *between* candidates, so a worker inside a boot runs for up to that boot's 15-minute budget; the
+  interrupt is what wakes it. `TimeoutStopSec` in the unit must stay above the window, or systemd's SIGKILL
+  lands during the cleanup that prevents the leak (the arithmetic is in the unit's own comment). And workers
+  are **threads**, so "force kill a worker" does not exist — the JVM exiting is the force, and `awaitStop`
+  only decides when to stop waiting. Verified against a live daemon, not reasoned about: a container trapping
+  SIGTERM proves the signal arrives before removal (`DockerJavaContainerEngineIT`, gated on
+  `GRINDER_DOCKER_IT=1`).
+- **Every container carries `OWNER_LABEL`, and that label is the only way to find an orphan.**
+  A SIGKILLed JVM leaves containers running with nothing tracking them — the in-memory set died with the
+  process, and they have no name and no autoremove. `reapOrphans()` at startup is the sole recovery, and it
+  assumes **one grinder per Docker daemon**: the label says "a grinder made this", not "*this* grinder", so a
+  second instance sharing a daemon would have its live boots reaped by the first one's startup. The shipped
+  unit is a singleton, which is what makes the simple label safe.
 - **Never hand SPC a *relative* properties file — a loaded one becomes a permanent write target.**
   `PropertyStore.loadProperties` adds every file it reads to `trackedPropertyFiles`, and `save()` writes to **all**
   of them on every save (skipping any that no longer exist, except `alwaysWrite`). `ApiProperties`' default is the

@@ -63,7 +63,8 @@ on the host is touched, and no mod ever gets network access.
 | JDK 21+              | To build and run the service                                                 |
 | Disk                 | The runtime image is ~2 GB; each cached loader install adds a few hundred MB |
 | RAM                  | ~3 GB **per parallel worker** (each worker holds a booting Minecraft server) |
-| `CURSEFORGE_API_KEY` | Optional. Without it the grinder uses Modrinth only                          |
+| Playwright + Chromium | **Required for CurseForge.** Distribution-locked files (`allowModDistribution=false`) have no API download-URL and are fetched with a headless browser, on the *host*. Install with `npx --yes playwright install chromium` as the service account, plus `sudo npx --yes playwright install-deps chromium` for the OS libraries |
+| `CURSEFORGE_API_KEY` | Optional. Without it the grinder uses Modrinth only. Complementary to the browser above: the key reveals that a file is locked, the browser fetches it |
 
 ---
 
@@ -191,7 +192,10 @@ never evicted, and a re-install costs one networked setup boot if it comes back.
 | `SPC_GRINDER_CURSORS`           | `~/.spc-grinder/cursors.json`  | Crawl position per platform — delete to re-sweep from the most-downloaded    |
 | `SPC_GRINDER_PORT`              | `8757`                         | Report server port                                                           |
 | `SPC_GRINDER_HOST`              | `127.0.0.1`                    | Report server bind address. Loopback by default — see *Exposing the report*  |
+| `SPC_GRINDER_CONTAINER_USER`    | owner of `SPC_GRINDER_WORK`    | `uid:gid` the containers run as. Must own the staging — see *Container identity* |
 | `SPC_GRINDER_WORKERS`           | `2`                            | Parallel boots. **Budget 3 GiB RAM each** — see *Sizing the worker count*    |
+| `SPC_GRINDER_CPUS`              | `2`                            | Cores **per container**. `0` = uncapped — see *Capping CPU*                  |
+| `SPC_GRINDER_MEMORY_GIB`        | `3`                            | GiB **per container**. ⚠ Only change this if you know what you are doing     |
 | `SPC_GRINDER_BATCH`             | `25`                           | Projects taken from **each** platform per pass — the sweep-speed lever       |
 | `SPC_GRINDER_INTERVAL`          | `21600` (6 h)                  | Seconds to idle after a full sweep found nothing due                         |
 | `SPC_GRINDER_SCAN_DELAY`        | `15`                           | Seconds between passes that only scanned past fresh verdicts                 |
@@ -234,10 +238,91 @@ silently falling back — verified against the JDK's `HttpServer`: an address th
 `BindException: Can't assign requested address`, and a name that does not resolve gives `SocketException:
 Unresolved address`. Pinning the subnet on a user-defined network avoids the situation entirely.
 
+### Publishing the fallback list (`/as-properties`)
+
+The report server serves a `serverpackcreator.properties` fragment at `/as-properties`, carrying the
+clientside-mod list this daemon holds **plus every mod the grinder has proven clientside by crashing a real
+server with it**. Point an SPC instance at it and its fallback list stops depending on a maintainer editing
+the repository by hand:
+
+```properties
+de.griefed.serverpackcreator.configuration.fallback.updateurl=https://grinder.example.com/as-properties
+```
+
+The instance polls that URL on startup (`UpdateConfig.updateFallback`) and replaces its stored lists when the
+served ones differ. The mod-whitelist is passed through untouched, so the endpoint is a **drop-in replacement**
+for the GitHub raw URL rather than a partial one that would quietly freeze a client's whitelist.
+
+Only `HIGH` confidence is ever published — a mod that crashed a server. A mod that booted cleanly has proven
+nothing, and a wrong entry silently strips a mod out of every server pack built against the list, so the gate
+is a floor rather than a threshold to tune.
+
+**The base list is only as fresh as this daemon's own SPC instance.** `UpdateConfig` *replaces* a client's
+lists with what it is served, so whatever this grinder holds becomes what every client holds. That is the
+shipped list of the SPC version the grinder was built from, refreshed from the repository at *its* startup — so
+a grinder that could not reach the repository when it started, or that is running an old build, will hand its
+clients an older base list than they had. Keep it current and let it reach the repository on boot.
+
+> **Do not point the grinder's own SPC instance at this endpoint.** Its findings would be folded back into
+> what it publishes as "the shipped list", and an entry could then never leave the list even after a later
+> verdict disagrees. Leave `SPC_GRINDER_SPC_PROPERTIES`' update-URL on the repository.
+
+Serving it publicly means serving it to other people's build tooling. Read *Exposing the report* first: the
+same port also serves the unauthenticated verdict table and the full CSV export.
+
+### Stopping it
+
+`systemctl stop spc-grinder` sends SIGTERM to the JVM, which is the unit's main process — the Gradle launcher
+`exec`s it, so nothing swallows the signal. The shutdown hook then, in this order:
+
+1. stops the pass loop and tells workers to take no further candidates;
+2. marks the container engine closed, so no worker can start another container behind the cleanup;
+3. asks every in-flight container to exit — `docker stop` with a **15-second** window, i.e. SIGTERM and then
+   the daemon's own SIGKILL — all of them at once, so the window is shared rather than paid per container;
+4. gives the workers what is left of that window, interrupting them so a worker parked in a boot wakes now
+   rather than after its 15-minute budget, and abandons any that will not quit;
+5. exits.
+
+**Workers are threads, not processes**, so there is nothing for systemd to kill separately. **Containers are
+not in the unit's control group** — they belong to the docker daemon — so systemd never touches them either,
+and step 3 is the only thing that stops them. That is why `TimeoutStopSec` has to stay above the window: a
+SIGKILL landing mid-cleanup leaves Minecraft servers running with nothing to tidy them.
+
+If that happens anyway, the next start recovers. Every container carries the label
+`de.griefed.serverpackcreator.grinder`, and startup removes whatever wears it:
+
+```bash
+docker ps -a --filter label=de.griefed.serverpackcreator.grinder=1   # what a killed run left behind
+```
+
+> **One grinder per Docker daemon.** The label identifies *a* grinder, not *this* grinder, so a second
+> instance sharing a daemon would have its running boots reaped by the first one's startup.
+
+### Container identity
+
+Every boot and every loader install bind-mounts a directory **this process created** and then runs as
+`SPC_GRINDER_CONTAINER_USER`. If that identity does not own the directory, the container can read the pack
+and write nothing — and the failure does not look like a permissions problem. The install script carries on
+past its refused writes and dies twenty lines later on the JVM's `Error: could not open 'user_jvm_args.txt'`,
+which reads as a broken start-script template.
+
+The default is the owner of `SPC_GRINDER_WORK`, which is the right answer almost always. It is *not* the
+runtime image's own `USER 1000:1000`: that only matches while the daemon itself runs as uid 1000, which
+stopped being true the moment it became a systemd service under its own account. Check it on the startup
+line:
+
+```
+Grinder starting — home=… work=… bind=127.0.0.1 port=8757 workers=2 containerUser=1001:1001
+```
+
+Set the variable only when the owner is not what the container needs — a work directory on a share owned by
+somebody else, or a userns-remapped daemon.
+
 ### Sizing the worker count
 
-Each in-flight grind holds a booting Minecraft server, capped at **3 GiB** (`ContainerResources.memoryBytes`), so the
-worker count is a memory question rather than a CPU one:
+Each in-flight grind holds a booting Minecraft server, capped at **3 GiB** (`SPC_GRINDER_MEMORY_GIB`, and see the
+warning below before touching it), so the worker count is a memory question first — for the CPU side see *Capping
+CPU* below:
 
 ```
 SPC_GRINDER_WORKERS  ≈  (memory available to Docker − ~2 GiB overhead) / 3 GiB
@@ -259,9 +344,51 @@ Throughput is roughly linear in workers until memory runs out: at one worker a c
 boot, so ~50/hour; Modrinth's ~71 000 mod projects alone are then about two months of wall-clock, and both platforms
 interleaved considerably more. Raising the worker count is the single biggest lever on how long a full sweep takes.
 
+#### ⚠ `SPC_GRINDER_MEMORY_GIB` — only change this if you know what you are doing
+
+The per-container memory cap is configurable, and it is the one knob here where the default is load-bearing in
+three directions at once:
+
+- **It is what every boot's heap is.** The packs the grinder builds leave `javaArgs` empty, so nothing passes
+  `-Xmx` and the JVM sizes its own heap from the container's cgroup limit — measured on Temurin 21 at 25%, so a
+  3 GiB cap gives a **768 MiB heap** (`--memory=3g` → `MaxHeapSize 805306368`; at `--memory=1g` it is
+  `268435456`). Lower the cap and modded servers stop reaching their ready-line for want of heap.
+- **It is the divisor in the formula above.** Raise it without lowering `SPC_GRINDER_WORKERS` and the host is
+  over-subscribed by exactly the factor you raised it by.
+- **Either failure is scored `INCONCLUSIVE`, which looks like a mod that hangs.** A boot killed for memory
+  teaches nothing, costs its full budget, and does not announce that the *host* was the problem.
+
+`0` removes the limit entirely. That is sharper here than for CPU: an uncapped boot can take the host's memory
+with it, rather than merely hogging cores. Values below the daemon's own floor are raised to it (6 MB).
+
+If the intent is "grind faster", the lever is `SPC_GRINDER_WORKERS` or `SPC_GRINDER_CPUS`, not this.
+
 **Keep the host awake.** A suspend freezes a boot mid-flight; the grinder adds detected suspends back to the boot's
 budget, but a machine asleep for eight hours simply is not grinding. Run it under `caffeinate -ims` on macOS (or the
 equivalent inhibitor elsewhere) for an unattended sweep.
+
+### Capping CPU
+
+Every container the grinder starts — each mod boot, and each loader install — runs under a CFS quota, set from
+`SPC_GRINDER_CPUS` in cores exactly like docker's own `--cpus`. Fractions are allowed (`1.5`), and `0` removes the
+cap. The default is **2 cores per container**, so what the grinder can occupy is:
+
+```
+cores occupied  ≈  SPC_GRINDER_WORKERS × SPC_GRINDER_CPUS      (2 × 2 = 4 by default)
+```
+
+plus the daemon's own host-side work, which is *not* container-bound: resolving and downloading mods, generating
+each server pack, and the headless Chromium a distribution-locked CurseForge file needs. That share is a normal
+process on the host, so cap it the normal way — `CPUQuota=`/`AllowedCPUs=` in the unit, or `nice`.
+
+**`CPUQuota=` in the unit does not reach the boots.** Containers are children of the Docker daemon, not of the
+service's control group (the same reason `systemctl stop` cannot stop them), so a unit-level quota constrains the
+JVM and nothing else. `SPC_GRINDER_CPUS` is the only lever on the containers.
+
+**Do not go below ~1 core.** A Minecraft server's startup is largely single-thread-bound, and a throttled boot
+still has to reach its ready-line inside the 15-minute budget — one that does not is scored INCONCLUSIVE, which
+looks exactly like a mod that hangs. Below one core, verdicts get slower *and* less trustworthy. Prefer fewer
+workers over starving each of them.
 
 ---
 
@@ -277,6 +404,19 @@ Columns are `Name, Project, NamePattern, Confidence, Loader, Detail`, highest co
 **Interpreting confidence:** only `HIGH` (the server crashed with the mod in place) is decisive. `MEDIUM`
 means the server booted — which does *not* prove the mod is server-safe. `INCONCLUSIVE` means nothing was
 learned, e.g. the loader has no build for that Minecraft version, so the mod was never actually tested.
+
+**Read the `Detail` column on a crash.** A crash that *contradicts* the mod's own metadata — it claims to
+support servers, yet the server died — is re-checked on up to two other versions of the mod before it may
+stand, because one crashing build is not a clientside mod. The detail says which way that went: `also crashed
+on <file>` means other versions crashed too, `but <file> booted cleanly` means the verdict was cleared and is
+no longer a crash, and `no other version … to re-check against` means the mod publishes only the one version,
+so the sample behind the verdict is a single build.
+
+**A crash is also weighed against the project's other loaders.** What this list publishes is a file-name stem
+matched with `startsWith`, and that stem is loader-agnostic — so if one loader crashed while another booted a
+server under the *same* stem, publishing the crash would strip a build that demonstrably works. Such a verdict
+keeps its boot result but not its confidence, and its detail ends in `booted a server with the same entry`.
+A crash whose stem is unique to its loader is unaffected: sideness can genuinely differ per loader.
 
 The store is plain JSON (`SPC_GRINDER_STORE`), keyed by platform + slug + loader — the same slug on
 Modrinth and CurseForge stays two separate projects. How far the crawl has got is in `SPC_GRINDER_CURSORS`:
@@ -360,6 +500,9 @@ Lines worth grepping for:
 | `Grinding ` / `Done .*→` | candidate started / finished, with its per-loader verdicts |
 | `Reusing cached` | an installed loader build was reused instead of installing a newer one |
 | `not the newest build` | a crash is being re-checked on the newest loader before it counts |
+| `although the metadata declares` | a crash contradicts the mod's claimed server support; other versions of the mod are being booted to settle it |
+| `booted the same` | a crash was set aside because another loader of the same project booted a server under the same list-entry |
+| `has more files than` | a CurseForge project's file history was longer than the paging cap; its oldest builds were not read |
 | `were not reached` | a pass was cut short; the crawl cursor was held back so nothing is skipped |
 | `Evicted` | idle loader installs reclaimed (`SPC_GRINDER_CACHE_TTL_DAYS`) |
 | `holds .* mods but only` | a CurseForge slice is too big to page through; its middle is unreachable |
@@ -486,7 +629,9 @@ Two more things the unit file decides, both worth stating explicitly:
 | `Cannot connect to the Docker daemon`    | Daemon not running, or your user isn't in the `docker` group                                                                  |
 | `FileNotFoundException: /log4j2.xml`, `Could not create directory /logs` | The service ran in `/` and SPC took it for its home. Fixed in the daemon, which now names its home itself; on an older build set `WorkingDirectory=` in the unit (§8) |
 | `home directory is not usable: <path>` | SPC resolved a home it cannot write to. Point it somewhere writable with `JAVA_OPTS=-Dde.griefed.serverpackcreator.home=<dir>`, or fix that directory's ownership |
-| `No cached loader install for …`         | The one-off install boot failed — it is the only boot allowed network. Check connectivity and the logs above it               |
+| `No cached loader install for …`         | The one-off install boot failed — it is the only boot allowed network. Read the `Cause:` on the `Install produced no library layer` warning above it, and the console it names; note the tuple is then on a 60-minute cooldown, so later candidates repeat this line without a fresh attempt |
+| Installs fail instantly with `Permission denied` inside the pack | The container's `uid:gid` does not own the staging directory, so it can read the pack and write nothing. §5, *Container identity* — check the `containerUser=` value on the startup line |
+| Every locked CurseForge file fails    | With `Timeout 30000ms exceeded`: missing Chromium OS libraries (`sudo npx --yes playwright install-deps chromium`) — the `Playwright Host validation warning` in the log lists them. With a `net::ERR_ABORTED` stack: an older build, in which the download-triggered navigation abort discarded the file |
 | Mods on the newest Minecraft are skipped | The image lacks that version's required JDK. Add it to the Dockerfile **and** `ImageJavaRuntimes.bundledMajors`, then rebuild |
 | Boots die with `Killed` mid-startup      | Host out of memory — lower `SPC_GRINDER_WORKERS`                                                                              |
 | Everything is `INCONCLUSIVE`             | Often the loader genuinely has no build for the selected Minecraft version; check the `Detail` column                         |
@@ -497,6 +642,7 @@ Two more things the unit file decides, both worth stating explicitly:
 | `category list unavailable`               | CurseForge's `/categories` failed, so an over-cap version is covered by its modloader slices only that sweep                   |
 | `holds N mods but only 20000 are reachable` | Even a version × category × modloader slice is too big to page through; its middle is skipped. No further filter exists      |
 | Reverse proxy 502s, but the report works over an SSH tunnel | The report is bound to loopback, which a containerised proxy cannot reach. Set `SPC_GRINDER_HOST` to the bridge gateway — §5, *Exposing the report* |
+| Reverse proxy still cannot reach it *after* widening the bind | Distinguish by **timeout vs. connection-refused**: a loopback bind refuses instantly, a firewall drop hangs. On a dropped connection the proxy's own bridge subnet is usually missing from the host firewall — find it with `docker inspect -f '{{range $n,$c := .NetworkSettings.Networks}}{{$n}} gw={{$c.Gateway}}{{end}}' <proxy>` and allow that subnet to the port |
 | A container outlived the process         | Should not happen — shutdown drains them. If it does, `docker ps` and remove it, and please report it                         |
 
 ---

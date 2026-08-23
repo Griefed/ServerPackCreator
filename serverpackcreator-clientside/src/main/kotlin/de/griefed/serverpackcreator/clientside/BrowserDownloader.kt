@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.clientside
 
 import com.microsoft.playwright.*
+import com.microsoft.playwright.options.WaitUntilState
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 
@@ -34,11 +35,15 @@ import java.io.File
  * equivalent to a maintainer manually downloading the mod to test it. An honest User-Agent and a
  * small inter-request delay keep the access respectful.
  *
- * @param requestDelayMillis Pause before each download to avoid hammering CurseForge.
+ * @param requestDelayMillis    Pause before each download to avoid hammering CurseForge.
+ * @param navigationTimeoutMillis Budget for each navigation and for the download itself. Playwright's own
+ *                                default is 30s, which a Cloudflare-fronted, ad-laden project page routinely
+ *                                exceeds — every timeout observed on 2026-08-23 was exactly `30000ms`.
  * @author Griefed
  */
 class BrowserDownloader(
-    private val requestDelayMillis: Long = 2_000
+    private val requestDelayMillis: Long = 2_000,
+    private val navigationTimeoutMillis: Double = 60_000.0
 ) : JarDownloader, AutoCloseable {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val userAgent =
@@ -59,10 +64,22 @@ class BrowserDownloader(
             targetDirectory.mkdirs()
             val destination = File(targetDirectory, modFile.fileName)
             newPage().use { page ->
-                page.navigate(pageUrl)
+                page.navigate(pageUrl, navigationOptions())
                 // CurseForge auto-initiates the file-download on the `/download` page; navigating
                 // there inside waitForDownload captures the resulting transfer.
-                val download: Download = page.waitForDownload { page.navigate("$pageUrl/download") }
+                val download: Download = page.waitForDownload(downloadOptions()) {
+                    // The navigation is *expected* to be aborted -- it turns into a file transfer, and Chromium
+                    // cancels a navigation that becomes a download. Letting that throw escape tore down the wait
+                    // and discarded the very download it had just triggered. Anything else is a real failure and
+                    // must still propagate.
+                    runCatching {
+                        page.navigate("$pageUrl/download", navigationOptions())
+                    }.onFailure { navigationFailure ->
+                        if (!isDownloadAbort(navigationFailure)) {
+                            throw navigationFailure
+                        }
+                    }
+                }
                 download.saveAs(destination.toPath())
             }
             if (destination.isFile) destination else null
@@ -71,6 +88,22 @@ class BrowserDownloader(
             null
         }
     }
+
+    /**
+     * How both navigations are performed: wait for `DOMCONTENTLOADED`, never Playwright's default `load`.
+     *
+     * A CurseForge project page keeps fetching ads and trackers long after it is usable, so waiting for `load`
+     * spends the entire budget on third parties and reports a page that works as a timeout. Extracted rather
+     * than inlined so the choice is testable without a browser — it is made here, on the host, before Chromium
+     * is involved at all.
+     */
+    internal fun navigationOptions(): Page.NavigateOptions = Page.NavigateOptions()
+        .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+        .setTimeout(navigationTimeoutMillis)
+
+    /** The download's own budget, kept equal to the navigation's so one slow page cannot be half-timed-out. */
+    internal fun downloadOptions(): Page.WaitForDownloadOptions =
+        Page.WaitForDownloadOptions().setTimeout(navigationTimeoutMillis)
 
     /** Open a fresh download-enabled page on the lazily-launched browser. */
     private fun newPage(): Page {
@@ -86,6 +119,19 @@ class BrowserDownloader(
         val runtime = playwright ?: Playwright.create().also { playwright = it }
         log.info("Launching headless Chromium for distribution-locked downloads...")
         return runtime.chromium().launch(BrowserType.LaunchOptions().setHeadless(true))
+    }
+
+    companion object {
+        /**
+         * Whether [failure] is Chromium cancelling a navigation because it became a download, rather than a
+         * navigation that genuinely failed. Both wordings Playwright uses for the event are recognised; a
+         * timeout or a DNS failure is not one of them, and must keep failing the download.
+         */
+        fun isDownloadAbort(failure: Throwable): Boolean {
+            val message = failure.message ?: return false
+            return message.contains("net::ERR_ABORTED", ignoreCase = true) ||
+                message.contains("Download is starting", ignoreCase = true)
+        }
     }
 
     /** Dispose the browser and Playwright runtime if they were started. */

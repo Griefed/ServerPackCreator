@@ -22,8 +22,12 @@ package de.griefed.serverpackcreator.grinder
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.settings.PathsConfig
+import de.griefed.serverpackcreator.grinder.container.ContainerResources
+import de.griefed.serverpackcreator.grinder.container.ContainerUser
+import de.griefed.serverpackcreator.grinder.container.SHUTDOWN_GRACE
 import de.griefed.serverpackcreator.grinder.container.DockerJavaContainerEngine
 import de.griefed.serverpackcreator.grinder.loader.*
+import de.griefed.serverpackcreator.grinder.report.FallbackLists
 import de.griefed.serverpackcreator.grinder.report.JsonVerdictStore
 import de.griefed.serverpackcreator.grinder.report.ReportServer
 import de.griefed.serverpackcreator.grinder.source.*
@@ -76,10 +80,34 @@ object GrinderApplication {
         // proxy in a container dials the host over the bridge gateway, never 127.0.0.1 -- is a deliberate act.
         val bindHost = env("SPC_GRINDER_HOST", "127.0.0.1")
         val workers = env("SPC_GRINDER_WORKERS", "2").toInt()
+        // Cores per container, not per host: `workers * cpus` is what the grinder can actually occupy, and the
+        // default pair (2 workers x 2 cores) is what every install has been running on. Worth a knob because a
+        // grinder normally shares its box -- and because the cap the code shipped with was unreachable from the
+        // outside. Do not tune it below ~1 core: world generation is single-thread-bound, and a boot throttled
+        // past its 15-minute budget is scored INCONCLUSIVE, which reads as a hanging mod rather than as a
+        // starved host. 0 disables the cap.
+        val containerCpus = env("SPC_GRINDER_CPUS", "2").toDouble()
+        // Memory per container, and the one knob here that is genuinely dangerous to touch: the packs the
+        // grinder builds leave `javaArgs` empty, so the JVM sizes the server's heap from this cgroup limit
+        // (measured at 25%, so 3 GiB gives a 768 MiB heap), and it is also what the README's worker-sizing
+        // advice divides by. Lower it and boots die of a heap too small for a modded server; raise it without
+        // dropping workers and the host over-subscribes and OOM-kills them. Both are scored INCONCLUSIVE,
+        // i.e. they look like mods that hang. Default 3 GiB -- see README §5's warning.
+        val containerMemoryGiB = env("SPC_GRINDER_MEMORY_GIB", "3").toDouble()
+        val containerResources = ContainerResources.forLimits(containerCpus, containerMemoryGiB)
+        // The image declares USER 1000:1000, which is only right while the daemon itself is uid 1000. Every
+        // container bind-mounts a directory this process created, so it has to run as that directory's owner --
+        // otherwise every write inside the pack is refused, and the boot dies on a missing @argfile far from
+        // the actual cause. Logged below so the identity is visible without reproducing the failure.
+        // Read here rather than inside ContainerUser so the entry point stays the one place environment is
+        // consulted -- which is also what keeps the README table and the systemd unit honest, since both guards
+        // scan this file for the names it reads.
+        val containerUser = ContainerUser.forDirectory(workDir, System.getenv("SPC_GRINDER_CONTAINER_USER"))
 
         log.info(
             "Grinder starting — home=$base image=$image work=$workDir cache=$cacheRoot store=$storeFile " +
-                "bind=$bindHost port=$port workers=$workers"
+                "bind=$bindHost port=$port workers=$workers containerUser=$containerUser " +
+                "cpus=${containerResources.cpuCapDescription()} memory=${containerResources.memoryCapDescription()}"
         )
 
         log.info("Using Preferences node '${ApiProperties.resolvePreferencesNode()}' for SPC settings.")
@@ -90,7 +118,10 @@ object GrinderApplication {
         val engine = DockerJavaContainerEngine()
         // Authoritative Minecraft -> required-Java from SPC's own metadata; gates selection to the image's JDKs.
         val imageJava = ImageJavaRuntimes.from(apiWrapper.versionMeta.minecraft)
-        val installer = DockerLoaderInstaller(engine, image, ApiVanillaPackGenerator(apiWrapper, File(workDir, "install")), imageJava)
+        val installer = DockerLoaderInstaller(
+            engine, image, ApiVanillaPackGenerator(apiWrapper, File(workDir, "install")), imageJava,
+            resources = containerResources, containerUser = containerUser
+        )
         // A cached install is a product of the start-script templates that built it, so record which ones those
         // were. Read per call rather than once: SPC resolves its templates from the then-current home, and the
         // daemon's home can be re-resolved while it runs.
@@ -99,7 +130,19 @@ object GrinderApplication {
                 apiWrapper.apiProperties.defaultStartScriptTemplates().values.map { File(it) }
             )
         })
-        val verifier = ContainerCandidateVerifier(apiWrapper, cache, engine, image, imageJava, File(workDir, "verify"))
+        val verifier = ContainerCandidateVerifier(
+            apiWrapper, cache, engine, image, imageJava, File(workDir, "verify"),
+            resources = containerResources, containerUser = containerUser
+        )
+        // Containers first: a JVM that was SIGKILLed (systemd's TimeoutStopSec expiring mid-cleanup) leaves them
+        // running, parented by the docker daemon rather than this unit's control group, so nothing else on the
+        // host will ever collect them. Safe here and only here, for the same reason as the staging sweep below:
+        // nothing of ours is in flight yet, so anything wearing our label is by definition inherited.
+        engine.reapOrphans().let { reaped ->
+            if (reaped > 0) {
+                log.info("Reaped $reaped container(s) left running by a previous, killed run.")
+            }
+        }
         // A run killed mid-boot leaves a staged pack that no per-candidate reap will ever come for, so sweep what
         // we inherited before adding to it. Safe here and only here: nothing is in flight yet.
         BootWorkspaceReaper(File(workDir, "verify")).reapAll().let { reclaimed ->
@@ -121,11 +164,33 @@ object GrinderApplication {
         val activePool = AtomicReference<GrindPool?>(null)
         val mainThread = Thread.currentThread()
         Runtime.getRuntime().addShutdownHook(Thread {
-            log.info("Shutdown requested — stopping the grind loop.")
+            log.info("Shutdown requested — ${SHUTDOWN_GRACE.seconds}s for containers and workers to quit, then killed.")
+            // ONE window for the whole shutdown, not one per half: the containers and the workers are the same
+            // stop as far as an operator and systemd are concerned, and spending a full window on each would
+            // double the worst case past what the unit's TimeoutStopSec is sized for.
+            val deadline = System.currentTimeMillis() + SHUTDOWN_GRACE.toMillis()
             running.set(false)
-            activePool.get()?.requestStop()
+            // Read once: `main` replaces this per pass, and reading it twice could signal one pool and wait on
+            // another.
+            val pool = activePool.get()
+            // No new candidates, before anything else: cheap, and it means a worker finishing right now does not
+            // start another one while the rest of this runs.
+            pool?.requestStop()
+            // Containers first, and this is the ordering that matters. `close()` marks the engine closed before
+            // it sweeps, so a worker cannot create a container behind it; it then asks each container to exit
+            // (SIGTERM, killed after the window) which is also what unblocks the workers waiting on them.
             runCatching { engine.close() }
                 .onFailure { log.warn("Could not clean up in-flight containers: ${it.message}") }
+            // Whatever is left of the window goes to the workers -- which is usually most of it, since stopping
+            // containers is what frees them. A worker that does not come back is abandoned (the JVM exits either
+            // way), but say so: it means work was still running at exit.
+            // Floored, not clamped to zero: a container that ignores SIGTERM can eat the whole window, and
+            // handing the workers 0ms means the interrupt they were just sent cannot possibly be observed --
+            // the "did not stop" warning would then be guaranteed rather than informative.
+            val remaining = maxOf(WORKER_STOP_FLOOR, Duration.ofMillis(deadline - System.currentTimeMillis()))
+            if (pool?.awaitStop(remaining) == false) {
+                log.warn("A worker did not stop within ${SHUTDOWN_GRACE.seconds}s; exiting anyway.")
+            }
             mainThread.interrupt()
         })
 
@@ -133,17 +198,29 @@ object GrinderApplication {
             .apply { parentFile?.mkdirs() }
         val cursorStore = JsonCursorStore(cursorFile)
         val server = ReportServer(
-            store, port, host = bindHost, status = status, cursors = cursorStore, cacheRoot = cacheRoot
+            store, port, host = bindHost, status = status, cursors = cursorStore, cacheRoot = cacheRoot,
+            // Read per request, not captured once: SPC refreshes these from its own update-URL while the
+            // daemon runs, and /as-properties must publish what this instance holds now.
+            fallbackLists = {
+                FallbackLists(
+                    clientsideMods = apiWrapper.apiProperties.clientsideMods.toList(),
+                    whitelist = apiWrapper.apiProperties.modsWhitelist.toList()
+                )
+            }
         ).start()
         val reportUrl = reportUrl(bindHost, server.port)
         log.info("Report:  $reportUrl/    CSV: $reportUrl/export.csv    live status: $reportUrl/status")
+        log.info("Fallback list for SPC instances (set as their fallback.updateurl): $reportUrl/as-properties")
 
         if (args.isNotEmpty()) {
             // One-shot: grind a fixed set of project URLs (handy for an end-to-end verification), then
             // hold the report open. The re-verify TTL still applies, so re-running skips fresh verdicts.
             val candidates = args.map { GrindCandidate(it, slugFromUrl(it), 0, ModPlatforms.ofUrl(it)) }
             log.info("One-shot run: grinding ${candidates.size} candidate(s) with $workers worker(s)...")
-            GrindPool(grinder, workers).grindAll(candidates) // one-shot: no crawl cursor to advance
+            // Registered like the continuous path's pool: activePool is the only handle the shutdown hook has,
+            // and without it Ctrl-C here signalled and awaited nothing -- both calls no-opping through a null.
+            GrindPool(grinder, workers).also { activePool.set(it) }
+                .grindAll(candidates) // one-shot: no crawl cursor to advance
             log.info("Grind complete: ${store.all().size} verdict(s). Report stays up at http://localhost:${server.port}/ — Ctrl-C to exit.")
             // Park until the shutdown hook interrupts us. Catching the interrupt is the point: the hook calls
             // `mainThread.interrupt()`, and letting that escape printed a bare `Exception in thread "main"
@@ -286,6 +363,12 @@ object GrinderApplication {
     }
 
     /** Read [key] from the environment, falling back to [default] when unset or blank. */
+    /**
+     * Least time the workers get to notice their interrupt, however long the containers took. Small enough that
+     * the worst case (grace + this) stays far inside the unit's stop timeout.
+     */
+    private val WORKER_STOP_FLOOR: Duration = Duration.ofSeconds(1)
+
     private fun env(key: String, default: String): String = System.getenv(key)?.takeIf { it.isNotBlank() } ?: default
 
     /** Best-effort project-slug from a URL (last path segment) — used only for the skip-already-done check. */

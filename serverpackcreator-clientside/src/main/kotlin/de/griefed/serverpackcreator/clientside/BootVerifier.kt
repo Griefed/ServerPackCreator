@@ -53,6 +53,9 @@ import java.util.*
  *                             the grinder passes its image's supported-Java check so a version whose
  *                             JDK the runtime image lacks is never selected (and thus never mis-scored).
  * @param bootTimeout          Budget for install + boot before declaring the run inconclusive.
+ * @param otherVersionRecheckLimit How many *other* versions of the mod may be booted to disprove a crash
+ *                             that contradicts a declared server support. Each one is a full boot, so this
+ *                             is a hard budget; `0` switches the second re-check off entirely.
  * @author Griefed
  */
 class BootVerifier(
@@ -65,7 +68,8 @@ class BootVerifier(
     private val serverRunner: ServerRunner = HostProcessServerRunner(),
     private val packPostProcessor: ((Prepared.Ready) -> Unit)? = null,
     private val minecraftAcceptable: (String) -> Boolean = { true },
-    private val bootTimeout: Duration = Duration.ofMinutes(12)
+    private val bootTimeout: Duration = Duration.ofMinutes(12),
+    private val otherVersionRecheckLimit: Int = 2
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
@@ -77,18 +81,45 @@ class BootVerifier(
      * (on a crash) the excerpt of the console-output around the failure for in-comment analysis.
      */
     data class BootOutcome(
+        /** What the boot proved, as classified from its console and exit status. */
         val result: BootResult,
+        /** Where this attempt's console was written, or `null` when the server never launched. */
         val logFile: File?,
+        /** Human-readable evidence: the combination booted, the outcome, and how the attempt was reached. */
         val detail: String,
-        val crashExcerpt: String? = null
+        /** On a crash, the console around the failure, so a report carries the evidence without the whole log. */
+        val crashExcerpt: String? = null,
+        /**
+         * The full console this attempt produced. Held because every attempt for one candidate writes the
+         * *same* `boot.log` — a re-check overwrites it — so the reported verdict has to be able to put its
+         * own console back; see [restoreDecisiveConsole].
+         */
+        val console: String? = null
+    )
+
+    /**
+     * A single re-check attempt on another version of the mod: what was booted, and what came of it. The
+     * [label] is what the report shows, so it names the file and the Minecraft version rather than an index.
+     */
+    data class OtherVersionAttempt(
+        /** Human-readable identification of the version booted, e.g. `ironchest-1.20.1.jar (Minecraft 1.20.1)`. */
+        val label: String,
+        /** What that boot produced — including an INCONCLUSIVE standing in for staging that never got to boot. */
+        val outcome: BootOutcome
     )
 
     /**
      * Stage the [project]'s newest file for [loader] (with its required dependencies) into a server
      * pack, run it, and classify the outcome. Any preparation failure (no bootable loader/MC combo,
      * download or generation failure) is reported as [BootResult.INCONCLUSIVE] rather than thrown.
+     *
+     * [metadataDeclaresServerSupport] is the caller's combined metadata verdict (the platform's self-report
+     * plus SPC's jar scan — see `ClientsideVerifier.declaresServerSupport`). When it is `true` and the boot
+     * crashes anyway, the two contradict each other, and the crash is re-checked against other versions of
+     * the mod before it may stand. It defaults to `false`, which spends no extra boots: a caller that does
+     * not know the metadata has nothing for the crash to contradict.
      */
-    fun verify(project: ProjectFiles, loader: String): BootOutcome {
+    fun verify(project: ProjectFiles, loader: String, metadataDeclaresServerSupport: Boolean = false): BootOutcome {
         val prepared = prepareBootPack(project, loader)
         if (prepared is Prepared.Failed) {
             // Say so out loud. This reason used to be returned as a detail string and then dropped by
@@ -100,7 +131,11 @@ class BootVerifier(
         }
         val ready = prepared as Prepared.Ready
         val outcome = runPrepared(ready, serverRunner, packPostProcessor, bootTimeout)
-        val decided = recheckCrashOnNewestVersion(project, loader, ready, outcome)
+        val loaderChecked = recheckCrashOnNewestVersion(project, loader, ready, outcome)
+        val decided = recheckCrashOnOtherModVersions(project, loader, ready, loaderChecked, metadataDeclaresServerSupport)
+        // Every attempt above wrote the same boot.log, so the file currently holds the *last* boot's console
+        // while `decided` may be an earlier one. Put the reported verdict's own console back.
+        restoreDecisiveConsole(decided)
         // An inconclusive boot learned nothing, so the *reason* is the whole value of the attempt — a missing
         // loader build, an overlay that could not be staged, a timeout. Without this the log said only
         // "boot:INCONCLUSIVE" and the reason had to be dug out of the per-boot console.
@@ -143,6 +178,61 @@ class BootVerifier(
         }
         val second = runPrepared(restaged as Prepared.Ready, serverRunner, packPostProcessor, bootTimeout)
         return reconcileRecheck(outcome, second, first.loaderVersion, newest)
+    }
+
+    /**
+     * When a crash **contradicts** the metadata — the mod claims to support servers, yet the server died —
+     * boot up to [otherVersionRecheckLimit] other versions of the mod and let them settle the contradiction.
+     * A mod that cannot run server-side cannot run server-side in *any* build, so one clean boot elsewhere
+     * proves the crash belonged to the build, not to the mod's sideness.
+     *
+     * **Why it exists:** measured live on 2026-08-23, `iron-chests` — a mod nobody would call clientside —
+     * was published `HIGH` off a single crashing build (`Forge 48.1.0 / Minecraft 1.20.2`). One boot cannot
+     * tell a broken build from a clientside mod, and the engine resolved that in the direction that writes a
+     * wrong entry into the fallback list, which silently strips the mod from every server pack built against
+     * it. Stops at the first clean boot, and anything that fails to disprove the crash leaves it standing.
+     */
+    private fun recheckCrashOnOtherModVersions(
+        project: ProjectFiles,
+        loader: String,
+        booted: Prepared.Ready,
+        outcome: BootOutcome,
+        metadataDeclaresServerSupport: Boolean
+    ): BootOutcome {
+        if (!shouldRecheckAgainstOtherVersions(outcome, metadataDeclaresServerSupport, otherVersionRecheckLimit)) {
+            return outcome
+        }
+        val candidates = BootCandidateSelector.pickRecheckCandidates(
+            project.files,
+            loader,
+            booted.minecraftVersion,
+            otherVersionRecheckLimit,
+            bootableMinecraft(loader)
+        )
+        val contradiction = "${project.slug}: $loader crashed on Minecraft ${booted.minecraftVersion} " +
+            "although the metadata declares server support"
+        if (candidates.isEmpty()) {
+            log.info("$contradiction, and the mod publishes no other bootable version to re-check against.")
+        } else {
+            log.info("$contradiction — re-checking ${candidates.size} other version(s) before trusting the crash.")
+        }
+        val attempts = mutableListOf<OtherVersionAttempt>()
+        for ((file, minecraftVersion) in candidates) {
+            val label = "${file.fileName} (Minecraft $minecraftVersion)"
+            val staged = stageBootPack(project, loader, file, minecraftVersion, loaderVersionOverride = null)
+            if (staged is Prepared.Failed) {
+                log.warn("Could not re-stage ${project.slug} as $label: ${staged.detail}")
+                attempts.add(OtherVersionAttempt(label, BootOutcome(BootResult.INCONCLUSIVE, null, staged.detail)))
+                continue
+            }
+            val attempt = runPrepared(staged as Prepared.Ready, serverRunner, packPostProcessor, bootTimeout)
+            attempts.add(OtherVersionAttempt(label, attempt))
+            // A single clean boot is all the proof needed, and every further one costs a full boot.
+            if (attempt.result == BootResult.SURVIVED) {
+                break
+            }
+        }
+        return reconcileOtherVersionRecheck(outcome, attempts)
     }
 
     /**
@@ -245,16 +335,40 @@ class BootVerifier(
      * policy's preference — used by the crash re-check to re-stage on the newest build.
      */
     fun prepareBootPack(project: ProjectFiles, loader: String, loaderVersionOverride: String? = null): Prepared {
-        // Only ever boot a stable Minecraft *release* — a mod's newest file may target a pre-release
-        // (a `-pre`/`-rc`/`-snapshot` of the current version), which is unstable and a waste to boot.
-        // [minecraftAcceptable] adds the host's own constraint (e.g. the grinder's supported-Java gate).
+        val candidate = BootCandidateSelector.pickBootableCandidate(project.files, loader, bootableMinecraft(loader))
+            ?: return Prepared.Failed("No bootable file/Minecraft/loader combination for $loader.")
+        val (mainFile, minecraftVersion) = candidate
+        return stageBootPack(project, loader, mainFile, minecraftVersion, loaderVersionOverride)
+    }
+
+    /**
+     * Whether [loader] can actually be booted on a given Minecraft version. Only a stable Minecraft *release*
+     * qualifies — a mod's newest file may target a pre-release (a `-pre`/`-rc`/`-snapshot`), which is unstable
+     * and a waste to boot — AND-ed with [minecraftAcceptable] (the host's own constraint, e.g. the grinder's
+     * supported-Java gate) and the loader actually having a build. The release set is read once per call, so
+     * a selection that probes many versions does not re-read SPC's metadata for each of them.
+     */
+    private fun bootableMinecraft(loader: String): (String) -> Boolean {
         val releaseVersions = apiWrapper.versionMeta.minecraft.serverReleases().map { it.minecraftVersion }.toHashSet()
-        val candidate = BootCandidateSelector.pickBootableCandidate(project.files, loader) { minecraftVersion ->
+        return { minecraftVersion ->
             minecraftVersion in releaseVersions &&
                 minecraftAcceptable(minecraftVersion) &&
                 loaderVersionPolicy.latestVersion(loader, minecraftVersion) != null
-        } ?: return Prepared.Failed("No bootable file/Minecraft/loader combination for $loader.")
-        val (mainFile, minecraftVersion) = candidate
+        }
+    }
+
+    /**
+     * Stage one *chosen* (file, Minecraft-version) combination: download [mainFile] plus its required
+     * dependencies and generate the self-installing server pack. Split out of [prepareBootPack] so a
+     * re-check can stage a combination it picked itself instead of the newest one selection would return.
+     */
+    private fun stageBootPack(
+        project: ProjectFiles,
+        loader: String,
+        mainFile: ModFile,
+        minecraftVersion: String,
+        loaderVersionOverride: String?
+    ): Prepared {
         val loaderVersion = loaderVersionOverride
             ?: loaderVersionPolicy.preferredVersion(loader, minecraftVersion)
             ?: return Prepared.Failed("No $loader version for Minecraft $minecraftVersion.")
@@ -388,6 +502,52 @@ class BootVerifier(
         }
 
         /**
+         * Whether a crash is worth spending boots on *other versions of the mod*: only a CRASHED outcome,
+         * only when the metadata claims server support (so the two signals contradict each other), and only
+         * within a non-zero boot budget.
+         *
+         * Deliberately narrow. Where the metadata already leans clientside the crash *confirms* it, and in a
+         * catalog sweep that agreement is the common case — re-checking it would spend boots to learn nothing
+         * while the crawl falls behind. The contradiction is the only case where one of the signals must be
+         * wrong, and therefore the only case worth paying to resolve.
+         */
+        internal fun shouldRecheckAgainstOtherVersions(
+            outcome: BootOutcome,
+            metadataDeclaresServerSupport: Boolean,
+            limit: Int
+        ): Boolean = outcome.result == BootResult.CRASHED && metadataDeclaresServerSupport && limit > 0
+
+        /**
+         * Fold the other-version [attempts] into the verdict for the crash in [first]. One clean boot wins
+         * outright — a mod that cannot run server-side cannot run server-side in any build, so the crash was
+         * that build's — while crashes elsewhere corroborate it and attempts that learned nothing leave it
+         * exactly as it was. Every branch records what was tried, so a reader of the report can see how large
+         * the sample behind the verdict was instead of guessing.
+         */
+        internal fun reconcileOtherVersionRecheck(first: BootOutcome, attempts: List<OtherVersionAttempt>): BootOutcome {
+            val survivor = attempts.firstOrNull { it.outcome.result == BootResult.SURVIVED }
+            if (survivor != null) {
+                return survivor.outcome.copy(
+                    detail = "${survivor.outcome.detail} (${first.detail}, but ${survivor.label} booted cleanly — " +
+                        "the crash belongs to that build of the mod, not to its sideness)"
+                )
+            }
+            val crashed = attempts.filter { it.outcome.result == BootResult.CRASHED }
+            if (crashed.isNotEmpty()) {
+                return first.copy(
+                    detail = "${first.detail} (also crashed on ${crashed.joinToString(", ") { it.label }})"
+                )
+            }
+            val unusable = if (attempts.isEmpty()) {
+                "no other version of the mod was bootable to re-check against"
+            } else {
+                "could not be re-checked on other versions: " +
+                    attempts.joinToString("; ") { "${it.label}: ${it.outcome.detail}" }
+            }
+            return first.copy(detail = "${first.detail} ($unusable)")
+        }
+
+        /**
          * Turn a [RunResult] into the reported [BootOutcome]: a [RunResult.NotStarted] is INCONCLUSIVE
          * with no log; a [RunResult.Completed] is written to [logFile], classified by
          * [BootLogClassifier], and — only on a crash — given a [BootLogExcerpt]. [label] prefixes the
@@ -396,10 +556,11 @@ class BootVerifier(
         internal fun outcomeFor(runResult: RunResult, logFile: File, label: String): BootOutcome = when (runResult) {
             is RunResult.NotStarted -> BootOutcome(BootResult.INCONCLUSIVE, null, runResult.detail)
             is RunResult.Completed -> {
+                val console = runResult.lines.joinToString("\n")
                 // Persisting the console must never fail the verification: the verdict comes from the lines in
                 // memory, and an unwritable log (a full disk, a path that is a directory) is a diagnostics
                 // problem, not a reason to lose a boot that already ran.
-                runCatching { logFile.writeText(runResult.lines.joinToString("\n")) }
+                runCatching { logFile.writeText(console) }
                     .onFailure { log.warn("Could not write the boot log ${logFile.absolutePath}: ${it.message}") }
                 val result = BootLogClassifier.classify(runResult.lines, runResult.exitCode, runResult.timedOut)
                 val crashExcerpt = if (result == BootResult.CRASHED) BootLogExcerpt.crashExcerpt(runResult.lines) else null
@@ -407,8 +568,25 @@ class BootVerifier(
                 // record it. Without it an INCONCLUSIVE verdict is undiagnosable from the report alone: a run that
                 // crashed loudly in its console but reported exit 0 looks identical to one that never started.
                 val exitDetail = if (runResult.timedOut) "timed out" else "exit ${runResult.exitCode ?: "unknown"}"
-                BootOutcome(result, logFile, "$label → $result ($exitDetail)", crashExcerpt)
+                BootOutcome(result, logFile, "$label → $result ($exitDetail)", crashExcerpt, console)
             }
+        }
+
+        /**
+         * Put [outcome]'s own console back into its log file, undoing a later attempt's overwrite.
+         *
+         * Every attempt for one candidate stages into the same directory — staging wipes it — so all of them
+         * write the same `boot.log`, while the *reported* verdict is frequently not the last one booted: both
+         * crash re-checks keep the original crash. The grinder's reaper then keeps that single file and
+         * deletes the staging around it, so the console a HIGH is diagnosed from would be a different boot's.
+         * Best-effort, exactly like the write it repairs: an unwritable log is a diagnostics problem, never a
+         * reason to lose a verdict.
+         */
+        internal fun restoreDecisiveConsole(outcome: BootOutcome) {
+            val logFile = outcome.logFile ?: return
+            val console = outcome.console ?: return
+            runCatching { logFile.writeText(console) }
+                .onFailure { log.warn("Could not restore the boot log ${logFile.absolutePath}: ${it.message}") }
         }
     }
 }
