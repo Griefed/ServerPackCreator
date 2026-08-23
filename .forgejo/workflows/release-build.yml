@@ -509,3 +509,90 @@ jobs:
           curl -sf -X PATCH "$API/releases/$RELEASE_ID" -H "Authorization: token $TOKEN" \
             -H 'Content-Type: application/json' -d @patch.json > /dev/null
           echo "Release notes updated"
+
+  news:
+    name: "News on Discord"
+    # Recreated from `main`'s `github_release.yml` and `github-prerelease.yml`, which carried a `news` job
+    # each, differing only in the words "release" and "Pre-Release". `prepare.outputs.prerelease` chooses
+    # between them here, so this is one job rather than two near-identical workflows.
+    #
+    # It announces the FORGEJO release -- the canonical one -- and therefore deliberately does NOT need
+    # `mirror`: a stalled push-mirror must not silence the announcement of a release that is complete
+    # here, and `mirror` is the job that failed on BOTH releases of 2026-08-23. It does wait for `maven`
+    # and `docker`, on the same reasoning `mirror` gives for its own `needs`: nobody should be pointed at
+    # a release whose artifacts and images do not exist yet. `virustotal` is left out because its own
+    # failures are explicitly tolerated and this announcement does not reproduce the release notes.
+    needs: [prepare, release, maven, docker]
+    runs-on: ubuntu-latest
+    steps:
+
+      # Two findings against the original are fixed by construction rather than carried across.
+      # WORKFLOW-AUDIT.md M6: it `curl`ed ChaoticWeg/discord.sh's *master* and executed it, which is
+      # remote-code-execution-by-trust for what is only a JSON builder -- so the payload is built the way
+      # qodana.yml already builds its own. M4: the deprecated `::set-output` disappears along with the
+      # separate date step that fed it. Every value reaches python through `env:` rather than being
+      # interpolated into the shell, per WORKFLOW-AUDIT.md L2.
+      - name: Post to Discord
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+          PRERELEASE: ${{ needs.prepare.outputs.prerelease }}
+          REPOSITORY: ${{ github.repository }}
+          SERVER_URL: ${{ github.server_url }}
+        run: |
+          # A missing webhook is fine and exits cleanly; a webhook that IS configured and then fails to
+          # accept the post is a real failure and must not be swallowed -- hence set -e after the guard,
+          # exactly as in qodana.yml's post.
+          if [ -z "${WEBHOOK_URL:-}" ]; then
+            echo "No WEBHOOK_URL configured - skipping"
+            exit 0
+          fi
+          set -eu
+          export RELEASED_AT="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          cat > news.py <<'NEWS_PY'
+          import json, os
+
+          version = os.environ["VERSION"]
+          repository = os.environ["REPOSITORY"]
+          server = os.environ["SERVER_URL"].rstrip("/")
+          # `prepare` writes exactly "true" or "false" and refuses any tag that is neither shape, so this
+          # comparison cannot silently mis-class a release.
+          prerelease = os.environ["PRERELEASE"] == "true"
+          noun = "pre-release" if prerelease else "release"
+          headline = "Pre-Release" if prerelease else "Release"
+          url = f"{server}/{repository}/releases/tag/{version}"
+          sentence = (f"There's been a new {noun} for {repository}. "
+                      f"The new version is {version} and is available at")
+          payload = {
+              "username": repository,
+              "avatar_url": "https://git.griefed.de/Griefed/ServerPackCreator/raw/branch/main/img/prosper.png",
+              # The angle brackets suppress Discord's own link unfurl in the message body, as the
+              # original did -- the embed below is the preview.
+              "content": f"{sentence} <{url}>",
+              "embeds": [{
+                  "title": f"New {repository} {headline}",
+                  "description": f"{sentence} {url}",
+                  "url": url,
+                  "color": 12648430,  # 0xC0FFEE, the colour used on main
+                  "author": {
+                      "name": "Griefed",
+                      "url": f"{server}/Griefed",
+                      "icon_url": "https://www.griefed.de/img/sam_icon.c4ec5b56.webp",
+                  },
+                  "thumbnail": {"url": "https://git.griefed.de/Griefed/ServerPackCreator/raw/branch/main/img/app_128x128.png"},
+                  "fields": [
+                      {"name": "Author", "value": f"[Griefed]({server}/Griefed)", "inline": True},
+                      # Was "GitHub". Forgejo is where the release lives now and what `url` points at.
+                      {"name": "Platform", "value": f"[Forgejo]({server})", "inline": True},
+                  ],
+                  "footer": {
+                      "text": f"Released at {os.environ['RELEASED_AT']}",
+                      "icon_url": "https://git.griefed.de/Griefed/ServerPackCreator/ra",
+                  },
+              }],
+          }
+          print(json.dumps(payload))
+          NEWS_PY
+          python3 news.py > payload.json
+          curl -sf -X POST -H 'Content-Type: application/json' -d @payload.json "$WEBHOOK_URL" > /dev/null
+          echo "Announced $VERSION at $SERVER_URL/$REPOSITORY/releases/tag/$VERSION"
