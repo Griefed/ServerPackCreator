@@ -76,35 +76,22 @@ internal class PackVariablesTest {
     }
 
     /**
-     * Forge must launch from the installer's own argfile, not through the ServerStarterJar.
+     * `USE_SSJ` must stay untouched, so the templates decide the Forge launch path.
      *
-     * `USE_SSJ` defaults to `true` and `HELP.md` already records the incompatibility it exists to work around —
-     * "people ran into trouble when using Forge and Minecraft 1.20.2 and 1.20.3". A human reads that and flips
-     * the knob; an unattended grinder never can, so every Forge 1.20.2/1.20.3 candidate booted a server that
-     * died in `BootstrapLauncher` and learned nothing about the mod (`CurseForge-ars-nouveau-Forge.log`,
-     * 2026-08-23). NeoForge is unaffected either way — the templates only consult this in `setupForge`.
+     * They bypass the ServerStarterJar themselves for exactly the Minecraft versions it cannot launch
+     * (`forgeNeedsItsOwnArgfile`). Setting the knob here would disable it for every *other* version too, and the
+     * grinder would then boot packs by a route almost no user's pack takes — losing the fidelity that let it
+     * notice the starter-jar path breaking in the first place.
      */
     @Test
-    fun forgeIsLaunchedFromItsArgfileRatherThanTheStarterJar(@TempDir dir: File) {
+    fun leavesTheStarterJarChoiceToTheTemplates(@TempDir dir: File) {
         File(dir, "variables.txt").writeText("JAVA=java\nUSE_SSJ=true\n")
 
         PackVariables.prepareUnattended(dir, "/opt/java-17/bin/java", offline = true)
 
-        val vars = File(dir, "variables.txt").readText()
-        Assertions.assertTrue(vars.contains("USE_SSJ=false"), "the grinder cannot flip this knob by hand: $vars")
-        Assertions.assertEquals(1, Regex("(?m)^USE_SSJ=").findAll(vars).count(), "no duplicate USE_SSJ key")
-    }
-
-    /** Set on the install boot too, so the cached layer is the one the offline boot then launches from. */
-    @Test
-    fun theInstallBootAlsoAvoidsTheStarterJarForForge(@TempDir dir: File) {
-        File(dir, "variables.txt").writeText("JAVA=java\n")
-
-        PackVariables.prepareUnattended(dir, "/opt/java-17/bin/java", offline = false)
-
         Assertions.assertTrue(
-            File(dir, "variables.txt").readText().contains("USE_SSJ=false"),
-            "installing one way and booting the other would cache a layer the boot cannot use"
+            File(dir, "variables.txt").readText().contains("USE_SSJ=true"),
+            "the pack's own USE_SSJ must survive untouched"
         )
     }
 
