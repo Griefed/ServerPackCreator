@@ -115,9 +115,15 @@ class DockerLoaderInstaller(
             val copied = InstallLayerSnapshot.copyInstallLayer(pack, preBoot, target)
             val installed = copied > 0 && File(target, "libraries").isDirectory
             if (!installed) {
+                // The diagnosis scans the WHOLE console; the quoted tail below does not. An unwritable mount
+                // refuses the first writes and the script fails twenty lines later, so the tail alone described
+                // a consequence and sent three rounds of diagnosis after the wrong subsystem.
+                val diagnosis = InstallFailureDiagnosis.of(output.lines)
                 log.warn(
                     "Install produced no library layer for $loader $loaderVersion / Minecraft $minecraftVersion " +
-                        "(copied=$copied, exitCode=${output.exitCode}, timedOut=${output.timedOut}). Last container output:\n" +
+                        "(copied=$copied, exitCode=${output.exitCode}, timedOut=${output.timedOut})." +
+                        (diagnosis?.let { " Cause: $it" } ?: "") +
+                        " Full console: ${installLog.absolutePath}. Last container output:\n" +
                         output.lines.takeLast(25).joinToString("\n")
                 )
             }
