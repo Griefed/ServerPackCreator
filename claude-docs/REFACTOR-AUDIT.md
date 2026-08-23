@@ -4044,3 +4044,283 @@ queued: [('Modrinth', 'creativecore'), ('CurseForge', 'jei')]
 ```
 
 **Suite after both iterations: grinder 336 → 344, 0 failures** (23 skipped).
+
+---
+
+# Audit — 2026-08-23, `claude-grinder-favicon-hostname-forge` (iteration 27)
+
+Scope: the 13 commits of `develop..HEAD` — a bundled favicon, container name resolution, the Forge
+launch path, two classifier rungs and a scan-date column. Six code commits, each preceded by its own
+red `test(...)` commit; no commit carries a `refactor:` label, so the behaviour-preservation rule is
+not in play.
+
+## HIGH
+
+**H1 — `Error: could not open` is broad enough to destroy a true clientside HIGH, and it is checked
+above the marker that produces one.**
+`BootLogClassifier.kt`, `launchFailureMarkers` (`c54637df7`):
+
+```kotlin
+"|Error: could not open)", RegexOption.IGNORE_CASE
+```
+
+`classify` tests `launchFailureMarkers` at rung four and `clientOnlyClassMarker` at rung seven, so a
+console that matches the former never reaches the latter. The pattern is unanchored and
+case-insensitive, so *any* line containing the substring matches — including a mod's own log line:
+
+```
+[19:41:26] [main/ERROR] [polytone/]: Error: could not open assets/polytone/foo.json
+java.lang.NoClassDefFoundError: net/minecraft/client/multiplayer/ClientLevel
+```
+
+That console is a textbook clientside crash and would now be scored **INCONCLUSIVE** — a true positive
+silently dropped, which is the one failure mode this classifier's whole guard ladder is arranged to
+avoid. The commit's own KDoc claims the opposite ("Matched with the launcher's own `Error: ` prefix so
+a mod logging 'could not open' about one of its own files is not excused along with it"), which is
+false: a log line can contain `Error: could not open` anywhere in it. So the defect ships with a
+comment asserting it is absent — the stale-prose failure class this file's conventions single out.
+
+The JVM launcher emits it as the **entire line**, with no timestamp or level prefix, while every mod
+line carries one. Anchoring the alternative to line start (`^Error: could not open`) is exact — the
+classifier already matches per line, so `^` means "the launcher said it" and nothing else.
+
+## MEDIUM
+
+**M1 — the new `Scanned` cell is the only table cell not HTML-escaped, and the doc says otherwise.**
+`VerdictReportRenderer.kt`, `rowHtml` (`3b1392f1c`): every other cell goes through `esc(...)`;
+`ScanDate.of(verdict.verifiedAt)` does not. No injection is reachable today — the value comes from a
+fixed `yyyy/MM/dd` formatter over an `Instant`, so it can only be digits and slashes. What is broken is
+the *invariant*, and the same commit edited that function's KDoc to read "and every cell is
+HTML-escaped", which is now untrue. The uniform discipline is what makes the next cell safe to add;
+one exception costs a character to remove and is otherwise a trap for whoever adds the cell after it.
+
+## LOW
+
+**L1 — `ContainerSpec.hostName` is unvalidated.** A blank one produces `withExtraHosts(":127.0.0.1")`
+and the daemon refuses *every* create with a message about extra hosts rather than about the spec.
+**Accepted, recorded:** both construction sites (`ContainerServerRunner`, `DockerLoaderInstaller`) take
+the default constant, and unlike `ContainerResources` — which validates precisely because
+`SPC_GRINDER_CPUS`/`SPC_GRINDER_MEMORY_GIB` reach it from the environment — nothing plumbs a value in.
+A `require` here would guard an input that cannot currently exist.
+
+**L2 — the icon is served without `Cache-Control`,** so a browser re-fetches 4 160 bytes per page load
+of a loopback service. Accepted; not worth a header.
+
+## Equivalence against the base — clean
+
+`develop`'s unmodified test tree against this branch's production code (worktree at `HEAD`,
+`src/test` replaced from `develop`, `--continue`):
+
+| Module | Base guards | Failures | Compile errors |
+|---|---|---|---|
+| clientside | 136 | **0** | none |
+| grinder | 344 | 2 | none |
+
+Both grinder failures are `VerdictCsvExporterTest.emitsHeaderAndOrdersHighestConfidenceFirst` and
+`emptyVerdictsStillEmitTheHeader` — the two exact `assertEquals` on the CSV header, changed
+deliberately by the `Scanned` column and enumerated in that column's own red-test commit. **Zero
+compile errors** is the load-bearing half: `ContainerSpec` gained a parameter and `respond` changed
+shape, and no base guard's signature broke. Notably the base `PackVariablesTest`, `ReportServerTest`
+and the whole clientside classifier suite pass untouched, so `USE_SSJ=false`, the two new favicon
+contexts and the two new INCONCLUSIVE rungs regressed nothing that was already pinned.
+
+## Verified clean — do not re-litigate
+
+- **The favicon really ships in the artefact**, not only on the test classpath. Measured, since the
+  guard resolves the resource from `build/resources/main` and would stay green if packaging dropped it,
+  and `buildSrc`/packaging has no test harness by decision:
+  `unzip -l serverpackcreator-grinder-dev.jar` → `de/griefed/serverpackcreator/grinder/report/favicon.png`,
+  **4160 bytes**, byte-identical to `img/config.png`.
+- **`CLEANUP` cannot delete the argfile the Forge boot now depends on.** `cleanServerFiles` runs only on
+  `--cleanup` or when `.previousrun` shows a changed version, and `.previousrun` is in the install
+  snapshot's runtime-state denylist — so a freshly staged grinder pack has none and never cleans.
+  The `libraries/` tree the argfile lives in therefore survives the offline boot.
+- **The extra host does not disturb the *networked* install container.** Measured on the bridge default:
+  `/etc/hosts` carries `127.0.0.1 spc-grinder` ahead of the daemon's own `172.17.0.3 spc-grinder`, so
+  the container's own name resolves to loopback — harmless for a container that only makes outbound
+  calls — and outbound DNS is unaffected (`nslookup maven.neoforged.net` answers).
+- **Matching the message and not the module** in `loaderBootstrapFailureMarkers` is deliberate and
+  proven, not a shortcut: the production log named `java.base` read by `net.minecraftforge.eventbus`,
+  the local reproduction of the identical launch named `java.management.rmi` read by `JarJarMetadata`.
+- **`loaderBootstrapFailureMarkers`' own breadth.** `Could not find parent layer for module`,
+  `Failed to find run file at` and `Failed to find startup arguments using run script path` are all
+  distinctive upstream sentences with no plausible mod-log collision — unlike H1's, none of them is a
+  generic verb phrase. Checked against the guard-ordering hazard H1 describes and cleared.
+- **The `/tmp` `noexec` finding is recorded, not deferred.** JNA cannot map a native library out of a
+  `noexec` tmpfs, which is the `com.sun.jna.Native` / `oshi` noise in `Modrinth-polytone-NeoForge.log`.
+  It cost nothing there (crash-report diagnostics only, and the real client-class crash was still
+  detected) and it must not be "fixed" in the classifier: those markers appear *inside* polytone's
+  correct HIGH, so excusing them would destroy the verdict. The only real fix is `exec` on `/tmp`,
+  which is a deliberate weakening of the untrusted-mod posture and therefore an owner's decision, not
+  a cleanup. Landmined in `grinder/container/CLAUDE.md`.
+- **Commit hygiene.** Every one of the six code commits is preceded by its own `test(...)` commit that
+  was observed red, with the red output quoted in the message; tests and behaviour changes are never in
+  the same commit; the single `docs:` commit touches only files documenting this branch's work.
+
+## Resolution — iteration 27, same session
+
+| Finding | Outcome |
+|---|---|
+| H1 `Error: could not open` suppresses a true clientside HIGH | **fixed** — anchored to line start, both directions pinned |
+| M1 the `Scanned` cell was the only unescaped one | **fixed** — `esc(...)`, byte-identical output, labelled `refactor:` |
+| L1 `hostName` unvalidated | **accepted, recorded** — no caller can supply one; unlike `ContainerResources`, nothing plumbs it from the environment |
+| L2 no `Cache-Control` on the icon | **accepted, recorded** |
+
+**H1's teeth were checked in the only way that proves them**: the guard was committed red
+(`expected: <CRASHED> but was: <INCONCLUSIVE>` on a console holding a mod's `Error: could not open`
+line *and* `NoClassDefFoundError: net/minecraft/client/multiplayer/ClientLevel`) and is green with the
+anchor. The pre-existing `aJvmThatNeverLaunchedIsInconclusive` case — the launcher's own whole-line
+message — stays green, so the anchor narrowed the guard without disarming it.
+
+**M1 is deliberately labelled `refactor:` and deliberately carries no new test.** `esc` rewrites only
+`& < > " '`; a `yyyy/MM/dd` string from a fixed formatter over an `Instant` contains none, so output is
+byte-identical and every existing assertion stays as it was — which is what the label claims and what
+makes a new guard pointless. A test would have to assert the *shape* of the call, which this repo's
+conventions rule out.
+
+---
+
+# Audit — 2026-08-23, `claude-grinder-favicon-hostname-forge` (iteration 28)
+
+Scope: as iteration 27, plus that iteration's own fixes (`ff8dc823d`, `b88f502d4`, `4e4cd96ca`).
+Weighted toward the guard-ordering hazard H1 exposed — the natural follow-through is whether any
+*sibling* marker has the same shape — and toward the two lists this branch incremented.
+
+## MEDIUM
+
+**M1 — nothing couples the table's header count to its cell count, and this branch changed both.**
+`VerdictReportRenderer.kt`: `columns` (now 8 entries) and `rowHtml`'s cell list (now 8) are two
+hand-maintained lists kept in step only by a reader noticing. Add a header without its cell and the
+page still renders — every column past the gap displays its neighbour's data, and `sortBy(index)`,
+wired from the header's *position*, sorts by the wrong column. Every existing guard looks for one
+value somewhere in the page, so none of them notices a shifted table. Incrementing both at once, which
+this branch did twice (crash-log cell earlier, `Scanned` here), is exactly when the two drift.
+
+## Examined and cleared — do not re-litigate
+
+- **`setupAbortMarkers` has H1's shape and is deliberately left broad.** `is not available for
+  Minecraft` is a phrase a mod could plausibly log about its own feature gating, and it sits at rung
+  three — one *above* the rung H1 was fixed at, so the same suppression is reachable. It is
+  nevertheless correct as-is: that guard exists to prevent a **false HIGH** on a loader with no build
+  for a new Minecraft, and for that job losing a true positive is the cheaper error — the engine's
+  stated policy is to claim CRASHED only when sure. H1 was the opposite case: a newly added generic
+  phrase whose own KDoc claimed a narrowness it did not have. Recorded so a later pass does not
+  "fix" a breadth that is chosen. (`crashServer` does echo its message as a whole line, so anchoring
+  is *available* there — it is simply not wanted.)
+- **The `^` anchor versus docker's log framing.** `DockerJavaContainerEngine` splits each frame's
+  payload on `\n`, so a line spanning two frames would arrive as two fragments and the anchor would
+  see the second fragment's start rather than the line's. Not reachable: the log driver frames at
+  write boundaries (and 16 KB), while the launcher's ~80-byte message is the process's first write —
+  and a *substring* match would fail on a split line just as surely. Accepted.
+- **`loaderBootstrapFailureMarkers` re-checked against H1's hazard.** All three alternatives are
+  distinctive upstream sentences, not generic verb phrases, and none has a plausible mod-log
+  collision. Cleared a second time, deliberately, because it is the guard H1's sibling review would
+  otherwise have to revisit.
+- **Dokka is clean for both touched modules** (`dokkaGenerateHtml`, no warnings), including the
+  `[ScanDate]` reference from `VerdictCsvExporter`'s public KDoc to an `internal` object — which is
+  the one new cross-visibility doc link on the branch.
+
+## Resolution — iteration 28, same session
+
+| Finding | Outcome |
+|---|---|
+| M1 headers and cells uncoupled | **fixed** — `everyHeaderHasACellBeneathIt`, teeth checked both ways |
+
+**A characterization test, so it passes as written — which is precisely why its teeth had to be shown
+rather than assumed.** Broken deliberately in both directions:
+
+| Injected defect | Guard says |
+|---|---|
+| a ninth header, no cell | `expected: <9> but was: <8>` |
+| a ninth cell, no header | `expected: <8> but was: <9>` |
+
+Counted off the rendered page rather than off the two source lists, so it pins the consequence (a
+misaligned table) and not the implementation that currently produces it.
+
+---
+
+# Audit — 2026-08-23, `claude-grinder-favicon-hostname-forge` (iteration 29)
+
+Scope: the template work Griefed asked for mid-session (`c9106d0b1`, `a39285749`, `84a6d58fb`) — which
+iterations 27 and 28 predate — plus its docs. This is the pass that mattered most, because the change
+touches three shell templates and only one of them can be executed by the suite.
+
+## HIGH
+
+**H1 — the new guard's fail-safe polarity was inverted, and its own KDoc said otherwise.**
+`forgeNeedsItsOwnArgfile` in all three templates. The doc read "anything unreadable falls through to a
+bypass, which is the safe direction"; the code fell through to the **ServerStarterJar**:
+
+```
+Minecraft 26w05a was launched via the ServerStarterJar; expected Forge's argfile
+```
+
+The bypass is the safe direction precisely because the argfile path works for every Forge from 1.17 on
+while the starter jar has a known failure — so a version nobody can parse must not be handed to the
+latter. Exactly the polarity the Java-24 guard already gets right, and exactly the class of defect this
+file records for that guard ("a guard inverted the wrong way still parses, still runs, and silently
+reinstates the crash").
+
+**H2 — comparing an unscreened version component is not harmless, and one call site was pre-existing.**
+Found by the guard written for H1. Per shell:
+
+| shell | comparing `26w05a` |
+|---|---|
+| bash | prints `bash: 26w05a: value too great for base` at the operator |
+| fish | the comparison is an error |
+| PowerShell | `[int]` **throws** (`RuntimeException`) — a snapshot-shaped version takes the whole start script down |
+
+The PowerShell case is a live defect in the **launcher-era** check (`[int]$Semantics[0] -eq 1 -And …`),
+which predates this branch. Both call sites are screened now, in one commit, because it is one concern.
+The era check still falls to the modern era for an unreadable version, which is where anything not
+plainly 1.x-and-old belongs, so its pinned behaviour is unchanged.
+
+## MEDIUM
+
+**M1 — the fish and PowerShell *callers* had no execution evidence, only a parse check.** The suite
+executes bash's `setupForge` and asserts source fragments for the other two — the repo's documented
+compromise, since neither shell installs everywhere. That covers the *helper* but not the caller wiring
+the branch restructured (`SSJ_REFUSAL`, the `elif`, the folded argfile block). Closed by measurement
+rather than by a new test, which would skip on every machine without those shells: the whole
+`setupForge` was extracted and driven in a container. **fish agrees with bash on all eight versions
+tried** (`1.17.1/1.20.1/1.20.2/1.20.3/1.20.4/1.21.1/26.2/26.20.2` → SSJ/SSJ/ARGFILE/ARGFILE/SSJ/SSJ/SSJ/SSJ).
+The PowerShell whole-`SetupForge` drive did not complete — the amd64 image runs under QEMU on this host
+and aborts or stalls on the file-writing parts — so **PowerShell's caller wiring rests on its parser plus
+the helper matrix, and that residual gap is stated rather than papered over.**
+
+**M2 — a suite count went stale inside the same session that changed it.** REFACTOR-LOG said grinder
+**350**; the test-result XML says **351**. The count moved twice on one branch (an alignment guard added,
+two `PackVariables` guards replaced by one). Corrected in `142f53db6`, and the corrected line now names
+where the number comes from.
+
+## Verified clean — do not re-litigate
+
+- **All three shells agree on all eleven versions after the fix**, verified by *executing* the extracted
+  helper, not by reading it:
+  `1.17.1/1.19.2/1.20/1.20.1 → SSJ`, `1.20.2/1.20.3 → BYPASS`, `1.20.4/1.21.1/26.2/26.20.2 → SSJ`,
+  `26w05a → BYPASS`. No shell emits a complaint, and both non-bash templates pass their own parser
+  (`fish -n`, `Parser::ParseFile`).
+- **The Java-24 guard's literal text survived the restructure**, so
+  `allTemplatesResolveJavaAfterTheChecksAndFailSafeWhenItIsUnknown` still pins what it always did — checked
+  by running it, not by eyeballing the diff.
+- **`26.20.2` is the case that earns the major test.** It matches 1.20.2 component for component below the
+  major; without the major test every modern pack would lose the starter jar.
+- **The `USE_SSJ=false` branch of `setupForge` is untouched** — `develop`'s own template tests pass.
+- **`HELP.md` under `src/main/resources` is generated and gitignored**; the root `HELP.md` is the source and
+  `shipRootDocuments` copies it. The first edit went to the generated copy and was reverted.
+- **The grinder's own `USE_SSJ=false` was removed rather than left as belt-and-braces**, deliberately: it
+  disabled the starter jar for every version, so the grinder would have stopped exercising the path most
+  user packs take — the path whose breakage it is the only thing that noticed.
+
+## Resolution — iteration 29, same session
+
+| Finding | Outcome |
+|---|---|
+| H1 inverted fail-safe polarity, doc claiming the opposite | **fixed** — unreadable ⇒ bypass, pinned red-first |
+| H2 unscreened component compared (one site pre-existing, ps1 throws) | **fixed** — both sites screened, all three shells |
+| M1 fish/ps1 caller unexecuted | **fish closed by measurement; PowerShell's caller gap stated** |
+| M2 stale suite count | **fixed** — 351, with the source of the number named |
+
+**Suites after all three iterations: api 356 → 361, clientside 136 → 139, grinder 344 → 351, zero
+failures** (24 skipped in the grinder — the docker ITs and the two bind-address guards needing a
+non-loopback IPv4). Read back from `<module>/build/test-results/test/*.xml`.

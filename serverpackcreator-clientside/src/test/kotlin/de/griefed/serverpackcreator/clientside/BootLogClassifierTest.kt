@@ -305,7 +305,11 @@ internal class BootLogClassifierTest {
         val cases = listOf(
             "Error: Unable to access jarfile forge.jar",
             "Error: Could not find or load main class do_not_manually_edit",
-            "Error: Invalid or corrupt jarfile server.jar"
+            "Error: Invalid or corrupt jarfile server.jar",
+            // The JVM's own message for an `@argfile` it cannot read, verbatim from Temurin 17. Reachable since
+            // Forge boots from `@libraries/.../unix_args.txt`: an install layer cached without that file fails
+            // exactly here, which is the same incomplete-cache case the jarfile messages above cover.
+            "Error: could not open `libraries/net/minecraftforge/forge/1.20.2-48.1.0/unix_args.txt'"
         )
         for (line in cases) {
             Assertions.assertEquals(
@@ -317,22 +321,96 @@ internal class BootLogClassifierTest {
     }
 
     /**
+     * The modloader's own bootstrap failed, so the JVM started but the server never did — no mod was loaded, and
+     * the run says nothing about sideness.
+     *
+     * Verbatim from a live grinder verdict (`CurseForge-ars-nouveau-Forge.log`, 2026-08-23), which was scored
+     * CRASHED and therefore a clientside HIGH for a mod whose code never ran. The cause is upstream and
+     * deterministic: the NeoForge ServerStarterJar synthesises a boot layer for the module path in
+     * `unix_args.txt`, and Forge's `SecureModuleClassLoader` matches a read module's configuration against its
+     * *direct* parents only, so `java.base` — one level further up, in the real boot configuration — is not
+     * found. cpw's original (what NeoForge itself runs) falls back to the platform classloader instead of
+     * throwing, which is why the same jar launches NeoForge and not Forge.
+     */
+    @Test
+    fun aModloaderThatNeverBootstrappedIsInconclusive() {
+        val lines = listOf(
+            "Detected 1.20.2 - Java 17",
+            "Running Forge checks and setup...",
+            "server.jar present.",
+            "Starting server...",
+            "Exception in thread \"main\" java.lang.IllegalStateException: Could not find parent layer for module `java.base` read by `net.minecraftforge.eventbus`",
+            "\tat cpw.mods.securejarhandler/net.minecraftforge.securemodules.SecureModuleClassLoader.<init>(SecureModuleClassLoader.java:137)",
+            "\tat net.minecraftforge.bootstrap@1.2.0/net.minecraftforge.bootstrap.BootstrapLauncher.main(BootstrapLauncher.java:117)",
+            "Exiting..."
+        )
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(lines, exitCode = 1, timedOut = false),
+            "the loader never bootstrapped, so no mod was ever loaded"
+        )
+    }
+
+    /**
+     * The ServerStarterJar's own give-ups, which land before any loader code runs at all: an install layer with
+     * no run-script to read arguments out of. Same class as the bootstrap failure above — the server was never
+     * launched — and observed on the offline boots whose cached install was incomplete.
+     */
+    @Test
+    fun aStarterJarThatCannotFindItsRunScriptIsInconclusive() {
+        listOf(
+            "Failed to find run file at run.sh, attempting to run installer",
+            "Failed to find startup arguments using run script path run.sh"
+        ).forEach { line ->
+            Assertions.assertEquals(
+                BootResult.INCONCLUSIVE,
+                BootLogClassifier.classify(listOf("Starting server...", line), exitCode = 1, timedOut = false),
+                "nothing was launched, so this says nothing about the mod: $line"
+            )
+        }
+    }
+
+    /**
+     * The launcher's `Error: could not open` excuse must not be claimable by a **mod's own log line**.
+     *
+     * `launchFailureMarkers` is rung four and [BootLogClassifier.clientOnlyClassMarker] is rung seven, so
+     * anything matching the former never reaches the latter — an over-broad pattern there does not merely add
+     * noise, it converts a textbook clientside crash into INCONCLUSIVE and drops a true positive. The JVM
+     * launcher emits its message as the **whole line**, while every mod line carries a timestamp and level
+     * prefix, which is the difference the guard has to key on.
+     */
+    @Test
+    fun aModLoggingCouldNotOpenDoesNotEscapeAClientOnlyClassCrash() {
+        val lines = listOf(
+            "[19:41:26] [main/ERROR] [polytone/]: Error: could not open assets/polytone/colormap.json",
+            "java.lang.NoClassDefFoundError: net/minecraft/client/multiplayer/ClientLevel"
+        )
+        Assertions.assertEquals(
+            BootResult.CRASHED,
+            BootLogClassifier.classify(lines, exitCode = 1, timedOut = false),
+            "a mod's own message must not buy it the launcher's excuse"
+        )
+    }
+
+    /**
      * Pins the guard order **as a whole**, which no other test in this file does.
      *
-     * `classify` is seven ordered guards, and its correctness rests entirely on that order. They accreted one at a
+     * `classify` is eight ordered guards, and its correctness rests entirely on that order. They accreted one at a
      * time, each in reaction to a live false positive, so every constraint is individually covered while the decision
      * table as a unit never was — reordering two guards could leave every other test in this file green. Each case
      * below puts a **higher-priority** signal in the same console as a **lower-priority** one and asserts the higher
      * wins, which is the only way a swap shows up as a failure.
      *
-     * The ladder, highest first: ready-line → timeout → setup-abort → launch-failure → killed/OOM →
-     * client-only-class → dependency-failure → exit code.
+     * The ladder, highest first: ready-line → timeout → setup-abort → launch-failure → loader-bootstrap-failure
+     * → killed/OOM → client-only-class → dependency-failure → exit code.
      */
     @Test
     fun theGuardOrderIsPinnedAsAWhole() {
         val ready = "[Server thread/INFO]: Done (4.2s)! For help, type \"help\""
         val setupAbort = "Fabric is not available for Minecraft 26.2, Fabric 0.19.3."
         val launchFailure = "Error: Unable to access jarfile forge.jar"
+        val loaderBootstrapFailure =
+            "Exception in thread \"main\" java.lang.IllegalStateException: Could not find parent layer for module `java.base` read by `net.minecraftforge.eventbus`"
         val outOfMemory = "java.lang.OutOfMemoryError: Java heap space"
         val clientClass = "java.lang.NoClassDefFoundError: net/minecraft/client/Minecraft"
         val dependency = "[main/ERROR] [ne.ne.fm.lo.ModSorter/]: Missing or unsupported mandatory dependencies:"
@@ -359,6 +437,11 @@ internal class BootLogClassifierTest {
             BootResult.INCONCLUSIVE,
             BootLogClassifier.classify(listOf(launchFailure, clientClass), exitCode = 1, timedOut = false),
             "a JVM that never launched outranks the client-class crash"
+        )
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(listOf(loaderBootstrapFailure, clientClass), exitCode = 1, timedOut = false),
+            "a loader that never bootstrapped outranks the client-class crash"
         )
         Assertions.assertEquals(
             BootResult.INCONCLUSIVE,

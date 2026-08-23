@@ -75,6 +75,26 @@ internal class PackVariablesTest {
         Assertions.assertEquals(1, Regex("(?m)^JAVA=").findAll(vars).count(), "no duplicate JAVA key")
     }
 
+    /**
+     * `USE_SSJ` must stay untouched, so the templates decide the Forge launch path.
+     *
+     * They bypass the ServerStarterJar themselves for exactly the Minecraft versions it cannot launch
+     * (`forgeNeedsItsOwnArgfile`). Setting the knob here would disable it for every *other* version too, and the
+     * grinder would then boot packs by a route almost no user's pack takes — losing the fidelity that let it
+     * notice the starter-jar path breaking in the first place.
+     */
+    @Test
+    fun leavesTheStarterJarChoiceToTheTemplates(@TempDir dir: File) {
+        File(dir, "variables.txt").writeText("JAVA=java\nUSE_SSJ=true\n")
+
+        PackVariables.prepareUnattended(dir, "/opt/java-17/bin/java", offline = true)
+
+        Assertions.assertTrue(
+            File(dir, "variables.txt").readText().contains("USE_SSJ=true"),
+            "the pack's own USE_SSJ must survive untouched"
+        )
+    }
+
     @Test
     fun installBootKeepsForceFetchOn(@TempDir dir: File) {
         File(dir, "variables.txt").writeText("JAVA=java\nSERVERSTARTERJAR_FORCE_FETCH=true\n")

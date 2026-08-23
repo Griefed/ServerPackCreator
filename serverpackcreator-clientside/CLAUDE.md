@@ -93,6 +93,20 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   by host memory pressure**, systematically, for the biggest mods. `SIGABRT` (134) is deliberately *not* excused: a
   fatal JVM abort is a real failure of the running server. Keep the guard narrow — a genuine mod-load crash
   (`NoClassDefFoundError: net/minecraft/client/…`) must still read CRASHED, and a test pins that.
+  **(4) Loader-bootstrap backstop** (`loaderBootstrapFailureMarkers`, 2026-08-23) — the *modloader itself*
+  failing before FML exists is also **INCONCLUSIVE**. `ars-nouveau` (Forge 48.1.0 / MC 1.20.2) was headed for a
+  HIGH off `IllegalStateException: Could not find parent layer for module`, thrown in
+  `BootstrapLauncher.main` with no mod loaded: the ServerStarterJar synthesises a boot layer for the module path
+  in Forge's `unix_args.txt`, and Forge's `SecureModuleClassLoader` matches a read module's configuration against
+  its **direct** parents only, so `java.base` — one level up in the real boot configuration — is not found.
+  cpw's original, which NeoForge runs, falls back to the platform classloader there, and that asymmetry is the
+  whole reason the same starter jar launches NeoForge and not Forge. **Match the message, not the module:**
+  reproduced locally, the same run named `java.management.rmi` read by `JarJarMetadata` instead — the iteration
+  order differs per run. The starter jar's own pre-launch give-ups (`Failed to find run file at`, `Failed to find
+  startup arguments using run script path`) sit in the same guard, and the JVM's `Error: could not open` for an
+  unreadable `@argfile` joined `launchFailureMarkers`, which became reachable once the grinder started booting
+  Forge from `@libraries/.../unix_args.txt`. The ladder is now **eight** rungs and
+  `theGuardOrderIsPinnedAsAWhole` is what pins the order as a unit.
 - **A crash that contradicts the metadata is re-checked on the mod's other versions.**
   `recheckCrashOnOtherModVersions`, over the pure `shouldRecheckAgainstOtherVersions`,
   `reconcileOtherVersionRecheck` and `BootCandidateSelector.pickRecheckCandidates`.
@@ -272,7 +286,7 @@ seam (writes the log, then `BootLogClassifier` + `BootLogExcerpt`). The default
 
 ## Testing patterns
 
-- 136 tests, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
+- 138 tests, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
   JSON to a fake `HttpFetcher`. **Four need a resource** — `MetadataScannerTest`, `LoaderVersionResolverTest`,
   `BootVerifierSelectionTest` and `AttemptStagingIsolationTest` each boot an offline `ApiWrapper` from
   `src/test/resources/serverpackcreator.properties` (whose `ModScanner` relies on the API's cached

@@ -40,6 +40,28 @@ The boot seam: the grinder implements clientside's `ServerRunner` for containers
   INCONCLUSIVE — the failure mode that looks like a hanging mod rather than a mis-set host.
   `ContainerLimitsWiringTest` asserts both knobs reach both collaborators, and that `main`'s fallbacks
   resolve to exactly the `ContainerResources` defaults every other construction site falls back to.
+- **A boot container has a fixed, *resolvable* hostname** (`CONTAINER_HOST_NAME` = `spc-grinder`, set with
+  `withHostName` and mapped to `127.0.0.1` with `withExtraHosts`). The daemon writes an `<ip> <hostname>` line
+  into `/etc/hosts` only for a container that *has* an address, and `--network none` has none — so a container
+  could not resolve its own name, and the first thing a Minecraft server does is ask for it: log4j calls
+  `InetAddress.getLocalHost()` while configuring itself, so every boot opened with three
+  `UnknownHostException: <container-id>: Temporary failure in name resolution` stacktraces before a mod was
+  touched. **The name has to be fixed rather than the daemon's default**, because the mapping is part of the
+  create call and the container id does not exist until after it. Measured against docker 29.7.2 under
+  `--network none`: `wget: bad address '<id>'` before, `can't connect to remote host (127.0.0.1)` after — i.e.
+  `getaddrinfo` now succeeds, and `--add-host` is honoured with no network at all, which is what makes this
+  possible without granting the boot one. `theContainersOwnHostnameResolvesWithoutANetwork` asserts it through
+  `wget` (the same `getaddrinfo` the JVM calls) rather than by reading `/etc/hosts`, which would only show that
+  a line was written.
+- **LANDMINE — `/tmp` is `noexec`, so JNA cannot load a native library.** Docker mounts a `--tmpfs` as
+  `rw,nosuid,nodev,noexec` (verified on 29.7.2), and the rootfs is read-only, so anything extracting a `.so`
+  and mapping it executable fails. Minecraft's own `oshi` system-report probes do exactly that, which is why a
+  crashed boot's console carries `NoClassDefFoundError: Could not initialize class com.sun.jna.Native` and
+  `Failed retrieving info for group processor/memory/software` (`Modrinth-polytone-NeoForge.log`). Harmless
+  there — it degraded only the crash report's diagnostics, and the real client-only-class crash was still
+  detected — but a mod that needs JNA *at load time* would fail for the environment and reach the classifier as
+  a crash. Do not add `exec` without deciding that trade-off deliberately: it is the sandbox's posture, not an
+  oversight.
 - **`DockerJavaContainerEngine`** is the real docker-java impl (create → start → follow logs → stop →
   inspect exit → force-remove). **Not unit-tested** (needs a live daemon) — that is the whole reason
   the testable orchestration sits in `ContainerServerRunner` behind the seam. If you change it, verify
