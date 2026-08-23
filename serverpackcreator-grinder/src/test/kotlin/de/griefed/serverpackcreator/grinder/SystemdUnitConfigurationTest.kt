@@ -36,6 +36,13 @@ internal class SystemdUnitConfigurationTest {
 
     private val unit = File("deploy/spc-grinder.service")
 
+    /**
+     * Read by the Gradle launcher rather than by any Kotlin, so no `env(...)` call names them — but the unit
+     * must still carry them, and `JAVA_HOME` above all: the launcher refuses to start without it or a `java`
+     * on `PATH`, and systemd supplies neither.
+     */
+    private val launcherRead = setOf("JAVA_HOME", "JAVA_OPTS", "SERVERPACKCREATOR_GRINDER_OPTS")
+
     /** Only the literal-default `env(...)` calls: those are the ones whose exact default the unit can quote. */
     private val envWithLiteralDefault = Regex("""env\("(SPC_GRINDER_[A-Z_]+)",\s*"([^"]*)"\)""")
 
@@ -77,6 +84,7 @@ internal class SystemdUnitConfigurationTest {
         val known = buildSet {
             addAll(envAnyName.findAll(source()).map { it.groupValues[1] })
             addAll(envWithoutDefault.findAll(source()).map { it.groupValues[1] })
+            addAll(launcherRead)
         }
         val phantom = declared.findAll(unit.readText()).map { it.groupValues[1] }.toSet() - known
         Assertions.assertTrue(phantom.isEmpty(), "the systemd unit declares variables nothing reads: $phantom")
@@ -98,6 +106,25 @@ internal class SystemdUnitConfigurationTest {
         for ((name, real) in defaults) {
             val stated = quoted[name] ?: continue
             Assertions.assertEquals(real, stated, "the systemd unit states the wrong default for $name")
+        }
+    }
+
+    /**
+     * The unit must show the operator how to give the service a JVM.
+     *
+     * This is the deployment's most likely first failure and the least obvious: the Gradle launcher dies with
+     * "JAVA_HOME is not set and no 'java' command could be found in your PATH", systemd hands a unit a minimal
+     * `PATH` and no `JAVA_HOME`, and the installer runs Gradle — so Java is on the *operator's* PATH the whole
+     * time they are watching, and missing from the service's when they are not.
+     */
+    @Test
+    fun theUnitTellsTheOperatorHowToProvideJava() {
+        val text = unit.readText()
+        for (name in launcherRead) {
+            Assertions.assertTrue(
+                text.contains("Environment=$name="),
+                "the unit does not mention $name — the launcher reads it and systemd will not supply it"
+            )
         }
     }
 
