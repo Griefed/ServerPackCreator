@@ -166,7 +166,10 @@ object GrinderApplication {
             // Whatever is left of the window goes to the workers -- which is usually most of it, since stopping
             // containers is what frees them. A worker that does not come back is abandoned (the JVM exits either
             // way), but say so: it means work was still running at exit.
-            val remaining = Duration.ofMillis(maxOf(0L, deadline - System.currentTimeMillis()))
+            // Floored, not clamped to zero: a container that ignores SIGTERM can eat the whole window, and
+            // handing the workers 0ms means the interrupt they were just sent cannot possibly be observed --
+            // the "did not stop" warning would then be guaranteed rather than informative.
+            val remaining = maxOf(WORKER_STOP_FLOOR, Duration.ofMillis(deadline - System.currentTimeMillis()))
             if (pool?.awaitStop(remaining) == false) {
                 log.warn("A worker did not stop within ${SHUTDOWN_GRACE.seconds}s; exiting anyway.")
             }
@@ -342,6 +345,12 @@ object GrinderApplication {
     }
 
     /** Read [key] from the environment, falling back to [default] when unset or blank. */
+    /**
+     * Least time the workers get to notice their interrupt, however long the containers took. Small enough that
+     * the worst case (grace + this) stays far inside the unit's stop timeout.
+     */
+    private val WORKER_STOP_FLOOR: Duration = Duration.ofSeconds(1)
+
     private fun env(key: String, default: String): String = System.getenv(key)?.takeIf { it.isNotBlank() } ?: default
 
     /** Best-effort project-slug from a URL (last path segment) — used only for the skip-already-done check. */

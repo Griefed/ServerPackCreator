@@ -40,6 +40,17 @@ const val PACK_MOUNT = "/srv/pack"
 val SHUTDOWN_GRACE: Duration = Duration.ofSeconds(15)
 
 /**
+ * How many containers are asked to stop at once during shutdown.
+ *
+ * The window in [SHUTDOWN_GRACE] is *per container*, so anything below the number in flight turns one window
+ * into several: at a cap of 8 and ten workers, the container phase alone was 30 seconds and the workers were
+ * left with none of the shared budget. A `docker stop` is an HTTP call that spends its time waiting, and
+ * concurrent boots are memory-bound at roughly twenty, so a cap well above any real worker count costs nothing
+ * and makes the single window the documentation promises actually true.
+ */
+const val MAX_PARALLEL_STOPS = 64
+
+/**
  * CPU / memory / pid caps applied to every boot container, so one fat modpack can't exhaust the host
  * and a runaway can't peg every core. Defaults are sized for a single Minecraft server boot.
  *

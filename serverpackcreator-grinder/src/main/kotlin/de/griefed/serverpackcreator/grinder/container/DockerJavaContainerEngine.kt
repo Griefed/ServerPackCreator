@@ -268,8 +268,7 @@ class DockerJavaContainerEngine(
          */
         const val OWNER_LABEL = "de.griefed.serverpackcreator.grinder"
 
-        /** Cap on concurrent stop requests during shutdown, so a large worker count cannot flood the daemon. */
-        private const val MAX_PARALLEL_STOPS = 8
+
 
         /** Build a [DockerClient] from the ambient Docker environment (DOCKER_HOST, TLS settings, …). */
         fun defaultClient(): DockerClient {
