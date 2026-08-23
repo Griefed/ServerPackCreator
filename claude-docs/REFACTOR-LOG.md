@@ -2329,4 +2329,4 @@ console and `verify` writes the decided one back, best-effort like the write it 
 
 Both fixes' guards had their teeth checked rather than assumed: stubbing the survivor lookup to `null` fails
 the two clearing guards, removing `distinctBy` fails the one-per-version guard, and removing the restore's
-`writeText` fails the console guard. Suite 93 → **110, 0 failures**.
+`writeText` fails the console guard. Suite 93 → **113, 0 failures**.
