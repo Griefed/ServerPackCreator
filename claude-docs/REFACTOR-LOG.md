@@ -2330,3 +2330,50 @@ console and `verify` writes the decided one back, best-effort like the write it 
 Both fixes' guards had their teeth checked rather than assumed: stubbing the survivor lookup to `null` fails
 the two clearing guards, removing `distinctBy` fails the one-per-version guard, and removing the restore's
 `writeText` fails the console guard. Suite 93 → **113, 0 failures**.
+
+## 2026-08-23 — the disproof was already in hand: cross-loader reconciliation
+
+The live verdict pair for `iron-chests` turned the previous entry's guess into evidence, and added a finding
+it had missed. Both rows come from **one run**:
+
+| Loader | Confidence | Entry | Boot |
+|---|---|---|---|
+| Forge | `HIGH` | `ironchest-` | Forge 48.1.0 / Minecraft 1.20.2 → CRASHED (exit 1) |
+| NeoForge | `LOW` | `ironchest-` | NeoForge 21.11.45 / Minecraft 1.21.11 → SURVIVED (exit 137) |
+
+The engine booted a real Minecraft server with this mod, watched it reach its ready-line, and then published
+the mod as clientside off the *other* loader's crash. (Exit 137 on the surviving row is not a kill worth
+investigating: `ContainerServerRunner` watches for the ready-line and stops the container the moment it
+appears, so every clean container boot exits 137.) The shape also confirms the abandoned-port hypothesis —
+Forge stops at 1.20.2 while NeoForge is at 1.21.11, i.e. the project migrated and left one final Forge build
+behind.
+
+**Why one loader's crash is not the other loader's business — except that it is.** The per-loader model is
+deliberate, and a mod genuinely can be client-only on one loader. But the *published* artefact is a
+loader-agnostic file-name stem matched with `startsWith`, and both rows derive `ironchest-`, so publishing
+the Forge crash strips the NeoForge build that had just proven itself. `reconcileAcrossLoaders` therefore
+keys on **the entry colliding**, not on any survival anywhere: where the stems differ nothing is stripped and
+there is no contradiction to resolve. The confidence drops to whatever `aggregate` yields for the same
+signals with no boot — re-derived, so there is one ladder rather than a second one — while `bootResult` and
+the crash excerpt stay, because the server did crash and that is worth diagnosing. The note is *rebuilt*
+rather than appended to: it used to end in "a strong clientside signal", and bolting a correction onto a
+false sentence is the stale-prose failure this project keeps paying for.
+
+**And the fix from earlier the same day would probably not have saved this mod.** `CurseForgePlatform.resolve`
+took `?pageSize=50` — the newest 50 files *across all loaders*. A project that migrated Forge → NeoForge keeps
+publishing NeoForge builds, so its last Forge build sinks toward the far end of that window and the builds
+before it drop out of it entirely, leaving the other-version re-check nothing of that loader to boot. Exactly
+the projects that produce the false positive are the ones the window hides the evidence from. Resolution now
+walks `index` until `totalCount`, capped at `MAX_FILE_PAGES` (10 × 50) with a warning when it truncates; a
+project inside one page still costs one call. Dependency resolution stays single-page on purpose — it needs
+*a* usable file for one loader/Minecraft pair, not a history.
+
+The two crash guards layer rather than compete: the within-loader re-check runs during the crashing loader's
+own boot, cross-loader reconciliation after every loader is in, so a crash must survive both. Loaders are
+assessed in sorted order and nothing looks ahead, so a project like this one still pays the two extra Forge
+boots before NeoForge supersedes them — deliberate, since those boots also produce the more specific
+within-loader answer.
+
+Teeth checked: relaxing the entry-collision condition fails `aLoaderBootingUnderADifferentEntryDisprovesNothing`;
+capping the file walk at one page fails `resolvePagesThroughEveryPublishedFile` and
+`aTotalCountThatIsNeverReachedStopsAtTheCap`. Suite 113 → **126, 0 failures**.
