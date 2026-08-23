@@ -63,7 +63,8 @@ on the host is touched, and no mod ever gets network access.
 | JDK 21+              | To build and run the service                                                 |
 | Disk                 | The runtime image is ~2 GB; each cached loader install adds a few hundred MB |
 | RAM                  | ~3 GB **per parallel worker** (each worker holds a booting Minecraft server) |
-| `CURSEFORGE_API_KEY` | Optional. Without it the grinder uses Modrinth only                          |
+| Playwright + Chromium | **Required for CurseForge.** Distribution-locked files (`allowModDistribution=false`) have no API download-URL and are fetched with a headless browser, on the *host*. Install with `npx --yes playwright install chromium` as the service account, plus `sudo npx --yes playwright install-deps chromium` for the OS libraries |
+| `CURSEFORGE_API_KEY` | Optional. Without it the grinder uses Modrinth only. Complementary to the browser above: the key reveals that a file is locked, the browser fetches it |
 
 ---
 
@@ -191,6 +192,7 @@ never evicted, and a re-install costs one networked setup boot if it comes back.
 | `SPC_GRINDER_CURSORS`           | `~/.spc-grinder/cursors.json`  | Crawl position per platform — delete to re-sweep from the most-downloaded    |
 | `SPC_GRINDER_PORT`              | `8757`                         | Report server port                                                           |
 | `SPC_GRINDER_HOST`              | `127.0.0.1`                    | Report server bind address. Loopback by default — see *Exposing the report*  |
+| `SPC_GRINDER_CONTAINER_USER`    | owner of `SPC_GRINDER_WORK`    | `uid:gid` the containers run as. Must own the staging — see *Container identity* |
 | `SPC_GRINDER_WORKERS`           | `2`                            | Parallel boots. **Budget 3 GiB RAM each** — see *Sizing the worker count*    |
 | `SPC_GRINDER_BATCH`             | `25`                           | Projects taken from **each** platform per pass — the sweep-speed lever       |
 | `SPC_GRINDER_INTERVAL`          | `21600` (6 h)                  | Seconds to idle after a full sweep found nothing due                         |
@@ -233,6 +235,52 @@ startup. If the bridge is ever recreated on a different subnet the bind fails lo
 silently falling back — verified against the JDK's `HttpServer`: an address this host does not own gives
 `BindException: Can't assign requested address`, and a name that does not resolve gives `SocketException:
 Unresolved address`. Pinning the subnet on a user-defined network avoids the situation entirely.
+
+### Publishing the fallback list (`/as-properties`)
+
+The report server serves a `serverpackcreator.properties` fragment at `/as-properties`, carrying the
+clientside-mod list this daemon holds **plus every mod the grinder has proven clientside by crashing a real
+server with it**. Point an SPC instance at it and its fallback list stops depending on a maintainer editing
+the repository by hand:
+
+```properties
+de.griefed.serverpackcreator.configuration.fallback.updateurl=https://grinder.example.com/as-properties
+```
+
+The instance polls that URL on startup (`UpdateConfig.updateFallback`) and replaces its stored lists when the
+served ones differ. The mod-whitelist is passed through untouched, so the endpoint is a **drop-in replacement**
+for the GitHub raw URL rather than a partial one that would quietly freeze a client's whitelist.
+
+Only `HIGH` confidence is ever published — a mod that crashed a server. A mod that booted cleanly has proven
+nothing, and a wrong entry silently strips a mod out of every server pack built against the list, so the gate
+is a floor rather than a threshold to tune.
+
+> **Do not point the grinder's own SPC instance at this endpoint.** Its findings would be folded back into
+> what it publishes as "the shipped list", and an entry could then never leave the list even after a later
+> verdict disagrees. Leave `SPC_GRINDER_SPC_PROPERTIES`' update-URL on the repository.
+
+Serving it publicly means serving it to other people's build tooling. Read *Exposing the report* first: the
+same port also serves the unauthenticated verdict table and the full CSV export.
+
+### Container identity
+
+Every boot and every loader install bind-mounts a directory **this process created** and then runs as
+`SPC_GRINDER_CONTAINER_USER`. If that identity does not own the directory, the container can read the pack
+and write nothing — and the failure does not look like a permissions problem. The install script carries on
+past its refused writes and dies twenty lines later on the JVM's `Error: could not open 'user_jvm_args.txt'`,
+which reads as a broken start-script template.
+
+The default is the owner of `SPC_GRINDER_WORK`, which is the right answer almost always. It is *not* the
+runtime image's own `USER 1000:1000`: that only matches while the daemon itself runs as uid 1000, which
+stopped being true the moment it became a systemd service under its own account. Check it on the startup
+line:
+
+```
+Grinder starting — home=… work=… bind=127.0.0.1 port=8757 workers=2 containerUser=1001:1001
+```
+
+Set the variable only when the owner is not what the container needs — a work directory on a share owned by
+somebody else, or a userns-remapped daemon.
 
 ### Sizing the worker count
 
@@ -486,7 +534,9 @@ Two more things the unit file decides, both worth stating explicitly:
 | `Cannot connect to the Docker daemon`    | Daemon not running, or your user isn't in the `docker` group                                                                  |
 | `FileNotFoundException: /log4j2.xml`, `Could not create directory /logs` | The service ran in `/` and SPC took it for its home. Fixed in the daemon, which now names its home itself; on an older build set `WorkingDirectory=` in the unit (§8) |
 | `home directory is not usable: <path>` | SPC resolved a home it cannot write to. Point it somewhere writable with `JAVA_OPTS=-Dde.griefed.serverpackcreator.home=<dir>`, or fix that directory's ownership |
-| `No cached loader install for …`         | The one-off install boot failed — it is the only boot allowed network. Check connectivity and the logs above it               |
+| `No cached loader install for …`         | The one-off install boot failed — it is the only boot allowed network. Read the `Cause:` on the `Install produced no library layer` warning above it, and the console it names; note the tuple is then on a 60-minute cooldown, so later candidates repeat this line without a fresh attempt |
+| Installs fail instantly with `Permission denied` inside the pack | The container's `uid:gid` does not own the staging directory, so it can read the pack and write nothing. §5, *Container identity* — check the `containerUser=` value on the startup line |
+| Every locked CurseForge file fails    | With `Timeout 30000ms exceeded`: missing Chromium OS libraries (`sudo npx --yes playwright install-deps chromium`) — the `Playwright Host validation warning` in the log lists them. With a `net::ERR_ABORTED` stack: an older build, in which the download-triggered navigation abort discarded the file |
 | Mods on the newest Minecraft are skipped | The image lacks that version's required JDK. Add it to the Dockerfile **and** `ImageJavaRuntimes.bundledMajors`, then rebuild |
 | Boots die with `Killed` mid-startup      | Host out of memory — lower `SPC_GRINDER_WORKERS`                                                                              |
 | Everything is `INCONCLUSIVE`             | Often the loader genuinely has no build for the selected Minecraft version; check the `Detail` column                         |
@@ -497,6 +547,7 @@ Two more things the unit file decides, both worth stating explicitly:
 | `category list unavailable`               | CurseForge's `/categories` failed, so an over-cap version is covered by its modloader slices only that sweep                   |
 | `holds N mods but only 20000 are reachable` | Even a version × category × modloader slice is too big to page through; its middle is skipped. No further filter exists      |
 | Reverse proxy 502s, but the report works over an SSH tunnel | The report is bound to loopback, which a containerised proxy cannot reach. Set `SPC_GRINDER_HOST` to the bridge gateway — §5, *Exposing the report* |
+| Reverse proxy still cannot reach it *after* widening the bind | Distinguish by **timeout vs. connection-refused**: a loopback bind refuses instantly, a firewall drop hangs. On a dropped connection the proxy's own bridge subnet is usually missing from the host firewall — find it with `docker inspect -f '{{range $n,$c := .NetworkSettings.Networks}}{{$n}} gw={{$c.Gateway}}{{end}}' <proxy>` and allow that subnet to the port |
 | A container outlived the process         | Should not happen — shutdown drains them. If it does, `docker ps` and remove it, and please report it                         |
 
 ---
