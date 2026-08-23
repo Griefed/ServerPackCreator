@@ -66,6 +66,82 @@ internal class BootCandidateSelectorTest {
         Assertions.assertNull(BootCandidateSelector.pickBootableCandidate(files, "Forge") { true })
     }
 
+    // --- the sample the other-version crash re-check boots ------------------------------------------
+
+    /**
+     * What "other versions of the mod" means: the newest file of each *other* Minecraft version, most recent
+     * Minecraft first. One per version, never two builds of the same one — two rebuilds for one Minecraft are
+     * near-identical code, so the second boot buys far less than a different version line does — and never a
+     * file the booted version already covered, which is the whole point of re-checking somewhere else.
+     */
+    @Test
+    fun recheckCandidatesAreTheNewestFileOfEachOtherMinecraftVersion() {
+        val files = listOf(
+            file("mod-1.20.2-2.jar", setOf("Forge"), setOf("1.20.2")),
+            file("mod-1.20.2-1.jar", setOf("Forge"), setOf("1.20.2")),
+            file("mod-1.20.1-2.jar", setOf("Forge"), setOf("1.20.1")),
+            file("mod-1.20.1-1.jar", setOf("Forge"), setOf("1.20.1")),
+            file("mod-1.19.2.jar", setOf("Forge"), setOf("1.19.2")),
+            file("mod-fabric-1.18.2.jar", setOf("Fabric"), setOf("1.18.2"))
+        )
+
+        val picked = BootCandidateSelector.pickRecheckCandidates(files, "Forge", "1.20.2", limit = 5) { true }
+
+        Assertions.assertEquals(
+            listOf("mod-1.20.1-2.jar" to "1.20.1", "mod-1.19.2.jar" to "1.19.2"),
+            picked.map { it.first.fileName to it.second },
+            "expected the newest Forge file of 1.20.1 then 1.19.2 — no 1.20.2 sibling, no Fabric file"
+        )
+    }
+
+    /** Each re-check is a full boot, so the limit is a hard budget, taken from the most recent end. */
+    @Test
+    fun recheckCandidatesStopAtTheLimit() {
+        val files = listOf(
+            file("mod-1.20.2.jar", setOf("Forge"), setOf("1.20.2")),
+            file("mod-1.20.1.jar", setOf("Forge"), setOf("1.20.1")),
+            file("mod-1.19.2.jar", setOf("Forge"), setOf("1.19.2"))
+        )
+
+        Assertions.assertEquals(
+            listOf("1.20.1"),
+            BootCandidateSelector.pickRecheckCandidates(files, "Forge", "1.20.2", limit = 1) { true }.map { it.second }
+        )
+        Assertions.assertTrue(
+            BootCandidateSelector.pickRecheckCandidates(files, "Forge", "1.20.2", limit = 0) { true }.isEmpty(),
+            "a zero budget must buy no boots at all"
+        )
+    }
+
+    /** Same gate as selection: a Minecraft version the loader has no build for can never be staged. */
+    @Test
+    fun recheckCandidatesSkipMinecraftVersionsWithoutAnAvailableLoaderVersion() {
+        val files = listOf(
+            file("mod-1.20.2.jar", setOf("Forge"), setOf("1.20.2")),
+            file("mod-1.20.1.jar", setOf("Forge"), setOf("1.20.1")),
+            file("mod-1.19.2.jar", setOf("Forge"), setOf("1.19.2"))
+        )
+
+        Assertions.assertEquals(
+            listOf("1.19.2"),
+            BootCandidateSelector.pickRecheckCandidates(files, "Forge", "1.20.2", limit = 5) { it != "1.20.1" }
+                .map { it.second }
+        )
+    }
+
+    /** A mod published for exactly one Minecraft version has nothing to be re-checked against. */
+    @Test
+    fun aProjectWithNoOtherMinecraftVersionYieldsNoRecheckCandidates() {
+        val files = listOf(
+            file("mod-1.20.2-2.jar", setOf("Forge"), setOf("1.20.2")),
+            file("mod-1.20.2-1.jar", setOf("Forge"), setOf("1.20.2"))
+        )
+
+        Assertions.assertTrue(
+            BootCandidateSelector.pickRecheckCandidates(files, "Forge", "1.20.2", limit = 5) { true }.isEmpty()
+        )
+    }
+
     @Test
     fun dependencyFilePrefersExactMinecraftMatchThenFallsBack() {
         val files = listOf(
