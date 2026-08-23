@@ -3315,3 +3315,84 @@ branch and has no base-tree callers. Nothing existing changed shape.
   check for the Linux host is recorded there. This is the one claim on the branch resting on reasoning plus
   production logs rather than on an executed check, and it should be closed on Yggdrasil before the fix is
   trusted in the release notes.
+
+---
+
+# Audit iteration 20 — 2026-08-23 — the graceful-shutdown branch
+
+Scope: the three commits merged as `c22e54a40` — `312745b33` (pins), `25541a8d8` (implementation),
+`067ebc31f` (documentation). Already on `develop`, so the fixes land as a follow-on branch rather than by
+rewriting merged history.
+
+Suites: grinder 282 (22 skipped), plus 6/6 of the Docker-gated `DockerJavaContainerEngineIT` against
+docker 29.7.2.
+
+## HIGH
+
+- **H1 — the branch's central guarantee has a reachable window in which it silently does not hold.**
+  `Grinder.kt`, `GrindPool.grindAll`: the worker threads are **started inside the `map`** and the field the
+  shutdown path reads is assigned only afterwards.
+
+  ```kotlin
+  val running = (1..workerCount).map {
+      Thread { … }.apply { name = "grind-worker-$it"; start() }   // running
+  }
+  workers = running                                              // …only now visible to awaitStop
+  ```
+
+  A SIGTERM arriving between the first `start()` and that assignment finds `workers == emptyList()`. `awaitStop`
+  then interrupts nobody, joins nothing, and — because `emptyList().none { it.isAlive }` is `true` — **reports a
+  clean stop**. The hook logs no warning, the JVM exits, and workers are still running. It is the exact failure
+  the branch was written to prevent, wearing a success message.
+
+  The window is small (thread construction for N workers) but it is entered on *every* pass, and a daemon that
+  restarts on a schedule enters it often. Publish the list before starting the threads.
+
+  Severity mapped deliberately: the rubric's HIGH covers behaviour-change-inside-a-refactor, broken boundaries
+  and plugin-API contracts, none of which this is. Calling it MEDIUM would understate a defect that makes the
+  feature's promise conditional on a race.
+
+## MEDIUM
+
+- **M2 — nothing pins the shutdown hook's wiring**, which is the same gap `FallbackListWiringTest` was written
+  to close two audits ago, left unapplied to a hook that cannot be executed (it builds an `ApiWrapper` and a
+  Docker client). Nothing asserts that `main` calls `awaitStop` at all, that it calls `reapOrphans` at startup,
+  or that `engine.close()` precedes `awaitStop` — and the ordering is load-bearing: `close()` is what sets the
+  closed flag, so reversing the two re-opens the create-behind-the-sweep hole this branch closed.
+
+- **M3 — the 15-second window is unpinned.** `SHUTDOWN_GRACE` is stated in the unit, in the README and in the
+  operator contract, and no test fails if someone changes it. It is a number an operator was promised.
+
+- **M4 — `TimeoutStopSec` and `SHUTDOWN_GRACE` are coupled with nothing enforcing it.** The unit's own comment
+  says lowering the timeout below the window "is the one change that actively causes the leak", and
+  `SystemdUnitConfigurationTest` checks environment knobs only. The relationship is arithmetic and therefore
+  checkable: the stop timeout must exceed `ceil(workers / 8) × grace` with margin.
+
+- **M5 — the grace window is a hard-coded top-level `val` the engine reads directly**, so no test can vary it.
+  Two consequences: the value itself is untestable (M3), and one IT case burns 15.6 s of real wall-clock
+  waiting out a window it cannot shorten. A constructor parameter defaulting to the constant fixes both
+  without changing production behaviour.
+
+## LOW
+
+- **L1 — `DockerJavaContainerEngineIT.waitForContainer(engine)` ignores its parameter**; it polls the daemon
+  globally by label. The signature claims a scoping that does not exist.
+- **L2 — `reapsALabelledOrphanLeftByAPreviousProcess` leaves its `orphanEngine` open** and its worker thread
+  running against a container the reap has removed. Harmless in a gated IT, but it is the one test in the file
+  that does not clean up after itself.
+- **L3 — every shutdown with a boot in flight now logs a spurious WARN.** `close()` removes the container,
+  then `run()`'s own `finally` tries again and the 404 surfaces as
+  `Could not remove container <id>: …`. Expected, harmless, and indistinguishable in the journal from a
+  removal that genuinely failed — which is precisely the kind of noise that made the 2026-08-23 install
+  diagnosis take three rounds.
+
+## Verified clean — do not re-litigate
+
+- **The pins landed red and separately** (`312745b33` before `25541a8d8`), and the container half was verified
+  against a live daemon rather than reasoned about — including a trapped SIGTERM proving the signal arrives
+  before removal.
+- **`close()` sets `closed` before it sweeps, and `run()` re-checks after adding to the tracking set.** Either
+  the sweep sees the container or the creator sees the flag; there is no third outcome.
+- **Concurrency in `close()` is bounded** at 8 and the pool is shut down in a `finally`.
+- **`reapOrphans` runs before the staging reaper and after the engine exists**, and at that point this process
+  owns no containers, so everything wearing the label is by definition inherited.
