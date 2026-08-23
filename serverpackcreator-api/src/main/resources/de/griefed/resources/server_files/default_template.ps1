@@ -350,6 +350,62 @@ Function global:CleanServerFiles
     #>
 }
 
+Function global:ForgeNeedsItsOwnArgfile
+{
+    <#
+    .SYNOPSIS
+
+    Whether the ServerStarterJar must be bypassed for this Minecraft version, because it cannot launch the Forge
+    install produced for it. Returns $true when the pack has to start Forge from Forge's own argfile.
+
+    Forge's installer writes one of two argfiles, and the ServerStarterJar can only start one of them:
+      * Minecraft 1.17 .. 1.20.1  -> "-p <module path>" over cpw's securejarhandler. The starter jar synthesises
+                                     a boot layer for it, and cpw's loader falls back to the platform classloader
+                                     for anything it cannot place, so this works.
+      * Minecraft 1.20.2          -> "-p <module path> --add-modules ALL-MODULE-PATH" over Forge's OWN
+                                     securemodules fork, which instead THROWS "Could not find parent layer for
+                                     module `java.base`" before the server starts. No shim jar exists here.
+      * Minecraft 1.20.3 onwards  -> "-jar forge-<version>-shim.jar". The starter jar takes its own "jar mode"
+                                     and never synthesises a layer, so this works again -- verified through
+                                     Minecraft 1.21.1, which reaches the ready-line through the starter jar.
+
+    1.20.3 is bypassed with 1.20.2 even though it ships the shim: it is documented as affected in HELP.md, it has
+    two Forge builds in total, and over-including it costs only the starter jar's hosting-company compatibility
+    while under-including it costs a server that cannot start.
+
+    The MAJOR is part of the test on purpose. Minor and patch carry this meaning only under the 1.x scheme:
+    Minecraft 26.20.2 matches 1.20.2 component for component below the major, and bypassing the starter jar
+    there would quietly drop that compatibility for every modern pack.
+    #>
+    # Screen every component before casting it, and take the bypass for anything unreadable -- [int] THROWS on a
+    # non-numeric component, and the bypass is the route that works for every Forge from 1.17 on.
+    if (-Not ([string]$Semantics[0] -match '^\d+$'))
+    {
+        return $true
+    }
+    if (-Not ([string]$Semantics[1] -match '^\d+$'))
+    {
+        return $true
+    }
+    if ([int]$Semantics[0] -ne 1)
+    {
+        return $false
+    }
+    if ([int]$Semantics[1] -ne 20)
+    {
+        return $false
+    }
+    if ($Semantics.count -lt 3)
+    {
+        return $false
+    }
+    if (-Not ([string]$Semantics[2] -match '^\d+$'))
+    {
+        return $true
+    }
+    return (([int]$Semantics[2] -eq 2) -Or ([int]$Semantics[2] -eq 3))
+}
+
 Function global:SetupForge
 {
     ""
@@ -360,7 +416,9 @@ Function global:SetupForge
     # 1.17 it produces libraries/.../win_args.txt instead. The major must be checked too, because the minor alone only
     # carries that meaning under the 1.x scheme -- Minecraft 26.2 has minor 2, which would otherwise read as the 1.2
     # era and take the legacy path, where the server cannot find forge.jar at all.
-    if ([int]$Semantics[0] -eq 1 -And [int]$Semantics[1] -le 16)
+    # Screened before cast, as in ForgeNeedsItsOwnArgfile: [int] THROWS on a non-numeric component, which would
+    # take the whole start script down for a snapshot-shaped version.
+    if (([string]$Semantics[0] -match '^\d+$') -And ([string]$Semantics[1] -match '^\d+$') -And ([int]$Semantics[0] -eq 1) -And ([int]$Semantics[1] -le 16))
     {
         $ForgeJarLocation = "forge.jar"
         $script:LauncherJarLocation = "forge.jar"
@@ -411,10 +469,22 @@ Function global:SetupForge
             # launches the server. So on Java that cannot trap the exit we do not hand SSJ the install at all:
             # install here, then launch from the argfile the installer produces, as the UseSSJ=false path does.
             # Fail-safe: only a Java we can read AND that predates 24 may use the ServerStarterJar path.
+            # Second reason, independent of Java: Minecraft 1.20.2/1.20.3 Forge cannot be launched by the
+            # ServerStarterJar at all -- see ForgeNeedsItsOwnArgfile above.
+            $SSJRefusal = ""
             if ((-Not ("${JavaVersion}" -match '^\d+$')) -Or ([int]${JavaVersion} -ge 24))
             {
-                Write-Host "Java ${JavaVersion} cannot grant ServerStarterJar the Security Manager it needs to run the"
-                Write-Host "Forge installer, so this pack installs Forge directly and starts it from its argfile instead."
+                $SSJRefusal = "Java ${JavaVersion} cannot grant ServerStarterJar the Security Manager it needs to run the Forge installer"
+            }
+            elseif (ForgeNeedsItsOwnArgfile)
+            {
+                $SSJRefusal = "Forge for Minecraft ${MinecraftVersion} starts from a module-path argfile the ServerStarterJar cannot launch"
+            }
+
+            if (${SSJRefusal} -ne "")
+            {
+                Write-Host "${SSJRefusal},"
+                Write-Host "so this pack installs Forge directly and starts it from its argfile instead."
                 $ForgeArgsFile = "libraries/net/minecraftforge/forge/${MinecraftVersion}-${ModLoaderVersion}/win_args.txt"
                 $script:ServerRunCommand = "@user_jvm_args.txt @${ForgeArgsFile} nogui"
                 if ((DownloadIfNotExists "${ForgeArgsFile}" "forge-installer.jar" "${ForgeInstallerUrl}"))

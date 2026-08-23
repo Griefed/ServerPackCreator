@@ -162,6 +162,34 @@
   **The grinder cannot catch this class of bug** — it pre-bakes the install and boots offline from cache, so it
   only ever exercises the launch of an already-installed tuple. Cached tuples stay valid across this change:
   their `unix_args.txt` is what the new path launches, and `downloadIfNotExist` short-circuits on it offline.
+
+  **Second, independent reason the templates bypass SSJ: Minecraft 1.20.2/1.20.3 Forge, which it cannot launch
+  at all** (`forgeNeedsItsOwnArgfile` in all three templates, added 2026-08-23 after the grinder published a
+  clientside HIGH for a mod whose server never started). Forge's installer writes one of two argfiles and SSJ
+  can only start one:
+
+  | Minecraft | argfile | ServerStarterJar |
+  |---|---|---|
+  | 1.17 – 1.20.1 | `-p <module path>`, cpw `securejarhandler` | works — cpw's `ModuleClassLoader` ends its parent-layer lookup with `.orElse(getPlatformClassLoader())` |
+  | **1.20.2** | `-p <module path> --add-modules ALL-MODULE-PATH`, Forge `securemodules` | **dies** — Forge's fork *throws* `Could not find parent layer for module` instead, because SSJ's synthesised boot layer is one level below the real boot configuration |
+  | 1.20.3 onwards | `-jar forge-<version>-shim.jar` | works — SSJ takes its own "jar mode" and synthesises nothing |
+
+  **LANDMINE — do not widen this to "every Forge from 1.20.2 on" from reading the source.** The throw is still
+  present in `securemodules` 2.2.21 (checked in the jar's own class bytes), so the source says every modern Forge
+  should fail — and it does not, because from 1.20.3 the argfile no longer takes the module-path route. Measured
+  on Temurin under `--network none`: `1.20.1-47.4.0` and `1.21.1-52.1.0` both reach the ready-line *through* SSJ
+  (1.21.1 logging `Launching in jar mode, using jar: forge-1.21.1-52.1.0-shim.jar`), while `1.20.2-48.1.0` dies
+  at `SecureModuleClassLoader.<init>` and reaches `Done (5.183s)! For help` from its own argfile. Over-widening
+  costs every modern pack the hosting-company compatibility SSJ exists for. 1.20.3 *is* included, on HELP.md's
+  word rather than a boot — it ships the shim, but it has two Forge builds in total, so over-including is
+  free and under-including is a dead server. **The module named in the exception varies per run**
+  (`java.base`/`net.minecraftforge.eventbus` in production, `java.management.rmi`/`JarJarMetadata` locally), so
+  anything matching on it must match the message.
+  Pinned by `ScriptTemplateContentTest.theBashTemplateBypassesTheStarterJarOnlyWhereForgeCannotBeLaunchedWithIt`
+  (executes `setupForge` across both versioning schemes, `26.20.2` included — it matches 1.20.2 component for
+  component below the major) and `allTemplatesBypassTheStarterJarForTheAffectedForgeVersionsAndTestTheMajor`.
+  fish and PowerShell were verified by **executing** the extracted function in containers: all three shells agree
+  on all ten versions, and both templates pass their own parser (`fish -n`, PowerShell's `Parser::ParseFile`).
 - **LANDMINE — a path derived from the home directory must be computed on access, never captured.**
   `PathsConfig.homeDirectory` re-reads on every access (and now honours `-Dde.griefed.serverpackcreator.home`
   first), so `serverFilesDirectory` and friends move when the home moves — `--home`, the `-D` override, or the GUI

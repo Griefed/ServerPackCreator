@@ -30,6 +30,12 @@ import java.io.File
  *  - `SERVERSTARTERJAR_FORCE_FETCH=false` for **offline** (cached) boots, else Forge/NeoForge
  *    re-download `server.jar` — fatal under `--network none`. The install boot leaves it on.
  *
+ * **`USE_SSJ` is deliberately *not* set here.** A Forge install the ServerStarterJar cannot launch is the
+ * templates' own problem to detect — `forgeNeedsItsOwnArgfile` in each of them bypasses it for exactly the
+ * affected Minecraft versions — and setting the knob here would disable the starter jar for every *other*
+ * version too. Then the grinder would boot packs by a route almost no user's pack takes, and would never
+ * again notice the starter-jar path breaking. It noticed once already, which is why the templates now decide.
+ *
  * @author Griefed
  */
 object PackVariables {

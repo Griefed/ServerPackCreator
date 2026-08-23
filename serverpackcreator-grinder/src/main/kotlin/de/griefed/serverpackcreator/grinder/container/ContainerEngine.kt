@@ -31,6 +31,20 @@ import kotlin.math.roundToLong
 const val PACK_MOUNT = "/srv/pack"
 
 /**
+ * The hostname every boot container carries — a fixed name rather than the daemon's default, which is the
+ * container's own id and therefore different on every boot.
+ *
+ * It exists because it has to be *resolvable*: the daemon writes an `<ip> <hostname>` line into `/etc/hosts`
+ * only for a container that has an address, and a grinder boot deliberately has none. Without that line
+ * `getaddrinfo` fails on the container's own name, and a Minecraft server asks for it immediately — log4j
+ * calls `InetAddress.getLocalHost()` while configuring itself, so every NeoForge boot opened with three
+ * `UnknownHostException: <container-id>: Temporary failure in name resolution` stacktraces before a single mod
+ * was loaded. Fixing the name here lets the engine map it, which a per-boot container id could not: the id is
+ * only known *after* the container is created, and the mapping has to be part of creating it.
+ */
+const val CONTAINER_HOST_NAME = "spc-grinder"
+
+/**
  * How long anything the grinder is tearing down gets to exit on its own before it is killed.
  *
  * Applies to both halves of a shutdown, because both are on the same clock: the container is asked to stop
@@ -190,6 +204,10 @@ data class BindMount(val hostPath: String, val containerPath: String, val readOn
  * @param user             The `uid:gid` to run as (non-root). The default matches the image's own `USER`;
  *                         callers that bind-mount a host directory pass the host owner (see `ContainerUser`).
  * @param tmpfsMounts      Writable tmpfs mount points, needed because the rootfs is read-only.
+ * @param hostName         The container's own hostname, which the engine also makes resolvable. A *networked*
+ *                         container gets an `<ip> <hostname>` line in `/etc/hosts` from the daemon; `none` has
+ *                         no address, so nothing resolves it and `InetAddress.getLocalHost()` throws — see
+ *                         [CONTAINER_HOST_NAME].
  * @author Griefed
  */
 data class ContainerSpec(
@@ -203,7 +221,8 @@ data class ContainerSpec(
     val dropAllCapabilities: Boolean = true,
     val noNewPrivileges: Boolean = true,
     val user: String = "1000:1000",
-    val tmpfsMounts: List<String> = listOf("/tmp")
+    val tmpfsMounts: List<String> = listOf("/tmp"),
+    val hostName: String = CONTAINER_HOST_NAME
 )
 
 /**

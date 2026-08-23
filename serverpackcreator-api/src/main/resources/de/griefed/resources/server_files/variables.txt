@@ -53,8 +53,10 @@
 #   available for download. When the download fails with the "latest"-setting, then pick a specific one and/or
 #   contact the devs of the ServerStarterJar about the latest release not having a server.jar to download.
 # USE_SSJ true/false allows you to enable/disable the usage of the ServerStarterJar by the NeoForge project when you are
-#   using Forge. Some Forge versions may be incompatible with said ServerStarterJar. As of right now, people
-#   ran into trouble when using Forge and Minecraft 1.20.2 and 1.20.3.
+#   using Forge. You should not need to touch this: the start script already skips the ServerStarterJar on its own
+#   wherever it cannot launch Forge -- on Minecraft 1.20.2 and 1.20.3, and on Java 24 and newer -- and installs
+#   Forge itself instead, telling you so on the console. Setting this to false does the same thing for every
+#   version, which costs you the hosting-company compatibility the ServerStarterJar provides everywhere else.
 # SSJ_FORGE_ARGS are additional arguments to use when using the Server Starter Jar from the NeoForge project in
 #   combination with the Forge-modloader. Some java versions require explicit allowing of the security manager,
 #   for example.

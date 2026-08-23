@@ -42,6 +42,9 @@ import java.util.concurrent.Executors
  * standalone service needs **no web framework** (no Spring, no new dependency). Bound to loopback by
  * default; pass a concrete port or `0` for an ephemeral one.
  *
+ * The browser-tab icon ships *inside* the jar and is served from there, keeping the promise the rest of the
+ * page already keeps: nothing here reaches out to an external asset.
+ *
  * @param store The verdicts to render; read live on each request so the table reflects the running grind.
  * @param requestedPort The port to bind (0 = pick a free one; read it back from [port] after [start]).
  * @param host The interface to bind; loopback by default so the report isn't exposed beyond the box.
@@ -66,6 +69,19 @@ class ReportServer(
     private val requeue: RequeueStore? = null
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+
+    /**
+     * The tab icon, read off the classpath once and held: it is a few kilobytes and every page load asks for
+     * it, so re-reading the jar entry per request buys nothing. `null` if the resource is somehow absent, in
+     * which case the pages simply go without an icon — a missing decoration must not 500 an endpoint.
+     */
+    private val favicon: ByteArray? by lazy {
+        val bytes = javaClass.getResourceAsStream(FAVICON_RESOURCE)?.use { stream -> stream.readBytes() }
+        if (bytes == null) {
+            log.warn("No $FAVICON_RESOURCE on the classpath; the report is served without a tab icon.")
+        }
+        bytes
+    }
     private val server: HttpServer = HttpServer.create(InetSocketAddress(host, requestedPort), 0)
     private var pool: ExecutorService? = null
     private val mapper = jacksonObjectMapper()
@@ -84,6 +100,12 @@ class ReportServer(
         }
         server.createContext("/status") { exchange ->
             respond(exchange, "application/json; charset=utf-8", statusJson())
+        }
+        // Both spellings need their own context: the pages link `/favicon.png`, while a browser asks for
+        // `/favicon.ico` unprompted on every endpoint that is not HTML (the plain-text crash consoles). Without
+        // a context of its own, either request falls through to `/` and gets the verdict table as its icon.
+        for (iconPath in listOf("/favicon.ico", "/favicon.png")) {
+            server.createContext(iconPath) { exchange -> respondFavicon(exchange) }
         }
         // Longest-prefix match again: /crash-logs is its own context, so /crash-log cannot swallow it.
         server.createContext("/crash-logs") { exchange ->
@@ -140,7 +162,11 @@ class ReportServer(
         return """
             <!doctype html>
             <html lang="en">
-            <head><meta charset="utf-8"><title>ServerPackCreator — crash consoles</title></head>
+            <head>
+              <meta charset="utf-8">
+              <title>ServerPackCreator — crash consoles</title>
+              <link rel="icon" type="image/png" href="/favicon.png">
+            </head>
             <body style="font-family: system-ui, sans-serif; margin: 1.5rem;">
               <h1>Crash consoles (${names.size})</h1>
               <p><a href="/">&larr; back to the verdict table</a></p>
@@ -148,6 +174,19 @@ class ReportServer(
             </body>
             </html>
         """.trimIndent()
+    }
+
+    /**
+     * Serve the bundled tab icon, or a 404 when the jar carries none. PNG under both `.png` and `.ico`: every
+     * current browser reads the bytes, not the extension, and one file beats shipping a second format.
+     */
+    private fun respondFavicon(exchange: HttpExchange) {
+        val icon = favicon
+        if (icon == null) {
+            respond(exchange, "text/plain; charset=utf-8", "No favicon is bundled with this build.", status = 404)
+        } else {
+            respondBytes(exchange, "image/png", icon)
+        }
     }
 
     /**
@@ -212,10 +251,24 @@ class ReportServer(
      * outside printable ASCII to `\uXXXX`, and the two encodings agree byte for byte there. Encoding it
      * "correctly" would be a branch that can never change an output.
      */
-    private fun respond(exchange: HttpExchange, contentType: String, body: String, status: Int = 200) {
-        val bytes = body.toByteArray(StandardCharsets.UTF_8)
+    private fun respond(exchange: HttpExchange, contentType: String, body: String, status: Int = 200) =
+        respondBytes(exchange, contentType, body.toByteArray(StandardCharsets.UTF_8), status)
+
+    /**
+     * Write [bytes] verbatim with the given [contentType] and [status], closing the exchange. The one endpoint
+     * that needs it is the icon — every other response is text, and goes through [respond] above.
+     */
+    private fun respondBytes(exchange: HttpExchange, contentType: String, bytes: ByteArray, status: Int = 200) {
         exchange.responseHeaders.add("Content-Type", contentType)
         exchange.sendResponseHeaders(status, bytes.size.toLong())
         exchange.responseBody.use { it.write(bytes) }
+    }
+
+    companion object {
+        /**
+         * Classpath location of the tab icon, resolved relative to this class's package so it travels with the
+         * jar. It is ServerPackCreator's own configuration glyph (`img/config.png`), the same mark the app uses.
+         */
+        private const val FAVICON_RESOURCE = "favicon.png"
     }
 }

@@ -48,6 +48,10 @@ internal class ReportServerTest {
     private fun get(port: Int, path: String) = HttpClient.newHttpClient()
         .send(HttpRequest.newBuilder(URI.create("http://127.0.0.1:$port$path")).build(), BodyHandlers.ofString())
 
+    /** The same request, kept as bytes — an icon must be asserted on its own bytes, not on a decoded string. */
+    private fun getBytes(port: Int, path: String) = HttpClient.newHttpClient()
+        .send(HttpRequest.newBuilder(URI.create("http://127.0.0.1:$port$path")).build(), BodyHandlers.ofByteArray())
+
     /**
      * The crash console a HIGH verdict was reached from, served by name so the overview can link it. The
      * name is untrusted input off a query string, so the traversal case is pinned in the same test as the
@@ -214,6 +218,44 @@ internal class ReportServerTest {
             Assertions.assertTrue(entries.contains("jei-"), "the repository list must be served: $entries")
             Assertions.assertTrue(entries.contains("entityculling-"), "a HIGH finding must be served: $entries")
             Assertions.assertFalse(entries.contains("inconclusive-"), "an unproven finding must never be served: $entries")
+        } finally {
+            server.stop()
+        }
+    }
+
+    /**
+     * The report's browser-tab icon. Both names are served on purpose: the pages link `/favicon.png`, and a
+     * browser asks for `/favicon.ico` on its own on every other endpoint — the plain-text crash consoles
+     * included. Neither may fall through to the catch-all context, which would answer an icon request with the
+     * whole verdict table.
+     *
+     * Asserted on the PNG signature rather than on a non-empty body, because an HTML fall-through or a 404 page
+     * is also a non-empty body with a 200 in front of it.
+     */
+    @Test
+    fun servesTheFaviconAndReferencesItFromEveryPage() {
+        val server = ReportServer(InMemoryVerdictStore(), requestedPort = 0).start()
+        try {
+            for (path in listOf("/favicon.ico", "/favicon.png")) {
+                val icon = getBytes(server.port, path)
+                Assertions.assertEquals(200, icon.statusCode(), path)
+                Assertions.assertTrue(
+                    icon.headers().firstValue("Content-Type").orElse("").contains("image/png"),
+                    "$path was served as ${icon.headers().firstValue("Content-Type")}"
+                )
+                Assertions.assertArrayEquals(
+                    byteArrayOf(0x89.toByte(), 'P'.code.toByte(), 'N'.code.toByte(), 'G'.code.toByte()),
+                    icon.body().take(4).toByteArray(),
+                    "$path must be a real PNG, not a page that happens to answer 200"
+                )
+            }
+
+            for (page in listOf("/", "/crash-logs")) {
+                Assertions.assertTrue(
+                    get(server.port, page).body().contains("""<link rel="icon" type="image/png" href="/favicon.png">"""),
+                    "$page must point a browser at the icon"
+                )
+            }
         } finally {
             server.stop()
         }

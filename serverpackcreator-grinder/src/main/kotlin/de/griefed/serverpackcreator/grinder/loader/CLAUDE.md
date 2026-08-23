@@ -97,6 +97,14 @@ diffed each booted dir against its pre-boot baseline. Conclusions:
   `SERVERSTARTERJAR_FORCE_FETCH=false` (else Forge/NeoForge *re-download* `server.jar` → needs network),
   and pre-write `eula.txt` = `eula=true` (else an interactive EULA prompt). Also set `JAVA` to the
   bundled per-MC JDK (`/opt/java-{8,17,21,25}`).
+- **`USE_SSJ` is deliberately NOT set on generated packs — the templates decide.** They bypass the
+  ServerStarterJar themselves for exactly the Minecraft versions it cannot launch (`forgeNeedsItsOwnArgfile`;
+  the full range and its measurements are the SSJ landmine in `serverpackcreator-api/CLAUDE.md`). Setting the
+  knob here — which this branch did first — is blanket: it disables the starter jar for 1.17–1.20.1 and 1.20.4+
+  as well, where it works, so the grinder would boot every Forge pack by a route almost no user's pack takes and
+  would never again notice that route breaking. It noticed once (a clientside HIGH published for `ars-nouveau`,
+  whose server died in `BootstrapLauncher` before FML existed), which is precisely the fidelity worth keeping.
+  `PackVariablesTest.leavesTheStarterJarChoiceToTheTemplates` fails if the line comes back.
 - **Cache-overlay seam — RESOLVED (no deep `BootVerifier` change needed).** The install layer never
   name-collides with pack files (`libraries/`, `server.jar`, run-scripts vs. `start.sh`/`mods/`/`config/`),
   so the overlay is a plain recursive copy. Plan: add an optional `packPostProcessor:
