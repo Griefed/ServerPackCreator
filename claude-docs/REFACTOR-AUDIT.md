@@ -3459,3 +3459,60 @@ not be provoked at 8 or 64 workers.
   worker that finishes during the sweep from picking up another candidate.
 - **A null `activePool` is handled correctly** for the *continuous* path — it is null only between passes,
   when there are no workers to signal. P21-H1 is about the one-shot path never setting it at all.
+
+---
+
+# Audit iteration 22 — 2026-08-23 — third pass, and the equivalence check
+
+Scope: the shutdown work plus iterations 20 and 21's fixes. Grinder suite 288 (22 skipped). Docker-gated IT
+6/6 on docker 29.7.2.
+
+## Equivalence against the base — clean
+
+The pre-shutdown test tree (`develop~1`) checked out over the current production code in a detached worktree:
+**276 pre-existing guards, zero failures, zero compile errors, nothing needing adaptation.** Every signature
+this work changed either is new (`awaitStop`, `reapOrphans`, `trackedWorkerCount`) or gained a defaulted
+parameter (`DockerJavaContainerEngine(shutdownGrace = …)`).
+
+## MEDIUM
+
+- **P22-M1 — the "one 15-second window" is only true up to eight in-flight containers.**
+  `DockerJavaContainerEngine.MAX_PARALLEL_STOPS = 8`, so with more containers than that the stops run in
+  batches and the container phase alone costs `ceil(n / 8) × 15 s`. At `SPC_GRINDER_WORKERS=10` — the value
+  actually deployed — that is **30 s before the workers get anything**, and iteration 21's deadline then hands
+  `awaitStop` zero milliseconds.
+
+  So iteration 21 fixed the *sequencing* of the two windows and left the multiplication in place. The unit's
+  comment and `ShutdownWiringTest` both already encode `ceil(workers / 8)`, which means the arithmetic is
+  honest — but it is honest about a number that did not need to be larger than one in the first place. The cap
+  was chosen defensively ("so a large worker count cannot flood the daemon"); a `docker stop` is an HTTP call
+  that spends its time waiting, and the realistic ceiling on concurrent boots is memory-bound at ~20. Raising
+  the cap well above any real worker count makes the promised single window true, and collapses the arithmetic
+  in three documents to `1 × grace`.
+
+- **P22-M2 — a container that burns the whole window leaves the workers exactly zero.**
+  With `remaining` clamped at 0, `awaitStop` interrupts and then joins nothing, so the "did not stop within
+  15s" warning is *guaranteed* rather than informative — the workers were never given a chance to observe the
+  interrupt they were just sent. A small floor (a second) makes the warning mean what it says, at a worst case
+  of 16 s against a 60 s stop timeout.
+
+## LOW
+
+- **P22-L1 — `theWorkersGetTheRemainderOfTheWindowRatherThanASecondOne` asserts an absence.**
+  `!body.contains("awaitStop(SHUTDOWN_GRACE)")` passes for any spelling that is not that exact string, so a
+  future rewrite that reintroduces the second window under a different name slips through. A positive
+  assertion — that a deadline is computed and its remainder passed — is what the guard means.
+- **P22-L2 — the one-shot path never clears `activePool`.** Harmless (a finished pool tracks no workers, so
+  `awaitStop` returns immediately) and noted only so it is not read as an oversight later.
+
+## Verified clean — do not re-litigate
+
+- **Iterations 20 and 21's guards all have verified teeth**, each broken in turn: `TimeoutStopSec=20`, the
+  removed reap call, the swapped `close`/`awaitStop` ordering, the unregistered one-shot pool, and the
+  full-window `awaitStop`. The one exception is stated in its own test doc — H1's invariant guards were never
+  observed red because the interleaving could not be provoked.
+- **The `activePool.set(` counting mistake is fixed and worth remembering**: the pass loop clears the
+  reference with `activePool.set(null)`, so counting occurrences made an unregistered pool pass. Caught only
+  because an expected red did not arrive.
+- **The three documents now agree with the code** on ordering and on the shared window (subject to P22-M1's
+  batching), and each is guarded rather than merely written.
