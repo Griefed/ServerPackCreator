@@ -443,6 +443,18 @@ TimeoutStopSec=120
 WantedBy=multi-user.target
 ```
 
+**A ready-made unit and an installer ship with the module**, so the block above is a summary rather than
+something to retype:
+
+- [`deploy/spc-grinder.service`](deploy/spc-grinder.service) — every variable §5 documents, commented out, with
+  its default. Pinned against `GrinderApplication` by `SystemdUnitConfigurationTest`, so a knob added to the
+  service and forgotten here fails the build.
+- [`deploy/install-grinder.sh`](deploy/install-grinder.sh) — builds the runtime image, runs `installDist`,
+  installs to `/opt/spc-grinder`, and creates the service account with its home and `docker` group membership.
+  Run it from the repository root as your normal user, **not** as root: it calls `sudo` for the four privileged
+  steps itself, and a Gradle build run as root leaves root-owned files in `build/`. Re-running it is the upgrade
+  path.
+
 Give `TimeoutStopSec` room: on stop the grinder removes in-flight containers before exiting.
 
 **`WorkingDirectory=` is not decoration.** A unit without it runs in `/`, and anything that resolves a relative
