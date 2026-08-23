@@ -66,16 +66,16 @@ class BrowserDownloader(
             newPage().use { page ->
                 // DOMCONTENTLOADED, not the default `load`: a CurseForge project page keeps fetching ads and
                 // trackers long after it is usable, and waiting for `load` turns a working page into a timeout.
-                page.navigate(pageUrl, Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED).setTimeout(navigationTimeoutMillis))
+                page.navigate(pageUrl, navigationOptions())
                 // CurseForge auto-initiates the file-download on the `/download` page; navigating
                 // there inside waitForDownload captures the resulting transfer.
-                val download: Download = page.waitForDownload(Page.WaitForDownloadOptions().setTimeout(navigationTimeoutMillis)) {
+                val download: Download = page.waitForDownload(downloadOptions()) {
                     // The navigation is *expected* to be aborted -- it turns into a file transfer, and Chromium
                     // cancels a navigation that becomes a download. Letting that throw escape tore down the wait
                     // and discarded the very download it had just triggered. Anything else is a real failure and
                     // must still propagate.
                     runCatching {
-                        page.navigate("$pageUrl/download", Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED).setTimeout(navigationTimeoutMillis))
+                        page.navigate("$pageUrl/download", navigationOptions())
                     }.onFailure { navigationFailure ->
                         if (!isDownloadAbort(navigationFailure)) {
                             throw navigationFailure
@@ -90,6 +90,22 @@ class BrowserDownloader(
             null
         }
     }
+
+    /**
+     * How both navigations are performed: wait for `DOMCONTENTLOADED`, never Playwright's default `load`.
+     *
+     * A CurseForge project page keeps fetching ads and trackers long after it is usable, so waiting for `load`
+     * spends the entire budget on third parties and reports a page that works as a timeout. Extracted rather
+     * than inlined so the choice is testable without a browser — it is made here, on the host, before Chromium
+     * is involved at all.
+     */
+    internal fun navigationOptions(): Page.NavigateOptions = Page.NavigateOptions()
+        .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+        .setTimeout(navigationTimeoutMillis)
+
+    /** The download's own budget, kept equal to the navigation's so one slow page cannot be half-timed-out. */
+    internal fun downloadOptions(): Page.WaitForDownloadOptions =
+        Page.WaitForDownloadOptions().setTimeout(navigationTimeoutMillis)
 
     /** Open a fresh download-enabled page on the lazily-launched browser. */
     private fun newPage(): Page {
