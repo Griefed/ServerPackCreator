@@ -31,6 +31,10 @@ import java.io.File
 import java.io.FileInputStream
 import java.util.*
 
+/**
+ * GridFS storage, kept for installations that still hold their files in MongoDB. New files go to the filesystem;
+ * this exists so the old ones can still be read and migrated.
+ */
 class DatabaseStorageService(
     private val gridFsTemplate: GridFsTemplate,
     private val gridFsOperations: GridFsOperations
@@ -52,6 +56,7 @@ class DatabaseStorageService(
         }
     }
 
+    /** Store a file in GridFS, returning its object id. */
     fun store(file: File): ObjectId {
         val originalName = determineFilename(file.name)
         val metaData = BasicDBObject()
@@ -65,6 +70,7 @@ class DatabaseStorageService(
         return objectId
     }
 
+    /** Read a file back out of GridFS, as the metadata and the resource together. */
     fun load(id: String): Optional<Pair<GridFSFile, GridFsResource>> {
         val result = gridFsTemplate.findOne(query(id))
         return Optional.of(

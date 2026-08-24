@@ -24,6 +24,13 @@ import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.data.mongodb.core.mapping.FieldType
 import org.springframework.data.mongodb.core.mapping.MongoId
 
+/**
+ * What a generation should produce: versions, loader, JVM arguments and the two mod lists.
+ * 
+ * The lists are **embedded**, not referenced. They were `@DBRef` arrays of single-field documents, which cost
+ * one round-trip per entry on every read; do not reintroduce that shape. The field layout is also part of the
+ * published v2 API, since the controller returns this entity directly.
+ */
 @Document
 class RunConfiguration() {
 

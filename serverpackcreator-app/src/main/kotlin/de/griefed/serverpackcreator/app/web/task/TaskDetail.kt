@@ -25,7 +25,16 @@ import de.griefed.serverpackcreator.app.web.serverpack.ServerPack
 import de.griefed.serverpackcreator.app.web.serverpack.customizing.RunConfiguration
 import java.io.File
 
-class TaskDetail(val modpack: ModPack) {
+/**
+ * One unit of queued work, carrying everything the worker needs and filling in what it produces as it goes.
+ * 
+ * Mutable on purpose: the same instance travels through the queue, so a later stage can read what an earlier
+ * one created.
+ */
+class TaskDetail(
+    /** The modpack being processed — the one field every task has from the start. */
+    val modpack: ModPack
+) {
 
     /** The server pack being produced, once it has been created. */
     var serverPack: ServerPack? = null

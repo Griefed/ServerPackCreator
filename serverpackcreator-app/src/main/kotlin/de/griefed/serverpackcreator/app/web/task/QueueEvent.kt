@@ -27,6 +27,7 @@ import org.springframework.data.mongodb.core.mapping.FieldType
 import org.springframework.data.mongodb.core.mapping.MongoId
 import java.util.*
 
+/** One moment in a modpack's processing, written as the queue advances. Append-only: the SPA polls these to show progress. */
 @Document
 class QueueEvent() {
 

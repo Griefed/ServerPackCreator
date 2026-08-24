@@ -73,6 +73,7 @@ class MigrationManager(
     private val current: String = apiProperties.apiVersion
     private val alphaBetaDev = ".*(alpha|beta|dev).*".toRegex()
     private val release = "[0-9]+.[0-9]+.[0-9]+".toRegex()
+    /** What the migrations reported, in the order they ran. Read by the GUI after startup to show the user what changed. */
     val migrationMessages: MutableList<MigrationMessage> = ArrayList(10)
 
     /**

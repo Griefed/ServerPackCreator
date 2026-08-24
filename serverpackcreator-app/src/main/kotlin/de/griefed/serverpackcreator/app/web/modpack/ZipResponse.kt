@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.app.web.modpack
 
+/** What an upload is answered with: whether it was accepted, why, and the ids of whatever it produced or matched. */
 class ZipResponse(
     /** What to tell the user, whether or not the upload was accepted. */
     val message: String,

@@ -36,6 +36,10 @@ class ElementLabel(text: String, private var size: Int = 0) : JLabel(text) {
         updateFont()
     }
 
+    /**
+     * Re-applies this label's own font after the look-and-feel reinstalls its delegate, which resets it. Without
+     * this, a theme change silently reverts the label to the LAF default.
+     */
     override fun updateUI() {
         super.updateUI()
         updateFont()

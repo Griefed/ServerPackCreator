@@ -41,6 +41,7 @@ class SettingsController @Autowired constructor(
     private val apiProperties: ApiProperties
 ) {
 
+    /** The settings snapshot the SPA reads on load. */
     @GetMapping("/current", produces = ["application/json"])
     @ResponseBody
     fun getProperties(): ResponseEntity<Settings> {

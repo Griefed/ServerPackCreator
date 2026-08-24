@@ -27,6 +27,11 @@ import org.springframework.data.mongodb.core.mapping.FieldType
 import org.springframework.data.mongodb.core.mapping.MongoId
 import java.util.*
 
+/**
+ * A generated server pack: the archive, the modpack it came from, and the run configuration that produced it.
+ * 
+ * Two packs from one modpack differ only by their [runConfiguration], which is why that field is part of equality.
+ */
 @Document
 class ServerPack {
 

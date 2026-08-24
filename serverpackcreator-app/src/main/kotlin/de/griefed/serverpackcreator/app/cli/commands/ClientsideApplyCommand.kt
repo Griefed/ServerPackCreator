@@ -73,6 +73,7 @@ class ClientsideApplyCommand : Command {
     )
     private var properties: String? = null
 
+    /** Insert an accepted report's entries into the shipped clientside list and `serverpackcreator.properties`. Pure editing — nothing is staged or committed. */
     override fun run() {
         apply(File(report ?: return), generationConfig?.let { File(it) }, properties?.let { File(it) })
     }

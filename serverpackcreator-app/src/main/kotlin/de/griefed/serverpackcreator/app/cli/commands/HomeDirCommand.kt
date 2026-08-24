@@ -35,7 +35,9 @@ import java.util.*
                   ],
     subcommands = [ClearScreen::class, CommandLine.HelpCommand::class]
 )
+/** Prints where SPC's home directory resolved to, which is the first thing to check when files turn up somewhere unexpected. */
 class HomeDirCommand : Command {
+    /** Print the resolved home directory. */
     override fun run() {
         changeHomeDirectory()
     }

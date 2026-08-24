@@ -26,12 +26,14 @@ import org.springframework.stereotype.Service
 import java.text.DateFormat
 import java.util.*
 
+/** Counts of packs created per day, for the dashboard's creation charts. */
 @Service
 class CreationStatsService @Autowired constructor(
     private val serverPackService: ServerPackService,
     private val modpackService: ModPackService
 ) {
 
+    /** Modpacks created per day. */
     fun getModpackTimeStamps(): List<AmountPerDate> {
         val dates = mutableListOf<Date>()
         for (pack in modpackService.getModpacks()) {
@@ -40,6 +42,7 @@ class CreationStatsService @Autowired constructor(
         return count(dates)
     }
 
+    /** Server packs created per day. */
     fun getServerPackTimeStamps(): List<AmountPerDate> {
         val dates = mutableListOf<Date>()
         for (pack in serverPackService.getServerPacks()) {

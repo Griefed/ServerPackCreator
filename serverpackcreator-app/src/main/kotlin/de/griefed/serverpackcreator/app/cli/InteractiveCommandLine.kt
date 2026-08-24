@@ -45,6 +45,7 @@ import java.nio.file.Path
 import java.util.*
 import java.util.function.Supplier
 
+/** The interactive shell: a picocli command tree read from a JLine terminal, for driving SPC without the GUI. */
 class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: UpdateChecker) {
 
     private val log by lazy { cachedLoggerOf(this.javaClass) }
@@ -89,9 +90,14 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
             CommandLine.HelpCommand::class
         ]
     )
+    /**
+     * The picocli root every verb hangs off. A `Runnable` because picocli invokes the top-level command when the
+     * user types nothing recognisable, which is where the help goes.
+     */
     class CliCommands(private val apiWrapper: ApiWrapper = ApiWrapper.api()) : Runnable {
         private val log by lazy { cachedLoggerOf(this.javaClass) }
         private var reader: LineReaderImpl? = null
+        /** Where the commands write. Held so the shell hands them all the same terminal it reads from. */
         var out: PrintWriter? = null
 
         /** Hand the shared line reader to the commands that prompt, so they read from the same terminal this shell owns. */
@@ -100,6 +106,7 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
             out = reader.terminal.writer()
         }
 
+        /** Invoked when no subcommand matched: print the usage rather than doing anything. */
         override fun run() {
             out!!.println(CommandLine(this).usageMessage)
         }

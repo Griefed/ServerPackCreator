@@ -26,6 +26,7 @@ import javax.swing.ImageIcon
  * @author Griefed
  */
 class CustomTip(name: String, tip: Any, private val imageResource: String): DefaultTip(name,tip) {
+    /** The tip's illustration, or `null` for a text-only tip. */
     fun getImage(): ImageIcon? {
         return try {
             ImageIcon(this.javaClass.getResource(imageResource))

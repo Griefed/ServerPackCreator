@@ -67,6 +67,7 @@ class ModPack() {
     @Indexed
     var sha256: String? = null
 
+    /** The server packs generated from this modpack. A `@DBRef` list, so reading a modpack resolves them. */
     @DBRef
     var serverPacks: MutableList<ServerPack> = mutableListOf()
 

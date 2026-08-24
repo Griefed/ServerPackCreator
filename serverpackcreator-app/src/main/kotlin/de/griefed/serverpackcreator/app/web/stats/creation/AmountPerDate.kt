@@ -19,4 +19,13 @@
  */
 package de.griefed.serverpackcreator.app.web.stats.creation
 
-data class AmountPerDate(val creations: Int, val date: String)
+/**
+ * One day's count, for the dashboard's time series. The date is a pre-formatted string rather than a `Date`
+ * because it is a bucket label, not an instant — the aggregation has already decided the granularity.
+ */
+data class AmountPerDate(
+    /** How many things happened on [date]. */
+    val creations: Int,
+    /** The day, pre-formatted — a bucket label rather than an instant, since the granularity is already decided. */
+    val date: String
+)
