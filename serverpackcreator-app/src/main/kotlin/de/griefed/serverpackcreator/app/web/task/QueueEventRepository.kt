@@ -23,9 +23,13 @@ import de.griefed.serverpackcreator.app.web.modpack.ModPackStatus
 import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
 
+/** Stored queue events, filtered the three ways the SPA asks for them. */
 @Repository
 interface QueueEventRepository : MongoRepository<QueueEvent, String> {
+    /** Every event for one modpack. */
     fun findAllByModPackId(modPackId: String): MutableList<QueueEvent>
+    /** Every event for one server pack. Note the parameter's spelling is a typo of long standing — the derived query keys on the method name, not on it. */
     fun findAllByServerPackId(serverPactId: String): MutableList<QueueEvent>
+    /** Every event that reported a given status. */
     fun findAllByStatus(status: ModPackStatus): MutableList<QueueEvent>
 }

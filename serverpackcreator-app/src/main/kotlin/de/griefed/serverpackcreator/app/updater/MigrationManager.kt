@@ -370,26 +370,32 @@ class MigrationManager(
         private val fromVersion: String, private val toVersion: String, private val changes: MutableList<String> = ArrayList(20)
     ) {
 
+        /** The version migrated from. */
         fun fromVersion(): String {
             return fromVersion
         }
 
+        /** The version migrated to. */
         fun toVersion(): String {
             return toVersion
         }
 
+        /** What the migration changed, one message per change. */
         fun changes(): List<String> {
             return changes
         }
 
+        /** How many changes there were — what a caller checks before deciding to show anything at all. */
         fun count(): Int {
             return changes.size
         }
 
+        /** The formatted report, identical to [toString]. Kept because the GUI dialogs call it by that name. */
         fun get(): String {
             return toString()
         }
 
+        /** The report as shown to the user: a header naming both versions, then the changes numbered. */
         override fun toString(): String {
             val header = "From $fromVersion to $toVersion the following changes were made:\n"
             val content = StringBuilder()
