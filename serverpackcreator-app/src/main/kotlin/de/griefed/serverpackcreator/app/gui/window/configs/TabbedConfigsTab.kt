@@ -73,6 +73,7 @@ class TabbedConfigsTab(
     private val noVersions = DefaultComboBoxModel(arrayOf(Translations.createserverpack_gui_createserverpack_forge_none.toString()))
     private val componentResizer = ComponentResizer()
     private val timer = ConfigCheckTimer(500, guiProps, this)
+    /** The editor of the tab currently in front, or `null` when the pane holds none. */
     val selectedEditor: ConfigEditor?
         get() {
             return if (activeTab != null) {
@@ -82,6 +83,7 @@ class TabbedConfigsTab(
             }
         }
 
+    /** This tab-group's own title component in the outer window. */
     val title = TabTitle(guiProps,"Configs")
 
     init {
@@ -186,6 +188,7 @@ class TabbedConfigsTab(
         tabs.addMouseListener(mouseAdapter)
     }
 
+    /** Open a fresh, empty configuration tab and return its editor. The caller usually fills it in immediately. */
     fun addTab(): ConfigEditor {
         val editor = ConfigEditor(
             guiProps,
@@ -200,6 +203,7 @@ class TabbedConfigsTab(
         return editor
     }
 
+    /** Save every open tab. A tab that has never been saved gets a path derived from its title. */
     fun saveAll() {
         for (tab in allTabs) {
             (tab as ConfigEditor).saveCurrentConfiguration()
@@ -207,6 +211,7 @@ class TabbedConfigsTab(
         checkAll()
     }
 
+    /** Save one tab to a path the user picks, defaulting to the tab in front. */
     fun saveAs(editor: ConfigEditor? = selectedEditor) {
         if (editor == null) {
             return
@@ -225,6 +230,12 @@ class TabbedConfigsTab(
         checkAll()
     }
 
+    /**
+     * Re-check every open tab and update the status icons.
+     * 
+     * **This is on the typing path.** It is what the 500 ms debounce timer fires, and it validates *all* open tabs,
+     * so anything expensive added here is paid per keystroke-pause multiplied by the user's open configs.
+     */
     fun checkAll() {
         timer.restart()
     }
@@ -253,6 +264,7 @@ class TabbedConfigsTab(
         }
     }
 
+    /** Ask the user for a configuration file and open it in a new tab. */
     fun loadConfigFile() {
         val configChooser = ConfigChooser(apiWrapper.apiProperties, Translations.createserverpack_gui_buttonloadconfig_title.toString())
         configChooser.isMultiSelectionEnabled = true
@@ -420,6 +432,7 @@ class TabbedConfigsTab(
         return getNames(apiWrapper.apiProperties.propertiesDirectory, guiProps.propertiesRegex)
     }
 
+    /** Walk the user through creating a configuration from scratch, for a first run. */
     fun stepByStepGuide() {
         selectedEditor?.stepByStepGuide() ?: addTab().stepByStepGuide()
     }

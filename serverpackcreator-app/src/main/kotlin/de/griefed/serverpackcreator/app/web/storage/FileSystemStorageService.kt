@@ -33,7 +33,19 @@ import java.security.MessageDigest
 import java.util.*
 import kotlin.io.path.listDirectoryEntries
 
-class FileSystemStorageService(val rootLocation: Path, private val messageDigestInstance: MessageDigest) {
+/**
+ * Stores uploaded and generated archives on the local filesystem, hashing each on the way in so the caller can
+ * recognise a duplicate. The digest is injected rather than created here, because a `MessageDigest` is stateful.
+ */
+class FileSystemStorageService(
+    /** Directory every stored file lands under. Public, because the storage system above reports it. */
+    val rootLocation: Path,
+    /**
+     * The hash every stored file is fingerprinted with. Injected rather than created here because a
+     * `MessageDigest` is stateful and not thread-safe, so who owns it has to be a deliberate choice.
+     */
+    private val messageDigestInstance: MessageDigest
+) {
 
     constructor(rootLocation: Path) : this(rootLocation, MessageDigest.getInstance("SHA-256"))
 
@@ -51,6 +63,7 @@ class FileSystemStorageService(val rootLocation: Path, private val messageDigest
         }
     }
 
+    /** Store a local file under the given id, returning what was written — empty when the write failed. */
     @Throws(StorageException::class)
     fun store(file: File, objectId: String): Optional<SavedFile> {
         try {
@@ -78,6 +91,7 @@ class FileSystemStorageService(val rootLocation: Path, private val messageDigest
         }
     }
 
+    /** Copy a file out of GridFS onto the filesystem, for an installation migrating away from database storage. */
     @Throws(StorageException::class)
     fun store(file: GridFSFile, resource: GridFsResource): Optional<SavedFile> {
         try {
@@ -105,6 +119,7 @@ class FileSystemStorageService(val rootLocation: Path, private val messageDigest
         }
     }
 
+    /** The stored file for an id, empty when there is none. */
     fun load(id: String): Optional<File> {
         val file =
             rootLocation.listDirectoryEntries().find { path -> path.toString().contains(id) }?.normalize()?.toFile()
@@ -116,11 +131,13 @@ class FileSystemStorageService(val rootLocation: Path, private val messageDigest
         }
     }
 
+    /** Delete one stored file. A file that is already gone is not an error. */
     fun delete(id: String) {
         FileSystemUtils.deleteRecursively(rootLocation.resolve("${id}.zip").normalize())
         FileSystemUtils.deleteRecursively(rootLocation.resolve(id).normalize())
     }
 
+    /** Delete everything under [rootLocation]. Used by the cleanup schedule, not by a request. */
     fun deleteAll() {
         for (path in rootLocation.listDirectoryEntries()) {
             FileSystemUtils.deleteRecursively(path)

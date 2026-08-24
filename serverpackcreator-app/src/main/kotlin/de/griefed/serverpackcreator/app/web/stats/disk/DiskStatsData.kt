@@ -19,11 +19,23 @@
  */
 package de.griefed.serverpackcreator.app.web.stats.disk
 
+/**
+ * One directory's disk usage, as the dashboard shows it: what the filesystem has, and how much of it is SPC's.
+ * 
+ * [usedBySPC] is reported separately from [freeSpace] because they answer different questions — how close the
+ * disk is to full, versus how much of that is this installation's doing.
+ */
 data class DiskStatsData(
+    /** Stable key for this row, so the SPA can match it across refreshes without matching on a path. */
     val identifier: String,
+    /** The directory being reported. */
     val dirName: String,
+    /** The filesystem root it sits on, which is what the space figures are actually about. */
     val rootName: String,
+    /** Total bytes on that root. */
     val totalSpace: Long,
+    /** Free bytes on that root. */
     val freeSpace: Long,
+    /** Bytes under [dirName] specifically — SPC's own share, not the whole root's used space. */
     val usedBySPC: Long
 )
