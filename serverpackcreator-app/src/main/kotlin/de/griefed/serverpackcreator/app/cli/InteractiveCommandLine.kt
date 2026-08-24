@@ -49,15 +49,25 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
 
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
+    /** The picocli root the subcommands below hang off. */
     val cliCommands = CliCommands(apiWrapper)
+    /** Generates a configuration by interviewing the user about a modpack. */
     val configGenCommand = ConfigGenCommand(apiWrapper)
+    /** Prints the interactive shell's own help. */
     val helpCommand = HelpCommand()
+    /** Runs a generation without the shell, from a configuration file. */
     val runHeadlessCommand = RunHeadlessCommand(apiWrapper)
+    /** Re-runs first-time setup (home directory, shipped files). */
     val setupCommand = SetupCommand(apiWrapper)
+    /** Checks whether a newer ServerPackCreator has been published. */
     val updateCommand = UpdateCommand(updateChecker)
+    /** Reads declared sideness out of a directory of jars. */
     val scanCommand = ScanCommand(apiWrapper)
+    /** Assesses a project from platform metadata alone. */
     val clientsideReportCommand = ClientsideReportCommand(apiWrapper)
+    /** Assesses a project with a real server boot on top of the metadata. */
     val verifyClientsideCommand = VerifyClientsideCommand(apiWrapper)
+    /** Inserts an accepted report's entries into the shipped clientside list. */
     val clientsideApplyCommand = ClientsideApplyCommand()
 
     @CommandLine.Command(
@@ -84,6 +94,7 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
         private var reader: LineReaderImpl? = null
         var out: PrintWriter? = null
 
+        /** Hand the shared line reader to the commands that prompt, so they read from the same terminal this shell owns. */
         fun setReader(reader: LineReader) {
             this.reader = reader as LineReaderImpl
             out = reader.terminal.writer()
@@ -99,6 +110,10 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
                 "Feeling lucky, Punk? This will generate a server pack config from a passed modpack-directory and generate a server pack in one go. No warranty. No guarantees."
             ]
         )
+        /**
+         * The one-shot convenience path: derive a configuration from a modpack directory, check it, and generate if it
+         * passes — the whole flow a new user is walked through, without the questions.
+         */
         fun feelingLucky(
             @CommandLine.Option(
                 names = ["-m", "--modpackDir"],
@@ -146,6 +161,10 @@ class InteractiveCommandLine(private val apiWrapper: ApiWrapper, updateChecker: 
         }
     }
 
+    /**
+     * Run the interactive shell: build the picocli command tree, then read and dispatch lines until the user quits.
+     * The reader's working directory is SPC's home, so a relative path typed at the prompt means what the user expects.
+     */
     fun cli(args: Array<String> = arrayOf("")) {
         try {
             val workDir: Supplier<Path> = Supplier { apiWrapper.apiProperties.homeDirectory.absoluteFile.toPath() }

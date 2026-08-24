@@ -211,6 +211,7 @@ class ConfigEditor(
         inclusionsSourceSetting.highlight()
     }
 
+    /** Backs the server-icon quick-select combo box; refilled whenever the server-files directory changes. */
     var iconQuickSelectModel: ComboBoxModel<String>
         set(value) {
             iconQuickSelect.model = value
@@ -218,6 +219,7 @@ class ConfigEditor(
         get() {
             return iconQuickSelect.model
         }
+    /** Backs the server.properties quick-select combo box, refilled alongside [iconQuickSelectModel]. */
     var propertiesQuickSelectModel: ComboBoxModel<String>
         set(value) {
             propertiesQuickSelect.model = value
@@ -225,9 +227,12 @@ class ConfigEditor(
         get() {
             return propertiesQuickSelect.model
         }
+    /** This tab's title component, which also carries the close button and the unsaved-changes icon. */
     val title = ConfigEditorTitle(guiProps, tabbedConfigsTab, this)
+    /** The configuration as last loaded or saved, which the dirty-check compares live widget state against. `null` on a new tab. */
     var lastConfig: PackConfig? = null
         private set
+    /** Where this tab was loaded from, and where a save goes. `null` until the tab has been saved once. */
     var configFile: File? = null
         private set
 
@@ -409,29 +414,35 @@ class ConfigEditor(
         }
     }
 
+    /** Writes the list into the exclusions field as one comma-separated string, then re-runs the checks. */
     override fun setClientSideMods(entries: MutableList<String>) {
         advSetExclusionsSetting.text = StringUtilities.buildString(entries)
         validateInputFields()
     }
 
+    /** Writes the list into the whitelist field as one comma-separated string, then re-runs the checks. */
     override fun setWhitelist(entries: MutableList<String>) {
         advSetWhitelistSetting.text = StringUtilities.buildString(entries)
         validateInputFields()
     }
 
+    /** Hands the specifications to the inclusions editor, which owns their table. */
     override fun setInclusions(entries: MutableList<InclusionSpecification>) {
         inclusionsSetting.setServerFiles(entries)
 
     }
 
+    /** Ticks or unticks the include-server-icon checkbox. */
     override fun setIconInclusionTicked(ticked: Boolean) {
         includeIconSetting.isSelected = ticked
     }
 
+    /** Puts the arguments into the Java-args field verbatim; no validation happens here. */
     override fun setJavaArguments(javaArguments: String) {
         advSetJavaArgsSetting.text = javaArguments
     }
 
+    /** Selects the version in the combo box, matching by value — an unknown version leaves the selection alone. */
     override fun setMinecraftVersion(version: String) {
         for (i in 0 until mcVersionSetting.model.size) {
             if (mcVersionSetting.model.getElementAt(i) == version) {
@@ -441,6 +452,7 @@ class ConfigEditor(
         }
     }
 
+    /** Selects the loader by mapping its name to the combo box's fixed index order. */
     override fun setModloader(modloader: String) {
         when (modloader) {
             "Fabric" -> modloaderSetting.selectedIndex = 0
@@ -452,6 +464,7 @@ class ConfigEditor(
         setModloaderVersionsModel()
     }
 
+    /** Selects the loader build in the combo box, matching by value like [setMinecraftVersion]. */
     override fun setModloaderVersion(version: String) {
         for (i in 0 until modloaderVersionSetting.model.size) {
             if (modloaderVersionSetting.model.getElementAt(i) == version) {
@@ -461,6 +474,7 @@ class ConfigEditor(
         }
     }
 
+    /** Sets the modpack path and remembers its parent as the chooser's next starting directory. */
     override fun setModpackDirectory(directory: String) {
         if (File(directory).parentFile.isDirectory) {
             guiProps.storePreference("lastmodpackchooserdir",File(directory).parent)
@@ -468,14 +482,17 @@ class ConfigEditor(
         modpackSetting.text = directory
     }
 
+    /** Ticks or unticks the include-server.properties checkbox. */
     override fun setPropertiesInclusionTicked(ticked: Boolean) {
         includePropertiesSetting.isSelected = ticked
     }
 
+    /** Loads the key/value pairs into the script-variables table, replacing what was there. */
     override fun setScriptVariables(variables: HashMap<String, String>) {
         advSetScriptKVPairsSetting.loadData(variables)
     }
 
+    /** Sets the icon path and remembers its parent as the chooser's next starting directory. */
     override fun setServerIconPath(path: String) {
         if (File(path).parentFile.isDirectory) {
             guiProps.storePreference("lastservericonchooserdir",File(path).parent)
@@ -483,10 +500,12 @@ class ConfigEditor(
         iconSetting.text = path
     }
 
+    /** Sets the suffix field, path-sanitised on the way in so an unusable name cannot be typed. */
     override fun setServerPackSuffix(suffix: String) {
         suffixSetting.text = StringUtilities.pathSecureText(suffix)
     }
 
+    /** Sets the properties path and remembers its parent as the chooser's next starting directory. */
     override fun setServerPropertiesPath(path: String) {
         if (File(path).parentFile.isDirectory) {
             guiProps.storePreference("lastserverpropertieschooserdir",File(path).parent)
@@ -494,18 +513,22 @@ class ConfigEditor(
         propertiesSetting.text = path
     }
 
+    /** Ticks or unticks the create-zip-archive checkbox. */
     override fun setZipArchiveCreationTicked(ticked: Boolean) {
         zipSetting.isSelected = ticked
     }
 
+    /** The exclusions field as SPC wants it: comma-separated with the display spacing removed. */
     override fun getClientSideMods(): String {
         return advSetExclusionsSetting.text.replace(", ", ",")
     }
 
+    /** The whitelist field as SPC wants it: comma-separated with the display spacing removed. */
     override fun getWhitelist(): String {
         return advSetWhitelistSetting.text.replace(", ", ",")
     }
 
+    /** [getClientSideMods] split and cleaned, so a trailing comma or a blank entry does not become a list item. */
     override fun getClientSideModsList(): MutableList<String> {
         return ListUtilities.cleanList(
             getClientSideMods().split(",")
@@ -514,6 +537,7 @@ class ConfigEditor(
         )
     }
 
+    /** [getWhitelist] split and cleaned, the same way as [getClientSideModsList]. */
     override fun getWhitelistList(): MutableList<String> {
         return ListUtilities.cleanList(
             getWhitelist().split(",")
@@ -522,10 +546,15 @@ class ConfigEditor(
         )
     }
 
+    /** The specifications currently in the inclusions editor's table. */
     override fun getInclusions(): MutableList<InclusionSpecification> {
         return inclusionsSetting.getServerFiles()
     }
 
+    /**
+     * The configuration the widgets *currently* describe — built fresh on every call, never cached, because it is
+     * what the dirty-check and the generation both read and either would go stale.
+     */
     override fun getCurrentConfiguration(): PackConfig {
         return PackConfig(
             getClientSideModsList(),
@@ -547,6 +576,10 @@ class ConfigEditor(
         )
     }
 
+    /**
+     * Write the current configuration to disk, to [configFile] when this tab already has one and otherwise to a
+     * path derived from the tab title. Returns the file written, which the caller stores back as [configFile].
+     */
     override fun saveCurrentConfiguration(): File {
         val modpackName = StringUtilities.pathSecureText( title.title + ".conf")
         val config = if (configFile != null) {
@@ -587,30 +620,37 @@ class ConfigEditor(
         inclusionsSetting.saveSuggestions()
     }
 
+    /** The Java-args field, verbatim. */
     override fun getJavaArguments(): String {
         return advSetJavaArgsSetting.text
     }
 
+    /** The selected Minecraft version. */
     override fun getMinecraftVersion(): String {
         return mcVersionSetting.selectedItem!!.toString()
     }
 
+    /** The selected modloader. */
     override fun getModloader(): String {
         return modloaderSetting.selectedItem!!.toString()
     }
 
+    /** The selected modloader build. */
     override fun getModloaderVersion(): String {
         return modloaderVersionSetting.selectedItem!!.toString()
     }
 
+    /** The modpack path field, verbatim — it may not exist yet, which is what the checks are for. */
     override fun getModpackDirectory(): String {
         return modpackSetting.text
     }
 
+    /** The script-variables table's current key/value pairs. */
     override fun getScriptSettings(): HashMap<String, String> {
         return advSetScriptKVPairsSetting.getData()
     }
 
+    /** The server-icon path field, verbatim. */
     override fun getServerIconPath(): String {
         return iconSetting.text
     }
@@ -644,34 +684,45 @@ class ConfigEditor(
         }
     }
 
+    /** The suffix field, path-sanitised on the way out as well as in. */
     override fun getServerPackSuffix(): String {
         return StringUtilities.pathSecureText(suffixSetting.text)
     }
 
+    /** The server.properties path field, verbatim. */
     override fun getServerPropertiesPath(): String {
         return propertiesSetting.text
     }
 
+    /** Whether Mojang publishes a server for the selected Minecraft version — asked of the version manifests, not of this tab. */
     override fun isMinecraftServerAvailable(): Boolean {
         return apiWrapper.versionMeta.minecraft.isServerAvailable(mcVersionSetting.selectedItem!!.toString())
     }
 
+    /** Whether the include-server-icon checkbox is ticked. */
     override fun isServerIconInclusionTicked(): Boolean {
         return includeIconSetting.isSelected
     }
 
+    /** Whether the include-server.properties checkbox is ticked. */
     override fun isServerPropertiesInclusionTicked(): Boolean {
         return includePropertiesSetting.isSelected
     }
 
+    /** Whether the create-zip-archive checkbox is ticked. */
     override fun isZipArchiveCreationTicked(): Boolean {
         return zipSetting.isSelected
     }
 
+    /** Empties the script-variables table. */
     override fun clearScriptVariables() {
         advSetScriptKVPairsSetting.clearData()
     }
 
+    /**
+     * Replace the Java arguments with Aikar's flags, asking first when the field is not empty — the confirmation
+     * exists because this silently discards hand-tuned arguments otherwise.
+     */
     override fun setAikarsFlagsAsJavaArguments() {
         if (getJavaArguments().isNotEmpty()) {
             when (JOptionPane.showConfirmDialog(
@@ -691,10 +742,12 @@ class ConfigEditor(
         }
     }
 
+    /** Asks the tabbed pane to re-check every open tab — this one included — via its debounced timer. */
     override fun validateInputFields() {
         tabbedConfigsTab.checkAll()
     }
 
+    /** The Java version the selected Minecraft needs, from the view model rather than a heuristic here. */
     override fun acquireRequiredJavaVersion(): String =
         viewModel.requiredJavaVersion(getMinecraftVersion())
 
