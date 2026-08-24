@@ -35,6 +35,10 @@ class ScannedMod(
     /** The non-platform mods this one declared it needs. The loader, Java and Minecraft are not recorded. */
     val dependencies: List<ModDependency> = emptyList()
 ) {
+    /**
+     * One line for a scan log, with the dependencies spelled out instead of left as object identities — they
+     * are the part a scan log is usually being read for, and the reason this is written by hand.
+     */
     override fun toString(): String {
         return "ScannedMod(file=$file, modID='$modID', sideness=$sideness, dependencies=${dependencies.joinToString(", ")})"
     }
@@ -55,6 +59,7 @@ class ModDependency(
      */
     val sideness: Sideness = Sideness.SERVER
 ) {
+    /** One line for a scan log: the id that was depended on, and the side the declaration asked for it on. */
     override fun toString(): String {
         return "ModDependency(modID='$modID', sideness=$sideness)"
     }

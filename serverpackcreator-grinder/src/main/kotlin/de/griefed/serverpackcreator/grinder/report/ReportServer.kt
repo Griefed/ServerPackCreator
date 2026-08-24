@@ -264,6 +264,7 @@ class ReportServer(
         exchange.responseBody.use { it.write(bytes) }
     }
 
+    /** Where the bundled tab icon lives. Private: which resource backs the icon routes is nobody else's business. */
     companion object {
         /**
          * Classpath location of the tab icon, resolved relative to this class's package so it travels with the
