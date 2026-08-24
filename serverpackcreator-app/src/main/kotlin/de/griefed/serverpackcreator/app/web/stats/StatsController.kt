@@ -35,6 +35,10 @@ import org.springframework.http.ResponseEntity
 import org.springframework.util.MimeTypeUtils
 import org.springframework.web.bind.annotation.*
 
+/**
+ * Read-only statistics for the SPA's dashboard: download counts, download history, creation times, disk usage
+ * and the plain counts. Every route delegates to a service; nothing is computed here.
+ */
 @Suppress("unused")
 @RestController
 @CrossOrigin(origins = ["*"])
@@ -46,6 +50,7 @@ class StatsController @Autowired constructor(
     private val amountStatsService: AmountStatsService
 ) {
 
+    /** Modpack downloads per day, whole series. */
     @GetMapping("/downloads/modpacks")
     @ResponseBody
     fun modPackDownloads(): ResponseEntity<List<AmountPerDate>> {
@@ -54,6 +59,7 @@ class StatsController @Autowired constructor(
         )
     }
 
+    /** Modpack downloads per day, one page at a time — for a series long enough that the whole of it is a bad response. */
     @GetMapping("/downloads/modpackspaginated", produces = ["application/json"])
     @ResponseBody
     fun modPackDownloadsPaginated(
@@ -67,6 +73,7 @@ class StatsController @Autowired constructor(
         )
     }
 
+    /** Server-pack downloads per day, whole series. */
     @GetMapping("/downloads/serverpacks")
     @ResponseBody
     fun serverPackDownloads(): ResponseEntity<List<AmountPerDate>> {
@@ -75,6 +82,7 @@ class StatsController @Autowired constructor(
         )
     }
 
+    /** Server-pack downloads per day, paginated like [modPackDownloadsPaginated]. */
     @GetMapping("/downloads/serverpackspaginated", produces = ["application/json"])
     @ResponseBody
     fun serverPackDownloadsPaginated(
@@ -88,6 +96,7 @@ class StatsController @Autowired constructor(
         )
     }
 
+    /** Every individual modpack download, whole history. */
     @GetMapping("/downloads/modpacks/history")
     @ResponseBody
     fun modPackDownloadHistory(): ResponseEntity<List<ModPackDownload>> {
@@ -96,6 +105,7 @@ class StatsController @Autowired constructor(
         )
     }
 
+    /** Every individual modpack download, one page at a time. */
     @GetMapping("/downloads/modpacks/historypaginated", produces = ["application/json"])
     @ResponseBody
     fun modPackDownloadHistoryPaginated(
@@ -109,6 +119,7 @@ class StatsController @Autowired constructor(
         )
     }
 
+    /** Every individual server-pack download, whole history. */
     @GetMapping("/downloads/serverpacks/history")
     @ResponseBody
     fun serverPackDownloadHistory(): ResponseEntity<List<ServerPackDownload>> {
@@ -117,6 +128,7 @@ class StatsController @Autowired constructor(
         )
     }
 
+    /** Every individual server-pack download, one page at a time. */
     @GetMapping("/downloads/serverpacks/historypaginated")
     @ResponseBody
     fun serverPackDownloadHistoryPaginated(
@@ -130,6 +142,7 @@ class StatsController @Autowired constructor(
         )
     }
 
+    /** The download history of one modpack. */
     @GetMapping("/downloads/modpacks/{modPackID}")
     @ResponseBody
     fun allDownloadsForModPack(@PathVariable modPackID: String): ResponseEntity<List<ModPackDownload>> {
@@ -138,6 +151,7 @@ class StatsController @Autowired constructor(
         )
     }
 
+    /** The download history of one server pack. A separate route from the modpack one on purpose — the two paths must not collide. */
     @GetMapping("/downloads/serverpacks/{serverPackID}")
     @ResponseBody
     fun allDownloadsForServerPack(@PathVariable serverPackID: String): ResponseEntity<List<ServerPackDownload>> {
@@ -146,6 +160,7 @@ class StatsController @Autowired constructor(
         )
     }
 
+    /** Free, total and SPC-occupied space per relevant directory. */
     @GetMapping("/disk")
     @ResponseBody
     fun diskStats(): ResponseEntity<List<DiskStatsData>> {
@@ -154,6 +169,7 @@ class StatsController @Autowired constructor(
         )
     }
 
+    /** How many modpacks were created per day. */
     @GetMapping("/creation/modpacks")
     @ResponseBody
     fun modPacksCreationTimes(): ResponseEntity<List<AmountPerDate>> {
@@ -162,6 +178,7 @@ class StatsController @Autowired constructor(
         )
     }
 
+    /** How many server packs were created per day. */
     @GetMapping("/creation/serverpacks")
     @ResponseBody
     fun serverPacksCreationTimes(): ResponseEntity<List<AmountPerDate>> {
@@ -170,6 +187,7 @@ class StatsController @Autowired constructor(
         )
     }
 
+    /** Plain counts — packs, configurations, and the distinct versions and loaders in use. */
     @GetMapping("/packs")
     @ResponseBody
     fun amountStats(): ResponseEntity<AmountStatsData> {

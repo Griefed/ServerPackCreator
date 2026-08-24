@@ -20,13 +20,20 @@
 package de.griefed.serverpackcreator.app.web.modpack
 
 class ZipResponse(
+    /** What to tell the user, whether or not the upload was accepted. */
     val message: String,
+    /** Whether the upload was accepted. `false` still carries a [message] explaining why. */
     val success: Boolean,
+    /** The created modpack's id, or `null` when nothing was created. */
     val modPackId: String?,
+    /** The run configuration's id, or `null` when the upload carried none. */
     val runConfigId: String?,
+    /** An already-generated server pack's id, when the upload turned out to be a duplicate. */
     val serverPackId: String?,
+    /** The queue status the modpack starts in, or `null` when nothing was queued. */
     val status: ModPackStatus?
 ) {
+    /** Compares every field; this is a response body, so two responses are equal exactly when they say the same thing. */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -43,6 +50,7 @@ class ZipResponse(
         return true
     }
 
+    /** Hashes the same fields [equals] compares. */
     override fun hashCode(): Int {
         var result = message.hashCode()
         result = 31 * result + success.hashCode()
@@ -53,6 +61,7 @@ class ZipResponse(
         return result
     }
 
+    /** Every field, for a log line. */
     override fun toString(): String {
         return "ZipResponse(message='$message', success=$success, modPackId=$modPackId, configId=$runConfigId, serverPackId=$serverPackId, status=$status)"
     }
