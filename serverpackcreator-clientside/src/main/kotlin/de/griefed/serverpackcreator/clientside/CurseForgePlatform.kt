@@ -160,6 +160,10 @@ class CurseForgePlatform(
         return segments[2]
     }
 
+    /**
+     * CurseForge's own API limits, quoted rather than chosen: its page size and how far this client is willing
+     * to page. See [FILE_PAGE_SIZE] and the paging landmine on `resolve`.
+     */
     companion object {
         /** CurseForge's maximum `pageSize` for the files endpoint; asking for more is not honoured. */
         const val FILE_PAGE_SIZE = 50

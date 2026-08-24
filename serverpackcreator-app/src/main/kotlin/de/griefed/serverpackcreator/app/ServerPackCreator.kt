@@ -64,6 +64,7 @@ fun main(args: Array<String>) {
 class ServerPackCreator(private val args: Array<String>) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val appInfo = JarInformation(ServerPackCreator::class.java)
+    /** The parsed arguments, which decide everything below — including which home directory the API is built against. */
     val commandlineParser: CommandlineParser = CommandlineParser(args, appInfo)
 
     init {
@@ -99,6 +100,10 @@ class ServerPackCreator(private val args: Array<String>) {
         }
     }
 
+    /**
+     * The API this process shares. Built eagerly and *before* the first log statement on purpose: `ApiProperties`
+     * is log4j's own `ConfigurationFactory`, so logging first would construct one against an unresolved home.
+     */
     val apiWrapper = ApiWrapper.api(commandlineParser.propertiesFile, false)
 
     init {
@@ -108,17 +113,20 @@ class ServerPackCreator(private val args: Array<String>) {
         apiWrapper.apiProperties.isExe()
     }
 
+    /** The release-feed check. Lazy, so a run that never asks about updates makes no network call. */
     @Suppress("MemberVisibilityCanBePrivate")
     @get:Synchronized
     val updateChecker: UpdateChecker by lazy {
         UpdateChecker(apiWrapper.apiProperties)
     }
 
+    /** The picocli shell. Lazy, because only the interactive mode ever builds it. */
     @get:Synchronized
     val interactiveCommandLine: InteractiveCommandLine by lazy {
         InteractiveCommandLine(apiWrapper, updateChecker)
     }
 
+    /** Start the application the arguments selected — GUI, web, CLI, one of the headless verbs, or the updater. */
     fun run(mode: Mode = Mode.GUI) {
         log.info("Running with args: ${args.joinToString(" ")}")
         log.info("Running in mode:   $mode")
@@ -250,6 +258,7 @@ class ServerPackCreator(private val args: Array<String>) {
         }
     }
 
+    /** The splash window while the GUI starts, held so it can be closed once the main frame is up. `null` in every non-GUI mode. */
     @get:Synchronized
     var splashScreen: SplashScreen? = null
         get() {
@@ -264,6 +273,7 @@ class ServerPackCreator(private val args: Array<String>) {
             return field!!
         }
 
+    /** Runs the release-to-release migrations for this installation. Lazy, so a mode that touches no settings does not. */
     @get:Synchronized
     val migrationManager: MigrationManager by lazy {
         MigrationManager(

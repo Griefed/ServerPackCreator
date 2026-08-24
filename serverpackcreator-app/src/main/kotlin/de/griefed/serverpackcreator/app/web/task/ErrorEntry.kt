@@ -24,9 +24,16 @@ import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.data.mongodb.core.mapping.FieldType
 import org.springframework.data.mongodb.core.mapping.MongoId
 
+/**
+ * One error message, stored as its own document.
+ * 
+ * The message *is* the id (`@MongoId` on [error]), so storing the same error twice is one document — which is
+ * what keeps a run that fails identically a hundred times from writing a hundred rows.
+ */
 @Document
 class ErrorEntry {
 
+    /** The message, which doubles as this document's id. */
     @MongoId(FieldType.STRING)
     var error: String
 
@@ -35,6 +42,7 @@ class ErrorEntry {
         this.error = error
     }
 
+    /** Two entries are equal when their message is, which follows from the message being the id. */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -44,10 +52,12 @@ class ErrorEntry {
         return error == other.error
     }
 
+    /** Hashes the message, matching [equals]. */
     override fun hashCode(): Int {
         return error.hashCode()
     }
 
+    /** The message, for a log line. */
     override fun toString(): String {
         return "ErrorEntry(error='$error')"
     }

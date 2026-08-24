@@ -89,6 +89,10 @@ class ContainerCandidateVerifier(
         }
     }
 
+    /**
+     * The crash-console retention step, kept here as a function rather than a method because it needs no verifier
+     * state and is what `BootWorkspaceReaperTest` exercises directly.
+     */
     companion object {
         /**
          * Copy the console of every **crashed** boot in [report] out of the staging under [bootRoot] and into

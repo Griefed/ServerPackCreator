@@ -45,7 +45,9 @@ class MainFrame(
     migrationManager: MigrationManager,
     themeManager: ThemeManager
 ) {
+    /** The application window itself, titled with SPC's version. */
     val frame: JFrame = JFrame("${Translations.createserverpack_gui_createandshowgui} ${apiWrapper.apiProperties.apiVersion}")
+    /** Everything inside the window — the tab groups and the control bar. */
     val mainPanel = MainPanel(guiProps, apiWrapper, guiProps.larsonScanner, this, themeManager)
     private val updateDialogs: UpdateDialogs = UpdateDialogs(
         guiProps, apiWrapper.utilities.webUtilities,
@@ -103,6 +105,7 @@ class MainFrame(
         menuBar.showTip()
     }
 
+    /** Tell the user a setting they just changed needs a restart, which SPC will not do for them. */
     fun showRestartNotice() {
         JOptionPane.showMessageDialog(
             frame,

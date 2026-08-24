@@ -61,6 +61,10 @@ fun URL.timedConnection(connectTimeout: Int, readTimeout: Int): URLConnection {
  */
 @Suppress("unused")
 class WebUtilities(private val apiProperties: ApiProperties) {
+    /**
+     * HasteBin's two upload ceilings. Private on purpose — they are that service's limits rather than anything
+     * this class promises, so they are checked here and never handed out.
+     */
     companion object {
         /** HasteBin's upload ceiling in bytes; a larger file is rejected before any request is made. */
         private const val MAX_HASTEBIN_BYTES = 10_000_000.0

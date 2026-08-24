@@ -207,6 +207,11 @@ class ClientsideVerifier(
         return confidence to note
     }
 
+    /**
+     * The pure reconciliation predicates — what counts as a declared server claim, and which of two loaders'
+     * outcomes may overrule the other. Stateless on purpose: they are the part of the confidence model that can
+     * be unit-tested without a platform, a jar or a boot.
+     */
     companion object {
         /**
          * Whether the mod *claims* to support servers — the platform's own `server_side: required`, or SPC's

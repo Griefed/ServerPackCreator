@@ -58,6 +58,7 @@ class ThemedBalloonTip(
         isVisible = false
     }
 
+    /** Re-styles the balloon from the current theme before showing it — the style is captured at construction, so a theme changed since would otherwise still show the old colours. */
     override fun setVisible(visible: Boolean) {
         style = guiProps.balloonStyle
         super.setVisible(visible)

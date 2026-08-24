@@ -799,6 +799,7 @@ class LarsonScanner : JPanel {
      * @author Griefed
      */
     class ScannerConfig {
+        /** Where the two gradient stops sit along each element's radius, 0.0 at the centre to 1.0 at the edge. */
         val fractions = floatArrayOf(0.4f, 1.0f)
 
         /**
@@ -1168,6 +1169,7 @@ class LarsonScanner : JPanel {
             isDividerActive = useDivider
         }
 
+        /** The three rendering-quality levels a configuration can ask for. */
         companion object {
             /** Set the rendering quality of the Larson Scanner to low settings.  */
             const val LOW = 0
@@ -2210,8 +2212,11 @@ class LarsonScanner : JPanel {
         }
     }
 
+    /** The scanner's fallback colours, used when the theme supplies none. */
     companion object {
+        /** Black, the scanner's backdrop when the theme names no panel background. */
         val DEFAULT_BACKGROUND_COLOUR = Color(0, 0, 0)
+        /** Red — the Cylon eye this widget is named after. */
         val DEFAULT_EYE_COLOUR = Color(255, 0, 0)
     }
 }

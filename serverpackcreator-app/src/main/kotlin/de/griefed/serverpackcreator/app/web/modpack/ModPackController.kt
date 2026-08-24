@@ -36,6 +36,10 @@ import org.springframework.util.MimeTypeUtils
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
+/**
+ * The modpack half of the public v2 API: upload an archive, ask for a server pack to be generated from it,
+ * and read back what exists. Delegates to `ModPackService`; the generation itself is queued, not done here.
+ */
 @RestController
 @CrossOrigin(origins = ["*"])
 @RequestMapping("/api/v2/modpacks")
@@ -47,6 +51,7 @@ class ModPackController @Autowired constructor(
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
+    /** Serve one modpack's archive, and count the download. */
     @GetMapping("/download/{id:[0-9a-zA-Z]+}", produces = ["application/zip"])
     @ResponseBody
     fun downloadModpack(@PathVariable id: String): ResponseEntity<Resource> {
@@ -67,6 +72,10 @@ class ModPackController @Autowired constructor(
             .body(ByteArrayResource(modpackArchive.get().readBytes()))
     }
 
+    /**
+     * Accept an uploaded archive. A hash-identical upload is recognised and answered with the existing modpack
+     * rather than stored twice — the response says which case it was.
+     */
     @PostMapping("/upload", produces = ["application/json"])
     @ResponseBody
     fun uploadModPack(
@@ -128,6 +137,7 @@ class ModPackController @Autowired constructor(
         }
     }
 
+    /** Queue a server-pack generation for an already-uploaded modpack with a given run configuration. */
     @PostMapping("/generate", produces = ["application/json"])
     @ResponseBody
     fun requestGeneration(
@@ -191,6 +201,7 @@ class ModPackController @Autowired constructor(
             )
     }
 
+    /** Every modpack, newest first. Unbounded — prefer the paginated route. */
     @GetMapping("/all", produces = ["application/json"])
     @ResponseBody
     fun getAllModPacks(): ResponseEntity<List<ModPack>> {
@@ -199,6 +210,7 @@ class ModPackController @Autowired constructor(
         )
     }
 
+    /** One page of modpacks, newest first. */
     @GetMapping("/allpaginated", produces = ["application/json"])
     @ResponseBody
     fun getAllModPacksPaginated(
@@ -214,6 +226,7 @@ class ModPackController @Autowired constructor(
         )
     }
 
+    /** One modpack by id. */
     @GetMapping("/{id:[0-9a-zA-Z]+}", produces = ["application/json"])
     @ResponseBody
     fun getModpack(@PathVariable id: String): ResponseEntity<ModPack> {
@@ -227,6 +240,7 @@ class ModPackController @Autowired constructor(
         }
     }
 
+    /** The modpack a given server pack was generated from. */
     @GetMapping("byserverpack/{id:[0-9a-zA-Z]+}", produces = ["application/json"])
     @ResponseBody
     fun getModPackByServerPack(@PathVariable id: String): ResponseEntity<ModPack> {

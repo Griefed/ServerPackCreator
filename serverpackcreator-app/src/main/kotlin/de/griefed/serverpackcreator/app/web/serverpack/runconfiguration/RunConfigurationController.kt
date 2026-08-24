@@ -26,6 +26,12 @@ import org.springframework.http.ResponseEntity
 import org.springframework.util.MimeTypeUtils
 import org.springframework.web.bind.annotation.*
 
+/**
+ * Read-only access to stored run configurations.
+ * 
+ * **The response body is this entity, on a versioned path**, so its field shape is part of the published API —
+ * changing it means changing the SPA's types and the published description in the same commit.
+ */
 @Suppress("unused")
 @RestController
 @CrossOrigin(origins = ["*"])
@@ -34,6 +40,7 @@ class RunConfigurationController @Autowired constructor(
     private val runConfigurationService: RunConfigurationService
 ) {
 
+    /** Every stored run configuration. (The typo in the name is part of the shipped API surface.) */
     @GetMapping("/all", produces = ["application/json"])
     @ResponseBody
     fun getAllRUnConfigurations(): ResponseEntity<List<RunConfiguration>> {
@@ -42,6 +49,7 @@ class RunConfigurationController @Autowired constructor(
         )
     }
 
+    /** One run configuration by id. Named for the SPA's call site rather than for what it returns. */
     @GetMapping("/{id:[0-9a-zA-Z]+}", produces = ["application/json"])
     @ResponseBody
     fun getModpack(@PathVariable id: String): ResponseEntity<RunConfiguration> {

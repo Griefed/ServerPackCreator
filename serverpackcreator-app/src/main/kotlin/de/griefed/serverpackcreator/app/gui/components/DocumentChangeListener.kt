@@ -36,14 +36,17 @@ interface DocumentChangeListener : DocumentListener {
      */
     fun update(e: DocumentEvent)
 
+    /** Forwards to [update]. */
     override fun insertUpdate(e: DocumentEvent) {
         update(e)
     }
 
+    /** Forwards to [update]. */
     override fun removeUpdate(e: DocumentEvent) {
         update(e)
     }
 
+    /** Forwards to [update]. */
     override fun changedUpdate(e: DocumentEvent) {
         update(e)
     }

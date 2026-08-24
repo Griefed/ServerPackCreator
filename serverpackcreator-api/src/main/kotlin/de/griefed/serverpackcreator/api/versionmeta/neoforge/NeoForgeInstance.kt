@@ -23,6 +23,17 @@ import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftClient
 import java.net.URL
 import java.util.*
 
+/**
+ * One NeoForge build: which Minecraft it targets, the build itself, and where its installer is fetched from.
+ *
+ * An interface with two implementations, because **NeoForge changed where it publishes**. Its first releases —
+ * Minecraft 1.20 and 1.20.1 — live under the legacy `net/neoforged/forge/` artifact group and need both
+ * versions to address the installer (`OldNeoForgeInstance`); everything later is addressed by the bare NeoForge
+ * version (`NewNeoForgeInstance`). `NeoForgeLoader` picks the right one per build, so callers here see one type
+ * and never that split.
+ *
+ * @author Griefed
+ */
 interface NeoForgeInstance {
     /** The Minecraft version this NeoForge build targets. */
     val minecraftVersion: String

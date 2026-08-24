@@ -23,6 +23,13 @@ import de.griefed.serverpackcreator.api.config.ConfigCheck
 import de.griefed.serverpackcreator.api.config.PackConfig
 import java.nio.file.Path
 
+/**
+ * Listener for an event that carries no payload: a plugin is told *that* something happened, not what. Registered
+ * through `ConfigurationHandler.addEventListener` / `ServerPackHandler.addEventListener`; reach for one of the
+ * typed listeners below when the details are what you need.
+ *
+ * @author Griefed
+ */
 interface SPCGenericListener {
     /** Called when the event fires. Carries no payload — use a typed listener when the details matter. */
     fun run()

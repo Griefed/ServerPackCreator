@@ -21,10 +21,16 @@ package de.griefed.serverpackcreator.app.web.storage
 
 import java.nio.file.Path
 
+/** A file that has been stored: where it went, what it was called, and the hash the duplicate-check keys on. */
 class SavedFile(
+    /** The id the file is stored and retrieved under — not its name. */
     val id: String,
+    /** SHA256 of the contents, which is what makes a re-upload recognisable. */
     val sha256: String,
+    /** Where it actually landed on disk. */
     val file: Path,
+    /** The name it was uploaded as, kept for display and for serving it back. */
     val originalName: String,
+    /** Size in bytes. */
     val size: Int
 )

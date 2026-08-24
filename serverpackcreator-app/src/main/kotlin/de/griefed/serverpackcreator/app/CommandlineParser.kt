@@ -45,26 +45,43 @@ import java.util.*
  */
 open class CommandlineParser(args: Array<String>, appInfo: JarInformation) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
+    /** Which application the arguments select. Defaults to the GUI, so a double-clicked jar needs no arguments. */
     var mode: Mode = Mode.GUI
+    /** Locale from `-lang`, or `null` to keep whatever is configured. */
     var language: Locale? = null
+    /** The properties file to load, preferring an `overrides.properties` beside the jar when one exists. */
     var propertiesFile: File = if (File(appInfo.jarFolder, "overrides.properties").isFile) {
         File(appInfo.jarFolder, "overrides.properties")
     } else {
         File(appInfo.jarFolder, "serverpackcreator.properties")
     }
+    /** The configuration to generate from, for a headless run. */
     var serverPackConfig : Optional<File> = Optional.empty()
+    /** Where the generated server pack should land, overriding the configured directory. */
     var serverPackDestination : Optional<File> = Optional.empty()
+    /** The modpack to derive a configuration from, for `-cgen`. */
     var modpackDirectory: Optional<File> = Optional.empty()
+    /** The home directory to use, which every other path is resolved against. */
     var homeDir: Optional<File> = Optional.empty()
+    /** The directory of jars `-scan` reads sideness from. */
     var scanDirectory: Optional<File> = Optional.empty()
+    /** Which loader `-scan` should read those jars as; the descriptors differ per loader. */
     var scanLoader: String? = null
+    /** Which Minecraft version `-scan` assumes, since it decides which Forge scanner applies. */
     var scanMinecraftVersion: String? = null
+    /** The project link `-clientsidereport` assesses from metadata alone. */
     var clientsideLink: Optional<String> = Optional.empty()
+    /** Where that report is written, or `null` for stdout. */
     var clientsideReportOutput: String? = null
+    /** The project link `-verifyclientside` assesses with a real server boot as well as metadata. */
     var clientsideVerifyLink: Optional<String> = Optional.empty()
+    /** Where that verification report is written, or `null` for stdout. */
     var clientsideVerifyOutput: String? = null
+    /** The accepted report `-clientsideapply` inserts entries from. */
     var clientsideApplyReport: Optional<String> = Optional.empty()
+    /** Override for the `GenerationConfig.kt` the apply step edits — the fallback list's Kotlin source. */
     var clientsideApplyGenerationConfig: String? = null
+    /** Override for the `serverpackcreator.properties` the apply step edits alongside it. */
     var clientsideApplyProperties: String? = null
 
     init {

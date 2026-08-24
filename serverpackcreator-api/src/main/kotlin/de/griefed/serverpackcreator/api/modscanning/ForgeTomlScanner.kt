@@ -48,6 +48,11 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
     val neoForgeMinecraft: Regex
         get() = "^(neoforge|forge|minecraft)$".toRegex()
 
+    /**
+     * The `side` value a Forge descriptor uses for client-only, spelled the way the TOML spells it: upper case,
+     * matched exactly. Read together with [neoForgeMinecraft] — it is a `side=CLIENT` on the *platform*
+     * dependency that marks the mod itself clientside, which is the one signal [read] is after.
+     */
     val client: Regex
         get() = "^CLIENT$".toRegex()
 

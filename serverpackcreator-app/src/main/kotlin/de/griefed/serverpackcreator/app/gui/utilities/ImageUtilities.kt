@@ -33,6 +33,7 @@ import javax.swing.ImageIcon
  * @author Griefed
  */
 class ImageUtilities {
+    /** Image loading from resources and from the base64 blobs the GUI embeds, so an icon needs no file on disk. */
     companion object {
         /**
          * Create an [Image] from a stream acquired from a resource, where [name] is the path to the resource in you JAR

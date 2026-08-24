@@ -25,6 +25,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.util.*
 
+/**
+ * Stores and reuses run configurations. **The reuse is the point:** an incoming configuration identical to a
+ * stored one is answered with the stored one, so two users asking for the same pack share it.
+ */
 @Service
 class RunConfigurationService @Autowired constructor(
     private val runConfigurationRepository: RunConfigurationRepository,
@@ -35,6 +39,7 @@ class RunConfigurationService @Autowired constructor(
     private val comma: String = ","
     private val space: String = " "
 
+    /** Build an entity from what a request supplied, filling in the shipped defaults for anything it left out. */
     fun createRunConfig(
         minecraftVersion: String,
         modloader: String,
@@ -72,6 +77,7 @@ class RunConfigurationService @Autowired constructor(
         return save(config)
     }
 
+    /** Store a configuration, returning the existing one when an exact match is already stored. */
     fun save(runConfiguration: RunConfiguration): RunConfiguration {
         val fromRepo =
             runConfigurationRepository.findByMinecraftVersionAndModloaderAndModloaderVersionAndStartArgsAndClientModsAndWhitelistedMods(
@@ -89,6 +95,7 @@ class RunConfigurationService @Autowired constructor(
         }
     }
 
+    /** Store a configuration assembled from its parts, otherwise as the overload above. */
     fun save(
         minecraftVersion: String,
         modloader: String,
@@ -109,10 +116,12 @@ class RunConfigurationService @Autowired constructor(
         )
     }
 
+    /** One configuration by id. */
     fun load(id: String): Optional<RunConfiguration> {
         return runConfigurationRepository.findById(id)
     }
 
+    /** Find a configuration by its *contents* rather than its id — the exact-match lookup the reuse depends on. */
     fun load(
         minecraftVersion: String,
         modloader: String,
@@ -131,6 +140,7 @@ class RunConfigurationService @Autowired constructor(
         )
     }
 
+    /** Every stored configuration. */
     fun loadAll(): List<RunConfiguration> {
         return runConfigurationRepository.findAll()
     }

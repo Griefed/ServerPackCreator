@@ -93,7 +93,9 @@ class ScrollTextArea(
         Translations.createserverpack_gui_textarea_replace_regex_replace.toString(),
         replaceWith
     )
+    /** The autocomplete popup, attached to the wrapped text area. `null` when [identifier] is blank. */
     val suggestionProvider: SuggestionProvider?
+    /** Names the autocomplete bucket this area's suggestions are stored under. */
     val identifier: String
 
     init {
@@ -112,6 +114,7 @@ class ScrollTextArea(
         }
     }
 
+    /** Forwards to the wrapped text area — the scroll pane holds no text itself. */
     var text: String
         get() {
             return textArea.text
@@ -120,6 +123,7 @@ class ScrollTextArea(
             textArea.text = value
         }
 
+    /** Appends to the wrapped area, for the log panes that stream into it rather than replacing its contents. */
     fun append(text: String) {
         textArea.append(text)
     }
@@ -132,12 +136,15 @@ class ScrollTextArea(
         textArea.document.addDocumentListener(listener)
     }
 
+    /** Records the edit with this area's own undo manager. */
     override fun undoableEditHappened(e: UndoableEditEvent) {
         undoManager.addEdit(e.edit)
     }
 
+    /** Unused; the shortcuts are handled on key-press. */
     override fun keyTyped(e: KeyEvent) {}
 
+    /** Handles undo and redo, and lets everything else through to the area. */
     override fun keyPressed(e: KeyEvent) {
         textArea.highlighter.removeAllHighlights()
         when (e.keyCode) {
@@ -162,6 +169,7 @@ class ScrollTextArea(
         }
     }
 
+    /** Unused; see [keyPressed]. */
     override fun keyReleased(e: KeyEvent) {}
 
     /**

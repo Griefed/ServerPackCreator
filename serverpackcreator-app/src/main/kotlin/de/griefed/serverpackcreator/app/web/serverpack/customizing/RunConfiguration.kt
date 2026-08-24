@@ -24,14 +24,25 @@ import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.data.mongodb.core.mapping.FieldType
 import org.springframework.data.mongodb.core.mapping.MongoId
 
+/**
+ * What a generation should produce: versions, loader, JVM arguments and the two mod lists.
+ * 
+ * The lists are **embedded**, not referenced. They were `@DBRef` arrays of single-field documents, which cost
+ * one round-trip per entry on every read; do not reintroduce that shape. The field layout is also part of the
+ * published v2 API, since the controller returns this entity directly.
+ */
 @Document
 class RunConfiguration() {
 
+    /** The document id, assigned by MongoDB. `private set` so only Spring Data's persistence constructor fills it. */
     @MongoId(FieldType.STRING)
     var id: String? = null
         private set
+    /** Minecraft version to generate for. */
     var minecraftVersion: String = ""
+    /** Modloader to generate for. */
     var modloader: String = ""
+    /** Modloader build to generate for. */
     var modloaderVersion: String = ""
 
     /**
@@ -79,6 +90,12 @@ class RunConfiguration() {
         this.id = id
     }
 
+    /**
+     * Compares the versions and all three embedded lists, exactly and element-wise.
+     * 
+     * **The exactness is load-bearing.** This equality is how the service decides whether an incoming configuration
+     * already exists and can be reused; a looser comparison hands somebody else's server pack back.
+     */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -95,6 +112,7 @@ class RunConfiguration() {
         return true
     }
 
+    /** Hashes the same six fields [equals] compares. */
     override fun hashCode(): Int {
         var result = minecraftVersion.hashCode()
         result = 31 * result + modloader.hashCode()
@@ -105,6 +123,7 @@ class RunConfiguration() {
         return result
     }
 
+    /** Every field, for a log line. */
     override fun toString(): String {
         return "RunConfiguration(id=$id, minecraftVersion='$minecraftVersion', modloader='$modloader', modloaderVersion='$modloaderVersion', startArgs=$startArgs, clientMods=$clientMods, whitelistedMods=$whitelistedMods)"
     }

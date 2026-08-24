@@ -104,6 +104,11 @@ class SmartScroller @JvmOverloads constructor(
         }
     }
 
+    /**
+     * Keeps the view pinned to the bottom while it already is, and leaves it alone once the user has scrolled up.
+     * 
+     * That is the whole point: a log pane that always jumps to the end is unreadable while something is being read.
+     */
     override fun adjustmentValueChanged(e: AdjustmentEvent) {
         SwingUtilities.invokeLater { checkScrollBar(e) }
     }

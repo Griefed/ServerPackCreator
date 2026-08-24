@@ -28,8 +28,12 @@ import java.io.File
  * @author Griefed
  */
 class ThemeInfo(
+    /** Display name in the theme picker. */
     val name: String,
+    /** The theme's licence text, when it came with one. */
     val license: String?,
+    /** The `.theme.json` this was read from, or `null` for a theme bundled with FlatLaf. */
     val themeFile: File?,
+    /** The look-and-feel class to install, or `null` for a theme that is loaded from [themeFile] instead. */
     val lafClassName: String?
 )

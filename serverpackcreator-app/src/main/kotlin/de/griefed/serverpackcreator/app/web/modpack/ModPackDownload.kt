@@ -26,13 +26,16 @@ import org.springframework.data.mongodb.core.mapping.FieldType
 import org.springframework.data.mongodb.core.mapping.MongoId
 import java.util.*
 
+/** One recorded modpack download, kept as a row for the same reason as `ServerPackDownload`: a counter cannot answer "when". */
 @Document
 class ModPackDownload {
 
+    /** When the download happened, set on construction so a retry keeps the original time. */
     @MongoId(FieldType.STRING)
     var downloadedAt: Date = Date(System.currentTimeMillis())
         private set
 
+    /** Which modpack was downloaded. */
     @DBRef
     var modPack: ModPack
 

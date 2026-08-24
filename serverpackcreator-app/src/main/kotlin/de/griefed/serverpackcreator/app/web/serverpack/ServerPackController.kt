@@ -118,6 +118,7 @@ class ServerPackController @Autowired constructor(
         )
     }
 
+    /** One page of server packs, newest first. */
     @GetMapping("/allpaginated", produces = ["application/json"])
     @ResponseBody
     fun getAllServerPacksPaginated(
@@ -133,6 +134,7 @@ class ServerPackController @Autowired constructor(
         )
     }
 
+    /** One server pack by id. */
     @GetMapping("/{id:[0-9a-zA-Z]+}", produces = ["application/json"])
     @ResponseBody
     fun getServerPack(@PathVariable id: String): ResponseEntity<ServerPack> {

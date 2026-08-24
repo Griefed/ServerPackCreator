@@ -19,7 +19,9 @@
  */
 package de.griefed.serverpackcreator.app.web.storage
 
+/** A storage operation failed, optionally naming the id it failed for so the caller can report *which* file. */
 open class StorageException : RuntimeException {
+    /** The id the failure was about, or `null` when the failure was not about one file. */
     var id: String? = null
     constructor(message: String?) : super(message)
     constructor(message: String, id: String?) : super(message) {

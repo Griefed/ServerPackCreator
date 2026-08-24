@@ -45,6 +45,7 @@ class ScrollTextFileField(
         this.addDocumentListener(documentChangeListener)
     }
 
+    /** The path as a `File`, so callers need not parse the text themselves. Setting it writes the path back into the field. */
     var file: File
         get() {
             return File(text).absoluteFile

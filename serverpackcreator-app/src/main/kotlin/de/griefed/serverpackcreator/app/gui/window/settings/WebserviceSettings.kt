@@ -158,6 +158,7 @@ class WebserviceSettings(
         panel.add(databaseCleanupReset, "cell 4 $y")
     }
 
+    /** Fills the widgets from the stored webservice settings. */
     override fun loadSettings() {
         databaseURISetting.text = apiProperties.databaseUri
         cleanupScheduleSetting.text = apiProperties.webserviceCleanupSchedule
@@ -167,6 +168,7 @@ class WebserviceSettings(
         databaseCleanupScheduleSetting.text = apiProperties.webserviceDatabaseCleanupSchedule
     }
 
+    /** Writes the widgets into the stored webservice settings. The owning panel re-loads afterwards, so the dirty-check reads the normalised values. */
     override fun saveSettings() {
         apiProperties.databaseUri = databaseURISetting.text
         apiProperties.webserviceCleanupSchedule = cleanupScheduleSetting.text
@@ -176,6 +178,7 @@ class WebserviceSettings(
         apiProperties.webserviceDatabaseCleanupSchedule = databaseCleanupScheduleSetting.text
     }
 
+    /** Problems with the webservice settings as currently entered, as messages to show. Empty means valid. */
     override fun validateSettings(): List<String> {
         val errors = mutableListOf<String>()
 
@@ -226,6 +229,7 @@ class WebserviceSettings(
         return errors.toList()
     }
 
+    /** Whether the webservice widgets differ from what is stored, compared against the normalised getters. */
     override fun hasUnsavedChanges(): Boolean {
         val changes = databaseURISetting.text != apiProperties.databaseUri ||
                     cleanupScheduleSetting.text != apiProperties.webserviceCleanupSchedule ||

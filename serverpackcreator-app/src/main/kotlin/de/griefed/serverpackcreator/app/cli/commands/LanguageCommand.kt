@@ -35,7 +35,9 @@ import java.util.*
                   ],
     subcommands = [ClearScreen::class, CommandLine.HelpCommand::class]
 )
+/** Changes the configured locale, which every message SPC prints is read from. */
 class LanguageCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) : Command {
+    /** Prompt for a locale and store it. */
     override fun run() {
         printAvailableLanguages()
         chooseAndSwitchLanguage()

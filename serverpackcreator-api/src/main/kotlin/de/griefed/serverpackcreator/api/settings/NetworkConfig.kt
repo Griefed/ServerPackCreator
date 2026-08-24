@@ -45,6 +45,11 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 class NetworkConfig(private val store: PropertyStore) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
+    /**
+     * The property keys this group reads, so a host setting them in `serverpackcreator.properties` — or a test
+     * seeding them — names the constant instead of retyping the string. They are public for that reason; the
+     * defaults beside them are what applies when a key is absent.
+     */
     companion object {
         /**
          * Property-key holding the milliseconds to wait for a connection to be established.

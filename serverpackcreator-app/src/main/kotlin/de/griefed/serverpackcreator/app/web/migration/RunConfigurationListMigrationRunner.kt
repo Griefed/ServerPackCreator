@@ -51,6 +51,7 @@ class RunConfigurationListMigrationRunner(
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
+    /** The collection name and logger this runner needs. The name is stated because the rewrite uses `MongoTemplate` rather than the repository — the mapped type can no longer read the old shape, which is the problem being fixed. */
     companion object {
         /** The collection Spring Data maps `RunConfiguration` to. */
         const val COLLECTION = "runConfiguration"

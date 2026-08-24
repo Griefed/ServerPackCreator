@@ -31,6 +31,12 @@ import org.springframework.stereotype.Service
 import java.nio.file.Path
 import kotlin.io.path.listDirectoryEntries
 
+/**
+ * Removes database rows whose file is gone — the opposite direction from `FileCleanupSchedule`.
+ * 
+ * Runs on a cron, disabled in tests: a suite running at the scheduled minute against an unreachable database
+ * should not get to find out what this does.
+ */
 @Suppress("unused")
 @Service
 class DatabaseCleanupSchedule @Autowired constructor(

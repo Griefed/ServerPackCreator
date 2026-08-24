@@ -22,14 +22,23 @@ package de.griefed.serverpackcreator.app.web.task
 import de.griefed.serverpackcreator.app.web.modpack.ModPack
 
 
+/**
+ * The generation queue, behind an interface so the web layer neither knows nor cares that it is backed by a
+ * single worker. Submitting is fire-and-forget: progress comes back as `QueueEvent`s, not as a return value.
+ */
 interface TaskExecutionService {
+    /** Queue one generation. Returns immediately; watch the events for what happens next. */
     fun submitTaskInQueue(taskDetail: TaskDetail)
 
+    /** How many tasks are waiting, for the dashboard. */
     fun getQueueSize(): Int
 
+    /** Drop every waiting task, returning what was done as a message for the operator. */
     fun clearQueue(): String
 
+    /** Drop the waiting task for one modpack — used when that modpack is deleted underneath it. */
     fun removeTaskForModpack(modpack: ModPack): String
 
+    /** What is currently queued, so an operator can see the backlog rather than just its size. */
     fun getQueueDetails(): List<TaskDetail>
 }

@@ -68,6 +68,11 @@ class TipOfTheDayManager(private val mainFrame: JFrame, private val guiProps: Gu
         }
     }
 
+    /**
+     * Show a tip the user has not seen yet, picked at random, and remember that they have now seen it.
+     * 
+     * Falls back to any tip once every one has been viewed, so the dialog never comes up empty.
+     */
     fun showTipOfTheDay() {
         componentScope.scope().launch(Dispatchers.Swing, CoroutineStart.DEFAULT) {
             var random = (0..<tipOfTheDayModel.tipCount).random()
@@ -93,11 +98,14 @@ class TipOfTheDayManager(private val mainFrame: JFrame, private val guiProps: Gu
         }
     }
 
+    /** Bridges the dialog's own show-on-startup checkbox to SPC's stored GUI property, so the choice survives a restart. */
     inner class ShowOnStartup : TipOfTheDay.ShowOnStartupChoice {
+        /** Store the user's choice. */
         override fun setShowingOnStartup(showOnStartup: Boolean) {
             guiProps.showTipOnStartup = showOnStartup
         }
 
+        /** The stored choice, which decides whether the dialog opens on launch. */
         override fun isShowingOnStartup(): Boolean {
             return guiProps.showTipOnStartup
         }

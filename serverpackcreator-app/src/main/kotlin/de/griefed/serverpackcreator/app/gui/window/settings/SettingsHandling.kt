@@ -44,6 +44,7 @@ class SettingsHandling(
     private val mainFrame: MainFrame,
     private val controlPanel: ControlPanel
 ) {
+    /** The load/save button row this class owns, placed above the settings tabs. */
     val panel = JPanel()
     private val load =
         BalloonTipButton(Translations.settings_handle_load_label.toString(), guiProps.loadIcon, Translations.settings_handle_load_tooltip.toString(), guiProps) { load() }
@@ -75,6 +76,12 @@ class SettingsHandling(
         return format.format(Date())
     }
 
+    /**
+     * Persist every settings tab, then **re-load them all** before re-checking.
+     * 
+     * The reload is not cosmetic: several settings are normalised on write or read, so a tab compared against its
+     * pre-save widget values would report unsaved changes forever. Do not remove it.
+     */
     fun save() {
         for (tab in settingsEditorsTab.allTabs) {
             (tab as Editor).saveSettings()
@@ -93,6 +100,7 @@ class SettingsHandling(
         controlPanel.updateStatus(Translations.settings_info_saved(apiProperties.serverPackCreatorPropertiesFile.absolutePath))
     }
 
+    /** Load settings from a properties file the user picks, replacing what is configured. */
     fun load() {
         val propertiesChooser = PropertiesChooser(apiProperties, Translations.settings_handle_chooser.toString())
         if (propertiesChooser.showOpenDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
@@ -106,6 +114,7 @@ class SettingsHandling(
         checkAll()
     }
 
+    /** Re-run every tab's dirty-check and update the unsaved-changes indicator. */
     fun checkAll() {
         val changes = settingsEditorsTab.allTabs.any {
             (it as Editor).hasUnsavedChanges()

@@ -74,6 +74,7 @@ class SuggestionProvider(
     /** The parsed suggestion-set for [cachedProperty]. Never handed out directly — see [allSuggestions]. */
     private var cachedSuggestions: Set<String> = emptySet()
 
+    /** The one pre-compiled pattern this class needs. Held here because the check runs on every keystroke and `toRegex()` compiles anew each call. */
     companion object {
         /** A single non-word character, used to decide whether the caret sits on a word boundary.
          * Held as a constant because the check runs on every keystroke and `toRegex()` compiles anew. */

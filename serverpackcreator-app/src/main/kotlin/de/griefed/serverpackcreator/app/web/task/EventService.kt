@@ -26,12 +26,17 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 
+/**
+ * Records and reads the queue's progress events — the stream the SPA polls to show what is happening to an
+ * upload. Append-only: an event is a record of a moment, never updated.
+ */
 @Service
 class EventService @Autowired constructor(
     private val errorRepository: ErrorRepository,
     private val queueEventRepository: QueueEventRepository
 ) {
 
+    /** Record one event against a modpack, and optionally a server pack, with the status and message to show. */
     fun submit(
         modPackId: String?,
         serverPackId: String?,
@@ -58,22 +63,27 @@ class EventService @Autowired constructor(
         queueEventRepository.save(event)
     }
 
+    /** Every event, newest first. */
     fun loadAll(sort: Sort = Sort.by(Sort.Direction.DESC, "timestamp")): MutableList<QueueEvent> {
         return queueEventRepository.findAll(sort)
     }
 
+    /** One page of events, as a `Page` so the caller learns the total. */
     fun loadAll(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "dateCreated")) : Page<QueueEvent> {
         return queueEventRepository.findAll(sizedPage.withSort(sort))
     }
 
+    /** Every event for one modpack — the history of a single upload. */
     fun loadAllByModPackId(modPackId: String): MutableList<QueueEvent> {
         return queueEventRepository.findAllByModPackId(modPackId)
     }
 
+    /** Every event for one server pack. */
     fun loadAllByServerPackId(serverPackId: String): MutableList<QueueEvent> {
         return queueEventRepository.findAllByServerPackId(serverPackId)
     }
 
+    /** Every event that reported a given status, for finding what failed. */
     fun loadAllByStatus(status: ModPackStatus): MutableList<QueueEvent> {
         return queueEventRepository.findAllByStatus(status)
     }

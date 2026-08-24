@@ -38,6 +38,7 @@ class InclusionSpecificationRenderer : JLabel(), ListCellRenderer<InclusionSpeci
         isOpaque = true
     }
 
+    /** Renders one inclusion as its source path, with the destination and filters appended when it has any. */
     override fun getListCellRendererComponent(
         list: JList<out InclusionSpecification>,
         value: InclusionSpecification,

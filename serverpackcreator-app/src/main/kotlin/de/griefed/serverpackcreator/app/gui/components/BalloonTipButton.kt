@@ -69,6 +69,10 @@ open class BalloonTipButton(text: String?, icon: Icon, toolTip: String, guiProps
         })
     }
 
+    /**
+     * Sets the balloon's text rather than Swing's tooltip — this button *is* its own tooltip, shown as a balloon
+     * that stays until dismissed, which a hover tooltip could not do.
+     */
     override fun setToolTipText(text: String) {
         toolTipLabel.text = text
     }

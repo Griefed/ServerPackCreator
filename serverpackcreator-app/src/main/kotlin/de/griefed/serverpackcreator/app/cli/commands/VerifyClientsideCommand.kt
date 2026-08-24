@@ -66,6 +66,7 @@ class VerifyClientsideCommand(private val apiWrapper: ApiWrapper = ApiWrapper.ap
     )
     private var output: String? = null
 
+    /** Assess a project with a real server boot on top of the metadata — the expensive pass, and the only one whose crash is decisive. */
     override fun run() {
         verify(url ?: return, output?.let { File(it) })
     }

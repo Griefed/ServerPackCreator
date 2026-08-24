@@ -32,8 +32,10 @@ import picocli.shell.jline3.PicocliCommands.ClearScreen
     ],
     subcommands = [ClearScreen::class, CommandLine.HelpCommand::class]
 )
+/** Checks the release feed for a newer ServerPackCreator and reports what it finds. */
 class UpdateCommand(private val updateChecker: UpdateChecker = UpdateChecker(ApiWrapper.api().apiProperties)) : Command {
 
+    /** Perform the check and print the result. */
     override fun run() {
         checkAndRunUpdate()
     }

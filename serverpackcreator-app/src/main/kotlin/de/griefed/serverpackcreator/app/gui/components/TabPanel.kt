@@ -34,7 +34,9 @@ import javax.swing.JTabbedPane
  */
 abstract class TabPanel(layout: LayoutManager = BorderLayout(), tabsConstraints: String? = null) {
 
+    /** The panel this group lives in, which the parent window adds. */
     val panel = JPanel(layout, true)
+    /** The tabbed pane itself. Exposed so subclasses can add tabs; prefer [allTabs] for reading. */
     val tabs = JTabbedPane()
 
     init {
@@ -45,10 +47,12 @@ abstract class TabPanel(layout: LayoutManager = BorderLayout(), tabsConstraints:
         }
     }
 
+    /** The component of the tab in front, or `null` when there are none. */
     val activeTab: Component?
         get() {
             return tabs.selectedComponent
         }
+    /** Every tab's component, in tab order — a snapshot, so iterating it while closing tabs is safe. */
     val allTabs: List<Component>
         get() {
             val paneTabs = mutableListOf<Component>()

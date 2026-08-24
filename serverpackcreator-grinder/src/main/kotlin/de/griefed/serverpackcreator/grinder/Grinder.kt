@@ -189,6 +189,9 @@ class GrindPool(
         stopRequested.set(true)
     }
 
+    /** How many workers the pool is currently tracking — the set [awaitStop] would signal. Test-facing. */
+    internal fun trackedWorkerCount(): Int = workers.size
+
     /**
      * Stop for real: signal, **interrupt** every worker, and wait up to [grace] for them to come back. Returns
      * whether they all did.
@@ -203,9 +206,6 @@ class GrindPool(
      * holding it open. A `false` return is worth logging — it means the process is about to exit with work still
      * running.
      */
-    /** How many workers the pool is currently tracking — the set [awaitStop] would signal. Test-facing. */
-    internal fun trackedWorkerCount(): Int = workers.size
-
     fun awaitStop(grace: Duration): Boolean {
         stopRequested.set(true)
         val running = workers

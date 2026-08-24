@@ -28,6 +28,11 @@ import java.nio.file.Path
 import java.security.MessageDigest
 import java.util.*
 
+/**
+ * The storage seam the web layer talks to. Delegates to [FileSystemStorageService] for the bytes while keeping
+ * the GridFS collaborators around, which is what lets an installation still holding files in the database be
+ * migrated onto the filesystem.
+ */
 class StorageSystem(
     private val fsStorageService: FileSystemStorageService,
     gridFsTemplate: GridFsTemplate,
@@ -53,17 +58,20 @@ class StorageSystem(
         gridFsOperations
     )
 
+    /** Store an uploaded file, returning what was written — empty when the store failed. */
     fun store(file: MultipartFile): Optional<SavedFile> {
         val destination = File(fsStorageService.rootLocation.toFile(), System.currentTimeMillis().toString() + "-orig-" + (file.originalFilename ?: file.name))
         file.transferTo(destination)
         return store(destination)
     }
 
+    /** Store a file already on disk, for a generated archive rather than an upload. */
     fun store(file: File): Optional<SavedFile> {
         val id = dbStorageService.store(file)
         return fsStorageService.store(file, id.toString())
     }
 
+    /** The stored file for an id, empty when there is none. */
     fun load(id: String): Optional<File> {
         val fileSys = fsStorageService.load(id)
         if (fileSys.isPresent) {
@@ -91,10 +99,12 @@ class StorageSystem(
         }
     }
 
+    /** Delete one stored file. */
     fun delete(id: String) {
         fsStorageService.delete(id)
     }
 
+    /** Delete everything stored. For the cleanup schedule, not for a request. */
     @Suppress("unused")
     fun deleteAll() {
         fsStorageService.deleteAll()

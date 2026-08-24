@@ -46,6 +46,10 @@ import javax.swing.undo.UndoManager
 open class ScrollTextField(
     guiProps: GuiProps,
     text: String,
+    /**
+     * Names the autocomplete bucket this field's suggestions are stored under. `null` or blank means no
+     * [suggestionProvider] is attached at all, which is how a field opts out of autocomplete.
+     */
     val identifier: String? = null,
     private val textField: JTextField = JTextField(text),
     horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_AS_NEEDED
@@ -63,8 +67,10 @@ open class ScrollTextField(
     }
 
     private val undoManager = UndoManager()
+    /** The autocomplete popup, attached to the *wrapped* field so it can position itself at the caret. `null` when [identifier] named no bucket. */
     val suggestionProvider: SuggestionProvider?
 
+    /** Forwards to the wrapped text field — a `JScrollPane` has no editability of its own. */
     var isEditable: Boolean
         get() {
             return textField.isEditable
@@ -72,6 +78,7 @@ open class ScrollTextField(
         set(value) {
             textField.isEditable = value
         }
+    /** Forwards to the wrapped text field. Reading the scroll pane instead would yield nothing. */
     var text: String
         get() {
             return textField.text
@@ -94,19 +101,28 @@ open class ScrollTextField(
         }
     }
 
+    /**
+     * The wrapped field's drop target, not the scroll pane's.
+     * 
+     * Overridden because Swing hands a drop to whichever component the mouse is over, and that is the scroll pane —
+     * so without this, dropping a file on a path field does nothing.
+     */
     override fun getDropTarget(): DropTarget {
         return textField.dropTarget
     }
 
+    /** Sets the drop target on the wrapped field, for the reason [getDropTarget] describes. */
     override fun setDropTarget(dropTarget: DropTarget) {
         textField.dropTarget = dropTarget
     }
 
+    /** Forwards the drop mode to the wrapped field. */
     @Suppress("unused")
     fun setDropMode(mode: DropMode) {
         textField.dropMode = mode
     }
 
+    /** The wrapped field's drop mode. */
     @Suppress("unused")
     fun getDropMode(): DropMode {
         return textField.dropMode
@@ -126,12 +142,15 @@ open class ScrollTextField(
         textField.document.addDocumentListener(listener)
     }
 
+    /** Records the edit with this field's own undo manager, which is capped at ten steps. */
     override fun undoableEditHappened(e: UndoableEditEvent) {
         undoManager.addEdit(e.edit)
     }
 
+    /** Unused; the shortcuts are handled on key-press. */
     override fun keyTyped(e: KeyEvent) {}
 
+    /** Handles undo and redo, and lets everything else through to the field. */
     override fun keyPressed(e: KeyEvent) {
         when (e.keyCode) {
             e.keyCode if e.isControlDown -> {
@@ -151,5 +170,6 @@ open class ScrollTextField(
         }
     }
 
+    /** Unused; see [keyPressed]. */
     override fun keyReleased(e: KeyEvent) {}
 }

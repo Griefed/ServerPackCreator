@@ -71,6 +71,7 @@ class ControlPanel(
     private val serverPacks = ServerPacksButton(guiProps) {
         FileUtilities.openFolder(apiWrapper.apiProperties.serverPacksDirectory)
     }
+    /** The always-visible bottom bar. **A running generation is anchored to this panel**, so it is cancelled only on window close and never by a tab switch — do not re-anchor it to a switchable container. */
     val panel = JPanel()
 
     init {

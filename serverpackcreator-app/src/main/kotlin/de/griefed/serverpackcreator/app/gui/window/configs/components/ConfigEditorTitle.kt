@@ -44,6 +44,7 @@ class ConfigEditorTitle(
     private val configEditor: ConfigEditor
 ) : TabTitle(guiProps) {
 
+    /** The tab's close button. Exposed so the tabbed pane can wire closing without reaching into the layout. */
     val closeButton = JButton(guiProps.closeIcon)
     private val editorTitleMouseAdapter = object : MouseAdapter() {
         val closeSaveAndSaveAsMenu = JPopupMenu()

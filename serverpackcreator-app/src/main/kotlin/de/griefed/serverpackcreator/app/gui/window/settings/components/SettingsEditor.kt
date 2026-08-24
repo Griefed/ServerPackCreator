@@ -23,8 +23,12 @@ package de.griefed.serverpackcreator.app.gui.window.settings.components
  * @author Griefed
  */
 interface SettingsEditor {
+    /** Fill the widgets from the stored settings, discarding whatever the user had typed. */
     fun loadSettings()
+    /** Write the widgets into the stored settings. The caller re-loads afterwards; see the interface doc for why. */
     fun saveSettings()
+    /** Problems with what the widgets currently hold, as messages to show. Empty means the panel is valid. */
     fun validateSettings(): List<String>
+    /** Whether the widgets differ from what is stored — compared against the *normalised* getters, hence the reload rule. */
     fun hasUnsavedChanges(): Boolean
 }

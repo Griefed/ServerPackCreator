@@ -72,6 +72,12 @@ class ScanCommand(private val apiWrapper: ApiWrapper = ApiWrapper.api()) : Comma
     )
     private var minecraftVersion: String? = null
 
+    /**
+     * Read the declared sideness out of every jar in the given directory and print it as JSON.
+     * 
+     * Needs both a loader and a Minecraft version, because a jar's descriptor differs per loader and *which* Forge
+     * scanner applies depends on the Minecraft version.
+     */
     override fun run() {
         scan(File(directory ?: return), loader ?: return, minecraftVersion ?: return)
     }

@@ -27,12 +27,14 @@ import org.springframework.http.ResponseEntity
 import org.springframework.util.MimeTypeUtils
 import org.springframework.web.bind.annotation.*
 
+/** Read-only access to the queue's progress events — the stream the SPA polls while an upload is processed. */
 @Suppress("unused")
 @RestController
 @CrossOrigin(origins = ["*"])
 @RequestMapping("/api/v2/events")
 class EventController @Autowired constructor(private val eventService: EventService) {
 
+    /** Every event, newest first. Unbounded — prefer the paginated route. */
     @GetMapping("/all", produces = ["application/json"])
     @ResponseBody
     fun getEvents(): ResponseEntity<List<QueueEvent>> {
@@ -40,6 +42,7 @@ class EventController @Autowired constructor(private val eventService: EventServ
             .body(eventService.loadAll())
     }
 
+    /** One page of events, newest first. */
     @GetMapping("/allpaginated", produces = ["application/json"])
     @ResponseBody
     fun getAllEventsPaginated(
@@ -55,6 +58,7 @@ class EventController @Autowired constructor(private val eventService: EventServ
         )
     }
 
+    /** Every event for one modpack: the history of a single upload. */
     @GetMapping("/modpack/{id:[0-9a-zA-Z]+}", produces = ["application/json"])
     @ResponseBody
     fun getModPackEvents(@PathVariable id: String): ResponseEntity<List<QueueEvent>> {
@@ -62,6 +66,7 @@ class EventController @Autowired constructor(private val eventService: EventServ
             .body(eventService.loadAllByModPackId(id))
     }
 
+    /** Every event for one server pack. */
     @GetMapping("/serverpack/{id:[0-9a-zA-Z]+}", produces = ["application/json"])
     @ResponseBody
     fun getServerPackEvents(@PathVariable id: String): ResponseEntity<List<QueueEvent>> {
@@ -69,6 +74,7 @@ class EventController @Autowired constructor(private val eventService: EventServ
             .body(eventService.loadAllByServerPackId(id))
     }
 
+    /** Every event that reported a given status, for finding what failed. */
     @GetMapping("/status/{status:[A-Z]+}", produces = ["application/json"])
     @ResponseBody
     fun getStatusEvents(@PathVariable status: ModPackStatus): ResponseEntity<List<QueueEvent>> {

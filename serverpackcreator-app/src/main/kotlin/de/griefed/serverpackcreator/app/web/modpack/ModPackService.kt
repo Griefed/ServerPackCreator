@@ -41,6 +41,10 @@ import java.io.IOException
 import java.nio.file.Path
 import java.util.*
 
+/**
+ * Everything done to a modpack between upload and deletion: storing the archive, recognising a duplicate by
+ * hash, deriving the API's `PackConfig` for a generation, and counting downloads.
+ */
 @Service
 class ModPackService @Autowired constructor(
     private val modpackRepository: ModPackRepository,
@@ -140,18 +144,22 @@ class ModPackService @Autowired constructor(
         return modpackRepository.save(modpack)
     }
 
+    /** One modpack by id, empty when there is none. */
     fun getModpack(id: String): Optional<ModPack> {
         return modpackRepository.findById(id)
     }
 
+    /** Every modpack, newest first by default. */
     fun getModpacks(sort: Sort = Sort.by(Sort.Direction.DESC, "dateCreated")): List<ModPack> {
         return modpackRepository.findAll(sort)
     }
 
+    /** One page of modpacks, as a `Page` so the caller learns the total. */
     fun getModpacks(sizedPage: PageRequest, sort: Sort = Sort.by(Sort.Direction.DESC, "dateCreated")): Page<ModPack> {
         return modpackRepository.findAll(sizedPage.withSort(sort))
     }
 
+    /** The modpack a server pack was generated from, by the server pack's id. */
     fun getByServerPack(id: String): Optional<ModPack> {
         val serverPack = serverPackRepository.findById(id)
         return if (serverPack.isPresent) {
@@ -161,10 +169,15 @@ class ModPackService @Autowired constructor(
         }
     }
 
+    /** The same lookup when the caller already holds the server pack. */
     fun getByServerPack(serverPack: ServerPack): Optional<ModPack> {
         return modpackRepository.findByServerPacksContains(serverPack)
     }
 
+    /**
+     * Build the API-level `PackConfig` a generation runs with, by combining the stored modpack with a run
+     * configuration. This is the bridge between the web module's entities and `-api`'s own configuration type.
+     */
     fun getPackConfigForModpack(modpack: ModPack, runConfiguration: RunConfiguration): PackConfig {
         val packConfig = PackConfig()
         packConfig.modpackDir = rootLocation.resolve("${modpack.fileID}.zip").normalize().toFile().absolutePath
@@ -181,6 +194,7 @@ class ModPackService @Autowired constructor(
         return packConfig
     }
 
+    /** Delete a modpack, its stored archive and the server packs generated from it. */
     fun deleteModpack(id: String) {
         val modpack = modpackRepository.findById(id)
         if (modpack.isPresent) {

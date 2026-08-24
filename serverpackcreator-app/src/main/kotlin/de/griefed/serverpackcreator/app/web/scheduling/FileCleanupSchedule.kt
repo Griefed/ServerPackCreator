@@ -30,6 +30,13 @@ import org.springframework.stereotype.Service
 import java.nio.file.Path
 import kotlin.io.path.listDirectoryEntries
 
+/**
+ * Deletes stored files no database row refers to any more, reclaiming the disk an aborted upload left behind.
+ * 
+ * **The direction is the danger.** It deletes files whose ids are absent from the database, so it must never run
+ * against a database it cannot read — which is why the schedules are disabled in the test context rather than
+ * left on their crons.
+ */
 @Suppress("unused")
 @Service
 class FileCleanupSchedule @Autowired constructor(

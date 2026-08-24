@@ -68,6 +68,10 @@ class SuspendAwareDeadline(
         lastTickMillis = currentMillis
     }
 
+    /**
+     * The suspend-detection threshold, kept out of the class so both boot paths — the host process runner and the
+     * grinder's container engine — are measured against the same number rather than each picking one.
+     */
     companion object {
         /**
          * Smallest wall-clock gap between two polls that is read as the host having suspended rather than merely

@@ -64,6 +64,7 @@ class ClientsideReportCommand(private val apiWrapper: ApiWrapper = ApiWrapper.ap
     )
     private var output: String? = null
 
+    /** Assess a project from platform metadata alone and write the report — the cheap pass, with no server boot. */
     override fun run() {
         report(url ?: return, output?.let { File(it) })
     }
