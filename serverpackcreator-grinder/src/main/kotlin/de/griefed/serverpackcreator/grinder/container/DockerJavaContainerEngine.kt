@@ -257,7 +257,9 @@ class DockerJavaContainerEngine(
             hostConfig.withSecurityOpts(listOf("no-new-privileges"))
         }
         if (spec.tmpfsMounts.isNotEmpty()) {
-            hostConfig.withTmpFs(spec.tmpfsMounts.associateWith { "rw" })
+            // Executable on purpose -- an untrusted mod may need to map a native library it unpacked here.
+            // See TMPFS_OPTIONS for the measurement and the trade-off it records.
+            hostConfig.withTmpFs(spec.tmpfsMounts.associateWith { TMPFS_OPTIONS })
         }
         return hostConfig
     }
