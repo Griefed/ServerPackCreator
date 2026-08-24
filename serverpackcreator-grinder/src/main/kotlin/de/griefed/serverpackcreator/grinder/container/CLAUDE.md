@@ -53,15 +53,30 @@ The boot seam: the grinder implements clientside's `ServerRunner` for containers
   possible without granting the boot one. `theContainersOwnHostnameResolvesWithoutANetwork` asserts it through
   `wget` (the same `getaddrinfo` the JVM calls) rather than by reading `/etc/hosts`, which would only show that
   a line was written.
-- **LANDMINE — `/tmp` is `noexec`, so JNA cannot load a native library.** Docker mounts a `--tmpfs` as
-  `rw,nosuid,nodev,noexec` (verified on 29.7.2), and the rootfs is read-only, so anything extracting a `.so`
-  and mapping it executable fails. Minecraft's own `oshi` system-report probes do exactly that, which is why a
-  crashed boot's console carries `NoClassDefFoundError: Could not initialize class com.sun.jna.Native` and
-  `Failed retrieving info for group processor/memory/software` (`Modrinth-polytone-NeoForge.log`). Harmless
-  there — it degraded only the crash report's diagnostics, and the real client-only-class crash was still
-  detected — but a mod that needs JNA *at load time* would fail for the environment and reach the classifier as
-  a crash. Do not add `exec` without deciding that trade-off deliberately: it is the sandbox's posture, not an
-  oversight.
+- **The boot tmpfs is mounted `exec` (`TMPFS_OPTIONS`), and that is a decided trade-off, not an oversight.**
+  Docker mounts a `--tmpfs` `nosuid,nodev,noexec` and the rootfs is read-only, so nothing inside a boot could
+  write a shared object and map it executable. Griefed approved granting `exec` on 2026-08-24 once the cost was
+  measured, and the measurement is the reason: the report that raised it looked cosmetic
+  (`Could not initialize class com.sun.jna.Native` in a crash report), but booting a real server under the
+  actual posture showed **every boot the grinder ever ran silently lost Netty's native epoll transport**:
+
+  | `/tmp` | boot console |
+  |---|---|
+  | `rw` | `NativeLibraryLoader: /tmp/libnetty_transport_native_epoll_….so exists but cannot be executed … check volume for "noexec" flag` → `Using default channel type` |
+  | `rw,exec` | `Using epoll channel type` |
+
+  JNA directly, production posture otherwise unchanged: `rw` gives
+  `UnsatisfiedLinkError: /tmp/jna….tmp: failed to map segment from shared object`, `rw,exec` gives
+  `JNA-OK pointerSize=8`.
+  **What is given away, and what is not.** A mod can run a native binary it wrote into `/tmp` — against a
+  workload that is already an untrusted JVM, i.e. an arbitrary-code execution engine, in a container with no
+  network, no capabilities, no privilege escalation, a read-only rootfs and a non-root user, none of which
+  changed. **`nosuid` and `nodev` are still applied**, which was verified rather than assumed: `rw,exec` and
+  `rw,nosuid,nodev,exec` both produce `rw,nosuid,nodev,relatime`. So do not "restore" `noexec` believing it
+  costs nothing, and do not widen the grant further.
+  `aBootCanExecuteFromItsTmpfsWhileKeepingTheRestOfItsHardening` pins both halves — it **executes** a binary out
+  of `/tmp` (the flag is the mechanism, running the file is the promise) and then asserts `nosuid`/`nodev`
+  survived.
 - **`DockerJavaContainerEngine`** is the real docker-java impl (create → start → follow logs → stop →
   inspect exit → force-remove). **Not unit-tested** (needs a live daemon) — that is the whole reason
   the testable orchestration sits in `ContainerServerRunner` behind the seam. If you change it, verify

@@ -2743,3 +2743,40 @@ two Minecraft versions and leaving them to act.
 
 Suites: api 356 → **361**, clientside **139**, grinder **351**, zero failures — read back from
 `<module>/build/test-results/test/*.xml` after the run, not carried forward from the earlier section.
+
+---
+
+## 2026-08-24 — the boot tmpfs is executable now, and `noexec` was costing more than it looked
+
+Griefed's call, after the earlier report left it as a decision: grant `exec` even though it weakens the
+sandbox. Measuring it first changed what the change is *for*.
+
+The finding that raised it was cosmetic — `NoClassDefFoundError: Could not initialize class
+com.sun.jna.Native` in `Modrinth-polytone-NeoForge.log`, degrading only the crash report's own system
+information. Booting a real Forge server under the grinder's actual posture (read-only rootfs, `--tmpfs
+/tmp:rw`, no network, all caps dropped, no-new-privileges) showed the real cost:
+
+| `/tmp` | boot console |
+|---|---|
+| `rw` | `NativeLibraryLoader: /tmp/libnetty_transport_native_epoll_aarch_64….so exists but cannot be executed even when execute permissions set; check volume for "noexec" flag` → `Using default channel type` |
+| `rw,exec` | `Using epoll channel type` |
+
+So **every boot the grinder has ever run** fell back from Netty's native epoll transport to NIO, and said so
+in a line nobody was reading. JNA on its own, same posture otherwise:
+
+| `/tmp` | `com.sun.jna.Native` |
+|---|---|
+| `rw` | `UnsatisfiedLinkError: /tmp/jna….tmp: failed to map segment from shared object` |
+| `rw,exec` | `JNA-OK pointerSize=8` |
+
+**What was given away.** A mod can now run a native binary it wrote into `/tmp`. Set against a workload that
+is already an untrusted JVM — an arbitrary-code execution engine — in a container with no network, no
+capabilities, no privilege escalation, a read-only rootfs and a non-root user, none of which changed. And
+`nosuid`/`nodev` stay: docker applies both even when only `exec` is asked for, verified rather than assumed
+(`rw,exec` and `rw,nosuid,nodev,exec` both yield `rw,nosuid,nodev,relatime`).
+
+The guard **executes** a binary out of `/tmp` rather than reading the mount flag — the flag is the mechanism,
+running the file is the promise — and then asserts the two options that must *not* have gone with it. It was
+red first (`sh: line 0: /tmp/echo: Permission denied`).
+
+Suite: grinder 351 → **352**, zero failures.
