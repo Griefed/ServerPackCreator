@@ -432,17 +432,30 @@ class BootVerifier(
     sealed interface Prepared {
         /** A generated, self-installing pack ready to boot, plus where its console log should land. */
         data class Ready(
+            /** The generated pack's root, mounted or launched as-is; its `start.sh` installs the loader itself. */
             val serverPack: File,
+            /** Where this attempt's console is written. One per attempt directory, so a re-stage overwrites it. */
             val logFile: File,
+            /** The Minecraft version this attempt boots, which decides the required Java. */
             val minecraftVersion: String,
+            /** The modloader this attempt boots — the loader the resulting verdict is about. */
             val loader: String,
+            /** The loader build being booted. May be older than the newest; a crash on one is re-checked. */
             val loaderVersion: String
         ) : Prepared
 
         /** Staging failed (no combo, download or generation failure); [detail] explains why. */
-        data class Failed(val detail: String) : Prepared
+        data class Failed(
+            /** The named reason staging stopped, carried into the report instead of a bare "could not boot". */
+            val detail: String
+        ) : Prepared
     }
 
+    /**
+     * The verifier's logger plus the pure decision helpers the crash re-checks are built from — they live here
+     * precisely because they need no verifier state, which is what makes them unit-testable while `verify`
+     * itself needs an `ApiWrapper` and a running server.
+     */
     companion object {
         private val log by lazy { cachedLoggerOf(BootVerifier::class.java) }
 

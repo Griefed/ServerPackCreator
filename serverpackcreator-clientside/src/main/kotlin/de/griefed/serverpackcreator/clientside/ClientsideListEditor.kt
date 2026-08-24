@@ -32,7 +32,12 @@ package de.griefed.serverpackcreator.clientside
 object ClientsideListEditor {
 
     /** A list-entry to add: the file-name stem and the project-link that documents it. */
-    data class Entry(val value: String, val comment: String?)
+    data class Entry(
+        /** The file-name stem itself — what SPC matches a jar against with `startsWith`. */
+        val value: String,
+        /** The project link written as the aligned trailing `//` comment, or `null` to write none. */
+        val comment: String?
+    )
 
     /** Column the trailing `//link` comment is aligned to in `GenerationConfig.kt`. */
     private const val COMMENT_COLUMN = 44

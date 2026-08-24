@@ -52,6 +52,7 @@ enum class DeclaredSupport {
     /** The platform said nothing. Always the case on CurseForge, which has no such field. */
     UNKNOWN;
 
+    /** Parsing of the platform's own wording into this enum; see [fromString] for the unrecognised case. */
     companion object {
         /**
          * Parse a platform-provided support-string into a [DeclaredSupport], defaulting to [UNKNOWN] for

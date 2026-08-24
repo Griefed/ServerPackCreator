@@ -121,6 +121,10 @@ class BrowserDownloader(
         return runtime.chromium().launch(BrowserType.LaunchOptions().setHeadless(true))
     }
 
+    /**
+     * The one predicate that has to be right for a locked-file download to ever succeed: telling Chromium's
+     * "this navigation turned into a download" abort apart from a navigation that genuinely failed.
+     */
     companion object {
         /**
          * Whether [failure] is Chromium cancelling a navigation because it became a download, rather than a

@@ -39,10 +39,16 @@ enum class Confidence {
  * @author Griefed
  */
 enum class JarScan {
+    /** The jar's own descriptor says client-only. */
     CLIENT,
+
+    /** The descriptor says server, says both, or said nothing usable — all of which keep the mod. */
     SERVER_OR_BOTH,
+
     /** Skipped now because the file is locked; the jar-scan happens in the boot-phase. */
     DEFERRED,
+
+    /** The jar could not be read at all (corrupt archive, unparseable descriptor). Not a sideness claim. */
     ERROR
 }
 
@@ -59,6 +65,9 @@ enum class JarScan {
  *                          [loader]; it differs when a cross-loader crash re-check decided the outcome, and
  *                          the difference is load-bearing — only a loader's *own* clean boot may disprove
  *                          another loader's crash (see `ClientsideVerifier.loaderDisprovingTheCrash`).
+ * @param bootCrashExcerpt  The slice of the crashed console a maintainer reads to judge *why* it crashed, or
+ *                          `null` when the boot did not crash. Kept even when a later pass strips the crash of
+ *                          its standing: the server did crash, and that is still worth diagnosing.
  * @param confidence        Aggregate confidence for this loader.
  * @param sampleFile        The file-name the jar-scan ran against (for traceability).
  * @param note              Optional caveat (e.g. a metadata/jar-scan contradiction, or a boot detail).

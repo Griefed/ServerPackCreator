@@ -126,6 +126,11 @@ data class ContainerResources(
     fun cpuCapDescription(): String =
         if (cpuQuota == UNSET_QUOTA) "uncapped" else "${cpuQuota.toDouble() / cpuPeriod} cores ($cpuQuota/${cpuPeriod}µs)"
 
+    /**
+     * The daemon's own floors and its two "unset means no limit" sentinels, plus the [forCpus]/[forLimits]
+     * factories that convert cores and gibibytes into them. Every value here is docker's, not ours, which is why
+     * they are constants with the daemon's wording quoted rather than tunables.
+     */
     companion object {
         /**
          * The smallest quota the docker daemon accepts — it rejects anything under 1ms per period with
