@@ -21,6 +21,8 @@ package de.griefed.serverpackcreator.grinder
 
 import de.griefed.serverpackcreator.clientside.ClientsideReport
 import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.DeclaredSupport
+import de.griefed.serverpackcreator.clientside.JarScan
 import java.time.Instant
 
 /**
@@ -108,7 +110,23 @@ data class GrindVerdict(
      * The platform's immutable project identifier, or `null` for verdicts recorded before it was tracked. Dedup
      * falls back to [slug] when absent, so a store written by an older build stays readable and correct.
      */
-    val projectId: String? = null
+    val projectId: String? = null,
+    /**
+     * Client support as the *platform* declares it, or `null` for a verdict recorded before this was carried.
+     * Nullable rather than [DeclaredSupport.UNKNOWN] on purpose: `UNKNOWN` is a real answer the platform gives —
+     * CurseForge gives it for *every* project, since it publishes no sideness at all — while `null` means nobody
+     * ever asked. Collapsing the two would make a legacy row indistinguishable from a CurseForge row.
+     */
+    val declaredClientSide: DeclaredSupport? = null,
+    /** Server support as the platform declares it, or `null` when unrecorded. See [declaredClientSide]. */
+    val declaredServerSide: DeclaredSupport? = null,
+    /** What SPC's own scan of the jar descriptor concluded, or `null` for a verdict recorded before this was carried. */
+    val jarScan: JarScan? = null,
+    /**
+     * The loader whose boot actually produced the evidence, which is not always [loader]: a cross-loader
+     * re-check can settle one loader's verdict from another loader's clean boot.
+     */
+    val bootedLoader: String? = null
 )
 
 /**

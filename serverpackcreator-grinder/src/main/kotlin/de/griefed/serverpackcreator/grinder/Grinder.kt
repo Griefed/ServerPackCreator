@@ -111,7 +111,13 @@ class Grinder(
                     verifiedAt = now,
                     // Identity comes from the candidate, not the report: the report echoes the slug, which is the
                     // mutable name this exists to stop depending on.
-                    projectId = candidate.projectId
+                    projectId = candidate.projectId,
+                    // The evidence behind the confidence, carried through so the report can show *why* rather
+                    // than only *what*. The clientside engine has decided all four already.
+                    declaredClientSide = verdict.declaredClientSide,
+                    declaredServerSide = verdict.declaredServerSide,
+                    jarScan = verdict.jarScan,
+                    bootedLoader = verdict.bootedLoader
                 )
             )
         }
