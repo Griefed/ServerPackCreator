@@ -20,6 +20,8 @@
 package de.griefed.serverpackcreator.grinder
 
 import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.clientside.DeclaredSupport
+import de.griefed.serverpackcreator.clientside.JarScan
 import de.griefed.serverpackcreator.grinder.report.InMemoryVerdictStore
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -64,6 +66,54 @@ internal class GrinderTest {
             store.all().map { it.loader to it.confidence }.toSet()
         )
         Assertions.assertEquals("jei-", store.all().first { it.loader == "Forge" }.suggestedEntry)
+    }
+
+    /**
+     * The clientside engine already decides both sidenesses and the jar scan, and the CLI report prints
+     * all three — but they stopped at [de.griefed.serverpackcreator.clientside.LoaderVerdict] and never
+     * reached the store, so the grinder's own report could not show what the platform declared versus what
+     * the jar declared. Those two facts are what a human needs to judge a verdict.
+     */
+    @Test
+    fun recordsTheDeclaredSidenessAndTheJarScanBehindTheVerdict() {
+        val store = InMemoryVerdictStore()
+        val verifier = CandidateVerifier { c ->
+            clientsideReport(
+                c.slug,
+                listOf(
+                    loaderVerdict(
+                        "Fabric", "${c.slug}-", Confidence.HIGH,
+                        declaredClientSide = DeclaredSupport.REQUIRED,
+                        declaredServerSide = DeclaredSupport.UNSUPPORTED,
+                        jarScan = JarScan.CLIENT,
+                        bootedLoader = "Quilt"
+                    )
+                )
+            )
+        }
+
+        Grinder(verifier, store).grind(candidate("jei"))
+
+        val recorded = store.all().single()
+        Assertions.assertEquals(DeclaredSupport.REQUIRED, recorded.declaredClientSide)
+        Assertions.assertEquals(DeclaredSupport.UNSUPPORTED, recorded.declaredServerSide)
+        Assertions.assertEquals(JarScan.CLIENT, recorded.jarScan)
+        Assertions.assertEquals(
+            "Quilt", recorded.bootedLoader,
+            "the loader that actually booted may differ from the loader the verdict is about"
+        )
+    }
+
+    /**
+     * A verdict recorded before those columns existed has no answer for them, which is a *different*
+     * statement from CurseForge publishing no sideness at all — and CurseForge publishes none for every
+     * one of its rows. Collapsing the two onto `UNKNOWN` would make the ~870 legacy rows indistinguishable
+     * from every CurseForge row, which is exactly the confusion the column exists to dispel.
+     */
+    @Test
+    fun aVerdictWithoutRecordedSidenessIsNullRatherThanUnknown() {
+        Assertions.assertNull(grindVerdict("jei", "Forge").declaredClientSide)
+        Assertions.assertNull(grindVerdict("jei", "Forge").jarScan)
     }
 
     @Test
