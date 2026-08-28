@@ -191,6 +191,8 @@ never evicted, and a re-install costs one networked setup boot if it comes back.
 | `SPC_GRINDER_STORE`             | `~/.spc-grinder/verdicts.json` | Verdict store — delete to start fresh                                        |
 | `SPC_GRINDER_CURSORS`           | `~/.spc-grinder/cursors.json`  | Crawl position per platform — delete to re-sweep from the most-downloaded    |
 | `SPC_GRINDER_REQUEUE`           | `~/.spc-grinder/requeue.json`  | Immediate re-grind queue — see *Re-grinding verdicts you no longer trust*    |
+| `SPC_GRINDER_BOOT_LOGS`         | `~/.spc-grinder/boot-logs`     | Console, server logs and crash reports of every boot that did not survive    |
+| `SPC_GRINDER_BOOT_LOG_BUDGET_MIB` | `2048`                       | Ceiling for that store; oldest attempts are dropped first once it is passed  |
 | `SPC_GRINDER_PORT`              | `8757`                         | Report server port                                                           |
 | `SPC_GRINDER_HOST`              | `127.0.0.1`                    | Report server bind address. Loopback by default — see *Exposing the report*  |
 | `SPC_GRINDER_CONTAINER_USER`    | owner of `SPC_GRINDER_WORK`    | `uid:gid` the containers run as. Must own the staging — see *Container identity* |

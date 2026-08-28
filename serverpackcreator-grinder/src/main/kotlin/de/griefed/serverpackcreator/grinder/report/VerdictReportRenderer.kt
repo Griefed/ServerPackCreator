@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.grinder.report
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import de.griefed.serverpackcreator.clientside.AttemptDirectory
 import de.griefed.serverpackcreator.clientside.Confidence
 import de.griefed.serverpackcreator.grinder.GrindVerdict
 import java.net.URLEncoder
@@ -37,7 +38,7 @@ object VerdictReportRenderer {
 
     /** Column headers, in the order the rows below emit their cells. */
     private val columns =
-        listOf("Name", "Project", "Name-pattern", "Confidence", "Loader", "Detail", "Crash log", "Scanned (UTC)")
+        listOf("Name", "Project", "Name-pattern", "Confidence", "Loader", "Detail", "Logs", "Scanned (UTC)")
 
     /** Default order: strongest clientside signal first, then by name — matches the CSV export. */
     private val confidenceRank = mapOf(
@@ -47,18 +48,22 @@ object VerdictReportRenderer {
     /**
      * Build the full HTML document for [verdicts].
      *
-     * [crashLogName] answers, per verdict, the name of the kept crash console to link — or `null` for no
-     * link. It is a *lookup* rather than a field on [GrindVerdict] on purpose: the log lives on disk under
-     * [BootLogStore], so asking at render time means a link appears exactly when a file is there, and a log
-     * removed by hand cannot strand the table pointing at a 404. Defaults to "no logs anywhere", which keeps
-     * the page renderable — and openable straight from disk — with no store wired at all.
+     * [logNames] answers, per verdict, every kept artifact to link — the console, the server's own logs and
+     * its crash reports, once per boot attempt. It is a *lookup* rather than a field on [GrindVerdict] on
+     * purpose: the files live on disk under [BootLogStore], so asking at render time means a link appears
+     * exactly when a file is there, and one removed by hand cannot strand the table pointing at a 404.
+     * Defaults to "no logs anywhere", which keeps the page renderable — and openable straight from disk —
+     * with no store wired at all.
+     *
+     * **Ask it for the rows being rendered, never for the whole store**: it is one directory listing per
+     * row, so applying it before paging would cost a lookup per verdict on every page load.
      */
-    fun toHtml(verdicts: List<GrindVerdict>, crashLogName: (GrindVerdict) -> String? = { null }): String {
+    fun toHtml(verdicts: List<GrindVerdict>, logNames: (GrindVerdict) -> List<String> = { emptyList() }): String {
         val ordered = verdicts.sortedWith(
             compareBy({ confidenceRank[it.confidence] ?: Int.MAX_VALUE }, { it.slug }, { it.loader })
         )
         val headerCells = columns.mapIndexed { index, name -> """<th onclick="sortBy($index)">${esc(name)}</th>""" }.joinToString("")
-        val bodyRows = ordered.joinToString("\n") { rowHtml(it, crashLogName(it)) }
+        val bodyRows = ordered.joinToString("\n") { rowHtml(it, logNames(it)) }
         // jackson yields a valid JS string literal (quotes/newlines escaped); additionally escape
         // <, > and & to their \uXXXX form so a mod-supplied "</script>" can't break out of the script
         // block (jackson does not escape these by default).
@@ -95,7 +100,7 @@ object VerdictReportRenderer {
                 <a class="btn" href="/export.csv">CSV endpoint</a>
                 <a class="btn" href="/status">Live status</a>
                 <a class="btn" href="/as-properties">Fallback list</a>
-                <a class="btn" href="/crash-logs">Crash logs</a>
+                <a class="btn" href="/boot-logs">Boot logs</a>
               </nav>
               <table id="verdicts">
                 <thead><tr>$headerCells</tr></thead>
@@ -129,16 +134,35 @@ object VerdictReportRenderer {
     }
 
     /**
+     * The Logs cell: a `<details>` disclosure over every artifact kept for this verdict's tuple, collapsed
+     * so a row with forty logs does not dominate the table. Native HTML, so it needs no JavaScript and still
+     * works in a page opened straight off disk.
+     *
+     * The link label drops the tuple prefix every name in the cell shares, leaving the attempt and the
+     * artifact — which is the part that differs and the part a reader is choosing between.
+     */
+    private fun logsCell(verdict: GrindVerdict, logNames: List<String>): String {
+        if (logNames.isEmpty()) {
+            return "&mdash;"
+        }
+        val prefix = AttemptDirectory.nameFor(verdict.platform, verdict.slug, verdict.loader) +
+            BootLogStore.ATTEMPT_SEPARATOR
+        val links = logNames.sorted().joinToString("") { name ->
+            val label = name.removePrefix(prefix)
+            """<a href="/boot-log?name=${esc(urlEncode(name))}">${esc(label)}</a><br>"""
+        }
+        return "<details><summary>${logNames.size} log(s)</summary>$links</details>"
+    }
+
+    /**
      * One table row; the Name links to the project, the crash-console cell links the kept log when
      * [crashLogName] names one, the last cell says when the mod was scanned, and every cell is HTML-escaped.
      *
      * The crash console is the cell that answers *why* a HIGH was reached — most often a server loading a mod
      * that reaches for a client-only class — which the Detail column can only summarise.
      */
-    private fun rowHtml(verdict: GrindVerdict, crashLogName: String?): String {
-        val crashLog = crashLogName
-            ?.let { """<a href="/crash-log?name=${esc(urlEncode(it))}">console</a>""" }
-            ?: ""
+    private fun rowHtml(verdict: GrindVerdict, logNames: List<String>): String {
+        val logs = logsCell(verdict, logNames)
         val cells = listOf(
             esc(verdict.slug),
             """<a href="${esc(verdict.projectUrl)}" rel="noopener noreferrer">${esc(verdict.projectUrl)}</a>""",
@@ -146,7 +170,7 @@ object VerdictReportRenderer {
             esc(verdict.confidence.name),
             esc(verdict.loader),
             esc(verdict.detail),
-            crashLog,
+            logs,
             // Last, because it is the one column whose width never changes — and the sort works on it as text.
             // Escaped like every other cell even though a `yyyy/MM/dd` string cannot contain markup: the
             // uniformity is what makes the *next* cell safe to add, and one exception is a trap for whoever

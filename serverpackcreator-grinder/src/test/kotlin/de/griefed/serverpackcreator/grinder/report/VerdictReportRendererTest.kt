@@ -109,7 +109,7 @@ internal class VerdictReportRendererTest {
     fun linksEveryEndpointBesideTheDownloadButton() {
         val html = VerdictReportRenderer.toHtml(listOf(grindVerdict("jei", "Forge", suggestedEntry = "jei-")))
 
-        listOf("/export.csv", "/status", "/as-properties", "/crash-logs").forEach { endpoint ->
+        listOf("/export.csv", "/status", "/as-properties", "/boot-logs").forEach { endpoint ->
             Assertions.assertTrue(
                 html.contains("""href="$endpoint""""),
                 "the overview must offer $endpoint; it was only ever in a startup log line"
@@ -118,23 +118,34 @@ internal class VerdictReportRendererTest {
     }
 
     /**
-     * A crash log is offered only where one is actually kept, so the table never points at a 404 — which is
-     * why the renderer asks a lookup per row instead of trusting a field that a deleted file would strand.
+     * Logs are offered only where some are actually kept, so the table never points at a 404 — which is why
+     * the renderer asks a lookup per row instead of trusting a field that a deleted file would strand.
+     *
+     * A row now carries *many*: the console, the server's own logs and its crash reports, once per attempt.
+     * They go behind a `<details>` disclosure so a heavily re-checked row cannot dominate the table, and the
+     * link labels drop the tuple prefix every name in the cell shares — what differs is the attempt and the
+     * artifact, which is what a reader is choosing between.
      */
     @Test
-    fun onlyARowWithAKeptCrashLogGetsALink() {
+    fun onlyARowWithKeptLogsGetsLinks() {
         val crashed = grindVerdict("creativecore", "Fabric", confidence = Confidence.HIGH)
         val clean = grindVerdict("jei", "Forge", confidence = Confidence.LOW)
+        val kept = listOf(
+            "Modrinth-creativecore-Fabric~Fabric_0.19.3_mc26.2~console.log",
+            "Modrinth-creativecore-Fabric~Fabric_0.19.3_mc26.2~logs-latest.log"
+        )
 
         val html = VerdictReportRenderer.toHtml(listOf(crashed, clean)) { verdict ->
-            "Modrinth-creativecore-Fabric.log".takeIf { verdict.slug == "creativecore" }
+            if (verdict.slug == "creativecore") kept else emptyList()
         }
 
+        Assertions.assertEquals(2, Regex("/boot-log\\?name=").findAll(html).count(), "one link per kept artifact, and no more")
+        Assertions.assertTrue(html.contains("<details><summary>2 log(s)</summary>"), "collapsed, so a re-checked row stays readable")
         Assertions.assertTrue(
-            html.contains("""href="/crash-log?name=Modrinth-creativecore-Fabric.log""""),
-            "the crashing row must link its console"
+            html.contains(">Fabric_0.19.3_mc26.2~console.log<"),
+            "the label drops the tuple prefix every name in the cell shares"
         )
-        Assertions.assertEquals(1, Regex("/crash-log\\?name=").findAll(html).count(), "and only that row")
+        Assertions.assertTrue(html.contains("&mdash;"), "a row with nothing kept says so rather than linking a 404")
     }
 
     @Test

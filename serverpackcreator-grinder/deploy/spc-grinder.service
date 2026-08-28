@@ -62,6 +62,15 @@ Environment=SPC_GRINDER_HOME=/home/grinder/.spc-grinder
 # daemon cannot read it back) and drained at the start of every pass.
 #Environment=SPC_GRINDER_REQUEUE=/home/grinder/.spc-grinder/requeue.json
 
+# Everything a boot that did NOT survive left behind: the container console, the server's own logs/ and
+# its crash-reports/, one set per attempt (the first boot and each re-check are separate attempts). This
+# is what makes a wrong verdict debuggable -- a mod wrongly cleared as server-safe leaves evidence here.
+# A clean boot keeps nothing: it proves nothing about sideness and explains nothing either.
+#Environment=SPC_GRINDER_BOOT_LOGS=/home/grinder/.spc-grinder/boot-logs
+# Ceiling for that store, in MiB. Once passed, the oldest attempts are deleted until it is under again.
+# Retention keeps most boots, so this is what stops a months-long run filling a fixed disk.
+#Environment=SPC_GRINDER_BOOT_LOG_BUDGET_MIB=2048
+
 # The image the boots run in. Build it with serverpackcreator-grinder/docker/Dockerfile.
 #Environment=SPC_GRINDER_IMAGE=spc-grinder-runtime:latest
 

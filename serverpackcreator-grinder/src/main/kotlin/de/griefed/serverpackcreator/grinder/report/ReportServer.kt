@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.grinder.report
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.sun.net.httpserver.HttpExchange
+import de.griefed.serverpackcreator.clientside.AttemptDirectory
 import com.sun.net.httpserver.HttpServer
 import de.griefed.serverpackcreator.grinder.GrinderStatus
 import de.griefed.serverpackcreator.grinder.ModPlatforms
@@ -107,27 +108,35 @@ class ReportServer(
         for (iconPath in listOf("/favicon.ico", "/favicon.png")) {
             server.createContext(iconPath) { exchange -> respondFavicon(exchange) }
         }
-        // Longest-prefix match again: /crash-logs is its own context, so /crash-log cannot swallow it.
+        // Longest-prefix match again: each index is its own context, so the singular route cannot swallow it.
+        // /crash-log(s) are kept as aliases of the /boot-log(s) that superseded them: both are documented, and
+        // an operator who has used this report has the old ones bookmarked. Removing a documented endpoint
+        // costs a user something and buys nothing.
         server.createContext("/crash-logs") { exchange ->
             respond(exchange, "text/html; charset=utf-8", crashLogIndex())
         }
+        server.createContext("/boot-logs") { exchange ->
+            respond(exchange, "text/html; charset=utf-8", crashLogIndex())
+        }
+        server.createContext("/boot-log") { exchange ->
+            serveBootLog(exchange)
+        }
         server.createContext("/crash-log") { exchange ->
-            val name = queryParameter(exchange.requestURI.rawQuery, "name")
-            // `read` is what enforces that a name cannot escape the store; a refusal is indistinguishable
-            // from an absent log on purpose, so probing tells an unauthenticated caller nothing.
-            val body = name?.let { crashLogs?.read(it) }
-            if (body == null) {
-                respond(exchange, "text/plain; charset=utf-8", "No such crash log.", status = 404)
-            } else {
-                respond(exchange, "text/plain; charset=utf-8", body)
-            }
+            serveBootLog(exchange)
         }
         server.createContext("/") { exchange ->
+            // One directory listing per *request*, not per row: `namesFor` lists the store every time it is
+            // asked, and the table renders every verdict, so asking per row would be a listing per row.
+            // Grouping on the owner prefix is safe because a tuple's own name cannot contain the separator —
+            // which is what `ATTEMPT_SEPARATOR` was chosen for.
+            val logsByOwner = crashLogs?.list()
+                ?.groupBy { it.substringBefore(BootLogStore.ATTEMPT_SEPARATOR) }
+                .orEmpty()
             respond(
                 exchange,
                 "text/html; charset=utf-8",
                 VerdictReportRenderer.toHtml(store.all()) { verdict ->
-                    crashLogs?.nameFor(verdict.platform, verdict.slug, verdict.loader)
+                    logsByOwner[AttemptDirectory.nameFor(verdict.platform, verdict.slug, verdict.loader)].orEmpty()
                 }
             )
         }
@@ -196,6 +205,22 @@ class ReportServer(
      * no web framework to parse one. A malformed escape decodes to `null` rather than throwing — a bad query
      * is a 404, never a 500 in somebody's log.
      */
+    /**
+     * Serve one kept boot log by its `?name=`, shared by `/boot-log` and its `/crash-log` alias.
+     *
+     * `read` is what enforces that a name cannot escape the store; a refusal is deliberately
+     * indistinguishable from an absent log, so probing tells an unauthenticated caller nothing.
+     */
+    private fun serveBootLog(exchange: HttpExchange) {
+        val name = queryParameter(exchange.requestURI.rawQuery, "name")
+        val body = name?.let { crashLogs?.read(it) }
+        if (body == null) {
+            respond(exchange, "text/plain; charset=utf-8", "No such boot log.", status = 404)
+        } else {
+            respond(exchange, "text/plain; charset=utf-8", body)
+        }
+    }
+
     private fun queryParameter(rawQuery: String?, key: String): String? =
         rawQuery?.split('&')
             ?.firstOrNull { it.substringBefore('=') == key }

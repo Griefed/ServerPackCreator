@@ -2780,3 +2780,62 @@ running the file is the promise — and then asserts the two options that must *
 red first (`sh: line 0: /tmp/echo: Permission denied`).
 
 Suite: grinder 351 → **352**, zero failures.
+
+## 2026-08-28 — verdict-store integrity, verdict provenance, and per-attempt boot logs
+
+Three things, in the order they had to happen.
+
+**A data-loss path found while planning, fixed before anything could reach it.** `JsonVerdictStore` built a
+bare `jacksonObjectMapper()`, so `FAIL_ON_UNKNOWN_PROPERTIES` was on and `readValue<List<GrindVerdict>>` was
+all-or-nothing. Adding *any* field to `GrindVerdict` therefore armed this: a newer build writes the field, the
+operator rolls back, `load()` throws, `runCatching` logs "starting empty", and the very next `record()`
+serialises the whole (empty) map over the file. A 100 000-verdict store for one unknown field name.
+`aCorruptFileDegradesToEmpty` stayed green throughout, because it pins *"start empty rather than crash"* and
+not *"and then don't destroy it"* — a good illustration of a guard whose teeth point somewhere else. Now:
+unknown properties tolerated, rows read individually so one bad verdict costs one verdict, and anything unread
+copied to `<name>.unreadable-<epoch>` **before** returning. The forward direction never needed a change —
+absent properties take the Kotlin constructor defaults, which is why the live store's 875 rows carry no
+`projectId` key and load fine.
+
+**Verdict provenance.** `LoaderVerdict` already carried `declaredClientSide`, `declaredServerSide`, `jarScan`
+and `bootedLoader`, and the CLI's `ClientsideReportRenderer` already printed three of them — they simply never
+reached `GrindVerdict`, so the grinder's report could show what a verdict *was* but not what it was based on.
+Threaded through the single mapping site in `Grinder`. Sideness and jar scan are **nullable, not defaulted to
+`UNKNOWN`**: `UNKNOWN` is a real answer a platform gives — CurseForge gives it for every project, because
+`CurseForgePlatform.resolve` hardcodes it and never queries CurseForge for a sideness field — while `null`
+means the question was never recorded. Rendering both the same way would tell a reader that ~870 legacy rows
+had been checked and found not-client-side.
+
+**Per-attempt boot logs.** Only the console of a **CRASHED** boot was kept, so a mod wrongly *cleared* left no
+evidence at all, and neither did an error in the checking itself. The server's own `logs/` and
+`crash-reports/` were read nowhere in the codebase — the only mention of those names was
+`InstallLayerSnapshot` *excluding* them from the install cache.
+
+- The seam is a `bootArtifactSink` invoked **inside `runPrepared`**, per attempt. It has to be: `stageBootPack`
+  does `deleteRecursively()` on the attempt directory, so the newest-build re-check and each other-version
+  boot destroy the previous attempt's pack and console, and anything read after `verify` returns can only ever
+  see the last one. A `refactor:` commit collapsed the three `runPrepared` call sites into one private
+  `BootVerifier.boot` first — 139 tests green with no test edited, which is the proof it was
+  behaviour-preserving — and `onlyOneCallSiteInvokesRunPrepared` now pins the structure, because a hook added
+  at two of three sites would silently lose exactly the re-check evidence a contested crash is argued with.
+- `BootArtifacts` (in `-clientside`, so the CLI verb and the daemon cannot disagree about retention) collects
+  console + `logs/` + `crash-reports/` as separate entries. Separate because they disagree usefully:
+  `logs/latest.log` is log4j's file appender, holding entries stdout never sees and missing the launcher
+  output stdout has. Capped by a **seeking** tail read rather than `readText`-then-trim, and everything found
+  is named in an `index.txt` whether kept or not — a silently capped set of logs reads as a complete one.
+- `CrashLogStore` became `BootLogStore` (pure rename first, machinery carried verbatim: the traversal guard is
+  scarred code, and retyping it is how that landmine comes back). Growth is bounded by `pruneExcept` per tuple
+  — deterministic naming only replaces the attempts a re-grind writes *again*, so a re-check sampling a
+  different loader or Minecraft line would otherwise strand the previous grind's files forever — with
+  `SPC_GRINDER_BOOT_LOG_BUDGET_MIB` (default 2048) as the backstop.
+
+**Two defects found in my own work, on review rather than by a test.** First, "what this grind wrote" was an
+instance field on `ContainerCandidateVerifier` — but **one** instance serves every `GrindPool` worker, so one
+candidate's prune would have deleted logs another had just written. Same cross-candidate class as the
+unqualified attempt directory that once wiped a pack mid-boot. Now per-invocation, pinned by
+`candidatesPrunedInParallelDoNotDeleteEachOthersLogs`. Second, `namesFor` lists the store on every call, and
+the table asks per row — 875 rows meant 875 directory listings per page load. `ReportServer` now snapshots one
+listing per request and groups it on the owner prefix.
+
+Also worth recording: exit codes from `./gradlew … | grep …` are *grep's*, not Gradle's. Two build results
+were misread that way before the pipeline was changed to `tee` a full log.

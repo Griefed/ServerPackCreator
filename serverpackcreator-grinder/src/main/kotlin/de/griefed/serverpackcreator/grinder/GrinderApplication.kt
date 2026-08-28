@@ -157,7 +157,17 @@ object GrinderApplication {
         // scratch the reaper is entitled to reclaim, and the console of a crashed boot is the one artefact a
         // HIGH verdict cannot be re-derived without. Bounded by the number of distinct crashing tuples, since
         // a re-grind replaces a project's log rather than adding one.
-        val crashLogs = BootLogStore(File(base, "crash-logs"))
+        // Every non-survived attempt's console, server logs and crash reports. Bounded by a total budget
+        // rather than by uptime: retention keeps most boots, so a daemon running for months on a fixed disk
+        // needs a ceiling that does not depend on the catalog's shape.
+        val bootLogBudgetMiB = env("SPC_GRINDER_BOOT_LOG_BUDGET_MIB", "2048").toLong()
+        val crashLogs = BootLogStore(
+            File(env("SPC_GRINDER_BOOT_LOGS", File(base, "boot-logs").path)),
+            bootLogBudgetMiB * 1024 * 1024
+        )
+        // One-shot: the superseded crash-logs directory holds real evidence for verdicts still being
+        // published, under a name that now contradicts what the store keeps.
+        crashLogs.adoptLegacy(File(base, "crash-logs"))
         val verifier = ContainerCandidateVerifier(
             apiWrapper, cache, engine, image, imageJava, File(workDir, "verify"),
             resources = containerResources, containerUser = containerUser, crashLogs = crashLogs
@@ -240,7 +250,7 @@ object GrinderApplication {
         ).start()
         val reportUrl = reportUrl(bindHost, server.port)
         log.info("Report:  $reportUrl/    CSV: $reportUrl/export.csv    live status: $reportUrl/status")
-        log.info("Crash consoles of boots that died: $reportUrl/crash-logs (also linked per row in the report)")
+        log.info("Logs of every boot that did not survive: $reportUrl/boot-logs (also linked per row in the report)")
         log.info("Fallback list for SPC instances (set as their fallback.updateurl): $reportUrl/as-properties")
 
         if (args.isNotEmpty()) {

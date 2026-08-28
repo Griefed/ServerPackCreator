@@ -270,7 +270,7 @@ though their detail lives deeper:
   to ask. `Grinder` logs `"Platform mismatch for …: candidate says 'X', resolved report says 'Y'"`, so the two
   are known to be able to disagree, and a slug is a mutable name a rename can move out from under a queued
   candidate. Asking with the candidate's copy of either matches nothing and leaks a whole pack per attempt.
-- **A crashed boot's console outlives its staging** (`CrashLogStore`, `ContainerCandidateVerifier.keepCrashConsoles`).
+- **Every non-survived attempt's evidence outlives its staging** (`BootLogStore`, `ContainerCandidateVerifier.keepAttemptArtifacts`, fired per attempt by `BootVerifier`'s `bootArtifactSink`). Was crash-console-only until 2026-08-28; now the container console *plus* the server's own `logs/` and `crash-reports/`, per attempt, for every boot that did not SURVIVE — because a mod wrongly **cleared** left no evidence at all, and neither did an error in the checking itself. Bounded by `pruneExcept` per tuple and `SPC_GRINDER_BOOT_LOG_BUDGET_MIB` (default 2048) overall; details and the concurrency landmine in `grinder/report/CLAUDE.md`. Superseded text follows for the reasoning that still holds:
   The reaper keeps one `boot.log` per attempt directory, but staging *wipes and re-creates* that directory, so
   the next re-grind of the same tuple destroyed the console for a verdict that is still published. Since a crash
   is the only outcome that reaches HIGH — and its usual cause, a server loading a mod that reaches for a

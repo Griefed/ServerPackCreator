@@ -28,156 +28,17 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
 /**
- * Pins the durable home for the console of a boot that **crashed** — the one artefact a HIGH verdict
- * cannot be re-derived without.
+ * Pins the durable home for what a boot leaves behind — the evidence a verdict cannot be re-derived
+ * without.
  *
- * The staging console is not that home. `BootWorkspaceReaper` keeps one `boot.log` per attempt
- * directory, but staging *wipes and re-creates* that directory, so the next re-grind of the same
- * `(platform, slug, loader)` destroys the evidence for the verdict that is still published. A crash is
- * the only outcome that reaches HIGH, and the usual cause — a server reaching for a client-only class —
- * is legible only from the console, so it has to survive the sweep that produced it.
+ * Staging is not that home. `BootWorkspaceReaper` keeps one `boot.log` per attempt directory, but staging
+ * *wipes and re-creates* that directory on every stage, so the next attempt destroys the last one's console
+ * and the next re-grind destroys the evidence for a verdict that is still published.
+ *
+ * Truncation and the never-read-a-huge-file-whole guarantee moved to `BootArtifacts` in `-clientside`,
+ * where the reading now happens; they are pinned there.
  */
 internal class BootLogStoreTest {
-
-    @TempDir
-    lateinit var directory: File
-
-    private fun store() = BootLogStore(directory)
-
-    /**
-     * A staged console, as the boot verifier leaves it — written **outside** the store, because that is where
-     * a real one lives: under `<work>/boot/<attempt>/boot.log`, in the staging this store exists to rescue it
-     * from.
-     */
-    private fun console(text: String): File =
-        File(directory.parentFile, "staged-boot-${text.hashCode()}.log").apply { writeText(text) }
-
-    /** The round trip a report link makes: keep it, get a name, read the same bytes back by that name. */
-    @Test
-    fun keepsACrashConsoleAndReadsItBackByName() {
-        val crash = console("java.lang.NoClassDefFoundError: net/minecraft/client/Minecraft\n\tat com.example…")
-
-        val name = store().keep(ModPlatforms.MODRINTH, "creativecore", "Fabric", crash)
-
-        Assertions.assertNotNull(name)
-        Assertions.assertEquals(crash.readText(), store().read(name!!))
-        Assertions.assertEquals(name, store().nameFor(ModPlatforms.MODRINTH, "creativecore", "Fabric"))
-    }
-
-    /** The same slug on the other platform is a different project, so it must not overwrite the first. */
-    @Test
-    fun theSameSlugOnAnotherPlatformIsADifferentLog() {
-        val modrinth = store().keep(ModPlatforms.MODRINTH, "creativecore", "Fabric", console("modrinth crash"))
-        val curseForge = store().keep(ModPlatforms.CURSEFORGE, "creativecore", "Fabric", console("curseforge crash"))
-
-        Assertions.assertNotEquals(modrinth, curseForge)
-        Assertions.assertEquals("modrinth crash", store().read(modrinth!!))
-        Assertions.assertEquals("curseforge crash", store().read(curseForge!!))
-    }
-
-    /** Nothing kept means no link to offer, which is what keeps the report from pointing at a 404. */
-    @Test
-    fun anUnknownTupleHasNoName() {
-        Assertions.assertNull(store().nameFor(ModPlatforms.MODRINTH, "never-ground", "Forge"))
-    }
-
-    /**
-     * A re-grind of the same project replaces its log rather than adding one, so the store is bounded by the
-     * number of distinct crashing `(platform, slug, loader)` tuples instead of by how long the daemon runs.
-     */
-    @Test
-    fun reGrindingATupleReplacesItsLogRatherThanAccumulating() {
-        store().keep(ModPlatforms.MODRINTH, "creativecore", "Fabric", console("first pass"))
-        store().keep(ModPlatforms.MODRINTH, "creativecore", "Fabric", console("second pass"))
-
-        Assertions.assertEquals(listOf("Modrinth-creativecore-Fabric.log"), store().list())
-        Assertions.assertEquals("second pass", store().read("Modrinth-creativecore-Fabric.log"))
-    }
-
-    /**
-     * **This store is served over HTTP by name, so a name is untrusted input.** A traversal must read
-     * nothing at all rather than any file the daemon's user can open — the grinder's report binds loopback
-     * by default but is explicitly documented as something an operator may reverse-proxy.
-     */
-    @Test
-    fun aNameThatEscapesTheStoreReadsNothing() {
-        val secret = File(directory.parentFile, "secret.txt").apply { writeText("not yours") }
-        store().keep(ModPlatforms.MODRINTH, "creativecore", "Fabric", console("real log"))
-
-        listOf("../${secret.name}", "..%2Fsecret.txt", "sub/dir.log", "/etc/passwd", "", "..").forEach { name ->
-            Assertions.assertNull(store().read(name), "'$name' must not resolve to anything")
-        }
-        Assertions.assertEquals("real log", store().read("Modrinth-creativecore-Fabric.log"), "and the real one still reads")
-    }
-
-    /**
-     * A mod can spew megabytes before it dies. The crash is at the *end*, so an oversized console is kept
-     * from its tail with the truncation said out loud — a silently shortened log is a log nobody can trust.
-     */
-    @Test
-    fun anOversizedConsoleIsKeptFromItsTailAndSaysSo() {
-        val tail = "java.lang.NoClassDefFoundError: net/minecraft/client/Minecraft"
-        val huge = console("x".repeat(BootLogStore.MAX_BYTES + 4096) + "\n" + tail)
-
-        val name = store().keep(ModPlatforms.MODRINTH, "spewy", "Forge", huge)!!
-        val kept = store().read(name)!!
-
-        Assertions.assertTrue(kept.endsWith(tail), "the crash is at the end — that is the half worth keeping")
-        Assertions.assertTrue(kept.contains("truncated"), "a shortened log must say it was shortened")
-        Assertions.assertTrue(kept.length <= BootLogStore.MAX_BYTES + 512, "kept ${kept.length} bytes")
-    }
-
-    /**
-     * **The cap has to bound what is *read*, not only what is written.** Boot consoles are streamed to disk
-     * uncapped, bounded only by the 15-minute boot timeout, so a chatty mod can leave hundreds of megabytes —
-     * and reading one whole into a `String` inflates it to roughly double as UTF-16. Worse, `keep`'s
-     * `runCatching` catches `Throwable`, so the resulting `OutOfMemoryError` would be swallowed and the
-     * daemon would carry on in an unknown heap state.
-     *
-     * Asserted by measurement rather than by reading the code: the JVM is given a console far larger than the
-     * cap and the heap used across the call is required to stay a fraction of it, which is only true if the
-     * file was never read whole.
-     */
-    @Test
-    fun anOversizedConsoleIsNeverReadWholeIntoMemory() {
-        val oversized = File(directory.parentFile, "huge-boot.log")
-        val chunk = "x".repeat(1024 * 1024)
-        oversized.bufferedWriter().use { writer -> repeat(64) { writer.write(chunk) } }
-        Assertions.assertTrue(
-            oversized.length() > BootLogStore.MAX_BYTES * 8L,
-            "fixture must exceed the cap many times over, was ${oversized.length()} bytes"
-        )
-
-        val runtime = Runtime.getRuntime()
-        System.gc()
-        val before = runtime.totalMemory() - runtime.freeMemory()
-        val name = store().keep(ModPlatforms.MODRINTH, "spewy", "Forge", oversized)
-        val peak = runtime.totalMemory() - runtime.freeMemory()
-
-        Assertions.assertNotNull(name)
-        Assertions.assertTrue(
-            peak - before < oversized.length(),
-            "keeping a ${oversized.length() / 1024 / 1024} MiB console allocated ${(peak - before) / 1024 / 1024} MiB — " +
-                "it is being read whole before the cap is applied"
-        )
-        Assertions.assertTrue(File(directory, name!!).length() <= BootLogStore.MAX_BYTES + 512L)
-    }
-
-    /** Reclamation must never fail a grind, so an unwritable store degrades to "no log" rather than throwing. */
-    @Test
-    fun anUnwritableStoreYieldsNoNameInsteadOfThrowing() {
-        val asFile = File(directory, "not-a-directory").apply { writeText("in the way") }
-
-        Assertions.assertNull(BootLogStore(asFile).keep(ModPlatforms.MODRINTH, "jei", "Forge", console("x")))
-    }
-}
-
-/**
- * Pins what the store gained when a boot stopped being represented by its console alone: an attempt's
- * whole evidence set, the pruning that keeps a re-grind from orphaning the previous one's files forever,
- * the budget backstop, and the one-shot adoption of the logs the old `crash-logs` directory holds.
- */
-internal class BootLogStoreAttemptTest {
 
     @TempDir
     lateinit var directory: File
@@ -301,7 +162,12 @@ internal class BootLogStoreAttemptTest {
         File(legacy, "Modrinth-jei-Forge.log").writeText("an old crash console")
 
         Assertions.assertEquals(1, store().adoptLegacy(legacy))
-        Assertions.assertEquals("an old crash console", store().read("Modrinth-jei-Forge.log"))
+        val adopted = store().namesFor(ModPlatforms.MODRINTH, "jei", "Forge").single()
+        Assertions.assertEquals(
+            "an old crash console", store().read(adopted),
+            "an adopted console must be reachable from its row, not merely present on the index"
+        )
+        Assertions.assertTrue(adopted.contains(BootLogStore.LEGACY_ATTEMPT), "and must say it predates per-attempt keeping")
         Assertions.assertEquals(0, store().adoptLegacy(legacy), "a second run has nothing left to move")
         Assertions.assertFalse(legacy.exists(), "an emptied legacy directory is removed rather than left to confuse")
     }
@@ -330,5 +196,51 @@ internal class BootLogStoreAttemptTest {
         File(directory.parentFile, "secret.txt").writeText("not yours")
 
         Assertions.assertNull(store().read("../secret.txt"))
+    }
+
+    /** The same slug on two platforms is two projects and two sets of evidence. */
+    @Test
+    fun theSameSlugOnAnotherPlatformIsADifferentLog() {
+        store().keep(AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "jei", "Forge"), attempt(), artifacts("console.log"))
+
+        Assertions.assertEquals(1, store().namesFor(ModPlatforms.MODRINTH, "jei", "Forge").size)
+        Assertions.assertTrue(
+            store().namesFor(ModPlatforms.CURSEFORGE, "jei", "Forge").isEmpty(),
+            "a CurseForge project must not inherit a Modrinth project's logs"
+        )
+    }
+
+    /**
+     * **Two candidates ground in parallel must not prune each other.** `GrindPool` runs N workers against
+     * one verifier instance, so anything tracking "what this grind wrote" that is shared between them lets
+     * one candidate's prune delete logs another had just written. That is the same cross-candidate class
+     * that once had an unqualified attempt directory wiping a pack out from under a running container, and
+     * it produced verdicts that disagreed with themselves for the identical build.
+     */
+    @Test
+    fun candidatesPrunedInParallelDoNotDeleteEachOthersLogs() {
+        val tuples = (1..8).map { Triple(ModPlatforms.MODRINTH, "mod$it", "Forge") }
+        val written = tuples.associateWith { (platform, slug, loader) ->
+            store().keep(AttemptDirectory.nameFor(platform, slug, loader), attempt(), artifacts("console.log", "logs-latest.log"))
+        }
+
+        tuples.map { (platform, slug, loader) ->
+            Thread {
+                store().pruneExcept(platform, slug, loader, written.getValue(Triple(platform, slug, loader)).toSet())
+            }.apply { start() }
+        }.forEach { it.join() }
+
+        tuples.forEach { (platform, slug, loader) ->
+            Assertions.assertEquals(
+                2, store().namesFor(platform, slug, loader).size,
+                "$slug lost logs to another candidate's prune"
+            )
+        }
+    }
+
+    /** Nothing kept means nothing listed — which is what stops the report linking a 404. */
+    @Test
+    fun anUnknownTupleHasNoLogs() {
+        Assertions.assertTrue(store().namesFor(ModPlatforms.MODRINTH, "never-ground", "Forge").isEmpty())
     }
 }

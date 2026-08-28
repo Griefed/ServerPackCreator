@@ -20,9 +20,9 @@
 package de.griefed.serverpackcreator.grinder.report
 
 import de.griefed.serverpackcreator.clientside.AttemptDirectory
+import de.griefed.serverpackcreator.clientside.BootArtifacts
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
-import java.io.RandomAccessFile
 
 /**
  * The durable home for the console of a boot that **crashed** — the one artefact a HIGH verdict cannot be
@@ -43,59 +43,106 @@ import java.io.RandomAccessFile
  * @param directory Where the logs live; created on first write.
  * @author Griefed
  */
-class BootLogStore(private val directory: File) {
+class BootLogStore(private val directory: File, private val budgetBytes: Long = DEFAULT_BUDGET_BYTES) {
 
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /**
-     * Copy [console] into the store under [platform]/[slug]/[loader]'s name, returning that name, or `null`
-     * when nothing could be kept.
+     * Write every artifact of one attempt into the store, returning the names written. [owner] is the
+     * attempt directory's name (the `(platform, slug, loader)` tuple), [attemptKey] distinguishes the
+     * attempts of one candidate from each other.
      *
-     * An oversized console is kept **from its tail** with the truncation stated in the file: a mod can spew
-     * for minutes before it dies, the stack trace is at the end, and a silently shortened log is one nobody
-     * can trust. Failure is a `null` and a warning, never a throw — keeping evidence must not fail a grind
-     * that has already produced its verdict.
+     * Failure is an empty list and a warning, never a throw — keeping evidence must not fail a grind that
+     * has already produced its verdict.
      */
-    fun keep(platform: String, slug: String, loader: String, console: File): String? {
-        val name = fileName(platform, slug, loader)
-        return runCatching {
+    fun keep(owner: String, attemptKey: String, artifacts: List<BootArtifacts.Artifact>): List<String> =
+        runCatching {
             directory.mkdirs()
-            File(directory, name).writeText(tailOf(console))
-            name
+            artifacts.map { artifact ->
+                val name = fileName(owner, attemptKey, artifact.name)
+                File(directory, name).writeText(artifact.content)
+                name
+            }
         }.getOrElse {
-            log.warn("Could not keep the crash console for $platform/$slug ($loader): ${it.message}")
-            null
+            log.warn("Could not keep the boot artifacts for $owner ($attemptKey): ${it.message}")
+            emptyList()
         }
+
+    /**
+     * Every artifact kept for a tuple, alphabetical. Rebuilds the prefix and filters on it rather than
+     * parsing a stored name apart: slugs and loaders both contain `-`, so a name has no unambiguous split,
+     * which is why [ATTEMPT_SEPARATOR] is a character neither of them uses.
+     */
+    fun namesFor(platform: String, slug: String, loader: String): List<String> {
+        val prefix = AttemptDirectory.nameFor(platform, slug, loader) + ATTEMPT_SEPARATOR
+        return list().filter { it.startsWith(prefix) }
     }
 
     /**
-     * [console]'s content, or its last [MAX_BYTES] with the truncation stated, **without ever holding the
-     * whole file**.
+     * Delete this tuple's kept artifacts except [keep], returning how many went.
      *
-     * The cap has to bound what is *read* and not only what is written. Boot consoles are streamed to disk
-     * uncapped, bounded only by the boot timeout, so a chatty mod can leave hundreds of megabytes — which
-     * `readText` would then inflate to roughly double as a UTF-16 `String`. [keep]'s `runCatching` catches
-     * `Throwable`, so the resulting `OutOfMemoryError` would be swallowed and the daemon would carry on in an
-     * unknown heap state: a failure that is worse than the one it hides.
-     *
-     * Seeks instead. Decoding may clip a multi-byte character at the seek point, which is why the notice sits
-     * in front of it — the first line is already declared incomplete.
+     * **The bound that actually holds.** Naming an attempt after what it booted means a re-grind replaces
+     * its own files — but only the ones it writes again. A re-check that samples a different loader or
+     * Minecraft line writes *new* names, so the previous grind's files would survive forever and the store
+     * would grow with uptime rather than with the catalog. That is the failure this daemon already paid for
+     * once, at 98 GB.
      */
-    private fun tailOf(console: File): String {
-        if (console.length() <= MAX_BYTES) {
-            return console.readText()
+    fun pruneExcept(platform: String, slug: String, loader: String, keep: Set<String>): Int =
+        namesFor(platform, slug, loader)
+            .filterNot { it in keep }
+            .count { name -> runCatching { File(directory, name).delete() }.getOrDefault(false) }
+
+    /**
+     * Delete oldest-first until the store is under [budgetBytes], returning the bytes reclaimed. The
+     * backstop behind the per-attempt caps: retention keeps every non-survived boot, and a daemon that runs
+     * for months on a fixed disk needs a ceiling that does not depend on the catalog's shape.
+     */
+    fun enforceBudget(): Long {
+        val files = directory.listFiles().orEmpty().filter { it.isFile }
+        var total = files.sumOf { it.length() }
+        if (total <= budgetBytes) {
+            return 0L
         }
-        val tail = ByteArray(MAX_BYTES)
-        RandomAccessFile(console, "r").use { file ->
-            file.seek(console.length() - MAX_BYTES)
-            file.readFully(tail)
+        var reclaimed = 0L
+        for (file in files.sortedBy { it.lastModified() }) {
+            if (total <= budgetBytes) {
+                break
+            }
+            val size = file.length()
+            if (runCatching { file.delete() }.getOrDefault(false)) {
+                total -= size
+                reclaimed += size
+            }
         }
-        return TRUNCATION_NOTICE + String(tail, Charsets.UTF_8)
+        log.info("Boot-log store exceeded ${budgetBytes / (1024 * 1024)} MiB; reclaimed ${reclaimed / 1024} KiB oldest-first.")
+        return reclaimed
     }
 
-    /** The kept log's name for a tuple, or `null` when none is kept — which is what stops a report linking a 404. */
-    fun nameFor(platform: String, slug: String, loader: String): String? =
-        fileName(platform, slug, loader).takeIf { File(directory, it).isFile }
+    /**
+     * Move the logs of the superseded `crash-logs` directory into this store once, returning how many were
+     * moved, and remove [legacyDirectory] when it empties. They are evidence for verdicts still being
+     * published, and leaving them under a name that now contradicts what it holds costs more to explain
+     * than to migrate.
+     */
+    fun adoptLegacy(legacyDirectory: File): Int {
+        val legacy = legacyDirectory.listFiles().orEmpty().filter { it.isFile && it.name.endsWith(SUFFIX) }
+        if (legacy.isEmpty()) {
+            runCatching { legacyDirectory.takeIf { it.isDirectory && it.listFiles().orEmpty().isEmpty() }?.delete() }
+            return 0
+        }
+        directory.mkdirs()
+        // Renamed into this store's own shape rather than moved verbatim: a legacy name is `<tuple>.log`
+        // with no attempt segment, so `namesFor` -- which filters on `<tuple>~` -- would never find it and
+        // the console would be listed on the index yet unreachable from the row it belongs to.
+        val moved = legacy.count { file ->
+            val adopted = fileName(file.name.removeSuffix(SUFFIX), LEGACY_ATTEMPT, BootArtifacts.CONSOLE_NAME)
+            runCatching { file.renameTo(File(directory, adopted)) }.getOrDefault(false)
+        }
+        runCatching { legacyDirectory.takeIf { it.listFiles().orEmpty().isEmpty() }?.delete() }
+        log.info("Adopted $moved log(s) from the superseded ${legacyDirectory.absolutePath}.")
+        return moved
+    }
+
 
     /**
      * Read a kept log by [name], or `null` when there is none.
@@ -114,9 +161,15 @@ class BootLogStore(private val directory: File) {
         return runCatching { candidate.takeIf { it.isFile }?.readText() }.getOrNull()
     }
 
-    /** Every kept log's name, alphabetical, so an index page has something stable to list. */
+    /**
+     * Every kept artifact's name, alphabetical, so an index page has something stable to list. Recognised by
+     * *shape* — `<tuple>~<attempt>~<artifact>` — rather than by extension, so an artifact keeps whatever
+     * extension it was born with and a stray file in the directory is still not mistaken for one of ours.
+     */
     fun list(): List<String> =
-        directory.listFiles()?.filter { it.isFile && it.name.endsWith(SUFFIX) }?.map { it.name }?.sorted()
+        directory.listFiles()
+            ?.filter { it.isFile && it.name.split(ATTEMPT_SEPARATOR).size >= 3 }
+            ?.map { it.name }?.sorted()
             ?: emptyList()
 
     /**
@@ -134,24 +187,45 @@ class BootLogStore(private val directory: File) {
     }
 
     /**
-     * The log's file name, built from the same [AttemptDirectory] helper that names the staging it is copied
-     * out of — so the two cannot drift, and so the platform is part of the identity here as well (the same
-     * slug on Modrinth and CurseForge is two projects, and two crashes).
+     * One artifact's file name: the attempt directory's own name (from [AttemptDirectory], so staging and
+     * this store cannot drift), then the attempt, then the artifact. Joined with [ATTEMPT_SEPARATOR]
+     * because both a slug and a loader may contain `-`, which makes the tuple's own name unsplittable.
+     *
+     * The artifact keeps its **own** extension (`console.log`, `index.txt`) rather than having one appended:
+     * a name is recognised as this store's by its *shape* — two separators — which is a stronger check than
+     * a suffix anyway, and appending one would leave `…~index.txt.log` for a reader to puzzle over.
      */
-    private fun fileName(platform: String, slug: String, loader: String) =
-        AttemptDirectory.nameFor(platform, slug, loader) + SUFFIX
+    private fun fileName(owner: String, attemptKey: String, artifact: String) =
+        "$owner$ATTEMPT_SEPARATOR$attemptKey$ATTEMPT_SEPARATOR$artifact"
 
-    /** Size ceiling and the marker a truncated log carries. */
+    /** Naming vocabulary and the store's default ceiling. */
     companion object {
-        /** Largest console kept in full; beyond this the tail is kept, because that is where the crash is. */
-        const val MAX_BYTES = 2 * 1024 * 1024
-
-        /** Extension every kept log carries, which is also what [list] filters on. */
+        /** Extension the superseded `crash-logs` store used, which is what [adoptLegacy] recognises. */
         const val SUFFIX = ".log"
 
-        /** Prefixed to a shortened log, so nobody reads a tail as if it were the whole boot. */
-        private const val TRUNCATION_NOTICE =
-            "[… earlier output truncated: this console exceeded ${MAX_BYTES / (1024 * 1024)} MiB, " +
-                "and the crash is at the end …]\n"
+        /**
+         * Separator between the tuple, the attempt and the artifact. Deliberately **not** `-`: both a slug
+         * and a loader contain those, so a name built with one could never be read back apart.
+         */
+        const val ATTEMPT_SEPARATOR = "~"
+
+        /**
+         * Attempt segment given to a console adopted from the superseded `crash-logs` directory. Those names
+         * predate per-attempt keeping and record nothing about what was booted, which is exactly what this
+         * placeholder says.
+         */
+        const val LEGACY_ATTEMPT = "archived-crash"
+
+        /** Default ceiling for the whole store, matching `SPC_GRINDER_BOOT_LOG_BUDGET_MIB`'s documented default. */
+        const val DEFAULT_BUDGET_BYTES = 2048L * 1024 * 1024
+
+        /**
+         * Names one attempt of a candidate by what it booted. Deterministic rather than a counter, so a
+         * re-grind replaces its own attempts instead of accumulating — and unique per candidate, since the
+         * first boot, the newest-build re-check and each other-version re-check differ in exactly these.
+         */
+        fun attemptKey(loader: String, loaderVersion: String, minecraftVersion: String) =
+            "${loader}_${loaderVersion}_mc$minecraftVersion"
+
     }
 }

@@ -197,6 +197,22 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   directory, and a crash is the one outcome that reaches HIGH. Cut only the *loader* suffix when parsing —
   slugs nest, and a prefix match would claim `creativecore-extras` for `creativecore`. Directories staged
   before this change match no owner and are cleared by the grinder's startup `reapAll()`.
+- **Every attempt's evidence is handed to `bootArtifactSink`, from inside `runPrepared`.** `BootArtifacts.collect`
+  reads the staged pack's `logs/` and `crash-reports/` alongside the console and returns them as separate
+  entries (they disagree usefully: `logs/latest.log` is log4j's file appender, so it holds entries stdout never
+  sees and misses the launcher output stdout has). Retention is `BootArtifacts.worthKeeping` — anything but
+  SURVIVED — and it lives here so the CLI verb and the grinder cannot disagree about it. Capped per artifact by
+  a **seeking** tail read, never `readText`-then-trim, and everything found is named in an `index.txt` whether
+  kept or not, because a silently capped set of logs reads as a complete one.
+  - **LANDMINE — the hook fires per *attempt*, and there is exactly one call site.** `runPrepared` runs three
+    times per candidate (first boot, newest-build re-check, each other-version re-check) and staging wipes the
+    attempt directory before each, so anything read after `verify` returns can only ever see the last one. All
+    three sites go through the private `BootVerifier.boot`; `onlyOneCallSiteInvokesRunPrepared` pins that,
+    because a hook added at two of three would silently lose exactly the re-check evidence a contested crash
+    is argued with.
+  - `Prepared.Ready.attemptName` derives the `(platform, slug, loader)` tuple from the log file's parent
+    rather than carrying three more fields — and stays correct for the other-version re-check, which
+    deliberately stages into the *crashing* loader's directory.
 - **Landmine — every attempt for one candidate writes the *same* `boot.log`.** Staging wipes
   `<work>/boot/<platform>-<slug>-<loader>` and re-creates it, so the loader-build re-check and each other-version boot
   overwrite the previous console, while the *reported* verdict is usually the first crash. The grinder's
