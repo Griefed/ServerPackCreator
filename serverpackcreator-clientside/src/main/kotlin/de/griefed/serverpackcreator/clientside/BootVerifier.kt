@@ -77,6 +77,16 @@ class BootVerifier(
     private val maxDependencyDepth = 4
 
     /**
+     * Boot one prepared attempt with this verifier's collaborators. **The single call site of
+     * [runPrepared]**, and deliberately so: an attempt happens three times over — the first boot, the
+     * newest-loader-build re-check and each other-version re-check — and anything that must happen per
+     * attempt has to be added in exactly one place or it silently covers two of the three. Staging wipes
+     * the attempt directory, so a re-check's evidence is gone by the time [verify] returns.
+     */
+    private fun boot(pack: Prepared.Ready): BootOutcome =
+        runPrepared(pack, serverRunner, packPostProcessor, bootTimeout)
+
+    /**
      * Result of a single boot-attempt: the verdict, the captured log-file, a human-readable note, and
      * (on a crash) the excerpt of the console-output around the failure for in-comment analysis.
      */
@@ -144,7 +154,7 @@ class BootVerifier(
             return BootOutcome(BootResult.INCONCLUSIVE, null, prepared.detail)
         }
         val ready = prepared as Prepared.Ready
-        val outcome = runPrepared(ready, serverRunner, packPostProcessor, bootTimeout)
+        val outcome = boot(ready)
         val loaderChecked = recheckCrashOnNewestVersion(project, loader, ready, outcome)
         val decided = recheckCrashOnOtherModVersions(project, loader, ready, loaderChecked, metadataDeclaresServerSupport)
         // Every attempt above wrote the same boot.log, so the file currently holds the *last* boot's console
@@ -190,7 +200,7 @@ class BootVerifier(
             log.warn("Could not re-stage ${project.slug} on $loader $newest (${restaged.detail}); keeping the crash.")
             return outcome
         }
-        val second = runPrepared(restaged as Prepared.Ready, serverRunner, packPostProcessor, bootTimeout)
+        val second = boot(restaged as Prepared.Ready)
         return reconcileRecheck(outcome, second, first.loaderVersion, newest)
     }
 
@@ -256,7 +266,7 @@ class BootVerifier(
                 attempts.add(OtherVersionAttempt(label, BootOutcome(BootResult.INCONCLUSIVE, null, staged.detail)))
                 continue
             }
-            val attempt = runPrepared(staged as Prepared.Ready, serverRunner, packPostProcessor, bootTimeout)
+            val attempt = boot(staged as Prepared.Ready)
             attempts.add(OtherVersionAttempt(label, attempt))
             // A single clean boot is all the proof needed, and every further one costs a full boot.
             if (attempt.result == BootResult.SURVIVED) {
