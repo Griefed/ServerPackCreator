@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -38,7 +40,10 @@ import java.util.concurrent.ConcurrentHashMap
  * store — shared so the two key schemes cannot drift — so a re-verified triple replaces rather than
  * duplicates, while the same slug on another platform keeps its own row. Existing stores need no
  * migration: keys are derived from fields every persisted verdict already carries. A corrupt/unreadable
- * file is logged and treated as empty rather than crashing the service.
+ * file is logged and treated as empty rather than crashing the service — and **copied aside first**,
+ * because [record] persists the whole map immediately, so anything unread would otherwise be overwritten
+ * by whatever survived. Unknown fields and unreadable individual rows are tolerated for the same reason:
+ * a store written by a newer build must survive a downgrade.
  *
  * @param file The JSON document backing the store (its parent directory is created on first write).
  * @author Griefed
@@ -46,9 +51,13 @@ import java.util.concurrent.ConcurrentHashMap
 class JsonVerdictStore(private val file: File) : VerdictStore {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
+    // Unknown properties are tolerated so a store written by a *newer* build stays readable after a
+    // downgrade. Failing on one would route a perfectly good store down the corrupt path, and from there
+    // the next record() rewrites the file from an empty map -- losing every verdict over a field name.
     private val mapper = jacksonObjectMapper()
         .registerModule(JavaTimeModule())
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 
     private val verdicts = ConcurrentHashMap<String, GrindVerdict>()
 
@@ -68,14 +77,48 @@ class JsonVerdictStore(private val file: File) : VerdictStore {
     override fun all(): List<GrindVerdict> = verdicts.values.toList()
 
 
-    /** Populate from the backing file if it exists; a read failure leaves the store empty (logged). */
+    /**
+     * Populate from the backing file if it exists. Read **row by row** rather than as one document, so a
+     * single verdict this build cannot make sense of -- a confidence constant added by a later version,
+     * say -- costs that row instead of every row. Whatever could not be read is preserved by
+     * [preserveUnreadable] first, because [persist] runs on the very next [record] and would otherwise
+     * overwrite the evidence with what survived.
+     */
     private fun load() {
         if (!file.isFile) {
             return
         }
-        runCatching { mapper.readValue<List<GrindVerdict>>(file) }
-            .onSuccess { stored -> stored.forEach { verdicts[it.identityKey()] = it } }
-            .onFailure { log.warn("Could not read verdict store ${file.absolutePath}; starting empty: ${it.message}") }
+        val elements = runCatching { mapper.readValue<List<JsonNode>>(file) }.getOrElse { failure ->
+            log.warn("Could not read verdict store ${file.absolutePath}; starting empty: ${failure.message}")
+            preserveUnreadable()
+            return
+        }
+
+        var skipped = 0
+        for (element in elements) {
+            runCatching { mapper.treeToValue(element, GrindVerdict::class.java) }
+                .onSuccess { verdicts[it.identityKey()] = it }
+                .onFailure { failure ->
+                    skipped++
+                    log.warn("Skipping an unreadable verdict in ${file.absolutePath}: ${failure.message}")
+                }
+        }
+        if (skipped > 0) {
+            log.warn("$skipped of ${elements.size} verdicts could not be read; the rest were kept.")
+            preserveUnreadable()
+        }
+    }
+
+    /**
+     * Copy the backing file aside before anything overwrites it, naming the copy after the moment it was
+     * rescued. A **copy** rather than a move: the store must still be where the operator expects it, and
+     * the rescued bytes are what a later build (or a human) needs to recover the rows this one dropped.
+     */
+    private fun preserveUnreadable() {
+        val backup = File(file.parentFile, "${file.name}.unreadable-${System.currentTimeMillis()}")
+        runCatching { Files.copy(file.toPath(), backup.toPath(), StandardCopyOption.REPLACE_EXISTING) }
+            .onSuccess { log.warn("Preserved the unreadable verdict store at ${backup.absolutePath}") }
+            .onFailure { log.error("Could not preserve the unreadable verdict store: ${it.message}") }
     }
 
     /**
