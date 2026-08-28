@@ -96,7 +96,7 @@ internal class BootArtifactsTest {
         val collected = BootArtifacts.collect(pack, console = null)
         val peak = runtime.totalMemory() - runtime.freeMemory()
 
-        Assertions.assertEquals(1, collected.size)
+        Assertions.assertTrue(collected.any { it.name == "logs-latest.log" && it.truncated })
         Assertions.assertTrue(
             peak - before < log.length(),
             "collecting a ${log.length() / 1024 / 1024} MiB log allocated ${(peak - before) / 1024 / 1024} MiB — " +
