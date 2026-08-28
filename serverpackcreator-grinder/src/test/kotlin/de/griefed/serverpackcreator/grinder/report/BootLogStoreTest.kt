@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.grinder.report
 
+import de.griefed.serverpackcreator.clientside.AttemptDirectory
+import de.griefed.serverpackcreator.clientside.BootArtifacts
 import de.griefed.serverpackcreator.grinder.ModPlatforms
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -167,5 +169,166 @@ internal class BootLogStoreTest {
         val asFile = File(directory, "not-a-directory").apply { writeText("in the way") }
 
         Assertions.assertNull(BootLogStore(asFile).keep(ModPlatforms.MODRINTH, "jei", "Forge", console("x")))
+    }
+}
+
+/**
+ * Pins what the store gained when a boot stopped being represented by its console alone: an attempt's
+ * whole evidence set, the pruning that keeps a re-grind from orphaning the previous one's files forever,
+ * the budget backstop, and the one-shot adoption of the logs the old `crash-logs` directory holds.
+ */
+internal class BootLogStoreAttemptTest {
+
+    @TempDir
+    lateinit var directory: File
+
+    private fun store(budgetBytes: Long = Long.MAX_VALUE) = BootLogStore(directory, budgetBytes)
+
+    private fun artifacts(vararg names: String) =
+        names.map { BootArtifacts.Artifact(it, "body of $it", truncated = false) }
+
+    private fun attempt(loader: String = "Forge", loaderVersion: String = "47.2.0", minecraft: String = "1.20.1") =
+        BootLogStore.attemptKey(loader, loaderVersion, minecraft)
+
+    @Test
+    fun keepsEveryArtifactOfAnAttemptUnderItsOwnTuple() {
+        val kept = store().keep(
+            AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "jei", "Forge"),
+            attempt(),
+            artifacts(BootArtifacts.CONSOLE_NAME, "logs-latest.log", "crash-reports-crash.txt")
+        )
+
+        Assertions.assertEquals(3, kept.size)
+        Assertions.assertEquals(
+            setOf("body of ${BootArtifacts.CONSOLE_NAME}", "body of logs-latest.log", "body of crash-reports-crash.txt"),
+            kept.map { store().read(it) }.toSet()
+        )
+        Assertions.assertEquals(
+            kept.toSet(),
+            store().namesFor(ModPlatforms.MODRINTH, "jei", "Forge").toSet(),
+            "every kept name must be findable from the tuple the report has"
+        )
+    }
+
+    /**
+     * A slug contains `-` and so does a loader, so a stored name can never be *parsed* back apart. The
+     * lookup rebuilds the prefix instead — which is also why the attempt separator has to be a character
+     * neither part uses.
+     */
+    @Test
+    fun aSlugContainingTheSeparatorIsStillFoundByItsTuple() {
+        store().keep(AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "iron-chests", "NeoForge"), attempt(), artifacts("console.log"))
+        store().keep(AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "iron", "NeoForge"), attempt(), artifacts("console.log"))
+
+        Assertions.assertEquals(1, store().namesFor(ModPlatforms.MODRINTH, "iron-chests", "NeoForge").size)
+        Assertions.assertEquals(1, store().namesFor(ModPlatforms.MODRINTH, "iron", "NeoForge").size)
+    }
+
+    /** Every attempt of one candidate is kept, because a re-check's boot is the evidence a crash is argued with. */
+    @Test
+    fun everyAttemptOfOneCandidateIsKeptSideBySide() {
+        val owner = AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "jei", "Forge")
+        store().keep(owner, attempt(loaderVersion = "47.2.0"), artifacts("console.log"))
+        store().keep(owner, attempt(loaderVersion = "47.3.11"), artifacts("console.log"))
+        store().keep(owner, attempt(loader = "NeoForge", minecraft = "1.21.1"), artifacts("console.log"))
+
+        Assertions.assertEquals(3, store().namesFor(ModPlatforms.MODRINTH, "jei", "Forge").size)
+    }
+
+    /** Deterministic naming: the same attempt ground again replaces itself rather than accumulating. */
+    @Test
+    fun reGrindingTheSameAttemptReplacesItsArtifacts() {
+        val owner = AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "jei", "Forge")
+        store().keep(owner, attempt(), listOf(BootArtifacts.Artifact("console.log", "first", false)))
+        val second = store().keep(owner, attempt(), listOf(BootArtifacts.Artifact("console.log", "second", false)))
+
+        Assertions.assertEquals(1, store().namesFor(ModPlatforms.MODRINTH, "jei", "Forge").size)
+        Assertions.assertEquals("second", store().read(second.single()))
+    }
+
+    /**
+     * The load-bearing bound. Deterministic naming only replaces *this* grind's attempts; a re-grind whose
+     * re-check samples a different loader or Minecraft line writes new names and would strand the previous
+     * grind's files forever. Without this, the feature re-introduces the growth class the reaper exists for.
+     */
+    @Test
+    fun pruningDropsAPreviousGrindsOrphansAndNothingElse() {
+        val owner = AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "jei", "Forge")
+        val other = AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "sodium", "Fabric")
+        store().keep(owner, attempt(loaderVersion = "47.2.0"), artifacts("console.log"))
+        store().keep(other, attempt(), artifacts("console.log"))
+        val current = store().keep(owner, attempt(loaderVersion = "47.3.11"), artifacts("console.log"))
+
+        val removed = store().pruneExcept(ModPlatforms.MODRINTH, "jei", "Forge", current.toSet())
+
+        Assertions.assertEquals(1, removed, "only the stale attempt of this tuple goes")
+        Assertions.assertEquals(current.toSet(), store().namesFor(ModPlatforms.MODRINTH, "jei", "Forge").toSet())
+        Assertions.assertEquals(1, store().namesFor(ModPlatforms.MODRINTH, "sodium", "Fabric").size, "another candidate is untouched")
+    }
+
+    /** The backstop: a fixed disk must survive an operator who grinds for months. Oldest goes first. */
+    @Test
+    fun theBudgetSweepDeletesOldestFirstUntilUnderTheCeiling() {
+        val owner = AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "jei", "Forge")
+        val oldest = store().keep(owner, attempt(loaderVersion = "1"), listOf(BootArtifacts.Artifact("console.log", "x".repeat(400), false)))
+        File(directory, oldest.single()).setLastModified(1_000L)
+        val newest = store().keep(owner, attempt(loaderVersion = "2"), listOf(BootArtifacts.Artifact("console.log", "y".repeat(400), false)))
+        File(directory, newest.single()).setLastModified(9_000_000L)
+
+        val reclaimed = store(budgetBytes = 500).enforceBudget()
+
+        Assertions.assertTrue(reclaimed > 0, "the sweep must report what it reclaimed")
+        Assertions.assertNull(store().read(oldest.single()), "the oldest attempt goes first")
+        Assertions.assertNotNull(store().read(newest.single()), "the newest is what an operator is most likely to want")
+    }
+
+    /** A budget with room to spare must not delete anything — a backstop that fires constantly is a bug. */
+    @Test
+    fun aStoreUnderItsBudgetIsLeftAlone() {
+        val owner = AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "jei", "Forge")
+        val kept = store().keep(owner, attempt(), artifacts("console.log"))
+
+        Assertions.assertEquals(0L, store(budgetBytes = 10 * 1024 * 1024).enforceBudget())
+        Assertions.assertNotNull(store().read(kept.single()))
+    }
+
+    /**
+     * The old store's logs are real evidence for verdicts still being published, and its directory name now
+     * contradicts what it holds. Moving them once is cheaper than explaining two directories forever.
+     */
+    @Test
+    fun adoptingTheLegacyCrashLogsMovesThemOnceAndIsIdempotent(@TempDir legacy: File) {
+        File(legacy, "Modrinth-jei-Forge.log").writeText("an old crash console")
+
+        Assertions.assertEquals(1, store().adoptLegacy(legacy))
+        Assertions.assertEquals("an old crash console", store().read("Modrinth-jei-Forge.log"))
+        Assertions.assertEquals(0, store().adoptLegacy(legacy), "a second run has nothing left to move")
+        Assertions.assertFalse(legacy.exists(), "an emptied legacy directory is removed rather than left to confuse")
+    }
+
+    /** An absent legacy directory is the normal case on a fresh install, not a failure. */
+    @Test
+    fun adoptingAnAbsentLegacyDirectoryIsANoOp(@TempDir parent: File) {
+        Assertions.assertEquals(0, store().adoptLegacy(File(parent, "never-existed")))
+    }
+
+    /** Keeping evidence must never fail a grind that already produced its verdict. */
+    @Test
+    fun anUnwritableStoreKeepsNothingInsteadOfThrowing(@TempDir parent: File) {
+        val blocked = File(parent, "blocked").apply { writeText("I am a file, not a directory") }
+
+        Assertions.assertTrue(
+            BootLogStore(blocked, Long.MAX_VALUE)
+                .keep(AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "jei", "Forge"), attempt(), artifacts("console.log"))
+                .isEmpty()
+        )
+    }
+
+    /** The traversal guard is inherited, not re-derived — but it has to still hold after the rework. */
+    @Test
+    fun aNameThatEscapesTheStoreStillReadsNothing() {
+        File(directory.parentFile, "secret.txt").writeText("not yours")
+
+        Assertions.assertNull(store().read("../secret.txt"))
     }
 }
