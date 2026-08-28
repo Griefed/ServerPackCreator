@@ -43,7 +43,7 @@ import java.io.RandomAccessFile
  * @param directory Where the logs live; created on first write.
  * @author Griefed
  */
-class CrashLogStore(private val directory: File) {
+class BootLogStore(private val directory: File) {
 
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 

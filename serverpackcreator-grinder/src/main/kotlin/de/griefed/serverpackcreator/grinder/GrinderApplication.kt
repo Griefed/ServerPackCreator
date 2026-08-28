@@ -27,7 +27,7 @@ import de.griefed.serverpackcreator.grinder.container.ContainerUser
 import de.griefed.serverpackcreator.grinder.container.SHUTDOWN_GRACE
 import de.griefed.serverpackcreator.grinder.container.DockerJavaContainerEngine
 import de.griefed.serverpackcreator.grinder.loader.*
-import de.griefed.serverpackcreator.grinder.report.CrashLogStore
+import de.griefed.serverpackcreator.grinder.report.BootLogStore
 import de.griefed.serverpackcreator.grinder.report.FallbackLists
 import de.griefed.serverpackcreator.grinder.report.JsonVerdictStore
 import de.griefed.serverpackcreator.grinder.report.VerdictStore
@@ -157,7 +157,7 @@ object GrinderApplication {
         // scratch the reaper is entitled to reclaim, and the console of a crashed boot is the one artefact a
         // HIGH verdict cannot be re-derived without. Bounded by the number of distinct crashing tuples, since
         // a re-grind replaces a project's log rather than adding one.
-        val crashLogs = CrashLogStore(File(base, "crash-logs"))
+        val crashLogs = BootLogStore(File(base, "crash-logs"))
         val verifier = ContainerCandidateVerifier(
             apiWrapper, cache, engine, image, imageJava, File(workDir, "verify"),
             resources = containerResources, containerUser = containerUser, crashLogs = crashLogs

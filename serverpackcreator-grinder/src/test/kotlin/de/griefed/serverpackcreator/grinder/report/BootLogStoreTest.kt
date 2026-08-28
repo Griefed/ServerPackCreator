@@ -35,12 +35,12 @@ import java.io.File
  * the only outcome that reaches HIGH, and the usual cause — a server reaching for a client-only class —
  * is legible only from the console, so it has to survive the sweep that produced it.
  */
-internal class CrashLogStoreTest {
+internal class BootLogStoreTest {
 
     @TempDir
     lateinit var directory: File
 
-    private fun store() = CrashLogStore(directory)
+    private fun store() = BootLogStore(directory)
 
     /**
      * A staged console, as the boot verifier leaves it — written **outside** the store, because that is where
@@ -115,14 +115,14 @@ internal class CrashLogStoreTest {
     @Test
     fun anOversizedConsoleIsKeptFromItsTailAndSaysSo() {
         val tail = "java.lang.NoClassDefFoundError: net/minecraft/client/Minecraft"
-        val huge = console("x".repeat(CrashLogStore.MAX_BYTES + 4096) + "\n" + tail)
+        val huge = console("x".repeat(BootLogStore.MAX_BYTES + 4096) + "\n" + tail)
 
         val name = store().keep(ModPlatforms.MODRINTH, "spewy", "Forge", huge)!!
         val kept = store().read(name)!!
 
         Assertions.assertTrue(kept.endsWith(tail), "the crash is at the end — that is the half worth keeping")
         Assertions.assertTrue(kept.contains("truncated"), "a shortened log must say it was shortened")
-        Assertions.assertTrue(kept.length <= CrashLogStore.MAX_BYTES + 512, "kept ${kept.length} bytes")
+        Assertions.assertTrue(kept.length <= BootLogStore.MAX_BYTES + 512, "kept ${kept.length} bytes")
     }
 
     /**
@@ -142,7 +142,7 @@ internal class CrashLogStoreTest {
         val chunk = "x".repeat(1024 * 1024)
         oversized.bufferedWriter().use { writer -> repeat(64) { writer.write(chunk) } }
         Assertions.assertTrue(
-            oversized.length() > CrashLogStore.MAX_BYTES * 8L,
+            oversized.length() > BootLogStore.MAX_BYTES * 8L,
             "fixture must exceed the cap many times over, was ${oversized.length()} bytes"
         )
 
@@ -158,7 +158,7 @@ internal class CrashLogStoreTest {
             "keeping a ${oversized.length() / 1024 / 1024} MiB console allocated ${(peak - before) / 1024 / 1024} MiB — " +
                 "it is being read whole before the cap is applied"
         )
-        Assertions.assertTrue(File(directory, name!!).length() <= CrashLogStore.MAX_BYTES + 512L)
+        Assertions.assertTrue(File(directory, name!!).length() <= BootLogStore.MAX_BYTES + 512L)
     }
 
     /** Reclamation must never fail a grind, so an unwritable store degrades to "no log" rather than throwing. */
@@ -166,6 +166,6 @@ internal class CrashLogStoreTest {
     fun anUnwritableStoreYieldsNoNameInsteadOfThrowing() {
         val asFile = File(directory, "not-a-directory").apply { writeText("in the way") }
 
-        Assertions.assertNull(CrashLogStore(asFile).keep(ModPlatforms.MODRINTH, "jei", "Forge", console("x")))
+        Assertions.assertNull(BootLogStore(asFile).keep(ModPlatforms.MODRINTH, "jei", "Forge", console("x")))
     }
 }

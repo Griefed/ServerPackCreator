@@ -65,7 +65,7 @@ class ReportServer(
     private val cursors: CursorStore? = null,
     private val cacheRoot: File? = null,
     private val fallbackLists: (() -> FallbackLists)? = null,
-    private val crashLogs: CrashLogStore? = null,
+    private val crashLogs: BootLogStore? = null,
     private val requeue: RequeueStore? = null
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }

@@ -29,7 +29,7 @@ import de.griefed.serverpackcreator.grinder.loader.CachedLoaderVersions
 import de.griefed.serverpackcreator.grinder.loader.ImageJavaRuntimes
 import de.griefed.serverpackcreator.grinder.loader.LoaderCache
 import de.griefed.serverpackcreator.grinder.loader.PackVariables
-import de.griefed.serverpackcreator.grinder.report.CrashLogStore
+import de.griefed.serverpackcreator.grinder.report.BootLogStore
 import java.io.File
 import java.time.Duration
 
@@ -67,7 +67,7 @@ class ContainerCandidateVerifier(
     private val resources: ContainerResources = ContainerResources(),
     private val curseForgeApiKey: String? = System.getenv("CURSEFORGE_API_KEY"),
     private val containerUser: String = ContainerUser.IMAGE_DEFAULT,
-    private val crashLogs: CrashLogStore? = null
+    private val crashLogs: BootLogStore? = null
 ) : CandidateVerifier {
     /** Reclaims each candidate's staging once its verdicts are in; without it the work tree grows without bound. */
     private val reaper = BootWorkspaceReaper(workDirectory)
@@ -112,7 +112,7 @@ class ContainerCandidateVerifier(
          * Nothing here may fail a grind that already has its answer, so a missing or unreadable console keeps
          * nothing and reports nothing.
          */
-        internal fun keepCrashConsoles(report: ClientsideReport, bootRoot: File, crashLogs: CrashLogStore?): Int {
+        internal fun keepCrashConsoles(report: ClientsideReport, bootRoot: File, crashLogs: BootLogStore?): Int {
             if (crashLogs == null) {
                 return 0
             }

@@ -60,7 +60,7 @@ internal class ReportServerTest {
     @Test
     fun servesAKeptCrashLogAndRefusesToEscapeItsStore(@TempDir logDir: File) {
         val secret = File(logDir.parentFile, "secret.txt").apply { writeText("not yours") }
-        val crashLogs = CrashLogStore(logDir)
+        val crashLogs = BootLogStore(logDir)
         crashLogs.keep(
             ModPlatforms.MODRINTH, "creativecore", "Fabric",
             File(logDir.parentFile, "staged.log").apply {

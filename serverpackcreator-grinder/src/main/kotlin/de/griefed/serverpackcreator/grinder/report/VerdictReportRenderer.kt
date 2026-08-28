@@ -49,7 +49,7 @@ object VerdictReportRenderer {
      *
      * [crashLogName] answers, per verdict, the name of the kept crash console to link — or `null` for no
      * link. It is a *lookup* rather than a field on [GrindVerdict] on purpose: the log lives on disk under
-     * [CrashLogStore], so asking at render time means a link appears exactly when a file is there, and a log
+     * [BootLogStore], so asking at render time means a link appears exactly when a file is there, and a log
      * removed by hand cannot strand the table pointing at a 404. Defaults to "no logs anywhere", which keeps
      * the page renderable — and openable straight from disk — with no store wired at all.
      */

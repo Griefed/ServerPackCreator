@@ -25,7 +25,7 @@ import de.griefed.serverpackcreator.clientside.Confidence
 import de.griefed.serverpackcreator.clientside.DeclaredSupport
 import de.griefed.serverpackcreator.clientside.JarScan
 import de.griefed.serverpackcreator.clientside.LoaderVerdict
-import de.griefed.serverpackcreator.grinder.report.CrashLogStore
+import de.griefed.serverpackcreator.grinder.report.BootLogStore
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -86,7 +86,7 @@ internal class ContainerCandidateVerifierReapTest {
     @Test
     fun aCrashedBootsConsoleIsKeptOutsideStaging(@TempDir work: File) {
         val bootRoot = File(work, "boot")
-        val crashLogs = CrashLogStore(File(work, "crash-logs"))
+        val crashLogs = BootLogStore(File(work, "crash-logs"))
         stagedConsole(bootRoot, ModPlatforms.MODRINTH, "creativecore", "Fabric", "NoClassDefFoundError: net/minecraft/client/Minecraft")
         stagedConsole(bootRoot, ModPlatforms.MODRINTH, "creativecore", "NeoForge", "Done (21.5s)! For help")
         val report = clientsideReport(
@@ -110,7 +110,7 @@ internal class ContainerCandidateVerifierReapTest {
      */
     @Test
     fun aCrashWithNoConsoleOnDiskKeepsNothingAndDoesNotThrow(@TempDir work: File) {
-        val crashLogs = CrashLogStore(File(work, "crash-logs"))
+        val crashLogs = BootLogStore(File(work, "crash-logs"))
         val report = clientsideReport(slug = "ghost", perLoader = listOf(verdict("Forge", BootResult.CRASHED)))
 
         ContainerCandidateVerifier.keepCrashConsoles(report, File(work, "boot"), crashLogs)
