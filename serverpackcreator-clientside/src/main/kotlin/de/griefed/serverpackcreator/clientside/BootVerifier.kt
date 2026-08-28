@@ -56,6 +56,10 @@ import java.util.*
  * @param otherVersionRecheckLimit How many *other* versions of the mod may be booted to disprove a crash
  *                             that contradicts a declared server support. Each one is a full boot, so this
  *                             is a hard budget; `0` switches the second re-check off entirely.
+ * @param bootArtifactSink     Optional hook handed every attempt's staged pack and its classified outcome,
+ *                             **per attempt** — staging wipes the attempt directory, so this is the only
+ *                             point at which a re-check's evidence still exists. A thrown sink is logged
+ *                             and ignored: keeping evidence must never fail a boot that already ran.
  * @author Griefed
  */
 class BootVerifier(
@@ -69,7 +73,8 @@ class BootVerifier(
     private val packPostProcessor: ((Prepared.Ready) -> Unit)? = null,
     private val minecraftAcceptable: (String) -> Boolean = { true },
     private val bootTimeout: Duration = Duration.ofMinutes(12),
-    private val otherVersionRecheckLimit: Int = 2
+    private val otherVersionRecheckLimit: Int = 2,
+    private val bootArtifactSink: ((Prepared.Ready, BootOutcome) -> Unit)? = null
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
@@ -84,7 +89,7 @@ class BootVerifier(
      * the attempt directory, so a re-check's evidence is gone by the time [verify] returns.
      */
     private fun boot(pack: Prepared.Ready): BootOutcome =
-        runPrepared(pack, serverRunner, packPostProcessor, bootTimeout)
+        runPrepared(pack, serverRunner, packPostProcessor, bootTimeout, bootArtifactSink)
 
     /**
      * Result of a single boot-attempt: the verdict, the captured log-file, a human-readable note, and
@@ -452,7 +457,15 @@ class BootVerifier(
             val loader: String,
             /** The loader build being booted. May be older than the newest; a crash on one is re-checked. */
             val loaderVersion: String
-        ) : Prepared
+        ) : Prepared {
+            /**
+             * This attempt's staging directory name — the `(platform, slug, loader)` tuple
+             * [AttemptDirectory] builds every staging path from. Derived from [logFile]'s parent rather
+             * than carried as three more fields, and correct for the other-version re-check too, which
+             * deliberately stages into the *crashing* loader's directory rather than its own.
+             */
+            val attemptName: String get() = logFile.parentFile?.name.orEmpty()
+        }
 
         /** Staging failed (no combo, download or generation failure); [detail] explains why. */
         data class Failed(
@@ -479,7 +492,8 @@ class BootVerifier(
             pack: Prepared.Ready,
             serverRunner: ServerRunner,
             packPostProcessor: ((Prepared.Ready) -> Unit)?,
-            bootTimeout: Duration
+            bootTimeout: Duration,
+            bootArtifactSink: ((Prepared.Ready, BootOutcome) -> Unit)? = null
         ): BootOutcome {
             if (packPostProcessor != null) {
                 val processing = runCatching { packPostProcessor.invoke(pack) }
@@ -507,8 +521,16 @@ class BootVerifier(
             }
             // Stamped here rather than inside `outcomeFor`, which classifies a console and has no business
             // knowing what was booted; this is the one place that does.
-            return outcomeFor(runResult, pack.logFile, "${pack.loader} ${pack.loaderVersion} / Minecraft ${pack.minecraftVersion}")
+            val outcome = outcomeFor(runResult, pack.logFile, "${pack.loader} ${pack.loaderVersion} / Minecraft ${pack.minecraftVersion}")
                 .copy(bootedLoader = pack.loader)
+            // Per attempt, and here rather than after `verify` returns: staging wipes and re-creates the
+            // attempt directory, so by the time a verdict is decided every earlier attempt's pack is gone.
+            // Guarded like the live-log sink above -- keeping evidence must never fail a boot that already ran.
+            if (bootArtifactSink != null) {
+                runCatching { bootArtifactSink.invoke(pack, outcome) }
+                    .onFailure { log.warn("Could not keep the boot artifacts for ${pack.attemptName}: ${it.message}") }
+            }
+            return outcome
         }
 
         /**
