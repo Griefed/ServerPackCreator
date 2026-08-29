@@ -134,7 +134,7 @@ internal class VerdictQueryTest {
     fun junkInTheQueryFallsBackInsteadOfThrowing() {
         Assertions.assertEquals(4, select("page=0&size=banana&sort=nonexistent&dir=sideways").matched)
         Assertions.assertEquals(1, select("page=0").page, "a page below the first is clamped to it")
-        Assertions.assertEquals(1, select("page=9999&size=2").pages.let { select("page=9999&size=2").page }.coerceAtMost(2))
+        Assertions.assertEquals(2, select("page=9999&size=2").page, "a page past the end clamps to the last")
         Assertions.assertEquals(4, select("&&&=&f.=x&").matched)
         Assertions.assertEquals(4, select("f.nosuchcolumn=whatever").matched, "an unknown column is ignored, not fatal")
     }
@@ -187,8 +187,15 @@ internal class VerdictQueryTest {
      */
     @Test
     fun onlyThePageSizesAResultCountJustifiesAreOffered() {
-        Assertions.assertEquals(listOf(100, 250, 500, 1_000, 2_000, null), VerdictQuery.offeredSizes(1_842, 250))
-        Assertions.assertEquals(listOf(null), VerdictQuery.offeredSizes(12, 250).filter { it == null })
+        // 1,842 rows: 100/250/500/1000 genuinely paginate. 2,000 and up would each show everything on one
+        // page, which is what `all` already is — so they are omitted as duplicates rather than as "too big".
+        Assertions.assertEquals(listOf(100, 250, 500, 1_000, null), VerdictQuery.offeredSizes(1_842, 250))
+        Assertions.assertFalse(
+            VerdictQuery.offeredSizes(1_842, 250).contains(100_000),
+            "no need to offer 100,000 when there are 1,842 rows"
+        )
+        // 12 rows: nothing paginates, so only the size in force and `all` remain.
+        Assertions.assertEquals(listOf(250, null), VerdictQuery.offeredSizes(12, 250))
     }
 
     /**
