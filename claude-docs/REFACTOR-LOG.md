@@ -2936,3 +2936,42 @@ Filtering ended up needing **no JavaScript at all** — `<select>`s for the low-
 (measured: 4 confidences, 5 loaders, 2 platforms), `<input>`s for the rest, one GET form, submitting *is*
 the URL update. The DOM sort is gone: it was lost on every reload and could not be shared, which is the
 whole point of putting state in the URL.
+
+### 2026-08-29 — item 9: the grinder's entry point, and what "simplify" actually meant here
+
+`GrinderApplication.main` was 294 lines. The line count was never the interesting part: what mattered was
+that **~20 assertions across 8 test files grepped that function's source text**, because `main` boots Docker
+and cannot be executed, so a string being present in a file was the only guard available. That shape also
+degrades silently — a source scan stops covering anything that moves out of the file it scans, without
+failing.
+
+**`GrinderConfiguration`** now reads every knob once, and is *executable*. `KNOBS` is a real list the README
+and systemd-unit guards iterate instead of regexing Kotlin, and `from(lookup)` takes its environment as a
+parameter, so a test asserts what the daemon *would do* with a value rather than that a literal appears
+somewhere. The two documentation guards went from regex-over-source to **zero** source greps, and gained
+things they could not previously state at all: that a malformed number falls back to its documented default,
+that a blank value reads as unset, that every path defaults beneath the home while staying individually
+overridable.
+
+**`GrindLoop`** is the sweep — drain the re-grind lane, take the catalog slice, commit what was reached,
+evict, pace — and it **had no test whatsoever** while it lived inside `main`. It takes
+`evictUnusedInstalls` and `verdictCount` as functions rather than `LoaderCache` and `VerdictStore`, which is
+what keeps its tests free of a Docker-bound installer. Four guards now cover behaviour that was previously
+only greppable, including the one that matters most operationally: a stop arriving *during* the drain must
+not start the catalog pass, or the daemon spends another boot budget per candidate after being asked to
+stop and systemd's `TimeoutStopSec` lands mid-boot.
+
+**Writing those tests taught something worth keeping:** `running` is polled *between steps*, deliberately,
+so a counter-based fake flag stops the loop mid-pass and proves nothing. The flag has to be flipped from the
+injected `sleeper`, which is where a real stop lands. Two of my first three assertions were wrong for
+exactly that reason, and the loop was right.
+
+**Result: 294 → 259 lines, and 20 → 18 source greps** — but the 18 that remain are the *joins* (a configured
+value reaching the collaborator it configures; the shutdown hook's ordering), which genuinely cannot be
+executed, and they now grep `config.<property>` rather than `env("NAME", "default")`. The values those greps
+used to stand in for are asserted for real. Grinder suite 382 → 386.
+
+**Not done, and deliberately:** the composition itself — the ~60 lines wiring `ApiWrapper`, the loader cache,
+the verifier and the report server — stays in `main`. Extracting it would move the remaining wiring guards
+without making any of them executable, since what they assert is precisely that this composition happens.
+That is churn with a migration cost and no gain in coverage.

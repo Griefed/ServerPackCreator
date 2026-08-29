@@ -37,8 +37,11 @@ internal class ReportBindWiringTest {
     fun theConfiguredBindHostReachesTheReportServer() {
         val body = grinderMainBody()
 
-        val read = Regex("""val\s+(\w+)\s*=\s*env\("SPC_GRINDER_HOST"""").find(body)
-            ?: Assertions.fail("main() no longer reads SPC_GRINDER_HOST")
+        // The configuration is executable now (GrinderConfigurationTest asserts SPC_GRINDER_HOST reaches
+        // `host`), so what is left for a source guard is only the join this test exists for: that `main`
+        // actually hands that value to the ReportServer. `main` boots Docker, so it cannot be run here.
+        val read = Regex("""val\s+(\w+)\s*=\s*config\.host""").find(body)
+            ?: Assertions.fail("main() no longer takes its bind address from the configuration")
         val variable = read.groupValues[1]
 
         // Across newlines: the construction is wrapped, and a single-line pattern would report it missing.
@@ -46,7 +49,7 @@ internal class ReportBindWiringTest {
             .find(body) ?: Assertions.fail("main() no longer constructs a ReportServer")
         Assertions.assertTrue(
             construction.groupValues[1].contains("host = $variable"),
-            "main() reads SPC_GRINDER_HOST into `$variable` but never passes it as ReportServer's host — " +
+            "main() reads the configured host into `$variable` but never passes it as ReportServer's host — " +
                 "the report would bind loopback and stay unreachable through a reverse proxy. Construction " +
                 "was: ${construction.value}"
         )
@@ -56,7 +59,7 @@ internal class ReportBindWiringTest {
     @Test
     fun theDefaultBindHostIsLoopback() {
         Assertions.assertTrue(
-            grinderMainBody().contains("""env("SPC_GRINDER_HOST", "127.0.0.1")"""),
+            GrinderConfiguration.from { null }.host == "127.0.0.1",
             "the report's bind address must default to loopback — it serves verdicts and the CSV export " +
                 "to anyone who can reach the port"
         )

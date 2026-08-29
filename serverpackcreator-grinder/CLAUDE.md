@@ -104,6 +104,28 @@ though their detail lives deeper:
 - **`installDist` is not rebuilt by `test`** — always rebuild before a live run, or you will draw conclusions
   from a stale jar (this has happened: a run reported the unfiltered 7 339-version axis because of it).
 
+- **Configuration is `GrinderConfiguration`, and the sweep is `GrindLoop`; `main` composes and hands off.**
+  Both were lifted out of a 294-line `main` on 2026-08-29 (now 259), and the point was never the line count:
+  - **`GrinderConfiguration` reads every knob once and is *executable*.** `KNOBS` is a real list, so
+    `ReadmeConfigurationTest` and `SystemdUnitConfigurationTest` iterate it instead of regexing
+    `GrinderApplication`'s source — which only worked while every `env(...)` stayed inside one function and
+    would have silently stopped covering anything that moved out. `from(lookup)` takes its environment as a
+    parameter, so a test asserts what the daemon *would do* rather than that a string is present.
+    **Landmine: a knob not in `KNOBS` is invisible to both documentation guards.**
+  - **`GrindLoop` had no test at all before the extraction.** Requeue-before-catalog, committing only what
+    was reached, and polling `running` between steps are the daemon's central behaviours, and all of them
+    lived where a Docker daemon was needed to run them. It takes `evictUnusedInstalls` and `verdictCount` as
+    functions rather than `LoaderCache`/`VerdictStore`, which is what keeps its tests free of a Docker-bound
+    installer. **Landmine for writing its tests:** `running` is polled *between steps*, so a counter-based
+    fake stops the loop mid-pass and proves nothing — flip the flag from the injected `sleeper`, which is
+    where a real stop lands.
+  - **18 source-text greps remain**, in `ReportBindWiringTest`, `ContainerLimitsWiringTest`,
+    `FallbackListWiringTest`, `ShutdownWiringTest` and `GrinderSpcEnvironmentTest`. Those assert *joins*
+    inside `main` — that a configured value reaches the collaborator it configures, that the shutdown hook
+    is ordered correctly — and `main` still cannot be executed, so they stay. What changed is that they now
+    grep for `config.<property>` rather than for `env("NAME", "default")`, and the *values* they used to
+    imply are asserted for real elsewhere.
+
 - **The daemon owns its own `Preferences` node — do not "simplify" that away.** SPC resolves its home directory
   through a `Preferences` node (`PathsConfig.homeDirectory`), historically the hard-coded, **machine-wide per-user**
   `ServerPackCreator` shared by the GUI, the web backend, every test suite *and* the grinder — and the getter

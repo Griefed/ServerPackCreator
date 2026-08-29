@@ -55,21 +55,16 @@ internal class SystemdUnitConfigurationTest {
     /** Both the active `Environment=` lines and the commented-out ones — the unit documents by commenting. */
     private val declared = Regex("""^\s*#?\s*Environment=([A-Z_]+)=(.*)$""", RegexOption.MULTILINE)
 
-    private fun source() = grinderEntryPoint.readText()
+    /** The service's own knob list — the same one it configures itself from. */
+    private fun knobs() = GrinderConfiguration.KNOBS.map { it.name }
 
     @Test
     fun everyVariableTheServiceReadsAppearsInTheUnit() {
         Assertions.assertTrue(unit.isFile, "unit not found at ${unit.absolutePath}")
         val text = unit.readText()
 
-        val names = buildSet {
-            addAll(envAnyName.findAll(source()).map { it.groupValues[1] })
-            addAll(
-                envWithoutDefault.findAll(source()).map { it.groupValues[1] }
-                    .filter { it.startsWith("SPC_GRINDER_") || it == "CURSEFORGE_API_KEY" }
-            )
-        }
-        Assertions.assertTrue(names.isNotEmpty(), "no env(...) calls found — did the entry point change shape?")
+        val names = knobs() + "CURSEFORGE_API_KEY"
+        Assertions.assertTrue(names.isNotEmpty(), "the service declares no knobs — did GrinderConfiguration change shape?")
 
         for (name in names) {
             Assertions.assertTrue(
@@ -82,8 +77,8 @@ internal class SystemdUnitConfigurationTest {
     @Test
     fun theUnitDoesNotInventVariablesTheServiceIgnores() {
         val known = buildSet {
-            addAll(envAnyName.findAll(source()).map { it.groupValues[1] })
-            addAll(envWithoutDefault.findAll(source()).map { it.groupValues[1] })
+            addAll(knobs())
+            add("CURSEFORGE_API_KEY")
             addAll(launcherRead)
         }
         val phantom = declared.findAll(unit.readText()).map { it.groupValues[1] }.toSet() - known
@@ -97,9 +92,10 @@ internal class SystemdUnitConfigurationTest {
      */
     @Test
     fun everyDefaultTheUnitQuotesIsTheRealOne() {
-        val defaults = envWithLiteralDefault.findAll(source())
-            .associate { it.groupValues[1] to it.groupValues[2] }
-        Assertions.assertTrue(defaults.isNotEmpty(), "no literal-default env(...) calls found")
+        val defaults = GrinderConfiguration.KNOBS.mapNotNull { knob ->
+            knob.literalDefault?.let { knob.name to it }
+        }.toMap()
+        Assertions.assertTrue(defaults.isNotEmpty(), "no knob declares a literal default")
 
         val quoted = declared.findAll(unit.readText()).associate { it.groupValues[1] to it.groupValues[2].trim() }
 

@@ -70,7 +70,10 @@ object GrinderApplication {
     fun main(args: Array<String>) {
         // Created here rather than lazily: it is handed to SPC as its home directory below, and SPC's own
         // writability check runs before anything of ours would have created it.
-        val base = File(env("SPC_GRINDER_HOME", File(System.getProperty("user.home"), ".spc-grinder").path))
+        // Every operator-facing setting, read once, in one place -- see GrinderConfiguration for why that
+        // place is a real object rather than a run of env() calls inside this function.
+        val config = GrinderConfiguration.from()
+        val base = config.home
             .absoluteFile.apply { mkdirs() }
         // Queue-and-exit, BEFORE the two claims below and before anything expensive is built. This process runs
         // *against a daemon that is already up*, so it must not claim the preferences node, re-pin SPC's home,
@@ -80,9 +83,8 @@ object GrinderApplication {
         // Answered here rather than over HTTP because the report server is unauthenticated by design, and a
         // write endpoint on it would let anyone who can reach the page schedule unbounded container work.
         if (args.isNotEmpty() && args.first().startsWith("--requeue")) {
-            val storePath = File(env("SPC_GRINDER_STORE", File(base, "verdicts.json").path))
-            val queuePath = File(env("SPC_GRINDER_REQUEUE", File(base, "requeue.json").path))
-                .apply { parentFile?.mkdirs() }
+            val storePath = config.store
+            val queuePath = config.requeue.apply { parentFile?.mkdirs() }
             enqueueAndExit(args, JsonRequeueStore(queuePath), JsonVerdictStore(storePath))
             return
         }
@@ -92,33 +94,33 @@ object GrinderApplication {
         claimSpcPreferencesNode()
         pinSpcHomeDirectory(base)
 
-        val image = env("SPC_GRINDER_IMAGE", "spc-grinder-runtime:latest")
-        val workDir = File(env("SPC_GRINDER_WORK", File(base, "work").path)).apply { mkdirs() }
-        val cacheRoot = File(env("SPC_GRINDER_CACHE", File(base, "cache").path)).apply { mkdirs() }
-        val storeFile = File(env("SPC_GRINDER_STORE", File(base, "verdicts.json").path)).apply { parentFile?.mkdirs() }
+        val image = config.image
+        val workDir = config.work.apply { mkdirs() }
+        val cacheRoot = config.cache.apply { mkdirs() }
+        val storeFile = config.store.apply { parentFile?.mkdirs() }
         // The immediate re-grind lane. Lives beside the verdict store rather than under `work/`: it is state an
         // operator authored, not scratch the reaper may reclaim.
-        val requeueFile = File(env("SPC_GRINDER_REQUEUE", File(base, "requeue.json").path)).apply { parentFile?.mkdirs() }
+        val requeueFile = config.requeue.apply { parentFile?.mkdirs() }
         val requeue = JsonRequeueStore(requeueFile)
-        val port = env("SPC_GRINDER_PORT", "8757").toInt()
+        val port = config.port
         // Loopback by default: the report is unauthenticated, so reaching it from anywhere else -- a reverse
         // proxy in a container dials the host over the bridge gateway, never 127.0.0.1 -- is a deliberate act.
-        val bindHost = env("SPC_GRINDER_HOST", "127.0.0.1")
-        val workers = env("SPC_GRINDER_WORKERS", "2").toInt()
+        val bindHost = config.host
+        val workers = config.workers
         // Cores per container, not per host: `workers * cpus` is what the grinder can actually occupy, and the
         // default pair (2 workers x 2 cores) is what every install has been running on. Worth a knob because a
         // grinder normally shares its box -- and because the cap the code shipped with was unreachable from the
         // outside. Do not tune it below ~1 core: world generation is single-thread-bound, and a boot throttled
         // past its 15-minute budget is scored INCONCLUSIVE, which reads as a hanging mod rather than as a
         // starved host. 0 disables the cap.
-        val containerCpus = env("SPC_GRINDER_CPUS", "2").toDouble()
+        val containerCpus = config.containerCpus
         // Memory per container, and the one knob here that is genuinely dangerous to touch: the packs the
         // grinder builds leave `javaArgs` empty, so the JVM sizes the server's heap from this cgroup limit
         // (measured at 25%, so 3 GiB gives a 768 MiB heap), and it is also what the README's worker-sizing
         // advice divides by. Lower it and boots die of a heap too small for a modded server; raise it without
         // dropping workers and the host over-subscribes and OOM-kills them. Both are scored INCONCLUSIVE,
         // i.e. they look like mods that hang. Default 3 GiB -- see README §5's warning.
-        val containerMemoryGiB = env("SPC_GRINDER_MEMORY_GIB", "3").toDouble()
+        val containerMemoryGiB = config.containerMemoryGiB
         val containerResources = ContainerResources.forLimits(containerCpus, containerMemoryGiB)
         // The image declares USER 1000:1000, which is only right while the daemon itself is uid 1000. Every
         // container bind-mounts a directory this process created, so it has to run as that directory's owner --
@@ -127,7 +129,7 @@ object GrinderApplication {
         // Read here rather than inside ContainerUser so the entry point stays the one place environment is
         // consulted -- which is also what keeps the README table and the systemd unit honest, since both guards
         // scan this file for the names it reads.
-        val containerUser = ContainerUser.forDirectory(workDir, System.getenv("SPC_GRINDER_CONTAINER_USER"))
+        val containerUser = ContainerUser.forDirectory(workDir, config.containerUser)
 
         log.info(
             "Grinder starting — home=$base image=$image work=$workDir cache=$cacheRoot store=$storeFile " +
@@ -139,7 +141,7 @@ object GrinderApplication {
 
         // Point SPC at a specific config when given (reproducible runs), else one inside our own home -- never
         // ApiWrapper.api()'s relative default, see resolveSpcPropertiesFile.
-        val apiWrapper = ApiWrapper.api(resolveSpcPropertiesFile(System.getenv("SPC_GRINDER_SPC_PROPERTIES"), base))
+        val apiWrapper = ApiWrapper.api(resolveSpcPropertiesFile(config.spcProperties, base))
         val engine = DockerJavaContainerEngine()
         // Authoritative Minecraft -> required-Java from SPC's own metadata; gates selection to the image's JDKs.
         val imageJava = ImageJavaRuntimes.from(apiWrapper.versionMeta.minecraft)
@@ -162,24 +164,13 @@ object GrinderApplication {
         // Every non-survived attempt's console, server logs and crash reports. Bounded by a total budget
         // rather than by uptime: retention keeps most boots, so a daemon running for months on a fixed disk
         // needs a ceiling that does not depend on the catalog's shape.
-        val bootLogBudgetMiB = env("SPC_GRINDER_BOOT_LOG_BUDGET_MIB", "2048").toLong()
-        // Operator-editable console rules. Absent file = today's behaviour exactly; edited while the service
+                // Operator-editable console rules. Absent file = today's behaviour exactly; edited while the service
         // runs, it takes effect on the next boot, because the verifier asks for the rules per attempt.
         // What a rule stating no verdict means. Default `grinder`: the ladder decides and the rule merely
         // names itself, which is "if none is specified, determine by grinder". `inconclusive` opts into the
         // conservative reading for a run where unfinished rules are expected.
-        val undecidedRuleVerdict = when (env("SPC_GRINDER_RULE_FALLBACK", "grinder").lowercase()) {
-            "inconclusive" -> BootResult.INCONCLUSIVE
-            else -> null
-        }
-        val consoleRules = ConsoleRuleFile(
-            File(env("SPC_GRINDER_BOOT_RULES", File(base, "boot-rules.json").path)),
-            undecidedRuleVerdict
-        )
-        val crashLogs = BootLogStore(
-            File(env("SPC_GRINDER_BOOT_LOGS", File(base, "boot-logs").path)),
-            bootLogBudgetMiB * 1024 * 1024
-        )
+        val consoleRules = ConsoleRuleFile(config.bootRules, config.ruleFallback)
+        val crashLogs = BootLogStore(config.bootLogs, config.bootLogBudgetBytes)
         // One-shot: the superseded crash-logs directory holds real evidence for verdicts still being
         // published, under a name that now contradicts what the store keeps.
         crashLogs.adoptLegacy(File(base, "crash-logs"))
@@ -208,7 +199,7 @@ object GrinderApplication {
         // Live activity record, so `/status` can answer "what is it doing right now?" (the verdict table only
         // ever answers "what has it found?").
         val status = GrinderStatus()
-        val reverifyTtl = Duration.ofDays(env("SPC_GRINDER_REVERIFY_TTL_DAYS", "30").toLong())
+        val reverifyTtl = config.reverifyTtl
         val grinder = Grinder(verifier, store, reverifyTtl, status = status, requeue = requeue)
 
         // ONE shutdown hook, registered before any boot can start so it covers the one-shot path too and
@@ -248,7 +239,7 @@ object GrinderApplication {
             mainThread.interrupt()
         })
 
-        val cursorFile = File(env("SPC_GRINDER_CURSORS", File(base, "cursors.json").path))
+        val cursorFile = config.cursors
             .apply { parentFile?.mkdirs() }
         val cursorStore = JsonCursorStore(cursorFile)
         val server = ReportServer(
@@ -300,8 +291,8 @@ object GrinderApplication {
         // Verdicts persist after every record, so a restart never redoes finished work.
         // Sources: Modrinth always (keyless); CurseForge only when its API key is set (mirrors clientside's
         // supportedPlatforms). GrindPool orders each batch round-robin across platforms, so neither starves.
-        val batchSize = env("SPC_GRINDER_BATCH", "25").toInt()
-        val curseForgeKey = System.getenv("CURSEFORGE_API_KEY")?.takeIf { it.isNotBlank() }
+        val batchSize = config.batch
+        val curseForgeKey = config.curseForgeApiKey
         val sources = buildList<CandidateSource> {
             add(ModrinthCandidateSource())
             if (curseForgeKey != null) {
@@ -309,9 +300,9 @@ object GrinderApplication {
             }
         }
         val crawler = CatalogCrawler(sources, cursorStore, batchSize)
-        val cacheRetention = Duration.ofDays(env("SPC_GRINDER_CACHE_TTL_DAYS", "7").toLong())
-        val betweenSweeps = Duration.ofSeconds(env("SPC_GRINDER_INTERVAL", "21600").toLong())
-        val whileCrawling = Duration.ofSeconds(env("SPC_GRINDER_SCAN_DELAY", "15").toLong())
+        val cacheRetention = config.cacheTtl
+        val betweenSweeps = config.betweenSweeps
+        val whileCrawling = config.whileCrawling
         val sourceNames = if (curseForgeKey != null) "Modrinth + CurseForge" else "Modrinth (no CURSEFORGE_API_KEY)"
         log.info(
             "Continuous mode: sources=$sourceNames, batch $batchSize/pass, re-verify TTL ${reverifyTtl.toDays()}d, " +
@@ -319,73 +310,22 @@ object GrinderApplication {
                 "$workers worker(s), cache retention ${cacheRetention.toDays()}d, cursors=$cursorFile."
         )
 
-        var pass = 0
-        while (running.get()) {
-            pass++
-            // The immediate lane first, and forced: these are projects somebody decided are wrong, and a
-            // wrong verdict is usually a recent one, so an unforced drain would skip every one as fresh.
-            // Ground before the catalog slice so a re-grind lands in minutes rather than at the next TTL.
-            val requeued = requeue.drain()
-            val batch = crawler.nextBatch()
-            // Announced before either pool runs, and counting both: /status answers "what is it doing right
-            // now?", and a drain of hundreds used to leave it showing the *previous* pass for the duration.
-            status.beginPass(pass, requeued.size + batch.candidates.size)
-            if (requeued.isNotEmpty()) {
-                log.info("Pass #$pass: re-grinding ${requeued.size} requested candidate(s) ahead of the crawl...")
-                GrindPool(grinder, workers).also { activePool.set(it) }.grindAll(requeued, force = true)
-            }
-            // LANDMINE: this check is what keeps a *second* pool per pass safe. The shutdown hook holds one
-            // handle and reads it once (deliberately -- reading twice could signal one pool and wait on
-            // another), so a stop that landed in the drain above has already been signalled, awaited and
-            // reported complete. Falling through would start a whole new pool of boots behind it, creating
-            // containers after the hook finished and while TimeoutStopSec counts down.
-            if (!running.get()) {
-                break
-            }
-            log.info("Pass #$pass: grinding ${batch.candidates.size} candidate(s)...")
-            val pool = GrindPool(grinder, workers).also { activePool.set(it) }
-            // Named for what it is, and deliberately not `pass`: that shadowed the pass *counter*, so every
-            // "Pass #$pass" below it printed this data class instead of the number.
-            val catalogPass = pool.grindAll(batch.candidates)
-            val verified = catalogPass.verified
-            activePool.set(null)
-            // Advance the crawl only past what was actually ground. An interrupted pass re-hands the rest next
-            // time instead of skipping those projects until the next full sweep, weeks or months away.
-            crawler.commit(batch, catalogPass.reached)
-            log.info("Pass #$pass complete: $verified verified, ${store.all().size} verdict(s) total.")
-            // Bound the loader cache by time. Each tuple costs ~150 MB and loaders keep shipping builds, so an
-            // unattended sweep would grow it without limit; a tuple still being booted is stamped as used on
-            // every cache hit, so only genuinely idle ones go.
-            val evicted = cache.evictUnusedSince(cacheRetention)
-            if (evicted > 0) {
-                log.info("Evicted $evicted loader install(s) unused for over ${cacheRetention.toDays()}d.")
-            }
-            if (!running.get()) {
-                break
-            }
-            // Wait only when there is nothing to get on with — a fixed sleep per pass would cap how fast the
-            // catalog can be swept, which is the difference between covering it in weeks and never.
-            val pause = GrindPacing.pauseAfterPass(verified, batch.sweepCompleted, betweenSweeps, whileCrawling)
-            if (pause.isZero) {
-                continue
-            }
-            // Served out in slices rather than one sleep, so a re-grind queued into a dozing daemon starts in
-            // seconds instead of waiting out a six-hour inter-sweep pause. See GrindPacing.pollInterval.
-            val wakeAt = System.currentTimeMillis() + pause.toMillis()
-            try {
-                while (running.get() && System.currentTimeMillis() < wakeAt) {
-                    if (requeue.pending() > 0) {
-                        log.info("Work was queued for re-grinding; starting the next pass now.")
-                        break
-                    }
-                    val remaining = Duration.ofMillis(wakeAt - System.currentTimeMillis())
-                    Thread.sleep(GrindPacing.pollInterval(remaining).toMillis())
-                }
-            } catch (_: InterruptedException) {
-                break // shutdown requested during the inter-pass wait
-            }
-        }
-        log.info("Grinder stopped after $pass pass(es).")
+        // The sweep itself lives in GrindLoop, which is testable; `main` composes and hands off.
+        val passes = GrindLoop(
+            grinder = grinder,
+            crawler = crawler,
+            requeue = requeue,
+            evictUnusedInstalls = cache::evictUnusedSince,
+            verdictCount = { store.all().size },
+            status = status,
+            workers = workers,
+            cacheRetention = cacheRetention,
+            betweenSweeps = betweenSweeps,
+            whileCrawling = whileCrawling,
+            running = running::get,
+            onPoolChanged = activePool::set
+        ).run()
+        log.info("Grinder stopped after $passes pass(es).")
     }
 
     /**
