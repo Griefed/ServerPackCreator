@@ -402,10 +402,18 @@ workers over starving each of them.
 
 While the service runs:
 
-- **Table:** `http://localhost:8757/` — sortable by any column (name, project, name pattern, confidence, loader)
+- **Table:** `http://localhost:8757/` — sortable by any column, including **Logs**
 - **CSV:** `http://localhost:8757/export.csv`
 
-Columns are `Name, Project, NamePattern, Confidence, Loader, Detail`, highest confidence first.
+Table columns are `Name, Project, Name-pattern, Confidence, Loader, Platform, Project sideness, Jar sideness,
+Detail, Rule, Dependencies, Scanned (UTC), Logs`, highest confidence first. The CSV carries the same set
+except **Logs**, spelling its headers `NamePattern`, `ProjectSideness`, `JarSideness` and `Scanned`.
+
+**Logs is sortable but not filterable**, because it is the one column not derived from the verdict — it is a
+listing of the artifacts kept on disk. Not every entry has any: artifacts are kept only for boots that did
+not survive, and the reaper drops the oldest once `SPC_GRINDER_BOOT_LOG_BUDGET_MIB` is passed. Sorting it
+descending (`?sort=logs&dir=desc`) is how you find the rows with something to read. `sort=logs` on
+`/export.csv` is accepted but does nothing, since that export has no Logs column.
 
 **Interpreting confidence:** only `HIGH` (the server crashed with the mod in place) is decisive. `MEDIUM`
 means the server booted — which does *not* prove the mod is server-safe. `INCONCLUSIVE` means nothing was
