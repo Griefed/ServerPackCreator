@@ -261,6 +261,51 @@ internal class BootCandidateSelectorTest {
     }
 
     /**
+     * An exact **Minecraft** match must beat a nearer *loader* match. Fabric API tags only its recent files as
+     * Quilt-compatible on CurseForge, so a Quilt boot found a Quilt-tagged file for the wrong Minecraft version
+     * and stopped before ever trying the Fabric fallback that had the right one.
+     *
+     * Measured 2026-08-29 over 200 published crash logs: **20 of the 35** boots that staged a Fabric API did so
+     * for the wrong Minecraft version — every one of them Quilt, every one of them the newest `+26.3` build,
+     * dropped into packs as old as 1.19.2. Quilt Loader then refused the pack with "Fabric API requires version
+     * ... of fabricloader/minecraft/java", the boot died, and the *candidate* was scored CRASHED for it.
+     */
+    @Test
+    fun anExactMinecraftMatchBeatsANearerLoaderMatch() {
+        val fabricApi = listOf(
+            file("fabric-api-0.158.3+26.3.jar", setOf("Fabric", "Quilt"), setOf("26.3")),
+            file("fabric-api-0.92.11+1.20.1.jar", setOf("Fabric"), setOf("1.20.1"))
+        )
+
+        Assertions.assertEquals(
+            "fabric-api-0.92.11+1.20.1.jar",
+            BootCandidateSelector.pickDependencyFile(fabricApi, "Quilt", "1.20.1")?.fileName,
+            "a Quilt-tagged build for the wrong Minecraft version must not win over the Fabric build for the right one"
+        )
+    }
+
+    /**
+     * A dependency published for no matching Minecraft version is **not** staged at all.
+     *
+     * The opposite of the candidate rule, and deliberately so: booting the candidate on a near-miss version still
+     * tests the candidate, but injecting a wrong-version *dependency* guarantees a loader-level version conflict
+     * that kills the boot and is then blamed on the mod under test. `refuseForMissingDependencies` scores the
+     * refusal INCONCLUSIVE, which is the honest answer — the mod was never given a fair run.
+     */
+    @Test
+    fun aDependencyIsNeverStagedForADifferentMinecraftVersion() {
+        val files = listOf(
+            file("dep-1.19.2.jar", setOf("Forge"), setOf("1.19.2")),
+            file("dep-1.20.1.jar", setOf("Forge"), setOf("1.20.1"))
+        )
+
+        Assertions.assertNull(
+            BootCandidateSelector.pickDependencyFile(files, "Forge", "1.21"),
+            "staging a 1.19.2 dependency into a 1.21 pack cannot help the boot and can only break it"
+        )
+    }
+
+    /**
      * The fallback is Quilt-only and deliberately not symmetric. Fabric cannot load Quilt mods, and NeoForge only
      * loads Forge mods for a narrow range of Minecraft versions — guessing there would stage a jar the loader cannot
      * use and turn a clean signal into noise.
