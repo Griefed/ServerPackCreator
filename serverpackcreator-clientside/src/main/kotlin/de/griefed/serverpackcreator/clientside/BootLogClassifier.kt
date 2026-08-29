@@ -30,6 +30,25 @@ import de.griefed.serverpackcreator.clientside.BootLogClassifier.setupAbortMarke
  *
  * @author Griefed
  */
+/**
+ * What a console classified to, plus the operator rule that had a hand in it — `null` when the built-in
+ * ladder decided alone. The rule is carried as a *field* rather than only mentioned in prose, because
+ * "how many verdicts did rule X decide?" is the only way to find a bad rule, and a sentence cannot answer it.
+ *
+ * @author Griefed
+ */
+data class Classification(
+    /** The verdict this console produced. */
+    val result: BootResult,
+    /** The rule that decided or annotated it, or `null` when no rule matched. */
+    val firedRule: ConsoleRuleMatch? = null
+) {
+    companion object {
+        /** A verdict the built-in ladder reached with no rule involved. */
+        internal fun of(result: BootResult) = Classification(result)
+    }
+}
+
 enum class BootResult {
     /** The server reached its ready-line — the mod did not prevent startup. */
     SURVIVED,
@@ -163,8 +182,38 @@ object BootLogClassifier {
             "|Unmet dependency listing" +
             "|Incompatible mods found" +
             "|requires .{1,80} or above" +
-            "|requires any version of)",
+            "|requires any version of" +
+            // Quilt Loader's solver phrasing, e.g. `requires version [0.19.3, INF) of fabricloader`. The largest
+            // single class in the 2026-08-29 census -- 63 of 200 published crash logs -- and previously read as a
+            // plain non-zero exit, so the *candidate* wore a verdict earned by the pack around it.
+            "|requires version .{1,80} of " +
+            // A mixin refusing because the class it targets is absent: the target belongs to a mod that was not
+            // staged, so nothing of the candidate was exercised. 6 of 200.
+            "|ClassMetadataNotFoundException" +
+            // The Mixin tweaker is part of the pack *we* assemble; without it no mod loads at all. 6 of 200, all
+            // legacy LaunchWrapper-era Forge.
+            "|ClassNotFoundException: org\\.spongepowered\\.asm\\.launch\\.MixinTweaker)",
         RegexOption.IGNORE_CASE
+    )
+
+    /**
+     * The sandbox refusing a mod the network. Boots run `--network none` — that isolation is the entire
+     * guarantee — so a mod whose loader reaches for the internet at startup is certain to die here and nowhere
+     * else, which makes the crash a property of the harness rather than of the mod.
+     *
+     * Measured 2026-08-29 across 200 published crash logs: **15 (8%)**. The clearest is OneConfig, which fetches
+     * its own stage1 from `api.polyfrost.org`, falls back to a Swing error dialog when it cannot — the
+     * `Fontconfig error: No writable cache directories` tail those logs all share, in a headless container — and
+     * then calls `System.exit`.
+     *
+     * Subordinate to [clientOnlyClassMarker], like every other excuse: a clientside mod may phone home *and* die
+     * on a client class, and the marker must still win.
+     */
+    private val sandboxNetworkMarkers = Regex(
+        "(java\\.net\\.UnknownHostException" +
+            "|java\\.net\\.ConnectException" +
+            "|java\\.net\\.NoRouteToHostException" +
+            "|java\\.net\\.SocketTimeoutException)"
     )
 
     /**
@@ -195,44 +244,89 @@ object BootLogClassifier {
      * `0` exit without ever reaching ready is [BootResult.INCONCLUSIVE]; and any other non-zero exit is
      * [BootResult.CRASHED].
      */
-    fun classify(consoleLines: List<String>, exitCode: Int?, timedOut: Boolean): BootResult {
+    fun classify(consoleLines: List<String>, exitCode: Int?, timedOut: Boolean): BootResult =
+        classify(consoleLines, exitCode, timedOut, ConsoleRuleSet.EMPTY).result
+
+    /**
+     * As above, consulting an operator's [rules] at rung 7 — above the exit code and above
+     * [clientOnlyClassMarker], below the timeout, killed/OOM and environment guards.
+     *
+     * **Why exactly there.** Everything above rung 7 means *the mod never got a fair run*, so a hand-edited
+     * file must not be able to manufacture a `CRASHED` — and therefore a `HIGH` — out of host trouble; a
+     * memory-starved VM doing precisely that, systematically, to the biggest mods is on this engine's
+     * record. Below the marker instead would leave a rule unable to raise the signature this feature exists
+     * for: FML's `for invalid dist DEDICATED_SERVER` on a **zero** exit, which the fallback excuses.
+     *
+     * A rule stating a verdict decides. A rule stating none is *undecided*, and
+     * [ConsoleRuleSet.undecidedVerdict] says what that means — by default the ladder decides and the rule
+     * merely names itself on the result, so an operator can see their pattern matched without it changing
+     * anything. First match in file order wins: the file's order is the only precedence its author can see.
+     */
+    fun classify(
+        consoleLines: List<String>,
+        exitCode: Int?,
+        timedOut: Boolean,
+        rules: ConsoleRuleSet
+    ): Classification {
         if (consoleLines.any { readyLine.containsMatchIn(it) }) {
-            return BootResult.SURVIVED
+            return Classification.of(BootResult.SURVIVED)
         }
         if (timedOut) {
-            return BootResult.INCONCLUSIVE
+            return Classification.of(BootResult.INCONCLUSIVE)
         }
         if (consoleLines.any { setupAbortMarkers.containsMatchIn(it) }) {
-            return BootResult.INCONCLUSIVE
+            return Classification.of(BootResult.INCONCLUSIVE)
         }
         // The JVM never got as far as running the server, so nothing about the mod was exercised.
         if (consoleLines.any { launchFailureMarkers.containsMatchIn(it) }) {
-            return BootResult.INCONCLUSIVE
+            return Classification.of(BootResult.INCONCLUSIVE)
         }
         // The loader fell over before it could load anything, so there was no mod in the run to blame.
         if (consoleLines.any { loaderBootstrapFailureMarkers.containsMatchIn(it) }) {
-            return BootResult.INCONCLUSIVE
+            return Classification.of(BootResult.INCONCLUSIVE)
         }
         // Killed from outside, or killed for memory: the mod never got the chance to fail on its own merits.
         if (exitCode in killedExitCodes || consoleLines.any { outOfMemoryMarkers.containsMatchIn(it) }) {
-            return BootResult.INCONCLUSIVE
+            return Classification.of(BootResult.INCONCLUSIVE)
         }
+        // Rung 7 -- the operator's own rules. Below every guard above, all of which mean the mod never got a
+        // fair run, so a hand-edited file can never turn host trouble into a HIGH. Above the marker below,
+        // so a rule can raise a signature the exit code excused and excuse one the marker would crash.
+        val fired = rules.rules.firstNotNullOfOrNull { rule ->
+            rule.firstMatch(consoleLines)?.let { ConsoleRuleMatch(rule, it) }
+        }
+        // A rule that states a verdict decides. One that does not is *undecided*: the rule set says whether
+        // that means INCONCLUSIVE or "let the ladder decide", and in the latter case the match still rides
+        // along on whatever the ladder settles, so the operator can see that their pattern matched.
+        val decided = fired?.rule?.verdict ?: rules.undecidedVerdict?.takeIf { fired != null }
+        if (fired != null && decided != null) {
+            return Classification(decided, fired)
+        }
+        val annotating = fired
+
         // A server that died reaching for a client-only class is decisive on the console alone, and must be, because
         // the exit status cannot be trusted here: measured 2026-07-30, NeoForge's ServerStarterJar reports the crash
         // in full and then exits **0**, so `modelfix` -- textbook `NoClassDefFoundError: net/minecraft/client/
         // Minecraft` -- was scored INCONCLUSIVE and no verdict in a 517-strong store ever reached HIGH. Environment
         // failures cannot fake this marker, which is what makes it safe to trust over the exit code.
         if (consoleLines.any { clientOnlyClassMarker.containsMatchIn(it) }) {
-            return BootResult.CRASHED
+            return Classification(BootResult.CRASHED, annotating)
         }
         // Dependencies our staging failed to supply mean the mod was never fairly tested.
         if (consoleLines.any { dependencyFailureMarkers.containsMatchIn(it) }) {
-            return BootResult.INCONCLUSIVE
+            return Classification(BootResult.INCONCLUSIVE, annotating)
         }
-        return when (exitCode) {
-            null, 0 -> BootResult.INCONCLUSIVE
-            else -> BootResult.CRASHED
+        // The sandbox denied the network, so the mod failed on the harness rather than on its own merits.
+        if (consoleLines.any { sandboxNetworkMarkers.containsMatchIn(it) }) {
+            return Classification(BootResult.INCONCLUSIVE, annotating)
         }
+        return Classification(
+            when (exitCode) {
+                null, 0 -> BootResult.INCONCLUSIVE
+                else -> BootResult.CRASHED
+            },
+            annotating
+        )
     }
 }
 

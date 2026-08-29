@@ -39,6 +39,15 @@ interface VerdictStore {
     fun all(): List<GrindVerdict>
 
     /**
+     * Persist anything buffered, if this store buffers at all.
+     *
+     * Defaulted to a no-op so an implementation that writes through — or holds nothing on disk, like the
+     * in-memory store — needs no ceremony, while a caller that must not lose work (the shutdown hook) can ask
+     * without knowing which it holds.
+     */
+    fun flush() {}
+
+    /**
      * Whether any verdict has been recorded for this project **on [platform]**. Answers "seen at all", which is
      * *not* what the daemon's skip check asks — `Grinder.grind` uses [newestVerification] against the re-verify TTL,
      * because a stale verdict must be re-ground. Kept as the readable predicate for that narrower question.

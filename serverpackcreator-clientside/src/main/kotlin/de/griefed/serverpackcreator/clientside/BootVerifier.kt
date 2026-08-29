@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.clientside
 
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.config.PackConfig
+import de.griefed.serverpackcreator.api.modscanning.ModDependency
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.time.Duration
@@ -56,6 +57,14 @@ import java.util.*
  * @param otherVersionRecheckLimit How many *other* versions of the mod may be booted to disprove a crash
  *                             that contradicts a declared server support. Each one is a full boot, so this
  *                             is a hard budget; `0` switches the second re-check off entirely.
+ * @param consoleRules         Supplies the operator's console rules, asked **per attempt** so a rule file
+ *                             edited during a run takes effect on the next boot rather than the next
+ *                             restart. Defaults to none, i.e. the built-in ladder alone.
+ * @param bootArtifactSink     Optional hook handed every attempt's staged pack and its classified outcome,
+ *                             **per attempt** — staging wipes the attempt directory, so this is the only
+ *                             point at which a re-check's evidence still exists. A thrown sink is logged
+ *                             and ignored: keeping evidence must never fail a boot that already ran. Kept
+ *                             **last** so a caller can pass it as a trailing lambda.
  * @author Griefed
  */
 class BootVerifier(
@@ -69,12 +78,26 @@ class BootVerifier(
     private val packPostProcessor: ((Prepared.Ready) -> Unit)? = null,
     private val minecraftAcceptable: (String) -> Boolean = { true },
     private val bootTimeout: Duration = Duration.ofMinutes(12),
-    private val otherVersionRecheckLimit: Int = 2
+    private val otherVersionRecheckLimit: Int = 2,
+    private val consoleRules: () -> ConsoleRuleSet = { ConsoleRuleSet.EMPTY },
+    private val bootArtifactSink: ((Prepared.Ready, BootOutcome) -> Unit)? = null
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     /** Maximum dependency-graph depth to resolve, guarding against cycles/runaway graphs. */
     private val maxDependencyDepth = 4
+
+    /**
+     * Boot one prepared attempt with this verifier's collaborators. **The single call site of
+     * [runPrepared]**, and deliberately so: an attempt happens three times over — the first boot, the
+     * newest-loader-build re-check and each other-version re-check — and anything that must happen per
+     * attempt has to be added in exactly one place or it silently covers two of the three. Staging wipes
+     * the attempt directory, so a re-check's evidence is gone by the time [verify] returns.
+     */
+    private fun boot(pack: Prepared.Ready): BootOutcome =
+        // The rules are asked for per attempt rather than captured once, which is what makes an edit during
+        // a multi-day run take effect on the next boot instead of the next restart.
+        runPrepared(pack, serverRunner, packPostProcessor, bootTimeout, consoleRules(), bootArtifactSink)
 
     /**
      * Result of a single boot-attempt: the verdict, the captured log-file, a human-readable note, and
@@ -106,7 +129,23 @@ class BootVerifier(
          * boot may disprove another loader's crash, because the entry comparison that guards the published
          * stem is about the build that actually booted.
          */
-        val bootedLoader: String? = null
+        val bootedLoader: String? = null,
+        /**
+         * The id of the operator rule that decided or annotated this outcome, or `null` when the built-in
+         * ladder settled it alone. A field rather than only a sentence in [detail], because finding a rule
+         * that fires too broadly means *counting* the verdicts it decided.
+         */
+        val firedRule: String? = null,
+        /**
+         * The injected dependency this crash appears to belong to, or `null`. **Annotation only** — it never
+         * changes [result]; the grinder requeues the named dependency as its own candidate so the question
+         * gets answered by grinding it rather than by trusting a string match.
+         */
+        val blamedDependency: String? = null,
+        /** The blamed dependency's project link, so the grinder can queue it for its own verification. */
+        val blamedDependencyUrl: String? = null,
+        /** The dependency jars staged alongside the candidate, so a verdict names the pack it booted with. */
+        val stagedDependencies: List<String> = emptyList()
     )
 
     /**
@@ -144,7 +183,7 @@ class BootVerifier(
             return BootOutcome(BootResult.INCONCLUSIVE, null, prepared.detail)
         }
         val ready = prepared as Prepared.Ready
-        val outcome = runPrepared(ready, serverRunner, packPostProcessor, bootTimeout)
+        val outcome = boot(ready)
         val loaderChecked = recheckCrashOnNewestVersion(project, loader, ready, outcome)
         val decided = recheckCrashOnOtherModVersions(project, loader, ready, loaderChecked, metadataDeclaresServerSupport)
         // Every attempt above wrote the same boot.log, so the file currently holds the *last* boot's console
@@ -190,7 +229,7 @@ class BootVerifier(
             log.warn("Could not re-stage ${project.slug} on $loader $newest (${restaged.detail}); keeping the crash.")
             return outcome
         }
-        val second = runPrepared(restaged as Prepared.Ready, serverRunner, packPostProcessor, bootTimeout)
+        val second = boot(restaged as Prepared.Ready)
         return reconcileRecheck(outcome, second, first.loaderVersion, newest)
     }
 
@@ -256,7 +295,7 @@ class BootVerifier(
                 attempts.add(OtherVersionAttempt(label, BootOutcome(BootResult.INCONCLUSIVE, null, staged.detail)))
                 continue
             }
-            val attempt = runPrepared(staged as Prepared.Ready, serverRunner, packPostProcessor, bootTimeout)
+            val attempt = boot(staged as Prepared.Ready)
             attempts.add(OtherVersionAttempt(label, attempt))
             // A single clean boot is all the proof needed, and every further one costs a full boot.
             if (attempt.result == BootResult.SURVIVED) {
@@ -283,10 +322,15 @@ class BootVerifier(
         modsDir: File,
         visited: MutableSet<String>,
         depth: Int,
-        unsatisfied: MutableSet<String>
+        unsatisfied: MutableSet<String>,
+        unmapped: MutableSet<String>,
+        injected: MutableList<InjectedDependency>
     ): Boolean {
-        if (selectDownloader(file, httpDownloader, browserDownloader).download(file, modsDir) == null) {
-            return false
+        val staged = selectDownloader(file, httpDownloader, browserDownloader).download(file, modsDir)
+            ?: return false
+        if (depth > 0) {
+            // Only dependencies count towards the cap and the recorded set; the candidate is not one.
+            injected.add(InjectedDependency(file.fileName, null, file.pageUrl))
         }
         if (depth >= maxDependencyDepth) {
             return true
@@ -308,13 +352,86 @@ class BootVerifier(
                 unsatisfied.add(dependencyRef)
                 continue
             }
-            if (!downloadWithDependencies(dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied)) {
+            if (!downloadWithDependencies(
+                    dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied, unmapped, injected
+                )
+            ) {
                 log.warn("Required dependency '$dependencyRef' (${dependencyFile.fileName}) could not be downloaded.")
                 unsatisfied.add(dependencyRef)
             }
         }
+        stageManifestDependencies(staged, file, loader, minecraftVersion, modsDir, visited, depth, unsatisfied, unmapped, injected)
         return true
     }
+
+    /**
+     * Stage the dependencies [staged]'s **jar manifest** declares but its platform metadata did not.
+     *
+     * The two sources overlap heavily — a well-formed project declares its dependencies in both — so
+     * anything already visited is skipped rather than downloaded twice. What this adds is the case the
+     * platform never sees: an author who declared a dependency only in `fabric.mod.json`. Fabric API is
+     * the one that matters, and until the `-api` exclusion fix it was not even reported as a dependency.
+     *
+     * **An id that maps to no project goes to [unmapped], not [unsatisfied]**, so it can never refuse the
+     * boot: a manifest id may name something bundled inside another jar, provided by the loader, or
+     * optional in practice, and refusing on it would turn working boots into INCONCLUSIVE.
+     */
+    private fun stageManifestDependencies(
+        staged: File,
+        file: ModFile,
+        loader: String,
+        minecraftVersion: String,
+        modsDir: File,
+        visited: MutableSet<String>,
+        depth: Int,
+        unsatisfied: MutableSet<String>,
+        unmapped: MutableSet<String>,
+        injected: MutableList<InjectedDependency>
+    ) {
+        if (depth >= maxDependencyDepth) {
+            return
+        }
+        val scanner = apiWrapper.modScanner.scannerFor(loader, minecraftVersion) ?: return
+        val declared = runCatching { scanner.scan(listOf(staged)).flatMap { it.dependencies } }
+            .onFailure { log.debug("Could not read ${file.fileName}'s manifest dependencies: ${it.message}") }
+            .getOrDefault(emptyList())
+
+        for (requirement in stageableRequirements(declared, visited) { platformRefFor(it) }) {
+            val ref = platformRefFor(requirement.modID)
+            if (ref == null) {
+                unmapped.add(requirement.modID)
+                continue
+            }
+            if (!visited.add(ref)) {
+                continue
+            }
+            val project = platform.resolveDependency(ref)
+            if (project == null) {
+                // Mapped but not resolvable is still only a *guess* that missed, so it does not refuse.
+                log.info("Manifest dependency '${requirement.modID}' (as '$ref') is not on ${file.pageUrl?.let { "this platform" } ?: "the platform"}.")
+                unmapped.add(requirement.modID)
+                continue
+            }
+            val dependencyFile =
+                BootCandidateSelector.pickDependencyFile(project.files, loader, minecraftVersion, requirement.versionConstraint)
+            if (dependencyFile == null) {
+                log.warn("Manifest dependency '${requirement.modID}' publishes no $loader file for Minecraft $minecraftVersion.")
+                unmapped.add(requirement.modID)
+                continue
+            }
+            if (!downloadWithDependencies(
+                    dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied, unmapped, injected
+                )
+            ) {
+                // Mapped AND resolved, then failed to stage: a case we chose to trust, so it refuses.
+                log.warn("Manifest dependency '${requirement.modID}' (${dependencyFile.fileName}) could not be downloaded.")
+                unsatisfied.add(requirement.modID)
+            }
+        }
+    }
+
+    /** This platform's ref for a manifest mod id, via [KnownModIds]. */
+    private fun platformRefFor(modId: String): String? = KnownModIds.refFor(modId, platform.name)
 
     /**
      * Generate a self-installing server pack from the synthetic [modpackDir] with mod auto-exclusion
@@ -417,15 +534,26 @@ class BootVerifier(
         val modsDir = File(attemptDir, "modpack/mods").apply { mkdirs() }
 
         val unsatisfied = mutableSetOf<String>()
-        if (!downloadWithDependencies(mainFile, loader, minecraftVersion, modsDir, mutableSetOf(), 0, unsatisfied)) {
+        val unmapped = mutableSetOf<String>()
+        val injected = mutableListOf<InjectedDependency>()
+        if (!downloadWithDependencies(
+                mainFile, loader, minecraftVersion, modsDir, mutableSetOf(), 0, unsatisfied, unmapped, injected
+            )
+        ) {
             return Prepared.Failed("Could not download ${mainFile.fileName}.")
         }
         refuseForMissingDependencies(unsatisfied, loader, minecraftVersion)?.let { return it }
+        refuseForTooManyDependencies(injected.map { it.fileName }, loader, minecraftVersion)?.let { return it }
+        unmappedDependencyNote(unmapped)?.let { log.warn(it) }
 
         val serverPack = generateServerPack(File(attemptDir, "modpack"), File(attemptDir, "serverpack"), minecraftVersion, loader, loaderVersion)
             ?: return Prepared.Failed("Server-pack generation failed for $loader $minecraftVersion.")
 
-        return Prepared.Ready(serverPack, File(attemptDir, "boot.log"), minecraftVersion, loader, loaderVersion)
+        return Prepared.Ready(
+            serverPack, File(attemptDir, "boot.log"), minecraftVersion, loader, loaderVersion,
+            injectedDependencies = injected.toList(),
+            candidateStem = FilenameStemDeriver.deriveStem(listOf(mainFile.fileName))
+        )
     }
 
     /** Result of [prepareBootPack]: a ready-to-run pack, or the reason staging could not finish. */
@@ -441,8 +569,20 @@ class BootVerifier(
             /** The modloader this attempt boots — the loader the resulting verdict is about. */
             val loader: String,
             /** The loader build being booted. May be older than the newest; a crash on one is re-checked. */
-            val loaderVersion: String
-        ) : Prepared
+            val loaderVersion: String,
+            /** The dependency jars staged beside the candidate, for attribution and for the verdict record. */
+            val injectedDependencies: List<InjectedDependency> = emptyList(),
+            /** The candidate's own file-name stem, so attribution can tell its frames from a dependency's. */
+            val candidateStem: String? = null
+        ) : Prepared {
+            /**
+             * This attempt's staging directory name — the `(platform, slug, loader)` tuple
+             * [AttemptDirectory] builds every staging path from. Derived from [logFile]'s parent rather
+             * than carried as three more fields, and correct for the other-version re-check too, which
+             * deliberately stages into the *crashing* loader's directory rather than its own.
+             */
+            val attemptName: String get() = logFile.parentFile?.name.orEmpty()
+        }
 
         /** Staging failed (no combo, download or generation failure); [detail] explains why. */
         data class Failed(
@@ -469,7 +609,9 @@ class BootVerifier(
             pack: Prepared.Ready,
             serverRunner: ServerRunner,
             packPostProcessor: ((Prepared.Ready) -> Unit)?,
-            bootTimeout: Duration
+            bootTimeout: Duration,
+            rules: ConsoleRuleSet = ConsoleRuleSet.EMPTY,
+            bootArtifactSink: ((Prepared.Ready, BootOutcome) -> Unit)? = null
         ): BootOutcome {
             if (packPostProcessor != null) {
                 val processing = runCatching { packPostProcessor.invoke(pack) }
@@ -497,8 +639,18 @@ class BootVerifier(
             }
             // Stamped here rather than inside `outcomeFor`, which classifies a console and has no business
             // knowing what was booted; this is the one place that does.
-            return outcomeFor(runResult, pack.logFile, "${pack.loader} ${pack.loaderVersion} / Minecraft ${pack.minecraftVersion}")
-                .copy(bootedLoader = pack.loader)
+            val outcome = outcomeFor(runResult, pack.logFile, "${pack.loader} ${pack.loaderVersion} / Minecraft ${pack.minecraftVersion}", rules)
+                .copy(bootedLoader = pack.loader, stagedDependencies = pack.injectedDependencies.map { it.fileName })
+                // Annotation only: `attribute` returns an outcome whose result is this one's, always.
+                .let { attribute(it, pack.injectedDependencies, pack.candidateStem) }
+            // Per attempt, and here rather than after `verify` returns: staging wipes and re-creates the
+            // attempt directory, so by the time a verdict is decided every earlier attempt's pack is gone.
+            // Guarded like the live-log sink above -- keeping evidence must never fail a boot that already ran.
+            if (bootArtifactSink != null) {
+                runCatching { bootArtifactSink.invoke(pack, outcome) }
+                    .onFailure { log.warn("Could not keep the boot artifacts for ${pack.attemptName}: ${it.message}") }
+            }
+            return outcome
         }
 
         /**
@@ -525,6 +677,94 @@ class BootVerifier(
                         "Not booting — a mod refused for missing dependencies says nothing about sideness."
                 )
             }
+
+        /** Ids the environment provides rather than the pack: never staged, whatever a descriptor says. */
+        private val environmentProvidedIds = setOf(
+            "minecraft", "java", "fabricloader", "forge", "neoforge", "quilt_loader", "quilt_base"
+        )
+
+        /**
+         * Largest number of dependency jars that may be staged alongside a candidate.
+         *
+         * Beyond it the boot is refused rather than attempted: a forty-jar pack that fails says nothing
+         * about the candidate, because any one of the forty could be the cause.
+         */
+        const val MAX_INJECTED_DEPENDENCIES = 12
+
+        /**
+         * The manifest-declared [requirements] worth *staging*: the environment's own ids dropped, and
+         * anything the platform already resolved dropped too.
+         *
+         * [alreadyResolved] holds the platform refs staged from `ModFile.requiredDependencies`, so a
+         * requirement mapping onto one of them is not downloaded a second time — the two sources overlap
+         * heavily, since a well-formed project declares its dependencies in both places.
+         */
+        internal fun stageableRequirements(
+            requirements: List<ModDependency>,
+            alreadyResolved: Set<String> = emptySet(),
+            refFor: (String) -> String? = { it }
+        ): List<ModDependency> = requirements.filterNot { requirement ->
+            requirement.modID.lowercase() in environmentProvidedIds ||
+                refFor(requirement.modID)?.let { it in alreadyResolved } == true
+        }
+
+        /**
+         * A note naming the manifest ids that mapped to no project, or `null` when every one resolved.
+         *
+         * These deliberately do **not** refuse the boot — see the class doc on the refusal split — but they
+         * must still be *said*, or a gap in [KnownModIds] is invisible: the boot would simply be a little
+         * less faithful for reasons nobody could see in the verdict.
+         */
+        internal fun unmappedDependencyNote(unmapped: Set<String>): String? =
+            unmapped.takeIf { it.isNotEmpty() }?.let {
+                "Manifest dependencies that could not be resolved to a project (booted without them): " +
+                    it.sorted().joinToString(", ") + "."
+            }
+
+        /**
+         * Refuse a boot whose dependency graph grew past [MAX_INJECTED_DEPENDENCIES], or `null` when it did
+         * not. A pack this size cannot produce evidence about the candidate specifically.
+         */
+        internal fun refuseForTooManyDependencies(
+            injected: List<String>,
+            loader: String,
+            minecraftVersion: String
+        ): Prepared.Failed? =
+            if (injected.size <= MAX_INJECTED_DEPENDENCIES) {
+                null
+            } else {
+                Prepared.Failed(
+                    "Staging ${injected.size} dependencies for $loader / Minecraft $minecraftVersion exceeds " +
+                        "the cap of $MAX_INJECTED_DEPENDENCIES. Not booting — a pack that large cannot say " +
+                        "anything about this mod specifically."
+                )
+            }
+
+        /**
+         * Annotate [outcome] with the injected dependency its crash names, if any.
+         *
+         * **Returns an outcome whose [BootOutcome.result] is always the input's.** Only a crash is
+         * considered at all, and even then the verdict is untouched: this exists to make a suspicion
+         * *visible and countable*, not to overrule the boot. `attributionNeverChangesTheBootResult` pins it.
+         */
+        internal fun attribute(
+            outcome: BootOutcome,
+            injected: List<InjectedDependency>,
+            candidateStem: String?
+        ): BootOutcome {
+            if (outcome.result != BootResult.CRASHED) {
+                return outcome
+            }
+            val blamed = DependencyAttribution.blame(
+                outcome.console?.lines().orEmpty(), injected, candidateStem
+            ) ?: return outcome
+            return outcome.copy(
+                detail = outcome.detail + " [crash names the injected dependency ${blamed.fileName}; " +
+                    "it has been queued for its own verification]",
+                blamedDependency = blamed.fileName,
+                blamedDependencyUrl = blamed.projectUrl
+            )
+        }
 
         /**
          * Whether a crash deserves a second boot on the newest loader build: only a CRASHED outcome, only when
@@ -613,7 +853,12 @@ class BootVerifier(
          * [BootLogClassifier], and — only on a crash — given a [BootLogExcerpt]. [label] prefixes the
          * human-readable detail. This is the verdict seam every runner (host or container) shares.
          */
-        internal fun outcomeFor(runResult: RunResult, logFile: File, label: String): BootOutcome = when (runResult) {
+        internal fun outcomeFor(
+            runResult: RunResult,
+            logFile: File,
+            label: String,
+            rules: ConsoleRuleSet = ConsoleRuleSet.EMPTY
+        ): BootOutcome = when (runResult) {
             is RunResult.NotStarted -> BootOutcome(BootResult.INCONCLUSIVE, null, runResult.detail)
             is RunResult.Completed -> {
                 val console = runResult.lines.joinToString("\n")
@@ -622,13 +867,23 @@ class BootVerifier(
                 // problem, not a reason to lose a boot that already ran.
                 runCatching { logFile.writeText(console) }
                     .onFailure { log.warn("Could not write the boot log ${logFile.absolutePath}: ${it.message}") }
-                val result = BootLogClassifier.classify(runResult.lines, runResult.exitCode, runResult.timedOut)
+                val classified = BootLogClassifier.classify(runResult.lines, runResult.exitCode, runResult.timedOut, rules)
+                val result = classified.result
                 val crashExcerpt = if (result == BootResult.CRASHED) BootLogExcerpt.crashExcerpt(runResult.lines) else null
                 // The exit status is *the* input that decides CRASHED vs INCONCLUSIVE when no ready-line appeared, so
                 // record it. Without it an INCONCLUSIVE verdict is undiagnosable from the report alone: a run that
                 // crashed loudly in its console but reported exit 0 looks identical to one that never started.
                 val exitDetail = if (runResult.timedOut) "timed out" else "exit ${runResult.exitCode ?: "unknown"}"
-                BootOutcome(result, logFile, "$label → $result ($exitDetail)", crashExcerpt, console)
+                // A rule that had a hand in this says so in the detail *and* in the field beside it: the
+                // sentence is for whoever reads the report, the field is for whoever has to count how often
+                // a rule fired before deciding it is too broad.
+                val ruleNote = classified.firedRule?.let { match ->
+                    " [rule '${match.rule.id}'" + (match.rule.note?.let { ": $it" } ?: "") + "]"
+                } ?: ""
+                BootOutcome(
+                    result, logFile, "$label → $result ($exitDetail)$ruleNote", crashExcerpt, console,
+                    firedRule = classified.firedRule?.rule?.id
+                )
             }
         }
 

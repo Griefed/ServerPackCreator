@@ -62,6 +62,30 @@ Environment=SPC_GRINDER_HOME=/home/grinder/.spc-grinder
 # daemon cannot read it back) and drained at the start of every pass.
 #Environment=SPC_GRINDER_REQUEUE=/home/grinder/.spc-grinder/requeue.json
 
+# Everything a boot that did NOT survive left behind: the container console, the server's own logs/ and
+# its crash-reports/, one set per attempt (the first boot and each re-check are separate attempts). This
+# is what makes a wrong verdict debuggable -- a mod wrongly cleared as server-safe leaves evidence here.
+# A clean boot keeps nothing: it proves nothing about sideness and explains nothing either.
+#Environment=SPC_GRINDER_BOOT_LOGS=/home/grinder/.spc-grinder/boot-logs
+# Operator-written rules mapping console text to a boot verdict, so a newly-observed clientside signature
+# is a file edit rather than a release. Absent file = exactly the built-in classification. Re-read on the
+# next boot after you save it, so no restart is needed. See deploy/boot-rules.example.json.
+# A rule can never outrank a timeout, a SIGKILL/OOM or a setup abort -- it cannot turn host trouble into a
+# HIGH-confidence clientside verdict.
+#Environment=SPC_GRINDER_BOOT_RULES=/home/grinder/.spc-grinder/boot-rules.json
+# What a rule that states NO verdict means.
+#   grinder      (default) the built-in ladder decides, and the rule merely names itself on the verdict --
+#                so a pattern can label a signature you are still making your mind up about, without
+#                changing anything.
+#   inconclusive the conservative reading: such a rule scores INCONCLUSIVE, the one outcome that can never
+#                reach HIGH and so can never publish. Suits a run where unfinished rules are expected.
+# This governs ONLY rules with no verdict. A rule that states one always means what it says, and a rule
+# whose verdict is MISSPELT is always INCONCLUSIVE regardless -- a typo is not an intention to honour.
+#Environment=SPC_GRINDER_RULE_FALLBACK=grinder
+# Ceiling for that store, in MiB. Once passed, the oldest attempts are deleted until it is under again.
+# Retention keeps most boots, so this is what stops a months-long run filling a fixed disk.
+#Environment=SPC_GRINDER_BOOT_LOG_BUDGET_MIB=2048
+
 # The image the boots run in. Build it with serverpackcreator-grinder/docker/Dockerfile.
 #Environment=SPC_GRINDER_IMAGE=spc-grinder-runtime:latest
 
@@ -104,6 +128,12 @@ Environment=SPC_GRINDER_HOME=/home/grinder/.spc-grinder
 # Pacing, in seconds.
 #Environment=SPC_GRINDER_INTERVAL=21600
 #Environment=SPC_GRINDER_SCAN_DELAY=15
+
+# How often buffered verdicts are written to the store, in seconds. The whole store is serialised per write,
+# so writing per verdict costs ~0.8-1.0s each once it passes 100k rows and blocks every grind worker behind
+# it. An orderly stop always flushes; only a hard kill can lose up to one interval, and those verdicts are
+# re-derived by REVERIFY_TTL_DAYS. `0` restores the old write-through behaviour.
+#Environment=SPC_GRINDER_STORE_FLUSH_SECONDS=30
 
 # Freshness, in days. Raise REVERIFY_TTL_DAYS above the time a full sweep takes, or the crawl never
 # reaches the tail because the head keeps going stale.

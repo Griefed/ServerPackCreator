@@ -104,6 +104,28 @@ though their detail lives deeper:
 - **`installDist` is not rebuilt by `test`** — always rebuild before a live run, or you will draw conclusions
   from a stale jar (this has happened: a run reported the unfiltered 7 339-version axis because of it).
 
+- **Configuration is `GrinderConfiguration`, and the sweep is `GrindLoop`; `main` composes and hands off.**
+  Both were lifted out of a 294-line `main` on 2026-08-29 (now 259), and the point was never the line count:
+  - **`GrinderConfiguration` reads every knob once and is *executable*.** `KNOBS` is a real list, so
+    `ReadmeConfigurationTest` and `SystemdUnitConfigurationTest` iterate it instead of regexing
+    `GrinderApplication`'s source — which only worked while every `env(...)` stayed inside one function and
+    would have silently stopped covering anything that moved out. `from(lookup)` takes its environment as a
+    parameter, so a test asserts what the daemon *would do* rather than that a string is present.
+    **Landmine: a knob not in `KNOBS` is invisible to both documentation guards.**
+  - **`GrindLoop` had no test at all before the extraction.** Requeue-before-catalog, committing only what
+    was reached, and polling `running` between steps are the daemon's central behaviours, and all of them
+    lived where a Docker daemon was needed to run them. It takes `evictUnusedInstalls` and `verdictCount` as
+    functions rather than `LoaderCache`/`VerdictStore`, which is what keeps its tests free of a Docker-bound
+    installer. **Landmine for writing its tests:** `running` is polled *between steps*, so a counter-based
+    fake stops the loop mid-pass and proves nothing — flip the flag from the injected `sleeper`, which is
+    where a real stop lands.
+  - **18 source-text greps remain**, in `ReportBindWiringTest`, `ContainerLimitsWiringTest`,
+    `FallbackListWiringTest`, `ShutdownWiringTest` and `GrinderSpcEnvironmentTest`. Those assert *joins*
+    inside `main` — that a configured value reaches the collaborator it configures, that the shutdown hook
+    is ordered correctly — and `main` still cannot be executed, so they stay. What changed is that they now
+    grep for `config.<property>` rather than for `env("NAME", "default")`, and the *values* they used to
+    imply are asserted for real elsewhere.
+
 - **The daemon owns its own `Preferences` node — do not "simplify" that away.** SPC resolves its home directory
   through a `Preferences` node (`PathsConfig.homeDirectory`), historically the hard-coded, **machine-wide per-user**
   `ServerPackCreator` shared by the GUI, the web backend, every test suite *and* the grinder — and the getter
@@ -270,7 +292,7 @@ though their detail lives deeper:
   to ask. `Grinder` logs `"Platform mismatch for …: candidate says 'X', resolved report says 'Y'"`, so the two
   are known to be able to disagree, and a slug is a mutable name a rename can move out from under a queued
   candidate. Asking with the candidate's copy of either matches nothing and leaks a whole pack per attempt.
-- **A crashed boot's console outlives its staging** (`CrashLogStore`, `ContainerCandidateVerifier.keepCrashConsoles`).
+- **Every non-survived attempt's evidence outlives its staging** (`BootLogStore`, `ContainerCandidateVerifier.keepAttemptArtifacts`, fired per attempt by `BootVerifier`'s `bootArtifactSink`). Was crash-console-only until 2026-08-28; now the container console *plus* the server's own `logs/` and `crash-reports/`, per attempt, for every boot that did not SURVIVE — because a mod wrongly **cleared** left no evidence at all, and neither did an error in the checking itself. Bounded by `pruneExcept` per tuple and `SPC_GRINDER_BOOT_LOG_BUDGET_MIB` (default 2048) overall; details and the concurrency landmine in `grinder/report/CLAUDE.md`. Superseded text follows for the reasoning that still holds:
   The reaper keeps one `boot.log` per attempt directory, but staging *wipes and re-creates* that directory, so
   the next re-grind of the same tuple destroyed the console for a verdict that is still published. Since a crash
   is the only outcome that reaches HIGH — and its usual cause, a server loading a mod that reaches for a
@@ -350,6 +372,7 @@ read the files; it also drifted (it listed 8 of the 30 test files). What is *not
   | Test | Gate | Also needs | Last verified |
   |---|---|---|---|
   | `DockerJavaContainerEngineIT` | `GRINDER_DOCKER_IT=1` | a daemon + `docker pull busybox` | Docker 29.5, 2026-06-26 |
+  | *(boot-log capture, verified by a live one-shot rather than an IT)* | — | a daemon + `spc-grinder-runtime` | Docker 29.7.2, 2026-08-29 |
   | `ScriptTemplateMatrixIT` | `GRINDER_TEMPLATE_IT=1` | the `spc-grinder-templates` image | 2026-07-29 |
   | `CatalogCrawlLiveIT` | `GRINDER_LIVE_IT=1` | network (Modrinth) | 2026-07-29 |
   | `CurseForgeCrawlLiveIT` | `GRINDER_CF_IT=1` | **plus** `CURSEFORGE_API_KEY` | 2026-07-30 |

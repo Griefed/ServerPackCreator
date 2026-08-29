@@ -21,6 +21,8 @@ package de.griefed.serverpackcreator.grinder.report
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.sun.net.httpserver.HttpExchange
+import de.griefed.serverpackcreator.clientside.AttemptDirectory
+import de.griefed.serverpackcreator.clientside.ConsoleRuleSet
 import com.sun.net.httpserver.HttpServer
 import de.griefed.serverpackcreator.grinder.GrinderStatus
 import de.griefed.serverpackcreator.grinder.ModPlatforms
@@ -51,6 +53,9 @@ import java.util.concurrent.Executors
  * @param fallbackLists Supplies the lists `/as-properties` publishes alongside the grinder's findings, read
  *                      per request so a refreshed list is served without a restart. `null` serves the
  *                      grinder's own findings only — the report server stays constructible without SPC.
+ * @param consoleRules Supplies the operator's console rules, so `/status` can report how many loaded and what
+ *        could not be. Reporting the errors is what stops a typo silently disabling an operator's rules —
+ *        the loader deliberately keeps the last good set, which would otherwise hide the breakage entirely.
  * @param crashLogs The kept consoles of crashed boots, linked from the table and served by name. `null`
  *                  simply offers no links, so the report stays constructible without a log store.
  * @param requeue The immediate re-grind queue, reported as a backlog count on `/status` so a queued
@@ -65,7 +70,8 @@ class ReportServer(
     private val cursors: CursorStore? = null,
     private val cacheRoot: File? = null,
     private val fallbackLists: (() -> FallbackLists)? = null,
-    private val crashLogs: CrashLogStore? = null,
+    private val crashLogs: BootLogStore? = null,
+    private val consoleRules: (() -> ConsoleRuleSet)? = null,
     private val requeue: RequeueStore? = null
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
@@ -93,7 +99,14 @@ class ReportServer(
     fun start(): ReportServer {
         // Longest-prefix match means /export.csv wins for that path; everything else renders the table.
         server.createContext("/export.csv") { exchange ->
-            respond(exchange, "text/csv; charset=utf-8", VerdictCsvExporter.toCsv(store.all()))
+            // The SAME selection the table runs, so the two cannot disagree -- they agree because they
+            // share this function, not because two renderers were kept in step. `defaultSize = null` keeps a
+            // bare /export.csv exporting everything, which is the documented behaviour operators script.
+            val selection = VerdictSelection.select(
+                store.all(), VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), null)
+            )
+            exchange.responseHeaders.add("Content-Disposition", "attachment; filename=\"clientside-mods.csv\"")
+            respond(exchange, "text/csv; charset=utf-8", VerdictCsvExporter.toCsv(selection.rows, preOrdered = true))
         }
         server.createContext("/as-properties") { exchange ->
             respond(exchange, "text/x-java-properties; charset=iso-8859-1", fallbackProperties())
@@ -107,27 +120,40 @@ class ReportServer(
         for (iconPath in listOf("/favicon.ico", "/favicon.png")) {
             server.createContext(iconPath) { exchange -> respondFavicon(exchange) }
         }
-        // Longest-prefix match again: /crash-logs is its own context, so /crash-log cannot swallow it.
+        // Longest-prefix match again: each index is its own context, so the singular route cannot swallow it.
+        // /crash-log(s) are kept as aliases of the /boot-log(s) that superseded them: both are documented, and
+        // an operator who has used this report has the old ones bookmarked. Removing a documented endpoint
+        // costs a user something and buys nothing.
         server.createContext("/crash-logs") { exchange ->
             respond(exchange, "text/html; charset=utf-8", crashLogIndex())
         }
+        server.createContext("/boot-logs") { exchange ->
+            respond(exchange, "text/html; charset=utf-8", crashLogIndex())
+        }
+        server.createContext("/boot-log") { exchange ->
+            serveBootLog(exchange)
+        }
         server.createContext("/crash-log") { exchange ->
-            val name = queryParameter(exchange.requestURI.rawQuery, "name")
-            // `read` is what enforces that a name cannot escape the store; a refusal is indistinguishable
-            // from an absent log on purpose, so probing tells an unauthenticated caller nothing.
-            val body = name?.let { crashLogs?.read(it) }
-            if (body == null) {
-                respond(exchange, "text/plain; charset=utf-8", "No such crash log.", status = 404)
-            } else {
-                respond(exchange, "text/plain; charset=utf-8", body)
-            }
+            serveBootLog(exchange)
         }
         server.createContext("/") { exchange ->
+            // One directory listing per *request*, not per row: `namesFor` lists the store every time it is
+            // asked, and the table renders every verdict, so asking per row would be a listing per row.
+            // Grouping on the owner prefix is safe because a tuple's own name cannot contain the separator —
+            // which is what `ATTEMPT_SEPARATOR` was chosen for.
+            val logsByOwner = crashLogs?.list()
+                ?.groupBy { it.substringBefore(BootLogStore.ATTEMPT_SEPARATOR) }
+                .orEmpty()
             respond(
                 exchange,
                 "text/html; charset=utf-8",
-                VerdictReportRenderer.toHtml(store.all()) { verdict ->
-                    crashLogs?.nameFor(verdict.platform, verdict.slug, verdict.loader)
+                VerdictReportRenderer.toHtml(
+                    VerdictSelection.select(
+                        store.all(),
+                        VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), VerdictQuery.DEFAULT_PAGE_SIZE)
+                    )
+                ) { verdict ->
+                    logsByOwner[AttemptDirectory.nameFor(verdict.platform, verdict.slug, verdict.loader)].orEmpty()
                 }
             )
         }
@@ -196,6 +222,22 @@ class ReportServer(
      * no web framework to parse one. A malformed escape decodes to `null` rather than throwing — a bad query
      * is a 404, never a 500 in somebody's log.
      */
+    /**
+     * Serve one kept boot log by its `?name=`, shared by `/boot-log` and its `/crash-log` alias.
+     *
+     * `read` is what enforces that a name cannot escape the store; a refusal is deliberately
+     * indistinguishable from an absent log, so probing tells an unauthenticated caller nothing.
+     */
+    private fun serveBootLog(exchange: HttpExchange) {
+        val name = queryParameter(exchange.requestURI.rawQuery, "name")
+        val body = name?.let { crashLogs?.read(it) }
+        if (body == null) {
+            respond(exchange, "text/plain; charset=utf-8", "No such boot log.", status = 404)
+        } else {
+            respond(exchange, "text/plain; charset=utf-8", body)
+        }
+    }
+
     private fun queryParameter(rawQuery: String?, key: String): String? =
         rawQuery?.split('&')
             ?.firstOrNull { it.substringBefore('=') == key }
@@ -225,6 +267,18 @@ class ReportServer(
             // wants to see it land, and a backlog that never shrinks is the symptom of a stalled pass.
             "requeued" to requeue?.pending(),
             "activity" to status?.snapshot(),
+            // The rule file keeps its last good state when a save breaks it, so the errors have to be visible
+            // somewhere or a typo disables an operator's rules in complete silence.
+            "bootRules" to consoleRules?.invoke()?.let { loaded ->
+                linkedMapOf(
+                    "source" to loaded.source,
+                    "ruleCount" to loaded.rules.size,
+                    // What an undecided rule resolves to, so an operator can see which mode is in force
+                    // without reading the unit file.
+                    "undecidedVerdict" to (loaded.undecidedVerdict?.name ?: "grinder decides"),
+                    "errors" to loaded.errors
+                )
+            },
             "crawl" to cursors?.let { store ->
                 ModPlatforms.known.associateWith { platform ->
                     val cursor = store.cursor(platform)

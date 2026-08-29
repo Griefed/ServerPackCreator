@@ -48,9 +48,15 @@ class FabricScanner(objectMapper: ObjectMapper, utilities: Utilities) : FabricFa
 
     override val scanAnnouncement = "Scanning Fabric mods for sideness..."
 
-    /** Dependency ids that are the platform rather than a mod, so they never pull a jar into the keep-list. */
+    /**
+     * Dependency ids that are the platform rather than a mod, so they never pull a jar into the keep-list.
+     *
+     * **`fabric` is deliberately NOT here.** It is Fabric API — a mod, and the most-depended-on one in the
+     * ecosystem — while `fabricloader` is the platform. Excluding it meant Fabric API could never be
+     * reported as the dependency it is, nor rescued back into a pack that had disabled it.
+     */
     private val dependencyExclusions: Regex
-        get() = "(fabric|fabricloader|java|minecraft)".toRegex()
+        get() = "(fabricloader|java|minecraft)".toRegex()
 
     /**
      * Fabric declares `depends` as an object keyed by mod id, so the ids are the block's field names.
@@ -63,7 +69,9 @@ class FabricScanner(objectMapper: ObjectMapper, utilities: Utilities) : FabricFa
                 log.debug("Checking dependency $dependency for $modId.")
                 if (!dependency.matches(dependencyExclusions)) {
                     log.debug("Added dependency $dependency for $modId.")
-                    modDependencies.add(ModDependency(dependency))
+                    modDependencies.add(
+                        ModDependency(dependency, versionConstraint = constraintOf(modConfig.path(depends).path(dependency)))
+                    )
                 }
             }
         } catch (_: NullPointerException) {
@@ -71,5 +79,17 @@ class FabricScanner(objectMapper: ObjectMapper, utilities: Utilities) : FabricFa
             // dependencies, so there is nothing to record.
         }
         return modDependencies
+    }
+
+    /**
+     * The version constraint a `depends` entry states. Fabric allows either a single string or an array of
+     * alternatives; an array is joined with ` || `, the same disjunction the format itself uses, so the
+     * original meaning survives as text.
+     */
+    private fun constraintOf(value: JsonNode): String? = when {
+        value.isTextual -> value.asText().takeIf { it.isNotBlank() }
+        value.isArray -> value.mapNotNull { it.asText(null) }.filter { it.isNotBlank() }
+            .joinToString(" || ").takeIf { it.isNotBlank() }
+        else -> null
     }
 }

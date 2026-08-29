@@ -35,21 +35,29 @@ import org.junit.jupiter.api.Test
  */
 internal class ContainerLimitsWiringTest {
 
-    /** The name `main` reads [knob] into, failing loudly if it stopped reading it at all. */
-    private fun knobVariable(body: String, knob: String): String =
-        Regex("""val\s+(\w+)\s*=\s*env\("$knob"""").find(body)?.groupValues?.get(1)
-            ?: Assertions.fail("main() does not read $knob — that cap would be unconfigurable")
+    /** The local `main` reads [property] of the configuration into, or a failure naming what is missing. */
+    private fun configuredVariable(body: String, property: String): String =
+        Regex("""val\s+(\w+)\s*=\s*config\.$property""").find(body)?.groupValues?.get(1)
+            ?: Assertions.fail("main() does not take $property from the configuration — that cap would be unconfigurable")
 
-    /** The `ContainerResources` name `main` derives from both knobs, in the order [ContainerResources.forLimits] takes them. */
+    /**
+     * The local holding the `ContainerResources` built from the configured caps.
+     *
+     * Only the JOIN is grepped now — that both caps become one `ContainerResources` and reach both
+     * container paths. Whether the knobs are read and defaulted correctly is *executed* instead, in
+     * `GrinderConfigurationTest`, because the configuration is a real object rather than a run of `env()`
+     * calls inside a function that boots Docker.
+     */
     private fun resourcesVariable(body: String): String {
-        val cpus = knobVariable(body, "SPC_GRINDER_CPUS")
-        val memory = knobVariable(body, "SPC_GRINDER_MEMORY_GIB")
+        val cpus = configuredVariable(body, "containerCpus")
+        val memory = configuredVariable(body, "containerMemoryGiB")
         return Regex("""val\s+(\w+)\s*=\s*ContainerResources\.forLimits\($cpus,\s*$memory\)""")
             .find(body)?.groupValues?.get(1)
             ?: Assertions.fail(
                 "main() reads the caps into `$cpus`/`$memory` but never turns both into one ContainerResources"
             )
     }
+
 
     /** Constructor arguments of [type] in [body], matched across newlines — the calls are wrapped. */
     private fun construction(body: String, type: String): String =
@@ -112,42 +120,39 @@ internal class ContainerLimitsWiringTest {
     /** Two cores and 3 GiB is what every install has been running on; the knobs must not re-tune them. */
     @Test
     fun theDefaultCapsAreTheOnesShippedBeforeTheKnobsExisted() {
-        val body = grinderMainBody()
+        // Executed rather than grepped: the configuration is a real object now, so this asserts the value
+        // the daemon would actually use instead of the presence of a string in a file.
+        val defaults = GrinderConfiguration.from { null }
 
-        Assertions.assertTrue(
-            body.contains("""env("SPC_GRINDER_CPUS", "2")"""),
+        Assertions.assertEquals(
+            2.0, defaults.containerCpus,
             "the per-container CPU cap must default to 2 cores — the value every existing install runs on"
         )
-        Assertions.assertTrue(
-            body.contains("""env("SPC_GRINDER_MEMORY_GIB", "3")"""),
+        Assertions.assertEquals(
+            3.0, defaults.containerMemoryGiB,
             "the per-container memory cap must default to 3 GiB — the value the worker-sizing advice divides by"
         )
     }
 
     /**
-     * The two places a default lives must agree: `main`'s fallback string, and `ContainerResources`' own
-     * property defaults.
+     * The two places a default lives must agree: [GrinderConfiguration]'s fallback, and
+     * `ContainerResources`' own property defaults.
      *
-     * Neither of the literal pins above can catch a drift *between* them — a class default moved to 4 GiB
-     * with `main` still falling back to `"3"` leaves every code path that constructs `ContainerResources()`
+     * Neither of the pins above can catch a drift *between* them — a class default moved to 4 GiB with the
+     * configuration still falling back to 3 leaves every code path that constructs `ContainerResources()`
      * directly (the fallbacks in `ContainerCandidateVerifier`, `ContainerServerRunner` and
      * `DockerLoaderInstaller`, and `ReadmeConfigurationTest`'s own sizing check) disagreeing with the
      * running daemon. So this asserts the identity rather than the values.
      */
     @Test
     fun theKnobDefaultsAgreeWithTheClassDefaults() {
-        val body = grinderMainBody()
-        val shipped = ContainerResources()
-
-        val cpus = Regex("""env\("SPC_GRINDER_CPUS",\s*"([^"]*)"\)""").find(body)?.groupValues?.get(1)
-            ?: Assertions.fail("main() no longer reads SPC_GRINDER_CPUS with a literal default")
-        val memoryGiB = Regex("""env\("SPC_GRINDER_MEMORY_GIB",\s*"([^"]*)"\)""").find(body)?.groupValues?.get(1)
-            ?: Assertions.fail("main() no longer reads SPC_GRINDER_MEMORY_GIB with a literal default")
+        val defaults = GrinderConfiguration.from { null }
 
         Assertions.assertEquals(
-            shipped, ContainerResources.forLimits(cpus.toDouble(), memoryGiB.toDouble()),
-            "main()'s fallbacks ($cpus cores / $memoryGiB GiB) must resolve to exactly the ContainerResources " +
-                "defaults every other construction site falls back to"
+            ContainerResources(),
+            ContainerResources.forLimits(defaults.containerCpus, defaults.containerMemoryGiB),
+            "the configuration's fallbacks (${defaults.containerCpus} cores / ${defaults.containerMemoryGiB} GiB) " +
+                "must resolve to exactly the ContainerResources defaults every other construction site falls back to"
         )
     }
 }

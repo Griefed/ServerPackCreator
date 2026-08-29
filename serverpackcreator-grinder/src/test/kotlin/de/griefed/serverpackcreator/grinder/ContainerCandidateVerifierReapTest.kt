@@ -21,11 +21,12 @@ package de.griefed.serverpackcreator.grinder
 
 import de.griefed.serverpackcreator.clientside.AttemptDirectory
 import de.griefed.serverpackcreator.clientside.BootResult
+import de.griefed.serverpackcreator.clientside.BootVerifier
 import de.griefed.serverpackcreator.clientside.Confidence
 import de.griefed.serverpackcreator.clientside.DeclaredSupport
 import de.griefed.serverpackcreator.clientside.JarScan
 import de.griefed.serverpackcreator.clientside.LoaderVerdict
-import de.griefed.serverpackcreator.grinder.report.CrashLogStore
+import de.griefed.serverpackcreator.grinder.report.BootLogStore
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -78,44 +79,83 @@ internal class ContainerCandidateVerifierReapTest {
     )
 
     /**
-     * **A crashed boot's console is copied out of staging, because staging is about to be reused.** The
-     * attempt directory is wiped and re-created by the next re-grind of the same tuple, taking with it the
-     * only evidence behind a HIGH verdict — most often a server loading a mod that reaches for a client-only
-     * class, which is legible from the console and nowhere else.
+     * **A boot's evidence is kept as the boot finishes, because staging is about to be reused.** The attempt
+     * directory is wiped and re-created by the *next attempt* — not merely the next re-grind — so a
+     * re-check destroys the console of the boot it was checking. Retention is
+     * [de.griefed.serverpackcreator.clientside.BootArtifacts.worthKeeping]: a boot that reached its
+     * ready-line proves nothing about sideness and explains nothing either.
      */
     @Test
-    fun aCrashedBootsConsoleIsKeptOutsideStaging(@TempDir work: File) {
-        val bootRoot = File(work, "boot")
-        val crashLogs = CrashLogStore(File(work, "crash-logs"))
-        stagedConsole(bootRoot, ModPlatforms.MODRINTH, "creativecore", "Fabric", "NoClassDefFoundError: net/minecraft/client/Minecraft")
-        stagedConsole(bootRoot, ModPlatforms.MODRINTH, "creativecore", "NeoForge", "Done (21.5s)! For help")
-        val report = clientsideReport(
-            slug = "creativecore",
-            perLoader = listOf(verdict("Fabric", BootResult.CRASHED), verdict("NeoForge", BootResult.SURVIVED))
+    fun aNonSurvivedAttemptsEvidenceIsKeptOutsideStaging(@TempDir work: File) {
+        val store = BootLogStore(File(work, "boot-logs"))
+        val pack = preparedAttempt(work, "creativecore", "Fabric")
+        File(pack.serverPack, "logs").mkdirs()
+        File(pack.serverPack, "logs/latest.log").writeText("the server's own log")
+        val kept = mutableListOf<String>()
+
+        ContainerCandidateVerifier.keepAttemptArtifacts(
+            pack,
+            BootVerifier.BootOutcome(BootResult.CRASHED, null, "crashed", console = "NoClassDefFoundError: net/minecraft/client/Minecraft"),
+            store,
+            kept
         )
 
-        ContainerCandidateVerifier.keepCrashConsoles(report, bootRoot, crashLogs)
-
-        Assertions.assertEquals(
-            listOf("Modrinth-creativecore-Fabric.log"),
-            crashLogs.list(),
-            "only the boot that crashed is worth keeping — a clean boot proves nothing and explains nothing"
+        Assertions.assertEquals(3, kept.size, "console, the server's log, and the index naming both")
+        Assertions.assertTrue(
+            kept.any { store.read(it)?.contains("net/minecraft/client/Minecraft") == true },
+            "the console has to be among what was kept"
         )
-        Assertions.assertTrue(crashLogs.read("Modrinth-creativecore-Fabric.log")!!.contains("net/minecraft/client/Minecraft"))
+        Assertions.assertTrue(
+            kept.any { store.read(it) == "the server's own log" },
+            "the server's own log is the half the console does not have"
+        )
+    }
+
+    /** A clean boot keeps nothing: it proves nothing about sideness and explains nothing either. */
+    @Test
+    fun aSurvivedAttemptKeepsNothing(@TempDir work: File) {
+        val store = BootLogStore(File(work, "boot-logs"))
+        val pack = preparedAttempt(work, "creativecore", "NeoForge")
+        File(pack.serverPack, "logs").mkdirs()
+        File(pack.serverPack, "logs/latest.log").writeText("Done (21.5s)! For help")
+        val kept = mutableListOf<String>()
+
+        ContainerCandidateVerifier.keepAttemptArtifacts(
+            pack,
+            BootVerifier.BootOutcome(BootResult.SURVIVED, null, "survived", console = "Done (21.5s)! For help"),
+            store,
+            kept
+        )
+
+        Assertions.assertTrue(kept.isEmpty())
+        Assertions.assertTrue(store.list().isEmpty())
     }
 
     /**
-     * A crash whose console never reached disk (a runner that never started, an unwritable log) keeps nothing
-     * and says nothing — collecting evidence must not fail a grind that already has its verdict.
+     * An attempt whose pack holds nothing and whose console never reached memory keeps nothing and says
+     * nothing — collecting evidence must not fail a grind that already has its verdict.
      */
     @Test
-    fun aCrashWithNoConsoleOnDiskKeepsNothingAndDoesNotThrow(@TempDir work: File) {
-        val crashLogs = CrashLogStore(File(work, "crash-logs"))
-        val report = clientsideReport(slug = "ghost", perLoader = listOf(verdict("Forge", BootResult.CRASHED)))
+    fun anAttemptWithNothingToKeepDoesNotThrow(@TempDir work: File) {
+        val store = BootLogStore(File(work, "boot-logs"))
+        val kept = mutableListOf<String>()
 
-        ContainerCandidateVerifier.keepCrashConsoles(report, File(work, "boot"), crashLogs)
+        ContainerCandidateVerifier.keepAttemptArtifacts(
+            preparedAttempt(work, "ghost", "Forge"),
+            BootVerifier.BootOutcome(BootResult.CRASHED, null, "crashed", console = null),
+            store,
+            kept
+        )
 
-        Assertions.assertTrue(crashLogs.list().isEmpty())
+        Assertions.assertTrue(kept.isEmpty())
+        Assertions.assertTrue(store.list().isEmpty())
+    }
+
+    /** One staged attempt, shaped as `BootVerifier` leaves it: a pack beside the attempt's own log file. */
+    private fun preparedAttempt(work: File, slug: String, loader: String): BootVerifier.Prepared.Ready {
+        val attemptDir = File(work, "boot/" + AttemptDirectory.nameFor(ModPlatforms.MODRINTH, slug, loader))
+        val pack = File(attemptDir, "serverpack").apply { mkdirs() }
+        return BootVerifier.Prepared.Ready(pack, File(attemptDir, "boot.log"), "1.20.1", loader, "47.2.0")
     }
 
     /** The report resolved the project, so its identity is the one the directories carry. */

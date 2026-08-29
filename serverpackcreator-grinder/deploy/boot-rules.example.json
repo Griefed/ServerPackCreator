@@ -1,0 +1,47 @@
+// Console rules for the grinder's boot classifier.
+//
+// Copy to the path in SPC_GRINDER_BOOT_RULES (default <SPC_GRINDER_HOME>/boot-rules.json) and edit while
+// the service runs -- the file is re-read on the next boot, so no restart is needed. NO file at all is the
+// normal install: the grinder then classifies exactly as it did before rules existed.
+//
+// Each rule:
+//   id       required. Reported on every verdict the rule decided, so a rule that fires too broadly can be
+//            found by counting. A rule without one is dropped.
+//   pattern  required. Regular expression, matched case-insensitively against each console line.
+//   verdict  optional. CRASHED | INCONCLUSIVE | SURVIVED.
+//            OMIT IT to leave the decision to the grinder: the built-in ladder decides and the rule merely
+//            names itself on the verdict, which is useful for labelling a signature you are still making
+//            your mind up about. Set SPC_GRINDER_RULE_FALLBACK=inconclusive to make such rules score
+//            INCONCLUSIVE instead -- the one outcome that can never reach HIGH.
+//            A MISSPELT verdict is always INCONCLUSIVE, whatever that setting says, and is reported on
+//            /status: a typo is a broken intention, not an intention to honour.
+//   note     optional. Why this signature means what it does. Carried into the verdict detail.
+//   enabled  optional, default true. Set false to park a rule without deleting it.
+//
+// WHERE RULES SIT: above the exit code and above the built-in client-class marker, but BELOW the ready-line
+// and below every guard meaning "the mod never got a fair run" (timeout, SIGKILL/OOM, setup abort, loader
+// bootstrap failure). So a rule can never turn host trouble into a HIGH-confidence clientside verdict --
+// which is a mistake this engine has made before, from a memory-starved VM, systematically.
+//
+// First match in file order wins.
+[
+  // FML refuses a client-only class on a dedicated server. Worth a rule because NeoForge's ServerStarterJar
+  // can print this crash in full and still exit 0, which the exit-code fallback reads as INCONCLUSIVE.
+  {
+    "id": "fml-invalid-dist",
+    "pattern": "for invalid dist DEDICATED_SERVER",
+    "verdict": "CRASHED",
+    "note": "FML refused a client-only class on a dedicated server."
+  },
+
+  // A screen/gui class from *another* mod's package. Deliberately has NO verdict: this usually means a
+  // missing or mismatched dependency rather than the candidate being clientside, so the label is useful
+  // while the judgement stays with the ladder. Give it "verdict": "CRASHED" once you are satisfied it
+  // really is the candidate's fault, or run with SPC_GRINDER_RULE_FALLBACK=inconclusive to keep every
+  // undecided rule out of the published list while you work through them.
+  {
+    "id": "third-party-screen-class",
+    "pattern": "NoClassDefFoundError: (?!net/minecraft/client)[\\w/]+/(screen|gui)/",
+    "note": "Reached for a screen/gui class from another mod -- often a dependency problem, not sideness."
+  }
+]

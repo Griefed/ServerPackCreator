@@ -50,18 +50,25 @@ class ScannedMod(
  * Only the id is known — the declaring descriptor names a mod, not a file — so matching this back to a jar
  * happens against [ScannedMod.modID].
  */
-class ModDependency(
+class ModDependency @JvmOverloads constructor(
     /** Id of the mod being depended on, as the declaring descriptor spells it. */
     val modID: String,
     /**
      * The side this dependency is needed on. Defaults to [Sideness.SERVER]: only Forge-style descriptors
      * state a side per dependency, so for the others every recorded dependency is one the server may need.
      */
-    val sideness: Sideness = Sideness.SERVER
+    val sideness: Sideness = Sideness.SERVER,
+    /**
+     * The version constraint the descriptor spelled, **verbatim and unparsed**, or `null` when it stated
+     * none. Left as written because the grammars differ per loader — Fabric and Quilt use npm-style ranges
+     * (`>=0.92.0`, `^2.0.0`), Forge and NeoForge use Maven ranges (`[15.2,)`) — and a consumer that wants
+     * to match one is better served by the original text than by a lossy normalisation done here.
+     */
+    val versionConstraint: String? = null
 ) {
     /** One line for a scan log: the id that was depended on, and the side the declaration asked for it on. */
     override fun toString(): String {
-        return "ModDependency(modID='$modID', sideness=$sideness)"
+        return "ModDependency(modID='$modID', sideness=$sideness, versionConstraint=$versionConstraint)"
     }
 }
 

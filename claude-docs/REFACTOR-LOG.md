@@ -2780,3 +2780,303 @@ running the file is the promise — and then asserts the two options that must *
 red first (`sh: line 0: /tmp/echo: Permission denied`).
 
 Suite: grinder 351 → **352**, zero failures.
+
+## 2026-08-28 — verdict-store integrity, verdict provenance, and per-attempt boot logs
+
+Three things, in the order they had to happen.
+
+**A data-loss path found while planning, fixed before anything could reach it.** `JsonVerdictStore` built a
+bare `jacksonObjectMapper()`, so `FAIL_ON_UNKNOWN_PROPERTIES` was on and `readValue<List<GrindVerdict>>` was
+all-or-nothing. Adding *any* field to `GrindVerdict` therefore armed this: a newer build writes the field, the
+operator rolls back, `load()` throws, `runCatching` logs "starting empty", and the very next `record()`
+serialises the whole (empty) map over the file. A 100 000-verdict store for one unknown field name.
+`aCorruptFileDegradesToEmpty` stayed green throughout, because it pins *"start empty rather than crash"* and
+not *"and then don't destroy it"* — a good illustration of a guard whose teeth point somewhere else. Now:
+unknown properties tolerated, rows read individually so one bad verdict costs one verdict, and anything unread
+copied to `<name>.unreadable-<epoch>` **before** returning. The forward direction never needed a change —
+absent properties take the Kotlin constructor defaults, which is why the live store's 875 rows carry no
+`projectId` key and load fine.
+
+**Verdict provenance.** `LoaderVerdict` already carried `declaredClientSide`, `declaredServerSide`, `jarScan`
+and `bootedLoader`, and the CLI's `ClientsideReportRenderer` already printed three of them — they simply never
+reached `GrindVerdict`, so the grinder's report could show what a verdict *was* but not what it was based on.
+Threaded through the single mapping site in `Grinder`. Sideness and jar scan are **nullable, not defaulted to
+`UNKNOWN`**: `UNKNOWN` is a real answer a platform gives — CurseForge gives it for every project, because
+`CurseForgePlatform.resolve` hardcodes it and never queries CurseForge for a sideness field — while `null`
+means the question was never recorded. Rendering both the same way would tell a reader that ~870 legacy rows
+had been checked and found not-client-side.
+
+**Per-attempt boot logs.** Only the console of a **CRASHED** boot was kept, so a mod wrongly *cleared* left no
+evidence at all, and neither did an error in the checking itself. The server's own `logs/` and
+`crash-reports/` were read nowhere in the codebase — the only mention of those names was
+`InstallLayerSnapshot` *excluding* them from the install cache.
+
+- The seam is a `bootArtifactSink` invoked **inside `runPrepared`**, per attempt. It has to be: `stageBootPack`
+  does `deleteRecursively()` on the attempt directory, so the newest-build re-check and each other-version
+  boot destroy the previous attempt's pack and console, and anything read after `verify` returns can only ever
+  see the last one. A `refactor:` commit collapsed the three `runPrepared` call sites into one private
+  `BootVerifier.boot` first — 139 tests green with no test edited, which is the proof it was
+  behaviour-preserving — and `onlyOneCallSiteInvokesRunPrepared` now pins the structure, because a hook added
+  at two of three sites would silently lose exactly the re-check evidence a contested crash is argued with.
+- `BootArtifacts` (in `-clientside`, so the CLI verb and the daemon cannot disagree about retention) collects
+  console + `logs/` + `crash-reports/` as separate entries. Separate because they disagree usefully:
+  `logs/latest.log` is log4j's file appender, holding entries stdout never sees and missing the launcher
+  output stdout has. Capped by a **seeking** tail read rather than `readText`-then-trim, and everything found
+  is named in an `index.txt` whether kept or not — a silently capped set of logs reads as a complete one.
+- `CrashLogStore` became `BootLogStore` (pure rename first, machinery carried verbatim: the traversal guard is
+  scarred code, and retyping it is how that landmine comes back). Growth is bounded by `pruneExcept` per tuple
+  — deterministic naming only replaces the attempts a re-grind writes *again*, so a re-check sampling a
+  different loader or Minecraft line would otherwise strand the previous grind's files forever — with
+  `SPC_GRINDER_BOOT_LOG_BUDGET_MIB` (default 2048) as the backstop.
+
+**Two defects found in my own work, on review rather than by a test.** First, "what this grind wrote" was an
+instance field on `ContainerCandidateVerifier` — but **one** instance serves every `GrindPool` worker, so one
+candidate's prune would have deleted logs another had just written. Same cross-candidate class as the
+unqualified attempt directory that once wiped a pack mid-boot. Now per-invocation, pinned by
+`candidatesPrunedInParallelDoNotDeleteEachOthersLogs`. Second, `namesFor` lists the store on every call, and
+the table asks per row — 875 rows meant 875 directory listings per page load. `ReportServer` now snapshots one
+listing per request and groups it on the owner prefix.
+
+Also worth recording: exit codes from `./gradlew … | grep …` are *grep's*, not Gradle's. Two build results
+were misread that way before the pipeline was changed to `tee` a full log.
+
+### 2026-08-29 — feature A verified against a real runtime, and what it measured
+
+A one-shot grind of `modelfix` (Modrinth, all four loaders, 456 s) on Docker 29.7.2 with a freshly built
+`spc-grinder-runtime:latest`. What only a real runtime could answer, answered:
+
+- **The NeoForge attempt crashed and left a genuine `crash-reports/crash-…-fml.txt`** — a NeoForge
+  `ModLoadingCrashException` — which the engine had never captured before. Kept alongside the console,
+  `logs/latest.log` and `logs/debug.log`, five artifacts under
+  `Modrinth-modelfix-NeoForge~NeoForge_21.8.54_mc1.21.8~*`, with `index.txt` correctly reporting
+  "3 kept, 0 not kept".
+- **Retention behaved exactly as designed.** Fabric, Forge and Quilt all SURVIVED and kept *nothing*; so
+  did the Fabric 1.20.4 other-version re-check. Only the crashed attempt has artifacts.
+- **The run exercised the case the per-attempt sink exists for.** The NeoForge crash was superseded by that
+  re-check — which staged into the *crashing loader's* directory, as designed — so the published verdict is
+  `NeoForge=MEDIUM(boot:SURVIVED)` while the evidence behind the crash survives on disk. A post-hoc copy
+  after `verify()` would have found that directory already overwritten.
+- **The console and the server's own log genuinely differ, measured rather than asserted.** The console
+  (31,780 bytes) carries launcher output `latest.log` lacks (`Start script generated by ServerPackCreator`,
+  `Detected 1.21.8 - Java 21`), and `latest.log` (19,027 bytes) carries **100 lines the console does not**.
+  That is the justification in `BootArtifacts`' doc, now with numbers behind it.
+- **The report serves it end to end:** `/` renders the row with `<details><summary>5 log(s)</summary>` and
+  five `/boot-log?name=` links, all nine columns including the new `Rule` and `Logs`; `/boot-logs` indexes
+  them; `/boot-log?name=` returns one by name; `/export.csv` carries the `Rule` column; and `/status`
+  reports `bootRules {source: none, ruleCount: 0, errors: []}`, i.e. feature C's observability with no rule
+  file present — the default install behaving as it did before rules existed.
+
+### 2026-08-29 — feature B: dependency resolution across both sources
+
+**The `-api` bug first, because it was the same one twice.** `FabricScanner` and `QuiltScanner` both carry
+the doc comment *"ids that are the platform rather than a mod"* and both broke it: `fabricloader`,
+`quilt_loader` and `quilt_base` are the platform, but `fabric` is **Fabric API** and `quilted_fabric_api` is
+**QFAPI** — mods, and the ones a server most often genuinely needs. Reported by Griefed, who was right on
+both halves. `ModDependency` gained `versionConstraint` (verbatim and unparsed — the grammars differ per
+loader) behind `@JvmOverloads`, because pf4j loads *compiled* plugin jars and binary compatibility, not
+merely source, is the contract that binds. Blast radius checked rather than feared: `ModListCompiler`'s
+rescue loop now pulls a disabled Fabric API back into a pack, which is correct, and neither id is in the
+shipped fallback list, so a stock install generates identically.
+
+**Two safety properties carry the rest of the feature, and both are inversions of the obvious.**
+
+`VersionConstraint` **fails towards accept**. A constraint it cannot parse must never *refuse*, because a
+refusal is indistinguishable from the dependency being genuinely unsatisfiable — a grammar gap would
+present as a catalog-wide mass-INCONCLUSIVE event rather than as a parser bug. That direction shipped
+broken **twice** during development: `numbersOf` maps a digit-less component to `0`, so a bare clause like
+`whatever` compared equal to `0.0.0`, and separately a bare `.x` took an empty prefix. Both were invisible
+to inspection and both were caught by tests, the second only after a deliberate adversarial sweep —
+`VersionConstraintFuzzTest` now runs 30 malformed shapes against 6 real versions and asserts not one
+refuses, paired with a guard that readable constraints still bite so the rule cannot decay into "accept
+everything".
+
+The **refusal split** is structural, not a flag. `unmapped` never reaches `refuseForMissingDependencies` at
+all. A manifest id is a weaker signal than a platform ref — it may name something bundled inside another
+jar (`fabric-api-base` ships *inside* Fabric API), provided by the loader, or optional in practice — and
+since a refusal is scored INCONCLUSIVE, treating every unresolvable one as fatal would convert a large
+share of *working* boots into INCONCLUSIVE. `refuseForMissingDependencies` kept its exact signature and its
+three existing pins stayed green untouched, which is the evidence the semantics were reused and not
+rewritten.
+
+**Attribution annotates and requeues; it never downgrades** (Griefed's call, reversing an earlier choice).
+The candidate did crash a server in the configuration a real pack produces, so downgrading on a string
+match trades a false positive for a lost true positive — the expensive direction for a list that decides
+what gets stripped from every pack built against it. `attributionNeverChangesTheBootResult` makes that safe
+by construction, and the blamed dependency is queued so the question is answered by *grinding it*. The
+stand-down guard also had to widen: an exception line and the `at` frames beneath it are one crash, and
+judging line-by-line blamed the dependency on the strength of the first line alone.
+
+### 2026-08-29 — the report becomes navigable at catalog scale
+
+`VerdictField` collapses what were four hand-synced lists (HTML headers, HTML cells, CSV header, CSV rows)
+into one enum. They had already drifted — the CSV carried seven fields against the table's eight — and
+`everyHeaderHasACellBeneathIt` existed because adding a header without its cell still rendered, shifting
+every column past the gap onto its neighbour's data. Two characterization guards landed **green** first to
+protect the restructure: `everyColumnRendersTheValueItsHeaderNames` (a distinct sentinel per field, since
+counting cells cannot catch an off-by-one) and `theCsvAndTheTableAgreeOnTheirDataColumns`.
+
+Selection is a pure unit — `QueryParams` → `VerdictQuery` → `VerdictSelection` → `VerdictPage` — rather
+than handler code, which is what makes `/` and `/export.csv` *provably* agree: they share the function
+instead of being kept in step by hand.
+
+**Measured against the real 875-row store**, not asserted: 4 pages at size 250, sizes offered
+`[100, 250, 500, all]`, filters returning HIGH=39 / Fabric=229 / `q=create`→8 (matching the store's own
+profile), **20 filtered+sorted selections in 13 ms**, and page bytes **110,703** at `size=250` against
+**369,873** at `size=all`. The cost was never the filtering; it is the HTML, which is what paging fixes.
+
+**Two bugs the tests caught that reading would not have.** `toQueryString` built its parts inside
+`buildList`, whose `MutableList` receiver's own `size` **shadows** the property — so it compared the list's
+length to the default and emitted that as the value: `size=250` rendered `size=0`, `size=2` rendered
+`size=4`, and every shared link would have carried a wrong page size. And my own expectation for the size
+ladder was wrong rather than the code: for 1,842 rows a size of 2,000 shows everything on one page, which
+is what `all` already is, so sizes at or above the count are omitted as *duplicates* rather than kept as
+"the next one up".
+
+Filtering ended up needing **no JavaScript at all** — `<select>`s for the low-cardinality columns
+(measured: 4 confidences, 5 loaders, 2 platforms), `<input>`s for the rest, one GET form, submitting *is*
+the URL update. The DOM sort is gone: it was lost on every reload and could not be shared, which is the
+whole point of putting state in the URL.
+
+### 2026-08-29 — item 9: the grinder's entry point, and what "simplify" actually meant here
+
+`GrinderApplication.main` was 294 lines. The line count was never the interesting part: what mattered was
+that **~20 assertions across 8 test files grepped that function's source text**, because `main` boots Docker
+and cannot be executed, so a string being present in a file was the only guard available. That shape also
+degrades silently — a source scan stops covering anything that moves out of the file it scans, without
+failing.
+
+**`GrinderConfiguration`** now reads every knob once, and is *executable*. `KNOBS` is a real list the README
+and systemd-unit guards iterate instead of regexing Kotlin, and `from(lookup)` takes its environment as a
+parameter, so a test asserts what the daemon *would do* with a value rather than that a literal appears
+somewhere. The two documentation guards went from regex-over-source to **zero** source greps, and gained
+things they could not previously state at all: that a malformed number falls back to its documented default,
+that a blank value reads as unset, that every path defaults beneath the home while staying individually
+overridable.
+
+**`GrindLoop`** is the sweep — drain the re-grind lane, take the catalog slice, commit what was reached,
+evict, pace — and it **had no test whatsoever** while it lived inside `main`. It takes
+`evictUnusedInstalls` and `verdictCount` as functions rather than `LoaderCache` and `VerdictStore`, which is
+what keeps its tests free of a Docker-bound installer. Four guards now cover behaviour that was previously
+only greppable, including the one that matters most operationally: a stop arriving *during* the drain must
+not start the catalog pass, or the daemon spends another boot budget per candidate after being asked to
+stop and systemd's `TimeoutStopSec` lands mid-boot.
+
+**Writing those tests taught something worth keeping:** `running` is polled *between steps*, deliberately,
+so a counter-based fake flag stops the loop mid-pass and proves nothing. The flag has to be flipped from the
+injected `sleeper`, which is where a real stop lands. Two of my first three assertions were wrong for
+exactly that reason, and the loop was right.
+
+**Result: 294 → 259 lines, and 20 → 18 source greps** — but the 18 that remain are the *joins* (a configured
+value reaching the collaborator it configures; the shutdown hook's ordering), which genuinely cannot be
+executed, and they now grep `config.<property>` rather than `env("NAME", "default")`. The values those greps
+used to stand in for are asserted for real. Grinder suite 382 → 386.
+
+**Not done, and deliberately:** the composition itself — the ~60 lines wiring `ApiWrapper`, the loader cache,
+the verifier and the report server — stays in `main`. Extracting it would move the remaining wiring guards
+without making any of them executable, since what they assert is precisely that this composition happens.
+That is churn with a migration cost and no gain in coverage.
+
+### 2026-08-29 — the requeue lane and the report, verified against a live daemon
+
+A running grinder on a copy of the real store (876 verdicts at the time of the checks), Docker 29.7.2.
+
+**The report answers real queries.** `875 of 875` unfiltered; `f.confidence=HIGH` → **39 of 875**, matching
+the store's own distribution; `f.loader=Fabric&q=create` → 1; `size=100&page=2&sort=name` → **"Page 2 of 9"**
+with exactly 100 rows. `/export.csv?f.confidence=HIGH` returned the same 39, a bare `/export.csv` all 876,
+and both parse as well-formed CSV (12 fields, no ragged rows). `Content-Disposition` is set, so the browser
+downloads rather than renders. Sort links carry the active filter (`/?f.confidence=HIGH&sort=name`) and the
+CSV button carries the query plus `size=all`.
+
+**Two counting traps worth naming**, because both looked like defects and neither was: `wc -l` under-counts
+a CSV whose last line has no trailing newline, and the row total *moved during the run* — the daemon was
+grinding, so 875 became 876. `/status` agreed with the CSV at every point; the discrepancy was the
+measurement, not the export.
+
+**The requeue lane works end to end.** `--requeue https://modrinth.com/mod/jei` from a second process
+reported `1 now pending`, `/status` showed `requeued: 1`, and the daemon drained it **forced and ahead of
+the crawl** on its next pass — `Pass #3: re-grinding 1 requested candidate(s) ahead of the crawl`, then
+`Grinding Modrinth/jei (re-grind requested)`, three loaders in 330 s, after which the catalog slice ran as
+usual. That exercises `GrindLoop`'s requeue-before-catalog ordering in production, which until this week was
+only a source-text grep.
+
+`/status` also confirmed the new rule default is live: `bootRules { undecidedVerdict: "grinder decides" }`.
+
+**What this run did *not* prove:** that a crash naming an injected dependency reaches that lane. Producing
+one on demand means finding a mod whose console blames a dependency by name, which no candidate here did.
+The path is covered by unit tests either way (`aDependencyBlamedForACrashIsQueuedForItsOwnVerification`
+pins `Grinder`'s end, `DependencyAttributionTest` the blame itself), and the lane it feeds is now proven.
+
+---
+
+## 2026-08-29 — the crash-log census, and B35 closed
+
+Griefed sent 21 crash logs from the live grinder with one observation: `autogg-reimagined` failed on
+`java.net.UnknownHostException: api.polyfrost.org`, and "appears to require a connection to the internet."
+That turned out to be a whole class of false positive, and pulling on it found a second, larger one of our
+own making.
+
+**The census.** 609 crash logs are published; 200 were sampled and classified with the real
+`BootLogClassifier`. **130 of 200 (65%) carried no client-side evidence at all**, yet every one scored
+CRASHED — crash logs are only kept for non-SURVIVED boots, so all 200 had. Of the 21 Griefed sent, exactly
+**two** had genuine sideness evidence: `arcane-vortex` (FML `for invalid dist DEDICATED_SERVER`) and
+`avm-mod` (`net/minecraft/class_746`, the intermediary name for `LocalPlayer`).
+
+**The network class is the harness, not the mod.** Boots run `--network none` — that isolation is the entire
+guarantee — so a mod whose loader phones home at startup is certain to die here and nowhere else. OneConfig
+fetches its own stage1 from `api.polyfrost.org`, falls back to a Swing error dialog when it cannot (which is
+why the tail of every one of those logs is `Fontconfig error: No writable cache directories`, in a headless
+container) and calls `System.exit`. 15 of 200.
+
+**The largest cause was ours.** `Fabric API requires version ...` was the single biggest failure class — 63
+of 200, with Fabric API the *requirer* in 55 — and it was caused by `BootCandidateSelector`, not by any mod.
+`pickForLoader` treated the Minecraft version as a preference *inside* each loader attempt and fell back to
+the newest file for that loader whatever version it targeted. CurseForge tags only recent Fabric API files
+as Quilt-compatible, so a Quilt boot matched a `+26.3` file on the loader, took it despite the mismatch, and
+never reached the Fabric build carrying the right Minecraft version. Measured: **20 of the 35** boots that
+staged a Fabric API staged one for the wrong version — all Quilt, all `+26.3`, into packs as old as 1.19.2.
+Quilt Loader refused each pack outright and the *candidate* wore the verdict.
+
+Two fixes, each pinned red in its own commit first:
+
+- The Minecraft version is now fixed **across** both loader attempts, which is what makes the
+  Quilt-to-Fabric fallback reachable at all. A dependency matching no file for the pack's version is not
+  staged, and the boot is refused as INCONCLUSIVE. The *candidate* keeps its loose fallback: a near-miss
+  candidate still tests the candidate, whereas a near-miss dependency only manufactures a conflict to blame
+  on it. One existing assertion moved with this (`dependencyFilePrefersExactMinecraftMatchThenFallsBack`
+  expected a 1.19.2 dependency in a 1.21 pack) — flagged rather than relabelled, since a changed expected
+  value means `fix:`, not `refactor:`.
+- `BootLogClassifier` gained `sandboxNetworkMarkers` and widened `dependencyFailureMarkers` (Quilt's
+  `requires version [x, y) of z`, mixin `ClassMetadataNotFoundException`, the legacy `MixinTweaker` CNFE).
+  Both sit **below** `clientOnlyClassMarker`, which is the whole design — an excuse may never outrank
+  decisive client-only evidence. `aClientClassCrashOutranksTheNetworkExcuse` was green before the fix and
+  had to stay green through it; that is what pins the ordering.
+
+Re-classifying the real logs: the 21 went **21 CRASHED → 11 CRASHED / 10 INCONCLUSIVE**, the 200-log sample
+**200 → 113 / 87**. Both true positives retained; nothing carrying client-side evidence moved.
+
+**Known gap, deliberately unfixed.** `clientOnlyClassMarker` misses Fabric intermediary names. `class_746`
+is `LocalPlayer`, but `class_NNNN` is intermediary for *every* class, not only client ones, so a pattern
+would trade these false negatives for false positives. It needs a version-specific ID list or nothing.
+
+**B35 closed — and the append-log was not needed.** The backlog asked whether dropping the pretty-printer
+would be enough. Measured at 100 k rows: sort 40.6 ms, pretty write 707.5 ms (45.6 MiB), compact write
+360.7 ms (38.2 MiB) — a 2× win that still left ~360 ms *per verdict*. The O(n) whole-file rewrite was the
+cost. So `record()` now buffers and a daemon flusher persists every `SPC_GRINDER_STORE_FLUSH_SECONDS`
+(default 30), with the shutdown hook flushing last, after the workers stop:
+
+| rows | write-through | coalesced |
+|------:|--------------:|----------:|
+| 1 000 | 20.8 ms | 2.5 µs |
+| 10 000 | 94.7 ms | 2.1 µs |
+| 100 000 | 1242.5 ms | 2.6 µs |
+
+Coalesced `record()` is **flat** — it no longer scales with the store, which was the defect; the deployed
+store held 38,258 verdicts and only grows. Format, pretty-printing and atomic move are untouched; only the
+frequency changed. The default stays write-through (`Duration.ZERO`) so coalescing is opted into at the
+composition root and no existing caller silently loses durability. A hard kill can lose at most one
+interval, re-derived by the re-verify TTL. The append-log alternative — a store-format change with recovery,
+compaction and `supersededLegacyKey` dedup semantics, on a file holding 38 k live verdicts — was therefore
+never built, to improve on a path that is now 2.6 µs.
+
+Also here: `StoreWriteBenchTest` had been swept into `47ccb99d4` as a scratch file and was seeding a
+100 k-row store on every build. It is now gated behind `SPC_GRINDER_BENCH=1`.
