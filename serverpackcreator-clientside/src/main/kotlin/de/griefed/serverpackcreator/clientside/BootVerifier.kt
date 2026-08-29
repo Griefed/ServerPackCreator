@@ -135,7 +135,15 @@ class BootVerifier(
          * ladder settled it alone. A field rather than only a sentence in [detail], because finding a rule
          * that fires too broadly means *counting* the verdicts it decided.
          */
-        val firedRule: String? = null
+        val firedRule: String? = null,
+        /**
+         * The injected dependency this crash appears to belong to, or `null`. **Annotation only** — it never
+         * changes [result]; the grinder requeues the named dependency as its own candidate so the question
+         * gets answered by grinding it rather than by trusting a string match.
+         */
+        val blamedDependency: String? = null,
+        /** The dependency jars staged alongside the candidate, so a verdict names the pack it booted with. */
+        val stagedDependencies: List<String> = emptyList()
     )
 
     /**
@@ -719,6 +727,31 @@ class BootVerifier(
                         "anything about this mod specifically."
                 )
             }
+
+        /**
+         * Annotate [outcome] with the injected dependency its crash names, if any.
+         *
+         * **Returns an outcome whose [BootOutcome.result] is always the input's.** Only a crash is
+         * considered at all, and even then the verdict is untouched: this exists to make a suspicion
+         * *visible and countable*, not to overrule the boot. `attributionNeverChangesTheBootResult` pins it.
+         */
+        internal fun attribute(
+            outcome: BootOutcome,
+            injected: List<InjectedDependency>,
+            candidateStem: String?
+        ): BootOutcome {
+            if (outcome.result != BootResult.CRASHED) {
+                return outcome
+            }
+            val blamed = DependencyAttribution.blame(
+                outcome.console?.lines().orEmpty(), injected, candidateStem
+            ) ?: return outcome
+            return outcome.copy(
+                detail = outcome.detail + " [crash names the injected dependency ${blamed.fileName}; " +
+                    "it has been queued for its own verification]",
+                blamedDependency = blamed.fileName
+            )
+        }
 
         /**
          * Whether a crash deserves a second boot on the newest loader build: only a CRASHED outcome, only when
