@@ -2865,3 +2865,43 @@ A one-shot grind of `modelfix` (Modrinth, all four loaders, 456 s) on Docker 29.
   them; `/boot-log?name=` returns one by name; `/export.csv` carries the `Rule` column; and `/status`
   reports `bootRules {source: none, ruleCount: 0, errors: []}`, i.e. feature C's observability with no rule
   file present — the default install behaving as it did before rules existed.
+
+### 2026-08-29 — feature B: dependency resolution across both sources
+
+**The `-api` bug first, because it was the same one twice.** `FabricScanner` and `QuiltScanner` both carry
+the doc comment *"ids that are the platform rather than a mod"* and both broke it: `fabricloader`,
+`quilt_loader` and `quilt_base` are the platform, but `fabric` is **Fabric API** and `quilted_fabric_api` is
+**QFAPI** — mods, and the ones a server most often genuinely needs. Reported by Griefed, who was right on
+both halves. `ModDependency` gained `versionConstraint` (verbatim and unparsed — the grammars differ per
+loader) behind `@JvmOverloads`, because pf4j loads *compiled* plugin jars and binary compatibility, not
+merely source, is the contract that binds. Blast radius checked rather than feared: `ModListCompiler`'s
+rescue loop now pulls a disabled Fabric API back into a pack, which is correct, and neither id is in the
+shipped fallback list, so a stock install generates identically.
+
+**Two safety properties carry the rest of the feature, and both are inversions of the obvious.**
+
+`VersionConstraint` **fails towards accept**. A constraint it cannot parse must never *refuse*, because a
+refusal is indistinguishable from the dependency being genuinely unsatisfiable — a grammar gap would
+present as a catalog-wide mass-INCONCLUSIVE event rather than as a parser bug. That direction shipped
+broken **twice** during development: `numbersOf` maps a digit-less component to `0`, so a bare clause like
+`whatever` compared equal to `0.0.0`, and separately a bare `.x` took an empty prefix. Both were invisible
+to inspection and both were caught by tests, the second only after a deliberate adversarial sweep —
+`VersionConstraintFuzzTest` now runs 30 malformed shapes against 6 real versions and asserts not one
+refuses, paired with a guard that readable constraints still bite so the rule cannot decay into "accept
+everything".
+
+The **refusal split** is structural, not a flag. `unmapped` never reaches `refuseForMissingDependencies` at
+all. A manifest id is a weaker signal than a platform ref — it may name something bundled inside another
+jar (`fabric-api-base` ships *inside* Fabric API), provided by the loader, or optional in practice — and
+since a refusal is scored INCONCLUSIVE, treating every unresolvable one as fatal would convert a large
+share of *working* boots into INCONCLUSIVE. `refuseForMissingDependencies` kept its exact signature and its
+three existing pins stayed green untouched, which is the evidence the semantics were reused and not
+rewritten.
+
+**Attribution annotates and requeues; it never downgrades** (Griefed's call, reversing an earlier choice).
+The candidate did crash a server in the configuration a real pack produces, so downgrading on a string
+match trades a false positive for a lost true positive — the expensive direction for a list that decides
+what gets stripped from every pack built against it. `attributionNeverChangesTheBootResult` makes that safe
+by construction, and the blamed dependency is queued so the question is answered by *grinding it*. The
+stand-down guard also had to widen: an exception line and the `at` frames beneath it are one crash, and
+judging line-by-line blamed the dependency on the strength of the first line alone.

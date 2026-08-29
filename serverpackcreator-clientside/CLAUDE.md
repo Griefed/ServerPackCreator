@@ -292,6 +292,34 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   produces a failure that looks like a crash. Measured across 112 kept boot logs: **36** failed exactly that way, the
   largest single failure class, each burning ~70 s to learn nothing. `BootLogClassifier` keeps a matching backstop
   (`dependencyFailureMarkers` → INCONCLUSIVE) for deps that go missing despite staging.
+- **Dependencies come from BOTH the platform and the jar manifest, and the two are trusted differently.**
+  `downloadWithDependencies` resolves `ModFile.requiredDependencies` as before, then scans each staged jar and
+  resolves what its manifest declares and the platform never mentioned — the case Fabric API most often falls
+  into. `KnownModIds` bridges the vocabularies (a manifest says `fabric`, Modrinth wants `fabric-api`,
+  CurseForge wants `306612`); `VersionConstraint` matches a declared range against `ModFile.version`.
+  - **LANDMINE — the refusal split is the whole safety property, and it is structural.** A platform ref is a
+    project the author linked; a manifest id is a bare string that may name something *bundled inside another
+    jar* (`fabric-api-base` ships inside Fabric API), provided by the loader, or optional in practice. Since
+    `refuseForMissingDependencies` scores a refusal INCONCLUSIVE, treating every unresolvable manifest id as a
+    refusal would convert a large share of *working* boots into INCONCLUSIVE. So `unmapped` never reaches that
+    function at all — not via a flag, via a separate collection — while `unsatisfied` (platform misses, and
+    manifest ids that mapped and then failed to stage) still refuses.
+  - **`VersionConstraint` fails towards ACCEPT, always.** A constraint it cannot parse must never refuse: a
+    refusal is indistinguishable from the dependency being genuinely unsatisfiable, so a grammar gap would
+    present as a catalog-wide mass-INCONCLUSIVE event. `looksLikeVersion` gates every comparison because
+    `numbersOf` maps a digit-less component to `0` — **two** separate branches shipped that bug during
+    development (a bare clause, then a bare `.x`), both invisible to inspection, both found by
+    `VersionConstraintFuzzTest`, which sweeps 30 malformed shapes and asserts not one refuses. Do not add a
+    comparison site without gating it.
+  - `BootCandidateSelector.pickDependencyFile` treats a constraint as a **preference**: it narrows, then falls
+    back to the whole set. Returning `null` where it used to return a file would turn a bootable candidate into
+    a refusal.
+  - **Attribution annotates, never downgrades** (`DependencyAttribution`, `BootVerifier.attribute`). A crash
+    naming an injected dependency records `blamedDependency` and requeues that project — the candidate still
+    crashed a server in the configuration a real pack produces, and downgrading on a string match trades a false
+    positive for a *lost true positive*. `attributionNeverChangesTheBootResult` pins it. Blame needs a crash
+    marker or stack frame (a name appears in every "loading mod" line) and stands down when the candidate is
+    named anywhere in the same crash context.
 - **Quilt dependencies fall back to the Fabric build** (`BootCandidateSelector.fallbackLoaders`). Quilt deliberately
   runs Fabric mods, which is why the canonical dependency of a Quilt mod is **Fabric API — a project publishing only
   Fabric-tagged files**. Strict loader matching dropped it silently: measured 2026-07-30, **210** dropped
