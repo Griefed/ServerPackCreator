@@ -165,4 +165,59 @@ internal class VerdictReportRendererTest {
         Assertions.assertFalse(html.contains("<script>alert(1)</script>"), "raw markup must not survive into a table cell")
         Assertions.assertTrue(html.contains("&lt;script&gt;alert(1)&lt;/script&gt;"), "it must be HTML-escaped")
     }
+
+    /**
+     * **The guard counting cannot give you.** `everyHeaderHasACellBeneathIt` proves the *number* of cells
+     * matches the number of headers, which is exactly what an off-by-one preserves: drop a column and add
+     * another and every cell past the gap silently shows its neighbour's data, with the count still right.
+     * This gives each field a distinct sentinel and asserts cell *i* carries column *i*'s.
+     *
+     * It lands green rather than red on purpose: it is a characterization guard over correct-but-fragile
+     * code, put in place to protect the restructure that follows. "Red first" applies to tests for new
+     * behaviour, which this is not.
+     */
+    @Test
+    fun everyColumnRendersTheValueItsHeaderNames() {
+        val verdict = grindVerdict(
+            slug = "SENTINELNAME",
+            loader = "SENTINELLOADER",
+            suggestedEntry = "SENTINELPATTERN",
+            projectUrl = "https://example.invalid/SENTINELPROJECT",
+            detail = "SENTINELDETAIL",
+            confidence = Confidence.HIGH
+        ).copy(firedRule = "SENTINELRULE", stagedDependencies = listOf("SENTINELDEP"))
+
+        val row = VerdictReportRenderer.toHtml(listOf(verdict)) { listOf("SENTINELLOG") }
+            .substringAfter("<tbody").substringAfter("<tr>").substringBefore("</tr>")
+        val cells = row.split("</td>").dropLast(1)
+
+        val expected = listOf(
+            "SENTINELNAME", "SENTINELPROJECT", "SENTINELPATTERN", "HIGH", "SENTINELLOADER",
+            "SENTINELDETAIL", "SENTINELRULE", "SENTINELDEP", "SENTINELLOG", "1970"
+        )
+        Assertions.assertEquals(expected.size, cells.size, "one sentinel per column; got ${cells.size} cells")
+        expected.forEachIndexed { index, sentinel ->
+            Assertions.assertTrue(
+                cells[index].contains(sentinel),
+                "cell $index should carry '$sentinel' but was: ${cells[index]}"
+            )
+        }
+    }
+
+    /**
+     * The HTML table and the CSV are two renderings of one column list, and they have drifted before — the
+     * CSV header carried seven fields while the table carried eight for a long time. This pins that they
+     * describe the same number of data columns, so the divergence cannot silently re-open.
+     */
+    @Test
+    fun theCsvAndTheTableAgreeOnTheirDataColumns() {
+        val html = VerdictReportRenderer.toHtml(listOf(grindVerdict("jei", "Forge")))
+        val headerCount = Regex("<th[ >]").findAll(html).count()
+        val csvColumnCount = VerdictCsvExporter.toCsv(emptyList()).split(",").size
+
+        Assertions.assertEquals(
+            headerCount - 1, csvColumnCount,
+            "the table has exactly one column the CSV does not: Logs, which is a set of links rather than a value"
+        )
+    }
 }
