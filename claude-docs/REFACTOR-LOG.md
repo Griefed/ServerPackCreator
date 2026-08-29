@@ -3005,3 +3005,78 @@ only a source-text grep.
 one on demand means finding a mod whose console blames a dependency by name, which no candidate here did.
 The path is covered by unit tests either way (`aDependencyBlamedForACrashIsQueuedForItsOwnVerification`
 pins `Grinder`'s end, `DependencyAttributionTest` the blame itself), and the lane it feeds is now proven.
+
+---
+
+## 2026-08-29 — the crash-log census, and B35 closed
+
+Griefed sent 21 crash logs from the live grinder with one observation: `autogg-reimagined` failed on
+`java.net.UnknownHostException: api.polyfrost.org`, and "appears to require a connection to the internet."
+That turned out to be a whole class of false positive, and pulling on it found a second, larger one of our
+own making.
+
+**The census.** 609 crash logs are published; 200 were sampled and classified with the real
+`BootLogClassifier`. **130 of 200 (65%) carried no client-side evidence at all**, yet every one scored
+CRASHED — crash logs are only kept for non-SURVIVED boots, so all 200 had. Of the 21 Griefed sent, exactly
+**two** had genuine sideness evidence: `arcane-vortex` (FML `for invalid dist DEDICATED_SERVER`) and
+`avm-mod` (`net/minecraft/class_746`, the intermediary name for `LocalPlayer`).
+
+**The network class is the harness, not the mod.** Boots run `--network none` — that isolation is the entire
+guarantee — so a mod whose loader phones home at startup is certain to die here and nowhere else. OneConfig
+fetches its own stage1 from `api.polyfrost.org`, falls back to a Swing error dialog when it cannot (which is
+why the tail of every one of those logs is `Fontconfig error: No writable cache directories`, in a headless
+container) and calls `System.exit`. 15 of 200.
+
+**The largest cause was ours.** `Fabric API requires version ...` was the single biggest failure class — 63
+of 200, with Fabric API the *requirer* in 55 — and it was caused by `BootCandidateSelector`, not by any mod.
+`pickForLoader` treated the Minecraft version as a preference *inside* each loader attempt and fell back to
+the newest file for that loader whatever version it targeted. CurseForge tags only recent Fabric API files
+as Quilt-compatible, so a Quilt boot matched a `+26.3` file on the loader, took it despite the mismatch, and
+never reached the Fabric build carrying the right Minecraft version. Measured: **20 of the 35** boots that
+staged a Fabric API staged one for the wrong version — all Quilt, all `+26.3`, into packs as old as 1.19.2.
+Quilt Loader refused each pack outright and the *candidate* wore the verdict.
+
+Two fixes, each pinned red in its own commit first:
+
+- The Minecraft version is now fixed **across** both loader attempts, which is what makes the
+  Quilt-to-Fabric fallback reachable at all. A dependency matching no file for the pack's version is not
+  staged, and the boot is refused as INCONCLUSIVE. The *candidate* keeps its loose fallback: a near-miss
+  candidate still tests the candidate, whereas a near-miss dependency only manufactures a conflict to blame
+  on it. One existing assertion moved with this (`dependencyFilePrefersExactMinecraftMatchThenFallsBack`
+  expected a 1.19.2 dependency in a 1.21 pack) — flagged rather than relabelled, since a changed expected
+  value means `fix:`, not `refactor:`.
+- `BootLogClassifier` gained `sandboxNetworkMarkers` and widened `dependencyFailureMarkers` (Quilt's
+  `requires version [x, y) of z`, mixin `ClassMetadataNotFoundException`, the legacy `MixinTweaker` CNFE).
+  Both sit **below** `clientOnlyClassMarker`, which is the whole design — an excuse may never outrank
+  decisive client-only evidence. `aClientClassCrashOutranksTheNetworkExcuse` was green before the fix and
+  had to stay green through it; that is what pins the ordering.
+
+Re-classifying the real logs: the 21 went **21 CRASHED → 11 CRASHED / 10 INCONCLUSIVE**, the 200-log sample
+**200 → 113 / 87**. Both true positives retained; nothing carrying client-side evidence moved.
+
+**Known gap, deliberately unfixed.** `clientOnlyClassMarker` misses Fabric intermediary names. `class_746`
+is `LocalPlayer`, but `class_NNNN` is intermediary for *every* class, not only client ones, so a pattern
+would trade these false negatives for false positives. It needs a version-specific ID list or nothing.
+
+**B35 closed — and the append-log was not needed.** The backlog asked whether dropping the pretty-printer
+would be enough. Measured at 100 k rows: sort 40.6 ms, pretty write 707.5 ms (45.6 MiB), compact write
+360.7 ms (38.2 MiB) — a 2× win that still left ~360 ms *per verdict*. The O(n) whole-file rewrite was the
+cost. So `record()` now buffers and a daemon flusher persists every `SPC_GRINDER_STORE_FLUSH_SECONDS`
+(default 30), with the shutdown hook flushing last, after the workers stop:
+
+| rows | write-through | coalesced |
+|------:|--------------:|----------:|
+| 1 000 | 20.8 ms | 2.5 µs |
+| 10 000 | 94.7 ms | 2.1 µs |
+| 100 000 | 1242.5 ms | 2.6 µs |
+
+Coalesced `record()` is **flat** — it no longer scales with the store, which was the defect; the deployed
+store held 38,258 verdicts and only grows. Format, pretty-printing and atomic move are untouched; only the
+frequency changed. The default stays write-through (`Duration.ZERO`) so coalescing is opted into at the
+composition root and no existing caller silently loses durability. A hard kill can lose at most one
+interval, re-derived by the re-verify TTL. The append-log alternative — a store-format change with recovery,
+compaction and `supersededLegacyKey` dedup semantics, on a file holding 38 k live verdicts — was therefore
+never built, to improve on a path that is now 2.6 µs.
+
+Also here: `StoreWriteBenchTest` had been swept into `47ccb99d4` as a scratch file and was seeding a
+100 k-row store on every build. It is now gated behind `SPC_GRINDER_BENCH=1`.
