@@ -3080,3 +3080,23 @@ never built, to improve on a path that is now 2.6 µs.
 
 Also here: `StoreWriteBenchTest` had been swept into `47ccb99d4` as a scratch file and was seeding a
 100 k-row store on every build. It is now gated behind `SPC_GRINDER_BENCH=1`.
+
+### B36 filed and closed the same day — the store was reset instead
+
+Filed after measuring that 174 of the 455 published HIGH verdicts holding a crash log (**38%**) were false
+positives under the fixes merged that day, and that HIGH is the only confidence reaching `/as-properties` —
+so each one was a working mod being stripped from users' server packs. By loader: Quilt 118, Forge 52,
+NeoForge 4, the Quilt concentration being the `pickForLoader` bug. The plan was a targeted
+`--requeue` of the 428 published projects once the fixes were deployed.
+
+It never needed doing. Griefed deployed the merge and **reset the store**, so the daemon is re-grinding the
+catalog from scratch on the fixed build. Verified against the live service: `/status` now reports the
+`bootRules` block (so it is running the merged code), the store went 38 258 → 186 verdicts, and the
+confidence spread is 130 LOW / 54 MEDIUM / **2 HIGH** — the 466 HIGH and their 174 false positives are
+simply gone, and `/as-properties` is back to essentially the shipped list.
+
+Recorded because the *measurement* keeps its value even though the remedy changed: it is the only
+end-to-end evidence of what the pre-fix engine was publishing, and it is the number to compare against once
+the fresh sweep has covered comparable ground. `requeue-high-verdicts.txt` was deleted with the entry; it is
+regenerable from `/export.csv` at any time, and would now list the wrong set anyway.
+
