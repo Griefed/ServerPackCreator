@@ -56,10 +56,14 @@ import java.util.*
  * @param otherVersionRecheckLimit How many *other* versions of the mod may be booted to disprove a crash
  *                             that contradicts a declared server support. Each one is a full boot, so this
  *                             is a hard budget; `0` switches the second re-check off entirely.
+ * @param consoleRules         Supplies the operator's console rules, asked **per attempt** so a rule file
+ *                             edited during a run takes effect on the next boot rather than the next
+ *                             restart. Defaults to none, i.e. the built-in ladder alone.
  * @param bootArtifactSink     Optional hook handed every attempt's staged pack and its classified outcome,
  *                             **per attempt** — staging wipes the attempt directory, so this is the only
  *                             point at which a re-check's evidence still exists. A thrown sink is logged
- *                             and ignored: keeping evidence must never fail a boot that already ran.
+ *                             and ignored: keeping evidence must never fail a boot that already ran. Kept
+ *                             **last** so a caller can pass it as a trailing lambda.
  * @author Griefed
  */
 class BootVerifier(
@@ -74,6 +78,7 @@ class BootVerifier(
     private val minecraftAcceptable: (String) -> Boolean = { true },
     private val bootTimeout: Duration = Duration.ofMinutes(12),
     private val otherVersionRecheckLimit: Int = 2,
+    private val consoleRules: () -> ConsoleRuleSet = { ConsoleRuleSet.EMPTY },
     private val bootArtifactSink: ((Prepared.Ready, BootOutcome) -> Unit)? = null
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
@@ -89,7 +94,9 @@ class BootVerifier(
      * the attempt directory, so a re-check's evidence is gone by the time [verify] returns.
      */
     private fun boot(pack: Prepared.Ready): BootOutcome =
-        runPrepared(pack, serverRunner, packPostProcessor, bootTimeout, bootArtifactSink)
+        // The rules are asked for per attempt rather than captured once, which is what makes an edit during
+        // a multi-day run take effect on the next boot instead of the next restart.
+        runPrepared(pack, serverRunner, packPostProcessor, bootTimeout, consoleRules(), bootArtifactSink)
 
     /**
      * Result of a single boot-attempt: the verdict, the captured log-file, a human-readable note, and
@@ -121,7 +128,13 @@ class BootVerifier(
          * boot may disprove another loader's crash, because the entry comparison that guards the published
          * stem is about the build that actually booted.
          */
-        val bootedLoader: String? = null
+        val bootedLoader: String? = null,
+        /**
+         * The id of the operator rule that decided or annotated this outcome, or `null` when the built-in
+         * ladder settled it alone. A field rather than only a sentence in [detail], because finding a rule
+         * that fires too broadly means *counting* the verdicts it decided.
+         */
+        val firedRule: String? = null
     )
 
     /**
@@ -493,6 +506,7 @@ class BootVerifier(
             serverRunner: ServerRunner,
             packPostProcessor: ((Prepared.Ready) -> Unit)?,
             bootTimeout: Duration,
+            rules: ConsoleRuleSet = ConsoleRuleSet.EMPTY,
             bootArtifactSink: ((Prepared.Ready, BootOutcome) -> Unit)? = null
         ): BootOutcome {
             if (packPostProcessor != null) {
@@ -521,7 +535,7 @@ class BootVerifier(
             }
             // Stamped here rather than inside `outcomeFor`, which classifies a console and has no business
             // knowing what was booted; this is the one place that does.
-            val outcome = outcomeFor(runResult, pack.logFile, "${pack.loader} ${pack.loaderVersion} / Minecraft ${pack.minecraftVersion}")
+            val outcome = outcomeFor(runResult, pack.logFile, "${pack.loader} ${pack.loaderVersion} / Minecraft ${pack.minecraftVersion}", rules)
                 .copy(bootedLoader = pack.loader)
             // Per attempt, and here rather than after `verify` returns: staging wipes and re-creates the
             // attempt directory, so by the time a verdict is decided every earlier attempt's pack is gone.
@@ -645,7 +659,12 @@ class BootVerifier(
          * [BootLogClassifier], and — only on a crash — given a [BootLogExcerpt]. [label] prefixes the
          * human-readable detail. This is the verdict seam every runner (host or container) shares.
          */
-        internal fun outcomeFor(runResult: RunResult, logFile: File, label: String): BootOutcome = when (runResult) {
+        internal fun outcomeFor(
+            runResult: RunResult,
+            logFile: File,
+            label: String,
+            rules: ConsoleRuleSet = ConsoleRuleSet.EMPTY
+        ): BootOutcome = when (runResult) {
             is RunResult.NotStarted -> BootOutcome(BootResult.INCONCLUSIVE, null, runResult.detail)
             is RunResult.Completed -> {
                 val console = runResult.lines.joinToString("\n")
@@ -654,13 +673,23 @@ class BootVerifier(
                 // problem, not a reason to lose a boot that already ran.
                 runCatching { logFile.writeText(console) }
                     .onFailure { log.warn("Could not write the boot log ${logFile.absolutePath}: ${it.message}") }
-                val result = BootLogClassifier.classify(runResult.lines, runResult.exitCode, runResult.timedOut)
+                val classified = BootLogClassifier.classify(runResult.lines, runResult.exitCode, runResult.timedOut, rules)
+                val result = classified.result
                 val crashExcerpt = if (result == BootResult.CRASHED) BootLogExcerpt.crashExcerpt(runResult.lines) else null
                 // The exit status is *the* input that decides CRASHED vs INCONCLUSIVE when no ready-line appeared, so
                 // record it. Without it an INCONCLUSIVE verdict is undiagnosable from the report alone: a run that
                 // crashed loudly in its console but reported exit 0 looks identical to one that never started.
                 val exitDetail = if (runResult.timedOut) "timed out" else "exit ${runResult.exitCode ?: "unknown"}"
-                BootOutcome(result, logFile, "$label → $result ($exitDetail)", crashExcerpt, console)
+                // A rule that had a hand in this says so in the detail *and* in the field beside it: the
+                // sentence is for whoever reads the report, the field is for whoever has to count how often
+                // a rule fired before deciding it is too broad.
+                val ruleNote = classified.firedRule?.let { match ->
+                    " [rule '${match.rule.id}'" + (match.rule.note?.let { ": $it" } ?: "") + "]"
+                } ?: ""
+                BootOutcome(
+                    result, logFile, "$label → $result ($exitDetail)$ruleNote", crashExcerpt, console,
+                    firedRule = classified.firedRule?.rule?.id
+                )
             }
         }
 
