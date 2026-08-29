@@ -46,6 +46,14 @@ internal fun JsonNode.textOrNull(field: String): String? {
  * @author Griefed
  */
 interface ModPlatform {
+    /**
+     * This platform's name, as it appears on every `ProjectFiles` it produces and as the grinder's
+     * `ModPlatforms` constants spell it. A property rather than four scattered string literals, because a
+     * candidate's platform and a recorded verdict's platform must agree exactly or the store re-grinds the
+     * same project forever.
+     */
+    val name: String
+
     /** Whether this platform recognizes [projectUrl] as one of its own project-links. */
     fun handles(projectUrl: String): Boolean
 

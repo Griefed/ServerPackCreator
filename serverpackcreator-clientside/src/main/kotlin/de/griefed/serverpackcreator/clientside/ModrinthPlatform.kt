@@ -37,6 +37,10 @@ class ModrinthPlatform(
     private val objectMapper: ObjectMapper = ObjectMapper()
 ) : ModPlatform {
 
+    /** @see ModPlatform.name */
+    override val name = "Modrinth"
+
+
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val apiBase = "https://api.modrinth.com/v2"
     private val userAgent = "Griefed/ServerPackCreator (clientside-verification; griefed@griefed.de)"
@@ -55,7 +59,7 @@ class ModrinthPlatform(
             files.addAll(filesOf(version, projectUrl))
         }
         return ProjectFiles(
-            platform = "Modrinth",
+            platform = name,
             slug = slug,
             projectUrl = projectUrl,
             clientSide = DeclaredSupport.fromString(project.textOrNull("client_side")),
@@ -68,7 +72,7 @@ class ModrinthPlatform(
         val projectUrl = "https://modrinth.com/mod/$nativeRef"
         val versions = objectMapper.readTree(httpFetcher.get("$apiBase/project/$nativeRef/version", headers))
         val files = versions.flatMap { filesOf(it, projectUrl) }
-        ProjectFiles("Modrinth", nativeRef, projectUrl, DeclaredSupport.UNKNOWN, DeclaredSupport.UNKNOWN, files)
+        ProjectFiles(name, nativeRef, projectUrl, DeclaredSupport.UNKNOWN, DeclaredSupport.UNKNOWN, files)
     } catch (ex: Exception) {
         log.warn("Could not resolve Modrinth dependency '$nativeRef': ${ex.message}")
         null

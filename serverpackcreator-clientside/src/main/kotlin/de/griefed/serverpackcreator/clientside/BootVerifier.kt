@@ -312,10 +312,15 @@ class BootVerifier(
         modsDir: File,
         visited: MutableSet<String>,
         depth: Int,
-        unsatisfied: MutableSet<String>
+        unsatisfied: MutableSet<String>,
+        unmapped: MutableSet<String>,
+        injected: MutableList<String>
     ): Boolean {
-        if (selectDownloader(file, httpDownloader, browserDownloader).download(file, modsDir) == null) {
-            return false
+        val staged = selectDownloader(file, httpDownloader, browserDownloader).download(file, modsDir)
+            ?: return false
+        if (depth > 0) {
+            // Only dependencies count towards the cap and the recorded set; the candidate is not one.
+            injected.add(file.fileName)
         }
         if (depth >= maxDependencyDepth) {
             return true
@@ -337,13 +342,86 @@ class BootVerifier(
                 unsatisfied.add(dependencyRef)
                 continue
             }
-            if (!downloadWithDependencies(dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied)) {
+            if (!downloadWithDependencies(
+                    dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied, unmapped, injected
+                )
+            ) {
                 log.warn("Required dependency '$dependencyRef' (${dependencyFile.fileName}) could not be downloaded.")
                 unsatisfied.add(dependencyRef)
             }
         }
+        stageManifestDependencies(staged, file, loader, minecraftVersion, modsDir, visited, depth, unsatisfied, unmapped, injected)
         return true
     }
+
+    /**
+     * Stage the dependencies [staged]'s **jar manifest** declares but its platform metadata did not.
+     *
+     * The two sources overlap heavily — a well-formed project declares its dependencies in both — so
+     * anything already visited is skipped rather than downloaded twice. What this adds is the case the
+     * platform never sees: an author who declared a dependency only in `fabric.mod.json`. Fabric API is
+     * the one that matters, and until the `-api` exclusion fix it was not even reported as a dependency.
+     *
+     * **An id that maps to no project goes to [unmapped], not [unsatisfied]**, so it can never refuse the
+     * boot: a manifest id may name something bundled inside another jar, provided by the loader, or
+     * optional in practice, and refusing on it would turn working boots into INCONCLUSIVE.
+     */
+    private fun stageManifestDependencies(
+        staged: File,
+        file: ModFile,
+        loader: String,
+        minecraftVersion: String,
+        modsDir: File,
+        visited: MutableSet<String>,
+        depth: Int,
+        unsatisfied: MutableSet<String>,
+        unmapped: MutableSet<String>,
+        injected: MutableList<String>
+    ) {
+        if (depth >= maxDependencyDepth) {
+            return
+        }
+        val scanner = apiWrapper.modScanner.scannerFor(loader, minecraftVersion) ?: return
+        val declared = runCatching { scanner.scan(listOf(staged)).flatMap { it.dependencies } }
+            .onFailure { log.debug("Could not read ${file.fileName}'s manifest dependencies: ${it.message}") }
+            .getOrDefault(emptyList())
+
+        for (requirement in stageableRequirements(declared, visited) { platformRefFor(it) }) {
+            val ref = platformRefFor(requirement.modID)
+            if (ref == null) {
+                unmapped.add(requirement.modID)
+                continue
+            }
+            if (!visited.add(ref)) {
+                continue
+            }
+            val project = platform.resolveDependency(ref)
+            if (project == null) {
+                // Mapped but not resolvable is still only a *guess* that missed, so it does not refuse.
+                log.info("Manifest dependency '${requirement.modID}' (as '$ref') is not on ${file.pageUrl?.let { "this platform" } ?: "the platform"}.")
+                unmapped.add(requirement.modID)
+                continue
+            }
+            val dependencyFile =
+                BootCandidateSelector.pickDependencyFile(project.files, loader, minecraftVersion, requirement.versionConstraint)
+            if (dependencyFile == null) {
+                log.warn("Manifest dependency '${requirement.modID}' publishes no $loader file for Minecraft $minecraftVersion.")
+                unmapped.add(requirement.modID)
+                continue
+            }
+            if (!downloadWithDependencies(
+                    dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied, unmapped, injected
+                )
+            ) {
+                // Mapped AND resolved, then failed to stage: a case we chose to trust, so it refuses.
+                log.warn("Manifest dependency '${requirement.modID}' (${dependencyFile.fileName}) could not be downloaded.")
+                unsatisfied.add(requirement.modID)
+            }
+        }
+    }
+
+    /** This platform's ref for a manifest mod id, via [KnownModIds]. */
+    private fun platformRefFor(modId: String): String? = KnownModIds.refFor(modId, platform.name)
 
     /**
      * Generate a self-installing server pack from the synthetic [modpackDir] with mod auto-exclusion
@@ -446,10 +524,17 @@ class BootVerifier(
         val modsDir = File(attemptDir, "modpack/mods").apply { mkdirs() }
 
         val unsatisfied = mutableSetOf<String>()
-        if (!downloadWithDependencies(mainFile, loader, minecraftVersion, modsDir, mutableSetOf(), 0, unsatisfied)) {
+        val unmapped = mutableSetOf<String>()
+        val injected = mutableListOf<String>()
+        if (!downloadWithDependencies(
+                mainFile, loader, minecraftVersion, modsDir, mutableSetOf(), 0, unsatisfied, unmapped, injected
+            )
+        ) {
             return Prepared.Failed("Could not download ${mainFile.fileName}.")
         }
         refuseForMissingDependencies(unsatisfied, loader, minecraftVersion)?.let { return it }
+        refuseForTooManyDependencies(injected, loader, minecraftVersion)?.let { return it }
+        unmappedDependencyNote(unmapped)?.let { log.warn(it) }
 
         val serverPack = generateServerPack(File(attemptDir, "modpack"), File(attemptDir, "serverpack"), minecraftVersion, loader, loaderVersion)
             ?: return Prepared.Failed("Server-pack generation failed for $loader $minecraftVersion.")

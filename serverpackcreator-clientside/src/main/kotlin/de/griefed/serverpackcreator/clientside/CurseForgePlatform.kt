@@ -41,6 +41,10 @@ class CurseForgePlatform(
     private val objectMapper: ObjectMapper = ObjectMapper()
 ) : ModPlatform {
 
+    /** @see ModPlatform.name */
+    override val name = "CurseForge"
+
+
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val apiBase = "https://api.curseforge.com/v1"
     private val minecraftGameId = 432
@@ -67,7 +71,7 @@ class CurseForgePlatform(
 
         val files = allFilesOf(modId, webBase, slug)
         return ProjectFiles(
-            platform = "CurseForge",
+            platform = name,
             slug = slug,
             projectUrl = projectUrl,
             clientSide = DeclaredSupport.UNKNOWN,
@@ -85,7 +89,7 @@ class CurseForgePlatform(
         // catalog sweep spends of the API key's quota for evidence nobody reads.
         val files = objectMapper.readTree(httpFetcher.get(filesUrl(modId, index = 0), headers))
             .path("data").map { toModFile(it, webBase) }
-        ProjectFiles("CurseForge", nativeRef, webBase, DeclaredSupport.UNKNOWN, DeclaredSupport.UNKNOWN, files)
+        ProjectFiles(name, nativeRef, webBase, DeclaredSupport.UNKNOWN, DeclaredSupport.UNKNOWN, files)
     } catch (ex: Exception) {
         log.warn("Could not resolve CurseForge dependency '$nativeRef': ${ex.message}")
         null
