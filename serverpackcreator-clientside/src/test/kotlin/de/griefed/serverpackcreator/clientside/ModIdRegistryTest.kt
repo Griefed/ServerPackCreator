@@ -37,16 +37,16 @@ internal class ModIdRegistryTest {
 
     @Test
     fun mapsFabricApiOnBothPlatforms() {
-        Assertions.assertEquals("fabric-api", KnownModIds.refFor("fabric", ModPlatforms.MODRINTH))
-        Assertions.assertEquals("306612", KnownModIds.refFor("fabric", ModPlatforms.CURSEFORGE))
+        Assertions.assertEquals("fabric-api", KnownModIds.refFor("fabric", "Modrinth"))
+        Assertions.assertEquals("306612", KnownModIds.refFor("fabric", "CurseForge"))
     }
 
     /** `fabric-api` is how a Quilt descriptor and some Fabric ones spell the same project. */
     @Test
     fun theApisOtherSpellingMapsToTheSameProject() {
         Assertions.assertEquals(
-            KnownModIds.refFor("fabric", ModPlatforms.MODRINTH),
-            KnownModIds.refFor("fabric-api", ModPlatforms.MODRINTH)
+            KnownModIds.refFor("fabric", "Modrinth"),
+            KnownModIds.refFor("fabric-api", "Modrinth")
         )
     }
 
@@ -57,7 +57,7 @@ internal class ModIdRegistryTest {
      */
     @Test
     fun anUnknownIdIsTriedAsAModrinthSlug() {
-        Assertions.assertEquals("cloth-config", KnownModIds.refFor("cloth-config", ModPlatforms.MODRINTH))
+        Assertions.assertEquals("cloth-config", KnownModIds.refFor("cloth-config", "Modrinth"))
     }
 
     /**
@@ -67,18 +67,18 @@ internal class ModIdRegistryTest {
      */
     @Test
     fun anUnknownIdIsNotGuessedOnCurseForge() {
-        Assertions.assertNull(KnownModIds.refFor("cloth-config", ModPlatforms.CURSEFORGE))
+        Assertions.assertNull(KnownModIds.refFor("cloth-config", "CurseForge"))
     }
 
     /** Ids are matched case-insensitively; descriptors are hand-written and inconsistent about it. */
     @Test
     fun idsAreMatchedCaseInsensitively() {
-        Assertions.assertEquals("fabric-api", KnownModIds.refFor("Fabric", ModPlatforms.MODRINTH))
+        Assertions.assertEquals("fabric-api", KnownModIds.refFor("Fabric", "Modrinth"))
     }
 
     /** A blank id maps nowhere rather than to a lookup that would resolve something arbitrary. */
     @Test
     fun aBlankIdMapsNowhere() {
-        Assertions.assertNull(KnownModIds.refFor("   ", ModPlatforms.MODRINTH))
+        Assertions.assertNull(KnownModIds.refFor("   ", "Modrinth"))
     }
 }
