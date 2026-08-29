@@ -6,7 +6,12 @@ cross-cutting landmines, remaining work) lives in serverpackcreator-grinder/CLAU
 - **`VerdictField` is the single declaration of a column** — header, CSV header, URL token, filter kind and
   cell text in one enum, consumed by the HTML headers, the HTML cells, the CSV header and the CSV rows.
   Those four were hand-synced and *had* drifted (CSV seven fields against the table's eight). Adding a
-  column now means one entry. **Logs is deliberately not a `VerdictField`**: it is not derivable from a
+  column now means one entry. It also carries `sortKey`, defaulting to `text` and overridden **only** by
+  `CONFIDENCE`: that column's text is an enum name, so sorting it as text ran alphabetically and put
+  `INCONCLUSIVE` above `MEDIUM` and `LOW` — shipped and observed live before it was fixed. The rank lives
+  once, as `VerdictField.CONFIDENCE_RANK`; the report's default order and `VerdictCsvExporter` both used to
+  declare their own copy, so the table and the export could drift on what "highest confidence first" means.
+  `theCsvDefaultOrderIsTheSameOrdering` fails if they ever do. **Logs is deliberately not a `VerdictField`**: it is not derivable from a
   `GrindVerdict` — it is a listing of files on disk — so it carries no `text` lambda and stays exempt from
   filtering, searching and the CSV.
 - **Logs *is* sortable, and the sort key is therefore its own type.** `SortKey` is a sealed interface over
