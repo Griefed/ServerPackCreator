@@ -3100,3 +3100,40 @@ end-to-end evidence of what the pre-fix engine was publishing, and it is the num
 the fresh sweep has covered comparable ground. `requeue-high-verdicts.txt` was deleted with the entry; it is
 regenerable from `/export.csv` at any time, and would now list the wrong set anyway.
 
+
+### The equivalence proof the plan required, run 2026-08-29
+
+The convention's own recipe — the base branch's *unmodified* test tree against the branch's production code
+— because green tests are HEAD's tests and pass by construction. Base is `57d22b57c`, the develop head
+before any of this work.
+
+**Four files could not compile.** Enumerated rather than worked around, per the rule; all three signature
+changes are deliberate and each is a data-shape change, not a rename, so none is mechanically adaptable
+without rewriting the fixture (which would be working around it):
+
+| Signature change | Files affected | Why |
+|---|---|---|
+| `CrashLogStore` → `BootLogStore`, and `keep(platform, slug, loader, File)` → `keep(owner, attemptKey, List<Artifact>)` | `CrashLogStoreTest`, `ContainerCandidateVerifierReapTest`, `ReportServerTest` | Feature A keeps *every* artifact of an attempt, not one console file. The `/crash-log(s)` HTTP routes were deliberately kept as aliases. |
+| `keepCrashConsoles` → `bootArtifactSink: ((Prepared.Ready, BootOutcome) -> Unit)?` | `ContainerCandidateVerifierReapTest` | Same. The sink is handed the staged pack and its outcome, not a console string. |
+| `VerdictReportRenderer.toHtml(List<GrindVerdict>)` → `toHtml(VerdictPage, logLinks)` | `VerdictReportRendererTest` | The renderer takes a page, since the report now filters, sorts and pages. |
+
+**The other 48 base test files compiled and ran: 323 tests, 25 skipped, 16 failed, and zero of the 16 is a
+regression.** They are two deliberate changes:
+
+- **14 — `main()` no longer calls `env(...)` itself.** `ContainerLimitsWiringTest` (4),
+  `GrindPoolShutdownTest` (3), `SystemdUnitConfigurationTest` (3), `ReadmeConfigurationTest` (2),
+  `ReportBindWiringTest` (2). Every message states it: *"main() does not read SPC_GRINDER_CPUS"*, *"no
+  env(...) calls found — did the entry point change shape?"*, *"main() no longer counts passes"*. These are
+  source-text guards over `main`'s body, and item 9 deliberately moved that body into `GrinderConfiguration`
+  and `GrindLoop`. Their HEAD replacements are strictly stronger: they iterate `GrinderConfiguration.KNOBS`
+  and drive `GrindLoop` with fakes, i.e. they *execute* what these could only grep.
+- **2 — the CSV header grew** from `Name,Project,NamePattern,Confidence,Loader,Detail,Scanned` to the
+  twelve-column set (`VerdictCsvExporterTest`). That is the sideness columns plus Rule, Dependencies and
+  Platform. Griefed confirmed on 2026-08-28 that nothing consumes `/export.csv` positionally.
+
+**Not run, and stated rather than quietly skipped:** B6's merge gate — the same ~100 candidates ground twice,
+`develop` against the branch, with the verdict delta in the commit body. It needs Docker and hours of real
+boots, and it has been overtaken: the deployed daemon was reset and is re-grinding the whole catalog on the
+fixed build, which is a far larger comparison but has no controlled baseline to diff against. The engine
+changes it was meant to catch were instead measured directly against 200 real published crash logs
+(21 → 11/10 and 200 → 113/87), which is evidence of the same kind.
