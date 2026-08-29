@@ -486,6 +486,8 @@ curl -s http://localhost:8757/status
 ```json
 {
   "verdicts" : 454,
+  "requeued" : 0,
+  "bootRules" : { "source" : "none", "ruleCount" : 0, "undecidedVerdict" : "grinder decides", "errors" : [ ] },
   "activity" : {
     "uptimeSeconds" : 22, "pass" : 1, "passCandidates" : 100,
     "passRunningSeconds" : 20, "verified" : 2, "failed" : 0, "skippedFresh" : 0,
@@ -502,6 +504,12 @@ curl -s http://localhost:8757/status
 }
 ```
 
+**`bootRules.errors` is the one nobody thinks to check.** A broken rule file keeps the *last good* rules
+rather than dropping them, which is what stops a mid-edit save from disabling everything you wrote — but it
+also means a typo is invisible from the outside. Anything non-empty there is a rule that is not running.
+`undecidedVerdict` shows which mode `SPC_GRINDER_RULE_FALLBACK` put the daemon in: `grinder decides` (the
+default) or `INCONCLUSIVE`.
+
 **`busySeconds` is the one to watch.** A worker past a few minutes on one candidate is either installing a cold
 loader tuple or stuck; the boot budget is 12 minutes, so anything approaching that will end as `INCONCLUSIVE`.
 A worker between candidates is simply absent from `workers`, so a shorter list than `SPC_GRINDER_WORKERS` means
@@ -512,6 +520,7 @@ Handy one-liners:
 ```bash
 curl -s localhost:8757/status | jq '.activity.workers'                  # who is on what
 curl -s localhost:8757/status | jq '.crawl'                             # crawl position per platform
+curl -s localhost:8757/status | jq '.bootRules'                         # rules loaded, and any that failed
 watch -n5 'curl -s localhost:8757/status | jq -c .activity'             # a poor man's dashboard
 ```
 

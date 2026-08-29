@@ -57,10 +57,13 @@ cross-cutting landmines, remaining work) lives in serverpackcreator-grinder/CLAU
 
 - **Persistence + web interface**: `JsonVerdictStore` (file-backed, loads on start, whole-file
   temp-then-atomic-move write, corrupt-file → empty) makes a multi-day run restart-safe.
-  `VerdictReportRenderer` renders a **self-contained** HTML page — click-to-sort columns, an
-  embedded-CSV download button, HTML-escaped cells **and** `\uXXXX`-escaped CSV-in-`<script>` so a
-  mod-supplied `</script>` can't break out. `ReportServer` serves the table (`/`) and CSV
-  (`/export.csv`) live off the store via the **JDK's built-in `com.sun.net.httpserver.HttpServer`** —
+  `VerdictReportRenderer` renders a **self-contained** HTML page with HTML-escaped cells. *(Superseded
+  2026-08-29: it used to have click-to-sort JS, an embedded-CSV download button and `\uXXXX`-escaped
+  CSV-in-`<script>` to stop a mod-supplied `</script>` breaking out. Sorting is server-side header links
+  now, the button is a link to `/export.csv`, and the page no longer puts mod-supplied text inside a
+  `<script>` block at all — so that escape hatch is gone rather than merely re-defended.)*
+  `ReportServer` serves the table (`/`) and CSV (`/export.csv`) live off the store via the **JDK's built-in
+  `com.sun.net.httpserver.HttpServer`** —
   **no Spring, no new dependency**. *Deliberately standalone:* the report is self-contained rather than
   rendered through the app's Quasar frontend, because the grinder must not depend on `-app` (that would
   drag in Spring/Mongo/Swing and break its standalone nature).
