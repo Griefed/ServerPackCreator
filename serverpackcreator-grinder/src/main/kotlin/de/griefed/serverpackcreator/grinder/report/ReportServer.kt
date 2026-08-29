@@ -24,6 +24,7 @@ import com.sun.net.httpserver.HttpExchange
 import de.griefed.serverpackcreator.clientside.AttemptDirectory
 import de.griefed.serverpackcreator.clientside.ConsoleRuleSet
 import com.sun.net.httpserver.HttpServer
+import de.griefed.serverpackcreator.grinder.GrindVerdict
 import de.griefed.serverpackcreator.grinder.GrinderStatus
 import de.griefed.serverpackcreator.grinder.ModPlatforms
 import de.griefed.serverpackcreator.grinder.loader.LoaderCache
@@ -95,6 +96,15 @@ class ReportServer(
     /** The actually-bound port (meaningful after [start], especially when an ephemeral `0` was asked). */
     val port: Int get() = server.address.port
 
+    /**
+     * The kept artifacts for one verdict, out of a per-request snapshot.
+     *
+     * Shared by the sort and the cell so the number a row is ordered by is the same number it then shows —
+     * two lookups written separately is exactly how those drift.
+     */
+    private fun logNamesFor(logsByOwner: Map<String, List<String>>, verdict: GrindVerdict): List<String> =
+        logsByOwner[AttemptDirectory.nameFor(verdict.platform, verdict.slug, verdict.loader)].orEmpty()
+
     /** Register the routes, start serving on a small thread pool, and return `this` for chaining. */
     fun start(): ReportServer {
         // Longest-prefix match means /export.csv wins for that path; everything else renders the table.
@@ -102,6 +112,9 @@ class ReportServer(
             // The SAME selection the table runs, so the two cannot disagree -- they agree because they
             // share this function, not because two renderers were kept in step. `defaultSize = null` keeps a
             // bare /export.csv exporting everything, which is the documented behaviour operators script.
+            // No log-count lookup on purpose: the CSV carries no Logs column, so `sort=logs` here degrades to
+            // the slug-then-loader tie-break rather than costing a directory listing for a column nobody is
+            // exporting. Every other sort behaves identically to the table's.
             val selection = VerdictSelection.select(
                 store.all(), VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), null)
             )
@@ -150,10 +163,13 @@ class ReportServer(
                 VerdictReportRenderer.toHtml(
                     VerdictSelection.select(
                         store.all(),
-                        VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), VerdictQuery.DEFAULT_PAGE_SIZE)
+                        VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), VerdictQuery.DEFAULT_PAGE_SIZE),
+                        // The same snapshot the renderer reads from, so the count a row is SORTED by and the
+                        // links it then shows cannot disagree -- and still one listing per request.
+                        logCount = { verdict -> logNamesFor(logsByOwner, verdict).size }
                     )
                 ) { verdict ->
-                    logsByOwner[AttemptDirectory.nameFor(verdict.platform, verdict.slug, verdict.loader)].orEmpty()
+                    logNamesFor(logsByOwner, verdict)
                 }
             )
         }

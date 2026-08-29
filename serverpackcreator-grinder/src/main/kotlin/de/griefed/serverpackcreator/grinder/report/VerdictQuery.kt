@@ -43,8 +43,9 @@ internal enum class FilterKind {
  * its cell still rendered — shifting every column past the gap onto its neighbour's data. One list makes
  * that impossible rather than merely tested for.
  *
- * The **Logs** column is deliberately not here: it is not derivable from a [GrindVerdict], it is exempt
- * from filtering, and sorting it is meaningless.
+ * The **Logs** column is deliberately not here: it is not derivable from a [GrindVerdict], so it cannot
+ * carry a [text] lambda and stays exempt from filtering, searching and the CSV. It *is* sortable — see
+ * [SortKey.Logs], which is why the sort key is its own type rather than a [VerdictField].
  *
  * @author Griefed
  */
@@ -119,6 +120,51 @@ internal object QueryParams {
 }
 
 /**
+ * A column the table can be ordered by.
+ *
+ * Not simply a [VerdictField], because the sortable columns and the verdict-derived ones are not the same
+ * set: **Logs** is rendered from a directory listing rather than from the verdict, so it can be sorted but
+ * never filtered, searched or exported. Modelling that as a type keeps the difference in the compiler
+ * instead of in a comment — a [VerdictField] cannot be asked for a log count, and [Logs] cannot be asked
+ * for cell text.
+ *
+ * @author Griefed
+ */
+internal sealed interface SortKey {
+    /** The token this key is addressed by in a URL (`sort=`). */
+    val param: String
+
+    /**
+     * Order by one of the verdict's own columns, using its [VerdictField.text].
+     *
+     * The property is `column` and **must not** be called `field`: inside a property getter `field` is the
+     * backing-field keyword, so `field.param` binds to a backing field this property does not have — which
+     * the compiler reports as "Property must be initialized", naming neither the cause nor the collision.
+     */
+    data class Column(val column: VerdictField) : SortKey {
+        override val param: String get() = column.param
+    }
+
+    /** Order by how many kept artifacts a row has. The count comes from the caller, not the verdict. */
+    data object Logs : SortKey {
+        override val param: String get() = PARAM
+
+        /** The URL token and the `<th>` text, shared so the link and the header cannot drift apart. */
+        const val PARAM = "logs"
+        const val HEADER = "Logs"
+    }
+
+    companion object {
+        /** The key named by [param], or `null` — an unknown one is ignored rather than fatal. */
+        fun byParam(param: String?): SortKey? = when {
+            param == null -> null
+            param.equals(Logs.PARAM, ignoreCase = true) -> Logs
+            else -> VerdictField.byParam(param)?.let(::Column)
+        }
+    }
+}
+
+/**
  * What the reader asked for: a search, per-column filters, a sort, and where in the results they are.
  *
  * Every field has a safe fallback, because these values arrive from a URL somebody may have typed, edited
@@ -132,7 +178,7 @@ internal data class VerdictQuery(
     /** Per-column filters. OR within a column, AND across columns. */
     val filters: Map<VerdictField, List<String>> = emptyMap(),
     /** The column to sort by, or `null` for the default confidence-then-slug-then-loader order. */
-    val sort: VerdictField? = null,
+    val sort: SortKey? = null,
     /** Whether [sort] runs backwards. */
     val descending: Boolean = false,
     /** 1-based page, clamped to the available range when applied. */
@@ -190,7 +236,7 @@ internal data class VerdictQuery(
             return VerdictQuery(
                 search = QueryParams.first(params, "q"),
                 filters = filters,
-                sort = VerdictField.byParam(QueryParams.first(params, "sort")),
+                sort = SortKey.byParam(QueryParams.first(params, "sort")),
                 descending = QueryParams.first(params, "dir").equals("desc", ignoreCase = true),
                 page = QueryParams.first(params, "page")?.toIntOrNull()?.coerceAtLeast(1) ?: 1,
                 size = when {
@@ -254,10 +300,22 @@ internal object VerdictSelection {
         Confidence.HIGH to 0, Confidence.MEDIUM to 1, Confidence.LOW to 2, Confidence.INCONCLUSIVE to 3
     )
 
-    /** Apply [query] to [verdicts]. */
-    fun select(verdicts: List<GrindVerdict>, query: VerdictQuery): VerdictPage {
+    /**
+     * Apply [query] to [verdicts].
+     *
+     * [logCount] answers how many kept artifacts a verdict has, and is only ever consulted for
+     * [SortKey.Logs]. It defaults to "nothing has logs" so every caller that does not sort by them — the
+     * CSV, and every test of the other columns — needs no directory listing at all. Pass the *same*
+     * per-request snapshot the renderer uses; a lookup that lists the store per row would cost one listing
+     * per verdict.
+     */
+    fun select(
+        verdicts: List<GrindVerdict>,
+        query: VerdictQuery,
+        logCount: (GrindVerdict) -> Int = { 0 }
+    ): VerdictPage {
         val matched = verdicts.filter { verdict -> matchesFilters(verdict, query) && matchesSearch(verdict, query) }
-        val ordered = order(matched, query)
+        val ordered = order(matched, query, logCount)
 
         val size = query.size ?: matched.size.coerceAtLeast(1)
         val pages = if (matched.isEmpty()) 1 else ((matched.size + size - 1) / size)
@@ -298,10 +356,27 @@ internal object VerdictSelection {
      * The default order is the one the report has always used — highest confidence, then slug, then loader
      * — because that is what a reader scanning for findings wants. A named sort replaces it entirely.
      */
-    private fun order(matched: List<GrindVerdict>, query: VerdictQuery): List<GrindVerdict> {
-        val sort = query.sort
-            ?: return matched.sortedWith(compareBy({ confidenceRank[it.confidence] ?: 99 }, { it.slug }, { it.loader }))
-        val byField = compareBy<GrindVerdict> { sort.text(it).lowercase() }
-        return matched.sortedWith(if (query.descending) byField.reversed() else byField)
+    private fun order(
+        matched: List<GrindVerdict>,
+        query: VerdictQuery,
+        logCount: (GrindVerdict) -> Int
+    ): List<GrindVerdict> = when (val sort = query.sort) {
+        null -> matched.sortedWith(compareBy({ confidenceRank[it.confidence] ?: 99 }, { it.slug }, { it.loader }))
+
+        // Only the COUNT is reversed, and the slug/loader tie-break is appended afterwards so it runs the
+        // same way in both directions. Reversing the whole comparator, as the field sorts do, would reshuffle
+        // every log-less row whenever a reader merely flipped the arrow -- and those rows are the majority,
+        // because artifacts are kept only for boots that did not survive.
+        is SortKey.Logs -> {
+            val byCount = compareBy<GrindVerdict> { logCount(it) }
+            matched.sortedWith(
+                (if (query.descending) byCount.reversed() else byCount).thenBy { it.slug }.thenBy { it.loader }
+            )
+        }
+
+        is SortKey.Column -> {
+            val byField = compareBy<GrindVerdict> { sort.column.text(it).lowercase() }
+            matched.sortedWith(if (query.descending) byField.reversed() else byField)
+        }
     }
 }

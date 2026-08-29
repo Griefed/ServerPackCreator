@@ -6,8 +6,26 @@ cross-cutting landmines, remaining work) lives in serverpackcreator-grinder/CLAU
 - **`VerdictField` is the single declaration of a column** — header, CSV header, URL token, filter kind and
   cell text in one enum, consumed by the HTML headers, the HTML cells, the CSV header and the CSV rows.
   Those four were hand-synced and *had* drifted (CSV seven fields against the table's eight). Adding a
-  column now means one entry. **Logs is deliberately not a `VerdictField`**: not derivable from a
-  `GrindVerdict`, filter-exempt, and meaningless to sort.
+  column now means one entry. **Logs is deliberately not a `VerdictField`**: it is not derivable from a
+  `GrindVerdict` — it is a listing of files on disk — so it carries no `text` lambda and stays exempt from
+  filtering, searching and the CSV.
+- **Logs *is* sortable, and the sort key is therefore its own type.** `SortKey` is a sealed interface over
+  `Column(VerdictField)` and `Logs`, because the sortable columns and the verdict-derived ones are not the
+  same set. Sorting it is far from meaningless — as an earlier version of this file claimed — because **not
+  every entry has logs**: artifacts are kept only for boots that did not survive, and the reaper drops the
+  oldest once the budget is passed, so `?sort=logs&dir=desc` is how a maintainer finds the rows with
+  anything to read. `VerdictSelection.select` takes an optional log-count lookup defaulting to "nothing has
+  logs", so the CSV and every other-column test need no directory listing.
+  - **The count and the links must come from one snapshot.** `ReportServer.logNamesFor` is shared by the
+    sort and the cell for that reason; two separate lookups is how a row sorts as having logs and then
+    renders an em-dash. `ReportServerTest.sortsTheTableByHowManyLogsEachRowHas` drives the real handler
+    against a real store, because that wiring is not observable from the pure unit.
+  - **`SortKey.Column`'s property is `column`, never `field`.** Inside a property getter `field` is the
+    backing-field keyword, so `field.param` binds to a backing field the property does not have — reported
+    as "Property must be initialized", naming neither the cause nor the collision.
+  - The Logs tie-break runs by slug in **both** directions, unlike the field sorts which reverse their whole
+    comparator: reversing it would reshuffle every log-less row when a reader merely flips the arrow, and
+    those rows are the majority.
 - **Filtering, sorting and paging are a pure unit** (`QueryParams` → `VerdictQuery` → `VerdictSelection` →
   `VerdictPage`), not handler code. Every edge case is three lines here instead of a socket round trip
   against a 60 KB blob — and it is what makes `/` and `/export.csv` *provably* agree: they share the

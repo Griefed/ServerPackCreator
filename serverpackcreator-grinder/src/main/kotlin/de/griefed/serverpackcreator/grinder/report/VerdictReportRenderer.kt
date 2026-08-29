@@ -47,8 +47,9 @@ internal object VerdictReportRenderer {
      */
     fun toHtml(page: VerdictPage, logLinks: (GrindVerdict) -> List<String> = { emptyList() }): String {
         val query = page.query
-        val headerCells = VerdictField.entries.joinToString("") { field -> headerCell(field, query) } +
-            """<th>Logs</th>"""
+        val headerCells = VerdictField.entries.joinToString("") { field ->
+            headerCell(SortKey.Column(field), field.header, query)
+        } + headerCell(SortKey.Logs, SortKey.Logs.HEADER, query)
         val filterCells = VerdictField.entries.joinToString("") { field -> filterCell(field, page) } +
             """<td></td>"""
         val bodyRows = page.rows.joinToString("\n") { rowHtml(it, logLinks(it)) }
@@ -123,11 +124,15 @@ internal object VerdictReportRenderer {
      * sort. **The page resets to 1**: keeping it would land the reader on page 40 of a different ordering,
      * which is not where they were.
      */
-    private fun headerCell(field: VerdictField, query: VerdictQuery): String {
-        val descending = query.sort == field && !query.descending
-        val target = query.copy(sort = field, descending = descending, page = 1)
-        val marker = if (query.sort == field) (if (query.descending) " ▾" else " ▴") else ""
-        return """<th><a href="/${esc(target.toQueryString())}">${esc(field.header)}$marker</a></th>"""
+    /**
+     * One sortable `<th>`. Takes the [key] and its [header] rather than a [VerdictField], because **Logs** is
+     * sortable without being one — it is rendered from a directory listing, not from the verdict.
+     */
+    private fun headerCell(key: SortKey, header: String, query: VerdictQuery): String {
+        val descending = query.sort == key && !query.descending
+        val target = query.copy(sort = key, descending = descending, page = 1)
+        val marker = if (query.sort == key) (if (query.descending) " ▾" else " ▴") else ""
+        return """<th><a href="/${esc(target.toQueryString())}">${esc(header)}$marker</a></th>"""
     }
 
     /**
