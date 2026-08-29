@@ -3137,3 +3137,50 @@ boots, and it has been overtaken: the deployed daemon was reset and is re-grindi
 fixed build, which is a far larger comparison but has no controlled baseline to diff against. The engine
 changes it was meant to catch were instead measured directly against 200 real published crash logs
 (21 → 11/10 and 200 → 113/87), which is evidence of the same kind.
+
+### The plan's remaining verification steps, run 2026-08-29
+
+Three of the four had been specified and never executed. Running them found one real defect.
+
+**Docker integration (`GRINDER_DOCKER_IT=1`): 9 tests, 9 passed, 0 skipped.** Real containers against a
+real daemon — the CPU cap reaching the kernel with its period, a boot executing from its tmpfs while the
+rest of the hardening holds, the container's own hostname resolving with `--network none`, a labelled
+orphan reaped, and a long-running container stopped promptly. Host was constrained (Docker VM: 2 CPUs,
+1.93 GiB), which is worth knowing when reading the timings below but did not affect the outcomes.
+
+**B0's generation regression check — found a real defect, now fixed.** Three cases: a stock pack (both jars
+kept), a clientside list naming Fabric API with a mod depending on `fabric-api` (rescued), and the same with
+a mod depending on the historical `fabric` (**failed**). The failure was correct.
+
+Verified against the artefact rather than reasoned about: Fabric API **0.92.11+1.20.1**, fetched from
+Modrinth's CDN, declares `"id": "fabric-api"` with `"provides": ["fabric"]` and 53 nested jars; the newest
+build, **0.158.3+26.3**, has dropped `provides` entirely. So a mod writing `depends: {"fabric": "*"}` names
+an id no jar in the pack calls itself, the rescue compared `"fabric"` to `"fabric-api"`, and a custom
+clientside list stripped Fabric API out from under it — the pack that installs and dies on load which the
+rescue exists to prevent. B0 had fixed the exclusion sets but the rescue could not use what they now
+recorded. Fixed by carrying `ScannedMod.provides` (behind `@JvmOverloads`, preserving the old
+`(File, String, Sideness, List)` JVM constructor descriptor) and matching a dependency against a mod's id
+**and** its aliases. Quilt's two entry shapes are pinned separately, since reading one silently yields a
+plausible empty list rather than an error.
+
+**The Fabric API acceptance check — passed, on a real boot.** The plan asked for a mod declaring Fabric API
+*only* in the jar manifest and not in platform metadata. Found by scanning Modrinth: **`moonlight`**, whose
+Fabric jar declares `depends: {"fabric": ">=0.116.6+1.21.1"}` while its Modrinth version metadata lists no
+required Fabric API. The "previously" half is confirmed from the pre-branch source rather than asserted —
+`57d22b57c`'s `FabricScanner` excludes `(fabric|fabricloader|java|minecraft)`, so the dependency was dropped
+and nothing was staged. One-shot grind on the current build:
+
+```
+FabricScanner: Added dependency fabric for moonlight.
+FabricScanner: fabric-api also provides [fabric].
+moonlight [Fabric] -> LOW   Fabric 0.19.3 / Minecraft 1.21.1 → SURVIVED (exit 137)
+   staged: ['fabric-api-0.116.15+1.21.1.jar']
+```
+
+`0.116.15` satisfies the declared `>=0.116.6+1.21.1`, and its Minecraft version matches the pack's 1.21.1 —
+the dependency-selection fix. The verdict is a real one rather than an INCONCLUSIVE on
+`dependencyFailureMarkers`. Forge and NeoForge staged nothing, correctly: those jars declare no Fabric API.
+
+**Incidentally, a live confirmation of B35's coalesced writes.** The run held three verdicts in memory,
+`/status` and `/export.csv` served them, and `verdicts.json` appeared on the flusher's interval rather than
+per verdict; a `SIGTERM` then ran the shutdown flush and all three survived the stop.
