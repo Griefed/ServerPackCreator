@@ -35,7 +35,7 @@ internal class ConsoleRuleLadderTest {
 
     private fun rules(vararg rules: ConsoleRule) = ConsoleRuleSet(rules.toList(), emptyList(), "test")
 
-    private fun rule(id: String, pattern: String, verdict: BootResult? = null, note: String? = null) =
+    private fun rule(id: String, pattern: String, verdict: BootResult = BootResult.INCONCLUSIVE, note: String? = null) =
         ConsoleRule(id, pattern, verdict, note)
 
     /**
@@ -121,20 +121,22 @@ internal class ConsoleRuleLadderTest {
     }
 
     /**
-     * A rule with no verdict identifies without deciding — "if none is specified, determine by grinder".
-     * It still has to name itself, or an operator cannot tell a rule that matched from one that did not.
+     * A rule that states no verdict falls to INCONCLUSIVE rather than deferring to the ladder. Writing a
+     * pattern down at all means it is a signature you do not yet trust, and INCONCLUSIVE is the one outcome
+     * that can never publish — so an unfinished rule costs coverage, never a false positive.
      */
     @Test
-    fun aRuleWithNoVerdictLeavesTheLadderToDecideAndStillNamesItself() {
+    fun aRuleWithNoVerdictFallsToInconclusiveAndNamesItself() {
         val console = listOf("java.lang.NoClassDefFoundError: com/benbenlaw/core/screen/util/slot/FilterSlot")
 
         val plain = BootLogClassifier.classify(console, exitCode = 1, timedOut = false)
         val ruled = BootLogClassifier.classify(
             console, exitCode = 1, timedOut = false,
-            rules = rules(rule("third-party-screen-class", "NoClassDefFoundError: .*/screen/", note = "a screen class from another mod"))
+            rules = rules(ConsoleRule("third-party-screen-class", "NoClassDefFoundError: .*/screen/", note = "a screen class from another mod"))
         )
 
-        Assertions.assertEquals(plain, ruled.result, "an annotating rule must not change the verdict")
+        Assertions.assertEquals(BootResult.CRASHED, plain, "the ladder alone would have crashed this on its non-zero exit")
+        Assertions.assertEquals(BootResult.INCONCLUSIVE, ruled.result, "a verdict-less rule must fail safe, not defer")
         Assertions.assertEquals("third-party-screen-class", ruled.firedRule?.rule?.id)
         Assertions.assertEquals("a screen class from another mod", ruled.firedRule?.rule?.note)
     }

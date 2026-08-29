@@ -38,10 +38,12 @@ data class ConsoleRule(
     /** Regular expression matched against each console line, case-insensitively. */
     val pattern: String,
     /**
-     * What a match means, or `null` for a rule that only *identifies* — it names itself on the verdict and
-     * leaves the built-in ladder to decide, which is the "if none is specified, determine by grinder" case.
+     * What a match means. Defaults to [BootResult.INCONCLUSIVE], and that default is the safety property:
+     * INCONCLUSIVE is the only outcome that can never reach `HIGH`, so a rule whose verdict is missing or
+     * unreadable costs coverage rather than publishing a wrong clientside entry. Writing a pattern down at
+     * all means it is a signature you do not yet trust.
      */
-    val verdict: BootResult? = null,
+    val verdict: BootResult = BootResult.INCONCLUSIVE,
     /** Why this signature means what it does, carried into the verdict detail for whoever reads it later. */
     val note: String? = null
 ) {
@@ -156,9 +158,12 @@ class ConsoleRuleFile(private val file: File) {
     /**
      * Validate one entry into [rules], or record why it cannot be used in [errors].
      *
-     * Every rejection is deliberate rather than a lenient default. **An unrecognised verdict drops the
-     * rule** — defaulting to the one value that reaches `HIGH` is exactly how a typo would publish a wrong
-     * clientside entry to everyone polling the fallback list.
+     * The rejections and the fallbacks are each deliberate, and they go in *opposite* directions. A rule
+     * with no id or no pattern is **dropped** — it could never be traced back to, or could never match. A
+     * verdict that is missing or unreadable **falls back to INCONCLUSIVE** rather than dropping the rule,
+     * because dropping would hand the console back to a ladder that may well reach `CRASHED` on its own,
+     * and `CRASHED` is the one outcome that publishes. Every fallback is still recorded in [errors]:
+     * failing safe must not mean failing silently.
      */
     private fun readRule(element: JsonNode, index: Int, rules: MutableList<ConsoleRule>, errors: MutableList<String>) {
         val id = element.path("id").asText(null)?.takeIf { it.isNotBlank() }
@@ -177,14 +182,18 @@ class ConsoleRuleFile(private val file: File) {
             return
         }
 
+        // A verdict that is absent, or that nobody can read, becomes INCONCLUSIVE rather than dropping the
+        // rule: dropping would leave the ladder free to reach CRASHED on its own, and CRASHED is the one
+        // outcome that publishes. The typo is still recorded, so failing safe never means failing silently.
         val declaredVerdict = element.path("verdict").asText(null)?.takeIf { it.isNotBlank() }
         val verdict = declaredVerdict?.let { name ->
             BootResult.entries.firstOrNull { it.name.equals(name, ignoreCase = true) }
                 ?: run {
-                    errors += "$label: '$name' is not a boot result (${BootResult.entries.joinToString("/")})"
-                    return
+                    errors += "$label: '$name' is not a boot result " +
+                        "(${BootResult.entries.joinToString("/")}); treated as ${BootResult.INCONCLUSIVE}"
+                    null
                 }
-        }
+        } ?: BootResult.INCONCLUSIVE
 
         val rule = ConsoleRule(id, pattern, verdict, element.path("note").asText(null)?.takeIf { it.isNotBlank() })
         if (rule.regex == null) {

@@ -76,9 +76,9 @@ internal class BootVerifierRuleProvenanceTest {
         Assertions.assertNull(withIrrelevantRules.firedRule)
     }
 
-    /** An annotating rule names itself without changing the verdict — that is the whole point of it. */
+    /** A verdict-less rule fails safe to INCONCLUSIVE and still names itself on the outcome. */
     @Test
-    fun anAnnotatingRuleIsNamedWithoutChangingTheVerdict(@TempDir dir: File) {
+    fun aVerdictLessRuleIsNamedAndFailsSafe(@TempDir dir: File) {
         val console = listOf("java.lang.NoClassDefFoundError: com/benbenlaw/core/screen/util/slot/FilterSlot")
         val run = RunResult.Completed(console, exitCode = 1, timedOut = false)
 
@@ -88,7 +88,8 @@ internal class BootVerifierRuleProvenanceTest {
             ruleSet(ConsoleRule("third-party-screen", "NoClassDefFoundError: .*/screen/", note = "another mod's screen class"))
         )
 
-        Assertions.assertEquals(plain.result, annotated.result, "an annotating rule must not move the verdict")
+        Assertions.assertEquals(BootResult.CRASHED, plain.result, "the ladder alone crashes this")
+        Assertions.assertEquals(BootResult.INCONCLUSIVE, annotated.result, "a verdict-less rule fails safe")
         Assertions.assertEquals("third-party-screen", annotated.firedRule)
     }
 }

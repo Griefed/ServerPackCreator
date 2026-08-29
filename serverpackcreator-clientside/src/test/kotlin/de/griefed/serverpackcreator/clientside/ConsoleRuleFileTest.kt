@@ -118,17 +118,19 @@ internal class ConsoleRuleFileTest {
     }
 
     /**
-     * **The one that matters most.** Defaulting an unrecognised verdict to CRASHED would let a typo publish
-     * a HIGH-confidence clientside entry, which is the single most expensive mistake this engine can make.
+     * **The one that matters most.** A verdict nobody can read must fail *safe*, and safe here means
+     * INCONCLUSIVE: it is the one outcome that can never reach `HIGH`, so a typo cannot publish a wrong
+     * clientside entry to everyone polling the fallback list. Dropping the rule instead would leave the
+     * ladder free to reach CRASHED on its own, which is the direction that costs something.
      */
     @Test
-    fun anUnknownVerdictDropsTheRuleRatherThanDefaultingToCrashed(@TempDir dir: File) {
+    fun anUnknownVerdictBecomesInconclusiveAndSaysSo(@TempDir dir: File) {
         val file = rulesFile(dir, """[{ "id": "typo", "pattern": "aaa", "verdict": "CRASHDE" }]""")
 
         val loaded = ConsoleRuleFile(file).current()
 
-        Assertions.assertTrue(loaded.rules.isEmpty(), "a rule whose verdict cannot be read must not fire at all")
-        Assertions.assertTrue(loaded.errors.single().contains("typo"))
+        Assertions.assertEquals(BootResult.INCONCLUSIVE, loaded.rules.single().verdict)
+        Assertions.assertTrue(loaded.errors.single().contains("typo"), "and the typo must still be visible: ${loaded.errors}")
     }
 
     /** No file is the normal case, and it must mean "behave exactly as before rules existed". */
@@ -148,14 +150,17 @@ internal class ConsoleRuleFileTest {
         Assertions.assertTrue(ConsoleRuleFile(file).current().rules.isEmpty())
     }
 
-    /** A rule without a verdict is legal: it identifies without deciding, leaving the ladder to rule. */
+    /**
+     * A rule that states no verdict still fails safe rather than deferring: writing a pattern down means it
+     * is a signature you do not trust, and INCONCLUSIVE is the outcome that can never publish.
+     */
     @Test
-    fun aRuleMayCarryNoVerdictAtAll(@TempDir dir: File) {
+    fun aRuleWithoutAVerdictIsInconclusive(@TempDir dir: File) {
         val file = rulesFile(dir, """[{ "id": "just-a-note", "pattern": "aaa", "note": "seen this before" }]""")
 
         val rule = ConsoleRuleFile(file).current().rules.single()
 
-        Assertions.assertNull(rule.verdict)
+        Assertions.assertEquals(BootResult.INCONCLUSIVE, rule.verdict)
         Assertions.assertEquals("seen this before", rule.note)
     }
 

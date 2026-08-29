@@ -8,10 +8,11 @@
 //   id       required. Reported on every verdict the rule decided, so a rule that fires too broadly can be
 //            found by counting. A rule without one is dropped.
 //   pattern  required. Regular expression, matched case-insensitively against each console line.
-//   verdict  optional. CRASHED | INCONCLUSIVE | SURVIVED. OMIT IT to let the built-in ladder decide while
-//            still recording that this rule matched -- useful for labelling a signature you are still
-//            making your mind up about. An unrecognised value drops the rule rather than defaulting: the
-//            default would be the one value that reaches HIGH, and a typo would then publish a wrong entry.
+//   verdict  optional, DEFAULT INCONCLUSIVE. CRASHED | INCONCLUSIVE | SURVIVED. Omitting it, or writing a
+//            value that is not one of those, means INCONCLUSIVE -- the one outcome that can never reach
+//            HIGH and so can never publish a clientside entry. That is deliberate: a rule you have not
+//            finished thinking about should cost coverage, never a false positive. A misspelt verdict is
+//            still reported on /status, so failing safe does not mean failing silently.
 //   note     optional. Why this signature means what it does. Carried into the verdict detail.
 //   enabled  optional, default true. Set false to park a rule without deleting it.
 //
@@ -31,10 +32,10 @@
     "note": "FML refused a client-only class on a dedicated server."
   },
 
-  // A screen/gui class from *another* mod's package. Deliberately has NO verdict: it usually means a
-  // missing or mismatched dependency rather than the candidate being clientside, so it labels the console
-  // and leaves the ladder to decide. Give it "verdict": "CRASHED" only if you have satisfied yourself that
-  // it really is the candidate's own fault.
+  // A screen/gui class from *another* mod's package. Deliberately has NO verdict, so it resolves to
+  // INCONCLUSIVE: this usually means a missing or mismatched dependency rather than the candidate being
+  // clientside, and scoring it INCONCLUSIVE keeps it out of the published list while you look into it.
+  // Give it "verdict": "CRASHED" only once you have satisfied yourself it really is the candidate's fault.
   {
     "id": "third-party-screen-class",
     "pattern": "NoClassDefFoundError: (?!net/minecraft/client)[\\w/]+/(screen|gui)/",

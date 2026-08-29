@@ -206,13 +206,16 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   `for invalid dist DEDICATED_SERVER` on a **zero** exit (the verified gap: that string was in no guard) and
   excuse a console the marker would crash. The order is pinned as a unit inside
   `theGuardOrderIsPinnedAsAWhole` — do not add a sibling test stating it a second time.
-  - A rule with **no** verdict identifies without deciding; it names itself on the result and the ladder settles
-    the outcome. First match in file order wins.
-  - **The loader is deliberately unforgiving per rule and forgiving per file**: an unknown verdict string, a
-    missing id or pattern, or an uncompilable regex drops *that rule* with a recorded reason, while a broken
-    whole file keeps the last good set. **Never default an unrecognised verdict** — CRASHED is the one value
-    that reaches HIGH, so a typo would publish a wrong entry to everyone polling `/as-properties`. "Keep last
-    good" hides breakage, which is why `ConsoleRuleSet.errors` is surfaced on the grinder's `/status`.
+  - **A missing or unreadable verdict resolves to `INCONCLUSIVE`, never to "let the ladder decide".** That is
+    the safety property: INCONCLUSIVE is the only outcome that cannot reach HIGH, so an unfinished or
+    misspelt rule costs coverage rather than publishing a false positive. Dropping the rule instead would
+    hand the console back to a ladder free to reach CRASHED on its own, which is the expensive direction.
+    (This reverses the original "if none is specified, determine by grinder" — decided 2026-08-29. Pure
+    annotate-only is therefore *not* available; a rule always decides.) First match in file order wins.
+  - **Drops and fallbacks go in opposite directions, deliberately.** No id or no pattern **drops** the rule
+    (untraceable, or unmatchable); an unreadable verdict **falls back**. Every fallback is recorded, and a
+    broken whole file keeps the last good set — which hides breakage, hence `ConsoleRuleSet.errors` on
+    `/status`.
   - Reload is a `(lastModified, length)` pair checked on read, not a `WatchService`: `classify` runs once per
     boot, so the stat is free, while a watcher costs a thread, a platform-specific backend (macOS's JDK default
     is itself a poller) and tests that need sleeps. **Landmine:** mtime is second-granular, so two edits inside
