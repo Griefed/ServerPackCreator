@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.time.Duration
 import java.time.Instant
 
 internal class StoreWriteBenchTest {
@@ -46,6 +47,27 @@ internal class StoreWriteBenchTest {
             repeat(10) { store.record(verdict(size + 100 + it)) }
             val perRecord = (System.nanoTime() - started) / 10 / 1_000_000.0
             println("[bench] %6d rows -> %7.1f ms per record(), file %6.1f MiB".format(size, perRecord, file.length() / 1024.0 / 1024.0))
+        }
+    }
+
+    /** The same measurement with writes coalesced — B35's fix, against the write-through number above. */
+    @Test
+    fun benchCoalesced(@TempDir dir: File) {
+        Assumptions.assumeTrue(
+            System.getenv("SPC_GRINDER_BENCH") != null,
+            "set SPC_GRINDER_BENCH=1 to run the store write benchmark"
+        )
+        for (size in listOf(1_000, 10_000, 100_000)) {
+            val file = File(dir, "coalesced-$size.json")
+            seed(file, size)
+            JsonVerdictStore(file, flushInterval = Duration.ofSeconds(30)).use { store ->
+                check(store.all().size == size)
+                repeat(3) { store.record(verdict(size + it)) }
+                val started = System.nanoTime()
+                repeat(10) { store.record(verdict(size + 100 + it)) }
+                val perRecord = (System.nanoTime() - started) / 10 / 1_000.0
+                println("[coalesced] %6d rows -> %8.1f us per record()".format(size, perRecord))
+            }
         }
     }
 

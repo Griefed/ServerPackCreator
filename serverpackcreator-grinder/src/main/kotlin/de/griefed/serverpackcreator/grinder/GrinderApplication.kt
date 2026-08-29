@@ -195,7 +195,11 @@ object GrinderApplication {
                 log.info("Reclaimed ${reclaimed / 1_048_576} MiB of staging left behind by a previous run.")
             }
         }
-        val store = JsonVerdictStore(storeFile)
+        // Coalesced, not write-through: persist() serialises the whole store and is @Synchronized on the
+        // grind worker's thread, so per-verdict writes serialised every worker behind a multi-megabyte
+        // rewrite (B35 -- 787-1050 ms per verdict at 100k rows). The shutdown hook flushes, so only a hard
+        // kill can lose verdicts, bounded to one interval and re-derived by the re-verify TTL.
+        val store = JsonVerdictStore(storeFile, flushInterval = config.storeFlush)
         // Live activity record, so `/status` can answer "what is it doing right now?" (the verdict table only
         // ever answers "what has it found?").
         val status = GrinderStatus()
@@ -236,6 +240,11 @@ object GrinderApplication {
             if (pool?.awaitStop(remaining) == false) {
                 log.warn("A worker did not stop within ${SHUTDOWN_GRACE.seconds}s; exiting anyway.")
             }
+            // Last, and after the workers are done, so it captures everything they recorded. Writes are
+            // coalesced, so without this every verdict since the last flush would be lost on an orderly stop
+            // -- the one data-loss path the buffering introduces, and the one it is cheap to close.
+            runCatching { store.flush() }
+                .onFailure { log.error("Could not flush the verdict store on shutdown: ${it.message}") }
             mainThread.interrupt()
         })
 

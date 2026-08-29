@@ -31,7 +31,12 @@ import java.io.File
 import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
+import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * File-backed [VerdictStore] that survives restarts: verdicts are loaded from [file] on construction
@@ -45,10 +50,26 @@ import java.util.concurrent.ConcurrentHashMap
  * by whatever survived. Unknown fields and unreadable individual rows are tolerated for the same reason:
  * a store written by a newer build must survive a downgrade.
  *
+ * Writes are **coalesced** when [flushInterval] is positive: [record] buffers in memory and a daemon
+ * flusher persists on that interval, plus once more on [close]. [persist] serialises the *whole* store, so
+ * write-through costs O(store) per verdict on a grind worker's thread — measured 2026-08-29 at 18–25 ms per
+ * `record()` for 1 k rows, 74–83 ms for 10 k and 787–1050 ms for 100 k, against a deployed store of 38 258
+ * verdicts taking ~4.3 verdicts/second. Dropping the pretty-printer was measured and is not enough (707 ms →
+ * 361 ms at 100 k); only writing less often is. The durability trade is bounded to one interval, and a lost
+ * verdict is re-derived by the re-verify TTL.
+ *
+ * The default is **write-through** ([Duration.ZERO]) on purpose: coalescing is opted into at the composition
+ * root, so no existing caller silently loses the durability it was written against.
+ *
  * @param file The JSON document backing the store (its parent directory is created on first write).
+ * @param flushInterval How often buffered verdicts reach the disk. [Duration.ZERO] (the default) writes
+ *        through on every [record] and starts no thread at all.
  * @author Griefed
  */
-class JsonVerdictStore(private val file: File) : VerdictStore {
+class JsonVerdictStore(
+    private val file: File,
+    private val flushInterval: Duration = Duration.ZERO
+) : VerdictStore, AutoCloseable {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
     // Unknown properties are tolerated so a store written by a *newer* build stays readable after a
@@ -61,6 +82,25 @@ class JsonVerdictStore(private val file: File) : VerdictStore {
 
     private val verdicts = ConcurrentHashMap<String, GrindVerdict>()
 
+    /** Whether [verdicts] holds anything not yet on disk. Only ever set when coalescing. */
+    private val pending = AtomicBoolean(false)
+
+    /**
+     * The flusher, or `null` when writing through. Daemon-threaded so it can never hold the JVM open, and
+     * created only when coalescing so a write-through store costs no thread.
+     */
+    private val flusher: ScheduledExecutorService? =
+        if (flushInterval.isZero || flushInterval.isNegative) {
+            null
+        } else {
+            Executors.newSingleThreadScheduledExecutor { runnable ->
+                Thread(runnable, "verdict-store-flush").apply { isDaemon = true }
+            }.apply {
+                val everyMillis = flushInterval.toMillis()
+                scheduleWithFixedDelay(::flushSafely, everyMillis, everyMillis, TimeUnit.MILLISECONDS)
+            }
+        }
+
     init {
         load()
     }
@@ -71,7 +111,37 @@ class JsonVerdictStore(private val file: File) : VerdictStore {
         // sitting beside it. Without this a project ground before ids existed would hold two rows for good.
         supersededLegacyKey(verdict)?.let { verdicts.remove(it) }
         verdicts[verdict.identityKey()] = verdict
+        if (flusher == null) persist() else pending.set(true)
+    }
+
+    /**
+     * Write anything buffered. A no-op when writing through, or when nothing has changed since the last one.
+     *
+     * The flag is cleared **after** a successful [persist], not before: clearing first would drop the pending
+     * verdicts on the floor if the write threw, whereas this way the next tick simply tries again.
+     */
+    @Synchronized
+    override fun flush() {
+        if (!pending.get()) {
+            return
+        }
         persist()
+        pending.set(false)
+    }
+
+    /** [flush] for the scheduled thread: a throwing task would silently cancel all future runs. */
+    private fun flushSafely() {
+        runCatching { flush() }
+            .onFailure { log.error("Could not flush the verdict store; will retry: ${it.message}") }
+    }
+
+    /**
+     * Stop the flusher and write out what is left. Called by the daemon's shutdown hook — without the final
+     * flush, every verdict ground since the last tick would be lost on an orderly stop.
+     */
+    override fun close() {
+        flusher?.shutdownNow()
+        flush()
     }
 
     override fun all(): List<GrindVerdict> = verdicts.values.toList()

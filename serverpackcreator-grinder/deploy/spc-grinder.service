@@ -129,6 +129,12 @@ Environment=SPC_GRINDER_HOME=/home/grinder/.spc-grinder
 #Environment=SPC_GRINDER_INTERVAL=21600
 #Environment=SPC_GRINDER_SCAN_DELAY=15
 
+# How often buffered verdicts are written to the store, in seconds. The whole store is serialised per write,
+# so writing per verdict costs ~0.8-1.0s each once it passes 100k rows and blocks every grind worker behind
+# it. An orderly stop always flushes; only a hard kill can lose up to one interval, and those verdicts are
+# re-derived by REVERIFY_TTL_DAYS. `0` restores the old write-through behaviour.
+#Environment=SPC_GRINDER_STORE_FLUSH_SECONDS=30
+
 # Freshness, in days. Raise REVERIFY_TTL_DAYS above the time a full sweep takes, or the crawl never
 # reaches the tail because the head keeps going stale.
 #Environment=SPC_GRINDER_REVERIFY_TTL_DAYS=30

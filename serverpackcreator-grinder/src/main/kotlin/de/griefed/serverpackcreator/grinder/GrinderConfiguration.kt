@@ -101,6 +101,13 @@ internal data class GrinderConfiguration(
     val betweenSweeps: Duration,
     /** Pause after a pass that found nothing due but has catalog left. */
     val whileCrawling: Duration,
+    /**
+     * How often buffered verdicts are written to the store. `0` writes through on every verdict, which is what
+     * the daemon did before B35 and costs O(store) on a grind worker's thread — measured at 787–1050 ms per
+     * verdict for a 100 k-row store. At most one interval of verdicts is lost to a hard kill, and those are
+     * re-derived by [reverifyTtl]; an orderly stop flushes.
+     */
+    val storeFlush: Duration,
     /** CurseForge API key, or `null` — without it CurseForge cannot be resolved at all. */
     val curseForgeApiKey: String?
 ) {
@@ -135,7 +142,8 @@ internal data class GrinderConfiguration(
             Knob("SPC_GRINDER_REVERIFY_TTL_DAYS", "30"),
             Knob("SPC_GRINDER_CACHE_TTL_DAYS", "7"),
             Knob("SPC_GRINDER_INTERVAL", "21600"),
-            Knob("SPC_GRINDER_SCAN_DELAY", "15")
+            Knob("SPC_GRINDER_SCAN_DELAY", "15"),
+            Knob("SPC_GRINDER_STORE_FLUSH_SECONDS", "30")
         )
 
         /** The default home, used when `SPC_GRINDER_HOME` says nothing. */
@@ -190,6 +198,9 @@ internal data class GrinderConfiguration(
                 cacheTtl = Duration.ofDays(number("SPC_GRINDER_CACHE_TTL_DAYS", "7").toLongOrNull() ?: 7),
                 betweenSweeps = Duration.ofSeconds(number("SPC_GRINDER_INTERVAL", "21600").toLongOrNull() ?: 21600),
                 whileCrawling = Duration.ofSeconds(number("SPC_GRINDER_SCAN_DELAY", "15").toLongOrNull() ?: 15),
+                storeFlush = Duration.ofSeconds(
+                    number("SPC_GRINDER_STORE_FLUSH_SECONDS", "30").toLongOrNull() ?: 30
+                ),
                 curseForgeApiKey = optional("CURSEFORGE_API_KEY")
             )
         }
