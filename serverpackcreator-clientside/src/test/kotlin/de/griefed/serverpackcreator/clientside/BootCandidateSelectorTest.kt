@@ -279,4 +279,63 @@ internal class BootCandidateSelectorTest {
             "NeoForge/Forge cross-loading is version-dependent — do not guess"
         )
     }
+
+    /**
+     * A declared constraint **narrows** the choice; it must never empty it.
+     *
+     * That direction is the whole safety property of constraint-aware selection: preferring a satisfying
+     * file is an improvement, but returning `null` where the old code returned a file would turn a
+     * bootable candidate into a refusal — and `refuseForMissingDependencies` scores a refusal INCONCLUSIVE,
+     * so the mod would silently stop being verified at all.
+     */
+    @Test
+    fun aConstraintNarrowsTheChoiceButNeverEmptiesIt() {
+        val older = modFile("api-0.91.0.jar", version = "0.91.0")
+        val newer = modFile("api-0.92.5.jar", version = "0.92.5")
+        val files = listOf(newer, older)
+
+        Assertions.assertEquals(
+            newer, BootCandidateSelector.pickDependencyFile(files, "Fabric", "1.20.1", ">=0.92.0"),
+            "the satisfying file is preferred"
+        )
+        Assertions.assertEquals(
+            older, BootCandidateSelector.pickDependencyFile(listOf(older), "Fabric", "1.20.1", ">=0.92.0"),
+            "when nothing satisfies, the answer must still be what it was without a constraint"
+        )
+        Assertions.assertEquals(
+            BootCandidateSelector.pickDependencyFile(files, "Fabric", "1.20.1"),
+            BootCandidateSelector.pickDependencyFile(files, "Fabric", "1.20.1", null),
+            "no constraint must behave exactly as before constraints existed"
+        )
+    }
+
+    /** A file whose version the platform never reported cannot be judged, so it stays eligible. */
+    @Test
+    fun aFileWithNoKnownVersionIsStillEligible() {
+        val unversioned = modFile("api-mystery.jar", version = null)
+
+        Assertions.assertEquals(
+            unversioned,
+            BootCandidateSelector.pickDependencyFile(listOf(unversioned), "Fabric", "1.20.1", ">=0.92.0")
+        )
+    }
+
+    /** The Quilt-to-Fabric fallback still applies with a constraint in play — Fabric API is the case. */
+    @Test
+    fun theQuiltFallbackStillAppliesWithAConstraint() {
+        val fabricOnly = modFile("fabric-api-0.92.5.jar", version = "0.92.5", loaders = setOf("Fabric"))
+
+        Assertions.assertEquals(
+            fabricOnly,
+            BootCandidateSelector.pickDependencyFile(listOf(fabricOnly), "Quilt", "1.20.1", ">=0.92.0")
+        )
+    }
+
+    /** Shared builder for the constraint guards above. */
+    private fun modFile(
+        fileName: String,
+        version: String?,
+        loaders: Set<String> = setOf("Fabric"),
+        minecraftVersions: Set<String> = setOf("1.20.1")
+    ) = ModFile(fileName, loaders, minecraftVersions, "https://example.invalid/$fileName", null, emptyList(), version)
 }
