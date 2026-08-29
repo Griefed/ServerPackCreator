@@ -117,7 +117,8 @@ class Grinder(
                     declaredClientSide = verdict.declaredClientSide,
                     declaredServerSide = verdict.declaredServerSide,
                     jarScan = verdict.jarScan,
-                    bootedLoader = verdict.bootedLoader
+                    bootedLoader = verdict.bootedLoader,
+                    firedRule = verdict.firedRule
                 )
             )
         }

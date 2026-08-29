@@ -197,6 +197,30 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   directory, and a crash is the one outcome that reaches HIGH. Cut only the *loader* suffix when parsing —
   slugs nest, and a prefix match would claim `creativecore-extras` for `creativecore`. Directories staged
   before this change match no owner and are cleared by the grinder's startup `reapAll()`.
+- **Operator console rules are rung 7 of the ladder** (`ConsoleRules.kt`: `ConsoleRule`, `ConsoleRuleSet`,
+  `ConsoleRuleFile`; `BootLogClassifier.classify(..., rules)` returning a `Classification`). A rule maps console
+  text to a `BootResult`, so a newly-observed clientside signature is a file edit rather than a release. **Where
+  it sits is the whole design**: below the ready-line and below every guard meaning *the mod never got a fair
+  run* (timeout, killed/OOM, setup abort, launch failure, loader bootstrap), so a hand-edited file can never turn
+  host trouble into a HIGH — and *above* the client-class marker and the exit code, so a rule can both raise FML's
+  `for invalid dist DEDICATED_SERVER` on a **zero** exit (the verified gap: that string was in no guard) and
+  excuse a console the marker would crash. The order is pinned as a unit inside
+  `theGuardOrderIsPinnedAsAWhole` — do not add a sibling test stating it a second time.
+  - A rule with **no** verdict identifies without deciding; it names itself on the result and the ladder settles
+    the outcome. First match in file order wins.
+  - **The loader is deliberately unforgiving per rule and forgiving per file**: an unknown verdict string, a
+    missing id or pattern, or an uncompilable regex drops *that rule* with a recorded reason, while a broken
+    whole file keeps the last good set. **Never default an unrecognised verdict** — CRASHED is the one value
+    that reaches HIGH, so a typo would publish a wrong entry to everyone polling `/as-properties`. "Keep last
+    good" hides breakage, which is why `ConsoleRuleSet.errors` is surfaced on the grinder's `/status`.
+  - Reload is a `(lastModified, length)` pair checked on read, not a `WatchService`: `classify` runs once per
+    boot, so the stat is free, while a watcher costs a thread, a platform-specific backend (macOS's JDK default
+    is itself a poller) and tests that need sleeps. **Landmine:** mtime is second-granular, so two edits inside
+    one second that keep the byte count identical are missed — stated rather than hidden, because closing it
+    means hashing the file on every call.
+  - **Parameter-order landmine:** `bootArtifactSink` must stay the **last** parameter of `runPrepared` and of
+    `BootVerifier`'s constructor. Adding `rules` after it silently re-bound every trailing-lambda call site to
+    the wrong parameter.
 - **Every attempt's evidence is handed to `bootArtifactSink`, from inside `runPrepared`.** `BootArtifacts.collect`
   reads the staged pack's `logs/` and `crash-reports/` alongside the console and returns them as separate
   entries (they disagree usefully: `logs/latest.log` is log4j's file appender, so it holds entries stdout never

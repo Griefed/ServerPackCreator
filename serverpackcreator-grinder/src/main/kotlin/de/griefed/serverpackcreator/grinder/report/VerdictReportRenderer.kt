@@ -38,7 +38,7 @@ object VerdictReportRenderer {
 
     /** Column headers, in the order the rows below emit their cells. */
     private val columns =
-        listOf("Name", "Project", "Name-pattern", "Confidence", "Loader", "Detail", "Logs", "Scanned (UTC)")
+        listOf("Name", "Project", "Name-pattern", "Confidence", "Loader", "Detail", "Rule", "Logs", "Scanned (UTC)")
 
     /** Default order: strongest clientside signal first, then by name — matches the CSV export. */
     private val confidenceRank = mapOf(
@@ -170,6 +170,9 @@ object VerdictReportRenderer {
             esc(verdict.confidence.name),
             esc(verdict.loader),
             esc(verdict.detail),
+            // Its own column rather than only a phrase inside Detail: sorting on it is how an operator sees
+            // at a glance how much of the table one rule is responsible for.
+            esc(verdict.firedRule ?: ""),
             logs,
             // Last, because it is the one column whose width never changes — and the sort works on it as text.
             // Escaped like every other cell even though a `yyyy/MM/dd` string cannot contain markup: the

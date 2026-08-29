@@ -68,7 +68,8 @@ class ContainerCandidateVerifier(
     private val resources: ContainerResources = ContainerResources(),
     private val curseForgeApiKey: String? = System.getenv("CURSEFORGE_API_KEY"),
     private val containerUser: String = ContainerUser.IMAGE_DEFAULT,
-    private val crashLogs: BootLogStore? = null
+    private val crashLogs: BootLogStore? = null,
+    private val consoleRules: () -> ConsoleRuleSet = { ConsoleRuleSet.EMPTY }
 ) : CandidateVerifier {
     /** Reclaims each candidate's staging once its verdicts are in; without it the work tree grows without bound. */
     private val reaper = BootWorkspaceReaper(workDirectory)
@@ -186,6 +187,7 @@ class ContainerCandidateVerifier(
                         packPostProcessor = ::overlayLoaderInstall,
                         minecraftAcceptable = imageJava::supports,
                         bootTimeout = bootTimeout,
+                        consoleRules = consoleRules,
                         bootArtifactSink = { staged, outcome ->
                             keepAttemptArtifacts(staged, outcome, crashLogs, keptLogNames)
                         }

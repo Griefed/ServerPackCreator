@@ -126,7 +126,13 @@ data class GrindVerdict(
      * The loader whose boot actually produced the evidence, which is not always [loader]: a cross-loader
      * re-check can settle one loader's verdict from another loader's clean boot.
      */
-    val bootedLoader: String? = null
+    val bootedLoader: String? = null,
+    /**
+     * The operator console rule that decided or annotated this verdict, or `null` when the built-in ladder
+     * settled it alone. A column rather than only a phrase in [detail], because finding a rule that fires
+     * too broadly means counting the verdicts it produced.
+     */
+    val firedRule: String? = null
 )
 
 /**

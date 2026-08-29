@@ -147,6 +147,7 @@ class ClientsideVerifier(
                 bootResult = bootOutcome?.result,
                 bootedLoader = bootOutcome?.bootedLoader,
                 bootCrashExcerpt = bootOutcome?.crashExcerpt,
+                firedRule = bootOutcome?.firedRule,
                 confidence = confidence,
                 sampleFile = sample?.fileName,
                 note = listOfNotNull(note, bootOutcome?.detail).joinToString(" ").ifBlank { null }

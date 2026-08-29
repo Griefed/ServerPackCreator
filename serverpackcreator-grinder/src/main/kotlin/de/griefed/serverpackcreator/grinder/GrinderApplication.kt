@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.grinder
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.settings.PathsConfig
+import de.griefed.serverpackcreator.clientside.ConsoleRuleFile
 import de.griefed.serverpackcreator.grinder.container.ContainerResources
 import de.griefed.serverpackcreator.grinder.container.ContainerUser
 import de.griefed.serverpackcreator.grinder.container.SHUTDOWN_GRACE
@@ -161,6 +162,9 @@ object GrinderApplication {
         // rather than by uptime: retention keeps most boots, so a daemon running for months on a fixed disk
         // needs a ceiling that does not depend on the catalog's shape.
         val bootLogBudgetMiB = env("SPC_GRINDER_BOOT_LOG_BUDGET_MIB", "2048").toLong()
+        // Operator-editable console rules. Absent file = today's behaviour exactly; edited while the service
+        // runs, it takes effect on the next boot, because the verifier asks for the rules per attempt.
+        val consoleRules = ConsoleRuleFile(File(env("SPC_GRINDER_BOOT_RULES", File(base, "boot-rules.json").path)))
         val crashLogs = BootLogStore(
             File(env("SPC_GRINDER_BOOT_LOGS", File(base, "boot-logs").path)),
             bootLogBudgetMiB * 1024 * 1024
@@ -170,7 +174,8 @@ object GrinderApplication {
         crashLogs.adoptLegacy(File(base, "crash-logs"))
         val verifier = ContainerCandidateVerifier(
             apiWrapper, cache, engine, image, imageJava, File(workDir, "verify"),
-            resources = containerResources, containerUser = containerUser, crashLogs = crashLogs
+            resources = containerResources, containerUser = containerUser, crashLogs = crashLogs,
+            consoleRules = consoleRules::current
         )
         // Containers first: a JVM that was SIGKILLed (systemd's TimeoutStopSec expiring mid-cleanup) leaves them
         // running, parented by the docker daemon rather than this unit's control group, so nothing else on the
@@ -246,6 +251,7 @@ object GrinderApplication {
                 )
             },
             crashLogs = crashLogs,
+            consoleRules = consoleRules::current,
             requeue = requeue
         ).start()
         val reportUrl = reportUrl(bindHost, server.port)

@@ -33,7 +33,7 @@ import de.griefed.serverpackcreator.grinder.GrindVerdict
 object VerdictCsvExporter {
 
     /** The header row; also documents the column order callers (and the table) rely on. */
-    private val header = listOf("Name", "Project", "NamePattern", "Confidence", "Loader", "Detail", "Scanned")
+    private val header = listOf("Name", "Project", "NamePattern", "Confidence", "Loader", "Detail", "Rule", "Scanned")
 
     /** Confidence ordering for the default sort: strongest clientside signal first. */
     private val confidenceRank = mapOf(
@@ -56,6 +56,8 @@ object VerdictCsvExporter {
                 verdict.confidence.name,
                 verdict.loader,
                 verdict.detail,
+            // Machine-readable, so "how many verdicts did this rule decide?" is a question the CSV answers.
+            verdict.firedRule ?: "",
                 ScanDate.of(verdict.verifiedAt)
             )
         }

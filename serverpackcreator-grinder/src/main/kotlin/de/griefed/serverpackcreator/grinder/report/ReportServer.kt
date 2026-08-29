@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.grinder.report
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.sun.net.httpserver.HttpExchange
 import de.griefed.serverpackcreator.clientside.AttemptDirectory
+import de.griefed.serverpackcreator.clientside.ConsoleRuleSet
 import com.sun.net.httpserver.HttpServer
 import de.griefed.serverpackcreator.grinder.GrinderStatus
 import de.griefed.serverpackcreator.grinder.ModPlatforms
@@ -52,6 +53,9 @@ import java.util.concurrent.Executors
  * @param fallbackLists Supplies the lists `/as-properties` publishes alongside the grinder's findings, read
  *                      per request so a refreshed list is served without a restart. `null` serves the
  *                      grinder's own findings only — the report server stays constructible without SPC.
+ * @param consoleRules Supplies the operator's console rules, so `/status` can report how many loaded and what
+ *        could not be. Reporting the errors is what stops a typo silently disabling an operator's rules —
+ *        the loader deliberately keeps the last good set, which would otherwise hide the breakage entirely.
  * @param crashLogs The kept consoles of crashed boots, linked from the table and served by name. `null`
  *                  simply offers no links, so the report stays constructible without a log store.
  * @param requeue The immediate re-grind queue, reported as a backlog count on `/status` so a queued
@@ -67,6 +71,7 @@ class ReportServer(
     private val cacheRoot: File? = null,
     private val fallbackLists: (() -> FallbackLists)? = null,
     private val crashLogs: BootLogStore? = null,
+    private val consoleRules: (() -> ConsoleRuleSet)? = null,
     private val requeue: RequeueStore? = null
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
@@ -250,6 +255,11 @@ class ReportServer(
             // wants to see it land, and a backlog that never shrinks is the symptom of a stalled pass.
             "requeued" to requeue?.pending(),
             "activity" to status?.snapshot(),
+            // The rule file keeps its last good state when a save breaks it, so the errors have to be visible
+            // somewhere or a typo disables an operator's rules in complete silence.
+            "bootRules" to consoleRules?.invoke()?.let { loaded ->
+                linkedMapOf("source" to loaded.source, "ruleCount" to loaded.rules.size, "errors" to loaded.errors)
+            },
             "crawl" to cursors?.let { store ->
                 ModPlatforms.known.associateWith { platform ->
                     val cursor = store.cursor(platform)

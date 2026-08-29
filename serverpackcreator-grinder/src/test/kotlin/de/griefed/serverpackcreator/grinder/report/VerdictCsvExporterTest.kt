@@ -41,7 +41,7 @@ internal class VerdictCsvExporterTest {
             )
         )
         val lines = csv.lines()
-        Assertions.assertEquals("Name,Project,NamePattern,Confidence,Loader,Detail,Scanned", lines[0])
+        Assertions.assertEquals("Name,Project,NamePattern,Confidence,Loader,Detail,Rule,Scanned", lines[0])
         Assertions.assertTrue(lines[1].startsWith("high-mod,"), "HIGH must come first: ${lines[1]}")
         Assertions.assertTrue(lines[2].startsWith("medium-mod,"))
         Assertions.assertTrue(lines[3].startsWith("low-mod,"))
@@ -77,6 +77,6 @@ internal class VerdictCsvExporterTest {
 
     @Test
     fun emptyVerdictsStillEmitTheHeader() {
-        Assertions.assertEquals("Name,Project,NamePattern,Confidence,Loader,Detail,Scanned", VerdictCsvExporter.toCsv(emptyList()))
+        Assertions.assertEquals("Name,Project,NamePattern,Confidence,Loader,Detail,Rule,Scanned", VerdictCsvExporter.toCsv(emptyList()))
     }
 }

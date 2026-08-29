@@ -67,6 +67,12 @@ Environment=SPC_GRINDER_HOME=/home/grinder/.spc-grinder
 # is what makes a wrong verdict debuggable -- a mod wrongly cleared as server-safe leaves evidence here.
 # A clean boot keeps nothing: it proves nothing about sideness and explains nothing either.
 #Environment=SPC_GRINDER_BOOT_LOGS=/home/grinder/.spc-grinder/boot-logs
+# Operator-written rules mapping console text to a boot verdict, so a newly-observed clientside signature
+# is a file edit rather than a release. Absent file = exactly the built-in classification. Re-read on the
+# next boot after you save it, so no restart is needed. See deploy/boot-rules.example.json.
+# A rule can never outrank a timeout, a SIGKILL/OOM or a setup abort -- it cannot turn host trouble into a
+# HIGH-confidence clientside verdict.
+#Environment=SPC_GRINDER_BOOT_RULES=/home/grinder/.spc-grinder/boot-rules.json
 # Ceiling for that store, in MiB. Once passed, the oldest attempts are deleted until it is under again.
 # Retention keeps most boots, so this is what stops a months-long run filling a fixed disk.
 #Environment=SPC_GRINDER_BOOT_LOG_BUDGET_MIB=2048
