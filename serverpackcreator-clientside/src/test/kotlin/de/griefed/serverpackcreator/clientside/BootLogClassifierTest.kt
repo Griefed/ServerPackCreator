@@ -532,4 +532,107 @@ internal class BootLogClassifierTest {
 
         Assertions.assertEquals(BootResult.SURVIVED, BootLogClassifier.classify(console, exitCode = 137, timedOut = false))
     }
+
+    /**
+     * A mod that dies because the sandbox denied it the network was never fairly tested.
+     *
+     * Boots run `--network none` — that isolation is the whole point — so any mod whose loader phones home at
+     * startup is guaranteed to fail here and would fail nowhere else. Measured 2026-08-29 over 200 published
+     * crash logs: **15 (8%)** died this way. The clearest is OneConfig, whose loader fetches its own stage1 from
+     * `api.polyfrost.org`, then falls back to a Swing error dialog — which is why the tail of those logs is
+     * `Fontconfig error: No writable cache directories` in a headless container — and calls `System.exit`.
+     */
+    @Test
+    fun aBootDeniedTheNetworkIsInconclusive() {
+        val console = listOf(
+            "[main/INFO] [LaunchWrapper]: Loading tweak class name cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker",
+            "[main/INFO] [STDERR]: java.net.UnknownHostException: api.polyfrost.org",
+            "Exiting..."
+        )
+
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(console, exitCode = 1, timedOut = false),
+            "the sandbox denied the network; that says nothing about whether the mod is clientside"
+        )
+    }
+
+    /**
+     * The network excuse is subordinate to the decisive marker, like every other excuse on the ladder.
+     *
+     * A clientside mod may perfectly well phone home *and* die on a client class. Letting the network guard
+     * outrank [BootLogClassifier] 's client-only marker would drop true positives, so it sits below it.
+     */
+    @Test
+    fun aClientClassCrashOutranksTheNetworkExcuse() {
+        val console = listOf(
+            "[main/INFO] [STDERR]: java.net.UnknownHostException: api.example.invalid",
+            "java.lang.NoClassDefFoundError: net/minecraft/client/gui/screens/Screen"
+        )
+
+        Assertions.assertEquals(
+            BootResult.CRASHED,
+            BootLogClassifier.classify(console, exitCode = 1, timedOut = false),
+            "a client-only class is decisive evidence and must not be excused by unrelated network noise"
+        )
+    }
+
+    /**
+     * Quilt Loader's solver phrasing must be read as the dependency failure it is.
+     *
+     * `requires version [0.19.3, ∞) of fabricloader` is what Quilt prints when a staged dependency does not fit
+     * the pack, and it was the single largest failure class in the published crash logs — 63 of 200 sampled,
+     * with Fabric API the requirer in 55 of them. The staging bug behind most of those is fixed separately; this
+     * keeps the *verdict* honest for the ones that still slip through.
+     */
+    @Test
+    fun theQuiltSolversVersionConflictIsADependencyFailure() {
+        val console = listOf(
+            "---- Quilt Loader: Failed to load ----",
+            "Fabric API requires version [0.19.3, \u221E) of fabricloader, but only wrong versions are present:"
+        )
+
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(console, exitCode = 1, timedOut = false),
+            "the pack was mis-assembled; the mod under test never ran"
+        )
+    }
+
+    /**
+     * A mixin that cannot find the class it targets is a missing dependency, not a sideness signal.
+     *
+     * Seen 6 times in the 200-log sample, always naming a class from a mod that was not staged —
+     * `com.llamalad7.mixinextras...`, `grillo78.clothes_mod...`, `net.fabricmc.fabric.api.event.Event`.
+     */
+    @Test
+    fun aMixinMissingItsTargetClassIsADependencyFailure() {
+        val console = listOf(
+            "Caused by: org.spongepowered.asm.mixin.throwables.ClassMetadataNotFoundException: " +
+                "com.llamalad7.mixinextras.injector.wrapoperation.Operation"
+        )
+
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(console, exitCode = 1, timedOut = false),
+            "the mixin's target was absent from the pack, so the mod was never exercised"
+        )
+    }
+
+    /**
+     * A pack assembled without the Mixin tweaker never loads a mod at all. Seen 6 times in the sample, all on
+     * legacy LaunchWrapper-era Forge.
+     */
+    @Test
+    fun aPackMissingTheMixinTweakerIsADependencyFailure() {
+        val console = listOf(
+            "java.lang.ClassNotFoundException: org.spongepowered.asm.launch.MixinTweaker"
+        )
+
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(console, exitCode = 1, timedOut = false),
+            "the tweaker is part of the pack we build, so its absence is our failure and not the mod's"
+        )
+    }
 }
