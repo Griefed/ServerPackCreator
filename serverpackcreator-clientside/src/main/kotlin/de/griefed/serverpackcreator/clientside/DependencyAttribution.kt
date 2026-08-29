@@ -24,7 +24,13 @@ data class InjectedDependency(
     /** The published jar file name, which is what a reader needs to reproduce the boot exactly. */
     val fileName: String,
     /** The mod id it was resolved by, matched against crash text alongside the file name's stem. */
-    val modId: String?
+    val modId: String?,
+    /**
+     * The dependency project's own link, when it was resolved from a platform. Carried so a blamed
+     * dependency can be **requeued as its own candidate** — which is how the suspicion gets answered by
+     * grinding it rather than by trusting the string match that raised it.
+     */
+    val projectUrl: String? = null
 )
 
 /**

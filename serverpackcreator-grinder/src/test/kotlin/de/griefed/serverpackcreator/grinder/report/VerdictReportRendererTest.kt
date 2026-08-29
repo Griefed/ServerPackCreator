@@ -153,7 +153,7 @@ internal class VerdictReportRendererTest {
         val html = VerdictReportRenderer.toHtml(listOf(grindVerdict("jei", "Forge", suggestedEntry = "jei-")))
         Assertions.assertTrue(html.contains("function downloadCsv("), "needs the CSV download hook")
         // The CSV is embedded as a JS string literal; its header and the name-pattern must be present.
-        Assertions.assertTrue(html.contains("Name,Project,NamePattern,Confidence,Loader,Detail,Rule,Scanned"), "embedded CSV header")
+        Assertions.assertTrue(html.contains("Name,Project,NamePattern,Confidence,Loader,Detail,Rule,Dependencies,Scanned"), "embedded CSV header")
         Assertions.assertTrue(html.contains("jei-"), "embedded CSV row")
     }
 

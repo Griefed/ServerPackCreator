@@ -132,7 +132,12 @@ data class GrindVerdict(
      * settled it alone. A column rather than only a phrase in [detail], because finding a rule that fires
      * too broadly means counting the verdicts it produced.
      */
-    val firedRule: String? = null
+    val firedRule: String? = null,
+    /**
+     * The dependency jars staged beside the candidate for the decisive boot, so a verdict can be traced to
+     * the pack that produced it rather than only to the mod it is about.
+     */
+    val stagedDependencies: List<String> = emptyList()
 )
 
 /**

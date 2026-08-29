@@ -148,6 +148,9 @@ class ClientsideVerifier(
                 bootedLoader = bootOutcome?.bootedLoader,
                 bootCrashExcerpt = bootOutcome?.crashExcerpt,
                 firedRule = bootOutcome?.firedRule,
+                blamedDependency = bootOutcome?.blamedDependency,
+                blamedDependencyUrl = bootOutcome?.blamedDependencyUrl,
+                stagedDependencies = bootOutcome?.stagedDependencies.orEmpty(),
                 confidence = confidence,
                 sampleFile = sample?.fileName,
                 note = listOfNotNull(note, bootOutcome?.detail).joinToString(" ").ifBlank { null }

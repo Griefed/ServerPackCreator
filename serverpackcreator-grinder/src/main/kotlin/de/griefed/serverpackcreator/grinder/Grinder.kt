@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.grinder
 
 import de.griefed.serverpackcreator.grinder.report.VerdictStore
+import de.griefed.serverpackcreator.grinder.source.RequeueStore
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.time.Duration
 import java.time.Instant
@@ -42,6 +43,10 @@ import java.util.concurrent.atomic.AtomicInteger
  * @param clock       Supplies the verdict timestamp and the freshness "now" (injectable for tests).
  * @param status      Live activity record for the report server's `/status`, updated around each candidate.
  *                    Optional so the orchestration stays testable without it.
+ * @param requeue     Where a dependency blamed for a candidate's crash is queued for its own verification.
+ *                    Optional for the same reason. **This is the point of attribution:** the blame itself is
+ *                    a string match and is never allowed to move a verdict, so the suspicion is settled by
+ *                    grinding the dependency and seeing whether it crashes alone.
  * @author Griefed
  */
 class Grinder(
@@ -49,7 +54,8 @@ class Grinder(
     private val store: VerdictStore,
     private val reverifyTtl: Duration = Duration.ofDays(30),
     private val clock: () -> Instant = Instant::now,
-    private val status: GrinderStatus? = null
+    private val status: GrinderStatus? = null,
+    private val requeue: RequeueStore? = null
 ) {
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
@@ -63,6 +69,32 @@ class Grinder(
      * usually a recent one — engine defects get found by reading verdicts that were just produced — so an
      * unforced drain would turn straight into [GrindOutcome.SKIPPED_FRESH] and quietly do nothing.
      */
+    /**
+     * Queue every dependency a loader's crash was attributed to, so it is verified in its own right.
+     *
+     * Attribution deliberately never changes a verdict — it is a string match over a console — so this is
+     * what turns the suspicion into evidence: grind the dependency alone and see whether it crashes.
+     * Failure here is logged and dropped, because a queueing problem must not cost the verdicts just earned.
+     */
+    private fun queueBlamedDependencies(report: de.griefed.serverpackcreator.clientside.ClientsideReport, candidate: GrindCandidate) {
+        val store = requeue ?: return
+        val blamed = report.perLoader.mapNotNull { it.blamedDependencyUrl }.distinct()
+        if (blamed.isEmpty()) {
+            return
+        }
+        runCatching {
+            store.add(
+                blamed.map { url ->
+                    GrindCandidate(url, url.substringAfterLast('/'), 0, ModPlatforms.ofUrl(url))
+                }
+            )
+        }.onSuccess {
+            log.info("Queued $it dependency project(s) blamed for ${candidate.slug}'s crash: ${blamed.joinToString(", ")}")
+        }.onFailure {
+            log.warn("Could not queue the dependencies blamed for ${candidate.slug}'s crash: ${it.message}")
+        }
+    }
+
     fun grind(candidate: GrindCandidate, force: Boolean = false): GrindOutcome {
         // Freshness is per (platform, slug): the same slug on Modrinth and CurseForge is two projects.
         val lastVerified = store.newestVerification(candidate.platform, candidate.slug, candidate.projectId)
@@ -118,10 +150,12 @@ class Grinder(
                     declaredServerSide = verdict.declaredServerSide,
                     jarScan = verdict.jarScan,
                     bootedLoader = verdict.bootedLoader,
-                    firedRule = verdict.firedRule
+                    firedRule = verdict.firedRule,
+                    stagedDependencies = verdict.stagedDependencies
                 )
             )
         }
+        queueBlamedDependencies(report, candidate)
         // Report the boot result alongside the confidence: a verdict reached *without* a boot is a much weaker
         // claim than one that booted, and only the log can tell them apart afterwards.
         log.info(

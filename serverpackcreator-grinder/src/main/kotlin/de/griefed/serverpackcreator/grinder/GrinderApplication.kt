@@ -198,7 +198,7 @@ object GrinderApplication {
         // ever answers "what has it found?").
         val status = GrinderStatus()
         val reverifyTtl = Duration.ofDays(env("SPC_GRINDER_REVERIFY_TTL_DAYS", "30").toLong())
-        val grinder = Grinder(verifier, store, reverifyTtl, status = status)
+        val grinder = Grinder(verifier, store, reverifyTtl, status = status, requeue = requeue)
 
         // ONE shutdown hook, registered before any boot can start so it covers the one-shot path too and
         // its ordering is unambiguous: stop pulling new candidates, then release containers whose run was

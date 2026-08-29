@@ -38,7 +38,7 @@ object VerdictReportRenderer {
 
     /** Column headers, in the order the rows below emit their cells. */
     private val columns =
-        listOf("Name", "Project", "Name-pattern", "Confidence", "Loader", "Detail", "Rule", "Logs", "Scanned (UTC)")
+        listOf("Name", "Project", "Name-pattern", "Confidence", "Loader", "Detail", "Rule", "Dependencies", "Logs", "Scanned (UTC)")
 
     /** Default order: strongest clientside signal first, then by name — matches the CSV export. */
     private val confidenceRank = mapOf(
@@ -173,6 +173,9 @@ object VerdictReportRenderer {
             // Its own column rather than only a phrase inside Detail: sorting on it is how an operator sees
             // at a glance how much of the table one rule is responsible for.
             esc(verdict.firedRule ?: ""),
+            // What was in the pack beside the mod. A verdict reached with dependencies injected is a
+            // different claim from one reached with the mod alone, and the reader should be able to see which.
+            esc(verdict.stagedDependencies.joinToString(", ")),
             logs,
             // Last, because it is the one column whose width never changes — and the sort works on it as text.
             // Escaped like every other cell even though a `yyyy/MM/dd` string cannot contain markup: the

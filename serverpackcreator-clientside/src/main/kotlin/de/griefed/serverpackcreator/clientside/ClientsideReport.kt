@@ -90,7 +90,16 @@ data class LoaderVerdict(
      * built-in ladder settled it alone. Carried so "which verdicts did rule X decide?" is answerable from
      * the data rather than by reading prose.
      */
-    val firedRule: String? = null
+    val firedRule: String? = null,
+    /**
+     * The injected dependency this loader's crash names, or `null`. Annotation only — the verdict is the
+     * boot's own; the grinder requeues this dependency so the question is answered by grinding it.
+     */
+    val blamedDependency: String? = null,
+    /** The blamed dependency's project link, so the grinder can queue it for its own verification. */
+    val blamedDependencyUrl: String? = null,
+    /** The dependency jars staged beside the candidate, so a verdict names the pack it was booted with. */
+    val stagedDependencies: List<String> = emptyList()
 )
 
 /**

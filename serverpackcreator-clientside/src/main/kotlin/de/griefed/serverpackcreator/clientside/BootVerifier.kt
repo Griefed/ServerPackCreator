@@ -142,6 +142,8 @@ class BootVerifier(
          * gets answered by grinding it rather than by trusting a string match.
          */
         val blamedDependency: String? = null,
+        /** The blamed dependency's project link, so the grinder can queue it for its own verification. */
+        val blamedDependencyUrl: String? = null,
         /** The dependency jars staged alongside the candidate, so a verdict names the pack it booted with. */
         val stagedDependencies: List<String> = emptyList()
     )
@@ -322,13 +324,13 @@ class BootVerifier(
         depth: Int,
         unsatisfied: MutableSet<String>,
         unmapped: MutableSet<String>,
-        injected: MutableList<String>
+        injected: MutableList<InjectedDependency>
     ): Boolean {
         val staged = selectDownloader(file, httpDownloader, browserDownloader).download(file, modsDir)
             ?: return false
         if (depth > 0) {
             // Only dependencies count towards the cap and the recorded set; the candidate is not one.
-            injected.add(file.fileName)
+            injected.add(InjectedDependency(file.fileName, null, file.pageUrl))
         }
         if (depth >= maxDependencyDepth) {
             return true
@@ -384,7 +386,7 @@ class BootVerifier(
         depth: Int,
         unsatisfied: MutableSet<String>,
         unmapped: MutableSet<String>,
-        injected: MutableList<String>
+        injected: MutableList<InjectedDependency>
     ) {
         if (depth >= maxDependencyDepth) {
             return
@@ -533,7 +535,7 @@ class BootVerifier(
 
         val unsatisfied = mutableSetOf<String>()
         val unmapped = mutableSetOf<String>()
-        val injected = mutableListOf<String>()
+        val injected = mutableListOf<InjectedDependency>()
         if (!downloadWithDependencies(
                 mainFile, loader, minecraftVersion, modsDir, mutableSetOf(), 0, unsatisfied, unmapped, injected
             )
@@ -541,13 +543,17 @@ class BootVerifier(
             return Prepared.Failed("Could not download ${mainFile.fileName}.")
         }
         refuseForMissingDependencies(unsatisfied, loader, minecraftVersion)?.let { return it }
-        refuseForTooManyDependencies(injected, loader, minecraftVersion)?.let { return it }
+        refuseForTooManyDependencies(injected.map { it.fileName }, loader, minecraftVersion)?.let { return it }
         unmappedDependencyNote(unmapped)?.let { log.warn(it) }
 
         val serverPack = generateServerPack(File(attemptDir, "modpack"), File(attemptDir, "serverpack"), minecraftVersion, loader, loaderVersion)
             ?: return Prepared.Failed("Server-pack generation failed for $loader $minecraftVersion.")
 
-        return Prepared.Ready(serverPack, File(attemptDir, "boot.log"), minecraftVersion, loader, loaderVersion)
+        return Prepared.Ready(
+            serverPack, File(attemptDir, "boot.log"), minecraftVersion, loader, loaderVersion,
+            injectedDependencies = injected.toList(),
+            candidateStem = FilenameStemDeriver.deriveStem(listOf(mainFile.fileName))
+        )
     }
 
     /** Result of [prepareBootPack]: a ready-to-run pack, or the reason staging could not finish. */
@@ -563,7 +569,11 @@ class BootVerifier(
             /** The modloader this attempt boots — the loader the resulting verdict is about. */
             val loader: String,
             /** The loader build being booted. May be older than the newest; a crash on one is re-checked. */
-            val loaderVersion: String
+            val loaderVersion: String,
+            /** The dependency jars staged beside the candidate, for attribution and for the verdict record. */
+            val injectedDependencies: List<InjectedDependency> = emptyList(),
+            /** The candidate's own file-name stem, so attribution can tell its frames from a dependency's. */
+            val candidateStem: String? = null
         ) : Prepared {
             /**
              * This attempt's staging directory name — the `(platform, slug, loader)` tuple
@@ -630,7 +640,9 @@ class BootVerifier(
             // Stamped here rather than inside `outcomeFor`, which classifies a console and has no business
             // knowing what was booted; this is the one place that does.
             val outcome = outcomeFor(runResult, pack.logFile, "${pack.loader} ${pack.loaderVersion} / Minecraft ${pack.minecraftVersion}", rules)
-                .copy(bootedLoader = pack.loader)
+                .copy(bootedLoader = pack.loader, stagedDependencies = pack.injectedDependencies.map { it.fileName })
+                // Annotation only: `attribute` returns an outcome whose result is this one's, always.
+                .let { attribute(it, pack.injectedDependencies, pack.candidateStem) }
             // Per attempt, and here rather than after `verify` returns: staging wipes and re-creates the
             // attempt directory, so by the time a verdict is decided every earlier attempt's pack is gone.
             // Guarded like the live-log sink above -- keeping evidence must never fail a boot that already ran.
@@ -749,7 +761,8 @@ class BootVerifier(
             return outcome.copy(
                 detail = outcome.detail + " [crash names the injected dependency ${blamed.fileName}; " +
                     "it has been queued for its own verification]",
-                blamedDependency = blamed.fileName
+                blamedDependency = blamed.fileName,
+                blamedDependencyUrl = blamed.projectUrl
             )
         }
 
