@@ -466,6 +466,47 @@ internal class BootLogClassifierTest {
             "the client-class crash outranks a zero exit"
         )
 
+        // Rung 7 -- an operator's rule -- sits between the two groups above: it may not outrank anything
+        // meaning "the mod never got a fair run", and it outranks everything that judges the mod itself.
+        // Stated here rather than beside this test, so the ladder's order stays pinned in exactly one place.
+        val ruleCrashes = ConsoleRuleSet(listOf(ConsoleRule("r", "unrecognised", BootResult.CRASHED)), emptyList(), "test")
+        Assertions.assertEquals(
+            BootResult.SURVIVED,
+            BootLogClassifier.classify(listOf(ready, "something unrecognised"), exitCode = 1, timedOut = false, rules = ruleCrashes).result,
+            "a ready-line outranks an operator's rule"
+        )
+        for ((line, exit, timeout, why) in listOf(
+            listOf(setupAbort, 1, false, "setup-abort"),
+            listOf(launchFailure, 1, false, "a JVM that never launched"),
+            listOf(loaderBootstrapFailure, 1, false, "a loader that never bootstrapped"),
+            listOf(outOfMemory, 1, false, "memory exhaustion"),
+            listOf("something unrecognised", 137, false, "a killed exit"),
+            listOf("something unrecognised", 1, true, "a timeout")
+        ).map { listOf(it[0] as String, it[1] as Int, it[2] as Boolean, it[3] as String) }) {
+            Assertions.assertEquals(
+                BootResult.INCONCLUSIVE,
+                BootLogClassifier.classify(
+                    listOf(line as String, "something unrecognised"), exit as Int, timeout as Boolean, ruleCrashes
+                ).result,
+                "$why outranks an operator's rule — a hand-edited file must never manufacture a HIGH from host trouble"
+            )
+        }
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(
+                listOf(clientClass), exitCode = 1, timedOut = false,
+                rules = ConsoleRuleSet(listOf(ConsoleRule("r", "net/minecraft/client", BootResult.INCONCLUSIVE)), emptyList(), "test")
+            ).result,
+            "an operator's rule outranks the built-in client-class marker"
+        )
+        Assertions.assertEquals(
+            BootResult.CRASHED,
+            BootLogClassifier.classify(listOf(dependency), exitCode = 1, timedOut = false, rules = ConsoleRuleSet(
+                listOf(ConsoleRule("r", "Missing or unsupported", BootResult.CRASHED)), emptyList(), "test"
+            )).result,
+            "an operator's rule outranks the dependency guard and the exit code"
+        )
+
         // And the dependency guard outranks the bare exit code.
         Assertions.assertEquals(
             BootResult.INCONCLUSIVE,

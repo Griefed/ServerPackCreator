@@ -30,6 +30,25 @@ import de.griefed.serverpackcreator.clientside.BootLogClassifier.setupAbortMarke
  *
  * @author Griefed
  */
+/**
+ * What a console classified to, plus the operator rule that had a hand in it — `null` when the built-in
+ * ladder decided alone. The rule is carried as a *field* rather than only mentioned in prose, because
+ * "how many verdicts did rule X decide?" is the only way to find a bad rule, and a sentence cannot answer it.
+ *
+ * @author Griefed
+ */
+data class Classification(
+    /** The verdict this console produced. */
+    val result: BootResult,
+    /** The rule that decided or annotated it, or `null` when no rule matched. */
+    val firedRule: ConsoleRuleMatch? = null
+) {
+    companion object {
+        /** A verdict the built-in ladder reached with no rule involved. */
+        internal fun of(result: BootResult) = Classification(result)
+    }
+}
+
 enum class BootResult {
     /** The server reached its ready-line — the mod did not prevent startup. */
     SURVIVED,
@@ -195,44 +214,80 @@ object BootLogClassifier {
      * `0` exit without ever reaching ready is [BootResult.INCONCLUSIVE]; and any other non-zero exit is
      * [BootResult.CRASHED].
      */
-    fun classify(consoleLines: List<String>, exitCode: Int?, timedOut: Boolean): BootResult {
+    fun classify(consoleLines: List<String>, exitCode: Int?, timedOut: Boolean): BootResult =
+        classify(consoleLines, exitCode, timedOut, ConsoleRuleSet.EMPTY).result
+
+    /**
+     * As above, consulting an operator's [rules] at rung 7 — above the exit code and above
+     * [clientOnlyClassMarker], below the timeout, killed/OOM and environment guards.
+     *
+     * **Why exactly there.** Everything above rung 7 means *the mod never got a fair run*, so a hand-edited
+     * file must not be able to manufacture a `CRASHED` — and therefore a `HIGH` — out of host trouble; a
+     * memory-starved VM doing precisely that, systematically, to the biggest mods is on this engine's
+     * record. Below the marker instead would leave a rule unable to raise the signature this feature exists
+     * for: FML's `for invalid dist DEDICATED_SERVER` on a **zero** exit, which the fallback excuses.
+     *
+     * A rule with no verdict identifies without deciding: it is named on the result and the ladder carries
+     * on. First match in file order wins, because the file's order is the only precedence its author can see.
+     */
+    fun classify(
+        consoleLines: List<String>,
+        exitCode: Int?,
+        timedOut: Boolean,
+        rules: ConsoleRuleSet
+    ): Classification {
         if (consoleLines.any { readyLine.containsMatchIn(it) }) {
-            return BootResult.SURVIVED
+            return Classification.of(BootResult.SURVIVED)
         }
         if (timedOut) {
-            return BootResult.INCONCLUSIVE
+            return Classification.of(BootResult.INCONCLUSIVE)
         }
         if (consoleLines.any { setupAbortMarkers.containsMatchIn(it) }) {
-            return BootResult.INCONCLUSIVE
+            return Classification.of(BootResult.INCONCLUSIVE)
         }
         // The JVM never got as far as running the server, so nothing about the mod was exercised.
         if (consoleLines.any { launchFailureMarkers.containsMatchIn(it) }) {
-            return BootResult.INCONCLUSIVE
+            return Classification.of(BootResult.INCONCLUSIVE)
         }
         // The loader fell over before it could load anything, so there was no mod in the run to blame.
         if (consoleLines.any { loaderBootstrapFailureMarkers.containsMatchIn(it) }) {
-            return BootResult.INCONCLUSIVE
+            return Classification.of(BootResult.INCONCLUSIVE)
         }
         // Killed from outside, or killed for memory: the mod never got the chance to fail on its own merits.
         if (exitCode in killedExitCodes || consoleLines.any { outOfMemoryMarkers.containsMatchIn(it) }) {
-            return BootResult.INCONCLUSIVE
+            return Classification.of(BootResult.INCONCLUSIVE)
         }
+        // Rung 7 -- the operator's own rules. Below every guard above, all of which mean the mod never got a
+        // fair run, so a hand-edited file can never turn host trouble into a HIGH. Above the marker below,
+        // so a rule can raise a signature the exit code excused and excuse one the marker would crash.
+        val fired = rules.rules.firstNotNullOfOrNull { rule ->
+            rule.firstMatch(consoleLines)?.let { ConsoleRuleMatch(rule, it) }
+        }
+        if (fired?.rule?.verdict != null) {
+            return Classification(fired.rule.verdict, fired)
+        }
+        // A rule without a verdict identifies without deciding: it rides along on whatever the ladder settles.
+        val annotating = fired
+
         // A server that died reaching for a client-only class is decisive on the console alone, and must be, because
         // the exit status cannot be trusted here: measured 2026-07-30, NeoForge's ServerStarterJar reports the crash
         // in full and then exits **0**, so `modelfix` -- textbook `NoClassDefFoundError: net/minecraft/client/
         // Minecraft` -- was scored INCONCLUSIVE and no verdict in a 517-strong store ever reached HIGH. Environment
         // failures cannot fake this marker, which is what makes it safe to trust over the exit code.
         if (consoleLines.any { clientOnlyClassMarker.containsMatchIn(it) }) {
-            return BootResult.CRASHED
+            return Classification(BootResult.CRASHED, annotating)
         }
         // Dependencies our staging failed to supply mean the mod was never fairly tested.
         if (consoleLines.any { dependencyFailureMarkers.containsMatchIn(it) }) {
-            return BootResult.INCONCLUSIVE
+            return Classification(BootResult.INCONCLUSIVE, annotating)
         }
-        return when (exitCode) {
-            null, 0 -> BootResult.INCONCLUSIVE
-            else -> BootResult.CRASHED
-        }
+        return Classification(
+            when (exitCode) {
+                null, 0 -> BootResult.INCONCLUSIVE
+                else -> BootResult.CRASHED
+            },
+            annotating
+        )
     }
 }
 
