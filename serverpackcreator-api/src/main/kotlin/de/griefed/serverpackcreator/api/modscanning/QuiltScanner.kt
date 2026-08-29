@@ -49,9 +49,15 @@ class QuiltScanner(objectMapper: ObjectMapper, utilities: Utilities) : FabricFam
 
     override val scanAnnouncement = "Scanning Quilt mods for sideness..."
 
-    /** Dependency ids that are the platform rather than a mod, so they never pull a jar into the keep-list. */
+    /**
+     * Dependency ids that are the platform rather than a mod, so they never pull a jar into the keep-list.
+     *
+     * **`quilted_fabric_api` is deliberately NOT here.** QFAPI is Quilt's port of Fabric API — a mod the
+     * server genuinely needs — while `quilt_loader` and `quilt_base` are the platform. (`fabric` was never
+     * excluded here, so a Quilt mod depending on Fabric API directly was always recorded.)
+     */
     val dependencyExclusions: Regex
-        get() = "(quilt_loader|quilt_base|quilted_fabric_api|java|minecraft)".toRegex()
+        get() = "(quilt_loader|quilt_base|java|minecraft)".toRegex()
 
     /**
      * Quilt declares `quilt_loader.depends` as an array whose entries are either an object carrying
@@ -70,7 +76,14 @@ class QuiltScanner(objectMapper: ObjectMapper, utilities: Utilities) : FabricFam
                     }
                     if (!dependencyId.matches(dependencyExclusions)) {
                         log.debug("Added dependency $dependencyId for $modId.")
-                        modDependencies.add(ModDependency(dependencyId))
+                        // Only the object form can state a range; a bare string entry keeps a null
+                        // constraint rather than an invented one.
+                        val constraint = if (dependency.isContainerNode) {
+                            dependency.path("versions").takeIf { it.isTextual }?.asText()?.takeIf { it.isNotBlank() }
+                        } else {
+                            null
+                        }
+                        modDependencies.add(ModDependency(dependencyId, versionConstraint = constraint))
                     }
                 } catch (_: NullPointerException) {
                     log.debug("No dependencies for $modId.")
