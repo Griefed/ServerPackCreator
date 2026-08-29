@@ -121,24 +121,57 @@ internal class ConsoleRuleLadderTest {
     }
 
     /**
-     * A rule that states no verdict falls to INCONCLUSIVE rather than deferring to the ladder. Writing a
-     * pattern down at all means it is a signature you do not yet trust, and INCONCLUSIVE is the one outcome
-     * that can never publish — so an unfinished rule costs coverage, never a false positive.
+     * **By default a verdict-less rule defers to the ladder and merely names itself** — "if none is
+     * specified, determine by grinder". The operator wrote a pattern to *label* a signature, and the ladder
+     * is still the better judge of what it means; the rule riding along is how they can see it matched.
      */
     @Test
-    fun aRuleWithNoVerdictFallsToInconclusiveAndNamesItself() {
+    fun aRuleWithNoVerdictLeavesTheLadderToDecideAndStillNamesItself() {
         val console = listOf("java.lang.NoClassDefFoundError: com/benbenlaw/core/screen/util/slot/FilterSlot")
+        val undecided = ConsoleRule("third-party-screen-class", "NoClassDefFoundError: .*/screen/", note = "a screen class from another mod")
 
         val plain = BootLogClassifier.classify(console, exitCode = 1, timedOut = false)
-        val ruled = BootLogClassifier.classify(
-            console, exitCode = 1, timedOut = false,
-            rules = rules(ConsoleRule("third-party-screen-class", "NoClassDefFoundError: .*/screen/", note = "a screen class from another mod"))
-        )
+        val ruled = BootLogClassifier.classify(console, exitCode = 1, timedOut = false, rules = rules(undecided))
 
-        Assertions.assertEquals(BootResult.CRASHED, plain, "the ladder alone would have crashed this on its non-zero exit")
-        Assertions.assertEquals(BootResult.INCONCLUSIVE, ruled.result, "a verdict-less rule must fail safe, not defer")
+        Assertions.assertEquals(BootResult.CRASHED, plain, "the ladder alone crashes this on its non-zero exit")
+        Assertions.assertEquals(plain, ruled.result, "an undecided rule must not move the verdict by default")
         Assertions.assertEquals("third-party-screen-class", ruled.firedRule?.rule?.id)
         Assertions.assertEquals("a screen class from another mod", ruled.firedRule?.rule?.note)
+    }
+
+    /**
+     * **Opting in makes an undecided rule conservative instead.** INCONCLUSIVE is the one outcome that can
+     * never publish, so a run where unfinished rules are expected can make them cost coverage rather than
+     * risk a false positive — without touching the rules themselves.
+     */
+    @Test
+    fun theOptInMakesAnUndecidedRuleInconclusive() {
+        val console = listOf("java.lang.NoClassDefFoundError: com/benbenlaw/core/screen/util/slot/FilterSlot")
+        val undecided = ConsoleRule("third-party-screen-class", "NoClassDefFoundError: .*/screen/")
+        val conservative = ConsoleRuleSet(listOf(undecided), emptyList(), "test", BootResult.INCONCLUSIVE)
+
+        val ruled = BootLogClassifier.classify(console, exitCode = 1, timedOut = false, rules = conservative)
+
+        Assertions.assertEquals(BootResult.INCONCLUSIVE, ruled.result)
+        Assertions.assertEquals("third-party-screen-class", ruled.firedRule?.rule?.id)
+    }
+
+    /**
+     * The opt-in governs only *undecided* rules. A rule that states a verdict still means what it says —
+     * otherwise turning the setting on would silently rewrite an operator's deliberate CRASHED rules.
+     */
+    @Test
+    fun theOptInDoesNotOverrideARuleThatStatesAVerdict() {
+        val console = listOf("for invalid dist DEDICATED_SERVER")
+        val stated = ConsoleRule("fml-invalid-dist", "for invalid dist DEDICATED_SERVER", BootResult.CRASHED)
+
+        Assertions.assertEquals(
+            BootResult.CRASHED,
+            BootLogClassifier.classify(
+                console, exitCode = 0, timedOut = false,
+                rules = ConsoleRuleSet(listOf(stated), emptyList(), "test", BootResult.INCONCLUSIVE)
+            ).result
+        )
     }
 
     /** A ready-line is decisive above everything, rules included: the server demonstrably started. */

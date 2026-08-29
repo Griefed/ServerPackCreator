@@ -70,6 +70,22 @@ internal class ModIdRegistryTest {
         Assertions.assertNull(KnownModIds.refFor("cloth-config", "CurseForge"))
     }
 
+    /**
+     * **QFAPI is why this registry exists rather than a slug guess.** Neither platform addresses it by
+     * anything resembling `quilted_fabric_api`: Modrinth calls it `qsl` and CurseForge `634179`. The
+     * Modrinth slug-fallback would miss it outright, so without the alias a Quilt mod's core dependency is
+     * unresolvable. Verified against both live APIs on 2026-08-29.
+     */
+    @Test
+    fun quiltedFabricApiMapsToQslOnBothPlatforms() {
+        Assertions.assertEquals("qsl", KnownModIds.refFor("quilted_fabric_api", "Modrinth"))
+        Assertions.assertEquals("634179", KnownModIds.refFor("quilted_fabric_api", "CurseForge"))
+        Assertions.assertEquals(
+            KnownModIds.refFor("quilted_fabric_api", "Modrinth"), KnownModIds.refFor("qsl", "Modrinth"),
+            "the project's own slug must resolve to itself, since a descriptor may use either name"
+        )
+    }
+
     /** Ids are matched case-insensitively; descriptors are hand-written and inconsistent about it. */
     @Test
     fun idsAreMatchedCaseInsensitively() {

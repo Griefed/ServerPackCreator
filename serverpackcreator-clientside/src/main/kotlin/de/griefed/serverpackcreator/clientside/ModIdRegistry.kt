@@ -56,7 +56,13 @@ object KnownModIds {
      */
     private val aliases: Map<String, PlatformRef> = mapOf(
         "fabric" to PlatformRef("fabric-api", "306612"),
-        "fabric-api" to PlatformRef("fabric-api", "306612")
+        "fabric-api" to PlatformRef("fabric-api", "306612"),
+        // QFAPI is the reason a registry is needed at all rather than a slug guess: neither platform
+        // addresses it by anything resembling its mod id. Verified against both live APIs on 2026-08-29 —
+        // Modrinth `qsl` (qvIfYCYJ) and CurseForge `634179`, both titled "Quilted Fabric API (QFAPI) /
+        // Quilt Standard Libraries (QSL)".
+        "quilted_fabric_api" to PlatformRef("qsl", "634179"),
+        "qsl" to PlatformRef("qsl", "634179")
     )
 
     /**

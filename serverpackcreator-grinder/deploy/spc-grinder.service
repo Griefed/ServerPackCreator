@@ -73,6 +73,15 @@ Environment=SPC_GRINDER_HOME=/home/grinder/.spc-grinder
 # A rule can never outrank a timeout, a SIGKILL/OOM or a setup abort -- it cannot turn host trouble into a
 # HIGH-confidence clientside verdict.
 #Environment=SPC_GRINDER_BOOT_RULES=/home/grinder/.spc-grinder/boot-rules.json
+# What a rule that states NO verdict means.
+#   grinder      (default) the built-in ladder decides, and the rule merely names itself on the verdict --
+#                so a pattern can label a signature you are still making your mind up about, without
+#                changing anything.
+#   inconclusive the conservative reading: such a rule scores INCONCLUSIVE, the one outcome that can never
+#                reach HIGH and so can never publish. Suits a run where unfinished rules are expected.
+# This governs ONLY rules with no verdict. A rule that states one always means what it says, and a rule
+# whose verdict is MISSPELT is always INCONCLUSIVE regardless -- a typo is not an intention to honour.
+#Environment=SPC_GRINDER_RULE_FALLBACK=grinder
 # Ceiling for that store, in MiB. Once passed, the oldest attempts are deleted until it is under again.
 # Retention keeps most boots, so this is what stops a months-long run filling a fixed disk.
 #Environment=SPC_GRINDER_BOOT_LOG_BUDGET_MIB=2048

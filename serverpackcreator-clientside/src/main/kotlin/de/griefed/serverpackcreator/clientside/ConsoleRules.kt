@@ -38,12 +38,14 @@ data class ConsoleRule(
     /** Regular expression matched against each console line, case-insensitively. */
     val pattern: String,
     /**
-     * What a match means. Defaults to [BootResult.INCONCLUSIVE], and that default is the safety property:
-     * INCONCLUSIVE is the only outcome that can never reach `HIGH`, so a rule whose verdict is missing or
-     * unreadable costs coverage rather than publishing a wrong clientside entry. Writing a pattern down at
-     * all means it is a signature you do not yet trust.
+     * What a match means, or `null` when the rule states none.
+     *
+     * A rule that states nothing is *undecided*, not safe-by-default: what an undecided rule means is the
+     * operator's choice, made once for the whole file via [ConsoleRuleSet.undecidedVerdict]. An **unreadable**
+     * verdict is a different thing entirely — the author tried to state one and failed — and always resolves
+     * to [BootResult.INCONCLUSIVE] at load time, because a typo must never be honoured as an intention.
      */
-    val verdict: BootResult = BootResult.INCONCLUSIVE,
+    val verdict: BootResult? = null,
     /** Why this signature means what it does, carried into the verdict detail for whoever reads it later. */
     val note: String? = null
 ) {
@@ -79,7 +81,19 @@ data class ConsoleRuleSet(
     /** One entry per rule (or whole file) that could not be loaded, naming it and why. */
     val errors: List<String>,
     /** Where these came from, for the status endpoint to show. */
-    val source: String
+    val source: String,
+    /**
+     * What a rule that states **no** verdict means, or `null` for "let the built-in ladder decide".
+     *
+     * `null` is the default because a rule without a verdict is *undecided*, not *unsafe*: the operator
+     * wrote a pattern to label a signature, and the ladder is still the better judge of what it means.
+     * Setting this to [BootResult.INCONCLUSIVE] opts into the conservative reading — no such rule can then
+     * contribute to a `HIGH` — which suits a run where unfinished rules are expected.
+     *
+     * It deliberately does **not** govern an *unreadable* verdict. A typo is a broken intention rather than
+     * an absent one, and always resolves to INCONCLUSIVE regardless of this setting.
+     */
+    val undecidedVerdict: BootResult? = null
 ) {
     companion object {
         /** No rules and no errors: exactly the behaviour this engine had before rules existed. */
@@ -104,9 +118,14 @@ data class ConsoleRuleSet(
  * is stated rather than hidden.
  *
  * @param file The rules document; absent means [ConsoleRuleSet.EMPTY], which is the normal install.
+ * @param undecidedVerdict What a rule stating no verdict means. `null` (the default) leaves it to the
+ *        built-in ladder; [BootResult.INCONCLUSIVE] opts into the conservative reading.
  * @author Griefed
  */
-class ConsoleRuleFile(private val file: File) {
+class ConsoleRuleFile(
+    private val file: File,
+    private val undecidedVerdict: BootResult? = null
+) {
 
     private val log by lazy { cachedLoggerOf(this.javaClass) }
 
@@ -151,7 +170,7 @@ class ConsoleRuleFile(private val file: File) {
             log.error("Loaded ${rules.size} console rule(s) from ${file.absolutePath}; ${errors.size} could not be used: $errors")
         }
         cachedKey = key
-        cached = ConsoleRuleSet(rules, errors, file.absolutePath)
+        cached = ConsoleRuleSet(rules, errors, file.absolutePath, undecidedVerdict)
         return cached
     }
 
@@ -182,18 +201,20 @@ class ConsoleRuleFile(private val file: File) {
             return
         }
 
-        // A verdict that is absent, or that nobody can read, becomes INCONCLUSIVE rather than dropping the
-        // rule: dropping would leave the ladder free to reach CRASHED on its own, and CRASHED is the one
-        // outcome that publishes. The typo is still recorded, so failing safe never means failing silently.
+        // An ABSENT verdict stays null: the rule is undecided, and what that means is the operator's
+        // choice (ConsoleRuleSet.undecidedVerdict). An UNREADABLE one is different -- the author tried to
+        // state a verdict and failed -- so it resolves to INCONCLUSIVE here regardless of that setting,
+        // because a typo must never be honoured as an intention, and INCONCLUSIVE is the only outcome that
+        // cannot publish. The typo is still recorded, so failing safe never means failing silently.
         val declaredVerdict = element.path("verdict").asText(null)?.takeIf { it.isNotBlank() }
         val verdict = declaredVerdict?.let { name ->
             BootResult.entries.firstOrNull { it.name.equals(name, ignoreCase = true) }
                 ?: run {
                     errors += "$label: '$name' is not a boot result " +
                         "(${BootResult.entries.joinToString("/")}); treated as ${BootResult.INCONCLUSIVE}"
-                    null
+                    BootResult.INCONCLUSIVE
                 }
-        } ?: BootResult.INCONCLUSIVE
+        }
 
         val rule = ConsoleRule(id, pattern, verdict, element.path("note").asText(null)?.takeIf { it.isNotBlank() })
         if (rule.regex == null) {

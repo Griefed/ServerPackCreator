@@ -227,9 +227,10 @@ object BootLogClassifier {
      * record. Below the marker instead would leave a rule unable to raise the signature this feature exists
      * for: FML's `for invalid dist DEDICATED_SERVER` on a **zero** exit, which the fallback excuses.
      *
-     * A matching rule always decides, and a rule that states no verdict decides INCONCLUSIVE — the one
-     * outcome that can never publish. First match in file order wins, because the file's order is the only
-     * precedence its author can see.
+     * A rule stating a verdict decides. A rule stating none is *undecided*, and
+     * [ConsoleRuleSet.undecidedVerdict] says what that means — by default the ladder decides and the rule
+     * merely names itself on the result, so an operator can see their pattern matched without it changing
+     * anything. First match in file order wins: the file's order is the only precedence its author can see.
      */
     fun classify(
         consoleLines: List<String>,
@@ -264,9 +265,14 @@ object BootLogClassifier {
         val fired = rules.rules.firstNotNullOfOrNull { rule ->
             rule.firstMatch(consoleLines)?.let { ConsoleRuleMatch(rule, it) }
         }
-        if (fired != null) {
-            return Classification(fired.rule.verdict, fired)
+        // A rule that states a verdict decides. One that does not is *undecided*: the rule set says whether
+        // that means INCONCLUSIVE or "let the ladder decide", and in the latter case the match still rides
+        // along on whatever the ladder settles, so the operator can see that their pattern matched.
+        val decided = fired?.rule?.verdict ?: rules.undecidedVerdict?.takeIf { fired != null }
+        if (fired != null && decided != null) {
+            return Classification(decided, fired)
         }
+        val annotating = fired
 
         // A server that died reaching for a client-only class is decisive on the console alone, and must be, because
         // the exit status cannot be trusted here: measured 2026-07-30, NeoForge's ServerStarterJar reports the crash
@@ -274,17 +280,18 @@ object BootLogClassifier {
         // Minecraft` -- was scored INCONCLUSIVE and no verdict in a 517-strong store ever reached HIGH. Environment
         // failures cannot fake this marker, which is what makes it safe to trust over the exit code.
         if (consoleLines.any { clientOnlyClassMarker.containsMatchIn(it) }) {
-            return Classification.of(BootResult.CRASHED)
+            return Classification(BootResult.CRASHED, annotating)
         }
         // Dependencies our staging failed to supply mean the mod was never fairly tested.
         if (consoleLines.any { dependencyFailureMarkers.containsMatchIn(it) }) {
-            return Classification.of(BootResult.INCONCLUSIVE)
+            return Classification(BootResult.INCONCLUSIVE, annotating)
         }
-        return Classification.of(
+        return Classification(
             when (exitCode) {
                 null, 0 -> BootResult.INCONCLUSIVE
                 else -> BootResult.CRASHED
-            }
+            },
+            annotating
         )
     }
 }

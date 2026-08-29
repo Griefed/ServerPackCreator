@@ -76,9 +76,9 @@ internal class BootVerifierRuleProvenanceTest {
         Assertions.assertNull(withIrrelevantRules.firedRule)
     }
 
-    /** A verdict-less rule fails safe to INCONCLUSIVE and still names itself on the outcome. */
+    /** A verdict-less rule leaves the verdict alone by default, and still names itself on the outcome. */
     @Test
-    fun aVerdictLessRuleIsNamedAndFailsSafe(@TempDir dir: File) {
+    fun aVerdictLessRuleIsNamedWithoutMovingTheVerdict(@TempDir dir: File) {
         val console = listOf("java.lang.NoClassDefFoundError: com/benbenlaw/core/screen/util/slot/FilterSlot")
         val run = RunResult.Completed(console, exitCode = 1, timedOut = false)
 
@@ -89,7 +89,7 @@ internal class BootVerifierRuleProvenanceTest {
         )
 
         Assertions.assertEquals(BootResult.CRASHED, plain.result, "the ladder alone crashes this")
-        Assertions.assertEquals(BootResult.INCONCLUSIVE, annotated.result, "a verdict-less rule fails safe")
+        Assertions.assertEquals(plain.result, annotated.result, "an undecided rule defers by default")
         Assertions.assertEquals("third-party-screen", annotated.firedRule)
     }
 }

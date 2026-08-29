@@ -151,17 +151,30 @@ internal class ConsoleRuleFileTest {
     }
 
     /**
-     * A rule that states no verdict still fails safe rather than deferring: writing a pattern down means it
-     * is a signature you do not trust, and INCONCLUSIVE is the outcome that can never publish.
+     * A rule that states no verdict is *undecided*, and stays that way on the rule itself — what it means
+     * is a per-run choice, not something baked in at load time.
      */
     @Test
-    fun aRuleWithoutAVerdictIsInconclusive(@TempDir dir: File) {
+    fun aRuleWithoutAVerdictIsUndecided(@TempDir dir: File) {
         val file = rulesFile(dir, """[{ "id": "just-a-note", "pattern": "aaa", "note": "seen this before" }]""")
 
         val rule = ConsoleRuleFile(file).current().rules.single()
 
-        Assertions.assertEquals(BootResult.INCONCLUSIVE, rule.verdict)
+        Assertions.assertNull(rule.verdict, "an absent verdict is undecided, not decided for the author")
         Assertions.assertEquals("seen this before", rule.note)
+    }
+
+    /** The per-run choice reaches the loaded set, so the classifier can apply it. */
+    @Test
+    fun theUndecidedPolicyIsCarriedOnTheLoadedSet(@TempDir dir: File) {
+        val file = rulesFile(dir, """[{ "id": "just-a-note", "pattern": "aaa" }]""")
+
+        Assertions.assertNull(ConsoleRuleFile(file).current().undecidedVerdict, "the ladder decides by default")
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            ConsoleRuleFile(file, BootResult.INCONCLUSIVE).current().undecidedVerdict,
+            "and the conservative reading is opt-in"
+        )
     }
 
     /** A rule with no id cannot be reported on, and an unreportable rule is worse than an absent one. */

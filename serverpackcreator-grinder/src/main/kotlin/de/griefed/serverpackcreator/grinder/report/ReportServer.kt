@@ -258,7 +258,14 @@ class ReportServer(
             // The rule file keeps its last good state when a save breaks it, so the errors have to be visible
             // somewhere or a typo disables an operator's rules in complete silence.
             "bootRules" to consoleRules?.invoke()?.let { loaded ->
-                linkedMapOf("source" to loaded.source, "ruleCount" to loaded.rules.size, "errors" to loaded.errors)
+                linkedMapOf(
+                    "source" to loaded.source,
+                    "ruleCount" to loaded.rules.size,
+                    // What an undecided rule resolves to, so an operator can see which mode is in force
+                    // without reading the unit file.
+                    "undecidedVerdict" to (loaded.undecidedVerdict?.name ?: "grinder decides"),
+                    "errors" to loaded.errors
+                )
             },
             "crawl" to cursors?.let { store ->
                 ModPlatforms.known.associateWith { platform ->

@@ -206,12 +206,15 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   `for invalid dist DEDICATED_SERVER` on a **zero** exit (the verified gap: that string was in no guard) and
   excuse a console the marker would crash. The order is pinned as a unit inside
   `theGuardOrderIsPinnedAsAWhole` — do not add a sibling test stating it a second time.
-  - **A missing or unreadable verdict resolves to `INCONCLUSIVE`, never to "let the ladder decide".** That is
-    the safety property: INCONCLUSIVE is the only outcome that cannot reach HIGH, so an unfinished or
-    misspelt rule costs coverage rather than publishing a false positive. Dropping the rule instead would
-    hand the console back to a ladder free to reach CRASHED on its own, which is the expensive direction.
-    (This reverses the original "if none is specified, determine by grinder" — decided 2026-08-29. Pure
-    annotate-only is therefore *not* available; a rule always decides.) First match in file order wins.
+  - **An absent verdict and an unreadable one are different, and resolve differently.** A rule stating *no*
+    verdict is **undecided**: `ConsoleRuleSet.undecidedVerdict` decides what that means, and it defaults to
+    `null` — the ladder decides and the rule merely names itself, i.e. "if none is specified, determine by
+    grinder". `SPC_GRINDER_RULE_FALLBACK=inconclusive` opts into the conservative reading for a run where
+    unfinished rules are expected. A **misspelt** verdict is always INCONCLUSIVE regardless of that setting
+    and is recorded in `errors`: the author tried to state an intention and failed, and a typo must never be
+    honoured as one. The opt-in governs undecided rules **only** — a rule that states a verdict always means
+    what it says, or turning the setting on would silently rewrite deliberate CRASHED rules. First match in
+    file order wins.
   - **Drops and fallbacks go in opposite directions, deliberately.** No id or no pattern **drops** the rule
     (untraceable, or unmatchable); an unreadable verdict **falls back**. Every fallback is recorded, and a
     broken whole file keeps the last good set — which hides breakage, hence `ConsoleRuleSet.errors` on

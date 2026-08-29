@@ -8,11 +8,13 @@
 //   id       required. Reported on every verdict the rule decided, so a rule that fires too broadly can be
 //            found by counting. A rule without one is dropped.
 //   pattern  required. Regular expression, matched case-insensitively against each console line.
-//   verdict  optional, DEFAULT INCONCLUSIVE. CRASHED | INCONCLUSIVE | SURVIVED. Omitting it, or writing a
-//            value that is not one of those, means INCONCLUSIVE -- the one outcome that can never reach
-//            HIGH and so can never publish a clientside entry. That is deliberate: a rule you have not
-//            finished thinking about should cost coverage, never a false positive. A misspelt verdict is
-//            still reported on /status, so failing safe does not mean failing silently.
+//   verdict  optional. CRASHED | INCONCLUSIVE | SURVIVED.
+//            OMIT IT to leave the decision to the grinder: the built-in ladder decides and the rule merely
+//            names itself on the verdict, which is useful for labelling a signature you are still making
+//            your mind up about. Set SPC_GRINDER_RULE_FALLBACK=inconclusive to make such rules score
+//            INCONCLUSIVE instead -- the one outcome that can never reach HIGH.
+//            A MISSPELT verdict is always INCONCLUSIVE, whatever that setting says, and is reported on
+//            /status: a typo is a broken intention, not an intention to honour.
 //   note     optional. Why this signature means what it does. Carried into the verdict detail.
 //   enabled  optional, default true. Set false to park a rule without deleting it.
 //
@@ -32,10 +34,11 @@
     "note": "FML refused a client-only class on a dedicated server."
   },
 
-  // A screen/gui class from *another* mod's package. Deliberately has NO verdict, so it resolves to
-  // INCONCLUSIVE: this usually means a missing or mismatched dependency rather than the candidate being
-  // clientside, and scoring it INCONCLUSIVE keeps it out of the published list while you look into it.
-  // Give it "verdict": "CRASHED" only once you have satisfied yourself it really is the candidate's fault.
+  // A screen/gui class from *another* mod's package. Deliberately has NO verdict: this usually means a
+  // missing or mismatched dependency rather than the candidate being clientside, so the label is useful
+  // while the judgement stays with the ladder. Give it "verdict": "CRASHED" once you are satisfied it
+  // really is the candidate's fault, or run with SPC_GRINDER_RULE_FALLBACK=inconclusive to keep every
+  // undecided rule out of the published list while you work through them.
   {
     "id": "third-party-screen-class",
     "pattern": "NoClassDefFoundError: (?!net/minecraft/client)[\\w/]+/(screen|gui)/",
