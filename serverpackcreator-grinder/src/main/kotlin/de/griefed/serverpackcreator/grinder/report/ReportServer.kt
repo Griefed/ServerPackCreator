@@ -99,7 +99,14 @@ class ReportServer(
     fun start(): ReportServer {
         // Longest-prefix match means /export.csv wins for that path; everything else renders the table.
         server.createContext("/export.csv") { exchange ->
-            respond(exchange, "text/csv; charset=utf-8", VerdictCsvExporter.toCsv(store.all()))
+            // The SAME selection the table runs, so the two cannot disagree -- they agree because they
+            // share this function, not because two renderers were kept in step. `defaultSize = null` keeps a
+            // bare /export.csv exporting everything, which is the documented behaviour operators script.
+            val selection = VerdictSelection.select(
+                store.all(), VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), null)
+            )
+            exchange.responseHeaders.add("Content-Disposition", "attachment; filename=\"clientside-mods.csv\"")
+            respond(exchange, "text/csv; charset=utf-8", VerdictCsvExporter.toCsv(selection.rows, preOrdered = true))
         }
         server.createContext("/as-properties") { exchange ->
             respond(exchange, "text/x-java-properties; charset=iso-8859-1", fallbackProperties())
@@ -140,7 +147,12 @@ class ReportServer(
             respond(
                 exchange,
                 "text/html; charset=utf-8",
-                VerdictReportRenderer.toHtml(store.all()) { verdict ->
+                VerdictReportRenderer.toHtml(
+                    VerdictSelection.select(
+                        store.all(),
+                        VerdictQuery.parse(QueryParams.parse(exchange.requestURI.rawQuery), VerdictQuery.DEFAULT_PAGE_SIZE)
+                    )
+                ) { verdict ->
                     logsByOwner[AttemptDirectory.nameFor(verdict.platform, verdict.slug, verdict.loader)].orEmpty()
                 }
             )

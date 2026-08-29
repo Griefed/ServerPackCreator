@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.grinder.report
 
 import de.griefed.serverpackcreator.clientside.Confidence
+import de.griefed.serverpackcreator.grinder.GrindVerdict
 import de.griefed.serverpackcreator.grinder.grindVerdict
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -32,14 +33,19 @@ import java.time.Instant
  */
 internal class VerdictReportRendererTest {
 
+    /** Render as the server does: through the same selection the live table and the CSV export both run. */
+    private fun pageOf(verdicts: List<GrindVerdict>, rawQuery: String? = null) =
+        VerdictSelection.select(verdicts, VerdictQuery.parse(QueryParams.parse(rawQuery), VerdictQuery.DEFAULT_PAGE_SIZE))
+
+
     @Test
     fun rendersSortableHeadersAndADataRow() {
         val html = VerdictReportRenderer.toHtml(
-            listOf(grindVerdict("jei", "Forge", confidence = Confidence.HIGH, suggestedEntry = "jei-"))
+            pageOf(listOf(grindVerdict("jei", "Forge", confidence = Confidence.HIGH, suggestedEntry = "jei-")))
         )
         Assertions.assertTrue(html.contains("<table"), "needs a table")
-        Assertions.assertTrue(html.contains("""onclick="sortBy(0)""""), "headers must be click-to-sort")
-        Assertions.assertTrue(html.contains("function sortBy("), "needs the sort script")
+        Assertions.assertTrue(html.contains("""href="/?sort=name"""), "a header must link its sorted view")
+        Assertions.assertFalse(html.contains("function sortBy("), "sorting is server-side now, not a DOM sort")
         Assertions.assertTrue(html.contains(">jei<"), "the project name")
         Assertions.assertTrue(html.contains(">jei-<"), "the clientside-list name-pattern column")
         Assertions.assertTrue(html.contains(">HIGH<"), "the confidence")
@@ -57,7 +63,7 @@ internal class VerdictReportRendererTest {
     @Test
     fun showsWhenTheModWasScanned() {
         val html = VerdictReportRenderer.toHtml(
-            listOf(grindVerdict("jei", "Forge", verifiedAt = Instant.parse("2026-08-23T19:41:13Z")))
+            pageOf(listOf(grindVerdict("jei", "Forge", verifiedAt = Instant.parse("2026-08-23T19:41:13Z"))))
         )
         Assertions.assertTrue(html.contains(">Scanned (UTC)<"), "the column needs a header")
         Assertions.assertTrue(html.contains(">2026/08/23<"), "the scan date must be in the row: $html")
@@ -67,7 +73,7 @@ internal class VerdictReportRendererTest {
     @Test
     fun zeroPadsTheScanDate() {
         val html = VerdictReportRenderer.toHtml(
-            listOf(grindVerdict("jei", "Forge", verifiedAt = Instant.parse("2026-01-05T00:00:00Z")))
+            pageOf(listOf(grindVerdict("jei", "Forge", verifiedAt = Instant.parse("2026-01-05T00:00:00Z"))))
         )
         Assertions.assertTrue(html.contains(">2026/01/05<"), "expected a padded date: $html")
     }
@@ -86,7 +92,7 @@ internal class VerdictReportRendererTest {
     @Test
     fun everyHeaderHasACellBeneathIt() {
         val html = VerdictReportRenderer.toHtml(
-            listOf(grindVerdict("jei", "Forge"), grindVerdict("sodium", "Fabric"))
+            pageOf(listOf(grindVerdict("jei", "Forge"), grindVerdict("sodium", "Fabric")))
         )
         val headers = Regex("<th[ >]").findAll(html).count()
         val bodyRows = html.substringAfter("<tbody>").substringBefore("</tbody>").trim().lines()
@@ -107,11 +113,11 @@ internal class VerdictReportRendererTest {
      */
     @Test
     fun linksEveryEndpointBesideTheDownloadButton() {
-        val html = VerdictReportRenderer.toHtml(listOf(grindVerdict("jei", "Forge", suggestedEntry = "jei-")))
+        val html = VerdictReportRenderer.toHtml(pageOf(listOf(grindVerdict("jei", "Forge", suggestedEntry = "jei-"))))
 
         listOf("/export.csv", "/status", "/as-properties", "/boot-logs").forEach { endpoint ->
             Assertions.assertTrue(
-                html.contains("""href="$endpoint""""),
+                html.contains("""href="$endpoint"""),
                 "the overview must offer $endpoint; it was only ever in a startup log line"
             )
         }
@@ -135,7 +141,7 @@ internal class VerdictReportRendererTest {
             "Modrinth-creativecore-Fabric~Fabric_0.19.3_mc26.2~logs-latest.log"
         )
 
-        val html = VerdictReportRenderer.toHtml(listOf(crashed, clean)) { verdict ->
+        val html = VerdictReportRenderer.toHtml(pageOf(listOf(crashed, clean))) { verdict ->
             if (verdict.slug == "creativecore") kept else emptyList()
         }
 
@@ -149,18 +155,24 @@ internal class VerdictReportRendererTest {
     }
 
     @Test
-    fun embedsTheCsvForTheDownloadButton() {
-        val html = VerdictReportRenderer.toHtml(listOf(grindVerdict("jei", "Forge", suggestedEntry = "jei-")))
-        Assertions.assertTrue(html.contains("function downloadCsv("), "needs the CSV download hook")
-        // The CSV is embedded as a JS string literal; its header and the name-pattern must be present.
-        Assertions.assertTrue(html.contains("Name,Project,NamePattern,Confidence,Loader,Detail,Rule,Dependencies,Scanned"), "embedded CSV header")
-        Assertions.assertTrue(html.contains("jei-"), "embedded CSV row")
+    fun theDownloadButtonLinksTheFilteredCsvExport() {
+        val html = VerdictReportRenderer.toHtml(
+            pageOf(listOf(grindVerdict("jei", "Forge", suggestedEntry = "jei-")), "f.confidence=HIGH&sort=name")
+        )
+
+        Assertions.assertTrue(html.contains("/export.csv?"), "the button links the export rather than embedding it")
+        Assertions.assertTrue(html.contains("f.confidence=HIGH"), "carrying the current filter")
+        Assertions.assertTrue(html.contains("sort=name"), "and the current sort")
+        // Pins the REMOVAL. An embedded copy would silently disagree with a filtered export, and dropping it
+        // also stops the page putting mod-supplied text inside a <script> block at all.
+        Assertions.assertFalse(html.contains("function downloadCsv("), "no embedded-CSV download hook")
+        Assertions.assertFalse(html.contains("const CSV ="), "no embedded CSV literal")
     }
 
     @Test
     fun escapesModSuppliedStringsToPreventInjection() {
         val html = VerdictReportRenderer.toHtml(
-            listOf(grindVerdict("x", "Forge", detail = "<script>alert(1)</script>"))
+            pageOf(listOf(grindVerdict("x", "Forge", detail = "<script>alert(1)</script>")))
         )
         Assertions.assertFalse(html.contains("<script>alert(1)</script>"), "raw markup must not survive into a table cell")
         Assertions.assertTrue(html.contains("&lt;script&gt;alert(1)&lt;/script&gt;"), "it must be HTML-escaped")
@@ -187,13 +199,14 @@ internal class VerdictReportRendererTest {
             confidence = Confidence.HIGH
         ).copy(firedRule = "SENTINELRULE", stagedDependencies = listOf("SENTINELDEP"))
 
-        val row = VerdictReportRenderer.toHtml(listOf(verdict)) { listOf("SENTINELLOG") }
+        val row = VerdictReportRenderer.toHtml(pageOf(listOf(verdict))) { listOf("SENTINELLOG") }
             .substringAfter("<tbody").substringAfter("<tr>").substringBefore("</tr>")
         val cells = row.split("</td>").dropLast(1)
 
         val expected = listOf(
             "SENTINELNAME", "SENTINELPROJECT", "SENTINELPATTERN", "HIGH", "SENTINELLOADER",
-            "SENTINELDETAIL", "SENTINELRULE", "SENTINELDEP", "SENTINELLOG", "1970"
+            "Modrinth", "not recorded", "not recorded",
+            "SENTINELDETAIL", "SENTINELRULE", "SENTINELDEP", "1970", "SENTINELLOG"
         )
         Assertions.assertEquals(expected.size, cells.size, "one sentinel per column; got ${cells.size} cells")
         expected.forEachIndexed { index, sentinel ->
@@ -211,7 +224,7 @@ internal class VerdictReportRendererTest {
      */
     @Test
     fun theCsvAndTheTableAgreeOnTheirDataColumns() {
-        val html = VerdictReportRenderer.toHtml(listOf(grindVerdict("jei", "Forge")))
+        val html = VerdictReportRenderer.toHtml(pageOf(listOf(grindVerdict("jei", "Forge"))))
         val headerCount = Regex("<th[ >]").findAll(html).count()
         val csvColumnCount = VerdictCsvExporter.toCsv(emptyList()).split(",").size
 
