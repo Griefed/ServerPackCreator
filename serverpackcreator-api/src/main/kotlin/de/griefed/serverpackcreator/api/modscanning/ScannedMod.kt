@@ -15,7 +15,7 @@ import java.io.File
  * whichever landed first and silently drop the other verdict. Merging those verdicts is a decision the caller
  * makes explicitly; compare on [file] when identifying the same jar across two scans.
  */
-class ScannedMod(
+class ScannedMod @JvmOverloads constructor(
     /** The jar this was read from. The only identity that holds across two scans of the same directory. */
     val file: File,
     /**
@@ -33,7 +33,17 @@ class ScannedMod(
      */
     val sideness: Sideness = Sideness.SERVER,
     /** The non-platform mods this one declared it needs. The loader, Java and Minecraft are not recorded. */
-    val dependencies: List<ModDependency> = emptyList()
+    val dependencies: List<ModDependency> = emptyList(),
+    /**
+     * Other mod-ids this mod answers to, from a Fabric/Quilt `provides` block — empty for loaders that
+     * have no such concept.
+     *
+     * Carried because a dependency names an id, not a jar: Fabric API 0.92.11+1.20.1 declares
+     * `"id": "fabric-api"` and `"provides": ["fabric"]`, so a mod writing `depends: {"fabric": "*"}` is
+     * satisfied by it. Without the alias, anything matching a dependency against a mod's own id alone —
+     * `ModListCompiler`'s dependency rescue, above all — compares "fabric" to "fabric-api" and misses.
+     */
+    val provides: List<String> = emptyList()
 ) {
     /**
      * One line for a scan log, with the dependencies spelled out instead of left as object identities — they

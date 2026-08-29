@@ -46,6 +46,9 @@ class FabricScanner(objectMapper: ObjectMapper, utilities: Utilities) : FabricFa
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val depends = "depends"
 
+    /** The `provides` block: a flat array of ids. */
+    private val provides = "provides"
+
     override val scanAnnouncement = "Scanning Fabric mods for sideness..."
 
     /**
@@ -92,4 +95,15 @@ class FabricScanner(objectMapper: ObjectMapper, utilities: Utilities) : FabricFa
             .joinToString(" || ").takeIf { it.isNotBlank() }
         else -> null
     }
+    /**
+     * Fabric declares `provides` as a flat array of ids the mod also answers to. Fabric API 0.92.11+1.20.1
+     * uses it to answer to the historical `fabric` while calling itself `fabric-api`; the newest builds have
+     * dropped the block, so its absence is normal and yields an empty list.
+     */
+    override fun readProvides(modConfig: JsonNode, modId: String): List<String> =
+        modConfig.path(provides)
+            .takeIf { it.isArray }
+            ?.mapNotNull { entry -> entry.takeIf { it.isTextual }?.asText()?.takeIf { it.isNotBlank() } }
+            .orEmpty()
+            .also { aliases -> if (aliases.isNotEmpty()) log.debug("$modId also provides $aliases.") }
 }

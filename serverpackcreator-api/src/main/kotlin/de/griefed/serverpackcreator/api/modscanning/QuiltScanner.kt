@@ -47,6 +47,9 @@ class QuiltScanner(objectMapper: ObjectMapper, utilities: Utilities) : FabricFam
     private val log by lazy { cachedLoggerOf(this.javaClass) }
     private val depends = "depends"
 
+    /** The `quilt_loader.provides` block, which mirrors `depends`' object-or-string entry shape. */
+    private val provides = "provides"
+
     override val scanAnnouncement = "Scanning Quilt mods for sideness..."
 
     /**
@@ -95,6 +98,31 @@ class QuiltScanner(objectMapper: ObjectMapper, utilities: Utilities) : FabricFam
         }
         return modDependencies
     }
+
+    /**
+     * Quilt nests `provides` under `quilt_loader`, with the same entry shape as `depends`: either an object
+     * carrying an `id`, or the bare id as a string. Absent for most mods, which yields an empty list.
+     */
+    override fun readProvides(modConfig: JsonNode, modId: String): List<String> {
+        val aliases = mutableListOf<String>()
+        try {
+            for (entry in utilities.jsonUtilities.getNestedElement(modConfig, QUILT_LOADER, provides)) {
+                val alias = if (entry.isContainerNode) {
+                    entry.path("id").takeIf { it.isTextual }?.asText()
+                } else {
+                    entry.takeIf { it.isTextual }?.asText()
+                }
+                alias?.takeIf { it.isNotBlank() }?.let { aliases.add(it) }
+            }
+        } catch (_: NullPointerException) {
+            // No "provides" block -> the mod answers to its own id only.
+        }
+        if (aliases.isNotEmpty()) {
+            log.debug("$modId also provides $aliases.")
+        }
+        return aliases
+    }
+
 
     private companion object {
         /** The descriptor block Quilt nests a mod's own identity and dependencies under. */
