@@ -147,7 +147,22 @@ object BootCandidateSelector {
      * Pick a dependency-file from [files] for the same [loader], preferring an exact
      * [minecraftVersion] match and falling back to any file for that loader.
      */
-    fun pickDependencyFile(files: List<ModFile>, loader: String, minecraftVersion: String): ModFile? =
+    fun pickDependencyFile(
+        files: List<ModFile>,
+        loader: String,
+        minecraftVersion: String,
+        versionConstraint: String? = null
+    ): ModFile? {
+        // A constraint is a PREFERENCE, never a filter. Preferring a satisfying file is an improvement;
+        // returning null where this used to return a file would turn a bootable candidate into a refusal,
+        // and `refuseForMissingDependencies` scores a refusal INCONCLUSIVE -- so the mod would quietly stop
+        // being verified rather than fail loudly. Narrow first, then fall back to the whole set.
+        val satisfying = files.filter { VersionConstraint.satisfies(it.version, versionConstraint) }
+        return pickFrom(satisfying, loader, minecraftVersion) ?: pickFrom(files, loader, minecraftVersion)
+    }
+
+    /** [pickDependencyFile]'s loader resolution, including the one-way Quilt-to-Fabric fallback. */
+    private fun pickFrom(files: List<ModFile>, loader: String, minecraftVersion: String): ModFile? =
         pickForLoader(files, loader, minecraftVersion)
             ?: fallbackLoaders[loader]?.let { pickForLoader(files, it, minecraftVersion) }
 

@@ -143,7 +143,11 @@ class CurseForgePlatform(
             minecraftVersions = gameVersions.filter { minecraftVersion.matches(it) }.toSortedSet(),
             downloadUrl = fileNode.textOrNull("downloadUrl"),
             pageUrl = "$webBase/files/$fileId",
-            requiredDependencies = requiredDeps
+            requiredDependencies = requiredDeps,
+            // CurseForge has no version field; `displayName` is what an author types as the release name
+            // and is the closest thing to one. It is often decorated ("JEI 15.2.0.27 for 1.20.1"), which is
+            // fine: VersionConstraint reads what it can and accepts what it cannot.
+            version = fileNode.textOrNull("displayName")
         )
     }
 

@@ -92,7 +92,10 @@ class ModrinthPlatform(
                 minecraftVersions = mcVersions,
                 downloadUrl = file.textOrNull("url"),
                 pageUrl = projectUrl,
-                requiredDependencies = requiredDeps
+                requiredDependencies = requiredDeps,
+                // The version this file was published under, which is what a dependant's declared
+                // constraint has to be matched against. Modrinth states it once per version, not per file.
+                version = version.textOrNull("version_number")
             )
         }
     }
