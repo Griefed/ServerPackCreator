@@ -114,9 +114,14 @@ object VersionConstraint {
             }
             return compareNumbers(numbersOf(version), ceiling) < 0
         }
-        // A trailing `.x` / `.*` pins the components before it, e.g. `1.20.x`.
+        // A trailing `.x` / `.*` pins the components before it, e.g. `1.20.x`. The prefix has to be
+        // version-shaped in its own right: a bare `.x` pins nothing, and without this check it would refuse
+        // everything — the same hole `looksLikeVersion` closes below, reached by a different branch.
         if (clause.endsWith(".x") || clause.endsWith(".*")) {
             val prefix = clause.dropLast(2)
+            if (!looksLikeVersion(prefix)) {
+                return true
+            }
             return version == prefix || version.startsWith("$prefix.")
         }
         // A bare clause that is not version-shaped is not a constraint this understands, so it accepts.
