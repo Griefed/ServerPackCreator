@@ -94,6 +94,43 @@ internal class ReportServerTest {
         }
     }
 
+    /**
+     * Sorting by Logs, through the real handler and a real directory listing.
+     *
+     * The unit test pins the ordering; this pins the *wiring* — that the count the sort uses comes from the
+     * same per-request snapshot the cells are rendered from. Those were two separate lookups in the first
+     * draft, which is exactly how a row sorts as having logs and then renders an em-dash.
+     */
+    @Test
+    fun sortsTheTableByHowManyLogsEachRowHas(@TempDir logDir: File) {
+        val crashLogs = BootLogStore(logDir)
+        crashLogs.keep(
+            AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "sodium", "Fabric"),
+            BootLogStore.attemptKey("Fabric", "0.16.9", "1.21.1"),
+            listOf(
+                BootArtifacts.Artifact("console.log", "crashed", false),
+                BootArtifacts.Artifact("latest.log", "also crashed", false)
+            )
+        )
+        val store = InMemoryVerdictStore().apply {
+            record(grindVerdict("sodium", "Fabric"))
+            record(grindVerdict("jei", "Forge"))
+            record(grindVerdict("iron-chests", "NeoForge"))
+        }
+        val server = ReportServer(store, requestedPort = 0, crashLogs = crashLogs).start()
+        try {
+            val body = get(server.port, "/?sort=logs&dir=desc").body()
+
+            Assertions.assertTrue(body.contains("sort=logs"), "the Logs header must render a sort link")
+            val withLogs = body.indexOf("sodium")
+            val without = listOf("jei", "iron-chests").minOf { body.indexOf(it) }
+            Assertions.assertTrue(withLogs in 0..<without, "the row holding logs must lead a descending Logs sort")
+            Assertions.assertTrue(body.contains("2 log(s)"), "and must still render the count it was sorted by")
+        } finally {
+            server.stop()
+        }
+    }
+
     @Test
     fun servesTheHtmlTableAndTheCsvExport() {
         val store = InMemoryVerdictStore().apply {
