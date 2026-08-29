@@ -116,6 +116,66 @@ internal class GrinderTest {
         Assertions.assertNull(grindVerdict("jei", "Forge").jarScan)
     }
 
+    /**
+     * **A dependency blamed for a candidate's crash is queued for its own verification.**
+     *
+     * This is the mechanism that makes attribution safe. The blame itself is a string match over a console
+     * and deliberately never moves a verdict, so the suspicion has to be settled some other way — by
+     * grinding the dependency alone and seeing whether it crashes by itself. Without the queueing the
+     * annotation would be a note nobody ever acts on.
+     */
+    @Test
+    fun aDependencyBlamedForACrashIsQueuedForItsOwnVerification() {
+        val store = InMemoryVerdictStore()
+        val queued = mutableListOf<GrindCandidate>()
+        val requeue = object : de.griefed.serverpackcreator.grinder.source.RequeueStore {
+            override fun add(candidates: Collection<GrindCandidate>): Int {
+                queued.addAll(candidates); return candidates.size
+            }
+
+            override fun drain(): List<GrindCandidate> = emptyList()
+            override fun pending(): Int = queued.size
+        }
+        val verifier = CandidateVerifier { c ->
+            clientsideReport(
+                c.slug,
+                listOf(
+                    loaderVerdict("Forge", "${c.slug}-", Confidence.HIGH)
+                        .copy(blamedDependencyUrl = "https://modrinth.com/mod/benbenlaw-core")
+                )
+            )
+        }
+
+        Grinder(verifier, store, requeue = requeue).grind(candidate("strawberrymod"))
+
+        Assertions.assertEquals(
+            listOf("https://modrinth.com/mod/benbenlaw-core"), queued.map { it.projectUrl },
+            "the blamed dependency must be queued so the question is answered by grinding it"
+        )
+        Assertions.assertEquals(ModPlatforms.MODRINTH, queued.single().platform, "resolved from its own URL")
+    }
+
+    /** Nothing blamed means nothing queued — the common case must not put work on the lane. */
+    @Test
+    fun aCandidateWithNoBlamedDependencyQueuesNothing() {
+        val queued = mutableListOf<GrindCandidate>()
+        val requeue = object : de.griefed.serverpackcreator.grinder.source.RequeueStore {
+            override fun add(candidates: Collection<GrindCandidate>): Int {
+                queued.addAll(candidates); return candidates.size
+            }
+
+            override fun drain(): List<GrindCandidate> = emptyList()
+            override fun pending(): Int = 0
+        }
+        val verifier = CandidateVerifier { c ->
+            clientsideReport(c.slug, listOf(loaderVerdict("Forge", "${c.slug}-", Confidence.LOW)))
+        }
+
+        Grinder(verifier, InMemoryVerdictStore(), requeue = requeue).grind(candidate("jei"))
+
+        Assertions.assertTrue(queued.isEmpty())
+    }
+
     @Test
     fun skipsProjectsWithAFreshVerdict() {
         val now = Instant.parse("2026-06-01T00:00:00Z")

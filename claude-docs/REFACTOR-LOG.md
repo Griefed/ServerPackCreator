@@ -2975,3 +2975,33 @@ used to stand in for are asserted for real. Grinder suite 382 → 386.
 the verifier and the report server — stays in `main`. Extracting it would move the remaining wiring guards
 without making any of them executable, since what they assert is precisely that this composition happens.
 That is churn with a migration cost and no gain in coverage.
+
+### 2026-08-29 — the requeue lane and the report, verified against a live daemon
+
+A running grinder on a copy of the real store (876 verdicts at the time of the checks), Docker 29.7.2.
+
+**The report answers real queries.** `875 of 875` unfiltered; `f.confidence=HIGH` → **39 of 875**, matching
+the store's own distribution; `f.loader=Fabric&q=create` → 1; `size=100&page=2&sort=name` → **"Page 2 of 9"**
+with exactly 100 rows. `/export.csv?f.confidence=HIGH` returned the same 39, a bare `/export.csv` all 876,
+and both parse as well-formed CSV (12 fields, no ragged rows). `Content-Disposition` is set, so the browser
+downloads rather than renders. Sort links carry the active filter (`/?f.confidence=HIGH&sort=name`) and the
+CSV button carries the query plus `size=all`.
+
+**Two counting traps worth naming**, because both looked like defects and neither was: `wc -l` under-counts
+a CSV whose last line has no trailing newline, and the row total *moved during the run* — the daemon was
+grinding, so 875 became 876. `/status` agreed with the CSV at every point; the discrepancy was the
+measurement, not the export.
+
+**The requeue lane works end to end.** `--requeue https://modrinth.com/mod/jei` from a second process
+reported `1 now pending`, `/status` showed `requeued: 1`, and the daemon drained it **forced and ahead of
+the crawl** on its next pass — `Pass #3: re-grinding 1 requested candidate(s) ahead of the crawl`, then
+`Grinding Modrinth/jei (re-grind requested)`, three loaders in 330 s, after which the catalog slice ran as
+usual. That exercises `GrindLoop`'s requeue-before-catalog ordering in production, which until this week was
+only a source-text grep.
+
+`/status` also confirmed the new rule default is live: `bootRules { undecidedVerdict: "grinder decides" }`.
+
+**What this run did *not* prove:** that a crash naming an injected dependency reaches that lane. Producing
+one on demand means finding a mod whose console blames a dependency by name, which no candidate here did.
+The path is covered by unit tests either way (`aDependencyBlamedForACrashIsQueuedForItsOwnVerification`
+pins `Grinder`'s end, `DependencyAttributionTest` the blame itself), and the lane it feeds is now proven.
