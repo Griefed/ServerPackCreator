@@ -182,8 +182,38 @@ object BootLogClassifier {
             "|Unmet dependency listing" +
             "|Incompatible mods found" +
             "|requires .{1,80} or above" +
-            "|requires any version of)",
+            "|requires any version of" +
+            // Quilt Loader's solver phrasing, e.g. `requires version [0.19.3, INF) of fabricloader`. The largest
+            // single class in the 2026-08-29 census -- 63 of 200 published crash logs -- and previously read as a
+            // plain non-zero exit, so the *candidate* wore a verdict earned by the pack around it.
+            "|requires version .{1,80} of " +
+            // A mixin refusing because the class it targets is absent: the target belongs to a mod that was not
+            // staged, so nothing of the candidate was exercised. 6 of 200.
+            "|ClassMetadataNotFoundException" +
+            // The Mixin tweaker is part of the pack *we* assemble; without it no mod loads at all. 6 of 200, all
+            // legacy LaunchWrapper-era Forge.
+            "|ClassNotFoundException: org\\.spongepowered\\.asm\\.launch\\.MixinTweaker)",
         RegexOption.IGNORE_CASE
+    )
+
+    /**
+     * The sandbox refusing a mod the network. Boots run `--network none` — that isolation is the entire
+     * guarantee — so a mod whose loader reaches for the internet at startup is certain to die here and nowhere
+     * else, which makes the crash a property of the harness rather than of the mod.
+     *
+     * Measured 2026-08-29 across 200 published crash logs: **15 (8%)**. The clearest is OneConfig, which fetches
+     * its own stage1 from `api.polyfrost.org`, falls back to a Swing error dialog when it cannot — the
+     * `Fontconfig error: No writable cache directories` tail those logs all share, in a headless container — and
+     * then calls `System.exit`.
+     *
+     * Subordinate to [clientOnlyClassMarker], like every other excuse: a clientside mod may phone home *and* die
+     * on a client class, and the marker must still win.
+     */
+    private val sandboxNetworkMarkers = Regex(
+        "(java\\.net\\.UnknownHostException" +
+            "|java\\.net\\.ConnectException" +
+            "|java\\.net\\.NoRouteToHostException" +
+            "|java\\.net\\.SocketTimeoutException)"
     )
 
     /**
@@ -284,6 +314,10 @@ object BootLogClassifier {
         }
         // Dependencies our staging failed to supply mean the mod was never fairly tested.
         if (consoleLines.any { dependencyFailureMarkers.containsMatchIn(it) }) {
+            return Classification(BootResult.INCONCLUSIVE, annotating)
+        }
+        // The sandbox denied the network, so the mod failed on the harness rather than on its own merits.
+        if (consoleLines.any { sandboxNetworkMarkers.containsMatchIn(it) }) {
             return Classification(BootResult.INCONCLUSIVE, annotating)
         }
         return Classification(
