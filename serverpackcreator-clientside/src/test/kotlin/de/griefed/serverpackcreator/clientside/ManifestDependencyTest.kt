@@ -45,31 +45,23 @@ internal class ManifestDependencyTest {
         ModDependency(modId, versionConstraint = constraint)
 
     /**
-     * **The guard that keeps B from being a regression.** A manifest id nothing can resolve must not stop
-     * the boot: the engine booted without it before, and `dependencyFailureMarkers` already catches the
-     * case where the loader genuinely rejects the mod for it.
+     * **The guard that keeps B from being a regression, and it is structural.** An unmapped manifest id
+     * never even reaches [BootVerifier.refuseForMissingDependencies] — that is the whole point of keeping
+     * the two collections separate rather than adding a flag. The engine booted without these ids before,
+     * and `dependencyFailureMarkers` already catches the case where the loader genuinely rejects the mod.
      */
     @Test
     fun anUnmappedManifestDependencyDoesNotRefuseTheBoot() {
-        val refusal = BootVerifier.refuseForMissingDependencies(
-            unsatisfied = emptySet(),
-            unmapped = setOf("fabric-api-base", "some_bundled_thing"),
-            slug = "jei",
-            loader = "Fabric"
+        Assertions.assertNull(
+            BootVerifier.refuseForMissingDependencies(emptySet(), "Fabric", "1.20.1"),
+            "with nothing in `unsatisfied` there is no refusal, whatever went unmapped"
         )
-
-        Assertions.assertNull(refusal, "an unresolvable manifest id must not abort the boot")
     }
 
-    /** A dependency we *did* map and then failed to stage is a real gap, and still refuses. */
+    /** A dependency we *did* map and then failed to stage is a real gap, and still refuses as it always did. */
     @Test
     fun aMappedDependencyThatCouldNotBeStagedStillRefuses() {
-        val refusal = BootVerifier.refuseForMissingDependencies(
-            unsatisfied = setOf("fabric-api"),
-            unmapped = emptySet(),
-            slug = "jei",
-            loader = "Fabric"
-        )
+        val refusal = BootVerifier.refuseForMissingDependencies(setOf("fabric-api"), "Fabric", "1.20.1")
 
         Assertions.assertNotNull(refusal)
         Assertions.assertTrue(refusal!!.detail.contains("fabric-api"), "the reason must name it: ${refusal.detail}")
@@ -132,9 +124,7 @@ internal class ManifestDependencyTest {
     @Test
     fun stagingRefusesBeyondTheInjectionCap() {
         val refusal = BootVerifier.refuseForTooManyDependencies(
-            injected = (1..BootVerifier.MAX_INJECTED_DEPENDENCIES + 1).map { "dep$it.jar" },
-            slug = "kitchensink",
-            loader = "Forge"
+            (1..BootVerifier.MAX_INJECTED_DEPENDENCIES + 1).map { "dep$it.jar" }, "Forge", "1.20.1"
         )
 
         Assertions.assertNotNull(refusal, "a pack this large tells you nothing about the candidate")
@@ -146,9 +136,7 @@ internal class ManifestDependencyTest {
     fun stagingAtTheCapIsFine() {
         Assertions.assertNull(
             BootVerifier.refuseForTooManyDependencies(
-                injected = (1..BootVerifier.MAX_INJECTED_DEPENDENCIES).map { "dep$it.jar" },
-                slug = "kitchensink",
-                loader = "Forge"
+                (1..BootVerifier.MAX_INJECTED_DEPENDENCIES).map { "dep$it.jar" }, "Forge", "1.20.1"
             )
         )
     }

@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.clientside
 
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.config.PackConfig
+import de.griefed.serverpackcreator.api.modscanning.ModDependency
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.time.Duration
@@ -569,6 +570,68 @@ class BootVerifier(
                     "Required ${if (unsatisfied.size == 1) "dependency" else "dependencies"} unavailable for " +
                         "$loader / Minecraft $minecraftVersion: ${unsatisfied.sorted().joinToString(", ")}. " +
                         "Not booting — a mod refused for missing dependencies says nothing about sideness."
+                )
+            }
+
+        /** Ids the environment provides rather than the pack: never staged, whatever a descriptor says. */
+        private val environmentProvidedIds = setOf(
+            "minecraft", "java", "fabricloader", "forge", "neoforge", "quilt_loader", "quilt_base"
+        )
+
+        /**
+         * Largest number of dependency jars that may be staged alongside a candidate.
+         *
+         * Beyond it the boot is refused rather than attempted: a forty-jar pack that fails says nothing
+         * about the candidate, because any one of the forty could be the cause.
+         */
+        const val MAX_INJECTED_DEPENDENCIES = 12
+
+        /**
+         * The manifest-declared [requirements] worth *staging*: the environment's own ids dropped, and
+         * anything the platform already resolved dropped too.
+         *
+         * [alreadyResolved] holds the platform refs staged from `ModFile.requiredDependencies`, so a
+         * requirement mapping onto one of them is not downloaded a second time — the two sources overlap
+         * heavily, since a well-formed project declares its dependencies in both places.
+         */
+        internal fun stageableRequirements(
+            requirements: List<ModDependency>,
+            alreadyResolved: Set<String> = emptySet(),
+            refFor: (String) -> String? = { it }
+        ): List<ModDependency> = requirements.filterNot { requirement ->
+            requirement.modID.lowercase() in environmentProvidedIds ||
+                refFor(requirement.modID)?.let { it in alreadyResolved } == true
+        }
+
+        /**
+         * A note naming the manifest ids that mapped to no project, or `null` when every one resolved.
+         *
+         * These deliberately do **not** refuse the boot — see the class doc on the refusal split — but they
+         * must still be *said*, or a gap in [KnownModIds] is invisible: the boot would simply be a little
+         * less faithful for reasons nobody could see in the verdict.
+         */
+        internal fun unmappedDependencyNote(unmapped: Set<String>): String? =
+            unmapped.takeIf { it.isNotEmpty() }?.let {
+                "Manifest dependencies that could not be resolved to a project (booted without them): " +
+                    it.sorted().joinToString(", ") + "."
+            }
+
+        /**
+         * Refuse a boot whose dependency graph grew past [MAX_INJECTED_DEPENDENCIES], or `null` when it did
+         * not. A pack this size cannot produce evidence about the candidate specifically.
+         */
+        internal fun refuseForTooManyDependencies(
+            injected: List<String>,
+            loader: String,
+            minecraftVersion: String
+        ): Prepared.Failed? =
+            if (injected.size <= MAX_INJECTED_DEPENDENCIES) {
+                null
+            } else {
+                Prepared.Failed(
+                    "Staging ${injected.size} dependencies for $loader / Minecraft $minecraftVersion exceeds " +
+                        "the cap of $MAX_INJECTED_DEPENDENCIES. Not booting — a pack that large cannot say " +
+                        "anything about this mod specifically."
                 )
             }
 
