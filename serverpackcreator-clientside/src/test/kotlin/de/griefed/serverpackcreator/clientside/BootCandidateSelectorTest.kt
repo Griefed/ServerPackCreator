@@ -215,14 +215,15 @@ internal class BootCandidateSelectorTest {
     }
 
     @Test
-    fun dependencyFilePrefersExactMinecraftMatchThenFallsBack() {
+    fun dependencyFileTakesTheExactMinecraftMatch() {
         val files = listOf(
             file("dep-1.19.2.jar", setOf("Forge"), setOf("1.19.2")),
             file("dep-1.20.1.jar", setOf("Forge"), setOf("1.20.1"))
         )
         Assertions.assertEquals("dep-1.20.1.jar", BootCandidateSelector.pickDependencyFile(files, "Forge", "1.20.1")?.fileName)
-        // no exact match -> first file for the loader
-        Assertions.assertEquals("dep-1.19.2.jar", BootCandidateSelector.pickDependencyFile(files, "Forge", "1.21")?.fileName)
+        // No file for 1.21 -> nothing is staged. This assertion used to expect `dep-1.19.2.jar`, and that
+        // expectation is the bug: see `aDependencyIsNeverStagedForADifferentMinecraftVersion`.
+        Assertions.assertNull(BootCandidateSelector.pickDependencyFile(files, "Forge", "1.21"))
         Assertions.assertNull(BootCandidateSelector.pickDependencyFile(files, "Fabric", "1.20.1"))
     }
 
