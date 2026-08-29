@@ -3,6 +3,34 @@ cross-cutting landmines, remaining work) lives in serverpackcreator-grinder/CLAU
 
 # grinder.report — verdict persistence and the web/CSV output
 
+- **`VerdictField` is the single declaration of a column** — header, CSV header, URL token, filter kind and
+  cell text in one enum, consumed by the HTML headers, the HTML cells, the CSV header and the CSV rows.
+  Those four were hand-synced and *had* drifted (CSV seven fields against the table's eight). Adding a
+  column now means one entry. **Logs is deliberately not a `VerdictField`**: not derivable from a
+  `GrindVerdict`, filter-exempt, and meaningless to sort.
+- **Filtering, sorting and paging are a pure unit** (`QueryParams` → `VerdictQuery` → `VerdictSelection` →
+  `VerdictPage`), not handler code. Every edge case is three lines here instead of a socket round trip
+  against a 60 KB blob — and it is what makes `/` and `/export.csv` *provably* agree: they share the
+  function rather than being kept in step by hand.
+  - **Nothing a URL can carry may throw.** Page 0, `size=banana`, a `sort=` naming a dropped column, a
+    malformed escape — all fall back. These arrive from bookmarks and address bars, and a report that 500s
+    is worse than one that quietly recovers.
+  - **`offeredSizes` always includes the size in force**, even when the result count would not justify it.
+    Filter a large store to a handful while a big size is set and a purely count-derived list leaves the
+    `<select>` with no matching option — the browser then shows its first, and the page silently disagrees
+    with its own URL. Sizes at or above the count are omitted as duplicates of `all`, not as "too big".
+  - **LANDMINE — bind `size` outside `buildList`.** Its `MutableList` receiver's own `size` shadows the
+    property, so `toQueryString` compared the *list length* and emitted it: `size=250` became `size=0`.
+    Invisible by reading; caught by `theAppliedQueryRoundTrips`.
+  - Measured on the real 875-row store: 20 filtered+sorted selections in **13 ms**, page bytes **110,703**
+    at `size=250` against **369,873** for `size=all`. The cost was never the filtering — it is the HTML.
+- **The filter bar needs no JavaScript.** CHOICE columns render a `<select>` of the values actually
+  present, TEXT columns an `<input>`, inside one GET form; submitting *is* the URL update. Sorting is
+  header links. The old DOM sort is gone — it was lost on reload and could not be shared.
+- **Project sideness is rendered honestly**, never as a bare enum: `not recorded` when nobody asked,
+  `not published by CurseForge` where the platform publishes none for *any* project. `UNKNOWN` for both
+  would tell a reader the mod was checked and found server-safe.
+
 - **`JsonVerdictStore` tolerates what it cannot read, and preserves it.** The mapper disables
   `FAIL_ON_UNKNOWN_PROPERTIES` and `load()` reads **row by row**, so a store written by a *newer* build stays
   readable after a downgrade and one unreadable verdict costs that verdict rather than all of them. Anything

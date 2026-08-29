@@ -2905,3 +2905,34 @@ what gets stripped from every pack built against it. `attributionNeverChangesThe
 by construction, and the blamed dependency is queued so the question is answered by *grinding it*. The
 stand-down guard also had to widen: an exception line and the `at` frames beneath it are one crash, and
 judging line-by-line blamed the dependency on the strength of the first line alone.
+
+### 2026-08-29 — the report becomes navigable at catalog scale
+
+`VerdictField` collapses what were four hand-synced lists (HTML headers, HTML cells, CSV header, CSV rows)
+into one enum. They had already drifted — the CSV carried seven fields against the table's eight — and
+`everyHeaderHasACellBeneathIt` existed because adding a header without its cell still rendered, shifting
+every column past the gap onto its neighbour's data. Two characterization guards landed **green** first to
+protect the restructure: `everyColumnRendersTheValueItsHeaderNames` (a distinct sentinel per field, since
+counting cells cannot catch an off-by-one) and `theCsvAndTheTableAgreeOnTheirDataColumns`.
+
+Selection is a pure unit — `QueryParams` → `VerdictQuery` → `VerdictSelection` → `VerdictPage` — rather
+than handler code, which is what makes `/` and `/export.csv` *provably* agree: they share the function
+instead of being kept in step by hand.
+
+**Measured against the real 875-row store**, not asserted: 4 pages at size 250, sizes offered
+`[100, 250, 500, all]`, filters returning HIGH=39 / Fabric=229 / `q=create`→8 (matching the store's own
+profile), **20 filtered+sorted selections in 13 ms**, and page bytes **110,703** at `size=250` against
+**369,873** at `size=all`. The cost was never the filtering; it is the HTML, which is what paging fixes.
+
+**Two bugs the tests caught that reading would not have.** `toQueryString` built its parts inside
+`buildList`, whose `MutableList` receiver's own `size` **shadows** the property — so it compared the list's
+length to the default and emitted that as the value: `size=250` rendered `size=0`, `size=2` rendered
+`size=4`, and every shared link would have carried a wrong page size. And my own expectation for the size
+ladder was wrong rather than the code: for 1,842 rows a size of 2,000 shows everything on one page, which
+is what `all` already is, so sizes at or above the count are omitted as *duplicates* rather than kept as
+"the next one up".
+
+Filtering ended up needing **no JavaScript at all** — `<select>`s for the low-cardinality columns
+(measured: 4 confidences, 5 loaders, 2 platforms), `<input>`s for the rest, one GET form, submitting *is*
+the URL update. The DOM sort is gone: it was lost on every reload and could not be shared, which is the
+whole point of putting state in the URL.
