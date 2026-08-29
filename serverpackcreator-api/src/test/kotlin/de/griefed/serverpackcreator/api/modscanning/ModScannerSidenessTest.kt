@@ -155,9 +155,90 @@ internal class ModScannerSidenessTest {
         val dependencies = modScanner.fabricScanner.scan(listOf(jar)).single().dependencies.map { it.modID }
 
         Assertions.assertEquals(
-            listOf("creativecore", "fabric-api-base"), dependencies,
-            "Only non-platform dependencies must be recorded; got $dependencies"
+            listOf("creativecore", "fabric", "fabric-api-base"), dependencies,
+            "The platform is `fabricloader`; `fabric` is Fabric API, a mod the server needs; got $dependencies"
         )
+    }
+
+    /**
+     * **`fabric` is Fabric API, not the platform.** The exclusion list conflated them, and its own doc
+     * comment says it holds "ids that are the platform rather than a mod" — `fabricloader` is the platform,
+     * while `fabric` is the single most-depended-on *mod* in the ecosystem and is genuinely required on a
+     * server by the mods that declare it. Dropping it meant Fabric API could never be reported as the
+     * dependency it is, and could never be rescued back into a pack that had disabled it.
+     */
+    @Test
+    fun fabricApiIsADependencyAndCarriesItsVersionRange(@TempDir tempDir: File) {
+        val descriptor = """
+            {"schemaVersion":1,"id":"needsapi","version":"1.0.0","environment":"*",
+             "depends":{"fabric":">=0.92.0","fabricloader":">=0.14","minecraft":"1.20.1","java":">=17"}}
+        """.trimIndent()
+        val jar = jarContaining(tempDir, "needsapi.jar", "fabric.mod.json", descriptor)
+
+        val dependency = modScanner.fabricScanner.scan(listOf(jar)).single().dependencies.single()
+
+        Assertions.assertEquals("fabric", dependency.modID)
+        Assertions.assertEquals(">=0.92.0", dependency.versionConstraint, "the declared range must be carried verbatim")
+    }
+
+    /**
+     * The Quilt half of the same bug, and the one that matters for a Quilt mod: `quilt_loader` and
+     * `quilt_base` are the platform, but `quilted_fabric_api` is QFAPI — Quilt's port of Fabric API, and
+     * just as much a mod the server needs.
+     */
+    @Test
+    fun quiltedFabricApiIsADependencyRatherThanThePlatform(@TempDir tempDir: File) {
+        val descriptor = """
+            {"schema_version":1,
+             "quilt_loader":{"id":"needsqfapi","version":"1.0.0",
+               "depends":[{"id":"quilted_fabric_api","versions":">=7.0.0"},"quilt_base","minecraft","java"]},
+             "minecraft":{"environment":"*"}}
+        """.trimIndent()
+        val jar = jarContaining(tempDir, "needsqfapi.jar", "quilt.mod.json", descriptor)
+
+        val dependency = modScanner.quiltScanner.scan(listOf(jar)).single().dependencies.single()
+
+        Assertions.assertEquals("quilted_fabric_api", dependency.modID)
+        Assertions.assertEquals(">=7.0.0", dependency.versionConstraint)
+    }
+
+    /** Forge and NeoForge state a `versionRange` per dependency; it has to survive the scan too. */
+    @Test
+    fun forgeDependenciesCarryTheirDeclaredVersionRange(@TempDir tempDir: File) {
+        val toml = """
+            modLoader="javafml"
+            loaderVersion="[40,)"
+            license="MIT"
+            [[mods]]
+            modId="needsjei"
+            [[dependencies.needsjei]]
+            modId="minecraft"
+            side="BOTH"
+            versionRange="[1.20.1]"
+            [[dependencies.needsjei]]
+            modId="jei"
+            side="BOTH"
+            versionRange="[15.2.0.27,)"
+        """.trimIndent()
+        val jar = jarContaining(tempDir, "needsjei.jar", "META-INF/mods.toml", toml)
+
+        val dependency = modScanner.forgeTomlScanner.scan(listOf(jar)).single().dependencies.single()
+
+        Assertions.assertEquals("jei", dependency.modID)
+        Assertions.assertEquals("[15.2.0.27,)", dependency.versionConstraint)
+    }
+
+    /** A dependency that states no range keeps a null constraint rather than an invented one. */
+    @Test
+    fun aBareQuiltDependencyCarriesNoConstraint(@TempDir tempDir: File) {
+        val descriptor = """
+            {"schema_version":1,
+             "quilt_loader":{"id":"bare","version":"1.0.0","depends":["cloth-config2"]},
+             "minecraft":{"environment":"*"}}
+        """.trimIndent()
+        val jar = jarContaining(tempDir, "bare.jar", "quilt.mod.json", descriptor)
+
+        Assertions.assertNull(modScanner.quiltScanner.scan(listOf(jar)).single().dependencies.single().versionConstraint)
     }
 
     /**
@@ -179,6 +260,10 @@ internal class ModScannerSidenessTest {
         Assertions.assertEquals(
             listOf("cloth-config2", "jei"), dependencies,
             "Both the string and the object form must be read, minus the platform; got $dependencies"
+        )
+        Assertions.assertEquals(
+            listOf(null, "*"), modScanner.quiltScanner.scan(listOf(jar)).single().dependencies.map { it.versionConstraint },
+            "the object form states a range and the bare string does not"
         )
     }
 
