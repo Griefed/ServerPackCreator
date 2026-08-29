@@ -59,12 +59,26 @@ internal enum class VerdictField(
     /** How this column filters. */
     val filter: FilterKind,
     /** The cell's plain text — also what filtering and searching match against. */
-    val text: (GrindVerdict) -> String
+    val text: (GrindVerdict) -> String,
+    /**
+     * What this column *orders* by, defaulting to [text].
+     *
+     * Overridden only by [CONFIDENCE], whose cell text is an enum name: sorted as text it runs
+     * alphabetically, and alphabetically `INCONCLUSIVE` — which means nothing was learned — outranks both
+     * `MEDIUM` and `LOW`. Observed live before this existed. Keeping it here rather than in the sorter is
+     * also what collapses the rank table onto one declaration, instead of one copy per layer.
+     */
+    val sortKey: (GrindVerdict) -> String = text
 ) {
     NAME("Name", "Name", "name", FilterKind.TEXT, { it.slug }),
     PROJECT("Project", "Project", "project", FilterKind.TEXT, { it.projectUrl }),
     PATTERN("Name-pattern", "NamePattern", "pattern", FilterKind.TEXT, { it.suggestedEntry ?: "" }),
-    CONFIDENCE("Confidence", "Confidence", "confidence", FilterKind.CHOICE, { it.confidence.name }),
+    CONFIDENCE(
+        "Confidence", "Confidence", "confidence", FilterKind.CHOICE, { it.confidence.name },
+        // Zero-padded so the rank sorts as text alongside every other column, without the sorter needing
+        // to know this one is numeric. One digit is plenty and the padding keeps it honest past nine.
+        sortKey = { "%02d".format(CONFIDENCE_RANK[it.confidence] ?: 99) }
+    ),
     LOADER("Loader", "Loader", "loader", FilterKind.CHOICE, { it.loader }),
     PLATFORM("Platform", "Platform", "platform", FilterKind.CHOICE, { it.platform }),
     PROJECT_SIDENESS(
@@ -87,6 +101,17 @@ internal enum class VerdictField(
     SCANNED("Scanned (UTC)", "Scanned", "scanned", FilterKind.TEXT, { ScanDate.of(it.verifiedAt) });
 
     companion object {
+        /**
+         * Confidence ordering, strongest clientside signal first — **the** rank table.
+         *
+         * Both the report's default order and `/export.csv`'s hand-maintained copy used to declare this
+         * separately, so the table and the export could drift into disagreeing about what "highest
+         * confidence first" means. Pinned by `theCsvDefaultOrderIsTheSameOrdering`.
+         */
+        val CONFIDENCE_RANK = mapOf(
+            Confidence.HIGH to 0, Confidence.MEDIUM to 1, Confidence.LOW to 2, Confidence.INCONCLUSIVE to 3
+        )
+
         /** The column addressed by [param], or `null` — an unknown one is ignored rather than fatal. */
         fun byParam(param: String?): VerdictField? = entries.firstOrNull { it.param == param }
     }
@@ -295,11 +320,6 @@ internal data class VerdictPage(
  */
 internal object VerdictSelection {
 
-    /** Confidence order for the default sort — highest first, since that is what a reader came for. */
-    private val confidenceRank = mapOf(
-        Confidence.HIGH to 0, Confidence.MEDIUM to 1, Confidence.LOW to 2, Confidence.INCONCLUSIVE to 3
-    )
-
     /**
      * Apply [query] to [verdicts].
      *
@@ -361,7 +381,11 @@ internal object VerdictSelection {
         query: VerdictQuery,
         logCount: (GrindVerdict) -> Int
     ): List<GrindVerdict> = when (val sort = query.sort) {
-        null -> matched.sortedWith(compareBy({ confidenceRank[it.confidence] ?: 99 }, { it.slug }, { it.loader }))
+        // The default order IS the confidence sort, expressed through the same key, so the two can never
+        // disagree about what "highest confidence first" means.
+        null -> matched.sortedWith(
+            compareBy({ VerdictField.CONFIDENCE.sortKey(it) }, { it.slug }, { it.loader })
+        )
 
         // Only the COUNT is reversed, and the slug/loader tie-break is appended afterwards so it runs the
         // same way in both directions. Reversing the whole comparator, as the field sorts do, would reshuffle
@@ -375,7 +399,7 @@ internal object VerdictSelection {
         }
 
         is SortKey.Column -> {
-            val byField = compareBy<GrindVerdict> { sort.column.text(it).lowercase() }
+            val byField = compareBy<GrindVerdict> { sort.column.sortKey(it).lowercase() }
             matched.sortedWith(if (query.descending) byField.reversed() else byField)
         }
     }

@@ -35,14 +35,6 @@ object VerdictCsvExporter {
     /** The header row; also documents the column order callers (and the table) rely on. */
     private val header = VerdictField.entries.map { it.csvHeader }
 
-    /** Confidence ordering for the default sort: strongest clientside signal first. */
-    private val confidenceRank = mapOf(
-        de.griefed.serverpackcreator.clientside.Confidence.HIGH to 0,
-        de.griefed.serverpackcreator.clientside.Confidence.MEDIUM to 1,
-        de.griefed.serverpackcreator.clientside.Confidence.LOW to 2,
-        de.griefed.serverpackcreator.clientside.Confidence.INCONCLUSIVE to 3
-    )
-
     /**
      * Render [verdicts] as a CSV document (header + one row per verdict), with proper escaping.
      *
@@ -55,7 +47,11 @@ object VerdictCsvExporter {
         val ordered = if (preOrdered) {
             verdicts
         } else {
-            verdicts.sortedWith(compareBy({ confidenceRank[it.confidence] ?: Int.MAX_VALUE }, { it.slug }, { it.loader }))
+            // The table's own ordering, through the same key rather than a second rank table kept in step
+            // by hand -- the two used to declare confidence order separately.
+            verdicts.sortedWith(
+                compareBy({ VerdictField.CONFIDENCE.sortKey(it) }, { it.slug }, { it.loader })
+            )
         }
         // Cells come from the same VerdictField list the table renders from, so the two cannot describe
         // different columns -- the drift that had the CSV carrying seven fields against the table's eight.
