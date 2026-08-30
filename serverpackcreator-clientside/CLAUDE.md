@@ -197,6 +197,52 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   directory, and a crash is the one outcome that reaches HIGH. Cut only the *loader* suffix when parsing —
   slugs nest, and a prefix match would claim `creativecore-extras` for `creativecore`. Directories staged
   before this change match no owner and are cleared by the grinder's startup `reapAll()`.
+- **Operator console rules are rung 7 of the ladder** (`ConsoleRules.kt`: `ConsoleRule`, `ConsoleRuleSet`,
+  `ConsoleRuleFile`; `BootLogClassifier.classify(..., rules)` returning a `Classification`). A rule maps console
+  text to a `BootResult`, so a newly-observed clientside signature is a file edit rather than a release. **Where
+  it sits is the whole design**: below the ready-line and below every guard meaning *the mod never got a fair
+  run* (timeout, killed/OOM, setup abort, launch failure, loader bootstrap), so a hand-edited file can never turn
+  host trouble into a HIGH — and *above* the client-class marker and the exit code, so a rule can both raise FML's
+  `for invalid dist DEDICATED_SERVER` on a **zero** exit (the verified gap: that string was in no guard) and
+  excuse a console the marker would crash. The order is pinned as a unit inside
+  `theGuardOrderIsPinnedAsAWhole` — do not add a sibling test stating it a second time.
+  - **An absent verdict and an unreadable one are different, and resolve differently.** A rule stating *no*
+    verdict is **undecided**: `ConsoleRuleSet.undecidedVerdict` decides what that means, and it defaults to
+    `null` — the ladder decides and the rule merely names itself, i.e. "if none is specified, determine by
+    grinder". `SPC_GRINDER_RULE_FALLBACK=inconclusive` opts into the conservative reading for a run where
+    unfinished rules are expected. A **misspelt** verdict is always INCONCLUSIVE regardless of that setting
+    and is recorded in `errors`: the author tried to state an intention and failed, and a typo must never be
+    honoured as one. The opt-in governs undecided rules **only** — a rule that states a verdict always means
+    what it says, or turning the setting on would silently rewrite deliberate CRASHED rules. First match in
+    file order wins.
+  - **Drops and fallbacks go in opposite directions, deliberately.** No id or no pattern **drops** the rule
+    (untraceable, or unmatchable); an unreadable verdict **falls back**. Every fallback is recorded, and a
+    broken whole file keeps the last good set — which hides breakage, hence `ConsoleRuleSet.errors` on
+    `/status`.
+  - Reload is a `(lastModified, length)` pair checked on read, not a `WatchService`: `classify` runs once per
+    boot, so the stat is free, while a watcher costs a thread, a platform-specific backend (macOS's JDK default
+    is itself a poller) and tests that need sleeps. **Landmine:** mtime is second-granular, so two edits inside
+    one second that keep the byte count identical are missed — stated rather than hidden, because closing it
+    means hashing the file on every call.
+  - **Parameter-order landmine:** `bootArtifactSink` must stay the **last** parameter of `runPrepared` and of
+    `BootVerifier`'s constructor. Adding `rules` after it silently re-bound every trailing-lambda call site to
+    the wrong parameter.
+- **Every attempt's evidence is handed to `bootArtifactSink`, from inside `runPrepared`.** `BootArtifacts.collect`
+  reads the staged pack's `logs/` and `crash-reports/` alongside the console and returns them as separate
+  entries (they disagree usefully: `logs/latest.log` is log4j's file appender, so it holds entries stdout never
+  sees and misses the launcher output stdout has). Retention is `BootArtifacts.worthKeeping` — anything but
+  SURVIVED — and it lives here so the CLI verb and the grinder cannot disagree about it. Capped per artifact by
+  a **seeking** tail read, never `readText`-then-trim, and everything found is named in an `index.txt` whether
+  kept or not, because a silently capped set of logs reads as a complete one.
+  - **LANDMINE — the hook fires per *attempt*, and there is exactly one call site.** `runPrepared` runs three
+    times per candidate (first boot, newest-build re-check, each other-version re-check) and staging wipes the
+    attempt directory before each, so anything read after `verify` returns can only ever see the last one. All
+    three sites go through the private `BootVerifier.boot`; `onlyOneCallSiteInvokesRunPrepared` pins that,
+    because a hook added at two of three would silently lose exactly the re-check evidence a contested crash
+    is argued with.
+  - `Prepared.Ready.attemptName` derives the `(platform, slug, loader)` tuple from the log file's parent
+    rather than carrying three more fields — and stays correct for the other-version re-check, which
+    deliberately stages into the *crashing* loader's directory.
 - **Landmine — every attempt for one candidate writes the *same* `boot.log`.** Staging wipes
   `<work>/boot/<platform>-<slug>-<loader>` and re-creates it, so the loader-build re-check and each other-version boot
   overwrite the previous console, while the *reported* verdict is usually the first crash. The grinder's
@@ -249,6 +295,34 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   produces a failure that looks like a crash. Measured across 112 kept boot logs: **36** failed exactly that way, the
   largest single failure class, each burning ~70 s to learn nothing. `BootLogClassifier` keeps a matching backstop
   (`dependencyFailureMarkers` → INCONCLUSIVE) for deps that go missing despite staging.
+- **Dependencies come from BOTH the platform and the jar manifest, and the two are trusted differently.**
+  `downloadWithDependencies` resolves `ModFile.requiredDependencies` as before, then scans each staged jar and
+  resolves what its manifest declares and the platform never mentioned — the case Fabric API most often falls
+  into. `KnownModIds` bridges the vocabularies (a manifest says `fabric`, Modrinth wants `fabric-api`,
+  CurseForge wants `306612`); `VersionConstraint` matches a declared range against `ModFile.version`.
+  - **LANDMINE — the refusal split is the whole safety property, and it is structural.** A platform ref is a
+    project the author linked; a manifest id is a bare string that may name something *bundled inside another
+    jar* (`fabric-api-base` ships inside Fabric API), provided by the loader, or optional in practice. Since
+    `refuseForMissingDependencies` scores a refusal INCONCLUSIVE, treating every unresolvable manifest id as a
+    refusal would convert a large share of *working* boots into INCONCLUSIVE. So `unmapped` never reaches that
+    function at all — not via a flag, via a separate collection — while `unsatisfied` (platform misses, and
+    manifest ids that mapped and then failed to stage) still refuses.
+  - **`VersionConstraint` fails towards ACCEPT, always.** A constraint it cannot parse must never refuse: a
+    refusal is indistinguishable from the dependency being genuinely unsatisfiable, so a grammar gap would
+    present as a catalog-wide mass-INCONCLUSIVE event. `looksLikeVersion` gates every comparison because
+    `numbersOf` maps a digit-less component to `0` — **two** separate branches shipped that bug during
+    development (a bare clause, then a bare `.x`), both invisible to inspection, both found by
+    `VersionConstraintFuzzTest`, which sweeps 30 malformed shapes and asserts not one refuses. Do not add a
+    comparison site without gating it.
+  - `BootCandidateSelector.pickDependencyFile` treats a constraint as a **preference**: it narrows, then falls
+    back to the whole set. Returning `null` where it used to return a file would turn a bootable candidate into
+    a refusal.
+  - **Attribution annotates, never downgrades** (`DependencyAttribution`, `BootVerifier.attribute`). A crash
+    naming an injected dependency records `blamedDependency` and requeues that project — the candidate still
+    crashed a server in the configuration a real pack produces, and downgrading on a string match trades a false
+    positive for a *lost true positive*. `attributionNeverChangesTheBootResult` pins it. Blame needs a crash
+    marker or stack frame (a name appears in every "loading mod" line) and stands down when the candidate is
+    named anywhere in the same crash context.
 - **Quilt dependencies fall back to the Fabric build** (`BootCandidateSelector.fallbackLoaders`). Quilt deliberately
   runs Fabric mods, which is why the canonical dependency of a Quilt mod is **Fabric API — a project publishing only
   Fabric-tagged files**. Strict loader matching dropped it silently: measured 2026-07-30, **210** dropped

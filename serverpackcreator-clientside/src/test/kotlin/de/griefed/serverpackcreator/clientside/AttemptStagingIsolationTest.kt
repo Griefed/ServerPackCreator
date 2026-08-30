@@ -45,6 +45,9 @@ internal class AttemptStagingIsolationTest {
 
     /** A platform answering for one host with a single Fabric file, under the slug both platforms share. */
     private fun platform(name: String, host: String) = object : ModPlatform {
+        // The same [name] the resolved ProjectFiles carry: a candidate's platform and its verdict's platform
+        // must agree exactly, which is what this fixture exists to exercise.
+        override val name: String = name
         override fun handles(projectUrl: String): Boolean = projectUrl.contains(host, ignoreCase = true)
         override fun resolve(projectUrl: String): ProjectFiles = ProjectFiles(
             platform = name,

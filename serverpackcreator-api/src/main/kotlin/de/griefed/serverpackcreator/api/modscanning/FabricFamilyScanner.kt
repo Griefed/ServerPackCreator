@@ -62,10 +62,24 @@ abstract class FabricFamilyScanner(
      */
     protected abstract fun readDependencies(modConfig: JsonNode, modId: String): List<ModDependency>
 
+    /**
+     * The other ids this descriptor says the mod answers to.
+     *
+     * Open rather than abstract, and empty by default, because a descriptor without the block is the
+     * common case and must not be an error. Overridden where the loader has the concept.
+     *
+     * @param modConfig The parsed descriptor.
+     * @param modId     Id of the mod being read, for logging.
+     */
+    protected open fun readProvides(modConfig: JsonNode, modId: String): List<String> = emptyList()
+
     final override fun read(modJar: File): ScannedMod {
         val modConfig: JsonNode = getJarJson(modJar, descriptor, objectMapper)
         val modId = utilities.jsonUtilities.getNestedText(modConfig, *idPath)
-        return ScannedMod(modJar, modId, readSideness(modConfig), readDependencies(modConfig, modId))
+        return ScannedMod(
+            modJar, modId, readSideness(modConfig), readDependencies(modConfig, modId),
+            readProvides(modConfig, modId)
+        )
     }
 
     /**

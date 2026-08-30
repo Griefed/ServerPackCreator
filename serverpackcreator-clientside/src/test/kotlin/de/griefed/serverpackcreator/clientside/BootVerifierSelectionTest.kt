@@ -46,6 +46,9 @@ internal class BootVerifierSelectionTest {
 
     /** The platform is only consulted for dependency resolution, which these tests never reach. */
     private val unusedPlatform = object : ModPlatform {
+        // Deliberately not a real platform's spelling: `platformRefFor` maps a manifest mod-id per platform,
+        // and a name no platform uses makes it resolve nothing — which is what "never reached" should mean.
+        override val name: String = "unused"
         override fun handles(projectUrl: String): Boolean = false
         override fun resolve(projectUrl: String): ProjectFiles = error("resolve must not be called")
         override fun resolveDependency(nativeRef: String): ProjectFiles? = error("resolveDependency must not be called")

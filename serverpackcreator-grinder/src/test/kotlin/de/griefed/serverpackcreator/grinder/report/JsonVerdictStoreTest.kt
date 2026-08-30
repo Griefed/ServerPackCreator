@@ -70,6 +70,68 @@ internal class JsonVerdictStoreTest {
         Assertions.assertEquals(1, JsonVerdictStore(file).all().size)
     }
 
+    /**
+     * A store written by a *newer* build carries fields this build has never heard of. Jackson's default
+     * is to fail the whole read on one, which routes a perfectly good store down the corrupt path — and
+     * from there the next [JsonVerdictStore.record] rewrites the file from an empty map. A downgrade must
+     * cost nothing but the unknown fields.
+     */
+    @Test
+    fun aStoreWrittenByANewerBuildStillLoads(@TempDir dir: File) {
+        val file = File(dir, "verdicts.json").apply { writeText(verdictJson(extra = ""","aFieldFromTheFuture":"whatever"""")) }
+
+        val store = JsonVerdictStore(file)
+
+        Assertions.assertEquals(1, store.all().size, "an unknown field must not discard the verdict")
+        Assertions.assertEquals(Confidence.HIGH, store.all().single().confidence)
+    }
+
+    /**
+     * The store degrading to empty is survivable; the store being *destroyed* is not. Persisting happens
+     * on the very next [JsonVerdictStore.record], so an unreadable file has to be copied aside before
+     * anything can overwrite it — otherwise one bad byte costs a multi-day grind.
+     */
+    @Test
+    fun anUnreadableStoreIsPreservedRatherThanOverwritten(@TempDir dir: File) {
+        val original = "{ this is not valid json"
+        val file = File(dir, "verdicts.json").apply { writeText(original) }
+
+        JsonVerdictStore(file).record(grindVerdict("jei", "Forge"))
+
+        val preserved = dir.listFiles().orEmpty().filter { it.name.startsWith("verdicts.json.unreadable-") }
+        Assertions.assertEquals(1, preserved.size, "the unreadable store must be kept aside, not silently destroyed")
+        Assertions.assertEquals(original, preserved.single().readText())
+    }
+
+    /**
+     * One row this build cannot make sense of — a confidence constant added later, say — must cost that
+     * row and nothing else. Reading the document as a whole makes every row hostage to the worst one.
+     */
+    @Test
+    fun oneUnreadableRowDoesNotDiscardTheOthers(@TempDir dir: File) {
+        val file = File(dir, "verdicts.json").apply {
+            writeText("[" + verdictBody("jei") + "," + verdictBody("sodium", confidence = "CERTAIN_FROM_THE_FUTURE") + "]")
+        }
+
+        val store = JsonVerdictStore(file)
+
+        Assertions.assertEquals(1, store.all().size, "the readable row must survive its neighbour")
+        Assertions.assertEquals("jei", store.all().single().slug)
+        Assertions.assertTrue(
+            dir.listFiles().orEmpty().any { it.name.startsWith("verdicts.json.unreadable-") },
+            "a partially-read store must be preserved too — the next record() drops the skipped rows"
+        )
+    }
+
+    /** One persisted verdict, as an older build would have written it, plus any [extra] trailing fields. */
+    private fun verdictJson(extra: String = "") = "[" + verdictBody("jei", extra = extra) + "]"
+
+    private fun verdictBody(slug: String, confidence: String = "HIGH", extra: String = "") = """
+        {"platform":"Modrinth","slug":"$slug","projectUrl":"https://modrinth.com/mod/$slug",
+         "loader":"Forge","suggestedEntry":"$slug-","confidence":"$confidence","detail":"",
+         "verifiedAt":"2026-02-01T00:00:00Z"$extra}
+    """.trimIndent()
+
     @Test
     fun newestVerificationSurvivesAReopen(@TempDir dir: File) {
         val file = File(dir, "verdicts.json")

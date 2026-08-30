@@ -191,6 +191,10 @@ never evicted, and a re-install costs one networked setup boot if it comes back.
 | `SPC_GRINDER_STORE`             | `~/.spc-grinder/verdicts.json` | Verdict store — delete to start fresh                                        |
 | `SPC_GRINDER_CURSORS`           | `~/.spc-grinder/cursors.json`  | Crawl position per platform — delete to re-sweep from the most-downloaded    |
 | `SPC_GRINDER_REQUEUE`           | `~/.spc-grinder/requeue.json`  | Immediate re-grind queue — see *Re-grinding verdicts you no longer trust*    |
+| `SPC_GRINDER_BOOT_LOGS`         | `~/.spc-grinder/boot-logs`     | Console, server logs and crash reports of every boot that did not survive    |
+| `SPC_GRINDER_BOOT_RULES`        | `~/.spc-grinder/boot-rules.json` | Operator console rules; absent = built-in classification only. Hot-reloaded |
+| `SPC_GRINDER_RULE_FALLBACK`     | `grinder`                      | What a rule stating no verdict means: `grinder` (the ladder decides) or `inconclusive` |
+| `SPC_GRINDER_BOOT_LOG_BUDGET_MIB` | `2048`                       | Ceiling for that store; oldest attempts are dropped first once it is passed  |
 | `SPC_GRINDER_PORT`              | `8757`                         | Report server port                                                           |
 | `SPC_GRINDER_HOST`              | `127.0.0.1`                    | Report server bind address. Loopback by default — see *Exposing the report*  |
 | `SPC_GRINDER_CONTAINER_USER`    | owner of `SPC_GRINDER_WORK`    | `uid:gid` the containers run as. Must own the staging — see *Container identity* |
@@ -200,6 +204,7 @@ never evicted, and a re-install costs one networked setup boot if it comes back.
 | `SPC_GRINDER_BATCH`             | `25`                           | Projects taken from **each** platform per pass — the sweep-speed lever       |
 | `SPC_GRINDER_INTERVAL`          | `21600` (6 h)                  | Seconds to idle after a full sweep found nothing due                         |
 | `SPC_GRINDER_SCAN_DELAY`        | `15`                           | Seconds between passes that only scanned past fresh verdicts                 |
+| `SPC_GRINDER_STORE_FLUSH_SECONDS` | `30`                         | Seconds between verdict-store writes. `0` writes through on every verdict    |
 | `SPC_GRINDER_REVERIFY_TTL_DAYS` | `30`                           | How long a verdict stays fresh before re-verification                        |
 | `SPC_GRINDER_CACHE_TTL_DAYS`    | `7`                            | Delete cached loader installs unused this long (~150 MB each). `0` = never   |
 | `SPC_GRINDER_SPC_PROPERTIES`    | *(unset)*                      | Point SPC at a specific `serverpackcreator.properties` for reproducible runs |
@@ -397,10 +402,18 @@ workers over starving each of them.
 
 While the service runs:
 
-- **Table:** `http://localhost:8757/` — sortable by any column (name, project, name pattern, confidence, loader)
+- **Table:** `http://localhost:8757/` — sortable by any column, including **Logs**
 - **CSV:** `http://localhost:8757/export.csv`
 
-Columns are `Name, Project, NamePattern, Confidence, Loader, Detail`, highest confidence first.
+Table columns are `Name, Project, Name-pattern, Confidence, Loader, Platform, Project sideness, Jar sideness,
+Detail, Rule, Dependencies, Scanned (UTC), Logs`, highest confidence first. The CSV carries the same set
+except **Logs**, spelling its headers `NamePattern`, `ProjectSideness`, `JarSideness` and `Scanned`.
+
+**Logs is sortable but not filterable**, because it is the one column not derived from the verdict — it is a
+listing of the artifacts kept on disk. Not every entry has any: artifacts are kept only for boots that did
+not survive, and the reaper drops the oldest once `SPC_GRINDER_BOOT_LOG_BUDGET_MIB` is passed. Sorting it
+descending (`?sort=logs&dir=desc`) is how you find the rows with something to read. `sort=logs` on
+`/export.csv` is accepted but does nothing, since that export has no Logs column.
 
 **Interpreting confidence:** only `HIGH` (the server crashed with the mod in place) is decisive. `MEDIUM`
 means the server booted — which does *not* prove the mod is server-safe. `INCONCLUSIVE` means nothing was
@@ -482,6 +495,8 @@ curl -s http://localhost:8757/status
 ```json
 {
   "verdicts" : 454,
+  "requeued" : 0,
+  "bootRules" : { "source" : "none", "ruleCount" : 0, "undecidedVerdict" : "grinder decides", "errors" : [ ] },
   "activity" : {
     "uptimeSeconds" : 22, "pass" : 1, "passCandidates" : 100,
     "passRunningSeconds" : 20, "verified" : 2, "failed" : 0, "skippedFresh" : 0,
@@ -498,6 +513,12 @@ curl -s http://localhost:8757/status
 }
 ```
 
+**`bootRules.errors` is the one nobody thinks to check.** A broken rule file keeps the *last good* rules
+rather than dropping them, which is what stops a mid-edit save from disabling everything you wrote — but it
+also means a typo is invisible from the outside. Anything non-empty there is a rule that is not running.
+`undecidedVerdict` shows which mode `SPC_GRINDER_RULE_FALLBACK` put the daemon in: `grinder decides` (the
+default) or `INCONCLUSIVE`.
+
 **`busySeconds` is the one to watch.** A worker past a few minutes on one candidate is either installing a cold
 loader tuple or stuck; the boot budget is 12 minutes, so anything approaching that will end as `INCONCLUSIVE`.
 A worker between candidates is simply absent from `workers`, so a shorter list than `SPC_GRINDER_WORKERS` means
@@ -508,6 +529,7 @@ Handy one-liners:
 ```bash
 curl -s localhost:8757/status | jq '.activity.workers'                  # who is on what
 curl -s localhost:8757/status | jq '.crawl'                             # crawl position per platform
+curl -s localhost:8757/status | jq '.bootRules'                         # rules loaded, and any that failed
 watch -n5 'curl -s localhost:8757/status | jq -c .activity'             # a poor man's dashboard
 ```
 

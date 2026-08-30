@@ -536,4 +536,91 @@ internal class ModListCompilerTest {
         )
         Assertions.assertTrue(disabled.isEmpty(), "Nothing in the chain may stay disabled; got ${disabled.map { it.name }}")
     }
+    /**
+     * **B0's generation regression check.** A `fabric`/`fabric-api` dependency must survive a clientside
+     * list that would otherwise strip it.
+     *
+     * Before the exclusion fix, `FabricScanner` dropped `fabric` from `ScannedMod.dependencies` as "the
+     * platform rather than a mod", so the rescue loop never saw it and a custom clientside list naming
+     * Fabric API stripped it out of the server pack — producing a pack that installs and dies on load.
+     *
+     * Three shapes, because real descriptors use all three: a mod may depend on `fabric-api` (the modern
+     * id), on `fabric` (the historical one, which real Fabric API still answers to via `provides`), and a
+     * stock pack must be untouched either way.
+     */
+    @Test
+    fun aFabricApiDependencyIsRescuedFromAClientsideList(@TempDir tempDir: File) {
+        apiProperties.isAutoExcludingModsEnabled = true
+        val modsDir = File(tempDir, "mods").apply { mkdirs() }
+        // Real Fabric API: id `fabric-api`, and it answers to the historical `fabric` via `provides`.
+        jarContaining(
+            modsDir, "fabric-api-0.92.0.jar", "fabric.mod.json",
+            """{"schemaVersion":1,"id":"fabric-api","version":"0.92.0","environment":"*",""" +
+                """"provides":["fabric"]}"""
+        )
+        fabricJar(modsDir, "modernmod.jar", "modernmod", "*", "fabric-api")
+
+        val (included, disabled) = modListCompiler.compileModList(
+            modsDir.absolutePath, listOf("fabric-api"), emptyList(), "1.20.1", "Fabric"
+        )
+
+        Assertions.assertTrue(
+            included.map { it.name }.contains("fabric-api-0.92.0.jar"),
+            "Fabric API is a server-side requirement of a kept mod; stripping it ships a pack that dies on " +
+                "load. included=${included.map { it.name }} disabled=${disabled.map { it.name }}"
+        )
+    }
+
+    /**
+     * The same, for a mod declaring the **historical** `fabric` id — which is what real Fabric API's
+     * `provides` block exists to answer.
+     *
+     * Separate from the modern case deliberately: the rescue matches `ModDependency.modID` against the
+     * disabled mod's own `modID` literally, and neither Fabric's nor Quilt's scanner reads `provides`. If
+     * this fails while the case above passes, B0 only half-landed and the gap is the `provides` block.
+     */
+    @Test
+    fun aHistoricalFabricDependencyAlsoRescuesFabricApi(@TempDir tempDir: File) {
+        apiProperties.isAutoExcludingModsEnabled = true
+        val modsDir = File(tempDir, "mods").apply { mkdirs() }
+        jarContaining(
+            modsDir, "fabric-api-0.92.0.jar", "fabric.mod.json",
+            """{"schemaVersion":1,"id":"fabric-api","version":"0.92.0","environment":"*",""" +
+                """"provides":["fabric"]}"""
+        )
+        fabricJar(modsDir, "oldmod.jar", "oldmod", "*", "fabric")
+
+        val (included, disabled) = modListCompiler.compileModList(
+            modsDir.absolutePath, listOf("fabric-api"), emptyList(), "1.20.1", "Fabric"
+        )
+
+        Assertions.assertTrue(
+            included.map { it.name }.contains("fabric-api-0.92.0.jar"),
+            "a mod depending on the historical `fabric` id must still rescue Fabric API, which declares " +
+                "`provides: [fabric]`. included=${included.map { it.name }} disabled=${disabled.map { it.name }}"
+        )
+    }
+
+    /** A stock pack — no clientside list — must be untouched by the exclusion change. */
+    @Test
+    fun aStockPackContainingFabricApiIsUnchanged(@TempDir tempDir: File) {
+        apiProperties.isAutoExcludingModsEnabled = true
+        val modsDir = File(tempDir, "mods").apply { mkdirs() }
+        jarContaining(
+            modsDir, "fabric-api-0.92.0.jar", "fabric.mod.json",
+            """{"schemaVersion":1,"id":"fabric-api","version":"0.92.0","environment":"*","provides":["fabric"]}"""
+        )
+        fabricJar(modsDir, "modernmod.jar", "modernmod", "*", "fabric-api")
+
+        val (included, disabled) = modListCompiler.compileModList(
+            modsDir.absolutePath, emptyList(), emptyList(), "1.20.1", "Fabric"
+        )
+
+        Assertions.assertEquals(
+            setOf("fabric-api-0.92.0.jar", "modernmod.jar"), included.map { it.name }.toSet(),
+            "neither id is in the shipped fallback list, so a stock generation must keep both"
+        )
+        Assertions.assertTrue(disabled.isEmpty(), "nothing should be disabled; got ${disabled.map { it.name }}")
+    }
+
 }

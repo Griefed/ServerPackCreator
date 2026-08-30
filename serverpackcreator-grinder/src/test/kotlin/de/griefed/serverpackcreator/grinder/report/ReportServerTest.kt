@@ -20,6 +20,8 @@
 package de.griefed.serverpackcreator.grinder.report
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import de.griefed.serverpackcreator.clientside.AttemptDirectory
+import de.griefed.serverpackcreator.clientside.BootArtifacts
 import de.griefed.serverpackcreator.clientside.Confidence
 import de.griefed.serverpackcreator.grinder.GrindCandidate
 import de.griefed.serverpackcreator.grinder.GrinderStatus
@@ -60,28 +62,70 @@ internal class ReportServerTest {
     @Test
     fun servesAKeptCrashLogAndRefusesToEscapeItsStore(@TempDir logDir: File) {
         val secret = File(logDir.parentFile, "secret.txt").apply { writeText("not yours") }
-        val crashLogs = CrashLogStore(logDir)
-        crashLogs.keep(
-            ModPlatforms.MODRINTH, "creativecore", "Fabric",
-            File(logDir.parentFile, "staged.log").apply {
-                writeText("java.lang.NoClassDefFoundError: net/minecraft/client/Minecraft")
-            }
-        )
+        val crashLogs = BootLogStore(logDir)
+        val name = crashLogs.keep(
+            AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "creativecore", "Fabric"),
+            BootLogStore.attemptKey("Fabric", "0.19.3", "26.2"),
+            listOf(BootArtifacts.Artifact("console.log", "java.lang.NoClassDefFoundError: net/minecraft/client/Minecraft", false))
+        ).single()
         val store = InMemoryVerdictStore().apply { record(grindVerdict("creativecore", "Fabric")) }
         val server = ReportServer(store, requestedPort = 0, crashLogs = crashLogs).start()
         try {
-            val kept = get(server.port, "/crash-log?name=Modrinth-creativecore-Fabric.log")
+            val kept = get(server.port, "/boot-log?name=$name")
             Assertions.assertEquals(200, kept.statusCode())
             Assertions.assertTrue(kept.headers().firstValue("Content-Type").orElse("").contains("text/plain"))
             Assertions.assertTrue(kept.body().contains("net/minecraft/client/Minecraft"))
 
-            val escaped = get(server.port, "/crash-log?name=../${secret.name}")
+            // The superseded routes stay: both are documented, and an operator has them bookmarked.
+            val viaAlias = get(server.port, "/crash-log?name=$name")
+            Assertions.assertEquals(kept.body(), viaAlias.body(), "/crash-log must keep answering as an alias")
+
+            val escaped = get(server.port, "/boot-log?name=../${secret.name}")
             Assertions.assertEquals(404, escaped.statusCode(), "a traversal must not be served")
             Assertions.assertFalse(escaped.body().contains("not yours"), "and must not leak the file either")
 
-            val index = get(server.port, "/crash-logs")
-            Assertions.assertEquals(200, index.statusCode())
-            Assertions.assertTrue(index.body().contains("Modrinth-creativecore-Fabric.log"), "the index lists what is kept")
+            for (index in listOf("/boot-logs", "/crash-logs")) {
+                val listing = get(server.port, index)
+                Assertions.assertEquals(200, listing.statusCode())
+                Assertions.assertTrue(listing.body().contains(name), "$index lists what is kept")
+            }
+        } finally {
+            server.stop()
+        }
+    }
+
+    /**
+     * Sorting by Logs, through the real handler and a real directory listing.
+     *
+     * The unit test pins the ordering; this pins the *wiring* — that the count the sort uses comes from the
+     * same per-request snapshot the cells are rendered from. Those were two separate lookups in the first
+     * draft, which is exactly how a row sorts as having logs and then renders an em-dash.
+     */
+    @Test
+    fun sortsTheTableByHowManyLogsEachRowHas(@TempDir logDir: File) {
+        val crashLogs = BootLogStore(logDir)
+        crashLogs.keep(
+            AttemptDirectory.nameFor(ModPlatforms.MODRINTH, "sodium", "Fabric"),
+            BootLogStore.attemptKey("Fabric", "0.16.9", "1.21.1"),
+            listOf(
+                BootArtifacts.Artifact("console.log", "crashed", false),
+                BootArtifacts.Artifact("latest.log", "also crashed", false)
+            )
+        )
+        val store = InMemoryVerdictStore().apply {
+            record(grindVerdict("sodium", "Fabric"))
+            record(grindVerdict("jei", "Forge"))
+            record(grindVerdict("iron-chests", "NeoForge"))
+        }
+        val server = ReportServer(store, requestedPort = 0, crashLogs = crashLogs).start()
+        try {
+            val body = get(server.port, "/?sort=logs&dir=desc").body()
+
+            Assertions.assertTrue(body.contains("sort=logs"), "the Logs header must render a sort link")
+            val withLogs = body.indexOf("sodium")
+            val without = listOf("jei", "iron-chests").minOf { body.indexOf(it) }
+            Assertions.assertTrue(withLogs in 0..<without, "the row holding logs must lead a descending Logs sort")
+            Assertions.assertTrue(body.contains("2 log(s)"), "and must still render the count it was sorted by")
         } finally {
             server.stop()
         }
@@ -102,7 +146,7 @@ internal class ReportServerTest {
             val csv = get(server.port, "/export.csv")
             Assertions.assertEquals(200, csv.statusCode())
             Assertions.assertTrue(csv.headers().firstValue("Content-Type").orElse("").contains("text/csv"))
-            Assertions.assertTrue(csv.body().startsWith("Name,Project,NamePattern,Confidence,Loader,Detail"))
+            Assertions.assertTrue(csv.body().startsWith("Name,Project,NamePattern,Confidence,Loader,Platform"))
             Assertions.assertTrue(csv.body().contains("jei-"))
         } finally {
             server.stop()

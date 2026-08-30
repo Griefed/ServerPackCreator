@@ -144,18 +144,41 @@ object BootCandidateSelector {
         minecraftVersion.split('.').take(2).joinToString(".")
 
     /**
-     * Pick a dependency-file from [files] for the same [loader], preferring an exact
-     * [minecraftVersion] match and falling back to any file for that loader.
+     * Pick a dependency-file from [files] for the same [loader] and **exactly** [minecraftVersion], or `null`.
+     *
+     * Unlike the candidate under test, a dependency is never staged for a different Minecraft version: a
+     * near-miss candidate still tests the candidate, but a near-miss dependency guarantees a loader-level
+     * version conflict that kills the boot and is then blamed on the mod under test. `null` becomes an
+     * INCONCLUSIVE refusal, which is the honest verdict for a mod that never got a fair run.
      */
-    fun pickDependencyFile(files: List<ModFile>, loader: String, minecraftVersion: String): ModFile? =
+    fun pickDependencyFile(
+        files: List<ModFile>,
+        loader: String,
+        minecraftVersion: String,
+        versionConstraint: String? = null
+    ): ModFile? {
+        // A constraint is a PREFERENCE, never a filter. Preferring a satisfying file is an improvement;
+        // returning null where this used to return a file would turn a bootable candidate into a refusal,
+        // and `refuseForMissingDependencies` scores a refusal INCONCLUSIVE -- so the mod would quietly stop
+        // being verified rather than fail loudly. Narrow first, then fall back to the whole set.
+        val satisfying = files.filter { VersionConstraint.satisfies(it.version, versionConstraint) }
+        return pickFrom(satisfying, loader, minecraftVersion) ?: pickFrom(files, loader, minecraftVersion)
+    }
+
+    /**
+     * [pickDependencyFile]'s loader resolution: the loader itself, then the one-way Quilt-to-Fabric fallback.
+     *
+     * The Minecraft version is fixed across both attempts, which is what makes the fallback reachable. It used
+     * to be a *preference* inside each attempt, so a Quilt-tagged file for the wrong version satisfied the first
+     * attempt and the Fabric build carrying the right version was never considered.
+     */
+    private fun pickFrom(files: List<ModFile>, loader: String, minecraftVersion: String): ModFile? =
         pickForLoader(files, loader, minecraftVersion)
             ?: fallbackLoaders[loader]?.let { pickForLoader(files, it, minecraftVersion) }
 
-    /** Newest file carrying [loader], preferring one that also lists [minecraftVersion]. */
-    private fun pickForLoader(files: List<ModFile>, loader: String, minecraftVersion: String): ModFile? {
-        val forLoader = files.filter { loader in it.loaders }
-        return forLoader.firstOrNull { minecraftVersion in it.minecraftVersions } ?: forLoader.firstOrNull()
-    }
+    /** Newest file carrying both [loader] and [minecraftVersion], or `null` when the project publishes none. */
+    private fun pickForLoader(files: List<ModFile>, loader: String, minecraftVersion: String): ModFile? =
+        files.firstOrNull { loader in it.loaders && minecraftVersion in it.minecraftVersions }
 
     /**
      * Loaders that can run another loader's mods, used **only** when a dependency publishes nothing for the loader

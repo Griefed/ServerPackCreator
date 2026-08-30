@@ -15,7 +15,7 @@ import java.io.File
  * whichever landed first and silently drop the other verdict. Merging those verdicts is a decision the caller
  * makes explicitly; compare on [file] when identifying the same jar across two scans.
  */
-class ScannedMod(
+class ScannedMod @JvmOverloads constructor(
     /** The jar this was read from. The only identity that holds across two scans of the same directory. */
     val file: File,
     /**
@@ -33,7 +33,17 @@ class ScannedMod(
      */
     val sideness: Sideness = Sideness.SERVER,
     /** The non-platform mods this one declared it needs. The loader, Java and Minecraft are not recorded. */
-    val dependencies: List<ModDependency> = emptyList()
+    val dependencies: List<ModDependency> = emptyList(),
+    /**
+     * Other mod-ids this mod answers to, from a Fabric/Quilt `provides` block — empty for loaders that
+     * have no such concept.
+     *
+     * Carried because a dependency names an id, not a jar: Fabric API 0.92.11+1.20.1 declares
+     * `"id": "fabric-api"` and `"provides": ["fabric"]`, so a mod writing `depends: {"fabric": "*"}` is
+     * satisfied by it. Without the alias, anything matching a dependency against a mod's own id alone —
+     * `ModListCompiler`'s dependency rescue, above all — compares "fabric" to "fabric-api" and misses.
+     */
+    val provides: List<String> = emptyList()
 ) {
     /**
      * One line for a scan log, with the dependencies spelled out instead of left as object identities — they
@@ -50,18 +60,25 @@ class ScannedMod(
  * Only the id is known — the declaring descriptor names a mod, not a file — so matching this back to a jar
  * happens against [ScannedMod.modID].
  */
-class ModDependency(
+class ModDependency @JvmOverloads constructor(
     /** Id of the mod being depended on, as the declaring descriptor spells it. */
     val modID: String,
     /**
      * The side this dependency is needed on. Defaults to [Sideness.SERVER]: only Forge-style descriptors
      * state a side per dependency, so for the others every recorded dependency is one the server may need.
      */
-    val sideness: Sideness = Sideness.SERVER
+    val sideness: Sideness = Sideness.SERVER,
+    /**
+     * The version constraint the descriptor spelled, **verbatim and unparsed**, or `null` when it stated
+     * none. Left as written because the grammars differ per loader — Fabric and Quilt use npm-style ranges
+     * (`>=0.92.0`, `^2.0.0`), Forge and NeoForge use Maven ranges (`[15.2,)`) — and a consumer that wants
+     * to match one is better served by the original text than by a lossy normalisation done here.
+     */
+    val versionConstraint: String? = null
 ) {
     /** One line for a scan log: the id that was depended on, and the side the declaration asked for it on. */
     override fun toString(): String {
-        return "ModDependency(modID='$modID', sideness=$sideness)"
+        return "ModDependency(modID='$modID', sideness=$sideness, versionConstraint=$versionConstraint)"
     }
 }
 

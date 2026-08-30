@@ -36,6 +36,9 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
     private val modId = "modId"
     private val dependencies = "dependencies"
     private val side = "side"
+
+    /** The key a Forge/NeoForge dependency entry states its Maven version range under. */
+    private val versionRange = "versionRange"
     private val both = "BOTH"
 
     /** Path of the descriptor inside a Forge jar. `open` because NeoForge moved it, and that subclass overrides it. */
@@ -96,7 +99,9 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
                         // The platform itself. What side this mod demands of Minecraft/Forge IS its sideness.
                         sidesForModloader.add(dependencySideness)
                     } else {
-                        modDependencies.add(ModDependency(dependencyModId, dependencySideness))
+                        modDependencies.add(
+                            ModDependency(dependencyModId, dependencySideness, getVersionRange(declared))
+                        )
                     }
                 }
 
@@ -188,6 +193,14 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
      * @param config Mod- or dependency-config which contains the modId.
      * @return `side` from the passed config, in upper-case letters.
      */
+    /**
+     * The `versionRange` a dependency entry states, or `null` when it states none. Kept verbatim: Forge and
+     * NeoForge write Maven ranges (`[15.2,)`), which is a different grammar from Fabric's, and normalising
+     * the two here would lose information the caller needs to tell them apart.
+     */
+    private fun getVersionRange(config: CommentedConfig): String? =
+        config.valueMap()[versionRange]?.toString()?.takeIf { it.isNotBlank() }
+
     private fun getSide(config: CommentedConfig): String {
         return if (config.valueMap()[side] != null) {
             config.valueMap()[side].toString().uppercase()

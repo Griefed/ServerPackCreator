@@ -29,8 +29,9 @@ import de.griefed.serverpackcreator.grinder.loader.CachedLoaderVersions
 import de.griefed.serverpackcreator.grinder.loader.ImageJavaRuntimes
 import de.griefed.serverpackcreator.grinder.loader.LoaderCache
 import de.griefed.serverpackcreator.grinder.loader.PackVariables
-import de.griefed.serverpackcreator.grinder.report.CrashLogStore
+import de.griefed.serverpackcreator.grinder.report.BootLogStore
 import java.io.File
+import java.util.Collections
 import java.time.Duration
 
 /**
@@ -67,19 +68,34 @@ class ContainerCandidateVerifier(
     private val resources: ContainerResources = ContainerResources(),
     private val curseForgeApiKey: String? = System.getenv("CURSEFORGE_API_KEY"),
     private val containerUser: String = ContainerUser.IMAGE_DEFAULT,
-    private val crashLogs: CrashLogStore? = null
+    private val crashLogs: BootLogStore? = null,
+    private val consoleRules: () -> ConsoleRuleSet = { ConsoleRuleSet.EMPTY }
 ) : CandidateVerifier {
     /** Reclaims each candidate's staging once its verdicts are in; without it the work tree grows without bound. */
     private val reaper = BootWorkspaceReaper(workDirectory)
 
+
     override fun verify(candidate: GrindCandidate): ClientsideReport {
         var resolved: ClientsideReport? = null
+        // Per invocation, never a field: ONE verifier instance serves every GrindPool worker, so a shared
+        // collection would let one candidate's prune delete the logs another had just written -- the same
+        // cross-candidate class that made an unqualified attempt directory wipe a pack mid-boot. The sink
+        // writes to it from the boot path while this call reads it afterwards, hence synchronized.
+        val keptLogNames = Collections.synchronizedList(mutableListOf<String>())
         try {
-            val report = verifyStaged(candidate)
+            val report = verifyStaged(candidate, keptLogNames)
             resolved = report
-            // Before the reaper runs, and before the next re-grind of this tuple wipes the staging: the console
-            // of a boot that crashed is the only evidence the verdict cannot be re-derived without.
-            keepCrashConsoles(report, File(workDirectory, "boot"), crashLogs)
+            // Artifacts were kept per attempt, during the boots, by the sink below -- staging wipes the attempt
+            // directory on every stage, so nothing readable is left by the time we get here. What is left to do
+            // is drop the *previous* grind's attempts, which a re-check sampling a different loader or Minecraft
+            // line would otherwise strand forever, and then check the store against its ceiling.
+            crashLogs?.let { store ->
+                val (platform, slug) = reapTarget(candidate, resolved)
+                report.perLoader.map { it.loader }.distinct().forEach { loader ->
+                    store.pruneExcept(platform, slug, loader, keptLogNames.toSet())
+                }
+                store.enforceBudget()
+            }
             return report
         } finally {
             // In a `finally` because a *thrown* verification is exactly when staging is most likely to be left
@@ -95,36 +111,34 @@ class ContainerCandidateVerifier(
      */
     companion object {
         /**
-         * Copy the console of every **crashed** boot in [report] out of the staging under [bootRoot] and into
-         * [crashLogs], returning how many were kept.
+         * Keep one finished attempt's evidence, if the boot is worth keeping one for.
          *
-         * **Why it has to happen here.** `BootWorkspaceReaper` keeps one `boot.log` per attempt directory, but
-         * staging *wipes and re-creates* that directory, so the next re-grind of the same tuple destroys the
-         * console belonging to the verdict still being published. A crash is the only outcome that reaches
-         * HIGH, and its usual cause — a server loading a mod that reaches for a client-only class — is legible
-         * from the console and from nothing else.
+         * Called from inside `BootVerifier.runPrepared`, once per attempt, and that is the only point at
+         * which it *can* be: staging wipes and re-creates the attempt directory on every stage, so by the
+         * time a candidate's verdicts are in, every attempt but the last has had its pack deleted — and the
+         * re-check attempts are precisely the ones a contested crash is argued with.
          *
-         * Only CRASHED is kept: a clean boot proves nothing about sideness and explains nothing either, and
-         * an INCONCLUSIVE one learned nothing by definition. The console is read from the *crashing loader's*
-         * own directory, which is where `BootVerifier.restoreDecisiveConsole` has just put the decided boot's
-         * output — including when a cross-loader re-check ran in the same directory.
-         *
-         * Nothing here may fail a grind that already has its answer, so a missing or unreadable console keeps
-         * nothing and reports nothing.
+         * Retention is [BootArtifacts.worthKeeping], which lives in `-clientside` so the CLI verb and this
+         * daemon cannot disagree about it. A boot that reached its ready-line explains nothing.
          */
-        internal fun keepCrashConsoles(report: ClientsideReport, bootRoot: File, crashLogs: CrashLogStore?): Int {
-            if (crashLogs == null) {
-                return 0
+        internal fun keepAttemptArtifacts(
+            pack: BootVerifier.Prepared.Ready,
+            outcome: BootVerifier.BootOutcome,
+            store: BootLogStore?,
+            into: MutableList<String>
+        ) {
+            if (store == null || !BootArtifacts.worthKeeping(outcome.result)) {
+                return
             }
-            return report.perLoader
-                .filter { it.bootResult == BootResult.CRASHED }
-                .count { verdict ->
-                    val console = File(
-                        bootRoot,
-                        AttemptDirectory.nameFor(report.platform, report.slug, verdict.loader) + "/" + BootWorkspaceReaper.KEPT_LOG
-                    )
-                    console.isFile && crashLogs.keep(report.platform, report.slug, verdict.loader, console) != null
-                }
+            val artifacts = BootArtifacts.collect(pack.serverPack, outcome.console)
+            if (artifacts.isEmpty()) {
+                return
+            }
+            into += store.keep(
+                pack.attemptName,
+                BootLogStore.attemptKey(pack.loader, pack.loaderVersion, pack.minecraftVersion),
+                artifacts
+            )
         }
 
         /**
@@ -145,7 +159,7 @@ class ContainerCandidateVerifier(
     }
 
     /** Run the actual verification, leaving the staging cleanup to [verify]. */
-    private fun verifyStaged(candidate: GrindCandidate): ClientsideReport {
+    private fun verifyStaged(candidate: GrindCandidate, keptLogNames: MutableList<String>): ClientsideReport {
         val httpDownloader = HttpJarDownloader(apiWrapper.webUtilities)
         // The browser is only launched for distribution-locked CurseForge files; disposed after the run.
         return BrowserDownloader().use { browserDownloader ->
@@ -172,7 +186,11 @@ class ContainerCandidateVerifier(
                         serverRunner = ContainerServerRunner(containerEngine, runtimeImage, resources, containerUser),
                         packPostProcessor = ::overlayLoaderInstall,
                         minecraftAcceptable = imageJava::supports,
-                        bootTimeout = bootTimeout
+                        bootTimeout = bootTimeout,
+                        consoleRules = consoleRules,
+                        bootArtifactSink = { staged, outcome ->
+                            keepAttemptArtifacts(staged, outcome, crashLogs, keptLogNames)
+                        }
                     )
                 }
             ).report(candidate.projectUrl)
