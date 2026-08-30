@@ -3184,3 +3184,53 @@ the dependency-selection fix. The verdict is a real one rather than an INCONCLUS
 **Incidentally, a live confirmation of B35's coalesced writes.** The run held three verdicts in memory,
 `/status` and `/export.csv` served them, and `verdicts.json` appeared on the flusher's interval rather than
 per verdict; a `SIGTERM` then ran the shutdown flush and all three survived the stop.
+
+### B6's merge gate, run 2026-08-30
+
+The last unrun item of the plan. Its rationale was that B changes *what gets booted*, so unit tests cannot
+say whether booting got better — only grinding the same candidates on both codebases can.
+
+**Scale, stated rather than implied: 6 candidates, not the plan's ~100.** The Docker VM available was 2 CPUs
+/ 1.93 GiB, where one multi-loader candidate takes ~20 minutes; 100 twice was not runnable. The six were
+**pre-registered before either run** — four from the crash logs Griefed sent where a fix was predicted to
+change the verdict, and two *controls* that had to stay CRASHED or the gate proves nothing. Baseline is
+`57d22b57c`; both runs used a fresh home and a shared loader cache.
+
+| candidate / loader | pre-branch | current | change |
+|---|---|---|---|
+| amblekit / Fabric | HIGH | HIGH | unchanged |
+| amblekit / Forge | HIGH | LOW | false positive removed |
+| animatica / Fabric | MEDIUM | MEDIUM | unchanged |
+| animatica / Quilt | HIGH | MEDIUM | false positive removed |
+| arcane-vortex / Forge | HIGH | HIGH | **control held** |
+| arcane-vortex / NeoForge | HIGH | HIGH | **control held** |
+| astronomical / Quilt | HIGH | LOW | false positive removed |
+| autogg-reimagined / Forge | HIGH | MEDIUM | false positive removed |
+| avm-mod / Fabric | HIGH | HIGH | **control held** |
+
+**HIGH verdicts 8 → 4. Four false positives removed, three controls held, zero regressions.**
+
+Each change is its intended mechanism, not a coincidence:
+
+- `animatica/Quilt` — *"Required dependency unavailable for Quilt / Minecraft 1.21.6: 306612. Not booting"*.
+  That is the strict Minecraft-version rule refusing CurseForge 306612 (Fabric API) instead of staging the
+  `+26.3` build into a 1.21.6 pack. It now refuses in **3 s** where it used to spend a whole boot earning a
+  verdict the harness had caused.
+- `astronomical/Quilt` — **SURVIVED**, having staged
+  `qfapi-4.0.0-beta.30_qsl-3.0.0-beta.29_fapi-0.77.0_mc-1.19.2.jar` and `cardinal-components-api-5.0.2.jar`.
+  The strongest single result in the gate: not excused, *proven server-safe*, because the pack was finally
+  assembled correctly.
+- `amblekit/Forge` — INCONCLUSIVE via the widened `dependencyFailureMarkers`.
+- `autogg-reimagined/Forge` — INCONCLUSIVE via `sandboxNetworkMarkers`; this is the OneConfig mod whose
+  loader reaches `api.polyfrost.org` under `--network none`.
+- `amblekit/Fabric` stays HIGH and CRASHED **with Fabric API correctly staged**, and the detail now records
+  that the crash names an injected dependency. A retained positive, which is the point of the controls.
+
+The controls holding is what makes the four removals meaningful: the changes are not a blanket softening of
+the classifier — decisive client-only evidence (`arcane-vortex`'s FML invalid-dist, `avm-mod`'s
+`class_746`) still reaches HIGH untouched.
+
+**Noticed while reading the results, not fixed here:** `amblekit/Fabric`'s `stagedDependencies` lists
+`fabric-api-0.100.8+1.20.6.jar` **twice** — the same file resolved through both the platform declaration and
+the jar manifest. Cosmetic (the file is written once; the verdict is unaffected) but it reaches the report's
+Dependencies column and the CSV, so it is worth a `distinct()`.
