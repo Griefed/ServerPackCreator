@@ -635,4 +635,28 @@ internal class BootLogClassifierTest {
             "the tweaker is part of the pack we build, so its absence is our failure and not the mod's"
         )
     }
+    /**
+     * A pack with no Minecraft server jar never loaded a mod, so it cannot say anything about one.
+     *
+     * Observed live 2026-08-30 on `Modrinth/architectury-api` at Minecraft 1.20.4 / Quilt. The shipped
+     * template fetches the vanilla jar only as a side effect of installing the Quilt launcher, so a pack
+     * that already had the launcher — a restored backup, or the grinder's cached loader install — never
+     * gets one, and Quilt's launcher aborts before Loader starts. Scored CRASHED off the exit code alone.
+     */
+    @Test
+    fun aPackMissingTheMinecraftServerJarIsInconclusive() {
+        val console = listOf(
+            "quilt-server-launch.jar present.",
+            "The Minecraft server .JAR is missing (/srv/pack/server.jar)!",
+            "Exception in thread \"main\" java.lang.RuntimeException: Failed to setup Quilt server environment!",
+            "Caused by: java.lang.RuntimeException: Missing game jar at /srv/pack/server.jar",
+            "Exiting..."
+        )
+
+        Assertions.assertEquals(
+            BootResult.INCONCLUSIVE,
+            BootLogClassifier.classify(console, exitCode = 1, timedOut = false),
+            "no game jar means no Loader, no mods and nothing exercised — that is not the candidate's crash"
+        )
+    }
 }
