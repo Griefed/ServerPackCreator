@@ -328,8 +328,15 @@ class BootVerifier(
     ): Boolean {
         val staged = selectDownloader(file, httpDownloader, browserDownloader).download(file, modsDir)
             ?: return false
-        if (depth > 0) {
+        if (depth > 0 && injected.none { it.fileName == file.fileName }) {
             // Only dependencies count towards the cap and the recorded set; the candidate is not one.
+            //
+            // Deduped by FILE, not by ref, because a project is reachable under two equally-valid
+            // identifiers -- the platform ref the author linked (`P7dR8mSH`) and the mod id its manifest
+            // declares (`fabric`, which ModIdRegistry maps to the slug `fabric-api`). `stageableRequirements`
+            // dedupes by ref and cannot see that those are one project. The duplicate is cosmetic in the
+            // report but not against the cap: it refuses a pack that is within it, and a refusal is scored
+            // INCONCLUSIVE, so the mod quietly stops being verified.
             injected.add(InjectedDependency(file.fileName, null, file.pageUrl))
         }
         if (depth >= maxDependencyDepth) {
@@ -729,16 +736,21 @@ class BootVerifier(
             injected: List<String>,
             loader: String,
             minecraftVersion: String
-        ): Prepared.Failed? =
-            if (injected.size <= MAX_INJECTED_DEPENDENCIES) {
+        ): Prepared.Failed? {
+            // Counted by distinct FILE. The cap asks "how big is this pack", and one jar reachable under two
+            // refs is one jar -- see `aJarStagedUnderTwoRefsCountsOnceAgainstTheCap`. The staging site dedupes
+            // too; this keeps the cap's own contract honest for any caller.
+            val distinct = injected.distinct()
+            return if (distinct.size <= MAX_INJECTED_DEPENDENCIES) {
                 null
             } else {
                 Prepared.Failed(
-                    "Staging ${injected.size} dependencies for $loader / Minecraft $minecraftVersion exceeds " +
+                    "Staging ${distinct.size} dependencies for $loader / Minecraft $minecraftVersion exceeds " +
                         "the cap of $MAX_INJECTED_DEPENDENCIES. Not booting — a pack that large cannot say " +
                         "anything about this mod specifically."
                 )
             }
+        }
 
         /**
          * Annotate [outcome] with the injected dependency its crash names, if any.

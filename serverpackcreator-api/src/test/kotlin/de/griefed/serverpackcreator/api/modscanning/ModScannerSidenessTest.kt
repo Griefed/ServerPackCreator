@@ -424,4 +424,55 @@ internal class ModScannerSidenessTest {
         Assertions.assertEquals(Sideness.SERVER, scanned.sideness, "No dependencies means no clientside signal")
         Assertions.assertTrue(scanned.dependencies.isEmpty(), "No dependencies were declared")
     }
+    /**
+     * Fabric's `provides` block, read verbatim.
+     *
+     * Verified against the real artifact: Fabric API **0.92.11+1.20.1** declares `"id": "fabric-api"` and
+     * `"provides": ["fabric"]`, so a mod writing `depends: {"fabric": "*"}` is satisfied by a jar that calls
+     * itself something else. Anything matching a dependency to a mod by id alone — `ModListCompiler`'s
+     * rescue above all — needs the alias or it compares "fabric" to "fabric-api" and misses.
+     *
+     * The newest builds have dropped the block, so its absence must stay normal rather than an error.
+     */
+    @Test
+    fun fabricProvidesIsRecordedAsAnAlias(@TempDir tempDir: File) {
+        val jar = jarContaining(
+            tempDir, "fabric-api.jar", "fabric.mod.json",
+            """{"schemaVersion":1,"id":"fabric-api","version":"0.92.11","environment":"*","provides":["fabric"]}"""
+        )
+
+        Assertions.assertEquals(listOf("fabric"), modScanner.fabricScanner.scan(listOf(jar)).single().provides)
+    }
+
+    /** A descriptor without the block answers to its own id only — the common case, and not an error. */
+    @Test
+    fun aFabricModWithoutProvidesCarriesNoAliases(@TempDir tempDir: File) {
+        val jar = jarContaining(
+            tempDir, "plain.jar", "fabric.mod.json",
+            """{"schemaVersion":1,"id":"plain","version":"1.0.0","environment":"*"}"""
+        )
+
+        Assertions.assertTrue(modScanner.fabricScanner.scan(listOf(jar)).single().provides.isEmpty())
+    }
+
+    /**
+     * Quilt nests `provides` under `quilt_loader` and allows both entry shapes its `depends` block does —
+     * a bare string, or an object carrying an `id`. Both occur, so both are read; asserted together
+     * because reading only one shape fails silently, yielding a plausible empty list rather than an error.
+     */
+    @Test
+    fun quiltProvidesIsReadInBothOfItsEntryShapes(@TempDir tempDir: File) {
+        val jar = jarContaining(
+            tempDir, "qfapi.jar", "quilt.mod.json",
+            """{"schema_version":1,
+                "quilt_loader":{"id":"quilted_fabric_api","version":"1.0.0",
+                                "provides":["fabric",{"id":"fabric-api","version":"*"}]},
+                "minecraft":{"environment":"*"}}"""
+        )
+
+        Assertions.assertEquals(
+            listOf("fabric", "fabric-api"), modScanner.quiltScanner.scan(listOf(jar)).single().provides,
+            "both the bare-string and the object entry shapes must be read"
+        )
+    }
 }

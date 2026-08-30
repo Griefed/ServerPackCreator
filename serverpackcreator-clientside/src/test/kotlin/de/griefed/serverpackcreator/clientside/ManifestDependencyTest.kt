@@ -140,4 +140,40 @@ internal class ManifestDependencyTest {
             )
         )
     }
+    /**
+     * The same jar staged twice must count **once** against the cap.
+     *
+     * A dependency is reachable under two different-but-equally-valid identifiers — the platform ref the
+     * author linked (`P7dR8mSH`) and the mod id its own manifest declares (`fabric`, mapped by
+     * `ModIdRegistry` to the slug `fabric-api`). `stageableRequirements` dedupes by *ref*, so it cannot
+     * see that those two resolve to one file; only the file name can.
+     *
+     * Observed in B6's merge gate 2026-08-30: `amblekit/Fabric` recorded
+     * `fabric-api-0.100.8+1.20.6.jar` twice. Cosmetic in the report, but not against the cap — double
+     * counting refuses a pack that is within it, and `refuseForTooManyDependencies` scores a refusal
+     * INCONCLUSIVE, so the mod silently stops being verified.
+     */
+    @Test
+    fun aJarStagedUnderTwoRefsCountsOnceAgainstTheCap() {
+        // Seven distinct jars, each recorded twice: fourteen entries, but a seven-dependency pack. The
+        // duplicated total is what pushes it past the cap of twelve, which is the whole defect.
+        val distinctFiles = (1..7).map { "dep-$it.jar" }
+        val everyOneDuplicated = distinctFiles + distinctFiles
+
+        Assertions.assertNull(
+            BootVerifier.refuseForTooManyDependencies(everyOneDuplicated, "Fabric", "1.20.6"),
+            "14 entries naming only 7 distinct jars is a 7-dependency pack and must not be refused"
+        )
+    }
+
+    /** The cap still bites on genuinely distinct dependencies, or it would protect nothing. */
+    @Test
+    fun theCapStillRefusesGenuinelyLargePacks() {
+        val tooMany = (1..13).map { "dep-$it.jar" }
+
+        Assertions.assertNotNull(
+            BootVerifier.refuseForTooManyDependencies(tooMany, "Fabric", "1.20.6"),
+            "13 distinct dependencies exceeds the cap of 12 and must still refuse"
+        )
+    }
 }

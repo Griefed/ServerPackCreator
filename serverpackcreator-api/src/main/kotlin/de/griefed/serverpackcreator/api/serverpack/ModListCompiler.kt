@@ -243,16 +243,10 @@ class ModListCompiler(
         }
 
         while (disabledMods.any { disabledMod ->                                    // Rip and tear until it is done.
-                serverMods.find { serverMod ->                                      // There mustn't be a single dependency
-                    serverMod.dependencies.filter { dependency ->                   // of a server mod left in the list of
-                        dependency.sideness == Sideness.SERVER }.map { dep ->       // disabled mods.
-                            dep.modID }.contains(disabledMod.modID)} != null}) {
-
-            disabledMods.removeIf { disabledMod ->
-                val match = serverMods.find { serverMod ->
-                    serverMod.dependencies.filter { dependency ->
-                        dependency.sideness == Sideness.SERVER }.map { dep ->
-                            dep.modID }.contains(disabledMod.modID)}
+                dependantOf(serverMods, disabledMod) != null }) {                   // There mustn't be a single dependency
+                                                                                    // of a server mod left in the list of
+            disabledMods.removeIf { disabledMod ->                                  // disabled mods.
+                val match = dependantOf(serverMods, disabledMod)
 
                 return@removeIf if (match != null) {
                     log.info("Disabled mod ${disabledMod.file.name} is a dependency for ${match.file.name}. Not disabling.")
@@ -275,4 +269,23 @@ class ModListCompiler(
         )
     }
 
+
+    /**
+     * The server-side mod, if any, that depends on [disabledMod] — matching the dependency's id against the
+     * mod's own id **and** the aliases its descriptor `provides`.
+     *
+     * The alias half is load-bearing rather than defensive. Fabric API 0.92.11+1.20.1 declares
+     * `"id": "fabric-api"` and `"provides": ["fabric"]`, so a mod writing `depends: {"fabric": "*"}` names
+     * an id no jar in the pack calls itself. Comparing ids alone therefore missed, and a clientside list
+     * naming Fabric API stripped it out from under every mod using the historical id — shipping a pack that
+     * installs and dies on load, which is the outcome this whole rescue exists to prevent.
+     */
+    private fun dependantOf(serverMods: List<ScannedMod>, disabledMod: ScannedMod): ScannedMod? {
+        val answersTo = (listOf(disabledMod.modID) + disabledMod.provides).toSet()
+        return serverMods.find { serverMod ->
+            serverMod.dependencies.any { dependency ->
+                dependency.sideness == Sideness.SERVER && dependency.modID in answersTo
+            }
+        }
+    }
 }
