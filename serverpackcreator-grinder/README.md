@@ -654,6 +654,23 @@ something to retype:
   build run as root leaves root-owned files in `build/`. Re-running it is the upgrade path. `--help` lists the
   flags; two are worth knowing about — `--grant-docker`, without which it refuses to put an *already-existing*
   account into the root-equivalent `docker` group, and `--no-pull` for an offline image rebuild.
+- [`deploy/update-grinder.sh`](deploy/update-grinder.sh) — the unattended wrapper: clone a branch, build it,
+  install it, restart. The inverse of the installer in one respect — **run it as root** — because its whole job
+  is to drop to an unprivileged build account and hand off. `--branch` picks what to deploy; anything after `--`
+  goes to the installer, where `--skip-image` is the difference between a two-minute update and a ten-minute one.
+
+  **It builds as a *build* account, not as `grinder`.** The service account is created nologin and without
+  sudo, which is what a service account should be, and the installer needs both — it calls `sudo` about thirty
+  times. So `sudo -u grinder -i ./install-grinder.sh` cannot work twice over: `-i` runs the account's login
+  shell, which is `/usr/sbin/nologin`, and the account could not `sudo` even if it had one. Give the build
+  account `docker` membership and passwordless `sudo`; the script checks both before it clones anything,
+  because otherwise the first surfaces as a stopped Docker daemon and the second as a hang on a password
+  prompt nothing will answer.
+
+  It also keeps the checkout **outside** `/opt/spc-grinder` and refuses to do otherwise: the installer finishes
+  with `chown -R root:root` on the prefix, which would take the build tree with it and break the *next* build.
+  And it does not stop or start the service itself — the installer does that, and its EXIT trap restarts the
+  service if the install dies halfway, which only works if it was the one that stopped it.
 
 **The service needs a JVM systemd can find.** The launcher wants `JAVA_HOME` or a `java` on `PATH`, and systemd
 gives a unit neither — its `PATH` is `/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin` and nothing
