@@ -673,6 +673,20 @@ Function global:SetupQuilt
             CrashServer "quilt-server-launch.jar not found. The Quilt installer requires Java 17 or newer: if the message above says so, set JAVA_INSTALLER in your variables.txt to a Java 17+ binary (your server keeps running on JAVA). Otherwise the Quilt servers may be having trouble - try again in a couple of minutes and check your internet connection."
         }
     }
+    # The vanilla server JAR, on its own terms rather than as a side effect of installing the launcher.
+    # --download-server above runs only when quilt-server-launch.jar was missing, so a pack that kept its
+    # launcher and lost the game JAR never fetches one and Quilt refuses to start. See the bash template.
+    if (-Not (Test-Path -Path 'server.jar' -PathType Leaf))
+    {
+        "The Minecraft server JAR is missing. Fetching it with the Quilt installer..."
+        DownloadIfNotExists "quilt-installer.jar" "quilt-installer.jar" "${QuiltInstallerUrl}" | Out-Null
+        RunInstallerJavaCommand "-jar quilt-installer.jar install server ${MinecraftVersion} --download-server --install-dir=."
+        DeleteFileSilently 'quilt-installer.jar'
+        if (-Not (Test-Path -Path 'server.jar' -PathType Leaf))
+        {
+            CrashServer "The Minecraft server JAR for ${MinecraftVersion} could not be downloaded. Without it Quilt Loader cannot launch. Check your internet connection and try again."
+        }
+    }
     $script:LauncherJarLocation = "quilt-server-launch.jar"
     $script:ServerRunCommand = "${JavaArgs} -jar ${LauncherJarLocation} nogui"
 
