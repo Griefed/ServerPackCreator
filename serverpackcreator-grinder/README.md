@@ -662,10 +662,18 @@ something to retype:
   **It builds as a *build* account, not as `grinder`.** The service account is created nologin and without
   sudo, which is what a service account should be, and the installer needs both — it calls `sudo` about thirty
   times. So `sudo -u grinder -i ./install-grinder.sh` cannot work twice over: `-i` runs the account's login
-  shell, which is `/usr/sbin/nologin`, and the account could not `sudo` even if it had one. Give the build
-  account `docker` membership and passwordless `sudo`; the script checks both before it clones anything,
-  because otherwise the first surfaces as a stopped Docker daemon and the second as a hang on a password
-  prompt nothing will answer.
+  shell, which is `/usr/sbin/nologin`, and the account could not `sudo` even if it had one.
+
+  The account needs `docker` membership, which is checked before anything is cloned (otherwise it surfaces
+  inside the installer as a stopped Docker daemon). It does **not** need permanent `sudo`: if it cannot
+  already sudo without a password, the script grants that for the run and removes the grant on exit, which it
+  can do because it is root already. A drop-in written by a run that gets killed is refused rather than reused,
+  so a leaked grant is loud instead of silent.
+
+  **A password prompt is not the alternative.** Root running `sudo -u <account>` needs no password — the one
+  that does is the installer's own sudo, the account going back to root. An account created by `useradd
+  --system` has no password at all, so that prompt cannot be answered by anyone, TTY or not. `--no-temp-sudo`
+  leaves `/etc/sudoers.d` alone and lets it prompt, which is only useful for an account that has a password.
 
   It also keeps the checkout **outside** `/opt/spc-grinder` and refuses to do otherwise: the installer finishes
   with `chown -R root:root` on the prefix, which would take the build tree with it and break the *next* build.

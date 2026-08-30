@@ -15,13 +15,20 @@
 # twice over: -i runs the account's login shell, which is /usr/sbin/nologin, and the account could not
 # sudo even if it had one.
 #
-# The build account needs, once:
+# The build account needs docker group membership, once:
 #
 #   usermod -aG docker <account>
-#   printf '<account> ALL=(ALL) NOPASSWD:ALL\n' >/etc/sudoers.d/<account> && chmod 440 /etc/sudoers.d/<account>
 #
-# Docker because the installer builds the runtime image and probes the daemon; passwordless sudo
-# because there is no TTY here to answer a prompt. Both are checked before anything is cloned.
+# It does NOT need permanent sudo. If it cannot already sudo without a password, this script grants it
+# for the duration of the run and removes the grant on exit, which it can do because it is root
+# already. That is not a privilege escalation worth agonising over: the docker group is
+# root-equivalent (`docker run -v /:/host` owns the box), so an account that can reach the daemon
+# could take root whenever it liked.
+#
+# WHY A GRANT RATHER THAN A PASSWORD PROMPT: root running `sudo -u <account>` needs no password, but
+# the installer's own sudo — the account going back to root — does. A service account created with
+# `useradd --system` has no password at all, so that prompt is unanswerable by anyone, with or without
+# a TTY. Prompting is available with --no-temp-sudo for an account that does have a password.
 #
 # The service is NOT stopped or started here. install-grinder.sh stops it, records that it was
 # running, replaces the jars and starts it again — and its EXIT trap restarts it if the install dies
@@ -37,6 +44,8 @@
 #   --branch NAME       branch to deploy (default: develop)
 #   --build-user NAME   unprivileged account to build as (default: $BUILD_USER, else spcbuild)
 #   --repo URL          clone from somewhere else (default: the canonical Forgejo remote)
+#   --no-temp-sudo      never touch /etc/sudoers.d. The account must then either already have
+#                       passwordless sudo, or a password and a TTY to type it at.
 #
 # Anything after `--` is passed straight to install-grinder.sh. The two worth knowing:
 #
@@ -52,6 +61,7 @@ set -Eeuo pipefail
 BRANCH="develop"
 BUILD_USER="${BUILD_USER:-spcbuild}"
 REPO_URL="${REPO_URL:-https://git.griefed.de/griefed/serverpackcreator}"
+temp_sudo=true
 PREFIX="${PREFIX:-/opt/spc-grinder}"
 SRC="${SRC:-/opt/spc-grinder-src}"
 
@@ -61,6 +71,7 @@ while [[ $# -gt 0 ]]; do
         --branch)     BRANCH="${2:?--branch needs a value}"; shift 2 ;;
         --build-user) BUILD_USER="${2:?--build-user needs a value}"; shift 2 ;;
         --repo)       REPO_URL="${2:?--repo needs a value}"; shift 2 ;;
+        --no-temp-sudo) temp_sudo=false; shift ;;
         --)           shift; installer_args+=("$@"); break ;;
         # The header block, however long it grows — the same trick install-grinder.sh uses, and for the
         # same reason: a fixed line range rots the moment the text above it moves.
@@ -74,6 +85,45 @@ die()  { printf '\033[31merror: %s\033[0m\n' "$1" >&2; exit 1; }
 
 # `set -E` is what makes this fire inside functions and subshells; without a trap it is an inert flag.
 trap 'printf "\033[31mfailed at line %s\033[0m\n" "$LINENO" >&2' ERR
+
+# Set the moment the file is created, so the EXIT trap can remove it even if the very next line fails.
+TEMP_SUDOERS=""
+
+# Remove the temporary grant, whatever happened. Registered on EXIT rather than on the success path
+# because the whole point is that a build which dies at Gradle, or is Ctrl-C'd, does not leave an
+# account with permanent passwordless root behind it.
+drop_temp_sudo() {
+    [[ -n "$TEMP_SUDOERS" && -e "$TEMP_SUDOERS" ]] || return 0
+    rm -f "$TEMP_SUDOERS"
+    printf 'removed the temporary sudo grant for %s\n' "$BUILD_USER"
+}
+trap drop_temp_sudo EXIT
+
+# Grant [BUILD_USER] passwordless sudo for this run only.
+#
+# Validated with `visudo -c` before it counts: a malformed drop-in does not break only this script, it
+# breaks sudo for the whole host, including the root shell that would have to repair it. Written 0440
+# because sudo refuses to read a group- or world-writable file and says so unhelpfully.
+grant_temp_sudo() {
+    local dropin="/etc/sudoers.d/99-spc-grinder-update"
+    [[ ! -e "$dropin" ]] || die "$dropin already exists — an earlier run may have been killed; remove it by hand"
+
+    TEMP_SUDOERS="$dropin"
+    printf '%s ALL=(ALL) NOPASSWD:ALL\n' "$BUILD_USER" >"$dropin"
+    chmod 440 "$dropin"
+
+    if command -v visudo >/dev/null; then
+        visudo -cf "$dropin" >/dev/null || die "the sudoers drop-in this script wrote is invalid; it has been removed"
+    fi
+
+    # Proven rather than assumed: NSS, sudo's own config and a mistyped account name can all make an
+    # apparently-correct drop-in do nothing, and the failure would otherwise surface much later as the
+    # installer hanging on a prompt.
+    sudo -u "$BUILD_USER" -H sudo -n true 2>/dev/null ||
+        die "granted $BUILD_USER passwordless sudo via $dropin, but it still cannot sudo"
+
+    echo "granted $BUILD_USER passwordless sudo for this run only ($dropin, removed on exit)"
+}
 
 # --- Preflight ------------------------------------------------------------------------------------
 # Everything is checked before the first destructive act. `rm -rf $SRC` happens below, and an update
@@ -109,9 +159,28 @@ esac
 id -nG "$BUILD_USER" | tr ' ' '\n' | grep -qx docker ||
     die "$BUILD_USER is not in the docker group — the installer builds an image and probes the daemon.
   usermod -aG docker $BUILD_USER"
-sudo -u "$BUILD_USER" -H sudo -n true 2>/dev/null ||
-    die "$BUILD_USER cannot sudo without a password, and there is no TTY here to answer a prompt.
+if sudo -u "$BUILD_USER" -H sudo -n true 2>/dev/null; then
+    echo "$BUILD_USER can already sudo without a password"
+elif [[ "$temp_sudo" == true ]]; then
+    grant_temp_sudo
+elif [[ -t 0 ]]; then
+    # --no-temp-sudo with a terminal: let the installer's own sudo prompt. Only works if the account
+    # HAS a password, which a `useradd --system` service account does not — hence the warning rather
+    # than a cheerful "you will be prompted".
+    step "WARNING: $BUILD_USER has no passwordless sudo"
+    cat <<PROMPT
+--no-temp-sudo was given, so nothing under /etc/sudoers.d will be touched. The installer's sudo calls
+will prompt for ${BUILD_USER}'s password on this terminal.
+
+If $BUILD_USER is a service account created by install-grinder.sh, it has no password — \`useradd
+--system\` locks it — and no password can be typed that will work. Drop --no-temp-sudo, or build as an
+account that has one.
+PROMPT
+else
+    die "$BUILD_USER cannot sudo without a password, --no-temp-sudo was given, and there is no TTY here
+to answer a prompt. Drop --no-temp-sudo to let this script grant it for the run, or grant it yourself:
   printf '$BUILD_USER ALL=(ALL) NOPASSWD:ALL\\n' >/etc/sudoers.d/$BUILD_USER && chmod 440 /etc/sudoers.d/$BUILD_USER"
+fi
 
 echo "branch:       $BRANCH"
 echo "repository:   $REPO_URL"
