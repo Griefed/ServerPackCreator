@@ -30,6 +30,36 @@
 # `useradd --system` has no password at all, so that prompt is unanswerable by anyone, with or without
 # a TTY. Prompting is available with --no-temp-sudo for an account that does have a password.
 #
+# ---------------------------------------------------------------------------------------------------
+# FIRST INSTALL vs UPDATE, and what --bootstrap is for
+#
+# Without --bootstrap this is an *update* script and presumes what a first install leaves behind. On a
+# host that has never run the grinder it stops at the first thing it cannot satisfy, in this order:
+#
+#   1. no such account: <build user>   -- and this is the chicken-and-egg. The account is created by
+#      install-grinder.sh step 4, which this script cannot reach because it dies first.
+#   2. <build user> is not in the docker group -- needs Docker installed and the account added.
+#   3. Docker itself -- install-grinder.sh dies on `docker not found`, an unreachable daemon, or a host
+#      with no `docker` group at all.
+#   4. a build JDK -- ./gradlew needs JAVA_HOME or a java on PATH *for the build account*. The JVM check
+#      install-grinder.sh performs is about the SERVICE's java on systemd's PATH, which is a different
+#      question; a host with no JDK used to surface as a bare Gradle error.
+#   5. the unit -- not installed unless --install-unit is passed, and even then explicitly "not enabled,
+#      not started". A first run otherwise leaves binaries and no service.
+#
+# --bootstrap folds 1, 2 and 5 into this script: it creates the build account when missing, puts it in
+# the docker group, passes --install-unit, and enables and starts the service at the end.
+#
+# It deliberately does NOT install packages. Docker and a JDK must already be there; 3 and 4 are checked
+# and named with the command to fix them, but apt/dnf/pacman differ, Docker's own convenience script is a
+# separate decision, and silently installing a container runtime is a bigger step than an update script
+# should take unattended. On Debian/Ubuntu that one-time step is:
+#
+#   apt install -y docker.io git openjdk-21-jdk && systemctl enable --now docker
+#
+# After a bootstrap, plain `sudo ./update-grinder.sh` is the upgrade path and --clear is the fresh start.
+# ---------------------------------------------------------------------------------------------------
+#
 # The service is NOT stopped or started here. install-grinder.sh stops it, records that it was
 # running, replaces the jars and starts it again — and its EXIT trap restarts it if the install dies
 # halfway. Stopping it first would make that bookkeeping false and defeat the safety net.
@@ -46,6 +76,9 @@
 #   --repo URL          clone from somewhere else (default: the canonical Forgejo remote)
 #   --no-temp-sudo      never touch /etc/sudoers.d. The account must then either already have
 #                       passwordless sudo, or a password and a TTY to type it at.
+#   --bootstrap         prepare a host that has never run the grinder: create the build account if it is
+#                       missing, add it to the docker group, install the systemd unit, and enable and
+#                       start the service at the end. See the block above for what it does not do.
 #   --clear             hand install-grinder.sh --clear, which DELETES the daemon's data directory
 #                       before installing: verdicts, crawl cursors, the re-grind queue, kept boot logs
 #                       and the loader cache. A fresh start, not an update.
@@ -68,6 +101,7 @@ BRANCH="develop"
 BUILD_USER="${BUILD_USER:-grinder}"
 REPO_URL="${REPO_URL:-https://git.griefed.de/griefed/serverpackcreator}"
 temp_sudo=true
+bootstrap=false
 PREFIX="${PREFIX:-/opt/spc-grinder}"
 SRC="${SRC:-/opt/spc-grinder-src}"
 
@@ -78,6 +112,7 @@ while [[ $# -gt 0 ]]; do
         --build-user) BUILD_USER="${2:?--build-user needs a value}"; shift 2 ;;
         --repo)       REPO_URL="${2:?--repo needs a value}"; shift 2 ;;
         --no-temp-sudo) temp_sudo=false; shift ;;
+        --bootstrap)    bootstrap=true; shift ;;
         # Forwarded rather than acted on here: the installer is the half that knows where the data lives,
         # and -- crucially -- the half that has already stopped the service by the time it clears.
         --clear)      installer_args+=("--clear"); shift ;;
@@ -88,6 +123,12 @@ while [[ $# -gt 0 ]]; do
         *)            echo "unknown option: $1 (try --help)" >&2; exit 2 ;;
     esac
 done
+
+# A first install needs the unit on disk before anything can enable it. Added rather than assumed, and
+# skipped when the caller already passed it after `--`, so it is never handed over twice.
+if [[ "$bootstrap" == true && " ${installer_args[*]-} " != *" --install-unit "* ]]; then
+    installer_args+=("--install-unit")
+fi
 
 step() { printf '\n\033[1m==> %s\033[0m\n' "$1"; }
 die()  { printf '\033[31merror: %s\033[0m\n' "$1" >&2; exit 1; }
@@ -145,9 +186,20 @@ step "Checking prerequisites"
 command -v git >/dev/null || die "git not found on PATH"
 command -v sudo >/dev/null || die "sudo not found; this script cannot drop privileges without it"
 
-id -u "$BUILD_USER" >/dev/null 2>&1 || die "no such account: $BUILD_USER (create one, or pass --build-user)"
+# Tracked so the docker-group decision below can tell a purpose-made account from one that was already
+# here, exactly as install-grinder.sh does for the service account.
+created_account=false
+if ! id -u "$BUILD_USER" >/dev/null 2>&1; then
+    [[ "$bootstrap" == true ]] ||
+        die "no such account: $BUILD_USER (create one, pass --build-user, or run with --bootstrap)"
+    # Created the way install-grinder.sh creates the service account, including the nologin shell: this
+    # script never needs a login shell, because it runs `bash -lc` explicitly rather than `sudo -i`.
+    nologin_shell="$(command -v nologin || echo /usr/sbin/nologin)"
+    useradd --system --create-home --home-dir "/home/$BUILD_USER" --shell "$nologin_shell" "$BUILD_USER"
+    created_account=true
+    echo "created $BUILD_USER (system account, home /home/$BUILD_USER, shell $nologin_shell)"
+fi
 [[ "$(id -u "$BUILD_USER")" -ne 0 ]] || die "$BUILD_USER is root; install-grinder.sh refuses to run as root"
-
 # This script rm -rf's $SRC. ${SRC:?} alone catches an empty value and nothing else, so the shape is
 # checked here: absolute, and at least two components deep, so an SRC of "/" or "/opt" cannot turn the
 # cleanup into something catastrophic. Lifted from install-grinder.sh's identical guard on PREFIX.
@@ -165,9 +217,39 @@ esac
 # Checked rather than assumed, because both failures surface deep inside the installer as something
 # else: without docker it dies on `docker info` reading as a stopped daemon, and without passwordless
 # sudo it blocks on a password prompt against a stdin that will never answer.
-id -nG "$BUILD_USER" | tr ' ' '\n' | grep -qx docker ||
-    die "$BUILD_USER is not in the docker group — the installer builds an image and probes the daemon.
+# Checked here rather than left to the installer, which only reaches its own docker checks after this
+# script has already wiped the checkout and cloned again — a slow way to learn the daemon is down.
+command -v docker >/dev/null ||
+    die "docker is not installed. --bootstrap does not install packages; on Debian/Ubuntu:
+  apt install -y docker.io && systemctl enable --now docker"
+docker info >/dev/null 2>&1 ||
+    die "the Docker daemon is not reachable. Is it running?
+  systemctl enable --now docker"
+getent group docker >/dev/null ||
+    die "this host has no 'docker' group, so no account could ever reach the socket"
+
+if id -nG "$BUILD_USER" | tr ' ' '\n' | grep -qx docker; then
+    echo "$BUILD_USER is in the docker group"
+elif [[ "$bootstrap" == true && "$created_account" == true ]]; then
+    # Only for an account this script just made. The docker group is root-equivalent -- `docker run
+    # -v /:/host` owns the box -- so install-grinder.sh refuses to grant it to an account it did not
+    # create, and bootstrapping is not a reason to be less careful than the script it calls.
+    usermod -aG docker "$BUILD_USER"
+    echo "added $BUILD_USER to the docker group (root-equivalent; it is a purpose-made service account)"
+else
+    die "$BUILD_USER is not in the docker group, and it already existed before this run.
+Adding it there grants root-equivalent privilege -- anyone who can run docker can mount / and own the
+host -- so this script will not do that to an account it did not create. Grant it deliberately:
   usermod -aG docker $BUILD_USER"
+fi
+
+# The build JDK, which nothing else checks: install-grinder.sh's JVM step asks whether *systemd* will
+# find a java for the service, which is a different question and answered much later. Without this, a
+# host with no JDK fails inside Gradle with a message about JAVA_HOME and nothing about how it got there.
+sudo -u "$BUILD_USER" -H bash -lc 'command -v java >/dev/null || [[ -n "${JAVA_HOME:-}" ]]' 2>/dev/null ||
+    die "$BUILD_USER can see no java, and the Gradle build needs one. --bootstrap does not install
+packages; on Debian/Ubuntu:
+  apt install -y openjdk-21-jdk"
 if sudo -u "$BUILD_USER" -H sudo -n true 2>/dev/null; then
     echo "$BUILD_USER can already sudo without a password"
 elif [[ "$temp_sudo" == true ]]; then
@@ -193,7 +275,7 @@ fi
 
 echo "branch:       $BRANCH"
 echo "repository:   $REPO_URL"
-echo "build as:     $BUILD_USER"
+echo "build as:     $BUILD_USER$([[ "$bootstrap" == true ]] && echo '  (--bootstrap)')"
 echo "source in:    $SRC"
 echo "install to:   $PREFIX (install-grinder.sh's own default unless PREFIX is overridden)"
 [[ ${#installer_args[@]} -eq 0 ]] || echo "installer args: ${installer_args[*]}"
@@ -226,6 +308,14 @@ step "2/2  Running install-grinder.sh as $BUILD_USER"
 sudo -u "$BUILD_USER" -H bash -lc \
     "cd '$SRC/repo/serverpackcreator-grinder/deploy' && ./install-grinder.sh ${installer_args[*]:-}"
 
+if [[ "$bootstrap" == true ]]; then
+    step "Enabling and starting spc-grinder"
+    # `enable --now` rather than `start`: a bootstrapped host should come back up after a reboot, which
+    # is the whole point of installing it as a service. Idempotent, so re-running --bootstrap is safe.
+    systemctl enable --now spc-grinder
+    systemctl --no-pager --lines=0 status spc-grinder || true
+fi
+
 step "Done"
 cat <<NEXT
 $BRANCH is installed. The installer restarted the service if it was running; if this was a first
@@ -236,3 +326,14 @@ install it will have printed the enable/start commands.
 
 The checkout is left at $SRC/repo for debugging and is wiped at the start of the next run.
 NEXT
+
+if [[ "$bootstrap" == true ]]; then
+    cat <<NEXT
+Bootstrapped. Review the unit before trusting the defaults — every variable is listed in it, commented
+out, with its default:
+
+  /etc/systemd/system/spc-grinder.service
+
+SPC_GRINDER_HOST is the one to decide first: the report has no authentication and binds loopback.
+NEXT
+fi

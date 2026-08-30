@@ -670,6 +670,31 @@ something to retype:
   is to drop to an unprivileged build account and hand off. `--branch` picks what to deploy; anything after `--`
   goes to the installer, where `--skip-image` is the difference between a two-minute update and a ten-minute one.
 
+  **On a host that has never run the grinder, use `--bootstrap`.** Without it this is an *update* script and
+  presumes what a first install leaves behind, so it stops at the first thing it cannot satisfy — and the first
+  thing is a chicken-and-egg: it needs the build account to exist, while the account is created by
+  `install-grinder.sh` step 4, which it never reaches. `--bootstrap` creates the account, adds it to the
+  `docker` group, passes `--install-unit`, and `systemctl enable --now`s the service at the end.
+
+  It **does not install packages**. Docker and a JDK must already be present; both are checked up front and
+  named with the command to fix them, but `apt`/`dnf`/`pacman` differ and silently installing a container
+  runtime is a bigger step than an update script should take unattended. On Debian/Ubuntu the one-time step is
+  `apt install -y docker.io git openjdk-21-jdk && systemctl enable --now docker`. So a first install is:
+
+  ```
+  sudo ./update-grinder.sh --bootstrap
+  ```
+
+  and every run after that is `sudo ./update-grinder.sh`. The build JDK is worth calling out because nothing
+  used to check it: the installer's JVM step asks whether *systemd* will find a java for the **service**, which
+  is a different question answered much later, so a host with no JDK failed inside Gradle with a message about
+  `JAVA_HOME` and nothing about how it got there.
+
+  **`--bootstrap` grants the `docker` group only to an account it created itself.** That group is
+  root-equivalent, `install-grinder.sh` refuses to grant it to an account it did not create, and bootstrapping
+  is not a reason to be less careful than the script it calls — a pre-existing account is refused with the
+  `usermod` line to run deliberately.
+
   **It builds as a *build* account, not as `grinder`.** The service account is created nologin and without
   sudo, which is what a service account should be, and the installer needs both — it calls `sudo` about thirty
   times. So `sudo -u grinder -i ./install-grinder.sh` cannot work twice over: `-i` runs the account's login
