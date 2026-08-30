@@ -46,6 +46,12 @@
 #   --repo URL          clone from somewhere else (default: the canonical Forgejo remote)
 #   --no-temp-sudo      never touch /etc/sudoers.d. The account must then either already have
 #                       passwordless sudo, or a password and a TTY to type it at.
+#   --clear             hand install-grinder.sh --clear, which DELETES the daemon's data directory
+#                       before installing: verdicts, crawl cursors, the re-grind queue, kept boot logs
+#                       and the loader cache. A fresh start, not an update.
+#
+# --clear is not the same as the checkout this script always wipes. That is build input and costs a
+# clone to replace; the data directory is everything the grind has learned and costs weeks of boots.
 #
 # Anything after `--` is passed straight to install-grinder.sh. The two worth knowing:
 #
@@ -59,7 +65,7 @@
 set -Eeuo pipefail
 
 BRANCH="develop"
-BUILD_USER="${BUILD_USER:-spcbuild}"
+BUILD_USER="${BUILD_USER:-grinder}"
 REPO_URL="${REPO_URL:-https://git.griefed.de/griefed/serverpackcreator}"
 temp_sudo=true
 PREFIX="${PREFIX:-/opt/spc-grinder}"
@@ -72,6 +78,9 @@ while [[ $# -gt 0 ]]; do
         --build-user) BUILD_USER="${2:?--build-user needs a value}"; shift 2 ;;
         --repo)       REPO_URL="${2:?--repo needs a value}"; shift 2 ;;
         --no-temp-sudo) temp_sudo=false; shift ;;
+        # Forwarded rather than acted on here: the installer is the half that knows where the data lives,
+        # and -- crucially -- the half that has already stopped the service by the time it clears.
+        --clear)      installer_args+=("--clear"); shift ;;
         --)           shift; installer_args+=("$@"); break ;;
         # The header block, however long it grows — the same trick install-grinder.sh uses, and for the
         # same reason: a fixed line range rots the moment the text above it moves.
