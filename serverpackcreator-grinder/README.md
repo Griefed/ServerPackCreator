@@ -652,8 +652,19 @@ something to retype:
   installs to `/opt/spc-grinder`, and creates the service account with its home and `docker` group membership.
   Run it as your normal user, **not** as root: it calls `sudo` for the privileged steps itself, and a Gradle
   build run as root leaves root-owned files in `build/`. Re-running it is the upgrade path. `--help` lists the
-  flags; two are worth knowing about — `--grant-docker`, without which it refuses to put an *already-existing*
-  account into the root-equivalent `docker` group, and `--no-pull` for an offline image rebuild.
+  flags; three are worth knowing about — `--grant-docker`, without which it refuses to put an
+  *already-existing* account into the root-equivalent `docker` group, `--no-pull` for an offline image rebuild,
+  and **`--clear`**, which deletes the daemon's data directory before installing.
+
+  **`--clear` is the fresh-start flag, and it is the only thing in either script that destroys data.** It
+  removes `SPC_GRINDER_HOME` — `/home/grinder/.spc-grinder` in the shipped unit — which holds the verdict
+  store, the crawl cursors, the re-grind queue, the kept boot logs *and* the loader cache. The daemon then
+  starts with no verdicts, at the head of the crawl, and re-downloads every loader install it needs at roughly
+  150 MB per loader/Minecraft tuple, which is the expensive part rather than the verdicts. Binaries are
+  untouched: this is about state, not code. It runs **after** the service is stopped, which is load-bearing —
+  the daemon coalesces verdict writes and flushes on shutdown, so clearing a running service would only get the
+  store written back out of memory as it stops. The path is guarded on its shape before anything is built, and
+  refused outright if it resolves to the account's whole home or to the install prefix.
 - [`deploy/update-grinder.sh`](deploy/update-grinder.sh) — the unattended wrapper: clone a branch, build it,
   install it, restart. The inverse of the installer in one respect — **run it as root** — because its whole job
   is to drop to an unprivileged build account and hand off. `--branch` picks what to deploy; anything after `--`
@@ -674,6 +685,11 @@ something to retype:
   that does is the installer's own sudo, the account going back to root. An account created by `useradd
   --system` has no password at all, so that prompt cannot be answered by anyone, TTY or not. `--no-temp-sudo`
   leaves `/etc/sudoers.d` alone and lets it prompt, which is only useful for an account that has a password.
+
+  **`--clear` is forwarded to the installer**, which is the half that knows where the data lives and the half
+  that has already stopped the service by the time it clears. Do not confuse it with the checkout this script
+  wipes on every run: that is build input and costs a clone to replace, while the data directory is everything
+  the grind has learned and costs weeks of boots.
 
   It also keeps the checkout **outside** `/opt/spc-grinder` and refuses to do otherwise: the installer finishes
   with `chown -R root:root` on the prefix, which would take the build tree with it and break the *next* build.

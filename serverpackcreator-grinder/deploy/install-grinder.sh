@@ -21,6 +21,11 @@
 #                    It is NOT enabled or started for you; the commands are printed at the end.
 #   --skip-image     leave the runtime image alone (it changes far less often than the code).
 #   --no-pull        build the image without refreshing its base (for an offline rebuild).
+#   --clear          DELETE the service's data directory before installing, so the daemon starts with a
+#                    clean slate: verdicts, crawl cursors, the re-grind queue, kept boot logs AND the
+#                    loader cache. Everything the grind has learned. The binaries are unaffected; this
+#                    is about state, not code. Nothing else in this script destroys data, so it is opt-in
+#                    and says exactly what it removed.
 #   --grant-docker   allow adding an ALREADY-EXISTING account to the docker group. That group is
 #                    root-equivalent — `docker run -v /:/host` owns the box — so granting it to an
 #                    account this script did not create is refused unless you ask for it explicitly.
@@ -36,6 +41,7 @@ IMAGE="${IMAGE:-spc-grinder-runtime:latest}"
 UNIT_NAME="spc-grinder.service"
 
 install_unit=false
+clear_home=false
 skip_image=false
 no_pull=false
 grant_docker=false
@@ -43,6 +49,7 @@ was_active=false
 for arg in "$@"; do
     case "$arg" in
         --install-unit) install_unit=true ;;
+        --clear)        clear_home=true ;;
         --skip-image)   skip_image=true ;;
         --no-pull)      no_pull=true ;;
         --grant-docker) grant_docker=true ;;
@@ -115,9 +122,26 @@ if [[ -f "$unit_file" ]]; then
     fi
 fi
 
+# The daemon's data directory, resolved the same way the daemon resolves it: SPC_GRINDER_HOME if the
+# operator sets one, else `$HOME/.spc-grinder` (GrinderConfiguration.defaultHome). Resolved even when
+# --clear was not given, so the line below always tells the operator where the state lives.
+SERVICE_DATA="${SPC_GRINDER_HOME:-$SERVICE_HOME/.spc-grinder}"
+
+# Guarded on the SHAPE, exactly as PREFIX is above, because --clear rm -rf's this. Absolute and at least
+# two components deep, and never the account's whole home or the install prefix -- a SPC_GRINDER_HOME of
+# `/home/grinder` would otherwise take the account's dotfiles, its ~/.gradle and its Playwright browsers
+# with it, and one of `/opt/spc-grinder` would delete the binaries this script just installed.
+if [[ "$clear_home" == true ]]; then
+    [[ "$SERVICE_DATA" == /* ]]              || die "SPC_GRINDER_HOME must be an absolute path, got '$SERVICE_DATA'"
+    [[ "$SERVICE_DATA" =~ ^/[^/]+/[^/]+ ]]   || die "SPC_GRINDER_HOME looks too close to the root to rm -rf: '$SERVICE_DATA'"
+    [[ "$SERVICE_DATA" != "$SERVICE_HOME" ]] || die "--clear would delete the whole home of $SERVICE_USER ($SERVICE_HOME), not just its data"
+    [[ "$SERVICE_DATA" != "$PREFIX" ]]       || die "--clear would delete the install prefix ($PREFIX)"
+fi
+
 echo "repository:   $repo_root"
 echo "install to:   $PREFIX"
 echo "service user: $SERVICE_USER (home $SERVICE_HOME)"
+echo "service data: $SERVICE_DATA$([[ "$clear_home" == true ]] && echo '  ** WILL BE DELETED (--clear) **')"
 echo "runtime image: $IMAGE"
 
 # Ask once up front rather than surprising you four steps in. The timestamp only lasts ~15 minutes,
@@ -225,6 +249,33 @@ else
 Adding it there grants root-equivalent privilege — anyone who can run docker can mount / and own the
 host — so this script will not do that to an account it did not create. Either use a dedicated
 account, or re-run with --grant-docker if $SERVICE_USER really is meant to be one."
+fi
+
+# --- Optional: a clean slate ----------------------------------------------------------------------
+# Deliberately here, AFTER the service was stopped in step 3, and the ordering is load-bearing: the
+# daemon coalesces verdict writes and flushes the store on shutdown, so clearing a *running* service
+# just gets it written back out of memory as the service stops. It is also after the account exists, so
+# the directory it names is the one the daemon will actually use.
+if [[ "$clear_home" == true ]]; then
+    step "Clearing $SERVICE_DATA (--clear)"
+
+    if [[ -d "$SERVICE_DATA" ]]; then
+        size="$(sudo du -sh "$SERVICE_DATA" 2>/dev/null | cut -f1 || echo '?')"
+        echo "removing $size of accumulated state:"
+        # Named individually rather than as one line, because "the grinder's data" is four different
+        # kinds of loss and the operator should see which ones they are asking for. `if` rather than
+        # `[[ ]] &&` so a missing last entry does not fail the loop under `set -e`.
+        for artefact in verdicts.json cursors.json requeue.json boot-logs crash-logs cache work; do
+            if [[ -e "$SERVICE_DATA/$artefact" ]]; then
+                echo "  - $artefact"
+            fi
+        done
+        sudo rm -rf "${SERVICE_DATA:?}"
+        echo "cleared — the daemon starts with no verdicts, at the head of the crawl, and re-downloads"
+        echo "every loader install it needs (~150 MB per loader/Minecraft tuple, the expensive part)."
+    else
+        echo "$SERVICE_DATA does not exist — nothing to clear"
+    fi
 fi
 
 # --- The JVM the service will actually see -----------------------------------------------------------
