@@ -513,6 +513,19 @@ function setupQuilt
         end
     end
 
+    # The vanilla server JAR, on its own terms rather than as a side effect of installing the launcher.
+    # --download-server above runs only when quilt-server-launch.jar was missing, so a pack that kept its
+    # launcher and lost the game JAR never fetches one and Quilt refuses to start. See the bash template.
+    if not test -s "server.jar"
+        echo "The Minecraft server JAR is missing. Fetching it with the Quilt installer..."
+        downloadIfNotExist "quilt-installer.jar" "quilt-installer.jar" "$QUILT_INSTALLER_URL" >/dev/null
+        runInstallerJavaCommand "-jar quilt-installer.jar install server $MINECRAFT_VERSION --download-server --install-dir=."
+        rm -f quilt-installer.jar
+        if not test -s "server.jar"
+            crashServer "The Minecraft server JAR for $MINECRAFT_VERSION could not be downloaded. Without it Quilt Loader cannot launch. Check your internet connection and try again."
+        end
+    end
+
     set -g LAUNCHER_JAR_LOCATION "quilt-server-launch.jar"
     set -g SERVER_RUN_COMMAND "$JAVA_ARGS -jar $LAUNCHER_JAR_LOCATION nogui"
 end

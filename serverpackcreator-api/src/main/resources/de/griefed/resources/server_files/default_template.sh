@@ -476,6 +476,23 @@ setupQuilt() {
 
   fi
 
+  # The vanilla server JAR, on its own terms rather than as a side effect of installing the launcher.
+  #
+  # --download-server above runs ONLY in the branch taken when quilt-server-launch.jar was missing, so a
+  # pack that kept its launcher and lost the game JAR -- a restored backup, a half-cleaned directory, a
+  # cached loader install -- never fetches one. Quilt's launcher then refuses to start with "Missing game
+  # jar at .../server.jar", which reads as a broken pack rather than as a missing download. Fabric does not
+  # have this hole: its improved launcher carries the server itself.
+  if [[ ! -s "server.jar" ]]; then
+    echo "The Minecraft server JAR is missing. Fetching it with the Quilt installer..."
+    downloadIfNotExist "quilt-installer.jar" "quilt-installer.jar" "${QUILT_INSTALLER_URL}" >/dev/null
+    runInstallerJavaCommand "-jar quilt-installer.jar install server ${MINECRAFT_VERSION} --download-server --install-dir=."
+    rm -f quilt-installer.jar
+    if [[ ! -s "server.jar" ]]; then
+      crashServer "The Minecraft server JAR for ${MINECRAFT_VERSION} could not be downloaded. Without it Quilt Loader cannot launch. Check your internet connection and try again."
+    fi
+  fi
+
   LAUNCHER_JAR_LOCATION="quilt-server-launch.jar"
   SERVER_RUN_COMMAND="${JAVA_ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"
 }

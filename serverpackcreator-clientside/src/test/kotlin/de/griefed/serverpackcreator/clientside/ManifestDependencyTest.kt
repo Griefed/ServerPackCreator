@@ -176,4 +176,76 @@ internal class ManifestDependencyTest {
             "13 distinct dependencies exceeds the cap of 12 and must still refuse"
         )
     }
+    /** A project carrying exactly [files], enough for the planner to pick from. */
+    private fun project(vararg files: ModFile) = ProjectFiles(
+        platform = "CurseForge", slug = "fabric-api", projectUrl = "https://example.invalid/fabric-api",
+        clientSide = DeclaredSupport.UNKNOWN, serverSide = DeclaredSupport.UNKNOWN, files = files.toList()
+    )
+
+    private fun file(name: String, loaders: Set<String>, mc: Set<String>) =
+        ModFile(name, loaders, mc, "https://cdn/$name", null, emptyList())
+
+    /**
+     * **The bug this exists for.** A manifest id the registry mapped, whose project resolved, and which
+     * then had no usable file, must REFUSE the boot — not be filed as a guess that missed.
+     *
+     * Observed live 2026-08-30 on `CurseForge/attributefix` at Minecraft 1.21.11: its manifest declares
+     * `Depends on 'fabric-api' (-∞, ∞)`, nothing was staged for it, and the boot ran anyway. Quilt Loader
+     * then refused the pack with "AttributeFix requires any version of fabric-api, which is missing!" and
+     * the *candidate* wore the verdict — the exact failure the refusal path exists to prevent.
+     *
+     * The split this restores is the one this file documents: mapped and resolved, then failed to stage, is
+     * a case we chose to trust, so failing to honour it is a real gap.
+     */
+    @Test
+    fun aMappedDependencyWithNoUsableFileRefusesRatherThanBeingFiledAsAGuess() {
+        val plan = BootVerifier.planManifestDependency(
+            ModDependency("fabric-api"), "Quilt", "1.21.11",
+            refFor = { "306612" },
+            // Resolves, but publishes nothing for this Minecraft version — the live shape.
+            resolveRef = { project(file("fabric-api-0.100.8+1.20.6.jar", setOf("Fabric"), setOf("1.20.6"))) }
+        )
+
+        Assertions.assertEquals(
+            ManifestDependencyPlan.Unsatisfied("fabric-api"), plan,
+            "a dependency we mapped and resolved and then could not stage must refuse the boot"
+        )
+    }
+
+    /** An id that maps to no project at all stays a guess, and never refuses. */
+    @Test
+    fun anUnmappableIdIsStillOnlyAGuess() {
+        val plan = BootVerifier.planManifestDependency(
+            ModDependency("some-bundled-thing"), "Quilt", "1.21.11",
+            refFor = { null },
+            resolveRef = { error("must not be consulted when nothing maps") }
+        )
+
+        Assertions.assertEquals(ManifestDependencyPlan.Unmapped("some-bundled-thing"), plan)
+    }
+
+    /** Mapped, but this platform does not carry it: also a guess that missed, so also never fatal. */
+    @Test
+    fun aMappedIdThePlatformDoesNotCarryIsAGuessToo() {
+        val plan = BootVerifier.planManifestDependency(
+            ModDependency("fabric-api"), "Quilt", "1.21.11",
+            refFor = { "306612" },
+            resolveRef = { null }
+        )
+
+        Assertions.assertEquals(ManifestDependencyPlan.Unmapped("fabric-api"), plan)
+    }
+
+    /** The happy path still picks a file, and picks one that fits the pack. */
+    @Test
+    fun aResolvableDependencyIsPlannedForStaging() {
+        val fits = file("fabric-api-0.141.6+1.21.11.jar", setOf("Fabric"), setOf("1.21.11"))
+        val plan = BootVerifier.planManifestDependency(
+            ModDependency("fabric-api"), "Quilt", "1.21.11",
+            refFor = { "306612" },
+            resolveRef = { project(file("fabric-api-0.100.8+1.20.6.jar", setOf("Fabric"), setOf("1.20.6")), fits) }
+        )
+
+        Assertions.assertEquals(ManifestDependencyPlan.Stage("306612", fits), plan)
+    }
 }

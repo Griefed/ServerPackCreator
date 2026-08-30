@@ -4324,3 +4324,191 @@ where the number comes from.
 **Suites after all three iterations: api 356 → 361, clientside 136 → 139, grinder 344 → 351, zero
 failures** (24 skipped in the grinder — the docker ITs and the two bind-address guards needing a
 non-loopback IPv4). Read back from `<module>/build/test-results/test/*.xml`.
+
+---
+
+# Audit — 2026-08-30, unpushed `develop` (iteration 30)
+
+Scope: `09bb6f262..develop` — **108 commits, 98 non-merge** (31 `test`, 25 `docs`, 22 `feat`, 17 `fix`,
+3 `refactor`). That is everything since iteration 29's branch was merged; iterations 1–29 stand and are not
+re-litigated. Requested against the Phase 0 baseline `69a587b6a`, which is 899 commits back — the earlier
+sections already cover that ground, so this section audits only what no iteration has seen.
+
+Suites at audit time: **api 376, clientside 228, grinder 410, app 149, plugin-example 3 — zero failures**
+(1 skip in api, 28 in the grinder: the docker ITs, the live catalog ITs, the template matrix, and the two
+bind-address guards that need a non-loopback IPv4). Read back from `<module>/build/test-results/test/*.xml`.
+
+## HIGH
+
+**H1 — `6de769d05 refactor(grinder): extract the configuration and the sweep out of main` deleted five
+executing shutdown guards and replaced them with nothing.**
+`serverpackcreator-grinder/src/test/.../GrindPoolShutdownTest.kt` — the commit removed 239 lines from it and
+today the file is **an empty class**: a licence header, ten imports, a KDoc that still says *"Pins what
+`systemctl stop` must do to the workers"*, and `{ }`.
+
+Eight `fun`s went in. Three were re-homed to the `GrindLoopTest.kt` added by the same commit
+(`theCatalogPassIsNotStartedWhenAStopArrivedDuringTheDrain`, `theLivePassCountsTheRequeuedCandidatesToo`, and
+`thePassCounterIsNotShadowed` as `everyCompletedPassIsCounted`). **Five did not, and exist nowhere in the
+repository:**
+
+| Deleted guard | What it held |
+|---|---|
+| `interruptsAWorkerParkedInABootRatherThanWaitingOutItsBudget` | the interrupt, not the flag, is what wakes a worker inside a 15-minute boot |
+| `givesUpAfterTheGraceWindowWhenAWorkerWillNotQuit` | the grace window is enforced against a worker that does not cooperate |
+| `stopsWorkersTakingFurtherCandidates` | `requestStop` stops the queue being drained further |
+| `tracksEveryWorkerBeforeAnyOfThemCanRun` | no worker starts untracked |
+| `neverReportsACleanStopWhileAWorkerIsStillRunning` | `awaitStop`'s return value cannot lie |
+
+Verified: `GrindPool.awaitStop`'s grace window is **no longer executed by any test**. The only surviving
+references are source-greps of `main`'s body in `ShutdownWiringTest` (`body.indexOf("awaitStop(")`,
+`body.contains("awaitStop(")`), which assert that a call is *written*, not that it *behaves*.
+
+Why HIGH rather than MEDIUM, on three counts. The label claims behaviour preservation while behavioural
+coverage was removed — the conventions' explicit stop-and-flag signal, and the carve-out does not apply
+because these are not reference updates. The path is one this module's own `CLAUDE.md` calls load-bearing:
+*"containers belong to the docker daemon's control group, not the unit's, so the shutdown hook is the only
+thing that can stop them"*, with `TimeoutStopSec` sized against exactly the window these guards held. And the
+loss is **silent**: a class with no `@Test` produces no `TEST-*.xml` at all, so the grinder's total went
+344 → 351 → 410 across the range with nobody able to notice five guards leaving.
+
+## MEDIUM
+
+**M2 — seven change commits bundled their guard instead of pinning it red first.** A repeat of the finding
+already recorded for 2026-07-31, and the conventions state the rule as *"Pin first means **commit** first, not
+just write first"*. The dominant pattern in this range is correct — most of the 98 commits run `test(...)` →
+`fix(...)`/`feat(...)` in adjacent pairs — but these seven land production and guard together, so nobody can
+check out `<commit>^` and watch the pin go red:
+
+`a05a25929`, `b76a6c9ee`, `edd962786`, `18f59b4bf`, `1714da922`, `41be7a2ea`, `d41c37e49`.
+
+**M3 — `18f59b4bf feat(clientside): stage the dependencies a jar manifest declares alone` added an abstract
+`ModPlatform.name` without updating the two anonymous implementations in the test tree, and nothing noticed
+for eleven days.** Fixed on 2026-08-30 by `b3d7e65a5`, so the defect is closed; what is **not** closed is the
+cause. Gradle's incremental compilation never recompiled `AttemptStagingIsolationTest` or
+`BootVerifierSelectionTest`, so every green build in between — including the full builds this work was merged
+on — was green without ever compiling those two files. `--rerun-tasks` is what exposed it, and nothing in the
+build or CI runs that. A green build is not evidence that the test tree compiles.
+
+## LOW
+
+**L1 — the emptied `GrindPoolShutdownTest.kt` keeps ten imports it no longer uses** (`CountDownLatch`,
+`AtomicBoolean`, `AtomicInteger`, `Timeout`, `Duration`, …). Kotlin does not warn on unused imports, so this
+does not breach "no new compiler warnings"; it is dead code that makes the file look inhabited. Resolved
+either way by whatever fixes H1.
+
+**L2 — `acfed4b45 docs(app): finish the dokka backlog` touches 74 files in one commit.** Verified harmless
+(see below), but a 74-file commit is not reviewable in the sense the one-concern rule is aiming at.
+
+## Verified clean — do not re-litigate
+
+- **No new `!!` anywhere in `src/main` across all 108 commits.** Checked by diffing the whole range and
+  grepping the added lines; zero hits.
+- **`6ec7dc042 refactor(grinder): rename CrashLogStore to BootLogStore` is a textbook reference-only update
+  and is correctly labelled.** Every changed assertion line differs only in the receiver
+  (`CrashLogStore.MAX_BYTES` → `BootLogStore.MAX_BYTES`); no expected value moved. This is precisely the
+  carve-out the conventions added so a legitimate Strangler-Fig move is not cried wolf over.
+- **`c3fe991e8 refactor(clientside): route every boot attempt through one BootVerifier.boot` changed no test
+  at all** — one production file, existing assertions green. Correct.
+- **Every `docs:` commit is comment-only or a sanctioned constructor reshape.** Checked by stripping comment,
+  blank and KDoc-punctuation lines from each diff: `f81c4ba6f` and `428c6e74a` have **zero** non-comment
+  changes; `acfed4b45` has 9 and `9000e99f1` has 21, and all of them are the
+  one-parameter-per-line reshape the conventions explicitly permit (`AmountPerDate`, `TaskDetail`,
+  `Prepared.Failed`, `Entry`, `RunResult.NotStarted`, `RunResult.Completed`), plus one within-file move of
+  `trackedWorkerCount`. Parameter names, types and order survive untouched in every case. No `docs:` commit
+  hides a behaviour change.
+- **No `docs:`-only commit touches a non-source file it should not**, and no `feat:`/`fix:` commit sprawls:
+  the widest are `f249e18cf` (15), `a05a25929` (15) and `41be7a2ea` (13), each confined to its stated feature.
+- **The base-vs-branch equivalence proof was run and recorded** (`REFACTOR-LOG.md`, 2026-08-29): base
+  `57d22b57c`'s unmodified test tree against this work's production code — four files uncompilable from three
+  enumerated signature changes, the other 48 giving 323 tests with 16 deltas and **zero regressions**.
+- **B6's merge gate was run and recorded** (`REFACTOR-LOG.md`, 2026-08-30): HIGH 8 → 4, three controls held,
+  zero regressions, on six pre-registered candidates.
+
+## Resolution — iteration 30, same session
+
+| Finding | Outcome |
+|---|---|
+| H1 five shutdown guards deleted by a `refactor:` commit | **fixed** — restored, teeth checked by mutation |
+| M2 seven commits bundled guard and change | **not fixable** — merged and pushed; process finding only |
+| M3 "nothing runs a clean compile" | **wrong, and corrected** — CI does, it fired, the red went unactioned |
+| L1 ten unused imports in the emptied file | **fixed** with H1 — all ten are used again |
+| L2 74-file docs commit | no action — verified comment-only, noted for reviewability |
+
+**H1 — closed.** The five guards are restored from `6de769d05^` verbatim, minus the three that legitimately
+moved to `GrindLoopTest` and minus nothing else. Verified after the fix: the file holds **5 `fun`s**, emits a
+`TEST-*.xml` again (it emitted none while empty, which is why the loss was invisible), and executes
+`pool.awaitStop(` at **5 call sites** rather than grepping `main`'s text for it. All five pass unchanged
+against today's `GrindPool`, so the deletion cost coverage but concealed no regression.
+
+**Teeth checked by mutation, and the first mutation was the wrong one.** Making `requestStop()` a no-op
+changed nothing — `awaitStop` sets `stopRequested` itself, so that mutation is vacuous rather than the guards
+being weak. Mutating `awaitStop` to neither flag the stop nor interrupt fails exactly the two that depend on
+it (`interruptsAWorkerParkedInABootRatherThanWaitingOutItsBudget`,
+`stopsWorkersTakingFurtherCandidates`); the other three hold mechanisms that mutation does not reach — the
+grace window expiring against a stubborn worker, worker tracking, and `awaitStop`'s return value not lying.
+Recorded because "the guards survived a mutation" is worthless until you check the mutation was meaningful.
+
+**M3 — the finding was wrong, and checking it was worth more than the fix would have been.** `test.yml`
+triggers on `push:` and `pull_request:` and runs `./gradlew build` on a fresh runner, so the clean-compile
+gate exists. It also **fired**: Forgejo `test.yml` runs **#301 (`592f1ce21`)** and **#306 (`388b6e3a2`)** both
+concluded **failure** on `develop` and stayed unactioned for about a week. Verified locally rather than
+inferred — a worktree at `388b6e3a2` fails `:serverpackcreator-clientside:compileTestKotlin --rerun-tasks`
+with the two `ModPlatform` fixtures, so the red was real, not flaky.
+
+The half worth keeping is *why it stayed invisible locally*: a plain build of that same commit reports
+**`BUILD SUCCESSFUL in 5s`** off the build cache (`org.gradle.caching=true`), against **`BUILD FAILED in 21s`**
+with `--rerun-tasks`. Every local full build agreed with itself and disagreed with CI. Recorded in the root
+`CLAUDE.md`.
+
+**No workflow change was made, deliberately.** Adding a second clean-compile step cannot help when the first
+one's failure is not read, and `.claude/rules/ci-workflows.md` makes clear that `.forgejo/workflows` edits are
+not free. The remedy is to check the pipeline after a push.
+
+**Suites after the fixes: api 376, clientside 228, grinder 415 (was 410 — the five restored), app 149,
+plugin-example 3. 1171 total, zero failures, 29 skipped.** Read from
+`<module>/build/test-results/test/*.xml` after a full `./gradlew build`.
+
+---
+
+# Audit — 2026-08-30, unpushed `develop` (iteration 31)
+
+Scope: iteration 30's range plus its own three fixes (`3ef3930fe`, `f68041c4a`, `9568120e1`). A re-audit of
+the fixes themselves, per the convention that a fix pass is audited like any other.
+
+## HIGH
+
+None.
+
+## MEDIUM
+
+**M1 — `M2` from iteration 30 stands and cannot be closed.** Seven change commits bundled their guard with
+the change (`a05a25929`, `b76a6c9ee`, `edd962786`, `18f59b4bf`, `1714da922`, `41be7a2ea`, `d41c37e49`). They
+are merged and pushed; rewriting published history costs more than the evidence is worth. Carried forward as
+a standing process finding rather than re-reported each iteration.
+
+## LOW
+
+**L1 — `GrindPoolShutdownTest`'s restored KDoc describes the file's *original* eight-guard scope.** It reads
+*"Pins what `systemctl stop` must do to the workers"*, which is true of the five it now holds; the three that
+moved to `GrindLoopTest` are not mentioned in either file's doc as having moved. Harmless — no claim is false
+— but a reader tracing the sweep guards has nothing pointing them across. Not fixed: editing it would touch a
+file this iteration just restored verbatim, and the value is small against the cost of another diff over
+recovered code.
+
+## Verified clean — do not re-litigate
+
+- **The restoration is verbatim, not a rewrite.** `3ef3930fe` adds exactly the five `fun`s that
+  `6de769d05` removed, with their original bodies and KDoc; the only omissions are the three that moved to
+  `GrindLoopTest` and the closing brace adjustment. Diffing the restored file against `6de769d05^`'s copy
+  shows no assertion, no expected value and no fixture changed.
+- **The guards execute rather than grep.** Five `pool.awaitStop(` call sites in the restored file; the
+  source-text assertions in `ShutdownWiringTest` are untouched and still cover the *wiring* inside `main`,
+  which is a different question and still cannot be executed.
+- **The loss is now detectable.** The file emits a `TEST-*.xml` again. While empty it emitted none, so the
+  grinder's totals moved 344 → 351 → 410 across iteration 30's range with five guards leaving and no count
+  changing — the mechanism that made H1 silent, and the reason a count is not a coverage check.
+- **L1 from iteration 30 is closed by the same commit**: all ten imports are used again, and a
+  `--rerun-tasks` compile of the module emits zero warnings from that file.
+- **No source outside the audit's scope was touched by the fix pass.** `3ef3930fe` is one test file;
+  `f68041c4a` and `9568120e1` are `CLAUDE.md` only.
+- **The full suite is green after the fixes**: 1171 tests, 0 failed, 29 skipped.

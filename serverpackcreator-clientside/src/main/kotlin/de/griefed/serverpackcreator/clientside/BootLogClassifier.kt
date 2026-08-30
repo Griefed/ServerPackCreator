@@ -141,7 +141,11 @@ object BootLogClassifier {
         "(Unable to access jarfile" +
             "|Could not find or load main class" +
             "|Invalid or corrupt jarfile" +
-            "|^Error: could not open)",
+            "|^Error: could not open" +
+            // No vanilla server jar means the loader's launcher aborts before Loader itself starts, so no
+            // mod is ever loaded. Both spellings: the shipped template's own message, and Quilt's.
+            "|The Minecraft server \\.JAR is missing" +
+            "|Missing game jar at)",
         RegexOption.IGNORE_CASE
     )
 

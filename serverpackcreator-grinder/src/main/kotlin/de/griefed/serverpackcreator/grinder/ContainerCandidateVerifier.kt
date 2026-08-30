@@ -111,6 +111,34 @@ class ContainerCandidateVerifier(
      */
     companion object {
         /**
+         * Why a loader install is unavailable, in words that match what actually happened.
+         *
+         * The predecessor said `No cached loader install for <tuple>`, which describes a cache miss — the one
+         * state that *cannot* be the cause, because [LoaderCache.ensureInstalled] responds to a miss by
+         * installing. It returns `null` only after an install failed, or while a recent failure is on
+         * cooldown. Naming the miss sent a reader looking for an on-demand install that has always been there.
+         *
+         * This becomes the verdict's detail — `BootVerifier` reports the throw as INCONCLUSIVE — so it is what
+         * the report shows for every candidate that wanted the tuple. That matters most in the [onCooldown]
+         * case, which logs at DEBUG and is otherwise invisible at default levels.
+         */
+        internal fun installUnavailableMessage(
+            loader: String,
+            loaderVersion: String,
+            minecraftVersion: String,
+            onCooldown: Boolean
+        ): String {
+            val tuple = "$loader $loaderVersion / Minecraft $minecraftVersion"
+            return if (onCooldown) {
+                "Loader install for $tuple failed recently and is on cooldown, so it was not retried. " +
+                    "Not booting — this says nothing about the mod. The failure itself was logged when it happened."
+            } else {
+                "Loader install for $tuple failed, so the pack could not be completed. Not booting — this says " +
+                    "nothing about the mod. See the install log for this tuple under the cache root."
+            }
+        }
+
+        /**
          * Keep one finished attempt's evidence, if the boot is worth keeping one for.
          *
          * Called from inside `BootVerifier.runPrepared`, once per attempt, and that is the only point at
@@ -206,7 +234,14 @@ class ContainerCandidateVerifier(
         val javaPath = imageJava.javaPath(pack.minecraftVersion)
             ?: throw IllegalStateException("No bundled JDK for Minecraft ${pack.minecraftVersion}")
         val base = loaderCache.ensureInstalled(pack.loader, pack.loaderVersion, pack.minecraftVersion)
-            ?: throw IllegalStateException("No cached loader install for ${pack.loader} ${pack.loaderVersion} / Minecraft ${pack.minecraftVersion}")
+            ?: throw IllegalStateException(
+                // Asked *after* the null, not before: ensureInstalled may have recorded the failure that puts
+                // the tuple on cooldown during this very call, and the operator wants the state that resulted.
+                installUnavailableMessage(
+                    pack.loader, pack.loaderVersion, pack.minecraftVersion,
+                    loaderCache.isInstallOnCooldown(pack.loader, pack.loaderVersion, pack.minecraftVersion)
+                )
+            )
         copyInstallLayer(base, pack.serverPack)
         PackVariables.prepareUnattended(pack.serverPack, javaPath, offline = true, installerJavaPath = imageJava.installerJavaPathFor(pack.minecraftVersion))
     }

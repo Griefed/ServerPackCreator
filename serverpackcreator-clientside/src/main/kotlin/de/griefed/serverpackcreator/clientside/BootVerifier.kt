@@ -404,27 +404,32 @@ class BootVerifier(
             .getOrDefault(emptyList())
 
         for (requirement in stageableRequirements(declared, visited) { platformRefFor(it) }) {
-            val ref = platformRefFor(requirement.modID)
-            if (ref == null) {
-                unmapped.add(requirement.modID)
+            // `visited` is claimed here rather than inside the planner, which keeps the planner pure: a ref
+            // seen once must not be resolved twice even when the first attempt came to nothing.
+            val alreadySeen = platformRefFor(requirement.modID)?.let { !visited.add(it) } ?: false
+            if (alreadySeen) {
                 continue
             }
-            if (!visited.add(ref)) {
-                continue
-            }
-            val project = platform.resolveDependency(ref)
-            if (project == null) {
-                // Mapped but not resolvable is still only a *guess* that missed, so it does not refuse.
-                log.info("Manifest dependency '${requirement.modID}' (as '$ref') is not on ${file.pageUrl?.let { "this platform" } ?: "the platform"}.")
-                unmapped.add(requirement.modID)
-                continue
-            }
-            val dependencyFile =
-                BootCandidateSelector.pickDependencyFile(project.files, loader, minecraftVersion, requirement.versionConstraint)
-            if (dependencyFile == null) {
-                log.warn("Manifest dependency '${requirement.modID}' publishes no $loader file for Minecraft $minecraftVersion.")
-                unmapped.add(requirement.modID)
-                continue
+            val plan = planManifestDependency(
+                requirement, loader, minecraftVersion,
+                refFor = { platformRefFor(it) },
+                resolveRef = { platform.resolveDependency(it) }
+            )
+            val dependencyFile = when (plan) {
+                is ManifestDependencyPlan.Unmapped -> {
+                    log.info("Manifest dependency '${plan.modID}' maps to nothing this platform carries.")
+                    unmapped.add(plan.modID)
+                    continue
+                }
+
+                is ManifestDependencyPlan.Unsatisfied -> {
+                    // Mapped AND resolved, then nothing usable: a case we chose to trust, so it refuses.
+                    log.warn("Manifest dependency '${plan.modID}' publishes no $loader file for Minecraft $minecraftVersion.")
+                    unsatisfied.add(plan.modID)
+                    continue
+                }
+
+                is ManifestDependencyPlan.Stage -> plan.file
             }
             if (!downloadWithDependencies(
                     dependencyFile, loader, minecraftVersion, modsDir, visited, depth + 1, unsatisfied, unmapped, injected
@@ -685,6 +690,38 @@ class BootVerifier(
                 )
             }
 
+        /**
+         * Where one manifest-declared requirement lands, without touching the network or the disk.
+         *
+         * Extracted because the decision used to live in three adjacent branches of the staging loop and
+         * they had drifted: the download failure refused, while "resolved but nothing usable" did not,
+         * even though both are the same case by the rule below. `CurseForge/attributefix` at Minecraft
+         * 1.21.11 booted without the Fabric API its manifest hard-requires because of it, and Quilt Loader
+         * blamed the mod.
+         *
+         * The rule, and it is the one [stageManifestDependencies] documents: an id we mapped to a real
+         * project and then failed to stage is a case we chose to trust, so failing it is a real gap and
+         * refuses. An id that maps to nothing, or to a project this platform does not carry, is only a
+         * guess that missed and never refuses.
+         *
+         * @param refFor     This platform's ref for a mod id, or `null` when the registry knows none.
+         * @param resolveRef The project behind a ref, or `null` when the platform does not carry it.
+         */
+        internal fun planManifestDependency(
+            requirement: ModDependency,
+            loader: String,
+            minecraftVersion: String,
+            refFor: (String) -> String?,
+            resolveRef: (String) -> ProjectFiles?
+        ): ManifestDependencyPlan {
+            val ref = refFor(requirement.modID) ?: return ManifestDependencyPlan.Unmapped(requirement.modID)
+            val project = resolveRef(ref) ?: return ManifestDependencyPlan.Unmapped(requirement.modID)
+            val file = BootCandidateSelector.pickDependencyFile(
+                project.files, loader, minecraftVersion, requirement.versionConstraint
+            ) ?: return ManifestDependencyPlan.Unsatisfied(requirement.modID)
+            return ManifestDependencyPlan.Stage(ref, file)
+        }
+
         /** Ids the environment provides rather than the pack: never staged, whatever a descriptor says. */
         private val environmentProvidedIds = setOf(
             "minecraft", "java", "fabricloader", "forge", "neoforge", "quilt_loader", "quilt_base"
@@ -916,4 +953,23 @@ class BootVerifier(
                 .onFailure { log.warn("Could not restore the boot log ${logFile.absolutePath}: ${it.message}") }
         }
     }
+}
+
+/**
+ * What [BootVerifier.planManifestDependency] decided about one manifest-declared requirement.
+ *
+ * A type rather than a pair of booleans because the three outcomes carry different things and are treated
+ * differently: only [Unsatisfied] refuses the boot.
+ *
+ * @author Griefed
+ */
+internal sealed interface ManifestDependencyPlan {
+    /** Stage [file], fetched under [ref]. */
+    data class Stage(val ref: String, val file: ModFile) : ManifestDependencyPlan
+
+    /** A guess that missed: nothing maps, or the platform does not carry it. Reported, never fatal. */
+    data class Unmapped(val modID: String) : ManifestDependencyPlan
+
+    /** Mapped and resolved, then nothing usable for this loader and Minecraft version. Refuses the boot. */
+    data class Unsatisfied(val modID: String) : ManifestDependencyPlan
 }
