@@ -197,7 +197,11 @@ internal class VerdictReportRendererTest {
             projectUrl = "https://example.invalid/SENTINELPROJECT",
             detail = "SENTINELDETAIL",
             confidence = Confidence.HIGH
-        ).copy(firedRule = "SENTINELRULE", stagedDependencies = listOf("SENTINELDEP"))
+        ).copy(
+            firedRule = "SENTINELRULE",
+            stagedDependencies = listOf("SENTINELDEP"),
+            decidedBy = "SENTINELDECISION"
+        )
 
         val row = VerdictReportRenderer.toHtml(pageOf(listOf(verdict))) { listOf("SENTINELLOG") }
             .substringAfter("<tbody").substringAfter("<tr>").substringBefore("</tr>")
@@ -206,7 +210,7 @@ internal class VerdictReportRendererTest {
         val expected = listOf(
             "SENTINELNAME", "SENTINELPROJECT", "SENTINELPATTERN", "HIGH", "SENTINELLOADER",
             "Modrinth", "not recorded", "not recorded",
-            "SENTINELDETAIL", "SENTINELRULE", "SENTINELDEP", "1970", "SENTINELLOG"
+            "SENTINELDETAIL", "SENTINELRULE", "SENTINELDECISION", "SENTINELDEP", "1970", "SENTINELLOG"
         )
         Assertions.assertEquals(expected.size, cells.size, "one sentinel per column; got ${cells.size} cells")
         expected.forEachIndexed { index, sentinel ->
