@@ -345,10 +345,21 @@ object BootLogClassifier {
      * on `Missing language javafml version [46,)` (Forge's language provider, not NeoForge's) and a
      * `java.lang.module.ResolutionException` from the jar's bundled MixinExtras colliding with NeoForge's.
      * One platform file claiming two loaders is what put it there; see `BootCandidateSelector`.
+     *
+     * **log4j-core belongs here for the opposite reason, and it is the most valuable member.** Its absence is
+     * not the mod's doing at all — the server is supposed to *have* a logging framework — so a console
+     * reaching for `org.apache.logging.log4j` means the runtime we assembled is broken. Measured 2026-08-31:
+     * every one of the 90 boots against the cached `NeoForge 21.11.45 / Minecraft 1.21.11` install died this
+     * way, `corgilib` (a library) and `chisels-bits` (a building mod that runs on servers) included, and the
+     * ones that reached a non-zero exit were published as clientside. **One poisoned cache entry produced
+     * false positives across an entire tuple**, which is exactly the failure a bare exit-code verdict cannot
+     * distinguish from a mod crashing on its own merits.
      */
     private val runtimeMismatchMarkers = Regex(
         "(Missing language .{1,40} version" +
-            "|java\\.lang\\.module\\.ResolutionException)",
+            "|java\\.lang\\.module\\.ResolutionException" +
+            "|NoClassDefFoundError: org/apache/logging/log4j" +
+            "|ClassNotFoundException: org\\.apache\\.logging\\.log4j)",
         RegexOption.IGNORE_CASE
     )
 

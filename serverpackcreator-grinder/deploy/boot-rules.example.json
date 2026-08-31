@@ -34,6 +34,34 @@
     "note": "FML refused a client-only class on a dedicated server."
   },
 
+  // LWJGL is the client's windowing and OpenGL binding. A dedicated server does not ship it, so a mod that
+  // reaches org.lwjgl.* while the server is starting cannot run server-side at all -- which is decisive in a
+  // way the built-in marker misses, since that one only matches net/minecraft/client.
+  //
+  // Verified against real consoles on 2026-08-31: sodium-extra, reeses-sodium-options and
+  // better-block-entities all died on `NoClassDefFoundError: org/lwjgl/Version` thrown from Sodium's
+  // PreLaunchChecks, and all three were published HIGH with no decisive evidence behind them.
+  //
+  // NOTE ON THE INDIRECT CASE: better-block-entities did not reach LWJGL itself -- Sodium, staged as its
+  // required dependency, did. That still justifies the entry: a mod whose required dependency cannot run on a
+  // server cannot run on one either, and stripping it from a server pack is the right answer. The evidence is
+  // about the pack, and the pack is the candidate plus what it requires.
+  {
+    "id": "lwjgl-on-a-dedicated-server",
+    "pattern": "NoClassDefFoundError: org/lwjgl|ClassNotFoundException: org\\.lwjgl",
+    "verdict": "CRASHED",
+    "note": "Reached for LWJGL, the client's windowing/OpenGL library, which a dedicated server never ships."
+  },
+
+  // NOT A RULE, AND DELIBERATELY SO -- read this before adding one.
+  //
+  // better-ping-display, immersive-ui and certain-questing-additions all die on
+  // `NoClassDefFoundError: org/apache/logging/log4j/core/config/ConfigurationSource`, and all three are
+  // published HIGH today. It is tempting to write a rule for it and recover three entries. Do not: log4j-core
+  // is a LOGGING library the server is supposed to have, so its absence is a defect in the pack we generated,
+  // not evidence that the mod is client-only. A rule here would launder a harness bug into a published
+  // clientside entry -- exactly what the decisive-evidence gate exists to prevent.
+
   // A screen/gui class from *another* mod's package. Deliberately has NO verdict: this usually means a
   // missing or mismatched dependency rather than the candidate being clientside, so the label is useful
   // while the judgement stays with the ladder. Give it "verdict": "CRASHED" once you are satisfied it

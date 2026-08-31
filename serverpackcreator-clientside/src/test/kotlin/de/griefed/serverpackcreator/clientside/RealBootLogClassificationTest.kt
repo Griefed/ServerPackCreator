@@ -151,6 +151,29 @@ internal class RealBootLogClassificationTest {
     }
 
     /**
+     * **A whole tuple's worth of false positives from one broken cache entry.** Measured 2026-08-31: all 90
+     * boots against the cached `NeoForge 21.11.45 / Minecraft 1.21.11` install died on a missing log4j-core,
+     * `corgilib` (a library mod) and `chisels-bits` (a building mod that runs on servers) among them, and the
+     * ones reaching a non-zero exit were published as clientside.
+     *
+     * The server is supposed to *have* a logging framework, so this says nothing whatsoever about the mod —
+     * which is why it is a classifier marker and **not** an operator rule. A rule would make it decisive
+     * evidence, and it is the precise opposite: the absence of evidence.
+     */
+    @Test
+    fun aMissingLoggingFrameworkIsTheHarnessBreaking() {
+        val console = listOf(
+            "java.lang.NoClassDefFoundError: org/apache/logging/log4j/core/config/ConfigurationSource",
+            "Caused by: java.lang.ClassNotFoundException: org.apache.logging.log4j.core.config.ConfigurationSource"
+        )
+
+        val decided = BootLogClassifier.classify(console, exitCode = 1, timedOut = false, ConsoleRuleSet.EMPTY)
+
+        Assertions.assertEquals(BootResult.INCONCLUSIVE, decided.result)
+        Assertions.assertEquals(BootDecision.RUNTIME_MISMATCH, decided.decidedBy)
+    }
+
+    /**
      * **The guard that stops the new markers going too far.** A mod reaching for a client-only class *inside*
      * a mixin is a genuine clientside signal, and the client-only-class marker sits above every new marker
      * for exactly that reason. Get this backwards and the fix silently discards true positives — the
