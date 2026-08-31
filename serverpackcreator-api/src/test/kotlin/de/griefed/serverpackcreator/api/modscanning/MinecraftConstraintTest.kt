@@ -41,7 +41,11 @@ import java.util.jar.JarOutputStream
  */
 internal class MinecraftConstraintTest {
 
-    private val modScanner = ApiWrapper.api(File("src/test/resources/serverpackcreator.properties")).modScanner
+    // The PROCESSED copy under build/, never src/test/resources -- SPC tracks every properties file it
+    // loads and writes absolute paths back into all of them on save, so pointing at the committed source
+    // pollutes it with this machine's paths. TestPropertiesTest.theCommittedTestPropertiesNameNoHost exists
+    // to catch exactly that, and caught this.
+    private val modScanner = ApiWrapper.api(File("build/resources/test/serverpackcreator.properties")).modScanner
 
     private fun jarContaining(dir: File, jarName: String, entry: String, content: String): File =
         File(dir, jarName).also { jar ->
@@ -92,10 +96,6 @@ internal class MinecraftConstraintTest {
             modId="minecraft"
             side="CLIENT"
             versionRange="[1.19.2,1.20)"
-            [[dependencies.pinnedforge]]
-            modId="forge"
-            side="BOTH"
-            versionRange="[43,)"
         """.trimIndent()
         val jar = jarContaining(tempDir, "pinnedforge.jar", "META-INF/mods.toml", toml)
 
@@ -106,6 +106,9 @@ internal class MinecraftConstraintTest {
             Sideness.CLIENT, scanned.sideness,
             "capturing the range must not disturb the sideness the same entry's side= decides"
         )
+        // Only ONE platform entry on purpose. sidenessOf is SERVER unless *every* signal says CLIENT, so
+        // adding a `forge` entry with side="BOTH" would make this SERVER for a reason that has nothing to do
+        // with the range being captured — which is exactly what a first draft of this fixture did.
     }
 
     /** A descriptor that states nothing about Minecraft reports `null`, never an invented range. */

@@ -73,12 +73,21 @@ abstract class FabricFamilyScanner(
      */
     protected open fun readProvides(modConfig: JsonNode, modId: String): List<String> = emptyList()
 
+    /**
+     * The Minecraft range this descriptor declares, or `null` when it declares none.
+     *
+     * Open rather than abstract, and `null` by default, because a descriptor stating nothing about Minecraft
+     * is ordinary and must never be read as a contradiction — a caller comparing this against a pack's
+     * version has to be able to tell "the jar says nothing" from "the jar says something else".
+     */
+    protected open fun readMinecraftConstraint(modConfig: JsonNode): String? = null
+
     final override fun read(modJar: File): ScannedMod {
         val modConfig: JsonNode = getJarJson(modJar, descriptor, objectMapper)
         val modId = utilities.jsonUtilities.getNestedText(modConfig, *idPath)
         return ScannedMod(
             modJar, modId, readSideness(modConfig), readDependencies(modConfig, modId),
-            readProvides(modConfig, modId)
+            readProvides(modConfig, modId), readMinecraftConstraint(modConfig)
         )
     }
 

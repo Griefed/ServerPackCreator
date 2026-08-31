@@ -43,7 +43,17 @@ class ScannedMod @JvmOverloads constructor(
      * satisfied by it. Without the alias, anything matching a dependency against a mod's own id alone —
      * `ModListCompiler`'s dependency rescue, above all — compares "fabric" to "fabric-api" and misses.
      */
-    val provides: List<String> = emptyList()
+    val provides: List<String> = emptyList(),
+    /**
+     * The Minecraft version range the descriptor itself declares, verbatim, or `null` when it declares none.
+     *
+     * Every scanner parses this already and used to discard it — Fabric and Quilt as an excluded "platform"
+     * dependency, Forge and NeoForge by consuming the platform entry for its `side`. It is kept because it
+     * answers a question nothing else can: **what did this jar say it was built for?** A platform's declared
+     * version list is what its author ticked, and a boot chosen from that alone can land a jar on a Minecraft
+     * whose mappings it has never seen — which fails as a mixin error that looks exactly like a crash.
+     */
+    val minecraftConstraint: String? = null
 ) {
     /**
      * One line for a scan log, with the dependencies spelled out instead of left as object identities — they

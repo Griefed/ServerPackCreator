@@ -67,6 +67,21 @@ class QuiltScanner(objectMapper: ObjectMapper, utilities: Utilities) : FabricFam
      * an `id`, or the bare id as a string — both forms occur in the wild, so both are read. A
      * descriptor without the block declares no dependencies and yields an empty list.
      */
+    /**
+     * The `quilt_loader.depends` entry for `minecraft`, in either declaration form, or `null`. Excluded from
+     * [readDependencies] as the platform, but it is still the jar's own statement of what it targets.
+     */
+    override fun readMinecraftConstraint(modConfig: JsonNode): String? =
+        runCatching {
+            utilities.jsonUtilities.getNestedElement(modConfig, QUILT_LOADER, depends)
+                .firstOrNull { entry ->
+                    val id = if (entry.isContainerNode) entry.path("id").asText(null) else entry.asText(null)
+                    id == "minecraft"
+                }
+                ?.takeIf { it.isContainerNode }
+                ?.path("versions")?.takeIf { it.isTextual }?.asText()?.takeIf { it.isNotBlank() }
+        }.getOrNull()
+
     override fun readDependencies(modConfig: JsonNode, modId: String): List<ModDependency> {
         val modDependencies = mutableListOf<ModDependency>()
         try {
