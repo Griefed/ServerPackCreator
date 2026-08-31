@@ -3234,3 +3234,80 @@ the classifier — decisive client-only evidence (`arcane-vortex`'s FML invalid-
 `fabric-api-0.100.8+1.20.6.jar` **twice** — the same file resolved through both the platform declaration and
 the jar manifest. Cosmetic (the file is written once; the verdict is unaffected) but it reaches the report's
 Dependencies column and the CSV, so it is worth a `distinct()`.
+
+## 2026-08-31 — the decisive-evidence gate, and the census that justified it
+
+Griefed sent five boot-log URLs from the deployed grinder and said more grinds were "invalid or otherwise
+broken. Again". The "again" was the operative word: a 200-log census (2026-08-29) and B's merge gate
+(`HIGH 8 → 4`) had both already happened, and neither was committed, so nothing re-checked the *published
+list* against the consoles behind it.
+
+**What the five logs actually were.** Checked regex-by-regex rather than by eye, **four of five reached the
+bare exit-code rung** and were scored `CRASHED` — eligible for a clientside `HIGH` — on no sideness evidence:
+a mixin `@Inject` that found no target (`create_ltab` on Minecraft 1.20.6), a `@Shadow` field missing from its
+target (`debugify` on 1.19.1), Quilt's `Unhandled solver error` (a phrasing sharing *nothing* with Fabric's,
+so `dependencyFailureMarkers` never reached it), and `Missing language javafml version [46,)` from a **Forge**
+jar staged for a **NeoForge** boot. The fifth, Fabric's `requires any version of …`, was already correct and
+is kept as the control.
+
+**Two root causes, both in selection, both systematic.** `pickBootableCandidate` boots the *newest* Minecraft
+in a file's declared set and never asks what the jar was built for, while `ModrinthPlatform.filesOf` applies a
+version node's `game_versions` to *every* file of it. And one `ModFile` can carry two loaders — a Modrinth
+version tagged `[forge, neoforge]` with two primary jars gives both jars both loaders — so a stable sort hands
+the NeoForge attempt whichever the platform listed first. **The suite could not see either shape**: every
+`pickBootableCandidate` test used a single-element `loaders` set *and* a single-element `minecraftVersions`
+set. Both are now characterized, and they pass as written, which is the point — they prove the defect.
+
+**Three things landed.**
+
+1. **`BootDecision`** names which rung decided a boot and marks exactly two as decisive evidence:
+   `CLIENT_ONLY_CLASS` (no broken harness can fabricate it) and `OPERATOR_RULE` (a rule reaching `CRASHED`
+   said so deliberately; an undecided rule resolves to the ladder or to `INCONCLUSIVE`, never to `CRASHED`).
+   `/as-properties` publishes nothing else. A legacy verdict has no recorded decision and so does not
+   publish — deliberately emptying the grinder's contribution until a sweep re-grinds, because an empty
+   contribution beats a wrong one.
+2. **Three marker sets**, all *below* `clientOnlyClassMarker` so a mod reaching a client class *through* a
+   mixin still reads `CRASHED`: `mixinApplyFailureMarkers`, `loaderSolverFailureMarkers`,
+   `runtimeMismatchMarkers`.
+3. **`JarSelfDeclaration`**, consulted in `stageBootPack` before generation, over the new additive
+   `ScannedMod.minecraftConstraint` — a value every scanner already parsed and threw away. **It fails toward
+   accept**: unreadable jar, absent descriptor, unparseable range, unrecognised loader, a scan that throws —
+   all boot. Only a positive, readable contradiction refuses, because a gate refusing on doubt turns a
+   descriptor gap into a catalog-wide mass-INCONCLUSIVE event.
+
+**`GrinderAuditIT` is the standing instrument**, gated `GRINDER_AUDIT_IT=1`. First live run, and it earned
+its keep twice — once on the store and once on itself.
+
+| | undefensible / total |
+|---|---|
+| per kept console (my first, wrong version) | 67 / 91 |
+| **per verdict (correct)** | **27 / 43** |
+
+A candidate is booted several times and every non-survived attempt keeps its own console, so grading
+artifacts counted one verdict repeatedly *and* counted a re-check attempt against a verdict another attempt
+decided. Grouped per tuple, a verdict is defensible if any of its consoles carries decisive evidence.
+
+Distribution, one entry per published HIGH, 43 verdicts over 91 consoles, no rule file:
+`CLIENT_ONLY_CLASS` 16 · `EXIT_CODE` 12 · `DEPENDENCY_FAILURE` 8 · `MIXIN_APPLY_FAILURE` 4 ·
+`RUNTIME_MISMATCH` 1 · `LAUNCH_FAILURE` 1 · `LOADER_BOOTSTRAP_FAILURE` 1.
+
+**The honest cost, stated because the numbers make it concrete.** Among the 27 are `sodium-extra`,
+`reeses-sodium-options`, `better-ping-display` and `immersive-ui` — mods that genuinely *are* client-only but
+whose crash was a dependency failure or a bare non-zero exit, so the engine holds no *proof*. The gate is
+conservative, not precise: it drops real findings alongside the false ones (`debugify`, `charm` and
+`tectonic` are in the same list and are **not** client-only). The recovery path is the rule engine — an
+operator who has verified a signature writes a rule, and `OPERATOR_RULE` counts as decisive. C and this gate
+compose for exactly that reason.
+
+**Three mistakes of mine, all caught by guards that already existed** — recorded because each is easy to
+repeat. A Forge fixture asserted `CLIENT` where `sidenessOf` correctly yields `SERVER`, because it declared
+two platform entries and `sidenessOf` is SERVER unless *every* signal says CLIENT. A new `-api` test pointed
+at `src/test/resources/serverpackcreator.properties`, and SPC wrote this machine's absolute paths into the
+committed file — every other test uses the processed `build/resources/test` copy for exactly that reason, and
+`TestPropertiesTest.theCommittedTestPropertiesNameNoHost` caught it. And
+`everyColumnRendersTheValueItsHeaderNames` caught the new `Decision` column the moment it was added to one
+of the two places that must agree.
+
+Also corrected: the module doc claimed the classifier ladder was "eight rungs" (it was eleven, is now
+fourteen), and `theGuardOrderIsPinnedAsAWhole`'s own KDoc omitted the rule and sandbox rungs while asserting
+both. The count is replaced with an instruction to re-derive it from `classify`, having been wrong twice.
