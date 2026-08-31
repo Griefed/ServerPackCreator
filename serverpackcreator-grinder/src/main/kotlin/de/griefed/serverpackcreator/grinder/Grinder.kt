@@ -151,6 +151,7 @@ class Grinder(
                     jarScan = verdict.jarScan,
                     bootedLoader = verdict.bootedLoader,
                     firedRule = verdict.firedRule,
+                    decidedBy = verdict.decidedBy?.name,
                     stagedDependencies = verdict.stagedDependencies
                 )
             )

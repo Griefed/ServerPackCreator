@@ -137,7 +137,15 @@ data class GrindVerdict(
      * The dependency jars staged beside the candidate for the decisive boot, so a verdict can be traced to
      * the pack that produced it rather than only to the mod it is about.
      */
-    val stagedDependencies: List<String> = emptyList()
+    val stagedDependencies: List<String> = emptyList(),
+    /**
+     * Which classifier rung settled this verdict's boot, by name, or `null` for a verdict recorded before it
+     * was tracked. **The publication gate reads this**: only a decision `BootDecision.decisive` marks may
+     * reach the fallback list, so a crash that was really a mixin failure, a solver give-up or a bare
+     * non-zero exit can never publish. A `String` rather than the enum, so a rung added by a newer build
+     * leaves the store readable to an older one.
+     */
+    val decidedBy: String? = null
 )
 
 /**

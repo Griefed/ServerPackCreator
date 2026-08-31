@@ -37,15 +37,88 @@ import de.griefed.serverpackcreator.clientside.BootLogClassifier.setupAbortMarke
  *
  * @author Griefed
  */
+/**
+ * Which rung of the ladder settled a boot's verdict, and whether that rung's `CRASHED` counts as **decisive
+ * evidence of client-only-ness**.
+ *
+ * Why this is needed at all: `CRASHED` is reachable from [CLIENT_ONLY_CLASS], which no environment failure
+ * can fabricate, and from [EXIT_CODE], which means only *"the process exited non-zero and nothing recognised
+ * why"*. Both produced an identical `HIGH`, so the published fallback list could not tell a mod reaching for
+ * `net/minecraft/client` from one whose mixins failed to apply. Sampled against the deployed grinder on
+ * 2026-08-31, four of five published boot logs were the latter — and one of those mods was already being
+ * served to every instance polling the list.
+ *
+ * @author Griefed
+ */
+enum class BootDecision(
+    /**
+     * Whether a `CRASHED` from this rung may publish a clientside entry. **Exactly two qualify**, and the set
+     * is deliberately tiny: [CLIENT_ONLY_CLASS] because the marker cannot be faked by a broken harness, and
+     * [OPERATOR_RULE] because a rule that reached `CRASHED` said so deliberately — an undecided rule resolves
+     * to the ladder or to `INCONCLUSIVE`, never to `CRASHED`.
+     */
+    val decisive: Boolean = false
+) {
+    /** The server reported ready. */
+    READY_LINE,
+
+    /** The boot ran out of its budget, so the mod never got a fair run. */
+    TIMED_OUT,
+
+    /** The pack's own setup aborted before the mod was loaded. */
+    SETUP_ABORT,
+
+    /** The JVM never got as far as running the server. */
+    LAUNCH_FAILURE,
+
+    /** The modloader fell over before it could load anything. */
+    LOADER_BOOTSTRAP_FAILURE,
+
+    /** Killed from outside, or killed for memory — host trouble, not the mod's doing. */
+    KILLED_OR_OOM,
+
+    /** An operator's console rule decided it. Decisive, because such a rule states `CRASHED` on purpose. */
+    OPERATOR_RULE(decisive = true),
+
+    /** The server died reaching for a client-only class. The one signal a broken harness cannot fabricate. */
+    CLIENT_ONLY_CLASS(decisive = true),
+
+    /** A dependency the staging failed to supply, so the mod's own code never ran. */
+    DEPENDENCY_FAILURE,
+
+    /** The sandbox denied the network, so the mod failed on the harness. */
+    SANDBOX_NETWORK,
+
+    /**
+     * A mixin failed to apply or inject — the jar and the Minecraft it was booted on disagree about what
+     * exists. Says nothing about sideness: the mod never reached its own server code.
+     */
+    MIXIN_APPLY_FAILURE,
+
+    /** The modloader's dependency solver gave up, so no mod was loaded to judge. */
+    LOADER_SOLVER_FAILURE,
+
+    /** The jar and the runtime disagree about the loader or its language — the wrong jar was staged. */
+    RUNTIME_MISMATCH,
+
+    /** Nothing was recognised; the exit status alone decided. **Never** evidence of anything about sideness. */
+    EXIT_CODE
+}
+
 data class Classification(
     /** The verdict this console produced. */
     val result: BootResult,
     /** The rule that decided or annotated it, or `null` when no rule matched. */
-    val firedRule: ConsoleRuleMatch? = null
+    val firedRule: ConsoleRuleMatch? = null,
+    /**
+     * Which rung settled [result]. Carried so the publication gate can refuse a `CRASHED` that is not
+     * evidence, and so an audit can report the distribution rather than guessing at it.
+     */
+    val decidedBy: BootDecision = BootDecision.EXIT_CODE
 ) {
     companion object {
         /** A verdict the built-in ladder reached with no rule involved. */
-        internal fun of(result: BootResult) = Classification(result)
+        internal fun of(result: BootResult, decidedBy: BootDecision) = Classification(result, null, decidedBy)
     }
 }
 
@@ -225,6 +298,71 @@ object BootLogClassifier {
      * is the one thing the expensive boot exists to catch, so it outranks the dependency excuse above — an
      * informational "Found 2 dependencies" line must never suppress it.
      */
+    /**
+     * A mixin that could not be applied or injected. **Not sideness evidence**: the jar and the Minecraft it
+     * was booted on disagree about what exists, so the mod's own server code never ran.
+     *
+     * Two of five real logs sampled 2026-08-31 died exactly this way and reached the bare exit-code rung —
+     * `create_ltab` on Minecraft 1.20.6 (`@Inject … could not find any targets matching
+     * 'Lnet/minecraft/class_4317;method_20807'`) and `debugify` on 1.19.1 (`@Shadow field f_25782_ was not
+     * located in the target class`). The existing mixin coverage in [dependencyFailureMarkers] is only
+     * `ClassMetadataNotFoundException` and the legacy `MixinTweaker`, neither of which is the apply/inject
+     * shape. **Stays below [clientOnlyClassMarker]** — a mod reaching a client-only class *through* a mixin
+     * is a genuine signal, and outranking it here would discard true positives.
+     */
+    private val mixinApplyFailureMarkers = Regex(
+        "(InvalidInjectionException" +
+            "|InvalidMixinException" +
+            "|MixinApplyError" +
+            "|MixinTransformerError" +
+            "|FAILED during APPLY" +
+            "|Critical injection failure" +
+            "|Mixin transformation of .{1,120} failed)",
+        RegexOption.IGNORE_CASE
+    )
+
+    /**
+     * The modloader's dependency solver giving up, so nothing was loaded to judge.
+     *
+     * Quilt's phrasing shares **nothing** with Fabric's: no `requires`, no `Incompatible mods found`, so
+     * [dependencyFailureMarkers] does not reach it. Its `requires version .{1,80} of ` alternative was
+     * written for a *different* Quilt shape. Observed 2026-08-31 on `create_ltab` / Quilt 0.31.0-beta.1:
+     * `Unhandled solver error involving the following rules:` with
+     * `quilt_resource_loader versions [*] (0 valid options, 0 invalid options)`.
+     */
+    private val loaderSolverFailureMarkers = Regex(
+        "(Unhandled solver error" +
+            "|\\(0 valid options, 0 invalid options\\)" +
+            "|Quilt Loader: Failed to load)",
+        RegexOption.IGNORE_CASE
+    )
+
+    /**
+     * The staged jar and the runtime disagree about the loader itself — the wrong jar was staged, so the run
+     * says nothing about the mod.
+     *
+     * Observed 2026-08-31: `DamageVignette-2.0.2-**forge**+mc1.20.jar` staged for a **NeoForge** boot, dying
+     * on `Missing language javafml version [46,)` (Forge's language provider, not NeoForge's) and a
+     * `java.lang.module.ResolutionException` from the jar's bundled MixinExtras colliding with NeoForge's.
+     * One platform file claiming two loaders is what put it there; see `BootCandidateSelector`.
+     *
+     * **log4j-core belongs here for the opposite reason, and it is the most valuable member.** Its absence is
+     * not the mod's doing at all — the server is supposed to *have* a logging framework — so a console
+     * reaching for `org.apache.logging.log4j` means the runtime we assembled is broken. Measured 2026-08-31:
+     * every one of the 90 boots against the cached `NeoForge 21.11.45 / Minecraft 1.21.11` install died this
+     * way, `corgilib` (a library) and `chisels-bits` (a building mod that runs on servers) included, and the
+     * ones that reached a non-zero exit were published as clientside. **One poisoned cache entry produced
+     * false positives across an entire tuple**, which is exactly the failure a bare exit-code verdict cannot
+     * distinguish from a mod crashing on its own merits.
+     */
+    private val runtimeMismatchMarkers = Regex(
+        "(Missing language .{1,40} version" +
+            "|java\\.lang\\.module\\.ResolutionException" +
+            "|NoClassDefFoundError: org/apache/logging/log4j" +
+            "|ClassNotFoundException: org\\.apache\\.logging\\.log4j)",
+        RegexOption.IGNORE_CASE
+    )
+
     private val clientOnlyClassMarker = Regex(
         "(NoClassDefFoundError: net/minecraft/client|ClassNotFoundException: net\\.minecraft\\.client)"
     )
@@ -273,25 +411,25 @@ object BootLogClassifier {
         rules: ConsoleRuleSet
     ): Classification {
         if (consoleLines.any { readyLine.containsMatchIn(it) }) {
-            return Classification.of(BootResult.SURVIVED)
+            return Classification.of(BootResult.SURVIVED, BootDecision.READY_LINE)
         }
         if (timedOut) {
-            return Classification.of(BootResult.INCONCLUSIVE)
+            return Classification.of(BootResult.INCONCLUSIVE, BootDecision.TIMED_OUT)
         }
         if (consoleLines.any { setupAbortMarkers.containsMatchIn(it) }) {
-            return Classification.of(BootResult.INCONCLUSIVE)
+            return Classification.of(BootResult.INCONCLUSIVE, BootDecision.SETUP_ABORT)
         }
         // The JVM never got as far as running the server, so nothing about the mod was exercised.
         if (consoleLines.any { launchFailureMarkers.containsMatchIn(it) }) {
-            return Classification.of(BootResult.INCONCLUSIVE)
+            return Classification.of(BootResult.INCONCLUSIVE, BootDecision.LAUNCH_FAILURE)
         }
         // The loader fell over before it could load anything, so there was no mod in the run to blame.
         if (consoleLines.any { loaderBootstrapFailureMarkers.containsMatchIn(it) }) {
-            return Classification.of(BootResult.INCONCLUSIVE)
+            return Classification.of(BootResult.INCONCLUSIVE, BootDecision.LOADER_BOOTSTRAP_FAILURE)
         }
         // Killed from outside, or killed for memory: the mod never got the chance to fail on its own merits.
         if (exitCode in killedExitCodes || consoleLines.any { outOfMemoryMarkers.containsMatchIn(it) }) {
-            return Classification.of(BootResult.INCONCLUSIVE)
+            return Classification.of(BootResult.INCONCLUSIVE, BootDecision.KILLED_OR_OOM)
         }
         // Rung 7 -- the operator's own rules. Below every guard above, all of which mean the mod never got a
         // fair run, so a hand-edited file can never turn host trouble into a HIGH. Above the marker below,
@@ -304,7 +442,7 @@ object BootLogClassifier {
         // along on whatever the ladder settles, so the operator can see that their pattern matched.
         val decided = fired?.rule?.verdict ?: rules.undecidedVerdict?.takeIf { fired != null }
         if (fired != null && decided != null) {
-            return Classification(decided, fired)
+            return Classification(decided, fired, BootDecision.OPERATOR_RULE)
         }
         val annotating = fired
 
@@ -314,22 +452,35 @@ object BootLogClassifier {
         // Minecraft` -- was scored INCONCLUSIVE and no verdict in a 517-strong store ever reached HIGH. Environment
         // failures cannot fake this marker, which is what makes it safe to trust over the exit code.
         if (consoleLines.any { clientOnlyClassMarker.containsMatchIn(it) }) {
-            return Classification(BootResult.CRASHED, annotating)
+            return Classification(BootResult.CRASHED, annotating, BootDecision.CLIENT_ONLY_CLASS)
         }
         // Dependencies our staging failed to supply mean the mod was never fairly tested.
         if (consoleLines.any { dependencyFailureMarkers.containsMatchIn(it) }) {
-            return Classification(BootResult.INCONCLUSIVE, annotating)
+            return Classification(BootResult.INCONCLUSIVE, annotating, BootDecision.DEPENDENCY_FAILURE)
         }
         // The sandbox denied the network, so the mod failed on the harness rather than on its own merits.
         if (consoleLines.any { sandboxNetworkMarkers.containsMatchIn(it) }) {
-            return Classification(BootResult.INCONCLUSIVE, annotating)
+            return Classification(BootResult.INCONCLUSIVE, annotating, BootDecision.SANDBOX_NETWORK)
+        }
+        // The jar and the runtime disagree -- a mixin that cannot apply, a solver that gave up, a language
+        // provider from the wrong loader. Each means the pack we assembled was wrong, not that the mod is
+        // clientside, and each reached the bare exit code before these rungs existed.
+        if (consoleLines.any { mixinApplyFailureMarkers.containsMatchIn(it) }) {
+            return Classification(BootResult.INCONCLUSIVE, annotating, BootDecision.MIXIN_APPLY_FAILURE)
+        }
+        if (consoleLines.any { loaderSolverFailureMarkers.containsMatchIn(it) }) {
+            return Classification(BootResult.INCONCLUSIVE, annotating, BootDecision.LOADER_SOLVER_FAILURE)
+        }
+        if (consoleLines.any { runtimeMismatchMarkers.containsMatchIn(it) }) {
+            return Classification(BootResult.INCONCLUSIVE, annotating, BootDecision.RUNTIME_MISMATCH)
         }
         return Classification(
             when (exitCode) {
                 null, 0 -> BootResult.INCONCLUSIVE
                 else -> BootResult.CRASHED
             },
-            annotating
+            annotating,
+            BootDecision.EXIT_CODE
         )
     }
 }
