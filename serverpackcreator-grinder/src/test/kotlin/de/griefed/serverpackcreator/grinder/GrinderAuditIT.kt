@@ -58,6 +58,11 @@ import java.time.Duration
  * `SPC_GRINDER_AUDIT_SAMPLE` caps how many consoles are fetched (default 200), and
  * `SPC_GRINDER_BOOT_RULES` is honoured so the audit classifies with the same rules the daemon would.
  *
+ * **Gotcha with that last one:** a Gradle test JVM's working directory is the *module* directory, so a
+ * relative path is relative to `serverpackcreator-grinder/`. `deploy/boot-rules.example.json` is right;
+ * prefixing it with the module name silently finds nothing, and the audit then reports
+ * `0 rule(s) from none` rather than failing — which is easy to miss in the header line.
+ *
  * @author Griefed
  */
 internal class GrinderAuditIT {

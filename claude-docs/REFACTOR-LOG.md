@@ -3311,3 +3311,41 @@ of the two places that must agree.
 Also corrected: the module doc claimed the classifier ladder was "eight rungs" (it was eleven, is now
 fourteen), and `theGuardOrderIsPinnedAsAWhole`'s own KDoc omitted the rule and sandbox rungs while asserting
 both. The count is replaced with an instruction to re-derive it from `classify`, having been wrong twice.
+
+### The same day — rules for the unproven, and a poisoned cache entry
+
+Asked to write rules recovering the client-only mods that lacked proof. Reading the consoles produced one
+rule, one deliberate refusal, and a harness defect worth more than either.
+
+**One rule, verified.** `sodium-extra`, `reeses-sodium-options` and `better-block-entities` all die on
+`NoClassDefFoundError: org/lwjgl/Version`. LWJGL is the client's windowing and OpenGL binding, which a
+dedicated server never ships, so reaching it *is* proof — decisive in a way `clientOnlyClassMarker` misses,
+since that matches only `net/minecraft/client`. `better-block-entities` did not reach it itself; Sodium, its
+required dependency, did — and the entry still holds, because a mod whose required dependency cannot run on
+a server cannot run on one either. `ShippedBootRulesTest` holds the shipped example to those real excerpts
+and also pins that no shipped rule can overturn a ready-line or host trouble.
+
+**One rule deliberately not written, with the reason in the file.** `better-ping-display`, `immersive-ui` and
+`certain-questing-additions` are published HIGH and all die on a missing **log4j-core**. A rule would have
+recovered three entries and been exactly backwards: log4j-core is a logging library the server is supposed
+to *have*.
+
+**Which found the real defect.** All three share one attempt tuple, so three *unrelated* mods on it were
+checked — `bbrb`, `chisels-bits`, `corgilib` — and every one fails identically. `corgilib` is a library and
+`chisels-bits` runs on servers. **The cached loader install for `NeoForge 21.11.45 / Minecraft 1.21.11` is
+broken, and all 90 boots against it are worthless**; the ones reaching a non-zero exit were published as
+clientside. One poisoned cache entry manufacturing false positives across an entire tuple is precisely what
+a bare exit-code verdict cannot distinguish from a mod crashing on its own merits. log4j-core therefore
+joined `runtimeMismatchMarkers` — a marker, not a rule, because it is the *absence* of evidence.
+**Operator action no code change covers: invalidate that tuple and re-grind it.**
+
+**Measured impact on the live store, 43 HIGH verdicts:**
+
+| | defensible | undefensible |
+|---|---|---|
+| deployed classifier, no rules | 16 | **27** |
+| + the three new markers | 16 | 27 — redistributed (`EXIT_CODE` 12→6, `RUNTIME_MISMATCH` 1→7) |
+| + the LWJGL rule | **19** | **24** |
+
+The markers recover nothing by design; they move verdicts to INCONCLUSIVE, which is the correct answer. Only
+a verified rule recovers, and it recovered exactly the three that were verified.
