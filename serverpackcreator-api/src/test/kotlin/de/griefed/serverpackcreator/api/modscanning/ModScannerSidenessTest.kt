@@ -475,4 +475,36 @@ internal class ModScannerSidenessTest {
             "both the bare-string and the object entry shapes must be read"
         )
     }
+
+    /**
+     * **A Fabric-only jar booted under Quilt must not lose its declared dependencies.**
+     *
+     * Quilt deliberately runs Fabric mods, and most do not ship a `quilt.mod.json` at all. The Quilt scanner
+     * then finds no descriptor, `DescriptorScanner` flattens that to a default entry — filename as id,
+     * `SERVER`, **empty dependencies** — and the merge only prefers the Fabric result when the two disagree
+     * about *sideness*. Two SERVER verdicts agree, so the empty entry wins and everything the Fabric manifest
+     * declared is discarded.
+     *
+     * Reported 2026-08-31 from the live grinder: `bookshelf` on Quilt 0.31.0-beta.3 / Minecraft 1.21.1 died
+     * with `Bookshelf requires any version of fabric-api, which is missing!` — the dependency was never
+     * resolved because the scan never reported it. The same loss reaches real generation, where
+     * `ModListCompiler`'s dependency rescue would fail to keep Fabric API in a Quilt pack that needs it.
+     */
+    @Test
+    fun aFabricOnlyJarKeepsItsDependenciesWhenScannedForQuilt(@TempDir tempDir: File) {
+        val descriptor = """
+            {"schemaVersion":1,"id":"bookshelf","version":"1.0.0","environment":"*",
+             "depends":{"fabric-api":"*","minecraft":"~1.21.1"}}
+        """.trimIndent()
+        val jar = jarContaining(tempDir, "bookshelf-fabric.jar", "fabric.mod.json", descriptor)
+
+        val scanned = modScanner.quiltPackScanner.scan(listOf(jar)).single()
+
+        Assertions.assertEquals("bookshelf", scanned.modID, "the Fabric descriptor's id, not the file name")
+        Assertions.assertEquals(
+            listOf("fabric-api"), scanned.dependencies.map { it.modID },
+            "a Quilt pack scan must keep what the Fabric manifest declared; got ${scanned.dependencies}"
+        )
+        Assertions.assertEquals("~1.21.1", scanned.minecraftConstraint)
+    }
 }
