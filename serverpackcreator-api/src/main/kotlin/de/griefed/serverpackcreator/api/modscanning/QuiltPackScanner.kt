@@ -59,7 +59,21 @@ class QuiltPackScanner(
 
         for (index in quiltScan.indices) {
             val fabricVerdict = fabricScan[quiltScan[index].file] ?: continue
-            if (quiltScan[index].sideness == Sideness.SERVER && fabricVerdict.sideness == Sideness.CLIENT) {
+            val quiltVerdict = quiltScan[index]
+            // Quilt deliberately runs Fabric mods, and most ship no quilt.mod.json at all -- so the Quilt
+            // scan yields the "nothing could be read" fallback while the Fabric scan holds the real
+            // descriptor. Preferring it is not a sideness judgement: everything the jar declared, its id,
+            // its dependencies and its Minecraft range, exists only in the Fabric result.
+            //
+            // Reported 2026-08-31: `bookshelf` on Quilt died with "requires any version of fabric-api,
+            // which is missing!" because this merge returned the empty entry, so nothing downstream ever
+            // saw the dependency. Sideness alone could not catch it -- both verdicts read SERVER and agreed.
+            if (!quiltVerdict.descriptorRead && fabricVerdict.descriptorRead) {
+                log.debug("${fabricVerdict.file.name} carries no Quilt descriptor; using its Fabric one.")
+                quiltScan[index] = fabricVerdict
+                continue
+            }
+            if (quiltVerdict.sideness == Sideness.SERVER && fabricVerdict.sideness == Sideness.CLIENT) {
                 log.info(
                     "${fabricVerdict.file.name} Quilt-scan yielded sideness SERVER, but Fabric-scan " +
                             "yielded CLIENT. Using Fabric-scan result instead."
