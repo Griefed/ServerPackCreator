@@ -75,8 +75,25 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
         val modConfig: CommentedConfig = getConfig(modJar)
         val modId = getModId((modConfig.valueMap()[mods] as ArrayList<*>)[0] as CommentedConfig)
         val (sidenesses, dependencies) = getSidenessesAndDependencies(modConfig, modId)
-        return ScannedMod(modJar, modId, sidenessOf(sidenesses), dependencies)
+        return ScannedMod(
+            modJar, modId, sidenessOf(sidenesses), dependencies,
+            minecraftConstraint = readMinecraftConstraint(modConfig, modId)
+        )
     }
+
+    /**
+     * The `versionRange` of the `minecraft` dependency this descriptor declares, or `null`.
+     *
+     * Read separately rather than returned from [getSidenessesAndDependencies], because that function
+     * *consumes* the platform entry — the `side` on it is what decides the mod's own sideness — and threading
+     * a third value out of it would tangle two unrelated answers. `minecraft` specifically, not the whole
+     * platform regex: `forge`/`neoforge` state a loader range, which is a different question.
+     */
+    private fun readMinecraftConstraint(modConfig: CommentedConfig, modId: String): String? = runCatching {
+        getMapOfDependencyLists(modConfig)[modId]
+            ?.firstOrNull { getModId(it).equals("minecraft", ignoreCase = true) }
+            ?.let { getVersionRange(it) }
+    }.getOrNull()
 
     private fun getSidenessesAndDependencies(modConfig: CommentedConfig, modId: String): Pair<List<Sideness>, List<ModDependency>> {
         val dependencies: Map<String, ArrayList<CommentedConfig>> = getMapOfDependencyLists(modConfig)

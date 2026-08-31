@@ -375,9 +375,26 @@ read the files; it also drifted (it listed 8 of the 30 test files). What is *not
   | *(boot-log capture, verified by a live one-shot rather than an IT)* | — | a daemon + `spc-grinder-runtime` | Docker 29.7.2, 2026-08-29 |
   | `ScriptTemplateMatrixIT` | `GRINDER_TEMPLATE_IT=1` | the `spc-grinder-templates` image | 2026-07-29 |
   | `CatalogCrawlLiveIT` | `GRINDER_LIVE_IT=1` | network (Modrinth) | 2026-07-29 |
+  | `GrinderAuditIT` | `GRINDER_AUDIT_IT=1` | network + a **live grinder** (`SPC_GRINDER_AUDIT_URL`) | 2026-08-31 |
   | `CurseForgeCrawlLiveIT` | `GRINDER_CF_IT=1` | **plus** `CURSEFORGE_API_KEY` | 2026-07-30 |
 
   e.g. `docker pull busybox && GRINDER_DOCKER_IT=1 ./gradlew :serverpackcreator-grinder:test --tests "*DockerJavaContainerEngineIT"`
+- **`GrinderAuditIT` grades a live daemon's published verdicts against their own evidence, and it exists
+  because sample-and-fix failed twice.** A 200-log census (2026-08-29) and a merge gate reporting `HIGH 8 → 4`
+  both preceded the 2026-08-31 finding that **four of five** sampled boot logs were scored `CRASHED` by the
+  bare exit-code rung — one of the mods already in the served fallback list. Neither census was committed, so
+  nothing re-checked the published list against the consoles behind it and the loop never closed.
+  - It asks one question of the whole store: **is every published `HIGH` decided by a rung
+    `BootDecision.decisive` marks?** Failure prints the distribution by decision, so a new defect shows up as
+    a bucket rather than as a surprise.
+  - **`/boot-logs` is HTML-only** — no machine-readable listing exists — so names are scraped from its
+    `?name=` hrefs. The tuple is everything before the first `~`, which holds because slugs and loaders
+    contain `-` but never `~`.
+  - It assumes a **non-zero exit** when re-classifying, deliberately: the exit status is not published, and
+    every rung a HIGH can legitimately come from is decided on the console alone. Assuming non-zero is what
+    keeps the exit-code rung *reachable*, and therefore counted.
+  - Politeness is part of the contract: gated, capped by `SPC_GRINDER_AUDIT_SAMPLE` (200), sequential, and it
+    never fails the audit over one missing artifact.
 - **The live ITs are the source of the platform facts quoted in this file.** Each prints `[live]` lines with
   its measured numbers (catalog sizes, slice sizes, saturation, ordering) — read those rather than trusting a
   number written down here, and re-run them after touching paging, the cursor, or the partition plan.

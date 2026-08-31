@@ -791,6 +791,16 @@ restart. Run it after touching paging or the cursor:
 
 ```bash
 GRINDER_LIVE_IT=1 ./gradlew :serverpackcreator-grinder:test --tests "*CatalogCrawlLiveIT"
+
+# Audit a LIVE grinder's published verdicts against their own evidence. Fails if any verdict published as
+# HIGH rests on a crash that is not decisive evidence of client-only-ness -- a mixin that would not apply, a
+# dependency solver that gave up, a jar staged for the wrong loader, or a bare non-zero exit nobody
+# recognised. Prints the distribution by decision either way, so a new failure shape shows up as a bucket.
+#
+#   SPC_GRINDER_AUDIT_URL     which grinder to grade (default https://grinder.serverpackcreator.de)
+#   SPC_GRINDER_AUDIT_SAMPLE  how many consoles to fetch (default 200)
+#   SPC_GRINDER_BOOT_RULES    honoured, so the audit classifies with the same rules the daemon uses
+GRINDER_AUDIT_IT=1 ./gradlew :serverpackcreator-grinder:test --tests "*GrinderAuditIT"
 ```
 
 Internals, design decisions and landmines live in [`CLAUDE.md`](CLAUDE.md) and [`module.md`](module.md).

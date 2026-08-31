@@ -94,6 +94,16 @@ class BootVerifier(
      * attempt has to be added in exactly one place or it silently covers two of the three. Staging wipes
      * the attempt directory, so a re-check's evidence is gone by the time [verify] returns.
      */
+    /**
+     * [refuseForSelfDeclaration] with this verifier's scanner supplying the jar's declared Minecraft range.
+     * Split so the decision itself stays testable without an [ApiWrapper].
+     */
+    private fun refuseForSelfDeclaration(jar: File, loader: String, minecraftVersion: String): Prepared.Failed? =
+        refuseForSelfDeclaration(jar, loader, minecraftVersion) { candidate ->
+            apiWrapper.modScanner.scannerFor(loader, minecraftVersion)
+                ?.scan(listOf(candidate))?.singleOrNull()?.minecraftConstraint
+        }
+
     private fun boot(pack: Prepared.Ready): BootOutcome =
         // The rules are asked for per attempt rather than captured once, which is what makes an edit during
         // a multi-day run take effect on the next boot instead of the next restart.
@@ -145,7 +155,13 @@ class BootVerifier(
         /** The blamed dependency's project link, so the grinder can queue it for its own verification. */
         val blamedDependencyUrl: String? = null,
         /** The dependency jars staged alongside the candidate, so a verdict names the pack it booted with. */
-        val stagedDependencies: List<String> = emptyList()
+        val stagedDependencies: List<String> = emptyList(),
+        /**
+         * Which rung of the classifier ladder settled [result], or `null` when no boot ran. Carried so the
+         * grinder's publication gate can refuse a `CRASHED` that is not evidence of sideness — a mixin that
+         * would not apply, a solver that gave up, a bare non-zero exit — rather than treating every crash alike.
+         */
+        val decidedBy: BootDecision? = null
     )
 
     /**
@@ -554,6 +570,10 @@ class BootVerifier(
         ) {
             return Prepared.Failed("Could not download ${mainFile.fileName}.")
         }
+        // Ask the jar what it says about itself before spending a container on it. The platform's declared
+        // loader and Minecraft sets are what an author ticked; the descriptor is what the jar was built
+        // against, and where the two disagree the boot can only fail for reasons that are not sideness.
+        refuseForSelfDeclaration(File(modsDir, mainFile.fileName), loader, minecraftVersion)?.let { return it }
         refuseForMissingDependencies(unsatisfied, loader, minecraftVersion)?.let { return it }
         refuseForTooManyDependencies(injected.map { it.fileName }, loader, minecraftVersion)?.let { return it }
         unmappedDependencyNote(unmapped)?.let { log.warn(it) }
@@ -675,6 +695,29 @@ class BootVerifier(
          * largest failure class — each burning a full boot (~70 s) to learn nothing. Reporting the unmet dependency
          * is both honest and actionable, where a "crash" would have been neither.
          */
+        /**
+         * Refuse a boot the staged jar's own descriptor contradicts, or `null` to go ahead.
+         *
+         * Scans the jar for its declared Minecraft range and compares that, plus the descriptors it carries,
+         * against what is about to be booted. **Every uncertainty accepts** — see [JarSelfDeclaration]; a
+         * scan that throws is caught here for the same reason, because a gate that refuses on doubt turns a
+         * descriptor gap into a catalog-wide mass-INCONCLUSIVE event.
+         */
+        internal fun refuseForSelfDeclaration(
+            jar: File,
+            loader: String,
+            minecraftVersion: String,
+            minecraftConstraint: (File) -> String?
+        ): Prepared.Failed? {
+            val declared = runCatching { minecraftConstraint(jar) }.getOrNull()
+            val contradiction = JarSelfDeclaration.contradiction(jar, loader, minecraftVersion, declared)
+                ?: return null
+            return Prepared.Failed(
+                "Refusing to boot $loader on Minecraft $minecraftVersion: $contradiction. " +
+                    "The platform's declared versions are what its author ticked, not what the jar was built for."
+            )
+        }
+
         internal fun refuseForMissingDependencies(
             unsatisfied: Set<String>,
             loader: String,
@@ -931,7 +974,8 @@ class BootVerifier(
                 } ?: ""
                 BootOutcome(
                     result, logFile, "$label → $result ($exitDetail)$ruleNote", crashExcerpt, console,
-                    firedRule = classified.firedRule?.rule?.id
+                    firedRule = classified.firedRule?.rule?.id,
+                    decidedBy = classified.decidedBy
                 )
             }
         }

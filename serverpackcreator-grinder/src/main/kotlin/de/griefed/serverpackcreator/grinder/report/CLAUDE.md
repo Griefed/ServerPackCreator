@@ -3,6 +3,25 @@ cross-cutting landmines, remaining work) lives in serverpackcreator-grinder/CLAU
 
 # grinder.report — verdict persistence and the web/CSV output
 
+- **`/as-properties` publishes only a crash that is *decisive evidence*, not every `HIGH`.**
+  `FallbackPropertiesRenderer.decisive` reads `GrindVerdict.decidedBy` and admits exactly two decisions:
+  `CLIENT_ONLY_CLASS` and `OPERATOR_RULE`. `HIGH` alone was never enough — `CRASHED` is reachable both from
+  the client-only-class marker, which no broken harness can fabricate, and from the bare exit-code rung, which
+  means only *"exited non-zero and nothing recognised why"* — and the two were indistinguishable afterwards.
+  - **Measured against the live daemon on 2026-08-31: 27 of 43 published `HIGH` verdicts rested on no
+    decisive evidence** (`EXIT_CODE` 12, `DEPENDENCY_FAILURE` 8, `MIXIN_APPLY_FAILURE` 4, one each of
+    `RUNTIME_MISMATCH`, `LAUNCH_FAILURE`, `LOADER_BOOTSTRAP_FAILURE`). `created_ltab-` was in the served list
+    off a mixin refmap mismatch and a missing Fabric API.
+  - **A legacy verdict reads `null` and does NOT publish.** That deliberately empties the grinder's
+    contribution until a sweep re-grinds — an empty contribution beats a wrong one, and grandfathering the old
+    rows in would keep exactly the entries the gate exists to remove.
+  - **The gate is conservative, not precise, and the numbers say so.** Among the 27 were `sodium-extra` and
+    `reeses-sodium-options`, which genuinely *are* client-only but crashed without decisive evidence. The
+    recovery path is a rule: a signature verified by hand counts as `OPERATOR_RULE`. Measured, the shipped
+    LWJGL rule recovered exactly 3, taking 27 → 24 — so expect a rule to buy single digits, not tens.
+  - `VerdictField.DECISION` exposes it as a filterable `CHOICE` column, so `?f.decision=EXIT_CODE` lists the
+    whole undefensible population. `GrinderAuditIT` grades it in bulk; details in the module `CLAUDE.md`.
+
 - **`VerdictField` is the single declaration of a column** — header, CSV header, URL token, filter kind and
   cell text in one enum, consumed by the HTML headers, the HTML cells, the CSV header and the CSV rows.
   Those four were hand-synced and *had* drifted (CSV seven fields against the table's eight). Adding a

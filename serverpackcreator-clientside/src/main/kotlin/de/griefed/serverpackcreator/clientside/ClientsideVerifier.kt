@@ -148,6 +148,7 @@ class ClientsideVerifier(
                 bootedLoader = bootOutcome?.bootedLoader,
                 bootCrashExcerpt = bootOutcome?.crashExcerpt,
                 firedRule = bootOutcome?.firedRule,
+                decidedBy = bootOutcome?.decidedBy,
                 blamedDependency = bootOutcome?.blamedDependency,
                 blamedDependencyUrl = bootOutcome?.blamedDependencyUrl,
                 stagedDependencies = bootOutcome?.stagedDependencies.orEmpty(),

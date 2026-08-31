@@ -105,8 +105,9 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   order differs per run. The starter jar's own pre-launch give-ups (`Failed to find run file at`, `Failed to find
   startup arguments using run script path`) sit in the same guard, and the JVM's `Error: could not open` for an
   unreadable `@argfile` joined `launchFailureMarkers`, which became reachable once the grinder started booting
-  Forge from `@libraries/.../unix_args.txt`. The ladder is now **eight** rungs and
-  `theGuardOrderIsPinnedAsAWhole` is what pins the order as a unit.
+  Forge from `@libraries/.../unix_args.txt`. The ladder is **fourteen** rungs, and
+  `theGuardOrderIsPinnedAsAWhole` is what pins the order as a unit — re-derive the count from `classify`
+  rather than trusting this sentence, which has been wrong twice.
 - **A crash that contradicts the metadata is re-checked on the mod's other versions.**
   `recheckCrashOnOtherModVersions`, over the pure `shouldRecheckAgainstOtherVersions`,
   `reconcileOtherVersionRecheck` and `BootCandidateSelector.pickRecheckCandidates`.
@@ -197,6 +198,21 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   directory, and a crash is the one outcome that reaches HIGH. Cut only the *loader* suffix when parsing —
   slugs nest, and a prefix match would claim `creativecore-extras` for `creativecore`. Directories staged
   before this change match no owner and are cleared by the grinder's startup `reapAll()`.
+- **Every rung names itself, and only two are decisive** (`BootDecision`). `CRASHED` is reachable from
+  `clientOnlyClassMarker`, which no broken harness can fabricate, *and* from the bare exit-code rung, which
+  means only "exited non-zero, nothing recognised why" — and afterwards the two were indistinguishable, so the
+  grinder published both alike. `Classification.decidedBy` records the rung; `BootDecision.decisive` marks
+  exactly `CLIENT_ONLY_CLASS` and `OPERATOR_RULE` (a rule reaching CRASHED stated it deliberately), and the
+  grinder's `/as-properties` gate publishes nothing else. **Measured 2026-08-31 against the deployed
+  grinder: four of five published boot logs were decided by the exit-code rung**, and one of those mods was
+  already in the served list.
+  - Three marker sets exist because of those four logs, all **below** `clientOnlyClassMarker` so a mod
+    reaching a client class *through* a mixin still reads CRASHED: `mixinApplyFailureMarkers` (an
+    `@Inject`/`@Shadow` that found no target — the jar and its Minecraft disagree),
+    `loaderSolverFailureMarkers` (Quilt's `Unhandled solver error` / `(0 valid options, 0 invalid options)`,
+    a phrasing sharing *nothing* with Fabric's, so `dependencyFailureMarkers` never reached it), and
+    `runtimeMismatchMarkers` (`Missing language javafml version [46,)`, `java.lang.module.ResolutionException`
+    — a Forge jar staged for a NeoForge boot).
 - **Operator console rules are rung 7 of the ladder** (`ConsoleRules.kt`: `ConsoleRule`, `ConsoleRuleSet`,
   `ConsoleRuleFile`; `BootLogClassifier.classify(..., rules)` returning a `Classification`). A rule maps console
   text to a `BootResult`, so a newly-observed clientside signature is a file edit rather than a release. **Where

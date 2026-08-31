@@ -97,6 +97,14 @@ internal enum class VerdictField(
     JAR_SIDENESS("Jar sideness", "JarSideness", "jar-sideness", FilterKind.CHOICE, { it.jarScan?.name ?: "not recorded" }),
     DETAIL("Detail", "Detail", "detail", FilterKind.TEXT, { it.detail }),
     RULE("Rule", "Rule", "rule", FilterKind.CHOICE, { it.firedRule ?: "" }),
+
+    /**
+     * Which classifier rung decided the boot. A **CHOICE** column on purpose: filtering the table to
+     * `decision=EXIT_CODE` is how a maintainer finds every verdict reached because a process exited non-zero
+     * and nothing recognised why — the population that produced the false positives of 2026-08-31, and the
+     * one the publication gate now refuses to publish.
+     */
+    DECISION("Decision", "Decision", "decision", FilterKind.CHOICE, { it.decidedBy ?: "" }),
     DEPENDENCIES("Dependencies", "Dependencies", "dependencies", FilterKind.TEXT, { it.stagedDependencies.joinToString(", ") }),
     SCANNED("Scanned (UTC)", "Scanned", "scanned", FilterKind.TEXT, { ScanDate.of(it.verifiedAt) });
 

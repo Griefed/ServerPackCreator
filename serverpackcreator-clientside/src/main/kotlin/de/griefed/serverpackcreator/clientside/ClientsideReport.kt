@@ -98,6 +98,11 @@ data class LoaderVerdict(
     val blamedDependency: String? = null,
     /** The blamed dependency's project link, so the grinder can queue it for its own verification. */
     val blamedDependencyUrl: String? = null,
+    /**
+     * Which classifier rung settled this loader's boot, or `null` when none ran. Only a decision marked
+     * `BootDecision.decisive` may publish a clientside entry.
+     */
+    val decidedBy: BootDecision? = null,
     /** The dependency jars staged beside the candidate, so a verdict names the pack it was booted with. */
     val stagedDependencies: List<String> = emptyList()
 )

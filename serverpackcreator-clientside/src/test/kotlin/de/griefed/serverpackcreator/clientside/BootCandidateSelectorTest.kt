@@ -31,6 +31,57 @@ internal class BootCandidateSelectorTest {
     private fun file(name: String, loaders: Set<String>, mcVersions: Set<String>) =
         ModFile(name, loaders, mcVersions, "https://cdn/$name", null, emptyList())
 
+    /**
+     * **The shape this suite never had, and the one that produced a live false positive.** A Modrinth version
+     * tagged `loaders: [forge, neoforge]` with two primary jars gives *both* `ModFile`s the *same* two-loader
+     * set — the loaders are read from the version node and applied to every file of it. CurseForge does the
+     * same from one flat `gameVersions` array.
+     *
+     * The selector then legitimately offers either jar for either loader, and being a stable sort it takes
+     * whichever the platform listed first. That is how `DamageVignette-2.0.2-forge+mc1.20.jar` came to be
+     * booted under NeoForge 20.4.251 on 2026-08-31, dying on `Missing language javafml version [46,)`.
+     *
+     * This is characterization, not a complaint: the selector cannot tell the two jars apart from metadata
+     * that describes them identically. `JarSelfDeclaration` is what refuses the pick afterwards, from the
+     * jar's own descriptor — see `JarSelfDeclarationTest.aForgeJarIsRefusedForANeoForgeBoot`.
+     */
+    @Test
+    fun aFileClaimingTwoLoadersIsOfferedForBoth() {
+        val bothTagged = setOf("Forge", "NeoForge")
+        val files = listOf(
+            file("DamageVignette-2.0.2-forge+mc1.20.jar", bothTagged, setOf("1.20.4")),
+            file("DamageVignette-2.0.2-neoforge+mc1.20.jar", bothTagged, setOf("1.20.4"))
+        )
+
+        val forFabricless = BootCandidateSelector.pickBootableCandidate(files, "NeoForge") { true }
+
+        Assertions.assertNotNull(forFabricless)
+        Assertions.assertEquals(
+            "DamageVignette-2.0.2-forge+mc1.20.jar", forFabricless?.first?.fileName,
+            "the stable sort takes whichever the platform listed first — a FORGE jar for a NeoForge boot, " +
+                "which only the post-stage descriptor gate can catch"
+        )
+    }
+
+    /**
+     * The Minecraft twin of the same problem. A platform's declared version set is what an author ticked, and
+     * `ModrinthPlatform.filesOf` applies a version node's whole `game_versions` list to every file of it
+     * without filtering — so one jar becomes one candidate *per version*, and the newest wins.
+     *
+     * Measured 2026-08-31: `create_ltab` booted on Minecraft 1.20.6 against older mappings, dying with
+     * `@Inject … could not find any targets matching 'Lnet/minecraft/class_4317;method_20807'`. Nothing here
+     * asks what the jar was compiled for, because nothing here can — the descriptor gate does.
+     */
+    @Test
+    fun aFileClaimingSeveralMinecraftVersionsIsBootedOnTheNewest() {
+        val files = listOf(file("create_ltab-2.1.2.jar", setOf("Fabric"), setOf("1.20.4", "1.20.5", "1.20.6")))
+
+        val candidate = BootCandidateSelector.pickBootableCandidate(files, "Fabric") { true }
+
+        Assertions.assertEquals("1.20.6", candidate?.second, "one jar, three candidate versions, newest taken")
+        Assertions.assertEquals("create_ltab-2.1.2.jar", candidate?.first?.fileName)
+    }
+
     @Test
     fun minecraftComparatorOrdersNumericallyNotLexically() {
         Assertions.assertTrue(BootCandidateSelector.minecraftComparator.compare("1.20", "1.9") > 0)

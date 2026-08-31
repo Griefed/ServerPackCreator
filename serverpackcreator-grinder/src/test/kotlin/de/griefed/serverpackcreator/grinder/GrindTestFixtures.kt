@@ -73,8 +73,12 @@ internal fun grindVerdict(
     projectUrl: String = "https://modrinth.com/mod/$slug",
     detail: String = "",
     platform: String = "Modrinth",
-    verifiedAt: Instant = Instant.EPOCH
-) = GrindVerdict(platform, slug, projectUrl, loader, suggestedEntry, confidence, detail, verifiedAt)
+    verifiedAt: Instant = Instant.EPOCH,
+    // A fixture standing for "a HIGH finding" should stand for a LEGITIMATE one, so it defaults to the
+    // decision that is decisive evidence. The publication gate's refusal of a non-decisive verdict is pinned
+    // explicitly in FallbackPropertiesPublicationGateTest rather than implied by every fixture here.
+    decidedBy: String? = BootDecision.CLIENT_ONLY_CLASS.name
+) = GrindVerdict(platform, slug, projectUrl, loader, suggestedEntry, confidence, detail, verifiedAt, decidedBy = decidedBy)
 
 /** [GrinderApplication]'s source, for the guards that can only be stated against `main`'s own text. */
 internal val grinderEntryPoint = File("src/main/kotlin/de/griefed/serverpackcreator/grinder/GrinderApplication.kt")
