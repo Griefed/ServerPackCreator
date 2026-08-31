@@ -145,7 +145,13 @@ class BootVerifier(
         /** The blamed dependency's project link, so the grinder can queue it for its own verification. */
         val blamedDependencyUrl: String? = null,
         /** The dependency jars staged alongside the candidate, so a verdict names the pack it booted with. */
-        val stagedDependencies: List<String> = emptyList()
+        val stagedDependencies: List<String> = emptyList(),
+        /**
+         * Which rung of the classifier ladder settled [result], or `null` when no boot ran. Carried so the
+         * grinder's publication gate can refuse a `CRASHED` that is not evidence of sideness — a mixin that
+         * would not apply, a solver that gave up, a bare non-zero exit — rather than treating every crash alike.
+         */
+        val decidedBy: BootDecision? = null
     )
 
     /**
@@ -931,7 +937,8 @@ class BootVerifier(
                 } ?: ""
                 BootOutcome(
                     result, logFile, "$label → $result ($exitDetail)$ruleNote", crashExcerpt, console,
-                    firedRule = classified.firedRule?.rule?.id
+                    firedRule = classified.firedRule?.rule?.id,
+                    decidedBy = classified.decidedBy
                 )
             }
         }

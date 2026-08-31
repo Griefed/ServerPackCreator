@@ -402,6 +402,9 @@ internal class BootLogClassifierTest {
      * wins, which is the only way a swap shows up as a failure.
      *
      * The ladder, highest first: ready-line → timeout → setup-abort → launch-failure → loader-bootstrap-failure
+     * → killed/OOM → operator rule → client-only-class → dependency-failure → sandbox-network →
+     * mixin-apply → loader-solver → runtime-mismatch → exit code. (This list omitted the rule rung and the
+     * sandbox rung while asserting both, which is why the count in the module doc was wrong twice.)
      * → killed/OOM → client-only-class → dependency-failure → exit code.
      */
     @Test
