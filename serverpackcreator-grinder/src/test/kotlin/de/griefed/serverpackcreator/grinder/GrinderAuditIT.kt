@@ -86,31 +86,45 @@ internal class GrinderAuditIT {
         Assumptions.assumeFalse(highs.isEmpty(), "the store published no HIGH verdicts, so there is nothing to grade")
         println("[audit] ${highs.size} HIGH verdict(s) in the store")
 
-        val consoles = consoleArtifacts().filter { it.owner in highs }.take(sampleSize)
-        Assumptions.assumeFalse(consoles.isEmpty(), "no kept console belongs to a published HIGH")
-        println("[audit] grading ${consoles.size} console(s) belonging to a published HIGH")
+        // GROUPED BY TUPLE, not by artifact. A candidate is booted several times -- the first attempt, the
+        // newest-build re-check, each other-version re-check -- and every non-survived attempt keeps its own
+        // console, so a tuple commonly has two or three. Grading artifacts would count one verdict repeatedly
+        // and, worse, count a re-check attempt against a verdict some *other* attempt decided. A verdict is
+        // defensible if ANY of its kept consoles carries decisive evidence, which is the charitable reading
+        // and the only one that matches what a verdict means.
+        val perTuple = consoleArtifacts().filter { it.owner in highs }.groupBy { it.owner }
+        val tuples = perTuple.keys.sorted().take(sampleSize)
+        Assumptions.assumeFalse(tuples.isEmpty(), "no kept console belongs to a published HIGH")
+        println("[audit] grading ${tuples.size} published HIGH verdict(s) over ${perTuple.filterKeys { it in tuples }.values.sumOf { it.size }} console(s)")
 
-        val byDecision = LinkedHashMap<BootDecision, MutableList<String>>()
-        for (artifact in consoles) {
-            val console = fetch("/boot-log?name=${enc(artifact.name)}") ?: continue
-            // The stored exit status is not published, and the classifier's decision for the rungs that matter
-            // does not depend on it: every rung a HIGH can legitimately come from is decided on the console
-            // alone. A non-zero exit is assumed so the exit-code rung is reachable and therefore *counted*.
-            val decided = BootLogClassifier.classify(console.lines(), exitCode = 1, timedOut = false, rules)
-            byDecision.getOrPut(decided.decidedBy) { mutableListOf() }.add(artifact.owner)
+        val best = LinkedHashMap<String, BootDecision>()
+        for (tuple in tuples) {
+            for (artifact in perTuple.getValue(tuple)) {
+                val console = fetch("/boot-log?name=${enc(artifact.name)}") ?: continue
+                // The stored exit status is not published, and every rung a HIGH can legitimately come from is
+                // decided on the console alone. A non-zero exit is assumed so the exit-code rung stays
+                // reachable, and therefore counted -- assuming zero would quietly reclassify the very
+                // population being audited.
+                val decided = BootLogClassifier.classify(console.lines(), exitCode = 1, timedOut = false, rules).decidedBy
+                val held = best[tuple]
+                if (held == null || (!held.decisive && decided.decisive)) {
+                    best[tuple] = decided
+                }
+            }
         }
 
-        println("[audit] decision distribution for published HIGH verdicts:")
+        val byDecision = best.entries.groupBy({ it.value }, { it.key })
+        println("[audit] decision distribution, one entry per published HIGH verdict:")
         byDecision.entries
             .sortedByDescending { it.value.size }
             .forEach { (decision, owners) ->
                 println("[audit]   ${owners.size.toString().padStart(4)}  $decision${if (decision.decisive) "" else "  <-- not evidence"}")
             }
 
-        val undefensible = byDecision.filterKeys { !it.decisive }.values.flatten()
+        val undefensible = byDecision.filterKeys { !it.decisive }.values.flatten().sorted()
         Assertions.assertTrue(
             undefensible.isEmpty(),
-            "${undefensible.size} of ${consoles.size} published HIGH verdict(s) rest on no decisive evidence. " +
+            "${undefensible.size} of ${best.size} published HIGH verdict(s) rest on no decisive evidence. " +
                 "Each is a mod being stripped from every server pack built against this list, for a crash that " +
                 "says nothing about sideness. First few: ${undefensible.take(10)}"
         )
