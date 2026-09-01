@@ -65,6 +65,42 @@ object KnownModIds {
         "qsl" to PlatformRef("qsl", "634179")
     )
 
+    /** Fabric API itself, the project every one of its modules resolves to. */
+    private val fabricApi = PlatformRef("fabric-api", "306612")
+
+    /**
+     * Fabric API is one project shipped as ~45 nested modules, and a descriptor depends on the **modules**
+     * (`fabric-resource-loader-v0`), never on the project. Neither platform publishes them separately, so
+     * every one of those ids was unresolvable: Modrinth's slug guess 404s and CurseForge refuses to guess.
+     *
+     * **A rule, not a table, and the difference is load-bearing.** The API-version suffix moves between
+     * releases — the current tree ships `fabric-resource-loader-v1` while most of the corpus still declares
+     * `-v0`, an id that exists in no source tree today — so a list snapshotted from the repository would be
+     * wrong for exactly the older mods this is meant to fix. The shape (`fabric-<something>-v<digits>`) is
+     * what is stable, and it is what the modules are named by convention.
+     */
+    private val fabricApiModulePattern = Regex("""^fabric-[a-z0-9_-]+-v\d+$""")
+
+    /** The Fabric API modules that carry no version suffix, and so cannot be matched by shape. */
+    private val unversionedFabricApiModules = setOf("fabric-api-base", "fabric-renderer-indigo")
+
+    /**
+     * Ids that look exactly like a Fabric API module and are not one.
+     *
+     * lucko's permissions library declares `fabric-permissions-api-v0` — plural, where Fabric API's own
+     * module is the singular `fabric-permission-api-v1`. One character apart, two different projects.
+     * Claiming it would stage Fabric API in place of the library the mod actually asked for and report a
+     * dependency it never declared. Verified against lucko's own `fabric.mod.json`, 2026-09-01.
+     *
+     * Keep this list to ids **observed** colliding; guessing at more would re-create the un-pinned table
+     * this class exists to avoid.
+     */
+    private val notFabricApi = setOf("fabric-permissions-api-v0")
+
+    /** Whether [id] names a module of Fabric API, and therefore resolves to Fabric API itself. */
+    private fun isFabricApiModule(id: String): Boolean = id !in notFabricApi &&
+        (id in unversionedFabricApiModules || fabricApiModulePattern.matches(id))
+
     /**
      * The ref [platform] can resolve [modId] by, or `null` when there is none.
      *
@@ -80,10 +116,11 @@ object KnownModIds {
         if (id.isEmpty()) {
             return null
         }
-        aliases[id]?.let { alias ->
+        val alias = aliases[id] ?: fabricApi.takeIf { isFabricApiModule(id) }
+        alias?.let {
             return when (platform) {
-                MODRINTH -> alias.modrinth
-                CURSEFORGE -> alias.curseForge
+                MODRINTH -> it.modrinth
+                CURSEFORGE -> it.curseForge
                 else -> null
             }
         }
