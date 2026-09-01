@@ -26,6 +26,11 @@
 #                    loader cache. Everything the grind has learned. The binaries are unaffected; this
 #                    is about state, not code. Nothing else in this script destroys data, so it is opt-in
 #                    and says exactly what it removed.
+#   --skip-browser   skip both halves of the headless-browser setup that distribution-locked CurseForge
+#                    files need: the ~170 MB Chromium download and the OS libraries it links against.
+#                    A Modrinth-only or offline host can do without. Note the daemon downloads the
+#                    browser itself on first use anyway — what skipping really costs is the libraries,
+#                    without which every locked-file navigation times out.
 #   --grant-docker   allow adding an ALREADY-EXISTING account to the docker group. That group is
 #                    root-equivalent — `docker run -v /:/host` owns the box — so granting it to an
 #                    account this script did not create is refused unless you ask for it explicitly.
@@ -45,6 +50,7 @@ clear_home=false
 skip_image=false
 no_pull=false
 grant_docker=false
+skip_browser=false
 was_active=false
 for arg in "$@"; do
     case "$arg" in
@@ -53,6 +59,7 @@ for arg in "$@"; do
         --skip-image)   skip_image=true ;;
         --no-pull)      no_pull=true ;;
         --grant-docker) grant_docker=true ;;
+        --skip-browser) skip_browser=true ;;
         # The header block, however long it grows. A fixed line range was wrong within one commit of
         # being written — the range is the kind of citation that rots the moment the text above moves.
         -h|--help)      awk 'NR>1 && /^#/ {sub(/^# ?/,""); print; next} NR>1 {exit}' "$0"; exit 0 ;;
@@ -288,14 +295,19 @@ step "Checking the JVM the service will see"
 systemd_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 unit_java_home="$(sed -n 's/^Environment=JAVA_HOME=//p' "$script_dir/$UNIT_NAME" | head -1)"
 
+# Captured, not just reported: the browser install below runs a Java main class and must use the same
+# JVM the service will, and re-deriving it there is how the two answers drift apart.
+service_java=""
 if [[ -n "$unit_java_home" ]]; then
     if [[ -x "$unit_java_home/bin/java" ]]; then
         echo "unit sets JAVA_HOME=$unit_java_home, and $unit_java_home/bin/java is executable"
+        service_java="$unit_java_home/bin/java"
     else
         die "the unit sets JAVA_HOME=$unit_java_home but $unit_java_home/bin/java is not executable"
     fi
 elif env -i PATH="$systemd_path" sh -c 'command -v java' >/dev/null 2>&1; then
-    echo "java found on systemd's PATH at $(env -i PATH="$systemd_path" sh -c 'command -v java')"
+    service_java="$(env -i PATH="$systemd_path" sh -c 'command -v java')"
+    echo "java found on systemd's PATH at $service_java"
 else
     step "WARNING: the service will not find a JVM"
     cat <<'JVM'
@@ -311,32 +323,78 @@ JVM
 fi
 
 # --- The headless browser CurseForge needs -----------------------------------------------------------
-# Distribution-locked CurseForge files (`allowModDistribution=false`) carry no API download-URL and are
-# fetched by driving the site with a headless Chromium, on the host, as the service account. Checked
-# against $SERVICE_USER's cache rather than the caller's: Playwright keeps browsers under $HOME, so the
-# operator having them proves nothing about the service. Missing, every locked CurseForge file fails and
-# the catalogue looks merely uncooperative.
-step "Checking the headless browser for locked CurseForge files"
-
-service_home="$(getent passwd "$SERVICE_USER" | cut -d: -f6)"
-if [[ -n "$service_home" ]] && compgen -G "$service_home/.cache/ms-playwright/chromium-*" >/dev/null 2>&1; then
-    echo "Chromium present in $service_home/.cache/ms-playwright"
+# Distribution-locked CurseForge files (`allowModDistribution=false`) carry no API download-URL at all
+# and can only be fetched by driving the site with a headless Chromium, on the host, as the service
+# account. Modrinth never needs it.
+#
+# **The browser is not the part that is usually missing.** Playwright's Java binding downloads browsers
+# itself on the first `Playwright.create()` — `DriverJar.installBrowsers()`, which is also why
+# `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD` exists — so a host that never ran an install still gets one. What
+# it does NOT do is install the OS libraries Chromium links against, and on a headless server those are
+# absent by default: Chromium then launches and every navigation times out, which reads as CurseForge
+# being slow rather than as a missing dependency. The CI job for the same code path installs exactly
+# those and nothing else (`clientside-report-reusable.yml` runs `install-deps chromium`), which is the
+# shape of the real gap. This script previously only *warned* about both halves.
+#
+# So both are done here, and pre-installing the browser is worth it even though it self-installs: the
+# lazy download happens mid-grind, needs network at an arbitrary later moment, and when it fails the
+# operator sees a staging failure on some mod rather than an error about a browser. Doing it at deploy
+# time makes it fail where somebody is watching.
+#
+# Installed with Playwright's OWN CLI, out of the jars we just installed — NOT with `npx playwright
+# install`. Playwright pins one Chromium build per release and looks for that exact directory: 1.62.0
+# wants `chromium-1234` (Chrome for Testing 151.0.7922.34, read from driver-1.62.0.jar's
+# browsers.json). `npx` installs whatever revision the *npm* package pins, which for any other version
+# lands beside it as `chromium-<other>` and leaves the Java binding still downloading its own — while a
+# check for `chromium-*` happily reports it present, which is what the check here used to do. Driving
+# the CLI from our own classpath makes the version match by construction: the same driver jar that will
+# run the download decides what to fetch.
+#
+# It is also idempotent — already-installed is a no-op — so this re-runs on every upgrade rather than
+# being guarded by a check that would have to replicate Playwright's own path logic to be correct. That
+# is what keeps a Playwright version bump, which moves the pinned revision, from silently going stale.
+if [[ "$skip_browser" == true ]]; then
+    step "Skipping the headless browser (--skip-browser)"
+    echo "the daemon will download it lazily on the first locked CurseForge file instead"
+elif [[ -z "$service_java" ]]; then
+    step "WARNING: cannot install the headless browser without a JVM"
+    echo "resolve the JVM warning above, then re-run this script to install it"
 else
-    step "WARNING: no Chromium for $SERVICE_USER"
-    cat <<BROWSER
-Distribution-locked CurseForge files can only be fetched with a headless browser, and $SERVICE_USER has
-none. Modrinth is unaffected; locked CurseForge candidates will fail with
+    step "Installing the headless browser for locked CurseForge files"
 
-  Could not download <file>.jar.
+    # As the service account and with -H, so the browser lands in the HOME the daemon will actually
+    # search. The operator's own cache proves nothing about the service's.
+    # NOT fatal, for the same reason it is worth doing at all: the daemon can still install this
+    # itself on first use, so a transient download failure here must not take a deployment down with
+    # it. Warn, and let the operator decide whether to care.
+    if sudo -u "$SERVICE_USER" -H "$service_java" -cp "$PREFIX/lib/*" \
+            com.microsoft.playwright.CLI install chromium; then
+        echo "chromium installed for $SERVICE_USER"
+    else
+        step "WARNING: could not pre-install chromium for $SERVICE_USER"
+        echo "the daemon will retry on its first locked CurseForge file — but it will do so mid-grind,"
+        echo "and if it fails there the verdict reads as a staging failure rather than as a browser one"
+    fi
 
-Install it as the service account, then the OS libraries as root:
+    # The OS libraries Chromium links against, which need root and are a separate step. Playwright only
+    # knows how to do this on Debian/Ubuntu, so a failure here is NOT fatal: on any other distribution
+    # the operator installs them by hand, and killing a deployment over it would be wrong. Say what is
+    # left undone instead, because without the libraries Chromium launches and then every navigation
+    # times out — which reads as CurseForge being slow rather than as a missing dependency.
+    if sudo "$service_java" -cp "$PREFIX/lib/*" com.microsoft.playwright.CLI install-deps chromium; then
+        echo "system libraries for chromium are present"
+    else
+        step "WARNING: could not install chromium's system libraries"
+        cat <<DEPS
+Playwright can only install these automatically on Debian/Ubuntu. Chromium itself is downloaded, but
+on a headless host without its libraries every navigation times out, so a locked CurseForge file
+fails slowly instead of quickly. Install the equivalent packages for your distribution by hand — the
+list Playwright would have installed is printed above — and then re-run just this step:
 
-  sudo -u $SERVICE_USER -H npx --yes playwright install chromium
-  sudo npx --yes playwright install-deps chromium
+  sudo $service_java -cp "$PREFIX/lib/*" com.microsoft.playwright.CLI install-deps chromium
 
-The second command is not optional on a headless host: without those libraries Chromium launches but
-navigations time out, which reads as CurseForge being slow rather than as a missing dependency.
-BROWSER
+DEPS
+    fi
 fi
 
 # --- Optional: the unit ---------------------------------------------------------------------------
