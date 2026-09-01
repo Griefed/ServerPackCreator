@@ -109,6 +109,27 @@ cross-cutting landmines, remaining work) lives in serverpackcreator-grinder/CLAU
   **no Spring, no new dependency**. *Deliberately standalone:* the report is self-contained rather than
   rendered through the app's Quasar frontend, because the grinder must not depend on `-app` (that would
   drag in Spring/Mongo/Swing and break its standalone nature).
+- **`/dashboard` is the human face of `/status`, and `/status` is unchanged.** `StatusDashboardRenderer`
+  serves a hand-written page that polls the JSON endpoint and renders pass, workers, crawl, cache and rule
+  health with human durations. A **second route rather than content negotiation**: `/status` is scripted
+  against, and handing a machine reader HTML because an `Accept` header looked browser-shaped would break
+  what it exists for. No framework and nothing off the network — the report is documented as loopback-bound
+  behind a reverse proxy, so a browser reaching it may have no route to a CDN at all.
+  - **The page is a constant, which is a security property rather than a shortcut.** Nothing is interpolated
+    server-side, so there is no escaping to get wrong on a server that has no authentication and displays
+    internet-supplied slugs; every value arrives as JSON and is written with `textContent`.
+  - **LANDMINE — `READ_FIELDS` is what makes a rename fail a build.** `statusJson()` builds its document from
+    **string-literal keys no compiler checks**, so renaming `"loaderCache"` compiles clean and silently blanks
+    a panel. `everyFieldTheDashboardReadsExistsInTheStatusDocument` resolves each declared path against a
+    document a real `ReportServer` serves. Verified to have teeth: with that key renamed it is the **only**
+    failure in all 434 grinder tests. Kotlin *property* renames are already caught by `GrinderStatusTest` at
+    compile time — this guard is for the untyped half. Keep it in step when the page reads something new.
+  - **The script is executed, not grepped** (`StatusDashboardScriptTest`, node when present, skipped
+    otherwise — the treatment `ScriptTemplateContentTest` gives the shipped shells). Nothing compiles a
+    string constant, so a typo ships an inert dashboard. It earned itself immediately: `safeHref` parsed
+    against `window.location.origin`, so a null or unparseable `projectUrl` resolved to a same-origin link
+    (`<report>/null`) that looked like a project and 404'd. Parsed with **no base**, anything not an absolute
+    http/https URL now yields no link at all.
 - **The tab icon is bundled, and needs its own routes.** `favicon.png` (a byte-identical copy of
   `img/config.png`) ships in this package's resources and is served from the classpath, so the page still
   fetches nothing from outside itself. Registered under **both** `/favicon.ico` and `/favicon.png`: the HTML
