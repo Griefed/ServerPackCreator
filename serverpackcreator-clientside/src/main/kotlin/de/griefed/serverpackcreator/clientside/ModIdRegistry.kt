@@ -101,6 +101,36 @@ object KnownModIds {
     private fun isFabricApiModule(id: String): Boolean = id !in notFabricApi &&
         (id in unversionedFabricApiModules || fabricApiModulePattern.matches(id))
 
+    /** Quilt Standard Libraries / QFAPI, the project every QSL module resolves to. */
+    private val quiltStandardLibraries = PlatformRef("qsl", "634179")
+
+    /**
+     * QSL is the Quilt mirror of the Fabric API case: one project shipped as ~33 modules, with descriptors
+     * depending on the **modules** (`quilt_resource_loader`, `quilt_networking`) rather than the project.
+     *
+     * **The shape is deliberately not Fabric's.** QSL ids are underscored and carry no API-version suffix,
+     * so `fabric-<x>-v<digits>` matches none of them — which is why the Fabric rule left this open instead
+     * of closing it by coincidence. Verified 2026-09-01 across all 47 `quilt.mod.json` files in
+     * `QuiltMC/quilt-standard-libraries` (branch 1.21.5): every module id they declare or depend on is
+     * `quilt_` followed by lowercase words and underscores.
+     */
+    private val qslModulePattern = Regex("""^quilt_[a-z0-9_]+$""")
+
+    /**
+     * Ids matching the QSL shape that are not QSL modules.
+     *
+     * `quilt_loader` is Quilt Loader itself — supplied by the runtime, and already dropped before staging
+     * by `BootVerifier.environmentProvidedIds`. Nothing downstream would notice the difference today, which
+     * is exactly why it is listed: a lookup table other code is entitled to trust must not record a false
+     * fact merely because the falsehood is currently unreachable.
+     *
+     * Like [notFabricApi], keep this to ids **observed** colliding rather than imagined ones.
+     */
+    private val notQsl = setOf("quilt_loader")
+
+    /** Whether [id] names a module of QSL, and therefore resolves to QSL itself. */
+    private fun isQslModule(id: String): Boolean = id !in notQsl && qslModulePattern.matches(id)
+
     /**
      * The ref [platform] can resolve [modId] by, or `null` when there is none.
      *
@@ -116,7 +146,9 @@ object KnownModIds {
         if (id.isEmpty()) {
             return null
         }
-        val alias = aliases[id] ?: fabricApi.takeIf { isFabricApiModule(id) }
+        val alias = aliases[id]
+            ?: fabricApi.takeIf { isFabricApiModule(id) }
+            ?: quiltStandardLibraries.takeIf { isQslModule(id) }
         alias?.let {
             return when (platform) {
                 MODRINTH -> it.modrinth
