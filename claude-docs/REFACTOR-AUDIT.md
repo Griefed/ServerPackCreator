@@ -4660,13 +4660,18 @@ modules by category rather than by published id. Resolved by reading **all 47 `q
 - `notQsl` holds `quilt_loader` — the loader, not a module. It is already dropped before staging, so mapping
   it would change nothing observable; it is excluded because a lookup table other code trusts should not
   record a false fact merely because the falsehood is unreachable today.
-- **One sub-gap raised rather than closed.** `quilt_base` *is* a QSL module — `library/core/qsl_base` exists
+- **One sub-gap raised, then closed on Griefed's instruction (2026-09-01).** `quilt_base` *is* a QSL module — `library/core/qsl_base` exists
   and `quilt_base_testmod` depends on it — yet `-api`'s `QuiltScanner.dependencyExclusions` strips it at scan
   time as "the platform", and `BootVerifier.environmentProvidedIds` repeats that. So it never reaches
   staging. Closing it would mean changing existing assertions in the **published** module, which the
   conventions treat as a stop-and-flag rather than a fix to make unilaterally, and the reachable case is
-  narrow: a mod whose *only* QSL dependency is `quilt_base`, since any other module now pulls QSL in. Left
-  as a decision for Griefed.
+  narrow: a mod whose *only* QSL dependency is `quilt_base`, since any other module now pulls QSL in. Raised
+  rather than changed unilaterally — and Griefed then said to change it, which is the flag doing its job.
+  **Now fixed:** `QuiltScanner.dependencyExclusions` drops only `(quilt_loader|java|minecraft)` and
+  `environmentProvidedIds` no longer lists `quilt_base`; four guards pinned red first across both modules,
+  two existing expectations updated under a `fix:` label, one `API-BEHAVIOUR-CHANGES.md` row for the extra
+  `ModDependency` a Quilt scan now returns. Final suites: api **383** (1 skip), clientside **267**, grinder
+  434 (29 skip), app 149.
 
 Suites after the follow-ups, re-derived from `build/test-results/test/*.xml`: api 382 (1 skip), clientside
 **266** (was 263), grinder 434 (29 skip), app 149. All green.

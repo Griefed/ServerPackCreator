@@ -782,9 +782,16 @@ class BootVerifier(
             return ManifestDependencyPlan.Stage(ref, file)
         }
 
-        /** Ids the environment provides rather than the pack: never staged, whatever a descriptor says. */
+        /**
+         * Ids the environment provides rather than the pack: never staged, whatever a descriptor says.
+         *
+         * **`quilt_base` is not one of them**, though it was listed here until 2026-09-01. It is QSL's base
+         * module, shipped by QFAPI, so a mod declaring it needs a jar staged exactly as one declaring
+         * `quilt_resource_loader` does — `KnownModIds` resolves both to QSL. Only the loaders and the
+         * runtime belong here.
+         */
         private val environmentProvidedIds = setOf(
-            "minecraft", "java", "fabricloader", "forge", "neoforge", "quilt_loader", "quilt_base"
+            "minecraft", "java", "fabricloader", "forge", "neoforge", "quilt_loader"
         )
 
         /**

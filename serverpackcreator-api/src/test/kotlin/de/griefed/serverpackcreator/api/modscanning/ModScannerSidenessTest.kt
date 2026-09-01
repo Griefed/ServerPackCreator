@@ -182,9 +182,15 @@ internal class ModScannerSidenessTest {
     }
 
     /**
-     * The Quilt half of the same bug, and the one that matters for a Quilt mod: `quilt_loader` and
-     * `quilt_base` are the platform, but `quilted_fabric_api` is QFAPI — Quilt's port of Fabric API, and
-     * just as much a mod the server needs.
+     * The Quilt half of the same bug, and the one that matters for a Quilt mod: `quilt_loader` is the
+     * platform, but `quilted_fabric_api` is QFAPI — Quilt's port of Fabric API, and just as much a mod the
+     * server needs.
+     *
+     * **`quilt_base` is a mod too, and used to be excluded as though it were the platform.** It is QSL's
+     * base module, shipped by QFAPI: `library/core/qsl_base` in `QuiltMC/quilt-standard-libraries`, whose
+     * own `quilt_base_testmod` declares `["quilt_loader", "quilt_base"]` (read 2026-09-01, branch 1.21.5).
+     * Excluding it was the exact mistake this test's Fabric counterpart exists to prevent — `fabric` (the
+     * API) is not excluded there, only `fabricloader` — so Quilt now matches: loader out, modules in.
      */
     @Test
     fun quiltedFabricApiIsADependencyRatherThanThePlatform(@TempDir tempDir: File) {
@@ -196,10 +202,35 @@ internal class ModScannerSidenessTest {
         """.trimIndent()
         val jar = jarContaining(tempDir, "needsqfapi.jar", "quilt.mod.json", descriptor)
 
-        val dependency = modScanner.quiltScanner.scan(listOf(jar)).single().dependencies.single()
+        val dependencies = modScanner.quiltScanner.scan(listOf(jar)).single().dependencies
 
-        Assertions.assertEquals("quilted_fabric_api", dependency.modID)
-        Assertions.assertEquals(">=7.0.0", dependency.versionConstraint)
+        Assertions.assertEquals(
+            listOf("quilted_fabric_api", "quilt_base"), dependencies.map { it.modID },
+            "QFAPI and QSL's base module are both mods; only quilt_loader/minecraft/java are the platform"
+        )
+        val qfapi = dependencies.first { it.modID == "quilted_fabric_api" }
+        Assertions.assertEquals(">=7.0.0", qfapi.versionConstraint)
+    }
+
+    /**
+     * The line the exclusion list actually draws, stated on its own so it cannot be inferred from a fixture
+     * that happens to list one of each. `quilt_loader` is the runtime; everything QSL ships is a mod that a
+     * server pack has to keep, and a jar providing it must stay rescuable.
+     */
+    @Test
+    fun onlyTheQuiltRuntimeIsExcludedFromDependencies(@TempDir tempDir: File) {
+        val descriptor = """
+            {"schema_version":1,
+             "quilt_loader":{"id":"qsluser","version":"1.0.0",
+               "depends":["quilt_loader","minecraft","java","quilt_base","quilt_resource_loader"]},
+             "minecraft":{"environment":"*"}}
+        """.trimIndent()
+        val jar = jarContaining(tempDir, "qsluser.jar", "quilt.mod.json", descriptor)
+
+        Assertions.assertEquals(
+            listOf("quilt_base", "quilt_resource_loader"),
+            modScanner.quiltScanner.scan(listOf(jar)).single().dependencies.map { it.modID }
+        )
     }
 
     /** Forge and NeoForge state a `versionRange` per dependency; it has to survive the scan too. */
@@ -258,12 +289,13 @@ internal class ModScannerSidenessTest {
         val dependencies = modScanner.quiltScanner.scan(listOf(jar)).single().dependencies.map { it.modID }
 
         Assertions.assertEquals(
-            listOf("cloth-config2", "jei"), dependencies,
+            listOf("cloth-config2", "jei", "quilt_base"), dependencies,
             "Both the string and the object form must be read, minus the platform; got $dependencies"
         )
         Assertions.assertEquals(
-            listOf(null, "*"), modScanner.quiltScanner.scan(listOf(jar)).single().dependencies.map { it.versionConstraint },
-            "the object form states a range and the bare string does not"
+            listOf(null, "*", null),
+            modScanner.quiltScanner.scan(listOf(jar)).single().dependencies.map { it.versionConstraint },
+            "the object form states a range and the bare strings do not"
         )
     }
 

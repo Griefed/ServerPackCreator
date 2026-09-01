@@ -55,12 +55,16 @@ class QuiltScanner(objectMapper: ObjectMapper, utilities: Utilities) : FabricFam
     /**
      * Dependency ids that are the platform rather than a mod, so they never pull a jar into the keep-list.
      *
-     * **`quilted_fabric_api` is deliberately NOT here.** QFAPI is Quilt's port of Fabric API — a mod the
-     * server genuinely needs — while `quilt_loader` and `quilt_base` are the platform. (`fabric` was never
-     * excluded here, so a Quilt mod depending on Fabric API directly was always recorded.)
+     * **Only `quilt_loader` is the platform.** `quilted_fabric_api` is QFAPI — Quilt's port of Fabric API, a
+     * mod the server genuinely needs — and so is **`quilt_base`**, which was excluded here until 2026-09-01
+     * as though it were the runtime. It is not: it is QSL's base module, shipped by QFAPI
+     * (`library/core/qsl_base` in `QuiltMC/quilt-standard-libraries`, whose `quilt_base_testmod` depends on
+     * `["quilt_loader", "quilt_base"]`). Excluding it was the same mistake [FabricScanner] documents on its
+     * own list — that one excludes `fabricloader` but never `fabric`, because a dependency you refuse to
+     * record can neither be reported nor rescued back into a pack that disabled it.
      */
     val dependencyExclusions: Regex
-        get() = "(quilt_loader|quilt_base|java|minecraft)".toRegex()
+        get() = "(quilt_loader|java|minecraft)".toRegex()
 
     /**
      * Quilt declares `quilt_loader.depends` as an array whose entries are either an object carrying

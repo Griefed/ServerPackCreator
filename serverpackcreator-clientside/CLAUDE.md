@@ -351,12 +351,15 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
       suffix — so `fabric-<x>-v<digits>` matches no QSL id, which is why the Fabric rule left this open
       rather than closing it by coincidence. The QSL rule is `^quilt_[a-z0-9_]+$` → `qsl` / `634179`, with
       `notQsl` holding `quilt_loader` (the loader, not a module).
-      **Known, deliberately not changed:** `quilt_base` *is* a QSL module (`library/core/qsl_base`;
-      `quilt_base_testmod` depends on `["quilt_loader", "quilt_base"]`), but `-api`'s
-      `QuiltScanner.dependencyExclusions` strips it at scan time as "the platform" and
-      `BootVerifier.environmentProvidedIds` repeats that, so it never reaches staging. Correcting it means
-      editing existing assertions in the published module — the stop-and-flag signal — for a case limited to
-      a mod whose *only* QSL dependency is `quilt_base`, since any other module now pulls QSL in anyway.
+      **`quilt_base` was the one QSL module both layers called "the platform", and that is fixed** (Griefed's
+      call, 2026-09-01, after it was flagged rather than changed). It is QSL's base module shipped by QFAPI —
+      `library/core/qsl_base`, and `quilt_base_testmod` depends on `["quilt_loader", "quilt_base"]` — so
+      `-api`'s `QuiltScanner.dependencyExclusions` no longer strips it and it is no longer in
+      `BootVerifier.environmentProvidedIds`. Only `quilt_loader` is the runtime, which is the same line
+      `FabricScanner` draws by excluding `fabricloader` and never `fabric`. Two existing `-api` expectations
+      had to change, which is the stop-and-flag signal working as intended: it was raised, decided, and the
+      commit is labelled `fix:`. One row in `API-BEHAVIOUR-CHANGES.md` — a Quilt jar's scan now returns one
+      more `ModDependency`, and a QFAPI/QSL jar becomes rescuable into a pack that had disabled it.
     - **One mod names several modules, and they must collapse to one download.** `visited` is claimed on the
       *ref*, so the first module resolves Fabric API and the rest short-circuit. That matters beyond the
       wasted fetch: it is the B6 shape, where one jar reachable under several names double-counted toward
