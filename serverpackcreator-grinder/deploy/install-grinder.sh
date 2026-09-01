@@ -110,7 +110,25 @@ getent group docker >/dev/null || die "no 'docker' group on this host — the se
 # Checked here, before anything is built or changed: PREFIX, SERVICE_USER and SERVICE_HOME are
 # overridable while the shipped unit hardcodes all three, and an install that disagrees with the unit
 # only fails later, at `systemctl start`, with nothing pointing back at the override.
-unit_file="$script_dir/$UNIT_NAME"
+#
+# **Which copy of the unit is authoritative is not obvious, and reading the wrong one is a real bug we
+# shipped.** Every knob in the shipped unit is commented out, JAVA_HOME included, and the operator
+# uncomments what they need in the INSTALLED copy under /etc/systemd/system — that is the one systemd
+# executes. Reading the shipped copy therefore reports the defaults rather than the configuration, and
+# `update-grinder.sh` makes it worse: it `rm -rf`s its checkout and re-clones every run, so the shipped
+# copy is pristine every single time and the operator's edits are invisible by construction. The
+# consequence was not cosmetic — a host whose java comes from JAVA_HOME in the installed unit, and not
+# from systemd's bare PATH, resolved no JVM here, which printed a "the service will not find a JVM"
+# warning at a service that starts fine and then SKIPPED the headless-browser install below.
+#
+# So: the shipped copy when we are about to install it (it is what will be in effect), otherwise the
+# installed copy if there is one, otherwise the shipped copy as a preview of a first install.
+installed_unit="/etc/systemd/system/$UNIT_NAME"
+if [[ "$install_unit" == true || ! -f "$installed_unit" ]]; then
+    unit_file="$script_dir/$UNIT_NAME"
+else
+    unit_file="$installed_unit"
+fi
 unit_value() { sed -n "s/^$1=//p" "$unit_file" | head -1; }
 unit_mismatch=false
 if [[ -f "$unit_file" ]]; then
@@ -146,6 +164,7 @@ if [[ "$clear_home" == true ]]; then
 fi
 
 echo "repository:   $repo_root"
+echo "unit read:    $unit_file$([[ "$unit_file" == "$installed_unit" ]] && echo '  (installed — the one systemd runs)' || echo '  (shipped copy)')"
 echo "install to:   $PREFIX"
 echo "service user: $SERVICE_USER (home $SERVICE_HOME)"
 echo "service data: $SERVICE_DATA$([[ "$clear_home" == true ]] && echo '  ** WILL BE DELETED (--clear) **')"
@@ -293,7 +312,10 @@ fi
 step "Checking the JVM the service will see"
 
 systemd_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-unit_java_home="$(sed -n 's/^Environment=JAVA_HOME=//p' "$script_dir/$UNIT_NAME" | head -1)"
+# Not via unit_value: that keeps the FIRST `Environment=` line, and the unit has several — the
+# JAVA_HOME one is not necessarily it. Read from $unit_file, which is the copy resolved in the
+# preflight as the one actually in effect, not the pristine shipped one.
+unit_java_home="$(sed -n 's/^Environment=JAVA_HOME=//p' "$unit_file" | head -1)"
 
 # Captured, not just reported: the browser install below runs a Java main class and must use the same
 # JVM the service will, and re-deriving it there is how the two answers drift apart.
@@ -353,27 +375,31 @@ fi
 # It is also idempotent — already-installed is a no-op — so this re-runs on every upgrade rather than
 # being guarded by a check that would have to replicate Playwright's own path logic to be correct. That
 # is what keeps a Playwright version bump, which moves the pinned revision, from silently going stale.
+browser_status="not attempted"
 if [[ "$skip_browser" == true ]]; then
     step "Skipping the headless browser (--skip-browser)"
     echo "the daemon will download it lazily on the first locked CurseForge file instead"
+    browser_status="skipped (--skip-browser)"
 elif [[ -z "$service_java" ]]; then
     step "WARNING: cannot install the headless browser without a JVM"
     echo "resolve the JVM warning above, then re-run this script to install it"
+    browser_status="SKIPPED — no JVM resolved"
 else
     step "Installing the headless browser for locked CurseForge files"
 
     # As the service account and with -H, so the browser lands in the HOME the daemon will actually
     # search. The operator's own cache proves nothing about the service's.
-    # NOT fatal, for the same reason it is worth doing at all: the daemon can still install this
-    # itself on first use, so a transient download failure here must not take a deployment down with
-    # it. Warn, and let the operator decide whether to care.
+    #
+    # NOT fatal, for the same reason it is worth doing at all: the daemon can still install this itself
+    # on first use, so a transient download failure here must not take a deployment down with it.
     if sudo -u "$SERVICE_USER" -H "$service_java" -cp "$PREFIX/lib/*" \
             com.microsoft.playwright.CLI install chromium; then
-        echo "chromium installed for $SERVICE_USER"
+        browser_status="installed"
     else
         step "WARNING: could not pre-install chromium for $SERVICE_USER"
         echo "the daemon will retry on its first locked CurseForge file — but it will do so mid-grind,"
         echo "and if it fails there the verdict reads as a staging failure rather than as a browser one"
+        browser_status="FAILED — see the output above"
     fi
 
     # The OS libraries Chromium links against, which need root and are a separate step. Playwright only
@@ -385,6 +411,7 @@ else
         echo "system libraries for chromium are present"
     else
         step "WARNING: could not install chromium's system libraries"
+        browser_status="$browser_status, WITHOUT system libraries"
         cat <<DEPS
 Playwright can only install these automatically on Debian/Ubuntu. Chromium itself is downloaded, but
 on a headless host without its libraries every navigation times out, so a locked CurseForge file
@@ -395,6 +422,13 @@ list Playwright would have installed is printed above — and then re-run just t
 
 DEPS
     fi
+
+    # Answers the operator's actual question — "is it installed for the account that runs the service?"
+    # — by listing what that account can see, rather than by asserting it. Reporting only, so globbing
+    # is fine here: the revision is Playwright's business, and the install above already exited on it.
+    echo "browser cache for $SERVICE_USER:"
+    sudo -u "$SERVICE_USER" -H sh -c 'ls -1 "$HOME/.cache/ms-playwright" 2>/dev/null' |
+        sed 's/^/  /' || true
 fi
 
 # --- Optional: the unit ---------------------------------------------------------------------------
@@ -413,11 +447,33 @@ fi
 
 # --- What is left for you -------------------------------------------------------------------------
 step "Done"
+
+# Repeated here on purpose. The browser steps are non-fatal, so their warnings scroll past in a long
+# install and an operator reasonably concludes the deployment succeeded -- which it did, minus the one
+# thing that makes locked CurseForge files work. A status line at the end is what makes "still getting
+# Could not download" answerable without re-reading the whole transcript.
+echo "headless browser: $browser_status"
+if [[ "$browser_status" != "installed" ]]; then
+    echo "  ^ locked CurseForge files (allowModDistribution=false) depend on this; Modrinth does not."
+fi
+
+# Point at the INSTALLED unit once there is one. Editing the checkout's copy is a trap: it is not what
+# systemd reads, and update-grinder.sh rm -rf's its checkout at the start of every run, so an operator
+# who configures there loses the configuration on the next update and cannot see why.
+if [[ -f "$installed_unit" ]]; then
+    edit_unit="$installed_unit"
+    edit_note="(the installed copy — the one systemd reads; a daemon-reload + restart applies an edit)"
+else
+    edit_unit="$script_dir/$UNIT_NAME"
+    edit_note="(not installed yet — install it first, then edit /etc/systemd/system/$UNIT_NAME, NOT this checkout)"
+fi
+
 cat <<NEXT
 Review the unit's configuration before the first start — every variable is listed in it, commented
 out, with its default:
 
-  $script_dir/$UNIT_NAME
+  $edit_unit
+  $edit_note
 
 Four worth a decision rather than a default:
   SPC_GRINDER_WORKERS  budget 3 GiB of Docker-available memory each; the default of 2 is conservative
