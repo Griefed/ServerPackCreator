@@ -325,6 +325,29 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   resolves what its manifest declares and the platform never mentioned — the case Fabric API most often falls
   into. `KnownModIds` bridges the vocabularies (a manifest says `fabric`, Modrinth wants `fabric-api`,
   CurseForge wants `306612`); `VersionConstraint` matches a declared range against `ModFile.version`.
+  - **LANDMINE — Fabric API is one project shipped as ~45 modules, and descriptors depend on the *modules*.**
+    A manifest says `fabric-resource-loader-v0`, `fabric-block-getter-api-v2`, `fabric-rendering-fluids-v1`;
+    neither platform publishes a project under any of those names, so Modrinth's slug guess 404s, CurseForge
+    refuses to guess, and the single most common dependency in the ecosystem went unstaged — the mod booted
+    without it, the loader refused the pack, and the *candidate* wore the INCONCLUSIVE. Reported live
+    2026-09-01, and the same shape as the recorded Quilt solver failure `fabric-resource-loader-v0 versions
+    [*] (0 valid options, 0 invalid options)`.
+    - **A rule, not a table, and that is load-bearing.** The API-version suffix moves between releases: the
+      current source tree ships `fabric-resource-loader-v1` and `fabric-block-getter-api-v2`, while the corpus
+      is full of older mods declaring `-v0` — ids in no tree today. A list snapshotted from the repository
+      would be wrong for exactly the historical mods this fixes. `fabric-<something>-v<digits>` is the stable
+      shape; measured against the 46 directories of `FabricMC/fabric` it matches **44**, the two misses being
+      `fabric-api-bom` and `fabric-api-catalog` (build artifacts, not runtime modules). `fabric-api-base` and
+      `fabric-renderer-indigo` carry no suffix and are listed explicitly.
+    - **`notFabricApi` is why a bare pattern is wrong.** lucko's `fabric-permissions-api-v0` (plural) matches
+      the shape and is a separate project; Fabric API's own is `fabric-permission-api-v1` (singular), one
+      character away, and must still resolve. Verified against lucko's `fabric.mod.json`, 2026-09-01. Keep
+      that set to ids **observed** colliding — guessing at more re-creates the un-pinned table `KnownModIds`
+      exists to avoid. A `fabric-` prefix alone proves nothing: `fabric-language-kotlin` is its own project.
+    - **One mod names several modules, and they must collapse to one download.** `visited` is claimed on the
+      *ref*, so the first module resolves Fabric API and the rest short-circuit. That matters beyond the
+      wasted fetch: it is the B6 shape, where one jar reachable under several names double-counted toward
+      `MAX_INJECTED_DEPENDENCIES` and refused packs that were within the cap.
   - **LANDMINE — the refusal split is the whole safety property, and it is structural.** A platform ref is a
     project the author linked; a manifest id is a bare string that may name something *bundled inside another
     jar* (`fabric-api-base` ships inside Fabric API), provided by the loader, or optional in practice. Since
