@@ -121,6 +121,28 @@ internal class ManifestDependencyTest {
     }
 
     /**
+     * **`quilt_base` is a QSL module, so it must be staged rather than excused as the runtime.**
+     *
+     * It sat in `environmentProvidedIds` beside `quilt_loader` until 2026-09-01, which meant a mod whose
+     * only QSL dependency was `quilt_base` had nothing staged and then failed to boot on the very
+     * dependency the harness had chosen not to supply. `quilt_loader` genuinely is the runtime and stays
+     * excused; QSL's modules are jars a pack has to carry.
+     */
+    @Test
+    fun quiltBaseIsStagedWhileTheQuiltLoaderIsNot() {
+        val requirements = listOf(
+            requirement("quilt_loader"), requirement("quilt_base"),
+            requirement("quilt_resource_loader"), requirement("minecraft")
+        )
+
+        Assertions.assertEquals(
+            listOf("quilt_base", "quilt_resource_loader"),
+            BootVerifier.stageableRequirements(requirements).map { it.modID },
+            "only the loader and the runtime are environment-provided; QSL's modules are mods"
+        )
+    }
+
+    /**
      * **A mod declares Fabric API several times over, and it must still be staged once.**
      *
      * Fabric API ships as ~45 modules and a descriptor depends on the modules, so a single mod routinely
