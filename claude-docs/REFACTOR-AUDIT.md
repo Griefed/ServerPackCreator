@@ -4675,3 +4675,45 @@ modules by category rather than by published id. Resolved by reading **all 47 `q
 
 Suites after the follow-ups, re-derived from `build/test-results/test/*.xml`: api 382 (1 skip), clientside
 **266** (was 263), grinder 434 (29 skip), app 149. All green.
+
+## Iteration 32 — MED-1, LOW-1 and MED-2's instances closed by rebuilding the history (2026-09-01)
+
+The resolution above recorded MED-1 and LOW-1 as *accepted, not rewritten*, on the `358675fbf` precedent
+that a mis-shaped commit found after merging is remedied by the audit entry. Griefed overrode that: nothing
+was pushed, so the history could still be re-cut. It was, and MED-2's two instances went with it — those had
+been closed only as a *rule*, because the bad red commits were thought immovable.
+
+**Method.** `git rebase -i` is unavailable in this environment, so the range was replayed explicitly: each
+feature branch re-created from `03047a7c0`, its commits re-made, and each `--no-ff` merge restored with its
+original message. **All nine merges survive** and the resulting tree is byte-identical to the pre-rebase tip
+(`git diff --stat` empty against the `backup-pre-rebase-20260901` ref, which is kept until Griefed deletes
+it). 26 commits became 29.
+
+**MED-1 — `cbc615edb` split, and the refactor moved ahead of the pin.** It is now
+`refactor(clientside): move the confidence fold into the companion` → `test(...)` → `fix(...)`. Putting the
+refactor *first* is what makes it honest: `aggregate` becomes `aggregateFor` in the companion while nothing
+yet references it, so that commit is **green** — verified by running the clientside suite at it. The
+confidence ladder was diffed against its previous form to confirm not one branch changed. The behaviour
+change is then a five-line commit instead of a ninety-line one.
+
+**LOW-1 — the two guards buried in implementation commits now have their own.**
+
+- `StatusDashboardScriptTest` was written after the renderer and found the `safeHref` bug, so the honest
+  shape is four commits, and that is what history now says: `test` (pin) → `feat` (dashboard, carrying the
+  base-URL bug) → `test(grinder): execute the dashboard's script under node` → `fix(grinder): the dashboard
+  links only absolute http(s) URLs`. Verified by checking out each: the feat commit is green, the node guard
+  is **red on `theLinkHelperOnlyAcceptsAbsoluteHttpUrls`**, the fix is green. The bug and its discovery are
+  now legible from the log instead of being invisible inside one commit.
+- The Fabric-module collapse guard moved into the pin commit, where it belongs: it is **red before the
+  fix** — `theManyModulesOfFabricApiCollapseToOneDependency` fails there — because without the registry
+  change the module ids do not resolve to `fabric-api` and so are not filtered.
+
+**MED-2's instances, not just its rule.** The dashboard pin's fixture now wires **every** optional
+collaborator of `ReportServer`, so that commit is red for exactly one reason — `Unresolved reference
+'StatusDashboardRenderer'` — rather than also for four field paths that no implementation could have
+resolved. The Fabric pin carries the corrected `v${version}` interpolation rather than the literal that was
+fixed a commit later. Both were checked by reading the failures at those commits, which is what the
+convention added yesterday asks for.
+
+Suites at the rebuilt tip: api 383 (1 skip), clientside 267, grinder 434 (29 skip), app 149 — all green.
+Every iteration-32 finding is now closed; none remain accepted-with-reason.
