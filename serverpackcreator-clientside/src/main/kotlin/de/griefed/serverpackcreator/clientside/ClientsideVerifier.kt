@@ -190,7 +190,8 @@ class ClientsideVerifier(
          * into a confidence. A crash is the strongest single signal — it promotes any metadata to
          * [Confidence.HIGH], including the "declares server/both yet crashes" lie the metadata can't
          * catch. Without a crash, a client-leaning metadata signal is [Confidence.MEDIUM], a clear
-         * server/both is [Confidence.LOW], and everything unknown/deferred is [Confidence.INCONCLUSIVE].
+         * server/both is [Confidence.LOW], a boot that merely *survived* is also [Confidence.LOW], and
+         * everything unknown/deferred is [Confidence.INCONCLUSIVE].
          */
         internal fun aggregateFor(
             serverSide: DeclaredSupport,
@@ -214,12 +215,19 @@ class ClientsideVerifier(
                 else -> null
             }
 
-            // A crash is decisive regardless of declaration; otherwise fall back to the metadata signal,
-            // which boot can confirm but (short of a crash) not overturn.
+            // A crash is decisive regardless of declaration; otherwise fall back to the metadata signal, which a
+            // boot can confirm but (short of a crash) not overturn -- hence SURVIVED sitting *below*
+            // metadataClient: a client mod can start a server without being any use on one, so a clean boot is
+            // not proof of server-safety. It is still evidence, though, and it used to be discarded: with the jar
+            // scan errored and the platform declaring nothing (i.e. every CurseForge project), there is no
+            // metadata to fall back TO, and the most expensive signal this engine produces fell into
+            // INCONCLUSIVE -- "we learned nothing" -- when what it learned was that the server started.
+            // Measured 2026-09-01: better-stats, tcdcommons and yacl, all JarSideness=ERROR, all SURVIVED.
             val confidence = when {
                 bootResult == BootResult.CRASHED -> Confidence.HIGH
                 metadataClient -> Confidence.MEDIUM
                 metadataServer -> Confidence.LOW
+                bootResult == BootResult.SURVIVED -> Confidence.LOW
                 else -> Confidence.INCONCLUSIVE
             }
             return confidence to note
