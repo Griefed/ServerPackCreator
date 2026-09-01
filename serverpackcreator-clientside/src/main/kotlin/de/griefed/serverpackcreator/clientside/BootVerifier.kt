@@ -568,7 +568,7 @@ class BootVerifier(
                 mainFile, loader, minecraftVersion, modsDir, mutableSetOf(), 0, unsatisfied, unmapped, injected
             )
         ) {
-            return Prepared.Failed("Could not download ${mainFile.fileName}.")
+            return Prepared.Failed(downloadFailureDetail(mainFile))
         }
         // Ask the jar what it says about itself before spending a container on it. The platform's declared
         // loader and Minecraft sets are what an author ticked; the descriptor is what the jar was built
@@ -629,6 +629,23 @@ class BootVerifier(
      * itself needs an `ApiWrapper` and a running server.
      */
     companion object {
+        /**
+         * Why a candidate jar could not be staged, phrased so the reason distinguishes a broken *host* from a
+         * broken *mod*. A [ModFile.locked] file is CurseForge's `allowModDistribution=false` — it carries no
+         * `downloadUrl` at all and can only be fetched by the headless browser, so its failure is almost
+         * always a missing Playwright/Chromium on the machine running the grind, not anything about the mod.
+         * Measured 2026-09-01: 21 live INCONCLUSIVE verdicts said only "could not download", all CurseForge,
+         * and nothing in them said which of the two had gone wrong.
+         */
+        internal fun downloadFailureDetail(file: ModFile): String =
+            if (file.locked) {
+                "Could not download ${file.fileName}: the file is distribution-locked " +
+                    "(allowModDistribution=false), so it needs the headless browser downloader — check that " +
+                    "Playwright and Chromium are installed for the account running this."
+            } else {
+                "Could not download ${file.fileName}."
+            }
+
         private val log by lazy { cachedLoggerOf(BootVerifier::class.java) }
 
         /**

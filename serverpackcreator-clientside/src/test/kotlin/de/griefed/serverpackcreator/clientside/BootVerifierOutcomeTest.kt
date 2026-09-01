@@ -151,4 +151,37 @@ internal class BootVerifierOutcomeTest {
 
         Assertions.assertDoesNotThrow { BootVerifier.restoreDecisiveConsole(outcome) }
     }
+
+    /**
+     * **A refusal has to name its cause, and "could not download" names nothing.**
+     *
+     * Measured against the live store on 2026-09-01: **21 verdicts** said only `Could not download <file>`,
+     * every one of them CurseForge, and the file names — `bwncr`, `tombstone`, `entityculling`,
+     * `moreoverlays` — are the population this module already documents as **distribution-locked**
+     * (`allowModDistribution=false`, so `downloadUrl` is null and the fetch has to go through the headless
+     * browser). Read as written, those 21 are indistinguishable from a 404 or a flaky link, so nobody can
+     * tell a broken host from a broken mod. A locked file says so, and names the host prerequisite it needs.
+     */
+    @Test
+    fun aLockedFileSaysWhyItCouldNotBeDownloaded() {
+        val locked = ModFile("tombstone-neoforge-26.2-9.9.3.jar", setOf("NeoForge"), setOf("26.2"), null, "https://cf/p", emptyList())
+
+        val reason = BootVerifier.downloadFailureDetail(locked)
+
+        Assertions.assertTrue(reason.contains(locked.fileName), reason)
+        Assertions.assertTrue(reason.contains("distribution-locked"), "the cause has to be named: $reason")
+        Assertions.assertTrue(reason.contains("browser"), "and the mechanism that handles it: $reason")
+    }
+
+    /** An ordinary file's failure must not blame the browser — that would send the operator the wrong way. */
+    @Test
+    fun anOrdinaryFileFailureDoesNotBlameTheBrowser() {
+        val ordinary = ModFile("jei-1.20.1.jar", setOf("Forge"), setOf("1.20.1"), "https://cdn/jei.jar", null, emptyList())
+
+        val reason = BootVerifier.downloadFailureDetail(ordinary)
+
+        Assertions.assertTrue(reason.contains(ordinary.fileName), reason)
+        Assertions.assertFalse(reason.contains("distribution-locked"), reason)
+        Assertions.assertFalse(reason.contains("browser"), reason)
+    }
 }
