@@ -170,6 +170,53 @@ internal class ModIdRegistryTest {
     }
 
     /**
+     * **QSL is the Quilt mirror of the Fabric API case, and it was left open by the Fabric fix.** Quilt
+     * Standard Libraries ships as ~33 modules and a Quilt descriptor depends on the modules, not on the
+     * project: `quilt_resource_loader`, `quilt_networking`, `quilt_registry`. Neither platform publishes
+     * them, so each fell through to a Modrinth slug guess that 404s and to nothing at all on CurseForge —
+     * the same unstaged-dependency failure `fabric-resource-loader-v0` produced.
+     *
+     * Verified 2026-09-01 by reading all 47 `quilt.mod.json` files in `QuiltMC/quilt-standard-libraries`
+     * (branch 1.21.5) and collecting what they declare in `depends`: 33 distinct `quilt_*` ids, e.g.
+     * `quilt_resource_loader_testmod` depends on `["quilt_loader", "quilt_resource_loader"]`.
+     *
+     * **The shape differs from Fabric's and the rule must not be copied.** QSL ids are underscored and carry
+     * **no** API-version suffix, so the `-v<digits>` rule matches none of them.
+     */
+    @Test
+    fun qslModulesResolveToQslOnBothPlatforms() {
+        val modules = listOf(
+            "quilt_resource_loader", "quilt_networking", "quilt_registry", "quilt_lifecycle_events",
+            "quilt_item_extensions", "quilt_block_extensions", "quilt_crash_info", "quilt_screen",
+            "quilt_datafixerupper", "quilt_registry_entry_attachment"
+        )
+
+        for (module in modules) {
+            Assertions.assertEquals("qsl", KnownModIds.refFor(module, "Modrinth"), module)
+            Assertions.assertEquals("634179", KnownModIds.refFor(module, "CurseForge"), module)
+        }
+    }
+
+    /**
+     * `quilt_loader` is Quilt Loader, not a QSL module — the runtime provides it, and `BootVerifier`'s
+     * `environmentProvidedIds` already drops it before staging. Mapping it to QSL would be wrong even
+     * though nothing downstream would notice today, and "nothing notices" is not a reason to record a
+     * false fact in a lookup table other code is entitled to trust.
+     */
+    @Test
+    fun theQuiltLoaderItselfIsNotAQslModule() {
+        Assertions.assertNotEquals("qsl", KnownModIds.refFor("quilt_loader", "Modrinth"))
+        Assertions.assertNull(KnownModIds.refFor("quilt_loader", "CurseForge"))
+    }
+
+    /** The two families do not bleed into one another: a QSL id is never Fabric API, nor the reverse. */
+    @Test
+    fun theFabricAndQuiltFamiliesStaySeparate() {
+        Assertions.assertEquals("fabric-api", KnownModIds.refFor("fabric-resource-loader-v0", "Modrinth"))
+        Assertions.assertEquals("qsl", KnownModIds.refFor("quilt_resource_loader", "Modrinth"))
+    }
+
+    /**
      * A `fabric-` prefix alone proves nothing: `fabric-language-kotlin` is its own project, and its id has
      * no module version suffix. It keeps the plain Modrinth slug guess, which is correct — that *is* its slug.
      */
