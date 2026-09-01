@@ -348,13 +348,28 @@ download/resolve phase runs on the **host** (in `BootVerifier.prepareBootPack`),
 container, so the box running the grinder needs:
 - **`CURSEFORGE_API_KEY`** env var — `clientside.supportedPlatforms()` only registers CurseForge when
   the key is present; without it CurseForge links cannot be resolved at all (Modrinth needs no key).
-- **Playwright + Chromium installed** (`playwright install chromium` + OS deps, as `clientside-boot.yml`
-  does) — distribution-locked CurseForge files (`allowModDistribution=false`, `downloadUrl=null`) are
-  routed by `clientside.selectDownloader` to the headless-browser `BrowserDownloader`, which runs on
-  the host during staging. The key and the browser are **complementary**: the key resolves the project
-  and reveals the file is locked; the browser fetches the withheld jar. A locked CurseForge mod needs
-  **both**. Wire the `BootVerifier` with a `BrowserDownloader()` (disposed via `use {}`) exactly as
-  `VerifyClientsideCommand` does — locked-file support is then inherited, not reimplemented.
+- **Playwright + Chromium** — distribution-locked CurseForge files (`allowModDistribution=false`,
+  `downloadUrl=null`) are routed by `clientside.selectDownloader` to the headless-browser
+  `BrowserDownloader`, which runs on the host during staging. The key and the browser are
+  **complementary**: the key resolves the project and reveals the file is locked; the browser fetches
+  the withheld jar. A locked CurseForge mod needs **both**. Wire the `BootVerifier` with a
+  `BrowserDownloader()` (disposed via `use {}`) exactly as `VerifyClientsideCommand` does — locked-file
+  support is then inherited, not reimplemented.
+  - **LANDMINE — the *browser* is not the half that goes missing; the OS libraries are.** Playwright's
+    Java binding downloads browsers itself on the first `Playwright.create()`
+    (`DriverJar.installBrowsers()`, which is why `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD` exists), so a host
+    that never ran an install still gets one. It does **not** install the libraries Chromium links
+    against, and on a headless server those are absent by default — Chromium then launches and every
+    navigation times out, which reads as CurseForge being slow. `clientside-boot.yml`'s reusable job
+    installs exactly those and nothing else, which is the shape of the gap. `install-grinder.sh` now
+    does both (`--skip-browser` opts out).
+  - **Install with Playwright's own CLI, never `npx playwright install`.** Playwright pins one Chromium
+    build per release and looks for that exact directory — 1.62.0 wants `chromium-1234` (Chrome for
+    Testing 151.0.7922.34, in `driver-1.62.0.jar`'s `browsers.json`). `npx` fetches whatever revision
+    the *npm* package pins, landing beside it as `chromium-<other>`, so a check for `chromium-*` reports
+    success while the binding still downloads its own. Driving `com.microsoft.playwright.CLI` from the
+    installed `lib/*` makes the version match by construction: the same driver jar that runs the
+    download decides what to fetch, and a version bump therefore cannot leave it stale.
 
 ## Testing
 
