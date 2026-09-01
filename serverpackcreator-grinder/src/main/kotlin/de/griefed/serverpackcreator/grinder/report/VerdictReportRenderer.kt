@@ -90,7 +90,8 @@ internal object VerdictReportRenderer {
               <h1>Suspected clientside mods (${page.matched} of ${page.total})</h1>
               <nav class="toolbar">
                 <a class="btn" href="/export.csv${csvQuery(query)}">Download CSV (${page.matched} rows)</a>
-                <a class="btn" href="/status">Live status</a>
+                <a class="btn" href="/dashboard">Live status</a>
+                <a class="btn" href="/status">Status JSON</a>
                 <a class="btn" href="/as-properties">Fallback list</a>
                 <a class="btn" href="/boot-logs">Boot logs</a>
               </nav>

@@ -37,7 +37,7 @@ docker build -t spc-grinder-runtime:latest serverpackcreator-grinder/docker
 |---|---|
 | Result table | <http://localhost:8757/> — sortable, highest confidence first |
 | CSV export | <http://localhost:8757/export.csv> |
-| What it is doing right now | `curl -s localhost:8757/status` |
+| What it is doing right now | `http://localhost:8757/dashboard` in a browser, or `curl -s localhost:8757/status` |
 
 **6. Run it continuously.** Once step 4 works, drop the `--args` and the grinder crawls the catalogue on
 its own, keeping the same report live at `localhost:8757`:
@@ -485,6 +485,21 @@ you want when a boot has been quiet for eight minutes.
 | What is the Minecraft server printing *right now*? | that attempt's `boot.log` (live) |
 | Why is a cold tuple taking minutes? | that tuple's `.spc-install.log` (live) |
 | Where has the crawl got to? | `/status` → `crawl`, or `SPC_GRINDER_CURSORS` |
+
+### `/dashboard` — live activity, for a human
+
+`http://localhost:8757/dashboard` is `/status` rendered as a page that polls itself: the current pass, what
+each worker is holding and for how long, the crawl position per platform, the loader-cache size, and any
+boot-rule errors — with durations as `2d 3h 2m` rather than `183742`. The poll interval is selectable
+(2/5/15/60s) and pausable, and it says so when the daemon stops answering rather than freezing on stale
+numbers.
+
+No framework and nothing fetched off the network, so it works over an SSH tunnel or behind a reverse proxy
+on a host with no route to a CDN. It is **read-only**, like every other endpoint here, and carries the same
+absence of authentication — see *Exposing the report* above.
+
+`/status` itself is unchanged and stays JSON: it is a second route, not content negotiation, so anything
+scripted against `/status` is unaffected.
 
 ### `/status` — live activity, as JSON
 
