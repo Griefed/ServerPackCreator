@@ -344,6 +344,19 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
       character away, and must still resolve. Verified against lucko's `fabric.mod.json`, 2026-09-01. Keep
       that set to ids **observed** colliding — guessing at more re-creates the un-pinned table `KnownModIds`
       exists to avoid. A `fabric-` prefix alone proves nothing: `fabric-language-kotlin` is its own project.
+    - **QSL is the same shape, and is handled by its own rule.** Quilt Standard Libraries also ships as
+      many modules, and a Quilt descriptor names them (`quilt_resource_loader`, `quilt_networking`). Verified
+      2026-09-01 across all 47 `quilt.mod.json` files in `QuiltMC/quilt-standard-libraries` (branch 1.21.5):
+      **33 distinct `quilt_*` ids**, all lowercase-with-underscores and **none** carrying an API-version
+      suffix — so `fabric-<x>-v<digits>` matches no QSL id, which is why the Fabric rule left this open
+      rather than closing it by coincidence. The QSL rule is `^quilt_[a-z0-9_]+$` → `qsl` / `634179`, with
+      `notQsl` holding `quilt_loader` (the loader, not a module).
+      **Known, deliberately not changed:** `quilt_base` *is* a QSL module (`library/core/qsl_base`;
+      `quilt_base_testmod` depends on `["quilt_loader", "quilt_base"]`), but `-api`'s
+      `QuiltScanner.dependencyExclusions` strips it at scan time as "the platform" and
+      `BootVerifier.environmentProvidedIds` repeats that, so it never reaches staging. Correcting it means
+      editing existing assertions in the published module — the stop-and-flag signal — for a case limited to
+      a mod whose *only* QSL dependency is `quilt_base`, since any other module now pulls QSL in anyway.
     - **One mod names several modules, and they must collapse to one download.** `visited` is claimed on the
       *ref*, so the first module resolves Fabric API and the rest short-circuit. That matters beyond the
       wasted fetch: it is the B6 shape, where one jar reachable under several names double-counted toward

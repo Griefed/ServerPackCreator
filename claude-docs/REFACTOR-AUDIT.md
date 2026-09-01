@@ -4621,3 +4621,52 @@ Maven-published module is the highest-cost miss available in this repository.
 - **Deploy-script changes carry no test harness, and that ceiling is stated rather than quietly accepted** —
   the same position `buildSrc` holds. Verification went in the commit messages (`bash -n`, `--help` rendering,
   `--nonsense` still rejected, the CLI main class resolving off the real installed dist).
+
+## Iteration 32 — resolution (2026-09-01)
+
+Every finding actioned, on branch `claude-audit-32-followups`. Status of each:
+
+| Finding | Outcome |
+|---|---|
+| MED-1 refactor bundled with behaviour change (`cbc615edb`) | **Accepted, not rewritten** — see below |
+| MED-2 red pins carrying their own bugs | **Closed forward** — new convention in root `CLAUDE.md` |
+| MED-3 stale api suite count | **Fixed** in the iteration-32 audit commit (381 → 382) |
+| LOW-1 guards added inside implementation commits | **Accepted, not rewritten** — see below |
+| LOW-2 three `!!` in `StatusDashboardScriptTest` | **Fixed** — `requireNode()` returns non-null |
+| LOW-3 `StatusDashboardRenderer.PAGE` undocumented | **Fixed** |
+| LOW-4 dashboard over-claims on the first failed poll | **Fixed** — `everLoaded` gates the wording |
+| OBS-1 QSL mirror of the Fabric API module gap | **Verified and closed** — see below |
+
+**MED-1 and LOW-1 are accepted rather than rewritten, deliberately.** Both are commit-shape defects in
+history that is already merged into `develop`. Fixing them means rebasing 17 commits including six merges to
+re-cut two of them, and the repository has already decided this trade once: the `358675fbf` entry records
+that a mislabelled commit found after merging is remedied by *the audit entry*, because the alternative is
+rewriting shared history. The forward-looking half is what has value, and MED-2's convention is it.
+
+**MED-2 is closed as a rule, since the instances cannot be.** Root `CLAUDE.md` now carries *"Run the pin
+before you commit it red, and read why it failed"*, with both 2026-09-01 instances as its evidence — the
+fixture that omitted `consoleRules` and the `${'$'}` escape that produced a literal `...-v$version`. It sits
+directly above the existing *pin first means commit first* rule, because it is the failure mode that rule
+does not catch on its own: a red commit proves nothing if the red is the guard's own bug.
+
+**OBS-1 verified and closed.** The observation was recorded unverified because the QSL repository groups
+modules by category rather than by published id. Resolved by reading **all 47 `quilt.mod.json` files** in
+`QuiltMC/quilt-standard-libraries` (branch 1.21.5) and collecting their `depends` entries: **33 distinct
+`quilt_*` module ids**, with `quilt_resource_loader_testmod` declaring `["quilt_loader",
+"quilt_resource_loader"]`. The gap was real and identical in shape to the Fabric one.
+
+- The rule is **not** a copy of Fabric's: QSL ids are underscored and carry **no** API-version suffix, so
+  `fabric-<x>-v<digits>` matches none of them. `^quilt_[a-z0-9_]+$` → `qsl` / `634179`.
+- `notQsl` holds `quilt_loader` — the loader, not a module. It is already dropped before staging, so mapping
+  it would change nothing observable; it is excluded because a lookup table other code trusts should not
+  record a false fact merely because the falsehood is unreachable today.
+- **One sub-gap raised rather than closed.** `quilt_base` *is* a QSL module — `library/core/qsl_base` exists
+  and `quilt_base_testmod` depends on it — yet `-api`'s `QuiltScanner.dependencyExclusions` strips it at scan
+  time as "the platform", and `BootVerifier.environmentProvidedIds` repeats that. So it never reaches
+  staging. Closing it would mean changing existing assertions in the **published** module, which the
+  conventions treat as a stop-and-flag rather than a fix to make unilaterally, and the reachable case is
+  narrow: a mod whose *only* QSL dependency is `quilt_base`, since any other module now pulls QSL in. Left
+  as a decision for Griefed.
+
+Suites after the follow-ups, re-derived from `build/test-results/test/*.xml`: api 382 (1 skip), clientside
+**266** (was 263), grinder 434 (29 skip), app 149. All green.

@@ -78,6 +78,12 @@ object StatusDashboardRenderer {
      */
     fun toHtml(): String = PAGE
 
+    /**
+     * The page itself, held as one constant because every property above depends on it being one: no request
+     * or store data is interpolated, so there is nothing here to escape and no way for a mod slug to reach
+     * the markup. Edit the JavaScript with the guards in mind — nothing compiles a string, so
+     * `StatusDashboardScriptTest` runs it under node, and [READ_FIELDS] must name any field newly read.
+     */
     private val PAGE = """
         <!doctype html>
         <html lang="en">
@@ -320,6 +326,10 @@ object StatusDashboardRenderer {
 
           var timer = null;
           var running = true;
+          // Whether any poll has ever succeeded. Without it the failure message claims to be "showing the
+          // last successful poll" on the very first failure, when every panel is empty and there is no such
+          // poll to show -- describing a state the page is demonstrably not in.
+          var everLoaded = false;
 
           function poll() {
             fetch("/status", { cache: "no-store" })
@@ -333,12 +343,15 @@ object StatusDashboardRenderer {
                 renderCrawl(doc);
                 renderRules(doc);
                 renderCache(doc);
+                everLoaded = true;
                 feed(true, "updated " + new Date().toLocaleTimeString());
               })
               .catch(function (error) {
                 // Say so rather than freezing on stale numbers: a dashboard that silently keeps showing the
                 // last good poll is worse than none when the daemon is the thing that stopped.
-                feed(false, "unreachable (" + error.message + ") — showing the last successful poll");
+                feed(false, everLoaded
+                  ? "unreachable (" + error.message + ") — showing the last successful poll"
+                  : "unreachable (" + error.message + ") — no data yet");
               });
           }
 

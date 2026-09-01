@@ -46,12 +46,22 @@ internal class StatusDashboardScriptTest {
     private fun script(): String =
         StatusDashboardRenderer.toHtml().substringAfter("<script>").substringBeforeLast("</script>")
 
-    /** Whether this host can run the checks at all — CI is not required to have node. */
-    private fun node(): String? =
-        System.getenv("PATH").orEmpty().split(File.pathSeparator)
+    /**
+     * The host's `node`, **skipping the calling test** when there is none — CI is not required to have a
+     * JavaScript toolchain, and these checks are worth having on a developer machine regardless.
+     *
+     * The assumption lives here rather than in each test so the return type can be non-null: an
+     * `assumeTrue(node != null)` at the call site aborts correctly but tells the compiler nothing, which is
+     * how three `!!` ended up in this file and were written up by audit iteration 32.
+     */
+    private fun requireNode(): String {
+        val node = System.getenv("PATH").orEmpty().split(File.pathSeparator)
             .map { File(it, "node") }
             .firstOrNull { it.canExecute() }
             ?.absolutePath
+        Assumptions.assumeTrue(node != null, "no node on PATH; skipping the dashboard script check")
+        return node ?: error("unreachable: the assumption above aborts the test")
+    }
 
     /** Run [source] under node, returning exit status and combined output. */
     private fun run(node: String, source: File): Pair<Int, String> {
@@ -70,9 +80,7 @@ internal class StatusDashboardScriptTest {
      */
     @Test
     fun theDashboardScriptParses(@TempDir dir: File) {
-        val node = node()
-        Assumptions.assumeTrue(node != null, "no node on PATH; skipping the dashboard script check")
-        val nodeBinary = node!!
+        val nodeBinary = requireNode()
 
         val file = File(dir, "page.js").apply { writeText(script()) }
         val process = ProcessBuilder(nodeBinary, "--check", file.absolutePath).redirectErrorStream(true).start()
@@ -89,9 +97,7 @@ internal class StatusDashboardScriptTest {
      */
     @Test
     fun theDurationHelperRendersEveryScale(@TempDir dir: File) {
-        val node = node()
-        Assumptions.assumeTrue(node != null, "no node on PATH; skipping the dashboard script check")
-        val nodeBinary = node!!
+        val nodeBinary = requireNode()
 
         val probe = File(dir, "duration.js").apply {
             writeText(harness() + """
@@ -120,9 +126,7 @@ internal class StatusDashboardScriptTest {
      */
     @Test
     fun theLinkHelperOnlyAcceptsAbsoluteHttpUrls(@TempDir dir: File) {
-        val node = node()
-        Assumptions.assumeTrue(node != null, "no node on PATH; skipping the dashboard script check")
-        val nodeBinary = node!!
+        val nodeBinary = requireNode()
 
         val probe = File(dir, "href.js").apply {
             writeText(harness() + """
