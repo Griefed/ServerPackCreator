@@ -168,10 +168,15 @@ object StatusDashboardRenderer {
           }
 
           // The only value that reaches an attribute rather than a text node, so it is the only one that
-          // needs checking: anything but http/https is dropped rather than linked.
+          // needs checking: anything but an absolute http/https URL is dropped rather than linked.
+          //
+          // Deliberately parsed with NO base. Resolving against window.location.origin turns every
+          // unparseable value into a same-origin link -- a null projectUrl became "<report>/null" -- so a
+          // row would render something that looks like a project link and leads to a 404 on this server.
+          // A platform's projectUrl is always absolute, so anything relative is bad data, not a link.
           function safeHref(url) {
             try {
-              var parsed = new URL(url, window.location.origin);
+              var parsed = new URL(url);
               return (parsed.protocol === "http:" || parsed.protocol === "https:") ? parsed.href : null;
             } catch (e) { return null; }
           }
