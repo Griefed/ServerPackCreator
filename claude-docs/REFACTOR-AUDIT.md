@@ -4512,3 +4512,112 @@ recovered code.
 - **No source outside the audit's scope was touched by the fix pass.** `3ef3930fe` is one test file;
   `f68041c4a` and `9568120e1` are `CLAUDE.md` only.
 - **The full suite is green after the fixes**: 1171 tests, 0 failed, 29 skipped.
+
+# Audit — 2026-09-01, unpushed `develop` (iteration 32)
+
+**Scope:** `git log 03047a7c0..HEAD` — **17 commits** (6 merges, 11 working commits) across `-api`,
+`-clientside`, `-grinder` and the grinder's deploy scripts. All were produced in one session responding to
+live-grinder defect reports: a Quilt scan dropping Fabric descriptors, INCONCLUSIVE verdicts that discarded a
+survived boot, a deploy script that only warned about the headless browser, a `/status` dashboard, and Fabric
+API's module ids going unresolved.
+
+**Method:** commit-by-commit hygiene review; `--rerun-tasks` clean compile of all three changed modules to
+catch warnings and the incremental-compilation blind spot this repository has already paid for; suite counts
+re-derived from `build/test-results/test/*.xml`; guard teeth checked by deliberate breakage.
+
+## HIGH — none
+
+No behaviour regression found. Module boundaries intact (`-clientside` gained nothing pointing outward,
+`-grinder`'s report still has no Spring). No new `!!` in production code. The one change to the **published**
+`-api` surface (`21c912bd4`, `ScannedMod.descriptorRead` + `QuiltPackScanner`'s Fabric-descriptor fallback)
+**did** get its `claude-docs/API-BEHAVIOUR-CHANGES.md` row — checked, because a silent behaviour change on the
+Maven-published module is the highest-cost miss available in this repository.
+
+## MEDIUM
+
+- **MED-1 — `cbc615edb` bundles a pure refactor with the behaviour change it was labelled for.** The
+  behaviour change is ~5 lines (a `SURVIVED -> Confidence.LOW` branch in `aggregate`). The commit carries
+  **90 changed lines** in `ClientsideVerifier.kt`, because it also moved `aggregate` into the companion,
+  renamed it `aggregateFor`, and re-wrapped three lines the move pushed past the column limit. The
+  conventions ask that "pure refactor (no behavior change)" and "change behavior" be separate commits, and
+  the cost here is the usual one: the fold's history now shows a wholesale rewrite, so a later reader cannot
+  see the one-line ranking decision without diffing by eye. The move was *necessary* (the test calls it
+  statically) — it simply belonged in its own commit ahead of the fix.
+
+- **MED-2 — Two red-committed pins contained bugs of their own, fixed in the implementation commit.** The
+  pin-first rule exists so someone can check out `<fix>^` and watch the guard go red for the stated reason.
+  Twice in this range the red was partly self-inflicted:
+  - `2072a8ebe`'s fixture never wired `consoleRules`, so `bootRules.source|ruleCount|undecidedVerdict|errors`
+    could not resolve **even with a correct implementation**; `7c15ecb00` edited the test to add it.
+  - `08f5730a9` wrote `"fabric-resource-loader-v${'$'}version"`, which is an escaped dollar producing the
+    literal `...-v$version`; `599b228c4` corrected it.
+
+  Both were caught immediately and the guards are sound now, but the committed red state is not the clean
+  "implementation missing" signal the rule is for. Checking the fixture resolves against a *real* server
+  before committing the pin would have caught the first; running the pin once before committing catches both.
+
+- **MED-3 — Root `CLAUDE.md`'s api suite count went stale in this very range. FIXED in this audit.** It read
+  `381 (1 skip)`; re-derived from the test XML it is **382 (1 skip)**. `20a4e02af` added one test to
+  `ModScannerSidenessTest` and no commit updated the row. This is precisely the defect the *Cite names, not
+  snapshots* convention names — "suite counts left behind by the tests that were just added" — and it is the
+  fourth consecutive audit to find an instance of that class. The clientside (263) and grinder (434) rows,
+  updated in the same session, were correct.
+
+## LOW
+
+- **LOW-1 — New tests introduced inside implementation commits rather than pinned first.**
+  `StatusDashboardScriptTest` (172 lines) landed entirely in `7c15ecb00`, and the Fabric-module collapse
+  guard (30 lines) in `599b228c4`. Both are defensible as characterization — the collapse guard pins
+  behaviour that already worked, and the script test's teeth *were* verified in-session by reinstating the
+  bug — but neither has a red commit, so the verification leaves no evidence, which is the same gap the
+  conventions record for the eight commits of 2026-07-31.
+
+- **LOW-2 — Three new `!!`, all the same line.** `val nodeBinary = node!!` appears verbatim in each of
+  `StatusDashboardScriptTest`'s three tests, after an `Assumptions.assumeTrue(node != null, …)` that Kotlin
+  cannot smart-cast through. The convention is "no new `!!`"; the honest fix is to have the helper return the
+  path and skip inside itself, or to bind once in a `@BeforeEach`. Test-only, so the blast radius is nil, but
+  it is duplication as well as an idiom violation.
+
+- **LOW-3 — `StatusDashboardRenderer.PAGE` has no doc comment.** Every other member of the object has one,
+  and the conventions extend the requirement to unexported constants explicitly. Its neighbour `toHtml()`
+  carries the explanation, which is presumably why it was missed.
+
+- **LOW-4 — The dashboard's failure text over-claims on the first poll.** `feed(false, "unreachable (…) —
+  showing the last successful poll")` is accurate on any poll but the first; when the *first* fetch fails
+  there is no previous poll and every panel is empty, so the message describes a state the page is not in.
+
+## Observation — an open item, not a defect in this range
+
+- **OBS-1 — the Fabric API module fix is asymmetric, and the Quilt mirror is untouched.** `KnownModIds` now
+  resolves `fabric-<something>-v<digits>` to Fabric API, closing the case where a descriptor names a *module*
+  of a project neither platform publishes separately. The same structural shape exists for Quilt: QSL also
+  ships as many modules, and this codebase maps only `quilted_fabric_api`/`qsl`, while
+  `BootVerifier.environmentProvidedIds` excuses only `quilt_loader` and `quilt_base`. Any other QSL module id
+  a Quilt descriptor declares therefore falls through to Modrinth as a slug guess and goes unmapped —
+  unstaged, exactly as `fabric-resource-loader-v0` did. **Unverified:** the exact QSL module ids (the
+  repository groups them by category rather than by published id), so confirm the id shape against a real
+  `quilt.mod.json` before adding a rule; guessing at it would rebuild the un-pinned table `KnownModIds`
+  exists to avoid.
+
+## Not findings / positives (verified — do not re-litigate)
+
+- **Pin-first done properly twice.** `20a4e02af` → `21c912bd4` and `d28c2cf3e` → `cbc615edb` each land the
+  guard red in its own commit and the fix touches **no test file** — confirmed with `git show --stat <fix> --
+  '*Test.kt'`.
+- **Guard teeth checked by deliberate breakage, three times.** Renaming the string-literal key `"loaderCache"`
+  in `statusJson()` made `everyFieldTheDashboardReadsExistsInTheStatusDocument` the **only** failure in all
+  434 grinder tests; reinstating `safeHref`'s base URL turned `theLinkHelperOnlyAcceptsAbsoluteHttpUrls` red;
+  renaming the Kotlin property `passRunningSeconds` failed at *compile* time via the pre-existing
+  `GrinderStatusTest`, which is what established that `READ_FIELDS` covers the untyped half rather than
+  duplicating the compiler.
+- **No new compiler warnings.** `--rerun-tasks` clean compile of `:api`, `:clientside` and `:grinder` test
+  source sets: every `w:` line is a pre-existing Java-deprecation in a file this range did not touch, and the
+  one touched file that carries such warnings (`ForgeTomlScanner.kt`) received a two-line change unrelated to
+  them.
+- **Measurements recorded rather than asserted**, per the *cite names* convention: the module rule measured at
+  44 of 46 `FabricMC/fabric` directories with the two misses named and explained; Playwright's pinned Chromium
+  revision read out of `driver-1.62.0.jar`'s `browsers.json` rather than assumed; the installer's unit-file
+  bug demonstrated by executing the resolution block against all three states.
+- **Deploy-script changes carry no test harness, and that ceiling is stated rather than quietly accepted** —
+  the same position `buildSrc` holds. Verification went in the commit messages (`bash -n`, `--help` rendering,
+  `--nonsense` still rejected, the CLI main class resolving off the real installed dist).
