@@ -109,7 +109,7 @@ class ClientsideVerifier(
             supersededByLoader(
                 verdict = assessment.verdict,
                 disproving = disproving,
-                metadataOnly = aggregate(project.serverSide, assessment.verdict.jarScan, null),
+                metadataOnly = aggregateFor(project.serverSide, assessment.verdict.jarScan, null),
                 bootDetail = assessment.bootDetail
             )
         }
@@ -136,7 +136,7 @@ class ClientsideVerifier(
                 .getOrNull()
         }
 
-        val (confidence, note) = aggregate(project.serverSide, jarScan, bootOutcome?.result)
+        val (confidence, note) = aggregateFor(project.serverSide, jarScan, bootOutcome?.result)
         return LoaderAssessment(
             verdict = LoaderVerdict(
                 loader = loader,
@@ -178,39 +178,6 @@ class ClientsideVerifier(
         }
     }
 
-    /**
-     * Combine the platform-declared server-side support, the jar-scan and (when run) the boot-result
-     * into a confidence. A crash is the strongest single signal — it promotes any metadata to
-     * [Confidence.HIGH], including the "declares server/both yet crashes" lie the metadata can't
-     * catch. Without a crash, a client-leaning metadata signal is [Confidence.MEDIUM], a clear
-     * server/both is [Confidence.LOW], and everything unknown/deferred is [Confidence.INCONCLUSIVE].
-     */
-    private fun aggregate(serverSide: DeclaredSupport, jarScan: JarScan, bootResult: BootResult?): Pair<Confidence, String?> {
-        val declaresClient = serverSide == DeclaredSupport.UNSUPPORTED
-        val declaresServer = serverSide == DeclaredSupport.REQUIRED
-        val jarClient = jarScan == JarScan.CLIENT
-        val jarServer = jarScan == JarScan.SERVER_OR_BOTH
-        val metadataClient = declaresClient || jarClient
-        val metadataServer = declaresServerSupport(serverSide, jarScan)
-
-        val note = when {
-            declaresClient && jarServer -> "Platform marks server unsupported but the jar declares server/both."
-            declaresServer && jarClient -> "Platform marks server required but the jar declares client-only."
-            bootResult == BootResult.CRASHED && metadataServer -> "Declared server/both but the server crashed — a strong clientside signal."
-            jarScan == JarScan.DEFERRED && bootResult == null -> "Distribution-locked file; jar-scan deferred to the boot-phase."
-            else -> null
-        }
-
-        // A crash is decisive regardless of declaration; otherwise fall back to the metadata signal,
-        // which boot can confirm but (short of a crash) not overturn.
-        val confidence = when {
-            bootResult == BootResult.CRASHED -> Confidence.HIGH
-            metadataClient -> Confidence.MEDIUM
-            metadataServer -> Confidence.LOW
-            else -> Confidence.INCONCLUSIVE
-        }
-        return confidence to note
-    }
 
     /**
      * The pure reconciliation predicates — what counts as a declared server claim, and which of two loaders'
@@ -218,6 +185,46 @@ class ClientsideVerifier(
      * be unit-tested without a platform, a jar or a boot.
      */
     companion object {
+        /**
+         * Combine the platform-declared server-side support, the jar-scan and (when run) the boot-result
+         * into a confidence. A crash is the strongest single signal — it promotes any metadata to
+         * [Confidence.HIGH], including the "declares server/both yet crashes" lie the metadata can't
+         * catch. Without a crash, a client-leaning metadata signal is [Confidence.MEDIUM], a clear
+         * server/both is [Confidence.LOW], and everything unknown/deferred is [Confidence.INCONCLUSIVE].
+         */
+        internal fun aggregateFor(
+            serverSide: DeclaredSupport,
+            jarScan: JarScan,
+            bootResult: BootResult?
+        ): Pair<Confidence, String?> {
+            val declaresClient = serverSide == DeclaredSupport.UNSUPPORTED
+            val declaresServer = serverSide == DeclaredSupport.REQUIRED
+            val jarClient = jarScan == JarScan.CLIENT
+            val jarServer = jarScan == JarScan.SERVER_OR_BOTH
+            val metadataClient = declaresClient || jarClient
+            val metadataServer = declaresServerSupport(serverSide, jarScan)
+
+            val note = when {
+                declaresClient && jarServer -> "Platform marks server unsupported but the jar declares server/both."
+                declaresServer && jarClient -> "Platform marks server required but the jar declares client-only."
+                bootResult == BootResult.CRASHED && metadataServer ->
+                    "Declared server/both but the server crashed — a strong clientside signal."
+                jarScan == JarScan.DEFERRED && bootResult == null ->
+                    "Distribution-locked file; jar-scan deferred to the boot-phase."
+                else -> null
+            }
+
+            // A crash is decisive regardless of declaration; otherwise fall back to the metadata signal,
+            // which boot can confirm but (short of a crash) not overturn.
+            val confidence = when {
+                bootResult == BootResult.CRASHED -> Confidence.HIGH
+                metadataClient -> Confidence.MEDIUM
+                metadataServer -> Confidence.LOW
+                else -> Confidence.INCONCLUSIVE
+            }
+            return confidence to note
+        }
+
         /**
          * Whether the mod *claims* to support servers — the platform's own `server_side: required`, or SPC's
          * scan of the jar reading server/both. Either source is enough; neither is trusted, which is why the
@@ -252,7 +259,10 @@ class ClientsideVerifier(
          * `sodium-fabric-` is exactly that shape, and it is the one `FilenameStemDeriver.deriveStems`
          * documents.
          */
-        internal fun loaderDisprovingTheCrash(verdict: LoaderVerdict, allVerdicts: List<LoaderVerdict>): LoaderVerdict? {
+        internal fun loaderDisprovingTheCrash(
+            verdict: LoaderVerdict,
+            allVerdicts: List<LoaderVerdict>
+        ): LoaderVerdict? {
             if (verdict.bootResult != BootResult.CRASHED) {
                 return null
             }
