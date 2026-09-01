@@ -120,6 +120,36 @@ internal class ManifestDependencyTest {
         )
     }
 
+    /**
+     * **A mod declares Fabric API several times over, and it must still be staged once.**
+     *
+     * Fabric API ships as ~45 modules and a descriptor depends on the modules, so a single mod routinely
+     * names five or eight of them. Every one now resolves to the same project, which makes this the exact
+     * shape B6 caught on `amblekit`: one jar reachable under several names, counted more than once, eating
+     * the `MAX_INJECTED_DEPENDENCIES` budget and refusing packs that were within it — scored INCONCLUSIVE,
+     * so it reads as a mod that could not be tested rather than as a bookkeeping bug.
+     */
+    @Test
+    fun theManyModulesOfFabricApiCollapseToOneDependency() {
+        val requirements = listOf(
+            requirement("fabric-resource-loader-v0"),
+            requirement("fabric-block-getter-api-v2"),
+            requirement("fabric-rendering-fluids-v1"),
+            requirement("fabric-networking-api-v1"),
+            requirement("fabric-api-base"),
+            requirement("cloth-config")
+        )
+
+        val stageable = BootVerifier.stageableRequirements(
+            requirements, alreadyResolved = setOf("fabric-api")
+        ) { id -> KnownModIds.refFor(id, "Modrinth") }
+
+        Assertions.assertEquals(
+            listOf("cloth-config"), stageable.map { it.modID },
+            "the platform already staged Fabric API, so none of its modules may be staged again"
+        )
+    }
+
     /** A pack cannot grow without bound: beyond the cap, refuse rather than boot a 40-jar pack. */
     @Test
     fun stagingRefusesBeyondTheInjectionCap() {
