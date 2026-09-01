@@ -74,6 +74,15 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   **Asymmetry baked into the confidence model:** only a CRASH is decisive (→ HIGH, incl. the
   "declares server/both yet crashes" lie); a clean boot does not prove server-safe. **The declared
   sideness is a self-report and is unreliable** — that asymmetry is *why* the expensive boot exists.
+  **But "not decisive" is not "not evidence", and `aggregate` conflated the two until 2026-09-01.** It
+  consulted `bootResult` for CRASHED and nothing else, so a SURVIVED boot fell through to the metadata —
+  and where there *is* no metadata (jar scan ERROR plus a platform declaring nothing, i.e. every
+  CurseForge project) it landed in INCONCLUSIVE, which means "we learned nothing" about a run that
+  learned the server started. SURVIVED now yields `LOW`, ranked **below** `metadataClient` so the
+  asymmetry above is untouched: a clean boot still cannot overturn a client-only declaration. Measured
+  against the live store: `better-stats`, `tcdcommons` and `yacl`, all `JarSideness=ERROR`, all decided
+  `READY_LINE`. **Exit 137 on such a row is normal** — `ContainerServerRunner` stops the container at the
+  ready-line — so the classifier was right and only the fold disagreed.
   **Landmine — loader-availability & pre-launch aborts (two-layer defense against a false HIGH):**
   a loader lacking a build for a brand-new Minecraft (e.g. Fabric on 26.2) must never be scored a
   clientside crash. (1) *Selection gate* — `LoaderVersionResolver.latest` returns `null` for a
@@ -356,6 +365,12 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   exactly that and nothing else — a timeout or a DNS failure must still fail, or the downloader returns `null`
   forever in silence. Both navigations also wait for `DOMCONTENTLOADED`, never the default `load`: an ad-laden
   project page keeps fetching long after it is usable, and the whole 30s default budget was being spent on it.
+  **A staging refusal names the lock** (`BootVerifier.downloadFailureDetail`). 21 live verdicts read only
+  `Could not download <file>`, every one CurseForge and every one from this locked population — a sentence a
+  404, a flaky link and *a host with no Chromium* all produce identically, so nobody could tell a broken host
+  from a broken mod. The locked branch names `allowModDistribution=false` and the Playwright prerequisite;
+  the ordinary branch deliberately does **not** mention the browser, since blaming it for an ordinary
+  download failure sends the operator the wrong way.
 - **`ClientsideListEditor`** (pure, unit-tested) inserts accepted entries into both files that ship the
   fallback-list: the `fallbackMods` `listOf(...)` block in `GenerationConfig.kt` (sorted, aligned
   `//link` comment, Kotlin trailing-comma is fine) and the backslash-continued `fallbackmodslist` in
@@ -376,7 +391,7 @@ seam (writes the log, then `BootLogClassifier` + `BootLogExcerpt`). The default
 
 ## Testing patterns
 
-- 138 tests, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
+- 257 tests, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
   JSON to a fake `HttpFetcher`. **Four need a resource** — `MetadataScannerTest`, `LoaderVersionResolverTest`,
   `BootVerifierSelectionTest` and `AttemptStagingIsolationTest` each boot an offline `ApiWrapper` from
   `src/test/resources/serverpackcreator.properties` (whose `ModScanner` relies on the API's cached
