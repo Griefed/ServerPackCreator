@@ -423,9 +423,48 @@ list Playwright would have installed is printed above — and then re-run just t
 DEPS
     fi
 
-    # Answers the operator's actual question — "is it installed for the account that runs the service?"
-    # — by listing what that account can see, rather than by asserting it. Reporting only, so globbing
-    # is fine here: the revision is Playwright's business, and the install above already exited on it.
+    # **The step that actually answers "does it work for this account".** Everything above checks that a
+    # download command exited zero, which is not the same thing: the failure this deployment keeps hitting
+    # is Chromium *launching* and then timing out, and an install exit code cannot see that. So launch it,
+    # as the service account, exactly the way `BrowserDownloader` does.
+    #
+    # `about:blank` needs no network, so this probes the browser and nothing else — a locked CurseForge
+    # file failing after this passes is a CurseForge or a network problem, not a missing prerequisite.
+    # Headless is the point: since 1.49 Playwright runs `setHeadless(true)` through a *separate*
+    # `chrome-headless-shell` binary (1.62.0 wants `chromium_headless_shell-1234`), so a cache holding only
+    # `chromium-<rev>` passes every check above and still cannot serve a single download.
+    #
+    # It also covers what nothing else here does: a HOME the service cannot write (Chromium needs a cache
+    # dir of its own) and the missing OS libraries, which is the case that reads as "CurseForge is slow".
+    # `|| true`, because a service account that cannot even mktemp is a finding to report, not a reason to
+    # abort a deployment that has already installed everything else — `set -e` would do the latter.
+    probe_png="$(sudo -u "$SERVICE_USER" -H sh -c 'mktemp "${TMPDIR:-/tmp}/spc-browser-probe-XXXXXX.png"' || true)"
+    probe_png="${probe_png:-/tmp/spc-browser-probe.png}"
+    if probe_output=$(sudo -u "$SERVICE_USER" -H "$service_java" -cp "$PREFIX/lib/*" \
+            com.microsoft.playwright.CLI screenshot --browser chromium \
+            "about:blank" "$probe_png" 2>&1); then
+        echo "chromium launches for $SERVICE_USER and rendered a page"
+    else
+        step "WARNING: chromium is installed but will not launch as $SERVICE_USER"
+        printf '%s\n' "$probe_output" | sed 's/^/  /' | head -30
+        cat <<PROBE
+
+That is the failure that reads as "every locked CurseForge file times out": the download is routed to the
+headless browser, the browser never starts, and the verdict blames the mod. Usual causes, in order:
+
+  * missing OS libraries — re-run the install-deps step above, or install its list by hand
+  * a HOME $SERVICE_USER cannot write, since Chromium needs its own cache directory
+  * a sandbox the kernel refuses; the unit sets NoNewPrivileges=true, and a host with unprivileged
+    user namespaces disabled leaves Chromium no sandbox it can use
+
+PROBE
+        browser_status="INSTALLED BUT WILL NOT LAUNCH — see the output above"
+    fi
+    sudo -u "$SERVICE_USER" -H rm -f "$probe_png" 2>/dev/null || true
+
+    # Answers the operator's other question — "is it installed for the account that runs the service?" — by
+    # listing what that account can see, rather than by asserting it. Reporting only, so globbing is fine:
+    # the revision is Playwright's business, and the install above already exited on it.
     echo "browser cache for $SERVICE_USER:"
     sudo -u "$SERVICE_USER" -H sh -c 'ls -1 "$HOME/.cache/ms-playwright" 2>/dev/null' |
         sed 's/^/  /' || true
