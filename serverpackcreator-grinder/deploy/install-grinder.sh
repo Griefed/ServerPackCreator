@@ -663,6 +663,20 @@ run_deploy_mode() {
 
     require_deletable SRC "$SRC"
 
+    # Deploy mode rm -rf's $SRC below, so a copy of this script living *inside* $SRC would be deleting
+    # the file bash is still reading — and bash reads a script incrementally, by offset, so the symptom
+    # is a syntax error somewhere in the middle rather than anything naming the cause. It is an easy
+    # mistake to make now: $SRC/repo is exactly where the previous run left a checkout, and it is the
+    # copy an operator reaches for. Skipped when the path does not resolve to a file, which is how a
+    # script fed to bash on stdin arrives.
+    local self_dir=""
+    [[ -f "${BASH_SOURCE[0]}" ]] && self_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/"
+    case "$self_dir" in
+        "$SRC"/*) die "this copy of the script lives under $SRC, which deploy mode wipes at the start of
+every run — it would delete the file it is executing. Run a copy from outside it, or re-fetch it:
+  f=\$(mktemp) && curl -fsSL $REPO_URL/raw/branch/$BRANCH/serverpackcreator-grinder/deploy/install-grinder.sh -o \"\$f\" && sudo bash \"\$f\"" ;;
+    esac
+
     # The one that is easy to get wrong and expensive to debug. Build mode ends with
     # `chown -R root:root $PREFIX`, so a source tree underneath it becomes root-owned — and the *next*
     # run's build, as $BUILD_USER, then fails on a tree it cannot write. Refusing is cheaper than the

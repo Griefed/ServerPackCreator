@@ -762,6 +762,12 @@ something to retype:
   branch's jars under whatever logic happened to be on your disk. The child runs unprivileged, so it
   lands in build mode; only root reaches the hand-off, so there is no recursion.
 
+  **It refuses to run from a copy of itself inside `/opt/spc-grinder-src`**, which is where the previous
+  run left a checkout and therefore the copy nearest to hand. Deploy mode wipes that directory before it
+  clones, so running the copy inside it means deleting the file bash is still reading — and bash reads a
+  script incrementally, by offset, so the symptom is a syntax error somewhere in the middle rather than
+  anything naming the cause. Re-fetch it instead, which is what the one-liner in §4 does.
+
   It keeps the checkout **outside** `/opt/spc-grinder` and refuses to do otherwise: build mode finishes
   with `chown -R root:root` on the prefix, which would take the build tree with it and break the *next*
   build. And deploy mode never stops or starts the service — build mode does, and its `EXIT` trap
