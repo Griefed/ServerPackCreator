@@ -157,6 +157,16 @@ evidence consulted occasionally, not context every session needs.
   server-side building mod among them. Two lessons generalise beyond the grinder: **a verdict that cannot name
   its own evidence cannot be audited**, and **an environment defect looks exactly like a subject defect unless
   something distinguishes them**.
+- **Question the requirement before you optimise the cost of meeting it.** On 2026-09-02 a circuit breaker
+  was designed, pinned with 189 lines of guards, implemented, wired through two modules and documented — and
+  deleted 34 minutes later, when Griefed asked whether the thing it protected was needed at all. It was not:
+  the route it bounded existed only to circumvent CurseForge's distribution opt-out, had stopped working
+  entirely, served under 1% of candidates, and cost 192.9 MB in every artifact. Every commit in that sequence
+  was correctly shaped, which is exactly why the shaping did not save it. The evidence to ask the prior
+  question was already in hand. This is Knuth's rule one level up: *measure before optimising* presumes the
+  thing should exist, so establish that first — "should this code exist?" is cheaper to answer than "how do I
+  make its failure cheap?", and one of the two answers deletes the other's work.
+
 - **Cite names, not snapshots.** Three consecutive audits of the performance branches found the same
   defect class and nothing else: a fact quoted in prose going stale the moment the code moved — 54 commit
   hashes killed by a rebase, a landmine still describing a flaw that had been fixed, a line number shifted
