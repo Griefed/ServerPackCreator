@@ -160,11 +160,14 @@ evidence consulted occasionally, not context every session needs.
 - **Cite names, not snapshots.** Three consecutive audits of the performance branches found the same
   defect class and nothing else: a fact quoted in prose going stale the moment the code moved — 54 commit
   hashes killed by a rebase, a landmine still describing a flaw that had been fixed, a line number shifted
-  by the very commit that cited it, and suite counts left behind by the tests that were just added. Prefer
-  the **commit subject** over its hash (subjects survive rebase, cherry-pick and squash), the **symbol name**
-  over `File.kt:123`, and "what the guard asserts" over "how many tests exist". Where a number genuinely
-  earns its place — a measurement, a byte count — say what produced it, so a reader can re-run it instead of
-  trusting it.
+  by the very commit that cited it, and suite counts left behind by the tests that were just added. **It
+  recurred on 2026-09-01:** that rebase killed 13 more hashes in `claude-docs/REFACTOR-AUDIT.md`, five of
+  which are now reachable from no ref at all and will stop resolving entirely once gc runs. That file cites
+  hashes at volume, so it is the guaranteed casualty of every history rewrite — write subjects there the
+  first time. Prefer the **commit subject** over its hash (subjects survive rebase, cherry-pick and squash),
+  the **symbol name** over `File.kt:123`, and "what the guard asserts" over "how many tests exist". Where a
+  number genuinely earns its place — a measurement, a byte count — say what produced it, so a reader can
+  re-run it instead of trusting it.
 - **KISS + MVC + TDD + SOLID** — always.
 - **No shortcuts:** fix bugs when found, don't defer.
 - **No assumptions:** read the code, check the docs before advising.
