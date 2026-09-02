@@ -98,7 +98,30 @@ Pass any number of project URLs. The grinder resolves each, boots it per modload
 
 ## 4. Run it as a service (continuous)
 
-With **no arguments** it enters fire-and-forget mode:
+**Deploy it on a server in one command.** This fetches the module's deploy script and runs it: it
+creates the build and service accounts, clones `develop`, builds the runtime image and the
+distribution, installs to `/opt/spc-grinder`, installs the systemd unit and enables it.
+
+```bash
+f=$(mktemp) && curl -fsSL https://git.griefed.de/griefed/serverpackcreator/raw/branch/develop/serverpackcreator-grinder/deploy/install-grinder.sh -o "$f" && sudo bash "$f" --bootstrap
+```
+
+**Every run after that is the same command without `--bootstrap`** — that is the upgrade path, and
+re-fetching each time means the deploy logic is updated along with the code it deploys. Add
+`--skip-image` once the runtime image exists; it is the difference between a two-minute update and a
+ten-minute one.
+
+Docker and JDK 21+ must already be present. The script checks both and names the command to fix
+them, but it deliberately installs no packages — on Debian/Ubuntu the one-time step is
+`apt install -y docker.io git openjdk-21-jdk && systemctl enable --now docker`. §8 covers the rest,
+and `--help` lists every flag.
+
+> Deliberately **not** `curl … | sudo bash`. A pipe hands the shell a script it may have only half
+> received, and root running half a script fails worse than a download that fails cleanly.
+> Downloading first also leaves you a file you can read before running it as root.
+
+To watch a pass in the foreground instead — during development, or the first time — run it with **no
+arguments**:
 
 ```bash
 ./gradlew :serverpackcreator-grinder:run
@@ -663,78 +686,86 @@ something to retype:
 - [`deploy/spc-grinder.service`](deploy/spc-grinder.service) — every variable §5 documents, commented out, with
   its default. Pinned against `GrinderApplication` by `SystemdUnitConfigurationTest`, so a knob added to the
   service and forgotten here fails the build.
-- [`deploy/install-grinder.sh`](deploy/install-grinder.sh) — builds the runtime image, runs `installDist`,
-  installs to `/opt/spc-grinder`, and creates the service account with its home and `docker` group membership.
-  Run it as your normal user, **not** as root: it calls `sudo` for the privileged steps itself, and a Gradle
-  build run as root leaves root-owned files in `build/`. Re-running it is the upgrade path. `--help` lists the
-  flags; three are worth knowing about — `--grant-docker`, without which it refuses to put an
-  *already-existing* account into the root-equivalent `docker` group, `--no-pull` for an offline image rebuild,
-  and **`--clear`**, which deletes the daemon's data directory before installing.
+- [`deploy/install-grinder.sh`](deploy/install-grinder.sh) — **one script, two modes, and the mode is
+  your uid rather than a flag.** Run as a normal user it builds *this* checkout and installs it; run as
+  root it clones a branch and hands off to the first mode inside that clone. There is no `--mode`,
+  because there is no choice: a Gradle build must not run as root or it leaves root-owned files in
+  `build/` that your next ordinary build cannot overwrite, and dropping to an unprivileged build account
+  requires being root to begin with. Re-running either way is the upgrade path. `--help` prints
+  everything.
 
-  **`--clear` is the fresh-start flag, and it is the only thing in either script that destroys data.** It
-  removes `SPC_GRINDER_HOME` — `/home/grinder/.spc-grinder` in the shipped unit — which holds the verdict
-  store, the crawl cursors, the re-grind queue, the kept boot logs *and* the loader cache. The daemon then
-  starts with no verdicts, at the head of the crawl, and re-downloads every loader install it needs at roughly
+  ```bash
+  ./install-grinder.sh                  # build this checkout, install it, restart the service
+  sudo ./install-grinder.sh --bootstrap # first install on a host that never ran the grinder
+  sudo ./install-grinder.sh             # update an installed service from a fresh clone
+  ```
+
+  **Build mode** (not root) builds the runtime image, runs `installDist`, installs to
+  `/opt/spc-grinder`, and creates the service account with its home and `docker` group membership. It
+  calls `sudo` for the privileged steps itself. Flags worth knowing: `--grant-docker`, without which it
+  refuses to put an *already-existing* account into the root-equivalent `docker` group; `--no-pull` for
+  an offline image rebuild; `--skip-image`; and `--install-unit` to install the unit file (never enabled
+  or started for you).
+
+  **`--clear` is the fresh-start flag, and the only thing in the script that destroys data.** It removes
+  `SPC_GRINDER_HOME` — `/home/grinder/.spc-grinder` in the shipped unit — which holds the verdict store,
+  the crawl cursors, the re-grind queue, the kept boot logs *and* the loader cache. The daemon then starts
+  with no verdicts, at the head of the crawl, and re-downloads every loader install it needs at roughly
   150 MB per loader/Minecraft tuple, which is the expensive part rather than the verdicts. Binaries are
-  untouched: this is about state, not code. It runs **after** the service is stopped, which is load-bearing —
-  the daemon coalesces verdict writes and flushes on shutdown, so clearing a running service would only get the
-  store written back out of memory as it stops. The path is guarded on its shape before anything is built, and
-  refused outright if it resolves to the account's whole home or to the install prefix.
-- [`deploy/update-grinder.sh`](deploy/update-grinder.sh) — the unattended wrapper: clone a branch, build it,
-  install it, restart. The inverse of the installer in one respect — **run it as root** — because its whole job
-  is to drop to an unprivileged build account and hand off. `--branch` picks what to deploy; anything after `--`
-  goes to the installer, where `--skip-image` is the difference between a two-minute update and a ten-minute one.
+  untouched: this is about state, not code. It runs **after** the service is stopped, which is
+  load-bearing — the daemon coalesces verdict writes and flushes on shutdown, so clearing a running
+  service would only get the store written back out of memory as it stops. The path is guarded on its
+  shape before anything is built, and refused outright if it resolves to the account's whole home or to
+  the install prefix. Do not confuse it with the checkout deploy mode wipes on every run: that is build
+  input and costs a clone to replace, while the data directory costs weeks of boots.
 
-  **On a host that has never run the grinder, use `--bootstrap`.** Without it this is an *update* script and
-  presumes what a first install leaves behind, so it stops at the first thing it cannot satisfy — and the first
-  thing is a chicken-and-egg: it needs the build account to exist, while the account is created by
-  `install-grinder.sh` step 4, which it never reaches. `--bootstrap` creates the account, adds it to the
-  `docker` group, passes `--install-unit`, and `systemctl enable --now`s the service at the end.
+  **Deploy mode** (root) exists to drop privileges. On a host that has never run the grinder, use
+  `--bootstrap`: without it, deploy mode presumes what a first install leaves behind and stops at the
+  first thing it cannot satisfy — and the first thing is a chicken-and-egg, because it needs the build
+  account to exist while the account is created by build mode's step 4, which it never reaches.
+  `--bootstrap` creates the account, adds it to the `docker` group, implies `--install-unit`, and
+  `systemctl enable --now`s the service at the end. `--branch` picks what to deploy.
 
-  It **does not install packages**. Docker and a JDK must already be present; both are checked up front and
-  named with the command to fix them, but `apt`/`dnf`/`pacman` differ and silently installing a container
-  runtime is a bigger step than an update script should take unattended. On Debian/Ubuntu the one-time step is
-  `apt install -y docker.io git openjdk-21-jdk && systemctl enable --now docker`. So a first install is:
-
-  ```
-  sudo ./update-grinder.sh --bootstrap
-  ```
-
-  and every run after that is `sudo ./update-grinder.sh`. The build JDK is worth calling out because nothing
-  used to check it: the installer's JVM step asks whether *systemd* will find a java for the **service**, which
-  is a different question answered much later, so a host with no JDK failed inside Gradle with a message about
-  `JAVA_HOME` and nothing about how it got there.
+  It **does not install packages**. Docker and a JDK must already be present; both are checked up front
+  and named with the command to fix them, but `apt`/`dnf`/`pacman` differ and silently installing a
+  container runtime is a bigger step than a deploy script should take unattended. The build JDK is worth
+  calling out because nothing used to check it: build mode's JVM step asks whether *systemd* will find a
+  java for the **service**, which is a different question answered much later, so a host with no JDK
+  failed inside Gradle with a message about `JAVA_HOME` and nothing about how it got there.
 
   **`--bootstrap` grants the `docker` group only to an account it created itself.** That group is
-  root-equivalent, `install-grinder.sh` refuses to grant it to an account it did not create, and bootstrapping
-  is not a reason to be less careful than the script it calls — a pre-existing account is refused with the
-  `usermod` line to run deliberately.
+  root-equivalent, build mode refuses to grant it to an account it did not create, and bootstrapping is
+  not a reason to be less careful — a pre-existing account is refused with the `usermod` line to run
+  deliberately.
 
-  **It builds as a *build* account, not as `grinder`.** The service account is created nologin and without
-  sudo, which is what a service account should be, and the installer needs both — it calls `sudo` about thirty
-  times. So `sudo -u grinder -i ./install-grinder.sh` cannot work twice over: `-i` runs the account's login
-  shell, which is `/usr/sbin/nologin`, and the account could not `sudo` even if it had one.
+  **It builds as a *build* account, not as `grinder`.** The service account is created nologin and
+  without sudo, which is what a service account should be, and the build needs both — it calls `sudo`
+  about thirty times. So `sudo -u grinder -i ./install-grinder.sh` cannot work twice over: `-i` runs the
+  account's login shell, which is `/usr/sbin/nologin`, and the account could not `sudo` even if it had
+  one.
 
-  The account needs `docker` membership, which is checked before anything is cloned (otherwise it surfaces
-  inside the installer as a stopped Docker daemon). It does **not** need permanent `sudo`: if it cannot
-  already sudo without a password, the script grants that for the run and removes the grant on exit, which it
-  can do because it is root already. A drop-in written by a run that gets killed is refused rather than reused,
+  The account needs `docker` membership, which is checked before anything is cloned (otherwise it
+  surfaces inside the build as a stopped Docker daemon). It does **not** need permanent `sudo`: if it
+  cannot already sudo without a password, the script grants that for the run and removes the grant on
+  exit — on `EXIT`, so a build that dies at Gradle or is Ctrl-C'd leaves nothing behind — which it can do
+  because it is root already. A drop-in written by a run that got killed is refused rather than reused,
   so a leaked grant is loud instead of silent.
 
-  **A password prompt is not the alternative.** Root running `sudo -u <account>` needs no password — the one
-  that does is the installer's own sudo, the account going back to root. An account created by `useradd
-  --system` has no password at all, so that prompt cannot be answered by anyone, TTY or not. `--no-temp-sudo`
-  leaves `/etc/sudoers.d` alone and lets it prompt, which is only useful for an account that has a password.
+  **A password prompt is not the alternative.** Root running `sudo -u <account>` needs no password — the
+  one that does is build mode's own sudo, the account going back to root. An account created by `useradd
+  --system` has no password at all, so that prompt cannot be answered by anyone, TTY or not.
+  `--no-temp-sudo` leaves `/etc/sudoers.d` alone and lets it prompt, which is only useful for an account
+  that has a password.
 
-  **`--clear` is forwarded to the installer**, which is the half that knows where the data lives and the half
-  that has already stopped the service by the time it clears. Do not confuse it with the checkout this script
-  wipes on every run: that is build input and costs a clone to replace, while the data directory is everything
-  the grind has learned and costs weeks of boots.
+  **Deploy mode runs the *clone's* copy of the script, not the one you launched.** That is the point of
+  cloning: the branch carries its own installer, and re-running the launched copy would install the
+  branch's jars under whatever logic happened to be on your disk. The child runs unprivileged, so it
+  lands in build mode; only root reaches the hand-off, so there is no recursion.
 
-  It also keeps the checkout **outside** `/opt/spc-grinder` and refuses to do otherwise: the installer finishes
-  with `chown -R root:root` on the prefix, which would take the build tree with it and break the *next* build.
-  And it does not stop or start the service itself — the installer does that, and its EXIT trap restarts the
-  service if the install dies halfway, which only works if it was the one that stopped it.
+  It keeps the checkout **outside** `/opt/spc-grinder` and refuses to do otherwise: build mode finishes
+  with `chown -R root:root` on the prefix, which would take the build tree with it and break the *next*
+  build. And deploy mode never stops or starts the service — build mode does, and its `EXIT` trap
+  restarts it if the install dies halfway, which only works if it was the one that stopped it.
 
 **The service needs a JVM systemd can find.** The launcher wants `JAVA_HOME` or a `java` on `PATH`, and systemd
 gives a unit neither — its `PATH` is `/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin` and nothing
