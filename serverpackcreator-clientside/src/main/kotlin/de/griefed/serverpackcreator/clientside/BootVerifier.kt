@@ -39,7 +39,6 @@ import java.util.*
  * @param apiWrapper            Generation + config + version-meta + properties.
  * @param platform             The hosting platform, for recursive dependency resolution.
  * @param httpDownloader       Downloads freely-distributable files.
- * @param browserDownloader    Downloads distribution-locked files (headless browser).
  * @param loaderVersionPolicy  Picks the loader-version to install. A policy may prefer an older build it
  *                             already has installed (the grinder does, to reuse its install cache); a crash on
  *                             such a build is re-checked against the policy's newest before it counts.
@@ -71,7 +70,6 @@ class BootVerifier(
     private val apiWrapper: ApiWrapper,
     private val platform: ModPlatform,
     private val httpDownloader: JarDownloader,
-    private val browserDownloader: JarDownloader,
     private val loaderVersionPolicy: LoaderVersionPolicy,
     private val workDirectory: File,
     private val serverRunner: ServerRunner = HostProcessServerRunner(),
@@ -323,8 +321,8 @@ class BootVerifier(
 
     /**
      * Download [file] and, recursively up to [maxDependencyDepth], its required dependencies into
-     * [modsDir]. Locked files go through the [browserDownloader], everything else through the
-     * [httpDownloader]. Returns false only if the main file itself could not be obtained.
+     * [modsDir] via the [httpDownloader]. Returns false only if the main file itself could not be obtained,
+     * which for a distribution-locked file is certain — it has no published URL.
      *
      * Every required dependency that could **not** be staged — unresolvable ref, no usable file, or a failed
      * download — is collected into [unsatisfied] instead of being shrugged off. The caller refuses to boot when that
@@ -342,7 +340,7 @@ class BootVerifier(
         unmapped: MutableSet<String>,
         injected: MutableList<InjectedDependency>
     ): Boolean {
-        val staged = selectDownloader(file, httpDownloader, browserDownloader).download(file, modsDir)
+        val staged = httpDownloader.download(file, modsDir)
             ?: return false
         if (depth > 0 && injected.none { it.fileName == file.fileName }) {
             // Only dependencies count towards the cap and the recorded set; the candidate is not one.
@@ -630,18 +628,19 @@ class BootVerifier(
      */
     companion object {
         /**
-         * Why a candidate jar could not be staged, phrased so the reason distinguishes a broken *host* from a
-         * broken *mod*. A [ModFile.locked] file is CurseForge's `allowModDistribution=false` — it carries no
-         * `downloadUrl` at all and can only be fetched by the headless browser, so its failure is almost
-         * always a missing Playwright/Chromium on the machine running the grind, not anything about the mod.
-         * Measured 2026-09-01: 21 live INCONCLUSIVE verdicts said only "could not download", all CurseForge,
-         * and nothing in them said which of the two had gone wrong.
+         * Why a candidate jar could not be staged, phrased so a reader can tell a *permanent* refusal from a
+         * transient one. A [ModFile.locked] file is CurseForge's `allowModDistribution=false`: the author
+         * opted out of third-party distribution, so no `downloadUrl` is published and the file is simply not
+         * obtainable — not a host problem, and not a fault of the mod. Saying so matters because 21 live
+         * verdicts once read only "could not download", which a 404, a flaky link and a deliberate opt-out
+         * all produce identically.
          */
         internal fun downloadFailureDetail(file: ModFile): String =
             if (file.locked) {
                 "Could not download ${file.fileName}: the file is distribution-locked " +
-                    "(allowModDistribution=false), so it needs the headless browser downloader — check that " +
-                    "Playwright and Chromium are installed for the account running this."
+                    "(allowModDistribution=false), so CurseForge publishes no download URL for it and this " +
+                    "mod cannot be boot-verified from that platform. A project published on Modrinth is " +
+                    "verified from there instead, where files carry a URL."
             } else {
                 "Could not download ${file.fileName}."
             }

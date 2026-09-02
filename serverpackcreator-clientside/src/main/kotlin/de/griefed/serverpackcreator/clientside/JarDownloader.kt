@@ -24,10 +24,10 @@ import java.io.File
 import java.net.URI
 
 /**
- * Fetches a published mod-file to a local jar for scanning/booting. Implementations differ in *how*
- * they obtain the bytes: the API-driven [HttpJarDownloader] handles freely-distributable files, while
- * the boot-phase browser-downloader handles distribution-locked ones. A `null` return means the file
- * could not be obtained by this strategy (the caller may then fall back or defer).
+ * Fetches a published mod-file to a local jar for scanning/booting. There is one implementation,
+ * [HttpJarDownloader], which downloads from the URL the platform published. A `null` return means the
+ * file could not be obtained — for a distribution-locked file that is permanent, and the caller reports
+ * it rather than falling back.
  *
  * @author Griefed
  */
@@ -37,18 +37,10 @@ fun interface JarDownloader {
 }
 
 /**
- * Route a file to the right download strategy: distribution-locked files (no `downloadUrl`) need the
- * [browserDownloader] (website flow), everything else uses the API-driven [httpDownloader].
- *
- * @author Griefed
- */
-fun selectDownloader(modFile: ModFile, httpDownloader: JarDownloader, browserDownloader: JarDownloader): JarDownloader =
-    if (modFile.locked) browserDownloader else httpDownloader
-
-/**
- * [JarDownloader] for freely-distributable files: downloads straight from the platform-provided
- * `downloadUrl` via SPC's [WebUtilities]. Distribution-locked files (no `downloadUrl`) are not
- * handled here and yield `null` — they are the browser-downloader's job in the boot-phase.
+ * [JarDownloader] for published files: downloads straight from the platform-provided `downloadUrl` via
+ * SPC's [WebUtilities]. A distribution-locked file has no `downloadUrl` and yields `null`; that is the
+ * end of the line, since the author opted out of third-party distribution and nothing here works around
+ * it. Such a project is verified from Modrinth instead, where files carry a URL.
  *
  * @param webUtilities SPC's download helper (from [de.griefed.serverpackcreator.api.ApiWrapper]).
  * @author Griefed

@@ -58,7 +58,6 @@ internal class BootVerifierSelectionTest {
         apiWrapper = apiWrapper,
         platform = unusedPlatform,
         httpDownloader = noNetworkDownloader,
-        browserDownloader = noNetworkDownloader,
         loaderVersionPolicy = resolver,
         workDirectory = workDir,
         minecraftAcceptable = minecraftAcceptable

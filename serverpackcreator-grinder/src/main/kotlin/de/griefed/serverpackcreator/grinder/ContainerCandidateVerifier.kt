@@ -189,8 +189,7 @@ class ContainerCandidateVerifier(
     /** Run the actual verification, leaving the staging cleanup to [verify]. */
     private fun verifyStaged(candidate: GrindCandidate, keptLogNames: MutableList<String>): ClientsideReport {
         val httpDownloader = HttpJarDownloader(apiWrapper.webUtilities)
-        // The browser is only launched for distribution-locked CurseForge files; disposed after the run.
-        return BrowserDownloader().use { browserDownloader ->
+        return run {
             ClientsideVerifier(
                 platforms = supportedPlatforms(curseForgeApiKey),
                 metadataScanner = MetadataScanner(apiWrapper.modScanner),
@@ -201,7 +200,6 @@ class ContainerCandidateVerifier(
                         apiWrapper = apiWrapper,
                         platform = platform,
                         httpDownloader = httpDownloader,
-                        browserDownloader = browserDownloader,
                         // Reuse an installed loader build rather than installing every fresh release; the
                         // policy still reports the newest truthfully, so the support gate and BootVerifier's
                         // crash re-check are unaffected (see CachedLoaderVersions).

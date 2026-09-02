@@ -170,7 +170,12 @@ internal class BootVerifierOutcomeTest {
 
         Assertions.assertTrue(reason.contains(locked.fileName), reason)
         Assertions.assertTrue(reason.contains("distribution-locked"), "the cause has to be named: $reason")
-        Assertions.assertTrue(reason.contains("browser"), "and the mechanism that handles it: $reason")
+        Assertions.assertTrue(
+            reason.contains("Modrinth"), "and where the project can be verified instead: $reason"
+        )
+        // The browser workaround was removed on 2026-09-02; a refusal must not send anyone looking for it.
+        Assertions.assertFalse(reason.contains("browser", ignoreCase = true), reason)
+        Assertions.assertFalse(reason.contains("Playwright", ignoreCase = true), reason)
     }
 
     /** An ordinary file's failure must not blame the browser — that would send the operator the wrong way. */
