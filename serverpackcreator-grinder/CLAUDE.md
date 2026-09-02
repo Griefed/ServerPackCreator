@@ -363,6 +363,17 @@ container, so the box running the grinder needs:
     navigation times out, which reads as CurseForge being slow. `clientside-boot.yml`'s reusable job
     installs exactly those and nothing else, which is the shape of the gap. `install-grinder.sh` now
     does both (`--skip-browser` opts out).
+  - **LANDMINE — headless Chromium is a *different binary*, and an install exit code does not prove it
+    runs.** Since 1.49 Playwright serves `setHeadless(true)` — which is what `BrowserDownloader` uses —
+    from a separate `chrome-headless-shell`, so 1.62.0 wants **`chromium_headless_shell-1234`** and not
+    just `chromium-1234`. `install chromium` fetches both, but a cache holding only the full browser
+    satisfies every path check and still cannot serve one download. `install-grinder.sh` therefore ends
+    with a **launch probe**: it drives `com.microsoft.playwright.CLI screenshot --browser chromium
+    about:blank` as the service account, which needs no network and fails loudly on the three causes
+    nothing else here can see — missing OS libraries, a HOME the service cannot write (Chromium needs its
+    own cache dir), and a sandbox the kernel refuses (the unit sets `NoNewPrivileges=true`, and a host
+    with unprivileged user namespaces disabled leaves Chromium none it can use). A locked CurseForge file
+    still failing *after* the probe passes is a CurseForge or network problem, not a prerequisite.
   - **Install with Playwright's own CLI, never `npx playwright install`.** Playwright pins one Chromium
     build per release and looks for that exact directory — 1.62.0 wants `chromium-1234` (Chrome for
     Testing 151.0.7922.34, in `driver-1.62.0.jar`'s `browsers.json`). `npx` fetches whatever revision
