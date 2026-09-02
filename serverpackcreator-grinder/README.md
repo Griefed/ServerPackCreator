@@ -37,7 +37,7 @@ docker build -t spc-grinder-runtime:latest serverpackcreator-grinder/docker
 |---|---|
 | Result table | <http://localhost:8757/> — sortable, highest confidence first |
 | CSV export | <http://localhost:8757/export.csv> |
-| What it is doing right now | `curl -s localhost:8757/status` |
+| What it is doing right now | `http://localhost:8757/dashboard` in a browser, or `curl -s localhost:8757/status` |
 
 **6. Run it continuously.** Once step 4 works, drop the `--args` and the grinder crawls the catalogue on
 its own, keeping the same report live at `localhost:8757`:
@@ -63,7 +63,7 @@ on the host is touched, and no mod ever gets network access.
 | JDK 21+              | To build and run the service                                                 |
 | Disk                 | The runtime image is ~2 GB; each cached loader install adds a few hundred MB |
 | RAM                  | ~3 GB **per parallel worker** (each worker holds a booting Minecraft server) |
-| Playwright + Chromium | **Required for CurseForge.** Distribution-locked files (`allowModDistribution=false`) have no API download-URL and are fetched with a headless browser, on the *host*. Install with `npx --yes playwright install chromium` as the service account, plus `sudo npx --yes playwright install-deps chromium` for the OS libraries |
+| Playwright + Chromium | **Required for CurseForge.** Distribution-locked files (`allowModDistribution=false`) have no API download-URL and are fetched with a headless browser, on the *host*. **`install-grinder.sh` does this for you** — pass `--skip-browser` to opt out. The browser itself is downloaded by Playwright's Java binding on first use anyway; the part that is genuinely missing on a headless host is the **OS libraries** Chromium links against, without which it launches and every navigation times out. To do it by hand, use Playwright's own CLI from the installed jars rather than `npx`, which pins a different Chromium revision: `sudo -u grinder -H java -cp "/opt/spc-grinder/lib/*" com.microsoft.playwright.CLI install chromium`, then the same with `install-deps chromium` as root |
 | `CURSEFORGE_API_KEY` | Optional. Without it the grinder uses Modrinth only. Complementary to the browser above: the key reveals that a file is locked, the browser fetches it |
 
 ---
@@ -486,6 +486,21 @@ you want when a boot has been quiet for eight minutes.
 | Why is a cold tuple taking minutes? | that tuple's `.spc-install.log` (live) |
 | Where has the crawl got to? | `/status` → `crawl`, or `SPC_GRINDER_CURSORS` |
 
+### `/dashboard` — live activity, for a human
+
+`http://localhost:8757/dashboard` is `/status` rendered as a page that polls itself: the current pass, what
+each worker is holding and for how long, the crawl position per platform, the loader-cache size, and any
+boot-rule errors — with durations as `2d 3h 2m` rather than `183742`. The poll interval is selectable
+(2/5/15/60s) and pausable, and it says so when the daemon stops answering rather than freezing on stale
+numbers.
+
+No framework and nothing fetched off the network, so it works over an SSH tunnel or behind a reverse proxy
+on a host with no route to a CDN. It is **read-only**, like every other endpoint here, and carries the same
+absence of authentication — see *Exposing the report* above.
+
+`/status` itself is unchanged and stays JSON: it is a second route, not content negotiation, so anything
+scripted against `/status` is unaffected.
+
 ### `/status` — live activity, as JSON
 
 ```bash
@@ -753,7 +768,7 @@ Two more things the unit file decides, both worth stating explicitly:
 | `home directory is not usable: <path>` | SPC resolved a home it cannot write to. Point it somewhere writable with `JAVA_OPTS=-Dde.griefed.serverpackcreator.home=<dir>`, or fix that directory's ownership |
 | `No cached loader install for …`         | The one-off install boot failed — it is the only boot allowed network. Read the `Cause:` on the `Install produced no library layer` warning above it, and the console it names; note the tuple is then on a 60-minute cooldown, so later candidates repeat this line without a fresh attempt |
 | Installs fail instantly with `Permission denied` inside the pack | The container's `uid:gid` does not own the staging directory, so it can read the pack and write nothing. §5, *Container identity* — check the `containerUser=` value on the startup line |
-| Every locked CurseForge file fails    | With `Timeout 30000ms exceeded`: missing Chromium OS libraries (`sudo npx --yes playwright install-deps chromium`) — the `Playwright Host validation warning` in the log lists them. With a `net::ERR_ABORTED` stack: an older build, in which the download-triggered navigation abort discarded the file |
+| Every locked CurseForge file fails    | With `Timeout 30000ms exceeded`: missing Chromium OS libraries — re-run `install-grinder.sh`, or by hand `sudo java -cp "/opt/spc-grinder/lib/*" com.microsoft.playwright.CLI install-deps chromium`; the `Playwright Host validation warning` in the log lists them. With a `net::ERR_ABORTED` stack: an older build, in which the download-triggered navigation abort discarded the file. The staging failure itself now names the lock, so a verdict reading only `Could not download <file>` predates that and should be re-ground |
 | Mods on the newest Minecraft are skipped | The image lacks that version's required JDK. Add it to the Dockerfile **and** `ImageJavaRuntimes.bundledMajors`, then rebuild |
 | Boots die with `Killed` mid-startup      | Host out of memory — lower `SPC_GRINDER_WORKERS`                                                                              |
 | Everything is `INCONCLUSIVE`             | Often the loader genuinely has no build for the selected Minecraft version; check the `Detail` column                         |

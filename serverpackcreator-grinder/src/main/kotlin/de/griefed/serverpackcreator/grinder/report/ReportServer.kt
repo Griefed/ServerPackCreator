@@ -127,6 +127,12 @@ class ReportServer(
         server.createContext("/status") { exchange ->
             respond(exchange, "application/json; charset=utf-8", statusJson())
         }
+        // The same document, rendered for a human and polled by the page itself. A second route rather than
+        // content negotiation on /status: that endpoint is scripted against, and handing a machine reader HTML
+        // because an Accept header looked browser-shaped would break the thing it exists for.
+        server.createContext("/dashboard") { exchange ->
+            respond(exchange, "text/html; charset=utf-8", StatusDashboardRenderer.toHtml())
+        }
         // Both spellings need their own context: the pages link `/favicon.png`, while a browser asks for
         // `/favicon.ico` unprompted on every endpoint that is not HTML (the plain-text crash consoles). Without
         // a context of its own, either request falls through to `/` and gets the verdict table as its icon.

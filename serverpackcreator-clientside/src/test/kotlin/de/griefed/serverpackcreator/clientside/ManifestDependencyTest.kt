@@ -120,6 +120,58 @@ internal class ManifestDependencyTest {
         )
     }
 
+    /**
+     * **`quilt_base` is a QSL module, so it must be staged rather than excused as the runtime.**
+     *
+     * It sat in `environmentProvidedIds` beside `quilt_loader` until 2026-09-01, which meant a mod whose
+     * only QSL dependency was `quilt_base` had nothing staged and then failed to boot on the very
+     * dependency the harness had chosen not to supply. `quilt_loader` genuinely is the runtime and stays
+     * excused; QSL's modules are jars a pack has to carry.
+     */
+    @Test
+    fun quiltBaseIsStagedWhileTheQuiltLoaderIsNot() {
+        val requirements = listOf(
+            requirement("quilt_loader"), requirement("quilt_base"),
+            requirement("quilt_resource_loader"), requirement("minecraft")
+        )
+
+        Assertions.assertEquals(
+            listOf("quilt_base", "quilt_resource_loader"),
+            BootVerifier.stageableRequirements(requirements).map { it.modID },
+            "only the loader and the runtime are environment-provided; QSL's modules are mods"
+        )
+    }
+
+    /**
+     * **A mod declares Fabric API several times over, and it must still be staged once.**
+     *
+     * Fabric API ships as ~45 modules and a descriptor depends on the modules, so a single mod routinely
+     * names five or eight of them. Every one now resolves to the same project, which makes this the exact
+     * shape B6 caught on `amblekit`: one jar reachable under several names, counted more than once, eating
+     * the `MAX_INJECTED_DEPENDENCIES` budget and refusing packs that were within it — scored INCONCLUSIVE,
+     * so it reads as a mod that could not be tested rather than as a bookkeeping bug.
+     */
+    @Test
+    fun theManyModulesOfFabricApiCollapseToOneDependency() {
+        val requirements = listOf(
+            requirement("fabric-resource-loader-v0"),
+            requirement("fabric-block-getter-api-v2"),
+            requirement("fabric-rendering-fluids-v1"),
+            requirement("fabric-networking-api-v1"),
+            requirement("fabric-api-base"),
+            requirement("cloth-config")
+        )
+
+        val stageable = BootVerifier.stageableRequirements(
+            requirements, alreadyResolved = setOf("fabric-api")
+        ) { id -> KnownModIds.refFor(id, "Modrinth") }
+
+        Assertions.assertEquals(
+            listOf("cloth-config"), stageable.map { it.modID },
+            "the platform already staged Fabric API, so none of its modules may be staged again"
+        )
+    }
+
     /** A pack cannot grow without bound: beyond the cap, refuse rather than boot a 40-jar pack. */
     @Test
     fun stagingRefusesBeyondTheInjectionCap() {

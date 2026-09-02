@@ -53,7 +53,18 @@ class ScannedMod @JvmOverloads constructor(
      * version list is what its author ticked, and a boot chosen from that alone can land a jar on a Minecraft
      * whose mappings it has never seen — which fails as a mixin error that looks exactly like a crash.
      */
-    val minecraftConstraint: String? = null
+    val minecraftConstraint: String? = null,
+    /**
+     * Whether a descriptor was actually read, or this is the "nothing could be read" fallback.
+     *
+     * The fallback is not an error — every scanner is handed the whole mods directory, so a Fabric-only jar
+     * yields one from the Quilt scanner by design. But it is **indistinguishable from a real scan by value
+     * alone**: `modID` falls back to the file name, `sideness` to `SERVER`, and the lists to empty, all of
+     * which a genuine descriptor could also produce. Anything *merging* two scans of the same jar therefore
+     * has to be told, or it will treat "I found nothing" as "I found nothing to declare" — which is exactly
+     * how a Quilt pack scan came to discard a Fabric jar's dependencies.
+     */
+    val descriptorRead: Boolean = false
 ) {
     /**
      * One line for a scan log, with the dependencies spelled out instead of left as object identities — they

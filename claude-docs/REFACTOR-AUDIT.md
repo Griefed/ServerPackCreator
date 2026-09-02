@@ -3100,7 +3100,8 @@ and nothing `serverpackcreator-api` exports changed shape or behaviour.
 
 ## MEDIUM
 
-- **M1 — `012211dd0` is labelled `docs(grinder)` and carries a production signature change.**
+- **M1 — `docs(grinder): close the deployment gaps this outage ran into` carries a production signature
+  change despite its `docs` label.**
   `container/ContainerUser.kt:60` loses its default argument (`override: String? = System.getenv(ENV_KEY)` →
   `override: String?`) and the read moves to `GrinderApplication.kt:88`. Behaviour is preserved, so this is a
   *pure refactor* mislabelled as documentation, not a behaviour change in disguise — but it is exactly the
@@ -3521,15 +3522,17 @@ parameter (`DockerJavaContainerEngine(shutdownGrace = …)`).
 
 # Audit — 2026-08-23, `claude-grinder-cpu-limit` (iteration 23)
 
-Scope: `git log develop..HEAD` — four commits (`408ff8d57` tests, `b5b69b5bc` `ContainerResources.forCpus`
-+ `cpuPeriod`, `6db241e88` `main` wiring + operator docs + the gated IT, `7c9ee5710` context files and the
+Scope: `git log develop..HEAD` — four commits (`test(grinder): pin the per-container CPU cap and its wiring`,
+`feat(grinder): express the container CPU cap in cores, against a stated period` = `ContainerResources.forCpus`
++ `cpuPeriod`, `feat(grinder): make the per-container CPU cap configurable` = `main` wiring + operator docs +
+the gated IT, `docs: record the CPU-cap knob and the quota-without-period finding` = context files and the
 log). Read-only pass; every number below was produced by a command, not recalled.
 
 ## HIGH
 
 **H1 — a positive CPU cap can silently become *no* cap.**
 `serverpackcreator-grinder/src/main/kotlin/de/griefed/serverpackcreator/grinder/container/ContainerEngine.kt:93`
-(`b5b69b5bc`). `forCpus` uses the *computed* quota as its "uncapped" sentinel:
+(the `forCpus` commit). `forCpus` uses the *computed* quota as its "uncapped" sentinel:
 
 ```kotlin
 val requested = Math.round(cpus * base.cpuPeriod)
@@ -3550,23 +3553,23 @@ parses, and `Math.round(Double.POSITIVE_INFINITY * 100_000)` is `Long.MAX_VALUE`
 ## MEDIUM
 
 **M1 — the new README section was inserted into the middle of the previous one.**
-`serverpackcreator-grinder/README.md:345` (`6db241e88`). `### Capping CPU` landed before the **Keep the host
+`serverpackcreator-grinder/README.md`'s `### Capping CPU` (added by the configurable-cap commit) landed before the **Keep the host
 awake** paragraph, which is about suspends and `caffeinate` and belongs to *Sizing the worker count* — it now
 reads as the closing advice of the CPU section. Same commit also leaves §5's sizing opener ("the worker count
 is a memory question rather than a CPU one") without the pointer it now needs. Boy-Scout scope was respected;
 the placement is simply wrong.
 
 **M2 — the startup line reports the derived numbers, not the knob.**
-`GrinderApplication.kt:101` (`6db241e88`) logs `cpuQuota=200000/100000`. Every other knob is logged in the
+`GrinderApplication`'s startup line (from the configurable-cap commit) logs `cpuQuota=200000/100000`. Every other knob is logged in the
 operator's own unit (`workers=2`, `port=8757`, `containerUser=…`), and this is the one whose whole point is
 that the operator thinks in cores. Worse at the documented escape hatch: `SPC_GRINDER_CPUS=0` prints
 `cpuQuota=0/100000`, which reads as "zero CPU" when it means "uncapped" — the value an operator is most
 likely to double-check in the log is the one the log states most misleadingly.
 
 **M3 — a guard shipped in the same commit as the code it guards.**
-`6db241e88` adds `DockerJavaContainerEngineIT.theCpuCapReachesTheKernelWithItsPeriod` alongside the wiring,
+The configurable-cap commit adds `DockerJavaContainerEngineIT.theCpuCapReachesTheKernelWithItsPeriod` alongside the wiring,
 and the behaviour that guard actually pins — `withCpuPeriod` in `hostConfigFor` — landed one commit earlier
-in `b5b69b5bc`, bundled with the new API. Nobody can check out a commit and watch that pin go red. This is
+in the `forCpus` commit, bundled with the new API. Nobody can check out a commit and watch that pin go red. This is
 the exact boundary CLAUDE.md's "Pin first means *commit* first" entry was written about after the 2026-07-31
 audit found eight commits doing it. Mitigating evidence, recorded because it is real: the teeth *were*
 checked in-session by removing `.withCpuPeriod` and re-running, which produced `saw: [75000 100000]` for a
@@ -3612,7 +3615,7 @@ reader does not mistake it for a real regression.
   a non-default 50 ms period so the assertion cannot pass with the period unsent — confirmed by removing the
   production line and watching it fail. Docker 29.7.2, full gated IT 7/7.
 - **`0` really is uncapped end to end**, in the daemon (`max 100000`, above) and through our own path.
-- **Commit `408ff8d57` is a legitimate red-first test commit**; its red is a compile error naming the missing
+- **`test(grinder): pin the per-container CPU cap and its wiring` is a legitimate red-first test commit**; its red is a compile error naming the missing
   API, which is the only form available for a not-yet-existing symbol.
 - **The `ContainerResources` KDoc reshape** (one parameter per line was already the shape) added `cpuPeriod`
   with docs and left names, types, order and defaults of the existing parameters untouched.
@@ -4512,3 +4515,251 @@ recovered code.
 - **No source outside the audit's scope was touched by the fix pass.** `3ef3930fe` is one test file;
   `f68041c4a` and `9568120e1` are `CLAUDE.md` only.
 - **The full suite is green after the fixes**: 1171 tests, 0 failed, 29 skipped.
+
+# Audit — 2026-09-01, unpushed `develop` (iteration 32)
+
+**Scope:** `git log 03047a7c0..HEAD` — **17 commits** (6 merges, 11 working commits) across `-api`,
+`-clientside`, `-grinder` and the grinder's deploy scripts. All were produced in one session responding to
+live-grinder defect reports: a Quilt scan dropping Fabric descriptors, INCONCLUSIVE verdicts that discarded a
+survived boot, a deploy script that only warned about the headless browser, a `/status` dashboard, and Fabric
+API's module ids going unresolved.
+
+**Method:** commit-by-commit hygiene review; `--rerun-tasks` clean compile of all three changed modules to
+catch warnings and the incremental-compilation blind spot this repository has already paid for; suite counts
+re-derived from `build/test-results/test/*.xml`; guard teeth checked by deliberate breakage.
+
+## HIGH — none
+
+No behaviour regression found. Module boundaries intact (`-clientside` gained nothing pointing outward,
+`-grinder`'s report still has no Spring). No new `!!` in production code. The one change to the **published**
+`-api` surface (`fix(api): keep a Fabric jar's declaration when scanning a Quilt pack` — `ScannedMod.descriptorRead`
++ `QuiltPackScanner`'s Fabric-descriptor fallback)
+**did** get its `claude-docs/API-BEHAVIOUR-CHANGES.md` row — checked, because a silent behaviour change on the
+Maven-published module is the highest-cost miss available in this repository.
+
+## MEDIUM
+
+- **MED-1 — `fix(clientside): count a survived boot, and say why a locked file would not download` bundles a
+  pure refactor with the behaviour change it was labelled for.** The
+  behaviour change is ~5 lines (a `SURVIVED -> Confidence.LOW` branch in `aggregate`). The commit carries
+  **90 changed lines** in `ClientsideVerifier.kt`, because it also moved `aggregate` into the companion,
+  renamed it `aggregateFor`, and re-wrapped three lines the move pushed past the column limit. The
+  conventions ask that "pure refactor (no behavior change)" and "change behavior" be separate commits, and
+  the cost here is the usual one: the fold's history now shows a wholesale rewrite, so a later reader cannot
+  see the one-line ranking decision without diffing by eye. The move was *necessary* (the test calls it
+  statically) — it simply belonged in its own commit ahead of the fix.
+
+- **MED-2 — Two red-committed pins contained bugs of their own, fixed in the implementation commit.** The
+  pin-first rule exists so someone can check out `<fix>^` and watch the guard go red for the stated reason.
+  Twice in this range the red was partly self-inflicted:
+  - `test(grinder): pin a self-contained live dashboard for /status` never wired `consoleRules` in its
+    fixture, so `bootRules.source|ruleCount|undecidedVerdict|errors` could not resolve **even with a correct
+    implementation**; the following `feat(grinder)` commit edited the test to add it.
+  - `test(clientside): pin that Fabric API's modules resolve to Fabric API` wrote
+    `"fabric-resource-loader-v${'$'}version"`, an escaped dollar producing the literal `...-v$version`; the
+    following `fix(clientside)` commit corrected it.
+
+  Both were caught immediately and the guards are sound now, but the committed red state is not the clean
+  "implementation missing" signal the rule is for. Checking the fixture resolves against a *real* server
+  before committing the pin would have caught the first; running the pin once before committing catches both.
+
+- **MED-3 — Root `CLAUDE.md`'s api suite count went stale in this very range. FIXED in this audit.** It read
+  `381 (1 skip)`; re-derived from the test XML it is **382 (1 skip)**. `test(api): pin that a Quilt pack scan
+keeps a Fabric jar's dependencies` added one test to
+  `ModScannerSidenessTest` and no commit updated the row. This is precisely the defect the *Cite names, not
+  snapshots* convention names — "suite counts left behind by the tests that were just added" — and it is the
+  fourth consecutive audit to find an instance of that class. The clientside (263) and grinder (434) rows,
+  updated in the same session, were correct.
+
+## LOW
+
+- **LOW-1 — New tests introduced inside implementation commits rather than pinned first.**
+  `StatusDashboardScriptTest` (172 lines) landed entirely in `feat(grinder): a live, framework-free dashboard
+  for /status`, and the Fabric-module collapse guard (30 lines) in `fix(clientside): resolve Fabric API's
+  module ids to Fabric API`. Both are defensible as characterization — the collapse guard pins
+  behaviour that already worked, and the script test's teeth *were* verified in-session by reinstating the
+  bug — but neither has a red commit, so the verification leaves no evidence, which is the same gap the
+  conventions record for the eight commits of 2026-07-31.
+
+- **LOW-2 — Three new `!!`, all the same line.** `val nodeBinary = node!!` appears verbatim in each of
+  `StatusDashboardScriptTest`'s three tests, after an `Assumptions.assumeTrue(node != null, …)` that Kotlin
+  cannot smart-cast through. The convention is "no new `!!`"; the honest fix is to have the helper return the
+  path and skip inside itself, or to bind once in a `@BeforeEach`. Test-only, so the blast radius is nil, but
+  it is duplication as well as an idiom violation.
+
+- **LOW-3 — `StatusDashboardRenderer.PAGE` has no doc comment.** Every other member of the object has one,
+  and the conventions extend the requirement to unexported constants explicitly. Its neighbour `toHtml()`
+  carries the explanation, which is presumably why it was missed.
+
+- **LOW-4 — The dashboard's failure text over-claims on the first poll.** `feed(false, "unreachable (…) —
+  showing the last successful poll")` is accurate on any poll but the first; when the *first* fetch fails
+  there is no previous poll and every panel is empty, so the message describes a state the page is not in.
+
+## Observation — an open item, not a defect in this range
+
+- **OBS-1 — the Fabric API module fix is asymmetric, and the Quilt mirror is untouched.** `KnownModIds` now
+  resolves `fabric-<something>-v<digits>` to Fabric API, closing the case where a descriptor names a *module*
+  of a project neither platform publishes separately. The same structural shape exists for Quilt: QSL also
+  ships as many modules, and this codebase maps only `quilted_fabric_api`/`qsl`, while
+  `BootVerifier.environmentProvidedIds` excuses only `quilt_loader` and `quilt_base`. Any other QSL module id
+  a Quilt descriptor declares therefore falls through to Modrinth as a slug guess and goes unmapped —
+  unstaged, exactly as `fabric-resource-loader-v0` did. **Unverified:** the exact QSL module ids (the
+  repository groups them by category rather than by published id), so confirm the id shape against a real
+  `quilt.mod.json` before adding a rule; guessing at it would rebuild the un-pinned table `KnownModIds`
+  exists to avoid.
+
+## Not findings / positives (verified — do not re-litigate)
+
+- **Pin-first done properly twice.** The `test(api)`/`fix(api)` pair for the Quilt pack scan, and the
+  `test(clientside)`/`fix(clientside)` pair for the survived boot, each land the
+  guard red in its own commit and the fix touches **no test file** — confirmed with `git show --stat <fix> --
+  '*Test.kt'`.
+- **Guard teeth checked by deliberate breakage, three times.** Renaming the string-literal key `"loaderCache"`
+  in `statusJson()` made `everyFieldTheDashboardReadsExistsInTheStatusDocument` the **only** failure in all
+  434 grinder tests; reinstating `safeHref`'s base URL turned `theLinkHelperOnlyAcceptsAbsoluteHttpUrls` red;
+  renaming the Kotlin property `passRunningSeconds` failed at *compile* time via the pre-existing
+  `GrinderStatusTest`, which is what established that `READ_FIELDS` covers the untyped half rather than
+  duplicating the compiler.
+- **No new compiler warnings.** `--rerun-tasks` clean compile of `:api`, `:clientside` and `:grinder` test
+  source sets: every `w:` line is a pre-existing Java-deprecation in a file this range did not touch, and the
+  one touched file that carries such warnings (`ForgeTomlScanner.kt`) received a two-line change unrelated to
+  them.
+- **Measurements recorded rather than asserted**, per the *cite names* convention: the module rule measured at
+  44 of 46 `FabricMC/fabric` directories with the two misses named and explained; Playwright's pinned Chromium
+  revision read out of `driver-1.62.0.jar`'s `browsers.json` rather than assumed; the installer's unit-file
+  bug demonstrated by executing the resolution block against all three states.
+- **Deploy-script changes carry no test harness, and that ceiling is stated rather than quietly accepted** —
+  the same position `buildSrc` holds. Verification went in the commit messages (`bash -n`, `--help` rendering,
+  `--nonsense` still rejected, the CLI main class resolving off the real installed dist).
+
+## Iteration 32 — resolution (2026-09-01)
+
+Every finding actioned, on branch `claude-audit-32-followups`. Status of each:
+
+| Finding | Outcome |
+|---|---|
+| MED-1 refactor bundled with behaviour change (the survived-boot `fix(clientside)`) | **Closed by the rebuild below** |
+| MED-2 red pins carrying their own bugs | **Closed forward** — new convention in root `CLAUDE.md` |
+| MED-3 stale api suite count | **Fixed** in the iteration-32 audit commit (381 → 382) |
+| LOW-1 guards added inside implementation commits | **Accepted, not rewritten** — see below |
+| LOW-2 three `!!` in `StatusDashboardScriptTest` | **Fixed** — `requireNode()` returns non-null |
+| LOW-3 `StatusDashboardRenderer.PAGE` undocumented | **Fixed** |
+| LOW-4 dashboard over-claims on the first failed poll | **Fixed** — `everLoaded` gates the wording |
+| OBS-1 QSL mirror of the Fabric API module gap | **Verified and closed** — see below |
+
+**MED-1 and LOW-1 are accepted rather than rewritten, deliberately.** Both are commit-shape defects in
+history that is already merged into `develop`. Fixing them means rebasing 17 commits including six merges to
+re-cut two of them, and the repository has already decided this trade once: the `358675fbf` entry records
+that a mislabelled commit found after merging is remedied by *the audit entry*, because the alternative is
+rewriting shared history. The forward-looking half is what has value, and MED-2's convention is it.
+
+**MED-2 is closed as a rule, since the instances cannot be.** Root `CLAUDE.md` now carries *"Run the pin
+before you commit it red, and read why it failed"*, with both 2026-09-01 instances as its evidence — the
+fixture that omitted `consoleRules` and the `${'$'}` escape that produced a literal `...-v$version`. It sits
+directly above the existing *pin first means commit first* rule, because it is the failure mode that rule
+does not catch on its own: a red commit proves nothing if the red is the guard's own bug.
+
+**OBS-1 verified and closed.** The observation was recorded unverified because the QSL repository groups
+modules by category rather than by published id. Resolved by reading **all 47 `quilt.mod.json` files** in
+`QuiltMC/quilt-standard-libraries` (branch 1.21.5) and collecting their `depends` entries: **33 distinct
+`quilt_*` module ids**, with `quilt_resource_loader_testmod` declaring `["quilt_loader",
+"quilt_resource_loader"]`. The gap was real and identical in shape to the Fabric one.
+
+- The rule is **not** a copy of Fabric's: QSL ids are underscored and carry **no** API-version suffix, so
+  `fabric-<x>-v<digits>` matches none of them. `^quilt_[a-z0-9_]+$` → `qsl` / `634179`.
+- `notQsl` holds `quilt_loader` — the loader, not a module. It is already dropped before staging, so mapping
+  it would change nothing observable; it is excluded because a lookup table other code trusts should not
+  record a false fact merely because the falsehood is unreachable today.
+- **One sub-gap raised, then closed on Griefed's instruction (2026-09-01).** `quilt_base` *is* a QSL module — `library/core/qsl_base` exists
+  and `quilt_base_testmod` depends on it — yet `-api`'s `QuiltScanner.dependencyExclusions` strips it at scan
+  time as "the platform", and `BootVerifier.environmentProvidedIds` repeats that. So it never reaches
+  staging. Closing it would mean changing existing assertions in the **published** module, which the
+  conventions treat as a stop-and-flag rather than a fix to make unilaterally, and the reachable case is
+  narrow: a mod whose *only* QSL dependency is `quilt_base`, since any other module now pulls QSL in. Raised
+  rather than changed unilaterally — and Griefed then said to change it, which is the flag doing its job.
+  **Now fixed:** `QuiltScanner.dependencyExclusions` drops only `(quilt_loader|java|minecraft)` and
+  `environmentProvidedIds` no longer lists `quilt_base`; four guards pinned red first across both modules,
+  two existing expectations updated under a `fix:` label, one `API-BEHAVIOUR-CHANGES.md` row for the extra
+  `ModDependency` a Quilt scan now returns. Final suites: api **383** (1 skip), clientside **267**, grinder
+  434 (29 skip), app 149.
+
+Suites after the follow-ups, re-derived from `build/test-results/test/*.xml`: api 382 (1 skip), clientside
+**266** (was 263), grinder 434 (29 skip), app 149. All green.
+
+## Iteration 32 — MED-1, LOW-1 and MED-2's instances closed by rebuilding the history (2026-09-01)
+
+The resolution above recorded MED-1 and LOW-1 as *accepted, not rewritten*, on the `358675fbf` precedent
+that a mis-shaped commit found after merging is remedied by the audit entry. Griefed overrode that and the
+history was re-cut, taking MED-2's two instances with it — those had been closed only as a *rule*, because
+the bad red commits were thought immovable.
+
+**Correction, recorded because it is the more useful half of this entry.** The rebuild was proposed on the
+stated ground that *nothing had been pushed*. That was false and it was never checked: `origin/develop`
+already held the 26 commits, so `358675fbf`'s precedent applied in full rather than being inapplicable. The
+rewrite therefore needed a **force-push of a shared branch**, which Griefed did on 2026-09-01 after being
+shown the divergence. Nothing was lost — the tip trees are byte-identical — but the decision was taken on a
+premise nobody had verified. **Check `origin/<branch>` before proposing a history rewrite;** the cost of
+being wrong is borne by everyone who has already pulled.
+
+**Method.** `git rebase -i` is unavailable in this environment, so the range was replayed explicitly: each
+feature branch re-created from `03047a7c0`, its commits re-made, and each `--no-ff` merge restored with its
+original message. **All nine merges survive** and the resulting tree is byte-identical to the pre-rebase tip
+(`git diff --stat` empty against the `backup-pre-rebase-20260901` ref). 26 commits became 29, and 30 once
+this entry landed.
+
+**MED-1 — the survived-boot `fix(clientside)` split, and the refactor moved ahead of the pin.** It is now
+`refactor(clientside): move the confidence fold into the companion` → `test(...)` → `fix(...)`. Putting the
+refactor *first* is what makes it honest: `aggregate` becomes `aggregateFor` in the companion while nothing
+yet references it, so that commit is **green** — verified by running the clientside suite at it. The
+confidence ladder was diffed against its previous form to confirm not one branch changed. The behaviour
+change is then a five-line commit instead of a ninety-line one.
+
+**LOW-1 — the two guards buried in implementation commits now have their own.**
+
+- `StatusDashboardScriptTest` was written after the renderer and found the `safeHref` bug, so the honest
+  shape is four commits, and that is what history now says: `test` (pin) → `feat` (dashboard, carrying the
+  base-URL bug) → `test(grinder): execute the dashboard's script under node` → `fix(grinder): the dashboard
+  links only absolute http(s) URLs`. Verified by checking out each: the feat commit is green, the node guard
+  is **red on `theLinkHelperOnlyAcceptsAbsoluteHttpUrls`**, the fix is green. The bug and its discovery are
+  now legible from the log instead of being invisible inside one commit.
+- The Fabric-module collapse guard moved into the pin commit, where it belongs: it is **red before the
+  fix** — `theManyModulesOfFabricApiCollapseToOneDependency` fails there — because without the registry
+  change the module ids do not resolve to `fabric-api` and so are not filtered.
+
+**MED-2's instances, not just its rule.** The dashboard pin's fixture now wires **every** optional
+collaborator of `ReportServer`, so that commit is red for exactly one reason — `Unresolved reference
+'StatusDashboardRenderer'` — rather than also for four field paths that no implementation could have
+resolved. The Fabric pin carries the corrected `v${version}` interpolation rather than the literal that was
+fixed a commit later. Both were checked by reading the failures at those commits, which is what the
+convention added yesterday asks for.
+
+Suites at the rebuilt tip: api 383 (1 skip), clientside 267, grinder 434 (29 skip), app 149 — all green.
+Every iteration-32 finding is now closed; none remain accepted-with-reason.
+
+## Iteration 32 — the citations this file's own rebase killed (2026-09-02)
+
+Rewriting the history above orphaned **13 short commit hashes cited in this file**, across 26 occurrences.
+Eight were killed by the 2026-09-01 rebase; the other five had already been orphaned by an earlier one and
+are now reachable from **no ref at all** — `git for-each-ref --contains` finds nothing for the CPU-cap
+series (`test(grinder): pin the per-container CPU cap and its wiring`, `feat(grinder): express the container
+CPU cap in cores, against a stated period`, `feat(grinder): make the per-container CPU cap configurable`,
+`docs: record the CPU-cap knob and the quota-without-period finding`) or for `docs(grinder): close the
+deployment gaps this outage ran into`. They survive only in the object store until gc, after which their
+hashes would not even resolve — which is why they are named here by subject rather than by the hashes that
+are about to become meaningless.
+
+All 26 now name the **commit subject** instead, which is what the *Cite names, not snapshots* convention
+asks for and what survives rebase, cherry-pick and squash. Verified by sweeping **every tracked `.md`** for
+hex tokens that `git cat-file -t` resolves to a commit and testing each against
+`git merge-base --is-ancestor <hash> develop`: this file is clean.
+
+Two other files carry non-develop citations and are deliberately left alone. `.claude/rules/ci-workflows.md`
+names `50fd50f37`, which is a real release commit on `origin/alpha` — outside `develop` by design, not
+orphaned. `CHANGELOG.md` names ~31 hashes that resolve to no branch at all, but it is **generated by
+semantic-release** and rewritten on every release, so hand-editing it would be both futile and wrong.
+
+The lesson is not that a rebase is dangerous. It is that **this file is the one place in the repository that
+cites hashes at volume**, so it is the one guaranteed casualty of any history rewrite — and it had already
+been hit once (the "54 commit hashes killed by a rebase" incident the root `CLAUDE.md` records) before being
+hit again here. Write subjects the first time.
+

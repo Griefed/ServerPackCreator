@@ -182,9 +182,15 @@ internal class ModScannerSidenessTest {
     }
 
     /**
-     * The Quilt half of the same bug, and the one that matters for a Quilt mod: `quilt_loader` and
-     * `quilt_base` are the platform, but `quilted_fabric_api` is QFAPI — Quilt's port of Fabric API, and
-     * just as much a mod the server needs.
+     * The Quilt half of the same bug, and the one that matters for a Quilt mod: `quilt_loader` is the
+     * platform, but `quilted_fabric_api` is QFAPI — Quilt's port of Fabric API, and just as much a mod the
+     * server needs.
+     *
+     * **`quilt_base` is a mod too, and used to be excluded as though it were the platform.** It is QSL's
+     * base module, shipped by QFAPI: `library/core/qsl_base` in `QuiltMC/quilt-standard-libraries`, whose
+     * own `quilt_base_testmod` declares `["quilt_loader", "quilt_base"]` (read 2026-09-01, branch 1.21.5).
+     * Excluding it was the exact mistake this test's Fabric counterpart exists to prevent — `fabric` (the
+     * API) is not excluded there, only `fabricloader` — so Quilt now matches: loader out, modules in.
      */
     @Test
     fun quiltedFabricApiIsADependencyRatherThanThePlatform(@TempDir tempDir: File) {
@@ -196,10 +202,35 @@ internal class ModScannerSidenessTest {
         """.trimIndent()
         val jar = jarContaining(tempDir, "needsqfapi.jar", "quilt.mod.json", descriptor)
 
-        val dependency = modScanner.quiltScanner.scan(listOf(jar)).single().dependencies.single()
+        val dependencies = modScanner.quiltScanner.scan(listOf(jar)).single().dependencies
 
-        Assertions.assertEquals("quilted_fabric_api", dependency.modID)
-        Assertions.assertEquals(">=7.0.0", dependency.versionConstraint)
+        Assertions.assertEquals(
+            listOf("quilted_fabric_api", "quilt_base"), dependencies.map { it.modID },
+            "QFAPI and QSL's base module are both mods; only quilt_loader/minecraft/java are the platform"
+        )
+        val qfapi = dependencies.first { it.modID == "quilted_fabric_api" }
+        Assertions.assertEquals(">=7.0.0", qfapi.versionConstraint)
+    }
+
+    /**
+     * The line the exclusion list actually draws, stated on its own so it cannot be inferred from a fixture
+     * that happens to list one of each. `quilt_loader` is the runtime; everything QSL ships is a mod that a
+     * server pack has to keep, and a jar providing it must stay rescuable.
+     */
+    @Test
+    fun onlyTheQuiltRuntimeIsExcludedFromDependencies(@TempDir tempDir: File) {
+        val descriptor = """
+            {"schema_version":1,
+             "quilt_loader":{"id":"qsluser","version":"1.0.0",
+               "depends":["quilt_loader","minecraft","java","quilt_base","quilt_resource_loader"]},
+             "minecraft":{"environment":"*"}}
+        """.trimIndent()
+        val jar = jarContaining(tempDir, "qsluser.jar", "quilt.mod.json", descriptor)
+
+        Assertions.assertEquals(
+            listOf("quilt_base", "quilt_resource_loader"),
+            modScanner.quiltScanner.scan(listOf(jar)).single().dependencies.map { it.modID }
+        )
     }
 
     /** Forge and NeoForge state a `versionRange` per dependency; it has to survive the scan too. */
@@ -258,12 +289,13 @@ internal class ModScannerSidenessTest {
         val dependencies = modScanner.quiltScanner.scan(listOf(jar)).single().dependencies.map { it.modID }
 
         Assertions.assertEquals(
-            listOf("cloth-config2", "jei"), dependencies,
+            listOf("cloth-config2", "jei", "quilt_base"), dependencies,
             "Both the string and the object form must be read, minus the platform; got $dependencies"
         )
         Assertions.assertEquals(
-            listOf(null, "*"), modScanner.quiltScanner.scan(listOf(jar)).single().dependencies.map { it.versionConstraint },
-            "the object form states a range and the bare string does not"
+            listOf(null, "*", null),
+            modScanner.quiltScanner.scan(listOf(jar)).single().dependencies.map { it.versionConstraint },
+            "the object form states a range and the bare strings do not"
         )
     }
 
@@ -474,5 +506,37 @@ internal class ModScannerSidenessTest {
             listOf("fabric", "fabric-api"), modScanner.quiltScanner.scan(listOf(jar)).single().provides,
             "both the bare-string and the object entry shapes must be read"
         )
+    }
+
+    /**
+     * **A Fabric-only jar booted under Quilt must not lose its declared dependencies.**
+     *
+     * Quilt deliberately runs Fabric mods, and most do not ship a `quilt.mod.json` at all. The Quilt scanner
+     * then finds no descriptor, `DescriptorScanner` flattens that to a default entry — filename as id,
+     * `SERVER`, **empty dependencies** — and the merge only prefers the Fabric result when the two disagree
+     * about *sideness*. Two SERVER verdicts agree, so the empty entry wins and everything the Fabric manifest
+     * declared is discarded.
+     *
+     * Reported 2026-08-31 from the live grinder: `bookshelf` on Quilt 0.31.0-beta.3 / Minecraft 1.21.1 died
+     * with `Bookshelf requires any version of fabric-api, which is missing!` — the dependency was never
+     * resolved because the scan never reported it. The same loss reaches real generation, where
+     * `ModListCompiler`'s dependency rescue would fail to keep Fabric API in a Quilt pack that needs it.
+     */
+    @Test
+    fun aFabricOnlyJarKeepsItsDependenciesWhenScannedForQuilt(@TempDir tempDir: File) {
+        val descriptor = """
+            {"schemaVersion":1,"id":"bookshelf","version":"1.0.0","environment":"*",
+             "depends":{"fabric-api":"*","minecraft":"~1.21.1"}}
+        """.trimIndent()
+        val jar = jarContaining(tempDir, "bookshelf-fabric.jar", "fabric.mod.json", descriptor)
+
+        val scanned = modScanner.quiltPackScanner.scan(listOf(jar)).single()
+
+        Assertions.assertEquals("bookshelf", scanned.modID, "the Fabric descriptor's id, not the file name")
+        Assertions.assertEquals(
+            listOf("fabric-api"), scanned.dependencies.map { it.modID },
+            "a Quilt pack scan must keep what the Fabric manifest declared; got ${scanned.dependencies}"
+        )
+        Assertions.assertEquals("~1.21.1", scanned.minecraftConstraint)
     }
 }

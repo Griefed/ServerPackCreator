@@ -87,7 +87,7 @@ abstract class FabricFamilyScanner(
         val modId = utilities.jsonUtilities.getNestedText(modConfig, *idPath)
         return ScannedMod(
             modJar, modId, readSideness(modConfig), readDependencies(modConfig, modId),
-            readProvides(modConfig, modId), readMinecraftConstraint(modConfig)
+            readProvides(modConfig, modId), readMinecraftConstraint(modConfig), descriptorRead = true
         )
     }
 

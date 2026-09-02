@@ -86,7 +86,7 @@ class ForgeAnnotationScanner(private val objectMapper: ObjectMapper, private val
             log.error("Could not scan ${modJar.name}. Consider reporting this to the mod-author: no modId in the annotation cache.")
             return ScannedMod(modJar)
         }
-        return ScannedMod(modJar, modId, sidenessOf(sidenesses), dependencies)
+        return ScannedMod(modJar, modId, sidenessOf(sidenesses), dependencies, descriptorRead = true)
     }
 
     /**

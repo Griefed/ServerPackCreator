@@ -76,3 +76,73 @@ internal class ClientsideVerifierServerSupportTest {
         Assertions.assertFalse(ClientsideVerifier.declaresServerSupport(DeclaredSupport.OPTIONAL, JarScan.ERROR))
     }
 }
+
+/**
+ * Pins the two INCONCLUSIVE populations the live store surfaced on 2026-09-01, both of which threw away
+ * something the engine had actually learned.
+ */
+internal class SurvivedBootConfidenceTest {
+
+    /**
+     * **A server that started is evidence, and it was being discarded.**
+     *
+     * `aggregate` fell through to `INCONCLUSIVE` whenever the metadata said nothing — and the metadata says
+     * nothing exactly when the jar scan errored *and* the platform declares no sideness, which is every
+     * CurseForge project. So the single most expensive signal the engine produces, a boot that reached its
+     * ready-line, counted for nothing.
+     *
+     * Live examples, all `JarSideness = ERROR`, all `SURVIVED (exit 137)`: `better-stats`, `tcdcommons` and
+     * `yacl`, each recorded `INCONCLUSIVE` while 2,318 other survived boots recorded `LOW` or `MEDIUM`.
+     */
+    @Test
+    fun aSurvivedBootIsLowRatherThanInconclusiveWhenTheMetadataSaysNothing() {
+        val verdict = ClientsideVerifier.aggregateFor(
+            serverSide = DeclaredSupport.UNKNOWN, jarScan = JarScan.ERROR, bootResult = BootResult.SURVIVED
+        )
+
+        Assertions.assertEquals(
+            Confidence.LOW, verdict.first,
+            "a server that started is what LOW means; INCONCLUSIVE claims we learned nothing"
+        )
+    }
+
+    /** With no boot and no metadata there genuinely is nothing, and that must stay INCONCLUSIVE. */
+    @Test
+    fun noBootAndNoMetadataIsStillInconclusive() {
+        Assertions.assertEquals(
+            Confidence.INCONCLUSIVE,
+            ClientsideVerifier.aggregateFor(DeclaredSupport.UNKNOWN, JarScan.ERROR, null).first
+        )
+    }
+
+    /**
+     * **A clean boot must not overturn a client-only declaration.** The asymmetry is the whole confidence
+     * model: a crash is decisive, a clean boot is not proof of server-safety — a client mod can start a
+     * server without being any use on one. So `metadataClient` keeps outranking a survived boot.
+     */
+    @Test
+    fun aSurvivedBootDoesNotOverturnAClientOnlyDeclaration() {
+        Assertions.assertEquals(
+            Confidence.MEDIUM,
+            ClientsideVerifier.aggregateFor(DeclaredSupport.UNSUPPORTED, JarScan.CLIENT, BootResult.SURVIVED).first
+        )
+    }
+
+    /** Nor may it soften a crash, which stays decisive above everything. */
+    @Test
+    fun aCrashStillOutranksEverything() {
+        Assertions.assertEquals(
+            Confidence.HIGH,
+            ClientsideVerifier.aggregateFor(DeclaredSupport.REQUIRED, JarScan.SERVER_OR_BOTH, BootResult.CRASHED).first
+        )
+    }
+
+    /** An inconclusive boot taught us nothing, so it must not be promoted the way a survived one is. */
+    @Test
+    fun anInconclusiveBootIsNotEvidence() {
+        Assertions.assertEquals(
+            Confidence.INCONCLUSIVE,
+            ClientsideVerifier.aggregateFor(DeclaredSupport.UNKNOWN, JarScan.ERROR, BootResult.INCONCLUSIVE).first
+        )
+    }
+}

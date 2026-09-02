@@ -74,6 +74,15 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   **Asymmetry baked into the confidence model:** only a CRASH is decisive (→ HIGH, incl. the
   "declares server/both yet crashes" lie); a clean boot does not prove server-safe. **The declared
   sideness is a self-report and is unreliable** — that asymmetry is *why* the expensive boot exists.
+  **But "not decisive" is not "not evidence", and `aggregate` conflated the two until 2026-09-01.** It
+  consulted `bootResult` for CRASHED and nothing else, so a SURVIVED boot fell through to the metadata —
+  and where there *is* no metadata (jar scan ERROR plus a platform declaring nothing, i.e. every
+  CurseForge project) it landed in INCONCLUSIVE, which means "we learned nothing" about a run that
+  learned the server started. SURVIVED now yields `LOW`, ranked **below** `metadataClient` so the
+  asymmetry above is untouched: a clean boot still cannot overturn a client-only declaration. Measured
+  against the live store: `better-stats`, `tcdcommons` and `yacl`, all `JarSideness=ERROR`, all decided
+  `READY_LINE`. **Exit 137 on such a row is normal** — `ContainerServerRunner` stops the container at the
+  ready-line — so the classifier was right and only the fold disagreed.
   **Landmine — loader-availability & pre-launch aborts (two-layer defense against a false HIGH):**
   a loader lacking a build for a brand-new Minecraft (e.g. Fabric on 26.2) must never be scored a
   clientside crash. (1) *Selection gate* — `LoaderVersionResolver.latest` returns `null` for a
@@ -316,6 +325,45 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   resolves what its manifest declares and the platform never mentioned — the case Fabric API most often falls
   into. `KnownModIds` bridges the vocabularies (a manifest says `fabric`, Modrinth wants `fabric-api`,
   CurseForge wants `306612`); `VersionConstraint` matches a declared range against `ModFile.version`.
+  - **LANDMINE — Fabric API is one project shipped as ~45 modules, and descriptors depend on the *modules*.**
+    A manifest says `fabric-resource-loader-v0`, `fabric-block-getter-api-v2`, `fabric-rendering-fluids-v1`;
+    neither platform publishes a project under any of those names, so Modrinth's slug guess 404s, CurseForge
+    refuses to guess, and the single most common dependency in the ecosystem went unstaged — the mod booted
+    without it, the loader refused the pack, and the *candidate* wore the INCONCLUSIVE. Reported live
+    2026-09-01, and the same shape as the recorded Quilt solver failure `fabric-resource-loader-v0 versions
+    [*] (0 valid options, 0 invalid options)`.
+    - **A rule, not a table, and that is load-bearing.** The API-version suffix moves between releases: the
+      current source tree ships `fabric-resource-loader-v1` and `fabric-block-getter-api-v2`, while the corpus
+      is full of older mods declaring `-v0` — ids in no tree today. A list snapshotted from the repository
+      would be wrong for exactly the historical mods this fixes. `fabric-<something>-v<digits>` is the stable
+      shape; measured against the 46 directories of `FabricMC/fabric` it matches **44**, the two misses being
+      `fabric-api-bom` and `fabric-api-catalog` (build artifacts, not runtime modules). `fabric-api-base` and
+      `fabric-renderer-indigo` carry no suffix and are listed explicitly.
+    - **`notFabricApi` is why a bare pattern is wrong.** lucko's `fabric-permissions-api-v0` (plural) matches
+      the shape and is a separate project; Fabric API's own is `fabric-permission-api-v1` (singular), one
+      character away, and must still resolve. Verified against lucko's `fabric.mod.json`, 2026-09-01. Keep
+      that set to ids **observed** colliding — guessing at more re-creates the un-pinned table `KnownModIds`
+      exists to avoid. A `fabric-` prefix alone proves nothing: `fabric-language-kotlin` is its own project.
+    - **QSL is the same shape, and is handled by its own rule.** Quilt Standard Libraries also ships as
+      many modules, and a Quilt descriptor names them (`quilt_resource_loader`, `quilt_networking`). Verified
+      2026-09-01 across all 47 `quilt.mod.json` files in `QuiltMC/quilt-standard-libraries` (branch 1.21.5):
+      **33 distinct `quilt_*` ids**, all lowercase-with-underscores and **none** carrying an API-version
+      suffix — so `fabric-<x>-v<digits>` matches no QSL id, which is why the Fabric rule left this open
+      rather than closing it by coincidence. The QSL rule is `^quilt_[a-z0-9_]+$` → `qsl` / `634179`, with
+      `notQsl` holding `quilt_loader` (the loader, not a module).
+      **`quilt_base` was the one QSL module both layers called "the platform", and that is fixed** (Griefed's
+      call, 2026-09-01, after it was flagged rather than changed). It is QSL's base module shipped by QFAPI —
+      `library/core/qsl_base`, and `quilt_base_testmod` depends on `["quilt_loader", "quilt_base"]` — so
+      `-api`'s `QuiltScanner.dependencyExclusions` no longer strips it and it is no longer in
+      `BootVerifier.environmentProvidedIds`. Only `quilt_loader` is the runtime, which is the same line
+      `FabricScanner` draws by excluding `fabricloader` and never `fabric`. Two existing `-api` expectations
+      had to change, which is the stop-and-flag signal working as intended: it was raised, decided, and the
+      commit is labelled `fix:`. One row in `API-BEHAVIOUR-CHANGES.md` — a Quilt jar's scan now returns one
+      more `ModDependency`, and a QFAPI/QSL jar becomes rescuable into a pack that had disabled it.
+    - **One mod names several modules, and they must collapse to one download.** `visited` is claimed on the
+      *ref*, so the first module resolves Fabric API and the rest short-circuit. That matters beyond the
+      wasted fetch: it is the B6 shape, where one jar reachable under several names double-counted toward
+      `MAX_INJECTED_DEPENDENCIES` and refused packs that were within the cap.
   - **LANDMINE — the refusal split is the whole safety property, and it is structural.** A platform ref is a
     project the author linked; a manifest id is a bare string that may name something *bundled inside another
     jar* (`fabric-api-base` ships inside Fabric API), provided by the loader, or optional in practice. Since
@@ -356,6 +404,12 @@ app's four CLI verbs (`-scan`, `-clientsidereport`, `-verifyclientside`, `-clien
   exactly that and nothing else — a timeout or a DNS failure must still fail, or the downloader returns `null`
   forever in silence. Both navigations also wait for `DOMCONTENTLOADED`, never the default `load`: an ad-laden
   project page keeps fetching long after it is usable, and the whole 30s default budget was being spent on it.
+  **A staging refusal names the lock** (`BootVerifier.downloadFailureDetail`). 21 live verdicts read only
+  `Could not download <file>`, every one CurseForge and every one from this locked population — a sentence a
+  404, a flaky link and *a host with no Chromium* all produce identically, so nobody could tell a broken host
+  from a broken mod. The locked branch names `allowModDistribution=false` and the Playwright prerequisite;
+  the ordinary branch deliberately does **not** mention the browser, since blaming it for an ordinary
+  download failure sends the operator the wrong way.
 - **`ClientsideListEditor`** (pure, unit-tested) inserts accepted entries into both files that ship the
   fallback-list: the `fallbackMods` `listOf(...)` block in `GenerationConfig.kt` (sorted, aligned
   `//link` comment, Kotlin trailing-comma is fine) and the backslash-continued `fallbackmodslist` in
@@ -376,7 +430,7 @@ seam (writes the log, then `BootLogClassifier` + `BootLogExcerpt`). The default
 
 ## Testing patterns
 
-- 138 tests, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
+- 257 tests, all offline. Most build jars in-memory (`java.util.jar`) or feed canned
   JSON to a fake `HttpFetcher`. **Four need a resource** — `MetadataScannerTest`, `LoaderVersionResolverTest`,
   `BootVerifierSelectionTest` and `AttemptStagingIsolationTest` each boot an offline `ApiWrapper` from
   `src/test/resources/serverpackcreator.properties` (whose `ModScanner` relies on the API's cached

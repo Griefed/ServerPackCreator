@@ -77,7 +77,8 @@ open class ForgeTomlScanner(private val tomlParser: TomlParser) : DescriptorScan
         val (sidenesses, dependencies) = getSidenessesAndDependencies(modConfig, modId)
         return ScannedMod(
             modJar, modId, sidenessOf(sidenesses), dependencies,
-            minecraftConstraint = readMinecraftConstraint(modConfig, modId)
+            minecraftConstraint = readMinecraftConstraint(modConfig, modId),
+            descriptorRead = true
         )
     }
 

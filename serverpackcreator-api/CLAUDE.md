@@ -49,8 +49,21 @@
   **not** re-add a `when (modloader)` over the concrete scanners; that duplication is what hid the Forge
   era bug in two places at once (versioning-scheme landmine below). A `null` return means "no scanner
   knows this loader" and each caller turns it into keep-every-mod. The Quilt arm returns
-  `QuiltPackScanner`, which owns the quilt+fabric merge — CLIENT wins, and the *Quilt* `ScannedMod` is
-  kept when both agree, because its id and dependency list feed the downstream dependency-rescue.
+  `QuiltPackScanner`, which owns the quilt+fabric merge — CLIENT wins on a sideness disagreement, and
+  whichever scan **actually read a descriptor** wins otherwise (see the landmine below; "the Quilt one is
+  kept when both agree" was the old rule, and it discarded a Fabric-only jar's entire declaration).
+- **LANDMINE — the "nothing could be read" fallback is indistinguishable from a real scan by value alone.**
+  `DescriptorScanner` flattens a missing descriptor to `ScannedMod(modJar)`: file name as `modID`, `SERVER`,
+  empty `dependencies`/`provides`, `null` `minecraftConstraint` — every one of which a genuine descriptor
+  could also produce. So anything **merging two scans of the same jar** must read `ScannedMod.descriptorRead`
+  rather than inferring from the values. `QuiltPackScanner` did not, and it cost real data: Quilt runs Fabric
+  mods and most ship no `quilt.mod.json`, so the Quilt scan was the fallback, the Fabric scan was real, the
+  merge only preferred Fabric where the two disagreed about *sideness*, both read `SERVER`, they agreed, and
+  the **empty entry won**. Everything the jar declared was thrown away. Found 2026-08-31 from a live grinder
+  boot — `bookshelf` on Quilt died with `requires any version of fabric-api, which is missing!` because the
+  dependency was never *reported*, so nothing could resolve it — and it reached generation too, where
+  `ModListCompiler`'s rescue would fail to keep Fabric API in a Quilt pack that needed it. Same outcome as the
+  `fabric` exclusion bug, by a different route.
 - **A jar carrying no descriptor is NOT a scan failure — do not log it as one.** Every scanner is handed
   the whole mods-directory, and a Quilt pack is scanned by **both** the Quilt and Fabric scanner by
   design, so one of the two finds nothing in every single-format jar. `MissingDescriptorException`
