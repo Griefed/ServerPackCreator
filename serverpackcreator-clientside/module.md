@@ -94,12 +94,10 @@ issue link ──▶ pick platform ──▶ resolve to ProjectFiles ──▶ d
 - [JarDownloader][de.griefed.serverpackcreator.clientside.JarDownloader] — the download
   interface, `selectDownloader()` (route by whether the file is locked), and `HttpJarDownloader`
   (the easy case: download straight from the platform URL).
-- [BrowserDownloader][de.griefed.serverpackcreator.clientside.BrowserDownloader] — the hard
-  case: `locked` CurseForge files have no download-URL, so it drives the project's website
-  download-flow with a headless browser (Playwright), launched *lazily* only when a locked file
-  actually shows up.
-
-**The boot signal (only the maintainer-triggered Phase 2):**
+- Distribution-locked CurseForge files (`allowModDistribution=false`) publish no download URL and
+  are reported as unverifiable. The headless-browser downloader that used to fetch them was
+  removed in 2026-09; it only circumvented the author's distribution opt-out, and Modrinth
+  verification covers those projects instead.
 - [BootVerifier][de.griefed.serverpackcreator.clientside.BootVerifier] — the orchestrator:
   force-include the mod + its required deps, generate a real server pack, boot it via the
   ServerStarterJar, watch for the ready-line vs. a crash.

@@ -348,39 +348,13 @@ download/resolve phase runs on the **host** (in `BootVerifier.prepareBootPack`),
 container, so the box running the grinder needs:
 - **`CURSEFORGE_API_KEY`** env var — `clientside.supportedPlatforms()` only registers CurseForge when
   the key is present; without it CurseForge links cannot be resolved at all (Modrinth needs no key).
-- **Playwright + Chromium** — distribution-locked CurseForge files (`allowModDistribution=false`,
-  `downloadUrl=null`) are routed by `clientside.selectDownloader` to the headless-browser
-  `BrowserDownloader`, which runs on the host during staging. The key and the browser are
-  **complementary**: the key resolves the project and reveals the file is locked; the browser fetches
-  the withheld jar. A locked CurseForge mod needs **both**. Wire the `BootVerifier` with a
-  `BrowserDownloader()` (disposed via `use {}`) exactly as `VerifyClientsideCommand` does — locked-file
-  support is then inherited, not reimplemented.
-  - **LANDMINE — the *browser* is not the half that goes missing; the OS libraries are.** Playwright's
-    Java binding downloads browsers itself on the first `Playwright.create()`
-    (`DriverJar.installBrowsers()`, which is why `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD` exists), so a host
-    that never ran an install still gets one. It does **not** install the libraries Chromium links
-    against, and on a headless server those are absent by default — Chromium then launches and every
-    navigation times out, which reads as CurseForge being slow. `clientside-boot.yml`'s reusable job
-    installs exactly those and nothing else, which is the shape of the gap. `install-grinder.sh` now
-    does both (`--skip-browser` opts out).
-  - **LANDMINE — headless Chromium is a *different binary*, and an install exit code does not prove it
-    runs.** Since 1.49 Playwright serves `setHeadless(true)` — which is what `BrowserDownloader` uses —
-    from a separate `chrome-headless-shell`, so 1.62.0 wants **`chromium_headless_shell-1234`** and not
-    just `chromium-1234`. `install chromium` fetches both, but a cache holding only the full browser
-    satisfies every path check and still cannot serve one download. `install-grinder.sh` therefore ends
-    with a **launch probe**: it drives `com.microsoft.playwright.CLI screenshot --browser chromium
-    about:blank` as the service account, which needs no network and fails loudly on the three causes
-    nothing else here can see — missing OS libraries, a HOME the service cannot write (Chromium needs its
-    own cache dir), and a sandbox the kernel refuses (the unit sets `NoNewPrivileges=true`, and a host
-    with unprivileged user namespaces disabled leaves Chromium none it can use). A locked CurseForge file
-    still failing *after* the probe passes is a CurseForge or network problem, not a prerequisite.
-  - **Install with Playwright's own CLI, never `npx playwright install`.** Playwright pins one Chromium
-    build per release and looks for that exact directory — 1.62.0 wants `chromium-1234` (Chrome for
-    Testing 151.0.7922.34, in `driver-1.62.0.jar`'s `browsers.json`). `npx` fetches whatever revision
-    the *npm* package pins, landing beside it as `chromium-<other>`, so a check for `chromium-*` reports
-    success while the binding still downloads its own. Driving `com.microsoft.playwright.CLI` from the
-    installed `lib/*` makes the version match by construction: the same driver jar that runs the
-    download decides what to fetch, and a version bump therefore cannot leave it stale.
+- **No browser, and no Playwright.** Distribution-locked CurseForge files (`allowModDistribution=false`,
+  `downloadUrl=null`) are **not obtainable**: the author opted out of third-party distribution. The headless
+  Chromium that used to fetch them anyway was removed 2026-09-02 — it existed only to circumvent that block,
+  CurseForge's Cloudflare challenge had stopped it working entirely, and it cost 192.9 MB of bundled node
+  binaries in every artifact (the app jar went 274.7 MB → 77.8 MB without it). Such a candidate is now
+  reported as unverifiable with a refusal naming the lock and pointing at Modrinth. Do not reintroduce it;
+  detail and the measurements are in `serverpackcreator-clientside/CLAUDE.md`.
 
 ## Testing
 
